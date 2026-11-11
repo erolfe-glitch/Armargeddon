@@ -214,8 +214,9 @@ function drawUnit(u, d) {
   // Figuren
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
-  const use = slots.slice(0, n).slice().sort((a, b) => a[1] - b[1]);
   const sp = FIG.sprite(k, u.side, flip, s * FH[k]);
+  // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
+  const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
   if (done) g.globalAlpha *= 0.6;
   const duck = u.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
@@ -679,10 +680,10 @@ function drawPortrait(canvas, kind, side) {
   gr.addColorStop(0, side === 'A' ? '#8a7a45' : '#5c6f82'); gr.addColorStop(1, '#22231c');
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   g.fillStyle = 'rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(W / 2, H * 0.88, W * 0.36, H * 0.07, 0, 0, 7); g.fill();
-  const [l, r, t] = FIG.BOX[kind];
-  const h = Math.min(H * 0.8 / t, W * 0.92 / (l + r));
-  const sp = FIG.sprite(kind, side, 0, h);
-  g.drawImage(sp.cv, Math.round(W / 2 - sp.ox + (l - r) * h / 2), Math.round(H * 0.9 - sp.oy));
+  const t0 = FIG.sprite(kind, side, 0, 100);
+  const k0 = Math.min(H * 0.84 / t0.cv.height, W * 0.94 / t0.cv.width);
+  const sp = FIG.sprite(kind, side, 0, 100 * k0);
+  g.drawImage(sp.cv, Math.round((W - sp.cv.width) / 2), Math.round(H * 0.93 - sp.cv.height));
 }
 const pill = (k, v, cls = '') => `<div class="pill ${cls}"><small>${k}</small><b>${v}</b></div>`;
 function updateHud() {

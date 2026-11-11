@@ -226,12 +226,36 @@ function drawFigure(g, kind, side) {
 }
 
 const cache = new Map();
+// Gemalte Einheitenbilder (aus art.js). Schlüssel: Figurart + '_' + Seite
+const ARTS = {};
+function setArt(map) {
+  for (const k in map) { const a = Object.assign({}, map[k]); a.img = new Image(); a.img.onload = () => { for (const ck of [...cache.keys()]) if (ck.startsWith(k.replace('_', ''))) cache.delete(ck); }; a.img.src = a.src; ARTS[k] = a; }
+}
 // Liefert { cv, ox, oy }: Füße liegen bei (ox, oy). h = Höhe eines Soldaten in Pixeln.
 function sprite(kind, side, flip, h) {
   h = Math.max(6, Math.round(h));
   const k = kind + side + (flip ? 1 : 0) + '_' + h;
   let s = cache.get(k);
   if (s) return s;
+  const art = ARTS[kind + '_' + side];
+  if (art && art.img.complete && art.img.naturalWidth) {
+    const H = Math.round(art.hs * h), W = Math.round(H * art.img.naturalWidth / art.img.naturalHeight);
+    // Heller Saum und leichte Aufhellung, damit sich die dunklen Bilder vom Schlammboden abheben
+    const pad = Math.ceil(h * 0.08);
+    const c2 = document.createElement('canvas'); c2.width = W + pad * 2; c2.height = H + pad * 2;
+    const g2 = c2.getContext('2d'), mirror = !!flip !== (art.faces === 'L');
+    g2.imageSmoothingQuality = 'high';
+    g2.save();
+    if (mirror) { g2.translate(c2.width, 0); g2.scale(-1, 1); }
+    g2.shadowColor = 'rgba(240,226,190,0.85)'; g2.shadowBlur = Math.max(2, h * 0.045);
+    try { g2.filter = 'brightness(1.22) contrast(1.08) saturate(1.1)'; } catch (e) {}
+    g2.drawImage(art.img, pad, pad, W, H);
+    g2.shadowColor = 'transparent'; g2.drawImage(art.img, pad, pad, W, H);
+    g2.restore();
+    s = { cv: c2, ox: pad + (mirror ? W * (1 - art.ax) : W * art.ax), oy: pad + H * art.ay, painted: true };
+    cache.set(k, s);
+    return s;
+  }
   const [l, r, t] = BOX[kind], pad = 0.08;
   const left = (flip ? r : l) + pad, right = (flip ? l : r) + pad;
   const cv = document.createElement('canvas');
@@ -267,6 +291,6 @@ function sprite(kind, side, flip, h) {
   return s;
 }
 
-const FIG = { PAL, OUT, KIND, BOX, sprite, drawFigure };
+const FIG = { PAL, OUT, KIND, BOX, sprite, drawFigure, setArt, ARTS };
 if (typeof module !== 'undefined' && module.exports) module.exports = FIG; else root.FIG = FIG;
 })(this);
