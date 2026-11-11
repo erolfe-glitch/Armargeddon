@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Armargeddon – Die Schlacht am Grauwall</title>
+<style>
+/* Grimdark-Kriegstisch: fast schwarze Paneele, Rost und Asche, das Schlachtfeld als Pixelbild. */
+:root {
+  --ink: #0d0b0a; --panel: #171311; --panel-2: #201a16; --line: #3a2f27;
+  --text: #e7dccb; --muted: #a39480; --rust: #c2622f; --rust-soft: #7e4426; --ember: #e0a248;
+  --A: #d88a3a; --D: #5ea4dc; --bad: #d0503a; --good: #9dff6e;
+  --display: "Georgia", "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--ink); color: var(--text); font: 15px/1.4 var(--body); }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, label:focus-within { outline: 2px solid var(--ember); outline-offset: 2px; }
+.app { min-height: 100%; display: grid; grid-template-rows: auto 1fr; }
+.bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 8px max(14px, env(safe-area-inset-left)); border-bottom: 1px solid var(--line); background: linear-gradient(#1c1613, #120f0d); }
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand h1 { margin: 0; font: 400 21px var(--display); letter-spacing: .22em; color: var(--rust); text-transform: uppercase; }
+.brand span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.turninfo { display: flex; gap: 10px; align-items: center; margin-right: auto; font-variant-numeric: tabular-nums; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 13px; border: 1px solid var(--line); background: var(--panel-2); }
+.chip::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+.chip.A { color: var(--A); border-color: #6a3d1c; } .chip.D { color: var(--D); border-color: #234c6e; }
+.tools { display: flex; gap: 6px; }
+.btn { border: 1px solid var(--rust-soft); background: transparent; border-radius: 6px; padding: 6px 11px; font-size: 13px; font-weight: 700; }
+.btn:hover { border-color: var(--rust); background: #2a1d16; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--rust); border-color: var(--rust); color: #170d07; font-size: 16px; padding: 11px 16px; width: 100%; }
+.btn.primary:hover { background: #d6733c; }
+.btn.warn { border-color: #8a8f94; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) 320px; min-height: 0; }
+.board { position: relative; overflow-x: auto; overflow-y: hidden; background: #121010; min-width: 0; }
+#map { display: block; touch-action: manipulation; image-rendering: pixelated; cursor: pointer; }
+.side { border-left: 1px solid var(--line); background: var(--panel); padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: calc(100vh - 52px); }
+.side h2 { margin: 0 0 6px; font: 400 12px var(--display); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.meter { margin-bottom: 6px; }
+.mlabel { display: flex; justify-content: space-between; font-size: 13px; }
+.mtrack { position: relative; height: 7px; background: #2a221d; border-radius: 2px; overflow: visible; margin-top: 2px; }
+.mtrack i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
+.meter.A i { background: var(--A); } .meter.D i { background: var(--D); }
+.mtrack b { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--bad); }
+.objs { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+.objs li { display: flex; justify-content: space-between; padding: 3px 0 3px 10px; border-left: 3px solid var(--line); margin-bottom: 2px; }
+.objs li.A { border-color: var(--A); } .objs li.D { border-color: var(--D); }
+.objs li.sum { border: 0; padding-left: 0; color: var(--ember); font-weight: 700; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--panel-2); }
+.card.A { border-top: 3px solid var(--A); } .card.D { border-top: 3px solid var(--D); } .card.terrain { border-top: 3px solid #8a7a5c; }
+.ctitle { display: flex; flex-direction: column; margin-bottom: 6px; }
+.ctitle span { font: 400 18px var(--display); }
+.ctitle em { font-style: normal; font-size: 12px; color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; margin: 0 0 6px; }
+.stats div { background: #15110f; border-radius: 4px; padding: 3px 6px; }
+.stats dt { font-size: 11px; color: var(--muted); } .stats dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.card p { margin: 6px 0 0; font-size: 13px; }
+.status { color: var(--ember); }
+.real { color: #c9bda9; border-top: 1px dashed var(--line); padding-top: 6px; }
+.acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.preview { border: 1px solid #7a2a1e; background: #261511; border-radius: 8px; padding: 10px 12px; }
+.ptitle { font-weight: 700; margin-bottom: 4px; }
+.pnums { display: flex; gap: 14px; font-size: 14px; }
+.pnums b { font-size: 17px; color: #ffb08a; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tags i { font-style: normal; font-size: 12px; background: #15110f; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; }
+.hint, .idle { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+#log { font-size: 12.5px; color: var(--muted); max-height: 150px; overflow-y: auto; }
+#log p { margin: 0 0 3px; }
+#log p:first-child { color: var(--text); }
+.endbtn { position: sticky; bottom: 0; padding-top: 4px; background: var(--panel); }
+/* Überlagerungen */
+.overlay { position: fixed; inset: 0; z-index: 10; background: rgba(8, 6, 5, 0.86); overflow-y: auto; padding: 24px max(16px, env(safe-area-inset-left)); }
+.sheet { max-width: 1000px; margin: 0 auto; }
+.kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ember); }
+.overlay h2.title { margin: 2px 0 8px; font: 400 clamp(36px, 7vw, 64px) var(--display); letter-spacing: .14em; text-transform: uppercase; color: #efe4d2; }
+.lead { max-width: 64ch; font-size: 16px; color: #d8ccb8; margin: 0 0 18px; }
+.cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.cards3 .card h3 { margin: 0 0 4px; font: 400 18px var(--display); }
+.cards3 .card .big { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.cards3 .card p { color: #cbbfab; }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 14px; }
+.modes label { display: block; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--panel-2); cursor: pointer; }
+.modes label:has(input:checked) { border-color: var(--rust); background: #2a1c15; }
+.modes input { position: absolute; opacity: 0; }
+.modes b { display: block; } .modes small { color: var(--muted); }
+.optrow { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 14px; }
+.note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--rust-soft); padding-left: 10px; margin: 0 0 16px; max-width: 70ch; }
+.startrow { display: flex; gap: 10px; max-width: 520px; }
+.startrow .btn { width: auto; white-space: nowrap; }
+.rules ol { padding-left: 20px; max-width: 70ch; } .rules li { margin-bottom: 6px; }
+.end .sheet, .hand .sheet { max-width: 640px; text-align: center; margin-top: 8vh; }
+.stars { font-size: 34px; color: var(--ember); letter-spacing: .2em; }
+.endstats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; text-align: left; margin: 14px 0; }
+.endstats div { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.endstats dt { font-size: 12px; color: var(--muted); } .endstats dd { margin: 0; font-weight: 700; }
+.history { text-align: left; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+.history h3 { margin: 0 0 6px; font: 400 17px var(--display); }
+.history ul { margin: 6px 0 0; padding-left: 18px; }
+.hand.A h2.title { color: var(--A); } .hand.D h2.title { color: var(--D); }
+@media (max-width: 1100px) { .stage { grid-template-columns: minmax(0, 1fr) 270px; } }
+@media (max-height: 520px) and (orientation: landscape) {
+  .bar { padding-top: 4px; padding-bottom: 4px; gap: 4px 10px; }
+  .brand h1 { font-size: 16px; } .brand span { display: none; }
+  .btn { padding: 4px 8px; font-size: 12px; }
+  .stage { grid-template-columns: minmax(0, 1fr) 250px; }
+  .side { padding: 8px 10px; gap: 8px; font-size: 13px; max-height: calc(100vh - 40px); }
+  .stats { grid-template-columns: repeat(3, 1fr); }
+  .btn.primary { font-size: 14px; padding: 8px 12px; }
+  .cards3, .modes { grid-template-columns: repeat(3, 1fr); }
+  .overlay h2.title { font-size: 34px; }
+}
+@media (orientation: portrait), (max-width: 640px) {
+  .stage { grid-template-columns: 1fr; }
+  .side { border-left: 0; border-top: 1px solid var(--line); max-height: none; }
+  .cards3, .modes { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="brand"><h1>Armargeddon</h1><span>Die Schlacht am Grauwall</span></div>
+    <div class="turninfo"><span id="turn">Runde 1</span><span id="sidechip" class="chip A">Konkordat</span></div>
+    <div class="tools">
+      <button class="btn" id="btnSpeed">Tempo 1×</button>
+      <button class="btn" id="btnRules2">Regeln</button>
+      <button class="btn" id="btnFull">Vollbild</button>
+      <button class="btn" id="btnMenu">Menü</button>
+    </div>
+  </header>
+  <main class="stage">
+    <div class="board" id="board"><canvas id="map" aria-label="Schlachtfeld"></canvas></div>
+    <aside class="side">
+      <section><h2>Kampfkraft</h2><div id="forces"></div></section>
+      <section><h2>Zielfelder</h2><ul class="objs" id="objs"></ul></section>
+      <section id="info"></section>
+      <section><h2>Bericht</h2><div id="log"></div></section>
+      <div class="endbtn"><button class="btn primary" id="btnEnd">Runde beenden</button></div>
+    </aside>
+  </main>
+</div>
+
+<div class="overlay" id="start" hidden>
+  <div class="sheet">
+    <div class="kicker">20. Nebelmond · Die Grauwall-Front</div>
+    <h2 class="title">Armargeddon</h2>
+    <p class="lead">Seit drei Jahren frisst sich der Krieg durch die Ebene von Ilm. Gräben, Draht und Maschinengewehre haben die Front erstarren lassen. Heute will das Konkordat von Valmor die Stellung der Aschenwacht durchbrechen, den Grauwall.</p>
+    <div class="cards3">
+      <div class="card A"><h3>Konkordat von Valmor</h3><div class="big">13 Schützenkohorten · 4 Mahlwerk-Trupps</div><p>Greift von links an. Rostmäntel, Krempenhelme, Gasmasken mit grünen Linsen. Muss Niemandsland, zwei Drahtgürtel und zwei Grabenlinien überwinden.</p></div>
+      <div class="card D"><h3>Aschenwacht des Grauwalls</h3><div class="big">10 Grenadiertrupps · 5 Sensenwerk-Trupps</div><p>Verteidigt rechts. Aschgraue Mäntel, Spitzhelme, rote Linsen. Hält zwei Grabenlinien, die Ruinen von Veskar, das Totholz und die Brücke von Marn.</p></div>
+      <div class="card terrain"><h3>Gelände</h3><div class="big">Niemandsland, Draht, Gräben</div><p>Zwischen den Linien Trichter und Schlamm. Vor jedem Graben liegt Stacheldraht mit wenigen Lücken. Dahinter ein Höhenrücken mit Ruinen, ein toter Wald und ein Kanal.</p></div>
+    </div>
+    <p class="note">Die Welt ist erfunden. Waffen, Gelände und Taktik entsprechen aber dem Ersten Weltkrieg 1914–1918. In jeder Einheit und jedem Geländefeld steht, wie es im echten Krieg war. Stufe 1: Infanterie und Maschinengewehre. Artillerie, Panzer, Gas und Stoßtrupps folgen.</p>
+    <h2 style="font:400 13px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0">Wer führt?</h2>
+    <div class="modes">
+      <label><input type="radio" name="mode" value="A" checked><b>Als Konkordat</b><small>Du greifst an, die KI verteidigt.</small></label>
+      <label><input type="radio" name="mode" value="D"><b>Als Aschenwacht</b><small>Du verteidigst, die KI greift an.</small></label>
+      <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
+    </div>
+    <div class="optrow"><label><input type="checkbox" id="optBlood" checked> Blut-Effekte (dezent)</label></div>
+    <div class="startrow"><button class="btn primary" id="startBtn">Schlacht beginnen</button><button class="btn" id="btnRules">Regeln</button><button class="btn" id="closeStart">Zurück</button></div>
+  </div>
+</div>
+
+<div class="overlay rules" id="rules" hidden>
+  <div class="sheet">
+    <div class="kicker">So wird gespielt</div>
+    <h2 class="title" style="font-size:40px">Regeln</h2>
+    <ol>
+      <li>Die Seiten ziehen abwechselnd, das Konkordat beginnt. 16 Runden.</li>
+      <li>Jede Einheit darf pro Runde einmal ziehen und einmal angreifen. Statt zu ziehen kann sie sich drehen.</li>
+      <li>Stärke (weißer Balken) sind die Verluste, Moral (goldener Balken) der Kampfwille. Wenig Moral: Die Einheit weicht zurück. Keine Moral oder kaum Stärke: Sie flieht.</li>
+      <li>Wer neben einem Gegner steht, darf nur 1 Feld ziehen. Wer neben einen Gegner zieht, muss stehen bleiben.</li>
+      <li>Angriffe in die Flanke wirken ×1,4, in den Rücken ×1,8. Die Figuren schauen in ihre Blickrichtung.</li>
+      <li>Gräben schützen gegen Beschuss und gegen Angriffe von vorn, nicht von der Seite.</li>
+      <li>Stacheldraht stoppt jede Bewegung. Wer drinsteht, ist leichte Beute. Infanterie kann ihn eine Runde lang schneiden.</li>
+      <li>Maschinengewehre feuern einmal pro gegnerischem Zug von selbst auf Gegner, die sich im Offenen bewegen.</li>
+      <li>Wer in einem Zug zu viel Beschuss abbekommt, ist niedergehalten: kann nicht ziehen, kämpft nur halb so stark und sein MG schweigt.</li>
+      <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern am Ende oder wenn die Aschenwacht zusammenbricht. Offiziere mit Banner stärken Einheiten in der Nähe und sammeln Fliehende.</li>
+    </ol>
+    <div class="startrow"><button class="btn primary" id="closeRules">Verstanden</button></div>
+  </div>
+</div>
+
+<div class="overlay end" id="end" hidden>
+  <div class="sheet">
+    <div class="kicker">Die Schlacht am Grauwall</div>
+    <h2 class="title" id="endTitle">Sieg</h2>
+    <div class="stars" id="endStars"></div>
+    <p class="lead" id="endWhy" style="margin:8px auto 0"></p>
+    <dl class="endstats" id="endStats"></dl>
+    <div class="history">
+      <h3>Wie war es im echten Krieg?</h3>
+      <p>Von 1915 bis 1917 scheiterten an der Westfront die meisten Angriffe auf ausgebaute Grabenstellungen. Stacheldraht hielt die Angreifer fest, Maschinengewehre schossen sie im Niemandsland zusammen. Selbst wenn die erste Linie fiel, hielt meist die zweite. Erst neue Mittel brachen das Patt auf: Panzer, Feuerwalzen der Artillerie und kleine Stoßtrupps. Sie kommen in den nächsten Stufen dieses Spiels.</p>
+      <ul>
+        <li>Warum war es so schwer, über das Niemandsland zu kommen?</li>
+        <li>Was hat dir geholfen, den Draht und die MG zu überwinden?</li>
+        <li>Was hättest du als Verteidiger anders gemacht?</li>
+      </ul>
+    </div>
+    <div class="startrow" style="margin:16px auto 0"><button class="btn primary" id="againBtn">Neue Schlacht</button><button class="btn" id="reviewBtn">Schlachtfeld ansehen</button></div>
+  </div>
+</div>
+
+<div class="overlay hand" id="handover" hidden>
+  <div class="sheet">
+    <div class="kicker">Nächster Zug</div>
+    <h2 class="title" id="handTitle"></h2>
+    <p class="lead" id="handText" style="margin:0 auto 18px"></p>
+    <div class="startrow" style="margin:0 auto"><button class="btn primary" id="handBtn">Los geht's</button></div>
+  </div>
+</div>
+
+<!--SCRIPTS-->
+</body>
+</html>
