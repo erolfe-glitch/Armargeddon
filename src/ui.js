@@ -761,6 +761,12 @@ function showDetail() {
 function drawPortraitLater(c, k, s) { requestAnimationFrame(() => drawPortrait(c, k, s)); }
 
 // ---------- Bildschirme ----------
+const ATTACKERS = { A: { name: 'Konkordat von Valmor', short: 'Konkordat' }, F: { name: 'Blaue Legion von Arvenne', short: 'Legion' } };
+function applySkin(sk) {
+  FIG.setSkin('A', sk); SIDES.A.name = ATTACKERS[sk].name; SIDES.A.short = ATTACKERS[sk].short;
+  $('facAName').textContent = ATTACKERS[sk].name;
+  drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
+}
 function showStart(first) {
   $('start').hidden = false; $('closeStart').hidden = first;
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
@@ -769,13 +775,14 @@ function showStart(first) {
 function startGame() {
   mode = document.querySelector('input[name=mode]:checked').value;
   blood = $('optBlood').checked;
+  applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
   $('start').hidden = true; $('end').hidden = true;
   G = E.newGame({});
   decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
-  banner('Die Schlacht am Grauwall', 'Das Konkordat greift an');
+  banner('Die Schlacht am Grauwall', SIDES.A.name + ' greift an');
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 function showHandover() {
@@ -786,13 +793,13 @@ function showEnd() {
   const r = G.over, me = mode === 'hot' ? null : mode, win = r.winner;
   let title = win ? SIDES[win].short + ' siegt' : 'Unentschieden';
   if (me) title = win === me ? 'Sieg' : win ? 'Niederlage' : 'Unentschieden';
-  const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Der Angriff des Konkordats ist zusammengebrochen.')
-    : `Nach ${P.MAXT} Runden hält das Konkordat ${r.pts} von 9 Punkten. Sieg ab ${P.WIN_A}, Unentschieden ab ${P.DRAW_A}.`;
+  const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Der Angriff ist zusammengebrochen.')
+    : `Nach ${P.MAXT} Runden hält der Angreifer ${r.pts} von 9 Punkten. Sieg ab ${P.WIN_A}, Unentschieden ab ${P.DRAW_A}.`;
   let stars = 0;
   if (me) { if (win === me) stars = 2 + (E.losses(G, me) < 0.3 ? 1 : 0); else if (!win) stars = 1; }
   $('endTitle').textContent = title; $('endWhy').textContent = why;
   $('endStars').textContent = me ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
-  $('endStats').innerHTML = `<div><dt>Ausfälle Konkordat</dt><dd>${Math.round(E.losses(G, 'A') * 100)} %</dd></div><div><dt>Ausfälle Aschenwacht</dt><dd>${Math.round(E.losses(G, 'D') * 100)} %</dd></div>` +
+  $('endStats').innerHTML = `<div><dt>Ausfälle ${SIDES.A.short}</dt><dd>${Math.round(E.losses(G, 'A') * 100)} %</dd></div><div><dt>Ausfälle Aschenwacht</dt><dd>${Math.round(E.losses(G, 'D') * 100)} %</dd></div>` +
     OBJECTIVES.map(o => `<div class="${G.ctrl[o.id]}"><dt>${o.name}</dt><dd>${SIDES[G.ctrl[o.id]].short}</dd></div>`).join('');
   $('end').hidden = false;
 }
@@ -808,6 +815,7 @@ $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
+document.querySelectorAll('input[name=skin]').forEach(r => r.onchange = () => { applySkin(r.value); if (G) { updateUI(); } });
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };

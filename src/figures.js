@@ -228,16 +228,20 @@ function drawFigure(g, kind, side) {
 const cache = new Map();
 // Gemalte Einheitenbilder (aus art.js). Schlüssel: Figurart + '_' + Seite
 const ARTS = {};
+// Bilderset je Seite: 'A' = England-Bogen, 'F' = Frankreich-Bogen, 'D' = Deutschland-Bogen
+const SKIN = { A: 'A', D: 'D' };
+function setSkin(side, s) { SKIN[side] = s; cache.clear(); }
 function setArt(map) {
-  for (const k in map) { const a = Object.assign({}, map[k]); a.img = new Image(); a.img.onload = () => { for (const ck of [...cache.keys()]) if (ck.startsWith(k.replace('_', ''))) cache.delete(ck); }; a.img.src = a.src; ARTS[k] = a; }
+  for (const k in map) { const a = Object.assign({}, map[k]); a.img = new Image(); a.img.onload = () => cache.clear(); a.img.src = a.src; ARTS[k] = a; }
 }
 // Liefert { cv, ox, oy }: Füße liegen bei (ox, oy). h = Höhe eines Soldaten in Pixeln.
 function sprite(kind, side, flip, h) {
   h = Math.max(6, Math.round(h));
-  const k = kind + side + (flip ? 1 : 0) + '_' + h;
+  const sk = SKIN[side] || side;
+  const k = kind + side + sk + (flip ? 1 : 0) + '_' + h;
   let s = cache.get(k);
   if (s) return s;
-  const art = ARTS[kind + '_' + side];
+  const art = ARTS[kind + '_' + sk] || ARTS[kind + '_' + side];
   if (art && art.img.complete && art.img.naturalWidth) {
     const H = Math.round(art.hs * h), W = Math.round(H * art.img.naturalWidth / art.img.naturalHeight);
     // Heller Saum und leichte Aufhellung, damit sich die dunklen Bilder vom Schlammboden abheben
@@ -291,6 +295,6 @@ function sprite(kind, side, flip, h) {
   return s;
 }
 
-const FIG = { PAL, OUT, KIND, BOX, sprite, drawFigure, setArt, ARTS };
+const FIG = { PAL, OUT, KIND, BOX, sprite, drawFigure, setArt, setSkin, ARTS };
 if (typeof module !== 'undefined' && module.exports) module.exports = FIG; else root.FIG = FIG;
 })(this);

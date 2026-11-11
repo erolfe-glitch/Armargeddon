@@ -199,13 +199,18 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
     <h1 class="title">Armargeddon</h1>
     <p class="lead">Drei Jahre Grabenkrieg. Heute soll der Grauwall fallen: mit Landkolossen, Donnerrohren und Gas gegen Draht, Gräben und Maschinengewehre.</p>
     <div class="factions">
-      <div class="fac A"><h3>Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und zwei Grabenlinien.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
+      <div class="fac A"><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und zwei Grabenlinien.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
       <div class="fac D"><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Ab Runde 8 kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
+    </div>
+    <p class="lbl">Wer greift an?</p>
+    <div class="modes" style="grid-template-columns:repeat(2,1fr)">
+      <label><input type="radio" name="skin" value="A" checked><b>Konkordat von Valmor</b><small>Khaki, flache Stahlhelme, schwerer Landkoloss.</small></label>
+      <label><input type="radio" name="skin" value="F"><b>Blaue Legion von Arvenne</b><small>Horizontblau, Kammhelme, leichter Landkoloss mit Turm.</small></label>
     </div>
     <p class="lbl">Wer führt?</p>
     <div class="modes">
-      <label><input type="radio" name="mode" value="A" checked><b>Konkordat</b><small>Du greifst an, die KI verteidigt.</small></label>
-      <label><input type="radio" name="mode" value="D"><b>Aschenwacht</b><small>Du verteidigst, die KI greift an.</small></label>
+      <label><input type="radio" name="mode" value="A" checked><b>Angreifer</b><small>Du greifst an, die KI verteidigt.</small></label>
+      <label><input type="radio" name="mode" value="D"><b>Verteidiger</b><small>Du führst die Aschenwacht, die KI greift an.</small></label>
       <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
     </div>
     <div class="optrow"><label><input type="checkbox" id="optBlood" checked> Blut-Effekte</label></div>
