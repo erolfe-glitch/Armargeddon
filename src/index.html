@@ -208,7 +208,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <label><input type="radio" name="mode" value="D"><b>Aschenwacht</b><small>Du verteidigst, die KI greift an.</small></label>
       <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
     </div>
-    <div class="optrow"><label><input type="checkbox" id="optBlood" checked> Blut-Effekte (dezent)</label></div>
+    <div class="optrow"><label><input type="checkbox" id="optBlood" checked> Blut-Effekte</label></div>
     <div class="startrow"><button class="endbtn" id="startBtn">Schlacht beginnen</button><button class="tbtn" id="btnRules">Regeln</button><button class="tbtn" id="closeStart" hidden>Zurück</button></div>
     <p class="note">Die Welt ist erfunden. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918. Tippe im Spiel bei einer Einheit auf „i“, dann steht dort, wie es im echten Krieg war.</p>
   </div>
@@ -228,6 +228,8 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <li>Landkolosse sind gegen Gewehre und MG immun und walzen Draht nieder. Geschütze im direkten Schuss, Sturmbrecher und Brandwerfer sind ihre Feinde.</li>
       <li>Lanzenreiter sind schnell und stark gegen Fliehende, aber leichte Beute für MG.</li>
       <li>Ab Runde 8 trifft die Reserve der Aschenwacht ein.</li>
+      <li>Marken an jeder eigenen Einheit: grüner Pfeil = kann noch ziehen, rote Raute = kann noch angreifen. Fertige Einheiten sind abgedunkelt.</li>
+      <li>Geschütze können aufprotzen: Dann ziehen sie 4 Felder, feuern aber erst wieder nach dem Abprotzen. Rot zeigt ihr Schussfeld.</li>
       <li>Nachschub: Für Punkte (★) holst du neue Einheiten an den eigenen Rand, auch Feldscher und Mörser.</li>
       <li>Das Konkordat siegt mit 4 Punkten aus den Zielfeldern (Fahnen) am Ende oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
@@ -239,7 +241,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
   <div class="sheet">
     <div class="kicker">Nachschub anfordern</div>
     <h2 class="title" style="font-size:44px">★ <span id="shopPts">0</span> Punkte</h2>
-    <p class="lead" style="margin:0">Punkte gibt es jede Runde (Konkordat 2, Aschenwacht 1), für jede geschlagene gegnerische Einheit (2) und für eroberte Zielfelder. Neue Einheiten erscheinen am eigenen Rand und handeln ab der nächsten Runde.</p>
+    <p class="lead" style="margin:0">Punkte gibt es jede Runde (1), für jede geschlagene gegnerische Einheit (2) und für eroberte Zielfelder. Neue Einheiten erscheinen am eigenen Rand und handeln ab der nächsten Runde.</p>
     <div class="shoplist" id="shopList"></div>
     <button class="tbtn" id="closeShop">Schließen</button>
   </div>

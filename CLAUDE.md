@@ -1,10 +1,10 @@
 # Hinweise für die Weiterarbeit
 
-- Sprache im Spiel und in Texten: Deutsch. Sachlicher Ton, Krieg nicht verherrlichen, Blut dezent und abschaltbar.
+- Sprache im Spiel und in Texten: Deutsch. Sachlicher Ton, Krieg nicht verherrlichen. Blut darf deutlich sein (Wunsch des Nutzers), bleibt aber abschaltbar.
 - Eigene Welt, keine fremden Marken oder Figuren (kein Warhammer o. ä.). Jede Einheit hat einen Text „Im echten Krieg“ mit belegbaren Fakten zum Ersten Weltkrieg.
 - Nur in `src/` ändern, danach `python3 tools/build.py`. Die Datei `index.html` im Hauptordner ist erzeugt und muss mit eingecheckt werden (GitHub Pages).
 - Nach jeder Regeländerung `node tools/sim.js 200` laufen lassen und Siegquote, Dauer und Verluste je Typ berichten.
 - Vor „fertig“ im Browser testen (Playwright), PC quer, Handy quer und hoch.
 - Stand: alle fünf Stufen umgesetzt (Infanterie/MG, Artillerie, Landkolosse und Reiter, Gas/Sturmbrecher/Brandwerfer mit Verstärkung ab Runde 8, Comic-Grafik mit HUD). Dazu Nachschub-Punkte mit Kaufmenü, Feldscher und Mörser. Offene Ideen: Pioniere, gemalte Einheitenbilder als Bilddateien, weitere Schlachten als reine Daten.
 - Klick-Treffer: zuerst die vorderste sichtbare Figur (enger Kasten), dann das Feld. Die Einheitenkarte unten hat eine feste Höhe.
-- Grafikstil: Comic-Vektorfiguren mit dicker dunkler Kontur (src/figures.js), flache Hexfelder. Oberfläche: schmale Statusleiste oben, Einheitenkarte mit Bild unten, wenig Text.
+- Grafikstil: düstere Vektorfiguren mit realistischen Proportionen, Schattierung, Schmutz und Randlicht (src/figures.js), durchgehender Schlammboden mit feinen Feldlinien, Nebel und Regen. Oberfläche: schmale Statusleiste oben, Einheitenkarte mit Bild unten, wenig Text.

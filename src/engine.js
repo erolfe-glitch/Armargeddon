@@ -21,8 +21,8 @@ const P = {
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
   BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
-  REINF_TURN: 8,
-  PTS_TURN: { A: 2, D: 1 }, PTS_KILL: 2, HEAL: 0.6, HEAL_MOR: 0.5
+  REINF_TURN: 8, LIMBER_MV: 4,
+  PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 0.6, HEAL_MOR: 0.5
 };
 
 const COLS = 24, ROWS = 13;
@@ -39,8 +39,8 @@ const TYPES = {
   mahlwerk: { side: 'A', name: 'Mahlwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
     can: 'Maschinengewehr, 3 Felder weit. Feuert von selbst auf Gegner, die sich im Offenen bewegen. Wer zieht, schießt nicht.',
     real: 'Maschinengewehre wie das britische Vickers oder das deutsche MG 08 schossen rund 450 bis 500 Schuss pro Minute.' },
-  haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', atk: 0, def: 3, mor: 6, mv: 1, rng: 8, fs: 5, gas: 2,
-    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Im Nahkampf wehrlos.',
+  haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 8, fs: 5, gas: 2,
+    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 4 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Gepanzert: Gewehre und MG prallen ab. Walzt Stacheldraht nieder, überquert Gräben. Bleibt manchmal mit einer Panne liegen.',
@@ -54,8 +54,8 @@ const TYPES = {
   sense: { side: 'D', name: 'Sensenwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
     can: 'Maschinengewehr, 3 Felder weit. Feuert von selbst auf Gegner, die sich im Offenen bewegen. Wer zieht, schießt nicht.',
     real: 'Am ersten Tag der Somme-Schlacht, dem 1. Juli 1916, hatte die britische Armee rund 57.000 Tote und Verwundete, sehr viele durch MG-Feuer.' },
-  geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', atk: 0, def: 3, mor: 6, mv: 1, rng: 8, fs: 5, gas: 1,
-    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Im Nahkampf wehrlos.',
+  geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 8, fs: 5, gas: 1,
+    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Aufgeprotzt zieht es 4 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Bei Flesquières schossen deutsche Feldgeschütze am 20. November 1917 im direkten Richten zahlreiche britische Panzer ab.' },
   sturm: { side: 'D', name: 'Sturmbrecher', cls: 'storm', atk: 6, def: 5, mor: 9, mv: 3, rng: 0, fs: 0,
     can: 'Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Landkolosse im Nahkampf ×1,5.',
@@ -205,7 +205,7 @@ function addUnit(G, type, c, r, officer) {
   const u = { id: G.nextId++, type, side: T.side, c, r, officer: officer || null,
     str: 10, mor: T.mor, face: T.side === 'A' ? 0 : 3, status: 'ok',
     moved: false, attacked: false, react: true, supp: 0, fireDmg: 0, turnOnly: false,
-    run: 0, broken: 0, gassed: false, seenWalker: false, gas: T.gas || 0, startC: c, startR: r };
+    run: 0, broken: 0, gassed: false, seenWalker: false, limbered: false, gas: T.gas || 0, startC: c, startR: r };
   G.units.push(u);
   return u;
 }
@@ -258,7 +258,7 @@ function reachable(G, u) {
   const res = new Map();
   if (!active(u) || u.moved || u.supp > 0 || u.broken > 0) return res;
   const T = TYPES[u.type], free = T.cls === 'storm' || T.cls === 'walker';
-  const mp = (!free && isZOC(G, u.c, u.r, u.side)) ? 1 : T.mv;
+  const mp = (!free && isZOC(G, u.c, u.r, u.side)) ? 1 : u.limbered ? P.LIMBER_MV : T.mv;
   const start = key(u.c, u.r);
   const best = new Map([[start, 0]]), prev = new Map();
   const queue = [[0, u.c, u.r]];
@@ -345,6 +345,17 @@ function turnUnit(G, u, face) {
   if (!active(u) || (u.moved && !u.turnOnly) || u.attacked || u.supp > 0 || u.broken > 0) return [];
   u.face = ((face % 6) + 6) % 6; u.moved = true; u.turnOnly = true;
   return [{ t: 'face', u: u.id, face: u.face }];
+}
+// Aufprotzen: Geschütz an die Pferde hängen (zieht dann 4 Felder, feuert nicht). Abprotzen: wieder feuerbereit ab der nächsten Runde.
+function canLimber(G, u) {
+  if (!active(u) || !TYPES[u.type].limber || u.supp > 0) return false;
+  return u.limbered ? !u.unlimbered : (!u.moved && !u.attacked);
+}
+function limber(G, u) {
+  if (!canLimber(G, u)) return [];
+  if (u.limbered) { u.limbered = false; u.moved = true; u.attacked = true; }
+  else { u.limbered = true; u.attacked = true; }
+  return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
 function canCut(G, u) { return active(u) && !u.attacked && cls(u) === 'inf' && hex(G, u.c, u.r).t === 'wire'; }
 function cutWire(G, u) {
@@ -583,7 +594,7 @@ function spotted(G, side, c, r) {
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
 function canShell(G, a, c, r, mode) {
   const T = TYPES[a.type];
-  if (!active(a) || T.cls !== 'art' || a.attacked || a.moved || a.supp > 0) return false;
+  if (!active(a) || T.cls !== 'art' || a.limbered || a.attacked || a.moved || a.supp > 0) return false;
   const d = dist(a.c, a.r, c, r);
   if (d < 1 || d > T.rng) return false;
   if (mode === 'gas' && a.gas <= 0) return false;
@@ -754,7 +765,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy,
+  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,

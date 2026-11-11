@@ -3,6 +3,7 @@
 'use strict';
 const { COLS, ROWS, TYPES, TERRAIN, OBJECTIVES, SIDES, P } = E;
 const figOf = T => T.fig || T.cls;
+const figU = u => u.limbered ? 'limber' : figOf(TYPES[u.type]);
 const SQ3 = Math.sqrt(3);
 const $ = id => document.getElementById(id);
 const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
@@ -11,7 +12,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
-let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set();
+let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set();
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [];
 let queue = [], qRunning = false;
@@ -71,9 +72,8 @@ function renderTerrain() {
   const lw = Math.max(1.5, s * 0.045);
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const h = G.map[c][r], n = hash(c * 3.1, r * 7.7);
-    hexPath(g, c, r, 0.955); g.fillStyle = TC[h.t][Math.floor(n * 3)]; g.fill();
-    if (h.ridge) { g.fillStyle = 'rgba(255,236,170,0.13)'; g.fill(); }
-    hexPath(g, c, r, 0.9); g.strokeStyle = 'rgba(255,255,225,0.07)'; g.lineWidth = lw; g.stroke();
+    hexPath(g, c, r, 1.02); g.fillStyle = TC[h.t][Math.floor(n * 3)]; g.fill();
+    if (h.ridge) { g.fillStyle = 'rgba(255,226,160,0.12)'; g.fill(); }
   }
   // Gräben: erst Sandsackwall, dann Grabensohle
   for (const pass of [0, 1]) {
@@ -92,6 +92,15 @@ function renderTerrain() {
       }
     }
   }
+  // Große weiche Flecken verbinden die Felder zu einem Boden, darüber feine Feldlinien
+  { let sd = 99; const rn = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+    for (let i = 0; i < 70; i++) {
+      const px = rn() * W, py = L.top + rn() * (H - L.top), rad = s * (1.2 + rn() * 2.6);
+      const bg = g.createRadialGradient(px, py, 0, px, py, rad), dark = rn() < 0.6;
+      bg.addColorStop(0, dark ? 'rgba(30,22,12,0.22)' : 'rgba(150,130,90,0.12)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = bg; g.save(); g.translate(px, py); g.scale(1, K); g.translate(-px, -py); g.fillRect(px - rad, py - rad, rad * 2, rad * 2); g.restore();
+    } }
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.3)'; g.lineWidth = Math.max(1, s * 0.022); g.stroke(); }
   // Schmutz und Körnung, damit der Boden nicht wie eine glatte Fläche wirkt
   { let sd = 4242; const rn = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
     for (let i = 0; i < Math.round(W * H / 420); i++) {
@@ -173,12 +182,12 @@ function syncAll() {
   }
 }
 const facesLeft = f => f === 2 || f === 3 || f === 4;
-const SLOTS = { medic: [[0.12, 0.14], [-0.38, -0.16]], mortar: [[0.15, 0.12]], inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
+const SLOTS = { limber: [[0.1, 0.12]], medic: [[0.12, 0.14], [-0.38, -0.16]], mortar: [[0.15, 0.12]], inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
   cav: [[0.18, 0.2], [-0.3, -0.2]], mg: [[0.12, 0.1]], art: [[0.15, 0.12]], walker: [[0, 0.16]] };
-const FH = { medic: 0.8, mortar: 0.76, inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
+const FH = { limber: 0.6, medic: 0.8, mortar: 0.76, inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
 
 function drawUnit(u, d) {
-  const T = TYPES[u.type], k = figOf(T), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
+  const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
   if (d.shake > 0) x += Math.sin(now / 22) * s * 0.05;
@@ -207,6 +216,7 @@ function drawUnit(u, d) {
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
   const use = slots.slice(0, n).slice().sort((a, b) => a[1] - b[1]);
   const sp = FIG.sprite(k, u.side, flip, s * FH[k]);
+  if (done) g.globalAlpha *= 0.6;
   const duck = u.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
@@ -228,6 +238,13 @@ function drawUnit(u, d) {
   g.fillStyle = '#3a372c'; g.fillRect(bx, by, w, bh); g.fillRect(bx, by + bh + 1, w, bh);
   g.fillStyle = d.str > 3.3 ? '#efe7d2' : '#e2553c'; g.fillRect(bx, by, w * d.str / 10, bh);
   g.fillStyle = '#e5b23a'; g.fillRect(bx, by + bh + 1, w * Math.min(1, d.mor / T.mor), bh);
+  // Aktionsmarken: links Bewegung (Pfeil), rechts Angriff (Raute). Leuchtet = noch möglich.
+  if (human(u.side) && G.side === u.side && E.active(u)) {
+    const cm = !u.moved && !u.supp && !u.broken, ca = !u.attacked && !u.broken, pr = Math.max(4, s * 0.15), py = by + bh;
+    g.lineWidth = Math.max(1.5, s * 0.04); g.strokeStyle = O;
+    g.beginPath(); g.moveTo(bx - pr * 2.3, py - pr); g.lineTo(bx - pr * 0.5, py); g.lineTo(bx - pr * 2.3, py + pr); g.closePath(); g.fillStyle = cm ? '#7fe36a' : '#2f2e25'; g.fill(); g.stroke();
+    const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
+  }
   // Zustandsmarken
   const tagY = y - s * (k === 'walker' ? 1.75 : k === 'cav' ? 1.45 : 1.2);
   const tag = (text, bg, fg) => {
@@ -239,6 +256,7 @@ function drawUnit(u, d) {
   };
   if (u.status === 'rout') tag('FLIEHT', '#efe7d2', '#222');
   else if (u.broken > 0) tag('PANNE', '#8d9189', '#16150f');
+  else if (u.limbered) tag('AUFGEPROTZT', '#c9b27a', '#16150f');
   else if (u.supp > 0) tag('▼ NIEDER', '#e9cf5a', '#222');
   else if (u.gassed) tag('GAS', '#c4d646', '#222');
 }
@@ -253,9 +271,10 @@ function draw() {
   // Markierungen
   if (sel && human(G.side) && !busy) {
     for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
+    for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(220,40,30,0.10)'; g.fill(); g.strokeStyle = 'rgba(230,60,45,0.28)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
     for (const k of shellHexes) {
       const c = Math.floor(k / 100), r = k % 100;
-      hexPath(g, c, r, 0.9); g.fillStyle = artMode === 'gas' ? 'rgba(196,214,70,0.28)' : 'rgba(255,150,40,0.24)'; g.fill();
+      hexPath(g, c, r, 0.92); g.fillStyle = `rgba(235,40,30,${0.36 + 0.1 * Math.sin(now / 260)})`; g.fill(); g.strokeStyle = '#ff5a40'; g.lineWidth = Math.max(2, s * 0.06); g.stroke();
     }
     for (const [, t] of targets) {
       const u = unitById(t.id); hexPath(g, u.c, u.r, 0.92);
@@ -268,7 +287,7 @@ function draw() {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
     if (sel && TYPES[sel.type].cls === 'art' && shellHexes.has(E.key(hoverHex[0], hoverHex[1])) && artMode !== 'he') {
       const cells = artMode === 'gas' ? E.gasCells(G, hoverHex[0], hoverHex[1]) : [hoverHex, ...E.neighbors(hoverHex[0], hoverHex[1])];
-      for (const [c, r] of cells) { hexPath(g, c, r, 0.9); g.fillStyle = artMode === 'gas' ? 'rgba(196,214,70,0.4)' : 'rgba(255,190,60,0.35)'; g.fill(); }
+      for (const [c, r] of cells) { hexPath(g, c, r, 0.9); g.fillStyle = artMode === 'gas' ? 'rgba(196,214,70,0.45)' : 'rgba(255,120,60,0.4)'; g.fill(); }
     }
   }
   // Zielfahnen
@@ -293,6 +312,15 @@ function draw() {
     }
     g.beginPath(); g.ellipse(x, y - s * 0.25, s * 0.78, s * 0.56, 0, 0, 7); g.strokeStyle = 'rgba(110,128,30,0.45)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
   }
+  // Nebelschwaden und Nieselregen
+  for (let i = 0; i < 5; i++) {
+    const fx = ((now / (38 + i * 9) + i * L.W * 0.27) % (L.W * 1.4)) - L.W * 0.2, fy = L.top + (L.H - L.top) * (0.12 + 0.2 * i);
+    const fg = g.createRadialGradient(fx, fy, 0, fx, fy, s * 7); fg.addColorStop(0, 'rgba(176,170,150,0.10)'); fg.addColorStop(1, 'rgba(176,170,150,0)');
+    g.fillStyle = fg; g.save(); g.translate(fx, fy); g.scale(1, 0.3); g.translate(-fx, -fy); g.fillRect(fx - s * 7, fy - s * 7, s * 14, s * 14); g.restore();
+  }
+  g.strokeStyle = 'rgba(200,205,205,0.10)'; g.lineWidth = Math.max(1, s * 0.02); g.beginPath();
+  for (let i = 0; i < 70; i++) { const rx = (i * 173.3 + now * 0.25) % L.W, ry = (i * 97.7 + now * 0.9) % L.H; g.moveTo(rx, ry); g.lineTo(rx - s * 0.12, ry + s * 0.5); }
+  g.stroke();
   // Effekte
   g.lineCap = 'round';
   for (let i = tracers.length - 1; i >= 0; i--) {
@@ -429,7 +457,9 @@ async function playEvent(e) {
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic) {
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
-        if (blood && TYPES[u.type].cls !== 'walker') { burst(x, y, 4, ['#8a1a14', '#6a120e'], { up: 0.08 }); decals.push({ x: d.x + (Math.random() - 0.5) * s * 0.7, y: d.y + (Math.random() - 0.3) * s * 0.4 * K, r: s * (0.05 + Math.random() * 0.06), col: 'rgba(96,20,16,0.55)' }); if (decals.length > 260) decals.shift(); }
+        if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 6 + nb * 3, ['#9a1612', '#74100c', '#b3221a'], { up: 0.16, spread: 0.2 });
+          for (let q = 0; q < nb; q++) decals.push({ x: d.x + (Math.random() - 0.5) * s * 1.1, y: d.y + (Math.random() - 0.3) * s * 0.7 * K, r: s * (0.06 + Math.random() * 0.13), col: Math.random() < 0.5 ? 'rgba(110,16,12,0.62)' : 'rgba(78,10,8,0.6)' });
+          while (decals.length > 700) decals.shift(); }
         floater(...headPos(e.u), '−' + fmt(e.dmg), '#ff9a7a', e.dmg >= 1.5);
       } else floater(...headPos(e.u), 'Panik', '#f0d27a');
       await wait(e.panic ? 180 : 300); break;
@@ -441,6 +471,7 @@ async function playEvent(e) {
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
       if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') boom(d.x, d.y, s * 1.1, 'he');
+      else if (blood) { decals.push({ x: d.x, y: d.y, r: s * 0.5, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * K, r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); burst(d.x, d.y - s * 0.4, 18, ['#9a1612', '#74100c'], { up: 0.2, spread: 0.3 }); }
       for (let k = 0; k < 10; k++) { d.alpha = 1 - k / 10; await wait(28); } d.alpha = 0; break;
     }
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
@@ -453,6 +484,7 @@ async function playEvent(e) {
     case 'breakdown': floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast('Ein Landkoloss bleibt mit einer Panne liegen.'); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
+    case 'limber': floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
     case 'spawn': { addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
       for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
     case 'heal': { const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'versorgt', '#8fe0c8'); await wait(120); break; }
@@ -524,9 +556,11 @@ function select(u) {
   computeOptions(); updateHud();
 }
 function computeOptions() {
-  reach = new Map(); targets = new Map(); shellHexes = new Set();
+  reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set();
   if (!sel || !E.active(sel) || sel.side !== G.side) return;
   reach = E.reachable(G, sel);
+  { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && !sel.moved && !sel.supp) : (T0.rng > 1 && !sel.attacked && !(T0.mg && sel.moved));
+    if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r))) rangeSet.add(E.key(c, r)); } }
   if (TYPES[sel.type].cls === 'art') {
     const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== sel.side; };
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
@@ -548,7 +582,7 @@ function computeOptions() {
 }
 async function act(fn) {
   busy = true; const u = sel;
-  previewT = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); updateHud();
+  previewT = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); updateHud();
   await play(fn(u));
   busy = false;
   sel = (u && E.active(u) && (!u.moved || !u.attacked)) ? u : null;
@@ -657,12 +691,12 @@ function updateHud() {
   hud.className = 'hud' + (u ? ' ' + u.side : '');
   if (u && E.alive(u)) {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
-    $('portrait').hidden = false; drawPortrait($('portrait'), figOf(T), u.side);
+    $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
     $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
     $('hudStats').innerHTML = pill('Stärke', fmt(u.str), u.str <= 3.3 ? 'bad' : '') + pill('Moral', fmt(u.mor), u.mor < P.FALLBACK_MOR + 1 ? 'bad' : 'gold') +
-      pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–');
+      pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–');
     $('btnInfo').hidden = false;
     let row = '';
     if (previewT && sel) {
@@ -671,11 +705,12 @@ function updateHud() {
     } else if (sel && human(sel.side) && sel.side === G.side) {
       const acts = [];
       if (T.cls === 'art') {
-        const can = !sel.attacked && !sel.moved && !sel.supp;
+        const can = !sel.attacked && !sel.moved && !sel.supp && !sel.limbered;
+        if (E.canLimber(G, sel)) acts.push(`<button class="act" data-act="limber">${sel.limbered ? '⚓ Abprotzen' : '🐎 Aufprotzen'}</button>`);
         if (can) {
           acts.push(`<button class="act ${artMode === 'he' ? 'on' : ''}" data-act="m-he">Sprenggranate</button><button class="act ${artMode === 'barrage' ? 'on' : ''}" data-act="m-barrage">Sperrfeuer</button><button class="act ${artMode === 'gas' ? 'on' : ''}" data-act="m-gas" ${sel.gas > 0 ? '' : 'disabled'}>Gas (${sel.gas})</button>`);
           acts.push(`<span class="hint">${shellHexes.size ? (artMode === 'he' ? 'Trifft ein Feld. Zerstört auch Draht.' : artMode === 'barrage' ? 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.' : 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.') : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).'}</span>`);
-        } else acts.push(`<span class="hint">${sel.supp ? 'Niedergehalten: kann nicht feuern.' : 'Hat diese Runde schon gehandelt.'}</span>`);
+        } else acts.push(`<span class="hint">${sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: zieht 4 Felder, feuert nicht. Nach dem Abprotzen ab der nächsten Runde feuerbereit.' : 'Hat diese Runde schon gehandelt.'}</span>`);
       } else {
         if ((!sel.moved || sel.turnOnly) && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
         if (E.canCut(G, sel)) acts.push('<button class="act on" data-act="cut">✂ Draht schneiden</button>');
@@ -711,6 +746,7 @@ async function panelAct(a) {
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
   if (a === 'cut') return act(u => E.cutWire(G, u));
+  if (a === 'limber') return act(u => E.limber(G, u));
 }
 function showDetail() {
   const u = sel || (inspect && inspect.unit); if (!u) return;

@@ -4,7 +4,7 @@
 (function (root) {
 'use strict';
 
-const OUT = '#16150f';
+const OUT = '#0e0d09';
 const PAL = {
   A: { coat: '#5f5a3c', coatD: '#454128', coatL: '#7a744e', helm: '#4a4d30', helmL: '#676a45', mask: '#2c2a20', lens: '#a8f070',
        pack: '#5e4830', boot: '#211c15', steel: '#7c8078', steelD: '#4e524c', wood: '#5f4229', armor: '#565a40', armorD: '#3b3e2b',
@@ -33,72 +33,79 @@ function plain(g, x, y, w, h, col) { g.fillStyle = col; g.fillRect(x, y, w, h); 
 
 function helmet(g, p, side, x, y) {
   if (side === 'A') {
-    g.beginPath(); g.ellipse(x, y, 0.17, 0.15, 0, Math.PI, 0); g.closePath(); fs(g, p.helm);
-    box(g, x - 0.25, y - 0.025, 0.5, 0.06, 0.03, p.helmL);
+    g.beginPath(); g.ellipse(x, y, 0.125, 0.115, 0, Math.PI, 0); g.closePath(); fs(g, p.helm);
+    box(g, x - 0.2, y - 0.02, 0.4, 0.045, 0.02, p.helmL);
+    plain(g, x - 0.07, y - 0.085, 0.05, 0.03, p.helmL);
   } else {
-    poly(g, [[x - 0.03, y - 0.15], [x, y - 0.3], [x + 0.03, y - 0.15]], p.steel);
-    g.beginPath(); g.ellipse(x, y, 0.18, 0.17, 0, Math.PI, 0); g.lineTo(x + 0.2, y + 0.03); g.lineTo(x - 0.22, y + 0.07); g.closePath(); fs(g, p.helm);
-    plain(g, x - 0.1, y - 0.11, 0.2, 0.03, p.helmL);
+    poly(g, [[x - 0.022, y - 0.11], [x, y - 0.24], [x + 0.022, y - 0.11]], p.steel);
+    g.beginPath(); g.ellipse(x, y, 0.13, 0.125, 0, Math.PI, 0); g.lineTo(x + 0.15, y + 0.025); g.lineTo(x - 0.17, y + 0.06); g.closePath(); fs(g, p.helm);
+    plain(g, x - 0.08, y - 0.085, 0.14, 0.022, p.helmL);
   }
 }
 function head(g, p, side, x, y) {
-  circ(g, x, y, 0.145, p.mask);
-  box(g, x + 0.09, y + 0.02, 0.12, 0.1, 0.035, p.steelD);
-  circ(g, x + 0.075, y - 0.02, 0.05, p.lens);
-  g.fillStyle = 'rgba(255,255,255,0.75)'; g.beginPath(); g.arc(x + 0.06, y - 0.035, 0.016, 0, 7); g.fill();
-  helmet(g, p, side, x, y - 0.06);
+  box(g, x - 0.06, y + 0.06, 0.12, 0.09, 0.02, p.coatD);          // Kragen
+  circ(g, x, y, 0.105, p.mask);
+  box(g, x + 0.06, y + 0.015, 0.1, 0.085, 0.03, p.steelD);         // Filter
+  seg(g, x + 0.1, y + 0.1, x + 0.02, y + 0.2, 0.03, p.mask);       // Schlauch
+  circ(g, x + 0.055, y - 0.015, 0.038, p.lens);
+  g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.arc(x + 0.045, y - 0.026, 0.012, 0, 7); g.fill();
+  helmet(g, p, side, x, y - 0.045);
 }
-// o: weapon 'rifle'|'grenade'|'flame'|'none', legs, crouch
+// Realistischere Proportionen: kleiner Kopf, langer Mantel, lange Beine. o: weapon, legs, crouch
 function soldier(g, p, side, o) {
   o = o || {};
   g.save();
-  if (o.crouch) { g.translate(0, 0); g.scale(1, 0.86); }
+  if (o.crouch) g.scale(1, 0.84);
   if (o.legs !== false) {
-    box(g, -0.17, -0.31, 0.15, 0.27, 0.04, p.coatD); box(g, -0.2, -0.085, 0.21, 0.085, 0.03, p.boot);
-    box(g, 0.02, -0.31, 0.15, 0.27, 0.04, p.coatD); box(g, 0.01, -0.085, 0.23, 0.085, 0.03, p.boot);
+    box(g, -0.14, -0.42, 0.12, 0.37, 0.035, p.coatD); plain(g, -0.135, -0.2, 0.11, 0.13, p.pack); box(g, -0.17, -0.075, 0.19, 0.075, 0.025, p.boot);
+    box(g, 0.02, -0.42, 0.12, 0.37, 0.035, p.coatD); plain(g, 0.025, -0.2, 0.11, 0.13, p.pack); box(g, 0.01, -0.075, 0.21, 0.075, 0.025, p.boot);
   }
-  if (o.weapon === 'flame') { box(g, -0.42, -0.74, 0.2, 0.4, 0.08, p.accent); plain(g, -0.39, -0.6, 0.14, 0.04, OUT); box(g, -0.36, -0.8, 0.08, 0.08, 0.02, p.steelD); }
-  else box(g, -0.36, -0.68, 0.18, 0.27, 0.05, p.pack);
-  poly(g, [[-0.25, -0.42], [0.24, -0.42], [0.3, -0.14], [-0.31, -0.14]], p.coat);
-  plain(g, -0.02, -0.4, 0.035, 0.24, p.coatD);
-  box(g, -0.22, -0.7, 0.43, 0.36, 0.1, p.coat);
-  plain(g, -0.17, -0.66, 0.07, 0.24, p.coatL);
-  plain(g, -0.215, -0.4, 0.42, 0.05, p.boot);
-  box(g, -0.045, -0.415, 0.09, 0.08, 0.015, p.steel);
-  if (o.weapon === 'grenade') box(g, -0.13, -0.66, 0.3, 0.24, 0.05, p.steelD);
-  box(g, -0.225, -0.63, 0.1, 0.07, 0.02, p.accent);
+  if (o.weapon === 'flame') { box(g, -0.36, -0.82, 0.17, 0.4, 0.07, p.accent); plain(g, -0.34, -0.68, 0.13, 0.03, OUT); plain(g, -0.34, -0.56, 0.13, 0.03, OUT); box(g, -0.31, -0.88, 0.07, 0.07, 0.02, p.steelD); }
+  else { box(g, -0.31, -0.76, 0.15, 0.27, 0.04, p.pack); box(g, -0.33, -0.8, 0.19, 0.07, 0.03, p.coatD); }
+  poly(g, [[-0.19, -0.52], [0.18, -0.52], [0.25, -0.17], [0.05, -0.15], [0.0, -0.22], [-0.05, -0.15], [-0.26, -0.17]], p.coat);   // Mantelschoß
+  plain(g, -0.2, -0.3, 0.06, 0.12, p.coatD); plain(g, 0.12, -0.34, 0.05, 0.15, p.coatD);
+  box(g, -0.18, -0.8, 0.36, 0.33, 0.08, p.coat);
+  plain(g, -0.14, -0.76, 0.05, 0.24, p.coatL);
+  seg(g, -0.13, -0.78, 0.12, -0.52, 0.035, p.pack);               // Schulterriemen
+  plain(g, -0.175, -0.52, 0.35, 0.045, p.boot);
+  box(g, -0.035, -0.535, 0.07, 0.07, 0.012, p.steel);
+  box(g, 0.07, -0.5, 0.1, 0.1, 0.02, p.pack);                     // Patronentasche
+  if (o.weapon === 'grenade') { box(g, -0.12, -0.76, 0.26, 0.22, 0.04, p.steelD); plain(g, -0.09, -0.73, 0.04, 0.16, p.steel); }
+  box(g, -0.19, -0.72, 0.085, 0.06, 0.015, p.accent);             // Armbinde
   if (o.weapon === 'rifle') {
-    g.save(); g.translate(-0.12, -0.5); g.rotate(-0.12);
-    box(g, 0, -0.035, 0.62, 0.07, 0.02, p.wood); box(g, 0.6, -0.02, 0.2, 0.035, 0.01, p.steel);
+    g.save(); g.translate(-0.12, -0.6); g.rotate(-0.1);
+    box(g, 0, -0.028, 0.6, 0.056, 0.015, p.wood); box(g, 0.2, -0.045, 0.16, 0.035, 0.01, p.steelD); box(g, 0.58, -0.016, 0.24, 0.028, 0.008, p.steel);
     g.restore();
-    box(g, 0.0, -0.62, 0.27, 0.11, 0.05, p.coatL); circ(g, 0.28, -0.585, 0.05, p.boot);
+    box(g, -0.02, -0.74, 0.1, 0.2, 0.045, p.coatL); box(g, 0.0, -0.64, 0.25, 0.09, 0.04, p.coatL); circ(g, 0.25, -0.61, 0.042, p.boot);
   } else if (o.weapon === 'grenade') {
-    box(g, 0.02, -0.82, 0.11, 0.28, 0.05, p.coatL);
-    g.save(); g.translate(0.08, -0.84); g.rotate(0.5);
-    box(g, -0.02, -0.26, 0.04, 0.26, 0.01, p.wood); box(g, -0.055, -0.38, 0.11, 0.14, 0.03, p.steelD);
+    box(g, 0.03, -0.98, 0.09, 0.3, 0.04, p.coatL);
+    g.save(); g.translate(0.075, -0.99); g.rotate(0.55);
+    box(g, -0.016, -0.25, 0.032, 0.25, 0.008, p.wood); box(g, -0.045, -0.36, 0.09, 0.13, 0.025, p.steelD);
     g.restore();
-    circ(g, 0.075, -0.84, 0.05, p.boot);
+    circ(g, 0.075, -0.99, 0.042, p.boot);
+    box(g, -0.1, -0.5, 0.14, 0.13, 0.02, p.pack);
   } else if (o.weapon === 'flame') {
-    box(g, 0.0, -0.6, 0.26, 0.1, 0.05, p.coatL);
-    box(g, 0.1, -0.56, 0.5, 0.07, 0.02, p.steelD); box(g, 0.56, -0.585, 0.08, 0.12, 0.02, p.steel);
-    g.beginPath(); g.moveTo(0.64, -0.6); g.quadraticCurveTo(0.86, -0.7, 0.98, -0.5); g.quadraticCurveTo(0.84, -0.42, 0.64, -0.46); g.closePath(); fs(g, '#f08a2a');
-    g.fillStyle = '#ffe07a'; g.beginPath(); g.ellipse(0.75, -0.53, 0.08, 0.04, 0, 0, 7); g.fill();
-    circ(g, 0.27, -0.55, 0.05, p.boot);
+    box(g, 0.0, -0.7, 0.24, 0.09, 0.04, p.coatL);
+    seg(g, -0.24, -0.5, 0.08, -0.6, 0.03, p.mask);
+    box(g, 0.08, -0.66, 0.5, 0.06, 0.02, p.steelD); box(g, 0.55, -0.685, 0.07, 0.11, 0.02, p.steel);
+    g.beginPath(); g.moveTo(0.62, -0.7); g.quadraticCurveTo(0.86, -0.82, 1.0, -0.6); g.quadraticCurveTo(0.84, -0.5, 0.62, -0.56); g.closePath(); fs(g, '#e8792a');
+    g.fillStyle = '#ffd870'; g.beginPath(); g.ellipse(0.74, -0.63, 0.08, 0.04, 0, 0, 7); g.fill();
+    circ(g, 0.25, -0.655, 0.042, p.boot);
   } else {
-    box(g, 0.0, -0.6, 0.22, 0.1, 0.05, p.coatL); circ(g, 0.23, -0.55, 0.05, p.boot);
+    box(g, -0.02, -0.74, 0.1, 0.2, 0.045, p.coatL); box(g, 0.0, -0.64, 0.21, 0.09, 0.04, p.coatL); circ(g, 0.21, -0.6, 0.042, p.boot);
   }
-  head(g, p, side, 0.02, -0.82);
+  head(g, p, side, 0.02, -0.9);
   g.restore();
 }
 
 function medic(g, p, side) {
   soldier(g, p, side, { weapon: 'none' });
-  box(g, -0.02, -0.5, 0.3, 0.26, 0.05, p.cloth);
-  g.fillStyle = '#2f7d6d'; g.fillRect(0.1, -0.455, 0.06, 0.17); g.fillRect(0.045, -0.4, 0.17, 0.06);
-  box(g, -0.235, -0.66, 0.12, 0.1, 0.02, p.cloth);
+  box(g, -0.04, -0.58, 0.28, 0.24, 0.04, p.cloth);
+  g.fillStyle = '#2f7d6d'; g.fillRect(0.075, -0.54, 0.05, 0.16); g.fillRect(0.02, -0.485, 0.16, 0.05);
+  box(g, -0.2, -0.73, 0.1, 0.08, 0.015, p.cloth);
   // Laterne
-  seg(g, 0.3, -0.56, 0.3, -0.42, 0.03, p.steelD);
-  box(g, 0.22, -0.42, 0.16, 0.2, 0.04, '#e8c35a'); plain(g, 0.22, -0.42, 0.16, 0.045, p.steelD);
+  seg(g, 0.23, -0.6, 0.3, -0.44, 0.025, p.steelD);
+  box(g, 0.23, -0.44, 0.14, 0.18, 0.035, '#e8c35a'); plain(g, 0.23, -0.44, 0.14, 0.04, p.steelD);
 }
 function mortar(g, p, side) {
   g.save(); g.translate(-0.55, 0); soldier(g, p, side, { weapon: 'none', crouch: true }); g.restore();
@@ -182,16 +189,30 @@ function cavalry(g, p, side) {
   poly(g, [[0.72, -1.6], [0.6, -1.86], [0.9, -1.72]], p.accent);
   poly(g, [[0.98, -1.76], [1.14, -1.84], [1.03, -1.7]], p.steel);
   box(g, -0.14, -0.72, 0.16, 0.36, 0.05, p.coatD); box(g, -0.16, -0.42, 0.24, 0.09, 0.03, p.boot);
-  g.save(); g.translate(-0.06, -0.52); soldier(g, p, side, { weapon: 'none', legs: false }); g.restore();
+  g.save(); g.translate(-0.06, -0.42); soldier(g, p, side, { weapon: 'none', legs: false }); g.restore();
 }
 
+function limberTeam(g, p, side) {
+  g.save(); g.translate(-0.75, 0);
+  seg(g, 0.05, -0.3, 0.62, -0.5, 0.06, p.wood);
+  g.save(); g.translate(-0.05, -0.36); g.rotate(Math.PI + 0.3);
+  box(g, -0.15, -0.075, 0.8, 0.15, 0.045, p.armorD); box(g, 0.56, -0.09, 0.09, 0.18, 0.03, p.steel);
+  g.restore();
+  box(g, -0.14, -0.6, 0.3, 0.26, 0.04, p.wood);
+  wheel(g, p, 0.0, -0.24, 0.24);
+  g.restore();
+  g.save(); g.translate(0.55, 0); g.scale(0.9, 0.9); horse(g, p, side);
+  g.save(); g.translate(-0.06, -0.42); soldier(g, p, side, { weapon: 'none', legs: false }); g.restore();
+  box(g, -0.14, -0.72, 0.15, 0.34, 0.05, p.coatD); box(g, -0.16, -0.44, 0.22, 0.08, 0.03, p.boot);
+  g.restore();
+}
 const KIND = { inf: 'inf', mg: 'mg', art: 'art', walker: 'walker', cav: 'cav', storm: 'storm', flame: 'flame' };
 // Maße je Figur in Soldatenhöhen: [links, rechts, oben]
-const BOX = { medic: [0.55, 0.6, 1.25], mortar: [1.05, 0.85, 1.25], inf: [0.55, 0.85, 1.25], storm: [0.55, 0.6, 1.4], flame: [0.6, 1.1, 1.25], mg: [1.0, 1.0, 1.25], art: [1.25, 1.0, 1.25], walker: [0.95, 1.45, 2.45], cav: [0.95, 1.3, 1.95] };
+const BOX = { limber: [1.15, 1.5, 1.75], medic: [0.55, 0.6, 1.3], mortar: [1.05, 0.85, 1.3], inf: [0.55, 0.9, 1.3], storm: [0.55, 0.6, 1.5], flame: [0.6, 1.1, 1.25], mg: [1.0, 1.0, 1.25], art: [1.25, 1.0, 1.25], walker: [0.95, 1.45, 2.45], cav: [0.95, 1.3, 1.95] };
 
 function drawFigure(g, kind, side) {
   const p = PAL[side];
-  g.lineWidth = 0.05; g.lineJoin = 'round'; g.strokeStyle = OUT;
+  g.lineWidth = 0.036; g.lineJoin = 'round'; g.strokeStyle = OUT;
   if (kind === 'inf') soldier(g, p, side, { weapon: 'rifle' });
   else if (kind === 'storm') soldier(g, p, side, { weapon: 'grenade' });
   else if (kind === 'flame') soldier(g, p, side, { weapon: 'flame' });
@@ -201,6 +222,7 @@ function drawFigure(g, kind, side) {
   else if (kind === 'cav') cavalry(g, p, side);
   else if (kind === 'medic') medic(g, p, side);
   else if (kind === 'mortar') mortar(g, p, side);
+  else if (kind === 'limber') limberTeam(g, p, side);
 }
 
 const cache = new Map();
@@ -222,7 +244,7 @@ function sprite(kind, side, flip, h) {
   g.globalCompositeOperation = 'source-atop';
   const W = cv.width, H = cv.height;
   let gr = g.createLinearGradient(flip ? W : 0, 0, flip ? 0 : W, H);
-  gr.addColorStop(0, 'rgba(255,236,190,0.20)'); gr.addColorStop(0.45, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(8,6,4,0.52)');
+  gr.addColorStop(0, 'rgba(255,232,180,0.26)'); gr.addColorStop(0.4, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(6,5,3,0.62)');
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   gr = g.createLinearGradient(0, oy - 0.42 * h, 0, oy);
   gr.addColorStop(0, 'rgba(58,44,28,0)'); gr.addColorStop(1, 'rgba(58,44,28,0.72)');
@@ -234,6 +256,12 @@ function sprite(kind, side, flip, h) {
     const r = h * (0.008 + rnd() * 0.022); g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, 7); g.fill();
   }
   g.globalCompositeOperation = 'source-over';
+  // Randlicht: helle Kante auf der Lichtseite, wie von fernem Feuerschein
+  const rim = document.createElement('canvas'); rim.width = W; rim.height = H;
+  const rg = rim.getContext('2d'), off = Math.max(1, h * 0.022) * (flip ? -1 : 1);
+  rg.drawImage(cv, 0, 0); rg.globalCompositeOperation = 'source-in'; rg.fillStyle = 'rgba(255,196,120,0.5)'; rg.fillRect(0, 0, W, H);
+  rg.globalCompositeOperation = 'destination-out'; rg.drawImage(cv, off, Math.abs(off));
+  g.drawImage(rim, 0, 0);
   s = { cv, ox, oy };
   cache.set(k, s);
   return s;

@@ -163,7 +163,15 @@ function planArt(G, u) {
 
 function planUnit(G, u) {
   const k = E.cls(u);
-  if (k === 'art') { const s = planArt(G, u); if (s) return { shell: s }; if (TYPES[u.type].mv < 2 || u.moved) return { v: 0 }; }
+  if (k === 'art') {
+    const near = nearestEnemyDist(G, u.side, u.c, u.r);
+    if (u.limbered) { if (near <= 6 || u.side === 'D') return { limber: true }; }
+    else {
+      const s = planArt(G, u); if (s) return { shell: s };
+      if (TYPES[u.type].limber && u.side === 'A' && G.turn >= 4 && near > 8 && E.canLimber(G, u)) return { limber: true };
+      if (TYPES[u.type].mv < 2 || u.moved) return { v: 0 };
+    }
+  }
   const opts = [];
   const here = posValue(G, u, u.c, u.r);
   const atkHere = u.attacked ? null : bestAttackFrom(G, u, u.c, u.r, false, 0);
@@ -212,11 +220,12 @@ function next(G) {
     G._aiDone.add(u.id);
     const o = planUnit(G, u);
     const steps = [];
+    if (o.limber) steps.push({ k: 'limber' });
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
     if (o.cut) steps.push({ k: 'cut' });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
-    if (!o.shell && !o.move && !o.cut && !u.moved) {
+    if (!o.shell && !o.limber && !o.move && !o.cut && !u.moved) {
       const adj = E.adjEnemies(G, u);
       const bad = adj.find(e => E.arcOf(G, u, e.c, e.r) !== 'front');
       if (bad && !adj.some(e => E.arcOf(G, u, e.c, e.r) === 'front')) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, bad.c, bad.r)) });
@@ -231,6 +240,7 @@ function exec(G, uid, s) {
   if (s.k === 'move') return E.moveUnit(G, u, s.c, s.r);
   if (s.k === 'turn') return E.turnUnit(G, u, s.face);
   if (s.k === 'cut') return E.cutWire(G, u);
+  if (s.k === 'limber') return E.limber(G, u);
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
