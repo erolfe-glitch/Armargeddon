@@ -231,7 +231,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <li>Marken an jeder eigenen Einheit: grüner Pfeil = kann noch ziehen, rote Raute = kann noch angreifen. Fertige Einheiten sind abgedunkelt.</li>
       <li>Geschütze können aufprotzen: Dann ziehen sie 4 Felder, feuern aber erst wieder nach dem Abprotzen. Rot zeigt ihr Schussfeld.</li>
       <li>Nachschub: Für Punkte (★) holst du neue Einheiten an den eigenen Rand, auch Feldscher und Mörser.</li>
-      <li>Das Konkordat siegt mit 4 Punkten aus den Zielfeldern (Fahnen) am Ende oder wenn die Aschenwacht zusammenbricht.</li>
+      <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende, bei 4 Punkten steht es unentschieden, oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
     <button class="endbtn" id="closeRules">Verstanden</button>
   </div>
@@ -305,7 +305,7 @@ const P = {
   MG_VS_WIRE: 2, MG_VS_CAV: 2,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
-  MAXT: 16, WIN_A: 4, DRAW_A: 3,
+  MAXT: 16, WIN_A: 5, DRAW_A: 4,
   SUPP: 0.6, SUPP_ATK: 0.5,
   ART_MIN: 2, SPOT: 5, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
