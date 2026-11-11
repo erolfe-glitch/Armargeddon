@@ -9,6 +9,8 @@ for (const [k, v] of Object.entries(process.env)) {
   if (k.startsWith('P_')) E.P[k.slice(2)] = +v;
   if (k.startsWith('T_')) { const [, t, f] = k.split('_'); E.TYPES[t][f] = +v; }
   if (k === 'BREAK_A') E.P.BREAK.A = +v;
+  if (k === 'INC_A') E.P.PTS_TURN.A = +v;
+  if (k === 'INC_D') E.P.PTS_TURN.D = +v;
   if (k === 'BREAK_D') E.P.BREAK.D = +v;
   if (k === 'NOA') noA = v.split(',');
   if (k.startsWith('DROP_')) drop[k.slice(5)] = +v;
@@ -25,7 +27,9 @@ for (let g = 0; g < N; g++) {
   E.startTurn(G);
   let guard = 0;
   try {
+    let bk = '';
     while (!G.over && guard++ < 8000) {
+      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; AI.buy(G); }
       const act = AI.next(G);
       if (!act) { E.endTurn(G); continue; }
       for (const s of act.steps) { AI.exec(G, act.u, s); if (G.over) break; }

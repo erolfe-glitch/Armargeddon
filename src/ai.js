@@ -9,7 +9,8 @@ const W = {
   A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
   D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
 };
-const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5 };
+const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'kohorte', 'moerser'], D: ['sturm', 'grenadier', 'minenwerfer', 'grenadier', 'heiler'] };
 
 function coverVal(t) { return t === 'trench' ? 1 : t === 'village' ? 0.9 : t === 'forest' ? 0.7 : t === 'crater' ? 0.4 : t === 'wire' ? -1.6 : 0; }
 
@@ -52,6 +53,12 @@ function posValue(G, u, c, r) {
   const w = W[u.side], h = E.hex(G, c, r), k = E.cls(u);
   const th = threatAt(G, u, c, r);
   let v;
+  if (k === 'medic') {
+    v = -th * 6;
+    for (const [nc, nr] of E.neighbors(c, r)) { const o = E.unitAt(G, nc, nr); if (o && o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'walker') v += 0.4 + (10 - o.str) * 0.35; }
+    let fd = 99; for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'art' && E.cls(o) !== 'medic') fd = Math.min(fd, E.dist(o.c, o.r, c, r));
+    return v - (fd === 99 ? 0 : fd * 0.5);
+  }
   if (u.side === 'A') {
     const tw = k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1);
     v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - th * tw * 6;
@@ -101,7 +108,7 @@ function bestAttackFrom(G, u, c, r, moved, run) {
       const v = attackValue(G, u, d, 'melee', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && !(T.mg && moved) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+    if (T.rng && T.cls !== 'art' && !(T.mg && moved) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
         dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
@@ -156,7 +163,7 @@ function planArt(G, u) {
 
 function planUnit(G, u) {
   const k = E.cls(u);
-  if (k === 'art') { const s = planArt(G, u); return s ? { shell: s } : { v: 0 }; }
+  if (k === 'art') { const s = planArt(G, u); if (s) return { shell: s }; if (TYPES[u.type].mv < 2 || u.moved) return { v: 0 }; }
   const opts = [];
   const here = posValue(G, u, u.c, u.r);
   const atkHere = u.attacked ? null : bestAttackFrom(G, u, u.c, u.r, false, 0);
@@ -177,6 +184,25 @@ function order(G, side) {
   return us.sort((a, b) => (ORDER[E.cls(a)] - ORDER[E.cls(b)]) || (b.c - a.c) * dir);
 }
 
+// Nachschub kaufen: der Reihe nach die Wunschliste, aufgestellt am eigenen Rand nahe am Geschehen
+function buy(G) {
+  const side = G.side, ev = [];
+  G._wish = G._wish || { A: 0, D: 0 };
+  for (let guard = 0; guard < 6; guard++) {
+    const type = WISH[side][G._wish[side] % WISH[side].length];
+    if (!E.canBuy(G, side, type)) break;
+    const hs = E.spawnHexes(G, side, type);
+    if (!hs.length) break;
+    let row = 6, bd = 99;
+    for (const o of G.units) if (o.side === side && E.active(o)) { const d = nearestEnemyDist(G, side, o.c, o.r); if (d < bd) { bd = d; row = o.r; } }
+    if (side === 'D') row = Math.min(row, 7);
+    hs.sort((p, q) => (Math.abs(p[1] - row) - Math.abs(q[1] - row)) || (side === 'A' ? q[0] - p[0] : p[0] - q[0]));
+    const e = E.buy(G, side, type, hs[0][0], hs[0][1]);
+    if (!e.length) break;
+    ev.push(...e); G._wish[side]++;
+  }
+  return ev;
+}
 function next(G) {
   if (G.over) return null;
   const tk = G.turn + G.side;
@@ -213,6 +239,6 @@ function exec(G, uid, s) {
   return [];
 }
 
-const AI = { next, exec, W, planUnit };
+const AI = { next, exec, buy, W, planUnit };
 if (typeof module !== 'undefined' && module.exports) module.exports = AI; else root.AI = AI;
 })(this);

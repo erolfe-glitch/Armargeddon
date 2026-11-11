@@ -2,6 +2,7 @@
 (function () {
 'use strict';
 const { COLS, ROWS, TYPES, TERRAIN, OBJECTIVES, SIDES, P } = E;
+const figOf = T => T.fig || T.cls;
 const SQ3 = Math.sqrt(3);
 const $ = id => document.getElementById(id);
 const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
@@ -10,7 +11,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
-let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse';
+let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set();
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [];
 let queue = [], qRunning = false;
@@ -54,9 +55,9 @@ function hexPath(g, c, r, k = 1) {
 
 // ---------- Gelände ----------
 const hash = (a, b) => { const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return n - Math.floor(n); };
-const TC = { open: ['#69743f', '#626d3b', '#6f7a44'], mud: ['#5b4b34', '#554530', '#604f37'], crater: ['#65703d', '#5f6a39', '#6a7541'],
-  trench: ['#6c7242', '#666c3e', '#707646'], wire: ['#666f3e', '#606a3a', '#6b7542'], village: ['#77725f', '#716c5a', '#7c7764'],
-  forest: ['#4d5634', '#485030', '#525b38'], canal: ['#3f5762', '#3b525d', '#435c67'], bridge: ['#3f5762', '#3b525d', '#435c67'] };
+const TC = { open: ['#5a5a3a', '#545436', '#5f5e3d'], mud: ['#4c4030', '#473b2c', '#514433'], crater: ['#575638', '#515034', '#5b5a3b'],
+  trench: ['#5c593b', '#565337', '#605d3e'], wire: ['#585639', '#525035', '#5c5a3c'], village: ['#66624f', '#605c4a', '#6b6753'],
+  forest: ['#42452f', '#3d402b', '#474a32'], canal: ['#34474f', '#30424a', '#384c54'], bridge: ['#34474f', '#30424a', '#384c54'] };
 const O = '#16150f';
 function renderTerrain() {
   const { s, W, H, dpr } = L;
@@ -91,6 +92,13 @@ function renderTerrain() {
       }
     }
   }
+  // Schmutz und Körnung, damit der Boden nicht wie eine glatte Fläche wirkt
+  { let sd = 4242; const rn = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+    for (let i = 0; i < Math.round(W * H / 420); i++) {
+      const px = rn() * W, py = L.top * 0.7 + rn() * (H - L.top * 0.7), rr0 = s * (0.02 + rn() * 0.09);
+      g.fillStyle = rn() < 0.55 ? 'rgba(24,18,10,0.16)' : rn() < 0.6 ? 'rgba(96,74,44,0.16)' : 'rgba(210,200,160,0.05)';
+      g.beginPath(); g.ellipse(px, py, rr0, rr0 * K, 0, 0, 7); g.fill();
+    } }
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const h = G.map[c][r], [x, y] = center(c, r), n = hash(c * 5.3, r * 2.9);
     g.strokeStyle = O; g.lineWidth = lw;
@@ -148,6 +156,9 @@ function renderTerrain() {
       g.beginPath(); g.moveTo(gx - s * 0.06, gy); g.lineTo(gx - s * 0.09, gy - s * 0.1); g.moveTo(gx, gy); g.lineTo(gx, gy - s * 0.13); g.moveTo(gx + s * 0.06, gy); g.lineTo(gx + s * 0.09, gy - s * 0.1); g.stroke();
     }
   }
+  const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.72);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(6,5,3,0.5)');
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
 }
 
 // ---------- Einheiten ----------
@@ -162,12 +173,12 @@ function syncAll() {
   }
 }
 const facesLeft = f => f === 2 || f === 3 || f === 4;
-const SLOTS = { inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
+const SLOTS = { medic: [[0.12, 0.14], [-0.38, -0.16]], mortar: [[0.15, 0.12]], inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
   cav: [[0.18, 0.2], [-0.3, -0.2]], mg: [[0.12, 0.1]], art: [[0.15, 0.12]], walker: [[0, 0.16]] };
-const FH = { inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
+const FH = { medic: 0.8, mortar: 0.76, inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
 
 function drawUnit(u, d) {
-  const T = TYPES[u.type], k = T.cls, s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
+  const T = TYPES[u.type], k = figOf(T), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
   if (d.shake > 0) x += Math.sin(now / 22) * s * 0.05;
@@ -199,6 +210,7 @@ function drawUnit(u, d) {
   const duck = u.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
+    g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
       const px = fx + (flip ? 0.2 : -0.2) * s, top = fy - s * 1.35;
       g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.07); g.beginPath(); g.moveTo(px, fy - s * 0.2); g.lineTo(px, top); g.stroke();
@@ -251,6 +263,7 @@ function draw() {
       g.strokeStyle = t.kind === 'fire' ? '#ffb04a' : '#ff5a40'; g.lineWidth = Math.max(2, s * 0.06); g.stroke();
     }
   }
+  if (placing) for (const k of spawnSet) { hexPath(g, Math.floor(k / 100), k % 100, 0.9); g.fillStyle = 'rgba(150,230,120,0.3)'; g.fill(); g.strokeStyle = 'rgba(190,255,160,0.8)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
   if (hoverHex) {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
     if (sel && TYPES[sel.type].cls === 'art' && shellHexes.has(E.key(hoverHex[0], hoverHex[1])) && artMode !== 'he') {
@@ -440,6 +453,9 @@ async function playEvent(e) {
     case 'breakdown': floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast('Ein Landkoloss bleibt mit einer Panne liegen.'); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
+    case 'spawn': { addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
+      for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
+    case 'heal': { const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'versorgt', '#8fe0c8'); await wait(120); break; }
     case 'gascloud': break;
     case 'reinf': {
       for (const id of e.ids) { const nu = unitById(id); addDU(nu); const d = DU.get(id); d.x += s * 2; }
@@ -467,10 +483,12 @@ function unitAtPixel(x, y) {
   let best = null;
   for (const u of G.units) {
     if (!E.alive(u)) continue;
-    const d = DU.get(u.id), k = TYPES[u.type].cls, hgt = L.s * (k === 'walker' ? 1.7 : k === 'cav' ? 1.4 : 1.05);
-    if (Math.abs(x - d.x) < L.s * 0.72 && y < d.y + L.s * K * 0.75 && y > d.y - hgt) if (!best || d.y > DU.get(best.id).y) best = u;
+    const d = DU.get(u.id), k = TYPES[u.type].cls, hgt = L.s * (k === 'walker' ? 1.55 : k === 'cav' ? 1.25 : 0.95);
+    if (Math.abs(x - d.x) < L.s * 0.5 && y < d.y + L.s * K * 0.3 && y > d.y - hgt) if (!best || d.y > DU.get(best.id).y) best = u;
   }
-  return best;
+  if (best) return best;
+  const h = pixToHex(x, y);
+  return h ? E.unitAt(G, h[0], h[1]) : null;
 }
 cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; });
 cv.addEventListener('pointermove', ev => {
@@ -486,7 +504,9 @@ cv.addEventListener('pointerleave', () => { hoverHex = null; });
 cv.addEventListener('click', ev => {
   if (!G || busy || G.over || !human(G.side)) return;
   const [x, y] = evToPx(ev);
-  const u = unitAtPixel(x, y), h = pixToHex(x, y);
+  let u = unitAtPixel(x, y), h = pixToHex(x, y);
+  if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
+  if (u) h = [u.c, u.r];
   if (sel && TYPES[sel.type].cls === 'art' && h && shellHexes.has(E.key(h[0], h[1])) && !(u && u.side === G.side)) return doShell(h[0], h[1]);
   if (sel && u && targets.has(u.id)) {
     if (previewT === u || lastPT === 'mouse') return doAttack(u);
@@ -538,9 +558,30 @@ const doMove = (c, r) => act(u => E.moveUnit(G, u, c, r));
 const doAttack = d => { const t = targets.get(d.id); return act(u => t.kind === 'fire' ? E.fire(G, u, d) : E.melee(G, u, d)); };
 const doShell = (c, r) => { const m = artMode; return act(u => E.shell(G, u, c, r, m)); };
 
+// ---------- Nachschub ----------
+function openShop() {
+  if (busy || G.over || !human(G.side)) return;
+  const sd = G.side;
+  $('shopPts').textContent = G.pts[sd];
+  $('shopList').innerHTML = E.SHOP[sd].map(t => { const T = TYPES[t], ok = E.canBuy(G, sd, t) && E.spawnHexes(G, sd, t).length;
+    return `<button class="item ${sd}" data-t="${t}" ${ok ? '' : 'disabled'}><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small></button>`; }).join('');
+  $('shop').hidden = false;
+  requestAnimationFrame(() => $('shopList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd)));
+  $('shopList').querySelectorAll('.item').forEach(b => b.onclick = () => {
+    $('shop').hidden = true; select(null);
+    placing = b.dataset.t; spawnSet = new Set(E.spawnHexes(G, sd, placing).map(h => E.key(h[0], h[1]))); updateHud();
+  });
+}
+function cancelPlace() { placing = null; spawnSet = new Set(); updateHud(); }
+async function doBuy(c, r) {
+  const t = placing; placing = null; spawnSet = new Set();
+  busy = true; await play(E.buy(G, G.side, t, c, r)); busy = false; updateUI();
+}
+
 // ---------- Rundenablauf ----------
 async function endTurn() {
   if (busy || G.over) return;
+  placing = null; spawnSet = new Set();
   select(null); busy = true;
   const ev = E.endTurn(G);
   updateUI();
@@ -553,6 +594,7 @@ async function endTurn() {
 async function aiTurn() {
   busy = true; updateUI();
   await wait(300);
+  { const bev = AI.buy(G); if (bev.length) await play(bev); }
   let guard = 0;
   while (!G.over && guard++ < 300) {
     const a = AI.next(G);
@@ -590,6 +632,8 @@ function updateUI() {
   const be = $('btnEnd');
   be.disabled = busy || !!G.over || !human(G.side);
   be.textContent = !human(G.side) && !G.over ? 'KI zieht …' : 'Runde beenden';
+  const bs = $('btnShop'), hs = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
+  bs.disabled = busy || !!G.over || !human(G.side); bs.innerHTML = `Nachschub <b>★ ${G.pts[hs]}</b>`;
   if (sel && (!E.active(sel) || sel.side !== G.side)) sel = null;
   computeOptions(); updateHud();
 }
@@ -609,11 +653,11 @@ function drawPortrait(canvas, kind, side) {
 const pill = (k, v, cls = '') => `<div class="pill ${cls}"><small>${k}</small><b>${v}</b></div>`;
 function updateHud() {
   if (!G) return;
-  const hud = $('hud'), u = sel || (inspect && inspect.unit) || null;
+  const hud = $('hud'), u = placing ? null : (sel || (inspect && inspect.unit) || null);
   hud.className = 'hud' + (u ? ' ' + u.side : '');
   if (u && E.alive(u)) {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
-    $('portrait').hidden = false; drawPortrait($('portrait'), T.cls, u.side);
+    $('portrait').hidden = false; drawPortrait($('portrait'), figOf(T), u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
     $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
@@ -644,7 +688,11 @@ function updateHud() {
     $('hudRow').innerHTML = row;
   } else {
     $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = '';
-    if (inspect && inspect.hex) {
+    if (placing) {
+      $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
+      $('hudSub').innerHTML = 'Aufstellen';
+      $('hudRow').innerHTML = '<span class="hint">Tippe ein grünes Feld am eigenen Rand an. Die Einheit kann ab der nächsten Runde handeln.</span><button class="act" data-act="cancel">Abbrechen</button>';
+    } else if (inspect && inspect.hex) {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = T.name + (h.ridge ? ' auf der Höhe' : '');
       $('hudSub').innerHTML = o ? `Zielfeld: ${o.name} · ${o.pts} Punkte` : 'Gelände';
@@ -658,6 +706,7 @@ function updateHud() {
   $('hudRow').querySelectorAll('[data-act]').forEach(b => b.onclick = () => panelAct(b.dataset.act));
 }
 async function panelAct(a) {
+  if (a === 'cancel') return cancelPlace();
   if (!sel || busy) return;
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
@@ -666,7 +715,7 @@ async function panelAct(a) {
 function showDetail() {
   const u = sel || (inspect && inspect.unit); if (!u) return;
   const T = TYPES[u.type];
-  drawPortraitLater($('detPortrait'), T.cls, u.side);
+  drawPortraitLater($('detPortrait'), figOf(T), u.side);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
   $('detOff').hidden = !u.officer;
@@ -688,7 +737,7 @@ function startGame() {
   decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
-  sel = null; inspect = null; updateUI();
+  sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
   banner('Die Schlacht am Grauwall', 'Das Konkordat greift an');
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
@@ -722,12 +771,14 @@ $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
+$('btnShop').onclick = openShop;
+$('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
 $('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; $('btnSpeed').textContent = speed + '×'; };
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
 window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (G) { layout(); updateHud(); } }, 120); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { select(null); $('detail').hidden = true; $('rules').hidden = true; } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
 // ---------- Start ----------
 G = E.newGame({ seed: 7 });

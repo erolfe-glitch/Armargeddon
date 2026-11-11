@@ -55,11 +55,14 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 @keyframes ban { 0% { opacity: 0; transform: scaleY(.6); } 12%, 78% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 
 /* Einheitenkarte unten */
-.hud { display: flex; gap: 12px; align-items: center; padding: 8px max(10px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)); background: linear-gradient(#2b2c23, #1a1b15); border-top: 3px solid var(--edge-d); min-height: 104px; }
+.hud { display: flex; gap: 12px; align-items: center; height: 118px; overflow: hidden; padding: 8px max(10px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)); background: linear-gradient(#2b2c23, #1a1b15); border-top: 3px solid var(--edge-d); min-height: 104px; }
 .hud.A { box-shadow: inset 0 4px 0 var(--A); } .hud.D { box-shadow: inset 0 4px 0 var(--D); }
 #portrait { width: 86px; height: 86px; border: 3px solid var(--edge-d); border-radius: 8px; outline: 2px solid var(--edge); background: #22231c; }
 .hmain { flex: 1; min-width: 0; display: grid; gap: 5px; }
-#portrait, .endbtn { flex: none; }
+#portrait, .hbtns { flex: none; }
+.hbtns { display: grid; gap: 5px; }
+.shopbtn { height: 30px; } .shopbtn b { color: var(--gold); margin-left: 4px; }
+.hbtns .endbtn { height: 56px; }
 .hhead { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 #hudName { font: 700 21px var(--display); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
 #hudSub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -71,11 +74,13 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .pill small { font: 600 10px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .pill b { font: 700 17px var(--display); font-variant-numeric: tabular-nums; }
 .pill.gold b { color: var(--gold); } .pill.bad b { color: var(--bad); }
-.hrow { display: flex; align-items: center; gap: 6px; min-height: 30px; min-width: 0; flex-wrap: wrap; }
+.hrow { display: flex; align-items: center; gap: 6px; height: 30px; min-width: 0; flex-wrap: nowrap; overflow: hidden; white-space: nowrap; }
+.hrow > * { flex: none; } .hrow > .hint, .hrow > .prev { flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.stats { height: 46px; }
 .hint { font-size: 13px; color: var(--muted); } .hint i { color: #cfc8b2; }
 .act { height: 30px; padding: 0 12px; background: var(--panel-2); border: 2px solid var(--edge); border-bottom-width: 4px; border-radius: 6px; font: 700 13px var(--display); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
 .act:hover { border-color: var(--gold); } .act.on { background: #4a3a1c; border-color: var(--gold); color: #ffe9a8; } .act:disabled { opacity: .4; cursor: default; }
-.prev { display: flex; align-items: baseline; gap: 4px 14px; flex-wrap: wrap; font-size: 13px; }
+.prev { display: flex; align-items: baseline; gap: 4px 14px; flex-wrap: nowrap; font-size: 13px; }
 .prev b { font: 700 15px var(--display); letter-spacing: .04em; text-transform: uppercase; color: #ffb08a; }
 .prev i { font: 700 18px var(--display); font-style: normal; color: #fff; }
 .prev .tags { color: var(--muted); } .prev em { font-style: normal; color: var(--gold); font-weight: 700; }
@@ -83,6 +88,12 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .endbtn:hover { background: #e88440; } .endbtn:active { border-bottom-width: 3px; transform: translateY(4px); }
 .endbtn:disabled { background: #55503f; border-color: #6b6652; border-bottom-color: #33301f; color: #b9b39a; cursor: default; }
 
+.shoplist { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin: 12px 0 16px; }
+.item { display: grid; grid-template-columns: 64px 1fr auto; grid-template-rows: auto auto; gap: 2px 10px; align-items: center; text-align: left; padding: 8px 10px; background: var(--panel-2); border: 2px solid var(--edge); border-bottom-width: 5px; border-radius: 8px; }
+.item:hover:not(:disabled) { border-color: var(--gold); background: #4a3a1c; } .item:disabled { opacity: .45; cursor: default; }
+.item canvas { grid-row: 1 / 3; width: 64px; height: 64px; border: 2px solid var(--edge-d); border-radius: 6px; }
+.item b { font: 700 17px var(--display); letter-spacing: .04em; text-transform: uppercase; } .item .cost { font: 700 18px var(--display); color: var(--gold); }
+.item small { grid-column: 2 / 4; color: var(--muted); font-size: 12px; line-height: 1.25; }
 /* Überlagerungen */
 .overlay { position: fixed; inset: 0; z-index: 10; background: rgba(10, 11, 7, .88); overflow-y: auto; padding: 22px max(16px, env(safe-area-inset-left)); -webkit-user-select: text; user-select: text; }
 .overlay.center { display: grid; place-items: center; }
@@ -129,19 +140,19 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
   .top { padding-top: 3px; padding-bottom: 3px; gap: 4px 10px; border-bottom-width: 2px; }
   .brand { display: none; } .tbtn { height: 26px; min-width: 32px; padding: 0 7px; font-size: 12px; border-bottom-width: 3px; }
   .top { gap: 4px 7px; flex-wrap: nowrap; } .meters { gap: 5px; } .meter { width: 92px; height: 18px; } .meter span { font-size: 10px; } .obj { padding: 0 4px; font-size: 12px; } .tools { gap: 3px; } .turn { font-size: 14px; white-space: nowrap; } .chip { font-size: 11px; padding: 2px 6px; white-space: nowrap; }
-  .hud { min-height: 78px; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); gap: 8px; }
+  .hud { height: 88px; padding-top: 5px; padding-bottom: calc(5px + env(safe-area-inset-bottom)); gap: 8px; }
   #portrait { width: 64px; height: 64px; } #hudName { font-size: 16px; } .hmain { gap: 3px; }
   .pill { min-width: 46px; padding: 0 6px 1px; } .pill b { font-size: 14px; } .pill small { font-size: 9px; }
-  .hrow { min-height: 24px; flex-wrap: nowrap; overflow: hidden; } .hint { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+  .hrow { height: 24px; } .hint { font-size: 12px; } .stats { height: 34px; } .hbtns { gap: 3px; } .shopbtn { height: 24px; } .hbtns .endbtn { height: 44px; }
   .act { height: 26px; font-size: 12px; padding: 0 8px; }
   .endbtn { height: 52px; min-width: 120px; font-size: 15px; padding: 0 10px; }
   .title { font-size: 36px; } .lead { font-size: 14px; margin-bottom: 10px; } .fac canvas { width: 54px; height: 54px; } .fac p { display: none; }
 }
 @media (orientation: portrait) {
   .meters { margin-left: 0; width: 100%; } .meter { flex: 1; width: auto; }
-  .hud { flex-wrap: wrap; }
+  .hud { flex-wrap: wrap; height: auto; }
   .hmain { flex-basis: 60%; }
-  .hud > .endbtn { width: 100%; height: 50px; }
+  .hbtns { width: 100%; grid-template-columns: auto 1fr; } .hbtns .endbtn { height: 48px; } .shopbtn { height: 48px; }
   .stats { flex-wrap: wrap; } .pill { min-width: 50px; }
   #hudSub { display: none; }
   .factions, .modes { grid-template-columns: 1fr; }
@@ -176,7 +187,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <div class="stats" id="hudStats"></div>
       <div class="hrow" id="hudRow"></div>
     </div>
-    <button class="endbtn" id="btnEnd">Runde beenden</button>
+    <div class="hbtns"><button class="act shopbtn" id="btnShop">Nachschub</button><button class="endbtn" id="btnEnd">Runde beenden</button></div>
   </footer>
 </div>
 <div id="toast"></div>
@@ -217,9 +228,20 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <li>Landkolosse sind gegen Gewehre und MG immun und walzen Draht nieder. Geschütze im direkten Schuss, Sturmbrecher und Brandwerfer sind ihre Feinde.</li>
       <li>Lanzenreiter sind schnell und stark gegen Fliehende, aber leichte Beute für MG.</li>
       <li>Ab Runde 8 trifft die Reserve der Aschenwacht ein.</li>
-      <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende oder wenn die Aschenwacht zusammenbricht.</li>
+      <li>Nachschub: Für Punkte (★) holst du neue Einheiten an den eigenen Rand, auch Feldscher und Mörser.</li>
+      <li>Das Konkordat siegt mit 4 Punkten aus den Zielfeldern (Fahnen) am Ende oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
     <button class="endbtn" id="closeRules">Verstanden</button>
+  </div>
+</div>
+
+<div class="overlay" id="shop" hidden>
+  <div class="sheet">
+    <div class="kicker">Nachschub anfordern</div>
+    <h2 class="title" style="font-size:44px">★ <span id="shopPts">0</span> Punkte</h2>
+    <p class="lead" style="margin:0">Punkte gibt es jede Runde (Konkordat 2, Aschenwacht 1), für jede geschlagene gegnerische Einheit (2) und für eroberte Zielfelder. Neue Einheiten erscheinen am eigenen Rand und handeln ab der nächsten Runde.</p>
+    <div class="shoplist" id="shopList"></div>
+    <button class="tbtn" id="closeShop">Schließen</button>
   </div>
 </div>
 
@@ -281,13 +303,14 @@ const P = {
   MG_VS_WIRE: 2, MG_VS_CAV: 2,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
-  MAXT: 16, WIN_A: 5, DRAW_A: 3,
+  MAXT: 16, WIN_A: 4, DRAW_A: 3,
   SUPP: 0.6, SUPP_ATK: 0.5,
   ART_MIN: 2, SPOT: 5, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
   BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
-  REINF_TURN: 8
+  REINF_TURN: 8,
+  PTS_TURN: { A: 2, D: 1 }, PTS_KILL: 2, HEAL: 0.6, HEAL_MOR: 0.5
 };
 
 const COLS = 24, ROWS = 13;
@@ -329,6 +352,26 @@ const TYPES = {
     can: 'Flammenstrahl auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Wird er beschossen, trifft es ihn ×1,5.',
     real: 'Flammenwerfer setzte die deutsche Armee ab 1915 ein, etwa bei Hooge in Flandern. Sie reichten meist nur rund 20 Meter weit.' }
 };
+
+Object.assign(TYPES, {
+  feldscher: { side: 'A', name: 'Feldscher', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
+    can: 'Versorgt zu Rundenbeginn alle eigenen Nachbareinheiten: Stärke +0,6 und Moral +0,5. Kaum Kampfkraft.',
+    real: 'Sanitäter und Krankenträger holten Verwundete oft unter Beschuss aus dem Niemandsland. Viele von ihnen fielen dabei selbst.' },
+  moerser: { side: 'A', name: 'Grabenmörser', cls: 'art', fig: 'mortar', atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
+    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann mit der Infanterie vorrücken.',
+    real: 'Der britische Stokes-Mörser von 1915 war so leicht, dass ihn wenige Männer in den vordersten Graben tragen konnten.' },
+  heiler: { side: 'D', name: 'Aschenpfleger', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
+    can: 'Versorgt zu Rundenbeginn alle eigenen Nachbareinheiten: Stärke +0,6 und Moral +0,5. Kaum Kampfkraft.',
+    real: 'Auf den Verbandplätzen direkt hinter der Front wurden Verwundete zuerst versorgt und nach Dringlichkeit sortiert.' },
+  minenwerfer: { side: 'D', name: 'Minenwerfer', cls: 'art', fig: 'mortar', atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
+    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann mit der Infanterie vorrücken.',
+    real: 'Deutsche Minenwerfer schossen schwere Sprengladungen im steilen Bogen in die gegnerischen Gräben.' }
+});
+// Nachschub: Kosten in Punkten und Angebot je Seite
+const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, haubitze: 6, koloss: 7,
+  grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 4, sturm: 5, geschuetz: 6 };
+const SHOP = { A: ['kohorte', 'feldscher', 'mahlwerk', 'moerser', 'reiter', 'haubitze', 'koloss'],
+  D: ['grenadier', 'heiler', 'sense', 'minenwerfer', 'brand', 'sturm', 'geschuetz'] };
 
 const TERRAIN = {
   open:    { name: 'Offenes Feld', cost: 1, info: 'Keine Deckung.' },
@@ -459,7 +502,7 @@ function newGame(opts) {
   const G = {
     map: buildMap(1917), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
-    ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false
+    ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
   for (const s of SETUP) addUnit(G, s[0], s[1], s[2], s[3]);
@@ -711,7 +754,9 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
   if (d.mor < P.FALLBACK_MOR && cls(d) !== 'art') fallBack(G, d, a, ev);
 }
+function credit(G, u) { if (!u.credited) { u.credited = true; G.pts[u.side === 'A' ? 'D' : 'A'] += P.PTS_KILL; } }
 function killUnit(G, u, ev, how) {
+  if (how !== 'escaped') credit(G, u);
   u.status = how === 'escaped' ? 'gone' : 'dead';
   if (u.officer && how !== 'escaped') ev.push({ t: 'officer', u: u.id, name: u.officer });
   ev.push({ t: how, u: u.id });
@@ -740,14 +785,14 @@ function fallBack(G, u, from, ev) {
   ev.push({ t: 'fallback', u: u.id, path: [[fc, fr], h] });
 }
 function routUnit(G, u, from, ev) {
-  u.status = 'rout'; u.supp = 0;
+  u.status = 'rout'; u.supp = 0; credit(G, u);
   ev.push({ t: 'rout', u: u.id });
   for (const [c, r] of neighbors(u.c, u.r)) {
     const o = unitAt(G, c, r);
     if (o && o.side === u.side && active(o)) {
       o.mor = Math.max(0, o.mor - 0.5);
       ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor });
-      if (o.mor <= 0) { o.status = 'rout'; ev.push({ t: 'rout', u: o.id }); }
+      if (o.mor <= 0) { o.status = 'rout'; credit(G, o); ev.push({ t: 'rout', u: o.id }); }
     }
   }
   flee(G, u, 2, ev);
@@ -816,7 +861,7 @@ function melee(G, a, d) {
 function claimObjective(G, u) {
   if (!active(u) || cls(u) === 'art') return;
   const o = hex(G, u.c, u.r).obj;
-  if (o) G.ctrl[o] = u.side;
+  if (o && G.ctrl[o] !== u.side) { G.ctrl[o] = u.side; G.pts[u.side] += OBJECTIVES.find(x => x.id === o).pts; }
 }
 
 // ---------- Artillerie ----------
@@ -904,6 +949,7 @@ function startTurn(G) {
     }
     ev.push({ t: 'reinf', ids });
   }
+  G.pts[s] += P.PTS_TURN[s];
   for (const u of G.units) {
     u.fireDmg = 0;
     if (u.side === s) { u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; }
@@ -914,7 +960,7 @@ function startTurn(G) {
       u.str = Math.max(0, u.str - P.GAS_STR); u.mor = Math.max(0, u.mor - P.GAS_MOR); u.gassed = true;
       ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor });
       if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
-      if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0)) { u.status = 'rout'; u.supp = 0; ev.push({ t: 'rout', u: u.id }); }
+      if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0)) { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); }
     }
     if (u.broken > 0) {
       u.broken--;
@@ -940,8 +986,30 @@ function startTurn(G) {
       u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1));
     }
   }
+  for (const m of G.units) if (m.side === s && active(m) && cls(m) === 'medic') {
+    for (const [c, r] of neighbors(m.c, m.r)) {
+      const o = unitAt(G, c, r);
+      if (!o || o.side !== s || !active(o) || cls(o) === 'walker' || cls(o) === 'medic' || (o.str >= 10 && o.mor >= TYPES[o.type].mor)) continue;
+      o.str = Math.min(10, o.str + P.HEAL); o.mor = Math.min(TYPES[o.type].mor, o.mor + P.HEAL_MOR);
+      ev.push({ t: 'heal', u: o.id, str: o.str, morv: o.mor });
+    }
+  }
   ev.push(...checkEnd(G));
   return ev;
+}
+// ---------- Nachschub ----------
+function spawnHexes(G, side, type) {
+  const out = [], probe = { type, side };
+  for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) if (!unitAt(G, c, r) && cost(G, probe, c, r) < 99) out.push([c, r]); }
+  return out;
+}
+function canBuy(G, side, type) { return !G.over && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
+function buy(G, side, type, c, r) {
+  if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
+  G.pts[side] -= COST[type];
+  const u = addUnit(G, type, c, r);
+  u.moved = true; u.attacked = true; u.react = false;
+  return [{ t: 'spawn', u: u.id }];
 }
 function endTurn(G) {
   if (G.over) return [];
@@ -974,7 +1042,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF,
+  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
@@ -993,12 +1061,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = E; else ro
 
 const OUT = '#16150f';
 const PAL = {
-  A: { coat: '#727048', coatD: '#57552f', coatL: '#8f8c5c', helm: '#5c6239', helmL: '#7d8352', mask: '#3b382a', lens: '#b8ff7c',
-       pack: '#7c5c38', boot: '#2a231a', steel: '#8e938a', steelD: '#5d625b', wood: '#7b5431', armor: '#666c4b', armorD: '#484d34',
-       armorL: '#8a9067', accent: '#e08a34', horse: '#5d4835', horseD: '#3f3023', skin: '#c9a27e' },
-  D: { coat: '#5e646c', coatD: '#454a52', coatL: '#7e858e', helm: '#3f444b', helmL: '#626972', mask: '#27292d', lens: '#ff5c46',
-       pack: '#4f463b', boot: '#1c1d20', steel: '#9ba1a7', steelD: '#666c73', wood: '#5b4733', armor: '#50565e', armorD: '#383d44',
-       armorL: '#757c86', accent: '#58a6e6', horse: '#3d3f45', horseD: '#2a2b30', skin: '#c9a27e' }
+  A: { coat: '#5f5a3c', coatD: '#454128', coatL: '#7a744e', helm: '#4a4d30', helmL: '#676a45', mask: '#2c2a20', lens: '#a8f070',
+       pack: '#5e4830', boot: '#211c15', steel: '#7c8078', steelD: '#4e524c', wood: '#5f4229', armor: '#565a40', armorD: '#3b3e2b',
+       armorL: '#74785a', accent: '#d07a2c', horse: '#4a3a2b', horseD: '#32271c', cloth: '#b9b29a', skin: '#c9a27e' },
+  D: { coat: '#4c5158', coatD: '#373b41', coatL: '#676d75', helm: '#32363b', helmL: '#4f555c', mask: '#1f2124', lens: '#ff4a36',
+       pack: '#3f382f', boot: '#17181a', steel: '#868c92', steelD: '#555a60', wood: '#48392a', armor: '#41464d', armorD: '#2c3036',
+       armorL: '#5f656e', accent: '#4a94d6', horse: '#33353a', horseD: '#222327', cloth: '#aeb2b6', skin: '#c9a27e' }
 };
 
 function rr(g, x, y, w, h, r) {
@@ -1046,7 +1114,8 @@ function soldier(g, p, side, o) {
   }
   if (o.weapon === 'flame') { box(g, -0.42, -0.74, 0.2, 0.4, 0.08, p.accent); plain(g, -0.39, -0.6, 0.14, 0.04, OUT); box(g, -0.36, -0.8, 0.08, 0.08, 0.02, p.steelD); }
   else box(g, -0.36, -0.68, 0.18, 0.27, 0.05, p.pack);
-  box(g, -0.24, -0.4, 0.47, 0.16, 0.05, p.coat);
+  poly(g, [[-0.25, -0.42], [0.24, -0.42], [0.3, -0.14], [-0.31, -0.14]], p.coat);
+  plain(g, -0.02, -0.4, 0.035, 0.24, p.coatD);
   box(g, -0.22, -0.7, 0.43, 0.36, 0.1, p.coat);
   plain(g, -0.17, -0.66, 0.07, 0.24, p.coatL);
   plain(g, -0.215, -0.4, 0.42, 0.05, p.boot);
@@ -1077,6 +1146,24 @@ function soldier(g, p, side, o) {
   g.restore();
 }
 
+function medic(g, p, side) {
+  soldier(g, p, side, { weapon: 'none' });
+  box(g, -0.02, -0.5, 0.3, 0.26, 0.05, p.cloth);
+  g.fillStyle = '#2f7d6d'; g.fillRect(0.1, -0.455, 0.06, 0.17); g.fillRect(0.045, -0.4, 0.17, 0.06);
+  box(g, -0.235, -0.66, 0.12, 0.1, 0.02, p.cloth);
+  // Laterne
+  seg(g, 0.3, -0.56, 0.3, -0.42, 0.03, p.steelD);
+  box(g, 0.22, -0.42, 0.16, 0.2, 0.04, '#e8c35a'); plain(g, 0.22, -0.42, 0.16, 0.045, p.steelD);
+}
+function mortar(g, p, side) {
+  g.save(); g.translate(-0.55, 0); soldier(g, p, side, { weapon: 'none', crouch: true }); g.restore();
+  box(g, -0.12, -0.09, 0.62, 0.1, 0.03, p.steelD);
+  seg(g, 0.34, -0.5, 0.46, -0.04, 0.045, p.steelD); seg(g, 0.34, -0.5, 0.2, -0.04, 0.045, p.steelD);
+  g.save(); g.translate(0.02, -0.1); g.rotate(-1.05);
+  box(g, 0, -0.085, 0.78, 0.17, 0.05, p.armorD); box(g, 0.7, -0.105, 0.1, 0.21, 0.03, p.steel); plain(g, 0.08, -0.05, 0.5, 0.035, p.armorL);
+  g.restore();
+  box(g, 0.52, -0.2, 0.2, 0.2, 0.03, p.wood); circ(g, 0.58, -0.24, 0.055, p.steelD); circ(g, 0.67, -0.24, 0.055, p.steelD);
+}
 function mgTeam(g, p, side) {
   g.save(); g.translate(-0.42, 0.0); soldier(g, p, side, { weapon: 'none', crouch: true }); g.restore();
   seg(g, 0.2, -0.36, 0.02, 0, 0.045, p.steelD); seg(g, 0.2, -0.36, 0.42, 0, 0.045, p.steelD); seg(g, 0.2, -0.36, 0.2, -0.02, 0.04, p.steelD);
@@ -1155,7 +1242,7 @@ function cavalry(g, p, side) {
 
 const KIND = { inf: 'inf', mg: 'mg', art: 'art', walker: 'walker', cav: 'cav', storm: 'storm', flame: 'flame' };
 // Maße je Figur in Soldatenhöhen: [links, rechts, oben]
-const BOX = { inf: [0.55, 0.85, 1.25], storm: [0.55, 0.6, 1.4], flame: [0.6, 1.1, 1.25], mg: [1.0, 1.0, 1.25], art: [1.25, 1.0, 1.25], walker: [0.95, 1.45, 2.45], cav: [0.95, 1.3, 1.95] };
+const BOX = { medic: [0.55, 0.6, 1.25], mortar: [1.05, 0.85, 1.25], inf: [0.55, 0.85, 1.25], storm: [0.55, 0.6, 1.4], flame: [0.6, 1.1, 1.25], mg: [1.0, 1.0, 1.25], art: [1.25, 1.0, 1.25], walker: [0.95, 1.45, 2.45], cav: [0.95, 1.3, 1.95] };
 
 function drawFigure(g, kind, side) {
   const p = PAL[side];
@@ -1167,6 +1254,8 @@ function drawFigure(g, kind, side) {
   else if (kind === 'art') gun(g, p, side);
   else if (kind === 'walker') walker(g, p, side);
   else if (kind === 'cav') cavalry(g, p, side);
+  else if (kind === 'medic') medic(g, p, side);
+  else if (kind === 'mortar') mortar(g, p, side);
 }
 
 const cache = new Map();
@@ -1184,6 +1273,22 @@ function sprite(kind, side, flip, h) {
   const ox = left * h, oy = (t + 0.04) * h;
   g.translate(ox, oy); g.scale(flip ? -h : h, h);
   drawFigure(g, kind, side);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalCompositeOperation = 'source-atop';
+  const W = cv.width, H = cv.height;
+  let gr = g.createLinearGradient(flip ? W : 0, 0, flip ? 0 : W, H);
+  gr.addColorStop(0, 'rgba(255,236,190,0.20)'); gr.addColorStop(0.45, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(8,6,4,0.52)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  gr = g.createLinearGradient(0, oy - 0.42 * h, 0, oy);
+  gr.addColorStop(0, 'rgba(58,44,28,0)'); gr.addColorStop(1, 'rgba(58,44,28,0.72)');
+  g.fillStyle = gr; g.fillRect(0, oy - 0.42 * h, W, 0.5 * h);
+  let seed = kind.length * 977 + (side === 'A' ? 13 : 71);
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let i = 0; i < Math.round(W * H / 90); i++) {
+    g.fillStyle = rnd() < 0.5 ? 'rgba(20,14,8,0.22)' : rnd() < 0.5 ? 'rgba(120,70,36,0.2)' : 'rgba(230,220,190,0.08)';
+    const r = h * (0.008 + rnd() * 0.022); g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, 7); g.fill();
+  }
+  g.globalCompositeOperation = 'source-over';
   s = { cv, ox, oy };
   cache.set(k, s);
   return s;
@@ -1206,7 +1311,8 @@ const W = {
   A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
   D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
 };
-const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5 };
+const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'kohorte', 'moerser'], D: ['sturm', 'grenadier', 'minenwerfer', 'grenadier', 'heiler'] };
 
 function coverVal(t) { return t === 'trench' ? 1 : t === 'village' ? 0.9 : t === 'forest' ? 0.7 : t === 'crater' ? 0.4 : t === 'wire' ? -1.6 : 0; }
 
@@ -1249,6 +1355,12 @@ function posValue(G, u, c, r) {
   const w = W[u.side], h = E.hex(G, c, r), k = E.cls(u);
   const th = threatAt(G, u, c, r);
   let v;
+  if (k === 'medic') {
+    v = -th * 6;
+    for (const [nc, nr] of E.neighbors(c, r)) { const o = E.unitAt(G, nc, nr); if (o && o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'walker') v += 0.4 + (10 - o.str) * 0.35; }
+    let fd = 99; for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'art' && E.cls(o) !== 'medic') fd = Math.min(fd, E.dist(o.c, o.r, c, r));
+    return v - (fd === 99 ? 0 : fd * 0.5);
+  }
   if (u.side === 'A') {
     const tw = k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1);
     v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - th * tw * 6;
@@ -1298,7 +1410,7 @@ function bestAttackFrom(G, u, c, r, moved, run) {
       const v = attackValue(G, u, d, 'melee', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && !(T.mg && moved) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+    if (T.rng && T.cls !== 'art' && !(T.mg && moved) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
         dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
@@ -1353,7 +1465,7 @@ function planArt(G, u) {
 
 function planUnit(G, u) {
   const k = E.cls(u);
-  if (k === 'art') { const s = planArt(G, u); return s ? { shell: s } : { v: 0 }; }
+  if (k === 'art') { const s = planArt(G, u); if (s) return { shell: s }; if (TYPES[u.type].mv < 2 || u.moved) return { v: 0 }; }
   const opts = [];
   const here = posValue(G, u, u.c, u.r);
   const atkHere = u.attacked ? null : bestAttackFrom(G, u, u.c, u.r, false, 0);
@@ -1374,6 +1486,25 @@ function order(G, side) {
   return us.sort((a, b) => (ORDER[E.cls(a)] - ORDER[E.cls(b)]) || (b.c - a.c) * dir);
 }
 
+// Nachschub kaufen: der Reihe nach die Wunschliste, aufgestellt am eigenen Rand nahe am Geschehen
+function buy(G) {
+  const side = G.side, ev = [];
+  G._wish = G._wish || { A: 0, D: 0 };
+  for (let guard = 0; guard < 6; guard++) {
+    const type = WISH[side][G._wish[side] % WISH[side].length];
+    if (!E.canBuy(G, side, type)) break;
+    const hs = E.spawnHexes(G, side, type);
+    if (!hs.length) break;
+    let row = 6, bd = 99;
+    for (const o of G.units) if (o.side === side && E.active(o)) { const d = nearestEnemyDist(G, side, o.c, o.r); if (d < bd) { bd = d; row = o.r; } }
+    if (side === 'D') row = Math.min(row, 7);
+    hs.sort((p, q) => (Math.abs(p[1] - row) - Math.abs(q[1] - row)) || (side === 'A' ? q[0] - p[0] : p[0] - q[0]));
+    const e = E.buy(G, side, type, hs[0][0], hs[0][1]);
+    if (!e.length) break;
+    ev.push(...e); G._wish[side]++;
+  }
+  return ev;
+}
 function next(G) {
   if (G.over) return null;
   const tk = G.turn + G.side;
@@ -1410,7 +1541,7 @@ function exec(G, uid, s) {
   return [];
 }
 
-const AI = { next, exec, W, planUnit };
+const AI = { next, exec, buy, W, planUnit };
 if (typeof module !== 'undefined' && module.exports) module.exports = AI; else root.AI = AI;
 })(this);
 
@@ -1420,6 +1551,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = AI; else r
 (function () {
 'use strict';
 const { COLS, ROWS, TYPES, TERRAIN, OBJECTIVES, SIDES, P } = E;
+const figOf = T => T.fig || T.cls;
 const SQ3 = Math.sqrt(3);
 const $ = id => document.getElementById(id);
 const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
@@ -1428,7 +1560,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
-let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse';
+let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set();
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [];
 let queue = [], qRunning = false;
@@ -1472,9 +1604,9 @@ function hexPath(g, c, r, k = 1) {
 
 // ---------- Gelände ----------
 const hash = (a, b) => { const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return n - Math.floor(n); };
-const TC = { open: ['#69743f', '#626d3b', '#6f7a44'], mud: ['#5b4b34', '#554530', '#604f37'], crater: ['#65703d', '#5f6a39', '#6a7541'],
-  trench: ['#6c7242', '#666c3e', '#707646'], wire: ['#666f3e', '#606a3a', '#6b7542'], village: ['#77725f', '#716c5a', '#7c7764'],
-  forest: ['#4d5634', '#485030', '#525b38'], canal: ['#3f5762', '#3b525d', '#435c67'], bridge: ['#3f5762', '#3b525d', '#435c67'] };
+const TC = { open: ['#5a5a3a', '#545436', '#5f5e3d'], mud: ['#4c4030', '#473b2c', '#514433'], crater: ['#575638', '#515034', '#5b5a3b'],
+  trench: ['#5c593b', '#565337', '#605d3e'], wire: ['#585639', '#525035', '#5c5a3c'], village: ['#66624f', '#605c4a', '#6b6753'],
+  forest: ['#42452f', '#3d402b', '#474a32'], canal: ['#34474f', '#30424a', '#384c54'], bridge: ['#34474f', '#30424a', '#384c54'] };
 const O = '#16150f';
 function renderTerrain() {
   const { s, W, H, dpr } = L;
@@ -1509,6 +1641,13 @@ function renderTerrain() {
       }
     }
   }
+  // Schmutz und Körnung, damit der Boden nicht wie eine glatte Fläche wirkt
+  { let sd = 4242; const rn = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
+    for (let i = 0; i < Math.round(W * H / 420); i++) {
+      const px = rn() * W, py = L.top * 0.7 + rn() * (H - L.top * 0.7), rr0 = s * (0.02 + rn() * 0.09);
+      g.fillStyle = rn() < 0.55 ? 'rgba(24,18,10,0.16)' : rn() < 0.6 ? 'rgba(96,74,44,0.16)' : 'rgba(210,200,160,0.05)';
+      g.beginPath(); g.ellipse(px, py, rr0, rr0 * K, 0, 0, 7); g.fill();
+    } }
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const h = G.map[c][r], [x, y] = center(c, r), n = hash(c * 5.3, r * 2.9);
     g.strokeStyle = O; g.lineWidth = lw;
@@ -1566,6 +1705,9 @@ function renderTerrain() {
       g.beginPath(); g.moveTo(gx - s * 0.06, gy); g.lineTo(gx - s * 0.09, gy - s * 0.1); g.moveTo(gx, gy); g.lineTo(gx, gy - s * 0.13); g.moveTo(gx + s * 0.06, gy); g.lineTo(gx + s * 0.09, gy - s * 0.1); g.stroke();
     }
   }
+  const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.72);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(6,5,3,0.5)');
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
 }
 
 // ---------- Einheiten ----------
@@ -1580,12 +1722,12 @@ function syncAll() {
   }
 }
 const facesLeft = f => f === 2 || f === 3 || f === 4;
-const SLOTS = { inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
+const SLOTS = { medic: [[0.12, 0.14], [-0.38, -0.16]], mortar: [[0.15, 0.12]], inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
   cav: [[0.18, 0.2], [-0.3, -0.2]], mg: [[0.12, 0.1]], art: [[0.15, 0.12]], walker: [[0, 0.16]] };
-const FH = { inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
+const FH = { medic: 0.8, mortar: 0.76, inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
 
 function drawUnit(u, d) {
-  const T = TYPES[u.type], k = T.cls, s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
+  const T = TYPES[u.type], k = figOf(T), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
   if (d.shake > 0) x += Math.sin(now / 22) * s * 0.05;
@@ -1617,6 +1759,7 @@ function drawUnit(u, d) {
   const duck = u.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
+    g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
       const px = fx + (flip ? 0.2 : -0.2) * s, top = fy - s * 1.35;
       g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.07); g.beginPath(); g.moveTo(px, fy - s * 0.2); g.lineTo(px, top); g.stroke();
@@ -1669,6 +1812,7 @@ function draw() {
       g.strokeStyle = t.kind === 'fire' ? '#ffb04a' : '#ff5a40'; g.lineWidth = Math.max(2, s * 0.06); g.stroke();
     }
   }
+  if (placing) for (const k of spawnSet) { hexPath(g, Math.floor(k / 100), k % 100, 0.9); g.fillStyle = 'rgba(150,230,120,0.3)'; g.fill(); g.strokeStyle = 'rgba(190,255,160,0.8)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
   if (hoverHex) {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
     if (sel && TYPES[sel.type].cls === 'art' && shellHexes.has(E.key(hoverHex[0], hoverHex[1])) && artMode !== 'he') {
@@ -1858,6 +2002,9 @@ async function playEvent(e) {
     case 'breakdown': floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast('Ein Landkoloss bleibt mit einer Panne liegen.'); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
+    case 'spawn': { addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
+      for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
+    case 'heal': { const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'versorgt', '#8fe0c8'); await wait(120); break; }
     case 'gascloud': break;
     case 'reinf': {
       for (const id of e.ids) { const nu = unitById(id); addDU(nu); const d = DU.get(id); d.x += s * 2; }
@@ -1885,10 +2032,12 @@ function unitAtPixel(x, y) {
   let best = null;
   for (const u of G.units) {
     if (!E.alive(u)) continue;
-    const d = DU.get(u.id), k = TYPES[u.type].cls, hgt = L.s * (k === 'walker' ? 1.7 : k === 'cav' ? 1.4 : 1.05);
-    if (Math.abs(x - d.x) < L.s * 0.72 && y < d.y + L.s * K * 0.75 && y > d.y - hgt) if (!best || d.y > DU.get(best.id).y) best = u;
+    const d = DU.get(u.id), k = TYPES[u.type].cls, hgt = L.s * (k === 'walker' ? 1.55 : k === 'cav' ? 1.25 : 0.95);
+    if (Math.abs(x - d.x) < L.s * 0.5 && y < d.y + L.s * K * 0.3 && y > d.y - hgt) if (!best || d.y > DU.get(best.id).y) best = u;
   }
-  return best;
+  if (best) return best;
+  const h = pixToHex(x, y);
+  return h ? E.unitAt(G, h[0], h[1]) : null;
 }
 cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; });
 cv.addEventListener('pointermove', ev => {
@@ -1904,7 +2053,9 @@ cv.addEventListener('pointerleave', () => { hoverHex = null; });
 cv.addEventListener('click', ev => {
   if (!G || busy || G.over || !human(G.side)) return;
   const [x, y] = evToPx(ev);
-  const u = unitAtPixel(x, y), h = pixToHex(x, y);
+  let u = unitAtPixel(x, y), h = pixToHex(x, y);
+  if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
+  if (u) h = [u.c, u.r];
   if (sel && TYPES[sel.type].cls === 'art' && h && shellHexes.has(E.key(h[0], h[1])) && !(u && u.side === G.side)) return doShell(h[0], h[1]);
   if (sel && u && targets.has(u.id)) {
     if (previewT === u || lastPT === 'mouse') return doAttack(u);
@@ -1956,9 +2107,30 @@ const doMove = (c, r) => act(u => E.moveUnit(G, u, c, r));
 const doAttack = d => { const t = targets.get(d.id); return act(u => t.kind === 'fire' ? E.fire(G, u, d) : E.melee(G, u, d)); };
 const doShell = (c, r) => { const m = artMode; return act(u => E.shell(G, u, c, r, m)); };
 
+// ---------- Nachschub ----------
+function openShop() {
+  if (busy || G.over || !human(G.side)) return;
+  const sd = G.side;
+  $('shopPts').textContent = G.pts[sd];
+  $('shopList').innerHTML = E.SHOP[sd].map(t => { const T = TYPES[t], ok = E.canBuy(G, sd, t) && E.spawnHexes(G, sd, t).length;
+    return `<button class="item ${sd}" data-t="${t}" ${ok ? '' : 'disabled'}><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small></button>`; }).join('');
+  $('shop').hidden = false;
+  requestAnimationFrame(() => $('shopList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd)));
+  $('shopList').querySelectorAll('.item').forEach(b => b.onclick = () => {
+    $('shop').hidden = true; select(null);
+    placing = b.dataset.t; spawnSet = new Set(E.spawnHexes(G, sd, placing).map(h => E.key(h[0], h[1]))); updateHud();
+  });
+}
+function cancelPlace() { placing = null; spawnSet = new Set(); updateHud(); }
+async function doBuy(c, r) {
+  const t = placing; placing = null; spawnSet = new Set();
+  busy = true; await play(E.buy(G, G.side, t, c, r)); busy = false; updateUI();
+}
+
 // ---------- Rundenablauf ----------
 async function endTurn() {
   if (busy || G.over) return;
+  placing = null; spawnSet = new Set();
   select(null); busy = true;
   const ev = E.endTurn(G);
   updateUI();
@@ -1971,6 +2143,7 @@ async function endTurn() {
 async function aiTurn() {
   busy = true; updateUI();
   await wait(300);
+  { const bev = AI.buy(G); if (bev.length) await play(bev); }
   let guard = 0;
   while (!G.over && guard++ < 300) {
     const a = AI.next(G);
@@ -2008,6 +2181,8 @@ function updateUI() {
   const be = $('btnEnd');
   be.disabled = busy || !!G.over || !human(G.side);
   be.textContent = !human(G.side) && !G.over ? 'KI zieht …' : 'Runde beenden';
+  const bs = $('btnShop'), hs = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
+  bs.disabled = busy || !!G.over || !human(G.side); bs.innerHTML = `Nachschub <b>★ ${G.pts[hs]}</b>`;
   if (sel && (!E.active(sel) || sel.side !== G.side)) sel = null;
   computeOptions(); updateHud();
 }
@@ -2027,11 +2202,11 @@ function drawPortrait(canvas, kind, side) {
 const pill = (k, v, cls = '') => `<div class="pill ${cls}"><small>${k}</small><b>${v}</b></div>`;
 function updateHud() {
   if (!G) return;
-  const hud = $('hud'), u = sel || (inspect && inspect.unit) || null;
+  const hud = $('hud'), u = placing ? null : (sel || (inspect && inspect.unit) || null);
   hud.className = 'hud' + (u ? ' ' + u.side : '');
   if (u && E.alive(u)) {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
-    $('portrait').hidden = false; drawPortrait($('portrait'), T.cls, u.side);
+    $('portrait').hidden = false; drawPortrait($('portrait'), figOf(T), u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
     $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
@@ -2062,7 +2237,11 @@ function updateHud() {
     $('hudRow').innerHTML = row;
   } else {
     $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = '';
-    if (inspect && inspect.hex) {
+    if (placing) {
+      $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
+      $('hudSub').innerHTML = 'Aufstellen';
+      $('hudRow').innerHTML = '<span class="hint">Tippe ein grünes Feld am eigenen Rand an. Die Einheit kann ab der nächsten Runde handeln.</span><button class="act" data-act="cancel">Abbrechen</button>';
+    } else if (inspect && inspect.hex) {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = T.name + (h.ridge ? ' auf der Höhe' : '');
       $('hudSub').innerHTML = o ? `Zielfeld: ${o.name} · ${o.pts} Punkte` : 'Gelände';
@@ -2076,6 +2255,7 @@ function updateHud() {
   $('hudRow').querySelectorAll('[data-act]').forEach(b => b.onclick = () => panelAct(b.dataset.act));
 }
 async function panelAct(a) {
+  if (a === 'cancel') return cancelPlace();
   if (!sel || busy) return;
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
@@ -2084,7 +2264,7 @@ async function panelAct(a) {
 function showDetail() {
   const u = sel || (inspect && inspect.unit); if (!u) return;
   const T = TYPES[u.type];
-  drawPortraitLater($('detPortrait'), T.cls, u.side);
+  drawPortraitLater($('detPortrait'), figOf(T), u.side);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
   $('detOff').hidden = !u.officer;
@@ -2106,7 +2286,7 @@ function startGame() {
   decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
-  sel = null; inspect = null; updateUI();
+  sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
   banner('Die Schlacht am Grauwall', 'Das Konkordat greift an');
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
@@ -2140,12 +2320,14 @@ $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
+$('btnShop').onclick = openShop;
+$('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
 $('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; $('btnSpeed').textContent = speed + '×'; };
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
 window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (G) { layout(); updateHud(); } }, 120); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { select(null); $('detail').hidden = true; $('rules').hidden = true; } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
 // ---------- Start ----------
 G = E.newGame({ seed: 7 });

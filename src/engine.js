@@ -15,13 +15,14 @@ const P = {
   MG_VS_WIRE: 2, MG_VS_CAV: 2,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
-  MAXT: 16, WIN_A: 5, DRAW_A: 3,
+  MAXT: 16, WIN_A: 4, DRAW_A: 3,
   SUPP: 0.6, SUPP_ATK: 0.5,
   ART_MIN: 2, SPOT: 5, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
   BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
-  REINF_TURN: 8
+  REINF_TURN: 8,
+  PTS_TURN: { A: 2, D: 1 }, PTS_KILL: 2, HEAL: 0.6, HEAL_MOR: 0.5
 };
 
 const COLS = 24, ROWS = 13;
@@ -63,6 +64,26 @@ const TYPES = {
     can: 'Flammenstrahl auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Wird er beschossen, trifft es ihn ×1,5.',
     real: 'Flammenwerfer setzte die deutsche Armee ab 1915 ein, etwa bei Hooge in Flandern. Sie reichten meist nur rund 20 Meter weit.' }
 };
+
+Object.assign(TYPES, {
+  feldscher: { side: 'A', name: 'Feldscher', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
+    can: 'Versorgt zu Rundenbeginn alle eigenen Nachbareinheiten: Stärke +0,6 und Moral +0,5. Kaum Kampfkraft.',
+    real: 'Sanitäter und Krankenträger holten Verwundete oft unter Beschuss aus dem Niemandsland. Viele von ihnen fielen dabei selbst.' },
+  moerser: { side: 'A', name: 'Grabenmörser', cls: 'art', fig: 'mortar', atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
+    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann mit der Infanterie vorrücken.',
+    real: 'Der britische Stokes-Mörser von 1915 war so leicht, dass ihn wenige Männer in den vordersten Graben tragen konnten.' },
+  heiler: { side: 'D', name: 'Aschenpfleger', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
+    can: 'Versorgt zu Rundenbeginn alle eigenen Nachbareinheiten: Stärke +0,6 und Moral +0,5. Kaum Kampfkraft.',
+    real: 'Auf den Verbandplätzen direkt hinter der Front wurden Verwundete zuerst versorgt und nach Dringlichkeit sortiert.' },
+  minenwerfer: { side: 'D', name: 'Minenwerfer', cls: 'art', fig: 'mortar', atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
+    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann mit der Infanterie vorrücken.',
+    real: 'Deutsche Minenwerfer schossen schwere Sprengladungen im steilen Bogen in die gegnerischen Gräben.' }
+});
+// Nachschub: Kosten in Punkten und Angebot je Seite
+const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, haubitze: 6, koloss: 7,
+  grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 4, sturm: 5, geschuetz: 6 };
+const SHOP = { A: ['kohorte', 'feldscher', 'mahlwerk', 'moerser', 'reiter', 'haubitze', 'koloss'],
+  D: ['grenadier', 'heiler', 'sense', 'minenwerfer', 'brand', 'sturm', 'geschuetz'] };
 
 const TERRAIN = {
   open:    { name: 'Offenes Feld', cost: 1, info: 'Keine Deckung.' },
@@ -193,7 +214,7 @@ function newGame(opts) {
   const G = {
     map: buildMap(1917), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
-    ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false
+    ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
   for (const s of SETUP) addUnit(G, s[0], s[1], s[2], s[3]);
@@ -445,7 +466,9 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
   if (d.mor < P.FALLBACK_MOR && cls(d) !== 'art') fallBack(G, d, a, ev);
 }
+function credit(G, u) { if (!u.credited) { u.credited = true; G.pts[u.side === 'A' ? 'D' : 'A'] += P.PTS_KILL; } }
 function killUnit(G, u, ev, how) {
+  if (how !== 'escaped') credit(G, u);
   u.status = how === 'escaped' ? 'gone' : 'dead';
   if (u.officer && how !== 'escaped') ev.push({ t: 'officer', u: u.id, name: u.officer });
   ev.push({ t: how, u: u.id });
@@ -474,14 +497,14 @@ function fallBack(G, u, from, ev) {
   ev.push({ t: 'fallback', u: u.id, path: [[fc, fr], h] });
 }
 function routUnit(G, u, from, ev) {
-  u.status = 'rout'; u.supp = 0;
+  u.status = 'rout'; u.supp = 0; credit(G, u);
   ev.push({ t: 'rout', u: u.id });
   for (const [c, r] of neighbors(u.c, u.r)) {
     const o = unitAt(G, c, r);
     if (o && o.side === u.side && active(o)) {
       o.mor = Math.max(0, o.mor - 0.5);
       ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor });
-      if (o.mor <= 0) { o.status = 'rout'; ev.push({ t: 'rout', u: o.id }); }
+      if (o.mor <= 0) { o.status = 'rout'; credit(G, o); ev.push({ t: 'rout', u: o.id }); }
     }
   }
   flee(G, u, 2, ev);
@@ -550,7 +573,7 @@ function melee(G, a, d) {
 function claimObjective(G, u) {
   if (!active(u) || cls(u) === 'art') return;
   const o = hex(G, u.c, u.r).obj;
-  if (o) G.ctrl[o] = u.side;
+  if (o && G.ctrl[o] !== u.side) { G.ctrl[o] = u.side; G.pts[u.side] += OBJECTIVES.find(x => x.id === o).pts; }
 }
 
 // ---------- Artillerie ----------
@@ -638,6 +661,7 @@ function startTurn(G) {
     }
     ev.push({ t: 'reinf', ids });
   }
+  G.pts[s] += P.PTS_TURN[s];
   for (const u of G.units) {
     u.fireDmg = 0;
     if (u.side === s) { u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; }
@@ -648,7 +672,7 @@ function startTurn(G) {
       u.str = Math.max(0, u.str - P.GAS_STR); u.mor = Math.max(0, u.mor - P.GAS_MOR); u.gassed = true;
       ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor });
       if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
-      if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0)) { u.status = 'rout'; u.supp = 0; ev.push({ t: 'rout', u: u.id }); }
+      if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0)) { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); }
     }
     if (u.broken > 0) {
       u.broken--;
@@ -674,8 +698,30 @@ function startTurn(G) {
       u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1));
     }
   }
+  for (const m of G.units) if (m.side === s && active(m) && cls(m) === 'medic') {
+    for (const [c, r] of neighbors(m.c, m.r)) {
+      const o = unitAt(G, c, r);
+      if (!o || o.side !== s || !active(o) || cls(o) === 'walker' || cls(o) === 'medic' || (o.str >= 10 && o.mor >= TYPES[o.type].mor)) continue;
+      o.str = Math.min(10, o.str + P.HEAL); o.mor = Math.min(TYPES[o.type].mor, o.mor + P.HEAL_MOR);
+      ev.push({ t: 'heal', u: o.id, str: o.str, morv: o.mor });
+    }
+  }
   ev.push(...checkEnd(G));
   return ev;
+}
+// ---------- Nachschub ----------
+function spawnHexes(G, side, type) {
+  const out = [], probe = { type, side };
+  for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) if (!unitAt(G, c, r) && cost(G, probe, c, r) < 99) out.push([c, r]); }
+  return out;
+}
+function canBuy(G, side, type) { return !G.over && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
+function buy(G, side, type, c, r) {
+  if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
+  G.pts[side] -= COST[type];
+  const u = addUnit(G, type, c, r);
+  u.moved = true; u.attacked = true; u.react = false;
+  return [{ t: 'spawn', u: u.id }];
 }
 function endTurn(G) {
   if (G.over) return [];
@@ -708,7 +754,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF,
+  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,

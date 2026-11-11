@@ -6,12 +6,12 @@
 
 const OUT = '#16150f';
 const PAL = {
-  A: { coat: '#727048', coatD: '#57552f', coatL: '#8f8c5c', helm: '#5c6239', helmL: '#7d8352', mask: '#3b382a', lens: '#b8ff7c',
-       pack: '#7c5c38', boot: '#2a231a', steel: '#8e938a', steelD: '#5d625b', wood: '#7b5431', armor: '#666c4b', armorD: '#484d34',
-       armorL: '#8a9067', accent: '#e08a34', horse: '#5d4835', horseD: '#3f3023', skin: '#c9a27e' },
-  D: { coat: '#5e646c', coatD: '#454a52', coatL: '#7e858e', helm: '#3f444b', helmL: '#626972', mask: '#27292d', lens: '#ff5c46',
-       pack: '#4f463b', boot: '#1c1d20', steel: '#9ba1a7', steelD: '#666c73', wood: '#5b4733', armor: '#50565e', armorD: '#383d44',
-       armorL: '#757c86', accent: '#58a6e6', horse: '#3d3f45', horseD: '#2a2b30', skin: '#c9a27e' }
+  A: { coat: '#5f5a3c', coatD: '#454128', coatL: '#7a744e', helm: '#4a4d30', helmL: '#676a45', mask: '#2c2a20', lens: '#a8f070',
+       pack: '#5e4830', boot: '#211c15', steel: '#7c8078', steelD: '#4e524c', wood: '#5f4229', armor: '#565a40', armorD: '#3b3e2b',
+       armorL: '#74785a', accent: '#d07a2c', horse: '#4a3a2b', horseD: '#32271c', cloth: '#b9b29a', skin: '#c9a27e' },
+  D: { coat: '#4c5158', coatD: '#373b41', coatL: '#676d75', helm: '#32363b', helmL: '#4f555c', mask: '#1f2124', lens: '#ff4a36',
+       pack: '#3f382f', boot: '#17181a', steel: '#868c92', steelD: '#555a60', wood: '#48392a', armor: '#41464d', armorD: '#2c3036',
+       armorL: '#5f656e', accent: '#4a94d6', horse: '#33353a', horseD: '#222327', cloth: '#aeb2b6', skin: '#c9a27e' }
 };
 
 function rr(g, x, y, w, h, r) {
@@ -59,7 +59,8 @@ function soldier(g, p, side, o) {
   }
   if (o.weapon === 'flame') { box(g, -0.42, -0.74, 0.2, 0.4, 0.08, p.accent); plain(g, -0.39, -0.6, 0.14, 0.04, OUT); box(g, -0.36, -0.8, 0.08, 0.08, 0.02, p.steelD); }
   else box(g, -0.36, -0.68, 0.18, 0.27, 0.05, p.pack);
-  box(g, -0.24, -0.4, 0.47, 0.16, 0.05, p.coat);
+  poly(g, [[-0.25, -0.42], [0.24, -0.42], [0.3, -0.14], [-0.31, -0.14]], p.coat);
+  plain(g, -0.02, -0.4, 0.035, 0.24, p.coatD);
   box(g, -0.22, -0.7, 0.43, 0.36, 0.1, p.coat);
   plain(g, -0.17, -0.66, 0.07, 0.24, p.coatL);
   plain(g, -0.215, -0.4, 0.42, 0.05, p.boot);
@@ -90,6 +91,24 @@ function soldier(g, p, side, o) {
   g.restore();
 }
 
+function medic(g, p, side) {
+  soldier(g, p, side, { weapon: 'none' });
+  box(g, -0.02, -0.5, 0.3, 0.26, 0.05, p.cloth);
+  g.fillStyle = '#2f7d6d'; g.fillRect(0.1, -0.455, 0.06, 0.17); g.fillRect(0.045, -0.4, 0.17, 0.06);
+  box(g, -0.235, -0.66, 0.12, 0.1, 0.02, p.cloth);
+  // Laterne
+  seg(g, 0.3, -0.56, 0.3, -0.42, 0.03, p.steelD);
+  box(g, 0.22, -0.42, 0.16, 0.2, 0.04, '#e8c35a'); plain(g, 0.22, -0.42, 0.16, 0.045, p.steelD);
+}
+function mortar(g, p, side) {
+  g.save(); g.translate(-0.55, 0); soldier(g, p, side, { weapon: 'none', crouch: true }); g.restore();
+  box(g, -0.12, -0.09, 0.62, 0.1, 0.03, p.steelD);
+  seg(g, 0.34, -0.5, 0.46, -0.04, 0.045, p.steelD); seg(g, 0.34, -0.5, 0.2, -0.04, 0.045, p.steelD);
+  g.save(); g.translate(0.02, -0.1); g.rotate(-1.05);
+  box(g, 0, -0.085, 0.78, 0.17, 0.05, p.armorD); box(g, 0.7, -0.105, 0.1, 0.21, 0.03, p.steel); plain(g, 0.08, -0.05, 0.5, 0.035, p.armorL);
+  g.restore();
+  box(g, 0.52, -0.2, 0.2, 0.2, 0.03, p.wood); circ(g, 0.58, -0.24, 0.055, p.steelD); circ(g, 0.67, -0.24, 0.055, p.steelD);
+}
 function mgTeam(g, p, side) {
   g.save(); g.translate(-0.42, 0.0); soldier(g, p, side, { weapon: 'none', crouch: true }); g.restore();
   seg(g, 0.2, -0.36, 0.02, 0, 0.045, p.steelD); seg(g, 0.2, -0.36, 0.42, 0, 0.045, p.steelD); seg(g, 0.2, -0.36, 0.2, -0.02, 0.04, p.steelD);
@@ -168,7 +187,7 @@ function cavalry(g, p, side) {
 
 const KIND = { inf: 'inf', mg: 'mg', art: 'art', walker: 'walker', cav: 'cav', storm: 'storm', flame: 'flame' };
 // Maße je Figur in Soldatenhöhen: [links, rechts, oben]
-const BOX = { inf: [0.55, 0.85, 1.25], storm: [0.55, 0.6, 1.4], flame: [0.6, 1.1, 1.25], mg: [1.0, 1.0, 1.25], art: [1.25, 1.0, 1.25], walker: [0.95, 1.45, 2.45], cav: [0.95, 1.3, 1.95] };
+const BOX = { medic: [0.55, 0.6, 1.25], mortar: [1.05, 0.85, 1.25], inf: [0.55, 0.85, 1.25], storm: [0.55, 0.6, 1.4], flame: [0.6, 1.1, 1.25], mg: [1.0, 1.0, 1.25], art: [1.25, 1.0, 1.25], walker: [0.95, 1.45, 2.45], cav: [0.95, 1.3, 1.95] };
 
 function drawFigure(g, kind, side) {
   const p = PAL[side];
@@ -180,6 +199,8 @@ function drawFigure(g, kind, side) {
   else if (kind === 'art') gun(g, p, side);
   else if (kind === 'walker') walker(g, p, side);
   else if (kind === 'cav') cavalry(g, p, side);
+  else if (kind === 'medic') medic(g, p, side);
+  else if (kind === 'mortar') mortar(g, p, side);
 }
 
 const cache = new Map();
@@ -197,6 +218,22 @@ function sprite(kind, side, flip, h) {
   const ox = left * h, oy = (t + 0.04) * h;
   g.translate(ox, oy); g.scale(flip ? -h : h, h);
   drawFigure(g, kind, side);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalCompositeOperation = 'source-atop';
+  const W = cv.width, H = cv.height;
+  let gr = g.createLinearGradient(flip ? W : 0, 0, flip ? 0 : W, H);
+  gr.addColorStop(0, 'rgba(255,236,190,0.20)'); gr.addColorStop(0.45, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(8,6,4,0.52)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  gr = g.createLinearGradient(0, oy - 0.42 * h, 0, oy);
+  gr.addColorStop(0, 'rgba(58,44,28,0)'); gr.addColorStop(1, 'rgba(58,44,28,0.72)');
+  g.fillStyle = gr; g.fillRect(0, oy - 0.42 * h, W, 0.5 * h);
+  let seed = kind.length * 977 + (side === 'A' ? 13 : 71);
+  const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  for (let i = 0; i < Math.round(W * H / 90); i++) {
+    g.fillStyle = rnd() < 0.5 ? 'rgba(20,14,8,0.22)' : rnd() < 0.5 ? 'rgba(120,70,36,0.2)' : 'rgba(230,220,190,0.08)';
+    const r = h * (0.008 + rnd() * 0.022); g.beginPath(); g.arc(rnd() * W, rnd() * H, r, 0, 7); g.fill();
+  }
+  g.globalCompositeOperation = 'source-over';
   s = { cv, ox, oy };
   cache.set(k, s);
   return s;

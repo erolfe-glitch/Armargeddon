@@ -30,8 +30,11 @@ Alle geplanten Stufen sind spielbar:
 - Blickrichtung mit Flanke und Rücken, Moral, Zurückweichen, Flucht, Offiziere
 - Comic-Grafik mit Einheitenbild, Werteleiste unten, Lerntexte „Im echten Krieg“
 
-Simulation, 200 Schlachten KI gegen KI: Konkordat 36 %, Aschenwacht 40 %, unentschieden 25 %, Dauer Ø 15,8 Runden.
-Ohne Landkolosse und Artillerie gewinnt das Konkordat nie (0 von 100).
+- Nachschub: Punkte pro Runde (Konkordat 2, Aschenwacht 1), 2 je geschlagener Einheit, dazu die Punkte eroberter Zielfelder. Dafür kommen neue Einheiten an den eigenen Rand.
+- Zusätzliche Einheiten im Nachschub: Feldscher/Aschenpfleger (versorgen Nachbarn), Grabenmörser/Minenwerfer.
+
+Simulation, 200 Schlachten KI gegen KI (beide kaufen Nachschub): Konkordat 57 %, Aschenwacht 42 %, unentschieden 1 %, Dauer Ø 15,9 Runden.
+Sieg des Konkordats ab 4 Punkten aus den Zielfeldern.
 
 ## Aufbau
 
