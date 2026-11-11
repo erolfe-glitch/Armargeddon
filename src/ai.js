@@ -3,110 +3,168 @@
 (function (root) {
 'use strict';
 const E = (typeof module !== 'undefined' && module.exports) ? require('./engine.js') : root.E;
+const P = E.P, TYPES = E.TYPES;
 
 const W = {
-  A: { threat: 0.35, prog: 0.6, obj: 0.35, hold: 0, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
+  A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
   D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
 };
+const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5 };
 
-function coverVal(t) {
-  return t === 'trench' ? 1 : t === 'village' ? 0.9 : t === 'forest' ? 0.7 : t === 'crater' ? 0.4 : t === 'wire' ? -1.6 : 0;
-}
+function coverVal(t) { return t === 'trench' ? 1 : t === 'village' ? 0.9 : t === 'forest' ? 0.7 : t === 'crater' ? 0.4 : t === 'wire' ? -1.6 : 0; }
 
-// erwarteter Beschuss auf ein Feld in der nächsten gegnerischen Runde
 function threatAt(G, u, c, r) {
-  const t = E.hex(G, c, r).t, D = E.TYPES[u.type];
-  let defm = t === 'trench' ? 1.6 : t === 'village' ? 1.5 : t === 'forest' ? 1.4 : t === 'crater' ? 1.2 : t === 'wire' ? 0.6 : 1;
+  const t = E.hex(G, c, r).t, D = TYPES[u.type];
+  const defm = t === 'trench' ? 1.6 : t === 'village' ? (D.cls === 'walker' ? 0.7 : 1.5) : t === 'forest' ? 1.4 : t === 'crater' ? 1.2 : t === 'wire' ? 0.6 : 1;
   let th = 0;
   for (const o of G.units) {
     if (o.side === u.side || !E.active(o)) continue;
-    const T = E.TYPES[o.type];
-    const sp = o.supp > 0 ? 0.35 : 1;
+    const T = TYPES[o.type];
     const d = E.dist(o.c, o.r, c, r);
-    if (T.rng && d <= T.rng + (T.mg ? 0 : 1) && E.hasLOS(G, o.c, o.r, c, r)) {
-      let f = T.fs * (T.mg && t === 'wire' ? 2 : 1);
-      th += sp * 0.45 * f / (D.def * defm) * (0.4 + 0.6 * o.str / 10);
+    if (T.cls === 'art') { if (D.cls === 'walker' && d <= P.ART_DIRECT && !o.supp) th += P.DMG * T.fs * P.ART_VS_WALKER / D.def * 0.8; continue; }
+    const sp = o.supp > 0 || o.broken > 0 ? 0.35 : 1;
+    if (T.rng && !E.immune(T, D) && d <= T.rng + (T.mg ? 0 : T.mv > 2 ? 1 : 0) && E.hasLOS(G, o.c, o.r, c, r)) {
+      let f = T.fs;
+      if (T.mg && (t === 'wire' || D.cls === 'cav')) f *= 2;
+      if (D.cls === 'flame') f *= 1.5;
+      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * (0.4 + 0.6 * o.str / 10);
     }
-    if (d <= T.mv + 1 && T.cls === 'inf') th += 0.45 * T.atk / (D.def * (t === 'trench' ? 1.3 : defm)) * 0.5 * (o.str / 10);
+    if (d <= T.mv + 1 && T.atk >= 4) {
+      const mm = D.cls === 'walker' ? (T.cls === 'storm' ? 1.5 : T.cls === 'walker' ? 1 : 0.4) : 1;
+      th += P.DMG * T.atk * mm / (D.def * (t === 'trench' ? 1.3 : defm)) * 0.5 * (o.str / 10);
+    }
   }
+  if (E.cloudAt(G, c, r)) th += 0.8;
   return th;
 }
-
-function nearestObjDist(G, side, c, r) {
+function nearestObjDist(G, c, r) {
   let best = 99;
-  for (const o of E.OBJECTIVES) {
-    if (G.ctrl[o.id] === side && side === 'A') continue;
-    best = Math.min(best, E.dist(c, r, o.c, o.r));
-  }
+  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === 'A') continue; best = Math.min(best, E.dist(c, r, o.c, o.r)); }
   return best === 99 ? 0 : best;
+}
+function nearestEnemyDist(G, side, c, r) {
+  let best = 99;
+  for (const o of G.units) if (o.side !== side && E.active(o)) best = Math.min(best, E.dist(c, r, o.c, o.r));
+  return best;
 }
 
 function posValue(G, u, c, r) {
-  const w = W[u.side], h = E.hex(G, c, r);
-  let v = coverVal(h.t) * w.cover;
-  v -= threatAt(G, u, c, r) * w.threat * 6 * (u.officer ? 1.6 : 1);
+  const w = W[u.side], h = E.hex(G, c, r), k = E.cls(u);
+  const th = threatAt(G, u, c, r);
+  let v;
   if (u.side === 'A') {
-    v += c * w.prog * (1 + G.turn / 6);
-    v -= nearestObjDist(G, 'A', c, r) * w.obj;
-    // nicht vor der eigenen Masse allein vorpreschen
+    const tw = k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1);
+    v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - th * tw * 6;
+    v += c * w.prog * (1 + G.turn / 6) * (k === 'cav' ? 0.7 : 1);
+    v -= nearestObjDist(G, c, r) * w.obj;
     let friends = 0;
     for (const o of G.units) if (o.side === 'A' && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
     v += Math.min(friends, 3) * 0.12;
+    if (k === 'walker' && h.t === 'wire') v += 1.0;
+  } else if (k === 'storm' || k === 'flame') {
+    v = coverVal(h.t) * 0.3 - th * 0.25 * 6 - nearestEnemyDist(G, 'D', c, r) * 0.7;
+    for (const o of E.OBJECTIVES) if (G.ctrl[o.id] === 'A') v -= E.dist(c, r, o.c, o.r) * 0.15;
   } else {
+    v = coverVal(h.t) * w.cover - th * w.threat * 6 * (u.officer ? 1.6 : 1);
     v -= E.dist(c, r, u.startC, u.startR) * w.hold;
     if (h.obj) v += 1.5;
   }
-  if (E.TYPES[u.type].mg) {
-    // MG wollen Schussfeld: Gegner in Reichweite
+  if (TYPES[u.type].mg) {
     let tgt = 0;
-    for (const o of G.units) if (o.side !== u.side && E.active(o) && E.dist(o.c, o.r, c, r) <= 3) tgt++;
+    for (const o of G.units) if (o.side !== u.side && E.active(o) && E.cls(o) !== 'walker' && E.dist(o.c, o.r, c, r) <= 3) tgt++;
     v += Math.min(tgt, 3) * 0.3;
   }
   return v;
 }
 
-function attackValue(G, a, d, ranged, fc, fr) {
-  const p = E.preview(G, a, d, ranged, fc, fr), w = W[a.side];
+function attackValue(G, a, d, kind, o) {
+  const p = E.preview(G, a, d, kind, o), w = W[a.side];
+  if (p.dmg <= 0.01) return -1;
   let v = p.dmg * w.dmg - p.counter * w.counter;
+  const flame = kind === 'fire' && TYPES[a.type].flame;
   const strAfter = d.str - p.dmg;
-  const morAfter = d.mor - p.dmg * 0.8 - (p.arc === 'flank' ? 0.5 : p.arc === 'rear' ? 1 : 0);
-  if (strAfter < 1.5 || morAfter <= 0) v += 2.5;
-  else if (morAfter < 3) v += 0.8;
+  const morAfter = d.mor - p.dmg * 0.8 * (flame ? 2 : 1) - (p.arc === 'flank' ? 0.5 : p.arc === 'rear' ? 1 : 0);
+  if (strAfter < 1.5 || morAfter <= 0) v += 2.5; else if (morAfter < 3) v += 0.8;
   if (d.officer) v += 0.8;
-  if (ranged && !d.supp && d.status === 'ok' && d.fireDmg + p.dmg >= E.P.SUPP) v += E.TYPES[d.type].mg ? 2.2 : 1.2;
-  if (!ranged && E.hex(G, d.c, d.r).obj) v += 0.6;
+  if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
+  if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
+  if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += 0.6;
   return v;
 }
-
-function bestAttackFrom(G, u, c, r, moved) {
-  const T = E.TYPES[u.type];
+function bestAttackFrom(G, u, c, r, moved, run) {
+  const T = TYPES[u.type];
   let best = null;
   for (const d of G.units) {
     if (d.side === u.side || !E.alive(d)) continue;
     const dd = E.dist(c, r, d.c, d.r);
     if (dd === 1 && T.atk >= 3) {
-      const v = attackValue(G, u, d, false, c, r);
-      if (!best || v > best.v) best = { v, d, ranged: false };
+      const v = attackValue(G, u, d, 'melee', { c, r, run });
+      if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && !(T.mg && moved) && dd >= 1 && dd <= T.rng + (E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
-      const v = attackValue(G, u, d, true, c, r);
-      if (!best || v > best.v) best = { v, d, ranged: true };
+    if (T.rng && !(T.mg && moved) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+        dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
+      const v = attackValue(G, u, d, 'fire', { c, r, run });
+      if (!best || v > best.v) best = { v, d, kind: 'fire' };
+    }
+  }
+  return best;
+}
+
+function planArt(G, u) {
+  if (u.attacked || u.moved || u.supp > 0) return null;
+  let best = null;
+  const consider = (v, c, r, mode) => { if (v > 0.5 && (!best || v > best.v)) best = { v, c, r, mode }; };
+  const friendsNear = (c, r, n) => G.units.some(o => o.side === u.side && E.active(o) && E.cls(o) !== 'art' && E.dist(o.c, o.r, c, r) <= n);
+  for (const d of G.units) {
+    if (d.side === u.side || !E.active(d)) continue;
+    if (E.canShell(G, u, d.c, d.r, 'he')) {
+      const direct = E.isDirect(G, u, d.c, d.r);
+      const dmg = E.shellDmg(G, u, d, direct);
+      let v = dmg * 4;
+      if (!d.supp && E.cls(d) !== 'walker' && d.fireDmg + dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
+      if (d.str - dmg < 1.5 || d.mor - dmg * 0.8 <= 0) v += 2.5;
+      if (E.cls(d) === 'walker' && direct) v += 1.5;
+      for (const [nc, nr] of E.neighbors(d.c, d.r)) { const f = E.unitAt(G, nc, nr); if (f && f.side === u.side) v -= 0.4; }
+      consider(v, d.c, d.r, 'he');
+    }
+    if (E.canShell(G, u, d.c, d.r, 'barrage')) {
+      let v = 0;
+      for (const [hc, hr] of [[d.c, d.r], ...E.neighbors(d.c, d.r)]) {
+        const x = E.unitAt(G, hc, hr);
+        if (!x || !E.active(x) || E.cls(x) === 'walker') continue;
+        if (x.side === u.side) v -= 2.5; else if (!x.supp) v += TYPES[x.type].mg ? 2.0 : E.cls(x) === 'art' ? 1.6 : 0.9;
+      }
+      if (u.side === 'A' && !friendsNear(d.c, d.r, 4)) v *= 0.4;
+      consider(v, d.c, d.r, 'barrage');
+    }
+    if (u.gas > 0 && E.canShell(G, u, d.c, d.r, 'gas')) {
+      let ne = 0, nf = 0;
+      for (const [gc, gr] of E.gasCells(G, d.c, d.r)) { const x = E.unitAt(G, gc, gr); if (x && E.active(x)) { if (x.side === u.side) nf++; else ne++; } }
+      if (ne >= 2 && !friendsNear(d.c, d.r, 2)) consider(ne * 1.7 - nf * 3, d.c, d.r, 'gas');
+    }
+  }
+  if (u.side === 'A') {
+    for (let c = 0; c < E.COLS; c++) for (let r = 0; r < E.ROWS; r++) {
+      if (E.hex(G, c, r).t !== 'wire' || !E.canShell(G, u, c, r, 'he')) continue;
+      const inf = G.units.some(o => o.side === 'A' && E.active(o) && E.cls(o) === 'inf' && E.dist(o.c, o.r, c, r) <= 2);
+      const wal = G.units.some(o => o.side === 'A' && E.active(o) && E.cls(o) === 'walker' && !o.broken && E.dist(o.c, o.r, c, r) <= 3);
+      if (inf && !wal) consider(0.9, c, r, 'he');
     }
   }
   return best;
 }
 
 function planUnit(G, u) {
+  const k = E.cls(u);
+  if (k === 'art') { const s = planArt(G, u); return s ? { shell: s } : { v: 0 }; }
   const opts = [];
   const here = posValue(G, u, u.c, u.r);
-  const atkHere = bestAttackFrom(G, u, u.c, u.r, false);
+  const atkHere = u.attacked ? null : bestAttackFrom(G, u, u.c, u.r, false, 0);
   opts.push({ v: here + (atkHere ? Math.max(0, atkHere.v) : 0), move: null, atk: atkHere && atkHere.v > 0 ? atkHere : null });
-  if (E.hex(G, u.c, u.r).t === 'wire' && E.TYPES[u.type].cls === 'inf' && W[u.side].cut > 0) {
-    opts.push({ v: here + W[u.side].cut + 1.2, move: null, cut: true });
-  }
+  if (E.canCut(G, u) && W[u.side].cut > 0) opts.push({ v: here + W[u.side].cut + 1.2, move: null, cut: true });
   for (const [, n] of E.reachable(G, u)) {
     const pv = posValue(G, u, n.c, n.r);
-    const atk = bestAttackFrom(G, u, n.c, n.r, true);
+    const atk = bestAttackFrom(G, u, n.c, n.r, true, n.path.length);
     opts.push({ v: pv + (atk ? Math.max(0, atk.v) : 0) - 0.05 * n.cost, move: [n.c, n.r], atk: atk && atk.v > 0 ? atk : null });
   }
   opts.sort((a, b) => b.v - a.v);
@@ -114,16 +172,11 @@ function planUnit(G, u) {
 }
 
 function order(G, side) {
-  const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked);
+  const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked && !u.broken);
   const dir = E.SIDES[side].dir;
-  return us.sort((a, b) => {
-    const ma = E.TYPES[a.type].mg ? 0 : 1, mb = E.TYPES[b.type].mg ? 0 : 1;
-    if (ma !== mb) return ma - mb;
-    return (b.c - a.c) * dir;
-  });
+  return us.sort((a, b) => (ORDER[E.cls(a)] - ORDER[E.cls(b)]) || (b.c - a.c) * dir);
 }
 
-// Nächste Aktion der KI: { u, steps: [ {k:'move',c,r} | {k:'fire'|'melee',d} | {k:'cut'} | {k:'turn',face} ] } oder null
 function next(G) {
   if (G.over) return null;
   const tk = G.turn + G.side;
@@ -133,11 +186,11 @@ function next(G) {
     G._aiDone.add(u.id);
     const o = planUnit(G, u);
     const steps = [];
+    if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
     if (o.cut) steps.push({ k: 'cut' });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
-    if (o.atk) steps.push({ k: o.atk.ranged ? 'fire' : 'melee', d: o.atk.d.id });
-    if (!o.move && !o.cut && !u.moved) {
-      // Front zum gefährlichsten Nachbarn drehen
+    if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
+    if (!o.shell && !o.move && !o.cut && !u.moved) {
       const adj = E.adjEnemies(G, u);
       const bad = adj.find(e => E.arcOf(G, u, e.c, e.r) !== 'front');
       if (bad && !adj.some(e => E.arcOf(G, u, e.c, e.r) === 'front')) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, bad.c, bad.r)) });
@@ -146,14 +199,13 @@ function next(G) {
   }
   return null;
 }
-
-// Führt einen Schritt aus und liefert die Ereignisse
 function exec(G, uid, s) {
   const u = G.units.find(x => x.id === uid);
   if (!u || !E.active(u)) return [];
   if (s.k === 'move') return E.moveUnit(G, u, s.c, s.r);
   if (s.k === 'turn') return E.turnUnit(G, u, s.face);
   if (s.k === 'cut') return E.cutWire(G, u);
+  if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
   if (s.k === 'fire') return E.canFire(G, u, d) ? E.fire(G, u, d) : [];

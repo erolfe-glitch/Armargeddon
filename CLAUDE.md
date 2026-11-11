@@ -5,4 +5,5 @@
 - Nur in `src/` ändern, danach `python3 tools/build.py`. Die Datei `index.html` im Hauptordner ist erzeugt und muss mit eingecheckt werden (GitHub Pages).
 - Nach jeder Regeländerung `node tools/sim.js 200` laufen lassen und Siegquote, Dauer und Verluste je Typ berichten.
 - Vor „fertig“ im Browser testen (Playwright), PC quer, Handy quer und hoch.
-- Stufenplan: 1 Infanterie/MG/Gräben/Draht (fertig) · 2 Artillerie und Sperrfeuer · 3 Panzer („Landkolosse“) und Kavallerie · 4 Gas, Stoßtrupps, Flammenwerfer, Phase 2 · 5 Grafik, Effekte, Lernteile.
+- Stand: alle fünf Stufen umgesetzt (Infanterie/MG, Artillerie, Landkolosse und Reiter, Gas/Sturmbrecher/Brandwerfer mit Verstärkung ab Runde 8, Comic-Grafik mit HUD). Offene Ideen: Sanitäter, Pioniere, Mörser, weitere Schlachten als reine Daten.
+- Grafikstil: Comic-Vektorfiguren mit dicker dunkler Kontur (src/figures.js), flache Hexfelder. Oberfläche: schmale Statusleiste oben, Einheitenkarte mit Bild unten, wenig Text.
