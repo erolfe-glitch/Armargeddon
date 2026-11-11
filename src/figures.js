@@ -248,7 +248,7 @@ function sprite(kind, side, flip, h) {
     g2.save();
     if (mirror) { g2.translate(c2.width, 0); g2.scale(-1, 1); }
     g2.shadowColor = 'rgba(240,226,190,0.85)'; g2.shadowBlur = Math.max(2, h * 0.045);
-    try { g2.filter = 'brightness(1.22) contrast(1.08) saturate(1.1)'; } catch (e) {}
+    try { g2.filter = 'brightness(1.12) contrast(1.05)'; } catch (e) {}
     g2.drawImage(art.img, pad, pad, W, H);
     g2.shadowColor = 'transparent'; g2.drawImage(art.img, pad, pad, W, H);
     g2.restore();
