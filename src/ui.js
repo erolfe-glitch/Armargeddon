@@ -12,7 +12,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
-let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set();
+let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null;
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [];
 let queue = [], qRunning = false;
@@ -182,9 +182,11 @@ function syncAll() {
   }
 }
 const facesLeft = f => f === 2 || f === 3 || f === 4;
-const SLOTS = { limber: [[0.1, 0.12]], medic: [[0.12, 0.14], [-0.38, -0.16]], mortar: [[0.15, 0.12]], inf: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], storm: [[0, 0.2], [-0.42, -0.14], [0.42, -0.2]], flame: [[0.1, 0.14], [-0.4, -0.16]],
-  cav: [[0.18, 0.2], [-0.3, -0.2]], mg: [[0.12, 0.1]], art: [[0.15, 0.12]], walker: [[0, 0.16]] };
-const FH = { limber: 0.6, medic: 0.8, mortar: 0.76, inf: 0.8, storm: 0.8, flame: 0.8, mg: 0.78, art: 0.74, walker: 0.64, cav: 0.62 };
+// Figuren stehen in der unteren Hälfte ihres Feldes und bleiben schmal, damit sie Nachbarfelder nicht verdecken
+const SLOTS = { limber: [[0, 0.38]], medic: [[0.2, 0.4], [-0.22, 0.2]], mortar: [[0, 0.38]], inf: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]], storm: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]],
+  flame: [[0.2, 0.4], [-0.22, 0.2]], cav: [[0, 0.4]], mg: [[0, 0.38]], art: [[0, 0.38]], walker: [[0, 0.4]] };
+const FH = { limber: 0.5, medic: 0.64, mortar: 0.62, inf: 0.64, storm: 0.64, flame: 0.64, mg: 0.64, art: 0.62, walker: 0.54, cav: 0.5 };
+const MAXW = 1.6;   // größte Bildbreite in Feldradien
 
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -202,6 +204,7 @@ function drawUnit(u, d) {
   g.lineWidth = Math.max(2, s * (isSel ? 0.09 : 0.06)); g.strokeStyle = isSel ? '#fff7dd' : acc;
   if (u.status === 'rout') g.setLineDash([s * 0.14, s * 0.12]);
   g.stroke(); g.setLineDash([]);
+  if (hoverU === u && !isSel) { g.beginPath(); g.ellipse(x, y, s * 0.8, s * 0.8 * K, 0, 0, 7); g.strokeStyle = 'rgba(255,250,225,0.85)'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); }
   if (E.active(u)) {
     const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.7, fy = y + Math.sin(a) * s * 0.7 * K;
     g.beginPath(); g.arc(fx, fy, s * 0.11, 0, 7); g.fillStyle = isSel ? '#fff7dd' : acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.04); g.strokeStyle = O; g.stroke();
@@ -214,7 +217,8 @@ function drawUnit(u, d) {
   // Figuren
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
-  const sp = FIG.sprite(k, u.side, flip, s * FH[k]);
+  let sp = FIG.sprite(k, u.side, flip, s * FH[k]);
+  if (sp.cv.width > s * MAXW) sp = FIG.sprite(k, u.side, flip, s * FH[k] * s * MAXW / sp.cv.width);
   // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
   const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
   if (done) g.globalAlpha *= 0.6;
@@ -247,7 +251,7 @@ function drawUnit(u, d) {
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
   // Zustandsmarken
-  const tagY = y - s * (k === 'walker' ? 1.75 : k === 'cav' ? 1.45 : 1.2);
+  const tagY = y - s * (k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (text, bg, fg) => {
     g.font = `800 ${Math.round(s * 0.27)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
     const tw = g.measureText(text).width + s * 0.2;
@@ -527,40 +531,41 @@ async function runQueue() {
 
 // ---------- Eingabe ----------
 function evToPx(ev) { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * cv.width / r.width, (ev.clientY - r.top) * cv.height / r.height]; }
-function unitAtPixel(x, y) {
-  let best = null;
+// Was liegt unter dem Zeiger? h = Feld, uHex = Einheit auf diesem Feld, uFig = vorderste Figur, deren Körper man dort sieht
+function pick(x, y) {
+  const h = pixToHex(x, y), uHex = h ? E.unitAt(G, h[0], h[1]) : null;
+  let uFig = null;
   for (const u of G.units) {
     if (!E.alive(u)) continue;
-    const d = DU.get(u.id), k = TYPES[u.type].cls, hgt = L.s * (k === 'walker' ? 1.55 : k === 'cav' ? 1.25 : 0.95);
-    if (Math.abs(x - d.x) < L.s * 0.5 && y < d.y + L.s * K * 0.3 && y > d.y - hgt) if (!best || d.y > DU.get(best.id).y) best = u;
+    const d = DU.get(u.id);
+    if (Math.abs(x - d.x) < L.s * 0.42 && y < d.y + L.s * K * 0.5 && y > d.y - L.s * 0.62) if (!uFig || d.y > DU.get(uFig.id).y) uFig = u;
   }
-  if (best) return best;
-  const h = pixToHex(x, y);
-  return h ? E.unitAt(G, h[0], h[1]) : null;
+  return { h, uHex, uFig };
 }
+function unitAtPixel(x, y) { const p = pick(x, y); return p.uFig || p.uHex; }
+const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targets.has(p.uFig.id) ? p.uFig : null;
 cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; });
 cv.addEventListener('pointermove', ev => {
   if (!G || ev.pointerType !== 'mouse') return;
-  const [x, y] = evToPx(ev);
-  hoverHex = pixToHex(x, y);
-  if (sel && !busy) {
-    const u = unitAtPixel(x, y), np = u && targets.has(u.id) ? u : null;
-    if (np !== previewT) { previewT = np; updateHud(); }
-  }
+  const [x, y] = evToPx(ev), p = pick(x, y);
+  hoverHex = p.h;
+  const movable = sel && !busy && p.h && reach.has(E.key(p.h[0], p.h[1]));
+  hoverU = movable ? null : (p.uFig || p.uHex);
+  if (sel && !busy) { const np = targetOf(p); if (np !== previewT) { previewT = np; updateHud(); } }
 });
-cv.addEventListener('pointerleave', () => { hoverHex = null; });
+cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; });
 cv.addEventListener('click', ev => {
   if (!G || busy || G.over || !human(G.side)) return;
-  const [x, y] = evToPx(ev);
-  let u = unitAtPixel(x, y), h = pixToHex(x, y);
+  const [x, y] = evToPx(ev), p = pick(x, y), h = p.h;
   if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
-  if (u) h = [u.c, u.r];
-  if (sel && TYPES[sel.type].cls === 'art' && h && shellHexes.has(E.key(h[0], h[1])) && !(u && u.side === G.side)) return doShell(h[0], h[1]);
-  if (sel && u && targets.has(u.id)) {
-    if (previewT === u || lastPT === 'mouse') return doAttack(u);
-    previewT = u; updateHud(); return;
+  if (sel) {
+    // Mit gewählter Einheit zählt zuerst das Feld: Ziel, Zugfeld oder Beschussfeld, egal welche Figur davorsteht
+    if (TYPES[sel.type].cls === 'art' && h && shellHexes.has(E.key(h[0], h[1]))) return doShell(h[0], h[1]);
+    const tu = targetOf(p);
+    if (tu) { if (previewT === tu || lastPT === 'mouse') return doAttack(tu); previewT = tu; updateHud(); return; }
+    if (h && reach.has(E.key(h[0], h[1]))) return doMove(h[0], h[1]);
   }
-  if (sel && h && reach.has(E.key(h[0], h[1])) && !(u && u.side === G.side && u.id !== sel.id)) return doMove(h[0], h[1]);
+  const u = p.uFig || p.uHex;
   if (u && u.side === G.side && E.active(u)) return select(u);
   if (u) { select(null); inspect = { unit: u }; updateHud(); return; }
   select(null);
