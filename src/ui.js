@@ -14,7 +14,7 @@ let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set();
 const DU = new Map();
-const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [];
+const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
 let skinA = 'A';
 const LEADER = { 'Prätor Hask': 2, 'Hauptfrau Morn': 1, 'Hauptmann Veyl': 1, 'Kastellan Orsk': 2, 'Sturmführer Kael': 3 };
 function leaderKind(u) { if (!u.officer || (u.side === 'A' && skinA !== 'A')) return null; const k = 'leader' + (LEADER[u.officer] ?? 0), a = FIG.ARTS[k + '_' + u.side]; return a && a.img.complete && a.img.naturalWidth ? k : null; }
@@ -329,7 +329,7 @@ function draw() {
   for (const o of OBJECTIVES) {
     const [x, y] = center(o.c, o.r), col = FIG.PAL[G.ctrl[o.id]].accent, px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fim = G.ctrl[o.id] === 'D' ? FLI.flagD : skinA === 'F' ? FLI.flagF : null;
+    const fim = G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : null;
     if (fim) { const fh = s * 1.15, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px - fw * 0.08, top - s * 0.12, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
@@ -390,7 +390,7 @@ function draw() {
   for (let i = flames.length - 1; i >= 0; i--) {
     const f = flames[i]; f.life--;
     if (f.life <= 0) { flames.splice(i, 1); continue; }
-    const k = Math.min(1, (f.max - f.life) / 6), im = FXI[f.life % 8 < 4 ? 'flame1' : 'flame2'];
+    const k = Math.min(1, (f.max - f.life) / 6), im = PJI.jet && f.life % 12 >= 8 ? PJI.jet : FXI[f.life % 8 < 4 ? 'flame1' : 'flame2'];
     if (im) {
       const len = Math.hypot(f.x2 - f.x1, f.y2 - f.y1) * 1.2 * k, hh = len * im.naturalHeight / im.naturalWidth * 1.25;
       g.save(); g.translate(f.x1, f.y1); g.rotate(Math.atan2(f.y2 - f.y1, f.x2 - f.x1));
@@ -415,6 +415,14 @@ function draw() {
       g.save(); g.translate(x, y); g.rotate(Math.atan2(ny - y, nx - x) + (sh.spin ? sh.t * 9 : 0)); if (sh.x2 < sh.x1 && !sh.spin) g.scale(1, -1);
       g.drawImage(pim, sh.spin ? -w / 2 : -w, -hh / 2, w, hh); g.restore();
     } else { g.beginPath(); g.arc(x, y, s * 0.12, 0, 7); g.fillStyle = sh.col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke(); }
+  }
+  for (let i = muzzles.length - 1; i >= 0; i--) {
+    const mz = muzzles[i]; mz.life--; if (mz.life <= 0) { muzzles.splice(i, 1); continue; }
+    const im = PJI[mz.img]; if (!im) continue;
+    const hh = s * mz.sz * (0.85 + 0.15 * Math.sin(mz.life)), w = fxw(im, hh);
+    g.save(); g.translate(mz.x, mz.y); if (mz.center) { g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w / 2, -hh * (mz.up || 0.5), w, hh); }
+    else { g.rotate(mz.ang); if (Math.cos(mz.ang) < 0) g.scale(1, -1); g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w * (mz.off || 0), -hh / 2, w, hh); }
+    g.restore(); g.globalAlpha = 1;
   }
   for (let i = rings.length - 1; i >= 0; i--) {
     const rg = rings[i]; rg.life--; if (rg.life <= 0) { rings.splice(i, 1); continue; }
@@ -463,7 +471,7 @@ function draw() {
 
 // ---------- Ton ----------
 let soundOn = true;
-const lastSnd = {}, SND_GAP = { rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
+const lastSnd = {}, SND_GAP = { rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 // Hintergrundkulisse als leise Schleife
@@ -526,8 +534,10 @@ async function playEvent(e) {
       if (e.reaction) floater(...headPos(e.a), 'Reaktionsfeuer!', '#ffd860');
       if (e.kind === 'flame') { playSound('flame', 0.6); flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); }
       else {
-        const mg = e.kind === 'mg', can = e.kind === 'cannon';
-        playSound(e.kind === 'rifle' ? 'rifle' : mg ? 'mg' : 'cannon', mg ? 0.55 : 0.6);
+        const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
+        playSound(e.kind === 'rifle' ? 'rifle' : mini ? 'minigun' : mg ? (au && au.side === 'D' ? 'mg2' : 'mg') : 'cannon', mg ? 0.55 : 0.6);
+        if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
+        else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
         tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 26 : 15, max: mg ? 26 : 15, n: mg ? 5 : 1, col: can ? '#ff9a3a' : '#ffe27a', img: mg ? 'burst' : can ? 'shard' : 'bullet', sz: mg ? 0.5 : can ? 0.34 : 0.2 });
         await wait(mg ? 380 : 250);
         if (can) { boom(x2, y2 + s * 0.4, s * 0.5, 'he'); playSound('boom', 0.45); }
@@ -536,10 +546,10 @@ async function playEvent(e) {
     }
     case 'shell': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = center(e.c, e.r);
-      a.face = e.face; playSound('launch', 0.6);
-      boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
+      a.face = e.face; playSound(TYPES[unitById(e.a).type].mobile ? 'launch' : 'cannon', 0.7);   // Mörser: Mörserton, Geschütze: Kanonenschuss
+      if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = Math.max(12, Math.round(30 / speed));
-      shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? 'shellB' : 'shellA', sz: 0.4 });
+      shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       await wait(dur * 16.7 * speed);
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
       playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : 'boom', 0.7);
@@ -551,15 +561,19 @@ async function playEvent(e) {
     case 'melee': case 'counter': {
       const a = DU.get(e.a), d = DU.get(e.d);
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
-      { const au = unitById(e.a); if (e.t === 'melee') playSound(au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.5); }
-      { const au = unitById(e.a), kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm')) shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 }); }
+      const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
+      if (e.t === 'melee') playSound(af === 'drill' ? 'smash' : af === 'shield' ? 'sword' : af === 'raider' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.55);
+      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm') && af !== 'shield' && af !== 'raider') shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 }); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(140);
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
+      if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
+      if (armored || af === 'drill') { if (armored) playSound('armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
       await wait(170); a.lunge = null; await wait(70); break;
     }
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
+      if (E.isMech(u.type)) playSound('robot', 0.5);
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('neigh', 0.5);
@@ -597,7 +611,8 @@ async function playEvent(e) {
     case 'crush': { const [x, y] = center(e.c, e.r); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain(); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
     case 'stuck': playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
-    case 'breakdown': playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast('Ein Landkoloss bleibt mit einer Panne liegen.'); await wait(350); break;
+    case 'breakdown': if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
+      playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
     case 'limber': playSound('clank', 0.6); floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
@@ -717,7 +732,7 @@ function openShop() {
   if (busy || G.over || !human(G.side)) return;
   const sd = G.side;
   $('shopPts').textContent = G.pts[sd];
-  $('shopList').innerHTML = E.SHOP[sd].map(t => { const T = TYPES[t], ok = E.canBuy(G, sd, t) && E.spawnHexes(G, sd, t).length;
+  $('shopList').innerHTML = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)).map(t => { const T = TYPES[t], ok = E.canBuy(G, sd, t) && E.spawnHexes(G, sd, t).length;
     return `<button class="item ${sd}" data-t="${t}" ${ok ? '' : 'disabled'}><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small></button>`; }).join('');
   $('shop').hidden = false;
   requestAnimationFrame(() => $('shopList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd)));
@@ -892,12 +907,20 @@ function applySkin(sk) {
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
 }
 function showStart(first) {
-  $('start').hidden = false; armyInfo(); $('closeStart').hidden = first;
+  $('start').hidden = false; armyInfo(); drawFlagPick(); $('closeStart').hidden = first;
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
   drawPortraitLater($('pD1'), 'mg', 'D'); drawPortraitLater($('pD2'), 'storm', 'D'); drawPortraitLater($('pD3'), 'flame', 'D');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
-const customArmy = { A: null, D: null };
+const customArmy = { A: null, D: null }, flagSel = { D: 0, F: 0 };
+const mechsOn = () => $('optMechs').checked;
+const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
+function drawFlagPick() {
+  const D = (window.FXDATA || {}).flags || {};
+  for (const k of ['D', 'F']) $('flags' + k).innerHTML = [0, 1, 2, 3].map(i => `<button class="flagbtn ${flagSel[k] === i ? 'on' : ''}" data-k="${k}" data-i="${i}" aria-label="Flagge ${i + 1}"><img src="${D['flag' + k + i] || ''}" alt=""></button>`).join('');
+  $('flagRowF').hidden = ((document.querySelector('input[name=skin]:checked') || {}).value || 'A') !== 'F';
+  document.querySelectorAll('.flagbtn').forEach(b => b.onclick = () => { flagSel[b.dataset.k] = +b.dataset.i; drawFlagPick(); });
+}
 let armySide = 'A', armyDraft = {};
 const curMode = () => document.querySelector('input[name=mode]:checked').value;
 function armyInfo() {
@@ -908,7 +931,8 @@ function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
   applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
   $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot';
-  $('armyList').innerHTML = E.ROSTER[sd].map(t => { const T = TYPES[t];
+  for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
+  $('armyList').innerHTML = roster(sd).map(t => { const T = TYPES[t];
     return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small><span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span></div>`; }).join('');
   $('army').hidden = false;
   requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd)));
@@ -925,17 +949,17 @@ function armyRefresh() {
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
     : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
-  $('armyMsg').textContent = msg; $('armyOk').disabled = !E.armyOk(sd, armyDraft);
+  $('armyMsg').textContent = msg; $('armyOk').disabled = !E.armyOk(sd, armyDraft, mechsOn());
 }
-function armyKeep() { if (!E.armyOk(armySide, armyDraft)) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
+function armyKeep() { if (!E.armyOk(armySide, armyDraft, mechsOn())) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
 
 function startGame() {
   mode = document.querySelector('input[name=mode]:checked').value;
   blood = $('optBlood').checked; soundOn = $('optSound').checked; $('btnSound').textContent = soundOn ? '🔊' : '🔇';
   applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
   $('start').hidden = true; $('end').hidden = true;
-  G = E.newGame({ army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
-  decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = 0;
+  G = E.newGame({ mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
+  decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
@@ -971,8 +995,10 @@ $('armyStd').onclick = () => { armyDraft = Object.assign({}, E.defaultArmy(armyS
 $('armyClear').onclick = () => { armyDraft = {}; armyRefresh(); };
 $('armyOk').onclick = () => { if (armyKeep()) { $('army').hidden = true; armyInfo(); } };
 $('armyCancel').onclick = () => { $('army').hidden = true; armyInfo(); };
-$('armySwap').onclick = () => { if (E.armyOk(armySide, armyDraft)) armyKeep(); openArmy(armySide === 'A' ? 'D' : 'A'); };
+$('armySwap').onclick = () => { if (E.armyOk(armySide, armyDraft, mechsOn())) armyKeep(); openArmy(armySide === 'A' ? 'D' : 'A'); };
 document.querySelectorAll('input[name=mode]').forEach(i => i.addEventListener('change', armyInfo));
+document.querySelectorAll('input[name=skin]').forEach(i => i.addEventListener('change', drawFlagPick));
+$('optMechs').addEventListener('change', () => { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); });
 $('btnMenu').onclick = () => showStart(false);
 $('closeStart').onclick = () => { $('start').hidden = true; };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; };

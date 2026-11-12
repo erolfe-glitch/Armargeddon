@@ -197,6 +197,10 @@ body { background: #0c0908; }
 .item:hover:not(:disabled), .modes label:has(input:checked) { background: linear-gradient(#5a3a1a, #3a2410); border-color: var(--gold); }
 .item canvas, .fac canvas { border-radius: 2px; }
 .endstats div { background: #130e0b; border-radius: 3px; }
+.flagpick { display: flex; gap: 8px; flex-wrap: wrap; }
+.flagbtn { width: 64px; height: 56px; padding: 3px; background: #d9c698; border: 2px solid #2a1c12; border-radius: 3px; opacity: .6; }
+.flagbtn img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.flagbtn.on { opacity: 1; border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
 /* Armee-Auswahl */
 .armyrow { flex-wrap: wrap; gap: 8px 14px; color: var(--muted); }
 .armybar { position: sticky; top: -22px; z-index: 2; display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; padding: 8px 12px; background: #120d0a; border: 2px solid #4b392d; border-radius: 4px; font: 700 15px var(--display); }
@@ -264,6 +268,10 @@ body { background: #0c0908; }
       <label><input type="radio" name="mode" value="D"><b>Verteidiger</b><small>Du führst die Aschenwacht, die KI greift an.</small></label>
       <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
     </div>
+    <p class="lbl">Kampfmaschinen und Flaggen</p>
+    <div class="optrow armyrow"><label><input type="checkbox" id="optMechs"> Kampfmaschinen (Mechs) zulassen: Eisenknecht und Bohrkoloss für die Aschenwacht</label></div>
+    <div class="optrow armyrow"><span>Flagge der Aschenwacht:</span><span class="flagpick" id="flagsD"></span></div>
+    <div class="optrow armyrow" id="flagRowF" hidden><span>Flagge der Blauen Legion:</span><span class="flagpick" id="flagsF"></span></div>
     <p class="lbl">Armee</p>
     <div class="optrow armyrow"><button class="tbtn" id="btnArmy">Armee zusammenstellen</button><span id="armyInfo">Standardarmee</span></div>
     <div class="optrow"><label><input type="checkbox" id="optBlood" checked> Blut-Effekte</label><label><input type="checkbox" id="optSound" checked> Ton</label></div>
@@ -293,6 +301,7 @@ body { background: #0c0908; }
       <li>Mörser dürfen ziehen und danach feuern. Kann eine Einheit schießen und stürmen, wählst du mit „Nahkampf“ oder „Beschuss“.</li>
       <li>Anführer (★) geben jede zweite Runde einen Befehl: „Sammeln“ oder „Sturmbefehl“.</li>
       <li>Armee: Im Startmenü kannst du unter „Armee zusammenstellen“ deine Truppen selbst wählen. Du hast so viele Punkte, wie die Standardarmee wert ist.</li>
+      <li>Kampfmaschinen (Mechs) gibt es nur, wenn du sie im Startmenü zulässt. Dort wählst du auch die Flagge.</li>
       <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende, bei 4 Punkten steht es unentschieden, oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
     <button class="endbtn" id="closeRules">Verstanden</button>

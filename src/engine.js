@@ -255,8 +255,9 @@ function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return
 const ARMY_BUDGET = { A: armyCost(defaultArmy('A')), D: armyCost(defaultArmy('D')) };
 const ARMY_MAX = { A: 26, D: 22 }, ARMY_MIN = { A: 8, D: 8 }, ARMY_CAP = 9, ARMY_WALKERS = 4;   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
 const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
-function armyOk(side, army) {
-  for (const t in army) if (!ROSTER[side].includes(t) || !(army[t] >= 0) || army[t] !== Math.floor(army[t])) return false;
+const isMech = t => !!TYPES[t] && (TYPES[t].fig === 'mech' || TYPES[t].fig === 'drill');
+function armyOk(side, army, mechs) {
+  for (const t in army) if (!ROSTER[side].includes(t) || (army[t] > 0 && isMech(t) && !mechs) || !(army[t] >= 0) || army[t] !== Math.floor(army[t])) return false;
   const n = armyCount(army); let walkers = 0;
   for (const t in army) { if (army[t] > ARMY_CAP) return false; if (TYPES[t].cls === 'walker') walkers += army[t]; }
   if (walkers > ARMY_WALKERS) return false;
@@ -295,12 +296,12 @@ function newGame(opts) {
   const G = {
     map: buildMap(1917), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
-    ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }
+    ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
-    if (army && armyOk(side, army)) deploy(G, side, army);
+    if (army && armyOk(side, army, !!opts.mechs)) deploy(G, side, army);
     else for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]);
   }
   return G;
@@ -626,7 +627,7 @@ function flee(G, u, steps, ev) {
   else if (adjEnemies(G, u).length) { killUnit(G, u, ev, 'destroyed'); return; }
   u.face = u.side === 'A' ? 3 : 0;
 }
-function fireKind(a) { const T = TYPES[a.type]; return T.mg ? 'mg' : T.flame ? 'flame' : T.cls === 'walker' ? 'cannon' : 'rifle'; }
+function fireKind(a) { const T = TYPES[a.type]; return T.mg ? 'mg' : T.flame ? 'flame' : T.fig === 'mech' ? 'minigun' : T.cls === 'walker' ? 'cannon' : 'rifle'; }
 function resolveFire(G, a, d, reaction) {
   const ev = [];
   const p = preview(G, a, d, 'fire');
@@ -831,7 +832,7 @@ function spawnHexes(G, side, type) {
   for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) if (!unitAt(G, c, r) && cost(G, probe, c, r) < 99) out.push([c, r]); }
   return out;
 }
-function canBuy(G, side, type) { return !G.over && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
+function canBuy(G, side, type) { return !G.over && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
 function buy(G, side, type, c, r) {
   if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
   G.pts[side] -= COST[type];
@@ -870,7 +871,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ARMY_CAP, ARMY_WALKERS, ROSTER,
+  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ARMY_CAP, ARMY_WALKERS, ROSTER, isMech,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
