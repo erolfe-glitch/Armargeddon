@@ -389,7 +389,7 @@ function draw() {
 
 // ---------- Ton ----------
 let soundOn = true;
-const lastSnd = {}, SND_GAP = { rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, cut: 300, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
+const lastSnd = {}, SND_GAP = { rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 // Hintergrundkulisse als leise Schleife
@@ -438,7 +438,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound('tank', 0.45); else playSound('steps', 0.6); } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound('tank', 0.5); else playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -509,7 +509,7 @@ async function playEvent(e) {
     case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
     case 'crush': { const [x, y] = center(e.c, e.r); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain(); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
-    case 'stuck': floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
+    case 'stuck': playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
     case 'breakdown': playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast('Ein Landkoloss bleibt mit einer Panne liegen.'); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
