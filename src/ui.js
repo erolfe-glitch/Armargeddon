@@ -383,6 +383,17 @@ function draw() {
   g.globalAlpha = 1;
 }
 
+// ---------- Ton ----------
+let soundOn = true, lastSnd = 0;
+const SND = {};
+for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
+function playSound(name, vol = 0.6) {
+  if (!soundOn || !SND[name]) return;
+  const t = performance.now(); if (t - lastSnd < 70) return; lastSnd = t;   // nicht mehrfach im selben Augenblick
+  window.__snd = (window.__snd || 0) + 1;
+  try { const a = SND[name].cloneNode(); a.volume = vol; a.playbackRate = 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+}
+
 // ---------- Effekte ----------
 function burst(x, y, n, cols, o = {}) {
   for (let i = 0; i < n; i++) particles.push({ x, y, vx: (Math.random() - 0.5) * L.s * (o.spread || 0.12), vy: -Math.random() * L.s * (o.up || 0.14), g: L.s * 0.008,
@@ -426,6 +437,7 @@ async function playEvent(e) {
       if (e.kind === 'flame') { flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); }
       else {
         const mg = e.kind === 'mg', can = e.kind === 'cannon';
+        if (e.kind === 'rifle') playSound('rifle');
         tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 26 : 15, max: mg ? 26 : 15, n: mg ? 5 : 1, col: can ? '#ff9a3a' : '#ffe27a' });
         await wait(mg ? 380 : 250);
         if (can) boom(x2, y2 + s * 0.4, s * 0.5, 'he');
@@ -774,7 +786,7 @@ function showStart(first) {
 }
 function startGame() {
   mode = document.querySelector('input[name=mode]:checked').value;
-  blood = $('optBlood').checked;
+  blood = $('optBlood').checked; soundOn = $('optSound').checked; $('btnSound').textContent = soundOn ? '🔊' : '🔇';
   applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
   $('start').hidden = true; $('end').hidden = true;
   G = E.newGame({});
@@ -815,6 +827,7 @@ $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
+$('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; if (soundOn) playSound('rifle', 0.4); };
 document.querySelectorAll('input[name=skin]').forEach(r => r.onchange = () => { applySkin(r.value); if (G) { updateUI(); } });
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
@@ -833,7 +846,7 @@ showStart(true);
 window.__dbg = {
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
-  setSpeed: v => speed = v, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
+  setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; }
 };
 })();
