@@ -384,12 +384,14 @@ function draw() {
 }
 
 // ---------- Ton ----------
-let soundOn = true, lastSnd = 0;
+let soundOn = true;
+const lastSnd = {}, SND_GAP = { rifle: 70, boom: 250, gallop: 1400 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 function playSound(name, vol = 0.6) {
   if (!soundOn || !SND[name]) return;
-  const t = performance.now(); if (t - lastSnd < 70) return; lastSnd = t;   // nicht mehrfach im selben Augenblick
+  const t = performance.now(); if (t - (lastSnd[name] || 0) < (SND_GAP[name] || 100)) return; lastSnd[name] = t;   // nicht mehrfach im selben Augenblick
+  window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
   window.__snd = (window.__snd || 0) + 1;
   try { const a = SND[name].cloneNode(); a.volume = vol; a.playbackRate = 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
 }
@@ -425,7 +427,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   switch (e.t) {
-    case 'move': await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
+    case 'move': if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('gallop', 0.5); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -440,7 +442,7 @@ async function playEvent(e) {
         if (e.kind === 'rifle') playSound('rifle');
         tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 26 : 15, max: mg ? 26 : 15, n: mg ? 5 : 1, col: can ? '#ff9a3a' : '#ffe27a' });
         await wait(mg ? 380 : 250);
-        if (can) boom(x2, y2 + s * 0.4, s * 0.5, 'he');
+        if (can) { boom(x2, y2 + s * 0.4, s * 0.5, 'he'); playSound('boom', 0.45); }
       }
       break;
     }
@@ -452,6 +454,7 @@ async function playEvent(e) {
       shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26' });
       await wait(dur * 16.7 * speed);
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
+      if (e.mode !== 'gas') playSound('boom', 0.7);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
       else if (e.mode === 'gas') boom(x2, y2, s * 1.0, 'gas');
       else { boom(x2, y2, s * 0.7, 'he'); E.neighbors(e.c, e.r).forEach(([c, r], i) => { const [bx, by] = center(c, r); boom(bx, by, s * 0.6, i % 2 ? 'dust' : 'he', 3 + i * 3); }); }
@@ -483,7 +486,7 @@ async function playEvent(e) {
     case 'rout': floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
-      if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') boom(d.x, d.y, s * 1.1, 'he');
+      if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { boom(d.x, d.y, s * 1.1, 'he'); playSound('boom', 0.7); }
       else if (blood) { decals.push({ x: d.x, y: d.y, r: s * 0.5, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * K, r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); burst(d.x, d.y - s * 0.4, 18, ['#9a1612', '#74100c'], { up: 0.2, spread: 0.3 }); }
       for (let k = 0; k < 10; k++) { d.alpha = 1 - k / 10; await wait(28); } d.alpha = 0; break;
     }
@@ -846,7 +849,7 @@ showStart(true);
 window.__dbg = {
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
-  setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
+  setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; }
 };
 })();
