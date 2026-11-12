@@ -35,7 +35,9 @@ Alle geplanten Stufen sind spielbar:
 - Geschütze können aufprotzen (4 Felder Zug, kein Feuer) und wieder abprotzen. Das Schussfeld wird rot angezeigt.
 - Aktionsmarken an jeder eigenen Einheit: grüner Pfeil = kann ziehen, rote Raute = kann angreifen.
 
-Simulation, 150 Schlachten KI gegen KI (beide kaufen Nachschub): Konkordat 28 %, Aschenwacht 31 %, unentschieden 41 %.
+Feld 20 × 11 (vorher 24 × 13), dazu ein Zoom-Knopf (1×, 1,3×, 1,6×) mit verschiebbarem Feld.
+
+Simulation, 150 Schlachten KI gegen KI (beide kaufen Nachschub): Konkordat 24 %, Aschenwacht 36 %, unentschieden 40 %.
 Sieg des Konkordats ab 5 Punkten aus den Zielfeldern, Unentschieden bei 4.
 
 ## Aufbau

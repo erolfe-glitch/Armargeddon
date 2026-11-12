@@ -25,7 +25,7 @@ const P = {
   PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 0.6, HEAL_MOR: 0.5
 };
 
-const COLS = 24, ROWS = 13;
+const COLS = 20, ROWS = 11;   // kleineres Feld, dafür größere Figuren
 
 const SIDES = {
   A: { name: 'Konkordat von Valmor', short: 'Konkordat', edge: 0, dir: 1 },
@@ -102,28 +102,27 @@ const TERRAIN = {
 };
 
 const OBJECTIVES = [
-  { id: 'veskar', name: 'Ruinen von Veskar', c: 17, r: 5, pts: 2 },
-  { id: 'schanze', name: 'Grauwall-Schanze', c: 15, r: 7, pts: 2 },
-  { id: 'totholz', name: 'Totholz von Ilm', c: 21, r: 1, pts: 3 },
-  { id: 'marn', name: 'Brücke von Marn', c: 21, r: 10, pts: 2 }
+  { id: 'veskar', name: 'Ruinen von Veskar', c: 15, r: 4, pts: 2 },
+  { id: 'schanze', name: 'Grauwall-Schanze', c: 13, r: 6, pts: 2 },
+  { id: 'totholz', name: 'Totholz von Ilm', c: 17, r: 1, pts: 3 },
+  { id: 'marn', name: 'Brücke von Marn', c: 18, r: 9, pts: 2 }
 ];
 
 const SETUP = [
-  ['kohorte', 4, 0], ['kohorte', 4, 2], ['kohorte', 4, 4], ['kohorte', 4, 6, 'Prätor Hask'], ['kohorte', 4, 8],
-  ['kohorte', 4, 10, 'Hauptfrau Morn'], ['kohorte', 4, 12],
-  ['kohorte', 2, 3], ['kohorte', 2, 5], ['kohorte', 2, 7], ['kohorte', 2, 9],
-  ['mahlwerk', 3, 0], ['mahlwerk', 3, 6], ['mahlwerk', 3, 12],
-  ['koloss', 3, 2], ['koloss', 3, 4], ['koloss', 3, 8], ['koloss', 3, 10],
-  ['haubitze', 1, 2], ['haubitze', 1, 6], ['haubitze', 1, 10],
-  ['reiter', 0, 4], ['reiter', 0, 8],
-  ['grenadier', 11, 1], ['grenadier', 11, 5], ['grenadier', 11, 9, 'Hauptmann Veyl'], ['grenadier', 11, 12],
-  ['sense', 11, 3], ['sense', 11, 7], ['sense', 11, 11],
-  ['grenadier', 15, 3], ['grenadier', 15, 7, 'Kastellan Orsk'], ['grenadier', 15, 11],
-  ['sense', 15, 5], ['sense', 15, 9],
-  ['grenadier', 17, 5], ['grenadier', 21, 1], ['grenadier', 21, 10],
-  ['geschuetz', 18, 6], ['geschuetz', 17, 1], ['geschuetz', 17, 10]
+  ['kohorte', 3, 0], ['kohorte', 3, 2], ['kohorte', 3, 4, 'Prätor Hask'], ['kohorte', 3, 6], ['kohorte', 3, 8, 'Hauptfrau Morn'], ['kohorte', 3, 10],
+  ['kohorte', 1, 3], ['kohorte', 1, 5], ['kohorte', 1, 7],
+  ['mahlwerk', 2, 0], ['mahlwerk', 2, 5], ['mahlwerk', 2, 10],
+  ['koloss', 2, 2], ['koloss', 2, 4], ['koloss', 2, 7], ['koloss', 2, 9],
+  ['haubitze', 0, 2], ['haubitze', 0, 5], ['haubitze', 0, 8],
+  ['reiter', 1, 1], ['reiter', 1, 9],
+  ['grenadier', 9, 0], ['grenadier', 9, 4], ['grenadier', 9, 8, 'Hauptmann Veyl'],
+  ['sense', 9, 2], ['sense', 9, 6], ['sense', 9, 10],
+  ['grenadier', 13, 2], ['grenadier', 13, 6, 'Kastellan Orsk'], ['grenadier', 13, 9],
+  ['sense', 13, 4], ['sense', 13, 8],
+  ['grenadier', 15, 4], ['grenadier', 17, 1], ['grenadier', 18, 9],
+  ['geschuetz', 16, 5], ['geschuetz', 15, 1], ['geschuetz', 15, 8]
 ];
-const REINF = [['sturm', 23, 2], ['sturm', 23, 5, 'Sturmführer Kael'], ['sturm', 23, 8], ['brand', 23, 3], ['brand', 23, 7], ['geschuetz', 22, 6]];
+const REINF = [['sturm', 19, 2], ['sturm', 19, 4, 'Sturmführer Kael'], ['sturm', 19, 6], ['brand', 19, 3], ['brand', 19, 5], ['geschuetz', 18, 5]];
 
 function mulberry32(a) {
   return function () {
@@ -140,22 +139,22 @@ function buildMap(seed) {
   const M = [];
   for (let c = 0; c < COLS; c++) { M.push([]); for (let r = 0; r < ROWS; r++) M[c].push({ t: 'open', ridge: false, obj: null }); }
   const set = (c, r, t) => { if (c >= 0 && c < COLS && r >= 0 && r < ROWS) M[c][r].t = t; };
-  for (let c = 5; c <= 8; c++) for (let r = 0; r < ROWS; r++) { const x = rnd(); if (x < 0.3) set(c, r, 'crater'); else if (x < 0.44) set(c, r, 'mud'); }
-  for (let c = 12; c <= 13; c++) for (let r = 0; r < ROWS; r++) if (rnd() < 0.2) set(c, r, 'crater');
-  for (let r = 0; r < ROWS; r++) set(4, r, 'trench');
+  for (let c = 4; c <= 6; c++) for (let r = 0; r < ROWS; r++) { const x = rnd(); if (x < 0.3) set(c, r, 'crater'); else if (x < 0.44) set(c, r, 'mud'); }
+  for (let c = 10; c <= 11; c++) for (let r = 0; r < ROWS; r++) if (rnd() < 0.2) set(c, r, 'crater');
+  for (let r = 0; r < ROWS; r++) set(3, r, 'trench');
   for (let r = 0; r < ROWS; r++) {
-    if (![3, 9].includes(r)) set(9, r, 'wire');
-    if (![6, 11].includes(r)) set(10, r, 'wire');
-    set(11, r, 'trench');
-    if (![2, 6, 10].includes(r)) set(14, r, 'wire');
-    set(15, r, 'trench');
+    if (![2, 8].includes(r)) set(7, r, 'wire');
+    if (![5, 9].includes(r)) set(8, r, 'wire');
+    set(9, r, 'trench');
+    if (![1, 5, 9].includes(r)) set(12, r, 'wire');
+    set(13, r, 'trench');
   }
-  for (let c = 16; c <= 18; c++) for (let r = 4; r <= 7; r++) M[c][r].ridge = true;
-  set(17, 5, 'village'); set(17, 6, 'village'); set(18, 5, 'village');
-  for (const [c, r] of [[19,0],[20,0],[21,0],[22,0],[19,1],[20,1],[21,1],[22,1],[20,2],[21,2]]) set(c, r, 'forest');
-  for (let r = 8; r < ROWS; r++) set(20, r, 'canal');
-  set(20, 10, 'bridge');
-  set(21, 9, 'village'); set(21, 10, 'village'); set(22, 10, 'village');
+  for (let c = 14; c <= 16; c++) for (let r = 3; r <= 6; r++) M[c][r].ridge = true;
+  set(15, 4, 'village'); set(15, 5, 'village'); set(16, 4, 'village');
+  for (const [c, r] of [[16,0],[17,0],[18,0],[16,1],[17,1],[18,1],[17,2]]) set(c, r, 'forest');
+  for (let r = 7; r < ROWS; r++) set(17, r, 'canal');
+  set(17, 9, 'bridge');
+  set(18, 8, 'village'); set(18, 9, 'village'); set(19, 9, 'village');
   for (const o of OBJECTIVES) M[o.c][o.r].obj = o.id;
   return M;
 }

@@ -203,7 +203,7 @@ function buy(G) {
     if (!hs.length) break;
     let row = 6, bd = 99;
     for (const o of G.units) if (o.side === side && E.active(o)) { const d = nearestEnemyDist(G, side, o.c, o.r); if (d < bd) { bd = d; row = o.r; } }
-    if (side === 'D') row = Math.min(row, 7);
+    if (side === 'D') row = Math.min(row, 6);   // unterhalb liegt der Kanal
     hs.sort((p, q) => (Math.abs(p[1] - row) - Math.abs(q[1] - row)) || (side === 'A' ? q[0] - p[0] : p[0] - q[0]));
     const e = E.buy(G, side, type, hs[0][0], hs[0][1]);
     if (!e.length) break;

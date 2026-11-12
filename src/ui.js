@@ -16,7 +16,7 @@ let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing 
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [];
 let queue = [], qRunning = false;
-let L = null, K = 0.62, tcv = null, now = 0;
+let L = null, K = 0.62, tcv = null, now = 0, ZOOM = 1;
 const human = side => mode === 'hot' || mode === side;
 
 const board = $('board'), cv = $('map'), ctx = cv.getContext('2d');
@@ -26,10 +26,10 @@ function layout() {
   const wrap = board.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const portrait = matchMedia('(orientation: portrait)').matches;
-  const cssW = Math.max(wrap.width, portrait ? 760 : 560);
+  const cssW = Math.max(wrap.width, portrait ? 760 : 560) * ZOOM;
   const s = cssW * dpr / (1.5 * COLS + 0.5);
   const top = s * 1.55, bot = s * 0.45;
-  K = Math.max(0.42, Math.min(0.86, (wrap.height * dpr - top - bot) / (s * SQ3 * (ROWS + 0.5))));
+  K = Math.max(0.42, Math.min(0.86, (wrap.height * ZOOM * dpr - top - bot) / (s * SQ3 * (ROWS + 0.5))));
   const H = Math.ceil(top + s * K * SQ3 * (ROWS + 0.5) + bot);
   L = { dpr, s, top, W: Math.round(cssW * dpr), H };
   cv.width = L.W; cv.height = H;
@@ -835,6 +835,13 @@ $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
+$('btnZoom').onclick = () => {
+  const fx = (board.scrollLeft + board.clientWidth / 2) / board.scrollWidth, fy = (board.scrollTop + board.clientHeight / 2) / board.scrollHeight;
+  ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1;
+  $('btnZoom').textContent = '🔍 ' + String(ZOOM).replace('.', ',') + '×';
+  layout(); syncAll();
+  board.scrollLeft = fx * board.scrollWidth - board.clientWidth / 2; board.scrollTop = fy * board.scrollHeight - board.clientHeight / 2;
+};
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; if (soundOn) playSound('rifle', 0.4); };
 document.querySelectorAll('input[name=skin]').forEach(r => r.onchange = () => { applySkin(r.value); if (G) { updateUI(); } });
 $('btnShop').onclick = openShop;
