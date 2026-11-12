@@ -18,3 +18,4 @@
 - Anstrich der Oberfläche (Wunsch des Nutzers nach Bildvorlage, „nicht zu doll, soll klar bleiben“): Rost/Eisen/Pergament als Überschreibungsblock am Ende des Stylesheets („Grimdark-Anstrich“), Serifenschrift für Titel, Runde und Hauptknopf, blutroter Himmel, Zustandsmarken als Pergamentzettel. Seitenfarben Orange/Blau bleiben.
 - Figurenmaßstab: Gerät und Pferde größer im Verhältnis zu den Soldaten (FH, MAXWK in ui.js): Landkoloss bis 2,05 Feldradien breit, Gespann 1,95, Geschütz 1,8.
 - Angekündigt, noch offen: Armee-Auswahl vor der Schlacht für den Angreifer (Punkte, ausbalanciert), sobald der Nutzer den Bogen mit weiteren Einheitentypen schickt.
+- Befehlsrufe (Töne des Nutzers): `forward` („Forward march“) beim Sturmbefehl, `stand` („Stand your ground“) beim Sammeln. Hundegebell (dog-barking) liegt vor, ist aber noch nicht eingebaut – Verwendung offen (vermutlich neue Einheit).

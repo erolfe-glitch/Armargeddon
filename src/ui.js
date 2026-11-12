@@ -580,7 +580,7 @@ async function playEvent(e) {
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
     case 'order': {
-      const d0 = DU.get(e.u), rl = e.kind === 'rally'; playSound(rl ? 'whistle' : 'cry', 0.6);
+      const d0 = DU.get(e.u), rl = e.kind === 'rally'; playSound(rl ? 'stand' : 'forward', 0.75);
       toast(`${e.name}: ${rl ? 'Sammeln!' : 'Sturmbefehl!'}`); floater(...headPos(e.u), rl ? 'Sammeln!' : 'Vorwärts!', rl ? '#b8ff7c' : '#ffb04a', true);
       for (let q = 0; q < 2; q++) rings.push({ x: d0.x, y: d0.y, r: 2.6 + q * 1.4, col: rl ? '#b8ff7c' : '#ffb04a', life: 34 + q * 10, max: 34 + q * 10 });
       await wait(260);
