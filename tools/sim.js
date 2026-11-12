@@ -21,7 +21,10 @@ const res = { A: 0, D: 0, draw: 0 }, why = {}, turns = [], pts = [], loss = { A:
 const typeLoss = {}, typeCount = {}, objHeld = {};
 let errors = 0;
 for (let g = 0; g < N; g++) {
-  const G = E.newGame({ seed: seed0 + g * 7919 });
+  const parse = v => v ? Object.fromEntries(v.split(',').map(x => { const [t, n] = x.split(':'); return [t, +n]; })) : null;
+  const army = { A: parse(process.env.ARMY_A), D: parse(process.env.ARMY_D) };
+  for (const sd of ['A', 'D']) if (army[sd] && !E.armyOk(sd, army[sd])) { console.log('Armee ungültig', sd, E.armyCost(army[sd]), E.armyCount(army[sd])); process.exit(1); }
+  const G = E.newGame({ seed: seed0 + g * 7919, army });
   if (noA.length) G.units = G.units.filter(u => !(u.side === 'A' && noA.includes(E.cls(u))));
   for (const [t, n] of Object.entries(drop)) for (let i = 0; i < n; i++) { const x = G.units.findIndex(u => u.type === t); if (x >= 0) G.units.splice(x, 1); }
   E.startTurn(G);

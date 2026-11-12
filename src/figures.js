@@ -226,6 +226,7 @@ function drawFigure(g, kind, side) {
 }
 
 const cache = new Map();
+const ALIAS = { bike: 'inf', sniper: 'inf', dog: 'inf', sapper: 'inf', raider: 'storm', shield: 'inf', atr: 'inf', heavy: 'inf', signal: 'inf', mech: 'walker', drill: 'walker' };
 // Gemalte Einheitenbilder (aus art.js). Schlüssel: Figurart + '_' + Seite
 const ARTS = {};
 // Bilderset je Seite: 'A' = England-Bogen, 'F' = Frankreich-Bogen, 'D' = Deutschland-Bogen
@@ -260,6 +261,7 @@ function sprite(kind, side, flip, h) {
     cache.set(k, s);
     return s;
   }
+  if (!BOX[kind]) kind = ALIAS[kind] || 'inf';   // neue Figurarten ohne Bild: nächste gezeichnete Figur
   const [l, r, t] = BOX[kind], pad = 0.08;
   const left = (flip ? r : l) + pad, right = (flip ? l : r) + pad;
   const cv = document.createElement('canvas');

@@ -34,6 +34,8 @@ Alle geplanten Stufen sind spielbar:
 - Zusätzliche Einheiten im Nachschub: Feldscher/Aschenpfleger (versorgen aktiv einen Nachbarn je Runde), Grabenmörser/Minenwerfer (dürfen ziehen und danach feuern).
 - Anführer mit eigenen Figuren und Befehlen: „Sammeln“ und „Sturmbefehl“ (jede zweite Runde).
 - Wahl zwischen Nahkampf und Beschuss, wenn beides möglich ist.
+- Armee-Auswahl vor der Schlacht: für den Wert der Standardarmee eigene Truppen wählen.
+- Weitere Truppen: Radfahrer, Scharfschütze, Meldegänger mit Hund, Pioniere, Grabenräumer; Schildträger, Panzerbüchse, Schwere Grabenwacht, Signaltrupp, Eisenknecht, Bohrkoloss.
 - Gemalte Bodenkacheln, Effekte und Geschosse aus Bildvorlagen (`src/fx.js`).
 - Geschütze können aufprotzen (4 Felder Zug, kein Feuer) und wieder abprotzen. Das Schussfeld wird rot angezeigt.
 - Aktionsmarken an jeder eigenen Einheit: grüner Pfeil = kann ziehen, rote Raute = kann angreifen.

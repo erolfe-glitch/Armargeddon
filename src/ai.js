@@ -10,7 +10,7 @@ const W = {
   D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
 };
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
-const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'kohorte', 'moerser'], D: ['sturm', 'grenadier', 'minenwerfer', 'grenadier', 'heiler'] };
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer'] };
 
 function coverVal(t) { return t === 'trench' ? 1 : t === 'village' ? 0.9 : t === 'forest' ? 0.7 : t === 'crater' ? 0.4 : t === 'wire' ? -1.6 : 0; }
 
@@ -50,7 +50,7 @@ function nearestEnemyDist(G, side, c, r) {
 }
 
 function posValue(G, u, c, r) {
-  const w = W[u.side], h = E.hex(G, c, r), k = E.cls(u);
+  const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay ? 'medic' : E.cls(u);
   const th = threatAt(G, u, c, r);
   let v;
   if (k === 'medic') {

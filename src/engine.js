@@ -80,11 +80,49 @@ Object.assign(TYPES, {
     can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann in derselben Runde ziehen und feuern.',
     real: 'Deutsche Minenwerfer schossen schwere Sprengladungen im steilen Bogen in die gegnerischen Gräben.' }
 });
+
+// Weitere Truppen für die Armee-Auswahl und den Nachschub
+Object.assign(TYPES, {
+  radler: { side: 'A', name: 'Radfahrer-Trupp', cls: 'inf', fig: 'bike', atk: 3, def: 3, mor: 6, mv: 5, rng: 2, fs: 2,
+    can: 'Schnelle Infanterie: zieht 5 Felder, kämpft aber schwächer als die Kohorte. Schlamm, Trichter und Draht bremsen wie bei allen Fußtruppen.',
+    real: 'Viele Armeen hatten Radfahrtruppen, etwa britische Cyclist Battalions oder deutsche Radfahr-Kompanien. Auf Straßen waren sie schnell und leise, im Trichterfeld mussten sie schieben.' },
+  scharf: { side: 'A', name: 'Scharfschütze', cls: 'inf', fig: 'sniper', pin: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 5, fs: 3,
+    can: 'Schießt 5 Felder weit. Jeder Treffer hält das Ziel nieder. Im Nahkampf fast wehrlos.',
+    real: 'Scharfschützen mit Zielfernrohr lauerten oft stundenlang getarnt. Schon ein kurz über die Grabenkante gehobener Kopf konnte tödlich sein.' },
+  melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', spot: 8, relay: true, atk: 2, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
+    can: 'Sieht für die Artillerie 8 statt 5 Felder weit. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
+    real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
+  pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', fig: 'sapper', sapper: true, atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
+    can: 'Schneidet Draht und kann danach noch angreifen. Sprengladungen: im Nahkampf ×1,5 gegen Kolosse und Kampfmaschinen.',
+    real: 'Pioniere schnitten nachts Gassen in den Draht, legten Sprengladungen und gruben Stollen unter die gegnerischen Linien.' },
+  raeumer: { side: 'A', name: 'Grabenräumer', cls: 'storm', fig: 'raider', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
+    can: 'Nahkämpfer ohne Gewehr. Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Kampfmaschinen im Nahkampf ×1,5.',
+    real: 'Für nächtliche Grabenüberfälle nutzten Soldaten Grabendolche, Keulen und geschärfte Spaten, weil Gewehre im engen Graben zu lang waren.' },
+  schild: { side: 'D', name: 'Schildträger', cls: 'inf', fig: 'shield', atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
+    can: 'Schwer gepanzert und langsam. Hält Gräben und Ruinen sehr zäh, hat aber keine Schusswaffe.',
+    real: 'Im Stellungskrieg wurden Stahlschilde und Brustpanzer erprobt, etwa der deutsche Grabenpanzer ab 1916. Sie waren schwer und schützten vor allem gegen Splitter.' },
+  buechse: { side: 'D', name: 'Panzerbüchsen-Trupp', cls: 'inf', fig: 'atr', at: 2, atk: 2, def: 3, mor: 7, mv: 2, rng: 4, fs: 3,
+    can: 'Schießt 4 Felder weit. Durchschlägt Panzerung: Beschuss trifft Landkolosse ×2.',
+    real: 'Das deutsche Tankgewehr M1918 war die erste Panzerbüchse der Welt. Es verschoss 13-mm-Geschosse und hatte einen sehr starken Rückstoß.' },
+  schwer: { side: 'D', name: 'Schwere Grabenwacht', cls: 'inf', fig: 'heavy', atk: 4, def: 5, mor: 8, mv: 2, rng: 2, fs: 2,
+    can: 'Infanterie mit Brustpanzer: bessere Abwehr und Moral als Grenadiere, aber nur 2 Felder Bewegung.',
+    real: 'Der deutsche Stahlhelm wurde 1916 eingeführt und senkte die Zahl der Kopfverletzungen deutlich. Für Posten gab es zusätzlich eine Stirnplatte.' },
+  signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 8, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
+    can: 'Sieht für die Artillerie 8 statt 5 Felder weit. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
+    real: 'Leuchtpistolen gaben vereinbarte Zeichen an die Artillerie, zum Beispiel für Sperrfeuer. Grabenperiskope erlaubten den Blick über die Brustwehr.' },
+  knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', fig: 'mech', atk: 6, def: 6, mor: 8, mv: 2, rng: 2, fs: 4,
+    can: 'Schreitende Kampfmaschine mit Maschinenwaffe. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
+    real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
+  bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', fig: 'drill', atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
+    can: 'Kampfmaschine mit Bohrkopf, nur für den Nahkampf. Sehr stark gegen alles, was er erreicht. Bleibt manchmal mit einer Panne liegen.',
+    real: 'Unter der Erde tobte ein Minenkrieg. Bei Messines zündeten die Briten am 7. Juni 1917 neunzehn Minen unter den deutschen Stellungen.' }
+});
 // Nachschub: Kosten in Punkten und Angebot je Seite
 const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, haubitze: 6, koloss: 7,
-  grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 4, sturm: 5, geschuetz: 6 };
-const SHOP = { A: ['kohorte', 'feldscher', 'mahlwerk', 'moerser', 'reiter', 'haubitze', 'koloss'],
-  D: ['grenadier', 'heiler', 'sense', 'minenwerfer', 'brand', 'sturm', 'geschuetz'] };
+  grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 5, sturm: 6, geschuetz: 6,
+  radler: 3, melder: 2, scharf: 4, pionier: 3, raeumer: 4, signal: 2, schild: 4, buechse: 5, schwer: 4, knecht: 9, bohrer: 9 };
+const SHOP = { A: ['kohorte', 'radler', 'melder', 'feldscher', 'pionier', 'scharf', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'haubitze', 'koloss'],
+  D: ['grenadier', 'signal', 'heiler', 'schwer', 'schild', 'buechse', 'sense', 'minenwerfer', 'brand', 'sturm', 'geschuetz', 'knecht', 'bohrer'] };
 
 const TERRAIN = {
   open:    { name: 'Offenes Feld', cost: 1, info: 'Keine Deckung.' },
@@ -209,6 +247,49 @@ function addUnit(G, type, c, r, officer) {
   G.units.push(u);
   return u;
 }
+// ---------- Armee-Auswahl ----------
+// Jede Seite darf vor der Schlacht für den Wert der Standardarmee selbst Truppen wählen.
+function defaultArmy(side) { const a = {}; for (const s of SETUP) if (TYPES[s[0]].side === side) a[s[0]] = (a[s[0]] || 0) + 1; return a; }
+function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
+function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
+const ARMY_BUDGET = { A: armyCost(defaultArmy('A')), D: armyCost(defaultArmy('D')) };
+const ARMY_MAX = { A: 26, D: 22 }, ARMY_MIN = { A: 8, D: 8 }, ARMY_CAP = 9, ARMY_WALKERS = 4;   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
+const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
+function armyOk(side, army) {
+  for (const t in army) if (!ROSTER[side].includes(t) || !(army[t] >= 0) || army[t] !== Math.floor(army[t])) return false;
+  const n = armyCount(army); let walkers = 0;
+  for (const t in army) { if (army[t] > ARMY_CAP) return false; if (TYPES[t].cls === 'walker') walkers += army[t]; }
+  if (walkers > ARMY_WALKERS) return false;
+  return armyCost(army) <= ARMY_BUDGET[side] && n >= ARMY_MIN[side] && n <= ARMY_MAX[side];
+}
+const ROWS_OUT = [5, 3, 7, 1, 9, 4, 6, 2, 8, 0, 10];
+function deploy(G, side, army) {
+  // Reihenfolge: Typen abwechselnd, damit sich die Truppen über die Front verteilen
+  const left = Object.assign({}, army), list = [];
+  for (let more = true; more;) { more = false; for (const t of ROSTER[side]) if (left[t] > 0) { left[t]--; list.push(t); more = true; } }
+  const names = side === 'A' ? ['Prätor Hask', 'Hauptfrau Morn'] : ['Hauptmann Veyl', 'Kastellan Orsk'];
+  const lead = t => { const T = TYPES[t]; return (T.cls === 'inf' || T.cls === 'storm') && !T.relay && !T.pin && names.length ? names.shift() : null; };
+  const free = (t, c, r) => inMap(c, r) && !unitAt(G, c, r) && cost(G, { type: t, side }, c, r) < 99;
+  if (side === 'A') {
+    const pref = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 0 : (T.mobile || T.pin || T.relay || T.cls === 'cav' || T.cls === 'medic' || T.fig === 'bike') ? 1 : (T.cls === 'walker' || T.cls === 'mg') ? 2 : 3; };
+    for (const t of list) {
+      const p = pref(t); let done = false;
+      for (const c of [p, p - 1, p + 1, p - 2, p + 2, p - 3, p + 3]) {
+        if (c < 0 || c > 3 || done) continue;
+        for (const r of ROWS_OUT) if (free(t, c, r)) { addUnit(G, t, c, r, lead(t)); done = true; break; }
+      }
+    }
+  } else {
+    const back = [[16, 5], [15, 1], [15, 8], [17, 5], [16, 3]];
+    const front = [[15, 4], [13, 6], [17, 1], [18, 9], [9, 4], [9, 8], [9, 0], [9, 2], [9, 6], [9, 10], [13, 2], [13, 9], [13, 4], [13, 8], [17, 3], [11, 5], [11, 1], [11, 9], [16, 7], [12, 3], [12, 7], [14, 5]];
+    for (const t of list) {
+      const T = TYPES[t], rear = T.cls === 'art' || T.cls === 'medic' || T.relay;
+      const sl = (rear ? back.concat(front) : front.concat(back)).find(([c, r]) => free(t, c, r));
+      if (sl) addUnit(G, t, sl[0], sl[1], lead(t));
+    }
+  }
+}
+
 function newGame(opts) {
   opts = opts || {};
   const G = {
@@ -217,7 +298,11 @@ function newGame(opts) {
     ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
-  for (const s of SETUP) addUnit(G, s[0], s[1], s[2], s[3]);
+  for (const side of ['A', 'D']) {
+    const army = opts.army && opts.army[side];
+    if (army && armyOk(side, army)) deploy(G, side, army);
+    else for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]);
+  }
   return G;
 }
 
@@ -360,7 +445,7 @@ function limber(G, u) {
 function canCut(G, u) { return active(u) && !u.attacked && cls(u) === 'inf' && hex(G, u.c, u.r).t === 'wire'; }
 function cutWire(G, u) {
   if (!canCut(G, u)) return [];
-  hex(G, u.c, u.r).t = 'open'; u.attacked = true; u.moved = true;
+  hex(G, u.c, u.r).t = 'open'; u.attacked = !TYPES[u.type].sapper; u.moved = true;
   return [{ t: 'cut', u: u.id, c: u.c, r: u.r }];
 }
 
@@ -384,7 +469,7 @@ function surrounded(G, u) {
   if (!adj.length) return false;
   return !retreatHex(G, u, null);
 }
-function immune(A, D) { return D.cls === 'walker' && (A.cls === 'inf' || A.cls === 'mg' || A.cls === 'cav' || A.cls === 'storm'); }
+function immune(A, D) { return D.cls === 'walker' && !A.at && (A.cls === 'inf' || A.cls === 'mg' || A.cls === 'cav' || A.cls === 'storm'); }
 function canMelee(G, a, d) {
   return active(a) && !a.attacked && !a.broken && TYPES[a.type].atk > 0 && alive(d) && d.side !== a.side && dist(a.c, a.r, d.c, d.r) === 1;
 }
@@ -429,7 +514,8 @@ function preview(G, a, d, kind, o) {
   }
   if (D.cls === 'walker') {
     if (ranged && immune(A, D)) { m = 0; tags.push('Panzerung: wirkungslos'); }
-    if (!ranged) { if (A.cls === 'storm') { m *= P.STORM_VS_WALKER; tags.push('geballte Ladung ×1,5'); } else if (A.cls !== 'walker') { m *= P.MELEE_VS_WALKER; tags.push('Panzerung ×0,4'); } }
+    if (ranged && A.at) { m *= A.at; tags.push('Panzerbüchse ×' + String(A.at).replace('.', ',')); }
+    if (!ranged) { if (A.cls === 'storm' || A.sapper) { m *= P.STORM_VS_WALKER; tags.push('geballte Ladung ×1,5'); } else if (A.cls !== 'walker') { m *= P.MELEE_VS_WALKER; tags.push('Panzerung ×0,4'); } }
   }
   if (ranged && A.mg) {
     if (hex(G, d.c, d.r).t === 'wire') { m *= P.MG_VS_WIRE; tags.push('MG gegen Draht ×2'); }
@@ -463,7 +549,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   d.str = Math.max(0, d.str - dmg);
   if (o.ranged && d.status === 'ok' && cls(d) !== 'walker') {
     d.fireDmg += dmg;
-    if (d.fireDmg >= P.SUPP && !d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
+    if ((d.fireDmg >= P.SUPP || (dmg > 0 && a && TYPES[a.type] && TYPES[a.type].pin)) && !d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
   }
   let ml = dmg * P.MOR_PER_DMG * (o.morMul || 1);
   if (arc === 'flank') ml += P.MOR_FLANK;
@@ -590,7 +676,7 @@ function claimObjective(G, u) {
 
 // ---------- Artillerie ----------
 function spotted(G, side, c, r) {
-  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= P.SPOT && hasLOS(G, u.c, u.r, c, r));
+  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= (TYPES[u.type].spot || P.SPOT) && hasLOS(G, u.c, u.r, c, r));
 }
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
 function canShell(G, a, c, r, mode) {
@@ -718,7 +804,8 @@ function startTurn(G) {
 function canOrder(G, u) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && !(u.cd > 0); }
 function order(G, u, kind) {
   if (!canOrder(G, u) || (kind !== 'rally' && kind !== 'storm')) return [];
-  u.cd = P.ORDER_CD; const ids = [];
+  const relay = G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].relay && dist(o.c, o.r, u.c, u.r) <= 3);
+  u.cd = relay ? 1 : P.ORDER_CD; const ids = [];
   for (const o of G.units) {
     if (o.side !== u.side || !active(o) || cls(o) === 'walker' || dist(o.c, o.r, u.c, u.r) > P.OFFICER_RANGE) continue;
     if (kind === 'rally') { o.mor = Math.min(TYPES[o.type].mor, o.mor + P.ORDER_MOR); o.supp = 0; } else o.zeal = true;
@@ -783,7 +870,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder,
+  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ARMY_CAP, ARMY_WALKERS, ROSTER,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
