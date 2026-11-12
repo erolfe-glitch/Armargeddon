@@ -76,7 +76,7 @@ function renderTerrain() {
   const g = tcv.getContext('2d');
   g.fillStyle = '#1c1d17'; g.fillRect(0, 0, W, H);
   const sky = g.createLinearGradient(0, 0, 0, L.top * 1.2);
-  sky.addColorStop(0, 'rgba(150,52,24,0.55)'); sky.addColorStop(1, 'rgba(150,52,24,0)');
+  sky.addColorStop(0, 'rgba(120,22,12,0.78)'); sky.addColorStop(0.55, 'rgba(110,30,14,0.38)'); sky.addColorStop(1, 'rgba(110,30,14,0)');
   g.fillStyle = sky; g.fillRect(0, 0, W, L.top * 1.2);
   g.lineJoin = 'round'; g.lineCap = 'round';
   const lw = Math.max(1.5, s * 0.045);
@@ -202,8 +202,8 @@ const facesLeft = f => f === 2 || f === 3 || f === 4;
 // Figuren stehen in der unteren Hälfte ihres Feldes und bleiben schmal, damit sie Nachbarfelder nicht verdecken
 const SLOTS = { limber: [[0, 0.38]], medic: [[0.2, 0.4], [-0.22, 0.2]], mortar: [[0, 0.38]], inf: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]], storm: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]],
   flame: [[0.2, 0.4], [-0.22, 0.2]], cav: [[0, 0.4]], mg: [[0, 0.38]], art: [[0, 0.38]], walker: [[0, 0.4]] };
-const FH = { limber: 0.5, medic: 0.64, mortar: 0.62, inf: 0.64, storm: 0.64, flame: 0.64, mg: 0.64, art: 0.62, walker: 0.54, cav: 0.5 };
-const MAXW = 1.6;   // größte Bildbreite in Feldradien
+const FH = { limber: 0.58, medic: 0.62, mortar: 0.66, inf: 0.62, storm: 0.62, flame: 0.62, mg: 0.68, art: 0.74, walker: 0.86, cav: 0.57 };
+const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7 };   // größte Bildbreite in Feldradien
 
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -235,7 +235,7 @@ function drawUnit(u, d) {
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
   let sp = FIG.sprite(k, u.side, flip, s * FH[k]);
-  if (sp.cv.width > s * MAXW) sp = FIG.sprite(k, u.side, flip, s * FH[k] * s * MAXW / sp.cv.width);
+  { const mw = s * (MAXWK[k] || MAXW); if (sp.cv.width > mw) sp = FIG.sprite(k, u.side, flip, s * FH[k] * mw / sp.cv.width); }
   // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
   const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
   if (done) g.globalAlpha *= 0.6;
@@ -244,7 +244,7 @@ function drawUnit(u, d) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
     g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
     const lead = ox === slots[0][0] && oy === slots[0][1] ? leaderKind(u) : null;
-    if (lead) { const ls = FIG.sprite(lead, u.side, flip, s * FH.inf * 1.25); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); g.font = `900 ${Math.round(s * 0.34)}px sans-serif`; g.textAlign = 'center'; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText('★', fx, fy - ls.oy + s * 0.02); g.fillStyle = u.cd > 0 ? '#9a917a' : '#ffd24a'; g.fillText('★', fx, fy - ls.oy + s * 0.02); continue; }
+    if (lead) { const ls = FIG.sprite(lead, u.side, flip, s * FH.inf * 1.12); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); g.font = `900 ${Math.round(s * 0.34)}px sans-serif`; g.textAlign = 'center'; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText('★', fx, fy - ls.oy + s * 0.02); g.fillStyle = u.cd > 0 ? '#9a917a' : '#ffd24a'; g.fillText('★', fx, fy - ls.oy + s * 0.02); continue; }
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
       const px = fx + (flip ? 0.2 : -0.2) * s, top = fy - s * 1.35;
       g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.07); g.beginPath(); g.moveTo(px, fy - s * 0.2); g.lineTo(px, top); g.stroke();
@@ -272,17 +272,20 @@ function drawUnit(u, d) {
   // Zustandsmarken
   const tagY = y - s * (k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (text, bg, fg) => {
-    g.font = `800 ${Math.round(s * 0.27)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `800 ${Math.round(s * 0.26)}px Georgia, 'Palatino Linotype', serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
     const tw = g.measureText(text).width + s * 0.2;
-    g.fillStyle = O; g.fillRect(x - tw / 2 - 2, tagY - s * 0.19 - 2, tw + 4, s * 0.38 + 4);
-    g.fillStyle = bg; g.fillRect(x - tw / 2, tagY - s * 0.19, tw, s * 0.38);
-    g.fillStyle = fg; g.fillText(text, x, tagY + 1);
+    const th = s * 0.38, lx = x - tw / 2, ty = tagY - th / 2, n = s * 0.035;
+    g.save(); g.translate(x, tagY); g.rotate(-0.035); g.translate(-x, -tagY);
+    g.beginPath(); g.moveTo(lx - n, ty); g.lineTo(lx + tw * 0.3, ty - n); g.lineTo(lx + tw * 0.7, ty + n * 0.5); g.lineTo(lx + tw + n, ty - n * 0.5); g.lineTo(lx + tw, ty + th * 0.55); g.lineTo(lx + tw + n, ty + th);
+    g.lineTo(lx + tw * 0.6, ty + th + n); g.lineTo(lx + tw * 0.25, ty + th - n * 0.5); g.lineTo(lx - n, ty + th + n * 0.5); g.lineTo(lx, ty + th * 0.45); g.closePath();
+    g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.lineJoin = 'round'; g.stroke();
+    g.fillStyle = fg; g.fillText(text, x, tagY + 1); g.restore();
   };
-  if (u.status === 'rout') tag('FLIEHT', '#efe7d2', '#222');
-  else if (u.broken > 0) tag('PANNE', '#8d9189', '#16150f');
-  else if (u.limbered) tag('AUFGEPROTZT', '#c9b27a', '#16150f');
-  else if (u.supp > 0) tag('▼ NIEDER', '#e9cf5a', '#222');
-  else if (u.gassed) tag('GAS', '#c4d646', '#222');
+  if (u.status === 'rout') tag('FLIEHT', '#e6dcc0', '#7a1c10');
+  else if (u.broken > 0) tag('PANNE', '#b9b09a', '#1d140d');
+  else if (u.limbered) tag('AUFGEPROTZT', '#d9c698', '#1d140d');
+  else if (u.supp > 0) tag('▼ NIEDER', '#dcc070', '#5a1408');
+  else if (u.gassed) tag('GAS', '#b9c24a', '#1d2408');
 }
 
 // ---------- Zeichnen ----------

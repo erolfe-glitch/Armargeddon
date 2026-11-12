@@ -158,6 +158,45 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
   .factions, .modes { grid-template-columns: 1fr; }
   .fac canvas { width: 64px; height: 64px; }
 }
+
+/* ---- Grimdark-Anstrich: Rost, Eisen, Pergament. Nur Farben und Flächen, Maße bleiben. ---- */
+:root {
+  --ink: #0f0c0a; --panel: #241c17; --panel-2: #33271f; --edge: #6a4a35; --edge-d: #0a0706;
+  --text: #ecdfc2; --muted: #a8977c; --A: #e08a34; --D: #5a9fd8; --gold: #d8a63c; --bad: #d8472e; --go: #a8351f;
+  --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --iron: linear-gradient(#3a2e27, #1c1512);
+  --rivets: radial-gradient(circle at 6px 6px, #8a6a52 0 1.6px, #120d0a 1.7px 3px, transparent 3.2px);
+}
+body { background: #0c0908; }
+.top { background: var(--rivets) 0 0 / 46px 100% repeat-x, repeating-linear-gradient(92deg, rgba(120,60,30,.10) 0 3px, transparent 3px 19px), var(--iron); border-bottom: 3px solid #0a0706; box-shadow: inset 0 -2px 0 #5a2c1a, inset 0 1px 0 rgba(255,220,180,.08); }
+.brand { font-family: var(--serif); color: #c9482c; text-shadow: 0 2px 0 #1a0805; letter-spacing: .06em; font-size: 18px; }
+.turn { font-family: var(--serif); font-size: 15px; color: #e6d8b6; padding: 1px 7px; background: #15100d; border: 2px solid #4b392d; border-radius: 3px; box-shadow: inset 0 0 0 1px #0a0706, 0 1px 0 rgba(255,220,180,.08); }
+.chip, .obj { border-radius: 2px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.28), 0 0 0 1px #0a0706; }
+.meter { width: 132px; background: #120d0a; border-color: #0a0706; border-radius: 2px; box-shadow: 0 0 0 1px #4b392d; }
+.meter.A i { background: linear-gradient(#e89a45, #b5601f); } .meter.D i { background: linear-gradient(#6aaee2, #35719f); }
+.tbtn, .act, #btnInfo { background: var(--iron); border-color: #5a4334; border-bottom-color: #2a1d15; border-radius: 4px; color: #e6d8b6; text-shadow: 0 1px 0 #000; }
+.act.on { background: linear-gradient(#5a3a1a, #3a2410); border-color: var(--gold); }
+.board { background: #130d0b; box-shadow: inset 0 0 90px rgba(0,0,0,.6); }
+#toast { background: #d9c698; color: #1d140d; border: 2px solid #2a1c12; border-radius: 2px; font-family: var(--serif); font-weight: 700; box-shadow: 0 3px 0 rgba(0,0,0,.5); }
+#banner { background: linear-gradient(90deg, transparent, rgba(40,8,4,.94) 20%, rgba(40,8,4,.94) 80%, transparent); }
+#banner b { font-family: var(--serif); color: #e4c9a0; text-shadow: 0 3px 0 #1a0805; }
+.hud { background: repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 2px, transparent 2px 118px), repeating-linear-gradient(1deg, rgba(150,90,50,.06) 0 2px, transparent 2px 9px), linear-gradient(#2e221a, #17110d); border-top: 3px solid #0a0706; }
+.hud.A { box-shadow: inset 0 4px 0 var(--A), inset 0 6px 0 #0a0706; } .hud.D { box-shadow: inset 0 4px 0 var(--D), inset 0 6px 0 #0a0706; }
+#portrait { border-color: #0a0706; outline: 2px solid #6a4a35; border-radius: 3px; background: #1a1410; box-shadow: 0 0 0 4px #2a1f18; }
+#hudName { font-family: var(--serif); letter-spacing: .04em; color: #efe2c4; text-shadow: 0 2px 0 #0a0706; }
+.pill { background: #130e0b; border-color: #0a0706; border-radius: 3px; box-shadow: 0 0 0 1px #4b392d; }
+.pill small { color: #a08a6c; }
+.endbtn { background: linear-gradient(#b8412a, #7e2414); color: #f6e6c8; border: 3px solid #d98a5a; border-bottom: 7px solid #3f0f08; border-radius: 5px; font-family: var(--serif); text-shadow: 0 2px 0 #3f0f08; }
+.endbtn:hover { background: linear-gradient(#cc4c32, #8e2a18); }
+.endbtn:disabled { background: #4a4037; border-color: #6a5c4e; border-bottom-color: #2a221c; color: #b3a48c; text-shadow: none; }
+.overlay { background: radial-gradient(ellipse at 50% 0, rgba(90,20,10,.55), transparent 60%), rgba(10,7,6,.93); }
+.title { font-family: var(--serif); color: #c9482c; text-shadow: 0 4px 0 #2a0b05; }
+.kicker, .lbl, .history h3 { font-family: var(--serif); }
+.fac, .box { border-radius: 4px; background: linear-gradient(#2a201a, #1b1410); }
+.item, .modes label { border-radius: 4px; background: var(--iron); border-color: #5a4334; border-bottom-color: #2a1d15; }
+.item:hover:not(:disabled), .modes label:has(input:checked) { background: linear-gradient(#5a3a1a, #3a2410); border-color: var(--gold); }
+.item canvas, .fac canvas { border-radius: 2px; }
+.endstats div { background: #130e0b; border-radius: 3px; }
 </style>
 </head>
 <body>
