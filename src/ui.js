@@ -389,9 +389,16 @@ function draw() {
 
 // ---------- Ton ----------
 let soundOn = true;
-const lastSnd = {}, SND_GAP = { rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000 };
+const lastSnd = {}, SND_GAP = { rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, cut: 300, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
+// Hintergrundkulisse als leise Schleife
+let ambient = null;
+function setAmbient(on) {
+  if (!SND.ambient) return;
+  if (!ambient) { ambient = SND.ambient; ambient.loop = true; ambient.volume = 0.22; }
+  try { if (on) { const p = ambient.play(); if (p && p.catch) p.catch(() => {}); } else ambient.pause(); } catch (e) {}
+}
 function playSound(name, vol = 0.6) {
   if (!soundOn || !SND[name]) return;
   const t = performance.now(); if (lastSnd[name] != null && t - lastSnd[name] < (SND_GAP[name] || 100)) return; lastSnd[name] = t;   // nicht mehrfach im selben Augenblick
@@ -431,7 +438,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound('tank', 0.45); } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound('tank', 0.45); else playSound('steps', 0.6); } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -452,7 +459,7 @@ async function playEvent(e) {
     }
     case 'shell': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = center(e.c, e.r);
-      a.face = e.face;
+      a.face = e.face; playSound('launch', 0.6);
       boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = Math.max(12, Math.round(30 / speed));
       shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26' });
@@ -467,6 +474,7 @@ async function playEvent(e) {
     case 'melee': case 'counter': {
       const a = DU.get(e.a), d = DU.get(e.d);
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
+      { const au = unitById(e.a); if (e.t === 'melee') playSound(au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.5); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(140);
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
@@ -488,7 +496,7 @@ async function playEvent(e) {
     case 'gas': { const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'Gas!', '#d6e670'); await wait(220); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −1', '#f0d27a'); await wait(200); break; }
     case 'supp': floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
-    case 'rout': floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
+    case 'rout': playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
       if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { boom(d.x, d.y, s * 1.1, 'he'); playSound('boom2', 0.75); }
@@ -498,17 +506,17 @@ async function playEvent(e) {
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
     case 'rally': floater(...headPos(e.u), 'gesammelt!', '#b8ff7c', true); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
-    case 'cut': { const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
+    case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
     case 'crush': { const [x, y] = center(e.c, e.r); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain(); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
     case 'stuck': floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
     case 'breakdown': playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast('Ein Landkoloss bleibt mit einer Panne liegen.'); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
-    case 'limber': floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
-    case 'spawn': { addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
+    case 'limber': playSound('clank', 0.6); floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
+    case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
       for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
-    case 'heal': { const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'versorgt', '#8fe0c8'); await wait(120); break; }
+    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'versorgt', '#8fe0c8'); await wait(120); break; }
     case 'gascloud': break;
     case 'reinf': {
       for (const id of e.ids) { const nu = unitById(id); addDU(nu); const d = DU.get(id); d.x += s * 2; }
@@ -803,7 +811,7 @@ function startGame() {
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
-  banner('Die Schlacht am Grauwall', SIDES.A.name + ' greift an'); playSound('march', 0.45);
+  banner('Die Schlacht am Grauwall', SIDES.A.name + ' greift an'); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 function showHandover() {
@@ -823,6 +831,7 @@ function showEnd() {
   $('endStats').innerHTML = `<div><dt>Ausfälle ${SIDES.A.short}</dt><dd>${Math.round(E.losses(G, 'A') * 100)} %</dd></div><div><dt>Ausfälle Aschenwacht</dt><dd>${Math.round(E.losses(G, 'D') * 100)} %</dd></div>` +
     OBJECTIVES.map(o => `<div class="${G.ctrl[o.id]}"><dt>${o.name}</dt><dd>${SIDES[G.ctrl[o.id]].short}</dd></div>`).join('');
   $('end').hidden = false;
+  setAmbient(false);
   if (win && (!me || win === me)) playSound('win', 0.6);
 }
 
@@ -844,7 +853,7 @@ $('btnZoom').onclick = () => {
   layout(); syncAll();
   board.scrollLeft = fx * board.scrollWidth - board.clientWidth / 2; board.scrollTop = fy * board.scrollHeight - board.clientHeight / 2;
 };
-$('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; if (soundOn) playSound('rifle', 0.4); };
+$('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
 document.querySelectorAll('input[name=skin]').forEach(r => r.onchange = () => { applySkin(r.value); if (G) { updateUI(); } });
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
