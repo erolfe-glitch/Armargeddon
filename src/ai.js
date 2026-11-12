@@ -199,7 +199,8 @@ function buy(G) {
   const side = G.side, ev = [];
   G._wish = G._wish || { A: 0, D: 0 };
   for (let guard = 0; guard < 6; guard++) {
-    const type = WISH[side][G._wish[side] % WISH[side].length];
+    const wl = G.mechs ? WISH[side].concat(side === 'A' ? ['saeger', 'stahl'] : ['knecht', 'panzerk']) : WISH[side];
+    const type = wl[G._wish[side] % wl.length];
     if (!E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
     if (!hs.length) break;

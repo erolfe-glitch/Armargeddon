@@ -251,6 +251,7 @@ body { background: #0c0908; }
   .det { grid-template-columns: 1fr; } .det canvas { width: 130px; height: 130px; }
   .shopbtn { height: 48px; } .item { grid-template-columns: 72px 1fr auto; } .item canvas { width: 72px; height: 72px; } .facflag { height: 46px; }
 }
+.optrow input[type=checkbox] { width: 20px; height: 20px; vertical-align: -4px; } .tbtn.on { border-color: var(--gold); color: #ffe9a8; }
 </style>
 </head>
 <body>
@@ -309,13 +310,17 @@ body { background: #0c0908; }
       <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
     </div>
     <p class="lbl">Kampfmaschinen und Flaggen</p>
-    <div class="optrow armyrow"><label><input type="checkbox" id="optMechs"> Kampfmaschinen (Mechs) zulassen: Sägeschreiter für den Angreifer, Eisenknecht und Bohrkoloss für die Aschenwacht</label></div>
+    <div class="modes" style="grid-template-columns:repeat(2,1fr)">
+      <label><input type="radio" name="mechs" value="0" checked><b>Ohne Kampfmaschinen</b><small>Nur Truppen und Gerät wie im Ersten Weltkrieg.</small></label>
+      <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit Kampfmaschinen</b><small>Je Seite zwei Mechs und ein Trupp in Kampfanzügen. Du holst sie über „Armee zusammenstellen“ oder im Nachschub.</small></label>
+    </div>
     <div class="optrow armyrow" id="flagRowA"><span>Flagge des Konkordats:</span><span class="flagpick" id="flagsA"></span></div>
     <div class="optrow armyrow"><span>Flagge der Aschenwacht:</span><span class="flagpick" id="flagsD"></span></div>
     <div class="optrow armyrow" id="flagRowF" hidden><span>Flagge der Blauen Legion:</span><span class="flagpick" id="flagsF"></span></div>
     <p class="lbl">Armee</p>
     <div class="optrow armyrow"><button class="tbtn" id="btnArmy">Armee zusammenstellen</button><span id="armyInfo">Standardarmee</span></div>
-    <div class="optrow"><label><input type="checkbox" id="optBlood" checked> Blut-Effekte</label><label><input type="checkbox" id="optSound" checked> Ton</label></div>
+    <p class="lbl">Einstellungen</p>
+    <div class="optrow armyrow"><button class="tbtn" id="setFull">⛶ Vollbild</button><button class="tbtn" id="setSpeed">Tempo 1×</button><button class="tbtn" id="setZoom">Zoom 1×</button><label><input type="checkbox" id="optBlood" checked> Blut-Effekte</label><label><input type="checkbox" id="optSound" checked> Ton</label></div>
     <div class="startrow"><button class="endbtn" id="startBtn">Schlacht beginnen</button><button class="tbtn" id="btnRules">Regeln</button><button class="tbtn" id="closeStart" hidden>Zurück</button></div>
     <p class="note">Die Welt ist erfunden. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918. Tippe im Spiel bei einer Einheit auf „i“, dann steht dort, wie es im echten Krieg war.</p>
   </div>
@@ -357,6 +362,7 @@ body { background: #0c0908; }
     <p class="lead" style="margin:0 0 8px">Du hast so viele Punkte, wie die Standardarmee wert ist. Stelle damit deine eigene Truppe zusammen. Sie wird automatisch aufgestellt.</p>
     <div class="armybar"><span>★ <b id="armyPts">0 / 0</b> Punkte</span><span id="armyCnt"></span><em id="armyMsg"></em></div>
     <div class="startrow" style="margin:8px 0"><button class="endbtn" id="armyOk">Übernehmen</button><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button></div>
+    <div class="armybar" id="armyMechRow" style="position:static;margin-bottom:10px"><span>Kampfmaschinen sind ausgeschaltet.</span><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
     <div class="shoplist" id="armyList"></div>
   </div>
 </div>

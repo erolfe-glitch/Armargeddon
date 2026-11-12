@@ -203,10 +203,10 @@ const facesLeft = f => f === 2 || f === 3 || f === 4;
 const SLOTS = { limber: [[0, 0.38]], medic: [[0.2, 0.4], [-0.22, 0.2]], mortar: [[0, 0.38]], inf: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]], storm: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]],
   flame: [[0.2, 0.4], [-0.22, 0.2]], cav: [[0, 0.4]], mg: [[0, 0.38]], art: [[0, 0.38]], walker: [[0, 0.4]],
   bike: [[0, 0.38]], sniper: [[0, 0.38]], dog: [[0, 0.38]], atr: [[0, 0.38]], signal: [[0.15, 0.4], [-0.25, 0.2]], sapper: [[0.2, 0.4], [-0.22, 0.2]], raider: [[0.22, 0.42], [-0.24, 0.22]],
-  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]] };
+  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]], mechB: [[0, 0.42]], suitA: [[0.24, 0.42], [-0.26, 0.2]], suitD: [[0.24, 0.42], [-0.26, 0.2]] };
 const FH = { limber: 0.58, medic: 0.62, mortar: 0.66, inf: 0.62, storm: 0.62, flame: 0.62, mg: 0.68, art: 0.74, walker: 0.86, cav: 0.57,
-  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64 };
-const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
+  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, suitA: 0.6, suitD: 0.6 };
+const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, mechB: 2.1, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
 
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -273,7 +273,7 @@ function drawUnit(u, d) {
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
   // Zustandsmarken
-  const tagY = y - s * (k === 'mech' || k === 'drill' || k === 'mechA' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
+  const tagY = y - s * (k === 'mech' || k === 'drill' || k === 'mechA' || k === 'mechB' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (text, bg, fg) => {
     g.font = `800 ${Math.round(s * 0.26)}px Georgia, 'Palatino Linotype', serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
     const tw = g.measureText(text).width + s * 0.2;
@@ -523,7 +523,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', 0.5); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', 0.5); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -562,7 +562,7 @@ async function playEvent(e) {
       const a = DU.get(e.a), d = DU.get(e.d);
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
-      if (e.t === 'melee') playSound(af === 'drill' || af === 'mechA' ? 'smash' : af === 'shield' ? 'sword' : af === 'raider' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.55);
+      if (e.t === 'melee') playSound(au && TYPES[au.type].mech ? 'smash' : af === 'shield' ? 'sword' : af === 'raider' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.55);
       { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm') && af !== 'shield' && af !== 'raider') shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 }); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(140);
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
@@ -927,13 +927,14 @@ function applySkin(sk) {
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
 }
 function showStart(first) {
-  $('start').hidden = false; armyInfo(); drawFlagPick(); $('closeStart').hidden = first;
+  $('start').hidden = false; armyInfo(); drawFlagPick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; $('setZoom').textContent = 'Zoom ' + String(ZOOM).replace('.', ',') + '×'; $('closeStart').hidden = first;
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
   drawPortraitLater($('pD1'), 'mg', 'D'); drawPortraitLater($('pD2'), 'storm', 'D'); drawPortraitLater($('pD3'), 'flame', 'D');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
 const customArmy = { A: null, D: null }, flagSel = { D: 0, F: 0, A: 0 };
 const mechsOn = () => $('optMechs').checked;
+function mechChanged() { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); }
 const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
 function drawFlagPick() {
   const D = (window.FXDATA || {}).flags || {};
@@ -951,7 +952,7 @@ function armyInfo() {
 function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
   applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
-  $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot';
+  $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
   for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
   $('armyList').innerHTML = roster(sd).map(t => { const T = TYPES[t];
     return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small><span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span></div>`; }).join('');
@@ -1019,7 +1020,13 @@ $('armyCancel').onclick = () => { $('army').hidden = true; armyInfo(); };
 $('armySwap').onclick = () => { if (E.armyOk(armySide, armyDraft, mechsOn())) armyKeep(); openArmy(armySide === 'A' ? 'D' : 'A'); };
 document.querySelectorAll('input[name=mode]').forEach(i => i.addEventListener('change', armyInfo));
 document.querySelectorAll('input[name=skin]').forEach(i => i.addEventListener('change', drawFlagPick));
-$('optMechs').addEventListener('change', () => { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); });
+document.querySelectorAll('input[name=mechs]').forEach(i => i.addEventListener('change', mechChanged));
+$('armyMech').onclick = () => { $('optMechs').checked = true; mechChanged(); const keep = armyDraft; openArmy(armySide); armyDraft = keep; armyRefresh(); };
+// Einstellungen schon im Startmenü
+$('setFull').onclick = () => $('btnFull').onclick();
+$('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; };
+$('setZoom').onclick = () => { ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1; const t = String(ZOOM).replace('.', ',') + '×'; $('btnZoom').textContent = '🔍 ' + t; $('setZoom').textContent = 'Zoom ' + t; if (G) { layout(); syncAll(); } };
+document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
 $('closeStart').onclick = () => { $('start').hidden = true; };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; };
