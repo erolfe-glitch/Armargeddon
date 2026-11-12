@@ -211,6 +211,46 @@ body { background: #0c0908; }
 .stepper { grid-column: 1 / 4; display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 .stepper i { min-width: 28px; text-align: center; font: 700 20px var(--display); font-style: normal; color: var(--text); }
 .stepper .tbtn { min-width: 44px; height: 36px; font-size: 20px; }
+/* Schlagworte, Flaggen, größere Menüs */
+.app { max-width: 100vw; overflow: hidden; }
+.sps { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; overflow: hidden; margin-left: 4px; flex: 0 1 auto; min-width: 0; }
+.stats { min-width: 0; } .stats .pill { flex: none; } .hmain { overflow: hidden; }
+.item { min-width: 0; } .item b { min-width: 0; overflow-wrap: anywhere; }
+#hudName { min-width: 0; overflow: hidden; text-overflow: ellipsis; } #btnInfo { flex: none; }
+.sp { flex: none; padding: 3px 9px; background: #3a2a14; border: 1px solid var(--gold); border-radius: 3px; color: #ffe9a8; font: 700 13px var(--display); letter-spacing: .03em; white-space: nowrap; }
+.act.pass { border-color: #7fae6a; color: #d6f0c8; }
+.sideflag { height: 30px; width: auto; margin-right: -8px; filter: drop-shadow(0 1px 1px #000); }
+.fac { position: relative; } .facflag { position: absolute; right: 8px; top: 8px; height: 58px; width: auto; }
+#btnInfo { width: auto; height: 30px; padding: 0 12px; border-radius: 4px; border-color: var(--gold); color: #ffe9a8; font: 700 14px var(--display); }
+#btnInfo::after { content: " Info"; }
+.shopbtn { height: 36px; font-size: 15px; border-color: var(--gold); color: #ffe9a8; } .hbtns .endbtn { height: 52px; }
+.overlay { font-size: 17px; } .sheet { max-width: 1080px; }
+.lead { font-size: 18px; } .lbl { font-size: 15px; } .note { font-size: 15px; } .optrow { font-size: 16px; }
+.modes b { font-size: 20px; } .modes small { font-size: 15px; } .modes label { padding: 12px 14px; }
+.fac h3 { font-size: 23px; } .fac p { font-size: 15px; } .fac canvas { width: 88px; height: 88px; }
+.overlay .tbtn { height: 40px; padding: 0 16px; font-size: 15px; }
+.shoplist { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.item { grid-template-columns: 84px 1fr auto; padding: 10px 12px; } .item canvas { width: 84px; height: 84px; }
+.item b { font-size: 20px; } .item .cost { font-size: 22px; white-space: nowrap; } .item small { font-size: 14.5px; line-height: 1.3; color: #cbbd9f; }
+.rules li { font-size: 17px; }
+.box { width: min(820px, 100%); padding: 22px 24px; }
+.det { gap: 18px; } .det canvas { width: 170px; height: 170px; } .det h3 { font-size: 30px; font-family: var(--serif); }
+.det p { font-size: 17px; line-height: 1.4; } .det .sps { flex-wrap: wrap; margin: 8px 0; } .det .sp { font-size: 15px; padding: 4px 10px; }
+.det .stats { height: auto; flex-wrap: wrap; margin-bottom: 6px; } .det .pill b { font-size: 19px; } .det .pill small { font-size: 11px; }
+.endstats dd { font-size: 18px; } .history { font-size: 16px; }
+@media (max-height: 520px) and (orientation: landscape) {
+  .meter { width: 76px; } .top { gap: 4px 5px; } .sideflag { margin-right: -3px; }
+  .sp { font-size: 11px; padding: 2px 6px; } .shopbtn { height: 28px; font-size: 13px; } .hbtns .endbtn { height: 42px; } #btnInfo { height: 24px; font-size: 12px; padding: 0 8px; } .sideflag { height: 22px; }
+  .det canvas { width: 110px; height: 110px; } .det p { font-size: 15px; } .box { padding: 12px 14px; } .fac canvas { width: 60px; height: 60px; } .facflag { height: 40px; }
+}
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 800px) { .wind { display: none; } .meter { width: 60px; } .meter span { font-size: 9px; } .tbtn { min-width: 28px; padding: 0 5px; } }
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 700px) { .sideflag { display: none; } .meter { width: 48px; } .meter span { display: none; } }
+@media (orientation: portrait) {
+  .stats { height: 112px; flex-wrap: wrap; align-content: flex-start; gap: 4px 5px; } .stats .pill { min-width: 44px; padding: 1px 6px 2px; } .pill b { font-size: 15px; }
+  .sps { margin: 0; width: 100%; flex: none; } .sp { font-size: 12px; padding: 2px 7px; } #hudName { font-size: 17px; } .item b { font-size: 17px; }
+  .det { grid-template-columns: 1fr; } .det canvas { width: 130px; height: 130px; }
+  .shopbtn { height: 48px; } .item { grid-template-columns: 72px 1fr auto; } .item canvas { width: 72px; height: 72px; } .facflag { height: 46px; }
+}
 </style>
 </head>
 <body>
@@ -218,7 +258,7 @@ body { background: #0c0908; }
   <header class="top">
     <span class="brand">Armargeddon</span>
     <span class="turn" id="turn">Runde 1/16</span>
-    <span id="sidechip" class="chip A">Konkordat</span>
+    <img id="sideFlag" class="sideflag" alt="" hidden><span id="sidechip" class="chip A">Konkordat</span>
     <span class="wind" title="Windrichtung: dorthin treibt Gas"><span>Wind</span><i id="windArrow"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M1 5h9V1l7 6-7 6V9H1z" fill="#d6e670" stroke="#16150f" stroke-width="1.5" stroke-linejoin="round"/></svg></i></span>
     <div class="meters">
       <div class="meter A" id="meterA" title="Kampfkraft. Marke: hier bricht das Heer zusammen"><i></i><b></b><span></span></div>
@@ -254,8 +294,8 @@ body { background: #0c0908; }
     <h1 class="title">Armargeddon</h1>
     <p class="lead">Drei Jahre Grabenkrieg. Heute soll der Grauwall fallen: mit Landkolossen, Donnerrohren und Gas gegen Draht, Gräben und Maschinengewehre.</p>
     <div class="factions">
-      <div class="fac A"><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und zwei Grabenlinien.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
-      <div class="fac D"><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Ab Runde 8 kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
+      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und zwei Grabenlinien.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
+      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Ab Runde 8 kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
     </div>
     <p class="lbl">Wer greift an?</p>
     <div class="modes" style="grid-template-columns:repeat(2,1fr)">
@@ -269,7 +309,8 @@ body { background: #0c0908; }
       <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
     </div>
     <p class="lbl">Kampfmaschinen und Flaggen</p>
-    <div class="optrow armyrow"><label><input type="checkbox" id="optMechs"> Kampfmaschinen (Mechs) zulassen: Eisenknecht und Bohrkoloss für die Aschenwacht</label></div>
+    <div class="optrow armyrow"><label><input type="checkbox" id="optMechs"> Kampfmaschinen (Mechs) zulassen: Sägeschreiter für den Angreifer, Eisenknecht und Bohrkoloss für die Aschenwacht</label></div>
+    <div class="optrow armyrow" id="flagRowA"><span>Flagge des Konkordats:</span><span class="flagpick" id="flagsA"></span></div>
     <div class="optrow armyrow"><span>Flagge der Aschenwacht:</span><span class="flagpick" id="flagsD"></span></div>
     <div class="optrow armyrow" id="flagRowF" hidden><span>Flagge der Blauen Legion:</span><span class="flagpick" id="flagsF"></span></div>
     <p class="lbl">Armee</p>
@@ -301,6 +342,7 @@ body { background: #0c0908; }
       <li>Mörser dürfen ziehen und danach feuern. Kann eine Einheit schießen und stürmen, wählst du mit „Nahkampf“ oder „Beschuss“.</li>
       <li>Anführer (★) geben jede zweite Runde einen Befehl: „Sammeln“ oder „Sturmbefehl“.</li>
       <li>Armee: Im Startmenü kannst du unter „Armee zusammenstellen“ deine Truppen selbst wählen. Du hast so viele Punkte, wie die Standardarmee wert ist.</li>
+      <li>„✓ Fertig“ schließt eine Einheit für diese Runde ab. Einheiten, die nichts mehr tun können, werden grau.</li>
       <li>Kampfmaschinen (Mechs) gibt es nur, wenn du sie im Startmenü zulässt. Dort wählst du auch die Flagge.</li>
       <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende, bei 4 Punkten steht es unentschieden, oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
@@ -335,6 +377,8 @@ body { background: #0c0908; }
       <canvas id="detPortrait"></canvas>
       <div>
         <h3 id="detName"></h3><div class="kicker" id="detSide"></div>
+        <div class="sps" id="detSp"></div>
+        <div class="stats" id="detStats"></div>
         <p><b>Kann:</b> <span id="detCan"></span></p>
         <p id="detOff"><b>Anführer:</b> Angriff ×1,15 und weniger Moralverlust für eigene Einheiten bis 2 Felder entfernt. Sammelt Fliehende. Jede zweite Runde ein Befehl: „Sammeln“ (Moral +1,5, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25).</p>
         <p class="real"><b>Im echten Krieg:</b> <span id="detReal"></span></p>

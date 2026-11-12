@@ -203,10 +203,10 @@ const facesLeft = f => f === 2 || f === 3 || f === 4;
 const SLOTS = { limber: [[0, 0.38]], medic: [[0.2, 0.4], [-0.22, 0.2]], mortar: [[0, 0.38]], inf: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]], storm: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]],
   flame: [[0.2, 0.4], [-0.22, 0.2]], cav: [[0, 0.4]], mg: [[0, 0.38]], art: [[0, 0.38]], walker: [[0, 0.4]],
   bike: [[0, 0.38]], sniper: [[0, 0.38]], dog: [[0, 0.38]], atr: [[0, 0.38]], signal: [[0.15, 0.4], [-0.25, 0.2]], sapper: [[0.2, 0.4], [-0.22, 0.2]], raider: [[0.22, 0.42], [-0.24, 0.22]],
-  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]] };
+  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]] };
 const FH = { limber: 0.58, medic: 0.62, mortar: 0.66, inf: 0.62, storm: 0.62, flame: 0.62, mg: 0.68, art: 0.74, walker: 0.86, cav: 0.57,
-  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64 };
-const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
+  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64 };
+const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
 
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -216,7 +216,7 @@ function drawUnit(u, d) {
   const g = ctx;
   g.globalAlpha = d.alpha * (u.status === 'rout' ? 0.75 : 1);
   const isSel = sel && sel.id === u.id;
-  const done = human(u.side) && G.side === u.side && u.moved && u.attacked && E.active(u) && !busy;
+  const done = human(u.side) && G.side === u.side && E.active(u) && !busy && spent.has(u.id);
   // Standring mit Blickrichtung
   g.beginPath(); g.ellipse(x, y, s * 0.7, s * 0.7 * K, 0, 0, 7);
   g.fillStyle = acc; g.globalAlpha *= done ? 0.12 : 0.28; g.fill();
@@ -273,7 +273,7 @@ function drawUnit(u, d) {
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
   // Zustandsmarken
-  const tagY = y - s * (k === 'mech' || k === 'drill' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
+  const tagY = y - s * (k === 'mech' || k === 'drill' || k === 'mechA' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (text, bg, fg) => {
     g.font = `800 ${Math.round(s * 0.26)}px Georgia, 'Palatino Linotype', serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
     const tw = g.measureText(text).width + s * 0.2;
@@ -329,7 +329,7 @@ function draw() {
   for (const o of OBJECTIVES) {
     const [x, y] = center(o.c, o.r), col = FIG.PAL[G.ctrl[o.id]].accent, px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fim = G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : null;
+    const fim = G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : FLI['flagA' + flagSel.A];
     if (fim) { const fh = s * 1.15, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px - fw * 0.08, top - s * 0.12, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
@@ -562,13 +562,13 @@ async function playEvent(e) {
       const a = DU.get(e.a), d = DU.get(e.d);
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
-      if (e.t === 'melee') playSound(af === 'drill' ? 'smash' : af === 'shield' ? 'sword' : af === 'raider' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.55);
+      if (e.t === 'melee') playSound(af === 'drill' || af === 'mechA' ? 'smash' : af === 'shield' ? 'sword' : af === 'raider' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.55);
       { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm') && af !== 'shield' && af !== 'raider') shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 }); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(140);
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
       if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
-      if (armored || af === 'drill') { if (armored) playSound('armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
+      if (armored || af === 'drill' || af === 'mechA') { if (armored) playSound('armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
       await wait(170); a.lunge = null; await wait(70); break;
     }
     case 'hit': {
@@ -786,6 +786,7 @@ function banner(title, sub) {
 function updateTop() {
   $('turn').textContent = `Runde ${G.turn}/${P.MAXT}`;
   const ch = $('sidechip'); ch.className = 'chip ' + G.side; ch.textContent = SIDES[G.side].short + (human(G.side) ? '' : ' · KI');
+  { const D = (window.FXDATA || {}).flags || {}, fs = G.side === 'D' ? D['flagD' + flagSel.D] : skinA === 'F' ? D['flagF' + flagSel.F] : D['flagA' + flagSel.A]; const fi = $('sideFlag'); if (fs && fi.getAttribute('src') !== fs) fi.src = fs; fi.hidden = !fs; }
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
   for (const sd of ['A', 'D']) {
     const v = 1 - E.losses(G, sd), el = $('meter' + sd);
@@ -795,8 +796,22 @@ function updateTop() {
   }
   $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id]}" title="${o.name}">⚑ ${o.pts}</span>`).join('') + `<span class="pts">${E.points(G)}/${P.WIN_A}</span>`;
 }
+// Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
+const spent = new Set();
+function hasAction(u) {
+  if (u.broken > 0) return false;
+  if (!u.moved && !u.supp && E.reachable(G, u).size) return true;
+  if (u.attacked) return false;
+  const T = TYPES[u.type];
+  if (T.cls === 'medic') return G.units.some(o => E.canHeal(G, u, o));
+  if (T.cls === 'art') { for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.canShell(G, u, c, r, 'he')) return true; }
+  if (E.canCut(G, u)) return true;
+  return G.units.some(d => d.side !== u.side && E.alive(d) && (E.canFire(G, u, d) || E.canMelee(G, u, d)));
+}
+function refreshSpent() { spent.clear(); if (!G || G.over || !human(G.side)) return; for (const u of G.units) if (u.side === G.side && E.active(u) && !hasAction(u)) spent.add(u.id); }
 function updateUI() {
   if (!G) return;
+  refreshSpent();
   updateTop();
   const be = $('btnEnd');
   be.disabled = busy || !!G.over || !human(G.side);
@@ -831,7 +846,8 @@ function updateHud() {
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
     $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
     $('hudStats').innerHTML = pill('Stärke', fmt(u.str), u.str <= 3.3 ? 'bad' : '') + pill('Moral', fmt(u.mor), u.mor < P.FALLBACK_MOR + 1 ? 'bad' : 'gold') +
-      pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–');
+      pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–') +
+      `<div class="sps">${(u.officer ? ['★ Anführer: gibt Befehle'] : []).concat(T.sp || []).map(x => `<span class="sp">${x}</span>`).join('')}</div>`;
     $('btnInfo').hidden = false;
     let row = '';
     if (previewT && sel) {
@@ -848,6 +864,7 @@ function updateHud() {
         } else acts.push(`<span class="hint">${sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: zieht 4 Felder, feuert nicht. Nach dem Abprotzen ab der nächsten Runde feuerbereit.' : 'Hat diese Runde schon gehandelt.'}</span>`);
       } else {
         if ([...targets.values()].some(t => t.both)) acts.push(`<button class="act ${atkPref === 'melee' ? 'on' : ''}" data-act="p-melee">⚔ Nahkampf</button><button class="act ${atkPref === 'fire' ? 'on' : ''}" data-act="p-fire">➶ Beschuss</button>`);
+        if (!spent.has(sel.id)) acts.push(`<button class="act pass" data-act="pass" title="Diese Einheit ist für diese Runde fertig">✓ Fertig</button>`);
         if (sel.officer) acts.push(E.canOrder(G, sel) ? `<button class="act" data-act="o-rally" title="Eigene Truppen bis 2 Felder: Moral +1,5, Niederhalten endet">📯 Sammeln</button><button class="act" data-act="o-storm" title="Eigene Truppen bis 2 Felder: Nahkampf ×1,25 in dieser Runde">⚔ Sturmbefehl</button>` : `<span class="hint">★ Befehl wieder in ${sel.cd} Runde${sel.cd > 1 ? 'n' : ''}.</span>`);
         if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +1,5, Moral +1).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
         if ((!sel.moved || sel.turnOnly) && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
@@ -880,6 +897,7 @@ function updateHud() {
 }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
+  if (a === 'pass') { E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
   if (a === 'o-rally' || a === 'o-storm') return act(() => E.order(G, sel, a.slice(2)));
   if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
   if (!sel || busy) return;
@@ -894,6 +912,8 @@ function showDetail() {
   drawPortraitLater($('detPortrait'), figOf(T), u.side);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
+  $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');
+  $('detStats').innerHTML = pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Moral', T.mor) + pill('Zug', T.mv) + pill('Schuss', T.rng ? `${T.rng} Felder` : '–') + pill('Kosten', '★ ' + (E.COST[u.type] || '–'));
   $('detOff').hidden = !u.officer;
   $('detail').hidden = false;
 }
@@ -912,13 +932,14 @@ function showStart(first) {
   drawPortraitLater($('pD1'), 'mg', 'D'); drawPortraitLater($('pD2'), 'storm', 'D'); drawPortraitLater($('pD3'), 'flame', 'D');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
-const customArmy = { A: null, D: null }, flagSel = { D: 0, F: 0 };
+const customArmy = { A: null, D: null }, flagSel = { D: 0, F: 0, A: 0 };
 const mechsOn = () => $('optMechs').checked;
 const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
 function drawFlagPick() {
   const D = (window.FXDATA || {}).flags || {};
-  for (const k of ['D', 'F']) $('flags' + k).innerHTML = [0, 1, 2, 3].map(i => `<button class="flagbtn ${flagSel[k] === i ? 'on' : ''}" data-k="${k}" data-i="${i}" aria-label="Flagge ${i + 1}"><img src="${D['flag' + k + i] || ''}" alt=""></button>`).join('');
-  $('flagRowF').hidden = ((document.querySelector('input[name=skin]:checked') || {}).value || 'A') !== 'F';
+  for (const k of ['A', 'D', 'F']) $('flags' + k).innerHTML = [0, 1, 2, 3].map(i => `<button class="flagbtn ${flagSel[k] === i ? 'on' : ''}" data-k="${k}" data-i="${i}" aria-label="Flagge ${i + 1}"><img src="${D['flag' + k + i] || ''}" alt=""></button>`).join('');
+  { const fsk = (document.querySelector('input[name=skin]:checked') || {}).value || 'A'; $('flagRowF').hidden = fsk !== 'F'; $('flagRowA').hidden = fsk === 'F';
+    $('facFlagA').src = D[fsk === 'F' ? 'flagF' + flagSel.F : 'flagA' + flagSel.A] || ''; $('facFlagD').src = D['flagD' + flagSel.D] || ''; }
   document.querySelectorAll('.flagbtn').forEach(b => b.onclick = () => { flagSel[b.dataset.k] = +b.dataset.i; drawFlagPick(); });
 }
 let armySide = 'A', armyDraft = {};
@@ -1034,7 +1055,7 @@ window.__dbg = {
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(),
+  sync: () => syncAll(), get spentN() { return spent.size; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; }
 };
 })();
