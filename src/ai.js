@@ -55,7 +55,9 @@ function posValue(G, u, c, r) {
   let v;
   if (k === 'medic') {
     v = -th * 6;
-    for (const [nc, nr] of E.neighbors(c, r)) { const o = E.unitAt(G, nc, nr); if (o && o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'walker') v += 0.4 + (10 - o.str) * 0.35; }
+    let bestH = 0;
+    for (const [nc, nr] of E.neighbors(c, r)) { const o = E.unitAt(G, nc, nr); if (o && o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'walker') { v += 0.2; bestH = Math.max(bestH, Math.min(1.5, 10 - o.str)); } }
+    v += bestH * 1.2;
     let fd = 99; for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'art' && E.cls(o) !== 'medic') fd = Math.min(fd, E.dist(o.c, o.r, c, r));
     return v - (fd === 99 ? 0 : fd * 0.5);
   }
@@ -215,6 +217,18 @@ function next(G) {
   if (G.over) return null;
   const tk = G.turn + G.side;
   if (G._aiKey !== tk) { G._aiKey = tk; G._aiDone = new Set(); }
+  for (const u of G.units) {   // Befehle der Anführer zuerst
+    if (!E.canOrder(G, u) || G._aiDone.has('o' + u.id)) continue;
+    G._aiDone.add('o' + u.id);
+    let weak = 0, close = 0;
+    for (const o of G.units) {
+      if (o.side !== u.side || !E.active(o) || E.cls(o) === 'walker' || E.dist(o.c, o.r, u.c, u.r) > E.P.OFFICER_RANGE) continue;
+      if (o.supp > 0) weak += 2; else if (o.mor <= E.TYPES[o.type].mor - 1.5) weak++;
+      if (E.TYPES[o.type].atk >= 4 && nearestEnemyDist(G, o.side, o.c, o.r) <= E.TYPES[o.type].mv) close++;
+    }
+    if (weak >= 2) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
+    if (close >= 2) return { u: u.id, steps: [{ k: 'order', kind: 'storm' }] };
+  }
   for (const u of order(G, G.side)) {
     if (G._aiDone.has(u.id)) continue;
     G._aiDone.add(u.id);
@@ -225,6 +239,7 @@ function next(G) {
     if (o.cut) steps.push({ k: 'cut' });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
+    if (E.cls(u) === 'medic') steps.push({ k: 'heal' });
     if (!o.shell && !o.limber && !o.move && !o.cut && !u.moved) {
       const adj = E.adjEnemies(G, u);
       const bad = adj.find(e => E.arcOf(G, u, e.c, e.r) !== 'front');
@@ -241,6 +256,12 @@ function exec(G, uid, s) {
   if (s.k === 'turn') return E.turnUnit(G, u, s.face);
   if (s.k === 'cut') return E.cutWire(G, u);
   if (s.k === 'limber') return E.limber(G, u);
+  if (s.k === 'order') return E.order(G, u, s.kind);
+  if (s.k === 'heal') {
+    let best = null;
+    for (const [nc, nr] of E.neighbors(u.c, u.r)) { const o = E.unitAt(G, nc, nr); if (o && E.canHeal(G, u, o) && (!best || o.str < best.str)) best = o; }
+    return best ? E.heal(G, u, best) : [];
+  }
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];

@@ -238,6 +238,9 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <li>Marken an jeder eigenen Einheit: grüner Pfeil = kann noch ziehen, rote Raute = kann noch angreifen. Fertige Einheiten sind abgedunkelt.</li>
       <li>Geschütze können aufprotzen: Dann ziehen sie 4 Felder, feuern aber erst wieder nach dem Abprotzen. Rot zeigt ihr Schussfeld.</li>
       <li>Nachschub: Für Punkte (★) holst du neue Einheiten an den eigenen Rand, auch Feldscher und Mörser.</li>
+      <li>Feldscher und Aschenpfleger versorgen je Runde einen Nachbarn: Einheit wählen, grün markierten Nachbarn antippen.</li>
+      <li>Mörser dürfen ziehen und danach feuern. Kann eine Einheit schießen und stürmen, wählst du mit „Nahkampf“ oder „Beschuss“.</li>
+      <li>Anführer (★) geben jede zweite Runde einen Befehl: „Sammeln“ oder „Sturmbefehl“.</li>
       <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende, bei 4 Punkten steht es unentschieden, oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
     <button class="endbtn" id="closeRules">Verstanden</button>
@@ -261,7 +264,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
       <div>
         <h3 id="detName"></h3><div class="kicker" id="detSide"></div>
         <p><b>Kann:</b> <span id="detCan"></span></p>
-        <p id="detOff"><b>Offizier:</b> Angriff ×1,15 und weniger Moralverlust für eigene Einheiten bis 2 Felder entfernt. Sammelt Fliehende.</p>
+        <p id="detOff"><b>Anführer:</b> Angriff ×1,15 und weniger Moralverlust für eigene Einheiten bis 2 Felder entfernt. Sammelt Fliehende. Jede zweite Runde ein Befehl: „Sammeln“ (Moral +1,5, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25).</p>
         <p class="real"><b>Im echten Krieg:</b> <span id="detReal"></span></p>
       </div>
     </div>

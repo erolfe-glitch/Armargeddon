@@ -5,7 +5,7 @@
 
 // ---------- Grundwerte (per Simulation abgestimmt) ----------
 const P = {
-  DMG: 0.6,
+  DMG: 0.61,
   FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6,
   COUNTER: { front: 0.6, flank: 0.3, rear: 0 },
   MOR_PER_DMG: 0.8, MOR_FLANK: 0.5, MOR_REAR: 1, MOR_SURR: 1,
@@ -13,6 +13,7 @@ const P = {
   BREAK: { A: 0.55, D: 0.5 },
   TRENCH_DEF: 1.6, CRATER_FIRE: 1.2, VILLAGE_DEF: 1.5, FOREST_DEF: 1.4, WIRE_DEF: 0.6,
   MG_VS_WIRE: 2, MG_VS_CAV: 2,
+  ORDER_CD: 2, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
   MAXT: 16, WIN_A: 5, DRAW_A: 4,
@@ -22,7 +23,7 @@ const P = {
   BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
   REINF_TURN: 8, LIMBER_MV: 4,
-  PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 0.6, HEAL_MOR: 0.5
+  PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 1.5, HEAL_MOR: 1
 };
 
 const COLS = 20, ROWS = 11;   // kleineres Feld, dafür größere Figuren
@@ -67,16 +68,16 @@ const TYPES = {
 
 Object.assign(TYPES, {
   feldscher: { side: 'A', name: 'Feldscher', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Versorgt zu Rundenbeginn alle eigenen Nachbareinheiten: Stärke +0,6 und Moral +0,5. Kaum Kampfkraft.',
+    can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +1,5 und Moral +1. Kaum Kampfkraft.',
     real: 'Sanitäter und Krankenträger holten Verwundete oft unter Beschuss aus dem Niemandsland. Viele von ihnen fielen dabei selbst.' },
-  moerser: { side: 'A', name: 'Grabenmörser', cls: 'art', fig: 'mortar', atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
-    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann mit der Infanterie vorrücken.',
+  moerser: { side: 'A', name: 'Grabenmörser', cls: 'art', fig: 'mortar', mobile: true, atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
+    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann in derselben Runde ziehen und feuern.',
     real: 'Der britische Stokes-Mörser von 1915 war so leicht, dass ihn wenige Männer in den vordersten Graben tragen konnten.' },
   heiler: { side: 'D', name: 'Aschenpfleger', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Versorgt zu Rundenbeginn alle eigenen Nachbareinheiten: Stärke +0,6 und Moral +0,5. Kaum Kampfkraft.',
+    can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +1,5 und Moral +1. Kaum Kampfkraft.',
     real: 'Auf den Verbandplätzen direkt hinter der Front wurden Verwundete zuerst versorgt und nach Dringlichkeit sortiert.' },
-  minenwerfer: { side: 'D', name: 'Minenwerfer', cls: 'art', fig: 'mortar', atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
-    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann mit der Infanterie vorrücken.',
+  minenwerfer: { side: 'D', name: 'Minenwerfer', cls: 'art', fig: 'mortar', mobile: true, atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
+    can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann in derselben Runde ziehen und feuern.',
     real: 'Deutsche Minenwerfer schossen schwere Sprengladungen im steilen Bogen in die gegnerischen Gräben.' }
 });
 // Nachschub: Kosten in Punkten und Angebot je Seite
@@ -307,7 +308,7 @@ function moveUnit(G, u, c, r) {
   if (!opt) return ev;
   const T = TYPES[u.type];
   u.moved = true; u.run = 0;
-  if (T.mg || T.cls === 'art') u.attacked = true;
+  if (T.mg || (T.cls === 'art' && !T.mobile)) u.attacked = true;
   let seg = [[u.c, u.r]];
   const flush = () => { if (seg.length > 1) ev.push({ t: 'move', u: u.id, path: seg }); seg = [[u.c, u.r]]; };
   for (const [nc, nr] of opt.path) {
@@ -438,6 +439,7 @@ function preview(G, a, d, kind, o) {
   if (!ranged && hex(G, ac, ar).t === 'wire') { m *= 0.7; tags.push('aus dem Draht ×0,7'); }
   if (ranged && D.cls === 'flame') { m *= P.FLAME_HIT; tags.push('Brandtank getroffen ×1,5'); }
   if (officerAt(G, a.side, ac, ar)) { m *= P.OFFICER_ATK; tags.push('Offizier ×1,15'); }
+  if (!ranged && a.zeal) { m *= P.ORDER_ATK; tags.push('Sturmbefehl ×1,25'); }
   if (a.supp > 0) { m *= P.SUPP_ATK; tags.push('niedergehalten ×0,5'); }
   if (a.gassed) { m *= P.GAS_ATK; tags.push('im Gas ×0,7'); }
   let dm = 1;
@@ -593,7 +595,7 @@ function spotted(G, side, c, r) {
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
 function canShell(G, a, c, r, mode) {
   const T = TYPES[a.type];
-  if (!active(a) || T.cls !== 'art' || a.limbered || a.attacked || a.moved || a.supp > 0) return false;
+  if (!active(a) || T.cls !== 'art' || a.limbered || a.attacked || (a.moved && !T.mobile) || a.supp > 0) return false;
   const d = dist(a.c, a.r, c, r);
   if (d < 1 || d > T.rng) return false;
   if (mode === 'gas' && a.gas <= 0) return false;
@@ -674,7 +676,7 @@ function startTurn(G) {
   G.pts[s] += P.PTS_TURN[s];
   for (const u of G.units) {
     u.fireDmg = 0;
-    if (u.side === s) { u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; }
+    if (u.side === s) { u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; if (u.cd > 0) u.cd--; }
     else if (TYPES[u.type].mg) u.react = true;
   }
   for (const u of G.units.filter(x => x.side === s && alive(x))) {
@@ -708,16 +710,33 @@ function startTurn(G) {
       u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1));
     }
   }
-  for (const m of G.units) if (m.side === s && active(m) && cls(m) === 'medic') {
-    for (const [c, r] of neighbors(m.c, m.r)) {
-      const o = unitAt(G, c, r);
-      if (!o || o.side !== s || !active(o) || cls(o) === 'walker' || cls(o) === 'medic' || (o.str >= 10 && o.mor >= TYPES[o.type].mor)) continue;
-      o.str = Math.min(10, o.str + P.HEAL); o.mor = Math.min(TYPES[o.type].mor, o.mor + P.HEAL_MOR);
-      ev.push({ t: 'heal', u: o.id, str: o.str, morv: o.mor });
-    }
-  }
   ev.push(...checkEnd(G));
   return ev;
+}
+// ---------- Befehle der Anführer ----------
+// Einmal alle zwei eigenen Runden. 'rally' = Sammeln (Moral +1,5, Niederhalten endet), 'storm' = Sturmbefehl (Nahkampf ×1,25 in dieser Runde).
+function canOrder(G, u) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && !(u.cd > 0); }
+function order(G, u, kind) {
+  if (!canOrder(G, u) || (kind !== 'rally' && kind !== 'storm')) return [];
+  u.cd = P.ORDER_CD; const ids = [];
+  for (const o of G.units) {
+    if (o.side !== u.side || !active(o) || cls(o) === 'walker' || dist(o.c, o.r, u.c, u.r) > P.OFFICER_RANGE) continue;
+    if (kind === 'rally') { o.mor = Math.min(TYPES[o.type].mor, o.mor + P.ORDER_MOR); o.supp = 0; } else o.zeal = true;
+    ids.push(o.id);
+  }
+  return [{ t: 'order', u: u.id, kind, name: u.officer, ids, mors: ids.map(id => G.units.find(x => x.id === id).mor) }];
+}
+
+// ---------- Sanitäter ----------
+function canHeal(G, m, t) {
+  return active(m) && cls(m) === 'medic' && !m.attacked && t && t !== m && t.side === m.side && active(t) && cls(t) !== 'walker' &&
+    dist(m.c, m.r, t.c, t.r) === 1 && (t.str < 10 || t.mor < TYPES[t.type].mor);
+}
+function heal(G, m, t) {
+  if (!canHeal(G, m, t)) return [];
+  m.attacked = true; m.face = faceIndex(angleTo(m.c, m.r, t.c, t.r));
+  t.str = Math.min(10, t.str + P.HEAL); t.mor = Math.min(TYPES[t.type].mor, t.mor + P.HEAL_MOR);
+  return [{ t: 'heal', u: t.id, by: m.id, str: t.str, morv: t.mor }];
 }
 // ---------- Nachschub ----------
 function spawnHexes(G, side, type) {
@@ -735,7 +754,7 @@ function buy(G, side, type, c, r) {
 }
 function endTurn(G) {
   if (G.over) return [];
-  for (const u of G.units) if (u.side === G.side && u.supp > 0) u.supp--;
+  for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; }
   if (G.side === 'A') G.side = 'D';
   else {
     if (G.turn >= P.MAXT) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
@@ -764,7 +783,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber,
+  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,

@@ -4,7 +4,7 @@ root = pathlib.Path(__file__).resolve().parent.parent
 src = root / 'src'
 html = (src / 'index.html').read_text(encoding='utf8')
 parts = []
-for name in ['engine.js', 'figures.js', 'art.js', 'sound.js', 'ai.js', 'ui.js']:
+for name in ['engine.js', 'figures.js', 'art.js', 'fx.js', 'sound.js', 'ai.js', 'ui.js']:
     code = (src / name).read_text(encoding='utf8')
     assert '</script' not in code, name
     parts.append(f'<script>\n{code}\n</script>')
