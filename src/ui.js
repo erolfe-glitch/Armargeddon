@@ -34,7 +34,7 @@ function layout() {
   const wrap = board.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const portrait = matchMedia('(orientation: portrait)').matches;
-  const MIN_S = 40;   // kleinste Feldgröße in CSS-Pixeln; größere Karten werden dann verschoben (ziehen, Mausrad, Pfeiltasten)
+  const MIN_S = 46;   // kleinste Feldgröße in CSS-Pixeln; größere Karten werden dann verschoben (ziehen, Mausrad, Pfeiltasten)
   const cssW = Math.max(wrap.width, portrait ? 760 : 560, MIN_S * (1.5 * COLS + 0.5)) * ZOOM;
   const s = cssW * dpr / (1.5 * COLS + 0.5);
   const top = s * 1.55, bot = s * 0.45;
@@ -228,6 +228,8 @@ const FH = { limber: 0.58, medic: 0.62, mortar: 0.66, inf: 0.62, storm: 0.62, fl
   bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, suitA: 0.6, suitD: 0.6,
   fgun: 0.7, leader1: 0.66, leader4: 0.66, flamer: 0.62, shieldA: 0.62, phone: 0.6, brawler: 0.62, knight: 0.64, sapperD: 0.6, banner: 0.74 };
 const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, mechB: 2.1, fgun: 1.8, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
+// Figuren etwas größer seit den kleineren Karten (Wunsch des Nutzers)
+const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK[k] *= 1.06;
 
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -689,7 +691,7 @@ function pick(x, y) {
   for (const u of G.units) {
     if (!E.alive(u)) continue;
     const d = DU.get(u.id);
-    if (Math.abs(x - d.x) < L.s * 0.42 && y < d.y + L.s * K * 0.5 && y > d.y - L.s * 0.62) if (!uFig || d.y > DU.get(uFig.id).y) uFig = u;
+    if (Math.abs(x - d.x) < L.s * 0.42 && y < d.y + L.s * K * 0.5 && y > d.y - L.s * Math.min(0.62, SQ3 * K * 0.55)) if (!uFig || d.y > DU.get(uFig.id).y) uFig = u;
   }
   return { h, uHex, uFig };
 }

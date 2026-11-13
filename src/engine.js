@@ -18,20 +18,20 @@ const P = {
   RECOVER: 0.5, RECOVER_COVER: 1,
   MAXT: 16, WIN_A: 5, DRAW_A: 4,
   SUPP: 0.6, SUPP_ATK: 0.5,
-  ART_MIN: 2, SPOT: 5, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
+  ART_MIN: 2, SPOT: 4, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
   BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
-  REINF_TURN: 8, LIMBER_MV: 4,
+  REINF_TURN: 8, LIMBER_MV: 3,
   PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 1.5, HEAL_MOR: 1
 };
 
-// Größe des Schlachtfelds: hängt von der gewählten Karte ab (useMap), Grauwall 20 × 11
-let COLS = 20, ROWS = 11;
+// Größe des Schlachtfelds: hängt von der gewählten Karte ab (useMap), Grauwall 16 × 10
+let COLS = 16, ROWS = 10;
 
 const SIDES = {
   A: { name: 'Konkordat von Valmor', short: 'Konkordat', edge: 0, dir: 1 },
-  D: { name: 'Aschenwacht des Grauwalls', short: 'Aschenwacht', edge: COLS - 1, dir: -1 }
+  D: { name: 'Aschenwacht des Grauwalls', short: 'Aschenwacht', edge: 15, dir: -1 }
 };
 
 const TYPES = {
@@ -41,13 +41,13 @@ const TYPES = {
   mahlwerk: { side: 'A', name: 'Mahlwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
     can: 'Maschinengewehr, 3 Felder weit. Feuert von selbst auf Gegner, die sich im Offenen bewegen. Wer zieht, schießt nicht.',
     real: 'Maschinengewehre wie das britische Vickers oder das deutsche MG 08 schossen rund 450 bis 500 Schuss pro Minute.' },
-  haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 8, fs: 5, gas: 2,
-    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 4 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
+  haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 2,
+    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Gepanzert: Gewehre und MG prallen ab. Walzt Stacheldraht nieder, überquert Gräben. Bleibt manchmal mit einer Panne liegen.',
     real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
-  reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 5, rng: 0, fs: 0,
+  reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
     real: 'Die Kavallerie wartete an der Westfront jahrelang auf den Durchbruch. Gegen Maschinengewehre und Stacheldraht war sie fast machtlos.' },
   grenadier: { side: 'D', name: 'Aschengrenadiere', cls: 'inf', atk: 4, def: 4, mor: 7, mv: 3, rng: 2, fs: 2,
@@ -56,8 +56,8 @@ const TYPES = {
   sense: { side: 'D', name: 'Sensenwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
     can: 'Maschinengewehr, 3 Felder weit. Feuert von selbst auf Gegner, die sich im Offenen bewegen. Wer zieht, schießt nicht.',
     real: 'Am ersten Tag der Somme-Schlacht, dem 1. Juli 1916, hatte die britische Armee rund 57.000 Tote und Verwundete, sehr viele durch MG-Feuer.' },
-  geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 8, fs: 5, gas: 1,
-    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Aufgeprotzt zieht es 4 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
+  geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 1,
+    can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Aufgeprotzt zieht es 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Bei Flesquières schossen deutsche Feldgeschütze am 20. November 1917 im direkten Richten zahlreiche britische Panzer ab.' },
   sturm: { side: 'D', name: 'Sturmbrecher', cls: 'storm', atk: 6, def: 5, mor: 9, mv: 3, rng: 0, fs: 0,
     can: 'Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Landkolosse im Nahkampf ×1,5.',
@@ -84,14 +84,14 @@ Object.assign(TYPES, {
 
 // Weitere Truppen für die Armee-Auswahl und den Nachschub
 Object.assign(TYPES, {
-  radler: { side: 'A', name: 'Radfahrer-Trupp', cls: 'inf', fig: 'bike', atk: 3, def: 3, mor: 6, mv: 5, rng: 2, fs: 2,
-    can: 'Schnelle Infanterie: zieht 5 Felder, kämpft aber schwächer als die Kohorte. Schlamm, Trichter und Draht bremsen wie bei allen Fußtruppen.',
+  radler: { side: 'A', name: 'Radfahrer-Trupp', cls: 'inf', fig: 'bike', atk: 3, def: 3, mor: 6, mv: 4, rng: 2, fs: 2,
+    can: 'Schnelle Infanterie: zieht 4 Felder, kämpft aber schwächer als die Kohorte. Schlamm, Trichter und Draht bremsen wie bei allen Fußtruppen.',
     real: 'Viele Armeen hatten Radfahrtruppen, etwa britische Cyclist Battalions oder deutsche Radfahr-Kompanien. Auf Straßen waren sie schnell und leise, im Trichterfeld mussten sie schieben.' },
-  scharf: { side: 'A', name: 'Scharfschütze', cls: 'inf', fig: 'sniper', pin: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 5, fs: 3,
-    can: 'Schießt 5 Felder weit. Jeder Treffer hält das Ziel nieder. Im Nahkampf fast wehrlos.',
+  scharf: { side: 'A', name: 'Scharfschütze', cls: 'inf', fig: 'sniper', pin: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 4, fs: 3,
+    can: 'Schießt 4 Felder weit. Jeder Treffer hält das Ziel nieder. Im Nahkampf fast wehrlos.',
     real: 'Scharfschützen mit Zielfernrohr lauerten oft stundenlang getarnt. Schon ein kurz über die Grabenkante gehobener Kopf konnte tödlich sein.' },
-  melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', courier: true, atk: 2, def: 2, mor: 7, mv: 6, rng: 0, fs: 0,
-    can: 'Schnell (6 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +1 Aktionspunkt, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
+  melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', courier: true, atk: 2, def: 2, mor: 7, mv: 5, rng: 0, fs: 0,
+    can: 'Schnell (5 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +1 Aktionspunkt, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
     real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
   pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', fig: 'sapper', sapper: true, atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schneidet Draht und kann danach noch angreifen. Sprengladungen: im Nahkampf ×1,5 gegen Kolosse und Kampfmaschinen.',
@@ -102,14 +102,14 @@ Object.assign(TYPES, {
   schild: { side: 'D', name: 'Schildträger', cls: 'inf', fig: 'shield', atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
     can: 'Schwer gepanzert und langsam. Hält Gräben und Ruinen sehr zäh, hat aber keine Schusswaffe.',
     real: 'Im Stellungskrieg wurden Stahlschilde und Brustpanzer erprobt, etwa der deutsche Grabenpanzer ab 1916. Sie waren schwer und schützten vor allem gegen Splitter.' },
-  buechse: { side: 'D', name: 'Panzerbüchsen-Trupp', cls: 'inf', fig: 'atr', at: 2, atk: 2, def: 3, mor: 7, mv: 2, rng: 4, fs: 3,
-    can: 'Schießt 4 Felder weit. Durchschlägt Panzerung: Beschuss trifft Landkolosse ×2.',
+  buechse: { side: 'D', name: 'Panzerbüchsen-Trupp', cls: 'inf', fig: 'atr', at: 2, atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 3,
+    can: 'Schießt 3 Felder weit. Durchschlägt Panzerung: Beschuss trifft Landkolosse ×2.',
     real: 'Das deutsche Tankgewehr M1918 war die erste Panzerbüchse der Welt. Es verschoss 13-mm-Geschosse und hatte einen sehr starken Rückstoß.' },
   schwer: { side: 'D', name: 'Schwere Grabenwacht', cls: 'inf', fig: 'heavy', atk: 4, def: 5, mor: 8, mv: 2, rng: 2, fs: 2,
     can: 'Infanterie mit Brustpanzer: bessere Abwehr und Moral als Grenadiere, aber nur 2 Felder Bewegung.',
     real: 'Der deutsche Stahlhelm wurde 1916 eingeführt und senkte die Zahl der Kopfverletzungen deutlich. Für Posten gab es zusätzlich eine Stirnplatte.' },
-  signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 8, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (8 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
+  signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 6, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
+    can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (6 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
     real: 'Leuchtpistolen gaben vereinbarte Zeichen an die Artillerie, zum Beispiel für Sperrfeuer. Grabenperiskope erlaubten den Blick über die Brustwehr.' },
   saeger: { side: 'A', name: 'Sägeschreiter', cls: 'walker', fig: 'mechA', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Drehlauf-Waffe und Kreissäge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
@@ -129,11 +129,11 @@ Object.assign(TYPES, {
   schildwall: { side: 'A', name: 'Schildwall', cls: 'inf', fig: 'shieldA', atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
     can: 'Schwer gepanzert und langsam. Gut, um Gräben und Ruinen zu halten, die man genommen hat. Keine Schusswaffe.',
     real: 'Beide Seiten erprobten Stahlschilde und Körperpanzer. Sie waren schwer und schützten vor allem gegen Splitter, kaum gegen Gewehrkugeln aus der Nähe.' },
-  feldkanone: { side: 'A', name: 'Feldkanone', cls: 'art', fig: 'fgun', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5,
-    can: 'Leichtes Geschütz: 6 Felder Reichweite, kein Gas. Direkter Schuss bis 3 Felder trifft Kolosse und Kampfmaschinen ×2,5. Aufgeprotzt zieht sie 4 Felder. Im Nahkampf wehrlos.',
+  feldkanone: { side: 'A', name: 'Feldkanone', cls: 'art', fig: 'fgun', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 5, fs: 5,
+    can: 'Leichtes Geschütz: 5 Felder Reichweite, kein Gas. Direkter Schuss bis 3 Felder trifft Kolosse und Kampfmaschinen ×2,5. Aufgeprotzt zieht sie 3 Felder. Im Nahkampf wehrlos.',
     real: 'Die britische 18-Pfünder-Feldkanone war das wichtigste Geschütz der britischen Armee. Bis 1918 verschoss sie rund 100 Millionen Granaten.' },
-  fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 8, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (8 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben.',
+  fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 6, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
+    can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (6 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben.',
     real: 'Feldtelefone verbanden die Gräben mit den Batterien. Die Leitungen wurden tief eingegraben, rissen im Trommelfeuer aber trotzdem ständig.' },
   grabenk: { side: 'D', name: 'Grabenkämpfer', cls: 'storm', fig: 'brawler', atk: 6, def: 3, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Nahkämpfer mit Grabenschwert und Keule. Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf.',
@@ -172,7 +172,7 @@ const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, hau
   radler: 3, melder: 2, scharf: 4, pionier: 3, raeumer: 4, signal: 2, schild: 4, buechse: 5, schwer: 4, knecht: 9, bohrer: 9, saeger: 8, klaue: 8, stahl: 6, panzerk: 6,
   hauptA: 4, generalA: 7, hauptD: 4, generalD: 7, flammen: 4, schildwall: 3, feldkanone: 5, fernsprech: 2, grabenk: 5, ritter: 6, pionierD: 3, banner: 4 };
 // Kurze Schlagworte zu den Besonderheiten, für die Einheitenkarte
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 5 Felder"], "scharf": ["Schuss 5 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +1 Aktionspunkt", "Zieht 6 Felder"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 4 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 6", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +0,5"], "hauptA": ["Befehl alle 2 Runden, 2 Felder"], "hauptD": ["Befehl alle 2 Runden, 2 Felder"], "generalA": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 4 Felder"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +1 Aktionspunkt", "Zieht 5 Felder"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +0,5"], "hauptA": ["Befehl alle 2 Runden, 2 Felder"], "hauptD": ["Befehl alle 2 Runden, 2 Felder"], "generalA": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
 const SHOP = { A: ['hauptA', 'generalA', 'kohorte', 'radler', 'melder', 'fernsprech', 'feldscher', 'pionier', 'scharf', 'schildwall', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'flammen', 'feldkanone', 'haubitze', 'koloss', 'stahl', 'saeger', 'klaue'],
   D: ['hauptD', 'generalD', 'grenadier', 'signal', 'heiler', 'pionierD', 'schwer', 'schild', 'banner', 'buechse', 'sense', 'grabenk', 'ritter', 'minenwerfer', 'brand', 'sturm', 'geschuetz', 'panzerk', 'knecht', 'bohrer'] };
@@ -203,7 +203,7 @@ const TERRAIN = {
              real: 'Ab 1917 bauten die Deutschen in Flandern Unterstände aus Stahlbeton. Die Briten nannten sie „Pillboxes“.' },
   fabrik:  { name: 'Fabrikruine', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,7. Versperrt die Sicht.',
              real: 'Bei Loos kämpften Briten und Deutsche 1915 im Kohlerevier um Zechen, Fördertürme und Abraumhalden.' },
-  kirche:  { name: 'Kirchenruine', cost: 1, info: 'Abwehr ×1,5. Versperrt die Sicht. Vom Turm sieht man 8 Felder weit.',
+  kirche:  { name: 'Kirchenruine', cost: 1, info: 'Abwehr ×1,5. Versperrt die Sicht. Vom Turm sieht man 6 Felder weit.',
              real: 'Kirchtürme waren begehrte Beobachtungsposten und wurden deshalb gezielt beschossen. In Albert hing die vergoldete Madonna jahrelang schief vom zerschossenen Turm.' },
   barrikade: { name: 'Barrikade', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,6 von allen Seiten. Reiter kommen nicht durch.',
              real: 'In umkämpften Dörfern sperrten Soldaten die Straßen mit Schutt, Möbeln, Karren und Sandsäcken.' },
@@ -288,121 +288,130 @@ function mapTools(cols, rows, seed) {
   return T;
 }
 const MAPS = {
-  grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 20, rows: 11, zoneA: 3,
-    desc: 'Die erste Schlacht: breite Front, zwei Grabenlinien, Kanal mit Brücke. Ab Runde 8 kommt der Gegenstoß.',
-    objectives: GRAUWALL_OBJ, setup: GRAUWALL_SETUP, reinf: GRAUWALL_REINF, build: buildGrauwall, armyMax: { A: 26, D: 22 } },
-  selm: { id: 'selm', name: 'Die Ruinen von Selm', size: 'Klein', cols: 18, rows: 14, zoneA: 2, zoneD: 7,
+  grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 7,
+    desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke. Zur Mitte der Schlacht kommt der Gegenstoß.',
+    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
+    objectives: [
+      { id: 'veskar', name: 'Ruinen von Veskar', c: 12, r: 4, pts: 2 },
+      { id: 'schanze', name: 'Grauwall-Schanze', c: 10, r: 5, pts: 2 },
+      { id: 'totholz', name: 'Totholz von Ilm', c: 14, r: 1, pts: 3 },
+      { id: 'marn', name: 'Brücke von Marn', c: 15, r: 8, pts: 2 }],
+    army: { A: { kohorte: 7, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
+    build: () => {
+      const T = mapTools(16, 10, 1917);
+      T.line(2, 0, 9, 'trench');
+      T.field(3, 4, 0, 9, [['crater', 0.3], ['mud', 0.16]]);
+      T.line(5, 0, 9, 'wire', [2, 7]); T.line(6, 0, 9, 'wire', [4, 8]);
+      T.line(7, 0, 9, 'trench');
+      T.field(8, 8, 0, 9, [['crater', 0.25]]);
+      T.line(9, 0, 9, 'wire', [1, 5, 8]);
+      T.line(10, 0, 9, 'trench');
+      T.ridge(11, 13, 3, 5);
+      T.many([[12, 4], [12, 3], [13, 4]], 'village');
+      T.many([[13, 0], [14, 0], [14, 1], [15, 1], [13, 1]], 'forest');
+      T.line(14, 6, 9, 'canal'); T.set(14, 8, 'bridge');
+      T.many([[15, 7], [15, 8]], 'village');
+      return T.M;
+    } },
+  selm: { id: 'selm', name: 'Die Ruinen von Selm', size: 'Klein', cols: 14, rows: 11, zoneA: 2, zoneD: 5,
     desc: 'Kurz und hart: ein Graben, ein Drahtgürtel, drei kleine Ziele dicht hinter der Front. Siegen kann nur, wer den Kirchhügel nimmt.',
-    maxT: 14, reinfTurn: 7, winA: 5, drawA: 3, armyMax: { A: 24, D: 20 },
+    maxT: 12, reinfTurn: 6, winA: 5, drawA: 3, armyMax: { A: 20, D: 16 },
     objectives: [
-      { id: 'nordhof', name: 'Nordgehöft', c: 10, r: 2, pts: 1 },
-      { id: 'kreuz', name: 'Kreuzung von Selm', c: 9, r: 7, pts: 1 },
-      { id: 'suedwald', name: 'Südwald', c: 11, r: 11, pts: 1 },
-      { id: 'kirche', name: 'Kirchhügel', c: 15, r: 6, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, feldscher: 1 }, D: { grenadier: 7, sense: 5, geschuetz: 2, heiler: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm'],
+      { id: 'nordhof', name: 'Nordgehöft', c: 7, r: 1, pts: 1 },
+      { id: 'kreuz', name: 'Kreuzung von Selm', c: 7, r: 5, pts: 1 },
+      { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 1 },
+      { id: 'kirche', name: 'Kirchhügel', c: 12, r: 5, pts: 3 }],
+    army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 3, feldscher: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1 } },
+    reinf: ['sturm', 'sturm', 'brand'],
     build: () => {
-      const T = mapTools(18, 14, 1871);
-      T.line(2, 0, 13, 'trench');
-      T.field(3, 5, 0, 13, [['crater', 0.3], ['mud', 0.18]]);
-      T.line(6, 0, 13, 'wire', [2, 7, 11]);
-      T.line(7, 0, 13, 'trench');
-      T.field(8, 11, 0, 13, [['crater', 0.14]]);
-      T.many([[10, 2], [11, 2], [10, 3]], 'village');
-      T.many([[9, 7], [10, 7], [10, 6]], 'village');
-      T.blob(11, 11, 1, 'forest');
-      T.line(12, 0, 13, 'wire', [1, 4, 8, 12]);
-      T.line(13, 0, 13, 'trench');
-      T.ridge(14, 16, 5, 8);
-      T.many([[15, 7], [16, 6]], 'village'); T.set(15, 6, 'kirche');
-      T.blob(16, 1, 1, 'forest');
-      T.set(10, 6, 'fabrik'); T.set(9, 8, 'barrikade');
-      T.set(13, 5, 'bunker'); T.set(13, 9, 'bunker');
-      T.many([[4, 9], [5, 10], [4, 10], [5, 3]], 'sumpf');
-      T.line(16, 9, 13, 'bahn');
+      const T = mapTools(14, 11, 1871);
+      T.line(1, 0, 10, 'trench');
+      T.field(2, 3, 0, 10, [['crater', 0.3], ['mud', 0.16]]);
+      T.many([[3, 7], [3, 8], [2, 8]], 'sumpf');
+      T.line(4, 0, 10, 'wire', [2, 5, 8]);
+      T.line(5, 0, 10, 'trench');
+      T.field(6, 8, 0, 10, [['crater', 0.14]]);
+      T.many([[7, 1], [8, 1], [7, 2]], 'village');
+      T.set(7, 5, 'village'); T.set(8, 5, 'fabrik'); T.set(7, 6, 'barrikade');
+      T.blob(8, 9, 1, 'forest');
+      T.line(9, 0, 10, 'wire', [1, 4, 7, 10]);
+      T.line(10, 0, 10, 'trench'); T.set(10, 3, 'bunker'); T.set(10, 7, 'bunker');
+      T.ridge(11, 13, 4, 6);
+      T.set(12, 5, 'kirche'); T.many([[12, 6], [13, 5]], 'village');
+      T.blob(13, 1, 1, 'forest');
+      T.line(13, 8, 10, 'bahn');
       return T.M;
     } },
-  lerne: { id: 'lerne', name: 'Das Tal der Lerne', size: 'Mittel', cols: 24, rows: 18, zoneA: 3, zoneD: 9,
-    desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 tief im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
-    maxT: 18, reinfTurn: 9, winA: 6, drawA: 5, armyMax: { A: 32, D: 30 },
+  lerne: { id: 'lerne', name: 'Das Tal der Lerne', size: 'Mittel', cols: 18, rows: 13, zoneA: 2, zoneD: 7,
+    desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
+    maxT: 16, reinfTurn: 8, winA: 6, drawA: 5, armyMax: { A: 26, D: 24 },
     objectives: [
-      { id: 'muehle', name: 'Lerner Mühle', c: 11, r: 3, pts: 1 },
-      { id: 'bahnhof', name: 'Bahnhof Lerne', c: 12, r: 9, pts: 2 },
-      { id: 'kalkwald', name: 'Kalkwald', c: 13, r: 14, pts: 2 },
-      { id: 'nordbruecke', name: 'Nordbrücke', c: 17, r: 4, pts: 2 },
-      { id: 'hoehe', name: 'Höhe 304', c: 20, r: 10, pts: 3 }],
-    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 1, moerser: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 1 } },
-    reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz'],
+      { id: 'muehle', name: 'Lerner Mühle', c: 8, r: 2, pts: 1 },
+      { id: 'bahnhof', name: 'Bahnhof Lerne', c: 9, r: 6, pts: 2 },
+      { id: 'kalkwald', name: 'Kalkwald', c: 10, r: 10, pts: 2 },
+      { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 2 },
+      { id: 'hoehe', name: 'Höhe 304', c: 16, r: 7, pts: 3 }],
+    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 11, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
-      const T = mapTools(24, 18, 1916);
-      T.line(3, 0, 17, 'trench');
-      T.field(4, 7, 0, 17, [['crater', 0.32], ['mud', 0.2]]);
-      T.line(8, 0, 17, 'wire', [3, 8, 13, 16]);
-      T.line(9, 0, 17, 'trench');
-      T.field(10, 13, 0, 17, [['crater', 0.16], ['mud', 0.06]]);
-      T.many([[11, 3], [12, 3], [11, 2]], 'village');
-      T.many([[12, 8], [12, 9], [13, 9], [13, 8]], 'village');
-      T.blob(13, 14, 1, 'forest'); T.many([[14, 15], [12, 16]], 'forest');
-      T.line(14, 7, 17, 'wire', [9, 13, 16]);
-      T.line(15, 6, 17, 'trench');
-      T.line(17, 0, 7, 'canal'); T.set(17, 4, 'bridge');
-      T.line(18, 0, 6, 'trench', [4]);
-      T.line(19, 7, 13, 'trench');
-      T.ridge(19, 21, 8, 12);
-      T.many([[20, 10], [20, 11], [21, 10]], 'village');
-      T.blob(22, 2, 1, 'forest'); T.blob(22, 16, 1, 'forest');
-      T.set(11, 3, 'fabrik');
-      T.line(12, 10, 17, 'bahn');
-      T.blob(13, 14, 1, 'wald'); T.many([[14, 15], [12, 16], [14, 13]], 'wald'); T.many([[13, 13], [13, 14], [13, 15], [13, 16]], 'waldweg');
-      T.set(17, 6, 'furt');
-      T.many([[15, 1], [15, 2], [16, 2], [16, 1]], 'sumpf');
-      T.set(20, 10, 'kirche'); T.set(19, 9, 'bunker'); T.set(19, 12, 'bunker');
+      const T = mapTools(18, 13, 1916);
+      T.line(2, 0, 12, 'trench');
+      T.field(3, 5, 0, 12, [['crater', 0.32], ['mud', 0.2]]);
+      T.line(6, 0, 12, 'wire', [2, 6, 10]);
+      T.line(7, 0, 12, 'trench');
+      T.field(8, 9, 0, 12, [['crater', 0.16]]);
+      T.set(8, 2, 'fabrik'); T.many([[8, 1], [9, 2]], 'village');
+      T.many([[9, 5], [10, 6]], 'village'); T.set(9, 6, 'village'); T.line(9, 7, 12, 'bahn');
+      T.blob(10, 10, 1, 'wald'); T.many([[10, 9], [10, 10], [10, 11]], 'waldweg');
+      T.line(11, 5, 12, 'wire', [7, 10]);
+      T.line(12, 4, 12, 'trench');
+      T.many([[11, 1], [12, 1], [12, 2]], 'sumpf');
+      T.line(13, 0, 5, 'canal'); T.set(13, 3, 'bridge'); T.set(13, 5, 'furt');
+      T.line(14, 0, 4, 'trench', [3]);
+      T.line(15, 5, 10, 'trench');
+      T.ridge(15, 16, 6, 9);
+      T.set(16, 7, 'kirche'); T.set(15, 6, 'bunker'); T.set(15, 9, 'bunker'); T.many([[16, 8], [17, 7]], 'village');
+      T.blob(17, 1, 1, 'forest'); T.blob(17, 11, 1, 'forest');
       return T.M;
     } },
-  front: { id: 'front', name: 'Die Grauwall-Front', size: 'Groß', cols: 30, rows: 22, zoneA: 3, zoneD: 11,
-    desc: 'Die ganze Front: drei Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
-    maxT: 22, reinfTurn: 11, winA: 8, drawA: 6, armyMax: { A: 42, D: 40 },
+  front: { id: 'front', name: 'Die Grauwall-Front', size: 'Groß', cols: 22, rows: 16, zoneA: 2, zoneD: 9,
+    desc: 'Die ganze Front: mehrere Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
+    maxT: 18, reinfTurn: 9, winA: 8, drawA: 6, armyMax: { A: 34, D: 32 },
     objectives: [
-      { id: 'kessel', name: 'Vorposten Kessel', c: 13, r: 4, pts: 1 },
-      { id: 'brand', name: 'Gehöft Brand', c: 13, r: 17, pts: 2 },
-      { id: 'kreuzhof', name: 'Kreuzhof', c: 16, r: 11, pts: 2 },
-      { id: 'schwarzwald', name: 'Schwarzwäldchen', c: 19, r: 4, pts: 2 },
-      { id: 'schleuse', name: 'Kanalschleuse', c: 21, r: 17, pts: 2 },
-      { id: 'feste', name: 'Feste Grauwall', c: 25, r: 10, pts: 3 }],
-    army: { A: { kohorte: 14, mahlwerk: 5, koloss: 5, haubitze: 5, reiter: 4, feldscher: 2, moerser: 2 }, D: { grenadier: 17, sense: 11, geschuetz: 5, heiler: 2, minenwerfer: 2 } },
-    reinf: ['sturm', 'sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
+      { id: 'kessel', name: 'Vorposten Kessel', c: 10, r: 3, pts: 1 },
+      { id: 'brand', name: 'Gehöft Brand', c: 10, r: 12, pts: 2 },
+      { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 2 },
+      { id: 'schwarzwald', name: 'Schwarzwäldchen', c: 15, r: 2, pts: 2 },
+      { id: 'schleuse', name: 'Kanalschleuse', c: 17, r: 13, pts: 2 },
+      { id: 'feste', name: 'Feste Grauwall', c: 19, r: 7, pts: 3 }],
+    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1 }, D: { grenadier: 13, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2 } },
+    reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
     build: () => {
-      const T = mapTools(30, 22, 1918);
-      T.line(3, 0, 21, 'trench');
-      T.field(4, 8, 0, 21, [['crater', 0.32], ['mud', 0.2]]);
-      T.line(9, 0, 21, 'wire', [2, 6, 11, 15, 19]);
-      T.line(10, 0, 21, 'wire', [4, 9, 13, 17]);
-      T.line(11, 0, 21, 'trench');
-      T.field(12, 16, 0, 21, [['crater', 0.15], ['mud', 0.05]]);
-      T.many([[13, 4], [14, 4], [13, 3]], 'village');
-      T.many([[13, 17], [14, 17], [13, 18]], 'village');
-      T.many([[16, 10], [16, 11], [17, 11], [17, 10], [15, 11]], 'village');
-      T.line(17, 6, 21, 'wire', [8, 14, 18]);
-      T.line(18, 6, 21, 'trench');
-      T.blob(19, 4, 2, 'forest');
-      T.line(21, 13, 21, 'canal'); T.set(21, 17, 'bridge');
-      T.line(22, 13, 21, 'trench', [17]);
-      T.field(19, 22, 6, 12, [['crater', 0.12]]);
-      T.line(23, 5, 15, 'trench');
-      T.ridge(24, 27, 8, 13);
-      T.many([[25, 10], [25, 11], [26, 10], [26, 11]], 'village');
-      T.blob(27, 2, 1, 'forest'); T.blob(28, 19, 1, 'forest');
-      T.blob(19, 4, 2, 'wald'); T.line(19, 1, 7, 'waldweg');
-      T.set(14, 3, 'barrikade'); T.set(14, 17, 'fabrik');
-      T.set(17, 10, 'kirche'); T.set(15, 11, 'barrikade');
-      T.set(21, 20, 'furt');
-      T.set(23, 8, 'bunker'); T.set(23, 12, 'bunker');
-      T.line(15, 0, 8, 'bahn');
-      T.many([[6, 15], [7, 16], [6, 16], [5, 3], [6, 3]], 'sumpf');
+      const T = mapTools(22, 16, 1918);
+      T.line(2, 0, 15, 'trench');
+      T.field(3, 6, 0, 15, [['crater', 0.32], ['mud', 0.2]]);
+      T.many([[4, 11], [5, 12], [4, 12], [4, 3], [5, 3]], 'sumpf');
+      T.line(7, 0, 15, 'wire', [2, 6, 10, 13]);
+      T.line(8, 0, 15, 'wire', [4, 8, 12]);
+      T.line(9, 0, 15, 'trench');
+      T.field(10, 12, 0, 15, [['crater', 0.15], ['mud', 0.05]]);
+      T.set(10, 3, 'barrikade'); T.many([[11, 3], [10, 2]], 'village');
+      T.set(10, 12, 'fabrik'); T.set(11, 12, 'village');
+      T.line(12, 0, 6, 'bahn');
+      T.many([[13, 8], [14, 8], [13, 9]], 'village'); T.set(13, 7, 'kirche'); T.set(12, 8, 'barrikade');
+      T.line(14, 4, 15, 'wire', [6, 10, 13]);
+      T.line(15, 4, 15, 'trench');
+      T.blob(15, 2, 1, 'wald'); T.many([[16, 1], [14, 1], [16, 2]], 'wald'); T.line(15, 0, 3, 'waldweg');
+      T.line(17, 10, 15, 'canal'); T.set(17, 13, 'bridge'); T.set(17, 15, 'furt');
+      T.line(18, 10, 15, 'trench', [13]); T.line(18, 3, 9, 'trench');
+      T.ridge(18, 20, 6, 9);
+      T.many([[19, 7], [19, 8], [20, 7], [20, 8]], 'village'); T.set(18, 6, 'bunker'); T.set(18, 9, 'bunker');
+      T.blob(20, 1, 1, 'forest'); T.blob(21, 14, 1, 'forest');
       return T.M;
     } }
 };
-let MAP = MAPS.grauwall, OBJECTIVES = GRAUWALL_OBJ, SETUP = GRAUWALL_SETUP, REINF = GRAUWALL_REINF;
+let MAP = MAPS.grauwall, OBJECTIVES = MAPS.grauwall.objectives, SETUP = null, REINF = MAPS.grauwall.reinf;
 function useMap(id) {
   MAP = MAPS[id] || MAPS.grauwall;
   COLS = MAP.cols; ROWS = MAP.rows; OBJECTIVES = MAP.objectives; SETUP = MAP.setup || null; REINF = MAP.reinf;
@@ -469,7 +478,7 @@ function defaultArmy(side) { if (MAP.army) return Object.assign({}, MAP.army[sid
 function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
 function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
 const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
-function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost(defaultArmy(sd)); ARMY_MAX[sd] = MAP.armyMax[sd]; } ARMY_CAP = COLS * ROWS > 600 ? 20 : COLS * ROWS > 400 ? 16 : 9; ARMY_WALKERS = COLS * ROWS > 600 ? 8 : COLS * ROWS > 400 ? 6 : 4; }
+function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost(defaultArmy(sd)); ARMY_MAX[sd] = MAP.armyMax[sd]; } ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
 let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
 const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
 armySync();
@@ -502,7 +511,7 @@ function deploy(G, side, army) {
         for (const r of ROWS_OUT) if (free(t, c, r)) { addUnit(G, t, c, r, lead(t)); done = true; break; }
       }
     }
-  } else if (MAP.id !== 'grauwall') deployD(G, list, lead, free);
+  } else if (true) deployD(G, list, lead, free);
   else {
     const back = [[16, 5], [15, 1], [15, 8], [17, 5], [16, 3]];
     const front = [[15, 4], [13, 6], [17, 1], [18, 9], [9, 4], [9, 8], [9, 0], [9, 2], [9, 6], [9, 10], [13, 2], [13, 9], [13, 4], [13, 8], [17, 3], [11, 5], [11, 1], [11, 9], [16, 7], [12, 3], [12, 7], [14, 5]];
@@ -945,7 +954,7 @@ function claimObjective(G, u) {
 
 // ---------- Artillerie ----------
 function spotted(G, side, c, r) {
-  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= Math.max(TYPES[u.type].spot || P.SPOT, hex(G, u.c, u.r).t === 'kirche' ? 8 : 0) && hasLOS(G, u.c, u.r, c, r));
+  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= Math.max(TYPES[u.type].spot || P.SPOT, hex(G, u.c, u.r).t === 'kirche' ? 6 : 0) && hasLOS(G, u.c, u.r, c, r));
 }
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
 function canShell(G, a, c, r, mode) {
