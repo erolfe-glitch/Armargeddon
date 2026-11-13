@@ -542,6 +542,7 @@ async function playEvent(e) {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
         playSound(e.kind === 'rifle' ? 'rifle' : mini ? 'minigun' : mg ? (au && au.side === 'D' ? 'mg2' : 'mg') : 'cannon', mg ? 0.55 : 0.6);
         if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
+        else if (mg && PJI.mgfire) muzzles.push({ img: 'mgfire', x: x1 + Math.cos(ang) * s * 0.25, y: y1 + Math.sin(ang) * s * 0.25, ang, sz: 0.85, off: 0.02, life: 26, max: 26 });
         else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
         tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 26 : 15, max: mg ? 26 : 15, n: mg ? 5 : 1, col: can ? '#ff9a3a' : '#ffe27a', img: mg ? 'burst' : can ? 'shard' : 'bullet', sz: mg ? 0.5 : can ? 0.34 : 0.2 });
         await wait((mg ? 26 : 15) * 16.667 * 0.9);
@@ -574,6 +575,7 @@ async function playEvent(e) {
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
+      if (au && TYPES[au.type].mech && TYPES[au.type].cls === 'walker' && PJI.hammer) muzzles.push({ img: 'hammer', x: d.x, y: d.y + s * 0.35, center: true, up: 0.75, sz: 1.7, life: 34, max: 34 });
       if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
       if (armored || af === 'drill' || af === 'mechA') { if (armored) playSound('armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
       await wait(170); a.lunge = null; await wait(70); break;
@@ -618,8 +620,9 @@ async function playEvent(e) {
     case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
     case 'crush': { const [x, y] = center(e.c, e.r); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain(); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
-    case 'stuck': playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
-    case 'breakdown': if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
+    case 'stuck': { const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
+    case 'breakdown': { const d0 = DU.get(e.u); muzzles.push({ img: 'engine', x: d0.x + s * 0.1, y: d0.y + s * 0.35, center: true, up: 0.92, sz: 2.3, life: 80, max: 80 }); }
+      if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
       playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
@@ -1111,7 +1114,7 @@ window.__dbg = {
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
+  sync: () => syncAll(), play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; }
 };
 })();
