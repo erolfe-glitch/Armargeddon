@@ -145,7 +145,8 @@ function renderTerrain() {
     } }
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const h = G.map[c][r], [x, y] = center(c, r), n = hash(c * 5.3, r * 2.9);
-    if (tiled.has(E.key(c, r))) continue;   // gemalte Kachel: keine gezeichneten Zutaten
+    if (tiled.has(E.key(c, r)) && h.t !== 'wire') continue;   // gemalte Kachel: keine gezeichneten Zutaten (Draht wird immer zusätzlich gezeichnet, damit er auffällt)
+    if (h.t === 'wire') { hexPath(g, c, r, 0.94); g.strokeStyle = 'rgba(205,210,215,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.setLineDash([s * 0.12, s * 0.08]); g.stroke(); g.setLineDash([]); }
     g.strokeStyle = O; g.lineWidth = lw;
     if (h.t === 'mud') {
       g.fillStyle = '#463826';
@@ -324,7 +325,10 @@ function draw() {
   }
   // Markierungen
   if (sel && human(G.side) && !busy) {
-    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
+    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
+      if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = '#e2553c'; g.setLineDash([s * 0.1, s * 0.07]); g.lineWidth = Math.max(2, s * 0.06); g.stroke(); g.setLineDash([]); } }
+    if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
+      g.font = `900 ${Math.round(s * 0.55)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
     for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(220,40,30,0.10)'; g.fill(); g.strokeStyle = 'rgba(230,60,45,0.28)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
     for (const k of shellHexes) {
       const c = Math.floor(k / 100), r = k % 100;
@@ -639,7 +643,7 @@ async function playEvent(e) {
     case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
     case 'crush': { const [x, y] = center(e.c, e.r); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain(); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
-    case 'stuck': { const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
+    case 'stuck': { playSound('crash', 0.65); const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
     case 'breakdown': { const d0 = DU.get(e.u); muzzles.push({ img: 'engine', x: d0.x + s * 0.1, y: d0.y + s * 0.35, center: true, up: 0.92, sz: 2.3, life: 80, max: 80 }); }
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
       playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
