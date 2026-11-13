@@ -215,7 +215,7 @@ body { background: #0c0908; }
 .app { max-width: 100vw; overflow: hidden; }
 .sps { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; overflow: hidden; margin-left: 4px; flex: 0 1 auto; min-width: 0; }
 .stats { min-width: 0; } .stats .pill { flex: none; } .hmain { overflow: hidden; }
-.item { min-width: 0; } .item b { min-width: 0; overflow-wrap: anywhere; }
+.item { min-width: 0; } .item b { min-width: 0; overflow-wrap: normal; hyphens: auto; }
 #hudName { min-width: 0; overflow: hidden; text-overflow: ellipsis; } #btnInfo { flex: none; }
 .sp { flex: none; padding: 3px 9px; background: #3a2a14; border: 1px solid var(--gold); border-radius: 3px; color: #ffe9a8; font: 700 13px var(--display); letter-spacing: .03em; white-space: nowrap; }
 .act.pass { border-color: #7fae6a; color: #d6f0c8; }
@@ -229,7 +229,7 @@ body { background: #0c0908; }
 .modes b { font-size: 20px; } .modes small { font-size: 15px; } .modes label { padding: 12px 14px; }
 .fac h3 { font-size: 23px; } .fac p { font-size: 15px; } .fac canvas { width: 88px; height: 88px; }
 .overlay .tbtn { height: 40px; padding: 0 16px; font-size: 15px; }
-.shoplist { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.shoplist { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
 .item { grid-template-columns: 84px 1fr auto; padding: 10px 12px; } .item canvas { width: 84px; height: 84px; }
 .item b { font-size: 20px; } .item .cost { font-size: 22px; white-space: nowrap; } .item small { font-size: 14.5px; line-height: 1.3; color: #cbbd9f; }
 .rules li { font-size: 17px; }
@@ -261,6 +261,98 @@ body { background: #0c0908; }
 .mapcard b { font: 700 19px var(--serif); color: #efe2c4; } .msize { font-size: 14px; color: var(--gold); font-weight: 700; }
 .mapcard small { font-size: 14px; color: #cbbd9f; line-height: 1.3; } .mwin { font-size: 13px; color: #9fc4e4; margin-top: auto; }
 @media (max-width: 1000px) { .mappick { grid-template-columns: repeat(2, 1fr); } .mapcard canvas { height: 90px; } .mapcard small { display: none; } }
+
+/* ===== UI-Bogen des Nutzers (komplett): Eisenrahmen, Holz, Pergament, Rohrbalken, gemalte Knöpfe ===== */
+body { background: #0c0908; }
+/* Statusleiste: dunkles Eisen mit Nieten */
+.top { background: var(--ui-wood) 0 50% / auto 140% repeat-x, #2a1f17; border-bottom: 4px solid #0a0706; box-shadow: inset 0 -3px 0 rgba(90,44,26,.8), 0 3px 8px rgba(0,0,0,.6); padding-top: 5px; padding-bottom: 5px; }
+.top::before { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(10,7,6,.35), rgba(10,7,6,.55)); pointer-events: none; }
+.top { position: relative; } .top > * { position: relative; }
+.turn { background: var(--ui-turn) center / 100% 100% no-repeat; border: 0; box-shadow: none; padding: 5px 14px 5px 34px; min-width: 112px; white-space: nowrap; text-align: center; color: #efe2c4; text-shadow: 0 2px 0 #000; }
+.tbtn { background: var(--ui-iron) center / 100% 100% no-repeat; border: 0; border-radius: 0; height: 32px; min-width: 36px; padding: 0 8px; color: #f2e6c8; text-shadow: 0 1px 0 #000, 0 0 4px #000; }
+.tbtn:hover { filter: brightness(1.25); } .tbtn:active { transform: translateY(1px); }
+.tbtn.on { filter: sepia(.6) brightness(1.3); }
+.top { gap: 4px 9px; } .tools { gap: 3px; } .brand { font-size: 16px; letter-spacing: .04em; } .tbtn { min-width: 32px; padding: 0 6px; }
+/* Kampfkraft: Rohrbalken mit Totenkopf */
+.meter { width: 150px; height: 26px; background: none; border: 0; border-radius: 0; overflow: visible; }
+.meter::after { content: ""; position: absolute; inset: 0; background: var(--ui-barR) center / 100% 100% no-repeat; pointer-events: none; }
+.meter i { left: 16.5%; top: 22%; bottom: 26%; width: calc(77% * var(--v, 1)); right: auto; inset: 22% auto 26% 16.5%; background: linear-gradient(#ffb060, var(--A) 45%, #8a4a14); }
+.meter.D i { background: linear-gradient(#a8d6ff, var(--D) 45%, #1f5a8c); }
+.meter::before { content: ""; position: absolute; top: 22%; bottom: 26%; left: 16.5%; right: 6.5%; background: #1a1210; }
+.meter b { left: calc(16.5% + 77% * var(--brk, .5)) !important; top: 14%; bottom: 18%; width: 3px; background: #ffe9a8; mix-blend-mode: normal; box-shadow: 0 0 3px #000; z-index: 2; }
+.meter span { left: 16%; right: 6%; z-index: 2; font-size: 11px; }
+/* Zielpunkte auf Eisenplatte */
+.pts { background: var(--ui-pts5) center / 100% 100% no-repeat; padding: 6px 22px 10px 12px; color: #ffe9a8; text-shadow: 0 2px 0 #000; }
+.obj { border-radius: 50%; min-width: 22px; text-align: center; box-shadow: inset 0 -2px 0 rgba(0,0,0,.35), 0 0 0 2px #1a120d, 0 0 0 3px #6a4a35; }
+/* Unterer Bereich: Holzkiste mit Stacheldraht oben */
+.hud { position: relative; overflow: visible; height: 136px; background: linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.45)), var(--ui-wood) 0 0 / auto 100% repeat-x, #2c2016; border-top: 6px solid #3a2a1e; box-shadow: inset 0 3px 0 #0a0706, 0 -2px 0 #0a0706 !important; padding-top: 10px; }
+.hud::before { content: ""; position: absolute; left: 0; right: 0; top: -30px; height: 34px; background: var(--ui-wire) 0 100% / auto 100% repeat-x; pointer-events: none; z-index: 3; }
+.hud.A { border-top-color: #8a4a14; } .hud.D { border-top-color: #1f5a8c; }
+.pwrap { position: relative; flex: none; width: 112px; height: 110px; display: grid; place-items: center; }
+.pwrap::after { content: ""; position: absolute; inset: 0; background: var(--ui-pframe) center / 100% 100% no-repeat; pointer-events: none; }
+.pwrap:has(#portrait[hidden]) { display: none; }
+#portrait { width: 80px; height: 82px; border: 0; outline: 0; border-radius: 0; margin-top: 2px; }
+#hudName { font-family: var(--serif); color: #f3e6c6; text-shadow: 0 2px 0 #000, 0 0 6px #000; }
+#hudSub { color: #cdbd9c; text-shadow: 0 1px 0 #000; }
+.hint { color: #d6c8a6; text-shadow: 0 1px 0 #000; }
+/* Stärke und Moral als Rohrbalken mit Herz und Kreuz */
+.sbars { display: grid; gap: 1px; flex: none; }
+.sbar { position: relative; width: 190px; height: 24px; }
+.sbar::before { content: ""; position: absolute; top: 22%; bottom: 25%; left: 16.5%; right: 6.5%; background: #1a1210; }
+.sbar i { position: absolute; top: 22%; bottom: 25%; left: 16.5%; width: calc(77% * var(--v)); background: linear-gradient(#e8e2d4, #9c968a 50%, #5c5850); }
+.sbar.C i { background: linear-gradient(#ffe27a, #d9a628 50%, #7a5a10); }
+.sbar.bad i { background: linear-gradient(#ff8a6a, #c8321e 50%, #6a140a); }
+.sbar::after { content: ""; position: absolute; inset: 0; background: var(--ui-barH) center / 100% 100% no-repeat; pointer-events: none; }
+.sbar.C::after { background-image: var(--ui-barC); }
+.sbar span { position: absolute; left: 18%; right: 7%; top: 0; bottom: 0; display: grid; place-items: center; font: 700 11px var(--display); letter-spacing: .06em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; z-index: 2; }
+.stats { align-items: center; gap: 5px; height: 52px; }
+.pill { background: var(--ui-iron) center / 100% 100% no-repeat; border: 0; border-radius: 0; padding: 4px 10px 6px; min-width: 60px; }
+.pill small { color: #cdbd9c; } .pill b { color: #f3e6c6; text-shadow: 0 1px 0 #000; }
+/* Aktionsknöpfe: Holzbrett, gewählt: Pergamentbrett */
+.act { background: var(--ui-plank) center / 100% 100% no-repeat; border: 0; border-radius: 0; height: 32px; padding: 0 20px; color: #f3e6c6; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+.act:hover { filter: brightness(1.25); }
+.act.on { background-image: var(--ui-plankP); color: #2a1a0e; text-shadow: none; }
+.sp { background: var(--ui-plankP) center / 100% 100% no-repeat; border: 0; border-radius: 0; color: #1e1208; padding: 4px 16px; font-weight: 800; font-size: 13px; text-shadow: 0 0 2px rgba(255,240,210,.8); }
+.act[data-act="p-fire"]::before, .act[data-act="p-melee"]::before { content: ""; display: inline-block; width: 18px; height: 18px; margin: 0 6px -4px 0; background: var(--ui-icCross) center / contain no-repeat; }
+.act[data-act="p-melee"]::before { background-image: var(--ui-icSwords); }
+/* Runde beenden und Nachschub: gemalte Schilder */
+.hbtns { gap: 6px; }
+.endbtn { background: var(--ui-end) center / 100% 100% no-repeat !important; border: 0 !important; border-radius: 0; color: #f6e6c8 !important; text-shadow: 0 2px 0 #2a0804, 0 0 6px #000 !important; min-width: 210px; }
+.endbtn:hover { filter: brightness(1.18); } .endbtn:active { transform: translateY(2px); }
+.endbtn:disabled { filter: grayscale(.85) brightness(.7); }
+.hbtns .endbtn { height: 64px; }
+#startBtn { background-image: var(--ui-attack) !important; min-width: 260px; height: 72px; }
+.shopbtn { background: var(--ui-plate) center / 100% 100% no-repeat !important; height: 40px !important; color: #ffe9a8; }
+#btnInfo { background: var(--ui-iron) center / 100% 100% no-repeat; border: 0; border-radius: 0; height: 30px; }
+/* Meldungen: Pergamentrolle; Rundenbanner: Eisenschild */
+#toast { background: var(--ui-scroll) center / 100% 100% no-repeat; border: 0; box-shadow: none; padding: 12px 56px 16px; color: #2a1a0e; font-size: 15px; }
+#banner { background: none; }
+#banner::before { content: ""; position: absolute; left: 50%; top: 50%; width: min(620px, 92vw); height: 190px; transform: translate(-50%, -50%); background: var(--ui-nameplate) center / 100% 100% no-repeat; z-index: -1; }
+#banner b { color: #e9d2a8; } #banner span { color: #d6c8a6; }
+/* Fenster: Eisenrahmen (9-Teilung), Info: Pergament */
+.sheet { border: 34px solid transparent; border-image: var(--ui-frame) 40 fill / 34px stretch; padding: 6px 10px; max-width: 1120px; }
+.overlay { background: radial-gradient(ellipse at 50% 0, rgba(90,20,10,.45), transparent 60%), rgba(8,6,5,.9); }
+.box { border: 40px solid transparent; border-top-width: 74px; border-image: var(--ui-parch) 100 60 60 60 fill / 74px 40px 40px 40px stretch; background: none !important; color: #2a1a0e; padding: 0 6px; }
+.box h3, .box p, .box b, .box .kicker { color: #2a1a0e !important; text-shadow: none !important; }
+.box .pill { background-image: var(--ui-iron); }
+.box .det h3 { margin: 4px 0 2px; line-height: 1.1; font-size: 28px; } .box .det .kicker { display: block; margin: 0 0 8px; } .box .det .sps { margin: 0 0 8px; } .box .det canvas { border: 3px solid #3a2a1e; box-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.item canvas { width: 76px !important; height: 76px !important; grid-row: 1 / 3; align-self: start; } .item { align-items: start; } .box .pill small, .box .pill b { color: #f3e6c6 !important; }
+.box .tbtn, .box .endbtn { color: #f3e6c6 !important; }
+.fac, .mapcard, .modes label, .item { border: 12px solid transparent !important; border-image: var(--ui-frame) 40 fill / 12px stretch !important; background: none !important; border-radius: 0 !important; }
+.mapcard:has(input:checked), .modes label:has(input:checked), .item.pick.has, .item:hover:not(:disabled) { filter: sepia(.35) brightness(1.18); box-shadow: 0 0 0 3px var(--gold), 0 0 18px rgba(229,178,58,.45); }
+.armybar { border: 10px solid transparent; border-image: var(--ui-frame) 40 fill / 10px stretch; background: none; }
+@media (max-width: 1300px) { .brand { display: none; } }
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 770px) { #sidechip { display: none; } }
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 860px) { .meter { width: 78px !important; } .chip { padding: 2px 4px; font-size: 10px; } .turn { min-width: 76px !important; padding: 4px 8px 4px 22px !important; } .obj { min-width: 16px; font-size: 10px; } .objs { gap: 2px; } .tbtn { min-width: 24px; padding: 0 3px; } }
+@media (max-height: 520px) and (orientation: landscape) {
+  .hud { height: 96px; padding-top: 6px; } .hud::before { top: -20px; height: 22px; }
+  .pwrap { width: 78px; height: 76px; } #portrait { width: 56px; height: 57px; }
+  .sbar { width: 140px; height: 18px; } .sbar span { font-size: 9px; } .stats { height: 40px; }
+  .act { height: 26px; padding: 0 14px; } .hbtns .endbtn { height: 46px; } .endbtn { min-width: 150px; } .shopbtn { height: 28px !important; }
+  .meter { width: 96px; height: 22px; } .meter span { font-size: 8px; letter-spacing: 0; } .turn { min-width: 88px; padding: 4px 10px 4px 26px; font-size: 13px; } .pts { padding: 4px 16px 7px 8px; }
+  .top { gap: 3px 5px; } .tbtn { min-width: 26px; height: 26px; padding: 0 4px; font-size: 11px; } .obj { min-width: 18px; font-size: 11px; }
+  .sheet { border-width: 20px; border-image-width: 20px; } .box { border-width: 26px; border-image-width: 26px; }
+}
 </style>
 </head>
 <body>
@@ -286,7 +378,7 @@ body { background: #0c0908; }
   </header>
   <main class="board" id="board"><canvas id="map" aria-label="Schlachtfeld"></canvas></main>
   <footer class="hud" id="hud">
-    <canvas id="portrait" hidden></canvas>
+    <div class="pwrap"><canvas id="portrait" hidden></canvas></div>
     <div class="hmain">
       <div class="hhead"><span id="hudName"></span><span id="hudSub"></span><button id="btnInfo" title="Mehr über diese Einheit" hidden>i</button></div>
       <div class="stats" id="hudStats"></div>

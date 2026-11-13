@@ -7,6 +7,9 @@ function setMap(id) { E.useMap(id); mapSel = E.MAP.id; COLS = E.COLS; ROWS = E.R
 const figOf = T => T.fig || T.cls;
 const figU = u => u.limbered ? 'limber' : figOf(TYPES[u.type]);
 const SQ3 = Math.sqrt(3);
+// Bilder aus dem UI-Bogen als CSS-Variablen (--ui-end, --ui-frame …) und für das Zeichnen (UIM)
+const UIM = {};
+{ const A = window.UIART || {}; for (const k in A) { document.documentElement.style.setProperty('--ui-' + k, `url("${A[k]}")`); const im = new Image(); im.onload = () => UIM[k] = im; im.src = A[k]; } }
 const $ = id => document.getElementById(id);
 const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
@@ -241,6 +244,7 @@ function drawUnit(u, d) {
   g.lineWidth = Math.max(2, s * (isSel ? 0.09 : 0.06)); g.strokeStyle = isSel ? '#fff7dd' : acc;
   if (u.status === 'rout') g.setLineDash([s * 0.14, s * 0.12]);
   g.stroke(); g.setLineDash([]);
+  if (isSel && UIM.ringY) { const rw = s * 1.75, rh = rw * K; g.save(); g.globalAlpha = 0.9; g.drawImage(UIM.ringY, x - rw / 2, y - rh / 2, rw, rh); g.restore(); }
   if (hoverU === u && !isSel) { g.beginPath(); g.ellipse(x, y, s * 0.8, s * 0.8 * K, 0, 0, 7); g.strokeStyle = 'rgba(255,250,225,0.85)'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); }
   if (E.active(u)) {
     const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.7, fy = y + Math.sin(a) * s * 0.7 * K;
@@ -291,16 +295,17 @@ function drawUnit(u, d) {
   }
   // Zustandsmarken
   const tagY = y - s * (k === 'mech' || k === 'drill' || k === 'mechA' || k === 'mechB' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
-  const tag = (glyph, bg, fg) => {
-    const cx = x - s * 0.86, cy = y - s * 0.02, r = s * 0.2;
+  const tag = (glyph, bg, fg, ic) => {
+    const cx = x - s * 0.86, cy = y - s * 0.02, r = s * 0.2, im = UIM[ic];
+    if (im) { const hh = s * 0.5, ww = hh * im.naturalWidth / im.naturalHeight; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); return; }
     g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     g.font = `900 ${Math.round(s * 0.25)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
   };
-  if (u.status === 'rout') tag('↩', '#e6dcc0', '#7a1c10');
-  else if (u.broken > 0) tag('✖', '#b9b09a', '#1d140d');
-  else if (u.limbered) tag('⇄', '#d9c698', '#1d140d');
-  else if (u.supp > 0) tag('▼', '#dcc070', '#5a1408');
-  else if (u.gassed) tag('G', '#b9c24a', '#1d2408');
+  if (u.status === 'rout') tag('↩', '#e6dcc0', '#7a1c10', 'icSkull');
+  else if (u.broken > 0) tag('✖', '#b9b09a', '#1d140d', 'icGear');
+  else if (u.limbered) tag('⇄', '#d9c698', '#1d140d', 'icArrows');
+  else if (u.supp > 0) tag('▼', '#dcc070', '#5a1408', 'icDanger');
+  else if (u.gassed) tag('G', '#b9c24a', '#1d2408', 'icWarn');
   if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02; g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#bfe0f2'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
 }
 
@@ -822,8 +827,7 @@ function updateTop() {
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
   for (const sd of ['A', 'D']) {
     const v = 1 - E.losses(G, sd), el = $('meter' + sd);
-    el.querySelector('i').style.width = Math.max(0, v * 100) + '%';
-    el.querySelector('b').style.left = (1 - P.BREAK[sd]) * 100 + '%';
+    el.style.setProperty('--v', Math.max(0, v)); el.style.setProperty('--brk', 1 - P.BREAK[sd]);
     el.querySelector('span').textContent = `${SIDES[sd].short} ${Math.round(v * 100)} %`;
   }
   $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id]}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts">${E.points(G)}/${G.winA}</span>`;
@@ -867,6 +871,7 @@ function drawPortrait(canvas, kind, side) {
   g.drawImage(sp.cv, Math.round((W - sp.cv.width) / 2), Math.round(H * 0.93 - sp.cv.height));
 }
 const pill = (k, v, cls = '') => `<div class="pill ${cls}"><small>${k}</small><b>${v}</b></div>`;
+const bar = (k, v, max, kind, cls = '') => `<div class="sbar ${kind} ${cls}" title="${k}" style="--v:${Math.max(0, Math.min(1, v / max))}"><i></i><span>${k} ${fmt(v)}</span></div>`;
 function updateHud() {
   if (!G) return;
   const hud = $('hud'), u = placing ? null : (sel || (inspect && inspect.unit) || null);
@@ -877,7 +882,7 @@ function updateHud() {
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
     $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
-    $('hudStats').innerHTML = pill('Stärke', fmt(u.str), u.str <= 3.3 ? 'bad' : '') + pill('Moral', fmt(u.mor), u.mor < P.FALLBACK_MOR + 1 ? 'bad' : 'gold') +
+    $('hudStats').innerHTML = `<div class="sbars">${bar('Stärke', u.str, 10, 'H', u.str <= 3.3 ? 'bad' : '')}${bar('Moral', u.mor, TYPES[u.type].mor, 'C', u.mor < P.FALLBACK_MOR + 1 ? 'bad' : '')}</div>` +
       pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–') +
       `<div class="sps">${(u.officer ? ['★ Anführer: gibt Befehle'] : []).concat(T.sp || []).map(x => `<span class="sp">${x}</span>`).join('')}</div>`;
     $('btnInfo').hidden = false;
