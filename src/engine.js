@@ -319,6 +319,13 @@ function mapTools(cols, rows, seed) {
   };
   return T;
 }
+// Karte aus Zeichenraster (für Karten nach gemaltem Bild): eine Zeile je Reihe, ein Zeichen je Spalte
+const GRID_CODE = { '.': 'open', ',': 'mud', o: 'crater', f: 'forest', W: 'wald', '=': 'trench', x: 'wire', U: 'bunker', '~': 'canal', B: 'bridge', F: 'furt', s: 'sumpf', V: 'village', K: 'fabrik', '+': 'kirche', '#': 'barrikade', '-': 'bahn' };
+function gridMap(grid) {
+  const T = mapTools(grid[0].length, grid.length, 1);
+  grid.forEach((row, r) => [...row].forEach((ch, c) => { T.set(c, r, GRID_CODE[ch] || 'open'); if ('~BF'.includes(ch)) T.M[c][r].river = true; }));
+  return T.M;
+}
 const MAPS = {
   grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 7,
     desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke. Zur Mitte der Schlacht kommt der Gegenstoß.',
@@ -472,12 +479,76 @@ const MAPS = {
       '=.oo.=.~B=.VVVVV',
       'o..xxU.~~=VVVVVK',
       'oxx..=.~~.VVVVVV'],
-    build() {
-      const T = mapTools(16, 10, 1), code = { '.': 'open', o: 'crater', f: 'forest', W: 'wald', '=': 'trench', x: 'wire', U: 'bunker', '~': 'canal', B: 'bridge', F: 'furt', V: 'village', K: 'fabrik', '+': 'kirche' };
-      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, code[ch] || 'open')));
-      for (let c = 7; c <= 8; c++) for (let r = 0; r < 10; r++) T.M[c][r].river = true;
-      return T.M;
-    } },
+    build() { return gridMap(this.grid); } },
+  waldfl: { id: 'waldfl', name: 'Der Waldfluss', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'waldfl',
+    desc: 'Gemalte Karte: Dichter Wald auf beiden Seiten, dazwischen ein Fluss mit Holzbrücke und Steg. Bunker im Unterholz, wenig freie Sicht.',
+    maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
+    objectives: [
+      { id: 'wbunkerw', name: 'Bunker am Hang', c: 6, r: 3, pts: 1 },
+      { id: 'wbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
+      { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 1 },
+      { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 2 },
+      { id: 'wbunkero', name: 'Bunker an der Lichtung', c: 13, r: 5, pts: 3 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
+    grid: [
+      'WWWW.==.~V..WWWW',
+      'WWWW.=..~.U.WWWW',
+      'WWWWo=..F=..WWWW',
+      'WWW..=U.~=U.WWWW',
+      '...WW==~~===....',
+      '.....=.~~==..U.W',
+      '=....=.B~=.....W',
+      '=.o..=.~B=....WW',
+      'o..xxU.~~=...WWW',
+      '.xx..=.~~...WWWW'],
+    build() { return gridMap(this.grid); } },
+  kasem: { id: 'kasem', name: 'Die Kasematten', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'kasem',
+    desc: 'Gemalte Karte: Aus dem eigenen Grabengewirr über offenes Feld gegen eine Zickzack-Linie, dahinter zwei Geschützkasematten und ein zerschossener Ort.',
+    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
+    objectives: [
+      { id: 'kgraben', name: 'Zickzack-Graben', c: 5, r: 4, pts: 1 },
+      { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 1 },
+      { id: 'kkasn', name: 'Kasematte Nord', c: 14, r: 1, pts: 2 },
+      { id: 'kkass', name: 'Kasematte Süd', c: 14, r: 4, pts: 2 },
+      { id: 'kfabrik', name: 'Ziegelei', c: 15, r: 8, pts: 3 }],
+    army: { A: { kohorte: 7, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
+    grid: [
+      'o===.f.~~.fff...',
+      '.===fff.~~ff..U.',
+      'o==.oof==.f.....',
+      '==....==U.......',
+      '=x.=====......U.',
+      'x.=.=..x........',
+      '===..ox.....==..',
+      '=.U.o....ooV===V',
+      'o.xxx...o.VVVVVK',
+      'oxx...........VV'],
+    build() { return gridMap(this.grid); } },
+  kanal: { id: 'kanal', name: 'Die Kanalstadt', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'kanal',
+    desc: 'Gemalte Karte: Häuserkampf. Ein Kanal teilt die Stadt; hinüber führen die Steinbrücke, die Bahnbrücke und eine Furt. Dahinter Fabrik und Kathedrale.',
+    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
+    objectives: [
+      { id: 'kfront', name: 'Vorderer Graben', c: 5, r: 4, pts: 1 },
+      { id: 'ksteinbr', name: 'Steinbrücke', c: 8, r: 3, pts: 1 },
+      { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 2 },
+      { id: 'kfab', name: 'Fabrik', c: 10, r: 2, pts: 2 },
+      { id: 'kkath', name: 'Kathedrale', c: 14, r: 2, pts: 3 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
+    grid: [
+      'VVVVVVV.~.VVV.VV',
+      'V.VVVVV~~..KoVVV',
+      'V..VV..~..KV.V+V',
+      '.VV.o.=.B.......',
+      'o.V=====~~......',
+      'o.===.=x.~...K.V',
+      '===.oox.~..V.VVV',
+      '=.U.oo..BVVVVVVV',
+      'o.xxx..~~VVVVVVK',
+      'oxx....F..VVVVVV'],
+    build() { return gridMap(this.grid); } },
   varn: { id: 'varn', name: 'Das Varntal', size: 'Mittel', cols: 18, rows: 14, zoneA: 2, zoneD: 7,
     desc: 'Ein zusammenhängendes Tal: Die Varn fließt von Nord nach Süd mitten durch Varnheim. Zwei Brücken, zwei Furten, eine Bunkerlinie davor, Bahn und Höhe 212 dahinter.',
     maxT: 16, reinfTurn: 8, winA: 5, drawA: 4, armyMax: { A: 26, D: 24 },
