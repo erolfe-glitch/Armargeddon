@@ -34,6 +34,7 @@ Alle geplanten Stufen sind spielbar:
 - Zusätzliche Einheiten im Nachschub: Feldscher/Aschenpfleger (versorgen aktiv einen Nachbarn je Runde), Grabenmörser/Minenwerfer (dürfen ziehen und danach feuern).
 - Anführer mit eigenen Figuren und Befehlen: „Sammeln“ und „Sturmbefehl“ (jede zweite Runde).
 - Wahl zwischen Nahkampf und Beschuss, wenn beides möglich ist.
+- Vier feste Karten zur Wahl: Der Grauwall (klassisch), Die Ruinen von Selm (klein), Das Tal der Lerne (mittel), Die Grauwall-Front (groß).
 - Armee-Auswahl vor der Schlacht: für den Wert der Standardarmee eigene Truppen wählen.
 - Weitere Truppen: Radfahrer, Scharfschütze, Meldegänger mit Hund, Pioniere, Grabenräumer; Schildträger, Panzerbüchse, Schwere Grabenwacht, Signaltrupp, Eisenknecht, Bohrkoloss.
 - Gemalte Bodenkacheln, Effekte und Geschosse aus Bildvorlagen (`src/fx.js`).

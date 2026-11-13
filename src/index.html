@@ -252,6 +252,15 @@ body { background: #0c0908; }
   .shopbtn { height: 48px; } .item { grid-template-columns: 72px 1fr auto; } .item canvas { width: 72px; height: 72px; } .facflag { height: 46px; }
 }
 .optrow input[type=checkbox] { width: 20px; height: 20px; vertical-align: -4px; } .tbtn.on { border-color: var(--gold); color: #ffe9a8; }
+/* Kartenwahl */
+.mappick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.mapcard { display: flex; flex-direction: column; gap: 4px; padding: 10px; background: linear-gradient(#2a201a, #1b1410); border: 2px solid #5a4334; border-radius: 4px; cursor: pointer; }
+.mapcard input { position: absolute; opacity: 0; pointer-events: none; }
+.mapcard:has(input:checked) { border-color: var(--gold); background: linear-gradient(#5a3a1a, #3a2410); }
+.mapcard canvas { width: 100%; height: 120px; background: #120d0a; border-radius: 3px; }
+.mapcard b { font: 700 19px var(--serif); color: #efe2c4; } .msize { font-size: 14px; color: var(--gold); font-weight: 700; }
+.mapcard small { font-size: 14px; color: #cbbd9f; line-height: 1.3; } .mwin { font-size: 13px; color: #9fc4e4; margin-top: auto; }
+@media (max-width: 1000px) { .mappick { grid-template-columns: repeat(2, 1fr); } .mapcard canvas { height: 90px; } .mapcard small { display: none; } }
 </style>
 </head>
 <body>
@@ -295,9 +304,11 @@ body { background: #0c0908; }
     <h1 class="title">Armargeddon</h1>
     <p class="lead">Drei Jahre Grabenkrieg. Heute soll der Grauwall fallen: mit Landkolossen, Donnerrohren und Gas gegen Draht, Gräben und Maschinengewehre.</p>
     <div class="factions">
-      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und zwei Grabenlinien.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
-      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Ab Runde 8 kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
+      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und Grabenlinien und die Zielfelder (⚑) nehmen.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
+      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Zur Mitte der Schlacht kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
     </div>
+    <p class="lbl">Schlachtfeld</p>
+    <div class="mappick" id="mapPick"></div>
     <p class="lbl">Wer greift an?</p>
     <div class="modes" style="grid-template-columns:repeat(2,1fr)">
       <label><input type="radio" name="skin" value="A" checked><b>Konkordat von Valmor</b><small>Khaki, flache Stahlhelme, schwerer Landkoloss.</small></label>
@@ -348,6 +359,7 @@ body { background: #0c0908; }
       <li>Anführer (★) geben jede zweite Runde einen Befehl: „Sammeln“ oder „Sturmbefehl“.</li>
       <li>Armee: Im Startmenü kannst du unter „Armee zusammenstellen“ deine Truppen selbst wählen. Du hast so viele Punkte, wie die Standardarmee wert ist.</li>
       <li>Kleine Zeichen links an der Einheit: ▼ niedergehalten, ⇄ aufgeprotzt, ✖ Panne, G im Gas, ↩ flieht. ◉ rechts: Aufklärer. Aufklärer lenken die Artillerie: Auf Felder mit ◉ streuen Granaten nicht und Sprenggranaten treffen ×1,25.</li>
+      <li>Große Karten: mit gedrückter Maustaste ziehen, Mausrad oder Pfeiltasten verschieben das Schlachtfeld.</li>
       <li>„✓ Fertig“ schließt eine Einheit für diese Runde ab. Einheiten, die nichts mehr tun können, werden grau.</li>
       <li>Kampfmaschinen (Mechs) gibt es nur, wenn du sie im Startmenü zulässt. Dort wählst du auch die Flagge.</li>
       <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende, bei 4 Punkten steht es unentschieden, oder wenn die Aschenwacht zusammenbricht.</li>

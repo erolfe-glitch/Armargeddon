@@ -26,7 +26,8 @@ const P = {
   PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 1.5, HEAL_MOR: 1
 };
 
-const COLS = 20, ROWS = 11;   // kleineres Feld, dafür größere Figuren
+// Größe des Schlachtfelds: hängt von der gewählten Karte ab (useMap), Grauwall 20 × 11
+let COLS = 20, ROWS = 11;
 
 const SIDES = {
   A: { name: 'Konkordat von Valmor', short: 'Konkordat', edge: 0, dir: 1 },
@@ -155,14 +156,14 @@ const TERRAIN = {
   bridge:  { name: 'Brücke', cost: 1, info: 'Einziger Weg über den Kanal. Zu schwach für Landkolosse.' }
 };
 
-const OBJECTIVES = [
+const GRAUWALL_OBJ = [
   { id: 'veskar', name: 'Ruinen von Veskar', c: 15, r: 4, pts: 2 },
   { id: 'schanze', name: 'Grauwall-Schanze', c: 13, r: 6, pts: 2 },
   { id: 'totholz', name: 'Totholz von Ilm', c: 17, r: 1, pts: 3 },
   { id: 'marn', name: 'Brücke von Marn', c: 18, r: 9, pts: 2 }
 ];
 
-const SETUP = [
+const GRAUWALL_SETUP = [
   ['kohorte', 3, 0], ['kohorte', 3, 2], ['kohorte', 3, 4, 'Prätor Hask'], ['kohorte', 3, 6], ['kohorte', 3, 8, 'Hauptfrau Morn'], ['kohorte', 3, 10],
   ['kohorte', 1, 3], ['kohorte', 1, 5], ['kohorte', 1, 7],
   ['mahlwerk', 2, 0], ['mahlwerk', 2, 5], ['mahlwerk', 2, 10],
@@ -176,7 +177,7 @@ const SETUP = [
   ['grenadier', 15, 4], ['grenadier', 17, 1], ['grenadier', 18, 9],
   ['geschuetz', 16, 5], ['geschuetz', 15, 1], ['geschuetz', 15, 8]
 ];
-const REINF = [['sturm', 19, 2], ['sturm', 19, 4, 'Sturmführer Kael'], ['sturm', 19, 6], ['brand', 19, 3], ['brand', 19, 5], ['geschuetz', 18, 5]];
+const GRAUWALL_REINF = [['sturm', 19, 2], ['sturm', 19, 4, 'Sturmführer Kael'], ['sturm', 19, 6], ['brand', 19, 3], ['brand', 19, 5], ['geschuetz', 18, 5]];
 
 function mulberry32(a) {
   return function () {
@@ -188,7 +189,7 @@ function mulberry32(a) {
 }
 
 // ---------- Karte ----------
-function buildMap(seed) {
+function buildGrauwall(seed) {
   const rnd = mulberry32(seed || 1917);
   const M = [];
   for (let c = 0; c < COLS; c++) { M.push([]); for (let r = 0; r < ROWS; r++) M[c].push({ t: 'open', ridge: false, obj: null }); }
@@ -209,9 +210,134 @@ function buildMap(seed) {
   for (let r = 7; r < ROWS; r++) set(17, r, 'canal');
   set(17, 9, 'bridge');
   set(18, 8, 'village'); set(18, 9, 'village'); set(19, 9, 'village');
-  for (const o of OBJECTIVES) M[o.c][o.r].obj = o.id;
+  for (const o of GRAUWALL_OBJ) M[o.c][o.r].obj = o.id;
   return M;
 }
+
+// ---------- Feste Karten (Wunsch des Nutzers: wählbar, drei Größen, quadratischer) ----------
+// Jede Karte ist reine Daten: Gelände-Bauplan, Zielfelder, Standardarmeen, Verstärkung, Runden, Siegpunkte.
+// Neue Karte: Eintrag in MAPS ergänzen; Aufstellung und Kaufbudget ergeben sich daraus.
+function mapTools(cols, rows, seed) {
+  const rnd = mulberry32(seed), M = [];
+  for (let c = 0; c < cols; c++) { M.push([]); for (let r = 0; r < rows; r++) M[c].push({ t: 'open', ridge: false, obj: null }); }
+  const ok = (c, r) => c >= 0 && c < cols && r >= 0 && r < rows;
+  const T = {
+    M, rnd,
+    set: (c, r, t) => { if (ok(c, r)) M[c][r].t = t; },
+    line: (c, r0, r1, t, gaps) => { for (let r = r0; r <= r1; r++) if (!(gaps || []).includes(r)) T.set(c, r, t); },
+    field: (c0, c1, r0, r1, list) => { for (let c = c0; c <= c1; c++) for (let r = r0; r <= r1; r++) { let x = rnd(); for (const [t, p] of list) { if (x < p) { T.set(c, r, t); break; } x -= p; } } },
+    blob: (c, r, rad, t) => { for (let cc = c - rad - 1; cc <= c + rad + 1; cc++) for (let rr = r - rad - 1; rr <= r + rad + 1; rr++) if (ok(cc, rr) && dist(c, r, cc, rr) <= rad) T.set(cc, rr, t); },
+    ridge: (c0, c1, r0, r1) => { for (let c = c0; c <= c1; c++) for (let r = r0; r <= r1; r++) if (ok(c, r)) M[c][r].ridge = true; },
+    many: (list, t) => { for (const [c, r] of list) T.set(c, r, t); }
+  };
+  return T;
+}
+const MAPS = {
+  grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 20, rows: 11, zoneA: 3,
+    desc: 'Die erste Schlacht: breite Front, zwei Grabenlinien, Kanal mit Brücke. Ab Runde 8 kommt der Gegenstoß.',
+    objectives: GRAUWALL_OBJ, setup: GRAUWALL_SETUP, reinf: GRAUWALL_REINF, build: buildGrauwall, armyMax: { A: 26, D: 22 } },
+  selm: { id: 'selm', name: 'Die Ruinen von Selm', size: 'Klein', cols: 18, rows: 14, zoneA: 2, zoneD: 7,
+    desc: 'Kurz und hart: ein Graben, ein Drahtgürtel, drei kleine Ziele dicht hinter der Front. Siegen kann nur, wer den Kirchhügel nimmt.',
+    maxT: 14, reinfTurn: 7, winA: 5, drawA: 3, armyMax: { A: 24, D: 20 },
+    objectives: [
+      { id: 'nordhof', name: 'Nordgehöft', c: 10, r: 2, pts: 1 },
+      { id: 'kreuz', name: 'Kreuzung von Selm', c: 9, r: 7, pts: 1 },
+      { id: 'suedwald', name: 'Südwald', c: 11, r: 11, pts: 1 },
+      { id: 'kirche', name: 'Kirchhügel', c: 15, r: 6, pts: 3 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, feldscher: 1 }, D: { grenadier: 7, sense: 5, geschuetz: 2, heiler: 1 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm'],
+    build: () => {
+      const T = mapTools(18, 14, 1871);
+      T.line(2, 0, 13, 'trench');
+      T.field(3, 5, 0, 13, [['crater', 0.3], ['mud', 0.18]]);
+      T.line(6, 0, 13, 'wire', [2, 7, 11]);
+      T.line(7, 0, 13, 'trench');
+      T.field(8, 11, 0, 13, [['crater', 0.14]]);
+      T.many([[10, 2], [11, 2], [10, 3]], 'village');
+      T.many([[9, 7], [10, 7], [10, 6]], 'village');
+      T.blob(11, 11, 1, 'forest');
+      T.line(12, 0, 13, 'wire', [1, 4, 8, 12]);
+      T.line(13, 0, 13, 'trench');
+      T.ridge(14, 16, 5, 8);
+      T.many([[15, 6], [15, 7], [16, 6]], 'village');
+      T.blob(16, 1, 1, 'forest');
+      return T.M;
+    } },
+  lerne: { id: 'lerne', name: 'Das Tal der Lerne', size: 'Mittel', cols: 24, rows: 18, zoneA: 3, zoneD: 9,
+    desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 tief im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
+    maxT: 18, reinfTurn: 9, winA: 6, drawA: 4, armyMax: { A: 32, D: 28 },
+    objectives: [
+      { id: 'muehle', name: 'Lerner Mühle', c: 11, r: 3, pts: 1 },
+      { id: 'bahnhof', name: 'Bahnhof Lerne', c: 12, r: 9, pts: 2 },
+      { id: 'kalkwald', name: 'Kalkwald', c: 13, r: 14, pts: 2 },
+      { id: 'nordbruecke', name: 'Nordbrücke', c: 17, r: 4, pts: 2 },
+      { id: 'hoehe', name: 'Höhe 304', c: 20, r: 10, pts: 3 }],
+    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 1, moerser: 1 }, D: { grenadier: 13, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 1 } },
+    reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz'],
+    build: () => {
+      const T = mapTools(24, 18, 1916);
+      T.line(3, 0, 17, 'trench');
+      T.field(4, 7, 0, 17, [['crater', 0.32], ['mud', 0.2]]);
+      T.line(8, 0, 17, 'wire', [3, 8, 13, 16]);
+      T.line(9, 0, 17, 'trench');
+      T.field(10, 13, 0, 17, [['crater', 0.16], ['mud', 0.06]]);
+      T.many([[11, 3], [12, 3], [11, 2]], 'village');
+      T.many([[12, 8], [12, 9], [13, 9], [13, 8]], 'village');
+      T.blob(13, 14, 1, 'forest'); T.many([[14, 15], [12, 16]], 'forest');
+      T.line(14, 7, 17, 'wire', [9, 13, 16]);
+      T.line(15, 6, 17, 'trench');
+      T.line(17, 0, 7, 'canal'); T.set(17, 4, 'bridge');
+      T.line(18, 0, 6, 'trench', [4]);
+      T.line(19, 7, 13, 'trench');
+      T.ridge(19, 21, 8, 12);
+      T.many([[20, 10], [20, 11], [21, 10]], 'village');
+      T.blob(22, 2, 1, 'forest'); T.blob(22, 16, 1, 'forest');
+      return T.M;
+    } },
+  front: { id: 'front', name: 'Die Grauwall-Front', size: 'Groß', cols: 30, rows: 22, zoneA: 3, zoneD: 11,
+    desc: 'Die ganze Front: drei Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
+    maxT: 22, reinfTurn: 11, winA: 7, drawA: 5, armyMax: { A: 42, D: 40 },
+    objectives: [
+      { id: 'kessel', name: 'Vorposten Kessel', c: 13, r: 4, pts: 1 },
+      { id: 'brand', name: 'Gehöft Brand', c: 13, r: 17, pts: 2 },
+      { id: 'kreuzhof', name: 'Kreuzhof', c: 16, r: 11, pts: 2 },
+      { id: 'schwarzwald', name: 'Schwarzwäldchen', c: 19, r: 4, pts: 2 },
+      { id: 'schleuse', name: 'Kanalschleuse', c: 21, r: 17, pts: 2 },
+      { id: 'feste', name: 'Feste Grauwall', c: 25, r: 10, pts: 3 }],
+    army: { A: { kohorte: 14, mahlwerk: 5, koloss: 5, haubitze: 5, reiter: 4, feldscher: 2, moerser: 2 }, D: { grenadier: 17, sense: 11, geschuetz: 5, heiler: 2, minenwerfer: 2 } },
+    reinf: ['sturm', 'sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
+    build: () => {
+      const T = mapTools(30, 22, 1918);
+      T.line(3, 0, 21, 'trench');
+      T.field(4, 8, 0, 21, [['crater', 0.32], ['mud', 0.2]]);
+      T.line(9, 0, 21, 'wire', [2, 6, 11, 15, 19]);
+      T.line(10, 0, 21, 'wire', [4, 9, 13, 17]);
+      T.line(11, 0, 21, 'trench');
+      T.field(12, 16, 0, 21, [['crater', 0.15], ['mud', 0.05]]);
+      T.many([[13, 4], [14, 4], [13, 3]], 'village');
+      T.many([[13, 17], [14, 17], [13, 18]], 'village');
+      T.many([[16, 10], [16, 11], [17, 11], [17, 10], [15, 11]], 'village');
+      T.line(17, 6, 21, 'wire', [8, 14, 18]);
+      T.line(18, 6, 21, 'trench');
+      T.blob(19, 4, 2, 'forest');
+      T.line(21, 13, 21, 'canal'); T.set(21, 17, 'bridge');
+      T.line(22, 13, 21, 'trench', [17]);
+      T.field(19, 22, 6, 12, [['crater', 0.12]]);
+      T.line(23, 5, 15, 'trench');
+      T.ridge(24, 27, 8, 13);
+      T.many([[25, 10], [25, 11], [26, 10], [26, 11]], 'village');
+      T.blob(27, 2, 1, 'forest'); T.blob(28, 19, 1, 'forest');
+      return T.M;
+    } }
+};
+let MAP = MAPS.grauwall, OBJECTIVES = GRAUWALL_OBJ, SETUP = GRAUWALL_SETUP, REINF = GRAUWALL_REINF;
+function useMap(id) {
+  MAP = MAPS[id] || MAPS.grauwall;
+  COLS = MAP.cols; ROWS = MAP.rows; OBJECTIVES = MAP.objectives; SETUP = MAP.setup || null; REINF = MAP.reinf;
+  SIDES.D.edge = COLS - 1;
+  return MAP;
+}
+function buildMap() { const M = MAP.build(1917); for (const o of OBJECTIVES) M[o.c][o.r].obj = o.id; return M; }
 
 // ---------- Hex-Geometrie (flache Oberseite, ungerade Spalten nach unten versetzt) ----------
 const AX = [[1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1]];
@@ -264,12 +390,15 @@ function addUnit(G, type, c, r, officer) {
 }
 // ---------- Armee-Auswahl ----------
 // Jede Seite darf vor der Schlacht für den Wert der Standardarmee selbst Truppen wählen.
-function defaultArmy(side) { const a = {}; for (const s of SETUP) if (TYPES[s[0]].side === side) a[s[0]] = (a[s[0]] || 0) + 1; return a; }
+function defaultArmy(side) { if (MAP.army) return Object.assign({}, MAP.army[side]); const a = {}; for (const s of SETUP) if (TYPES[s[0]].side === side) a[s[0]] = (a[s[0]] || 0) + 1; return a; }
 function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
 function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
-const ARMY_BUDGET = { A: armyCost(defaultArmy('A')), D: armyCost(defaultArmy('D')) };
-const ARMY_MAX = { A: 26, D: 22 }, ARMY_MIN = { A: 8, D: 8 }, ARMY_CAP = 9, ARMY_WALKERS = 4;   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
+const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
+function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost(defaultArmy(sd)); ARMY_MAX[sd] = MAP.armyMax[sd]; } ARMY_CAP = COLS * ROWS > 600 ? 20 : COLS * ROWS > 400 ? 14 : 9; ARMY_WALKERS = COLS * ROWS > 600 ? 8 : COLS * ROWS > 400 ? 6 : 4; }
+let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
 const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
+armySync();
+function useMapArmy(id) { useMap(id); armySync(); return MAP; }
 const isMech = t => !!TYPES[t] && !!TYPES[t].mech;
 function armyOk(side, army, mechs) {
   for (const t in army) if (!ROSTER[side].includes(t) || (army[t] > 0 && isMech(t) && !mechs) || !(army[t] >= 0) || army[t] !== Math.floor(army[t])) return false;
@@ -278,24 +407,27 @@ function armyOk(side, army, mechs) {
   if (walkers > ARMY_WALKERS) return false;
   return armyCost(army) <= ARMY_BUDGET[side] && n >= ARMY_MIN[side] && n <= ARMY_MAX[side];
 }
-const ROWS_OUT = [5, 3, 7, 1, 9, 4, 6, 2, 8, 0, 10];
+function rowsOut() { const m = Math.floor(ROWS / 2), out = [m]; for (let k = 2; out.length < ROWS; k += 2) { for (const r of [m - k, m + k]) if (r >= 0 && r < ROWS) out.push(r); if (k > ROWS) break; } for (let r = 0; r < ROWS; r++) if (!out.includes(r)) out.push(r); return out; }
 function deploy(G, side, army) {
   // Reihenfolge: Typen abwechselnd, damit sich die Truppen über die Front verteilen
   const left = Object.assign({}, army), list = [];
   for (let more = true; more;) { more = false; for (const t of ROSTER[side]) if (left[t] > 0) { left[t]--; list.push(t); more = true; } }
-  const names = side === 'A' ? ['Prätor Hask', 'Hauptfrau Morn'] : ['Hauptmann Veyl', 'Kastellan Orsk'];
+  const names = side === 'A' ? ['Prätor Hask', 'Hauptfrau Morn', 'Legat Corvin'] : ['Hauptmann Veyl', 'Kastellan Orsk', 'Major Dresk'];
+  if (COLS * ROWS < 400) names.pop();
+  const ROWS_OUT = rowsOut(), zA = MAP.zoneA;
   const lead = t => { const T = TYPES[t]; return (T.cls === 'inf' || T.cls === 'storm') && !T.relay && !T.pin && names.length ? names.shift() : null; };
   const free = (t, c, r) => inMap(c, r) && !unitAt(G, c, r) && cost(G, { type: t, side }, c, r) < 99;
   if (side === 'A') {
-    const pref = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 0 : (T.mobile || T.pin || T.relay || T.cls === 'cav' || T.cls === 'medic' || T.fig === 'bike') ? 1 : (T.cls === 'walker' || T.cls === 'mg') ? 2 : 3; };
+    const pref = t => { const T = TYPES[t], k = T.cls === 'art' && !T.mobile ? 0 : (T.mobile || T.pin || T.relay || T.cls === 'cav' || T.cls === 'medic' || T.fig === 'bike') ? 1 : (T.cls === 'walker' || T.cls === 'mg') ? 2 : 3; return Math.round(k * zA / 3); };
     for (const t of list) {
       const p = pref(t); let done = false;
       for (const c of [p, p - 1, p + 1, p - 2, p + 2, p - 3, p + 3]) {
-        if (c < 0 || c > 3 || done) continue;
+        if (c < 0 || c > zA || done) continue;
         for (const r of ROWS_OUT) if (free(t, c, r)) { addUnit(G, t, c, r, lead(t)); done = true; break; }
       }
     }
-  } else {
+  } else if (MAP.id !== 'grauwall') deployD(G, list, lead, free);
+  else {
     const back = [[16, 5], [15, 1], [15, 8], [17, 5], [16, 3]];
     const front = [[15, 4], [13, 6], [17, 1], [18, 9], [9, 4], [9, 8], [9, 0], [9, 2], [9, 6], [9, 10], [13, 2], [13, 9], [13, 4], [13, 8], [17, 3], [11, 5], [11, 1], [11, 9], [16, 7], [12, 3], [12, 7], [14, 5]];
     for (const t of list) {
@@ -306,10 +438,40 @@ function deploy(G, side, army) {
   }
 }
 
+// Verteidiger auf neuen Karten: Besatzung für jedes Zielfeld, MG in die vorderen Gräben, Geschütze nach hinten,
+// alles mit Abstand, damit die ganze Front besetzt ist.
+function deployD(G, list, lead, free) {
+  const zD = MAP.zoneD, depth = COLS - zD, placed = [];
+  const role = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 'art' : (T.cls === 'medic' || T.relay || T.mobile) ? 'back' : T.mg ? 'mg' : 'inf'; };
+  const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
+  const score = (t, c, r) => {
+    const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
+    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1 }[h.t] || 0;
+    if (h.ridge) v += 1;
+    for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v += rl === 'art' ? -2 : 4; else if (dd === 1) v += 1.2; }
+    if (rl === 'art') v += d * 6 - (d < 0.45 ? 5 : 0);
+    else if (rl === 'back') v += d * 3;
+    else if (rl === 'mg') v += (1 - d) * 3;
+    else v += (1 - d) * 1.2;
+    for (const p of placed) { const dd = dist(c, r, p[0], p[1]); if (dd <= 1) v -= 3.2; else if (dd === 2) v -= 1.2; else if (dd === 3) v -= 0.3; }
+    return v;
+  };
+  const order = list.slice().sort((a, b) => ({ inf: 0, mg: 1, back: 2, art: 3 }[role(a)] - { inf: 0, mg: 1, back: 2, art: 3 }[role(b)]));
+  // zuerst je Zielfeld eine Infanterie
+  for (const o of objs) { const i = order.findIndex(t => role(t) === 'inf'); if (i < 0 || !free(order[i], o.c, o.r)) continue; const t = order.splice(i, 1)[0]; addUnit(G, t, o.c, o.r, lead(t)); placed.push([o.c, o.r]); }
+  for (const t of order) {
+    let best = null, bv = -1e9;
+    for (let c = zD; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (!free(t, c, r)) continue; const v = score(t, c, r); if (v > bv) { bv = v; best = [c, r]; } }
+    if (best) { addUnit(G, t, best[0], best[1], lead(t)); placed.push(best); }
+  }
+}
+
 function newGame(opts) {
   opts = opts || {};
+  useMapArmy(opts.map);
   const G = {
-    map: buildMap(1917), units: [], turn: 1, side: 'A', over: null,
+    mapId: MAP.id, maxT: MAP.maxT || P.MAXT, winA: MAP.winA || P.WIN_A, drawA: MAP.drawA || P.DRAW_A, reinfTurn: MAP.reinfTurn || P.REINF_TURN,
+    map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     ctrl: {}, nextId: 1, clouds: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs
   };
@@ -317,7 +479,8 @@ function newGame(opts) {
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
     if (army && armyOk(side, army, !!opts.mechs)) deploy(G, side, army);
-    else for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]);
+    else if (SETUP) { for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]); }
+    else deploy(G, side, defaultArmy(side));
   }
   return G;
 }
@@ -766,10 +929,12 @@ function startTurn(G) {
       ev.push({ t: 'gascloud' });
     }
   }
-  if (s === 'D' && G.turn === P.REINF_TURN && !G.reinfDone) {
+  if (s === 'D' && G.turn === G.reinfTurn && !G.reinfDone) {
     G.reinfDone = true;
     const ids = [];
-    for (const [type, c, r, off] of REINF) {
+    const RO = rowsOut();
+    const list = REINF.map((x, i) => Array.isArray(x) ? x : [x, COLS - 1 - (i >= ROWS ? 1 : 0), RO[i % ROWS], i === 1 ? 'Sturmführer Kael' : null]);
+    for (const [type, c, r, off] of list) {
       let rr = r, tries = 0;
       while (unitAt(G, c, rr) && tries++ < ROWS) rr = (rr + 1) % ROWS;
       if (unitAt(G, c, rr)) continue;
@@ -867,7 +1032,7 @@ function endTurn(G) {
   for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; }
   if (G.side === 'A') G.side = 'D';
   else {
-    if (G.turn >= P.MAXT) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
+    if (G.turn >= G.maxT) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
     G.turn++; G.side = 'A';
   }
   return startTurn(G);
@@ -880,8 +1045,8 @@ function losses(G, side) {
 function points(G) { let p = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === 'A') p += o.pts; return p; }
 function finalResult(G) {
   const p = points(G);
-  if (p >= P.WIN_A) return { winner: 'A', why: 'points', pts: p };
-  if (p >= P.DRAW_A) return { winner: null, why: 'points', pts: p };
+  if (p >= G.winA) return { winner: 'A', why: 'points', pts: p };
+  if (p >= G.drawA) return { winner: null, why: 'points', pts: p };
   return { winner: 'D', why: 'points', pts: p };
 }
 function checkEnd(G) {
@@ -893,11 +1058,13 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, COLS, ROWS, SIDES, TYPES, TERRAIN, OBJECTIVES, SETUP, REINF, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, pass, canCut, guided, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ARMY_CAP, ARMY_WALKERS, ROSTER, isMech,
+  P, SIDES, TYPES, TERRAIN, MAPS, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, pass, canCut, guided, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
 };
+for (const [k, f] of Object.entries({ COLS: () => COLS, ROWS: () => ROWS, OBJECTIVES: () => OBJECTIVES, SETUP: () => SETUP, REINF: () => REINF, MAP: () => MAP, ARMY_CAP: () => ARMY_CAP, ARMY_WALKERS: () => ARMY_WALKERS }))
+  Object.defineProperty(E, k, { get: f, enumerable: true });
 if (typeof module !== 'undefined' && module.exports) module.exports = E; else root.E = E;
 })(this);

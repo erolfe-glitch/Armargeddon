@@ -1,7 +1,9 @@
 // ===== ARMARGEDDON OBERFLÄCHE =====
 (function () {
 'use strict';
-const { COLS, ROWS, TYPES, TERRAIN, OBJECTIVES, SIDES, P } = E;
+const { TYPES, TERRAIN, SIDES, P } = E;
+let COLS = E.COLS, ROWS = E.ROWS, OBJECTIVES = E.OBJECTIVES, mapSel = 'grauwall';
+function setMap(id) { E.useMap(id); mapSel = E.MAP.id; COLS = E.COLS; ROWS = E.ROWS; OBJECTIVES = E.OBJECTIVES; }
 const figOf = T => T.fig || T.cls;
 const figU = u => u.limbered ? 'limber' : figOf(TYPES[u.type]);
 const SQ3 = Math.sqrt(3);
@@ -16,7 +18,7 @@ let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing 
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
 let skinA = 'A';
-const LEADER = { 'Prätor Hask': 2, 'Hauptfrau Morn': 1, 'Hauptmann Veyl': 1, 'Kastellan Orsk': 2, 'Sturmführer Kael': 3 };
+const LEADER = { 'Prätor Hask': 2, 'Hauptfrau Morn': 1, 'Hauptmann Veyl': 1, 'Kastellan Orsk': 2, 'Sturmführer Kael': 3, 'Legat Corvin': 3, 'Major Dresk': 0 };
 function leaderKind(u) { if (!u.officer || (u.side === 'A' && skinA !== 'A')) return null; const k = 'leader' + (LEADER[u.officer] ?? 0), a = FIG.ARTS[k + '_' + u.side]; return a && a.img.complete && a.img.naturalWidth ? k : null; }
 let queue = [], qRunning = false;
 let L = null, K = 0.62, tcv = null, now = 0, ZOOM = 1;
@@ -29,7 +31,8 @@ function layout() {
   const wrap = board.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const portrait = matchMedia('(orientation: portrait)').matches;
-  const cssW = Math.max(wrap.width, portrait ? 760 : 560) * ZOOM;
+  const MIN_S = 40;   // kleinste Feldgröße in CSS-Pixeln; größere Karten werden dann verschoben (ziehen, Mausrad, Pfeiltasten)
+  const cssW = Math.max(wrap.width, portrait ? 760 : 560, MIN_S * (1.5 * COLS + 0.5)) * ZOOM;
   const s = cssW * dpr / (1.5 * COLS + 0.5);
   const top = s * 1.55, bot = s * 0.45;
   K = Math.max(0.42, Math.min(0.86, (wrap.height * ZOOM * dpr - top - bot) / (s * SQ3 * (ROWS + 0.5))));
@@ -661,8 +664,12 @@ function pick(x, y) {
 }
 function unitAtPixel(x, y) { const p = pick(x, y); return p.uFig || p.uHex; }
 const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targets.has(p.uFig.id) ? p.uFig : null;
-cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; });
+let drag = null, dragged = 0;
+cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; if (ev.pointerType === 'mouse') drag = { x: ev.clientX, y: ev.clientY, sl: board.scrollLeft, st: board.scrollTop, moved: false }; });
+window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = performance.now(); drag = null; cv.style.cursor = ''; });
+board.addEventListener('wheel', ev => { if (ev.ctrlKey || ev.shiftKey) return; const canV = board.scrollHeight > board.clientHeight + 2; if (!canV && board.scrollWidth > board.clientWidth + 2) { board.scrollLeft += ev.deltaY; ev.preventDefault(); } }, { passive: false });
 cv.addEventListener('pointermove', ev => {
+  if (drag && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > 8) { drag.moved = true; cv.style.cursor = 'grabbing'; board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; return; } }
   if (!G || ev.pointerType !== 'mouse') return;
   const [x, y] = evToPx(ev), p = pick(x, y);
   hoverHex = p.h;
@@ -672,6 +679,7 @@ cv.addEventListener('pointermove', ev => {
 });
 cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; });
 cv.addEventListener('click', ev => {
+  if (performance.now() - dragged < 250) return;   // war ein Verschieben, kein Klick
   if (!G || busy || G.over || !human(G.side)) return;
   const [x, y] = evToPx(ev), p = pick(x, y), h = p.h;
   if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
@@ -791,7 +799,7 @@ function banner(title, sub) {
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
 }
 function updateTop() {
-  $('turn').textContent = `Runde ${G.turn}/${P.MAXT}`;
+  $('turn').textContent = `Runde ${G.turn}/${G.maxT}`;
   const ch = $('sidechip'); ch.className = 'chip ' + G.side; ch.textContent = SIDES[G.side].short + (human(G.side) ? '' : ' · KI');
   { const D = (window.FXDATA || {}).flags || {}, fs = G.side === 'D' ? D['flagD' + flagSel.D] : skinA === 'F' ? D['flagF' + flagSel.F] : D['flagA' + flagSel.A]; const fi = $('sideFlag'); if (fs && fi.getAttribute('src') !== fs) fi.src = fs; fi.hidden = !fs; }
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
@@ -801,7 +809,7 @@ function updateTop() {
     el.querySelector('b').style.left = (1 - P.BREAK[sd]) * 100 + '%';
     el.querySelector('span').textContent = `${SIDES[sd].short} ${Math.round(v * 100)} %`;
   }
-  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id]}" title="${o.name}">⚑ ${o.pts}</span>`).join('') + `<span class="pts">${E.points(G)}/${P.WIN_A}</span>`;
+  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id]}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts">${E.points(G)}/${G.winA}</span>`;
 }
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
@@ -898,7 +906,7 @@ function updateHud() {
       $('hudRow').innerHTML = `<span class="hint">${T.info}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <i>Im echten Krieg: ' + T.real + '</i>' : ''}</span>`;
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
-      $('hudSub').innerHTML = `Runde ${G.turn} von ${P.MAXT}`;
+      $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} von ${G.maxT}`;
       $('hudRow').innerHTML = `<span class="hint">${human(G.side) ? 'Tippe eine eigene Einheit an. Tippe auf Gegner oder Gelände für Infos.' : 'Bitte warten …'}</span>`;
     }
   }
@@ -936,7 +944,7 @@ function applySkin(sk) {
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
 }
 function showStart(first) {
-  $('start').hidden = false; armyInfo(); drawFlagPick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; $('setZoom').textContent = 'Zoom ' + String(ZOOM).replace('.', ',') + '×'; $('closeStart').hidden = first;
+  $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; $('setZoom').textContent = 'Zoom ' + String(ZOOM).replace('.', ',') + '×'; $('closeStart').hidden = first;
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
   drawPortraitLater($('pD1'), 'mg', 'D'); drawPortraitLater($('pD2'), 'storm', 'D'); drawPortraitLater($('pD3'), 'flame', 'D');
 }
@@ -984,17 +992,46 @@ function armyRefresh() {
 }
 function armyKeep() { if (!E.armyOk(armySide, armyDraft, mechsOn())) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
 
+// ---------- Kartenwahl ----------
+const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a' };
+function drawMapPreview(cvs, id) {
+  const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
+  const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);
+  cvs.width = W * dpr; cvs.height = H * dpr; const g2 = cvs.getContext('2d'); g2.scale(dpr, dpr);
+  const kp = 0.58;   // gestaucht wie im Spiel (Seitenansicht)
+  const s2 = Math.min(W / (1.5 * m.cols + 0.5), H / (SQ3 * kp * (m.rows + 0.5)));
+  const ox = (W - s2 * (1.5 * m.cols + 0.5)) / 2, oy = (H - s2 * SQ3 * kp * (m.rows + 0.5)) / 2;
+  const hp = (c, r) => [ox + s2 * (1 + 1.5 * c), oy + s2 * SQ3 * kp * (r + 0.5 * (c & 1) + 0.5)];
+  for (let c = 0; c < m.cols; c++) for (let r = 0; r < m.rows; r++) {
+    const [x, y] = hp(c, r); g2.beginPath(); for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; g2.lineTo(x + s2 * Math.cos(a), y + s2 * kp * Math.sin(a)); }
+    g2.closePath(); g2.fillStyle = TCOL[M[c][r].t] || '#6d6250'; g2.fill();
+    if (M[c][r].ridge) { g2.fillStyle = 'rgba(255,226,160,0.18)'; g2.fill(); }
+    if (c <= m.zoneA) { g2.fillStyle = 'rgba(224,138,52,0.22)'; g2.fill(); }
+  }
+  for (const o of m.objectives) { const [x, y] = hp(o.c, o.r); g2.beginPath(); g2.arc(x, y, Math.max(5, s2 * 0.95), 0, 7); g2.fillStyle = '#5a9fd8'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#0a0706'; g2.stroke();
+    g2.fillStyle = '#fff'; g2.font = `800 ${Math.max(8, Math.round(s2 * 1.3))}px system-ui`; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText(o.pts, x, y + 0.5); }
+}
+// Hintergrund hinter dem Startmenü zeigt die gewählte Karte
+function bgGame() { G = E.newGame({ seed: 7, map: mapSel }); decals.length = 0; initDU(); layout(); syncAll(); updateUI(); }
+function drawMapPick() {
+  $('mapPick').innerHTML = Object.values(E.MAPS).map(m => { const tot = m.objectives.reduce((n, o) => n + o.pts, 0);
+    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.cols} × ${m.rows} · ${m.maxT || P.MAXT} Runden</span><small>${m.desc}</small><span class="mwin">⚑ ${m.objectives.length} Ziele, ${tot} Punkte · Sieg ab ${m.winA || P.WIN_A}, Remis ab ${m.drawA || P.DRAW_A}</span></label>`; }).join('');
+  requestAnimationFrame(() => document.querySelectorAll('#mapPick canvas').forEach(c => drawMapPreview(c, c.dataset.map)));
+  document.querySelectorAll('input[name=map]').forEach(i => i.addEventListener('change', () => { setMap(i.value); customArmy.A = customArmy.D = null; armyInfo(); bgGame(); }));
+}
+
 function startGame() {
   mode = document.querySelector('input[name=mode]:checked').value;
   blood = $('optBlood').checked; soundOn = $('optSound').checked; $('btnSound').textContent = soundOn ? '🔊' : '🔇';
   applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
   $('start').hidden = true; $('end').hidden = true;
-  G = E.newGame({ mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
+  setMap(mapSel);
+  G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
   decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
-  banner('Die Schlacht am Grauwall', SIDES.A.name + ' greift an'); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
+  banner(E.MAP.name, `${SIDES.A.name} greift an · Sieg ab ${G.winA} von ${E.totalPts()} Punkten`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 function showHandover() {
@@ -1006,7 +1043,7 @@ function showEnd() {
   let title = win ? SIDES[win].short + ' siegt' : 'Unentschieden';
   if (me) title = win === me ? 'Sieg' : win ? 'Niederlage' : 'Unentschieden';
   const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Der Angriff ist zusammengebrochen.')
-    : `Nach ${P.MAXT} Runden hält der Angreifer ${r.pts} von 9 Punkten. Sieg ab ${P.WIN_A}, Unentschieden ab ${P.DRAW_A}.`;
+    : `Nach ${G.maxT} Runden hält der Angreifer ${r.pts} von ${E.totalPts()} Punkten. Sieg ab ${G.winA}, Unentschieden ab ${G.drawA}.`;
   let stars = 0;
   if (me) { if (win === me) stars = 2 + (E.losses(G, me) < 0.3 ? 1 : 0); else if (!win) stars = 1; }
   $('endTitle').textContent = title; $('endWhy').textContent = why;
@@ -1060,7 +1097,10 @@ $('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; $
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
 window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (G) { layout(); updateHud(); } }, 120); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
+document.addEventListener('keydown', e => {
+  const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+  if (pan && $('start').hidden && !e.target.closest('input')) { board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
+  if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
 // ---------- Start ----------
 G = E.newGame({ seed: 7 });

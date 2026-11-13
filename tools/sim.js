@@ -1,10 +1,19 @@
 // KI gegen KI: node tools/sim.js [Anzahl] [Startwert]
+// Karte wählen: MAP=selm|lerne|front (Standard: grauwall)
 // Übersteuern zum Testen: P_DMG=0.6 T_koloss_def=7 NOA=walker,art DROP_koloss=1 BREAK_A=0.6 node tools/sim.js
 const E = require('../src/engine.js');
 const AI = require('../src/ai.js');
 
 const N = +(process.argv[2] || 200), seed0 = +(process.argv[3] || 1);
 let noA = [], drop = {};
+// Kartenwerte testen: M_winA=6 M_maxT=16, Armeen: MA_kohorte=10 MD_grenadier=9 (Anzahl in der Standardarmee der Karte)
+const MP = E.MAPS[process.env.MAP || 'grauwall'];
+for (const [k, v] of Object.entries(process.env)) {
+  if (k.startsWith('MO_')) MP.objectives.find(o => o.id === k.slice(3)).pts = +v;
+  if (k.startsWith('M_')) MP[k.slice(2)] = +v;
+  if (k.startsWith('MA_') && MP.army) MP.army.A[k.slice(3)] = +v;
+  if (k.startsWith('MD_') && MP.army) MP.army.D[k.slice(3)] = +v;
+}
 for (const [k, v] of Object.entries(process.env)) {
   if (k.startsWith('P_')) E.P[k.slice(2)] = +v;
   if (k.startsWith('T_')) { const [, t, f] = k.split('_'); E.TYPES[t][f] = +v; }
@@ -24,7 +33,7 @@ for (let g = 0; g < N; g++) {
   const parse = v => v ? Object.fromEntries(v.split(',').map(x => { const [t, n] = x.split(':'); return [t, +n]; })) : null;
   const army = { A: parse(process.env.ARMY_A), D: parse(process.env.ARMY_D) };
   for (const sd of ['A', 'D']) if (army[sd] && !E.armyOk(sd, army[sd], true)) { console.log('Armee ungültig', sd, E.armyCost(army[sd]), E.armyCount(army[sd])); process.exit(1); }
-  const G = E.newGame({ seed: seed0 + g * 7919, army, mechs: !!process.env.MECHS || !!army.A || !!army.D });
+  const G = E.newGame({ seed: seed0 + g * 7919, army, map: process.env.MAP, mechs: !!process.env.MECHS || !!army.A || !!army.D });
   if (noA.length) G.units = G.units.filter(u => !(u.side === 'A' && noA.includes(E.cls(u))));
   for (const [t, n] of Object.entries(drop)) for (let i = 0; i < n; i++) { const x = G.units.findIndex(u => u.type === t); if (x >= 0) G.units.splice(x, 1); }
   E.startTurn(G);
