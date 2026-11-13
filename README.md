@@ -36,7 +36,8 @@ Alle geplanten Stufen sind spielbar:
 - Wahl zwischen Nahkampf und Beschuss, wenn beides möglich ist.
 - Weitere Truppen: Flammentrupp, Schildwall, Feldkanone, Fernsprechtrupp (Konkordat); Grabenkämpfer, Kettenritter, Drahtpioniere, Bannerträger (Aschenwacht).
 - Neue Feldarten: Furt, Sumpf, dichter Wald, Waldweg, Bunker, Fabrik, Kirche, Barrikade, Bahndamm.
-- Vier feste Karten zur Wahl: Der Grauwall (klassisch), Die Ruinen von Selm (klein), Das Tal der Lerne (mittel), Die Grauwall-Front (groß).
+- Fünf feste Karten zur Wahl: Der Grauwall (klassisch), Die Ruinen von Selm (klein), Das Tal der Lerne (mittel), Das Varntal (mittel, Fluss durch die Stadt), Die Grauwall-Front (groß).
+- Gemalte Karten: Boden, Fluss, Gräben, Straßen und Bahn laufen durchgehend über die Felder; Bunker, Kirche, Fabrik, Häuser und Wald stehen als Bilder darauf.
 - Armee-Auswahl vor der Schlacht: für den Wert der Standardarmee eigene Truppen wählen.
 - Weitere Truppen: Radfahrer, Scharfschütze, Meldegänger mit Hund, Pioniere, Grabenräumer; Schildträger, Panzerbüchse, Schwere Grabenwacht, Signaltrupp, Eisenknecht, Bohrkoloss.
 - Gemalte Bodenkacheln, Effekte und Geschosse aus Bildvorlagen (`src/fx.js`).

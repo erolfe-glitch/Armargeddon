@@ -305,7 +305,17 @@ function mapTools(cols, rows, seed) {
     field: (c0, c1, r0, r1, list) => { for (let c = c0; c <= c1; c++) for (let r = r0; r <= r1; r++) { let x = rnd(); for (const [t, p] of list) { if (x < p) { T.set(c, r, t); break; } x -= p; } } },
     blob: (c, r, rad, t) => { for (let cc = c - rad - 1; cc <= c + rad + 1; cc++) for (let rr = r - rad - 1; rr <= r + rad + 1; rr++) if (ok(cc, rr) && dist(c, r, cc, rr) <= rad) T.set(cc, rr, t); },
     ridge: (c0, c1, r0, r1) => { for (let c = c0; c <= c1; c++) for (let r = r0; r <= r1; r++) if (ok(c, r)) M[c][r].ridge = true; },
-    many: (list, t) => { for (const [c, r] of list) T.set(c, r, t); }
+    many: (list, t) => { for (const [c, r] of list) T.set(c, r, t); },
+    // path: Feldkette über Wegpunkte. what = Geländeart, oder 'road'/'rail'/'river' als reine Zeichen-Merkmale (Regeln bleiben)
+    path: (pts, what, keep) => {
+      const hexes = [];
+      for (let i = 0; i < pts.length; i++) { hexes.push(pts[i]); if (i + 1 < pts.length) hexes.push(...line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])); }
+      for (const [c, r] of hexes) if (ok(c, r)) {
+        if (what === 'road' || what === 'rail' || what === 'river') M[c][r][what] = true;
+        else if (!(keep || []).includes(M[c][r].t)) M[c][r].t = what;
+      }
+      return hexes;
+    }
   };
   return T;
 }
@@ -334,6 +344,7 @@ const MAPS = {
       T.many([[13, 0], [14, 0], [14, 1], [15, 1], [13, 1]], 'forest');
       T.line(14, 6, 9, 'canal'); T.set(14, 8, 'bridge');
       T.many([[15, 7], [15, 8]], 'village');
+      T.path([[0, 4], [12, 4], [14, 8], [15, 8]], 'road');   // alte Landstraße nach Veskar und über die Marnbrücke
       return T.M;
     } },
   selm: { id: 'selm', name: 'Die Ruinen von Selm', size: 'Klein', cols: 14, rows: 11, zoneA: 2, zoneD: 5,
@@ -363,6 +374,7 @@ const MAPS = {
       T.set(12, 5, 'kirche'); T.many([[12, 6], [13, 5]], 'village');
       T.blob(13, 1, 1, 'forest');
       T.line(13, 8, 10, 'bahn');
+      T.path([[0, 5], [13, 5]], 'road'); T.path([[7, 0], [7, 10]], 'road');   // die Kreuzung von Selm
       return T.M;
     } },
   lerne: { id: 'lerne', name: 'Das Tal der Lerne', size: 'Mittel', cols: 18, rows: 13, zoneA: 2, zoneD: 7,
@@ -389,12 +401,14 @@ const MAPS = {
       T.line(11, 5, 12, 'wire', [7, 10]);
       T.line(12, 4, 12, 'trench');
       T.many([[11, 1], [12, 1], [12, 2]], 'sumpf');
-      T.line(13, 0, 5, 'canal'); T.set(13, 3, 'bridge'); T.set(13, 5, 'furt');
+      T.line(13, 0, 5, 'canal'); T.set(13, 3, 'bridge'); T.set(13, 4, 'furt');   // Kanal endet am Becken (13,5)
       T.line(14, 0, 4, 'trench', [3]);
       T.line(15, 5, 10, 'trench');
       T.ridge(15, 16, 6, 9);
       T.set(16, 7, 'kirche'); T.set(15, 6, 'bunker'); T.set(15, 9, 'bunker'); T.many([[16, 8], [17, 7]], 'village');
       T.blob(17, 1, 1, 'forest'); T.blob(17, 11, 1, 'forest');
+      T.path([[9, 0], [9, 6]], 'rail');   // Bahnlinie läuft durch den Bahnhof weiter nach Norden
+      T.path([[0, 2], [8, 2], [13, 3], [16, 7], [17, 7]], 'road'); T.path([[9, 6], [10, 9]], 'road'); T.path([[10, 11], [10, 12]], 'road');
       return T.M;
     } },
   front: { id: 'front', name: 'Die Grauwall-Front', size: 'Groß', cols: 22, rows: 16, zoneA: 2, zoneD: 9,
@@ -430,6 +444,48 @@ const MAPS = {
       T.ridge(18, 20, 6, 9);
       T.many([[19, 7], [19, 8], [20, 7], [20, 8]], 'village'); T.set(18, 6, 'bunker'); T.set(18, 9, 'bunker');
       T.blob(20, 1, 1, 'forest'); T.blob(21, 14, 1, 'forest');
+      T.path([[12, 7], [12, 15]], 'rail');
+      T.path([[15, 3], [13, 7], [13, 8]], 'road'); T.path([[0, 8], [13, 8], [19, 7]], 'road');
+      T.path([[0, 3], [12, 3]], 'road'); T.path([[0, 12], [10, 12], [17, 13], [21, 13]], 'road');
+      return T.M;
+    } },
+  varn: { id: 'varn', name: 'Das Varntal', size: 'Mittel', cols: 18, rows: 14, zoneA: 2, zoneD: 7,
+    desc: 'Ein zusammenhängendes Tal: Die Varn fließt von Nord nach Süd mitten durch Varnheim. Zwei Brücken, zwei Furten, eine Bunkerlinie davor, Bahn und Höhe 212 dahinter.',
+    maxT: 16, reinfTurn: 8, winA: 5, drawA: 4, armyMax: { A: 26, D: 24 },
+    objectives: [
+      { id: 'varnwald', name: 'Varnwald', c: 9, r: 2, pts: 1 },
+      { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 2 },
+      { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 },
+      { id: 'vfabrik', name: 'Tuchfabrik', c: 12, r: 6, pts: 2 },
+      { id: 'h212', name: 'Höhe 212', c: 16, r: 10, pts: 3 }],
+    army: { A: { kohorte: 9, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 10, sense: 5, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
+    build: () => {
+      const T = mapTools(18, 14, 1915);
+      // Straßen und Bahn zuerst (nur Zeichen-Merkmale), dann das Gelände
+      T.path([[0, 6], [9, 6], [11, 6], [13, 6], [17, 6]], 'road'); T.path([[0, 3], [12, 3], [17, 3]], 'road'); T.path([[13, 6], [16, 10], [17, 11]], 'road');
+      T.path([[14, 0], [14, 13]], 'rail');
+      // Ausgangsgraben, Niemandsland, Draht, vordere Linie mit zwei Bunkern
+      T.line(2, 0, 13, 'trench');
+      T.field(3, 5, 0, 13, [['crater', 0.3], ['mud', 0.2]]);
+      T.many([[4, 10], [4, 11], [5, 11]], 'sumpf');
+      T.line(6, 0, 13, 'wire', [3, 7, 11]);
+      T.line(7, 0, 13, 'trench'); T.set(7, 3, 'bunker'); T.set(7, 10, 'bunker');
+      T.field(8, 9, 8, 13, [['crater', 0.14]]);
+      // Varnwald mit Waldweg
+      T.many([[8, 0], [8, 1], [10, 0], [10, 1], [10, 2], [8, 2], [11, 1]], 'wald'); T.path([[9, 0], [9, 3]], 'waldweg');
+      // die Varn: von Nord nach Süd, Brücken und Furten
+      T.path([[12, 0], [12, 4], [11, 5], [11, 9], [10, 10], [10, 13]], 'canal'); T.path([[12, 0], [12, 4], [11, 5], [11, 9], [10, 10], [10, 13]], 'river');
+      T.set(12, 3, 'bridge'); T.set(11, 6, 'bridge'); T.set(11, 9, 'furt'); T.set(10, 12, 'furt');
+      T.many([[9, 11], [9, 12]], 'sumpf');
+      // Varnheim an beiden Ufern
+      T.many([[9, 5], [10, 5], [10, 7], [9, 6]], 'village'); T.set(10, 6, 'kirche'); T.set(9, 7, 'barrikade');
+      T.set(12, 6, 'fabrik'); T.many([[13, 5], [12, 7], [13, 6]], 'village');
+      T.many([[14, 6], [14, 7], [14, 8]], 'bahn');
+      // zweite Linie und Höhe 212
+      T.path([[15, 1], [15, 12]], 'trench'); T.set(15, 4, 'bunker'); T.set(15, 9, 'bunker');
+      T.ridge(15, 17, 8, 11); T.set(16, 10, 'bunker');
+      T.many([[17, 1], [17, 2], [16, 1]], 'forest'); T.many([[17, 12], [17, 13], [16, 13]], 'forest');
       return T.M;
     } }
 };

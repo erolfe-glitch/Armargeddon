@@ -89,6 +89,195 @@ function tileKey(c, r, h) {
   return t;
 }
 const O = '#16150f';
+// ---------- Gemalte Karte (Bögen des Nutzers im Ordner Map) ----------
+// Statt einer Kachel je Feld: ein durchgehender Boden, weiche Flächen für Wald, Ort und Sumpf,
+// Fluss, Gräben, Wege und Bahn als durchgehende Linien von Feld zu Feld, Gebäude und Bäume als Bilder darauf.
+const PT = { tex: {}, spr: {}, n: 0, need: 0 };
+{ const D = (window.FXDATA || {}).paint;
+  if (D) for (const grp of ['tex', 'spr']) for (const k in D[grp]) {
+    PT.need++; const im = new Image();
+    im.onload = () => { PT[grp][k] = im; PT.n++; if (PT.n === PT.need && L && G) renderTerrain(); };
+    im.src = D[grp][k];
+  } }
+const paintReady = () => PT.need > 0 && PT.n === PT.need;
+const WATER = new Set(['canal', 'bridge', 'furt']), TOWN = new Set(['village', 'kirche', 'fabrik', 'barrikade', 'bahn']);
+function renderPainted(g) {
+  const { s, W, H } = L, x0 = 0, y0 = L.top - s * K * 1.2;
+  const pat = (k, sc = 1) => { const p = g.createPattern(PT.tex[k], 'repeat'); const f = s * 1.9 / 324 * sc; p.setTransform(new DOMMatrix([f, 0, 0, f * 0.92, 0, 0])); return p; };
+  const T = (c, r) => E.inMap(c, r) ? G.map[c][r].t : null;
+  // 1) Boden: Gras, darüber Schlamm, wo gekämpft wird
+  g.save(); g.beginPath(); g.rect(x0, y0, W, H - y0); g.clip();
+  g.fillStyle = pat('grass'); g.fillRect(x0, y0, W, H - y0);
+  const layer = (tex, wf, rad = 1.25, sc = 1) => {
+    const m = document.createElement('canvas'); m.width = W; m.height = H; const mg = m.getContext('2d');
+    for (let c = -1; c <= COLS; c++) for (let r = -1; r <= ROWS; r++) {
+      const cc = Math.max(0, Math.min(COLS - 1, c)), rr = Math.max(0, Math.min(ROWS - 1, r));
+      const w = wf(G.map[cc][rr], cc, rr); if (w <= 0) continue;
+      const [x, y] = center(c, r), R = s * rad * (0.9 + hash(c * 2.3, r * 5.1) * 0.25);
+      mg.save(); mg.translate(x, y); mg.scale(1, K * 0.95);
+      const gr = mg.createRadialGradient(0, 0, 0, 0, 0, R);
+      gr.addColorStop(0, `rgba(0,0,0,${w})`); gr.addColorStop(0.55, `rgba(0,0,0,${w * 0.85})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      mg.fillStyle = gr; mg.fillRect(-R, -R, R * 2, R * 2); mg.restore();
+    }
+    mg.globalCompositeOperation = 'source-in'; mg.fillStyle = pat(tex, sc); mg.fillRect(0, 0, W, H);
+    g.drawImage(m, 0, 0);
+  };
+  const mid = c => { const f = c / Math.max(1, COLS - 1); return Math.max(0, 1 - Math.abs(f - 0.5) * 2.2); };   // Niemandsland in der Mitte
+  layer('mud', (h, c, r) => ({ mud: 1, crater: 1, wire: 0.95, trench: 0.9, bunker: 0.8, barrikade: 0.6, furt: 0.5 })[h.t] ?? (h.t === 'open' ? 0.25 + mid(c) * 0.6 + (hash(c * 4.1, r * 1.3) > 0.7 ? 0.2 : 0) : 0));
+  layer('forestfloor', h => ({ wald: 1, forest: 0.8, waldweg: 0.95 })[h.t] || 0, 1.15);
+  layer('rubble', h => TOWN.has(h.t) && h.t !== 'bahn' ? 1 : 0, 1.05);
+  layer('swamp', h => h.t === 'sumpf' ? 1 : 0, 1.15);
+  // Höhen: heller, mit feinen Schraffen
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].ridge) {
+    const [x, y] = center(c, r); g.save(); g.translate(x, y); g.scale(1, K);
+    const gr = g.createRadialGradient(0, 0, 0, 0, 0, s * 1.1); gr.addColorStop(0, 'rgba(235,215,160,0.16)'); gr.addColorStop(1, 'rgba(235,215,160,0)');
+    g.fillStyle = gr; g.fillRect(-s * 1.1, -s * 1.1, s * 2.2, s * 2.2); g.restore();
+  }
+  // kleine Trichter und Pfützen im Schlamm
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    const h = G.map[c][r]; if (!(h.t === 'mud' || h.t === 'open' && mid(c) > 0.4)) continue;
+    const n = hash(c * 7.7, r * 3.3); if (n < 0.45) continue;
+    const [x, y] = center(c, r), px = x + (n - 0.7) * s * 1.2, py = y + (hash(c, r * 2) - 0.5) * s * K, rr = s * (0.12 + n * 0.12);
+    g.fillStyle = 'rgba(30,22,12,0.45)'; g.beginPath(); g.ellipse(px, py, rr * 1.25, rr * K * 1.1, 0, 0, 7); g.fill();
+    g.fillStyle = 'rgba(70,88,90,0.55)'; g.beginPath(); g.ellipse(px + rr * 0.1, py + rr * K * 0.15, rr * 0.8, rr * K * 0.6, 0, 0, 7); g.fill();
+  }
+  // 2) Linien: Wege durch Feld zu Feld (Mittelpunkt zu Mittelpunkt, weich gebogen); am Kartenrand laufen sie hinaus
+  // wave(l, L): Versatz quer zur Linie (0 an beiden Enden, damit die Stücke nahtlos aneinander passen)
+  const linePath = (inSet, joinSet = inSet, wave = null) => {
+    const P = new Path2D();
+    let hc = 0, hr = 0;
+    const emit = pts => {   // Punktfolge mit Querversatz
+      let L = 0; const acc = [0]; for (let i = 1; i < pts.length; i++) { L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); acc.push(L); }
+      for (let i = 0; i < pts.length; i++) {
+        let [x, y] = pts[i];
+        if (wave && L > 0) { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, o = wave(acc[i], L, hc, hr); x += -dy / l * o; y += dx / l * o; }
+        i ? P.lineTo(x, y) : P.moveTo(x, y);
+      }
+    };
+    const quad = (a, cx, cy, b) => { const out = []; for (let k = 0; k <= 12; k++) { const t = k / 12, u = 1 - t; out.push([u * u * a[0] + 2 * u * t * cx + t * t * b[0], u * u * a[1] + 2 * u * t * cy + t * t * b[1]]); } return out; };
+    const seg = (a, b) => { const out = []; for (let k = 0; k <= 8; k++) { const t = k / 8; out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } return out; };
+    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+      if (!inSet(G.map[c][r], c, r)) continue;
+      hc = c; hr = r;
+      const [x, y] = center(c, r), pts = [];
+      for (const [a, b] of E.neighbors(c, r)) if (joinSet(G.map[a][b], a, b)) { const [ex, ey] = center(a, b); pts.push([(x + ex) / 2, (y + ey) / 2]); }
+      if (pts.length <= 1) {   // Ende am Rand: hinaus verlängern
+        const out = [];
+        if (c === 0) out.push([x - s * 1.6, y]); if (c === COLS - 1) out.push([x + s * 1.6, y]);
+        if (r === 0) out.push([x, y - s * K * 1.8]); if (r === ROWS - 1) out.push([x, y + s * K * 1.8]);
+        if (out.length && pts.length) { const [px, py] = pts[0]; out.sort((p, q) => Math.hypot(q[0] - px, q[1] - py) - Math.hypot(p[0] - px, p[1] - py)); }
+        if (out.length) pts.push(out[0]);
+      }
+      if (!pts.length) { emit(seg([x - s * 0.3, y], [x + s * 0.3, y])); continue; }
+      if (pts.length === 1) { emit(seg([x, y], pts[0])); continue; }
+      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) emit(quad(pts[i], x, y, pts[j]));
+    }
+    return P;
+  };
+  // Zickzack der Gräben (Schulterwehren) und sanfte Windungen des Flusses
+  const zig = (l, L, c, r) => s * 0.16 * ((c + r) & 1 ? 1 : -1) * Math.min(1, 2.2 * Math.sin(Math.PI * l / L));
+  const meander = (l, L) => s * 0.09 * Math.sin(Math.PI * l / L) * (hash(Math.round(L), 3) > 0.5 ? 1 : -1);
+  const stroke = (P, style, w, dash) => { g.strokeStyle = style; g.lineWidth = w; g.setLineDash(dash || []); g.stroke(P); g.setLineDash([]); };
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  // Fluss und Kanal
+  const isW = h => WATER.has(h.t);
+  if ([...Array(COLS).keys()].some(c => G.map[c].some(isW))) {
+    const P = linePath(isW, isW, meander);
+    g.lineCap = 'butt';
+    stroke(P, 'rgba(22,18,10,0.45)', s * 1.22); stroke(P, '#463d2a', s * 1.04); stroke(P, '#2c3330', s * 0.84);
+    stroke(P, pat('water', 0.8), s * 0.74); stroke(P, 'rgba(160,190,195,0.10)', s * 0.5);
+    stroke(P, 'rgba(190,215,220,0.22)', s * 0.04, [s * 0.25, s * 0.5]);
+    g.lineCap = 'round';
+    // Kanalende mitten im Feld: gemauertes Becken mit Schleusentor
+    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+      const h = G.map[c][r]; if (!isW(h)) continue;
+      const nb = E.neighbors(c, r).filter(([a, b]) => isW(G.map[a][b])); if (nb.length !== 1) continue;
+      if (c === 0 || r === 0 || c === COLS - 1 || r === ROWS - 1) continue;
+      const [x, y] = center(c, r), [ex, ey] = center(nb[0][0], nb[0][1]), ang = Math.atan2(ey - y, ex - x);
+      g.save(); g.translate(x, y); g.rotate(ang);
+      g.fillStyle = '#2c3330'; g.fillRect(0, -s * 0.37, s * 0.1, s * 0.74);
+      g.fillStyle = '#6e6a60'; g.strokeStyle = O; g.lineWidth = Math.max(1, s * 0.025);
+      g.fillRect(-s * 0.12, -s * 0.52, s * 0.14, s * 1.04); g.strokeRect(-s * 0.12, -s * 0.52, s * 0.14, s * 1.04);
+      for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(-s * 0.12, i * s * 0.15); g.lineTo(s * 0.02, i * s * 0.15); g.stroke(); }
+      g.fillStyle = '#5a4128'; g.fillRect(s * 0.18, -s * 0.37, s * 0.06, s * 0.74); g.strokeRect(s * 0.18, -s * 0.37, s * 0.06, s * 0.74);
+      g.restore();
+    }
+    // Furt: Steine quer, flacheres Wasser
+    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'furt') {
+      const [x, y] = center(c, r);
+      for (let i = 0; i < 9; i++) { const n = hash(c * 3 + i, r * 5 - i), px = x + (i - 4) * s * 0.14, py = y + (n - 0.5) * s * K * 0.7;
+        g.fillStyle = '#6e6a5e'; g.strokeStyle = O; g.lineWidth = Math.max(1, s * 0.02); g.beginPath(); g.ellipse(px, py, s * 0.075, s * 0.055, 0, 0, 7); g.fill(); g.stroke(); }
+    }
+  }
+  // Bahn: Schotter, Schwellen, zwei Schienen
+  const isB = h => h.t === 'bahn' || h.rail;
+  if ([...Array(COLS).keys()].some(c => G.map[c].some(isB))) {
+    const P = linePath(isB);
+    g.lineCap = 'butt';
+    stroke(P, 'rgba(20,18,14,0.5)', s * 0.62); stroke(P, '#6a655c', s * 0.52); stroke(P, '#3b2c1f', s * 0.44, [s * 0.05, s * 0.07]);
+    stroke(P, '#8d9294', s * 0.25); stroke(P, '#4f483f', s * 0.19, [s * 0.05, s * 0.07]); g.lineCap = 'round';
+  }
+  // Wege (Waldweg und Straßen mit h.road): Fahrspuren im Schlamm
+  const isR = h => h.t === 'waldweg' || h.road;
+  if ([...Array(COLS).keys()].some(c => G.map[c].some(isR))) {
+    const P = linePath(isR);
+    stroke(P, 'rgba(25,20,12,0.35)', s * 0.42); stroke(P, '#5d4c35', s * 0.34); stroke(P, '#463826', s * 0.24); stroke(P, '#6c5a40', s * 0.16); stroke(P, '#4b3b28', s * 0.1);
+  }
+  // Gräben: Brustwehr, dunkle Wände, Laufroste; Bunker liegen in der Linie
+  const isT = h => h.t === 'trench', joinT = h => h.t === 'trench' || h.t === 'bunker';
+  if ([...Array(COLS).keys()].some(c => G.map[c].some(isT))) {
+    const P = linePath(isT, joinT, zig);
+    g.lineCap = 'butt';
+    stroke(P, 'rgba(18,14,8,0.45)', s * 0.82); stroke(P, '#5b4830', s * 0.68); stroke(P, '#7f6d4b', s * 0.56, [s * 0.11, s * 0.025]);
+    stroke(P, '#1d160e', s * 0.38); stroke(P, '#2e2418', s * 0.28); stroke(P, '#6b5434', s * 0.12, [s * 0.03, s * 0.05]);
+    g.lineCap = 'round';
+  }
+  g.restore();
+  // 3) Bilder: von hinten nach vorn, damit Vordergrund überdeckt
+  const S = PT.spr, items = [];
+  const put = (k, c, r, wk, dy = 0, flat = false, dx = 0) => { if (S[k]) { const [x, y] = center(c, r); items.push({ k, x: x + dx * s, y: y + dy * s * K, w: s * wk, flat }); } };
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    const t = G.map[c][r].t, n = hash(c * 1.7, r * 9.1);
+    if (t === 'bunker') put(['bunker1', 'bunker2', 'bunker3', 'bunker4'][Math.floor(n * 4)], c, r, 2.1, -0.15, true);
+    else if (t === 'kirche') put('church', c, r, 2.5, -0.4);
+    else if (t === 'fabrik') put('factory', c, r, 2.5, -0.35);
+    else if (t === 'barrikade') put('barric', c, r, 2.1, -0.1, true);
+    else if (t === 'village') put(['house1', 'house2', 'ruinwall', 'house1', 'house2'][Math.floor(n * 5)], c, r, 2.3, -0.2, true);
+    else if (t === 'wald') put(n < 0.5 ? 'treeD' : 'treeK', c, r, 2.35, -0.5);
+    else if (t === 'forest') put(n < 0.75 ? 'treeX' : 'treeA', c, r, 2.2, -0.4);
+    else if (t === 'crater') put('craterS', c, r, 1.45, 0.05, true);
+    else if (t === 'wire') put('wireS', c, r, 2.0, -0.05, true);
+    else if (t === 'trench' && n > 0.86 && !E.neighbors(c, r).some(([a, b]) => G.map[a][b].t === 'bunker')) put(n > 0.93 ? 'dugout' : 'mgnest', c, r, 1.3, -0.1, true, (n - 0.9) * 2);
+  }
+  items.sort((a, b) => a.y - b.y);
+  for (const it of items) {
+    const im = S[it.k], w = it.w, hgt = w * im.naturalHeight / im.naturalWidth * (it.flat ? Math.max(0.72, Math.min(1, K / 0.6)) : 1);
+    g.save(); g.translate(it.x, it.y + hgt * 0.12); g.scale(1, 0.45);
+    const sh = g.createRadialGradient(0, 0, 0, 0, 0, w * 0.5); sh.addColorStop(0, 'rgba(10,8,4,0.45)'); sh.addColorStop(1, 'rgba(10,8,4,0)');
+    g.fillStyle = sh; g.fillRect(-w / 2, -w / 2, w, w); g.restore();
+    g.drawImage(im, it.x - w / 2, it.y - hgt * 0.55, w, hgt);
+  }
+  // 4) Brücken quer zum Fluss
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'bridge') {
+    const [x, y] = center(c, r); let dx = 0, dy = 0;
+    for (const [a, b] of E.neighbors(c, r)) if (WATER.has(G.map[a][b].t)) { const [ex, ey] = center(a, b); const ux = ex - x, uy = ey - y, l = Math.hypot(ux, uy); if (dx * ux + dy * uy < 0) { dx -= ux / l; dy -= uy / l; } else { dx += ux / l; dy += uy / l; } }
+    if (!dx && !dy) dy = 1;
+    const ang = Math.atan2(dy, dx) + Math.PI / 2, lw = Math.max(1.2, s * 0.03);
+    g.save(); g.translate(x, y); g.rotate(ang);
+    g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(-s * 0.95, -s * 0.2, s * 1.9, s * 0.48);
+    g.fillStyle = '#5a5248'; g.fillRect(-s * 0.98, -s * 0.3, s * 0.22, s * 0.6); g.fillRect(s * 0.76, -s * 0.3, s * 0.22, s * 0.6);
+    g.fillStyle = '#7d5b36'; g.strokeStyle = O; g.lineWidth = lw; g.fillRect(-s * 0.85, -s * 0.24, s * 1.7, s * 0.48); g.strokeRect(-s * 0.85, -s * 0.24, s * 1.7, s * 0.48);
+    g.lineWidth = lw * 0.6; for (let i = -7; i <= 7; i++) { g.beginPath(); g.moveTo(i * s * 0.11, -s * 0.24); g.lineTo(i * s * 0.11, s * 0.24); g.stroke(); }
+    g.strokeStyle = '#3a2a1a'; g.lineWidth = lw * 1.6; for (const yy of [-0.26, 0.26]) { g.beginPath(); g.moveTo(-s * 0.85, yy * s); g.lineTo(s * 0.85, yy * s); g.stroke(); }
+    g.restore();
+  }
+  // 5) Draht immer deutlich: Rollen und heller Rand
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'wire') {
+    hexPath(g, c, r, 0.94); g.strokeStyle = 'rgba(205,210,215,0.6)'; g.lineWidth = Math.max(1.5, s * 0.04); g.setLineDash([s * 0.12, s * 0.08]); g.stroke(); g.setLineDash([]);
+  }
+  // 6) feine Feldlinien, damit man die Felder noch zählen kann
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.2)'; g.lineWidth = Math.max(1, s * 0.018); g.stroke(); }
+}
 function renderTerrain() {
   const { s, W, H, dpr } = L;
   tcv = tcv || document.createElement('canvas'); tcv.width = W; tcv.height = H;
@@ -97,6 +286,12 @@ function renderTerrain() {
   const sky = g.createLinearGradient(0, 0, 0, L.top * 1.2);
   sky.addColorStop(0, 'rgba(120,22,12,0.78)'); sky.addColorStop(0.55, 'rgba(110,30,14,0.38)'); sky.addColorStop(1, 'rgba(110,30,14,0)');
   g.fillStyle = sky; g.fillRect(0, 0, W, L.top * 1.2);
+  if (paintReady() && !window.NOPAINT) {
+    renderPainted(g);
+    const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.72);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(6,5,3,0.5)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+    return;
+  }
   g.lineJoin = 'round'; g.lineCap = 'round';
   const lw = Math.max(1.5, s * 0.045), tiled = new Set();
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
@@ -896,7 +1091,7 @@ function updateHud() {
     $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
-    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
+    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
     $('hudStats').innerHTML = (u.side === G.side && E.active(u) ? pill('Aktion', '●'.repeat(Math.max(0, u.ap || 0)) + '○'.repeat(Math.max(0, P.AP - (u.ap || 0))) || '–', 'gold') : '') + `<div class="sbars">${bar('Stärke', u.str, 10, 'H', u.str <= 3.3 ? 'bad' : '')}${bar('Moral', u.mor, TYPES[u.type].mor, 'C', u.mor < P.FALLBACK_MOR + 1 ? 'bad' : '')}</div>` +
       pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–') +
       `<div class="sps">${(u.officer ? ['★ Anführer: gibt Befehle'] : []).concat(T.sp || []).map(x => `<span class="sp">${x}</span>`).join('')}</div>`;
@@ -940,9 +1135,9 @@ function updateHud() {
       $('hudRow').innerHTML = '<span class="hint">Tippe ein grünes Feld am eigenen Rand an. Die Einheit kann ab der nächsten Runde handeln.</span><button class="act" data-act="cancel">Abbrechen</button>';
     } else if (inspect && inspect.hex) {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
-      $('hudName').textContent = T.name + (h.ridge ? ' auf der Höhe' : '');
+      $('hudName').textContent = (h.river && h.t === 'canal' ? 'Fluss' : T.name) + (h.ridge ? ' auf der Höhe' : '');
       $('hudSub').innerHTML = o ? `Zielfeld: ${o.name} · ${o.pts} Punkte` : 'Gelände';
-      $('hudRow').innerHTML = `<span class="hint">${T.info}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <i>Im echten Krieg: ' + T.real + '</i>' : ''}</span>`;
+      $('hudRow').innerHTML = `<span class="hint">${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <i>Im echten Krieg: ' + T.real + '</i>' : ''}</span>`;
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
       $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} von ${G.maxT}`;
@@ -1150,7 +1345,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = {
+window.__dbg = { PT, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
