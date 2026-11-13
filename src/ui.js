@@ -297,16 +297,18 @@ function drawUnit(u, d) {
   // Zustandsmarken
   const tagY = y - s * (k === 'mech' || k === 'drill' || k === 'mechA' || k === 'mechB' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (glyph, bg, fg, ic) => {
-    const cx = x - s * 0.86, cy = y - s * 0.02, r = s * 0.2, im = UIM[ic];
-    if (im) { const hh = s * 0.5, ww = hh * im.naturalWidth / im.naturalHeight; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); return; }
+    const cx = x - s * 0.9, cy = y - s * 0.12, r = s * 0.2, im = UIM[ic];
+    if (im) {   // helle Scheibe mit Rand dahinter, Symbol aufgehellt: auf dunklem Boden gut zu sehen
+      const R = s * 0.34; g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = bg; g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = s * 0.12; g.fill(); g.shadowBlur = 0; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#1d140d'; g.stroke();
+      const hh = s * 0.52, ww = hh * im.naturalWidth / im.naturalHeight; g.filter = 'brightness(1.45) contrast(1.15)'; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
     g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     g.font = `900 ${Math.round(s * 0.25)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
   };
-  if (u.status === 'rout') tag('↩', '#e6dcc0', '#7a1c10', 'icSkull');
-  else if (u.broken > 0) tag('✖', '#b9b09a', '#1d140d', 'icGear');
-  else if (u.limbered) tag('⇄', '#d9c698', '#1d140d', 'icArrows');
-  else if (u.supp > 0) tag('▼', '#dcc070', '#5a1408', 'icDanger');
-  else if (u.gassed) tag('G', '#b9c24a', '#1d2408', 'icWarn');
+  if (u.status === 'rout') tag('↩', '#f3ead2', '#7a1c10', 'icSkull');
+  else if (u.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear');
+  else if (u.limbered) tag('⇄', '#f0e2b8', '#1d140d', 'icArrows');
+  else if (u.supp > 0) tag('▼', '#ffe28a', '#5a1408', 'icDanger');
+  else if (u.gassed) tag('G', '#e3ec8a', '#1d2408', 'icWarn');
   if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02; g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#bfe0f2'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
 }
 
