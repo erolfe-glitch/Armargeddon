@@ -17,6 +17,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
+let recSet = new Set();
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
@@ -534,7 +535,10 @@ function drawUnit(u, d) {
   else if (u.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear');
   else if (u.limbered) tag('⇄', '#f0e2b8', '#1d140d', 'icArrows');
   else if (u.supp > 0) tag('▼', '#ffe28a', '#5a1408', 'icDanger');
+  else if (u.stuck > 0) tag('≈', '#d9c49a', '#3a2410');
   else if (u.gassed) tag('G', '#e3ec8a', '#1d2408', 'icWarn');
+  else if (u.ow) tag('◎', '#cfe9ff', '#0f3550');
+  else if (TYPES[u.type].mg && !u.setup && E.active(u)) tag('⤓', '#e9dfc4', '#5a3a10');
   if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02; g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#bfe0f2'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
 }
 
@@ -553,7 +557,7 @@ function draw() {
   }
   // Markierungen
   if (sel && human(G.side) && !busy) {
-    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
+    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = n.march ? 'rgba(255,190,70,0.24)' : n.retreat ? 'rgba(255,160,120,0.26)' : 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = n.march ? 'rgba(255,196,90,0.85)' : 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
       if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = '#e2553c'; g.setLineDash([s * 0.1, s * 0.07]); g.lineWidth = Math.max(2, s * 0.06); g.stroke(); g.setLineDash([]); } }
     if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
       g.font = `900 ${Math.round(s * 0.55)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
@@ -567,6 +571,7 @@ function draw() {
     if (scoutSet.size) { g.font = `900 ${Math.round(s * 0.34)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (scoutSet.has(E.key(c, r))) { const [hx, hy] = center(c, r); g.lineWidth = Math.max(2, s * 0.08); g.strokeStyle = O; g.strokeText('◉', hx, hy); g.fillStyle = '#bfe0f2'; g.fillText('◉', hx, hy); } }
     for (const id of sendSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(120,200,255,0.30)'; g.fill(); g.strokeStyle = '#7fd8ff'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
+    for (const id of recSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(255,200,90,0.3)'; g.fill(); g.strokeStyle = '#ffcf6a'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
     for (const id of healSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(110,220,180,0.34)'; g.fill(); g.strokeStyle = '#8fe0c8'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); if (PJI.cross) { const [cx, cy] = center(hu.c, hu.r), hh = s * 0.5; g.globalAlpha = 0.75 + 0.25 * Math.sin(now / 200); g.drawImage(PJI.cross, cx - hh / 2, cy - s * 1.25, hh, hh * PJI.cross.naturalHeight / PJI.cross.naturalWidth); g.globalAlpha = 1; } }
     for (const [, t] of targets) {
       const u = unitById(t.id); hexPath(g, u.c, u.r, 0.92);
@@ -878,6 +883,12 @@ async function playEvent(e) {
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
       playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
+    case 'unstuck': floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
+    case 'recovered': { playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
+    case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
+    case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#9fd8ff', true); await wait(220); break;
+    case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); break;
+    case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
     case 'limber': playSound('clank', 0.6); floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
@@ -948,6 +959,7 @@ cv.addEventListener('click', ev => {
   }
   const u = p.uFig || p.uHex;
   { const hu = [p.uHex, p.uFig].find(q => q && healSet.has(q.id)); if (sel && hu) return act(m => E.heal(G, m, hu)); }
+  { const ru = [p.uHex, p.uFig].find(q => q && recSet.has(q.id)); if (sel && ru) return act(m => E.recover(G, m, ru)); }
   { const su = [p.uHex, p.uFig].find(q => q && sendSet.has(q.id)); if (sel && su) return act(m => E.sendOrder(G, m, su)); }
   if (u && u.side === G.side && E.active(u)) return select(u);
   if (u) { select(null); inspect = { unit: u }; updateHud(); return; }
@@ -964,9 +976,11 @@ function computeOptions() {
   if (!sel || !E.active(sel) || sel.side !== G.side) return;
   if (TYPES[sel.type].relay) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const dd = E.dist(sel.c, sel.r, c, r); if (dd > 0 && dd <= TYPES[sel.type].spot && E.hasLOS(G, sel.c, sel.r, c, r)) sightSet.add(E.key(c, r)); }
   reach = E.reachable(G, sel);
+  for (const [k, n] of E.reachable(G, sel, { march: true })) if (!reach.has(k)) reach.set(k, n);   // Marsch: gelbe Felder
+  recSet = new Set(); if (TYPES[sel.type].recover) for (const o of G.units) if (E.canRecover(G, sel, o)) recSet.add(o.id);
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
-  { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= (T0.mobile ? 1 : 2) && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= (T0.mg ? 2 : 1));
+  { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= (T0.mobile ? 1 : 2) && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= 1 && (!T0.mg || sel.setup));
     if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r))) rangeSet.add(E.key(c, r)); } }
   if (TYPES[sel.type].cls === 'art') {
     const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== sel.side; };
@@ -990,7 +1004,7 @@ function computeOptions() {
 }
 async function act(fn) {
   busy = true; const u = sel;
-  previewT = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
+  previewT = null; recSet = new Set(); reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
   await play(fn(u));
   busy = false;
   sel = (u && E.active(u) && u.ap >= 1) ? u : null;
@@ -1074,7 +1088,8 @@ function hasAction(u) {
   if (u.broken > 0) return false;
   if (u.ap < 1) return false;
   if (!u.supp && E.reachable(G, u).size) return true;
-  if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o))) return true;
+  if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o) || E.canRecover(G, u, o))) return true;
+  if (E.canSetup(G, u)) return true;
   if (u.attacked) return false;
   const T = TYPES[u.type];
   if (T.cls === 'medic') return G.units.some(o => E.canHeal(G, u, o));
@@ -1140,16 +1155,25 @@ function updateHud() {
       } else {
         if ([...targets.values()].some(t => t.both)) acts.push(`<button class="act ${atkPref === 'melee' ? 'on' : ''}" data-act="p-melee">⚔ Nahkampf</button><button class="act ${atkPref === 'fire' ? 'on' : ''}" data-act="p-fire">➶ Beschuss</button>`);
         if (!spent.has(sel.id)) acts.push(`<button class="act pass" data-act="pass" title="Diese Einheit ist für diese Runde fertig">✓ Fertig</button>`);
-        if (sel.officer) acts.push(E.canOrder(G, sel) ? `<button class="act" data-act="o-rally" title="Eigene Truppen bis 2 Felder: Moral +1,5, Niederhalten endet">📯 Sammeln</button><button class="act" data-act="o-storm" title="Eigene Truppen bis 2 Felder: Nahkampf ×1,25 in dieser Runde">⚔ Sturmbefehl</button>` : `<span class="hint">★ Befehl wieder in ${sel.cd} Runde${sel.cd > 1 ? 'n' : ''}.</span>`);
+        if (sel.officer) {
+          const ob = (k, ic, lbl, tip) => { const cd = k === 'rally' ? sel.cdR : sel.cdS; return E.canOrderKind(G, sel, k) ? `<button class="act" data-act="o-${k}" title="${tip}">${ic} ${lbl}</button>` : `<button class="act" disabled title="${tip}">${ic} ${lbl}${cd > 0 ? ` (${cd})` : ''}</button>`; };
+          acts.push(ob('rally', '📯', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +1,5, Niederhalten endet. Abklingzeit ' + E.orderCd(G, sel, 'rally') + ' Runden.') + ob('storm', '⚔', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde. Abklingzeit ' + E.orderCd(G, sel, 'storm') + ' Runden.'));
+        }
         if (T.relay) acts.push(`<span class="hint"><i>◉ Blau:</i> Hier lenkt der Trupp eure Artillerie: keine Streuung, Sprenggranaten ×1,25.</span>`);
         if (T.cls === 'art' && scoutSet.size) acts.push(`<span class="hint"><i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.</span>`);
-        if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +1,5, Moral +1).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
+        if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${sel.cdH > 0 ? `Versorgen wieder in ${sel.cdH} Runde${sel.cdH > 1 ? 'n' : ''}.` : healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +2,5, Moral +1,5).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
         if (T.courier && sel.ap >= 1 && !sel.sent) acts.push(`<span class="hint"><i>Blau:</i> Befehl überbringen – angeklickte Einheit bekommt +1 Aktionspunkt.</span>`);
         if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
-        if (E.canCut(G, sel)) acts.push('<button class="act on" data-act="cut">✂ Draht schneiden</button>');
+        if (E.canCut(G, sel)) acts.push(`<button class="act on" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
+        else if (G.map[sel.c][sel.r].t === 'wire' && !sel.attacked) acts.push(`<span class="hint">${['cav', 'art', 'walker'].includes(T.cls) || T.noCut ? 'Kann keinen Draht schneiden.' : `Draht schneiden braucht ${E.cutCost(sel)} Aktionspunkte.`}</span>`);
+        if (E.canSetup(G, sel)) acts.push('<button class="act on" data-act="setup" title="MG in Stellung bringen: erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.">🛠 Aufbauen (1 ●)</button>');
+        else if (T.mg && !sel.setup) acts.push('<span class="hint">MG abgebaut: erst aufbauen, dann feuern.</span>');
+        if (E.canOverwatch(G, sel)) acts.push('<button class="act" data-act="ow" title="Beide Aktionspunkte: schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).">◎ Feuerbereitschaft (2 ●)</button>');
+        if (recSet.size) acts.push('<span class="hint"><i>Gelb:</i> Koloss bzw. Maschine anklicken zum Bergen (1 ●).</span>');
+        else if (T.recover && sel.cdB > 0) acts.push(`<span class="hint">Bergen wieder in ${sel.cdB} Runde${sel.cdB > 1 ? 'n' : ''}.</span>`);
         if (TYPES[sel.type].wirelayer && !sel.attacked) acts.push(E.canLay(G, sel) ? '<button class="act on" data-act="lay" title="Stacheldraht auf das Feld legen, in das die Einheit blickt">⌇ Draht ziehen</button>' : '<span class="hint">Draht ziehen: zum freien Feld drehen (Drehen-Knöpfe).</span>');
         const hint = sel.broken ? 'Panne: fällt diese Runde aus.' : sel.supp ? 'Niedergehalten: kann nicht ziehen.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
-          `${sel.ap} Aktionspunkt${sel.ap > 1 ? 'e' : ''}. ${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit). ' : 'Helle Felder: ziehen. ') : ''}${sel.attacked ? '' : targets.size ? 'Rot: Nahkampf, Orange: Beschuss.' : 'Kein Ziel in Reichweite.'}`;
+          `${sel.ap} Aktionspunkt${sel.ap > 1 ? 'e' : ''}. ${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit). ' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte. ' : [...reach.values()].some(n => n.march) ? 'Hell: ziehen (1 ●). Gelb: Marsch (2 ●, danach keine Aktion). ' : 'Helle Felder: ziehen. ') : ''}${sel.attacked ? '' : targets.size ? 'Rot: Nahkampf, Orange: Beschuss.' : 'Kein Ziel in Reichweite.'}`;
         acts.push(`<span class="hint">${hint}</span>`);
       }
       row = acts.join('');
@@ -1185,6 +1209,8 @@ async function panelAct(a) {
   if (a === 'cut') return act(u => E.cutWire(G, u));
   if (a === 'lay') return act(u => E.layWire(G, u));
   if (a === 'limber') return act(u => E.limber(G, u));
+  if (a === 'setup') return act(u => E.setupMG(G, u));
+  if (a === 'ow') return act(u => E.overwatch(G, u));
 }
 function showDetail() {
   const u = sel || (inspect && inspect.unit); if (!u) return;

@@ -80,6 +80,7 @@ function posValue(G, u, c, r) {
     v -= E.dist(c, r, u.startC, u.startR) * w.hold;
     if (h.obj) v += 1.5;
   }
+  if (TYPES[u.type].recover) for (const w of G.units) if (w.side === u.side && E.alive(w) && E.cls(w) === 'walker' && (w.stuck > 0 || w.broken > 0) && E.dist(w.c, w.r, c, r) === 1) v += 2.5;
   if (TYPES[u.type].mg) {
     let tgt = 0;
     for (const o of G.units) if (o.side !== u.side && E.active(o) && E.cls(o) !== 'walker' && E.dist(o.c, o.r, c, r) <= 3) tgt++;
@@ -112,7 +113,7 @@ function bestAttackFrom(G, u, c, r, moved, run) {
       const v = attackValue(G, u, d, 'melee', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && T.cls !== 'art' && !(T.mg && moved) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+    if (T.rng && T.cls !== 'art' && !(T.mg && (moved || (!u.setup && u.ap < 2))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
         dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
@@ -183,9 +184,14 @@ function planUnit(G, u) {
   if (E.canCut(G, u) && W[u.side].cut > 0) opts.push({ v: here + W[u.side].cut + 1.2, move: null, cut: true });
   for (const [, n] of E.reachable(G, u)) {
     const pv = posValue(G, u, n.c, n.r);
-    const atk = bestAttackFrom(G, u, n.c, n.r, true, n.path.length);
-    opts.push({ v: pv + (atk ? Math.max(0, atk.v) : 0) - 0.05 * n.cost, move: [n.c, n.r], atk: atk && atk.v > 0 ? atk : null });
+    const atk = n.retreat ? null : bestAttackFrom(G, u, n.c, n.r, true, n.path.length);
+    opts.push({ v: pv + (atk ? Math.max(0, atk.v) : 0) - 0.05 * n.cost - (n.retreat ? 0.4 : 0), move: [n.c, n.r], atk: atk && atk.v > 0 ? atk : null });
   }
+  if (!(typeof process !== 'undefined' && process.env && process.env['NOMARCH_' + u.side]))
+    for (const [, n] of E.reachable(G, u, { march: true })) {   // Marsch nur zum Anmarsch: Ziel außer Reichweite des Feindes
+      if (nearestEnemyDist(G, u.side, n.c, n.r) < 4 || threatAt(G, u, n.c, n.r) > 0.25) continue;
+      opts.push({ v: posValue(G, u, n.c, n.r) - 0.05 * n.cost - 0.35, move: [n.c, n.r], atk: null, march: true });
+    }
   opts.sort((a, b) => b.v - a.v);
   return opts[0];
 }
@@ -229,19 +235,24 @@ function next(G) {
       if (o.supp > 0) weak += 2; else if (o.mor <= E.TYPES[o.type].mor - 1.5) weak++;
       if (E.TYPES[o.type].atk >= 4 && nearestEnemyDist(G, o.side, o.c, o.r) <= E.TYPES[o.type].mv) close++;
     }
-    if (weak >= 2) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
-    if (close >= 2) return { u: u.id, steps: [{ k: 'order', kind: 'storm' }] };
+    if (weak >= 2 && E.canOrderKind(G, u, 'rally')) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
+    if (close >= 2 && E.canOrderKind(G, u, 'storm')) return { u: u.id, steps: [{ k: 'order', kind: 'storm' }] };
   }
   for (const u of order(G, G.side)) {
     if (G._aiDone.has(u.id)) continue;
     G._aiDone.add(u.id);
     const o = planUnit(G, u);
     const steps = [];
+    if (TYPES[u.type].recover) for (const w of G.units) if (E.canRecover(G, u, w)) { steps.push({ k: 'recover', t: w.id }); break; }
     if (o.limber) steps.push({ k: 'limber' });
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
     if (o.cut) steps.push({ k: 'cut' });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
+    if (o.atk && TYPES[u.type].mg && !u.setup && !o.move) steps.push({ k: 'setup' });
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
+    if (TYPES[u.type].mg && !o.atk && nearestEnemyDist(G, u.side, o.move ? o.move[0] : u.c, o.move ? o.move[1] : u.r) <= 7) steps.push({ k: 'setup' });
+    if (!o.move && !o.atk && !o.cut && !o.shell && !o.limber && E.canOverwatch(G, u) && nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 3 &&
+        !(typeof process !== 'undefined' && process.env && process.env['NOOW_' + u.side])) steps.push({ k: 'ow' });
     if (E.cls(u) === 'medic') steps.push({ k: 'heal' });
     if (TYPES[u.type].wirelayer) steps.push({ k: 'wire' });
     if (!o.shell && !o.limber && !o.move && !o.cut && u.ap >= 1) {
@@ -274,6 +285,7 @@ function next(G) {
     if (o.move && !ENV['NOMV2_' + G.side]) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk && !ENV['NOATK2_' + G.side] && (!o.move || !ENV['NOMV2_' + G.side])) steps.push({ k: o.atk.kind, d: o.atk.d.id });
     if (o.cut) steps.push({ k: 'cut' });
+    if (TYPES[u.type].mg && !steps.length && E.canSetup(G, u)) steps.push({ k: 'setup' });
     if (steps.length) return { u: u.id, steps };
   }
   return null;
@@ -286,6 +298,9 @@ function exec(G, uid, s) {
   if (s.k === 'cut') return E.cutWire(G, u);
   if (s.k === 'wire') { if (!u.attacked && E.nearestEnemy && E.canLay(G, u)) { const [c, r] = E.layTarget(G, u); let near = 99; for (const o of G.units) if (o.side !== u.side && E.active(o)) near = Math.min(near, E.dist(c, r, o.c, o.r)); if (near <= 5 && near >= 2) return E.layWire(G, u); } return []; }
   if (s.k === 'limber') return E.limber(G, u);
+  if (s.k === 'setup') return E.setupMG(G, u);
+  if (s.k === 'ow') return E.overwatch(G, u);
+  if (s.k === 'recover') { const t = G.units.find(x => x.id === s.t); return t ? E.recover(G, u, t) : []; }
   if (s.k === 'order') return E.order(G, u, s.kind);
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
