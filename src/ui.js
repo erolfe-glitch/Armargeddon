@@ -288,7 +288,9 @@ function drawUnit(u, d) {
 }
 
 // ---------- Zeichnen ----------
-function frame(t) { now = t; draw(); requestAnimationFrame(frame); }
+// STEP = vergangene Zeit in 60-Hz-Bildern (gleich schnell bei 30, 60 oder 144 Hz); FS = dazu das Spieltempo, passend zu wait()
+let lastT = 0, STEP = 1, FS = 1;
+function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; draw(); requestAnimationFrame(frame); }
 function draw() {
   if (!L || !tcv) return;
   const g = ctx, s = L.s;
@@ -365,7 +367,7 @@ function draw() {
   // Effekte
   g.lineCap = 'round';
   for (let i = tracers.length - 1; i >= 0; i--) {
-    const tr = tracers[i]; tr.life--;
+    const tr = tracers[i]; tr.life -= FS;
     if (tr.life <= 0) { tracers.splice(i, 1); continue; }
     const k = 1 - tr.life / tr.max;
     const pim = PJI[tr.img];
@@ -388,7 +390,7 @@ function draw() {
     if (tr.life > tr.max - 5) { g.fillStyle = '#fff1a0'; g.beginPath(); g.arc(tr.x1, tr.y1, s * 0.16, 0, 7); g.fill(); }
   }
   for (let i = flames.length - 1; i >= 0; i--) {
-    const f = flames[i]; f.life--;
+    const f = flames[i]; f.life -= FS;
     if (f.life <= 0) { flames.splice(i, 1); continue; }
     const k = Math.min(1, (f.max - f.life) / 6), im = PJI.jet && f.life % 12 >= 8 ? PJI.jet : FXI[f.life % 8 < 4 ? 'flame1' : 'flame2'];
     if (im) {
@@ -405,7 +407,7 @@ function draw() {
     }
   }
   for (let i = shells.length - 1; i >= 0; i--) {
-    const sh = shells[i]; sh.t += 1 / sh.dur;
+    const sh = shells[i]; sh.t += FS / sh.dur;
     if (sh.t >= 1) { shells.splice(i, 1); continue; }
     const x = sh.x1 + (sh.x2 - sh.x1) * sh.t, y = sh.y1 + (sh.y2 - sh.y1) * sh.t - Math.sin(Math.PI * sh.t) * s * (sh.arc ?? 3.2);
     const pim = PJI[sh.img];
@@ -417,7 +419,7 @@ function draw() {
     } else { g.beginPath(); g.arc(x, y, s * 0.12, 0, 7); g.fillStyle = sh.col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke(); }
   }
   for (let i = muzzles.length - 1; i >= 0; i--) {
-    const mz = muzzles[i]; mz.life--; if (mz.life <= 0) { muzzles.splice(i, 1); continue; }
+    const mz = muzzles[i]; mz.life -= FS; if (mz.life <= 0) { muzzles.splice(i, 1); continue; }
     const im = PJI[mz.img]; if (!im) continue;
     const hh = s * mz.sz * (0.85 + 0.15 * Math.sin(mz.life)), w = fxw(im, hh);
     g.save(); g.translate(mz.x, mz.y); if (mz.center) { g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w / 2, -hh * (mz.up || 0.5), w, hh); }
@@ -425,13 +427,13 @@ function draw() {
     g.restore(); g.globalAlpha = 1;
   }
   for (let i = rings.length - 1; i >= 0; i--) {
-    const rg = rings[i]; rg.life--; if (rg.life <= 0) { rings.splice(i, 1); continue; }
+    const rg = rings[i]; rg.life -= FS; if (rg.life <= 0) { rings.splice(i, 1); continue; }
     const k = 1 - rg.life / rg.max, im = PJI[rg.img];
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
     else { g.beginPath(); g.ellipse(rg.x, rg.y, s * rg.r * k, s * rg.r * k * K, 0, 0, 7); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
   for (let i = booms.length - 1; i >= 0; i--) {
-    const b = booms[i]; if (b.delay > 0) { b.delay--; continue; } b.life--;
+    const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
     if (b.life <= 0) { booms.splice(i, 1); continue; }
     const k = 1 - b.life / b.max, im = FXI[b.img];
     if (im) {
@@ -447,7 +449,7 @@ function draw() {
     g.globalAlpha = 1;
   }
   for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i]; p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life--;
+    const p = particles[i]; p.x += p.vx * FS; p.y += p.vy * FS; p.vy += p.g * FS; p.life -= FS;
     if (p.life <= 0) { particles.splice(i, 1); continue; }
     g.globalAlpha = Math.min(1, p.life / 12); g.fillStyle = p.col; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 7); g.fill();
   }
@@ -459,7 +461,7 @@ function draw() {
     for (const [, n] of reach) { const [x, y] = center(n.c, n.r); g.fillStyle = 'rgba(22,21,15,0.8)'; g.fillText(n.cost, x + 1.5, y + 1.5); g.fillStyle = '#fff6cf'; g.fillText(n.cost, x, y); }
   }
   for (let i = floaters.length - 1; i >= 0; i--) {
-    const f = floaters[i]; f.life--; f.y -= s * (f.hold ? (f.life > f.max - 30 ? 0.012 : 0.0015) : 0.012);
+    const f = floaters[i]; f.life -= f.hold ? STEP : FS; f.y -= s * STEP * (f.hold ? (f.life > f.max - 30 ? 0.012 : 0.0015) : 0.012);
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
     g.globalAlpha = Math.min(1, f.life / 18);
     g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.66 : 0.54) : f.big ? 0.5 : 0.42))}px system-ui, sans-serif`;
@@ -513,8 +515,8 @@ async function animPath(id, path, msPer) {
   for (let i = 1; i < path.length; i++) {
     const [x0, y0] = center(path[i - 1][0], path[i - 1][1]), [x1, y1] = center(path[i][0], path[i][1]);
     if (x1 !== x0) d.face = x1 > x0 ? 0 : 3;
-    const steps = Math.max(3, Math.round(msPer / 16 / speed));
-    for (let k = 1; k <= steps; k++) { d.x = x0 + (x1 - x0) * k / steps; d.y = y0 + (y1 - y0) * k / steps; await raf(); }
+    const dur = msPer / speed, t0 = performance.now();
+    for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; }
   }
 }
 const unitById = id => G.units.find(u => u.id === id);
@@ -539,7 +541,7 @@ async function playEvent(e) {
         if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
         else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
         tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 26 : 15, max: mg ? 26 : 15, n: mg ? 5 : 1, col: can ? '#ff9a3a' : '#ffe27a', img: mg ? 'burst' : can ? 'shard' : 'bullet', sz: mg ? 0.5 : can ? 0.34 : 0.2 });
-        await wait(mg ? 380 : 250);
+        await wait((mg ? 26 : 15) * 16.667 * 0.9);
         if (can) { boom(x2, y2 + s * 0.4, s * 0.5, 'he'); playSound('boom', 0.45); }
       }
       break;
@@ -548,9 +550,9 @@ async function playEvent(e) {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = center(e.c, e.r);
       a.face = e.face; playSound(TYPES[unitById(e.a).type].mobile ? 'launch' : 'cannon', 0.7);   // Mörser: Mörserton, Geschütze: Kanonenschuss
       if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
-      const dur = Math.max(12, Math.round(30 / speed));
+      const dur = 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn
       shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
-      await wait(dur * 16.7 * speed);
+      await wait(dur * 16.667);
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
       if (e.guided) floater(x2, y2 - s * 1.5, '◉ gelenkt ×1,25', '#bfe0f2', false, true);
       playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : 'boom', 0.7);
@@ -564,8 +566,9 @@ async function playEvent(e) {
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
       if (e.t === 'melee') playSound(au && TYPES[au.type].mech ? 'smash' : af === 'shield' ? 'sword' : af === 'raider' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', 0.55);
-      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm') && af !== 'shield' && af !== 'raider') shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 }); }
-      a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(140);
+      let thrown = false;
+      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm') && af !== 'shield' && af !== 'raider') (thrown = true, shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
+      a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
       if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
@@ -1068,7 +1071,7 @@ window.__dbg = {
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
+  sync: () => syncAll(), get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; }
 };
 })();
