@@ -971,6 +971,8 @@ function showDetail() {
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
   $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');
   $('detStats').innerHTML = pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Moral', T.mor) + pill('Zug', T.mv) + pill('Schuss', T.rng ? `${T.rng} Felder` : '–') + pill('Kosten', '★ ' + (E.COST[u.type] || '–'));
+  const cp = E.costParts(u.type);
+  $('detCost').innerHTML = `Kosten <b>★ ${cp.total}</b> = Kampfwert ${cp.base}` + cp.abil.map(([n, v]) => ` ${v < 0 ? '−' : '+'} ${n} ${Math.abs(v)}`).join('') + (cp.total !== cp.base + cp.abil.reduce((s, a) => s + a[1], 0) ? ' (gerundet)' : '');
   $('detOff').hidden = !u.officer;
   $('detail').hidden = false;
 }

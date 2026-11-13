@@ -353,6 +353,7 @@ body { background: #0c0908; }
   .top { gap: 3px 5px; } .tbtn { min-width: 26px; height: 26px; padding: 0 4px; font-size: 11px; } .obj { min-width: 18px; font-size: 11px; }
   .sheet { border-width: 20px; border-image-width: 20px; } .box { border-width: 26px; border-image-width: 26px; }
 }
+.costline { margin: 6px 0 0; font-size: 14px; opacity: .85; } .costline b { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -476,7 +477,7 @@ body { background: #0c0908; }
   <div class="sheet">
     <div class="kicker">Nachschub anfordern</div>
     <h2 class="title" style="font-size:44px">★ <span id="shopPts">0</span> Punkte</h2>
-    <p class="lead" style="margin:0">Punkte gibt es jede Runde (1), für jede geschlagene gegnerische Einheit (2) und für eroberte Zielfelder. Neue Einheiten erscheinen am eigenen Rand und handeln ab der nächsten Runde.</p>
+    <p class="lead" style="margin:0">Punkte gibt es jede Runde (10), für jede geschlagene gegnerische Einheit (20) und für eroberte Zielfelder (10 je Siegpunkt). Neue Einheiten erscheinen am eigenen Rand und handeln ab der nächsten Runde.</p>
     <div class="shoplist" id="shopList"></div>
     <button class="tbtn" id="closeShop">Schließen</button>
   </div>
@@ -490,6 +491,7 @@ body { background: #0c0908; }
         <h3 id="detName"></h3><div class="kicker" id="detSide"></div>
         <div class="sps" id="detSp"></div>
         <div class="stats" id="detStats"></div>
+        <p class="costline" id="detCost"></p>
         <p><b>Kann:</b> <span id="detCan"></span></p>
         <p id="detOff"><b>Anführer:</b> Angriff ×1,15 und weniger Moralverlust für eigene Einheiten bis 2 Felder entfernt. Sammelt Fliehende. Jede zweite Runde ein Befehl: „Sammeln“ (Moral +1,5, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25).</p>
         <p class="real"><b>Im echten Krieg:</b> <span id="detReal"></span></p>

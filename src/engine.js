@@ -23,7 +23,7 @@ const P = {
   BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
   REINF_TURN: 8, LIMBER_MV: 3,
-  PTS_TURN: { A: 1, D: 1 }, PTS_KILL: 2, HEAL: 1.5, HEAL_MOR: 1
+  PTS_TURN: { A: 10, D: 10 }, PTS_KILL: 20, PTS_OBJ: 10, HEAL: 1.5, HEAL_MOR: 1
 };
 
 // Größe des Schlachtfelds: hängt von der gewählten Karte ab (useMap), Grauwall 16 × 10
@@ -167,10 +167,32 @@ Object.assign(TYPES, {
     real: 'Unter der Erde tobte ein Minenkrieg. Bei Messines zündeten die Briten am 7. Juni 1917 neunzehn Minen unter den deutschen Stellungen.' }
 });
 // Nachschub: Kosten in Punkten und Angebot je Seite
-const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, haubitze: 6, koloss: 7,
-  grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 5, sturm: 6, geschuetz: 6,
-  radler: 3, melder: 2, scharf: 4, pionier: 3, raeumer: 4, signal: 2, schild: 4, buechse: 5, schwer: 4, knecht: 9, bohrer: 9, saeger: 8, klaue: 8, stahl: 6, panzerk: 6,
-  hauptA: 4, generalA: 7, hauptD: 4, generalD: 7, flammen: 4, schildwall: 3, feldkanone: 5, fernsprech: 2, grabenk: 5, ritter: 6, pionierD: 3, banner: 4 };
+// Kosten in Punkten (großer Maßstab, Wunsch des Nutzers): aus Werten und Fähigkeiten berechnet.
+// Kampfwert = 6·Angriff + 5·Zähigkeit + 5·Zug − 45, auf 5 gerundet.
+//   Angriff = stärkere Waffe + 0,4 × schwächere (Feuer = Feuerkraft × (1 + 0,15 je Feld Reichweite über 1), Steilfeuer ×1,3;
+//             Nahkampf = Angriff, Reiter ×1,2, Sturmtruppen ×1,15). Zähigkeit = Abwehr (Kolosse ×1,6, Rüstung ×1,4) + halbe Moral.
+// Dazu Fähigkeiten (ABIL) und ein kleiner Abgleich aus der Simulation (ADJ). Prüfen: node tools/costcheck.js
+const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
+  signal: ['Lenkt Artillerie', 15], fernsprech: ['Lenkt Artillerie', 15], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
+  hauptA: ['Befehle', 15], hauptD: ['Befehle', 15], generalA: ['Befehle jede Runde', 50], generalD: ['Befehle jede Runde', 50],
+  pionierD: ['Draht ziehen', 5], knecht: ['Sturmkanone', 20] };
+// Abgleich nach tools/costcheck.js (Grauwall, 140 Spiele je Typ): Angreifer-Infanterie nimmt Zielfelder und ist für den Angreifer mehr wert,
+// Sturmtruppen, Kampfmaschinen, Scharfschützen waren zu billig, Mörser, Reiter und Sanitäter zu teuer.
+const ADJ = { kohorte: 5, grenadier: -5, scharf: 10, pionier: 5, moerser: -10, minenwerfer: -10, reiter: -10, feldscher: -5, heiler: -5,
+  sturm: 30, knecht: 50, bohrer: 60, grabenk: 15, brand: 5, ritter: 5 };
+function costParts(k) {
+  const t = TYPES[k], c = t.cls;
+  let F = t.rng > 0 ? (t.fs || 0) * (1 + 0.15 * (t.rng - 1)) : 0; if (c === 'art') F *= 1.3;
+  const N = t.atk * (c === 'cav' ? 1.2 : c === 'storm' ? 1.15 : 1), A = Math.max(F, N) + 0.4 * Math.min(F, N);
+  const Z = t.def * (c === 'walker' ? 1.6 : t.suit ? 1.4 : 1) + 0.5 * t.mor;
+  const base = 6 * A + 5 * Z + 5 * t.mv - 45, abil = [];
+  if (ABIL[k]) abil.push(ABIL[k]);
+  if (c === 'walker') abil.push(['Pannen', -10]);
+  if (ADJ[k]) abil.push(['Abgleich', ADJ[k]]);
+  const total = Math.max(15, Math.round((base + abil.reduce((n, a) => n + a[1], 0)) / 5) * 5);
+  return { base: Math.round(base), abil, total };
+}
+const COST = {}; for (const k in TYPES) COST[k] = costParts(k).total;
 // Kurze Schlagworte zu den Besonderheiten, für die Einheitenkarte
 const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 4 Felder"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +1 Aktionspunkt", "Zieht 5 Felder"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +0,5"], "hauptA": ["Befehl alle 2 Runden, 2 Felder"], "hauptD": ["Befehl alle 2 Runden, 2 Felder"], "generalA": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
@@ -322,7 +344,7 @@ const MAPS = {
       { id: 'kreuz', name: 'Kreuzung von Selm', c: 7, r: 5, pts: 1 },
       { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 1 },
       { id: 'kirche', name: 'Kirchhügel', c: 12, r: 5, pts: 3 }],
-    army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 3, feldscher: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1 } },
+    army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 2, feldscher: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1 } },
     reinf: ['sturm', 'sturm', 'brand'],
     build: () => {
       const T = mapTools(14, 11, 1871);
@@ -563,7 +585,7 @@ function newGame(opts) {
   for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
-    if (army && armyOk(side, army, !!opts.mechs)) deploy(G, side, army);
+    if (army && (opts.free || armyOk(side, army, !!opts.mechs))) deploy(G, side, army);   // free: nur für Tests ohne Budgetgrenze
     else if (SETUP) { for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]); }
     else deploy(G, side, defaultArmy(side));
   }
@@ -949,7 +971,7 @@ function melee(G, a, d) {
 function claimObjective(G, u) {
   if (!active(u) || cls(u) === 'art') return;
   const o = hex(G, u.c, u.r).obj;
-  if (o && G.ctrl[o] !== u.side) { G.ctrl[o] = u.side; G.pts[u.side] += OBJECTIVES.find(x => x.id === o).pts; }
+  if (o && G.ctrl[o] !== u.side) { G.ctrl[o] = u.side; G.pts[u.side] += OBJECTIVES.find(x => x.id === o).pts * P.PTS_OBJ; }
 }
 
 // ---------- Artillerie ----------
@@ -1166,7 +1188,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
