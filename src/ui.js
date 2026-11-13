@@ -18,7 +18,7 @@ let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing 
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
 let skinA = 'A';
-const LEADER = { 'Prätor Hask': 2, 'Hauptfrau Morn': 1, 'Hauptmann Veyl': 1, 'Kastellan Orsk': 2, 'Sturmführer Kael': 3, 'Legat Corvin': 3, 'Major Dresk': 0 };
+const LEADER = { 'Prätor Hask': 4, 'Hauptfrau Morn': 1, 'Hauptmann Veyl': 1, 'Kastellan Orsk': 4, 'Sturmführer Kael': 3, 'Legat Corvin': 2, 'Major Dresk': 2 };
 function leaderKind(u) { if (!u.officer || (u.side === 'A' && skinA !== 'A')) return null; const k = 'leader' + (LEADER[u.officer] ?? 0), a = FIG.ARTS[k + '_' + u.side]; return a && a.img.complete && a.img.naturalWidth ? k : null; }
 let queue = [], qRunning = false;
 let L = null, K = 0.62, tcv = null, now = 0, ZOOM = 1;
@@ -219,10 +219,11 @@ const facesLeft = f => f === 2 || f === 3 || f === 4;
 const SLOTS = { limber: [[0, 0.38]], medic: [[0.2, 0.4], [-0.22, 0.2]], mortar: [[0, 0.38]], inf: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]], storm: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]],
   flame: [[0.2, 0.4], [-0.22, 0.2]], cav: [[0, 0.4]], mg: [[0, 0.38]], art: [[0, 0.38]], walker: [[0, 0.4]],
   bike: [[0, 0.38]], sniper: [[0, 0.38]], dog: [[0, 0.38]], atr: [[0, 0.38]], signal: [[0.15, 0.4], [-0.25, 0.2]], sapper: [[0.2, 0.4], [-0.22, 0.2]], raider: [[0.22, 0.42], [-0.24, 0.22]],
-  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]], mechB: [[0, 0.42]], suitA: [[0.24, 0.42], [-0.26, 0.2]], suitD: [[0.24, 0.42], [-0.26, 0.2]] };
+  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]], mechB: [[0, 0.42]], fgun: [[0, 0.38]], flamer: [[0.2, 0.4], [-0.22, 0.2]], shieldA: [[0.2, 0.4], [-0.22, 0.2]], phone: [[0.15, 0.4], [-0.25, 0.2]], brawler: [[0.22, 0.42], [-0.24, 0.22]], knight: [[0.2, 0.4], [-0.22, 0.2]], sapperD: [[0.2, 0.4], [-0.22, 0.2]], banner: [[0, 0.4]], suitA: [[0.24, 0.42], [-0.26, 0.2]], suitD: [[0.24, 0.42], [-0.26, 0.2]] };
 const FH = { limber: 0.58, medic: 0.62, mortar: 0.66, inf: 0.62, storm: 0.62, flame: 0.62, mg: 0.68, art: 0.74, walker: 0.86, cav: 0.57,
-  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, suitA: 0.6, suitD: 0.6 };
-const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, mechB: 2.1, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
+  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, suitA: 0.6, suitD: 0.6,
+  fgun: 0.7, flamer: 0.62, shieldA: 0.62, phone: 0.6, brawler: 0.62, knight: 0.64, sapperD: 0.6, banner: 0.74 };
+const MAXW = 1.6, MAXWK = { walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, mechB: 2.1, fgun: 1.8, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
 
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -902,6 +903,7 @@ function updateHud() {
         if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +1,5, Moral +1).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
         if ((!sel.moved || sel.turnOnly) && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
         if (E.canCut(G, sel)) acts.push('<button class="act on" data-act="cut">✂ Draht schneiden</button>');
+        if (TYPES[sel.type].wirelayer && !sel.attacked) acts.push(E.canLay(G, sel) ? '<button class="act on" data-act="lay" title="Stacheldraht auf das Feld legen, in das die Einheit blickt">⌇ Draht ziehen</button>' : '<span class="hint">Draht ziehen: zum freien Feld drehen (Drehen-Knöpfe).</span>');
         const hint = sel.broken ? 'Panne: fällt diese Runde aus.' : sel.supp ? 'Niedergehalten: kann nicht ziehen.' : (sel.moved && sel.attacked) ? 'Fertig für diese Runde.' :
           `${sel.moved ? '' : 'Helle Felder: ziehen. '}${sel.attacked ? '' : targets.size ? 'Rot: Nahkampf, Orange: Beschuss.' : 'Kein Ziel in Reichweite.'}`;
         acts.push(`<span class="hint">${hint}</span>`);
@@ -937,6 +939,7 @@ async function panelAct(a) {
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
   if (a === 'cut') return act(u => E.cutWire(G, u));
+  if (a === 'lay') return act(u => E.layWire(G, u));
   if (a === 'limber') return act(u => E.limber(G, u));
 }
 function showDetail() {

@@ -123,6 +123,30 @@ Object.assign(TYPES, {
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb. Stärker als Infanterie, aber kein Koloss: Geschütze und Nahkampf treffen voll.',
     real: 'Motorisierte Kampfanzüge gab es nie. Der deutsche Grabenpanzer aus Stahlplatten wog rund zehn Kilogramm und wurde vor allem von Posten und MG-Schützen getragen.' },
+  flammen: { side: 'A', name: 'Flammentrupp', cls: 'flame', fig: 'flamer', atk: 2, def: 3, mor: 7, mv: 2, rng: 1, fs: 7, flame: true,
+    can: 'Flammenstrahl auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Wird er beschossen, trifft es ihn ×1,5.',
+    real: 'Auch die Briten setzten Flammenwerfer ein. An der Somme wurden 1916 riesige fest eingebaute Livens-Flammenwerfer unter dem Niemandsland vorgeschoben.' },
+  schildwall: { side: 'A', name: 'Schildwall', cls: 'inf', fig: 'shieldA', atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
+    can: 'Schwer gepanzert und langsam. Gut, um Gräben und Ruinen zu halten, die man genommen hat. Keine Schusswaffe.',
+    real: 'Beide Seiten erprobten Stahlschilde und Körperpanzer. Sie waren schwer und schützten vor allem gegen Splitter, kaum gegen Gewehrkugeln aus der Nähe.' },
+  feldkanone: { side: 'A', name: 'Feldkanone', cls: 'art', fig: 'fgun', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5,
+    can: 'Leichtes Geschütz: 6 Felder Reichweite, kein Gas. Direkter Schuss bis 3 Felder trifft Kolosse und Kampfmaschinen ×2,5. Aufgeprotzt zieht sie 4 Felder. Im Nahkampf wehrlos.',
+    real: 'Die britische 18-Pfünder-Feldkanone war das wichtigste Geschütz der britischen Armee. Bis 1918 verschoss sie rund 100 Millionen Granaten.' },
+  fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 8, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
+    can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (8 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben.',
+    real: 'Feldtelefone verbanden die Gräben mit den Batterien. Die Leitungen wurden tief eingegraben, rissen im Trommelfeuer aber trotzdem ständig.' },
+  grabenk: { side: 'D', name: 'Grabenkämpfer', cls: 'storm', fig: 'brawler', atk: 6, def: 3, mor: 8, mv: 3, rng: 0, fs: 0,
+    can: 'Nahkämpfer mit Grabenschwert und Keule. Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf.',
+    real: 'Deutsche Stoßtrupps trugen für den Grabenkampf Handgranaten, Pistolen, Grabendolche und geschärfte Spaten statt langer Gewehre.' },
+  ritter: { side: 'D', name: 'Kettenritter', cls: 'inf', fig: 'knight', suit: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 0, fs: 0,
+    can: 'Gepanzerter Nahkämpfer mit Axt und Stachelschild. Gewehr- und MG-Feuer wirkt nur halb. Langsam, keine Schusswaffe.',
+    real: 'Ritterrüstungen gab es im Ersten Weltkrieg nicht. Echte Körperpanzer wogen um die zehn Kilogramm und schützten nur Brust und Bauch.' },
+  pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', fig: 'sapperD', wirelayer: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
+    can: 'Zieht Stacheldraht: legt einen Drahtgürtel auf das freie Feld, in das er blickt. Danach kein Angriff mehr in der Runde.',
+    real: 'Drahtverhaue wurden meist nachts gebaut. Arbeitstrupps schraubten Eisenpfähle in den Boden und spannten Rollen Stacheldraht dazwischen.' },
+  banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
+    can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr.',
+    real: 'Im Ersten Weltkrieg trugen Regimenter ihre Fahnen kaum noch ins Gefecht. Sie waren zu auffällig und wurden ab 1914 meist hinter der Front verwahrt.' },
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', fig: 'mech', mech: true, atk: 6, def: 6, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Sturmkanone. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
     real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
@@ -133,12 +157,13 @@ Object.assign(TYPES, {
 // Nachschub: Kosten in Punkten und Angebot je Seite
 const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, haubitze: 6, koloss: 7,
   grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 5, sturm: 6, geschuetz: 6,
-  radler: 3, melder: 2, scharf: 4, pionier: 3, raeumer: 4, signal: 2, schild: 4, buechse: 5, schwer: 4, knecht: 9, bohrer: 9, saeger: 8, klaue: 8, stahl: 6, panzerk: 6 };
+  radler: 3, melder: 2, scharf: 4, pionier: 3, raeumer: 4, signal: 2, schild: 4, buechse: 5, schwer: 4, knecht: 9, bohrer: 9, saeger: 8, klaue: 8, stahl: 6, panzerk: 6,
+  flammen: 4, schildwall: 3, feldkanone: 5, fernsprech: 2, grabenk: 5, ritter: 6, pionierD: 3, banner: 4 };
 // Kurze Schlagworte zu den Besonderheiten, für die Einheitenkarte
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 5 Felder"], "scharf": ["Schuss 5 Felder", "Hält das Ziel nieder"], "melder": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 4 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 5 Felder"], "scharf": ["Schuss 5 Felder", "Hält das Ziel nieder"], "melder": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 4 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 6", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +0,5"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
-const SHOP = { A: ['kohorte', 'radler', 'melder', 'feldscher', 'pionier', 'scharf', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'haubitze', 'koloss', 'stahl', 'saeger', 'klaue'],
-  D: ['grenadier', 'signal', 'heiler', 'schwer', 'schild', 'buechse', 'sense', 'minenwerfer', 'brand', 'sturm', 'geschuetz', 'panzerk', 'knecht', 'bohrer'] };
+const SHOP = { A: ['kohorte', 'radler', 'melder', 'fernsprech', 'feldscher', 'pionier', 'scharf', 'schildwall', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'flammen', 'feldkanone', 'haubitze', 'koloss', 'stahl', 'saeger', 'klaue'],
+  D: ['grenadier', 'signal', 'heiler', 'pionierD', 'schwer', 'schild', 'banner', 'buechse', 'sense', 'grabenk', 'ritter', 'minenwerfer', 'brand', 'sturm', 'geschuetz', 'panzerk', 'knecht', 'bohrer'] };
 
 const TERRAIN = {
   open:    { name: 'Offenes Feld', cost: 1, info: 'Keine Deckung.' },
@@ -536,6 +561,7 @@ function isZOC(G, c, r, side) {
   for (const [nc, nr] of neighbors(c, r)) { const o = unitAt(G, nc, nr); if (o && o.side !== side && active(o) && cls(o) !== 'art') return true; }
   return false;
 }
+function bannerAt(G, side, c, r) { return G.units.some(o => TYPES[o.type].banner && o.side === side && active(o) && dist(o.c, o.r, c, r) <= 2); }
 function officerAt(G, side, c, r) {
   return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= P.OFFICER_RANGE);
 }
@@ -782,6 +808,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (d.status === 'ok' && surrounded(G, d)) ml += P.MOR_SURR;
   if ((t === 'trench' || t === 'bunker') && !o.flame) ml *= 0.5;
   if (officerAt(G, d.side, d.c, d.r)) ml *= P.OFFICER_MOR;
+  if (bannerAt(G, d.side, d.c, d.r)) ml *= 0.75;
   d.mor = Math.max(0, d.mor - ml);
   ev.push({ t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });
   if (d.str < 0.3) { killUnit(G, d, ev, 'destroyed'); return; }
@@ -1023,7 +1050,7 @@ function startTurn(G) {
     if (!adjEnemies(G, u).length && !u.supp && !u.gassed) {
       const t = hex(G, u.c, u.r).t;
       const rec = ['trench', 'village', 'forest', 'bunker', 'wald', 'fabrik', 'kirche', 'barrikade'].includes(t) ? P.RECOVER_COVER : P.RECOVER;
-      u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1));
+      u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1) + (bannerAt(G, u.side, u.c, u.r) ? 0.5 : 0));
     }
   }
   ev.push(...checkEnd(G));
@@ -1031,6 +1058,11 @@ function startTurn(G) {
 }
 // Einheit für diese Runde abschließen (Knopf „Fertig“)
 function pass(G, u) { if (!u || !active(u) || u.side !== G.side) return []; u.moved = true; u.attacked = true; return [{ t: 'pass', u: u.id }]; }
+
+// Drahtpioniere: Stacheldraht auf das Feld legen, in das die Einheit blickt
+function layTarget(G, u) { const [c, r] = step(u.c, u.r, u.face); return inMap(c, r) && ['open', 'crater', 'mud'].includes(hex(G, c, r).t) && !unitAt(G, c, r) && !hex(G, c, r).obj ? [c, r] : null; }
+function canLay(G, u) { return active(u) && !!TYPES[u.type].wirelayer && u.side === G.side && !u.attacked && u.supp <= 0 && !!layTarget(G, u); }
+function layWire(G, u) { if (!canLay(G, u)) return []; const [c, r] = layTarget(G, u); hex(G, c, r).t = 'wire'; u.attacked = true; return [{ t: 'terrain', c, r, what: 'Draht gezogen' }]; }
 
 // ---------- Befehle der Anführer ----------
 // Einmal alle zwei eigenen Runden. 'rally' = Sammeln (Moral +1,5, Niederhalten endet), 'storm' = Sturmbefehl (Nahkampf ×1,25 in dieser Runde).
@@ -1103,7 +1135,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, pass, canCut, guided, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,

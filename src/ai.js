@@ -10,7 +10,7 @@ const W = {
   D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
 };
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
-const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer'] };
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'grabenk'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
 function coverVal(t) { return COVER[t] || 0; }
@@ -243,6 +243,7 @@ function next(G) {
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
     if (E.cls(u) === 'medic') steps.push({ k: 'heal' });
+    if (TYPES[u.type].wirelayer) steps.push({ k: 'wire' });
     if (!o.shell && !o.limber && !o.move && !o.cut && !u.moved) {
       const adj = E.adjEnemies(G, u);
       const bad = adj.find(e => E.arcOf(G, u, e.c, e.r) !== 'front');
@@ -258,6 +259,7 @@ function exec(G, uid, s) {
   if (s.k === 'move') return E.moveUnit(G, u, s.c, s.r);
   if (s.k === 'turn') return E.turnUnit(G, u, s.face);
   if (s.k === 'cut') return E.cutWire(G, u);
+  if (s.k === 'wire') { if (!u.attacked && E.nearestEnemy && E.canLay(G, u)) { const [c, r] = E.layTarget(G, u); let near = 99; for (const o of G.units) if (o.side !== u.side && E.active(o)) near = Math.min(near, E.dist(c, r, o.c, o.r)); if (near <= 5 && near >= 2) return E.layWire(G, u); } return []; }
   if (s.k === 'limber') return E.limber(G, u);
   if (s.k === 'order') return E.order(G, u, s.kind);
   if (s.k === 'heal') {
