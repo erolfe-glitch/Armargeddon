@@ -122,7 +122,7 @@ function bestAttackFrom(G, u, c, r, moved, run) {
 }
 
 function planArt(G, u) {
-  if (u.attacked || u.moved || u.supp > 0) return null;
+  if (u.attacked || u.ap < (TYPES[u.type].mobile ? 1 : 2) || u.supp > 0) return null;
   let best = null;
   const consider = (v, c, r, mode) => { if (v > 0.5 && (!best || v > best.v)) best = { v, c, r, mode }; };
   const friendsNear = (c, r, n) => G.units.some(o => o.side === u.side && E.active(o) && E.cls(o) !== 'art' && E.dist(o.c, o.r, c, r) <= n);
@@ -173,7 +173,7 @@ function planUnit(G, u) {
     else {
       const s = planArt(G, u); if (s) return { shell: s };
       if (TYPES[u.type].limber && u.side === 'A' && G.turn >= 4 && near > 8 && E.canLimber(G, u)) return { limber: true };
-      if (TYPES[u.type].mv < 2 || u.moved) return { v: 0 };
+      if (TYPES[u.type].mv < 2 || u.ap < 1) return { v: 0 };
     }
   }
   const opts = [];
@@ -191,7 +191,7 @@ function planUnit(G, u) {
 }
 
 function order(G, side) {
-  const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked && !u.broken);
+  const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked && !u.broken && u.ap >= 1);
   const dir = E.SIDES[side].dir;
   return us.sort((a, b) => (ORDER[E.cls(a)] - ORDER[E.cls(b)]) || (b.c - a.c) * dir);
 }
@@ -244,11 +244,36 @@ function next(G) {
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
     if (E.cls(u) === 'medic') steps.push({ k: 'heal' });
     if (TYPES[u.type].wirelayer) steps.push({ k: 'wire' });
-    if (!o.shell && !o.limber && !o.move && !o.cut && !u.moved) {
+    if (!o.shell && !o.limber && !o.move && !o.cut && u.ap >= 1) {
       const adj = E.adjEnemies(G, u);
       const bad = adj.find(e => E.arcOf(G, u, e.c, e.r) !== 'front');
       if (bad && !adj.some(e => E.arcOf(G, u, e.c, e.r) === 'front')) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, bad.c, bad.r)) });
     }
+    if (steps.length) return { u: u.id, steps };
+  }
+  if (typeof process !== 'undefined' && process.env && process.env['NO2_' + G.side]) return null;
+  // Zweiter Durchgang: Meldehunde bringen Befehle, dann nutzen Einheiten mit übrigen Aktionspunkten sie (weiter ziehen oder angreifen)
+  G._aiDone2 = G._aiDone2 && G._aiKey2 === tk ? G._aiDone2 : new Set(); G._aiKey2 = tk;
+  for (const m of G.units) {
+    if (m.side !== G.side || !TYPES[m.type].courier || G._aiDone2.has('s' + m.id)) continue;
+    G._aiDone2.add('s' + m.id);
+    let best = null, bv = 0;
+    for (const t of G.units) {
+      if (!E.canSend(G, m, t) || t.attacked || t.ap > 1) continue;
+      const v = TYPES[t.type].atk + (nearestEnemyDist(G, t.side, t.c, t.r) <= TYPES[t.type].mv + 2 ? 3 : 0);
+      if (v > bv) { bv = v; best = t; }
+    }
+    if (best) { G._aiDone2.delete(best.id); return { u: m.id, steps: [{ k: 'send', t: best.id }] }; }
+  }
+  for (const u of order(G, G.side)) {
+    if (G._aiDone2.has(u.id) || E.cls(u) === 'art') continue;
+    { const ENV = typeof process !== 'undefined' && process.env || {}; if (ENV.SKIP2 && ENV.SKIP2.split(',').includes(E.cls(u))) continue; }
+    G._aiDone2.add(u.id);
+    const o = planUnit(G, u), steps = [];
+    const ENV = typeof process !== 'undefined' && process.env || {};
+    if (o.move && !ENV['NOMV2_' + G.side]) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
+    if (o.atk && !ENV['NOATK2_' + G.side] && (!o.move || !ENV['NOMV2_' + G.side])) steps.push({ k: o.atk.kind, d: o.atk.d.id });
+    if (o.cut) steps.push({ k: 'cut' });
     if (steps.length) return { u: u.id, steps };
   }
   return null;
@@ -262,6 +287,7 @@ function exec(G, uid, s) {
   if (s.k === 'wire') { if (!u.attacked && E.nearestEnemy && E.canLay(G, u)) { const [c, r] = E.layTarget(G, u); let near = 99; for (const o of G.units) if (o.side !== u.side && E.active(o)) near = Math.min(near, E.dist(c, r, o.c, o.r)); if (near <= 5 && near >= 2) return E.layWire(G, u); } return []; }
   if (s.k === 'limber') return E.limber(G, u);
   if (s.k === 'order') return E.order(G, u, s.kind);
+  if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
     let best = null;
     for (const [nc, nr] of E.neighbors(u.c, u.r)) { const o = E.unitAt(G, nc, nr); if (o && E.canHeal(G, u, o) && (!best || o.str < best.str)) best = o; }

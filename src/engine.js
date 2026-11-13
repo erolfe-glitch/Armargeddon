@@ -10,10 +10,10 @@ const P = {
   COUNTER: { front: 0.6, flank: 0.3, rear: 0 },
   MOR_PER_DMG: 0.8, MOR_FLANK: 0.5, MOR_REAR: 1, MOR_SURR: 1,
   FALLBACK_MOR: 3, ROUT_STR: 1.5,
-  BREAK: { A: 0.55, D: 0.5 },
+  BREAK: { A: 0.55, D: 0.58 },   // D höher seit den Aktionspunkten (Angreifer kommt schneller heran)
   TRENCH_DEF: 1.6, CRATER_FIRE: 1.2, VILLAGE_DEF: 1.5, FOREST_DEF: 1.4, WIRE_DEF: 0.6,
   MG_VS_WIRE: 2, MG_VS_CAV: 2,
-  GUIDED: 1.25, ORDER_CD: 2, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
+  AP: 2, MV2: 0.5, ZOC_STOP: 1, GUIDED: 1.25, ORDER_CD: 2, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
   MAXT: 16, WIN_A: 5, DRAW_A: 4,
@@ -90,8 +90,8 @@ Object.assign(TYPES, {
   scharf: { side: 'A', name: 'Scharfschütze', cls: 'inf', fig: 'sniper', pin: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 5, fs: 3,
     can: 'Schießt 5 Felder weit. Jeder Treffer hält das Ziel nieder. Im Nahkampf fast wehrlos.',
     real: 'Scharfschützen mit Zielfernrohr lauerten oft stundenlang getarnt. Schon ein kurz über die Grabenkante gehobener Kopf konnte tödlich sein.' },
-  melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', spot: 8, relay: true, atk: 2, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
-    can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (8 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
+  melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', courier: true, atk: 2, def: 2, mor: 7, mv: 6, rng: 0, fs: 0,
+    can: 'Schnell (6 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +1 Aktionspunkt, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
     real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
   pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', fig: 'sapper', sapper: true, atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schneidet Draht und kann danach noch angreifen. Sprengladungen: im Nahkampf ×1,5 gegen Kolosse und Kampfmaschinen.',
@@ -147,6 +147,18 @@ Object.assign(TYPES, {
   banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
     can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr.',
     real: 'Im Ersten Weltkrieg trugen Regimenter ihre Fahnen kaum noch ins Gefecht. Sie waren zu auffällig und wurden ab 1914 meist hinter der Front verwahrt.' },
+  hauptA: { side: 'A', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 3, mor: 9, mv: 3, rng: 2, fs: 2,
+    can: 'Kommandotrupp: gibt jede zweite Runde einen Befehl („Sammeln“ oder „Sturmbefehl“) an alle eigenen Truppen bis 2 Felder. Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
+    real: 'Ein Hauptmann führte eine Kompanie von rund 200 Mann. Die Verluste unter jungen Offizieren waren sehr hoch, weil sie beim Angriff vorangingen.' },
+  generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 3, mor: 10, mv: 3, rng: 1, fs: 1,
+    can: 'Kommandotrupp: gibt jede Runde einen Befehl an alle eigenen Truppen bis 3 Felder. Höchstens einer je Armee. Schwach im Kampf, sein Verlust wiegt schwer.',
+    real: 'Generäle führten meist aus Hauptquartieren weit hinter der Front, verbunden über Telefon und Meldegänger. Trotzdem fielen im Ersten Weltkrieg über 70 britische Generäle.' },
+  hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 3, mor: 9, mv: 3, rng: 2, fs: 2,
+    can: 'Kommandotrupp: gibt jede zweite Runde einen Befehl („Sammeln“ oder „Sturmbefehl“) an alle eigenen Truppen bis 2 Felder. Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
+    real: 'In der deutschen Armee führte ein Hauptmann meist eine Kompanie. Ab 1916 übernahmen oft Leutnants diese Aufgabe, weil zu viele Offiziere gefallen waren.' },
+  generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 3, mor: 10, mv: 3, rng: 1, fs: 1,
+    can: 'Kommandotrupp: gibt jede Runde einen Befehl an alle eigenen Truppen bis 3 Felder. Höchstens einer je Armee. Schwach im Kampf, sein Verlust wiegt schwer.',
+    real: 'Deutsche Divisionen wurden von Generalmajoren geführt. Die Stäbe arbeiteten mit Karten, Telefon und Luftbildern meist mehrere Kilometer hinter der Front.' },
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', fig: 'mech', mech: true, atk: 6, def: 6, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Sturmkanone. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
     real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
@@ -158,12 +170,12 @@ Object.assign(TYPES, {
 const COST = { kohorte: 3, mahlwerk: 4, feldscher: 3, moerser: 4, reiter: 4, haubitze: 6, koloss: 7,
   grenadier: 3, sense: 4, heiler: 3, minenwerfer: 4, brand: 5, sturm: 6, geschuetz: 6,
   radler: 3, melder: 2, scharf: 4, pionier: 3, raeumer: 4, signal: 2, schild: 4, buechse: 5, schwer: 4, knecht: 9, bohrer: 9, saeger: 8, klaue: 8, stahl: 6, panzerk: 6,
-  flammen: 4, schildwall: 3, feldkanone: 5, fernsprech: 2, grabenk: 5, ritter: 6, pionierD: 3, banner: 4 };
+  hauptA: 4, generalA: 7, hauptD: 4, generalD: 7, flammen: 4, schildwall: 3, feldkanone: 5, fernsprech: 2, grabenk: 5, ritter: 6, pionierD: 3, banner: 4 };
 // Kurze Schlagworte zu den Besonderheiten, für die Einheitenkarte
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 5 Felder"], "scharf": ["Schuss 5 Felder", "Hält das Ziel nieder"], "melder": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 4 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 6", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +0,5"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 5 Felder"], "scharf": ["Schuss 5 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +1 Aktionspunkt", "Zieht 6 Felder"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 4 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 6", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 8 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +0,5"], "hauptA": ["Befehl alle 2 Runden, 2 Felder"], "hauptD": ["Befehl alle 2 Runden, 2 Felder"], "generalA": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
-const SHOP = { A: ['kohorte', 'radler', 'melder', 'fernsprech', 'feldscher', 'pionier', 'scharf', 'schildwall', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'flammen', 'feldkanone', 'haubitze', 'koloss', 'stahl', 'saeger', 'klaue'],
-  D: ['grenadier', 'signal', 'heiler', 'pionierD', 'schwer', 'schild', 'banner', 'buechse', 'sense', 'grabenk', 'ritter', 'minenwerfer', 'brand', 'sturm', 'geschuetz', 'panzerk', 'knecht', 'bohrer'] };
+const SHOP = { A: ['hauptA', 'generalA', 'kohorte', 'radler', 'melder', 'fernsprech', 'feldscher', 'pionier', 'scharf', 'schildwall', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'flammen', 'feldkanone', 'haubitze', 'koloss', 'stahl', 'saeger', 'klaue'],
+  D: ['hauptD', 'generalD', 'grenadier', 'signal', 'heiler', 'pionierD', 'schwer', 'schild', 'banner', 'buechse', 'sense', 'grabenk', 'ritter', 'minenwerfer', 'brand', 'sturm', 'geschuetz', 'panzerk', 'knecht', 'bohrer'] };
 
 const TERRAIN = {
   open:    { name: 'Offenes Feld', cost: 1, info: 'Keine Deckung.' },
@@ -439,9 +451,12 @@ function line(c1, r1, c2, r2) {
 }
 
 // ---------- Spielstand ----------
+// Aktionspunkte: jede Einheit hat je Runde P.AP (2). Ziehen 1, Schießen 1 (MG 2), Steilfeuer 2 (Mörser 1), Nahkampf alle,
+// Befehl, Versorgen, Draht 1. Je Runde höchstens ein Angriff. `moved` heißt: keine Punkte mehr zum Ziehen.
+function spend(u, n) { u.ap = Math.max(0, (u.ap || 0) - n); u.moved = u.ap <= 0; }
 function addUnit(G, type, c, r, officer) {
   const T = TYPES[type];
-  const u = { id: G.nextId++, type, side: T.side, c, r, officer: officer || null,
+  const u = { id: G.nextId++, type, side: T.side, c, r, officer: officer || (T.cmd === 2 ? 'General' : T.cmd ? 'Hauptmann' : null), ap: P.AP,
     str: 10, mor: T.mor, face: T.side === 'A' ? 0 : 3, status: 'ok',
     moved: false, attacked: false, react: true, supp: 0, fireDmg: 0, turnOnly: false,
     run: 0, broken: 0, gassed: false, seenWalker: false, limbered: false, gas: T.gas || 0, startC: c, startR: r };
@@ -465,6 +480,7 @@ function armyOk(side, army, mechs) {
   const n = armyCount(army); let walkers = 0;
   for (const t in army) { if (army[t] > ARMY_CAP) return false; if (TYPES[t].cls === 'walker') walkers += army[t]; }
   if (walkers > ARMY_WALKERS) return false;
+  if ((army.generalA || 0) + (army.generalD || 0) > 1 || (army.hauptA || 0) + (army.hauptD || 0) > 3) return false;
   return armyCost(army) <= ARMY_BUDGET[side] && n >= ARMY_MIN[side] && n <= ARMY_MAX[side];
 }
 function rowsOut() { const m = Math.floor(ROWS / 2), out = [m]; for (let k = 2; out.length < ROWS; k += 2) { for (const r of [m - k, m + k]) if (r >= 0 && r < ROWS) out.push(r); if (k > ROWS) break; } for (let r = 0; r < ROWS; r++) if (!out.includes(r)) out.push(r); return out; }
@@ -563,7 +579,7 @@ function isZOC(G, c, r, side) {
 }
 function bannerAt(G, side, c, r) { return G.units.some(o => TYPES[o.type].banner && o.side === side && active(o) && dist(o.c, o.r, c, r) <= 2); }
 function officerAt(G, side, c, r) {
-  return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= P.OFFICER_RANGE);
+  return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= cmdRange(o));
 }
 function arcOf(G, d, ac, ar) {
   const diff = angDiff(angleTo(d.c, d.r, ac, ar), d.face * 60);
@@ -581,9 +597,10 @@ function cost(G, u, c, r) {
 }
 function reachable(G, u) {
   const res = new Map();
-  if (!active(u) || u.moved || u.supp > 0 || u.broken > 0) return res;
+  if (!active(u) || u.ap < 1 || u.supp > 0 || u.broken > 0 || u.zocStop) return res;
   const T = TYPES[u.type], free = T.cls === 'storm' || T.cls === 'walker';
-  const mp = (!free && isZOC(G, u.c, u.r, u.side)) ? 1 : u.limbered ? P.LIMBER_MV : T.mv;
+  let mp = (!free && isZOC(G, u.c, u.r, u.side)) ? 1 : u.limbered ? P.LIMBER_MV : T.mv;
+  if (u.mvd > 0) mp = Math.max(1, Math.floor(mp * P.MV2));   // zweiter Zug in derselben Runde: nur halb so weit
   const start = key(u.c, u.r);
   const best = new Map([[start, 0]]), prev = new Map();
   const queue = [[0, u.c, u.r]];
@@ -632,8 +649,7 @@ function moveUnit(G, u, c, r) {
   const opt = reachable(G, u).get(key(c, r));
   if (!opt) return ev;
   const T = TYPES[u.type];
-  u.moved = true; u.run = 0;
-  if (T.mg || (T.cls === 'art' && !T.mobile)) u.attacked = true;
+  spend(u, 1); u.run = 0; u.mvd = (u.mvd || 0) + 1;
   let seg = [[u.c, u.r]];
   const flush = () => { if (seg.length > 1) ev.push({ t: 'move', u: u.id, path: seg }); seg = [[u.c, u.r]]; };
   for (const [nc, nr] of opt.path) {
@@ -663,29 +679,30 @@ function moveUnit(G, u, c, r) {
     }
     if (G.rng() < P.BREAKDOWN) { u.broken = 3; u.attacked = true; ev.push({ t: 'breakdown', u: u.id }); }
   }
+  if (P.ZOC_STOP && T.cls !== 'storm' && T.cls !== 'walker' && isZOC(G, u.c, u.r, u.side)) u.zocStop = true;   // Feindberührung beendet die Bewegung für die Runde
   ev.push(...checkEnd(G));
   return ev;
 }
 function turnUnit(G, u, face) {
-  if (!active(u) || (u.moved && !u.turnOnly) || u.attacked || u.supp > 0 || u.broken > 0) return [];
-  u.face = ((face % 6) + 6) % 6; u.moved = true; u.turnOnly = true;
+  if (!active(u) || u.ap < 1 || u.attacked || u.supp > 0 || u.broken > 0) return [];
+  u.face = ((face % 6) + 6) % 6;   // Drehen kostet keinen Punkt
   return [{ t: 'face', u: u.id, face: u.face }];
 }
 // Aufprotzen: Geschütz an die Pferde hängen (zieht dann 4 Felder, feuert nicht). Abprotzen: wieder feuerbereit ab der nächsten Runde.
 function canLimber(G, u) {
   if (!active(u) || !TYPES[u.type].limber || u.supp > 0) return false;
-  return u.limbered ? !u.unlimbered : (!u.moved && !u.attacked);
+  return u.limbered ? u.ap >= 1 : (u.ap >= 1 && !u.attacked);
 }
 function limber(G, u) {
   if (!canLimber(G, u)) return [];
-  if (u.limbered) { u.limbered = false; u.moved = true; u.attacked = true; }
-  else { u.limbered = true; u.attacked = true; }
+  if (u.limbered) { u.limbered = false; u.ap = 0; u.moved = true; u.attacked = true; }
+  else { u.limbered = true; u.attacked = true; spend(u, 1); }
   return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
-function canCut(G, u) { return active(u) && !u.attacked && cls(u) === 'inf' && hex(G, u.c, u.r).t === 'wire'; }
+function canCut(G, u) { return active(u) && u.ap >= 1 && !u.attacked && cls(u) === 'inf' && hex(G, u.c, u.r).t === 'wire'; }
 function cutWire(G, u) {
   if (!canCut(G, u)) return [];
-  hex(G, u.c, u.r).t = 'open'; u.attacked = !TYPES[u.type].sapper; u.moved = true;
+  hex(G, u.c, u.r).t = 'open'; u.attacked = !TYPES[u.type].sapper; spend(u, 1);
   return [{ t: 'cut', u: u.id, c: u.c, r: u.r }];
 }
 
@@ -711,12 +728,12 @@ function surrounded(G, u) {
 }
 function immune(A, D) { return D.cls === 'walker' && !A.at && (A.cls === 'inf' || A.cls === 'mg' || A.cls === 'cav' || A.cls === 'storm'); }
 function canMelee(G, a, d) {
-  return active(a) && !a.attacked && !a.broken && TYPES[a.type].atk > 0 && alive(d) && d.side !== a.side && dist(a.c, a.r, d.c, d.r) === 1;
+  return active(a) && a.ap >= 1 && !a.attacked && !a.broken && TYPES[a.type].atk > 0 && alive(d) && d.side !== a.side && dist(a.c, a.r, d.c, d.r) === 1;
 }
 function canFire(G, a, d) {
   const T = TYPES[a.type];
   if (!active(a) || a.attacked || a.broken || !T.rng || T.cls === 'art' || !alive(d) || d.side === a.side) return false;
-  if (T.mg && a.moved) return false;
+  if (a.ap < (T.mg ? 2 : 1)) return false;   // MG: ziehen oder schießen
   if (immune(T, TYPES[d.type])) return false;
   const dd = dist(a.c, a.r, d.c, d.r);
   return dd >= 1 && dd <= rangeOf(G, a, d.c, d.r) && hasLOS(G, a.c, a.r, d.c, d.r);
@@ -883,7 +900,7 @@ function resolveFire(G, a, d, reaction) {
   const ev = [];
   const p = preview(G, a, d, 'fire');
   const dmg = p.dmg * (0.75 + G.rng() * 0.5);
-  if (!reaction) { a.attacked = true; a.face = faceIndex(angleTo(a.c, a.r, d.c, d.r)); }
+  if (!reaction) { a.attacked = true; spend(a, TYPES[a.type].mg ? 2 : 1); a.face = faceIndex(angleTo(a.c, a.r, d.c, d.r)); }
   const flame = !!TYPES[a.type].flame;
   ev.push({ t: 'fire', a: a.id, d: d.id, kind: fireKind(a), reaction: !!reaction, face: a.face });
   applyDamage(G, a, d, dmg, p.arc, ev, { ranged: true, flame, morMul: flame ? P.FLAME_MOR : 1 });
@@ -899,7 +916,7 @@ function melee(G, a, d) {
   if (!canMelee(G, a, d)) return [];
   const ev = [];
   const p = preview(G, a, d, 'melee');
-  a.attacked = true; a.moved = true;
+  a.attacked = true; a.ap = 0; a.moved = true;
   a.face = faceIndex(angleTo(a.c, a.r, d.c, d.r));
   ev.push({ t: 'melee', a: a.id, d: d.id, face: a.face });
   const dmg = p.dmg * (0.75 + G.rng() * 0.5);
@@ -933,7 +950,7 @@ function spotted(G, side, c, r) {
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
 function canShell(G, a, c, r, mode) {
   const T = TYPES[a.type];
-  if (!active(a) || T.cls !== 'art' || a.limbered || a.attacked || (a.moved && !T.mobile) || a.supp > 0) return false;
+  if (!active(a) || T.cls !== 'art' || a.limbered || a.attacked || a.ap < (T.mobile ? 1 : 2) || a.supp > 0) return false;
   const d = dist(a.c, a.r, c, r);
   if (d < 1 || d > T.rng) return false;
   if (mode === 'gas' && a.gas <= 0) return false;
@@ -959,7 +976,7 @@ function gasCells(G, c, r) {
 function shell(G, a, c, r, mode) {
   if (!canShell(G, a, c, r, mode)) return [];
   const ev = [];
-  a.attacked = true; a.moved = true;
+  a.attacked = true; spend(a, TYPES[a.type].mobile ? 1 : 2);
   a.face = faceIndex(angleTo(a.c, a.r, c, r));
   const direct = isDirect(G, a, c, r);
   let tc = c, tr = r, sc = false;
@@ -1019,7 +1036,7 @@ function startTurn(G) {
   G.pts[s] += P.PTS_TURN[s];
   for (const u of G.units) {
     u.fireDmg = 0;
-    if (u.side === s) { u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; if (u.cd > 0) u.cd--; }
+    if (u.side === s) { u.ap = P.AP; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; if (u.cd > 0) u.cd--; }
     else if (TYPES[u.type].mg) u.react = true;
   }
   for (const u of G.units.filter(x => x.side === s && alive(x))) {
@@ -1031,20 +1048,20 @@ function startTurn(G) {
     }
     if (u.broken > 0) {
       u.broken--;
-      if (u.broken > 0) { u.moved = true; u.attacked = true; } else ev.push({ t: 'repaired', u: u.id });
+      if (u.broken > 0) { u.ap = 0; u.moved = true; u.attacked = true; } else ev.push({ t: 'repaired', u: u.id });
     }
     if (u.status === 'rout') {
       const off = G.units.find(o => o.officer && o.side === s && active(o) && dist(o.c, o.r, u.c, u.r) <= P.OFFICER_RANGE);
       if (off && !adjEnemies(G, u).length && u.str >= P.ROUT_STR && G.rng() < P.RALLY) {
         u.status = 'ok'; u.mor = 3; u.face = s === 'A' ? 0 : 3;
         ev.push({ t: 'rally', u: u.id, by: off.officer });
-        u.moved = true; u.attacked = true;
+        u.ap = 0; u.moved = true; u.attacked = true;
         continue;
       }
       if (u.c === SIDES[s].edge) { killUnit(G, u, ev, 'escaped'); continue; }
       flee(G, u, TYPES[u.type].mv + 1, ev);
       if (alive(u) && u.c === SIDES[s].edge) killUnit(G, u, ev, 'escaped');
-      u.moved = true; u.attacked = true;
+      u.ap = 0; u.moved = true; u.attacked = true;
       continue;
     }
     if (!adjEnemies(G, u).length && !u.supp && !u.gassed) {
@@ -1057,22 +1074,27 @@ function startTurn(G) {
   return ev;
 }
 // Einheit für diese Runde abschließen (Knopf „Fertig“)
-function pass(G, u) { if (!u || !active(u) || u.side !== G.side) return []; u.moved = true; u.attacked = true; return [{ t: 'pass', u: u.id }]; }
+function pass(G, u) { if (!u || !active(u) || u.side !== G.side) return []; u.ap = 0; u.moved = true; u.attacked = true; return [{ t: 'pass', u: u.id }]; }
 
 // Drahtpioniere: Stacheldraht auf das Feld legen, in das die Einheit blickt
 function layTarget(G, u) { const [c, r] = step(u.c, u.r, u.face); return inMap(c, r) && ['open', 'crater', 'mud'].includes(hex(G, c, r).t) && !unitAt(G, c, r) && !hex(G, c, r).obj ? [c, r] : null; }
-function canLay(G, u) { return active(u) && !!TYPES[u.type].wirelayer && u.side === G.side && !u.attacked && u.supp <= 0 && !!layTarget(G, u); }
-function layWire(G, u) { if (!canLay(G, u)) return []; const [c, r] = layTarget(G, u); hex(G, c, r).t = 'wire'; u.attacked = true; return [{ t: 'terrain', c, r, what: 'Draht gezogen' }]; }
+function canLay(G, u) { return active(u) && !!TYPES[u.type].wirelayer && u.side === G.side && u.ap >= 1 && !u.attacked && u.supp <= 0 && !!layTarget(G, u); }
+function layWire(G, u) { if (!canLay(G, u)) return []; const [c, r] = layTarget(G, u); hex(G, c, r).t = 'wire'; u.attacked = true; spend(u, 1); return [{ t: 'terrain', c, r, what: 'Draht gezogen' }]; }
+
+// Meldegänger mit Hund: bringt einer eigenen Einheit bis 3 Felder einen Befehl, sie bekommt +1 Aktionspunkt (einmal je Runde)
+function canSend(G, m, t) { return active(m) && !!TYPES[m.type].courier && m.side === G.side && m.ap >= 1 && !m.sent && t && t !== m && t.side === m.side && active(t) && !t.broken && !TYPES[t.type].courier && (t.ap || 0) < 3 && dist(m.c, m.r, t.c, t.r) <= 3; }
+function sendOrder(G, m, t) { if (!canSend(G, m, t)) return []; m.sent = true; spend(m, 1); t.ap = (t.ap || 0) + 1; t.moved = false; return [{ t: 'sent', u: t.id, by: m.id, ap: t.ap }]; }
 
 // ---------- Befehle der Anführer ----------
 // Einmal alle zwei eigenen Runden. 'rally' = Sammeln (Moral +1,5, Niederhalten endet), 'storm' = Sturmbefehl (Nahkampf ×1,25 in dieser Runde).
-function canOrder(G, u) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && !(u.cd > 0); }
+function cmdRange(u) { return TYPES[u.type].cmd === 2 ? 3 : P.OFFICER_RANGE; }
+function canOrder(G, u) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && u.ap >= 1 && !(u.cd > 0); }
 function order(G, u, kind) {
   if (!canOrder(G, u) || (kind !== 'rally' && kind !== 'storm')) return [];
   const relay = G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].relay && dist(o.c, o.r, u.c, u.r) <= 3);
-  u.cd = relay ? 1 : P.ORDER_CD; const ids = [];
+  u.cd = relay || TYPES[u.type].cmd === 2 ? 1 : P.ORDER_CD; spend(u, 1); const ids = [];
   for (const o of G.units) {
-    if (o.side !== u.side || !active(o) || cls(o) === 'walker' || dist(o.c, o.r, u.c, u.r) > P.OFFICER_RANGE) continue;
+    if (o.side !== u.side || !active(o) || cls(o) === 'walker' || dist(o.c, o.r, u.c, u.r) > cmdRange(u)) continue;
     if (kind === 'rally') { o.mor = Math.min(TYPES[o.type].mor, o.mor + P.ORDER_MOR); o.supp = 0; } else o.zeal = true;
     ids.push(o.id);
   }
@@ -1081,12 +1103,12 @@ function order(G, u, kind) {
 
 // ---------- Sanitäter ----------
 function canHeal(G, m, t) {
-  return active(m) && cls(m) === 'medic' && !m.attacked && t && t !== m && t.side === m.side && active(t) && cls(t) !== 'walker' &&
+  return active(m) && cls(m) === 'medic' && m.ap >= 1 && !m.attacked && t && t !== m && t.side === m.side && active(t) && cls(t) !== 'walker' &&
     dist(m.c, m.r, t.c, t.r) === 1 && (t.str < 10 || t.mor < TYPES[t.type].mor);
 }
 function heal(G, m, t) {
   if (!canHeal(G, m, t)) return [];
-  m.attacked = true; m.face = faceIndex(angleTo(m.c, m.r, t.c, t.r));
+  m.attacked = true; spend(m, 1); m.face = faceIndex(angleTo(m.c, m.r, t.c, t.r));
   t.str = Math.min(10, t.str + P.HEAL); t.mor = Math.min(TYPES[t.type].mor, t.mor + P.HEAL_MOR);
   return [{ t: 'heal', u: t.id, by: m.id, str: t.str, morv: t.mor }];
 }
@@ -1096,12 +1118,12 @@ function spawnHexes(G, side, type) {
   for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) if (!unitAt(G, c, r) && cost(G, probe, c, r) < 99) out.push([c, r]); }
   return out;
 }
-function canBuy(G, side, type) { return !G.over && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
+function canBuy(G, side, type) { return !G.over && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
 function buy(G, side, type, c, r) {
   if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
   G.pts[side] -= COST[type];
   const u = addUnit(G, type, c, r);
-  u.moved = true; u.attacked = true; u.react = false;
+  u.ap = 0; u.moved = true; u.attacked = true; u.react = false;
   return [{ t: 'spawn', u: u.id }];
 }
 function endTurn(G) {
@@ -1135,7 +1157,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
