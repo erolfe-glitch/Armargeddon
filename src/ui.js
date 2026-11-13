@@ -37,8 +37,9 @@ function layout() {
   const MIN_S = 46;   // kleinste Feldgröße in CSS-Pixeln; größere Karten werden dann verschoben (ziehen, Mausrad, Pfeiltasten)
   const cssW = Math.max(wrap.width, portrait ? 760 : 560, MIN_S * (1.5 * COLS + 0.5)) * ZOOM;
   const s = cssW * dpr / (1.5 * COLS + 0.5);
-  const top = s * 1.55, bot = s * 0.45;
+  const mi = mapImg(), top = s * (mi ? 0.9 : 1.55), bot = s * 0.45;
   K = Math.max(0.42, Math.min(0.86, (wrap.height * ZOOM * dpr - top - bot) / (s * SQ3 * (ROWS + 0.5))));
+  if (mi) { const mk = imgK(mi); K = Math.min(mk, Math.max(K, mk * 0.8)); }   // gemaltes Kartenbild: höchstens 20 % gestaucht, sonst verschieben
   const H = Math.ceil(top + s * K * SQ3 * (ROWS + 0.5) + bot);
   L = { dpr, s, top, W: Math.round(cssW * dpr), H };
   cv.width = L.W; cv.height = H;
@@ -92,6 +93,32 @@ const O = '#16150f';
 // ---------- Gemalte Karte (Bögen des Nutzers im Ordner Map) ----------
 // Statt einer Kachel je Feld: ein durchgehender Boden, weiche Flächen für Wald, Ort und Sumpf,
 // Fluss, Gräben, Wege und Bahn als durchgehende Linien von Feld zu Feld, Gebäude und Bäume als Bilder darauf.
+const MIMG = {}, BASE = {};
+{ const D = (window.FXDATA || {}).mapimg || {};
+  for (const k in D) { const im = new Image(); im.onload = () => { MIMG[k] = im; if (L && G && E.MAPS[G.mapId] && E.MAPS[G.mapId].img === k) layout(); }; im.src = D[k]; } }
+function mapImg() { const m = G && E.MAPS[G.mapId]; return m && m.img && MIMG[m.img] || null; }
+const imgK = im => (1.5 * COLS + 0.5) / (im.naturalWidth / im.naturalHeight * SQ3 * (ROWS + 0.5));
+// Gemaltes Kartenbild: Bild unter das Raster, Änderungen im Spiel (Draht gelegt oder geschnitten) darüber zeichnen
+function renderImageMap(g, im) {
+  const { s } = L, w = s * (1.5 * COLS + 0.5), h = s * K * SQ3 * (ROWS + 0.5);
+  g.drawImage(im, 0, L.top, w, h);
+  const id = G.mapId, base = BASE[id] || (BASE[id] = E.MAPS[id].build());
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    const t = G.map[c][r].t, b = base[c][r].t, [x, y] = center(c, r);
+    if (t === b) continue;
+    if (t === 'wire' && PT.spr.wireS) { const ws = s * 2, wh = ws * PT.spr.wireS.naturalHeight / PT.spr.wireS.naturalWidth * 0.8; g.drawImage(PT.spr.wireS, x - ws / 2, y - wh * 0.55, ws, wh); }
+    else if (b === 'wire' && PT.tex.mud) {   // Draht geschnitten: Schlamm darüber
+      const R = s * 1.05, m = document.createElement('canvas'); m.width = m.height = Math.ceil(R * 2); const mg = m.getContext('2d');
+      const gr = mg.createRadialGradient(R, R, 0, R, R, R); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.95)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      mg.fillStyle = gr; mg.fillRect(0, 0, R * 2, R * 2); mg.globalCompositeOperation = 'source-in'; mg.fillStyle = mg.createPattern(PT.tex.mud, 'repeat'); mg.fillRect(0, 0, R * 2, R * 2);
+      g.drawImage(m, x - R, y - R * K, R * 2, R * 2 * K);
+    }
+  }
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    if (G.map[c][r].t === 'wire') { hexPath(g, c, r, 0.94); g.strokeStyle = 'rgba(205,210,215,0.55)'; g.lineWidth = Math.max(1.5, s * 0.035); g.setLineDash([s * 0.12, s * 0.08]); g.stroke(); g.setLineDash([]); }
+    hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.22)'; g.lineWidth = Math.max(1, s * 0.016); g.stroke();
+  }
+}
 const PT = { tex: {}, spr: {}, n: 0, need: 0 };
 { const D = (window.FXDATA || {}).paint;
   if (D) for (const grp of ['tex', 'spr']) for (const k in D[grp]) {
@@ -286,8 +313,9 @@ function renderTerrain() {
   const sky = g.createLinearGradient(0, 0, 0, L.top * 1.2);
   sky.addColorStop(0, 'rgba(120,22,12,0.78)'); sky.addColorStop(0.55, 'rgba(110,30,14,0.38)'); sky.addColorStop(1, 'rgba(110,30,14,0)');
   g.fillStyle = sky; g.fillRect(0, 0, W, L.top * 1.2);
-  if (paintReady() && !window.NOPAINT) {
-    renderPainted(g);
+  const mimg = mapImg();
+  if (mimg || paintReady() && !window.NOPAINT) {
+    if (mimg) renderImageMap(g, mimg); else renderPainted(g);
     const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.72);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(6,5,3,0.5)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
     return;
@@ -1236,13 +1264,14 @@ function drawMapPreview(cvs, id) {
   const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
   const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);
   cvs.width = W * dpr; cvs.height = H * dpr; const g2 = cvs.getContext('2d'); g2.scale(dpr, dpr);
-  const kp = 0.58;   // gestaucht wie im Spiel (Seitenansicht)
+  const pim = m.img && MIMG[m.img], kp = pim ? (1.5 * m.cols + 0.5) / (pim.naturalWidth / pim.naturalHeight * SQ3 * (m.rows + 0.5)) : 0.58;   // gestaucht wie im Spiel (Seitenansicht)
   const s2 = Math.min(W / (1.5 * m.cols + 0.5), H / (SQ3 * kp * (m.rows + 0.5)));
   const ox = (W - s2 * (1.5 * m.cols + 0.5)) / 2, oy = (H - s2 * SQ3 * kp * (m.rows + 0.5)) / 2;
   const hp = (c, r) => [ox + s2 * (1 + 1.5 * c), oy + s2 * SQ3 * kp * (r + 0.5 * (c & 1) + 0.5)];
+  if (pim) g2.drawImage(pim, ox, oy, s2 * (1.5 * m.cols + 0.5), s2 * SQ3 * kp * (m.rows + 0.5));
   for (let c = 0; c < m.cols; c++) for (let r = 0; r < m.rows; r++) {
     const [x, y] = hp(c, r); g2.beginPath(); for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; g2.lineTo(x + s2 * Math.cos(a), y + s2 * kp * Math.sin(a)); }
-    g2.closePath(); g2.fillStyle = TCOL[M[c][r].t] || '#6d6250'; g2.fill();
+    g2.closePath(); if (!pim) { g2.fillStyle = TCOL[M[c][r].t] || '#6d6250'; g2.fill(); }
     if (M[c][r].ridge) { g2.fillStyle = 'rgba(255,226,160,0.18)'; g2.fill(); }
     if (c <= m.zoneA) { g2.fillStyle = 'rgba(224,138,52,0.22)'; g2.fill(); }
   }

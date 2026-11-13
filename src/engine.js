@@ -449,6 +449,35 @@ const MAPS = {
       T.path([[0, 3], [12, 3]], 'road'); T.path([[0, 12], [10, 12], [17, 13], [21, 13]], 'road');
       return T.M;
     } },
+  // Karte nach einem gemalten Bild: Gelände je Feld so, wie es auf dem Bild zu sehen ist (Zeilen = Reihen, Zeichen = Spalten)
+  stein: { id: 'stein', name: 'Die Steinbrücke', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'stein',
+    desc: 'Gemalte Karte: Vor dem Fluss die Grabenlinie mit zwei Bunkern, darüber nur die alte Steinbrücke und die Furt am Steg. Dahinter Bunker, Dorf, Fabrik und die Kirche.',
+    maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
+    objectives: [
+      { id: 'sbunkerw', name: 'Westbunker', c: 6, r: 3, pts: 1 },
+      { id: 'sbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
+      { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 2 },
+      { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 2 },
+      { id: 'skirche', name: 'Kirche', c: 14, r: 6, pts: 3 }],
+    army: { A: { kohorte: 7, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
+    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
+    grid: [
+      'off..==.~VU.WWWW',
+      'ffffx=.~~V..WWWW',
+      'fffox=.FF...WWWW',
+      'fof.x=U~~=U.WWW.',
+      '..f.x==~~===....',
+      '....x=.~~==..K.V',
+      '=....=.B~..VVV+V',
+      '=.oo.=.~B=.VVVVV',
+      'o..xxU.~~=VVVVVK',
+      'oxx..=.~~.VVVVVV'],
+    build() {
+      const T = mapTools(16, 10, 1), code = { '.': 'open', o: 'crater', f: 'forest', W: 'wald', '=': 'trench', x: 'wire', U: 'bunker', '~': 'canal', B: 'bridge', F: 'furt', V: 'village', K: 'fabrik', '+': 'kirche' };
+      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, code[ch] || 'open')));
+      for (let c = 7; c <= 8; c++) for (let r = 0; r < 10; r++) T.M[c][r].river = true;
+      return T.M;
+    } },
   varn: { id: 'varn', name: 'Das Varntal', size: 'Mittel', cols: 18, rows: 14, zoneA: 2, zoneD: 7,
     desc: 'Ein zusammenhängendes Tal: Die Varn fließt von Nord nach Süd mitten durch Varnheim. Zwei Brücken, zwei Furten, eine Bunkerlinie davor, Bahn und Höhe 212 dahinter.',
     maxT: 16, reinfTurn: 8, winA: 5, drawA: 4, armyMax: { A: 26, D: 24 },
