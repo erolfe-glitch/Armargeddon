@@ -71,7 +71,20 @@ const fxw = (im, h) => h * im.naturalWidth / im.naturalHeight;
 const hash = (a, b) => { const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return n - Math.floor(n); };
 const TC = { open: ['#5a5a3a', '#545436', '#5f5e3d'], mud: ['#4c4030', '#473b2c', '#514433'], crater: ['#575638', '#515034', '#5b5a3b'],
   trench: ['#5c593b', '#565337', '#605d3e'], wire: ['#585639', '#525035', '#5c5a3c'], village: ['#66624f', '#605c4a', '#6b6753'],
-  forest: ['#42452f', '#3d402b', '#474a32'], canal: ['#34474f', '#30424a', '#384c54'], bridge: ['#34474f', '#30424a', '#384c54'] };
+  forest: ['#42452f', '#3d402b', '#474a32'], canal: ['#34474f', '#30424a', '#384c54'], bridge: ['#34474f', '#30424a', '#384c54'],
+  furt: ['#3e5058', '#3a4b52', '#42545c'], sumpf: ['#45482f', '#40432c', '#4a4d33'], wald: ['#2f3a24', '#2b3521', '#334027'], waldweg: ['#4a4a30', '#45452d', '#4f4f34'],
+  bunker: ['#5d5c55', '#57564f', '#63625a'], fabrik: ['#5a4a3e', '#55463a', '#5f4e42'], kirche: ['#5e5c55', '#59574f', '#64625a'], barrikade: ['#5a4f3c', '#554a38', '#5f5440'], bahn: ['#55524a', '#504d45', '#5a574f'] };
+// Welche gemalte Kachel ein Feld bekommt: Varianten je nach Nachbarschaft und Zufall (fest je Feld)
+function tileKey(c, r, h) {
+  const t = h.t, n = hash(c * 1.7, r * 9.1), nb = E.neighbors(c, r).map(([a, b]) => G.map[a][b].t);
+  const has = k => TIMG[k] ? k : null, wood = nb.some(x => x === 'wald' || x === 'waldweg' || x === 'forest'), wet = nb.some(x => x === 'canal' || x === 'furt' || x === 'sumpf');
+  if (t === 'village') { const v = ['village', 'debris', 'village2', 'village3', 'debris2'].filter(k => TIMG[k]); return v[Math.floor(n * v.length)] || 'village'; }
+  if (t === 'forest') return n < 0.5 && has('forest2') || 'forest';
+  if (t === 'trench') return (wood && has('trenchF')) || (wet && has('trenchW')) || 'trench';
+  if (t === 'canal') return (wood && has('canal1')) || has('canal0') || 'canal';
+  if (t === 'waldweg') return n < 0.35 && has('lichtung') || 'waldweg';
+  return t;
+}
 const O = '#16150f';
 function renderTerrain() {
   const { s, W, H, dpr } = L;
@@ -82,13 +95,13 @@ function renderTerrain() {
   sky.addColorStop(0, 'rgba(120,22,12,0.78)'); sky.addColorStop(0.55, 'rgba(110,30,14,0.38)'); sky.addColorStop(1, 'rgba(110,30,14,0)');
   g.fillStyle = sky; g.fillRect(0, 0, W, L.top * 1.2);
   g.lineJoin = 'round'; g.lineCap = 'round';
-  const lw = Math.max(1.5, s * 0.045);
+  const lw = Math.max(1.5, s * 0.045), tiled = new Set();
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const h = G.map[c][r], n = hash(c * 3.1, r * 7.7);
-    const tk = h.t === 'village' ? (hash(c * 1.7, r * 9.1) < 0.5 && TIMG.debris ? 'debris' : 'village') : h.t, tim = TIMG[tk];
+    const tk = tileKey(c, r, h), tim = TIMG[tk]; if (tim) tiled.add(E.key(c, r));
     hexPath(g, c, r, 1.02);
     if (tim) {
-      const [hx, hy] = center(c, r), hw = s * 2.06, hh = s * K * SQ3 * 1.04, fl = tk !== 'trench' && n > 0.5;
+      const [hx, hy] = center(c, r), hw = s * 2.06, hh = s * K * SQ3 * 1.04, fl = !['trench', 'trenchF', 'trenchW', 'bridge', 'kirche', 'fabrik', 'bahn'].includes(tk) && n > 0.5;
       g.save(); g.clip(); g.translate(hx, hy); if (fl) g.scale(-1, 1);
       g.drawImage(tim, -hw / 2, -hh / 2, hw, hh); g.restore(); hexPath(g, c, r, 1.02);
     } else { g.fillStyle = TC[h.t][Math.floor(n * 3)]; g.fill(); }
@@ -129,7 +142,7 @@ function renderTerrain() {
     } }
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const h = G.map[c][r], [x, y] = center(c, r), n = hash(c * 5.3, r * 2.9);
-    if (TIMG[h.t]) continue;   // gemalte Kachel: keine gezeichneten Zutaten
+    if (tiled.has(E.key(c, r))) continue;   // gemalte Kachel: keine gezeichneten Zutaten
     g.strokeStyle = O; g.lineWidth = lw;
     if (h.t === 'mud') {
       g.fillStyle = '#463826';
@@ -996,7 +1009,8 @@ function armyRefresh() {
 function armyKeep() { if (!E.armyOk(armySide, armyDraft, mechsOn())) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
 
 // ---------- Kartenwahl ----------
-const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a' };
+const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a',
+  furt: '#4f7480', sumpf: '#4b5a36', wald: '#24331c', waldweg: '#6b6a44', bunker: '#a7a59a', fabrik: '#8a5a44', kirche: '#c2bba8', barrikade: '#7a5a3a', bahn: '#56524a' };
 function drawMapPreview(cvs, id) {
   const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
   const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);

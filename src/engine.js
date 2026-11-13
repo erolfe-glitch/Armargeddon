@@ -153,7 +153,25 @@ const TERRAIN = {
   forest:  { name: 'Totholz', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,4. Versperrt die Sicht.',
              real: 'Nach Monaten Beschuss blieben von ganzen Wäldern nur Baumstümpfe, etwa im Wald von Delville an der Somme.' },
   canal:   { name: 'Kanal', cost: 99, info: 'Nicht passierbar, nur über die Brücke.' },
-  bridge:  { name: 'Brücke', cost: 1, info: 'Einziger Weg über den Kanal. Zu schwach für Landkolosse.' }
+  bridge:  { name: 'Brücke', cost: 1, info: 'Einziger Weg über den Kanal. Zu schwach für Landkolosse.' },
+  furt:    { name: 'Furt', cost: 3, info: 'Seichtes Wasser: kostet 3 Bewegung, Abwehr ×0,8. Geschütze kommen nicht durch.',
+             real: 'Flüsse waren Hindernisse. Im Oktober 1914 öffneten die Belgier an der Yser die Schleusen und setzten das Land unter Wasser, um den deutschen Vormarsch zu stoppen.' },
+  sumpf:   { name: 'Sumpf', cost: 3, info: 'Kostet 3 Bewegung. Kolosse bleiben oft stecken, Geschütze kommen nicht durch.',
+             real: 'Zerschossene Entwässerungsgräben machten Flandern 1917 zum Sumpf. Bei Passchendaele blieben Panzer reihenweise stecken.' },
+  wald:    { name: 'Dichter Wald', cost: 3, info: 'Kostet 3 Bewegung. Abwehr ×1,5. Versperrt die Sicht. Reiter, Geschütze und Kolosse kommen nicht durch.',
+             real: 'Im Argonnerwald kämpften Franzosen und Deutsche jahrelang auf engem Raum, oft mit Minen und Handgranaten.' },
+  waldweg: { name: 'Waldweg', cost: 1, info: 'Schneise durch den Wald: kostet 1 Bewegung, auch für Geschütze und Kolosse. Abwehr ×1,2.',
+             real: 'Nachschub lief über Feldbahnen und Bohlenwege. Ohne sie versank im Herbst alles im Schlamm.' },
+  bunker:  { name: 'Betonbunker', cost: 1, info: 'Abwehr ×2 gegen alles. Halber Moralverlust.',
+             real: 'Ab 1917 bauten die Deutschen in Flandern Unterstände aus Stahlbeton. Die Briten nannten sie „Pillboxes“.' },
+  fabrik:  { name: 'Fabrikruine', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,7. Versperrt die Sicht.',
+             real: 'Bei Loos kämpften Briten und Deutsche 1915 im Kohlerevier um Zechen, Fördertürme und Abraumhalden.' },
+  kirche:  { name: 'Kirchenruine', cost: 1, info: 'Abwehr ×1,5. Versperrt die Sicht. Vom Turm sieht man 8 Felder weit.',
+             real: 'Kirchtürme waren begehrte Beobachtungsposten und wurden deshalb gezielt beschossen. In Albert hing die vergoldete Madonna jahrelang schief vom zerschossenen Turm.' },
+  barrikade: { name: 'Barrikade', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,6 von allen Seiten. Reiter kommen nicht durch.',
+             real: 'In umkämpften Dörfern sperrten Soldaten die Straßen mit Schutt, Möbeln, Karren und Sandsäcken.' },
+  bahn:    { name: 'Bahndamm', cost: 1, info: 'Abwehr ×1,3 gegen Beschuss. Fester Untergrund: Kolosse kommen gut voran.',
+             real: 'Eisenbahnen brachten Truppen und Granaten an die Front. Bahndämme dienten oft als Deckung.' }
 };
 
 const GRAUWALL_OBJ = [
@@ -259,20 +277,24 @@ const MAPS = {
       T.line(12, 0, 13, 'wire', [1, 4, 8, 12]);
       T.line(13, 0, 13, 'trench');
       T.ridge(14, 16, 5, 8);
-      T.many([[15, 6], [15, 7], [16, 6]], 'village');
+      T.many([[15, 7], [16, 6]], 'village'); T.set(15, 6, 'kirche');
       T.blob(16, 1, 1, 'forest');
+      T.set(10, 6, 'fabrik'); T.set(9, 8, 'barrikade');
+      T.set(13, 5, 'bunker'); T.set(13, 9, 'bunker');
+      T.many([[4, 9], [5, 10], [4, 10], [5, 3]], 'sumpf');
+      T.line(16, 9, 13, 'bahn');
       return T.M;
     } },
   lerne: { id: 'lerne', name: 'Das Tal der Lerne', size: 'Mittel', cols: 24, rows: 18, zoneA: 3, zoneD: 9,
     desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 tief im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
-    maxT: 18, reinfTurn: 9, winA: 6, drawA: 4, armyMax: { A: 32, D: 28 },
+    maxT: 18, reinfTurn: 9, winA: 6, drawA: 5, armyMax: { A: 32, D: 30 },
     objectives: [
       { id: 'muehle', name: 'Lerner Mühle', c: 11, r: 3, pts: 1 },
       { id: 'bahnhof', name: 'Bahnhof Lerne', c: 12, r: 9, pts: 2 },
       { id: 'kalkwald', name: 'Kalkwald', c: 13, r: 14, pts: 2 },
       { id: 'nordbruecke', name: 'Nordbrücke', c: 17, r: 4, pts: 2 },
       { id: 'hoehe', name: 'Höhe 304', c: 20, r: 10, pts: 3 }],
-    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 1, moerser: 1 }, D: { grenadier: 13, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 1 } },
+    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 1, moerser: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 1 } },
     reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz'],
     build: () => {
       const T = mapTools(24, 18, 1916);
@@ -292,11 +314,17 @@ const MAPS = {
       T.ridge(19, 21, 8, 12);
       T.many([[20, 10], [20, 11], [21, 10]], 'village');
       T.blob(22, 2, 1, 'forest'); T.blob(22, 16, 1, 'forest');
+      T.set(11, 3, 'fabrik');
+      T.line(12, 10, 17, 'bahn');
+      T.blob(13, 14, 1, 'wald'); T.many([[14, 15], [12, 16], [14, 13]], 'wald'); T.many([[13, 13], [13, 14], [13, 15], [13, 16]], 'waldweg');
+      T.set(17, 6, 'furt');
+      T.many([[15, 1], [15, 2], [16, 2], [16, 1]], 'sumpf');
+      T.set(20, 10, 'kirche'); T.set(19, 9, 'bunker'); T.set(19, 12, 'bunker');
       return T.M;
     } },
   front: { id: 'front', name: 'Die Grauwall-Front', size: 'Groß', cols: 30, rows: 22, zoneA: 3, zoneD: 11,
     desc: 'Die ganze Front: drei Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
-    maxT: 22, reinfTurn: 11, winA: 7, drawA: 5, armyMax: { A: 42, D: 40 },
+    maxT: 22, reinfTurn: 11, winA: 8, drawA: 6, armyMax: { A: 42, D: 40 },
     objectives: [
       { id: 'kessel', name: 'Vorposten Kessel', c: 13, r: 4, pts: 1 },
       { id: 'brand', name: 'Gehöft Brand', c: 13, r: 17, pts: 2 },
@@ -327,6 +355,13 @@ const MAPS = {
       T.ridge(24, 27, 8, 13);
       T.many([[25, 10], [25, 11], [26, 10], [26, 11]], 'village');
       T.blob(27, 2, 1, 'forest'); T.blob(28, 19, 1, 'forest');
+      T.blob(19, 4, 2, 'wald'); T.line(19, 1, 7, 'waldweg');
+      T.set(14, 3, 'barrikade'); T.set(14, 17, 'fabrik');
+      T.set(17, 10, 'kirche'); T.set(15, 11, 'barrikade');
+      T.set(21, 20, 'furt');
+      T.set(23, 8, 'bunker'); T.set(23, 12, 'bunker');
+      T.line(15, 0, 8, 'bahn');
+      T.many([[6, 15], [7, 16], [6, 16], [5, 3], [6, 3]], 'sumpf');
       return T.M;
     } }
 };
@@ -394,7 +429,7 @@ function defaultArmy(side) { if (MAP.army) return Object.assign({}, MAP.army[sid
 function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
 function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
 const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
-function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost(defaultArmy(sd)); ARMY_MAX[sd] = MAP.armyMax[sd]; } ARMY_CAP = COLS * ROWS > 600 ? 20 : COLS * ROWS > 400 ? 14 : 9; ARMY_WALKERS = COLS * ROWS > 600 ? 8 : COLS * ROWS > 400 ? 6 : 4; }
+function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost(defaultArmy(sd)); ARMY_MAX[sd] = MAP.armyMax[sd]; } ARMY_CAP = COLS * ROWS > 600 ? 20 : COLS * ROWS > 400 ? 16 : 9; ARMY_WALKERS = COLS * ROWS > 600 ? 8 : COLS * ROWS > 400 ? 6 : 4; }
 let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
 const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
 armySync();
@@ -446,7 +481,7 @@ function deployD(G, list, lead, free) {
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
-    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1 }[h.t] || 0;
+    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2 }[h.t] || 0;
     if (h.ridge) v += 1;
     for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v += rl === 'art' ? -2 : 4; else if (dd === 1) v += 1.2; }
     if (rl === 'art') v += d * 6 - (d < 0.45 ? 5 : 0);
@@ -513,9 +548,9 @@ function arcOf(G, d, ac, ar) {
 function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
   if (t === 'canal') return 99;
-  if (k === 'cav') { if (t === 'wire' || t === 'forest') return 99; if (t === 'crater' || t === 'trench') return 3; }
-  if (k === 'walker') { if (t === 'forest' || t === 'bridge') return 99; if (t === 'crater') return 1; }
-  if (k === 'art') { if (t === 'wire' || t === 'forest') return 99; }
+  if (k === 'cav') { if (t === 'wire' || t === 'forest' || t === 'wald' || t === 'barrikade') return 99; if (t === 'crater' || t === 'trench') return 3; }
+  if (k === 'walker') { if (t === 'forest' || t === 'bridge' || t === 'wald') return 99; if (t === 'crater') return 1; }
+  if (k === 'art') { if (t === 'wire' || t === 'forest' || t === 'wald' || t === 'furt' || t === 'sumpf') return 99; }
   return TERRAIN[t].cost;
 }
 function reachable(G, u) {
@@ -564,7 +599,7 @@ function autoFace(G, u) {
   if (e && dist(u.c, u.r, e.c, e.r) <= 4) u.face = faceIndex(angleTo(u.c, u.r, e.c, e.r));
   else u.face = u.side === 'A' ? 0 : 3;
 }
-function openGround(G, c, r) { return ['open', 'mud', 'crater', 'wire', 'bridge'].includes(hex(G, c, r).t); }
+function openGround(G, c, r) { return ['open', 'mud', 'crater', 'wire', 'bridge', 'furt', 'sumpf', 'waldweg', 'bahn'].includes(hex(G, c, r).t); }
 
 function moveUnit(G, u, c, r) {
   const ev = [];
@@ -580,7 +615,7 @@ function moveUnit(G, u, c, r) {
     const h = hex(G, nc, nr);
     if (T.cls === 'walker' && h.t === 'wire') { h.t = 'open'; flush(); ev.push({ t: 'crush', u: u.id, c: nc, r: nr }); }
     claimObjective(G, u);
-    if (T.cls === 'walker' && h.t === 'mud' && G.rng() < P.STUCK) { flush(); ev.push({ t: 'stuck', u: u.id }); break; }
+    if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); ev.push({ t: 'stuck', u: u.id }); break; }
     if (T.cls !== 'walker' && openGround(G, nc, nr)) {
       const mg = G.units.find(m => m.side !== u.side && active(m) && TYPES[m.type].mg && m.react && !m.supp &&
         dist(m.c, m.r, nc, nr) <= rangeOf(G, m, nc, nr) && hasLOS(G, m.c, m.r, nc, nr));
@@ -638,7 +673,7 @@ function hasLOS(G, c1, r1, c2, r2) {
   for (const [c, r] of line(c1, r1, c2, r2)) {
     if (!inMap(c, r)) continue;
     const t = hex(G, c, r).t;
-    if (t === 'forest' || t === 'village') return false;
+    if (t === 'forest' || t === 'village' || t === 'wald' || t === 'fabrik' || t === 'kirche') return false;
   }
   return true;
 }
@@ -670,11 +705,21 @@ function defMods(G, d, arc, ranged, tags, noTrench) {
   if (t === 'village') { if (cls(d) === 'walker') { m *= 0.7; tags.push('Koloss in Ruinen ×0,7'); } else { m *= P.VILLAGE_DEF; tags.push('Ruinen ×1,5'); } }
   if (t === 'forest') { m *= P.FOREST_DEF; tags.push('Totholz ×1,4'); }
   if (t === 'wire') { m *= P.WIRE_DEF; tags.push('im Draht ×0,6'); }
+  const wk = cls(d) === 'walker';
+  if (t === 'furt') { m *= 0.8; tags.push('in der Furt ×0,8'); }
+  if (t === 'wald') { m *= 1.5; tags.push('Wald ×1,5'); }
+  if (t === 'waldweg') { m *= 1.2; tags.push('Waldweg ×1,2'); }
+  if (t === 'bunker') { m *= 2; tags.push('Bunker ×2'); }
+  if (t === 'fabrik') { m *= wk ? 0.7 : 1.7; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Fabrik ×1,7'); }
+  if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
+  if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
+  if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
   return m;
 }
 function hexDef(G, c, r, isWalker) {
   const t = hex(G, c, r).t;
-  return t === 'village' ? (isWalker ? 0.7 : P.VILLAGE_DEF) : t === 'forest' ? P.FOREST_DEF : t === 'wire' ? P.WIRE_DEF : 1;
+  return t === 'village' || t === 'kirche' ? (isWalker ? 0.7 : P.VILLAGE_DEF) : t === 'fabrik' ? (isWalker ? 0.7 : 1.7) : t === 'forest' ? P.FOREST_DEF : t === 'wire' ? P.WIRE_DEF
+    : t === 'furt' ? 0.8 : t === 'wald' ? 1.5 : t === 'waldweg' ? 1.2 : t === 'bunker' ? 2 : t === 'barrikade' ? 1.6 : 1;
 }
 
 // Schaden ohne Zufall, für Vorschau und KI. kind: 'melee' | 'fire'
@@ -735,7 +780,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (arc === 'flank') ml += P.MOR_FLANK;
   if (arc === 'rear') ml += P.MOR_REAR;
   if (d.status === 'ok' && surrounded(G, d)) ml += P.MOR_SURR;
-  if (t === 'trench' && !o.flame) ml *= 0.5;
+  if ((t === 'trench' || t === 'bunker') && !o.flame) ml *= 0.5;
   if (officerAt(G, d.side, d.c, d.r)) ml *= P.OFFICER_MOR;
   d.mor = Math.max(0, d.mor - ml);
   ev.push({ t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });
@@ -761,7 +806,7 @@ function retreatHex(G, u, from) {
     if (from) s += dist(c, r, from.c, from.r) * 2;
     let adj = 0; for (const [nc, nr] of neighbors(c, r)) { const o = unitAt(G, nc, nr); if (o && o.side !== u.side && active(o)) adj++; }
     s -= adj * 2;
-    if (t === 'trench' || t === 'village') s += 1;
+    if (['trench', 'village', 'bunker', 'fabrik', 'kirche', 'barrikade', 'wald'].includes(t)) s += 1;
     if (t === 'wire') s -= 2;
     if (s > bs) { bs = s; best = [c, r]; }
   }
@@ -856,7 +901,7 @@ function claimObjective(G, u) {
 
 // ---------- Artillerie ----------
 function spotted(G, side, c, r) {
-  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= (TYPES[u.type].spot || P.SPOT) && hasLOS(G, u.c, u.r, c, r));
+  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= Math.max(TYPES[u.type].spot || P.SPOT, hex(G, u.c, u.r).t === 'kirche' ? 8 : 0) && hasLOS(G, u.c, u.r, c, r));
 }
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
 function canShell(G, a, c, r, mode) {
@@ -977,7 +1022,7 @@ function startTurn(G) {
     }
     if (!adjEnemies(G, u).length && !u.supp && !u.gassed) {
       const t = hex(G, u.c, u.r).t;
-      const rec = (t === 'trench' || t === 'village' || t === 'forest') ? P.RECOVER_COVER : P.RECOVER;
+      const rec = ['trench', 'village', 'forest', 'bunker', 'wald', 'fabrik', 'kirche', 'barrikade'].includes(t) ? P.RECOVER_COVER : P.RECOVER;
       u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1));
     }
   }

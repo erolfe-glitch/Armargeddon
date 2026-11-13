@@ -12,11 +12,13 @@ const W = {
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer'] };
 
-function coverVal(t) { return t === 'trench' ? 1 : t === 'village' ? 0.9 : t === 'forest' ? 0.7 : t === 'crater' ? 0.4 : t === 'wire' ? -1.6 : 0; }
+const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
+function coverVal(t) { return COVER[t] || 0; }
 
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
-  const defm = t === 'trench' ? 1.6 : t === 'village' ? (D.cls === 'walker' ? 0.7 : 1.5) : t === 'forest' ? 1.4 : t === 'crater' ? 1.2 : t === 'wire' ? 0.6 : 1;
+  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8 };
+  const defm = (t === 'village' || t === 'kirche' || t === 'fabrik') && D.cls === 'walker' ? 0.7 : DM[t] || 1;
   let th = 0;
   for (const o of G.units) {
     if (o.side === u.side || !E.active(o)) continue;
