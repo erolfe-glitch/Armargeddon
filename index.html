@@ -3750,8 +3750,8 @@ function draw() {
         g.strokeText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.fillStyle = f.col; g.fillText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.textAlign = 'center'; }
       continue;
     }
-    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.66 : 0.54) : f.big ? 0.5 : 0.42))}px system-ui, sans-serif`;
-    g.lineWidth = Math.max(3, s * 0.12); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
+    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.66 : 0.54) : f.big ? 0.33 : 0.28))}px system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers), Schadenszahlen groß
+    g.lineWidth = Math.max(2.5, s * (f.hold ? 0.12 : 0.08)); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
     g.fillStyle = f.col; g.fillText(f.text, f.x, f.y);
   }
   g.globalAlpha = 1;
