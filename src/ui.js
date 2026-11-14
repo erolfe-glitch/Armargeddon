@@ -542,7 +542,7 @@ function drawUnit(u, d) {
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
   // Deckungsschild (Wunsch des Nutzers): Bronze = leichte, Silber = gute, Gold = starke Deckung durch das Gelände; Striche 1–3 zusätzlich zur Farbe
-  if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u); if (cv0.tier) drawShield(g, x + s * 0.76, y - s * 0.56, s * 0.46, cv0.tier); } }
+  if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u); if (cv0.tier) drawShield(g, x + s * 0.68, y - s * 0.4, s * 0.24, cv0.tier); } }
   // Zustandsmarken
   const tagY = y - s * (['mech', 'drill', 'mechA', 'mechB', 'mechT', 'mechK', 'mechC'].includes(k) ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (glyph, bg, fg, ic) => {
@@ -760,6 +760,13 @@ function draw() {
     const f = floaters[i]; f.life -= f.hold ? STEP : FS; f.y -= s * STEP * (f.hold ? (f.life > f.max - 30 ? 0.012 : 0.0015) : 0.012);
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
     g.globalAlpha = Math.min(1, f.life / 18);
+    if (f.icon) {   // Symbol statt Text: kurz aufpoppen, dann langsam steigen
+      const k = Math.min(1, (f.max - f.life) / 6), hh = s * (f.big ? 0.95 : 0.8) * (0.7 + 0.3 * k), ww = hh * f.icon.naturalWidth / f.icon.naturalHeight;
+      g.save(); g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = s * 0.18; g.drawImage(f.icon, f.x - ww / 2, f.y - hh * 0.8, ww, hh); g.restore();
+      if (f.sub) { g.font = `900 ${Math.round(s * 0.4)}px system-ui, sans-serif`; g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.lineJoin = 'round';
+        g.strokeText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.fillStyle = f.col; g.fillText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.textAlign = 'center'; }
+      continue;
+    }
     g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.66 : 0.54) : f.big ? 0.5 : 0.42))}px system-ui, sans-serif`;
     g.lineWidth = Math.max(3, s * 0.12); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
     g.fillStyle = f.col; g.fillText(f.text, f.x, f.y);
@@ -802,7 +809,19 @@ function boom(x, y, r, kind, delay = 0) {
   booms.push({ x, y, r, cols, kind, img: opts[Math.floor(Math.random() * opts.length)], flip: Math.random() < 0.5, life, max: life, delay });
   if (kind === 'he') { boom(x, y, r * 0.9, 'dust'); boom(x, y - r * 0.2, r * 0.9, 'smoke', 14); }
 }
-function floater(x, y, text, col, big, hold) { const life = hold ? 210 : 60 / speed + 22; floaters.push({ x, y, text, col, life, max: life, big, hold }); }
+// Effekt-Texte als Symbole (Wunsch des Nutzers; Symbolbögen in FXDATA.proj i_*). [Textanfang, Symbol, Zahl aus dem Text]
+const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktionsfeuer', 'react'], ['Streuung', 'scatter'], ['Panik', 'rout'], ['flieht', 'rout'],
+  ['Gas!', 'gas'], ['Schreck', 'fear', /−\d+/], ['niedergehalten', 'supp'], ['aufgerieben', 'worn'], ['Sammeln', 'rally'], ['gesammelt', 'rally'], ['Moral +', 'morup'],
+  ['Vorwärts', 'whistle'], ['Sturm!', 'whistle'], ['Draht geschnitten', 'cut'], ['Draht niedergewalzt', 'crush'], ['steckt im Schlamm', 'stuck'], ['Panne', 'broken'],
+  ['wieder flott', 'repair'], ['wieder frei', 'repair'], ['instand gesetzt', 'repair'], ['geborgen', 'repair'], ['Nebelwand', 'smoke'], ['Stollen', 'tunnel', /\d+/],
+  ['Mine gelegt', 'mine', /\d+/], ['Mine!', 'mine'], ['Ausgeleuchtet', 'light'], ['Gas entgiftet', 'gasok'], ['kein Gas', 'gasok'], ['nachgeladen', 'ammo'],
+  ['Gegenstoß', 'counter'], ['aufgebaut', 'setup'], ['Feuerbereit', 'aim'], ['Marsch', 'march'], ['aufgeprotzt', 'limber'], ['abgeprotzt', 'limber'], ['Nachschub', 'supply'], ['versorgt', 'heal', /\+[\d,]+/]];
+function floater(x, y, text, col, big, hold) {
+  const life = hold ? 210 : 60 / speed + 22, f = { x, y, text, col, life, max: life, big, hold };
+  const m = FICON.find(([p]) => String(text).startsWith(p));
+  if (m && PJI['i_' + m[1]]) { f.icon = PJI['i_' + m[1]]; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
+  floaters.push(f);
+}
 function bodyPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 1.0 : 0.55)]; }
 function headPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 2.0 : k === 'cav' ? 1.7 : 1.45)]; }
 
