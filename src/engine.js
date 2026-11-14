@@ -25,6 +25,7 @@ const P = {
   REINF_TURN: 8, LIMBER_MV: 3,
   PTS_TURN: { A: 10, D: 10 }, PTS_KILL: 20, PTS_OBJ: 10, HEAL: 2.5, HEAL_MOR: 1.5,
   // Bewegung und Aktionen (Paket 1): Marsch = doppelte Zugweite für beide Punkte, Feuerbereitschaft, Aufbauen der MG, Abklingzeiten
+  GOAL_K: 7, MAX_ROUNDS: 40, D_BAND: 6,
   MARCH: 2, OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2, STUCK_TURNS: 2
 };
 
@@ -390,11 +391,12 @@ const MAPS = {
     desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke. Zur Mitte der Schlacht kommt der Gegenstoß.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'veskar', name: 'Ruinen von Veskar', c: 12, r: 4, pts: 2 },
-      { id: 'schanze', name: 'Grauwall-Schanze', c: 10, r: 5, pts: 2 },
-      { id: 'totholz', name: 'Totholz von Ilm', c: 14, r: 1, pts: 3 },
-      { id: 'marn', name: 'Brücke von Marn', c: 15, r: 8, pts: 2 }],
-    army: { A: { kohorte: 7, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'vorposten', name: 'Vorposten', c: 3, r: 4, pts: 1 },
+      { id: 'nordgraben', name: 'Nordgraben', c: 7, r: 2, pts: 2 },
+      { id: 'suedgraben', name: 'Südgraben', c: 7, r: 7, pts: 2 },
+      { id: 'schanze', name: 'Die Schanze', c: 10, r: 5, pts: 2 },
+      { id: 'veskar', name: 'Veskar', c: 12, r: 4, pts: 1 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 8, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     build: () => {
       const T = mapTools(16, 10, 1917);
@@ -417,10 +419,11 @@ const MAPS = {
     desc: 'Kurz und hart: ein Graben, ein Drahtgürtel, drei kleine Ziele dicht hinter der Front. Siegen kann nur, wer den Kirchhügel nimmt.',
     maxT: 12, reinfTurn: 6, winA: 5, drawA: 3, armyMax: { A: 20, D: 16 },
     objectives: [
-      { id: 'nordhof', name: 'Nordgehöft', c: 7, r: 1, pts: 1 },
-      { id: 'kreuz', name: 'Kreuzung von Selm', c: 7, r: 5, pts: 1 },
-      { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 1 },
-      { id: 'kirche', name: 'Kirchhügel', c: 12, r: 5, pts: 3 }],
+      { id: 'vorfeld', name: 'Vorfeld', c: 3, r: 5, pts: 1 },
+      { id: 'nordhof', name: 'Nordhof', c: 7, r: 1, pts: 2 },
+      { id: 'kreuz', name: 'Kreuzung', c: 7, r: 5, pts: 3 },
+      { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 2 },
+      { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
     army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 2, feldscher: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1 } },
     reinf: ['sturm', 'sturm', 'brand'],
     build: () => {
@@ -447,12 +450,12 @@ const MAPS = {
     desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
     maxT: 16, reinfTurn: 8, winA: 6, drawA: 5, armyMax: { A: 26, D: 24 },
     objectives: [
-      { id: 'muehle', name: 'Lerner Mühle', c: 8, r: 2, pts: 1 },
-      { id: 'bahnhof', name: 'Bahnhof Lerne', c: 9, r: 6, pts: 2 },
+      { id: 'vorfeld', name: 'Vorfeld', c: 4, r: 6, pts: 1 },
+      { id: 'muehle', name: 'Mühle', c: 8, r: 2, pts: 2 },
+      { id: 'bahnhof', name: 'Bahnhof', c: 9, r: 6, pts: 3 },
       { id: 'kalkwald', name: 'Kalkwald', c: 10, r: 10, pts: 2 },
-      { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 2 },
-      { id: 'hoehe', name: 'Höhe 304', c: 16, r: 7, pts: 3 }],
-    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 12, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+      { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 1 }],
+    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 13, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
       const T = mapTools(18, 13, 1916);
@@ -481,13 +484,12 @@ const MAPS = {
     desc: 'Die ganze Front: mehrere Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
     maxT: 18, reinfTurn: 9, winA: 8, drawA: 6, armyMax: { A: 34, D: 32 },
     objectives: [
-      { id: 'kessel', name: 'Vorposten Kessel', c: 10, r: 3, pts: 1 },
-      { id: 'brand', name: 'Gehöft Brand', c: 10, r: 12, pts: 2 },
-      { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 2 },
-      { id: 'schwarzwald', name: 'Schwarzwäldchen', c: 15, r: 2, pts: 2 },
-      { id: 'schleuse', name: 'Kanalschleuse', c: 17, r: 13, pts: 2 },
-      { id: 'feste', name: 'Feste Grauwall', c: 19, r: 7, pts: 3 }],
-    army: { A: { kohorte: 12, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1 }, D: { grenadier: 13, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2 } },
+      { id: 'vorwerk', name: 'Vorwerk', c: 5, r: 8, pts: 1 },
+      { id: 'kessel', name: 'Kessel', c: 10, r: 3, pts: 2 },
+      { id: 'brand', name: 'Brandstätte', c: 10, r: 12, pts: 2 },
+      { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 3 },
+      { id: 'riegel', name: 'Riegel', c: 16, r: 8, pts: 1 }],
+    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2 } },
     reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
     build: () => {
       const T = mapTools(22, 16, 1918);
@@ -520,11 +522,12 @@ const MAPS = {
     desc: 'Gemalte Karte: Vor dem Fluss die Grabenlinie mit zwei Bunkern, darüber nur die alte Steinbrücke und die Furt am Steg. Dahinter Bunker, Dorf, Fabrik und die Kirche.',
     maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'sbunkerw', name: 'Westbunker', c: 6, r: 3, pts: 1 },
       { id: 'sbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
-      { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 2 },
-      { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 2 },
-      { id: 'skirche', name: 'Kirche', c: 14, r: 6, pts: 3 }],
+      { id: 'sbunkerw', name: 'Westbunker', c: 6, r: 3, pts: 1 },
+      { id: 'steg', name: 'Furt am Steg', c: 7, r: 2, pts: 2 },
+      { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 3 },
+      { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 1 },
+      { id: 'dorfrand', name: 'Dorfrand', c: 11, r: 6, pts: 1 }],
     army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
@@ -543,12 +546,13 @@ const MAPS = {
     desc: 'Gemalte Karte: Dichter Wald auf beiden Seiten, dazwischen ein Fluss mit Holzbrücke und Steg. Bunker im Unterholz, wenig freie Sicht.',
     maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'wbunkerw', name: 'Bunker am Hang', c: 6, r: 3, pts: 1 },
       { id: 'wbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
-      { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 1 },
-      { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 2 },
-      { id: 'wbunkero', name: 'Bunker an der Lichtung', c: 13, r: 5, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'wbunkerw', name: 'Bunker am Hang', c: 6, r: 3, pts: 1 },
+      { id: 'wsteg', name: 'Steg', c: 8, r: 2, pts: 2 },
+      { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 3 },
+      { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 1 },
+      { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'WWWW.==.~V..WWWW',
@@ -566,12 +570,12 @@ const MAPS = {
     desc: 'Gemalte Karte: Aus dem eigenen Grabengewirr über offenes Feld gegen eine Zickzack-Linie, dahinter zwei Geschützkasematten und ein zerschossener Ort.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'kgraben', name: 'Zickzack-Graben', c: 5, r: 4, pts: 1 },
-      { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 1 },
-      { id: 'kkasn', name: 'Kasematte Nord', c: 14, r: 1, pts: 2 },
-      { id: 'kkass', name: 'Kasematte Süd', c: 14, r: 4, pts: 2 },
-      { id: 'kfabrik', name: 'Ziegelei', c: 15, r: 8, pts: 3 }],
-    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'eigenb', name: 'Vorderer Bunker', c: 2, r: 7, pts: 1 },
+      { id: 'kgraben', name: 'Zickzack-Graben', c: 5, r: 4, pts: 2 },
+      { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 3 },
+      { id: 'vorwerk', name: 'Ziegelhof', c: 11, r: 7, pts: 2 },
+      { id: 'riegelg', name: 'Riegelgraben', c: 12, r: 6, pts: 1 }],
+    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 9, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'o===.f.~~.fff...',
@@ -589,12 +593,13 @@ const MAPS = {
     desc: 'Gemalte Karte: Häuserkampf. Ein Kanal teilt die Stadt; hinüber führen die Steinbrücke, die Bahnbrücke und eine Furt. Dahinter Fabrik und Kathedrale.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'kfront', name: 'Vorderer Graben', c: 5, r: 4, pts: 1 },
-      { id: 'ksteinbr', name: 'Steinbrücke', c: 8, r: 3, pts: 1 },
-      { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 2 },
+      { id: 'eigenb', name: 'Vorderer Bunker', c: 2, r: 7, pts: 1 },
+      { id: 'kfront', name: 'Vorderer Graben', c: 5, r: 4, pts: 2 },
+      { id: 'ksteinbr', name: 'Steinbrücke', c: 8, r: 3, pts: 3 },
+      { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 3 },
       { id: 'kfab', name: 'Fabrik', c: 10, r: 2, pts: 2 },
-      { id: 'kkath', name: 'Kathedrale', c: 14, r: 2, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'ostviertel', name: 'Ostviertel', c: 11, r: 6, pts: 2 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 13, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'VVVVVVV.~.VVV.VV',
@@ -612,12 +617,13 @@ const MAPS = {
     desc: 'Ein zusammenhängendes Tal: Die Varn fließt von Nord nach Süd mitten durch Varnheim. Zwei Brücken, zwei Furten, eine Bunkerlinie davor, Bahn und Höhe 212 dahinter.',
     maxT: 16, reinfTurn: 8, winA: 5, drawA: 4, armyMax: { A: 26, D: 24 },
     objectives: [
-      { id: 'varnwald', name: 'Varnwald', c: 9, r: 2, pts: 1 },
-      { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 2 },
-      { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 },
-      { id: 'vfabrik', name: 'Tuchfabrik', c: 12, r: 6, pts: 2 },
-      { id: 'h212', name: 'Höhe 212', c: 16, r: 10, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 12, sense: 5, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+      { id: 'vorfeld', name: 'Vorfeld', c: 4, r: 6, pts: 1 },
+      { id: 'westbunker', name: 'Westbunker', c: 7, r: 3, pts: 1 },
+      { id: 'varnwald', name: 'Varnwald', c: 9, r: 2, pts: 2 },
+      { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 3 },
+      { id: 'suedfurt', name: 'Südfurt', c: 11, r: 9, pts: 2 },
+      { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 16, sense: 5, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
       const T = mapTools(18, 14, 1915);
@@ -763,14 +769,15 @@ function deploy(G, side, army) {
 // Verteidiger auf neuen Karten: Besatzung für jedes Zielfeld, MG in die vorderen Gräben, Geschütze nach hinten,
 // alles mit Abstand, damit die ganze Front besetzt ist.
 function deployD(G, list, lead, free) {
-  const zD = MAP.zoneD, depth = COLS - zD, placed = [];
+  const zD = Math.max(MAP.zoneD, COLS - (+(TOG.M_band || 0) || MAP.band || P.D_BAND)), depth = COLS - zD, placed = [];   // Siegpunkt-Modus: beide starten am eigenen Rand
   const role = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 'art' : (T.cls === 'medic' || T.relay || T.mobile) ? 'back' : T.mg ? 'mg' : 'inf'; };
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
     let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2 }[h.t] || 0;
     if (h.ridge) v += 1;
-    for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v += rl === 'art' ? -2 : 4; else if (dd === 1) v += 1.2; }
+    for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v -= 50; else if (dd === 1) v += 1.2; }
+    if (rl !== 'art' && rl !== 'back') v += (1 - d) * 2;   // Kampftruppen vorn im Band
     if (rl === 'art') v += d * 6 - (d < 0.45 ? 5 : 0);
     else if (rl === 'back') v += d * 3;
     else if (rl === 'mg') v += (1 - d) * 3;
@@ -779,8 +786,6 @@ function deployD(G, list, lead, free) {
     return v;
   };
   const order = list.slice().sort((a, b) => ({ inf: 0, mg: 1, back: 2, art: 3 }[role(a)] - { inf: 0, mg: 1, back: 2, art: 3 }[role(b)]));
-  // zuerst je Zielfeld eine Infanterie
-  for (const o of objs) { const i = order.findIndex(t => role(t) === 'inf'); if (i < 0 || !free(order[i], o.c, o.r)) continue; const t = order.splice(i, 1)[0]; addUnit(G, t, o.c, o.r, lead(t)); placed.push([o.c, o.r]); }
   for (const t of order) {
     let best = null, bv = -1e9;
     for (let c = zD; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (!free(t, c, r)) continue; const v = score(t, c, r); if (v > bv) { bv = v; best = [c, r]; } }
@@ -797,7 +802,8 @@ function newGame(opts) {
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs
   };
-  for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
+  for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
+  G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
     if (army && (opts.free || armyOk(side, army, !!opts.mechs))) deploy(G, side, army);   // free: nur für Tests ohne Budgetgrenze
@@ -1323,6 +1329,11 @@ function startTurn(G) {
     ev.push({ t: 'reinf', ids });
   }
   G.pts[s] += P.PTS_TURN[s];
+  { // Siegpunkte: jedes Zielfeld, das die Seite über die gegnerische Runde gehalten hat, zählt
+    let add = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === s) add += o.pts;
+    if (add) { G.vp[s] += add; ev.push({ t: 'score', side: s, add, vp: G.vp[s], goal: G.goal }); }
+    if (G.vp[s] >= G.goal) { G.over = { winner: s, why: 'points', pts: G.vp[s], vp: { ...G.vp } }; ev.push({ t: 'over', result: G.over }); return ev; }
+  }
   G.smoke = G.smoke.filter(k => k.side !== s); G.lit = G.lit.filter(k => k.side !== s);
   ev.push(...tunnelsTick(G, s));
   for (const u of G.units) {
@@ -1537,7 +1548,7 @@ function endTurn(G) {
   for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; }
   if (G.side === 'A') G.side = 'D';
   else {
-    if (G.turn >= G.maxT) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
+    if (G.turn >= P.MAX_ROUNDS) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
     G.turn++; G.side = 'A';
   }
   return startTurn(G);
@@ -1548,17 +1559,15 @@ function losses(G, side) {
   return lost / total;
 }
 function points(G) { let p = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === 'A') p += o.pts; return p; }
-function finalResult(G) {
-  const p = points(G);
-  if (p >= G.winA) return { winner: 'A', why: 'points', pts: p };
-  if (p >= G.drawA) return { winner: null, why: 'points', pts: p };
-  return { winner: 'D', why: 'points', pts: p };
+function finalResult(G) {   // nur Notbremse nach P.MAX_ROUNDS Runden
+  const w = G.vp.A > G.vp.D ? 'A' : G.vp.D > G.vp.A ? 'D' : null;
+  return { winner: w, why: 'time', pts: w ? G.vp[w] : G.vp.A, vp: { ...G.vp } };
 }
 function checkEnd(G) {
   if (G.over) return [];
   const la = losses(G, 'A'), ld = losses(G, 'D');
-  if (ld >= P.BREAK.D) G.over = { winner: 'A', why: 'break', pts: points(G) };
-  else if (la >= P.BREAK.A) G.over = { winner: 'D', why: 'break', pts: points(G) };
+  if (ld >= P.BREAK.D) G.over = { winner: 'A', why: 'break', pts: G.vp.A, vp: { ...G.vp } };
+  else if (la >= P.BREAK.A) G.over = { winner: 'D', why: 'break', pts: G.vp.D, vp: { ...G.vp } };
   return G.over ? [{ t: 'over', result: G.over }] : [];
 }
 

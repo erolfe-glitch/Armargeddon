@@ -37,7 +37,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .meter span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 12px var(--display); letter-spacing: .05em; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
 .objs { display: flex; align-items: center; gap: 4px; }
 .obj { padding: 1px 6px; border-radius: 3px; font: 700 13px var(--display); color: #16150f; }
-.obj.A { background: var(--A); } .obj.D { background: var(--D); }
+.obj.A { background: var(--A); } .obj.D { background: var(--D); } .obj.N { background: #b9b4a6; } .pts i { font-style: normal; } .pts .vpA { color: var(--A); } .pts .vpD { color: var(--D); } .pts small { font-size: .75em; opacity: .8; }
 .pts { font: 700 15px var(--display); color: var(--gold); margin-left: 4px; }
 .tools { display: flex; gap: 5px; }
 .tbtn { min-width: 38px; height: 30px; padding: 0 9px; background: var(--panel-2); border: 2px solid var(--edge); border-bottom-width: 4px; border-radius: 6px; font: 700 13px var(--display); letter-spacing: .04em; text-transform: uppercase; }
@@ -397,8 +397,8 @@ body { background: #0c0908; }
     <h1 class="title">Armargeddon</h1>
     <p class="lead">Drei Jahre Grabenkrieg. Heute soll der Grauwall fallen: mit Landkolossen, Donnerrohren und Gas gegen Draht, Gräben und Maschinengewehre.</p>
     <div class="factions">
-      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und Grabenlinien und die Zielfelder (⚑) nehmen.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
-      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Zur Mitte der Schlacht kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
+      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Kommt von links. Mehr Truppen, Landkolosse und schwere Haubitzen. Muss durch Niemandsland und Draht zu den Zielfeldern (⚑).</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
+      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Kommt von rechts. Zäh in Gräben und Ruinen. Zur Mitte der Schlacht trifft die Reserve mit Sturmbrechern und Brandwerfern ein.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
     </div>
     <p class="lbl">Schlachtfeld</p>
     <div class="mappick" id="mapPick"></div>
@@ -443,7 +443,8 @@ body { background: #0c0908; }
       <li>Artillerie braucht eine eigene Einheit, die das Ziel sieht. Sprenggranaten machen Schaden, Sperrfeuer hält nieder, Gas treibt mit dem Wind.</li>
       <li>Landkolosse sind gegen Gewehre und MG immun und walzen Draht nieder. Geschütze im direkten Schuss, Sturmbrecher und Brandwerfer sind ihre Feinde.</li>
       <li>Lanzenreiter sind schnell und stark gegen Fliehende, aber leichte Beute für MG.</li>
-      <li>Ab Runde 8 trifft die Reserve der Aschenwacht ein.</li>
+      <li>Sieg: Alle Zielfelder (⚑) sind zu Beginn neutral. Wer ein Feld betritt, besetzt es. Zu Beginn der eigenen Runde zählt jedes gehaltene Feld seine Punkte. Wer zuerst das Ziel der Karte erreicht, gewinnt. Es gibt keine Rundengrenze. Wer zu viele Truppen verliert, bricht zusammen und verliert sofort.</li>
+      <li>Zur Mitte der Schlacht trifft die Reserve der Aschenwacht ein.</li>
       <li>Marken an jeder eigenen Einheit: grüner Pfeil = kann noch ziehen, rote Raute = kann noch angreifen. Fertige Einheiten sind abgedunkelt.</li>
       <li>Geschütze können aufprotzen: Dann ziehen sie 4 Felder, feuern aber erst wieder nach dem Abprotzen. Rot zeigt ihr Schussfeld.</li>
       <li>Nachschub: Für Punkte (★) holst du neue Einheiten an den eigenen Rand, auch Feldscher und Mörser.</li>
@@ -554,6 +555,7 @@ const P = {
   REINF_TURN: 8, LIMBER_MV: 3,
   PTS_TURN: { A: 10, D: 10 }, PTS_KILL: 20, PTS_OBJ: 10, HEAL: 2.5, HEAL_MOR: 1.5,
   // Bewegung und Aktionen (Paket 1): Marsch = doppelte Zugweite für beide Punkte, Feuerbereitschaft, Aufbauen der MG, Abklingzeiten
+  GOAL_K: 7, MAX_ROUNDS: 40, D_BAND: 6,
   MARCH: 2, OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2, STUCK_TURNS: 2
 };
 
@@ -919,11 +921,12 @@ const MAPS = {
     desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke. Zur Mitte der Schlacht kommt der Gegenstoß.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'veskar', name: 'Ruinen von Veskar', c: 12, r: 4, pts: 2 },
-      { id: 'schanze', name: 'Grauwall-Schanze', c: 10, r: 5, pts: 2 },
-      { id: 'totholz', name: 'Totholz von Ilm', c: 14, r: 1, pts: 3 },
-      { id: 'marn', name: 'Brücke von Marn', c: 15, r: 8, pts: 2 }],
-    army: { A: { kohorte: 7, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'vorposten', name: 'Vorposten', c: 3, r: 4, pts: 1 },
+      { id: 'nordgraben', name: 'Nordgraben', c: 7, r: 2, pts: 2 },
+      { id: 'suedgraben', name: 'Südgraben', c: 7, r: 7, pts: 2 },
+      { id: 'schanze', name: 'Die Schanze', c: 10, r: 5, pts: 2 },
+      { id: 'veskar', name: 'Veskar', c: 12, r: 4, pts: 1 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 8, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     build: () => {
       const T = mapTools(16, 10, 1917);
@@ -946,10 +949,11 @@ const MAPS = {
     desc: 'Kurz und hart: ein Graben, ein Drahtgürtel, drei kleine Ziele dicht hinter der Front. Siegen kann nur, wer den Kirchhügel nimmt.',
     maxT: 12, reinfTurn: 6, winA: 5, drawA: 3, armyMax: { A: 20, D: 16 },
     objectives: [
-      { id: 'nordhof', name: 'Nordgehöft', c: 7, r: 1, pts: 1 },
-      { id: 'kreuz', name: 'Kreuzung von Selm', c: 7, r: 5, pts: 1 },
-      { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 1 },
-      { id: 'kirche', name: 'Kirchhügel', c: 12, r: 5, pts: 3 }],
+      { id: 'vorfeld', name: 'Vorfeld', c: 3, r: 5, pts: 1 },
+      { id: 'nordhof', name: 'Nordhof', c: 7, r: 1, pts: 2 },
+      { id: 'kreuz', name: 'Kreuzung', c: 7, r: 5, pts: 3 },
+      { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 2 },
+      { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
     army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 2, feldscher: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1 } },
     reinf: ['sturm', 'sturm', 'brand'],
     build: () => {
@@ -976,12 +980,12 @@ const MAPS = {
     desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
     maxT: 16, reinfTurn: 8, winA: 6, drawA: 5, armyMax: { A: 26, D: 24 },
     objectives: [
-      { id: 'muehle', name: 'Lerner Mühle', c: 8, r: 2, pts: 1 },
-      { id: 'bahnhof', name: 'Bahnhof Lerne', c: 9, r: 6, pts: 2 },
+      { id: 'vorfeld', name: 'Vorfeld', c: 4, r: 6, pts: 1 },
+      { id: 'muehle', name: 'Mühle', c: 8, r: 2, pts: 2 },
+      { id: 'bahnhof', name: 'Bahnhof', c: 9, r: 6, pts: 3 },
       { id: 'kalkwald', name: 'Kalkwald', c: 10, r: 10, pts: 2 },
-      { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 2 },
-      { id: 'hoehe', name: 'Höhe 304', c: 16, r: 7, pts: 3 }],
-    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 12, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+      { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 1 }],
+    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 13, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
       const T = mapTools(18, 13, 1916);
@@ -1010,13 +1014,12 @@ const MAPS = {
     desc: 'Die ganze Front: mehrere Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
     maxT: 18, reinfTurn: 9, winA: 8, drawA: 6, armyMax: { A: 34, D: 32 },
     objectives: [
-      { id: 'kessel', name: 'Vorposten Kessel', c: 10, r: 3, pts: 1 },
-      { id: 'brand', name: 'Gehöft Brand', c: 10, r: 12, pts: 2 },
-      { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 2 },
-      { id: 'schwarzwald', name: 'Schwarzwäldchen', c: 15, r: 2, pts: 2 },
-      { id: 'schleuse', name: 'Kanalschleuse', c: 17, r: 13, pts: 2 },
-      { id: 'feste', name: 'Feste Grauwall', c: 19, r: 7, pts: 3 }],
-    army: { A: { kohorte: 12, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1 }, D: { grenadier: 13, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2 } },
+      { id: 'vorwerk', name: 'Vorwerk', c: 5, r: 8, pts: 1 },
+      { id: 'kessel', name: 'Kessel', c: 10, r: 3, pts: 2 },
+      { id: 'brand', name: 'Brandstätte', c: 10, r: 12, pts: 2 },
+      { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 3 },
+      { id: 'riegel', name: 'Riegel', c: 16, r: 8, pts: 1 }],
+    army: { A: { kohorte: 11, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2 } },
     reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
     build: () => {
       const T = mapTools(22, 16, 1918);
@@ -1049,11 +1052,12 @@ const MAPS = {
     desc: 'Gemalte Karte: Vor dem Fluss die Grabenlinie mit zwei Bunkern, darüber nur die alte Steinbrücke und die Furt am Steg. Dahinter Bunker, Dorf, Fabrik und die Kirche.',
     maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'sbunkerw', name: 'Westbunker', c: 6, r: 3, pts: 1 },
       { id: 'sbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
-      { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 2 },
-      { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 2 },
-      { id: 'skirche', name: 'Kirche', c: 14, r: 6, pts: 3 }],
+      { id: 'sbunkerw', name: 'Westbunker', c: 6, r: 3, pts: 1 },
+      { id: 'steg', name: 'Furt am Steg', c: 7, r: 2, pts: 2 },
+      { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 3 },
+      { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 1 },
+      { id: 'dorfrand', name: 'Dorfrand', c: 11, r: 6, pts: 1 }],
     army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
@@ -1072,12 +1076,13 @@ const MAPS = {
     desc: 'Gemalte Karte: Dichter Wald auf beiden Seiten, dazwischen ein Fluss mit Holzbrücke und Steg. Bunker im Unterholz, wenig freie Sicht.',
     maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'wbunkerw', name: 'Bunker am Hang', c: 6, r: 3, pts: 1 },
       { id: 'wbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
-      { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 1 },
-      { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 2 },
-      { id: 'wbunkero', name: 'Bunker an der Lichtung', c: 13, r: 5, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'wbunkerw', name: 'Bunker am Hang', c: 6, r: 3, pts: 1 },
+      { id: 'wsteg', name: 'Steg', c: 8, r: 2, pts: 2 },
+      { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 3 },
+      { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 1 },
+      { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'WWWW.==.~V..WWWW',
@@ -1095,12 +1100,12 @@ const MAPS = {
     desc: 'Gemalte Karte: Aus dem eigenen Grabengewirr über offenes Feld gegen eine Zickzack-Linie, dahinter zwei Geschützkasematten und ein zerschossener Ort.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'kgraben', name: 'Zickzack-Graben', c: 5, r: 4, pts: 1 },
-      { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 1 },
-      { id: 'kkasn', name: 'Kasematte Nord', c: 14, r: 1, pts: 2 },
-      { id: 'kkass', name: 'Kasematte Süd', c: 14, r: 4, pts: 2 },
-      { id: 'kfabrik', name: 'Ziegelei', c: 15, r: 8, pts: 3 }],
-    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'eigenb', name: 'Vorderer Bunker', c: 2, r: 7, pts: 1 },
+      { id: 'kgraben', name: 'Zickzack-Graben', c: 5, r: 4, pts: 2 },
+      { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 3 },
+      { id: 'vorwerk', name: 'Ziegelhof', c: 11, r: 7, pts: 2 },
+      { id: 'riegelg', name: 'Riegelgraben', c: 12, r: 6, pts: 1 }],
+    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 9, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'o===.f.~~.fff...',
@@ -1118,12 +1123,13 @@ const MAPS = {
     desc: 'Gemalte Karte: Häuserkampf. Ein Kanal teilt die Stadt; hinüber führen die Steinbrücke, die Bahnbrücke und eine Furt. Dahinter Fabrik und Kathedrale.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
     objectives: [
-      { id: 'kfront', name: 'Vorderer Graben', c: 5, r: 4, pts: 1 },
-      { id: 'ksteinbr', name: 'Steinbrücke', c: 8, r: 3, pts: 1 },
-      { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 2 },
+      { id: 'eigenb', name: 'Vorderer Bunker', c: 2, r: 7, pts: 1 },
+      { id: 'kfront', name: 'Vorderer Graben', c: 5, r: 4, pts: 2 },
+      { id: 'ksteinbr', name: 'Steinbrücke', c: 8, r: 3, pts: 3 },
+      { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 3 },
       { id: 'kfab', name: 'Fabrik', c: 10, r: 2, pts: 2 },
-      { id: 'kkath', name: 'Kathedrale', c: 14, r: 2, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 7, sense: 4, geschuetz: 2 } },
+      { id: 'ostviertel', name: 'Ostviertel', c: 11, r: 6, pts: 2 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 13, sense: 4, geschuetz: 2 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'VVVVVVV.~.VVV.VV',
@@ -1141,12 +1147,13 @@ const MAPS = {
     desc: 'Ein zusammenhängendes Tal: Die Varn fließt von Nord nach Süd mitten durch Varnheim. Zwei Brücken, zwei Furten, eine Bunkerlinie davor, Bahn und Höhe 212 dahinter.',
     maxT: 16, reinfTurn: 8, winA: 5, drawA: 4, armyMax: { A: 26, D: 24 },
     objectives: [
-      { id: 'varnwald', name: 'Varnwald', c: 9, r: 2, pts: 1 },
-      { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 2 },
-      { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 },
-      { id: 'vfabrik', name: 'Tuchfabrik', c: 12, r: 6, pts: 2 },
-      { id: 'h212', name: 'Höhe 212', c: 16, r: 10, pts: 3 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 12, sense: 5, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+      { id: 'vorfeld', name: 'Vorfeld', c: 4, r: 6, pts: 1 },
+      { id: 'westbunker', name: 'Westbunker', c: 7, r: 3, pts: 1 },
+      { id: 'varnwald', name: 'Varnwald', c: 9, r: 2, pts: 2 },
+      { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 3 },
+      { id: 'suedfurt', name: 'Südfurt', c: 11, r: 9, pts: 2 },
+      { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 }],
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 16, sense: 5, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
       const T = mapTools(18, 14, 1915);
@@ -1292,14 +1299,15 @@ function deploy(G, side, army) {
 // Verteidiger auf neuen Karten: Besatzung für jedes Zielfeld, MG in die vorderen Gräben, Geschütze nach hinten,
 // alles mit Abstand, damit die ganze Front besetzt ist.
 function deployD(G, list, lead, free) {
-  const zD = MAP.zoneD, depth = COLS - zD, placed = [];
+  const zD = Math.max(MAP.zoneD, COLS - (+(TOG.M_band || 0) || MAP.band || P.D_BAND)), depth = COLS - zD, placed = [];   // Siegpunkt-Modus: beide starten am eigenen Rand
   const role = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 'art' : (T.cls === 'medic' || T.relay || T.mobile) ? 'back' : T.mg ? 'mg' : 'inf'; };
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
     let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2 }[h.t] || 0;
     if (h.ridge) v += 1;
-    for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v += rl === 'art' ? -2 : 4; else if (dd === 1) v += 1.2; }
+    for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v -= 50; else if (dd === 1) v += 1.2; }
+    if (rl !== 'art' && rl !== 'back') v += (1 - d) * 2;   // Kampftruppen vorn im Band
     if (rl === 'art') v += d * 6 - (d < 0.45 ? 5 : 0);
     else if (rl === 'back') v += d * 3;
     else if (rl === 'mg') v += (1 - d) * 3;
@@ -1308,8 +1316,6 @@ function deployD(G, list, lead, free) {
     return v;
   };
   const order = list.slice().sort((a, b) => ({ inf: 0, mg: 1, back: 2, art: 3 }[role(a)] - { inf: 0, mg: 1, back: 2, art: 3 }[role(b)]));
-  // zuerst je Zielfeld eine Infanterie
-  for (const o of objs) { const i = order.findIndex(t => role(t) === 'inf'); if (i < 0 || !free(order[i], o.c, o.r)) continue; const t = order.splice(i, 1)[0]; addUnit(G, t, o.c, o.r, lead(t)); placed.push([o.c, o.r]); }
   for (const t of order) {
     let best = null, bv = -1e9;
     for (let c = zD; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (!free(t, c, r)) continue; const v = score(t, c, r); if (v > bv) { bv = v; best = [c, r]; } }
@@ -1326,7 +1332,8 @@ function newGame(opts) {
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs
   };
-  for (const o of OBJECTIVES) G.ctrl[o.id] = 'D';
+  for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
+  G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
     if (army && (opts.free || armyOk(side, army, !!opts.mechs))) deploy(G, side, army);   // free: nur für Tests ohne Budgetgrenze
@@ -1852,6 +1859,11 @@ function startTurn(G) {
     ev.push({ t: 'reinf', ids });
   }
   G.pts[s] += P.PTS_TURN[s];
+  { // Siegpunkte: jedes Zielfeld, das die Seite über die gegnerische Runde gehalten hat, zählt
+    let add = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === s) add += o.pts;
+    if (add) { G.vp[s] += add; ev.push({ t: 'score', side: s, add, vp: G.vp[s], goal: G.goal }); }
+    if (G.vp[s] >= G.goal) { G.over = { winner: s, why: 'points', pts: G.vp[s], vp: { ...G.vp } }; ev.push({ t: 'over', result: G.over }); return ev; }
+  }
   G.smoke = G.smoke.filter(k => k.side !== s); G.lit = G.lit.filter(k => k.side !== s);
   ev.push(...tunnelsTick(G, s));
   for (const u of G.units) {
@@ -2066,7 +2078,7 @@ function endTurn(G) {
   for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; }
   if (G.side === 'A') G.side = 'D';
   else {
-    if (G.turn >= G.maxT) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
+    if (G.turn >= P.MAX_ROUNDS) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
     G.turn++; G.side = 'A';
   }
   return startTurn(G);
@@ -2077,17 +2089,15 @@ function losses(G, side) {
   return lost / total;
 }
 function points(G) { let p = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === 'A') p += o.pts; return p; }
-function finalResult(G) {
-  const p = points(G);
-  if (p >= G.winA) return { winner: 'A', why: 'points', pts: p };
-  if (p >= G.drawA) return { winner: null, why: 'points', pts: p };
-  return { winner: 'D', why: 'points', pts: p };
+function finalResult(G) {   // nur Notbremse nach P.MAX_ROUNDS Runden
+  const w = G.vp.A > G.vp.D ? 'A' : G.vp.D > G.vp.A ? 'D' : null;
+  return { winner: w, why: 'time', pts: w ? G.vp[w] : G.vp.A, vp: { ...G.vp } };
 }
 function checkEnd(G) {
   if (G.over) return [];
   const la = losses(G, 'A'), ld = losses(G, 'D');
-  if (ld >= P.BREAK.D) G.over = { winner: 'A', why: 'break', pts: points(G) };
-  else if (la >= P.BREAK.A) G.over = { winner: 'D', why: 'break', pts: points(G) };
+  if (ld >= P.BREAK.D) G.over = { winner: 'A', why: 'break', pts: G.vp.A, vp: { ...G.vp } };
+  else if (la >= P.BREAK.A) G.over = { winner: 'D', why: 'break', pts: G.vp.D, vp: { ...G.vp } };
   return G.over ? [{ t: 'over', result: G.over }] : [];
 }
 
@@ -2552,7 +2562,7 @@ const P = E.P, TYPES = E.TYPES;
 
 const W = {
   A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
-  D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
+  D: { threat: 0.45, prog: 0.45, obj: 0.45, hold: 0.45, cover: 0.6, dmg: 4, counter: 3.2, cut: 1.2 }   // Siegpunkt-Modus: auch die Aschenwacht rückt auf die Zielfelder vor
 };
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'granate', 'rauch', 'spreng'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'grabenk', 'eingreif', 'minen', 'pirsch'] };
@@ -2560,6 +2570,7 @@ const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scha
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
 function coverVal(t) { return COVER[t] || 0; }
 
+if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const m = k.match(/^W_([AD])_(\w+)$/); if (m) W[m[1]][m[2]] = +process.env[k]; }
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
   const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8 };
@@ -2585,10 +2596,21 @@ function threatAt(G, u, c, r) {
   if (E.cloudAt(G, c, r)) th += 0.8;
   return th;
 }
-function nearestObjDist(G, c, r) {
-  let best = 99;
-  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === 'A') continue; best = Math.min(best, E.dist(c, r, o.c, o.r)); }
+function nearestObjDist(G, c, r, side) {
+  side = side || 'A'; let best = 99;
+  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === side) continue; best = Math.min(best, E.dist(c, r, o.c, o.r) - o.pts * 0.3); }
   return best === 99 ? 0 : best;
+}
+// Verteidiger: nächstes Zielfeld, das noch nicht uns gehört oder auf dem kein eigener Trupp steht
+function openObjDist(G, u, c, r) {
+  let best = 99, any = 99;
+  for (const o of E.OBJECTIVES) {
+    const d = E.dist(c, r, o.c, o.r); any = Math.min(any, d);
+    const x = E.unitAt(G, o.c, o.r);
+    if (G.ctrl[o.id] === u.side && x && x.side === u.side && x.id !== u.id) continue;
+    best = Math.min(best, d - o.pts * 0.3);
+  }
+  return best === 99 ? any * 0.4 : best;
 }
 // Fähigkeiten der Skirmish-Trupps: wann und wohin
 function abilPlan(G, u) {
@@ -2629,22 +2651,24 @@ function posValue(G, u, c, r) {
     let fd = 99; for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'art' && E.cls(o) !== 'medic') fd = Math.min(fd, E.dist(o.c, o.r, c, r));
     return v - (fd === 99 ? 0 : fd * 0.5);
   }
-  if (u.side === 'A') {
+  if (!(u.side === 'D' && (k === 'storm' || k === 'flame'))) {   // beide Seiten rücken vor und halten Zielfelder
     const tw = k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1);
     v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - th * tw * 6;
-    v += c * w.prog * (1 + G.turn / 6) * (k === 'cav' ? 0.7 : 1);
-    v -= nearestObjDist(G, c, r) * w.obj;
+    const far = E.OBJECTIVES.reduce((m, o) => Math.max(m, u.side === 'A' ? o.c : E.COLS - 1 - o.c), 0);   // nicht weiter vor als das fernste Zielfeld
+    v += Math.min(u.side === 'A' ? c : E.COLS - 1 - c, far) * w.prog * (1 + Math.min(G.turn, 8) / 6) * (k === 'cav' ? 0.7 : 1);
+    v -= nearestObjDist(G, c, r, u.side) * w.obj;
     let friends = 0;
-    for (const o of G.units) if (o.side === 'A' && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
+    for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
     v += Math.min(friends, 3) * 0.12;
     if (k === 'walker' && h.t === 'wire') v += 1.0;
+    if (h.obj && k !== 'art') v += 1 + 0.4 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
   } else if (k === 'storm' || k === 'flame') {
     v = coverVal(h.t) * 0.3 - th * 0.25 * 6 - nearestEnemyDist(G, 'D', c, r) * 0.7;
-    for (const o of E.OBJECTIVES) if (G.ctrl[o.id] === 'A') v -= E.dist(c, r, o.c, o.r) * 0.15;
+    for (const o of E.OBJECTIVES) if (G.ctrl[o.id] !== 'D') v -= E.dist(c, r, o.c, o.r) * 0.15;
   } else {
     v = coverVal(h.t) * w.cover - th * w.threat * 6 * (u.officer ? 1.6 : 1);
-    v -= E.dist(c, r, u.startC, u.startR) * w.hold;
-    if (h.obj) v += 1.5;
+    v -= openObjDist(G, u, c, r) * w.hold;
+    if (h.obj) v += 2 + 0.5 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
   }
   if (TYPES[u.type].recover) for (const w of G.units) if (w.side === u.side && E.alive(w) && E.cls(w) === 'walker' && (w.stuck > 0 || w.broken > 0) && E.dist(w.c, w.r, c, r) === 1) v += 2.5;
   if (TYPES[u.type].mg) {
@@ -3488,9 +3512,9 @@ function draw() {
   }
   // Zielfahnen
   for (const o of OBJECTIVES) {
-    const [x, y] = center(o.c, o.r), col = FIG.PAL[G.ctrl[o.id]].accent, px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
+    const [x, y] = center(o.c, o.r), col = G.ctrl[o.id] ? FIG.PAL[G.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fim = G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : FLI['flagA' + flagSel.A];
+    const fim = !G.ctrl[o.id] ? null : G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : FLI['flagA' + flagSel.A];
     if (fim) { const fh = s * 1.15, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px - fw * 0.08, top - s * 0.12, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
@@ -3813,6 +3837,7 @@ async function playEvent(e) {
     case 'clear': { playSound('flame', 0.35); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
     case 'ammo': { playSound('clank', 0.5); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
+    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#ffb469' : '#8fc4ff', true); } await wait(350); updateUI(); break; }
     case 'unstuck': floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
     case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
@@ -4003,7 +4028,7 @@ function banner(title, sub) {
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
 }
 function updateTop() {
-  $('turn').textContent = `Runde ${G.turn}/${G.maxT}`;
+  $('turn').textContent = `Runde ${G.turn}`;
   const ch = $('sidechip'); ch.className = 'chip ' + G.side; ch.textContent = SIDES[G.side].short + (human(G.side) ? '' : ' · KI');
   { const D = (window.FXDATA || {}).flags || {}, fs = G.side === 'D' ? D['flagD' + flagSel.D] : skinA === 'F' ? D['flagF' + flagSel.F] : D['flagA' + flagSel.A]; const fi = $('sideFlag'); if (fs && fi.getAttribute('src') !== fs) fi.src = fs; fi.hidden = !fs; }
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
@@ -4012,7 +4037,7 @@ function updateTop() {
     el.style.setProperty('--v', Math.max(0, v)); el.style.setProperty('--brk', 1 - P.BREAK[sd]);
     el.querySelector('span').textContent = `${SIDES[sd].short} ${Math.round(v * 100)} %`;
   }
-  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id]}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts">${E.points(G)}/${G.winA}</span>`;
+  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id] || 'N'}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts" title="Siegpunkte: Konkordat : Aschenwacht, Ziel ${G.goal}"><i class="vpA">${G.vp.A}</i> : <i class="vpD">${G.vp.D}</i> <small>/ ${G.goal}</small></span>`;
 }
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
@@ -4129,7 +4154,7 @@ function updateHud() {
       $('hudRow').innerHTML = `<span class="hint">${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <i>Im echten Krieg: ' + T.real + '</i>' : ''}</span>`;
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
-      $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} von ${G.maxT}`;
+      $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} · Siegpunkte ${G.vp.A} : ${G.vp.D}, Ziel ${G.goal}`;
       $('hudRow').innerHTML = `<span class="hint">${human(G.side) ? 'Tippe eine eigene Einheit an. Tippe auf Gegner oder Gelände für Infos.' : 'Bitte warten …'}</span>`;
     }
   }
@@ -4246,7 +4271,7 @@ function drawMapPreview(cvs, id) {
 function bgGame() { G = E.newGame({ seed: 7, map: mapSel }); decals.length = 0; initDU(); layout(); syncAll(); updateUI(); }
 function drawMapPick() {
   $('mapPick').innerHTML = Object.values(E.MAPS).map(m => { const tot = m.objectives.reduce((n, o) => n + o.pts, 0);
-    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.cols} × ${m.rows} · ${m.maxT || P.MAXT} Runden</span><small>${m.desc}</small><span class="mwin">⚑ ${m.objectives.length} Ziele, ${tot} Punkte · Sieg ab ${m.winA || P.WIN_A}, Remis ab ${m.drawA || P.DRAW_A}</span></label>`; }).join('');
+    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.cols} × ${m.rows} · Ziel ${m.goal || Math.round(tot * P.GOAL_K)} Siegpunkte</span><small>${m.desc}</small><span class="mwin">⚑ ${m.objectives.length} Ziele, ${tot} Punkte · Sieg ab ${m.winA || P.WIN_A}, Remis ab ${m.drawA || P.DRAW_A}</span></label>`; }).join('');
   requestAnimationFrame(() => document.querySelectorAll('#mapPick canvas').forEach(c => drawMapPreview(c, c.dataset.map)));
   document.querySelectorAll('input[name=map]').forEach(i => i.addEventListener('change', () => { setMap(i.value); customArmy.A = customArmy.D = null; armyInfo(); bgGame(); }));
 }
@@ -4262,7 +4287,7 @@ function startGame() {
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
-  banner(E.MAP.name, `${SIDES.A.name} greift an · Sieg ab ${G.winA} von ${E.totalPts()} Punkten`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
+  banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 function showHandover() {
@@ -4273,14 +4298,15 @@ function showEnd() {
   const r = G.over, me = mode === 'hot' ? null : mode, win = r.winner;
   let title = win ? SIDES[win].short + ' siegt' : 'Unentschieden';
   if (me) title = win === me ? 'Sieg' : win ? 'Niederlage' : 'Unentschieden';
-  const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Der Angriff ist zusammengebrochen.')
-    : `Nach ${G.maxT} Runden hält der Angreifer ${r.pts} von ${E.totalPts()} Punkten. Sieg ab ${G.winA}, Unentschieden ab ${G.drawA}.`;
+  const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Das Konkordat ist zusammengebrochen.')
+    : r.why === 'time' ? `Nach ${P.MAX_ROUNDS} Runden steht es ${G.vp.A} : ${G.vp.D} Siegpunkte.`
+    : `${SIDES[win].short} hat zuerst ${G.goal} Siegpunkte erreicht. Endstand ${G.vp.A} : ${G.vp.D}.`;
   let stars = 0;
   if (me) { if (win === me) stars = 2 + (E.losses(G, me) < 0.3 ? 1 : 0); else if (!win) stars = 1; }
   $('endTitle').textContent = title; $('endWhy').textContent = why;
   $('endStars').textContent = me ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
   $('endStats').innerHTML = `<div><dt>Ausfälle ${SIDES.A.short}</dt><dd>${Math.round(E.losses(G, 'A') * 100)} %</dd></div><div><dt>Ausfälle Aschenwacht</dt><dd>${Math.round(E.losses(G, 'D') * 100)} %</dd></div>` +
-    OBJECTIVES.map(o => `<div class="${G.ctrl[o.id]}"><dt>${o.name}</dt><dd>${SIDES[G.ctrl[o.id]].short}</dd></div>`).join('');
+    OBJECTIVES.map(o => `<div class="${G.ctrl[o.id] || 'N'}"><dt>${o.name}</dt><dd>${G.ctrl[o.id] ? SIDES[G.ctrl[o.id]].short : 'neutral'}</dd></div>`).join('');
   $('end').hidden = false;
   setAmbient(false);
   if (win && (!me || win === me)) playSound('win', 0.6);

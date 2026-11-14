@@ -7,7 +7,7 @@ const P = E.P, TYPES = E.TYPES;
 
 const W = {
   A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
-  D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
+  D: { threat: 0.45, prog: 0.45, obj: 0.45, hold: 0.45, cover: 0.6, dmg: 4, counter: 3.2, cut: 1.2 }   // Siegpunkt-Modus: auch die Aschenwacht rückt auf die Zielfelder vor
 };
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'granate', 'rauch', 'spreng'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'grabenk', 'eingreif', 'minen', 'pirsch'] };
@@ -15,6 +15,7 @@ const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scha
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
 function coverVal(t) { return COVER[t] || 0; }
 
+if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const m = k.match(/^W_([AD])_(\w+)$/); if (m) W[m[1]][m[2]] = +process.env[k]; }
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
   const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8 };
@@ -40,10 +41,21 @@ function threatAt(G, u, c, r) {
   if (E.cloudAt(G, c, r)) th += 0.8;
   return th;
 }
-function nearestObjDist(G, c, r) {
-  let best = 99;
-  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === 'A') continue; best = Math.min(best, E.dist(c, r, o.c, o.r)); }
+function nearestObjDist(G, c, r, side) {
+  side = side || 'A'; let best = 99;
+  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === side) continue; best = Math.min(best, E.dist(c, r, o.c, o.r) - o.pts * 0.3); }
   return best === 99 ? 0 : best;
+}
+// Verteidiger: nächstes Zielfeld, das noch nicht uns gehört oder auf dem kein eigener Trupp steht
+function openObjDist(G, u, c, r) {
+  let best = 99, any = 99;
+  for (const o of E.OBJECTIVES) {
+    const d = E.dist(c, r, o.c, o.r); any = Math.min(any, d);
+    const x = E.unitAt(G, o.c, o.r);
+    if (G.ctrl[o.id] === u.side && x && x.side === u.side && x.id !== u.id) continue;
+    best = Math.min(best, d - o.pts * 0.3);
+  }
+  return best === 99 ? any * 0.4 : best;
 }
 // Fähigkeiten der Skirmish-Trupps: wann und wohin
 function abilPlan(G, u) {
@@ -84,22 +96,24 @@ function posValue(G, u, c, r) {
     let fd = 99; for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.cls(o) !== 'art' && E.cls(o) !== 'medic') fd = Math.min(fd, E.dist(o.c, o.r, c, r));
     return v - (fd === 99 ? 0 : fd * 0.5);
   }
-  if (u.side === 'A') {
+  if (!(u.side === 'D' && (k === 'storm' || k === 'flame'))) {   // beide Seiten rücken vor und halten Zielfelder
     const tw = k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1);
     v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - th * tw * 6;
-    v += c * w.prog * (1 + G.turn / 6) * (k === 'cav' ? 0.7 : 1);
-    v -= nearestObjDist(G, c, r) * w.obj;
+    const far = E.OBJECTIVES.reduce((m, o) => Math.max(m, u.side === 'A' ? o.c : E.COLS - 1 - o.c), 0);   // nicht weiter vor als das fernste Zielfeld
+    v += Math.min(u.side === 'A' ? c : E.COLS - 1 - c, far) * w.prog * (1 + Math.min(G.turn, 8) / 6) * (k === 'cav' ? 0.7 : 1);
+    v -= nearestObjDist(G, c, r, u.side) * w.obj;
     let friends = 0;
-    for (const o of G.units) if (o.side === 'A' && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
+    for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
     v += Math.min(friends, 3) * 0.12;
     if (k === 'walker' && h.t === 'wire') v += 1.0;
+    if (h.obj && k !== 'art') v += 1 + 0.4 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
   } else if (k === 'storm' || k === 'flame') {
     v = coverVal(h.t) * 0.3 - th * 0.25 * 6 - nearestEnemyDist(G, 'D', c, r) * 0.7;
-    for (const o of E.OBJECTIVES) if (G.ctrl[o.id] === 'A') v -= E.dist(c, r, o.c, o.r) * 0.15;
+    for (const o of E.OBJECTIVES) if (G.ctrl[o.id] !== 'D') v -= E.dist(c, r, o.c, o.r) * 0.15;
   } else {
     v = coverVal(h.t) * w.cover - th * w.threat * 6 * (u.officer ? 1.6 : 1);
-    v -= E.dist(c, r, u.startC, u.startR) * w.hold;
-    if (h.obj) v += 1.5;
+    v -= openObjDist(G, u, c, r) * w.hold;
+    if (h.obj) v += 2 + 0.5 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
   }
   if (TYPES[u.type].recover) for (const w of G.units) if (w.side === u.side && E.alive(w) && E.cls(w) === 'walker' && (w.stuck > 0 || w.broken > 0) && E.dist(w.c, w.r, c, r) === 1) v += 2.5;
   if (TYPES[u.type].mg) {

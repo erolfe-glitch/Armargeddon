@@ -37,7 +37,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .meter span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 12px var(--display); letter-spacing: .05em; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
 .objs { display: flex; align-items: center; gap: 4px; }
 .obj { padding: 1px 6px; border-radius: 3px; font: 700 13px var(--display); color: #16150f; }
-.obj.A { background: var(--A); } .obj.D { background: var(--D); }
+.obj.A { background: var(--A); } .obj.D { background: var(--D); } .obj.N { background: #b9b4a6; } .pts i { font-style: normal; } .pts .vpA { color: var(--A); } .pts .vpD { color: var(--D); } .pts small { font-size: .75em; opacity: .8; }
 .pts { font: 700 15px var(--display); color: var(--gold); margin-left: 4px; }
 .tools { display: flex; gap: 5px; }
 .tbtn { min-width: 38px; height: 30px; padding: 0 9px; background: var(--panel-2); border: 2px solid var(--edge); border-bottom-width: 4px; border-radius: 6px; font: 700 13px var(--display); letter-spacing: .04em; text-transform: uppercase; }
@@ -397,8 +397,8 @@ body { background: #0c0908; }
     <h1 class="title">Armargeddon</h1>
     <p class="lead">Drei Jahre Grabenkrieg. Heute soll der Grauwall fallen: mit Landkolossen, Donnerrohren und Gas gegen Draht, Gräben und Maschinengewehre.</p>
     <div class="factions">
-      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Greift von links an. Muss durch Niemandsland, Draht und Grabenlinien und die Zielfelder (⚑) nehmen.</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
-      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt rechts. Zur Mitte der Schlacht kommt der Gegenstoß mit Sturmbrechern und Brandwerfern.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
+      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Kommt von links. Mehr Truppen, Landkolosse und schwere Haubitzen. Muss durch Niemandsland und Draht zu den Zielfeldern (⚑).</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
+      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Kommt von rechts. Zäh in Gräben und Ruinen. Zur Mitte der Schlacht trifft die Reserve mit Sturmbrechern und Brandwerfern ein.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
     </div>
     <p class="lbl">Schlachtfeld</p>
     <div class="mappick" id="mapPick"></div>
@@ -443,7 +443,8 @@ body { background: #0c0908; }
       <li>Artillerie braucht eine eigene Einheit, die das Ziel sieht. Sprenggranaten machen Schaden, Sperrfeuer hält nieder, Gas treibt mit dem Wind.</li>
       <li>Landkolosse sind gegen Gewehre und MG immun und walzen Draht nieder. Geschütze im direkten Schuss, Sturmbrecher und Brandwerfer sind ihre Feinde.</li>
       <li>Lanzenreiter sind schnell und stark gegen Fliehende, aber leichte Beute für MG.</li>
-      <li>Ab Runde 8 trifft die Reserve der Aschenwacht ein.</li>
+      <li>Sieg: Alle Zielfelder (⚑) sind zu Beginn neutral. Wer ein Feld betritt, besetzt es. Zu Beginn der eigenen Runde zählt jedes gehaltene Feld seine Punkte. Wer zuerst das Ziel der Karte erreicht, gewinnt. Es gibt keine Rundengrenze. Wer zu viele Truppen verliert, bricht zusammen und verliert sofort.</li>
+      <li>Zur Mitte der Schlacht trifft die Reserve der Aschenwacht ein.</li>
       <li>Marken an jeder eigenen Einheit: grüner Pfeil = kann noch ziehen, rote Raute = kann noch angreifen. Fertige Einheiten sind abgedunkelt.</li>
       <li>Geschütze können aufprotzen: Dann ziehen sie 4 Felder, feuern aber erst wieder nach dem Abprotzen. Rot zeigt ihr Schussfeld.</li>
       <li>Nachschub: Für Punkte (★) holst du neue Einheiten an den eigenen Rand, auch Feldscher und Mörser.</li>

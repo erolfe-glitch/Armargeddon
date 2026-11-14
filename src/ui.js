@@ -591,9 +591,9 @@ function draw() {
   }
   // Zielfahnen
   for (const o of OBJECTIVES) {
-    const [x, y] = center(o.c, o.r), col = FIG.PAL[G.ctrl[o.id]].accent, px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
+    const [x, y] = center(o.c, o.r), col = G.ctrl[o.id] ? FIG.PAL[G.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fim = G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : FLI['flagA' + flagSel.A];
+    const fim = !G.ctrl[o.id] ? null : G.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : FLI['flagA' + flagSel.A];
     if (fim) { const fh = s * 1.15, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px - fw * 0.08, top - s * 0.12, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
@@ -916,6 +916,7 @@ async function playEvent(e) {
     case 'clear': { playSound('flame', 0.35); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
     case 'ammo': { playSound('clank', 0.5); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
+    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#ffb469' : '#8fc4ff', true); } await wait(350); updateUI(); break; }
     case 'unstuck': floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
     case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
@@ -1106,7 +1107,7 @@ function banner(title, sub) {
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
 }
 function updateTop() {
-  $('turn').textContent = `Runde ${G.turn}/${G.maxT}`;
+  $('turn').textContent = `Runde ${G.turn}`;
   const ch = $('sidechip'); ch.className = 'chip ' + G.side; ch.textContent = SIDES[G.side].short + (human(G.side) ? '' : ' · KI');
   { const D = (window.FXDATA || {}).flags || {}, fs = G.side === 'D' ? D['flagD' + flagSel.D] : skinA === 'F' ? D['flagF' + flagSel.F] : D['flagA' + flagSel.A]; const fi = $('sideFlag'); if (fs && fi.getAttribute('src') !== fs) fi.src = fs; fi.hidden = !fs; }
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
@@ -1115,7 +1116,7 @@ function updateTop() {
     el.style.setProperty('--v', Math.max(0, v)); el.style.setProperty('--brk', 1 - P.BREAK[sd]);
     el.querySelector('span').textContent = `${SIDES[sd].short} ${Math.round(v * 100)} %`;
   }
-  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id]}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts">${E.points(G)}/${G.winA}</span>`;
+  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id] || 'N'}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts" title="Siegpunkte: Konkordat : Aschenwacht, Ziel ${G.goal}"><i class="vpA">${G.vp.A}</i> : <i class="vpD">${G.vp.D}</i> <small>/ ${G.goal}</small></span>`;
 }
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
@@ -1232,7 +1233,7 @@ function updateHud() {
       $('hudRow').innerHTML = `<span class="hint">${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <i>Im echten Krieg: ' + T.real + '</i>' : ''}</span>`;
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
-      $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} von ${G.maxT}`;
+      $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} · Siegpunkte ${G.vp.A} : ${G.vp.D}, Ziel ${G.goal}`;
       $('hudRow').innerHTML = `<span class="hint">${human(G.side) ? 'Tippe eine eigene Einheit an. Tippe auf Gegner oder Gelände für Infos.' : 'Bitte warten …'}</span>`;
     }
   }
@@ -1349,7 +1350,7 @@ function drawMapPreview(cvs, id) {
 function bgGame() { G = E.newGame({ seed: 7, map: mapSel }); decals.length = 0; initDU(); layout(); syncAll(); updateUI(); }
 function drawMapPick() {
   $('mapPick').innerHTML = Object.values(E.MAPS).map(m => { const tot = m.objectives.reduce((n, o) => n + o.pts, 0);
-    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.cols} × ${m.rows} · ${m.maxT || P.MAXT} Runden</span><small>${m.desc}</small><span class="mwin">⚑ ${m.objectives.length} Ziele, ${tot} Punkte · Sieg ab ${m.winA || P.WIN_A}, Remis ab ${m.drawA || P.DRAW_A}</span></label>`; }).join('');
+    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.cols} × ${m.rows} · Ziel ${m.goal || Math.round(tot * P.GOAL_K)} Siegpunkte</span><small>${m.desc}</small><span class="mwin">⚑ ${m.objectives.length} Ziele, ${tot} Punkte · Sieg ab ${m.winA || P.WIN_A}, Remis ab ${m.drawA || P.DRAW_A}</span></label>`; }).join('');
   requestAnimationFrame(() => document.querySelectorAll('#mapPick canvas').forEach(c => drawMapPreview(c, c.dataset.map)));
   document.querySelectorAll('input[name=map]').forEach(i => i.addEventListener('change', () => { setMap(i.value); customArmy.A = customArmy.D = null; armyInfo(); bgGame(); }));
 }
@@ -1365,7 +1366,7 @@ function startGame() {
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
-  banner(E.MAP.name, `${SIDES.A.name} greift an · Sieg ab ${G.winA} von ${E.totalPts()} Punkten`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
+  banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 function showHandover() {
@@ -1376,14 +1377,15 @@ function showEnd() {
   const r = G.over, me = mode === 'hot' ? null : mode, win = r.winner;
   let title = win ? SIDES[win].short + ' siegt' : 'Unentschieden';
   if (me) title = win === me ? 'Sieg' : win ? 'Niederlage' : 'Unentschieden';
-  const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Der Angriff ist zusammengebrochen.')
-    : `Nach ${G.maxT} Runden hält der Angreifer ${r.pts} von ${E.totalPts()} Punkten. Sieg ab ${G.winA}, Unentschieden ab ${G.drawA}.`;
+  const why = r.why === 'break' ? (win === 'A' ? 'Die Aschenwacht ist zusammengebrochen.' : 'Das Konkordat ist zusammengebrochen.')
+    : r.why === 'time' ? `Nach ${P.MAX_ROUNDS} Runden steht es ${G.vp.A} : ${G.vp.D} Siegpunkte.`
+    : `${SIDES[win].short} hat zuerst ${G.goal} Siegpunkte erreicht. Endstand ${G.vp.A} : ${G.vp.D}.`;
   let stars = 0;
   if (me) { if (win === me) stars = 2 + (E.losses(G, me) < 0.3 ? 1 : 0); else if (!win) stars = 1; }
   $('endTitle').textContent = title; $('endWhy').textContent = why;
   $('endStars').textContent = me ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
   $('endStats').innerHTML = `<div><dt>Ausfälle ${SIDES.A.short}</dt><dd>${Math.round(E.losses(G, 'A') * 100)} %</dd></div><div><dt>Ausfälle Aschenwacht</dt><dd>${Math.round(E.losses(G, 'D') * 100)} %</dd></div>` +
-    OBJECTIVES.map(o => `<div class="${G.ctrl[o.id]}"><dt>${o.name}</dt><dd>${SIDES[G.ctrl[o.id]].short}</dd></div>`).join('');
+    OBJECTIVES.map(o => `<div class="${G.ctrl[o.id] || 'N'}"><dt>${o.name}</dt><dd>${G.ctrl[o.id] ? SIDES[G.ctrl[o.id]].short : 'neutral'}</dd></div>`).join('');
   $('end').hidden = false;
   setAmbient(false);
   if (win && (!me || win === me)) playSound('win', 0.6);
