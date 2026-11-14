@@ -176,7 +176,7 @@ function planArt(G, u) {
     }
     if (E.canShell(G, u, d.c, d.r, 'barrage')) {
       let v = 0;
-      for (const [hc, hr] of [[d.c, d.r], ...E.neighbors(d.c, d.r)]) {
+      for (const [hc, hr] of E.barrageCells(G, u, d.c, d.r)) {
         const x = E.unitAt(G, hc, hr);
         if (!x || !E.active(x) || E.cls(x) === 'walker') continue;
         if (x.side === u.side) v -= 2.5; else if (!x.supp) v += TYPES[x.type].mg ? 2.0 : E.cls(x) === 'art' ? 1.6 : 0.9;

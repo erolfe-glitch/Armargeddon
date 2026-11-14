@@ -463,7 +463,7 @@ function drawUnit(u, d) {
   const g = ctx;
   g.globalAlpha = d.alpha * (u.status === 'rout' ? 0.75 : 1);
   const isSel = sel && sel.id === u.id;
-  const done = human(u.side) && G.side === u.side && E.active(u) && !busy && spent.has(u.id);
+  const done = human(u.side) && G.side === u.side && E.active(u) && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
   // Standring mit Blickrichtung
   g.beginPath(); g.ellipse(x, y, s * 0.7, s * 0.7 * K, 0, 0, 7);
   g.fillStyle = acc; g.globalAlpha *= done ? 0.12 : 0.28; g.fill();
@@ -471,6 +471,7 @@ function drawUnit(u, d) {
   g.lineWidth = Math.max(2, s * (isSel ? 0.09 : 0.06)); g.strokeStyle = isSel ? '#fff7dd' : acc;
   if (u.status === 'rout') g.setLineDash([s * 0.14, s * 0.12]);
   g.stroke(); g.setLineDash([]);
+  if (isSel) { const pz = 0.5 + 0.5 * Math.sin(now / 260); g.save(); g.globalAlpha = 0.35 + 0.4 * pz; g.beginPath(); g.ellipse(x, y, s * (0.86 + 0.06 * pz), s * (0.86 + 0.06 * pz) * K, 0, 0, 7); g.strokeStyle = '#fff3c4'; g.lineWidth = Math.max(2.5, s * 0.07); g.shadowColor = '#ffe9a0'; g.shadowBlur = s * 0.3; g.stroke(); g.restore(); }
   if (isSel && UIM.ringY) { const rw = s * 1.75, rh = rw * K; g.save(); g.globalAlpha = 0.9; g.drawImage(UIM.ringY, x - rw / 2, y - rh / 2, rw, rh); g.restore(); }
   if (hoverU === u && !isSel) { g.beginPath(); g.ellipse(x, y, s * 0.8, s * 0.8 * K, 0, 0, 7); g.strokeStyle = 'rgba(255,250,225,0.85)'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); }
   if (E.active(u)) {
@@ -524,12 +525,12 @@ function drawUnit(u, d) {
   // Zustandsmarken
   const tagY = y - s * (['mech', 'drill', 'mechA', 'mechB', 'mechT', 'mechK', 'mechC'].includes(k) ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (glyph, bg, fg, ic) => {
-    const cx = x - s * 0.9, cy = y - s * 0.12, r = s * 0.2, im = UIM[ic];
+    const cx = x - s * 0.84, cy = y - s * 0.1, r = s * 0.17, im = UIM[ic];
     if (im) {   // helle Scheibe mit Rand dahinter, Symbol aufgehellt: auf dunklem Boden gut zu sehen
-      const R = s * 0.34; g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = bg; g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = s * 0.12; g.fill(); g.shadowBlur = 0; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#1d140d'; g.stroke();
-      const hh = s * 0.52, ww = hh * im.naturalWidth / im.naturalHeight; g.filter = 'brightness(1.45) contrast(1.15)'; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
+      const R = s * 0.24; g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = bg; g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = s * 0.12; g.fill(); g.shadowBlur = 0; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#1d140d'; g.stroke();
+      const hh = s * 0.38, ww = hh * im.naturalWidth / im.naturalHeight; g.filter = 'brightness(1.45) contrast(1.15)'; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
     g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
-    g.font = `900 ${Math.round(s * 0.25)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
+    g.font = `900 ${Math.round(s * 0.21)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
   };
   if (u.status === 'rout') tag('↩', '#f3ead2', '#7a1c10', 'icSkull');
   else if (u.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear');
@@ -585,7 +586,7 @@ function draw() {
   if (hoverHex) {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
     if (sel && TYPES[sel.type].cls === 'art' && shellHexes.has(E.key(hoverHex[0], hoverHex[1])) && artMode !== 'he') {
-      const cells = artMode === 'gas' ? E.gasCells(G, hoverHex[0], hoverHex[1]) : [hoverHex, ...E.neighbors(hoverHex[0], hoverHex[1])];
+      const cells = artMode === 'gas' ? E.gasCells(G, hoverHex[0], hoverHex[1]) : E.barrageCells(G, sel, hoverHex[0], hoverHex[1]);
       for (const [c, r] of cells) { hexPath(g, c, r, 0.9); g.fillStyle = artMode === 'gas' ? 'rgba(196,214,70,0.45)' : 'rgba(255,120,60,0.4)'; g.fill(); }
     }
   }
@@ -696,7 +697,7 @@ function draw() {
     const mz = muzzles[i]; mz.life -= FS; if (mz.life <= 0) { muzzles.splice(i, 1); continue; }
     const im = PJI[mz.img]; if (!im) continue;
     const hh = s * mz.sz * (0.85 + 0.15 * Math.sin(mz.life)), w = fxw(im, hh);
-    g.save(); g.translate(mz.x, mz.y); if (mz.center) { g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w / 2, -hh * (mz.up || 0.5), w, hh); }
+    g.save(); g.translate(mz.x, mz.y); if (mz.center) { if (mz.flip) g.scale(-1, 1); g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w / 2, -hh * (mz.up || 0.5), w, hh); }
     else { g.rotate(mz.ang); if (Math.cos(mz.ang) < 0) g.scale(1, -1); g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w * (mz.off || 0), -hh / 2, w, hh); }
     g.restore(); g.globalAlpha = 1;
   }
@@ -758,7 +759,7 @@ function setAmbient(on) {
   try { if (on) { const p = ambient.play(); if (p && p.catch) p.catch(() => {}); } else ambient.pause(); } catch (e) {}
 }
 // Abwechslung: Gruppen von Tönen, aus denen zufällig gewählt wird (Wunsch des Nutzers)
-const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3'], cry: ['cry', 'scream', 'roar'], heavy: ['heavy1', 'heavy2', 'heavy3'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'punch4', 'swords'] };
+const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3'], cry: ['cry', 'scream'], heavy: ['heavy1', 'heavy2', 'heavy3'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'punch4', 'swords'] };
 function playSound(name, vol = 0.6) {
   if (SND_VAR[name]) { const opts = SND_VAR[name].filter(k => SND[k]); if (opts.length) name = opts[Math.floor(Math.random() * opts.length)]; }
   if (!soundOn || !SND[name]) return;
@@ -837,7 +838,7 @@ async function playEvent(e) {
       playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : 'boom', 0.7);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
       else if (e.mode === 'gas') boom(x2, y2, s * 1.0, 'gas');
-      else { boom(x2, y2, s * 0.7, 'he'); E.neighbors(e.c, e.r).forEach(([c, r], i) => { const [bx, by] = center(c, r); boom(bx, by, s * 0.6, i % 2 ? 'dust' : 'he', 3 + i * 3); }); }
+      else { boom(x2, y2, s * 0.7, 'he'); (e.cells || [[e.c, e.r], ...E.neighbors(e.c, e.r)]).slice(1).forEach(([c, r], i) => { const [bx, by] = center(c, r); boom(bx, by, s * 0.6, i % 2 ? 'dust' : 'he', 3 + i * 3); }); }
       await wait(e.mode === 'barrage' ? 420 : 260); break;
     }
     case 'melee': case 'counter': {
@@ -853,10 +854,22 @@ async function playEvent(e) {
         if (af === 'mechB') playSound(Math.random() < 0.5 ? 'snarl' : 'tiger', 0.4);   // Klauenschreiter knurrt
       }
       let thrown = false;
-      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && (kc === 'inf' || kc === 'storm') && af !== 'shield' && af !== 'raider') (thrown = true, shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
+      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
-      boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
+      boom(mx, my + s * 0.25, s * 0.3, 'dust');
+      { // Nahkampf-Bilder aus dem Effektbogen des Nutzers: Hieb, Kolbenstoß, Krallen, Bajonettstich, Aufprall, Blut
+        const T0 = au && TYPES[au.type], kc = T0 && T0.cls, fl = d.x < a.x, ang = Math.atan2(d.y - a.y, d.x - a.x);
+        let k = null;
+        if (af === 'mechB' || af === 'mechK' || af === 'mechA') k = 'mclaw';
+        else if (kc === 'cav' || af === 'raider' || af === 'brawler' || af === 'knight') k = 'mswing';
+        else if (af === 'shield' || af === 'shieldA' || kc === 'walker') k = 'msmash';
+        else if (kc !== 'art') k = ['mstab', 'msmash', 'mswing'][Math.floor(Math.random() * 3)];
+        if (k === 'mstab' && PJI.mstab) muzzles.push({ img: 'mstab', x: a.x + (d.x - a.x) * 0.25, y: a.y - s * 0.45 + (d.y - a.y) * 0.25, ang, off: 0, sz: 0.4, life: 34, max: 34 });
+        else if (k && PJI[k]) muzzles.push({ img: k, x: d.x, y: d.y - s * 0.1, center: true, up: 0.85, sz: k === 'mswing' ? 1.3 : 1.25, flip: fl, life: 42, max: 42 });
+        if (PJI.mimpact) muzzles.push({ img: 'mimpact', x: mx, y: my + s * 0.25, center: true, up: 0.5, sz: kc === 'walker' ? 1.1 : 0.85, life: 26, max: 26 });
+        if (blood && PJI.msplat && du && TYPES[du.type].cls !== 'walker' && TYPES[du.type].cls !== 'art') muzzles.push({ img: 'msplat', x: d.x + (fl ? -1 : 1) * s * 0.15, y: d.y - s * 0.35, center: true, up: 0.5, sz: 0.9, flip: fl, life: 54, max: 54 });
+      }
       if (au && TYPES[au.type].mech && TYPES[au.type].cls === 'walker' && PJI.hammer) muzzles.push({ img: 'hammer', x: d.x, y: d.y + s * 0.35, center: true, up: 0.75, sz: 1.7, life: 34, max: 34 });
       if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
       if (armored || af === 'drill' || af === 'mechA' || af === 'mechK' || af === 'mechC') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
@@ -893,7 +906,7 @@ async function playEvent(e) {
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
     case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+1 Aktion', '#7fd8ff', true); await wait(300); break; }
     case 'order': {
-      const d0 = DU.get(e.u), rl = e.kind === 'rally'; playSound(rl ? 'stand' : 'forward', 0.75);
+      const d0 = DU.get(e.u), rl = e.kind === 'rally'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.75);   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
       toast(`${e.name}: ${rl ? 'Sammeln!' : 'Sturmbefehl!'}`); floater(...headPos(e.u), rl ? 'Sammeln!' : 'Vorwärts!', rl ? '#b8ff7c' : '#ffb04a', true);
       for (let q = 0; q < 2; q++) rings.push({ x: d0.x, y: d0.y, r: 2.6 + q * 1.4, col: rl ? '#b8ff7c' : '#ffb04a', life: 34 + q * 10, max: 34 + q * 10 });
       await wait(260);
@@ -907,7 +920,7 @@ async function playEvent(e) {
     case 'stuck': { playSound('crash', 0.65); const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
     case 'breakdown': { const d0 = DU.get(e.u); muzzles.push({ img: 'engine', x: d0.x + s * 0.1, y: d0.y + s * 0.35, center: true, up: 0.92, sz: 2.3, life: 80, max: 80 }); }
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
-      playSound('glitch', 0.6); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
+      playSound('crash', 0.7); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
     case 'repaired': floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
     case 'smoke': { playSound('gas', 0.5); for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
     case 'tunnel': { playSound('steps', 0.5); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
@@ -919,7 +932,7 @@ async function playEvent(e) {
     case 'clear': { playSound('flame', 0.35); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
     case 'ammo': { playSound('clank', 0.5); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
-    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#ffb469' : '#8fc4ff', true); } await wait(350); updateUI(); break; }
+    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#ff8a7a' : '#8fc4ff', true); } await wait(350); updateUI(); break; }
     case 'unstuck': floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
     case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
@@ -1043,7 +1056,7 @@ function computeOptions() {
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
       if (!E.canShell(G, sel, c, r, artMode)) continue;
       const ok = artMode === 'he' ? (foe(c, r) || G.map[c][r].t === 'wire')
-        : artMode === 'barrage' ? [[c, r], ...E.neighbors(c, r)].some(h => foe(h[0], h[1]))
+        : artMode === 'barrage' ? E.barrageCells(G, sel, c, r).some(h => foe(h[0], h[1]))
         : E.gasCells(G, c, r).some(h => foe(h[0], h[1]));
       if (ok) { shellHexes.add(E.key(c, r));
         if (E.guided(G, sel.side, c, r)) scoutSet.add(E.key(c, r)); }
@@ -1207,7 +1220,7 @@ function updateHud() {
         if (E.canLimber(G, sel)) acts.push(`<button class="act" data-act="limber">${sel.limbered ? '⚓ Abprotzen' : '🐎 Aufprotzen'}</button>`);
         if (can) {
           acts.push(`<button class="act ${artMode === 'he' ? 'on' : ''}" data-act="m-he">Sprenggranate</button><button class="act ${artMode === 'barrage' ? 'on' : ''}" data-act="m-barrage">Sperrfeuer</button><button class="act ${artMode === 'gas' ? 'on' : ''}" data-act="m-gas" ${sel.gas > 0 ? '' : 'disabled'}>Gas (${sel.gas})</button>`);
-          acts.push(`<span class="hint">${shellHexes.size ? (artMode === 'he' ? 'Trifft ein Feld. Zerstört auch Draht.' : artMode === 'barrage' ? 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.' : 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.') : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).'}</span>`);
+          acts.push(`<span class="hint">${shellHexes.size ? (artMode === 'he' ? 'Trifft ein Feld. Zerstört auch Draht.' : artMode === 'barrage' ? (TYPES[sel.type].mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.') : 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.') : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).'}</span>`);
         } else acts.push(`<span class="hint">${sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: zieht 4 Felder, feuert nicht. Nach dem Abprotzen ab der nächsten Runde feuerbereit.' : 'Hat diese Runde schon gehandelt.'}</span>`);
       } else {
         if ([...targets.values()].some(t => t.both)) acts.push(`<button class="act ${atkPref === 'melee' ? 'on' : ''}" data-act="p-melee">⚔ Nahkampf</button><button class="act ${atkPref === 'fire' ? 'on' : ''}" data-act="p-fire">➶ Beschuss</button>`);
@@ -1221,7 +1234,7 @@ function updateHud() {
         if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${sel.cdH > 0 ? `Versorgen wieder in ${sel.cdH} Runde${sel.cdH > 1 ? 'n' : ''}.` : healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +2,5, Moral +1,5).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
         if (T.courier && sel.ap >= 1 && !sel.sent) acts.push(`<span class="hint"><i>Blau:</i> Befehl überbringen – angeklickte Einheit bekommt +1 Aktionspunkt.</span>`);
         if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
-        if (E.canCut(G, sel)) acts.push(`<button class="act on" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
+        if (E.canCut(G, sel)) acts.push(`<button class="act on actcut" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
         else if (G.map[sel.c][sel.r].t === 'wire' && !sel.attacked) acts.push(`<span class="hint">${['cav', 'art', 'walker'].includes(T.cls) || T.noCut ? 'Kann keinen Draht schneiden.' : `Draht schneiden braucht ${E.cutCost(sel)} Aktionspunkte.`}</span>`);
         if (sel.supp > 0) acts.push('<span class="hint">▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen und weicht nicht zurück.</span>');
         else if (T.rng > 0 && E.held(G, sel)) acts.push('<span class="hint">⚔ Im Nahkampf gebunden: ein gleich großer oder größerer Gegner steht daneben, Schießen geht nicht.</span>');
@@ -1235,12 +1248,12 @@ function updateHud() {
         if (E.canOverwatch(G, sel)) acts.push('<button class="act" data-act="ow" title="Beide Aktionspunkte: schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).">◎ Feuerbereitschaft (2 ●)</button>');
         if (recSet.size) acts.push('<span class="hint"><i>Gelb:</i> Koloss bzw. Maschine anklicken zum Bergen (1 ●).</span>');
         else if (T.recover && sel.cdB > 0) acts.push(`<span class="hint">Bergen wieder in ${sel.cdB} Runde${sel.cdB > 1 ? 'n' : ''}.</span>`);
-        if (TYPES[sel.type].wirelayer && !sel.attacked) acts.push(E.canLay(G, sel) ? '<button class="act on" data-act="lay" title="Stacheldraht auf das Feld legen, in das die Einheit blickt">⌇ Draht ziehen</button>' : '<span class="hint">Draht ziehen: zum freien Feld drehen (Drehen-Knöpfe).</span>');
+        if (TYPES[sel.type].wirelayer && !sel.attacked) acts.push(E.canLay(G, sel) ? '<button class="act on actcut" data-act="lay" title="Stacheldraht auf das Feld legen, in das die Einheit blickt">⌇ Draht ziehen</button>' : '<span class="hint">Draht ziehen: zum freien Feld drehen (Drehen-Knöpfe).</span>');
         const hint = sel.broken ? 'Panne: fällt diese Runde aus.' : sel.supp ? 'Niedergehalten: kann nicht ziehen.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
           `${sel.ap} Aktionspunkt${sel.ap > 1 ? 'e' : ''}. ${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit). ' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte. ' : [...reach.values()].some(n => n.march) ? 'Hell: ziehen (1 ●). Gelb: Marsch (2 ●, danach keine Aktion). ' : 'Helle Felder: ziehen. ') : ''}${sel.attacked ? '' : targets.size ? 'Rot: Nahkampf, Orange: Beschuss.' : 'Kein Ziel in Reichweite.'}`;
         acts.push(`<span class="hint">${hint}</span>`);
       }
-      row = acts.join('');
+      row = acts.filter(a => a.includes('actcut')).concat(acts.filter(a => !a.includes('actcut'))).join('');   // Draht-Knopf zuerst, damit er auch am Handy zu sehen ist
     } else row = `<span class="hint">${T.can}</span>`;
     $('hudRow').innerHTML = row;
   } else {
@@ -1364,7 +1377,7 @@ function drawMapPreview(cvs, id) {
     const [x, y] = hp(c, r); g2.beginPath(); for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; g2.lineTo(x + s2 * Math.cos(a), y + s2 * kp * Math.sin(a)); }
     g2.closePath(); if (!pim) { g2.fillStyle = TCOL[M[c][r].t] || '#6d6250'; g2.fill(); }
     if (M[c][r].ridge) { g2.fillStyle = 'rgba(255,226,160,0.18)'; g2.fill(); }
-    if (c <= m.zoneA) { g2.fillStyle = 'rgba(224,138,52,0.22)'; g2.fill(); }
+    if (c <= m.zoneA) { g2.fillStyle = 'rgba(201,74,61,0.22)'; g2.fill(); }
   }
   for (const o of m.objectives) { const [x, y] = hp(o.c, o.r); g2.beginPath(); g2.arc(x, y, Math.max(5, s2 * 0.95), 0, 7); g2.fillStyle = '#5a9fd8'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#0a0706'; g2.stroke();
     g2.fillStyle = '#fff'; g2.font = `800 ${Math.max(8, Math.round(s2 * 1.3))}px system-ui`; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText(o.pts, x, y + 0.5); }

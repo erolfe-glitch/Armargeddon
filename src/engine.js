@@ -1292,6 +1292,13 @@ function gasCells(G, c, r) {
   for (let i = 0; i < 2; i++) { p = step(p[0], p[1], G.wind); if (inMap(p[0], p[1])) out.push(p); }
   return out;
 }
+// Sperrfeuer: Geschütze decken Ziel und alle Nachbarn (7 Felder), Mörser nur Ziel und die zwei Nachbarn zum Schützen hin (Wunsch des Nutzers: kleineres Gebiet)
+function barrageCells(G, a, c, r) {
+  const nb = neighbors(c, r);
+  if (!TYPES[a.type].mobile) return [[c, r], ...nb];
+  const d = h => dist(a.c, a.r, h[0], h[1]) + Math.hypot(h[0] - a.c, h[1] - a.r) * 0.001;
+  return [[c, r], ...nb.slice().sort((x, y) => d(x) - d(y)).slice(0, 2)];
+}
 function shell(G, a, c, r, mode) {
   if (!canShell(G, a, c, r, mode)) return [];
   const ev = [];
@@ -1301,7 +1308,7 @@ function shell(G, a, c, r, mode) {
   let tc = c, tr = r, sc = false;
   const gd = !direct && guided(G, a.side, c, r), roll = direct ? 1 : G.rng();
   if (!direct && !gd && roll < P.SCATTER) { const nb = neighbors(c, r); const p = nb[Math.floor(G.rng() * nb.length)]; tc = p[0]; tr = p[1]; sc = true; }
-  ev.push({ t: 'shell', a: a.id, c: tc, r: tr, mode, scatter: sc, guided: gd, face: a.face });
+  ev.push({ t: 'shell', a: a.id, c: tc, r: tr, mode, scatter: sc, guided: gd, face: a.face, cells: mode === 'barrage' ? barrageCells(G, a, tc, tr) : null });
   if (mode === 'he') {
     const d = unitAt(G, tc, tr);
     if (d) applyDamage(G, a, d, shellDmg(G, a, d, direct) * (gd ? P.GUIDED : 1) * (0.75 + G.rng() * 0.5), 'front', ev, { ranged: true });
@@ -1309,7 +1316,7 @@ function shell(G, a, c, r, mode) {
     if (h.t === 'wire' && G.rng() < P.HE_WIRE) { h.t = 'open'; ev.push({ t: 'terrain', c: tc, r: tr, what: 'Draht zerschossen' }); }
     else if (h.t === 'open' && G.rng() < P.HE_CRATER) { h.t = 'crater'; ev.push({ t: 'terrain', c: tc, r: tr }); }
   } else if (mode === 'barrage') {
-    for (const [hc, hr] of [[tc, tr], ...neighbors(tc, tr)]) {
+    for (const [hc, hr] of barrageCells(G, a, tc, tr)) {
       const u = unitAt(G, hc, hr);
       if (u && active(u) && cls(u) !== 'walker' && !u.supp) { u.supp = 1; ev.push({ t: 'supp', u: u.id }); }
     }
@@ -1596,7 +1603,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, costParts, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, barrageCells, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
