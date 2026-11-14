@@ -994,7 +994,7 @@ function limber(G, u) {
   return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
 // Draht schneiden: Pioniere und Sturmtruppen (Drahtscheren) für 1 Punkt, übrige Fußtruppen für beide; Reiter, Radler, Geschütze gar nicht, Kolosse walzen ihn nieder
-function canCut(G, u) { const T = TYPES[u.type]; return active(u) && !(u.supp > 0) && u.ap >= cutCost(u) && (!u.attacked || T.sapper) && ['inf', 'mg', 'storm', 'medic', 'flame'].includes(T.cls) && !T.noCut && hex(G, u.c, u.r).t === 'wire'; }
+function canCut(G, u) { const T = TYPES[u.type]; return active(u) && !(u.supp > 0) && u.ap >= cutCost(u) && (!u.attacked || T.sapper) && ['inf', 'storm', 'medic', 'flame'].includes(T.cls) && !T.mg && !T.noCut && hex(G, u.c, u.r).t === 'wire'; }   // MG-Trupps schneiden keinen Draht (Wunsch des Nutzers)
 function cutWire(G, u) {
   if (!canCut(G, u)) return [];
   hex(G, u.c, u.r).t = 'open'; u.attacked = u.attacked || !TYPES[u.type].sapper; spend(u, cutCost(u));

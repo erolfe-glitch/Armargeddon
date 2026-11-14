@@ -754,7 +754,7 @@ function draw() {
 
 // ---------- Ton ----------
 let soundOn = true;
-const lastSnd = {}, SND_GAP = { mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
+const lastSnd = {}, SND_GAP = { cannonH: 200, boomH: 250, mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 // Hintergrundkulisse als leise Schleife
@@ -809,7 +809,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tankmove', 0.5); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tankmove', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -834,14 +834,14 @@ async function playEvent(e) {
     }
     case 'shell': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = center(e.c, e.r);
-      a.face = e.face; playSound(TYPES[unitById(e.a).type].mobile ? 'launch' : 'cannon', 0.7);   // Mörser: Mörserton, Geschütze: Kanonenschuss
+      a.face = e.face; playSound(TYPES[unitById(e.a).type].mobile ? 'launch' : 'cannonH', TYPES[unitById(e.a).type].mobile ? 0.42 : 0.8);   // Mörser: Mörserton, Geschütze: Kanonenschuss
       if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn
       shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       await wait(dur * 16.667);
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
       if (e.guided) floater(x2, y2 - s * 1.5, '◉ gelenkt ×1,25', '#bfe0f2', false, true);
-      playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : 'boom', 0.7);
+      playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[unitById(e.a).type].mobile ? 'boom' : 'boomH', 0.7);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
       else if (e.mode === 'gas') { boom(x2, y2, s * 1.0, 'gas'); visSync('clouds'); }   // Wolke erst beim Einschlag
       else { boom(x2, y2, s * 0.7, 'he'); (e.cells || [[e.c, e.r], ...E.neighbors(e.c, e.r)]).slice(1).forEach(([c, r], i) => { const [bx, by] = center(c, r); boom(bx, by, s * 0.6, i % 2 ? 'dust' : 'he', 3 + i * 3); }); }
@@ -1243,7 +1243,7 @@ function updateHud() {
         if (T.courier && sel.ap >= 1 && !sel.sent) acts.push(`<span class="hint"><i>Blau:</i> Befehl überbringen – angeklickte Einheit bekommt +1 Aktionspunkt.</span>`);
         if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
         if (E.canCut(G, sel)) acts.push(`<button class="act on actcut" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
-        else if (G.map[sel.c][sel.r].t === 'wire' && !sel.attacked) acts.push(`<span class="hint">${['cav', 'art', 'walker'].includes(T.cls) || T.noCut ? 'Kann keinen Draht schneiden.' : `Draht schneiden braucht ${E.cutCost(sel)} Aktionspunkte.`}</span>`);
+        else if (G.map[sel.c][sel.r].t === 'wire' && !sel.attacked) acts.push(`<span class="hint">${['cav', 'art', 'walker'].includes(T.cls) || T.noCut || T.mg ? 'Kann keinen Draht schneiden.' : `Draht schneiden braucht ${E.cutCost(sel)} Aktionspunkte.`}</span>`);
         if (sel.supp > 0) acts.push('<span class="hint">▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen und weicht nicht zurück.</span>');
         else if (T.rng > 0 && E.held(G, sel)) acts.push('<span class="hint">⚔ Im Nahkampf gebunden: ein gleich großer oder größerer Gegner steht daneben, Schießen geht nicht.</span>');
         else if (sel.fellBack) acts.push('<span class="hint">MG ist zurückgewichen und schießt in dieser Runde nicht mehr.</span>');
