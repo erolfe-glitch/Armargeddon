@@ -144,11 +144,11 @@ function bestAttackFrom(G, u, c, r, moved, run) {
   for (const d of G.units) {
     if (d.side === u.side || !E.alive(d)) continue;
     const dd = E.dist(c, r, d.c, d.r);
-    if (dd === 1 && T.atk >= 3) {
+    if (dd === 1 && T.atk >= 3 && !(u.supp > 0)) {
       const v = attackValue(G, u, d, 'melee', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && T.cls !== 'art' && !(T.mg && (moved || (!u.setup && u.ap < 2))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+    if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.mg && (moved || (!u.setup && u.ap < 2))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
         dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
@@ -242,7 +242,7 @@ function buy(G) {
   const side = G.side, ev = [];
   G._wish = G._wish || { A: 0, D: 0 };
   for (let guard = 0; guard < 6; guard++) {
-    const wl = G.mechs ? WISH[side].concat(side === 'A' ? ['saeger', 'stahl'] : ['knecht', 'panzerk']) : WISH[side];
+    const wl = G.mechs ? WISH[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : WISH[side];
     const type = wl[G._wish[side] % wl.length];
     if (!E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);

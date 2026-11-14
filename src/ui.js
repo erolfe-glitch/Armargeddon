@@ -447,9 +447,9 @@ const facesLeft = f => f === 2 || f === 3 || f === 4;
 const SLOTS = { smoke: [[0, 0.38]], lobber: [[0, 0.38]], miner: [[0, 0.38]], demo: [[0, 0.38]], wrench: [[0, 0.38]], balloon: [[0, 0.3]], mines: [[0, 0.38]], light: [[0, 0.38]], counter: [[0, 0.38]], gasmask: [[0, 0.38]], ammo: [[0, 0.38]], stalker: [[0, 0.4]], limber: [[0, 0.38]], medic: [[0.2, 0.4], [-0.22, 0.2]], mortar: [[0, 0.38]], inf: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]], storm: [[0.22, 0.42], [-0.24, 0.22], [0, 0.05]],
   flame: [[0.2, 0.4], [-0.22, 0.2]], cav: [[0, 0.4]], mg: [[0, 0.38]], art: [[0, 0.38]], walker: [[0, 0.4]],
   bike: [[0, 0.38]], sniper: [[0, 0.38]], dog: [[0, 0.38]], atr: [[0, 0.38]], signal: [[0.15, 0.4], [-0.25, 0.2]], sapper: [[0.2, 0.4], [-0.22, 0.2]], raider: [[0.22, 0.42], [-0.24, 0.22]],
-  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]], mechB: [[0, 0.42]], fgun: [[0, 0.38]], leader1: [[0.12, 0.4], [-0.3, 0.2]], leader4: [[0.12, 0.4], [-0.3, 0.2]], flamer: [[0.2, 0.4], [-0.22, 0.2]], shieldA: [[0.2, 0.4], [-0.22, 0.2]], phone: [[0.15, 0.4], [-0.25, 0.2]], brawler: [[0.22, 0.42], [-0.24, 0.22]], knight: [[0.2, 0.4], [-0.22, 0.2]], sapperD: [[0.2, 0.4], [-0.22, 0.2]], banner: [[0, 0.4]], suitA: [[0.24, 0.42], [-0.26, 0.2]], suitD: [[0.24, 0.42], [-0.26, 0.2]] };
+  shield: [[0.2, 0.4], [-0.22, 0.2]], heavy: [[0.2, 0.4], [-0.24, 0.2]], mech: [[0, 0.42]], drill: [[0, 0.42]], mechA: [[0, 0.42]], mechB: [[0, 0.42]], mechT: [[0, 0.42]], mechK: [[0, 0.42]], mechC: [[0, 0.42]], fgun: [[0, 0.38]], leader1: [[0.12, 0.4], [-0.3, 0.2]], leader4: [[0.12, 0.4], [-0.3, 0.2]], flamer: [[0.2, 0.4], [-0.22, 0.2]], shieldA: [[0.2, 0.4], [-0.22, 0.2]], phone: [[0.15, 0.4], [-0.25, 0.2]], brawler: [[0.22, 0.42], [-0.24, 0.22]], knight: [[0.2, 0.4], [-0.22, 0.2]], sapperD: [[0.2, 0.4], [-0.22, 0.2]], banner: [[0, 0.4]], suitA: [[0.24, 0.42], [-0.26, 0.2]], suitD: [[0.24, 0.42], [-0.26, 0.2]] };
 const FH = { smoke: 0.7, lobber: 0.66, miner: 0.66, demo: 0.7, wrench: 0.66, balloon: 1.15, mines: 0.6, light: 0.7, counter: 0.68, gasmask: 0.62, ammo: 0.64, stalker: 0.5, limber: 0.58, medic: 0.62, mortar: 0.66, inf: 0.62, storm: 0.62, flame: 0.62, mg: 0.68, art: 0.74, walker: 0.86, cav: 0.57,
-  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, suitA: 0.6, suitD: 0.6,
+  bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, mechT: 0.64, mechK: 0.64, mechC: 0.64, suitA: 0.6, suitD: 0.6,
   fgun: 0.7, leader1: 0.66, leader4: 0.66, flamer: 0.62, shieldA: 0.62, phone: 0.6, brawler: 0.62, knight: 0.64, sapperD: 0.6, banner: 0.74 };
 const MAXW = 1.6, MAXWK = { smoke: 1.6, lobber: 1.5, miner: 1.6, demo: 1.6, wrench: 1.6, balloon: 1.3, mines: 1.5, light: 1.6, counter: 1.5, gasmask: 1.7, ammo: 1.6, stalker: 1.6, walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, mechB: 2.1, fgun: 1.8, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
 // Figuren etwas größer seit den kleineren Karten (Wunsch des Nutzers)
@@ -522,7 +522,7 @@ function drawUnit(u, d) {
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
   // Zustandsmarken
-  const tagY = y - s * (k === 'mech' || k === 'drill' || k === 'mechA' || k === 'mechB' ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
+  const tagY = y - s * (['mech', 'drill', 'mechA', 'mechB', 'mechT', 'mechK', 'mechC'].includes(k) ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (glyph, bg, fg, ic) => {
     const cx = x - s * 0.9, cy = y - s * 0.12, r = s * 0.2, im = UIM[ic];
     if (im) {   // helle Scheibe mit Rand dahinter, Symbol aufgehellt: auf dunklem Boden gut zu sehen
@@ -646,9 +646,9 @@ function draw() {
     const k = 1 - tr.life / tr.max;
     const pim = PJI[tr.img];
     if (pim) {
-      const ang = Math.atan2(tr.y2 - tr.y1, tr.x2 - tr.x1), hh = s * tr.sz, w = fxw(pim, hh), reps = tr.n > 1 ? 2 : 1;
-      for (let n = 0; n < reps; n++) {
-        const p = k * 1.15 - n * 0.3; if (p < 0 || p > 1) continue;
+      const ang = Math.atan2(tr.y2 - tr.y1, tr.x2 - tr.x1), hh = s * tr.sz, w = fxw(pim, hh), reps = tr.stream ? tr.n : tr.n > 1 ? 2 : 1;
+      for (let n = 0; n < reps; n++) {   // MG: Kette einzelner Geschosse mit kleinem Abstand (Wunsch des Nutzers)
+        const p = tr.stream ? k * 1.9 - n * 0.11 : k * 1.15 - n * 0.3; if (p < 0 || p > 1) continue;
         g.save(); g.translate(tr.x1 + (tr.x2 - tr.x1) * p, tr.y1 + (tr.y2 - tr.y1) * p); g.rotate(ang); if (tr.x2 < tr.x1) g.scale(1, -1);
         g.drawImage(pim, -w, -hh / 2, w, hh); g.restore();
       }
@@ -747,7 +747,7 @@ function draw() {
 
 // ---------- Ton ----------
 let soundOn = true;
-const lastSnd = {}, SND_GAP = { medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
+const lastSnd = {}, SND_GAP = { mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 // Hintergrundkulisse als leise Schleife
@@ -758,7 +758,7 @@ function setAmbient(on) {
   try { if (on) { const p = ambient.play(); if (p && p.catch) p.catch(() => {}); } else ambient.pause(); } catch (e) {}
 }
 // Abwechslung: Gruppen von Tönen, aus denen zufällig gewählt wird (Wunsch des Nutzers)
-const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3'], cry: ['cry', 'scream', 'roar'], heavy: ['heavy1', 'heavy2', 'heavy3'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'] };
+const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3'], cry: ['cry', 'scream', 'roar'], heavy: ['heavy1', 'heavy2', 'heavy3'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'punch4', 'swords'] };
 function playSound(name, vol = 0.6) {
   if (SND_VAR[name]) { const opts = SND_VAR[name].filter(k => SND[k]); if (opts.length) name = opts[Math.floor(Math.random() * opts.length)]; }
   if (!soundOn || !SND[name]) return;
@@ -802,7 +802,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', 0.5); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tankmove', 0.5); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -815,12 +815,12 @@ async function playEvent(e) {
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
         const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
-        playSound(e.kind === 'rifle' ? rs : mini ? 'minigun' : mg ? (au && au.side === 'D' ? 'mg2' : 'mg') : 'cannon', mg ? 0.55 : 0.6);
+        playSound(e.kind === 'rifle' ? rs : mini ? 'minigun' : mg ? (au && au.side === 'D' ? 'mg3' : 'mg') : 'cannon', mg ? 0.55 : 0.6);
         if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
         else if (mg && PJI.mgfire) muzzles.push({ img: 'mgfire', x: x1 + Math.cos(ang) * s * 0.25, y: y1 + Math.sin(ang) * s * 0.25, ang, sz: 0.85, off: 0.02, life: 26, max: 26 });
         else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
-        tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 26 : 15, max: mg ? 26 : 15, n: mg ? 5 : 1, col: can ? '#ff9a3a' : '#ffe27a', img: mg ? 'burst' : can ? 'shard' : 'bullet', sz: mg ? 0.5 : can ? 0.34 : 0.2 });
-        await wait((mg ? 26 : 15) * 16.667 * 0.9);
+        tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 30 : 15, max: mg ? 30 : 15, n: mg ? 9 : 1, stream: mg, col: can ? '#ff9a3a' : '#ffe27a', img: can ? 'shard' : 'bullet', sz: mg ? 0.17 : can ? 0.34 : 0.2 });
+        await wait((mg ? 30 : 15) * 16.667 * 0.9);
         if (can) { boom(x2, y2 + s * 0.4, s * 0.5, 'he'); playSound('boom', 0.45); }
       }
       break;
@@ -846,7 +846,10 @@ async function playEvent(e) {
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
       if (e.t === 'melee') {
         const mech = au && TYPES[au.type].mech;
-        playSound(mech ? 'heavy' : af === 'shield' ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', mech ? 0.7 : 0.55);
+        const du0 = unitById(e.d), foot = x => x && ['inf', 'mg', 'storm', 'medic', 'flame'].includes(TYPES[x.type].cls) && !TYPES[x.type].suit;
+        const tank = au && TYPES[au.type].cls === 'walker' && !mech;
+        playSound(mech ? 'heavy' : tank ? 'impact' : af === 'shield' ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : foot(au) && foot(du0) ? 'punch' : au && TYPES[au.type].cls === 'storm' ? 'grenade' : 'cry', mech || tank ? 0.7 : 0.55);
+        if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35);
         if (af === 'mechB') playSound(Math.random() < 0.5 ? 'snarl' : 'tiger', 0.4);   // Klauenschreiter knurrt
       }
       let thrown = false;
@@ -856,7 +859,7 @@ async function playEvent(e) {
       boom(mx, my + s * 0.25, s * 0.38, 'dust'); burst(mx, my, 8, ['#fff1c0', '#d9d2bd'], { spread: 0.2 });
       if (au && TYPES[au.type].mech && TYPES[au.type].cls === 'walker' && PJI.hammer) muzzles.push({ img: 'hammer', x: d.x, y: d.y + s * 0.35, center: true, up: 0.75, sz: 1.7, life: 34, max: 34 });
       if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
-      if (armored || af === 'drill' || af === 'mechA') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
+      if (armored || af === 'drill' || af === 'mechA' || af === 'mechK' || af === 'mechC') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
       await wait(170); a.lunge = null; await wait(70); break;
     }
     case 'hit': {
@@ -968,6 +971,23 @@ const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targ
 let drag = null, dragged = 0;
 cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; if (ev.pointerType === 'mouse') drag = { x: ev.clientX, y: ev.clientY, sl: board.scrollLeft, st: board.scrollTop, moved: false }; });
 window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = performance.now(); drag = null; cv.style.cursor = ''; });
+// Kleine Pfeile am Rand zeigen, wohin man noch verschieben kann (Wunsch des Nutzers); antippen verschiebt ein Stück
+const SCR = {};
+for (const [k, ch] of [['l', '◀'], ['r', '▶'], ['u', '▲'], ['d', '▼']]) {
+  const el = document.createElement('button'); el.className = 'scrhint ' + k; el.textContent = ch; el.hidden = true; el.setAttribute('aria-label', 'Karte verschieben');
+  el.addEventListener('click', () => { const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
+  document.body.appendChild(el); SCR[k] = el;
+}
+function updScroll() {
+  const b = board.getBoundingClientRect(), sl = board.scrollLeft, st = board.scrollTop, mx = board.scrollWidth - board.clientWidth, my = board.scrollHeight - board.clientHeight;
+  const show = { l: sl > 4, r: sl < mx - 4, u: st > 4, d: st < my - 4 };
+  for (const k in SCR) {
+    const el = SCR[k]; el.hidden = !show[k] || !G || !document.querySelector('#start')?.hidden; if (el.hidden) continue;
+    const x = k === 'l' ? b.left + 6 : k === 'r' ? b.right - 34 : b.left + b.width / 2 - 14, y = k === 'u' ? b.top + 6 : k === 'd' ? b.bottom - 34 : b.top + b.height / 2 - 14;
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+  }
+}
+board.addEventListener('scroll', updScroll, { passive: true }); addEventListener('resize', () => setTimeout(updScroll, 50)); setInterval(updScroll, 700);
 board.addEventListener('wheel', ev => { if (ev.ctrlKey || ev.shiftKey) return; const canV = board.scrollHeight > board.clientHeight + 2; if (!canV && board.scrollWidth > board.clientWidth + 2) { board.scrollLeft += ev.deltaY; ev.preventDefault(); } }, { passive: false });
 cv.addEventListener('pointermove', ev => {
   if (drag && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > 8) { drag.moved = true; cv.style.cursor = 'grabbing'; board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; return; } }
@@ -1203,6 +1223,9 @@ function updateHud() {
         if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
         if (E.canCut(G, sel)) acts.push(`<button class="act on" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
         else if (G.map[sel.c][sel.r].t === 'wire' && !sel.attacked) acts.push(`<span class="hint">${['cav', 'art', 'walker'].includes(T.cls) || T.noCut ? 'Kann keinen Draht schneiden.' : `Draht schneiden braucht ${E.cutCost(sel)} Aktionspunkte.`}</span>`);
+        if (sel.supp > 0) acts.push('<span class="hint">▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen und weicht nicht zurück.</span>');
+        else if (T.rng > 0 && E.held(G, sel)) acts.push('<span class="hint">⚔ Im Nahkampf gebunden: ein gleich großer oder größerer Gegner steht daneben, Schießen geht nicht.</span>');
+        else if (sel.fellBack) acts.push('<span class="hint">MG ist zurückgewichen und schießt in dieser Runde nicht mehr.</span>');
         if (T.abil) { const A = E.ABILS[T.abil], tg = E.abilTargets(G, sel);
           if (tg.length) acts.push(`<button class="act ${abilMode ? 'on' : ''}" data-act="abil" title="${T.can}">${A.icon} ${A.name} (${A.ap} ●)</button>`);
           else acts.push(`<span class="hint">${A.name}: ${sel.cdA > 0 ? `wieder in ${sel.cdA} Runde${sel.cdA > 1 ? 'n' : ''}` : T.abil === 'mine' && !(sel.mines > 0) ? 'keine Minen mehr' : sel.ap < A.ap ? `braucht ${A.ap} Aktionspunkte` : 'kein Ziel'}.</span>`);

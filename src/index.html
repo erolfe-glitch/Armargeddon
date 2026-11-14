@@ -354,6 +354,9 @@ body { background: #0c0908; }
   .sheet { border-width: 20px; border-image-width: 20px; } .box { border-width: 26px; border-image-width: 26px; }
 }
 .costline { margin: 6px 0 0; font-size: 14px; opacity: .85; } .costline b { color: var(--gold); }
+.scrhint { position: fixed; z-index: 30; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid rgba(255,235,190,.6); background: rgba(20,16,10,.62); color: #f1e2bd; font-size: 13px; line-height: 26px; text-align: center; cursor: pointer; opacity: .8; animation: scrpulse 1.6s ease-in-out infinite; }
+.scrhint:hover { opacity: 1; background: rgba(40,30,16,.85); }
+@keyframes scrpulse { 50% { opacity: .45; } }
 </style>
 </head>
 <body>
@@ -416,7 +419,7 @@ body { background: #0c0908; }
     <p class="lbl">Kampfmaschinen und Flaggen</p>
     <div class="modes" style="grid-template-columns:repeat(2,1fr)">
       <label><input type="radio" name="mechs" value="0" checked><b>Ohne Kampfmaschinen</b><small>Nur Truppen und Gerät wie im Ersten Weltkrieg.</small></label>
-      <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit Kampfmaschinen</b><small>Je Seite zwei Mechs und ein Trupp in Kampfanzügen. Du holst sie über „Armee zusammenstellen“ oder im Nachschub.</small></label>
+      <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit Kampfmaschinen</b><small>Je Seite mehrere Mechs und ein Trupp in Kampfanzügen. Du holst sie über „Armee zusammenstellen“ oder im Nachschub.</small></label>
     </div>
     <div class="optrow armyrow" id="flagRowA"><span>Flagge des Konkordats:</span><span class="flagpick" id="flagsA"></span></div>
     <div class="optrow armyrow"><span>Flagge der Aschenwacht:</span><span class="flagpick" id="flagsD"></span></div>
