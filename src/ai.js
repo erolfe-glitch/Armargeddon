@@ -10,7 +10,7 @@ const W = {
   D: { threat: 0.9, prog: 0, obj: 0.2, hold: 0.45, cover: 0.9, dmg: 4, counter: 3.5, cut: 0 }
 };
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
-const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'grabenk'] };
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'granate', 'rauch', 'spreng'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'grabenk', 'eingreif', 'minen', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
 function coverVal(t) { return COVER[t] || 0; }
@@ -44,6 +44,27 @@ function nearestObjDist(G, c, r) {
   let best = 99;
   for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === 'A') continue; best = Math.min(best, E.dist(c, r, o.c, o.r)); }
   return best === 99 ? 0 : best;
+}
+// Fähigkeiten der Skirmish-Trupps: wann und wohin
+function abilPlan(G, u) {
+  const k = TYPES[u.type].abil; if (!k || (typeof process !== 'undefined' && process.env && process.env.NOABIL)) return null;
+  const tg = E.abilTargets(G, u); if (!tg.length) return null;
+  const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== u.side && E.alive(x) ? x : null; };
+  const area = (c, r) => [[c, r], ...E.neighbors(c, r)].filter(([a, b]) => E.inMap(a, b));
+  let best = null, bv = 0;
+  for (const [c, r] of tg) {
+    let v = 0;
+    if (k === 'smoke') { for (const [a, b] of area(c, r)) { const x = E.unitAt(G, a, b); if (x && x.side === u.side && E.active(x) && threatAt(G, x, a, b) > 0.3) v += 1; if (foe(a, b)) v -= 0.6; } v = v >= 2 ? v : 0; }
+    else if (k === 'tunnel') { const x = foe(c, r); v = x ? 2 + (G.map[c][r].obj ? 2 : 0) + (10 - x.str) * 0.05 : 0; }
+    else if (k === 'charge') { const x = foe(c, r); v = x ? 2 + (E.cls(x) === 'walker' ? 3 : 0) + (G.map[c][r].t === 'bunker' ? 2 : 0) : (G.map[c][r].t === 'bunker' ? 0.5 : 0); }
+    else if (k === 'mine') { const n = nearestEnemyDist(G, u.side, c, r); v = n <= 6 ? 7 - n + (G.map[c][r].t === 'open' || G.map[c][r].t === 'mud' ? 0.5 : 0) : 0; }
+    else if (k === 'light') { for (const [a, b] of area(c, r)) if (foe(a, b)) v += 1; v = v >= 1 ? v : 0; }
+    else if (k === 'clear') { for (const [a, b] of area(c, r)) { const x = E.unitAt(G, a, b); if (x && x.side === u.side) v += 1; } }
+    if (v > bv) { bv = v; best = [c, r]; }
+  }
+  if (!best) return null;
+  const A = E.ABILS[k];
+  return { only: A.ap >= 2, step: { k: 'abil', c: best[0], r: best[1] } };
 }
 function nearestEnemyDist(G, side, c, r) {
   let best = 99;
@@ -241,8 +262,11 @@ function next(G) {
   for (const u of order(G, G.side)) {
     if (G._aiDone.has(u.id)) continue;
     G._aiDone.add(u.id);
+    const ab = abilPlan(G, u);
+    if (ab && ab.only) return { u: u.id, steps: [ab.step] };
     const o = planUnit(G, u);
     const steps = [];
+    if (ab) steps.push(ab.step);
     if (TYPES[u.type].recover) for (const w of G.units) if (E.canRecover(G, u, w)) { steps.push({ k: 'recover', t: w.id }); break; }
     if (o.limber) steps.push({ k: 'limber' });
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
@@ -264,6 +288,9 @@ function next(G) {
   }
   if (typeof process !== 'undefined' && process.env && process.env['NO2_' + G.side]) return null;
   // Zweiter Durchgang: Meldehunde bringen Befehle, dann nutzen Einheiten mit übrigen Aktionspunkten sie (weiter ziehen oder angreifen)
+  for (const u of G.units) if (u.side === G.side && E.active(u) && TYPES[u.type].abil === 'ammo') {
+    const t = E.abilTargets(G, u)[0]; if (t) return { u: u.id, steps: [{ k: 'abil', c: t[0], r: t[1] }] };
+  }
   G._aiDone2 = G._aiDone2 && G._aiKey2 === tk ? G._aiDone2 : new Set(); G._aiKey2 = tk;
   for (const m of G.units) {
     if (m.side !== G.side || !TYPES[m.type].courier || G._aiDone2.has('s' + m.id)) continue;
@@ -299,6 +326,7 @@ function exec(G, uid, s) {
   if (s.k === 'wire') { if (!u.attacked && E.nearestEnemy && E.canLay(G, u)) { const [c, r] = E.layTarget(G, u); let near = 99; for (const o of G.units) if (o.side !== u.side && E.active(o)) near = Math.min(near, E.dist(c, r, o.c, o.r)); if (near <= 5 && near >= 2) return E.layWire(G, u); } return []; }
   if (s.k === 'limber') return E.limber(G, u);
   if (s.k === 'setup') return E.setupMG(G, u);
+  if (s.k === 'abil') return E.useAbil(G, u, s.c, s.r);
   if (s.k === 'ow') return E.overwatch(G, u);
   if (s.k === 'recover') { const t = G.units.find(x => x.id === s.t); return t ? E.recover(G, u, t) : []; }
   if (s.k === 'order') return E.order(G, u, s.kind);
