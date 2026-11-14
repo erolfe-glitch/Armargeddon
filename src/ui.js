@@ -461,6 +461,19 @@ const MAXW = 1.6, MAXWK = { smoke: 1.6, lobber: 1.5, miner: 1.6, demo: 1.6, wren
 // Figuren etwas größer seit den kleineren Karten (Wunsch des Nutzers)
 const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK[k] *= 1.06;
 
+const SHIELD_COL = { 1: ['#e6a868', '#a8662c', '#5c3412'], 2: ['#f4f5f7', '#b4b8be', '#5d6168'], 3: ['#fff1a0', '#e0ad2c', '#7a5408'] };
+function drawShield(g, cx, cy, h, tier) {
+  const w = h * 0.82, [hi, mid, lo] = SHIELD_COL[tier];
+  g.save(); g.translate(cx, cy);
+  const path = () => { g.beginPath(); g.moveTo(-w / 2, -h / 2); g.lineTo(w / 2, -h / 2); g.lineTo(w / 2, -h * 0.08); g.quadraticCurveTo(w * 0.46, h * 0.32, 0, h / 2); g.quadraticCurveTo(-w * 0.46, h * 0.32, -w / 2, -h * 0.08); g.closePath(); };
+  path(); const gr = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); gr.addColorStop(0, hi); gr.addColorStop(0.55, mid); gr.addColorStop(1, lo);
+  g.fillStyle = gr; g.shadowColor = 'rgba(0,0,0,0.75)'; g.shadowBlur = h * 0.25; g.fill(); g.shadowBlur = 0;
+  g.lineWidth = Math.max(1.5, h * 0.1); g.strokeStyle = '#1d140d'; g.stroke();
+  g.beginPath(); g.moveTo(-w * 0.32, -h * 0.36); g.lineTo(w * 0.32, -h * 0.36); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = Math.max(1, h * 0.06); g.stroke();
+  g.strokeStyle = lo; g.lineWidth = Math.max(1.2, h * 0.09); g.lineCap = 'round';
+  for (let i = 0; i < tier; i++) { const xx = (i - (tier - 1) / 2) * w * 0.22; g.beginPath(); g.moveTo(xx, -h * 0.18); g.lineTo(xx, h * 0.16); g.stroke(); }
+  g.restore();
+}
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
@@ -528,6 +541,8 @@ function drawUnit(u, d) {
     for (let i = 0; i < Math.max(P.AP, ap); i++) { g.beginPath(); g.arc(bx - pr * (1.1 + i * 1.9), py, pr * 0.8, 0, 7); g.fillStyle = i < ap ? (i >= P.AP ? '#7fd8ff' : '#ffd24a') : '#2f2e25'; g.fill(); g.stroke(); }
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
+  // Deckungsschild (Wunsch des Nutzers): Bronze = leichte, Silber = gute, Gold = starke Deckung durch das Gelände; Striche 1–3 zusätzlich zur Farbe
+  if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u); if (cv0.tier) drawShield(g, x + s * 0.76, y - s * 0.56, s * 0.46, cv0.tier); } }
   // Zustandsmarken
   const tagY = y - s * (['mech', 'drill', 'mechA', 'mechB', 'mechT', 'mechK', 'mechC'].includes(k) ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
   const tag = (glyph, bg, fg, ic) => {
@@ -1212,7 +1227,7 @@ function updateHud() {
     $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
-    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${st ? ` · <em>${st}</em>` : ''}`;
+    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} ×${String(Math.round(cv.f * 10) / 10).replace('.', ',')}</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
     $('hudStats').innerHTML = (u.side === G.side && E.active(u) ? pill('Aktion', '●'.repeat(Math.max(0, u.ap || 0)) + '○'.repeat(Math.max(0, P.AP - (u.ap || 0))) || '–', 'gold') : '') + `<div class="sbars">${bar('Stärke', u.str, 10, 'H', u.str <= 3.3 ? 'bad' : '')}${bar('Moral', u.mor, TYPES[u.type].mor, 'C', u.mor < P.FALLBACK_MOR + 1 ? 'bad' : '')}</div>` +
       pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–') +
       `<div class="sps">${(u.officer ? ['★ Anführer: gibt Befehle'] : []).concat(T.sp || []).map(x => `<span class="sp">${x}</span>`).join('')}</div>`;
