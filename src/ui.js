@@ -545,24 +545,32 @@ function drawUnit(u, d) {
   if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u); if (cv0.tier) drawShield(g, x + s * 0.68, y - s * 0.4, s * 0.24, cv0.tier); } }
   // Zustandsmarken
   const tagY = y - s * (['mech', 'drill', 'mechA', 'mechB', 'mechT', 'mechK', 'mechC'].includes(k) ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
-  const tag = (glyph, bg, fg, ic) => {
-    const cx = x - s * 0.84, cy = y - s * 0.1, r = s * 0.17, im = UIM[ic];
+  const tag = (glyph, bg, fg, ic, sym) => {
+    const cx = x - s * 0.84, cy = y - s * 0.1, r = s * 0.17, pim = sym && PJI['i_' + sym], im = UIM[ic];
+    if (pim) {   // Symbol aus den Bögen des Nutzers, klein, mit dunkler Scheibe dahinter
+      const hh = s * 0.3, ww = Math.min(hh * pim.naturalWidth / pim.naturalHeight, s * 0.36);
+      g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = bg; g.stroke();
+      g.drawImage(pim, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
     if (im) {   // helle Scheibe mit Rand dahinter, Symbol aufgehellt: auf dunklem Boden gut zu sehen
       const R = s * 0.24; g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = bg; g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = s * 0.12; g.fill(); g.shadowBlur = 0; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#1d140d'; g.stroke();
       const hh = s * 0.38, ww = hh * im.naturalWidth / im.naturalHeight; g.filter = 'brightness(1.45) contrast(1.15)'; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
     g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     g.font = `900 ${Math.round(s * 0.21)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
   };
-  if (d.vs.rout) tag('↩', '#f3ead2', '#7a1c10', 'icSkull');
-  else if (d.vs.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear');
-  else if (u.limbered) tag('⇄', '#f0e2b8', '#1d140d', 'icArrows');
-  else if (d.vs.supp > 0) tag('▼', '#ffe28a', '#5a1408', 'icDanger');
-  else if (d.vs.stuck > 0) tag('≈', '#d9c49a', '#3a2410');
-  else if (d.vs.gassed) tag('G', '#e3ec8a', '#1d2408', 'icWarn');
-  else if (u.ow) tag('◎', '#cfe9ff', '#0f3550');
+  if (d.vs.rout) tag('↩', '#f3ead2', '#7a1c10', 'icSkull', 'rout');
+  else if (d.vs.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear', 'broken');
+  else if (u.limbered) tag('⇄', '#f0e2b8', '#1d140d', 'icArrows', 'limber');
+  else if (d.vs.supp > 0) tag('▼', '#ffe28a', '#5a1408', 'icDanger', 'supp');
+  else if (d.vs.stuck > 0) tag('≈', '#d9c49a', '#3a2410', null, 'stuck');
+  else if (d.vs.gassed) tag('G', '#e3ec8a', '#1d2408', 'icWarn', 'gas');
+  else if (u.ow) tag('◎', '#cfe9ff', '#0f3550', null, 'aim');
   else if (TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u)) tag('◌', '#c8d6a8', '#22300f');
   else if (TYPES[u.type].mg && !u.setup && E.active(u)) tag('⤓', '#e9dfc4', '#5a3a10');
-  if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02; g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#bfe0f2'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
+  if (TYPES[u.type].relay && E.active(u) && PJI.i_react) {   // Aufklärer: Auge aus dem Symbolbogen
+    const cx = x + s * 0.86, cy = y - s * 0.02, im = PJI.i_react, hh = s * 0.24, ww = Math.min(hh * im.naturalWidth / im.naturalHeight, s * 0.34);
+    g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = '#bfe0f2'; g.stroke(); g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore();
+  } else if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02;
+ g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#bfe0f2'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
 }
 
 // ---------- Zeichnen ----------
@@ -819,7 +827,8 @@ const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktio
 function floater(x, y, text, col, big, hold) {
   const life = hold ? 210 : 60 / speed + 22, f = { x, y, text, col, life, max: life, big, hold };
   const m = FICON.find(([p]) => String(text).startsWith(p));
-  if (m && PJI['i_' + m[1]]) { f.icon = PJI['i_' + m[1]]; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
+  if (false && m && PJI['i_' + m[1]]) {   // abgeschaltet: Symbole nur noch als Zustandsmarken (Wunsch des Nutzers)
+ f.icon = PJI['i_' + m[1]]; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
   floaters.push(f);
 }
 function bodyPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 1.0 : 0.55)]; }
