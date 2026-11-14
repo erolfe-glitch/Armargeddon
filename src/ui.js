@@ -11,7 +11,7 @@ const SQ3 = Math.sqrt(3);
 const UIM = {};
 { const A = window.UIART || {}; for (const k in A) { document.documentElement.style.setProperty('--ui-' + k, `url("${A[k]}")`); const im = new Image(); im.onload = () => UIM[k] = im; im.src = A[k]; } }
 const $ = id => document.getElementById(id);
-const fmt = (x, d = 1) => x.toFixed(d).replace('.', ',');
+const fmt = x => String(Math.max(0, Math.round(x * 10)));   // Anzeige in ganzen Zahlen: Stärke 10,0 → 100, Schaden 0,7 → 7 (Wunsch des Nutzers)
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 
 // ---------- Zustand ----------
@@ -528,11 +528,14 @@ function drawUnit(u, d) {
   g.globalAlpha = 1;
   if (!E.alive(u)) return;
   // Balken
-  const w = s * 0.96, bx = x - w / 2, by = y + s * K * 0.78, bh = Math.max(3, s * 0.09);
-  g.fillStyle = O; g.fillRect(bx - 2, by - 2, w + 4, bh * 2 + 5);
-  g.fillStyle = '#3a372c'; g.fillRect(bx, by, w, bh); g.fillRect(bx, by + bh + 1, w, bh);
-  g.fillStyle = d.str > 3.3 ? '#efe7d2' : '#e2553c'; g.fillRect(bx, by, w * d.str / 10, bh);
-  g.fillStyle = '#e5b23a'; g.fillRect(bx, by + bh + 1, w * Math.min(1, d.mor / T.mor), bh);
+  // Stärke oben (Farbe nach Zustand: grün, gelb, rot), Moral unten (gold); Striche alle 10 Punkte (Wunsch des Nutzers: eindeutiger)
+  const w = s * 0.96, bx = x - w / 2, by = y + s * K * 0.78, bh = Math.max(4, s * 0.11), bm = Math.max(3, s * 0.075), q = Math.max(0, Math.min(1, d.str / 10));
+  g.fillStyle = O; g.fillRect(bx - 2, by - 2, w + 4, bh + bm + 5);
+  g.fillStyle = '#2a2820'; g.fillRect(bx, by, w, bh); g.fillRect(bx, by + bh + 1, w, bm);
+  g.fillStyle = q > 0.66 ? '#8fd45e' : q > 0.33 ? '#f0c23a' : '#e8452e'; g.fillRect(bx, by, w * q, bh);
+  g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(bx, by, w * q, Math.max(1, bh * 0.3));
+  g.fillStyle = '#d9a53a'; g.fillRect(bx, by + bh + 1, w * Math.max(0, Math.min(1, d.mor / T.mor)), bm);
+  g.fillStyle = 'rgba(0,0,0,0.55)'; for (let i = 1; i < 10; i++) g.fillRect(Math.round(bx + w * i / 10), by, 1, bh);
   // Aktionsmarken: links Bewegung (Pfeil), rechts Angriff (Raute). Leuchtet = noch möglich.
   if (human(u.side) && G.side === u.side && E.active(u)) {
     const ca = !u.attacked && !d.vs.broken && u.ap >= 1, pr = Math.max(4, s * 0.15), py = by + bh, ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0);
@@ -775,8 +778,8 @@ function draw() {
         g.strokeText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.fillStyle = f.col; g.fillText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.textAlign = 'center'; }
       continue;
     }
-    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.66 : 0.54) : f.big ? 0.33 : 0.28))}px system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers), Schadenszahlen groß
-    g.lineWidth = Math.max(2.5, s * (f.hold ? 0.12 : 0.08)); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
+    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.44 : 0.36) : f.big ? 0.26 : 0.22))}px system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers), Schadenszahlen groß
+    g.lineWidth = Math.max(2, s * (f.hold ? 0.09 : 0.065)); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
     g.fillStyle = f.col; g.fillText(f.text, f.x, f.y);
   }
   g.globalAlpha = 1;
@@ -943,7 +946,7 @@ async function playEvent(e) {
       await wait(e.panic ? 180 : 300); break;
     }
     case 'gas': { const d = DU.get(e.u); d.vs.gassed = true; d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'Gas!', '#d6e670'); await wait(220); break; }
-    case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −1', '#f0d27a'); await wait(200); break; }
+    case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
@@ -995,7 +998,7 @@ async function playEvent(e) {
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
       for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
     case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
-      rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); floater(...headPos(e.u), 'versorgt +1,5', '#8fe0c8', true); await wait(350); break; }
+      rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); floater(...headPos(e.u), 'versorgt', '#8fe0c8', true); await wait(350); break; }
     case 'gascloud': visSync('clouds'); break;
     case 'reinf': {
       for (const id of e.ids) { const nu = unitById(id); addDU(nu); const d = DU.get(id); d.x += s * 2; }
@@ -1255,7 +1258,7 @@ function updateHud() {
     $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
-    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} ×${String(Math.round(cv.f * 10) / 10).replace('.', ',')}</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
+    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} +${Math.round((cv.f - 1) * 100)} %</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
     $('hudStats').innerHTML = (u.side === G.side && E.active(u) ? pill('Aktion', '●'.repeat(Math.max(0, u.ap || 0)) + '○'.repeat(Math.max(0, P.AP - (u.ap || 0))) || '–', 'gold') : '') + `<div class="sbars">${bar('Stärke', u.str, 10, 'H', u.str <= 3.3 ? 'bad' : '')}${bar('Moral', u.mor, TYPES[u.type].mor, 'C', u.mor < P.FALLBACK_MOR + 1 ? 'bad' : '')}</div>` +
       pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–') +
       `<div class="sps">${(u.officer ? ['★ Anführer: gibt Befehle'] : []).concat(T.sp || []).map(x => `<span class="sp">${x}</span>`).join('')}</div>`;
@@ -1278,11 +1281,11 @@ function updateHud() {
         if (!spent.has(sel.id)) acts.push(`<button class="act pass" data-act="pass" title="Diese Einheit ist für diese Runde fertig">✓ Fertig</button>`);
         if (sel.officer) {
           const ob = (k, ic, lbl, tip) => { const cd = k === 'rally' ? sel.cdR : sel.cdS; return E.canOrderKind(G, sel, k) ? `<button class="act" data-act="o-${k}" title="${tip}">${ic} ${lbl}</button>` : `<button class="act" disabled title="${tip}">${ic} ${lbl}${cd > 0 ? ` (${cd})` : ''}</button>`; };
-          acts.push(ob('rally', '📯', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +1,5, Niederhalten endet. Abklingzeit ' + E.orderCd(G, sel, 'rally') + ' Runden.') + ob('storm', '⚔', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde. Abklingzeit ' + E.orderCd(G, sel, 'storm') + ' Runden.'));
+          acts.push(ob('rally', '📯', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +15, Niederhalten endet. Abklingzeit ' + E.orderCd(G, sel, 'rally') + ' Runden.') + ob('storm', '⚔', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde. Abklingzeit ' + E.orderCd(G, sel, 'storm') + ' Runden.'));
         }
         if (T.relay) acts.push(`<span class="hint"><i>◉ Blau:</i> Hier lenkt der Trupp eure Artillerie: keine Streuung, Sprenggranaten ×1,25.</span>`);
         if (T.cls === 'art' && scoutSet.size) acts.push(`<span class="hint"><i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.</span>`);
-        if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${sel.cdH > 0 ? `Versorgen wieder in ${sel.cdH} Runde${sel.cdH > 1 ? 'n' : ''}.` : healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +2,5, Moral +1,5).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
+        if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${sel.cdH > 0 ? `Versorgen wieder in ${sel.cdH} Runde${sel.cdH > 1 ? 'n' : ''}.` : healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +25, Moral +15).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
         if (T.courier && sel.ap >= 1 && !sel.sent) acts.push(`<span class="hint"><i>Blau:</i> Befehl überbringen – angeklickte Einheit bekommt +1 Aktionspunkt.</span>`);
         if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
         if (E.canCut(G, sel)) acts.push(`<button class="act on actcut" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
