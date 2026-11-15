@@ -398,5 +398,29 @@
  "wimpel_fraktionen/wimpel_legion": [
   309,
   466
+ ],
+ "kartenmarken/schild_bronze": [
+  235,
+  283
+ ],
+ "kartenmarken/schild_silber": [
+  238,
+  288
+ ],
+ "kartenmarken/schild_gold": [
+  241,
+  290
+ ],
+ "kartenmarken/orden": [
+  143,
+  263
+ ],
+ "kartenmarken/muenze_voll": [
+  195,
+  190
+ ],
+ "kartenmarken/muenze_leer": [
+  190,
+  185
  ]
 }

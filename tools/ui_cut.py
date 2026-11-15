@@ -1,6 +1,6 @@
 """Schneidet die UI-Bögen des Nutzers (Magenta-Hintergrund, JPG) in einzelne PNG-Teile.
 
-Aufruf:  python tools/ui_cut.py            -> schreibt ui-quelle/teile/<bogen>/<name>.png und teile/uebersicht.png
+Aufruf:  python tools/ui_cut.py [bogen ...]  -> nur die genannten Bögen (ohne Angabe alle); schreibt ui-quelle/teile/<bogen>/<name>.png und teile/uebersicht.png
 Magenta wird weich freigestellt (Alpha aus dem Magenta-Anteil), Farbsäume werden entfärbt.
 """
 import json, sys
@@ -43,12 +43,14 @@ NAMES['wappen_aschenwacht'] = ['w_flagge', 'w_emblem']
 NAMES['wappen_legion'] = ['w_flagge', 'w_emblem']
 # Wimpel der Zielmarken (obere Leiste), mit Stange und Messingknauf: Konkordat, Aschenwacht, Blaue Legion
 NAMES['wimpel_fraktionen'] = ['wimpel_konkordat', 'wimpel_aschenwacht', 'wimpel_legion']
+# Kartenmarken (Einheiten auf der Karte): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
+NAMES['kartenmarken'] = ['schild_bronze', 'schild_silber', 'schild_gold', 'orden', 'muenze_voll', 'muenze_leer']
 MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6, 'bogen3_symbole': 30, 'bogen3b_symbole': 30}
 # Bögen mit festem Raster (Spalten, Zeilen): Stücke werden nach ihrer Mitte der Rasterzelle zugeordnet,
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
 GRID = {'bogen3b_symbole': (4, 4), 'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
         'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1),
-        'wimpel_fraktionen': (3, 1)}
+        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2)}
 
 
 def grid_parts(rgba, cols, rows):
@@ -128,8 +130,12 @@ def parts(rgba, merge):
 
 def main():
     OUT.mkdir(exist_ok=True)
-    index = {}
+    only = set(sys.argv[1:])
+    idx = OUT / 'teile.json'
+    index = json.loads(idx.read_text(encoding='utf-8')) if only and idx.exists() else {}
     for sheet, names in NAMES.items():
+        if only and sheet not in only:
+            continue
         src = next(SRC.glob(sheet + '*'))
         rgba = key(Image.open(src))
         ps = grid_parts(rgba, *GRID[sheet]) if sheet in GRID else parts(rgba, MERGE[sheet])

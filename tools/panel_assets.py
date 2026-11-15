@@ -48,35 +48,18 @@ SYMBOLS = {
     # Zustandsmarken (Karte und Panel)
     'bogen4c_symbole': ['niedergehalten', 'flucht', 'gebrochen', 'festgefahren', 'durchsickern'],
 }
-# Deckungsschilde: gemaltes s_schild, per Verlaufsabbildung (Helligkeit -> Farbe) eingefärbt
-COVER = {
-    'cov1': [(0, '1a0e06'), (.35, '5c2c10'), (.7, 'a8592a'), (1, 'eca474')],   # Bronze
-    'cov2': [(0, '15171a'), (.35, '585d64'), (.7, 'aeb3ba'), (1, 'f4f5f7')],   # Silber
-    'cov3': [(0, '221604'), (.35, '7a5408'), (.7, 'd6a32a'), (1, 'fff0a0')],   # Gold
-}
+# Kartenmarken (ui-quelle/kartenmarken.png): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
+PARTS.update({
+    'cov1': ('kartenmarken/schild_bronze', 96), 'cov2': ('kartenmarken/schild_silber', 96), 'cov3': ('kartenmarken/schild_gold', 96),
+    'orden': ('kartenmarken/orden', 96), 'muenze': ('kartenmarken/muenze_voll', 64), 'muenzeLeer': ('kartenmarken/muenze_leer', 64),
+})
 for sheet, names in SYMBOLS.items():
     for n in names:
         PARTS['s_' + n] = (f'{sheet}/s_{n}', SYM)
-for k, stops in COVER.items():
-    PARTS[k] = ('bogen3b_symbole/s_schild', 96, 1.0, stops)
 
 
-def tint(im, stops):
-    import numpy as np
-    a = np.asarray(im).astype(float) / 255
-    lum = 0.3 * a[..., 0] + 0.59 * a[..., 1] + 0.11 * a[..., 2]
-    lo, hi = np.percentile(lum[a[..., 3] > 0.5], [3, 97])
-    L = np.clip((lum - lo) / (hi - lo), 0, 1)
-    xs = [x for x, _ in stops]
-    cs = np.array([[int(c[i:i + 2], 16) for i in (0, 2, 4)] for _, c in stops]) / 255
-    rgb = np.stack([np.interp(L, xs, cs[:, i]) for i in range(3)], -1)
-    return Image.fromarray((np.dstack([rgb, a[..., 3]]) * 255).astype('uint8'), 'RGBA')
-
-
-def data_url(key, edge, keep=1.0, stops=None):
+def data_url(key, edge, keep=1.0):
     im = Image.open(TEILE / f'{key}.png').convert('RGBA')
-    if stops:
-        im = tint(im, stops)
     if keep < 1:
         im = im.crop((0, 0, im.width, round(im.height * keep)))
     k = edge / max(im.size)
