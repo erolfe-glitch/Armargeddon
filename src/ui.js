@@ -489,6 +489,9 @@ const COVER_NAME = ['', 'Bronze', 'Silber', 'Gold'];
 const coverTip = u => { const cv = E.coverOf(G, u), h = G.map[u.c][u.r]; return cv.tier ? { tier: cv.tier, name: `Deckung ${COVER_NAME[cv.tier]}`, text: `${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' auf der Höhe' : ''}: Verteidigung +${Math.round((cv.f - 1) * 100)} %. Bronze = leichte, Silber = gute, Gold = starke Deckung.` } : null; };
 // Trefferflächen der Marken auf der Karte (für Tooltips per Maus und Touch), jedes Bild neu gefüllt
 const MARKS = [], MARKQ = [];
+// „Alle Marken zeigen“: Alt gedrückt halten oder Knopf in der oberen Leiste (Touch); dann liegen die Marken aller Einheiten obenauf
+let altHeld = false, marksOn = false;
+const marksAll = () => altHeld || marksOn;
 // Gemalte Kartenmarken (Wunsch des Nutzers, Stil wie die obere Leiste): Pinsel-Lebensbalken und Pinselstrich-Ringe.
 // SVG mit Filtern wird einmal je Farbe in ein Canvas gerastert und dann nur noch kopiert (schnell genug für jedes Bild).
 const SPR = {};
@@ -594,7 +597,8 @@ function drawUnit(u, d) {
   }
   g.filter = 'none'; g.globalAlpha = 1;
   if (!E.alive(u)) return;
-  drawMarks(u, d, x, y, own, done, acc);   // Marken gleich nach der eigenen Figur (Tiefenreihenfolge): Figuren davor dürfen sie verdecken, sie malen nie über fremde
+  if (isSel || hoverU === u || marksAll()) MARKQ.push(() => drawMarks(u, d, x, y, own, done, acc));   // gewählt, überfahren oder „Alle Marken“: obenauf
+  else drawMarks(u, d, x, y, own, done, acc);   // Marken gleich nach der eigenen Figur (Tiefenreihenfolge): Figuren davor dürfen sie verdecken, sie malen nie über fremde
 }
 function drawMarks(u, d, x, y, own, done, acc) {
   const g = ctx, s = L.s;
@@ -1344,13 +1348,15 @@ const TB_SVG = {
   speed: TB_ICON('<path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/>', true),
   rules: TB_ICON('<path d="M8.5 9a3.5 3.5 0 1 1 5.2 3c-1.1.6-1.7 1.3-1.7 2.6"/><circle cx="12" cy="19" r="1.2" fill="#F0EDE1"/>'),
   full: TB_ICON('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'),
-  menu: TB_ICON('<path d="M4 6h16M4 12h16M4 18h16"/>')
+  menu: TB_ICON('<path d="M4 6h16M4 12h16M4 18h16"/>'),
+  marks: TB_ICON('<circle cx="6.5" cy="15.5" r="4"/><circle cx="17.5" cy="15.5" r="4"/><path d="M10.5 15h3M4 12.5 6.5 5.5h3.5l.5 7M20 12.5 17.5 5.5H14l-.5 7"/>')
 };
 const tbNum = n => String(n).replace('.', ',') + '×';
 function tbSync() {
   $('btnZoom').innerHTML = TB_SVG.zoom + `<b class="tb-v">${tbNum(ZOOM)}</b>`;
   $('btnSound').innerHTML = soundOn ? TB_SVG.sndOn : TB_SVG.sndOff;
   $('btnSpeed').innerHTML = TB_SVG.speed + `<b class="tb-v">${tbNum(speed)}</b>`;
+  $('btnMarks').innerHTML = TB_SVG.marks; $('btnMarks').classList.toggle('on', marksOn); $('btnMarks').setAttribute('aria-pressed', marksOn);
   $('btnRules2').innerHTML = TB_SVG.rules; $('btnFull').innerHTML = TB_SVG.full; $('btnMenu').innerHTML = TB_SVG.menu;
   document.querySelectorAll('.tb-btn').forEach(b => b.setAttribute('aria-label', b.dataset.tip));
 }
@@ -1722,6 +1728,29 @@ function showEnd() {
 
 // ---------- Knöpfe ----------
 $('btnEnd').onclick = endTurn;
+$('btnMarks').onclick = () => { marksOn = !marksOn; tbSync(); };
+// „Nächste Einheit“ (Tab, Umschalt+Tab rückwärts): nächste eigene Einheit, die noch handeln kann, wählen und die Karte hinschieben.
+// Sind alle fertig, leuchtet „Runde beenden“ kurz auf.
+function nextUnit(back) {
+  if (!G || busy || G.over || !human(G.side) || placing) return;
+  refreshSpent();
+  const list = G.units.filter(u => u.side === G.side && E.active(u) && !spent.has(u.id)).sort((a, b) => a.c - b.c || a.r - b.r);
+  if (!list.length) { const be = $('btnEnd'); be.classList.remove('flash'); void be.offsetWidth; be.classList.add('flash'); setTimeout(() => be.classList.remove('flash'), 1900); return; }
+  const i = sel ? list.findIndex(u => u.id === sel.id) : -1;
+  const u = list[((i < 0 ? (back ? 0 : -1) : i) + (back ? -1 : 1) + list.length) % list.length];
+  select(u);
+  const [x, y] = center(u.c, u.r), rc = cv.getBoundingClientRect(), bc = board.getBoundingClientRect();
+  board.scrollBy({ left: rc.left + x * rc.width / cv.width - (bc.left + bc.width / 2), top: rc.top + y * rc.height / cv.height - (bc.top + bc.height / 2), behavior: 'smooth' });
+}
+$('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext').dataset.long; return; } nextUnit(false); };
+// Tooltip am Knopf: Maus beim Drüberfahren, Touch durch langes Drücken (dann kein Klick)
+{ const b = $('btnNext'), tip = [{ name: 'Nächste Einheit', text: 'Wählt die nächste eigene Einheit, die noch Aktionspunkte hat, und schiebt die Karte hin. Taste Tab (Umschalt+Tab rückwärts).' }];
+  let tm = 0; const at = () => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top]; };
+  b.addEventListener('pointerover', e => { if (e.pointerType === 'mouse') showTip(tip, ...at(), 'next'); });
+  b.addEventListener('pointerout', e => { if (e.pointerType === 'mouse') hideTip(); });
+  b.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') return; tm = setTimeout(() => { b.dataset.long = '1'; showTip(tip, ...at(), 'next', 3500); }, 420); });
+  b.addEventListener('pointerup', () => clearTimeout(tm)); b.addEventListener('pointercancel', () => clearTimeout(tm));
+  b.addEventListener('contextmenu', e => e.preventDefault()); }
 $('startBtn').onclick = startGame;
 $('btnArmy').onclick = () => openArmy(curMode() === 'D' ? 'D' : 'A');
 $('armyStd').onclick = () => { armyDraft = Object.assign({}, E.defaultArmy(armySide)); armyRefresh(); };
@@ -1762,8 +1791,13 @@ $('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; t
 tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
+document.addEventListener('keyup', e => { if (e.key === 'Alt') { altHeld = false; e.preventDefault(); } });   // preventDefault: Alt öffnet sonst das Browsermenü
+window.addEventListener('blur', () => { altHeld = false; });
 window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (G) { layout(); updateHud(); } }, 120); });
+const gameKeys = e => G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input'));
 document.addEventListener('keydown', e => {
+  if (e.key === 'Alt') { if (gameKeys(e)) e.preventDefault(); altHeld = true; return; }
+  if (e.key === 'Tab' && gameKeys(e) && !e.ctrlKey && !e.altKey) { e.preventDefault(); nextUnit(e.shiftKey); return; }
   const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
   if (pan && $('start').hidden && !e.target.closest('input')) { board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
   // Tasten 1–n: Fähigkeiten-Knöpfe des Panels

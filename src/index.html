@@ -611,6 +611,16 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 #hud .up-sub .up-orden { height: 18px; width: auto; vertical-align: -3px; margin-right: 3px; }
 /* Seitenname im Panel: Knochenweiß, Fraktionsfarbe als Strich darunter (Ochsenblut ist als Schrift auf Dunkel zu schwach) */
 #hud .up-sub i.A, #hud .up-sub i.D { color: var(--s-text); border-bottom: 3px solid; border-bottom-color: var(--A); padding-bottom: 1px; } #hud .up-sub i.D { border-bottom-color: var(--D); }
+/* „Nächste Einheit“ neben Nachschub, „Alle Marken“ in der Leiste, Aufleuchten von „Runde beenden“ */
+.up-turn { width: 268px; }
+.up-turnrow .up-shop { padding: 0 10px; letter-spacing: .04em; }
+.up-turnrow { display: flex; gap: 8px; } .up-turnrow .up-shop { flex: 1; min-width: 0; }
+.up-next { flex: none; width: 52px; height: 46px; padding: 0; display: grid; place-items: center; }
+.up-next svg { width: 26px; height: 26px; filter: drop-shadow(0 1.5px 0 var(--s-ink)); }
+.tb-btn.on svg { stroke: var(--s-brass); } .tb-btn.on svg * { stroke: var(--s-brass); }
+.tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
+.up-end.flash { animation: endflash .6s ease-in-out 3; }
+@keyframes endflash { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(194,164,97,.95)) brightness(1.35); } }
 </style>
 </head>
 <body>
@@ -630,6 +640,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
       <span class="tb-brand">Armargeddon</span>
       <div class="tb-tools">
         <button class="tb-btn" id="btnZoom" data-tip="Zoom: größere Figuren, Feld verschiebbar"></button>
+        <button class="tb-btn" id="btnMarks" data-tip="Alle Marken zeigen: Zustand, Leben und Deckung aller Einheiten obenauf. Mit der Maus: Alt gedrückt halten."></button>
         <button class="tb-btn" id="btnSound" data-tip="Ton an/aus"></button>
         <button class="tb-btn" id="btnSpeed" data-tip="Tempo der Abläufe"></button>
         <button class="tb-btn" id="btnRules2" data-tip="Regeln"></button>
@@ -652,7 +663,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
       <div class="up-hint" id="hudHint"></div>
       <div class="up-abils" id="hudRow"></div>
     </div>
-    <div class="up-turn"><button class="up-plate up-shop" id="btnShop">Nachschub</button><button class="up-plate up-end" id="btnEnd">Runde beenden</button></div>
+    <div class="up-turn"><div class="up-turnrow"><button class="up-plate up-shop" id="btnShop">Nachschub</button><button class="up-plate up-next" id="btnNext" aria-label="Nächste Einheit (Tab)"><svg viewBox="0 0 24 24" fill="none" stroke="#F0EDE1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h12M11 7l5 5-5 5M20 5v14"/></svg></button></div><button class="up-plate up-end" id="btnEnd">Runde beenden</button></div>
   </footer>
 </div>
 <div id="toast"></div>
