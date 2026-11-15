@@ -606,6 +606,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .mtip b { display: block; font: 700 17px var(--s-head); letter-spacing: .05em; text-transform: uppercase; }
 .mtip span { display: block; font: 14px/1.35 var(--s-body); }
 .mtip span + b { margin-top: 8px; }
+#hud .up-name { padding-top: .2em; margin-top: -.2em; }   /* Platz für Umlautpunkte, sonst schneidet overflow sie ab */
+#hud .up-name.two { white-space: normal; text-overflow: clip; font-size: 16px; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 </style>
 </head>
 <body>
