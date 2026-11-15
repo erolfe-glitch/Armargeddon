@@ -22,7 +22,8 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-brass`     | `#C2A461` | Akzent Messing: Auswahl, Fähigkeiten, Hauptknopf |
 | `--s-life`      | `#BF4638` | Leben; Fraktionsfarbe **Konkordat** (Blutrot) |
 | `--s-foe-dark`  | `#713B36` | Feind dunkel |
-| `--s-friend`    | `#7A8F99` | Fraktionsfarbe **Aschenwacht** (Feldgrau) |
+| `--s-friend`    | `#7D8471` | Fraktionsfarbe **Aschenwacht** (Feldgrau grünlich) |
+| `--s-legion`    | `#6F8FB5` | Fraktionsfarbe **Blaue Legion** (Horizontblau, einziges erlaubtes Blau) |
 | `--s-gas`       | `#8A8A2E` | Gas, Gefahr |
 | `--s-ink`       | `#120D0B` | Comic-Kontur, harte Schatten |
 
@@ -30,6 +31,7 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 Jede Fraktion hat genau ein Wappen (Quelle `ui-quelle/wappen_*.png`, Teile in `ui-quelle/teile/wappen_*/`):
 - **Konkordat:** eiserner Löwenkopf im Strahlenkranz, Bronze.
 - **Aschenwacht:** Stahlhelm mit Sehschlitz im Strahlenkranz, Stahlgrau.
+- **Blaue Legion von Arvenne** (zweites Bilderset des Konkordats): Bronze-Hahn mit Patina im Strahlenkranz. Ersetzt beim Bilderset Frankreich überall das Konkordats-Wappen.
 
 Das **ganze Emblem** (`w_emblem`, immer mit Strahlenkranz, nie beschnitten) ist die Marke der Seite, leicht aufgehellt (`.crest`). **Weniger, aber groß:**
 - Obere Leiste: je Seite **ein** Medaillon (`.tb-medal`, bei 1920 px 64 px, Handy 40–46 px), darf über den Leistenrand ragen. Links neben dem eigenen Kampfkraft-Balken, rechts neben dem des Gegners; dazu eins bei „Seite am Zug“.
@@ -39,13 +41,16 @@ Das **ganze Emblem** (`w_emblem`, immer mit Strahlenkranz, nie beschnitten) ist 
 Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im Startmenü. Die Flaggen dahinter (Union-Jack-artig beim Konkordat, Schwarz-Weiß-Rot bei der Aschenwacht) sind **gewollt** und bleiben so; die alten echten Nationalflaggen-Bilder sind entfernt.
 
 ## Fraktionsfarben
-Fest je Fraktion, nicht nach Freund/Feind:
-- **Konkordat:** Blutrot `#BF4638` (`--s-life`, `--A`).
-- **Aschenwacht:** Feldgrau `#7A8F99` (`--s-friend`, `--D`).
+Fest je Fraktion, nicht nach Freund/Feind. Alle drei klar verschieden:
+- **Konkordat:** Blutrot `#BF4638`.
+- **Aschenwacht:** Feldgrau grünlich `#7D8471`.
+- **Blaue Legion:** Horizontblau `#6F8FB5` – die **einzige erlaubte Blau-Farbe** im Spiel.
 
-Gilt für Kampfkraft-Balken, Siegpunkt-Zahlen, Zielfeld-Marken (Leiste und Karte), Ringe unter den Einheiten und Figuren-Akzente (`FIG.PAL.accent`). **Kein Blau im Spiel**, auch nicht für Hilfsmarkierungen (dafür Knochenweiß oder Messing).
-Die Seite erkennt man nie nur an der Farbe: dazu das Wappen bzw. der Name. Ersatzformen, falls ein Wappenbild fehlt: Schild (Konkordat) und Zackenraute (Aschenwacht).
-Die Reihenfolge in der Leiste folgt der Sicht: eigene Seite links, Gegner rechts.
+Im Code: CSS `--A` / `--D` und `FIG.PAL.accent`; `applySkin` in ui.js setzt sie nach Bilderset (`sideCol`). Gilt für Kampfkraft-Balken, Siegpunkte, Zielfeld-Marken (Leiste und Karte), Ringe unter den Einheiten und Seitennamen. Hilfsmarkierungen nie blau, sondern Knochenweiß oder Messing.
+
+**Zahlen nie in Fraktionsfarbe** (Rot auf Dunkel ist schlecht lesbar): Siegpunkt-Zahlen in Knochenweiß, die Fraktionsfarbe als dicker Strich (5 px) darunter.
+
+Die Seite erkennt man nie nur an der Farbe: dazu das Wappen bzw. der Name. Ersatzformen, falls ein Wappenbild fehlt: Schild (Konkordat/Legion) und Zackenraute (Aschenwacht). Reihenfolge in der Leiste nach Sicht: eigene Seite links, Gegner rechts.
 
 ## Schrift
 - **Headline** (`--s-head`): kantig, gut lesbar – Titel, Knöpfe, Namen. Großbuchstaben mit etwas Sperrung.

@@ -31,6 +31,8 @@ PARTS = {
     'wD': ('wappen_aschenwacht/w_emblem', 128),
     'fA': ('wappen_konkordat/w_flagge', 300),
     'fD': ('wappen_aschenwacht/w_flagge', 300),
+    'wF': ('wappen_legion/w_emblem', 128),      # Blaue Legion (zweites Bilderset des Konkordats)
+    'fF': ('wappen_legion/w_flagge', 300),
 }
 SYMBOLS = {
     'bogen3b_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',

@@ -8,7 +8,7 @@
 /* Spiel-HUD: Schlachtfeld füllt den Bildschirm, oben eine schmale Statusleiste, unten die Einheitenkarte. */
 :root {
   --ink: #12130f; --panel: #23241d; --panel-2: #2e3027; --edge: #4a4c3c; --edge-d: #0b0c08;
-  --text: #f0e9d6; --muted: #a9a48e; --A: #BF4638; --D: #7A8F99; --gold: #e5b23a; --bad: #e2553c; --go: #d9722c;
+  --text: #f0e9d6; --muted: #a9a48e; --A: #BF4638; --D: #7D8471; --gold: #e5b23a; --bad: #e2553c; --go: #d9722c;
   --display: "Bahnschrift", "DIN Condensed", "Arial Narrow", "Roboto Condensed", system-ui, sans-serif;
   --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
@@ -16,7 +16,7 @@
 /* ---- STYLE.md – Palette (zentral; jede UI-Änderung nutzt diese Werte) ---- */
 :root {
   --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
-  --s-brass: #C2A461; --s-life: #BF4638; --s-foe-dark: #713B36; --s-friend: #7A8F99; --s-gas: #8A8A2E; --s-ink: #120D0B;
+  --s-brass: #C2A461; --s-life: #BF4638; --s-foe-dark: #713B36; --s-friend: #7D8471; --s-legion: #6F8FB5; --s-gas: #8A8A2E; --s-ink: #120D0B;
   --s-head: "Bahnschrift SemiBold Condensed", "Bahnschrift", "DIN Condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
   --s-body: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
   --s-min: 14px;
@@ -170,7 +170,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 /* ---- Grimdark-Anstrich: Rost, Eisen, Pergament. Nur Farben und Flächen, Maße bleiben. ---- */
 :root {
   --ink: #0f0c0a; --panel: #241c17; --panel-2: #33271f; --edge: #6a4a35; --edge-d: #0a0706;
-  --text: #ecdfc2; --muted: #a8977c; --A: #BF4638; --D: #7A8F99; --gold: #d8a63c; --bad: #d8472e; --go: #a8351f;
+  --text: #ecdfc2; --muted: #a8977c; --A: #BF4638; --D: #7D8471; --gold: #d8a63c; --bad: #d8472e; --go: #a8351f;
   --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
   --iron: linear-gradient(#3a2e27, #1c1512);
   --rivets: radial-gradient(circle at 6px 6px, #8a6a52 0 1.6px, #120d0a 1.7px 3px, transparent 3.2px);
@@ -284,7 +284,7 @@ body { background: #0c0908; }
 .meter { width: 150px; height: 26px; background: none; border: 0; border-radius: 0; overflow: visible; }
 .meter::after { content: ""; position: absolute; inset: 0; background: var(--ui-barR) center / 100% 100% no-repeat; pointer-events: none; }
 .meter i { left: 16.5%; top: 22%; bottom: 26%; width: calc(77% * var(--v, 1)); right: auto; inset: 22% auto 26% 16.5%; background: linear-gradient(#f08070, var(--A) 45%, #6e1c14); }
-.meter.D i { background: linear-gradient(#b4c2c8, var(--D) 45%, #4d5a60); }
+.meter.D i { background: var(--D); }
 .meter::before { content: ""; position: absolute; top: 22%; bottom: 26%; left: 16.5%; right: 6.5%; background: #1a1210; }
 .meter b { left: calc(16.5% + 77% * var(--brk, .5)) !important; top: 14%; bottom: 18%; width: 3px; background: #ffe9a8; mix-blend-mode: normal; box-shadow: 0 0 3px #000; z-index: 2; }
 .meter span { left: 16%; right: 6%; z-index: 2; font-size: 11px; }
@@ -510,18 +510,18 @@ body { background: #0c0908; }
 
 .tb-meter .tube { position: relative; width: 210px; height: 40px; background: var(--up-balken) center / 100% 100% no-repeat; }
 .tb-meter .slot { position: absolute; inset: 27% 8.3%; overflow: hidden; border-radius: 2px; }
-.tb-meter .slot i { position: absolute; inset: 0 auto 0 0; width: calc(var(--v, 1) * 100%); background: var(--s-friend); transition: width .4s; }
-.tb-meter.A .slot i { background: var(--s-life); } .tb-meter.D .slot i { background: var(--s-friend); }
+.tb-meter .slot i { position: absolute; inset: 0 auto 0 0; width: calc(var(--v, 1) * 100%); background: var(--D); transition: width .4s; }
+.tb-meter.A .slot i { background: var(--A); } .tb-meter.D .slot i { background: var(--D); }   /* --A/--D = Fraktionsfarbe, ui.js setzt sie je Bilderset */
 .tb-meter .slot i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); background-size: calc(100% / var(--v, 1)) 100%; }
 .tb-meter .tube b { position: absolute; top: 12%; bottom: 12%; left: calc(8.3% + var(--brk, .5) * 83.4% - 2px); width: 4px; background: var(--s-brass); box-shadow: 0 0 0 2px var(--s-ink); border-radius: 1px; }
 .tb-meter .val { min-width: 58px; font: 700 20px var(--s-body); font-variant-numeric: tabular-nums; text-shadow: 0 2px 0 var(--s-ink); }
 .tb-meter.fr .val { text-align: right; }
 .tb-pts { height: 54px; padding: 0 20px; gap: 9px; font-size: 28px; letter-spacing: .03em; }
-.tb-pts b { font: inherit; } .tb-pts b.A { color: var(--s-life); } .tb-pts b.D { color: var(--s-friend); } .tb-pts .sep { font-style: normal; color: #cbbfa6; }
+.tb-pts b { font: inherit; color: var(--s-text); padding: 0 2px 1px; border-bottom: 5px solid; line-height: 1; } .tb-pts b.A { border-color: var(--A); } .tb-pts b.D { border-color: var(--D); } .tb-pts .sep { font-style: normal; color: #cbbfa6; }
 .tb-pts small { font: 700 15px var(--s-head); color: #cbbfa6; margin-left: 2px; letter-spacing: .04em; }
 .tb-dots { display: inline-flex; gap: 4px; margin: 0 6px 0 6px; padding-left: 12px; border-left: 2px solid rgba(240,237,225,.25); }
 .tb-obj { display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 3px; border-radius: 50%; border: 2px solid var(--s-ink); font: 700 14px var(--s-body); color: var(--s-ink); text-shadow: none; letter-spacing: 0; background: var(--s-parch); }
-.tb-obj.A { background: var(--s-life); } .tb-obj.D { background: var(--s-friend); }
+.tb-obj.A { background: var(--A); } .tb-obj.D { background: var(--D); }
 .tb-tools { display: flex; gap: 6px; }
 .tb-btn { position: relative; width: 44px; height: 44px; padding: 0; border: 0; cursor: pointer; background: var(--up-platte) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)); transition: transform .08s; }
 .tb-btn::before { content: ""; position: absolute; inset: 16%; border-radius: 6px; background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.8) 0 45%, rgba(18,13,11,.35) 70%, rgba(18,13,11,0) 90%); }

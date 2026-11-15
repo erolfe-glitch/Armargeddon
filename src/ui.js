@@ -626,7 +626,7 @@ function draw() {
   for (const o of OBJECTIVES) {
     const [x, y] = center(o.c, o.r), col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fl = VIS.ctrl[o.id] && CFLAG[VIS.ctrl[o.id]], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
+    const fl = VIS.ctrl[o.id] && CFLAG[fac(VIS.ctrl[o.id])], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
     if (fim) { const fh = s * 0.95, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px + s * 0.02, top - s * 0.04, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
@@ -986,7 +986,7 @@ async function playEvent(e) {
     case 'clear': { visSync('clouds'); playSound('flame', 0.35); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
     case 'ammo': { playSound('clank', 0.5); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
-    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#BF4638' : '#7A8F99', true); } await wait(350); updateUI(); break; }
+    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
     case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
@@ -1285,9 +1285,13 @@ const UP_MARK = {   // Ersatz, falls die Wappenbilder fehlen: Freund = Schild (F
   foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
 };
 // Fraktionswappen (ui-quelle/wappen_*): Konkordat = eiserner Löwenkopf, Aschenwacht = Stahlhelm. Emblem allein als Marke, mit Flagge auf Zielfeldern.
-const crest = sd => UP['w' + sd] ? `<img class="crest" src="${UP['w' + sd]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
+// Fraktion je Seite: A = Konkordat oder Blaue Legion (Bilderset F), D = Aschenwacht. Wappen und Farbe hängen an der Fraktion.
+const fac = sd => sd === 'D' ? 'D' : skinA === 'F' ? 'F' : 'A';
+const FCOL = { A: '#BF4638', D: '#7D8471', F: '#6F8FB5' };   // Blutrot, Feldgrau grünlich, Horizontblau (STYLE.md)
+const sideCol = sd => FCOL[fac(sd)];
+const crest = sd => UP['w' + fac(sd)] ? `<img class="crest" src="${UP['w' + fac(sd)]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
 const CFLAG = {};
-for (const sd of ['A', 'D']) if (UP['f' + sd]) { const im = new Image(); im.src = UP['f' + sd]; CFLAG[sd] = im; }
+for (const f of ['A', 'D', 'F']) if (UP['f' + f]) { const im = new Image(); im.src = UP['f' + f]; CFLAG[f] = im; }
 const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
@@ -1447,6 +1451,8 @@ function drawPortraitLater(c, k, s) { requestAnimationFrame(() => drawPortrait(c
 const ATTACKERS = { A: { name: 'Konkordat von Valmor', short: 'Konkordat' }, F: { name: 'Blaue Legion von Arvenne', short: 'Legion' } };
 function applySkin(sk) {
   skinA = sk; FIG.setSkin('A', sk); SIDES.A.name = ATTACKERS[sk].name; SIDES.A.short = ATTACKERS[sk].short;
+  for (const sd of ['A', 'D']) { FIG.PAL[sd].accent = sideCol(sd); document.documentElement.style.setProperty('--' + sd, sideCol(sd)); }   // Ringe, Marken, Balken
+  drawFlagPick();
   $('facAName').textContent = ATTACKERS[sk].name;
   drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
 }
@@ -1461,7 +1467,7 @@ const mechsOn = () => $('optMechs').checked;
 function mechChanged() { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); }
 const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
 function drawFlagPick() {   // jede Fraktion hat genau ein Wappen (keine Auswahl mehr)
-  $('facFlagA').src = UP.fA || ''; $('facFlagD').src = UP.fD || '';
+  $('facFlagA').src = UP['f' + fac('A')] || ''; $('facFlagD').src = UP.fD || '';
 }
 let armySide = 'A', armyDraft = {};
 const curMode = () => document.querySelector('input[name=mode]:checked').value;
