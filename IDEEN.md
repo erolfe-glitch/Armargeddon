@@ -13,8 +13,10 @@ Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hi
 
 Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Kamera und Spielgefühl.
 
-- **Etappe 4 – Einheitenbilder:** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion.
+- **Etappe 4a – UI-Flächen scharf (als Nächstes):** Bronze- und Eisentafeln in Menüs und Panels wirken verwaschen, weil ein großes Bild gestreckt wird. Lösung: kachelbare, scharfe Texturen für die Flächen, einzelne Bilder nur für Ecken und Rahmen (9-Slice).
+- **Etappe 4b – Einheitenbilder:** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion.
+- **Etappe 4c – Sound und Musik:** UI-Klicks, Waffen, Einschläge, Gas, Ketten, Atmosphäre; Musik mit Suno: Titelthema und 1–2 Schlachtmusiken.
 - **Etappe 5 – Gameplay:** Missionstypen (nicht nur Siegpunkte), stärkere und nachvollziehbare KI, Blaue Legion als vollwertige Seite.
-- **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen.
+- **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle.
 - **Etappe 7 – Balance:** Kosten, Werte und Siegquoten mit `tools/sim.js` und `tools/costcheck.js` abstimmen.
 - **Etappe 8 – Feldzug:** Weltkarte mit aufeinanderfolgenden Schlachten, Land- und Seeschlachten.
