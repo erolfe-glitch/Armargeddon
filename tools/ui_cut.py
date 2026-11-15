@@ -31,10 +31,16 @@ NAMES = {
                        's_gewehr', 's_pferd', 's_fernglas', 's_sanduhr'],
 }
 NAMES['bogen3b_symbole'] = NAMES['bogen3_symbole']   # gleiche Anordnung, neuer Stil (wird im Entwurf benutzt)
+NAMES['bogen4a_symbole'] = ['s_drahtschere', 's_drahtrolle', 's_auge', 's_haken', 's_drehpfeil', 's_mg_dreibein',
+                            's_sperrfeuer', 's_lafette', 's_flamme']
+NAMES['bogen4b_symbole'] = ['s_meldehund', 's_schraubenschluessel', 's_nebel', 's_spitzhacke', 's_sprengladung',
+                            's_tellermine', 's_scheinwerfer', 's_gasmaske', 's_munitionskiste']
+NAMES['bogen4c_symbole'] = ['s_panzerbrecher', 's_durchsickern', 's_niedergehalten', 's_flucht', 's_gebrochen',
+                            's_festgefahren', 's_walze']
 MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6, 'bogen3_symbole': 30, 'bogen3b_symbole': 30}
 # Bögen mit festem Raster (Spalten, Zeilen): Stücke werden nach ihrer Mitte der Rasterzelle zugeordnet,
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
-GRID = {'bogen3b_symbole': (4, 4)}
+GRID = {'bogen3b_symbole': (4, 4), 'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3)}
 
 
 def grid_parts(rgba, cols, rows):

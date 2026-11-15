@@ -196,16 +196,16 @@ img { display: block; }
 const SYM = {
   sanduhr: "@@bogen3b_symbole/s_sanduhr:48@@",
   zielen: "@@bogen3b_symbole/s_zielen:128@@", nahkampf: "@@bogen3b_symbole/s_nahkampf:128@@",
-  marsch: "@@bogen3b_symbole/s_marsch:128@@", fernglas: "@@bogen3b_symbole/s_fernglas:128@@",
-  zahnrad: "@@bogen3b_symbole/s_zahnrad:128@@", granate: "@@bogen3b_symbole/s_handgranate:128@@"
+  marsch: "@@bogen3b_symbole/s_marsch:128@@", auge: "@@bogen4a_symbole/s_auge:128@@",
+  drahtschere: "@@bogen4a_symbole/s_drahtschere:128@@", granate: "@@bogen3b_symbole/s_handgranate:128@@"
 };
 const PIC = { A: "@@art:inf_A@@", D: "@@art:inf_D@@" };
 const ABILS = [
   { s: 'zielen',   n: 'Schießen',        ap: 1, t: 'Feuer auf einen Feind in 2 Feldern Reichweite.', on: true },
   { s: 'nahkampf', n: 'Nahkampf',        ap: 2, t: 'Sturm auf ein Nachbarfeld. Kostet alle Aktionen.' },
   { s: 'marsch',   n: 'Marsch',          ap: 2, t: 'Doppelte Zugweite. Kostet alle Aktionen.' },
-  { s: 'fernglas', n: 'Feuerbereit',     ap: 1, t: 'Schießt einmal auf den ersten Feind, der in Reichweite zieht.' },
-  { s: 'zahnrad',  n: 'Draht schneiden', ap: 1, t: 'Entfernt Stacheldraht auf einem Nachbarfeld.' },
+  { s: 'auge', n: 'Feuerbereitschaft', ap: 2, t: 'Schießt einmal auf den ersten Feind, der in Reichweite zieht.' },
+  { s: 'drahtschere', n: 'Draht schneiden', ap: 1, t: 'Entfernt Stacheldraht auf einem Nachbarfeld.' },
   { s: 'granate',  n: 'Granaten',        ap: 2, t: 'Wurf über Deckung, trifft auch im Graben.', cd: 2 }
 ];
 const panel = document.getElementById('panel'), box = document.getElementById('abils');

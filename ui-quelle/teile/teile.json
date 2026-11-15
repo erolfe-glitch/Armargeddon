@@ -262,5 +262,105 @@
  "bogen3b_symbole/s_sanduhr": [
   254,
   411
+ ],
+ "bogen4a_symbole/s_drahtschere": [
+  456,
+  442
+ ],
+ "bogen4a_symbole/s_drahtrolle": [
+  565,
+  452
+ ],
+ "bogen4a_symbole/s_auge": [
+  472,
+  376
+ ],
+ "bogen4a_symbole/s_haken": [
+  513,
+  716
+ ],
+ "bogen4a_symbole/s_drehpfeil": [
+  629,
+  659
+ ],
+ "bogen4a_symbole/s_mg_dreibein": [
+  684,
+  696
+ ],
+ "bogen4a_symbole/s_sperrfeuer": [
+  934,
+  427
+ ],
+ "bogen4a_symbole/s_lafette": [
+  841,
+  560
+ ],
+ "bogen4a_symbole/s_flamme": [
+  622,
+  585
+ ],
+ "bogen4b_symbole/s_meldehund": [
+  260,
+  251
+ ],
+ "bogen4b_symbole/s_schraubenschluessel": [
+  289,
+  247
+ ],
+ "bogen4b_symbole/s_nebel": [
+  245,
+  233
+ ],
+ "bogen4b_symbole/s_spitzhacke": [
+  258,
+  246
+ ],
+ "bogen4b_symbole/s_sprengladung": [
+  244,
+  243
+ ],
+ "bogen4b_symbole/s_tellermine": [
+  263,
+  179
+ ],
+ "bogen4b_symbole/s_scheinwerfer": [
+  201,
+  248
+ ],
+ "bogen4b_symbole/s_gasmaske": [
+  217,
+  245
+ ],
+ "bogen4b_symbole/s_munitionskiste": [
+  346,
+  210
+ ],
+ "bogen4c_symbole/s_panzerbrecher": [
+  240,
+  225
+ ],
+ "bogen4c_symbole/s_durchsickern": [
+  272,
+  242
+ ],
+ "bogen4c_symbole/s_niedergehalten": [
+  199,
+  245
+ ],
+ "bogen4c_symbole/s_flucht": [
+  232,
+  247
+ ],
+ "bogen4c_symbole/s_gebrochen": [
+  247,
+  244
+ ],
+ "bogen4c_symbole/s_festgefahren": [
+  339,
+  237
+ ],
+ "bogen4c_symbole/s_walze": [
+  386,
+  215
  ]
 }
