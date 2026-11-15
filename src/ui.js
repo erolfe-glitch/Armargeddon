@@ -1211,7 +1211,7 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
   $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
-    + `<span class="tb-dots">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && UP['f' + fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
+    + `<span class="tb-dots">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
 }
 // Knöpfe der oberen Leiste: flache Symbole in Knochenweiß, Werte als kleine Marke
 const TB_ICON = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? '#F0EDE1' : 'none'}" stroke="#F0EDE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -1292,6 +1292,20 @@ const sideCol = sd => FCOL[fac(sd)];
 const crest = sd => UP['w' + fac(sd)] ? `<img class="crest" src="${UP['w' + fac(sd)]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
 const CFLAG = {};
 for (const f of ['A', 'D', 'F']) if (UP['f' + f]) { const im = new Image(); im.src = UP['f' + f]; CFLAG[f] = im; }
+// Gemalte Wimpel für eroberte Zielmarken (oben in der Leiste): Dreieck in Fraktionsfarbe, ausgefranstes Ende, Pinselstriche,
+// Tintenkontur, helle Form drauf (Konkordat Krone, Aschenwacht Helmspitze, Legion Hahnenkamm). Als Bild, damit die Filter-IDs getrennt bleiben.
+const PENN_SYM = {
+  A: 'M6.5 19L6 10.5 9.6 14 13 8 16.4 14 20 10.5 19.5 19Z',
+  D: 'M5.5 20h15v-2h-1.2Q19 12.5 13 12 7 12.5 6.7 18H5.5ZM11.6 12.2l1.4-6 1.4 6Z',
+  F: 'M6.5 19C6 15 7 13 8.6 13.2L9 9.4 11.4 12.2 12.8 7.6 14.6 11.8 17.2 8.4 17.6 12.8C19.6 12.4 21 15 19.8 19Z'
+};
+const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 30">
+<filter id="r" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".18 .5" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter>
+<filter id="s" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".05 .7" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 .07 0 0 0 0 .05 0 0 0 0 .04 2.8 0 0 0 -1.3"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+<g filter="url(#r)"><path id="p" d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" fill="${FCOL[f]}" stroke="#120D0B" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
+<path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
+const PENNANT = { A: pennant('A'), D: pennant('D'), F: pennant('F') };
 const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
