@@ -13,6 +13,7 @@ Rostiges Eisen, Pergament, Holz, Comic-Tinte. Dicke dunkle Konturen, harte Schat
 ## Grundregel
 - **Rahmen und Hintergründe:** texturiert, dreckig, abgenutzt (Rost, Kratzer, Maserung, Flecken).
 - **Inhalte** (Text, Balkenfüllung, Zahlen, Symbole): flach, sauber, hoher Kontrast. Keine Textur, kein Verlauf, kein Schmutz auf Inhalten.
+- **Flächen immer gekachelt, nie gestreckt.** Große Flächen (Menüs, Panels, Tafeln, Knöpfe, Tooltips) bekommen eine kachelbare Textur in Originalgröße (`background-repeat`): Bronze (Menüs, Fenster), Rost-Eisen (Tafeln, Knöpfe), Holz (Einheiten-Panel, obere Leiste), Pergament (Tooltips, Tagebuch, Info-Fenster). Abdunkeln nur über eine flache Tintenschicht darüber. Rahmen und Ecken sind Einzelbilder aus dem UI-Bogen per 9-Slice (`border-image`, Innenfläche durchsichtig, Kanten mit Nieten `round`). Quelle `ui-quelle/texturen_ui.png`, aufbereitet mit `tools/ui_textures.py` (nahtlos, Flecken ausgeglichen), eingebettet als `--up-tx*` bzw. `--up-t9/r9/l9/p9`.
 
 ## Palette
 Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“). Keine neuen Farben ohne Eintrag hier.

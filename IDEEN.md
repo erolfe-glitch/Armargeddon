@@ -11,7 +11,7 @@ Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hi
 
 ## Gesamtplan (Stand 2026-11-15)
 
-Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Kamera und Spielgefühl.
+Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Kamera und Spielgefühl, Etappe 4a UI-Flächen gekachelt.
 
 - **Etappe 4a – UI-Flächen scharf (als Nächstes):** Bronze- und Eisentafeln in Menüs und Panels wirken verwaschen, weil ein großes Bild gestreckt wird. Lösung: kachelbare, scharfe Texturen für die Flächen, einzelne Bilder nur für Ecken und Rahmen (9-Slice).
 - **Etappe 4b – Einheitenbilder:** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion.

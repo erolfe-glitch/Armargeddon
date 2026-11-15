@@ -747,6 +747,40 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 @media (min-width: 2200px) and (min-height: 1200px) { .sm-facs { grid-template-columns: repeat(3, minmax(0, 640px)); gap: 40px; } .sm-flag { height: 270px; } .sm-fac h3 { font-size: 38px; } .sm-fac p { font-size: 21px; } .sm-units canvas { width: 160px; height: 160px; }
   .sm .mappick { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; } .sm-body, .sm-foot { max-width: 2200px; } .sm .mapcard canvas { height: 210px; } .sm .mapcard b { font-size: 30px; } .sm .msize, .sm .mapcard small { font-size: 18px; } }
 @media (max-height: 900px) { .sm-flag { height: 130px; } .sm-units canvas { width: 90px; height: 90px; } .sm-head { margin-bottom: 8px; } .sm-page { padding-top: 18px; } }
+
+/* ===== Etappe 4a (STYLE.md „Flächen immer gekachelt“): große Flächen = kachelbare Textur in Originalgröße (--up-tx*), nie gestreckt.
+   Rahmen und Ecken bleiben Einzelbilder aus dem UI-Bogen per 9-Slice (--up-t9 Tafel, --up-r9 Rost-Eisenrahmen, --up-l9 Leiste, --up-p9 Pergament;
+   Innenfläche dort durchsichtig, erzeugt von tools/ui_textures.py). Abdunkeln über eine flache Tintenschicht, damit Schrift lesbar bleibt. ===== */
+:root { --tx-ink45: linear-gradient(rgba(18,13,11,.45), rgba(18,13,11,.45)); --tx-ink35: linear-gradient(rgba(18,13,11,.35), rgba(18,13,11,.35)); }
+/* Tafeln und Knöpfe: Eisen gekachelt, Eisenrand mit Messingecken. --tw = Größe der Ecke auf dem Schirm */
+.sm-btn, .sm-chip, .up-plate, .up-text, .tb-plate {
+  --tw: 22px; border: calc(var(--tw) * .46) solid transparent; border-image: var(--up-t9) 100 / var(--tw) stretch;
+  background: var(--tx-ink45), var(--up-txEisen) 0 0 repeat; background-clip: padding-box, padding-box; }
+.sm-btn { --tw: 30px; } .up-end { --tw: 26px; } .tb-pts { --tw: 24px; }
+/* Der 9-Slice-Rand nimmt Platz ein: seitliche Innenabstände um die Randbreite kleiner, damit nichts breiter wird (obere Leiste ab 1280 px) */
+.tb-plate { padding: 0 8px; } .tb-pts { padding: 0 9px; } .up-plate { padding: 0 6px; } .up-turnrow .up-shop { padding: 0 2px; } .up-next { padding: 0; }
+.sm-chip { padding: 0 10px; } .up-text { padding: 0 8px; } .sm-btn { padding: 0 22px; }
+@media (max-width: 1800px) { .tb-pts { padding: 0 1px; } }
+@media (max-width: 1600px) { .tb-pts { padding: 0 3px; } }
+@media (max-width: 1400px) { .tb-plate:not(.tb-pts) { padding: 0 2px; } }
+@media (max-width: 1600px) and (min-height: 521px) { .up-turnrow .up-shop { padding: 0; } }
+/* Menüs und Fenster: Bronze gekachelt im Rost-Eisenrahmen (Nieten wiederholt statt gestreckt) */
+.sm-opts, .sm-setup, .sm-fac, .sheet, .armybar {
+  border-image: var(--up-r9) 64 round; background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat !important; background-clip: padding-box, padding-box !important; }
+.sm .mapcard { border-image: var(--up-r9) 64 round !important; background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat !important; background-clip: padding-box, padding-box !important; }
+/* Einheiten-Panel und obere Leiste: Holz gekachelt, Eisenband mit Nieten und Mittelplatten als 9-Slice darüber */
+.upanel { background: var(--tx-ink35), var(--up-txHolz) 0 0 repeat, var(--s-bg); }
+.upanel::before { content: ""; position: absolute; inset: 0; pointer-events: none; border: solid transparent; border-width: 40px 30px; border-image: var(--up-l9) 76 60 / 47px 37px stretch; }
+.upanel > * { position: relative; }
+.tbar { background: var(--tx-ink35), var(--up-txHolz) 0 0 repeat, var(--s-bg); }
+.tbar::before { border-image: var(--up-l9) 76 60 / 18px 16px stretch; }
+/* Pergament (Tooltips, Tagebuch, Info-Fenster): Pergament gekachelt, ausgefranster Rand als 9-Slice */
+.up-tip, .mtip, .tbar [data-tip]::after {
+  border: 15px solid transparent; border-image: var(--up-p9) 46 / 22px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; }
+.up-tip, .mtip { padding: 2px 6px 4px; } .tbar [data-tip]::after { padding: 0 3px 1px; }
+.diary { background: var(--up-txPerg) 0 0 repeat; }
+.box { border-image: var(--ui-parch) 100 60 60 60 / 74px 40px 40px 40px stretch; background: var(--up-txPerg) 0 0 repeat !important; background-clip: padding-box !important; }
+@media (max-height: 520px), (max-width: 900px) { .box { border-image-width: 26px; } }
 </style>
 </head>
 <body>

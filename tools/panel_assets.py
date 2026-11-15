@@ -53,6 +53,11 @@ PARTS.update({
     'cov1': ('kartenmarken/schild_bronze', 96), 'cov2': ('kartenmarken/schild_silber', 96), 'cov3': ('kartenmarken/schild_gold', 96),
     'orden': ('kartenmarken/orden', 96), 'muenze': ('kartenmarken/muenze_voll', 64), 'muenzeLeer': ('kartenmarken/muenze_leer', 64),
 })
+# Kachelbare Flächen und Rahmen für 9-Slice (tools/ui_textures.py): Flächen immer gekachelt in Originalgröße, nie gestreckt
+PARTS.update({
+    'txBronze': ('texturen/bronze', 496), 'txEisen': ('texturen/eisen', 496), 'txHolz': ('texturen/holz', 496), 'txPerg': ('texturen/pergament', 496),
+    'r9': ('texturen/rahmen9', 524), 't9': ('texturen/tafel9', 542), 'l9': ('texturen/leiste9', 1951), 'p9': ('texturen/perg9', 507),
+})
 for sheet, names in SYMBOLS.items():
     for n in names:
         PARTS['s_' + n] = (f'{sheet}/s_{n}', SYM)
