@@ -31,6 +31,8 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-friend-hi` | `#A0AC88` | Feldgrau aufgehellt, nur Füllung des Kampfkraft-Balkens der Aschenwacht |
 | `--s-legion`    | `#6F8FB5` | Fraktionsfarbe **Blaue Legion** (Horizontblau, einziges erlaubtes Blau) |
 | `--s-gas`       | `#8A8A2E` | Gas, Gefahr |
+| `--s-moss`      | `#6B7A3A` | Lebensbalken über 60 % (Moosgrün) |
+| `--s-ochre`     | `#B08A2E` | Lebensbalken 30–60 % (Ocker); darunter `--s-life` |
 | `--s-ink`       | `#120D0B` | Comic-Kontur, harte Schatten |
 
 ## Fraktionswappen
@@ -66,17 +68,20 @@ Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `to
 - Mindestens **14 px** überall, auch in Tooltips und Kleingedrucktem.
 - **Kein Text in Grafiken.** Beschriftung immer als echte Schrift im HTML.
 
+## Schärfe
+- Grafiken nie hochskalieren: Teile in voller Quellgröße einbetten (`tools/panel_assets.py`), Canvas zeichnet mit `devicePixelRatio`. Wo die Quelle selbst zu klein ist (Holzleiste 1951 px, Titelbild 1024 px), braucht es eine größere Vorlage.
+
 ## Bauteile
 - Konturen 2–3 px in `--s-ink`, harter Schatten nach unten (kein Weichzeichner).
-- Balken: Rahmen texturiert, Füllung flach mit Segmentstrichen. Leben `--s-life`, Moral `--s-brass`.
+- Balken: Rahmen texturiert, Füllung flach mit Segmentstrichen und dünnem Tintenrand. **Leben nach Stand** (Karte und Panel gleich): über 60 % `--s-moss`, 30–60 % `--s-ochre`, darunter `--s-life`. Moral `--s-brass`. Die Fraktion zeigen Ring, Wappen und Marken, nicht der Lebensbalken.
 - **Ausnahme Kampfkraft-Balken (obere Leiste):** Füllung gemalt – Pinselform mit ausgefranstem Ende, feine Pinselstriche, Tintenkontur. Farbe bleibt die volle Fraktionsfarbe, Segmentstriche dünn.
 - **Zielfeld-Marken (obere Leiste):** kleine gemalte Messingmünzen (Verlauf aus Messingtönen um `--s-brass`) mit eingeprägter Zahl (dunkles Braun, heller Grat darunter), Rand immer `--s-rust`. Erobert: Wimpel aus `ui-quelle/wimpel_fraktionen.png` mit Stange und Messingknauf am rechten Münzrand (Konkordat rot-weißes Schrägkreuz, Aschenwacht Schwarz-Weiß-Rot, Legion Blau-Weiß-Rot), kein farbiger Rand. Fester Abstand zwischen den Münzen, damit die Leiste beim Erobern nicht springt; der letzte Wimpel ragt nicht in die Messingecke. Fehlt das Bild, greift der gezeichnete Wimpel (`pennant` in ui.js).
-- Symbol-Knöpfe: Rostknopf aus Bogen 2, Symbol aus `bogen3b_symbole`. Symbol mit dünner Kontur (1 px) in Knochenweiß `#F0EDE1`, Knopffläche dahinter leicht abgedunkelt. Tooltip als Pergamentzettel mit Name, Kosten (nur Zahl), Kurztext.
+- Symbol-Knöpfe: Rostknopf aus Bogen 2, Symbol aus `bogen3b_symbole`. Fähigkeiten-Knöpfe im Panel bis 84 px breit (teilen sich die Breite, bei 1280 px kleiner, nie Überlauf). Symbol aufgehellt mit Messingkante (1 px, `--s-brass`) und leichtem Goldhauch, damit es sich vom Rostknopf abhebt; Knopffläche dahinter leicht abgedunkelt. Zustandssymbole im Panel 30 px, Deckungsschild 34 px. Tooltip als Pergamentzettel mit Name, Kosten (nur Zahl), Kurztext.
 - Zustände: gewählt = Messingrand (Knopf „gewählt“); gesperrt = Knopf „gesperrt“, Symbol grau und gedimmt, **ohne** helle Kontur, dazu große Zahl (Abklingzeit).
 - Leistensymbole (Lupe, Lautsprecher, Vorspulen, Vollbild): einfache flache Zeichen in Knochenweiß `#F0EDE1`, kein gemalter Bogen.
 
 ## Kartenmarken an den Einheiten
-- Eine kompakte Zeile an den Füßen der eigenen Figuren, ganz im eigenen Feld: links **ein** Zustandsplatz (wichtigstes Symbol, „+n“), Mitte Pinsel-Lebensbalken in Fraktionsfarbe mit kleinen Messingmünzen darunter (Aktionspunkte, nur eigene Einheiten), rechts kleines Deckungsschild (Bronze/Silber/Gold aus `kartenmarken.png`). Anführer: Orden rechts neben der Figur.
+- Eine kompakte Zeile an den Füßen der eigenen Figuren, ganz im eigenen Feld: links **ein** Zustandsplatz (wichtigstes Symbol, „+n“), Mitte Pinsel-Lebensbalken (Farbe nach Stand, siehe Balken) mit kleinen Messingmünzen darunter (Aktionspunkte, nur eigene Einheiten), rechts kleines Deckungsschild (Bronze/Silber/Gold aus `kartenmarken.png`). Anführer: Orden rechts neben der Figur.
 - Marken werden in Tiefenreihenfolge mit der eigenen Figur gezeichnet: Figuren davor dürfen sie verdecken, sie malen **nie** über fremde Figuren.
 - Ringe: gemalter Pinselstrich in gedämpfter Fraktionsfarbe, Auswahl Messing. Jede Marke hat einen Pergament-Tooltip (Maus und Touch).
 

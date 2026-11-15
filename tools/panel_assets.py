@@ -12,20 +12,20 @@ ROOT = Path(__file__).resolve().parent.parent
 TEILE = ROOT / 'ui-quelle' / 'teile'
 OUT = ROOT / 'src' / 'uipanel.js'
 
-SYM = 144
+SYM = 192   # Fähigkeiten-Knopf bis 84 px, Symbol ~64 px: reicht bis devicePixelRatio 3
 # Schlüssel im Spiel -> (Teil, größte Kante in px)
 PARTS = {
-    'leiste': ('bogen1_rahmen/leiste_holz', 1400),
-    'rahmen': ('bogen1_rahmen/rahmen_quadrat', 280),
-    'tafel': ('bogen1_rahmen/tafel_messing', 380),
-    'perg': ('bogen1_rahmen/pergament_klein', 480),
-    'knopf': ('bogen2_buttons/knopf_rost_1', 150),
-    'knopfAn': ('bogen2_buttons/knopf_rost_1_gewaehlt', 150),
-    'knopfAus': ('bogen2_buttons/knopf_rost_1_gesperrt', 150),
-    'balken': ('bogen2_buttons/balken_1', 640),
+    'leiste': ('bogen1_rahmen/leiste_holz', 1951),   # volle Quellgröße: Panel 1920 px breit, nie hochskalieren (border-image-slice in index.html passt dazu)
+    'rahmen': ('bogen1_rahmen/rahmen_quadrat', 524),
+    'tafel': ('bogen1_rahmen/tafel_messing', 542),
+    'perg': ('bogen1_rahmen/pergament_klein', 507),
+    'knopf': ('bogen2_buttons/knopf_rost_1', 293),
+    'knopfAn': ('bogen2_buttons/knopf_rost_1_gewaehlt', 293),
+    'knopfAus': ('bogen2_buttons/knopf_rost_1_gesperrt', 293),
+    'balken': ('bogen2_buttons/balken_1', 825),
     'punkt': ('bogen2_buttons/punkt_voll', 56),
     'punktLeer': ('bogen2_buttons/punkt_leer_1', 56),
-    'platte': ('bogen2_buttons/platte_1', 120),
+    'platte': ('bogen2_buttons/platte_1', 200),
     # Fraktionswappen: Emblem allein (Marken) und Emblem vor Flagge (Zielfelder, Startmenü)
     'wA': ('wappen_konkordat/w_emblem', 128),
     'wD': ('wappen_aschenwacht/w_emblem', 128),
@@ -66,7 +66,7 @@ def data_url(key, edge, keep=1.0):
     if k < 1:
         im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
     buf = io.BytesIO()
-    im.save(buf, 'WEBP', quality=84, method=6)
+    im.save(buf, 'WEBP', quality=88, method=6)
     return 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode()
 
 

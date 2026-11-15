@@ -516,6 +516,9 @@ function svgSprite(key, svg, w, h) {
   im.src = 'data:image/svg+xml,' + encodeURIComponent(svg);
   return null;
 }
+// Lebensbalken nach Stand (STYLE.md): über 60 % Moos, 30–60 % Ocker, darunter Ochsenblut. Gilt für Karte und Panel.
+const LIFE_COL = { hi: '#6B7A3A', mid: '#B08A2E', low: '#8E2B22' };
+const lifeTier = q => q > 0.6 ? 'hi' : q >= 0.3 ? 'mid' : 'low';
 // Pinselform des Kampfkraft-Balkens (gleicher Pfad und Filter wie .tb-meter in index.html), mit Tintenkontur
 const BRUSH_D = 'M1.5 3.4C30 1.9 70 3.1 110 2.3S170 2.9 191 2.1L196 4.6 193.5 7.8 198.5 11.2 194.5 14 197 16.4 190 17.9C150 18.6 110 17.5 70 18.2S20 17.6 1.5 17.1Z';
 const brushBar = col => svgSprite('bar' + col, `<svg xmlns="http://www.w3.org/2000/svg" width="412" height="56" viewBox="-3 -4 206 28" preserveAspectRatio="none">
@@ -629,9 +632,9 @@ function drawMarks(u, d, x, y, own, done, acc) {
   // Markenzeile unter der Figur: [Zustand] [Lebensbalken, darunter Aktionspunkte] [Deckung]
   const bw = s * 0.5, bh = Math.max(3.5, s * 0.065), bx = x - bw / 2, by = y + s * K * 0.3, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
   g.globalAlpha = done ? 0.7 : 1;
-  // Pinsel-Lebensbalken wie die Kampfkraft-Balken oben: dunkle Pinselform als Grund, Füllung in Fraktionsfarbe, Segmentstriche
+  // Pinsel-Lebensbalken wie die Kampfkraft-Balken oben: dunkle Pinselform als Grund, Füllung nach Stand (LIFE_COL), Tintenrand, Segmentstriche
   drawBrushBar(g, '#221B18', bx, by, bw, bh);
-  if (q > 0.01) drawBrushBar(g, acc, bx, by, bw * q, bh);
+  if (q > 0.01) drawBrushBar(g, LIFE_COL[lifeTier(q)], bx, by, bw * q, bh);   // Farbe nach Stand, Fraktion zeigt der Ring
   g.fillStyle = 'rgba(18,13,11,0.7)'; for (let i = 1; i < 10 * q - 0.2; i++) g.fillRect(Math.round(bx + bw * i / 10), by + bh * 0.15, 1, bh * 0.7);
   MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: by + bh + 4, u, kind: 'hp' });
   if (own) {   // Aktionspunkte: kleine Messingpunkte (leer = dunkel)
@@ -1544,7 +1547,7 @@ function updateHud() {
       hudTips = [cv && { ...cv, img: UP['cov' + cv.tier], cls: 'cov' }, ...statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d), img: upSym(st.sym) }))].filter(Boolean);
       $('hudStates').innerHTML = hudTips.map((t, i) => `<span class="up-st${t.cls ? ' ' + t.cls : ''}" data-i="${i}" tabindex="0" aria-label="${upEsc(t.name)}"><img src="${t.img}" alt=""></span>`).join(''); }
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
-    $('hudStats').innerHTML = upBar('hp', 'Leben', u.str, 10) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
+    $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
       `<div class="up-tiles">${own ? `<span class="up-t" title="Aktionspunkte: ${ap} von ${P.AP}"><img src="${upSym('blitz')}" alt="Aktionen">${'<i class="up-pip"></i>'.repeat(Math.min(ap, P.AP))}${'<i class="up-pip used"></i>'.repeat(Math.max(0, P.AP - ap))}</span>` : ''}` +
       `<span class="up-t" title="Bewegung"><img src="${upSym('marsch')}" alt="Bewegung">${u.limbered ? P.LIMBER_MV : T.mv} <small>Felder</small></span>` +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
@@ -1573,7 +1576,7 @@ function updateHud() {
     }
   }
   $('hudSub').title = $('hudSub').textContent;
-  hud.className = 'upanel' + (hasU ? ' ' + u.side : ' nounit') + (btns.length > 7 ? ' many' : '');
+  hud.className = 'upanel' + (hasU ? ' ' + u.side : ' nounit') + (btns.length > 7 ? ' many' : ''); hud.style.setProperty('--n', Math.max(1, btns.length));   // Knopfgröße teilt die Breite auf (CSS .up-ab)
   // Name immer ganz (Wunsch des Nutzers): erst kleiner bis 15 px, reicht das nicht, zweizeilig
   { const el = $('hudName'), rg = document.createRange(), over = () => { rg.selectNodeContents(el); return rg.getBoundingClientRect().width > el.getBoundingClientRect().width + 0.01; };   // genau messen, auch Bruchteile von Pixeln
     el.style.fontSize = ''; el.classList.remove('two');

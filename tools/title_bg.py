@@ -11,7 +11,7 @@ H = round(im.height * W / im.width)
 big = im.resize((W, H), Image.LANCZOS)
 big = big.filter(ImageFilter.UnsharpMask(radius=2.2, percent=70, threshold=2))   # Kanten nach dem Hochskalieren wieder fassen
 buf = io.BytesIO()
-big.save(buf, 'WEBP', quality=82, method=6)
+big.save(buf, 'WEBP', quality=92, method=6)   # feine Tuschlinien nicht verschmieren
 data = 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode()
 out = root / 'src' / 'titlebg.js'
 out.write_text('// ===== ARMARGEDDON TITELBILD =====\n// Erzeugt von tools/title_bg.py aus ui-quelle/Titelbild.webp. Datendatei, nicht von Hand ändern, nicht komplett lesen.\n'

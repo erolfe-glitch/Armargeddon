@@ -18,6 +18,7 @@
 :root {
   --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
   --s-brass: #C2A461; --s-life: #8E2B22; --s-foe-dark: #713B36; --s-friend: #7D8471; --s-friend-hi: #A0AC88; --s-legion: #6F8FB5; --s-gas: #8A8A2E; --s-ink: #120D0B;
+  --s-moss: #6B7A3A; --s-ochre: #B08A2E;   /* Lebensbalken: über 60 % Moos, 30–60 % Ocker, darunter --s-life */
   --s-head: "Arm Kopf", "Palatino Linotype", Georgia, serif;   /* IM Fell English SC, Ziffern aus Alegreya Sans (tools/fonts.py) */
   --s-body: "Arm Text", "Segoe UI", system-ui, sans-serif;   /* Alegreya Sans */
   --s-min: 14px;
@@ -372,9 +373,9 @@ body { background: #0c0908; }
 
 /* ===== Einheiten-Panel nach STYLE.md (ersetzt die alte untere Leiste). Grafiken aus src/uipanel.js als --up-<name>. ===== */
 .upanel {
-  --ab: 64px; --bar: 300px; --pic: 132px;
+  --abmax: 84px; --bar: 300px; --pic: 140px;
   position: relative; display: grid; grid-template-columns: auto minmax(max-content, 1fr) auto; align-items: center; gap: 18px;
-  height: 176px; padding: 18px max(30px, env(safe-area-inset-left)) calc(24px + env(safe-area-inset-bottom));
+  height: 200px; padding: 16px max(30px, env(safe-area-inset-left)) calc(22px + env(safe-area-inset-bottom));
   background: var(--up-leiste) center / 100% 100% no-repeat, var(--s-bg); color: var(--s-text); font: 15px/1.3 var(--s-body);
 }
 .upanel button { font: inherit; color: inherit; }
@@ -395,31 +396,31 @@ body { background: #0c0908; }
 #hud .up-sub em { font-style: normal; color: var(--s-brass); font-weight: 700; }
 .up-vals { display: flex; flex-direction: column; gap: 3px; }
 .up-bar { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
-.up-bar .tube { position: relative; height: 30px; background: var(--up-balken) center / 100% 100% no-repeat; }
+.up-bar .tube { position: relative; height: 34px; background: var(--up-balken) center / 100% 100% no-repeat; }
 .up-bar .slot { position: absolute; inset: 27% 8.3%; overflow: hidden; border-radius: 2px; }
 .up-bar .slot i { position: absolute; inset: 0 auto 0 0; background: var(--s-life); }
 .up-bar.hp .slot i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); }
-.up-bar.mor .tube { height: 22px; } .up-bar.mor .slot { inset: 30% 8.3%; } .up-bar.mor .slot i { background: var(--s-brass); }
+.up-bar.mor .tube { height: 26px; } .up-bar.mor .slot { inset: 30% 8.3%; } .up-bar.mor .slot i { background: var(--s-brass); }
 .up-bar.mor.bad .slot i { background: var(--s-life); }
-.up-bar .val { font: 700 16px var(--s-body); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; white-space: nowrap; }
+.up-bar .val { font: 700 17px var(--s-body); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; white-space: nowrap; }
 .up-bar .val small { font-size: 14px; font-weight: 400; color: #b9ae98; }
 .up-bar .val .k { font: 600 14px var(--s-head); letter-spacing: .06em; text-transform: uppercase; color: #cbbfa6; margin-right: 4px; }
 .up-tiles { display: flex; gap: 16px; align-items: center; margin-top: 2px; }
-.up-t { display: flex; align-items: center; gap: 6px; font: 700 16px var(--s-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.up-t img { width: 26px; height: 26px; object-fit: contain; filter: drop-shadow(0 0 1px #F0EDE1); }
-.up-t img.wide { width: 40px; margin-right: 2px; }
+.up-t { display: flex; align-items: center; gap: 6px; font: 700 17px var(--s-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.up-t img { width: 32px; height: 32px; object-fit: contain; filter: drop-shadow(0 0 1px #F0EDE1); }
+.up-t img.wide { width: 46px; margin-right: 2px; }
 .up-t small { font: 400 14px var(--s-body); color: #cbbfa6; }
-.up-pip { width: 22px; height: 22px; background: var(--up-muenze) center / contain no-repeat; }   /* Aktionspunkt: volle Messingmünze */
+.up-pip { width: 28px; height: 28px; background: var(--up-muenze) center / contain no-repeat; }   /* Aktionspunkt: volle Messingmünze */
 .up-pip.used { background-image: var(--up-muenzeLeer); }
 
-.up-mid { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.up-mid { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; container-type: inline-size; }
 #hud .up-hint { max-width: 100%; min-height: 19px; font-size: 14px; line-height: 19px; color: #e2d6bc; text-shadow: 0 1px 0 #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 #hud .up-hint b { color: #ff9c8c; font-family: var(--s-head); letter-spacing: .04em; text-transform: uppercase; }
 #hud .up-hint i { font-style: normal; color: var(--s-brass); font-weight: 700; }
 #hud .up-hint em { font-style: normal; color: var(--s-brass); }
-.up-abils { display: flex; justify-content: center; gap: 9px; }
-.up-slot { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.up-ab { position: relative; width: var(--ab); height: calc(var(--ab) * 1.186); padding: 0; border: 0; cursor: pointer;
+.up-abils { display: flex; justify-content: center; gap: 9px; max-width: 100%; }
+.up-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.up-ab { --ab: min(var(--abmax), calc((100cqw - (var(--n, 6) - 1) * 9px) / var(--n, 6))); position: relative; flex: none; width: var(--ab); height: calc(var(--ab) * 1.186); padding: 0; border: 0; cursor: pointer;
   background: var(--up-knopf) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)); transition: transform .08s; }
 .up-ab::before { content: ""; position: absolute; inset: 13% 11%; border-radius: 8px; pointer-events: none;
   background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.85) 0 45%, rgba(18,13,11,.5) 66%, rgba(18,13,11,0) 84%); }
@@ -436,11 +437,11 @@ body { background: #0c0908; }
 .up-ab.off::before { background: rgba(18,13,11,.25); }
 .up-ab.pulse { background-image: var(--up-knopfAn); animation: uppulse 1.3s ease-in-out infinite; }
 @keyframes uppulse { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(242,214,130,.95)); } }
-.up-ab .ap { position: absolute; right: -7px; top: -7px; width: 24px; height: 24px; display: grid; place-items: center;
-  font: 700 14px var(--s-body); color: var(--s-ink); background: var(--up-punkt) center / contain no-repeat; }
+.up-ab .ap { position: absolute; right: -7px; top: -7px; width: 28px; height: 28px; display: grid; place-items: center;
+  font: 700 16px var(--s-body); color: var(--s-ink); background: var(--up-punkt) center / contain no-repeat; }
 .up-ab .cdn { position: absolute; left: -6px; bottom: -6px; display: flex; align-items: center; gap: 2px; padding: 2px 6px 2px 3px;
   font: 700 14px/1 var(--s-body); color: var(--s-text); background: var(--s-ink); border: 2px solid #6e5a4b; border-radius: 12px; }
-.up-ab .cdn img { width: 14px; height: 16px; object-fit: contain; }
+.up-ab .cdn img { width: 18px; height: 20px; object-fit: contain; }
 .up-ab .cdn.cnt { padding-left: 6px; }
 .up-key { font: 700 14px var(--s-head); color: #cbbfa6; min-width: 22px; text-align: center; padding: 0 5px; border: 1px solid #6e5a4b; border-radius: 3px; background: rgba(18,13,11,.6); }
 .up-slot.on .up-key { color: var(--s-brass); border-color: var(--s-brass); }
@@ -463,9 +464,8 @@ body { background: #0c0908; }
 .up-shop { height: 46px; color: var(--s-brass); white-space: nowrap; } .up-shop b { color: var(--s-text); margin-left: 6px; }
 .up-end { height: 64px; font-size: 19px !important; }
 
-.upanel.many { --ab: 54px; } .upanel.many .up-abils { gap: 7px; }
 @media (max-height: 520px), (max-width: 1100px) {
-  .upanel { --ab: 48px; --bar: 196px; --pic: 86px; height: 120px; gap: 10px; padding: 12px max(16px, env(safe-area-inset-left)) calc(16px + env(safe-area-inset-bottom)); }
+  .upanel { --abmax: 48px; --bar: 196px; --pic: 86px; height: 120px; gap: 10px; padding: 12px max(16px, env(safe-area-inset-left)) calc(16px + env(safe-area-inset-bottom)); }
   .up-unit { gap: 8px; }
   #hud .up-name { font-size: 15px; } #hud .up-sub { display: none; } #hud #btnInfo .long { display: none; } #hud #btnInfo { padding: 0 6px; }
   .up-bar .tube { height: 22px; } .up-bar.mor .tube { height: 16px; } .up-bar .val { min-width: 70px; font-size: 14px; } .up-bar.hp .val small { display: none; }
@@ -478,14 +478,13 @@ body { background: #0c0908; }
   .up-bar .val small { display: none; }
 }
 @media (max-height: 520px) and (max-width: 760px) {
-  .upanel { --ab: 42px; --bar: 160px; --pic: 74px; }
+  .upanel { --abmax: 42px; --bar: 160px; --pic: 74px; }
 }
-@media (max-height: 520px), (max-width: 1100px) { .upanel.many { --ab: 40px; } .upanel.many .up-abils { gap: 4px; } }
 
 /* ===== Obere Leiste nach STYLE.md (passend zum Einheiten-Panel). Rahmen aus --up-leiste, Knöpfe --up-platte.
    Links Runde/Seite/Wind, Mitte Kampfkraft + Siegpunkte (groß), rechts Titel + Knöpfe. Breite Bildschirme wachsen über zoom mit. ===== */
 .tbar { position: relative; z-index: 20; min-width: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; height: 74px; padding: 0 max(26px, env(safe-area-inset-left)); color: var(--s-text); font: 15px/1.2 var(--s-body); background: var(--s-bg); }
-.tbar::before { content: ""; position: absolute; inset: 0; border: 18px solid transparent; border-image: var(--up-leiste) 80 64 fill / 18px 16px stretch; pointer-events: none; }
+.tbar::before { content: ""; position: absolute; inset: 0; border: 18px solid transparent; border-image: var(--up-leiste) 111 89 fill / 18px 16px stretch; pointer-events: none; }
 .tbar > * { position: relative; }
 body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Leiste würde den Titel verdecken */
 .tb-left, .tb-right, .tb-mid { display: flex; align-items: center; gap: 12px; }
@@ -594,14 +593,14 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 @media (max-height: 520px) and (max-width: 940px) { .tb-side b { display: none; } .tb-side { padding: 0 6px; } .tb-side .tb-medal { margin-left: 0; margin-right: 0; } .tb-meter .tube { width: 64px; } }
 @media (max-height: 520px) and (max-width: 760px) { .tb-meter .tube { width: 40px; } .tb-medal { --m: 40px; } .tb-tools { gap: 2px; } .tb-left, .tb-mid, .tb-right { gap: 4px; } .tbar { gap: 4px; padding: 0 max(13px, env(safe-area-inset-left)); } .tb-plate { padding: 0 7px; } .tb-pts small, .tb-side small { display: none; } }
 /* ===== Zustandsmarken: Symbolzeile im Panel und Pergament-Tooltip (Karte und Panel) ===== */
-.up-subrow { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 28px; margin-top: -4px; }
+.up-subrow { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 34px; margin-top: -4px; }
 .up-subrow .up-sub { margin-top: 0 !important; min-width: 0; }
 .up-states { display: flex; align-items: center; gap: 2px; flex: none; }
 .up-states:empty { display: none; }
-.up-st { display: grid; place-items: center; width: 40px; height: 40px; margin: -6px -5px; cursor: help; border-radius: 50%; outline: none; }
-.up-st img { width: 26px; height: 26px; object-fit: contain; pointer-events: none;
+.up-st { display: grid; place-items: center; width: 42px; height: 42px; margin: -4px -3px; cursor: help; border-radius: 50%; outline: none; }
+.up-st img { width: 30px; height: 30px; object-fit: contain; pointer-events: none;
   filter: drop-shadow(.6px 0 0 #F0EDE1) drop-shadow(-.6px 0 0 #F0EDE1) drop-shadow(0 .6px 0 #F0EDE1) drop-shadow(0 -.6px 0 #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.6)); }
-.up-st.cov img { height: 28px; filter: drop-shadow(0 2px 0 var(--s-ink)); }
+.up-st.cov img { height: 34px; filter: drop-shadow(0 2px 0 var(--s-ink)); }
 .up-st:focus-visible { box-shadow: 0 0 0 2px var(--s-brass); }
 .mtip { position: fixed; left: 0; top: 0; z-index: 80; width: 270px; padding: 15px 19px 17px; pointer-events: none; text-align: left;
   color: var(--s-bg); background: var(--up-perg) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 0 rgba(0,0,0,.6));
@@ -625,6 +624,25 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
 .up-end.flash { animation: endflash .6s ease-in-out 3; }
 @keyframes endflash { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(194,164,97,.95)) brightness(1.35); } }
+/* ===== Feinschliff Panel (STYLE.md): Lebensbalken nach Stand, helle Fähigkeiten-Symbole mit Messingkante, 1280 px ohne Überlauf ===== */
+/* Leben: Füllung flach, Farbe nach Stand (über 60 % Moos, 30–60 % Ocker, darunter Ochsenblut), dünner dunkler Rand. Fraktion zeigen Wappen und Ring. */
+.up-bar.hp .slot { box-shadow: inset 0 0 0 1.5px var(--s-ink); background: rgba(18,13,11,.55); }
+.up-bar.hp .slot i { background: var(--s-moss); box-shadow: inset 0 0 0 1.5px var(--s-ink); }
+.up-bar.hp.mid .slot i { background: var(--s-ochre); } .up-bar.hp.low .slot i { background: var(--s-life); }
+/* Fähigkeiten-Symbol: aufgehellt, Messingkante (1 px) statt Knochenweiß, leichter Goldhauch, harter Schatten. Gesperrt bleibt grau ohne Kante. */
+.up-ab::before { background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.78) 0 42%, rgba(18,13,11,.45) 64%, rgba(18,13,11,0) 84%); }
+.up-ab > img { inset: 15% 12%; width: 76%; height: 70%;
+  filter: brightness(1.75) contrast(1.08) sepia(.22) saturate(1.15)
+          drop-shadow(1px 0 0 var(--s-brass)) drop-shadow(-1px 0 0 var(--s-brass)) drop-shadow(0 1px 0 var(--s-brass)) drop-shadow(0 -1px 0 var(--s-brass))
+          drop-shadow(0 0 4px rgba(242,214,130,.35)) drop-shadow(0 2px 0 var(--s-ink)); }
+.up-ab.off > img { filter: grayscale(1) brightness(.55); }
+.up-key { line-height: 18px; }
+@media (max-width: 1600px) and (min-height: 521px) {
+  .upanel { --bar: 250px; --pic: 120px; gap: 14px; padding-left: max(22px, env(safe-area-inset-left)); padding-right: 22px; }
+  .up-turn { width: 230px; } .up-abils { gap: 7px; } .up-ab { --ab: min(var(--abmax), calc((100cqw - (var(--n, 6) - 1) * 7px) / var(--n, 6))); }
+  .up-bar .val { min-width: 84px; } .up-tiles { gap: 12px; } .up-t small { display: none; }   /* „Felder“ steht im Tooltip */
+  .up-turnrow .up-shop { padding: 0 8px; letter-spacing: .02em; } .up-shop b { margin-left: 4px; }
+}
 /* ===== Startmenü nach STYLE.md: Schritte Titel → Fraktion → Schlachtfeld → Schlacht. Hintergrund = Titelbild (src/titlebg.js, --sm-bg). ===== */
 .overlay.sm { padding: 0; overflow: hidden; background: var(--s-ink); font: 17px/1.35 var(--s-body); color: var(--s-text); -webkit-user-select: none; user-select: none; }
 .sm-bg { position: absolute; inset: 0; background: var(--sm-bg) center 40% / cover no-repeat, var(--s-bg); transition: filter .35s, transform .35s; }
