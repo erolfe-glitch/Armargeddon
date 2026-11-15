@@ -1249,88 +1249,141 @@ function drawPortrait(canvas, kind, side) {
 }
 const pill = (k, v, cls = '') => `<div class="pill ${cls}"><small>${k}</small><b>${v}</b></div>`;
 const bar = (k, v, max, kind, cls = '') => `<div class="sbar ${kind} ${cls}" title="${k}" style="--v:${Math.max(0, Math.min(1, v / max))}"><i></i><span>${k} ${fmt(v)}</span></div>`;
+// ---------- Einheiten-Panel (STYLE.md): Bild, Werte, Fähigkeiten als Symbol-Knöpfe ----------
+const UP = window.UIPANEL || {};
+for (const k in UP) document.documentElement.style.setProperty('--up-' + k, `url("${UP[k]}")`);
+const upSym = k => UP['s_' + k] || '';
+const UP_MARK = {   // Freund = Schild (Feldgrau), Feind = Zackenraute (Rot): Form und Farbe
+  friend: '<svg viewBox="0 0 40 44"><path d="M4 4h32v16c0 11-7 18-16 21C11 38 4 31 4 20z" fill="#7A8F99" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M12 13h16M12 20h16" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>',
+  foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
+};
+const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
+const upBar = (cls, k, v, max) => `<div class="up-bar ${cls}"><div class="tube"><div class="slot"><i style="width:${Math.round(Math.max(0, Math.min(1, v / max)) * 100)}%"></i></div></div><span class="val"><span class="k">${k}</span>${fmt(v)}<small> / ${fmt(max)}</small></span></div>`;
+function upBtn(b, i) {
+  const cost = b.cost > 0 ? `<span class="ap">${b.cost}</span>` : '';
+  const corner = b.cd > 0 ? `<span class="cdn"><img src="${upSym('sanduhr')}" alt="">${b.cd}</span>` : b.cnt != null ? `<span class="cdn cnt">×${b.cnt}</span>` : '';
+  const costTxt = b.costTxt || (b.cost > 0 ? `${b.cost} Aktion${b.cost > 1 ? 'en' : ''}` : 'kostet nichts');
+  const tip = `<span class="up-tip" role="tooltip"><b>${b.name}</b><span class="cost">${costTxt}${b.cd > 0 ? ' · wieder bereit in ' + upRunden(b.cd) : ''}</span><span>${b.text}</span>${b.off && b.why ? `<span class="why">${b.why}</span>` : ''}</span>`;
+  const cls = 'up-ab' + (b.on ? ' on' : '') + (b.off ? ' off' : '') + (b.pulse && !b.off ? ' pulse' : '') + (b.mirror ? ' mirror' : '');
+  return `<div class="up-slot${b.on ? ' on' : ''}"><button class="${cls}" data-act="${b.act}" aria-label="${upEsc(b.name)}, Taste ${i + 1}"${b.off ? ' aria-disabled="true"' : ''}><img src="${upSym(b.sym)}" alt="">${cost}${corner}${tip}</button><span class="up-key">${i + 1}</span></div>`;
+}
+let upBtns = [];
+// Knöpfe der gewählten eigenen Einheit (gleiche Bedingungen wie bisher, nur als Symbole)
+function unitButtons(T, hints) {
+  const btns = [], tg = [...targets.values()];
+  if (T.cls === 'art') {
+    const c = T.mobile ? 1 : 2, can = !sel.attacked && sel.ap >= c && !sel.supp && !sel.limbered;
+    const why = sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: erst abprotzen.' : sel.attacked ? 'Hat diese Runde schon gehandelt.' : sel.ap < c ? `Braucht ${c} Aktionspunkte.` : '';
+    if (E.canLimber(G, sel)) btns.push(sel.limbered
+      ? { act: 'limber', sym: 'lafette', name: 'Abprotzen', cost: sel.ap, costTxt: 'alle Aktionen', text: 'In Stellung gehen. Ab der nächsten Runde feuerbereit.' }
+      : { act: 'limber', sym: 'pferd', name: 'Aufprotzen', cost: 1, text: `Anspannen: zieht ${P.LIMBER_MV} Felder, feuert aber nicht.` });
+    btns.push({ act: 'm-he', sym: 'granate_artillerie', name: 'Sprenggranate', cost: c, text: 'Trifft ein Feld. Zerstört auch Draht.', on: can && artMode === 'he', off: !can, why });
+    btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, text: T.mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.', on: can && artMode === 'barrage', off: !can, why });
+    if (sel.gas > 0 || T.gas > 0) btns.push({ act: 'm-gas', sym: 'gas', name: 'Gasgranate', cost: c, cnt: sel.gas, text: 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.', on: can && artMode === 'gas', off: !can || !(sel.gas > 0), why: sel.gas > 0 ? why : 'Keine Gasgranaten mehr.' });
+    hints.push(can ? (shellHexes.size ? 'Zielfeld anklicken.' : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).') : why);
+    if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.`);
+    return btns;
+  }
+  const onWire = G.map[sel.c][sel.r].t === 'wire';
+  if (E.canCut(G, sel) || (onWire && !sel.attacked)) {
+    const no = ['cav', 'art', 'walker'].includes(T.cls) || T.noCut || T.mg;
+    btns.push({ act: 'cut', sym: 'drahtschere', name: 'Draht schneiden', cost: E.cutCost(sel), text: 'Entfernt den Stacheldraht auf diesem Feld.', pulse: true, off: !E.canCut(G, sel), why: no ? 'Kann keinen Draht schneiden.' : `Braucht ${E.cutCost(sel)} Aktionspunkte.` });
+  }
+  if (T.wirelayer && !sel.attacked) btns.push({ act: 'lay', sym: 'drahtrolle', name: 'Draht ziehen', cost: 1, text: 'Stacheldraht auf das Feld legen, in das die Einheit blickt.', pulse: true, off: !E.canLay(G, sel), why: 'Zu einem freien Feld drehen (Drehen-Knöpfe).' });
+  const atkWhy = sel.supp > 0 ? 'Niedergehalten: kann nicht schießen oder stürmen.' : sel.attacked ? 'Hat diese Runde schon angegriffen.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' : 'Kein Ziel in Reichweite.';
+  if (T.rng > 0) {
+    const sym = T.lob ? 'handgranate' : T.flame ? 'flamme' : 'zielen', name = T.lob ? 'Granatwurf' : T.flame ? 'Flammenstrahl' : 'Beschuss';
+    const why = T.mg && !sel.setup ? 'MG erst aufbauen.' : !sel.supp && !sel.attacked && E.held(G, sel) ? 'Im Nahkampf gebunden: Schießen geht nicht.' : atkWhy;
+    btns.push({ act: 'p-fire', sym, name, cost: 1, text: `Ziel auf der Karte anklicken (orange). Reichweite ${T.rng} Felder.`, on: atkPref === 'fire', off: !tg.some(t => t.kind === 'fire' || t.both), why });
+  }
+  if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: Math.max(1, sel.ap), costTxt: 'alle Aktionen', text: 'Gegner auf einem Nachbarfeld anklicken (rot).', on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });
+  if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
+    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: A.ap, cd: sel.cdA, text: T.can, on: abilMode, off: !at.length,
+      why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < A.ap ? `Braucht ${A.ap} Aktionspunkte.` : 'Kein Ziel.' });
+    if (abilMode) hints.push('<i>Violett:</i> Zielfeld anklicken.'); }
+  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_dreibein', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
+  if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 2, text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht beide Aktionspunkte, noch nicht gezogen und nicht angegriffen.' });
+  if (sel.officer) for (const [k, sym, name, tip] of [['rally', 'fahne', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +15, Niederhalten endet.'], ['storm', 'blitz', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde.']]) {
+    const cd = k === 'rally' ? sel.cdR : sel.cdS;
+    btns.push({ act: 'o-' + k, sym, name, cost: 1, cd, text: `${tip} Abklingzeit ${E.orderCd(G, sel, k)} Runden.`, off: !E.canOrderKind(G, sel, k), why: cd > 0 ? `Wieder in ${upRunden(cd)}.` : 'Nur ein Befehl je Runde.' });
+  }
+  if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', cost: 1, cd: sel.cdH, text: 'Grün markierten Nachbarn anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
+  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', cost: 1, text: 'Blau markierte Einheit anklicken: Sie bekommt +1 Aktionspunkt.', off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
+  if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', cost: 1, cd: sel.cdB, text: 'Gelb markierten Koloss bzw. Maschine anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
+  if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) {
+    btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', text: 'Blickrichtung ändern. Drehen kostet nichts.' });
+    btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', mirror: true, text: 'Blickrichtung ändern. Drehen kostet nichts.' });
+  }
+  if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
+  // Hinweiszeile
+  if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
+  else if (T.rng > 0 && E.held(G, sel)) hints.push('⚔ Im Nahkampf gebunden: Schießen geht nicht.');
+  else if (sel.fellBack) hints.push('MG ist zurückgewichen und schießt in dieser Runde nicht mehr.');
+  if (T.relay) hints.push('<i>◉ Blau:</i> Hier lenkt der Trupp eure Artillerie.');
+  hints.push(sel.broken ? 'Panne: fällt diese Runde aus.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
+    `${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit).' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte.' : [...reach.values()].some(n => n.march) ? 'Hell: ziehen (1 ●). Gelb: Marsch (2 ●).' : 'Helle Felder: ziehen.') : ''}${sel.attacked ? '' : targets.size ? ' Rot: Nahkampf, Orange: Beschuss.' : ''}`);
+  return btns;
+}
 function updateHud() {
   if (!G) return;
   const hud = $('hud'), u = placing ? null : (sel || (inspect && inspect.unit) || null);
-  hud.className = 'hud' + (u ? ' ' + u.side : '');
-  if (u && E.alive(u)) {
+  const hasU = !!(u && E.alive(u));
+  const hints = []; let btns = [];
+  if (hasU) {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
     $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
+    const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
+    $('upMark').innerHTML = u.side === mine ? UP_MARK.friend : UP_MARK.foe;
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
-    $('hudSub').innerHTML = `${SIDES[u.side].short}${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} +${Math.round((cv.f - 1) * 100)} %</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
-    $('hudStats').innerHTML = (u.side === G.side && E.active(u) ? pill('Aktion', '●'.repeat(Math.max(0, u.ap || 0)) + '○'.repeat(Math.max(0, P.AP - (u.ap || 0))) || '–', 'gold') : '') + `<div class="sbars">${bar('Stärke', u.str, 10, 'H', u.str <= 3.3 ? 'bad' : '')}${bar('Moral', u.mor, TYPES[u.type].mor, 'C', u.mor < P.FALLBACK_MOR + 1 ? 'bad' : '')}</div>` +
-      pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Zug', u.limbered ? P.LIMBER_MV : T.mv) + pill('Schuss', T.rng ? `${T.rng}·${T.fs}` : '–') +
-      `<div class="sps">${(u.officer ? ['★ Anführer: gibt Befehle'] : []).concat(T.sp || []).map(x => `<span class="sp">${x}</span>`).join('')}</div>`;
+    $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} +${Math.round((cv.f - 1) * 100)} %</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
+    const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
+    $('hudStats').innerHTML = upBar('hp', 'Leben', u.str, 10) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
+      `<div class="up-tiles">${own ? `<span class="up-t" title="Aktionspunkte: ${ap} von ${P.AP}"><img src="${upSym('blitz')}" alt="Aktionen">${'<i class="up-pip"></i>'.repeat(Math.min(ap, P.AP))}${'<i class="up-pip used"></i>'.repeat(Math.max(0, P.AP - ap))}</span>` : ''}` +
+      `<span class="up-t" title="Bewegung"><img src="${upSym('marsch')}" alt="Bewegung">${u.limbered ? P.LIMBER_MV : T.mv} <small>Felder</small></span>` +
+      `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
     $('btnInfo').hidden = false;
-    let row = '';
     if (previewT && sel) {
       const t = targets.get(previewT.id), p = E.preview(G, sel, previewT, t.kind);
-      row = `<div class="prev"><b>${t.kind === 'fire' ? 'Beschuss' : 'Nahkampf'} → ${TYPES[previewT.type].name}</b><span>Schaden ≈ <i>${fmt(p.dmg)}</i></span>${t.kind === 'fire' ? '' : `<span>Gegenschlag ≈ <i>${fmt(p.counter)}</i></span>`}<span class="tags">${p.tags.join(' · ') || 'keine Zu- oder Abschläge'}</span><em>${lastPT === 'mouse' ? 'Klicken' : 'Nochmal tippen'} zum Angreifen</em></div>` + (t.both ? `<button class="act ${t.kind === 'melee' ? 'on' : ''}" data-act="p-melee">⚔ Nahkampf</button><button class="act ${t.kind === 'fire' ? 'on' : ''}" data-act="p-fire">➶ Beschuss</button>` : '');
-    } else if (sel && human(sel.side) && sel.side === G.side) {
-      const acts = [];
-      if (T.cls === 'art') {
-        const can = !sel.attacked && sel.ap >= (T.mobile ? 1 : 2) && !sel.supp && !sel.limbered;
-        if (E.canLimber(G, sel)) acts.push(`<button class="act" data-act="limber">${sel.limbered ? '⚓ Abprotzen' : '🐎 Aufprotzen'}</button>`);
-        if (can) {
-          acts.push(`<button class="act ${artMode === 'he' ? 'on' : ''}" data-act="m-he">Sprenggranate</button><button class="act ${artMode === 'barrage' ? 'on' : ''}" data-act="m-barrage">Sperrfeuer</button><button class="act ${artMode === 'gas' ? 'on' : ''}" data-act="m-gas" ${sel.gas > 0 ? '' : 'disabled'}>Gas (${sel.gas})</button>`);
-          acts.push(`<span class="hint">${shellHexes.size ? (artMode === 'he' ? 'Trifft ein Feld. Zerstört auch Draht.' : artMode === 'barrage' ? (TYPES[sel.type].mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.') : 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.') : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).'}</span>`);
-        } else acts.push(`<span class="hint">${sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: zieht 4 Felder, feuert nicht. Nach dem Abprotzen ab der nächsten Runde feuerbereit.' : 'Hat diese Runde schon gehandelt.'}</span>`);
-      } else {
-        if ([...targets.values()].some(t => t.both)) acts.push(`<button class="act ${atkPref === 'melee' ? 'on' : ''}" data-act="p-melee">⚔ Nahkampf</button><button class="act ${atkPref === 'fire' ? 'on' : ''}" data-act="p-fire">➶ Beschuss</button>`);
-        if (!spent.has(sel.id)) acts.push(`<button class="act pass" data-act="pass" title="Diese Einheit ist für diese Runde fertig">✓ Fertig</button>`);
-        if (sel.officer) {
-          const ob = (k, ic, lbl, tip) => { const cd = k === 'rally' ? sel.cdR : sel.cdS; return E.canOrderKind(G, sel, k) ? `<button class="act" data-act="o-${k}" title="${tip}">${ic} ${lbl}</button>` : `<button class="act" disabled title="${tip}">${ic} ${lbl}${cd > 0 ? ` (${cd})` : ''}</button>`; };
-          acts.push(ob('rally', '📯', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +15, Niederhalten endet. Abklingzeit ' + E.orderCd(G, sel, 'rally') + ' Runden.') + ob('storm', '⚔', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde. Abklingzeit ' + E.orderCd(G, sel, 'storm') + ' Runden.'));
-        }
-        if (T.relay) acts.push(`<span class="hint"><i>◉ Blau:</i> Hier lenkt der Trupp eure Artillerie: keine Streuung, Sprenggranaten ×1,25.</span>`);
-        if (T.cls === 'art' && scoutSet.size) acts.push(`<span class="hint"><i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.</span>`);
-        if (T.cls === 'medic' && !sel.attacked) acts.push(`<span class="hint">${sel.cdH > 0 ? `Versorgen wieder in ${sel.cdH} Runde${sel.cdH > 1 ? 'n' : ''}.` : healSet.size ? 'Grün: diese Nachbarn kannst du versorgen (Stärke +25, Moral +15).' : 'Kein verwundeter Nachbar. Zieh neben eine angeschlagene eigene Einheit.'}</span>`);
-        if (T.courier && sel.ap >= 1 && !sel.sent) acts.push(`<span class="hint"><i>Blau:</i> Befehl überbringen – angeklickte Einheit bekommt +1 Aktionspunkt.</span>`);
-        if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) acts.push('<button class="act" data-act="tl">↺ Drehen</button><button class="act" data-act="tr">↻ Drehen</button>');
-        if (E.canCut(G, sel)) acts.push(`<button class="act on actcut" data-act="cut">✂ Draht schneiden (${E.cutCost(sel)} ●)</button>`);
-        else if (G.map[sel.c][sel.r].t === 'wire' && !sel.attacked) acts.push(`<span class="hint">${['cav', 'art', 'walker'].includes(T.cls) || T.noCut || T.mg ? 'Kann keinen Draht schneiden.' : `Draht schneiden braucht ${E.cutCost(sel)} Aktionspunkte.`}</span>`);
-        if (sel.supp > 0) acts.push('<span class="hint">▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen und weicht nicht zurück.</span>');
-        else if (T.rng > 0 && E.held(G, sel)) acts.push('<span class="hint">⚔ Im Nahkampf gebunden: ein gleich großer oder größerer Gegner steht daneben, Schießen geht nicht.</span>');
-        else if (sel.fellBack) acts.push('<span class="hint">MG ist zurückgewichen und schießt in dieser Runde nicht mehr.</span>');
-        if (T.abil) { const A = E.ABILS[T.abil], tg = E.abilTargets(G, sel);
-          if (tg.length) acts.push(`<button class="act ${abilMode ? 'on' : ''}" data-act="abil" title="${T.can}">${A.icon} ${A.name} (${A.ap} ●)</button>`);
-          else acts.push(`<span class="hint">${A.name}: ${sel.cdA > 0 ? `wieder in ${sel.cdA} Runde${sel.cdA > 1 ? 'n' : ''}` : T.abil === 'mine' && !(sel.mines > 0) ? 'keine Minen mehr' : sel.ap < A.ap ? `braucht ${A.ap} Aktionspunkte` : 'kein Ziel'}.</span>`);
-          if (abilMode) acts.push('<span class="hint"><i>Violett:</i> Zielfeld anklicken.</span>'); }
-        if (E.canSetup(G, sel)) acts.push('<button class="act on" data-act="setup" title="MG in Stellung bringen: erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.">🛠 Aufbauen (1 ●)</button>');
-        else if (T.mg && !sel.setup) acts.push('<span class="hint">MG abgebaut: erst aufbauen, dann feuern.</span>');
-        if (E.canOverwatch(G, sel)) acts.push('<button class="act" data-act="ow" title="Beide Aktionspunkte: schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).">◎ Feuerbereitschaft (2 ●)</button>');
-        if (recSet.size) acts.push('<span class="hint"><i>Gelb:</i> Koloss bzw. Maschine anklicken zum Bergen (1 ●).</span>');
-        else if (T.recover && sel.cdB > 0) acts.push(`<span class="hint">Bergen wieder in ${sel.cdB} Runde${sel.cdB > 1 ? 'n' : ''}.</span>`);
-        if (TYPES[sel.type].wirelayer && !sel.attacked) acts.push(E.canLay(G, sel) ? '<button class="act on actcut" data-act="lay" title="Stacheldraht auf das Feld legen, in das die Einheit blickt">⌇ Draht ziehen</button>' : '<span class="hint">Draht ziehen: zum freien Feld drehen (Drehen-Knöpfe).</span>');
-        const hint = sel.broken ? 'Panne: fällt diese Runde aus.' : sel.supp ? 'Niedergehalten: kann nicht ziehen.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
-          `${sel.ap} Aktionspunkt${sel.ap > 1 ? 'e' : ''}. ${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit). ' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte. ' : [...reach.values()].some(n => n.march) ? 'Hell: ziehen (1 ●). Gelb: Marsch (2 ●, danach keine Aktion). ' : 'Helle Felder: ziehen. ') : ''}${sel.attacked ? '' : targets.size ? 'Rot: Nahkampf, Orange: Beschuss.' : 'Kein Ziel in Reichweite.'}`;
-        acts.push(`<span class="hint">${hint}</span>`);
-      }
-      row = acts.filter(a => a.includes('actcut')).concat(acts.filter(a => !a.includes('actcut'))).join('');   // Draht-Knopf zuerst, damit er auch am Handy zu sehen ist
-    } else row = `<span class="hint">${T.can}</span>`;
-    $('hudRow').innerHTML = row;
+      hints.push(`<b>${t.kind === 'fire' ? 'Beschuss' : 'Nahkampf'} → ${TYPES[previewT.type].name}</b> Schaden ≈ <i>${fmt(p.dmg)}</i>${t.kind === 'fire' ? '' : ` · Gegenschlag ≈ <i>${fmt(p.counter)}</i>`} · ${p.tags.join(' · ') || 'keine Zu- oder Abschläge'} · <em>${lastPT === 'mouse' ? 'Klicken' : 'Nochmal tippen'} zum Angreifen</em>`);
+    }
+    if (sel && human(sel.side) && sel.side === G.side) btns = unitButtons(T, hints);
+    else if (!hints.length) hints.push(T.can);
   } else {
-    $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = '';
+    $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = ''; $('upMark').innerHTML = '';
     if (placing) {
       $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
       $('hudSub').innerHTML = 'Aufstellen';
-      $('hudRow').innerHTML = '<span class="hint">Tippe ein grünes Feld am eigenen Rand an. Die Einheit kann ab der nächsten Runde handeln.</span><button class="act" data-act="cancel">Abbrechen</button>';
+      hints.push('Tippe ein grünes Feld am eigenen Rand an. Die Einheit kann ab der nächsten Runde handeln.');
     } else if (inspect && inspect.hex) {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = (h.river && h.t === 'canal' ? 'Fluss' : T.name) + (h.ridge ? ' auf der Höhe' : '');
       $('hudSub').innerHTML = o ? `Zielfeld: ${o.name} · ${o.pts} Punkte` : 'Gelände';
-      $('hudRow').innerHTML = `<span class="hint">${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <i>Im echten Krieg: ' + T.real + '</i>' : ''}</span>`;
+      hints.push(`${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <em>Im echten Krieg: ' + T.real + '</em>' : ''}`);
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
       $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} · Siegpunkte ${G.vp.A} : ${G.vp.D}, Ziel ${G.goal}`;
-      $('hudRow').innerHTML = `<span class="hint">${human(G.side) ? 'Tippe eine eigene Einheit an. Tippe auf Gegner oder Gelände für Infos.' : 'Bitte warten …'}</span>`;
+      hints.push(human(G.side) ? 'Tippe eine eigene Einheit an. Tippe auf Gegner oder Gelände für Infos.' : 'Bitte warten …');
     }
   }
-  $('hudRow').querySelectorAll('[data-act]').forEach(b => b.onclick = () => panelAct(b.dataset.act));
+  hud.className = 'upanel' + (hasU ? ' ' + u.side : ' nounit') + (btns.length > 7 ? ' many' : '');
+  const hn = $('hudHint'); hn.innerHTML = hints.filter(Boolean).join(' · '); hn.title = hn.textContent;
+  // Draht-Knöpfe zuerst (Wunsch des Nutzers), dann die übrigen in fester Reihenfolge
+  btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
+  upBtns = btns;
+  $('hudRow').innerHTML = btns.map(upBtn).join('') + (placing ? '<button class="up-text" data-act="cancel">Abbrechen</button>' : '');
+  $('hudRow').querySelectorAll('[data-act]').forEach(b => {
+    let tm = 0, long = false;
+    b.onpointerdown = e => { long = false; if (e.pointerType !== 'mouse') tm = setTimeout(() => { long = true; b.classList.add('show'); }, 420); };
+    b.onpointerup = b.onpointercancel = b.onpointerleave = () => { clearTimeout(tm); if (b.classList.contains('show')) setTimeout(() => b.classList.remove('show'), 1600); };
+    b.onclick = () => { if (long) { long = false; return; } if (b.classList.contains('off')) return; panelAct(b.dataset.act); };
+  });
 }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
+  if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: grün markierten Nachbarn anklicken.', 'i-send': 'Befehl überbringen: blau markierte Einheit anklicken.', 'i-rec': 'Bergen: gelb markierten Koloss anklicken.' }[a] || ''); return; }
   if (a === 'pass') { E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
   if (a === 'o-rally' || a === 'o-storm') return act(() => E.order(G, sel, a.slice(2)));
   if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
@@ -1526,6 +1579,9 @@ window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() =
 document.addEventListener('keydown', e => {
   const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
   if (pan && $('start').hidden && !e.target.closest('input')) { board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
+  // Tasten 1–n: Fähigkeiten-Knöpfe des Panels
+  if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
 // ---------- Start ----------

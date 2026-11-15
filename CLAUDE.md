@@ -4,7 +4,7 @@
 Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltkrieg, aber in einer eigenen Welt. **Reiner Spielspaß, kein Lernspiel.** Die Texte „Im echten Krieg“ sind Beiwerk, keine Lehrinhalte.
 
 ## Feste Regeln
-- **Diese Dateien NIE komplett lesen** (eingebettete Bilder/Töne, mehrere MB): `src/art.js`, `src/mapimg.js`, `src/fx.js`, `src/sound.js`, `src/paint.js`, `src/uiart.js`. Nur gezielt mit Grep nach Schlüsseln suchen oder mit offset/limit kleine Stücke lesen.
+- **Diese Dateien NIE komplett lesen** (eingebettete Bilder/Töne, mehrere MB): `src/art.js`, `src/mapimg.js`, `src/fx.js`, `src/sound.js`, `src/paint.js`, `src/uiart.js`, `src/uipanel.js`. Nur gezielt mit Grep nach Schlüsseln suchen oder mit offset/limit kleine Stücke lesen.
 - Sprache in Spiel und Texten: Deutsch. Sachlicher Ton, Krieg nicht verherrlichen. Blut darf deutlich sein, bleibt aber abschaltbar.
 - Eigene Welt, keine fremden Marken oder Figuren (kein Warhammer o. ä.). Jede Einheit hat einen Text „Im echten Krieg“ mit belegbaren Fakten zum Ersten Weltkrieg.
 - Nur in `src/` ändern, danach `python3 tools/build.py`. `index.html` im Hauptordner ist erzeugt und wird mit eingecheckt (GitHub Pages).
@@ -37,10 +37,10 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 ## Projektstruktur
 - `src/engine.js` – Regeln, Spielzustand G, Typen (TYPES), Karten (E.MAPS), Kosten (costParts), Konstanten P.
 - `src/ai.js` – KI (posValue, abilPlan, zweiter Durchgang). Test-Gewichte W_A_x/W_D_x.
-- `src/ui.js` – Zeichnen, Bedienung, Effekte, Töne abspielen (playSound, SND_VAR), Layout.
+- `src/ui.js` – Zeichnen, Bedienung, Effekte, Töne abspielen (playSound, SND_VAR), Layout. Untere Leiste = Einheiten-Panel nach STYLE.md: `updateHud` + `unitButtons` (Knöpfe je Einheit, Tasten 1–n), CSS-Block „Einheiten-Panel nach STYLE.md“ am Ende von `src/index.html`.
 - `src/figures.js` – gezeichnete Ersatzfiguren (FIG, FIG.setSkin).
 - `src/index.html` – Gerüst und Stylesheet. Der Block „UI-Bogen des Nutzers“ am Ende überschreibt den älteren „Grimdark-Anstrich“.
-- Datendateien (nicht lesen, siehe oben): `art.js` (Einheiten-/Anführerbilder, Schlüssel `_A` Konkordat, `_D` Aschenwacht, `_F` Frankreich-Set; je Bild hs/ax/ay/faces), `fx.js` (FXDATA: tiles, fx, proj inkl. Symbole `i_*`, flags), `paint.js` (FXDATA.paint: Bodentexturen, Objektbilder), `mapimg.js` (FXDATA.mapimg: gemalte Ganzkarten), `sound.js` (Töne, Zuordnung im Dateikopf), `uiart.js` (UIART: Oberflächenteile, als CSS-Variablen `--ui-<name>`).
+- Datendateien (nicht lesen, siehe oben): `art.js` (Einheiten-/Anführerbilder, Schlüssel `_A` Konkordat, `_D` Aschenwacht, `_F` Frankreich-Set; je Bild hs/ax/ay/faces), `fx.js` (FXDATA: tiles, fx, proj inkl. Symbole `i_*`, flags), `paint.js` (FXDATA.paint: Bodentexturen, Objektbilder), `mapimg.js` (FXDATA.mapimg: gemalte Ganzkarten), `sound.js` (Töne, Zuordnung im Dateikopf), `uiart.js` (UIART: Oberflächenteile, als CSS-Variablen `--ui-<name>`). `uipanel.js` (UIPANEL: Grafiken des Einheiten-Panels, erzeugt mit `tools/panel_assets.py`, als CSS-Variablen `--up-<name>`, Symbole `s_<name>`).
 - `tools/build.py` – baut `index.html`. `tools/sim.js` – KI gegen KI. `tools/costcheck.js` – Punktwerte prüfen.
 - `ui-quelle/` – Bildvorlagen des Nutzers für die Oberfläche. Gemini-Bögen (Magenta-Hintergrund) schneidet `tools/ui_cut.py` in `ui-quelle/teile/<bogen>/` (Übersicht: `teile/uebersicht.png`). Symbole: `bogen3b_symbole` und `bogen4a/4b/4c_symbole` gelten, `bogen3_symbole` ist alt. Zuordnung in `entwurf/symbol-liste.md`.
 - `entwurf/` – UI-Entwürfe, noch nicht im Spiel. Quelle `einheiten-panel.src.html`, Bau mit `tools/entwurf.py` (bettet Teile und Einheitenbilder ein). `symbol-liste.md`: alle Knöpfe/Fähigkeiten mit Symbolzuordnung.

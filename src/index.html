@@ -369,6 +369,117 @@ body { background: #0c0908; }
 .act.actcut { background: linear-gradient(#f4e2a0, #c9a440) !important; color: #1d140d !important; border: 3px solid #fff4c8 !important; font-weight: 900; font-size: 1.12em; box-shadow: 0 0 0 2px #1d140d, 0 0 14px 3px rgba(255,226,140,.75); animation: cutpulse 1.1s ease-in-out infinite; }
 @keyframes cutpulse { 50% { box-shadow: 0 0 0 2px #1d140d, 0 0 22px 7px rgba(255,226,140,.95); } }
 .cov1 { color: #e0a060; } .cov2 { color: #e4e7ec; } .cov3 { color: #ffd84a; }
+
+/* ===== Einheiten-Panel nach STYLE.md (ersetzt die alte untere Leiste). Grafiken aus src/uipanel.js als --up-<name>. ===== */
+.upanel {
+  --ab: 64px; --bar: 300px; --pic: 132px;
+  position: relative; display: grid; grid-template-columns: auto minmax(max-content, 1fr) auto; align-items: center; gap: 18px;
+  height: 176px; padding: 18px max(30px, env(safe-area-inset-left)) calc(24px + env(safe-area-inset-bottom));
+  background: var(--up-leiste) center / 100% 100% no-repeat, var(--s-bg); color: var(--s-text); font: 15px/1.3 var(--s-body);
+}
+.upanel button { font: inherit; color: inherit; }
+.up-unit { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.up-pic { position: relative; flex: none; width: var(--pic); height: calc(var(--pic) * 1.04); background: var(--up-rahmen) center / 100% 100% no-repeat; }
+.upanel.nounit .up-pic, .upanel.nounit .up-vals { display: none; }
+#hud #portrait { position: absolute; inset: 11% 11% 11.5% 11%; width: 78%; height: 77.5%; border: 0; outline: 0; border-radius: 0; margin: 0; box-shadow: none; background: #1a1410; }
+.up-mark { position: absolute; left: -9px; top: -9px; width: 34px; height: 38px; filter: drop-shadow(0 3px 0 var(--s-ink)); }
+.up-mark svg { width: 100%; height: 100%; display: block; }
+.up-stats { display: flex; flex-direction: column; gap: 4px; width: var(--bar); flex: none; }
+.up-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#hud .up-name { font: 700 21px/1.3 var(--s-head); letter-spacing: .03em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 2px 0 var(--s-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+#hud #btnInfo::after { content: none; }
+#hud #btnInfo { width: auto; margin-left: auto; flex: none; height: auto; font: 700 14px var(--s-head); letter-spacing: .04em; color: var(--s-bg); background: var(--s-brass); border: 2px solid var(--s-ink); border-radius: 3px; padding: 2px 8px; box-shadow: 0 2px 0 var(--s-ink); text-shadow: none; cursor: pointer; }
+#hud .up-sub { font-size: 14px; color: #cbbfa6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -4px; text-shadow: none; }
+#hud .up-sub i { font-style: normal; font-weight: 700; } #hud .up-sub i.A { color: var(--A); } #hud .up-sub i.D { color: var(--D); }
+#hud .up-sub em { font-style: normal; color: var(--s-brass); font-weight: 700; }
+.up-vals { display: flex; flex-direction: column; gap: 3px; }
+.up-bar { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.up-bar .tube { position: relative; height: 30px; background: var(--up-balken) center / 100% 100% no-repeat; }
+.up-bar .slot { position: absolute; inset: 27% 8.3%; overflow: hidden; border-radius: 2px; }
+.up-bar .slot i { position: absolute; inset: 0 auto 0 0; background: var(--s-life); }
+.up-bar.hp .slot i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); }
+.up-bar.mor .tube { height: 22px; } .up-bar.mor .slot { inset: 30% 8.3%; } .up-bar.mor .slot i { background: var(--s-brass); }
+.up-bar.mor.bad .slot i { background: var(--s-life); }
+.up-bar .val { font: 700 16px var(--s-body); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; white-space: nowrap; }
+.up-bar .val small { font-size: 14px; font-weight: 400; color: #b9ae98; }
+.up-bar .val .k { font: 600 14px var(--s-head); letter-spacing: .06em; text-transform: uppercase; color: #cbbfa6; margin-right: 4px; }
+.up-tiles { display: flex; gap: 16px; align-items: center; margin-top: 2px; }
+.up-t { display: flex; align-items: center; gap: 6px; font: 700 16px var(--s-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.up-t img { width: 26px; height: 26px; object-fit: contain; filter: drop-shadow(0 0 1px #F0EDE1); }
+.up-t img.wide { width: 40px; margin-right: 2px; }
+.up-t small { font: 400 14px var(--s-body); color: #cbbfa6; }
+.up-pip { width: 20px; height: 20px; background: var(--up-punkt) center / contain no-repeat; }
+.up-pip.used { background-image: var(--up-punktLeer); }
+
+.up-mid { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+#hud .up-hint { max-width: 100%; min-height: 19px; font-size: 14px; line-height: 19px; color: #e2d6bc; text-shadow: 0 1px 0 #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+#hud .up-hint b { color: #ff9c8c; font-family: var(--s-head); letter-spacing: .04em; text-transform: uppercase; }
+#hud .up-hint i { font-style: normal; color: var(--s-brass); font-weight: 700; }
+#hud .up-hint em { font-style: normal; color: var(--s-brass); }
+.up-abils { display: flex; justify-content: center; gap: 9px; }
+.up-slot { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.up-ab { position: relative; width: var(--ab); height: calc(var(--ab) * 1.186); padding: 0; border: 0; cursor: pointer;
+  background: var(--up-knopf) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)); transition: transform .08s; }
+.up-ab::before { content: ""; position: absolute; inset: 13% 11%; border-radius: 8px; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.85) 0 45%, rgba(18,13,11,.5) 66%, rgba(18,13,11,0) 84%); }
+.up-ab > img { position: absolute; inset: 18% 14%; width: 72%; height: 64%; object-fit: contain;
+  filter: drop-shadow(.6px 0 0 #F0EDE1) drop-shadow(-.6px 0 0 #F0EDE1) drop-shadow(0 .6px 0 #F0EDE1) drop-shadow(0 -.6px 0 #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.6)); }
+.up-ab.mirror > img { transform: scaleX(-1); }
+.up-ab:hover, .up-ab:focus-visible, .up-ab.show { z-index: 31; }   /* Tooltip über Spielfeld-Knöpfen; Menüs decken das Panel ab, dann gibt es kein Hover */
+.up-ab:hover { transform: translateY(-2px); } .up-ab:active { transform: translateY(2px); }
+.up-ab:focus-visible { outline: 3px solid var(--s-brass); outline-offset: 3px; }
+.up-ab.on { background-image: var(--up-knopfAn); }
+.up-ab.off { background-image: var(--up-knopfAus); cursor: default; }
+.up-ab.off:hover, .up-ab.off:active { transform: none; }
+.up-ab.off > img { filter: brightness(.45) saturate(.5); }
+.up-ab.off::before { background: rgba(18,13,11,.25); }
+.up-ab.pulse { background-image: var(--up-knopfAn); animation: uppulse 1.3s ease-in-out infinite; }
+@keyframes uppulse { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(242,214,130,.95)); } }
+.up-ab .ap { position: absolute; right: -7px; top: -7px; width: 24px; height: 24px; display: grid; place-items: center;
+  font: 700 14px var(--s-body); color: var(--s-ink); background: var(--up-punkt) center / contain no-repeat; }
+.up-ab .cdn { position: absolute; left: -6px; bottom: -6px; display: flex; align-items: center; gap: 2px; padding: 2px 6px 2px 3px;
+  font: 700 14px/1 var(--s-body); color: var(--s-text); background: var(--s-ink); border: 2px solid #6e5a4b; border-radius: 12px; }
+.up-ab .cdn img { width: 14px; height: 16px; object-fit: contain; }
+.up-ab .cdn.cnt { padding-left: 6px; }
+.up-key { font: 700 14px var(--s-head); color: #cbbfa6; min-width: 22px; text-align: center; padding: 0 5px; border: 1px solid #6e5a4b; border-radius: 3px; background: rgba(18,13,11,.6); }
+.up-slot.on .up-key { color: var(--s-brass); border-color: var(--s-brass); }
+.up-tip { position: absolute; bottom: calc(100% + 12px); left: 50%; width: 250px; z-index: 30; padding: 15px 19px 17px; text-align: left; pointer-events: none; white-space: normal;
+  color: var(--s-bg); background: var(--up-perg) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 0 rgba(0,0,0,.6));
+  opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity .12s, transform .12s; }
+.up-tip b { display: block; font: 700 17px var(--s-head); letter-spacing: .05em; text-transform: uppercase; }
+.up-tip .cost { display: block; font: 700 14px var(--s-body); color: #5a2a22; margin: 2px 0 4px; }
+.up-tip span { display: block; font: 14px/1.35 var(--s-body); }
+.up-tip .why { color: #713B36; font-weight: 700; margin-top: 4px; }
+.up-ab:hover .up-tip, .up-ab:focus-visible .up-tip, .up-ab.show .up-tip { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.up-slot:first-child .up-tip { left: 0; transform: translate(-8px, 4px); } .up-slot:first-child .up-ab:hover .up-tip, .up-slot:first-child .up-ab.show .up-tip { transform: translate(-8px, 0); }
+.up-text { height: 44px; padding: 0 18px; border: 0; cursor: pointer; color: var(--s-text); background: var(--up-tafel) center / 100% 100% no-repeat; font: 700 15px var(--s-head) !important; letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+
+.up-turn { display: flex; flex-direction: column; gap: 9px; width: 184px; }
+.up-plate { border: 0; cursor: pointer; padding: 0 16px; color: var(--s-text); background: var(--up-tafel) center / 100% 100% no-repeat;
+  font: 700 17px var(--s-head) !important; letter-spacing: .07em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)); }
+.up-plate:hover { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) brightness(1.15); } .up-plate:active { transform: translateY(2px); }
+.up-plate:disabled { filter: grayscale(.8) brightness(.6); cursor: default; transform: none; }
+.up-shop { height: 46px; color: var(--s-brass); white-space: nowrap; } .up-shop b { color: var(--s-text); margin-left: 6px; }
+.up-end { height: 64px; font-size: 19px !important; }
+
+.upanel.many { --ab: 54px; } .upanel.many .up-abils { gap: 7px; }
+@media (max-height: 520px), (max-width: 1100px) {
+  .upanel { --ab: 48px; --bar: 196px; --pic: 86px; height: 120px; gap: 10px; padding: 12px max(16px, env(safe-area-inset-left)) calc(16px + env(safe-area-inset-bottom)); }
+  .up-unit { gap: 8px; }
+  #hud .up-name { font-size: 15px; } #hud .up-sub { display: none; } #hud #btnInfo .long { display: none; } #hud #btnInfo { padding: 0 6px; }
+  .up-bar .tube { height: 22px; } .up-bar.mor .tube { height: 16px; } .up-bar .val { min-width: 70px; font-size: 14px; } .up-bar.hp .val small { display: none; }
+  .up-tiles { gap: 10px; } .up-t { font-size: 14px; } .up-t img { width: 20px; height: 20px; } .up-t img.wide { width: 28px; } .up-t small { display: none; } .up-pip { width: 16px; height: 16px; }
+  .up-abils { gap: 5px; } .up-key { display: none; } .up-mid { gap: 3px; }
+  #hud .up-hint { font-size: 14px; line-height: 17px; min-height: 17px; }
+  .up-ab .ap { width: 20px; height: 20px; font-size: 13px; right: -5px; top: -5px; }
+  .up-turn { width: 120px; gap: 5px; } .up-shop { height: 34px; font-size: 14px !important; padding: 0 8px; } .up-end { height: 46px; font-size: 15px !important; padding: 0 8px; }
+  .up-shop b { margin-left: 3px; } .up-plate { letter-spacing: .02em; } .up-shop { font-size: 13px !important; padding: 0 4px; }
+  .up-bar .val small { display: none; }
+}
+@media (max-height: 520px) and (max-width: 760px) {
+  .upanel { --ab: 42px; --bar: 160px; --pic: 74px; }
+}
+@media (max-height: 520px), (max-width: 1100px) { .upanel.many { --ab: 40px; } .upanel.many .up-abils { gap: 4px; } }
 </style>
 </head>
 <body>
@@ -393,14 +504,20 @@ body { background: #0c0908; }
     </div>
   </header>
   <main class="board" id="board"><canvas id="map" aria-label="Schlachtfeld"></canvas></main>
-  <footer class="hud" id="hud">
-    <div class="pwrap"><canvas id="portrait" hidden></canvas></div>
-    <div class="hmain">
-      <div class="hhead"><span id="hudName"></span><span id="hudSub"></span><button id="btnInfo" title="Mehr über diese Einheit" hidden>i</button></div>
-      <div class="stats" id="hudStats"></div>
-      <div class="hrow" id="hudRow"></div>
+  <footer class="upanel nounit" id="hud">
+    <div class="up-unit">
+      <div class="up-pic"><canvas id="portrait"></canvas><div class="up-mark" id="upMark"></div></div>
+      <div class="up-stats">
+        <div class="up-head"><span class="up-name" id="hudName"></span><button class="up-info" id="btnInfo" title="Mehr über diese Einheit" hidden>i<span class="long"> Info</span></button></div>
+        <div class="up-sub" id="hudSub"></div>
+        <div class="up-vals" id="hudStats"></div>
+      </div>
     </div>
-    <div class="hbtns"><button class="act shopbtn" id="btnShop">Nachschub</button><button class="endbtn" id="btnEnd">Runde beenden</button></div>
+    <div class="up-mid">
+      <div class="up-hint" id="hudHint"></div>
+      <div class="up-abils" id="hudRow"></div>
+    </div>
+    <div class="up-turn"><button class="up-plate up-shop" id="btnShop">Nachschub</button><button class="up-plate up-end" id="btnEnd">Runde beenden</button></div>
   </footer>
 </div>
 <div id="toast"></div>
