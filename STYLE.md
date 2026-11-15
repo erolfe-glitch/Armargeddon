@@ -94,6 +94,13 @@ Drei Darstellungen, klar getrennt, gedämpft – das Gelände bleibt sichtbar:
 - **Vorschau** (Maus über erreichbarem Feld, Finger: erstes Antippen, zweites zieht): gestrichelte Messinglinien zu den Zielen von dort, Gegner mit Schussfeld auf das Feld gestrichelt in `--s-range` umrandet, oben links am Feld Warndreieck (Ochsenblut, „!“, Zahl), oben rechts das Deckungsschild des Felds. Tooltip per Maus und Touch.
 - **Bereite Einheiten** (eigene Runde): dezenter pulsierender Messingring am Boden. Können nur noch höchstens 3 handeln, zusätzlich ein Messingwinkel über der Figur. Beides in den Optionen abschaltbar („Hilfen“).
 
+## Kamera, Ereigniszeile, Kriegstagebuch
+- **Kamera** (Option „Kamera folgt der KI“): fährt weich (ca. 0,4 s) nur, wenn das Geschehen nicht im Bild ist. KI-Einheit am Zug: Messingring. Zu Beginn der eigenen Runde zurück zur zuletzt gewählten Einheit bzw. zur eigenen Front. Wer selbst verschiebt, hat Vorrang.
+- **Zoom:** „Ganze Karte“ bis 2×, Mausrad und zwei Finger stufenlos auf den Zeigerpunkt; Knopf: ganze Karte → 1× → 1,3× → 1,6×.
+- **Wucht:** kurzer Halt bei Treffern, leichtes Bildwackeln bei schweren Treffern und Einschlägen (Option „Bildwackeln“). Tempo 1×, 2×, Sofort (ohne Kamerafahrt und Ton).
+- **Ereigniszeile:** wichtige Ereignisse beider Seiten (niedergehalten, flieht, aufgerieben, schwerer Treffer, Reaktionsfeuer, Panne, festgefahren, Anführer fällt) groß in Headline-Schrift, Knochenweiß auf Tinte, Rostrand, Fraktionsfarbe als 5-px-Strich darunter; ca. 1,7 s.
+- **Kriegstagebuch** (Buch-Symbol in der oberen Leiste): Pergament (`--s-parch`, Text `--s-bg`) im Rostrahmen, Runden neueste oben, Einträge mit Fraktionsstrich links, Wichtiges fett; Eintrag antippen fährt die Kamera hin und markiert das Feld in Messing. Einträge mindestens 40 px hoch.
+
 ## Bildregeln für Einheiten und Karten
 Gelten für jedes neue oder neu gemalte Bild. Bestandsaufnahme und Begründung: `entwurf/bestand/BESTAND.md` (lokal).
 Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel ist **1 SH = 1,18 Feldradien** (gut sichtbar auch auf dunklen gemalten Karten).

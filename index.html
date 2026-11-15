@@ -61,7 +61,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 
 /* Schlachtfeld */
 .board { position: relative; overflow: auto; background: #1c1d17; min-height: 0; }
-#map { display: block; touch-action: manipulation; cursor: pointer; }
+#map { display: block; touch-action: none; cursor: pointer; }   /* Ziehen und Pinch-Zoom macht ui.js selbst */
 #toast { position: fixed; left: 50%; top: 58px; transform: translate(-50%, -8px); background: rgba(18,19,15,.9); border: 2px solid var(--edge); padding: 6px 14px; border-radius: 6px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 5; max-width: 90vw; text-align: center; }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
 #banner { position: fixed; left: 0; right: 0; top: 34%; display: grid; justify-items: center; gap: 2px; padding: 14px 10px; background: linear-gradient(90deg, transparent, rgba(12,12,8,.92) 20%, rgba(12,12,8,.92) 80%, transparent); pointer-events: none; opacity: 0; z-index: 6; }
@@ -581,7 +581,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 /* Ab 1280 px muss alles passen (Zielgeräte PC und Digitalboards): Seitenname weicht dem Wappen, Balken schmaler */
 @media (max-width: 1800px) { .tb-meter .tube { width: 96px; } .tb-meter .tb-medal { display: none; } .tb-medal { --m: 54px; } .tb-dots.wim, .tb-dots:has(.tb-flag.img) { gap: 21px; padding-right: 20px; } .tb-btn { width: 40px; height: 40px; } .tb-tools { gap: 3px; } .tb-pts { padding: 0 10px; } .tb-dots { padding-left: 8px; margin: 0 4px; } }
 @media (max-width: 1600px) { .tb-wind .k { display: none; } .tb-meter .tube { width: 130px; height: 34px; } .tb-meter .val { font-size: 17px; min-width: 48px; } .tb-mid { gap: 12px; } .tb-pts { font-size: 24px; height: 48px; padding: 0 14px; } }
-@media (max-width: 1400px) { .tb-meter .val { display: none; } .tb-left { gap: 8px; } .tb-plate:not(.tb-pts) { padding: 0 12px; font-size: 16px; } .tb-tools { gap: 4px; } .tb-meter .tube { width: 120px; } }
+@media (max-width: 1400px) { .tb-meter .val { display: none; } .tb-left { gap: 8px; } .tb-plate:not(.tb-pts) { padding: 0 12px; font-size: 16px; } .tb-tools { gap: 3px; } .tb-meter .tube { width: 100px; } }   /* Platz für den Tagebuch-Knopf bei 1280 px */
 /* Karten mit 6+ Zielfeldern: Münzen kleiner und enger, damit die Leiste ab 1280 px nicht über den Rand läuft (fester Abstand bleibt) */
 @media (max-width: 1600px) { .tb-dots.many { gap: 4px; } .tb-dots.many .tb-obj { width: 26px; height: 26px; font-size: 14px; border-width: 2.5px; }
   .tb-dots.many.wim, .tb-dots.many:has(.tb-flag.img) { gap: 16px; padding-right: 16px; } .tb-dots.many .tb-flag.img img { height: 23px; } .tb-dots.many .tb-flag:not(.img) { height: 22px; } .tb-dots.many .tb-flag:not(.img) img { width: 25px; } }
@@ -649,6 +649,33 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
   .up-bar .val { min-width: 84px; } .up-tiles { gap: 12px; } .up-t small { display: none; }   /* „Felder“ steht im Tooltip */
   .up-turnrow .up-shop { padding: 0 8px; letter-spacing: .02em; } .up-shop b { margin-left: 4px; }
 }
+
+/* ===== Ereigniszeile und Kriegstagebuch (Etappe 3, STYLE.md) ===== */
+/* Ereigniszeile: wichtige Ereignisse groß über der Karte, Serifenschrift, Fraktionsfarbe als Strich darunter */
+#evline { position: fixed; left: 50%; top: 96px; z-index: 7; pointer-events: none; padding: 10px 26px 12px; width: max-content; max-width: min(80vw, 900px); text-align: center;
+  background: rgba(18,13,11,.88); border: 2px solid var(--s-rust); box-shadow: 0 0 0 2px var(--s-ink), 0 4px 0 2px rgba(18,13,11,.7);
+  opacity: 0; transform: translate(-50%, -10px) scale(.96); transition: opacity .18s, transform .18s; }
+#evline.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+#evline b { display: inline-block; font: 400 26px/1.15 var(--s-head); letter-spacing: .06em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 2px 0 var(--s-ink);
+  padding-bottom: 3px; border-bottom: 5px solid var(--fc, var(--s-brass)); }
+/* Kriegstagebuch: Pergament im Eisenrahmen rechts, Einträge als Knöpfe (antippen fährt die Kamera hin) */
+.diary { position: fixed; right: 18px; top: 86px; z-index: 25; width: 380px; max-height: calc(100vh - 86px - 220px); display: flex; flex-direction: column;
+  color: var(--s-bg); background: var(--s-parch); border: 3px solid var(--s-rust); box-shadow: 0 0 0 2px var(--s-ink), 0 6px 0 2px rgba(18,13,11,.7); }
+.diary > * { position: relative; }
+.board { scrollbar-width: none; } .board::-webkit-scrollbar { display: none; }   /* verschoben wird per Ziehen, Mausrad, Pfeiltasten und Randpfeilen */
+.diary header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 10px 8px 18px; border-bottom: 2px solid rgba(102,72,58,.6); }
+.diary h3 { margin: 0; font: 400 22px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-bg); }
+.dg-close { width: 40px; height: 40px; border: 2px solid var(--s-ink); border-radius: 3px; background: var(--s-rust); color: var(--s-text); font: 700 18px var(--s-body); cursor: pointer; }
+.dg-list { list-style: none; margin: 0; padding: 6px 12px 12px; overflow-y: auto; overscroll-behavior: contain; }
+.dg-turn h4 { margin: 10px 4px 4px; font: 400 16px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: #5a2a22; }
+.dg-turn ol { list-style: none; margin: 0; padding: 0; }
+.dg-it { display: block; width: 100%; min-height: 40px; padding: 8px 10px 8px 14px; text-align: left; border: 0; border-left: 5px solid var(--fc); background: transparent; cursor: pointer;
+  font: 15px/1.3 var(--s-body); color: var(--s-bg); border-bottom: 1px solid rgba(102,72,58,.25); }
+.dg-it.imp { font-weight: 700; }
+.dg-it:hover, .dg-it:focus-visible { background: rgba(194,164,97,.35); outline: none; }
+.dg-it.nopos { cursor: default; } .dg-it.nopos:hover { background: transparent; }
+.dg-empty { padding: 14px 6px; font: 15px var(--s-body); }
+.tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
 /* ===== Startmenü nach STYLE.md: Schritte Titel → Fraktion → Schlachtfeld → Schlacht. Hintergrund = Titelbild (src/titlebg.js, --sm-bg). ===== */
 .overlay.sm { padding: 0; overflow: hidden; background: var(--s-ink); font: 17px/1.35 var(--s-body); color: var(--s-text); -webkit-user-select: none; user-select: none; }
 .sm-bg { position: absolute; inset: 0; background: var(--sm-bg) center 40% / cover no-repeat, var(--s-bg); transition: filter .35s, transform .35s; }
@@ -744,7 +771,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
     <div class="tb-right">
       <span class="tb-brand">Armargeddon</span>
       <div class="tb-tools">
-        <button class="tb-btn" id="btnZoom" data-tip="Zoom: größere Figuren, Feld verschiebbar"></button>
+        <button class="tb-btn" id="btnDiary" data-tip="Kriegstagebuch: Ereignisse der letzten Runden, Eintrag antippen zeigt den Ort"></button>
+        <button class="tb-btn" id="btnZoom" data-tip="Zoom: ganze Karte bis 1,6×. Mausrad oder zwei Finger zoomen stufenlos"></button>
         <button class="tb-btn" id="btnMarks" data-tip="Alle Marken zeigen: Zustand, Leben und Deckung aller Einheiten obenauf. Mit der Maus: Alt gedrückt halten."></button>
         <button class="tb-btn" id="btnSound" data-tip="Ton an/aus"></button>
         <button class="tb-btn" id="btnSpeed" data-tip="Tempo der Abläufe"></button>
@@ -755,6 +783,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
     </div>
   </header>
   <main class="board" id="board"><canvas id="map" aria-label="Schlachtfeld"></canvas></main>
+  <div id="evline" aria-live="polite"></div>
+  <aside class="diary" id="diary" hidden aria-label="Kriegstagebuch"><header><h3>Kriegstagebuch</h3><button class="dg-close" id="closeDiary" aria-label="Schließen">✕</button></header><ol class="dg-list" id="diaryList"></ol></aside>
   <footer class="upanel nounit" id="hud">
     <div class="up-unit">
       <div class="up-pic"><canvas id="portrait"></canvas><div class="up-mark" id="upMark"></div></div>
@@ -795,6 +825,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
       <div class="sm-row"><span>Tempo</span><button class="sm-chip" id="setSpeed">Tempo 1×</button></div>
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
+      <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
@@ -3509,20 +3540,23 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
+const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
+const speedTxt = () => speed >= INSTANT ? 'Tempo sofort' : 'Tempo ' + speed + '×';
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
 let recSet = new Set(), abilSet = new Set(), abilMode = false;
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
-const OPT = { ready: true, strag: true };
-try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); if (typeof o.ready === 'boolean') OPT.ready = o.ready; if (typeof o.strag === 'boolean') OPT.strag = o.strag; } catch (e) {}
+const OPT = { ready: true, strag: true, cam: true, shake: true };   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
+try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === 'boolean') OPT[k] = o[k]; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
 let skinA = 'A';
 const LEADER = { 'Prätor Hask': 4, 'Hauptfrau Morn': 1, 'Hauptmann Veyl': 1, 'Kastellan Orsk': 4, 'Sturmführer Kael': 3, 'Legat Corvin': 2, 'Major Dresk': 2, 'General': 4, 'Hauptmann': 1 };
 function leaderKind(u) { if (!u.officer || (u.side === 'A' && skinA !== 'A')) return null; const k = 'leader' + (LEADER[u.officer] ?? 0), a = FIG.ARTS[k + '_' + u.side]; return a && a.img.complete && a.img.naturalWidth ? k : null; }
 let queue = [], qRunning = false;
-let L = null, K = 0.62, tcv = null, now = 0, ZOOM = 1;
+let L = null, K = 0.62, tcv = null, now = 0, ZOOM = 1, ZFIT = 1, zoomFit = false;
+const Z_MAX = 2;   // stufenloser Zoom zwischen „ganze Karte“ (ZFIT) und 2×
 const human = side => mode === 'hot' || mode === side;
 
 const board = $('board'), cv = $('map'), ctx = cv.getContext('2d');
@@ -3533,15 +3567,23 @@ function layout() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const portrait = matchMedia('(orientation: portrait)').matches;
   const MIN_S = 46;   // kleinste Feldgröße in CSS-Pixeln; größere Karten werden dann verschoben (ziehen, Mausrad, Pfeiltasten)
-  const cssW = Math.max(wrap.width, portrait ? 760 : 560, MIN_S * (1.5 * COLS + 0.5)) * ZOOM;
-  const s = cssW * dpr / (1.5 * COLS + 0.5);
-  const mi = mapImg(), top = s * (mi ? 0.9 : 1.55), bot = s * 0.45;
-  K = Math.max(0.42, Math.min(0.86, (wrap.height * ZOOM * dpr - top - bot) / (s * SQ3 * (ROWS + 0.5))));
+  const base = Math.max(wrap.width, portrait ? 760 : 560, MIN_S * (1.5 * COLS + 0.5));
+  // Stauchung K hängt nicht vom Zoom ab (alles skaliert mit s): einmal bei Zoom 1 bestimmen
+  const s1 = base * dpr / (1.5 * COLS + 0.5), mi = mapImg();
+  K = Math.max(0.42, Math.min(0.86, (wrap.height * dpr - s1 * ((mi ? 0.9 : 1.55) + 0.45)) / (s1 * SQ3 * (ROWS + 0.5))));
   if (mi) { const mk = imgK(mi); K = Math.min(mk, Math.max(K, mk * 0.8)); }   // gemaltes Kartenbild: höchstens 20 % gestaucht, sonst verschieben
+  // „Ganze Karte“: größter Zoom, bei dem Breite und Höhe ganz ins Bild passen (höchstens 1)
+  const h1 = (s1 * ((mi ? 0.9 : 1.55) + 0.45) + s1 * K * SQ3 * (ROWS + 0.5)) / dpr;
+  ZFIT = Math.min(1, wrap.width / base, wrap.height / h1);
+  if (zoomFit) ZOOM = ZFIT; ZOOM = Math.max(ZFIT, Math.min(Z_MAX, ZOOM));
+  const cssW = base * ZOOM, s = cssW * dpr / (1.5 * COLS + 0.5);
+  const top = s * (mi ? 0.9 : 1.55), bot = s * 0.45;
   const H = Math.ceil(top + s * K * SQ3 * (ROWS + 0.5) + bot);
   L = { dpr, s, top, W: Math.round(cssW * dpr), H };
   cv.width = L.W; cv.height = H;
   cv.style.width = cssW + 'px'; cv.style.height = (H / dpr) + 'px';
+  // kleiner als das Bild (ganze Karte): mittig
+  cv.style.marginLeft = Math.max(0, Math.floor((wrap.width - cssW) / 2)) + 'px'; cv.style.marginTop = Math.max(0, Math.floor((wrap.height - H / dpr) / 2)) + 'px';
   renderTerrain();
   for (const u of G.units) { const d = DU.get(u.id); if (d) { const [x, y] = center(u.c, u.r); d.x = x; d.y = y; } }
 }
@@ -4058,11 +4100,10 @@ function chevron(x, y, w) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x -
 function brackets(cx, cy, R, col) { const g = ctx, ry = R * K * 1.2, ln = R * 0.4, lw = Math.max(2, L.s * 0.035);
   const seg = () => { for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { g.beginPath(); g.moveTo(cx + sx * R, cy + sy * ry - sy * ln * 0.8); g.lineTo(cx + sx * R, cy + sy * ry); g.lineTo(cx + sx * R - sx * ln, cy + sy * ry); g.stroke(); } };
   g.save(); g.lineCap = 'square'; g.strokeStyle = '#120D0B'; g.lineWidth = lw + 3; seg(); g.strokeStyle = col; g.lineWidth = lw; seg(); g.restore(); }
-// Warndreieck (Ochsenblut, Knochenweiß „!“) mit Zahl der Gegner, die dorthin schießen können
+// Warndreieck (Ochsenblut) mit genau EINER Zahl: wie viele Gegner auf dieses Feld schießen können
 function warnMark(x, y, R, n) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x, y - R); g.lineTo(x + R * 1.08, y + R * 0.82); g.lineTo(x - R * 1.08, y + R * 0.82); g.closePath();
   g.fillStyle = '#8E2B22'; g.fill(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, R * 0.16); g.strokeStyle = '#120D0B'; g.stroke();
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.font = `900 ${Math.round(R * 1.1)}px "Arm Text", system-ui, sans-serif`; g.fillText('!', x, y + R * 0.22);
-  if (n > 1) { const t = String(n); g.font = `700 ${Math.round(Math.max(14, R * 0.95))}px "Arm Text", system-ui, sans-serif`; g.lineWidth = Math.max(3, R * 0.2); g.strokeText(t, x + R * 1.25, y - R * 0.7); g.fillText(t, x + R * 1.25, y - R * 0.7); }
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.font = `900 ${Math.round(Math.max(14, R * 1.05))}px "Arm Text", system-ui, sans-serif`; g.fillText(String(n), x, y + R * 0.24);
   g.restore(); }
 // Symbol auf dunkler Scheibe mit Rostrand (Karte)
 function drawSym(g, im, cx, cy, R) {
@@ -4091,6 +4132,7 @@ function drawUnit(u, d) {
     g.beginPath(); g.arc(fx, fy, Math.max(2, s * 0.055), 0, 7); g.fillStyle = isSel ? '#C2A461' : acc; g.fill(); g.lineWidth = Math.max(1, s * 0.03); g.strokeStyle = '#120D0B'; g.stroke();
   }
   g.globalAlpha = A0;
+  if (activeU === u.id && !isSel) { const pz = 0.5 + 0.5 * Math.sin(now / 160); g.globalAlpha = A0 * (0.7 + 0.3 * pz); drawRing(g, '#C2A461', x, y, s * (0.72 + 0.03 * pz), true); g.globalAlpha = A0; }   // KI: diese Einheit ist dran
   if (isSel) {   // gewählt: Messingring, leicht pulsierend
     const pz = 0.5 + 0.5 * Math.sin(now / 300);
     g.globalAlpha = A0 * (0.85 + 0.15 * pz); drawRing(g, '#C2A461', x, y, s * (0.7 + 0.02 * pz), true); g.globalAlpha = A0;
@@ -4191,7 +4233,7 @@ function hexMark(c, r, o) {
   g.stroke(); g.setLineDash([]);
   if (o.sym) { const [cx, cy] = center(c, r); MARKQ.push(() => { g.globalAlpha = 0.85 + 0.15 * pz; drawSym(g, o.sym, cx, cy - s * K * (o.inHex ? 0.1 : 0.62), s * 0.2); g.globalAlpha = 1; }); }   // Symbol über den Figuren
 }
-function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; draw(); requestAnimationFrame(frame); }
+function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; shakeStep(); draw(); requestAnimationFrame(frame); }
 function draw() {
   if (!L || !tcv) return;
   const g = ctx, s = L.s;
@@ -4248,7 +4290,7 @@ function draw() {
           g.restore();
           if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * K * 0.92, s * 0.22, pv.threat.length);
           if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * K * 0.92, s * 0.36, pv.cov); });
-        if (pv.threat.length || pv.cov) MARKS.push({ x0: hx - s * 0.8, y0: hy - s * K * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * K * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
+        MARKS.push({ x0: hx - s * 0.8, y0: hy - s * K * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * K * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
   }
   if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: PARCH, fill: 0.22, dash: true });
   if (hoverHex) {
@@ -4274,6 +4316,7 @@ function draw() {
   list.sort((a, b) => a[0] - b[0]);
   for (const [, u, d] of list) drawUnit(u, d);
   for (const f of MARKQ) f(); MARKQ.length = 0;
+  if (diaryMark && now - diaryMark.t < 2400) { const k = (now - diaryMark.t) / 2400, pz = 0.5 + 0.5 * Math.sin(now / 140); g.globalAlpha = 1 - k * 0.6; hexMark(diaryMark.c, diaryMark.r, { rgb: BRASS, fill: 0.18 + 0.1 * pz }); g.globalAlpha = 1; }   // Ort aus dem Kriegstagebuch
   // Nebel (grau), ausgeleuchtete Felder (gelb), eigene Stollen und Minen
   for (const k of VIS.lit) { hexPath(g, k.c, k.r, 0.98); g.fillStyle = 'rgba(255,240,170,0.16)'; g.fill(); }
   for (const k of VIS.smoke) {
@@ -4403,8 +4446,10 @@ function draw() {
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
   { const n = sel && human(G.side) && !busy && hoverHex && !abilSet.has(E.key(hoverHex[0], hoverHex[1])) && reach.get(E.key(hoverHex[0], hoverHex[1]));
-    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`; g.font = `700 ${Math.round(Math.max(14, s * 0.24))}px "Arm Text", system-ui, sans-serif`;
-      g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x, y - s * K * 0.45); g.fillStyle = '#F0EDE1'; g.fillText(t, x, y - s * K * 0.45); } }
+    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)), ty = y - s * K * 0.45;
+      g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
+      if (im) { g.save(); g.filter = 'brightness(1.9) sepia(0.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B)'; g.drawImage(im, x0, ty - iw / 2, iw, iw); g.restore(); }   // Stiefel: das ist der Weg, keine Warnzahl
+      g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
   for (let i = floaters.length - 1; i >= 0; i--) {
     const f = floaters[i]; f.life -= f.hold ? STEP : FS; f.y -= s * STEP * (f.hold ? (f.life > f.max - 30 ? 0.012 : 0.0015) : 0.012);
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
@@ -4439,7 +4484,7 @@ function setAmbient(on) {
 const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3'], cry: ['cry', 'scream'], heavy: ['heavy1', 'heavy2', 'heavy3'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'punch4', 'swords'] };
 function playSound(name, vol = 0.6) {
   if (SND_VAR[name]) { const opts = SND_VAR[name].filter(k => SND[k]); if (opts.length) name = opts[Math.floor(Math.random() * opts.length)]; }
-  if (!soundOn || !SND[name]) return;
+  if (!soundOn || !SND[name] || (speed >= INSTANT && qRunning)) return;
   const t = performance.now(); if (lastSnd[name] != null && t - lastSnd[name] < (SND_GAP[name] || 100)) return; lastSnd[name] = t;   // nicht mehrfach im selben Augenblick
   window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
   window.__snd = (window.__snd || 0) + 1;
@@ -4483,6 +4528,7 @@ async function animPath(id, path, msPer) {
   for (let i = 1; i < path.length; i++) {
     const [x0, y0] = center(path[i - 1][0], path[i - 1][1]), [x1, y1] = center(path[i][0], path[i][1]);
     if (x1 !== x0) d.face = x1 > x0 ? 0 : 3;
+    if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
     for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; }
   }
@@ -4492,6 +4538,7 @@ const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 
 async function playEvent(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
+  try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
     case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tankmove', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
@@ -4501,7 +4548,8 @@ async function playEvent(e) {
     case 'fire': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      if (e.reaction) floater(...headPos(e.a), 'Reaktionsfeuer!', '#ffd860');
+      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), 'Reaktionsfeuer!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
+      if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6); flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); }
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
@@ -4518,11 +4566,14 @@ async function playEvent(e) {
     }
     case 'shell': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = center(e.c, e.r);
+      if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);   // Abschuss zeigen, danach folgt die Kamera der Granate
       a.face = e.face; playSound(TYPES[unitById(e.a).type].mobile ? 'launch' : 'cannonH', TYPES[unitById(e.a).type].mobile ? 0.42 : 0.8);   // Mörser: Mörserton, Geschütze: Kanonenschuss
       if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn
       shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
+      if (camOn() && !inView(x2, y2, 0.12)) camTo(x2, y2, dur * 16.667 * 0.8);
       await wait(dur * 16.667);
+      shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
       if (e.guided) floater(x2, y2 - s * 1.5, '◉ gelenkt ×1,25', '#F0EDE1', false, true);
       playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[unitById(e.a).type].mobile ? 'boom' : 'boomH', 0.7);
@@ -4570,6 +4621,7 @@ async function playEvent(e) {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
       if (E.isMech(u.type)) playSound('robot', 0.5);
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
+      if (!e.panic && e.dmg >= 1.5) { shake(e.dmg >= 2.5 ? 6 : 4); playSound('impact', 0.3); }   // schwerer Treffer: Wucht
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('neigh', 0.5);
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45);
@@ -4581,7 +4633,7 @@ async function playEvent(e) {
         floater(...headPos(e.u), '−' + fmt(e.dmg), e.dmg >= 1.5 ? '#ff6a4a' : '#ff9a7a', e.dmg >= 1.5, true);
         if (human(G.side) || human(u.side)) toast(`${nm(u)}: −${fmt(e.dmg)} Stärke · ${e.dmg >= 2 ? 'schwerer Treffer' : e.dmg >= 1 ? 'guter Treffer' : e.dmg >= 0.4 ? 'leichter Treffer' : 'kaum Wirkung'} · noch ${fmt(e.str)}`);
       } else floater(...headPos(e.u), 'Panik', '#f0d27a');
-      await wait(e.panic ? 180 : 300); break;
+      await wait(e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern
     }
     case 'gas': { const d = DU.get(e.u); d.vs.gassed = true; d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'Gas!', '#d6e670'); await wait(220); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
@@ -4589,7 +4641,7 @@ async function playEvent(e) {
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
-      if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { boom(d.x, d.y, s * 1.1, 'he'); playSound('boom2', 0.75); }
+      if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { boom(d.x, d.y, s * 1.1, 'he'); playSound('boom2', 0.75); shake(8); }
       else if (blood) { boom(d.x, d.y, s * 0.6, 'blood'); decals.push({ v: 3, x: d.x, y: d.y, r: s * 0.36, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * K, r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); burst(d.x, d.y - s * 0.4, 18, ['#9a1612', '#74100c'], { up: 0.2, spread: 0.3 }); }
       for (let k = 0; k < 10; k++) { d.alpha = 1 - k / 10; await wait(28); } d.alpha = 0; break;
     }
@@ -4674,13 +4726,13 @@ function pick(x, y) {
 function unitAtPixel(x, y) { const p = pick(x, y); return p.uFig || p.uHex; }
 const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targets.has(p.uFig.id) ? p.uFig : null;
 let drag = null, dragged = 0;
-cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; if (ev.pointerType === 'mouse') drag = { x: ev.clientX, y: ev.clientY, sl: board.scrollLeft, st: board.scrollTop, moved: false }; });
+cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; if (!pinch) drag = { x: ev.clientX, y: ev.clientY, sl: board.scrollLeft, st: board.scrollTop, moved: false }; });   // Maus und Finger verschieben
 window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = performance.now(); drag = null; cv.style.cursor = ''; });
 // Kleine Pfeile am Rand zeigen, wohin man noch verschieben kann (Wunsch des Nutzers); antippen verschiebt ein Stück
 const SCR = {};
 for (const [k, ch] of [['l', '◀'], ['r', '▶'], ['u', '▲'], ['d', '▼']]) {
   const el = document.createElement('button'); el.className = 'scrhint ' + k; el.textContent = ch; el.hidden = true; el.setAttribute('aria-label', 'Karte verschieben');
-  el.addEventListener('click', () => { const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
+  el.addEventListener('click', () => { userCam(); const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
   document.body.appendChild(el); SCR[k] = el;
 }
 function updScroll() {
@@ -4693,9 +4745,13 @@ function updScroll() {
   }
 }
 board.addEventListener('scroll', updScroll, { passive: true }); addEventListener('resize', () => setTimeout(updScroll, 50)); setInterval(updScroll, 700);
-board.addEventListener('wheel', ev => { if (ev.ctrlKey || ev.shiftKey) return; const canV = board.scrollHeight > board.clientHeight + 2; if (!canV && board.scrollWidth > board.clientWidth + 2) { board.scrollLeft += ev.deltaY; ev.preventDefault(); } }, { passive: false });
+board.addEventListener('wheel', ev => {   // Mausrad (und Touchpad-Pinch = Strg) zoomt auf den Punkt unter dem Zeiger; Umschalt + Rad verschiebt waagrecht
+  if (!G) return; ev.preventDefault(); userCam();
+  if (ev.shiftKey && !ev.ctrlKey) { board.scrollLeft += ev.deltaY || ev.deltaX; return; }
+  const dy = ev.deltaMode === 1 ? ev.deltaY * 30 : ev.deltaY; setZoom((zPend || ZOOM) * Math.exp(-dy * (ev.ctrlKey ? 0.006 : 0.0015)), ev.clientX, ev.clientY);
+}, { passive: false });
 cv.addEventListener('pointermove', ev => {
-  if (drag && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > 8) { drag.moved = true; cv.style.cursor = 'grabbing'; board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; return; } }
+  if (drag && !pinch && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > (ev.pointerType === 'mouse' ? 8 : 14)) { drag.moved = true; userCam(); cv.style.cursor = 'grabbing'; board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; return; } }
   if (!G || ev.pointerType !== 'mouse') return;
   const [x, y] = evToPx(ev), p = pick(x, y);
   hoverHex = p.h;
@@ -4724,8 +4780,10 @@ function markTips(m) {
   if (m.kind === 'state') return statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d) }));
   if (m.kind === 'cover') return [coverTip(u)];
   if (m.kind === 'pv') { const pv = m.pv, cn = ['', 'Bronze', 'Silber', 'Gold'][pv.cov];
-    return [{ name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite.` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Deckung ${cn}.` : 'Keine Deckung.'}` },
-      pv.threat.length && { name: 'Unter Beschuss', text: `${pv.threat.length} ${pv.threat.length === 1 ? 'Gegner kann' : 'Gegner können'} auf dieses Feld schießen (rot umrandet).` }]; }
+    const n = reach.get(E.key(pv.c, pv.r));
+    return [pv.threat.length && { name: `Warndreieck: ${pv.threat.length} ${pv.threat.length === 1 ? 'Schütze' : 'Schützen'}`, text: `So viele Gegner können auf dieses Feld schießen (rot umrandet).` },
+      { name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite (Messinglinien).` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Schild: Deckung ${cn}.` : 'Keine Deckung.'}` },
+      n && { name: `Stiefel: Weg ${n.cost}`, text: `Bewegung bis hierher${n.march ? ', als Marsch (danach keine Aktion mehr)' : n.retreat ? ', als Rückzug' : ''}.` }]; }
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
   if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
   return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
@@ -4774,7 +4832,7 @@ cv.addEventListener('click', ev => {
 });
 
 function select(u) {
-  sel = u; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
+  sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
 }
 // Nachbar über Kante i eines Felds (Ecke i liegt bei 60°·i, y nach unten; Spalten mit ungerader Nummer liegen halb tiefer)
@@ -4873,7 +4931,7 @@ async function endTurn() {
   await play(ev);
   busy = false; updateUI();
   if (G.over) return;
-  if (mode === 'hot') return showHandover();
+  if (mode === 'hot') { camHome(); return showHandover(); }
   if (!human(G.side)) await aiTurn();
 }
 async function aiTurn() {
@@ -4884,12 +4942,17 @@ async function aiTurn() {
   while (!G.over && guard++ < 300) {
     const a = AI.next(G);
     if (!a) break;
+    camHold = false; activeU = a.u.id;   // diese Einheit ist dran: Messingring, Kamera hin, wenn sie nicht im Bild ist
+    { const d = DU.get(a.u.id); if (d && camOn() && !inView(d.x, d.y - L.s * 0.4)) await camTo(d.x, d.y - L.s * 0.4); }
+    await wait(170);
     for (const s of a.steps) { const ev = AI.exec(G, a.u, s); if (ev.length) await play(ev); if (G.over) break; }
-    await wait(60);
+    activeU = null;
+    await wait(250);   // Absatz zwischen zwei Einheiten
   }
   if (G.over) { busy = false; return; }
   await play(E.endTurn(G));
-  busy = false; updateUI();
+  busy = false; activeU = null; updateUI();
+  camHome();   // Rundenbeginn: zurück zur eigenen Einheit bzw. Front
 }
 
 // ---------- Anzeige ----------
@@ -4937,6 +5000,8 @@ const TB_SVG = {
   sndOn: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9a4.5 4.5 0 0 1 0 6M18.5 6a8.5 8.5 0 0 1 0 12"/>'),
   sndOff: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>'),
   speed: TB_ICON('<path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/>', true),
+  instant: TB_ICON('<path d="M2.5 6l7 6-7 6zM10 6l7 6-7 6z" fill="#F0EDE1"/><path d="M20.5 5.5v13"/>'),
+  diary: TB_ICON('<path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h10.5M8.5 8.5h6M8.5 11.5h4"/>'),
   rules: TB_ICON('<path d="M8.5 9a3.5 3.5 0 1 1 5.2 3c-1.1.6-1.7 1.3-1.7 2.6"/><circle cx="12" cy="19" r="1.2" fill="#F0EDE1"/>'),
   full: TB_ICON('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'),
   menu: TB_ICON('<path d="M4 6h16M4 12h16M4 18h16"/>'),
@@ -4944,9 +5009,10 @@ const TB_SVG = {
 };
 const tbNum = n => String(n).replace('.', ',') + '×';
 function tbSync() {
-  $('btnZoom').innerHTML = TB_SVG.zoom + `<b class="tb-v">${tbNum(ZOOM)}</b>`;
+  $('btnZoom').innerHTML = TB_SVG.zoom + `<b class="tb-v">${zoomFit || ZOOM <= ZFIT + 0.01 ? 'Karte' : tbNum(Math.round(ZOOM * 10) / 10)}</b>`;
   $('btnSound').innerHTML = soundOn ? TB_SVG.sndOn : TB_SVG.sndOff;
-  $('btnSpeed').innerHTML = TB_SVG.speed + `<b class="tb-v">${tbNum(speed)}</b>`;
+  $('btnSpeed').innerHTML = speed >= INSTANT ? TB_SVG.instant : TB_SVG.speed + `<b class="tb-v">${tbNum(speed)}</b>`; $('btnSpeed').dataset.tip = 'Tempo der Abläufe: ' + speedTxt().replace('Tempo ', '');
+  $('btnDiary').innerHTML = TB_SVG.diary; $('btnDiary').classList.toggle('on', !$('diary').hidden);
   $('btnMarks').innerHTML = TB_SVG.marks; $('btnMarks').classList.toggle('on', marksOn); $('btnMarks').setAttribute('aria-pressed', marksOn);
   $('btnRules2').innerHTML = TB_SVG.rules; $('btnFull').innerHTML = TB_SVG.full; $('btnMenu').innerHTML = TB_SVG.menu;
   document.querySelectorAll('.tb-btn').forEach(b => b.setAttribute('aria-label', b.dataset.tip));
@@ -5224,7 +5290,7 @@ function setupSync() {
   armyInfo();
 }
 function showStart(first) {
-  $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; $('setZoom').textContent = 'Zoom ' + String(ZOOM).replace('.', ',') + '×'; $('closeStart').hidden = first;
+  $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = speedTxt(); $('setZoom').textContent = zoomTxt(); $('closeStart').hidden = first;
   startStep('title');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
@@ -5307,7 +5373,8 @@ function startGame() {
   decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
-  sel = null; inspect = null; placing = null; spawnSet = new Set(); updateUI();
+  sel = null; inspect = null; placing = null; spawnSet = new Set(); LOG.length = 0; lastSel.A = lastSel.D = null; renderDiary(); updateUI();
+  requestAnimationFrame(() => camHome(true));
   banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
@@ -5372,8 +5439,8 @@ $('armyMech').onclick = () => { $('optMechs').checked = true; mechChanged(); con
 // Einstellungen schon im Startmenü
 $('setFull').onclick = () => $('btnFull').onclick();
 document.documentElement.style.setProperty('--sm-bg', window.TITLEBG ? `url("${window.TITLEBG}")` : 'none');   // Titelbild (tools/title_bg.py)
-$('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; };
-$('setZoom').onclick = () => { ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1; const t = String(ZOOM).replace('.', ',') + '×'; tbSync(); $('setZoom').textContent = 'Zoom ' + t; if (G) { layout(); syncAll(); } };
+$('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textContent = speedTxt(); };
+$('setZoom').onclick = () => { $('btnZoom').onclick(); $('setZoom').textContent = zoomTxt(); };
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
 $('closeStart').onclick = () => { $('start').hidden = true; };
@@ -5383,21 +5450,20 @@ $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
-$('btnZoom').onclick = () => {
-  const fx = (board.scrollLeft + board.clientWidth / 2) / board.scrollWidth, fy = (board.scrollTop + board.clientHeight / 2) / board.scrollHeight;
-  ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1;
-  tbSync();
-  layout(); syncAll();
-  board.scrollLeft = fx * board.scrollWidth - board.clientWidth / 2; board.scrollTop = fy * board.scrollHeight - board.clientHeight / 2;
+$('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,6× (doppelte Stufen fallen weg, wenn die Karte schon bei 1× ganz passt)
+  const st = [...new Set([ZFIT, 1, 1.3, 1.6].map(z => Math.round(Math.max(ZFIT, z) * 100) / 100))];
+  const cur = zoomFit ? 0 : st.findIndex(z => Math.abs(z - ZOOM) < 0.02), nz = st[(cur + 1) % st.length];
+  const bc = board.getBoundingClientRect(); setZoom(nz, bc.left + bc.width / 2, bc.top + bc.height / 2, nz <= ZFIT + 0.001, true);
 };
 // Hilfen (Optionen): sofort wirksam, im Browser gemerkt
-$('optReady').checked = OPT.ready; $('optStrag').checked = OPT.strag;
-for (const [id, k] of [['optReady', 'ready'], ['optStrag', 'strag']]) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} });
+const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake']];
+for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
+for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} });
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
-$('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; tbSync(); };
+$('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? INSTANT : 1; tbSync(); };   // 1×, 2×, Sofort
 tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
@@ -5409,11 +5475,149 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Alt') { if (gameKeys(e)) e.preventDefault(); altHeld = true; return; }
   if (e.key === 'Tab' && gameKeys(e) && !e.ctrlKey && !e.altKey) { e.preventDefault(); nextUnit(e.shiftKey); return; }
   const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-  if (pan && $('start').hidden && !e.target.closest('input')) { board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
+  if (pan && $('start').hidden && !e.target.closest('input')) { userCam(); board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
   // Tasten 1–n: Fähigkeiten-Knöpfe des Panels
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
+
+// ---------- Kamera, Zoom, Wucht, Kriegstagebuch (Etappe 3) ----------
+// Kamera = Scrollposition des Schlachtfelds. Passt die Karte ganz ins Bild, gibt es nichts zu fahren.
+let camAnim = null, camHold = false, activeU = null, shakeT = 0, shakeA = 0, diaryMark = null;
+const lastSel = { A: null, D: null };   // zuletzt gewählte eigene Einheit je Seite (Kamera zu Rundenbeginn)
+const camOn = () => OPT.cam && speed < INSTANT && !camHold;
+function userCam() { camAnim = null; if (G && busy && !human(G.side)) camHold = true; }   // Spieler verschiebt selbst: Kamera hält still bis zur nächsten KI-Einheit
+function toBoard(x, y) { const rc = cv.getBoundingClientRect(), bc = board.getBoundingClientRect(); return [rc.left - bc.left + board.scrollLeft + x * rc.width / cv.width, rc.top - bc.top + board.scrollTop + y * rc.height / cv.height]; }
+function inView(x, y, m = 0.18) {
+  const [bx, by] = toBoard(x, y), w = board.clientWidth, h = board.clientHeight, sl = board.scrollLeft, st = board.scrollTop;
+  const mx = board.scrollWidth - w > 2 ? m : 0, my = board.scrollHeight - h > 2 ? m : 0;   // ohne Verschieben zählt das ganze Bild
+  return bx >= sl + w * mx && bx <= sl + w * (1 - mx) && by >= st + h * my && by <= st + h * (1 - my);
+}
+function camTo(x, y, ms = 380, force) {   // weich zum Punkt (Canvas-Pixel) fahren; Promise endet bei Ankunft oder Abbruch
+  if (!L || (!force && !camOn())) return Promise.resolve();
+  const [bx, by] = toBoard(x, y), w = board.clientWidth, h = board.clientHeight;
+  const tl = Math.max(0, Math.min(board.scrollWidth - w, bx - w / 2)), tt = Math.max(0, Math.min(board.scrollHeight - h, by - h / 2));
+  const l0 = board.scrollLeft, t0 = board.scrollTop;
+  if (Math.abs(tl - l0) < 2 && Math.abs(tt - t0) < 2) return Promise.resolve();
+  const dur = speed >= INSTANT ? 0 : ms / Math.min(speed, 2), me = {}; camAnim = me;
+  if (!dur) { board.scrollLeft = tl; board.scrollTop = tt; return Promise.resolve(); }
+  return new Promise(res => { const st = performance.now();
+    const step = () => { if (camAnim !== me) return res(); const k = Math.min(1, (performance.now() - st) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      board.scrollLeft = l0 + (tl - l0) * e; board.scrollTop = t0 + (tt - t0) * e; if (k < 1) requestAnimationFrame(step); else { camAnim = null; res(); } };
+    requestAnimationFrame(step); });
+}
+// Rundenbeginn: zur zuletzt gewählten eigenen Einheit, sonst zur eigenen Front (die drei Einheiten, die dem Gegner am nächsten stehen)
+function camHome(first) {
+  if (!G || !L || G.over || (!OPT.cam && !first)) return;
+  const side = human(G.side) ? G.side : null; if (!side) return;
+  let u = lastSel[side] != null ? unitById(lastSel[side]) : null, x, y;
+  if (u && E.active(u)) [x, y] = center(u.c, u.r);
+  else {
+    const own = G.units.filter(o => o.side === side && E.active(o)), foes = G.units.filter(o => o.side !== side && E.alive(o)); if (!own.length) return;
+    const near = o => foes.length ? Math.min(...foes.map(f => E.dist(o.c, o.r, f.c, f.r))) : 0;
+    const front = own.map(o => [near(o), o]).sort((a, b) => a[0] - b[0]).slice(0, 3).map(q => center(q[1].c, q[1].r));
+    x = front.reduce((n, q) => n + q[0], 0) / front.length; y = front.reduce((n, q) => n + q[1], 0) / front.length;
+  }
+  camTo(x, y - L.s * 0.4, 450, true);
+}
+// Bildwackeln bei Einschlägen (abschaltbar), über CSS-Verschiebung des Schlachtfelds
+function shake(a) { if (!OPT.shake || speed >= INSTANT) return; shakeA = Math.max(shakeA * shakeT, a); shakeT = 1; }
+function shakeStep() {
+  if (shakeT <= 0) return;
+  shakeT -= 0.075 * STEP; const a = shakeA * Math.max(0, shakeT);
+  cv.style.transform = shakeT > 0 ? `translate(${((Math.random() * 2 - 1) * a).toFixed(1)}px, ${((Math.random() * 2 - 1) * a * 0.7).toFixed(1)}px)` : '';
+}
+
+// Zoom: stufenlos zwischen „ganze Karte“ und 2×, auf den Punkt unter Zeiger/Fingern. Während des Drehens wird nur das Bild gestreckt (flüssig),
+// kurz danach scharf neu gezeichnet.
+let zPend = 0, zTm = 0, pinch = null;
+const zoomTxt = () => zoomFit || ZOOM <= ZFIT + 0.01 ? 'Zoom: ganze Karte' : 'Zoom ' + String(Math.round(ZOOM * 10) / 10).replace('.', ',') + '×';
+function setZoom(z, cx, cy, fit, at) {
+  if (!G || !L) return;
+  const cur = zPend || ZOOM, nz = Math.max(ZFIT, Math.min(Z_MAX, z));
+  zoomFit = !!fit || nz <= ZFIT + 0.001;
+  if (Math.abs(nz - cur) < 0.002 && !at) return;
+  const rc = cv.getBoundingClientRect(), fx = (cx - rc.left) / rc.width, fy = (cy - rc.top) / rc.height;
+  const w = rc.width / cur * nz, h = rc.height / cur * nz;
+  zPend = nz; cv.style.width = w + 'px'; cv.style.height = h + 'px';
+  cv.style.marginLeft = Math.max(0, Math.floor((board.clientWidth - w) / 2)) + 'px'; cv.style.marginTop = Math.max(0, Math.floor((board.clientHeight - h) / 2)) + 'px';
+  const r2 = cv.getBoundingClientRect(); board.scrollLeft += r2.left + fx * r2.width - cx; board.scrollTop += r2.top + fy * r2.height - cy;
+  clearTimeout(zTm); zTm = setTimeout(() => {   // scharf neu zeichnen, Mitte des Bildes bleibt, wo sie war
+    const bc = board.getBoundingClientRect(), r0 = cv.getBoundingClientRect(), mx = bc.left + bc.width / 2, my = bc.top + bc.height / 2;
+    const gx = (mx - r0.left) / r0.width, gy = (my - r0.top) / r0.height;
+    ZOOM = zPend; zPend = 0; layout(); syncAll();
+    const r1 = cv.getBoundingClientRect(); board.scrollLeft += r1.left + gx * r1.width - mx; board.scrollTop += r1.top + gy * r1.height - my;
+    tbSync(); updScroll(); if ($('setZoom')) $('setZoom').textContent = zoomTxt();
+  }, at ? 0 : 170);
+}
+// Zwei Finger: Pinch-Zoom (ein Finger verschiebt, siehe pointerdown/pointermove oben)
+{ const ptrs = new Map();
+  const two = () => { const [a, b] = [...ptrs.values()]; return { d: Math.hypot(a[0] - b[0], a[1] - b[1]), x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 }; };
+  cv.addEventListener('pointerdown', ev => { if (ev.pointerType !== 'touch') return; ptrs.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (ptrs.size === 2) { const t = two(); pinch = { d: Math.max(20, t.d), z: zPend || ZOOM }; drag = null; userCam(); } });
+  cv.addEventListener('pointermove', ev => { if (!ptrs.has(ev.pointerId)) return; ptrs.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pinch && ptrs.size >= 2) { const t = two(); setZoom(pinch.z * t.d / pinch.d, t.x, t.y); } });
+  const up = ev => { ptrs.delete(ev.pointerId); if (pinch && ptrs.size < 2) { pinch = null; dragged = performance.now(); } };
+  addEventListener('pointerup', up); addEventListener('pointercancel', up);
+}
+
+// Ereignistexte (wichtige Ereignisse beider Seiten, groß über der Karte) und Kriegstagebuch (alle Treffer, Angriffe, Wichtiges)
+const LOG = [];
+const evQ = []; let evBusy = false;
+function headline(text, side) {
+  if (speed >= INSTANT) { evQ.length = 0; }   // sofort: nur das Letzte zählt
+  evQ.push({ text, side }); if (evQ.length > 3) evQ.shift();
+  if (!evBusy) nextHeadline();
+}
+function nextHeadline() {
+  const it = evQ.shift(), el = $('evline'); if (!it) { evBusy = false; return; }
+  evBusy = true; el.innerHTML = `<b>${upEsc(it.text)}</b>`; el.style.setProperty('--fc', it.side ? sideCol(it.side) : 'var(--s-brass)');
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  const dur = speed >= INSTANT ? 1600 : 1700 / Math.sqrt(speed);
+  clearTimeout(el._t); el._t = setTimeout(() => { el.classList.remove('on'); setTimeout(nextHeadline, 160); }, evQ.length ? Math.min(dur, 900) : dur);
+}
+function logAdd(text, side, c, r, imp) {
+  LOG.push({ turn: G.turn, by: G.side, text, side, c, r, imp }); if (LOG.length > 400) LOG.shift();
+  if (!$('diary').hidden && !logAdd.raf) logAdd.raf = requestAnimationFrame(() => { logAdd.raf = 0; renderDiary(); });
+}
+function noteEvent(e, u) {
+  if (!G) return;
+  const N = x => x ? TYPES[x.type].name : '', at = x => x ? [x.c, x.r] : [null, null];
+  switch (e.t) {
+    case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
+      logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
+      if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
+    case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);
+    case 'rout': logAdd(`${N(u)} flieht`, u.side, ...at(u), true); return headline(`${N(u)} flieht!`, u.side);
+    case 'destroyed': logAdd(`${N(u)} aufgerieben`, u.side, ...at(u), true); return headline(`${N(u)} aufgerieben!`, u.side);
+    case 'officer': logAdd(`${e.name} ist gefallen`, u && u.side, ...at(u), true); return headline(`${e.name} fällt!`, u && u.side);
+    case 'stuck': logAdd(`${N(u)} steckt im Schlamm fest`, u.side, ...at(u), true); return headline(`${N(u)} steckt fest!`, u.side);
+    case 'breakdown': logAdd(`${N(u)}: Panne`, u.side, ...at(u), true); return headline(`${N(u)}: Panne!`, u.side);
+    case 'mine': logAdd('Mine detoniert', null, e.c, e.r, true); return headline('Mine!', null);
+    case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
+    case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
+      if (e.reaction) { logAdd(`Reaktionsfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Reaktionsfeuer auf ${N(d)}!`, a.side); }
+      else logAdd(`Beschuss: ${N(a)} auf ${N(d)}`, a.side, ...at(d)); return; }
+    case 'melee': { const a = unitById(e.a), d = unitById(e.d); if (a && d) logAdd(`Nahkampf: ${N(a)} gegen ${N(d)}`, a.side, ...at(d)); return; }
+    case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }
+    case 'order': return logAdd(`${e.name}: ${e.kind === 'rally' ? 'Sammeln' : 'Sturmbefehl'}`, u && u.side, ...at(u));
+    case 'score': { const n = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side).reduce((m, o) => m + o.pts, 0); if (n) logAdd(`${SIDES[e.side].short}: +${n} Siegpunkte`, e.side, null, null); return; }
+    case 'spawn': return logAdd(`Nachschub: ${N(u)}`, u.side, ...at(u));
+    case 'reinf': { const f = unitById(e.ids[0]); return logAdd('Gegenstoß: Verstärkung trifft ein', f && f.side, ...at(f), true); }
+  }
+}
+// Kriegstagebuch: Liste der letzten Runden, neueste oben, Klick fährt die Kamera hin
+function renderDiary() {
+  const el = $('diaryList'); if (!el || !G) return;
+  const turns = [...new Set(LOG.map(l => l.turn + ':' + l.by))].reverse().slice(0, 6);
+  el.innerHTML = turns.length ? turns.map(k => { const [t, by] = k.split(':'), items = LOG.map((l, i) => [l, i]).filter(([l]) => l.turn + ':' + l.by === k).reverse();
+    return `<li class="dg-turn"><h4>Runde ${t} · ${upEsc(SIDES[by].short)}</h4><ol>${items.map(([l, i]) => `<li><button class="dg-it${l.imp ? ' imp' : ''}${l.c == null ? ' nopos' : ''}" data-i="${i}" style="--fc:${l.side ? sideCol(l.side) : 'var(--s-rust)'}">${upEsc(l.text)}</button></li>`).join('')}</ol></li>`; }).join('')
+    : '<li class="dg-empty">Noch keine Ereignisse.</li>';
+}
+$('btnDiary').onclick = () => { const d = $('diary'); d.hidden = !d.hidden; if (!d.hidden) renderDiary(); tbSync(); };
+$('closeDiary').onclick = () => { $('diary').hidden = true; tbSync(); };
+$('diaryList').addEventListener('click', ev => { const b = ev.target.closest('.dg-it'); if (!b) return; const l = LOG[+b.dataset.i]; if (!l || l.c == null) return;
+  const [x, y] = center(l.c, l.r); diaryMark = { c: l.c, r: l.r, t: now }; camTo(x, y - L.s * 0.3, 450, true); });
 
 // ---------- Start ----------
 G = E.newGame({ seed: 7 });
