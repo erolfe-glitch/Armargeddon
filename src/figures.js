@@ -240,13 +240,13 @@ function setSkin(side, s) { SKIN[side] = s; cache.clear(); }
 const SHT = {
   inf_A: 1, inf_D: 1, inf_F: 1, medic_A: 1, medic_D: 1, medic_F: 1, storm_D: 1, flame_D: 1, flamer_A: 1, shieldA_A: 1, shield_D: 1,
   knight_D: 1, brawler_D: 1, heavy_D: 1, dog_A: 1, bike_A: 1, counter_D: 1, ammo_D: 1, gasmask_D: 1, miner_A: 1, lobber_A: 1, wrench_A: 0.95,
-  raider_A: 0.9, phone_A: 1.2, sapper_A: 1.08, sapperD_D: 1.08, signal_D: 1.07, demo_A: 1.08, smoke_A: 1.15, light_D: 1.17, banner_D: 1.31,
+  raider_A: 0.9, phone_A: 1.2, sapper_A: 1.08, sapperD_D: 1.08, signal_D: 1.07, demo_A: 1.08, smoke_A: 1, light_D: 1.13, banner_D: 1.31,
   sniper_A: 0.75, atr_D: 0.75, mines_D: 0.75, stalker_D: 0.45,
   mg_A: 0.75, mg_D: 0.75, mg_F: 0.8, mortar_A: 0.75, mortar_D: 1, mortar_F: 0.75,
   art_A: 1, art_D: 1.05, art_F: 1, fgun_A: 1,
   limber_A: 1.4, limber_D: 1.4, limber_F: 1.4, cav_A: 1.65, cav_F: 1.6,
   walker_A: 1.4, walker_F: 1.3, suitA_A: 1.39, suitD_D: 1.28,
-  mech_D: 1.65, drill_D: 1.75, mechA_D: 1.65, mechB_D: 1.6, mechT_A: 1.65, mechK_A: 1.75, mechC_A: 1.6, balloon_A: 2,
+  mech_D: 1.65, drill_D: 1.75, mechA_D: 1.65, mechB_D: 1.6, mechT_A: 1.65, mechK_A: 1.75, mechC_A: 1.6, balloon_A: 3,
   leader0_A: 1, leader1_A: 1.1, leader2_A: 1.2, leader3_A: 1, leader4_A: 1, leader0_D: 1, leader1_D: 1, leader2_D: 1, leader3_D: 1.37, leader4_D: 1
 };
 // Sichtbarer Kasten (Alpha) eines Bildes, Anteile 0–1

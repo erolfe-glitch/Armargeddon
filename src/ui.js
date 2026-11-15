@@ -467,10 +467,11 @@ const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK
 // über die obere Feldkante höchstens eine halbe Hexhöhe. Reicht der Platz nicht, wird die Figur kleiner.
 // Überstand über die obere Feldkante: drei Viertel Hexhöhe; Mechs und Kolosse (big) ohne Höhengrenze, damit sie ihre 1,6 SH erreichen.
 const SH_R = 1.18, FIGW_R = 2.2, OVER = 0.75;
+const OVER_K = { balloon: 1.5 };   // Fesselballon schwebt: darf weiter nach oben, sonst wird der Trupp darunter winzig
 function figSprite(k, side, flip, oy, big) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
   const s = L.s, h = s * SH_R, sp = FIG.sprite(k, side, flip, h);
   if (!sp.rule) return sp;
-  const f = Math.min(1, s * FIGW_R / sp.cw, big ? 1 : s * K * (oy + SQ3 / 2 + OVER * SQ3) / sp.top);
+  const f = Math.min(1, s * FIGW_R / sp.cw, big ? 1 : s * K * (oy + SQ3 / 2 + (OVER_K[k] || OVER) * SQ3) / sp.top);
   return f < 0.995 ? FIG.sprite(k, side, flip, h * f) : sp;
 }
 // Bis die Karten neu gemalt sind: Figuren in Wald, Totholz und Ruinen leicht abgedunkelt, damit sie „im“ Gelände stehen
