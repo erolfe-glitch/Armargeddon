@@ -66,10 +66,10 @@ function hexPath(g, c, r, k = 1) {
 }
 
 // ---------- Bilder für Kacheln und Effekte ----------
-const TIMG = {}, FXI = {}, PJI = {}, FLI = {};
+const TIMG = {}, FXI = {}, PJI = {};
 { const D = window.FXDATA || { tiles: {}, fx: {} };
   const load = (store, map) => { for (const k in map) { const im = new Image(); im.onload = () => { store[k] = im; if (store === TIMG && L && G) renderTerrain(); }; im.src = map[k]; } };
-  load(TIMG, D.tiles); load(FXI, D.fx); load(PJI, D.proj || {}); load(FLI, D.flags || {}); }
+  load(TIMG, D.tiles); load(FXI, D.fx); load(PJI, D.proj || {}); }
 const fxw = (im, h) => h * im.naturalWidth / im.naturalHeight;
 
 // ---------- Gelände ----------
@@ -1285,7 +1285,8 @@ const UP_MARK = {   // Ersatz, falls die Wappenbilder fehlen: Freund = Schild (F
   foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
 };
 // Fraktionswappen (ui-quelle/wappen_*): Konkordat = eiserner Löwenkopf, Aschenwacht = Stahlhelm. Emblem allein als Marke, mit Flagge auf Zielfeldern.
-const crest = sd => UP['w' + sd] ? `<img class="crest" src="${UP['w' + sd]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
+// Unter 40 px zeigt CSS nur den Kern (.k: Kopf/Helm ohne Strahlenkranz), darüber das ganze Emblem (.f).
+const crest = sd => UP['w' + sd] ? `<img class="crest k" src="${UP['k' + sd] || UP['w' + sd]}" alt="${SIDES[sd].short}"><img class="crest f" src="${UP['w' + sd]}" alt="">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
 const CFLAG = {};
 for (const sd of ['A', 'D']) if (UP['f' + sd]) { const im = new Image(); im.src = UP['f' + sd]; CFLAG[sd] = im; }
 const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };

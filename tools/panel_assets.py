@@ -29,6 +29,8 @@ PARTS = {
     # Fraktionswappen: Emblem allein (Marken) und Emblem vor Flagge (Zielfelder, Startmenü)
     'wA': ('wappen_konkordat/w_emblem', 128),
     'wD': ('wappen_aschenwacht/w_emblem', 128),
+    'kA': ('wappen_konkordat/w_kern', 96),      # Kern ohne Strahlenkranz: Marken unter 40 px
+    'kD': ('wappen_aschenwacht/w_kern', 96),
     'fA': ('wappen_konkordat/w_flagge', 300),
     'fD': ('wappen_aschenwacht/w_flagge', 300),
 }

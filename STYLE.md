@@ -31,7 +31,11 @@ Jede Fraktion hat genau ein Wappen (Quelle `ui-quelle/wappen_*.png`, Teile in `u
 - **Konkordat:** eiserner Löwenkopf im Strahlenkranz, Bronze.
 - **Aschenwacht:** Stahlhelm mit Sehschlitz im Strahlenkranz, Stahlgrau.
 
-Das **Emblem allein** (`w_emblem`) ist die Marke der Seite: obere Leiste (Seite am Zug, Kampfkraft, Siegpunkte) und Marke am Einheitenbild. Mindestens 26 px, leicht aufgehellt (`.crest`). Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im Startmenü. Keine echten Nationalflaggen.
+Das **Emblem** ist die Marke der Seite: obere Leiste (Seite am Zug, Kampfkraft, Siegpunkte) und Marke am Einheitenbild, leicht aufgehellt (`.crest`).
+- Ab **40 px** das ganze Emblem (`w_emblem`, mit Strahlenkranz).
+- **Unter 40 px** nur der Kern (`w_kern`: Löwenkopf bzw. Helm ohne Strahlenkranz, mit Tintenkontur), damit die Umrisse klar verschieden bleiben. Mindestens 22 px. Erzeugt von `tools/ui_cut.py` (Umriss in `KERN`).
+
+Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im Startmenü. Die Flaggen dahinter (Union-Jack-artig beim Konkordat, Schwarz-Weiß-Rot bei der Aschenwacht) sind **gewollt** und bleiben so; die alten echten Nationalflaggen-Bilder sind entfernt.
 
 ## Freund und Feind
 Nie nur über Farbe. Die Seite erkennt man am Wappen (Form), dazu die Farbe:
