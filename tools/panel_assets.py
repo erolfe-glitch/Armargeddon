@@ -25,6 +25,12 @@ PARTS = {
     'balken': ('bogen2_buttons/balken_1', 640),
     'punkt': ('bogen2_buttons/punkt_voll', 56),
     'punktLeer': ('bogen2_buttons/punkt_leer_1', 56),
+    'platte': ('bogen2_buttons/platte_1', 120),
+    # Fraktionswappen: Emblem allein (Marken) und Emblem vor Flagge (Zielfelder, Startmenü)
+    'wA': ('wappen_konkordat/w_emblem', 128),
+    'wD': ('wappen_aschenwacht/w_emblem', 128),
+    'fA': ('wappen_konkordat/w_flagge', 300),
+    'fD': ('wappen_aschenwacht/w_flagge', 300),
 }
 SYMBOLS = {
     'bogen3b_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',

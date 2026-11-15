@@ -626,8 +626,8 @@ function draw() {
   for (const o of OBJECTIVES) {
     const [x, y] = center(o.c, o.r), col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fim = !VIS.ctrl[o.id] ? null : VIS.ctrl[o.id] === 'D' ? FLI['flagD' + flagSel.D] : skinA === 'F' ? FLI['flagF' + flagSel.F] : FLI['flagA' + flagSel.A];
-    if (fim) { const fh = s * 1.15, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px - fw * 0.08, top - s * 0.12, fw, fh); }
+    const fl = VIS.ctrl[o.id] && CFLAG[VIS.ctrl[o.id]], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
+    if (fim) { const fh = s * 0.95, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px + s * 0.02, top - s * 0.04, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
   }
@@ -1193,17 +1193,44 @@ function banner(title, sub) {
   const el = $('banner'); el.innerHTML = `<b>${title}</b><span>${sub || ''}</span>`;
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
 }
-function updateTop() {
+function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau, Feind = Zackenstern/Blutrot (Sicht der Seite am Zug bzw. des Spielers)
+  const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode), ff = sd => sd === mine ? 'fr' : 'fo', mk = crest;
   $('turn').textContent = `Runde ${G.turn}`;
-  const ch = $('sidechip'); ch.className = 'chip ' + G.side; ch.textContent = SIDES[G.side].short + (human(G.side) ? '' : ' · KI');
-  { const D = (window.FXDATA || {}).flags || {}, fs = G.side === 'D' ? D['flagD' + flagSel.D] : skinA === 'F' ? D['flagF' + flagSel.F] : D['flagA' + flagSel.A]; const fi = $('sideFlag'); if (fs && fi.getAttribute('src') !== fs) fi.src = fs; fi.hidden = !fs; }
+  const ch = $('sidechip'); ch.className = 'tb-plate tb-side ' + ff(G.side);
+  ch.innerHTML = `<i class="tb-mark">${mk(G.side)}</i><b>${SIDES[G.side].short}</b>${human(G.side) ? '' : '<small>KI</small>'}`;
+  ch.dataset.tip = `Am Zug: ${SIDES[G.side].name || SIDES[G.side].short}${human(G.side) ? '' : ' (Computer)'}`;
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
   for (const sd of ['A', 'D']) {
-    const v = 1 - E.losses(G, sd), el = $('meter' + sd);
-    el.style.setProperty('--v', Math.max(0, v)); el.style.setProperty('--brk', 1 - P.BREAK[sd]);
-    el.querySelector('span').textContent = `${SIDES[sd].short} ${Math.round(v * 100)} %`;
+    const v = Math.max(0, 1 - E.losses(G, sd)), el = $('meter' + sd), pc = Math.round(v * 100);
+    el.className = 'tb-meter ' + ff(sd);
+    el.style.setProperty('--v', Math.max(0.001, v)); el.style.setProperty('--brk', 1 - P.BREAK[sd]);
+    el.querySelector('.tb-mark').innerHTML = mk(sd);
+    el.querySelector('.val').textContent = pc + ' %';
+    el.dataset.tip = `Kampfkraft ${SIDES[sd].short}: ${pc} %. Messingstrich: darunter bricht das Heer zusammen.`;
   }
-  $('objs').innerHTML = OBJECTIVES.map(o => `<span class="obj ${G.ctrl[o.id] || 'N'}" title="${o.name}">${OBJECTIVES.length > 4 ? '' : '⚑ '}${o.pts}</span>`).join('') + `<span class="pts" title="Siegpunkte: Konkordat : Aschenwacht, Ziel ${G.goal}"><i class="vpA">${G.vp.A}</i> : <i class="vpD">${G.vp.D}</i> <small>/ ${G.goal}</small></span>`;
+  const own = c => c === 'A' || c === 'D' ? ff(c) : '';
+  const foe = mine === 'A' ? 'D' : 'A';
+  $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><i class="tb-mark">${mk(mine)}</i>${G.vp[mine]}<i class="sep">:</i>${G.vp[foe]}<i class="tb-mark">${mk(foe)}</i><small>/ ${G.goal}</small>`
+    + `<span class="tb-dots">${OBJECTIVES.map(o => `<span class="tb-obj ${own(G.ctrl[o.id])}">${o.pts}</span>`).join('')}</span></span>`;
+}
+// Knöpfe der oberen Leiste: flache Symbole in Knochenweiß, Werte als kleine Marke
+const TB_ICON = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? '#F0EDE1' : 'none'}" stroke="#F0EDE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const TB_SVG = {
+  zoom: TB_ICON('<circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20.5 20.5M7.5 10h5M10 7.5v5"/>'),
+  sndOn: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9a4.5 4.5 0 0 1 0 6M18.5 6a8.5 8.5 0 0 1 0 12"/>'),
+  sndOff: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>'),
+  speed: TB_ICON('<path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/>', true),
+  rules: TB_ICON('<path d="M8.5 9a3.5 3.5 0 1 1 5.2 3c-1.1.6-1.7 1.3-1.7 2.6"/><circle cx="12" cy="19" r="1.2" fill="#F0EDE1"/>'),
+  full: TB_ICON('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'),
+  menu: TB_ICON('<path d="M4 6h16M4 12h16M4 18h16"/>')
+};
+const tbNum = n => String(n).replace('.', ',') + '×';
+function tbSync() {
+  $('btnZoom').innerHTML = TB_SVG.zoom + `<b class="tb-v">${tbNum(ZOOM)}</b>`;
+  $('btnSound').innerHTML = soundOn ? TB_SVG.sndOn : TB_SVG.sndOff;
+  $('btnSpeed').innerHTML = TB_SVG.speed + `<b class="tb-v">${tbNum(speed)}</b>`;
+  $('btnRules2').innerHTML = TB_SVG.rules; $('btnFull').innerHTML = TB_SVG.full; $('btnMenu').innerHTML = TB_SVG.menu;
+  document.querySelectorAll('.tb-btn').forEach(b => b.setAttribute('aria-label', b.dataset.tip));
 }
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
@@ -1253,10 +1280,14 @@ const bar = (k, v, max, kind, cls = '') => `<div class="sbar ${kind} ${cls}" tit
 const UP = window.UIPANEL || {};
 for (const k in UP) document.documentElement.style.setProperty('--up-' + k, `url("${UP[k]}")`);
 const upSym = k => UP['s_' + k] || '';
-const UP_MARK = {   // Freund = Schild (Feldgrau), Feind = Zackenraute (Rot): Form und Farbe
+const UP_MARK = {   // Ersatz, falls die Wappenbilder fehlen: Freund = Schild (Feldgrau), Feind = Zackenraute (Rot)
   friend: '<svg viewBox="0 0 40 44"><path d="M4 4h32v16c0 11-7 18-16 21C11 38 4 31 4 20z" fill="#7A8F99" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M12 13h16M12 20h16" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>',
   foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
 };
+// Fraktionswappen (ui-quelle/wappen_*): Konkordat = eiserner Löwenkopf, Aschenwacht = Stahlhelm. Emblem allein als Marke, mit Flagge auf Zielfeldern.
+const crest = sd => UP['w' + sd] ? `<img class="crest" src="${UP['w' + sd]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
+const CFLAG = {};
+for (const sd of ['A', 'D']) if (UP['f' + sd]) { const im = new Image(); im.src = UP['f' + sd]; CFLAG[sd] = im; }
 const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
@@ -1335,7 +1366,7 @@ function updateHud() {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
     $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
     const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
-    $('upMark').innerHTML = u.side === mine ? UP_MARK.friend : UP_MARK.foe;
+    $('upMark').innerHTML = crest(u.side);
     $('hudName').textContent = T.name;
     const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
     $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} +${Math.round((cv.f - 1) * 100)} %</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
@@ -1425,16 +1456,12 @@ function showStart(first) {
   drawPortraitLater($('pD1'), 'mg', 'D'); drawPortraitLater($('pD2'), 'storm', 'D'); drawPortraitLater($('pD3'), 'flame', 'D');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
-const customArmy = { A: null, D: null }, flagSel = { D: 0, F: 0, A: 0 };
+const customArmy = { A: null, D: null };
 const mechsOn = () => $('optMechs').checked;
 function mechChanged() { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); }
 const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
-function drawFlagPick() {
-  const D = (window.FXDATA || {}).flags || {};
-  for (const k of ['A', 'D', 'F']) $('flags' + k).innerHTML = [0, 1, 2, 3].map(i => `<button class="flagbtn ${flagSel[k] === i ? 'on' : ''}" data-k="${k}" data-i="${i}" aria-label="Flagge ${i + 1}"><img src="${D['flag' + k + i] || ''}" alt=""></button>`).join('');
-  { const fsk = (document.querySelector('input[name=skin]:checked') || {}).value || 'A'; $('flagRowF').hidden = fsk !== 'F'; $('flagRowA').hidden = fsk === 'F';
-    $('facFlagA').src = D[fsk === 'F' ? 'flagF' + flagSel.F : 'flagA' + flagSel.A] || ''; $('facFlagD').src = D['flagD' + flagSel.D] || ''; }
-  document.querySelectorAll('.flagbtn').forEach(b => b.onclick = () => { flagSel[b.dataset.k] = +b.dataset.i; drawFlagPick(); });
+function drawFlagPick() {   // jede Fraktion hat genau ein Wappen (keine Auswahl mehr)
+  $('facFlagA').src = UP.fA || ''; $('facFlagD').src = UP.fD || '';
 }
 let armySide = 'A', armyDraft = {};
 const curMode = () => document.querySelector('input[name=mode]:checked').value;
@@ -1500,7 +1527,7 @@ function drawMapPick() {
 
 function startGame() {
   mode = document.querySelector('input[name=mode]:checked').value;
-  blood = $('optBlood').checked; soundOn = $('optSound').checked; $('btnSound').textContent = soundOn ? '🔊' : '🔇';
+  blood = $('optBlood').checked; soundOn = $('optSound').checked; tbSync();
   applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
@@ -1550,7 +1577,7 @@ $('armyMech').onclick = () => { $('optMechs').checked = true; mechChanged(); con
 // Einstellungen schon im Startmenü
 $('setFull').onclick = () => $('btnFull').onclick();
 $('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; };
-$('setZoom').onclick = () => { ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1; const t = String(ZOOM).replace('.', ',') + '×'; $('btnZoom').textContent = '🔍 ' + t; $('setZoom').textContent = 'Zoom ' + t; if (G) { layout(); syncAll(); } };
+$('setZoom').onclick = () => { ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1; const t = String(ZOOM).replace('.', ',') + '×'; tbSync(); $('setZoom').textContent = 'Zoom ' + t; if (G) { layout(); syncAll(); } };
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
 $('closeStart').onclick = () => { $('start').hidden = true; };
@@ -1563,16 +1590,17 @@ $('btnInfo').onclick = showDetail;
 $('btnZoom').onclick = () => {
   const fx = (board.scrollLeft + board.clientWidth / 2) / board.scrollWidth, fy = (board.scrollTop + board.clientHeight / 2) / board.scrollHeight;
   ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1;
-  $('btnZoom').textContent = '🔍 ' + String(ZOOM).replace('.', ',') + '×';
+  tbSync();
   layout(); syncAll();
   board.scrollLeft = fx * board.scrollWidth - board.clientWidth / 2; board.scrollTop = fy * board.scrollHeight - board.clientHeight / 2;
 };
-$('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; $('btnSound').textContent = soundOn ? '🔊' : '🔇'; setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
+$('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
 document.querySelectorAll('input[name=skin]').forEach(r => r.onchange = () => { applySkin(r.value); if (G) { updateUI(); } });
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
-$('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; $('btnSpeed').textContent = speed + '×'; };
+$('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 3 : 1; tbSync(); };
+tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
 window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(() => { if (G) { layout(); updateHud(); } }, 120); });
@@ -1594,6 +1622,7 @@ window.__dbg = { PT, tcv: () => tcv, renderTerrain: () => renderTerrain(), paint
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
-  select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; }
+  select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
+  ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd
 };
 })();

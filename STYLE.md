@@ -26,10 +26,18 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-gas`       | `#8A8A2E` | Gas, Gefahr |
 | `--s-ink`       | `#120D0B` | Comic-Kontur, harte Schatten |
 
+## Fraktionswappen
+Jede Fraktion hat genau ein Wappen (Quelle `ui-quelle/wappen_*.png`, Teile in `ui-quelle/teile/wappen_*/`):
+- **Konkordat:** eiserner Löwenkopf im Strahlenkranz, Bronze.
+- **Aschenwacht:** Stahlhelm mit Sehschlitz im Strahlenkranz, Stahlgrau.
+
+Das **Emblem allein** (`w_emblem`) ist die Marke der Seite: obere Leiste (Seite am Zug, Kampfkraft, Siegpunkte) und Marke am Einheitenbild. Mindestens 26 px, leicht aufgehellt (`.crest`). Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im Startmenü. Keine echten Nationalflaggen.
+
 ## Freund und Feind
-Nie nur über Farbe. Zusätzlich über Form:
-- **Freund:** Schild (oben gerade, unten rund), Feldgrau.
-- **Feind:** Raute mit Zacken, Rot.
+Nie nur über Farbe. Die Seite erkennt man am Wappen (Form), dazu die Farbe:
+- **Freund:** Feldgrau (Balken, Zielfeld-Kreise).
+- **Feind:** Blutrot.
+- Ersatzformen, falls ein Wappenbild fehlt: Freund = Schild (oben gerade, unten rund), Feind = Raute mit Zacken.
 
 ## Schrift
 - **Headline** (`--s-head`): kantig, gut lesbar – Titel, Knöpfe, Namen. Großbuchstaben mit etwas Sperrung.

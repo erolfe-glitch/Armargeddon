@@ -205,7 +205,6 @@ body { background: #0c0908; }
 .item:hover:not(:disabled), .modes label:has(input:checked) { background: linear-gradient(#5a3a1a, #3a2410); border-color: var(--gold); }
 .item canvas, .fac canvas { border-radius: 2px; }
 .endstats div { background: #130e0b; border-radius: 3px; }
-.flagpick { display: flex; gap: 8px; flex-wrap: wrap; }
 .flagbtn { width: 64px; height: 56px; padding: 3px; background: #d9c698; border: 2px solid #2a1c12; border-radius: 3px; opacity: .6; }
 .flagbtn img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .flagbtn.on { opacity: 1; border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold); }
@@ -228,7 +227,7 @@ body { background: #0c0908; }
 .sp { flex: none; padding: 3px 9px; background: #3a2a14; border: 1px solid var(--gold); border-radius: 3px; color: #ffe9a8; font: 700 13px var(--display); letter-spacing: .03em; white-space: nowrap; }
 .act.pass { border-color: #7fae6a; color: #d6f0c8; }
 .sideflag { height: 30px; width: auto; margin-right: -8px; filter: drop-shadow(0 1px 1px #000); }
-.fac { position: relative; } .facflag { position: absolute; right: 8px; top: 8px; height: 58px; width: auto; }
+.fac { position: relative; } .facflag { position: absolute; right: 8px; top: 8px; height: 72px; width: auto; filter: drop-shadow(0 3px 0 rgba(0,0,0,.5)); } .fac > p { margin-right: 80px; }
 #btnInfo { width: auto; height: 30px; padding: 0 12px; border-radius: 4px; border-color: var(--gold); color: #ffe9a8; font: 700 14px var(--display); }
 #btnInfo::after { content: " Info"; }
 .shopbtn { height: 36px; font-size: 15px; border-color: var(--gold); color: #ffe9a8; } .hbtns .endbtn { height: 52px; }
@@ -350,7 +349,7 @@ body { background: #0c0908; }
 .mapcard:has(input:checked), .modes label:has(input:checked), .item.pick.has, .item:hover:not(:disabled) { filter: sepia(.35) brightness(1.18); box-shadow: 0 0 0 3px var(--gold), 0 0 18px rgba(229,178,58,.45); }
 .armybar { border: 10px solid transparent; border-image: var(--ui-frame) 40 fill / 10px stretch; background: none; }
 @media (max-width: 1300px) { .brand { display: none; } }
-@media (max-height: 520px) and (orientation: landscape) and (max-width: 770px) { #sidechip { display: none; } }
+@media (max-height: 520px) and (orientation: landscape) and (max-width: 770px) { #sidechip b { display: none; } }
 @media (max-height: 520px) and (orientation: landscape) and (max-width: 860px) { .meter { width: 78px !important; } .chip { padding: 2px 4px; font-size: 10px; } .turn { min-width: 76px !important; padding: 4px 8px 4px 22px !important; } .obj { min-width: 16px; font-size: 10px; } .objs { gap: 2px; } .tbtn { min-width: 24px; padding: 0 3px; } }
 @media (max-height: 520px) and (orientation: landscape) {
   .hud { height: 96px; padding-top: 6px; } .hud::before { top: -20px; height: 22px; }
@@ -384,6 +383,7 @@ body { background: #0c0908; }
 #hud #portrait { position: absolute; inset: 11% 11% 11.5% 11%; width: 78%; height: 77.5%; border: 0; outline: 0; border-radius: 0; margin: 0; box-shadow: none; background: #1a1410; }
 .up-mark { position: absolute; left: -9px; top: -9px; width: 34px; height: 38px; filter: drop-shadow(0 3px 0 var(--s-ink)); }
 .up-mark svg { width: 100%; height: 100%; display: block; }
+.up-mark:has(.crest) { left: -8px; top: -6px; width: 42px; height: 42px; z-index: 2; }
 .up-stats { display: flex; flex-direction: column; gap: 4px; width: var(--bar); flex: none; }
 .up-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
 #hud .up-name { font: 700 21px/1.3 var(--s-head); letter-spacing: .03em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 2px 0 var(--s-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -476,31 +476,114 @@ body { background: #0c0908; }
   .up-shop b { margin-left: 3px; } .up-plate { letter-spacing: .02em; } .up-shop { font-size: 13px !important; padding: 0 4px; }
   .up-bar .val small { display: none; }
 }
+@media (max-height: 520px) and (max-width: 940px) { .tb-side b { display: none; } .tb-meter .tube { width: 64px; } }
 @media (max-height: 520px) and (max-width: 760px) {
   .upanel { --ab: 42px; --bar: 160px; --pic: 74px; }
 }
 @media (max-height: 520px), (max-width: 1100px) { .upanel.many { --ab: 40px; } .upanel.many .up-abils { gap: 4px; } }
+
+/* ===== Obere Leiste nach STYLE.md (passend zum Einheiten-Panel). Rahmen aus --up-leiste, Knöpfe --up-platte.
+   Links Runde/Seite/Wind, Mitte Kampfkraft + Siegpunkte (groß), rechts Titel + Knöpfe. Breite Bildschirme wachsen über zoom mit. ===== */
+.tbar { position: relative; z-index: 20; min-width: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; height: 74px; padding: 0 max(26px, env(safe-area-inset-left)); color: var(--s-text); font: 15px/1.2 var(--s-body); background: var(--s-bg); }
+.tbar::before { content: ""; position: absolute; inset: 0; border: 18px solid transparent; border-image: var(--up-leiste) 80 64 fill / 18px 16px stretch; pointer-events: none; }
+.tbar > * { position: relative; }
+.tb-left, .tb-right, .tb-mid { display: flex; align-items: center; gap: 12px; }
+.tb-right { justify-content: flex-end; gap: 18px; }
+.tb-mid { gap: 18px; }
+.tb-brand { font: 700 22px var(--s-head); letter-spacing: .14em; text-transform: uppercase; color: #cbbfa6; text-shadow: 0 2px 0 var(--s-ink); white-space: nowrap; }
+.tb-plate { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; white-space: nowrap; background: var(--up-tafel) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 0 rgba(0,0,0,.5));
+  font: 700 18px var(--s-head); letter-spacing: .07em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 2px 0 var(--s-ink); font-variant-numeric: tabular-nums; }
+.tb-side b { font: inherit; } .tb-side small { font: 700 14px var(--s-head); color: #cbbfa6; margin-left: 2px; }
+.tb-mark { display: inline-block; flex: none; width: 24px; height: 26px; filter: drop-shadow(0 2px 0 var(--s-ink)); }
+.tb-mark svg { width: 100%; height: 100%; display: block; }
+.crest { width: 100%; height: 100%; display: block; object-fit: contain; filter: brightness(1.3) contrast(1.2); }   /* Wappen: dunkles Metall auf dunklem Grund aufhellen */
+.tb-mark { width: 30px; height: 30px; } .tb-side .tb-mark { width: 32px; height: 32px; }
+.tb-wind { display: inline-flex; align-items: center; gap: 7px; }
+.tb-wind .k { font: 700 15px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: #cbbfa6; text-shadow: 0 2px 0 var(--s-ink); }
+.tb-wind i { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--s-ink); border: 2px solid var(--s-rust); transition: transform .4s; }
+.tb-wind svg { width: 20px; height: 16px; }
+/* Mitte: Freund links, Feind rechts (Reihenfolge über .fr/.fo) */
+.tb-meter { display: flex; align-items: center; gap: 8px; order: 0; }
+.tb-meter.fo { order: 2; flex-direction: row-reverse; }
+.tb-objs { order: 1; display: flex; align-items: center; }
+.tb-meter .tb-mark { width: 36px; height: 36px; }
+.tb-meter .tube { position: relative; width: 210px; height: 40px; background: var(--up-balken) center / 100% 100% no-repeat; }
+.tb-meter .slot { position: absolute; inset: 27% 8.3%; overflow: hidden; border-radius: 2px; }
+.tb-meter .slot i { position: absolute; inset: 0 auto 0 0; width: calc(var(--v, 1) * 100%); background: var(--s-friend); transition: width .4s; }
+.tb-meter.fo .slot i { background: var(--s-life); }
+.tb-meter .slot i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); background-size: calc(100% / var(--v, 1)) 100%; }
+.tb-meter .tube b { position: absolute; top: 12%; bottom: 12%; left: calc(8.3% + var(--brk, .5) * 83.4% - 2px); width: 4px; background: var(--s-brass); box-shadow: 0 0 0 2px var(--s-ink); border-radius: 1px; }
+.tb-meter .val { min-width: 58px; font: 700 20px var(--s-body); font-variant-numeric: tabular-nums; text-shadow: 0 2px 0 var(--s-ink); }
+.tb-meter.fr .val { text-align: right; }
+.tb-pts { height: 54px; padding: 0 20px; gap: 9px; font-size: 28px; letter-spacing: .03em; }
+.tb-pts .tb-mark { width: 32px; height: 32px; } .tb-pts .sep { font-style: normal; color: #cbbfa6; }
+.tb-pts small { font: 700 15px var(--s-head); color: #cbbfa6; margin-left: 2px; letter-spacing: .04em; }
+.tb-dots { display: inline-flex; gap: 4px; margin: 0 6px 0 6px; padding-left: 12px; border-left: 2px solid rgba(240,237,225,.25); }
+.tb-obj { display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 3px; border-radius: 50%; border: 2px solid var(--s-ink); font: 700 14px var(--s-body); color: var(--s-ink); text-shadow: none; letter-spacing: 0; background: var(--s-parch); }
+.tb-obj.fr { background: var(--s-friend); } .tb-obj.fo { background: var(--s-life); }
+.tb-tools { display: flex; gap: 6px; }
+.tb-btn { position: relative; width: 44px; height: 44px; padding: 0; border: 0; cursor: pointer; background: var(--up-platte) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)); transition: transform .08s; }
+.tb-btn::before { content: ""; position: absolute; inset: 16%; border-radius: 6px; background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.8) 0 45%, rgba(18,13,11,.35) 70%, rgba(18,13,11,0) 90%); }
+.tb-btn svg { position: absolute; left: 50%; top: 50%; width: 25px; height: 25px; transform: translate(-50%, -50%); filter: drop-shadow(0 1.5px 0 var(--s-ink)); }
+.tb-btn:hover { transform: translateY(-2px); } .tb-btn:active { transform: translateY(1px); }
+.tb-btn:focus-visible { outline: 3px solid var(--s-brass); outline-offset: 2px; }
+.tb-v { position: absolute; right: -6px; bottom: -6px; padding: 1px 5px; font: 700 14px/1 var(--s-body); font-variant-numeric: tabular-nums; color: var(--s-text); background: var(--s-ink); border: 2px solid #6e5a4b; border-radius: 10px; }
+/* Tooltip als Pergamentzettel unter dem Element */
+.tbar [data-tip]::after { content: attr(data-tip); position: absolute; top: calc(100% + 10px); left: 50%; z-index: 40; width: max-content; max-width: 240px; padding: 10px 16px 12px; white-space: normal; text-align: left;
+  font: 700 14px/1.3 var(--s-body); color: var(--s-bg); text-shadow: none; letter-spacing: 0; text-transform: none; background: var(--up-perg) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 0 rgba(0,0,0,.6));
+  opacity: 0; visibility: hidden; transform: translate(-50%, -4px); transition: opacity .12s, transform .12s; pointer-events: none; }
+.tbar [data-tip]:hover::after, .tbar [data-tip]:focus-visible::after { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.tb-tools .tb-btn:nth-last-child(-n+2)::after { left: auto; right: 0; transform: translate(0, -4px); }
+.tb-tools .tb-btn:nth-last-child(-n+2):hover::after { transform: none; }
+/* Breite Bildschirme: die ganze Leiste wächst mit */
+@media (min-width: 2200px) { .tbar { zoom: 1.15; } }
+@media (min-width: 2450px) { .tbar { zoom: 1.3; } }
+@media (min-width: 3000px) { .tbar { zoom: 1.55; } }
+@media (min-width: 3600px) { .tbar { zoom: 1.85; } }
+/* Schmaler werdend */
+@media (max-width: 2199px) { .tb-brand { display: none; } }
+@media (min-width: 2450px) and (max-width: 2699px) { .tb-brand { display: none; } }
+@media (max-width: 1800px) { .tb-meter .tube { width: 170px; } .tbar { gap: 12px; } }
+@media (max-width: 1600px) { .tb-wind .k { display: none; } .tb-meter .tube { width: 130px; height: 34px; } .tb-meter .val { font-size: 17px; min-width: 48px; } .tb-mid { gap: 12px; } .tb-pts { font-size: 24px; height: 48px; padding: 0 14px; } }
+@media (max-width: 1400px) { .tb-meter .val { display: none; } .tb-left { gap: 8px; } .tb-plate:not(.tb-pts) { padding: 0 12px; font-size: 16px; } .tb-tools { gap: 4px; } .tb-meter .tube { width: 120px; } }
+@media (max-width: 1150px) { .tb-dots { display: none; } .tb-meter .tube { width: 100px; } }
+@media (max-height: 520px), (max-width: 900px) {
+  .tbar { height: 52px; gap: 6px; padding: 0 max(16px, env(safe-area-inset-left)); }
+  .tbar::before { border-width: 12px; border-image-width: 12px 11px; }
+  .tb-left, .tb-mid, .tb-right { gap: 6px; }
+  .tb-plate { height: 36px; padding: 0 10px; font-size: 15px; gap: 5px; } .tb-mark, .tb-side .tb-mark { width: 26px; height: 26px; }
+  .tb-wind i { width: 26px; height: 26px; } .tb-wind .k, .tb-meter .val, .tb-dots { display: none; }
+  .tb-meter { gap: 3px; } .tb-meter .tube { width: 76px; height: 24px; } .tb-meter .tb-mark { width: 26px; height: 26px; }
+  .tb-pts { height: 38px; padding: 0 10px; font-size: 18px; gap: 5px; } .tb-pts .tb-mark { width: 24px; height: 24px; }
+  .tb-tools { gap: 3px; } .tb-btn { width: 36px; height: 36px; } .tb-btn svg { width: 20px; height: 20px; }
+}
+@media (max-height: 520px) and (max-width: 940px) { .tb-side b { display: none; } .tb-meter .tube { width: 64px; } }
+@media (max-height: 520px) and (max-width: 760px) { .tb-meter .tube { width: 40px; } .tb-mark, .tb-side .tb-mark, .tb-meter .tb-mark, .tb-pts .tb-mark { width: 22px; height: 22px; } .tb-tools { gap: 2px; } .tb-left, .tb-mid, .tb-right { gap: 4px; } .tbar { gap: 4px; padding: 0 max(13px, env(safe-area-inset-left)); } .tb-plate { padding: 0 7px; } .tb-pts small, .tb-side small { display: none; } }
 </style>
 </head>
 <body>
 <div class="app">
-  <header class="top">
-    <span class="brand">Armargeddon</span>
-    <span class="turn" id="turn">Runde 1/16</span>
-    <img id="sideFlag" class="sideflag" alt="" hidden><span id="sidechip" class="chip A">Konkordat</span>
-    <span class="wind" title="Windrichtung: dorthin treibt Gas"><span>Wind</span><i id="windArrow"><svg width="18" height="14" viewBox="0 0 18 14"><path d="M1 5h9V1l7 6-7 6V9H1z" fill="#d6e670" stroke="#16150f" stroke-width="1.5" stroke-linejoin="round"/></svg></i></span>
-    <div class="meters">
-      <div class="meter A" id="meterA" title="Kampfkraft. Marke: hier bricht das Heer zusammen"><i></i><b></b><span></span></div>
-      <div class="meter D" id="meterD" title="Kampfkraft. Marke: hier bricht das Heer zusammen"><i></i><b></b><span></span></div>
+  <header class="tbar" id="topbar">
+    <div class="tb-left">
+      <span class="tb-plate tb-turn" id="turn">Runde 1</span>
+      <span class="tb-plate tb-side" id="sidechip" data-tip="Seite am Zug"><i class="tb-mark"></i><b>Konkordat</b></span>
+      <span class="tb-wind" data-tip="Wind: dorthin treibt Gas"><span class="k">Wind</span><i id="windArrow"><svg viewBox="0 0 18 14"><path d="M1 5h9V1l7 6-7 6V9H1z" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.5" stroke-linejoin="round"/></svg></i></span>
     </div>
-    <div class="objs" id="objs" title="Zielfelder und Punkte des Konkordats"></div>
-    <div class="tools">
-      <button class="tbtn" id="btnZoom" title="Vergrößern: größere Figuren, das Feld lässt sich dann verschieben">🔍 1×</button>
-      <button class="tbtn" id="btnSound" title="Ton an/aus">🔊</button>
-      <button class="tbtn" id="btnSpeed" title="Tempo">1×</button>
-      <button class="tbtn" id="btnRules2" title="Regeln">?</button>
-      <button class="tbtn" id="btnFull" title="Vollbild">⛶</button>
-      <button class="tbtn" id="btnMenu">Menü</button>
+    <div class="tb-mid">
+      <div class="tb-meter" id="meterA"><i class="tb-mark"></i><span class="tube"><span class="slot"><i></i></span><b></b></span><span class="val"></span></div>
+      <div class="tb-objs" id="objs"></div>
+      <div class="tb-meter" id="meterD"><i class="tb-mark"></i><span class="tube"><span class="slot"><i></i></span><b></b></span><span class="val"></span></div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-brand">Armargeddon</span>
+      <div class="tb-tools">
+        <button class="tb-btn" id="btnZoom" data-tip="Zoom: größere Figuren, Feld verschiebbar"></button>
+        <button class="tb-btn" id="btnSound" data-tip="Ton an/aus"></button>
+        <button class="tb-btn" id="btnSpeed" data-tip="Tempo der Abläufe"></button>
+        <button class="tb-btn" id="btnRules2" data-tip="Regeln"></button>
+        <button class="tb-btn" id="btnFull" data-tip="Vollbild"></button>
+        <button class="tb-btn" id="btnMenu" data-tip="Menü"></button>
+      </div>
     </div>
   </header>
   <main class="board" id="board"><canvas id="map" aria-label="Schlachtfeld"></canvas></main>
@@ -545,14 +628,11 @@ body { background: #0c0908; }
       <label><input type="radio" name="mode" value="D"><b>Verteidiger</b><small>Du führst die Aschenwacht, die KI greift an.</small></label>
       <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
     </div>
-    <p class="lbl">Kampfmaschinen und Flaggen</p>
+    <p class="lbl">Kampfmaschinen</p>
     <div class="modes" style="grid-template-columns:repeat(2,1fr)">
       <label><input type="radio" name="mechs" value="0" checked><b>Ohne Kampfmaschinen</b><small>Nur Truppen und Gerät wie im Ersten Weltkrieg.</small></label>
       <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit Kampfmaschinen</b><small>Je Seite mehrere Mechs und ein Trupp in Kampfanzügen. Du holst sie über „Armee zusammenstellen“ oder im Nachschub.</small></label>
     </div>
-    <div class="optrow armyrow" id="flagRowA"><span>Flagge des Konkordats:</span><span class="flagpick" id="flagsA"></span></div>
-    <div class="optrow armyrow"><span>Flagge der Aschenwacht:</span><span class="flagpick" id="flagsD"></span></div>
-    <div class="optrow armyrow" id="flagRowF" hidden><span>Flagge der Blauen Legion:</span><span class="flagpick" id="flagsF"></span></div>
     <p class="lbl">Armee</p>
     <div class="optrow armyrow"><button class="tbtn" id="btnArmy">Armee zusammenstellen</button><span id="armyInfo">Standardarmee</span></div>
     <p class="lbl">Einstellungen</p>
@@ -587,7 +667,7 @@ body { background: #0c0908; }
       <li>Kleine Zeichen links an der Einheit: ▼ niedergehalten, ⇄ aufgeprotzt, ✖ Panne, G im Gas, ↩ flieht. ◉ rechts: Aufklärer. Aufklärer lenken die Artillerie: Auf Felder mit ◉ streuen Granaten nicht und Sprenggranaten treffen ×1,25.</li>
       <li>Große Karten: mit gedrückter Maustaste ziehen, Mausrad oder Pfeiltasten verschieben das Schlachtfeld.</li>
       <li>„✓ Fertig“ schließt eine Einheit für diese Runde ab. Einheiten, die nichts mehr tun können, werden grau.</li>
-      <li>Kampfmaschinen (Mechs) gibt es nur, wenn du sie im Startmenü zulässt. Dort wählst du auch die Flagge.</li>
+      <li>Kampfmaschinen (Mechs) gibt es nur, wenn du sie im Startmenü zulässt.</li>
       <li>Das Konkordat siegt mit 5 Punkten aus den Zielfeldern (Fahnen) am Ende, bei 4 Punkten steht es unentschieden, oder wenn die Aschenwacht zusammenbricht.</li>
     </ol>
     <button class="endbtn" id="closeRules">Verstanden</button>
