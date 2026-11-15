@@ -83,4 +83,4 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Im Browser: `window.__dbg` (fx, vis, mz, play([...])). Headless-Browser rendern langsam, Effekte früh fotografieren.
 
 ## Offene Ideen
-Ordner Units/Russia ansehen, Bildkarten 1, 4, 7, 8 des Nutzers verbauen, Kartenbeschreibungen (desc) an den Siegpunkt-Modus anpassen.
+Alle Ideen für später und der Gesamtplan (Etappen 4–8) stehen in `IDEEN.md`. **Neue Ideen dort eintragen** (kurz, mit Datum), nicht hier.
