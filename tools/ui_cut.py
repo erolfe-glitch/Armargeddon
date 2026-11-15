@@ -41,11 +41,14 @@ NAMES['bogen4c_symbole'] = ['s_panzerbrecher', 's_durchsickern', 's_niedergehalt
 NAMES['wappen_konkordat'] = ['w_flagge', 'w_emblem']
 NAMES['wappen_aschenwacht'] = ['w_flagge', 'w_emblem']
 NAMES['wappen_legion'] = ['w_flagge', 'w_emblem']
+# Wimpel der Zielmarken (obere Leiste), mit Stange und Messingknauf: Konkordat, Aschenwacht, Blaue Legion
+NAMES['wimpel_fraktionen'] = ['wimpel_konkordat', 'wimpel_aschenwacht', 'wimpel_legion']
 MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6, 'bogen3_symbole': 30, 'bogen3b_symbole': 30}
 # Bögen mit festem Raster (Spalten, Zeilen): Stücke werden nach ihrer Mitte der Rasterzelle zugeordnet,
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
 GRID = {'bogen3b_symbole': (4, 4), 'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
-        'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1)}
+        'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1),
+        'wimpel_fraktionen': (3, 1)}
 
 
 def grid_parts(rgba, cols, rows):

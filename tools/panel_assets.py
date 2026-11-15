@@ -33,6 +33,10 @@ PARTS = {
     'fD': ('wappen_aschenwacht/w_flagge', 300),
     'wF': ('wappen_legion/w_emblem', 128),      # Blaue Legion (zweites Bilderset des Konkordats)
     'fF': ('wappen_legion/w_flagge', 300),
+    # Wimpel an eroberten Zielmarken: Stange unten gekürzt (dritter Wert = behaltener Anteil der Höhe)
+    'pA': ('wimpel_fraktionen/wimpel_konkordat', 160, 0.62),
+    'pD': ('wimpel_fraktionen/wimpel_aschenwacht', 160, 0.62),
+    'pF': ('wimpel_fraktionen/wimpel_legion', 160, 0.62),
 }
 SYMBOLS = {
     'bogen3b_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',
@@ -47,8 +51,10 @@ for sheet, names in SYMBOLS.items():
         PARTS['s_' + n] = (f'{sheet}/s_{n}', SYM)
 
 
-def data_url(key, edge):
+def data_url(key, edge, keep=1.0):
     im = Image.open(TEILE / f'{key}.png').convert('RGBA')
+    if keep < 1:
+        im = im.crop((0, 0, im.width, round(im.height * keep)))
     k = edge / max(im.size)
     if k < 1:
         im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
@@ -62,8 +68,8 @@ def main():
              '// Erzeugt von tools/panel_assets.py aus ui-quelle/teile. Datendatei, nicht von Hand ändern.',
              'window.UIPANEL = {']
     total = 0
-    for k, (src, edge) in PARTS.items():
-        u = data_url(src, edge)
+    for k, (src, edge, *keep) in PARTS.items():
+        u = data_url(src, edge, *keep)
         total += len(u)
         lines.append(f'"{k}": "{u}",')
     lines.append('};')

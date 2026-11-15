@@ -2,6 +2,11 @@
 
 Jede UI-Änderung hält sich an diese Datei. Referenzbild: `ui-quelle/referenz_stil.webp.webp`.
 
+## Zielgeräte
+- **PC und große Touch-Displays (Digitalboards), ab 1280 px Breite.** Handy wird nicht mehr optimiert und nicht getestet (alten Handy-Code nicht ausbauen, nur nicht pflegen).
+- **Touch überall:** Jeder Tooltip auch per Antippen (Anzeigen) bzw. langem Drücken (Knöpfe). Knöpfe mindestens 40 px, für Finger.
+- Die obere Leiste passt bei jeder Breite ab 1280 px vollständig; der Titel und der Seitenname stehen nicht in der Leiste (Seite = Wappen, Name im Tooltip). Unter 1800 px fallen die Wappen neben den Kampfkraft-Balken weg.
+
 ## Richtung
 Rostiges Eisen, Pergament, Holz, Comic-Tinte. Dicke dunkle Konturen, harte Schatten, Nieten.
 
@@ -35,7 +40,7 @@ Jede Fraktion hat genau ein Wappen (Quelle `ui-quelle/wappen_*.png`, Teile in `u
 - **Blaue Legion von Arvenne** (zweites Bilderset des Konkordats): Bronze-Hahn mit Patina im Strahlenkranz. Ersetzt beim Bilderset Frankreich überall das Konkordats-Wappen.
 
 Das **ganze Emblem** (`w_emblem`, immer mit Strahlenkranz, nie beschnitten) ist die Marke der Seite, leicht aufgehellt (`.crest`). **Weniger, aber groß:**
-- Obere Leiste: je Seite **ein** Medaillon (`.tb-medal`, bei 1920 px 64 px, Handy 40–46 px), darf über den Leistenrand ragen. Links neben dem eigenen Kampfkraft-Balken, rechts neben dem des Gegners; dazu eins bei „Seite am Zug“.
+- Obere Leiste: je Seite **ein** Medaillon (`.tb-medal`, bei 1920 px 64 px, unter 1800 px 54 px), darf über den Leistenrand ragen. Links neben dem eigenen Kampfkraft-Balken, rechts neben dem des Gegners; dazu eins bei „Seite am Zug“.
 - Am Einheitenbild im Panel (50 px).
 - Bei Siegpunkten und anderen kleinen Stellen **kein** Emblem, dort zeigt die Farbe die Seite.
 
@@ -65,7 +70,7 @@ Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `to
 - Konturen 2–3 px in `--s-ink`, harter Schatten nach unten (kein Weichzeichner).
 - Balken: Rahmen texturiert, Füllung flach mit Segmentstrichen. Leben `--s-life`, Moral `--s-brass`.
 - **Ausnahme Kampfkraft-Balken (obere Leiste):** Füllung gemalt – Pinselform mit ausgefranstem Ende, feine Pinselstriche, Tintenkontur. Farbe bleibt die volle Fraktionsfarbe, Segmentstriche dünn.
-- **Zielfeld-Marken (obere Leiste):** kleine gemalte Messingmünzen (Verlauf aus Messingtönen um `--s-brass`) mit eingeprägter Zahl (dunkles Braun, heller Grat darunter), Rand immer `--s-rust`. Erobert: kleiner gemalter Wimpel an einer Stange neben der Münze (Fraktionsfarbe, Tintenkontur, Pinselstriche, ausgefranstes Ende; helle Form: Konkordat Krone, Aschenwacht Helmspitze, Legion Hahnenkamm; `pennant` in ui.js), kein farbiger Rand. Die Wappenflagge ist dafür zu klein.
+- **Zielfeld-Marken (obere Leiste):** kleine gemalte Messingmünzen (Verlauf aus Messingtönen um `--s-brass`) mit eingeprägter Zahl (dunkles Braun, heller Grat darunter), Rand immer `--s-rust`. Erobert: Wimpel aus `ui-quelle/wimpel_fraktionen.png` mit Stange und Messingknauf am rechten Münzrand (Konkordat rot-weißes Schrägkreuz, Aschenwacht Schwarz-Weiß-Rot, Legion Blau-Weiß-Rot), kein farbiger Rand. Fester Abstand zwischen den Münzen, damit die Leiste beim Erobern nicht springt; der letzte Wimpel ragt nicht in die Messingecke. Fehlt das Bild, greift der gezeichnete Wimpel (`pennant` in ui.js).
 - Symbol-Knöpfe: Rostknopf aus Bogen 2, Symbol aus `bogen3b_symbole`. Symbol mit dünner Kontur (1 px) in Knochenweiß `#F0EDE1`, Knopffläche dahinter leicht abgedunkelt. Tooltip als Pergamentzettel mit Name, Kosten (nur Zahl), Kurztext.
 - Zustände: gewählt = Messingrand (Knopf „gewählt“); gesperrt = Knopf „gesperrt“, Symbol grau und gedimmt, **ohne** helle Kontur, dazu große Zahl (Abklingzeit).
 - Leistensymbole (Lupe, Lautsprecher, Vorspulen, Vollbild): einfache flache Zeichen in Knochenweiß `#F0EDE1`, kein gemalter Bogen.

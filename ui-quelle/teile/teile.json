@@ -386,5 +386,17 @@
  "wappen_legion/w_emblem": [
   463,
   498
+ ],
+ "wimpel_fraktionen/wimpel_konkordat": [
+  332,
+  467
+ ],
+ "wimpel_fraktionen/wimpel_aschenwacht": [
+  315,
+  467
+ ],
+ "wimpel_fraktionen/wimpel_legion": [
+  309,
+  466
  ]
 }

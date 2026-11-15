@@ -1211,7 +1211,18 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
   $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
-    + `<span class="tb-dots">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
+    + `<span class="tb-dots${UP.pA ? ' wim' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag${UP['p' + fac(c)] ? ' img' : ''}"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
+}
+// Tooltips der oberen Leiste per Touch (Digitalboards): Knöpfe lang drücken, Anzeigen kurz antippen. Klick nach langem Druck entfällt.
+{ let tm = 0, hide = 0, long = false;
+  const tb = $('topbar'), clear = () => tb.querySelectorAll('.tip').forEach(x => x.classList.remove('tip'));
+  const show = el => { clear(); clearTimeout(hide); el.classList.add('tip'); hide = setTimeout(clear, 2500); };
+  tb.addEventListener('pointerdown', e => { long = false; clearTimeout(tm); if (e.pointerType === 'mouse') return;
+    const el = e.target.closest('[data-tip]'); if (!el) return clear();
+    if (el.tagName === 'BUTTON') tm = setTimeout(() => { long = true; show(el); }, 420); else show(el); });
+  tb.addEventListener('pointerup', () => clearTimeout(tm)); tb.addEventListener('pointercancel', () => clearTimeout(tm));
+  tb.addEventListener('click', e => { if (long) { long = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  tb.addEventListener('contextmenu', e => { if (e.target.closest('[data-tip]')) e.preventDefault(); });
 }
 // Knöpfe der oberen Leiste: flache Symbole in Knochenweiß, Werte als kleine Marke
 const TB_ICON = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? '#F0EDE1' : 'none'}" stroke="#F0EDE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -1292,7 +1303,7 @@ const sideCol = sd => FCOL[fac(sd)];
 const crest = sd => UP['w' + fac(sd)] ? `<img class="crest" src="${UP['w' + fac(sd)]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
 const CFLAG = {};
 for (const f of ['A', 'D', 'F']) if (UP['f' + f]) { const im = new Image(); im.src = UP['f' + f]; CFLAG[f] = im; }
-// Gemalte Wimpel für eroberte Zielmarken (oben in der Leiste): Dreieck in Fraktionsfarbe, ausgefranstes Ende, Pinselstriche,
+// Ersatz-Wimpel (nur falls das Bild UP.pA/pD/pF fehlt) für eroberte Zielmarken (oben in der Leiste): Dreieck in Fraktionsfarbe, ausgefranstes Ende, Pinselstriche,
 // Tintenkontur, helle Form drauf (Konkordat Krone, Aschenwacht Helmspitze, Legion Hahnenkamm). Als Bild, damit die Filter-IDs getrennt bleiben.
 const PENN_SYM = {
   A: 'M6.5 19L6 10.5 9.6 14 13 8 16.4 14 20 10.5 19.5 19Z',
@@ -1305,7 +1316,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <g filter="url(#r)"><path id="p" d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" fill="${FCOL[f]}" stroke="#120D0B" stroke-width="2.2" stroke-linejoin="round"/>
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
-const PENNANT = { A: pennant('A'), D: pennant('D'), F: pennant('F') };
+const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/wimpel_fraktionen.png, sonst gezeichnet
 const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
