@@ -273,18 +273,24 @@ function sprite(kind, side, flip, h) {
     // Mit Bildregel: sichtbarer Inhalt = sh Soldatenhöhen; sonst alter Faktor hs (Bildhöhe in h)
     const bb = art.bb || [0, 0, 1, 1];
     const H = Math.round(art.sh ? art.sh * h / (bb[3] - bb[1]) : art.hs * h), W = Math.round(H * art.img.naturalWidth / art.img.naturalHeight);
-    // Heller Saum und leichte Aufhellung, damit sich die dunklen Bilder vom Schlammboden abheben
+    // Kontrast zum dunklen Gelände (STYLE.md „Kontrast im Spiel“): feine dunkle Außenkontur, leichte Aufhellung,
+    // feine helle Randkante oben links (Licht von oben links, unabhängig von der Spiegelung)
     const pad = Math.ceil(h * 0.08);
     const c2 = document.createElement('canvas'); c2.width = W + pad * 2; c2.height = H + pad * 2;
     const g2 = c2.getContext('2d'), mirror = !!flip !== (art.faces === 'L');
     g2.imageSmoothingQuality = 'high';
-    g2.save();
-    if (mirror) { g2.translate(c2.width, 0); g2.scale(-1, 1); }
-    g2.shadowColor = 'rgba(240,226,190,0.85)'; g2.shadowBlur = Math.max(2, h * 0.045);
-    try { g2.filter = 'brightness(1.12) contrast(1.05)'; } catch (e) {}
-    g2.drawImage(art.img, pad, pad, W, H);
-    g2.shadowColor = 'transparent'; g2.drawImage(art.img, pad, pad, W, H);
-    g2.restore();
+    const fig = document.createElement('canvas'); fig.width = c2.width; fig.height = c2.height;
+    const gf = fig.getContext('2d'); gf.imageSmoothingQuality = 'high';
+    gf.save(); if (mirror) { gf.translate(fig.width, 0); gf.scale(-1, 1); }
+    try { gf.filter = 'brightness(1.16) contrast(1.08)'; } catch (e) {}
+    gf.drawImage(art.img, pad, pad, W, H); gf.restore();
+    const tint = col => { const t = document.createElement('canvas'); t.width = fig.width; t.height = fig.height; const tg = t.getContext('2d'); tg.drawImage(fig, 0, 0); tg.globalCompositeOperation = 'source-in'; tg.fillStyle = col; tg.fillRect(0, 0, t.width, t.height); return t; };
+    const ink = tint('rgba(18,13,11,0.95)'), ro = Math.max(1, h * 0.012);
+    for (let a = 0; a < 8; a++) g2.drawImage(ink, Math.cos(a * Math.PI / 4) * ro, Math.sin(a * Math.PI / 4) * ro);
+    g2.drawImage(fig, 0, 0);
+    const rim = tint('rgba(255,234,196,1)'), rg = rim.getContext('2d'), rr = Math.max(1, h * 0.014);
+    rg.globalCompositeOperation = 'destination-out'; rg.drawImage(fig, rr, rr);
+    g2.save(); g2.globalAlpha = 0.6; g2.drawImage(rim, 0, 0); g2.restore();
     s = { cv: c2, ox: pad + (mirror ? W * (1 - art.ax) : W * art.ax), oy: pad + H * art.ay, painted: true, rule: !!art.sh };
     s.top = s.oy - pad - bb[1] * H; s.cw = (bb[2] - bb[0]) * W;   // Inhalt: Höhe über den Füßen, Breite
     cache.set(k, s);

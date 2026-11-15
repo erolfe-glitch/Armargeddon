@@ -82,16 +82,19 @@ Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `to
 
 ## Bildregeln für Einheiten und Karten
 Gelten für jedes neue oder neu gemalte Bild. Bestandsaufnahme und Begründung: `entwurf/bestand/BESTAND.md` (lokal).
-Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel ist **1 SH = 0,95 Feldradien**.
+Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel ist **1 SH = 1,18 Feldradien** (gut sichtbar auch auf dunklen gemalten Karten).
 
 - **Größe zum Feld** (feste Klassen, im Code `SHT` in `figures.js`):
   - stehend 1,0 SH · kniend 0,75 · liegend 0,4 (echte Höhe, nicht aufblasen)
   - Mannschaft an Gerät (MG, Mörser, Geschütz, Gespann) hat **dieselbe** Soldatenhöhe wie Infanterie; das Gerät richtet sich nach ihr
   - Reiter 1,4 SH · Panzer 1,3–1,5 SH · Mech 1,6 SH · Kampfanzug 1,15 SH
-  - Breite höchstens 1,9 Feldradien (Feld = 2). Über die obere Feldkante ragt nichts mehr als **eine halbe Hexhöhe** (Fahnen, Lanzen, Mechköpfe eingeschlossen). Reicht der Platz nicht, wird die Figur kleiner gezeichnet, nie größer.
+  - Breite höchstens 2,2 Feldradien (Feld = 2). Über die obere Feldkante ragt nichts mehr als **drei Viertel Hexhöhe** (Fahnen, Lanzen eingeschlossen); Mechs und Kolosse dürfen so weit hinaus, dass sie ihre 1,6 SH erreichen. Reicht der Platz nicht, wird die Figur kleiner gezeichnet, nie größer.
 - **Quellbilder:** stehender Soldat = 200 px, Füße auf gemeinsamer Grundlinie (unten, `ay` 0,975), freigestellt (Alpha). **Kein Boden, kein Rauch, kein Gas, kein Lichtkegel, kein Schatten im Bild** – Effekte kommen aus `fx.js`, Schatten und heller Saum aus dem Code.
 - **Perspektive:** Dreiviertelansicht von vorn-rechts, Kamera ca. 20° über Augenhöhe (Sohlen leicht als Ellipse sichtbar). Alle Quellbilder blicken **nach rechts**, gespiegelt wird nur im Code.
-- **Karten:** Vorbild sind die gemalten Ganzbilder (Steinbrücke, Waldfluss, Kasematten, Kanalstadt): Vogelschau schräg ≈ 45–50° (Stauchung K 0,72–0,75), feine Tuschschraffur, gedämpftes Grau-Grün-Braun. Gebäude in echtem Maßstab zur Figur (Haus ≈ 1 Feld). Die Baustein-Karten werden später danach neu gemalt.
+- **Karten:** Stil wie die gemalten Ganzbilder (Steinbrücke, Waldfluss, Kasematten, Kanalstadt): feine Tuschschraffur, gedämpftes Grau-Grün-Braun, Gebäude in echtem Maßstab zur Figur (Haus ≈ 1 Feld). **Die Karten richten sich nach den Figuren, nicht umgekehrt:** Kamera ca. **30–35°** über dem Boden (flacher als die bisherigen 45–50°), damit die Figuren nicht wie aufgeklebt wirken.
+  - In bespielbaren Feldern **keine hohen Objekte, die man von oben sieht.** Wald = Stämme, Stümpfe, Unterholz; hohe Baumkronen nur am Kartenrand. Gebäude als Ruinen mit niedrigen Mauern, damit Figuren darin stehen können.
+  - Alle Karten (auch die Baustein-Karten) werden danach neu gemalt. Bis dahin gleicht der Code aus (siehe „Kontrast im Spiel“).
+- **Kontrast im Spiel** (macht der Code, nicht das Bild): weicher dunkler Bodenschatten und kräftiger Kontaktschatten unter den Füßen, feine dunkle Außenkontur, feine helle Randkante oben links (Licht). Figuren auf Wald-, Totholz- und Ruinenfeldern leicht abgedunkelt, damit sie „im“ Gelände stehen.
 - **Licht:** Hauptlicht von **oben links vorn** (ca. 45°): Glanzkanten links/oben, Eigenschatten rechts/unten. Gebäudeschatten auf Karten fallen nach rechts unten.
 - **Kontur:** Außenkontur Tinte `--s-ink` (`#120D0B`), im Spiel 2–3 px (in der 200-px-Quelle ≈ 5 px), Innenlinien halb so stark. Kleinteile (Nieten, Schnallen) zusammenfassen, nichts feiner als ½ px im Spiel.
 - **Farbe:** gedämpft (Sättigung 0,25–0,40), Grundhelligkeit 0,18–0,25. Fraktionsfarbe nur in Uniform und Anstrich: Konkordat Khaki-Braun mit Ochsenblut-Akzent, Aschenwacht Feldgrau, Blaue Legion Horizontblau. Metall, Leder, Holz bei allen gleich (Rost, gedämpftes Messing). Kräftige Farben nur für Feuer, Blut, Mündungsfeuer. Figuren eine Stufe heller und kontrastreicher als der Boden.

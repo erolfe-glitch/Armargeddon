@@ -465,13 +465,16 @@ const MAXW = 1.6, MAXWK = { smoke: 1.6, lobber: 1.5, miner: 1.6, demo: 1.6, wren
 const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK[k] *= 1.06;
 // Bildregeln (STYLE.md): 1 Soldatenhöhe = 0,95 Feldradien, Größe je Bild in FIG.SHT. Grenzen: Breite höchstens 1,9 Feldradien,
 // über die obere Feldkante höchstens eine halbe Hexhöhe. Reicht der Platz nicht, wird die Figur kleiner.
-const SH_R = 0.95, FIGW_R = 1.9;
-function figSprite(k, side, flip, oy) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
+// Überstand über die obere Feldkante: drei Viertel Hexhöhe; Mechs und Kolosse (big) ohne Höhengrenze, damit sie ihre 1,6 SH erreichen.
+const SH_R = 1.18, FIGW_R = 2.2, OVER = 0.75;
+function figSprite(k, side, flip, oy, big) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
   const s = L.s, h = s * SH_R, sp = FIG.sprite(k, side, flip, h);
   if (!sp.rule) return sp;
-  const f = Math.min(1, s * FIGW_R / sp.cw, s * K * (oy + SQ3) / sp.top);
+  const f = Math.min(1, s * FIGW_R / sp.cw, big ? 1 : s * K * (oy + SQ3 / 2 + OVER * SQ3) / sp.top);
   return f < 0.995 ? FIG.sprite(k, side, flip, h * f) : sp;
 }
+// Bis die Karten neu gemalt sind: Figuren in Wald, Totholz und Ruinen leicht abgedunkelt, damit sie „im“ Gelände stehen
+const DIM_T = new Set(['wald', 'waldweg', 'forest', 'village', 'fabrik', 'kirche']);
 
 // Kartenmarken nach STYLE.md (Wunsch des Nutzers): an der Figur nur ein schmaler Lebensbalken in Fraktionsfarbe, das Deckungsschild und EIN Zustandsplatz
 // (wichtigster Zustand, „+n“ bei mehreren). Eigene Einheiten am Zug: Messingpunkte unter dem Balken = Aktionspunkte. Alles in einer Zeile unter der Figur.
@@ -586,15 +589,25 @@ function drawUnit(u, d) {
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
   const oyMin = Math.min(...slots.slice(0, 2).map(q => q[1]));
-  let sp = figSprite(k, u.side, flip, oyMin);
+  const big = T.cls === 'walker';
+  let sp = figSprite(k, u.side, flip, oyMin, big);
   if (!sp.rule) { sp = FIG.sprite(k, u.side, flip, s * FH[k]); const mw = s * (MAXWK[k] || MAXW); if (sp.cv.width > mw) sp = FIG.sprite(k, u.side, flip, s * FH[k] * mw / sp.cv.width); }
   // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
   const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
-  if (done) { g.globalAlpha = A0 * 0.85; g.filter = 'grayscale(0.75) brightness(0.8)'; }   // fertig: leicht ausgegraut
+  const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
+  const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
   const duck = d.vs.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
-    g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
+    // Bodenschatten: weich und dunkel, Breite nach Figur; darunter kräftiger Kontaktschatten an den Füßen
+    g.filter = 'none'; g.globalAlpha = A0;
+    const sw = Math.max(s * 0.3, Math.min(s * 1.0, (sp.cw || s * 0.6) * 0.5)), sh = sw * 0.32;
+    g.save(); g.translate(fx, fy); g.scale(1, sh / sw);
+    const sg = g.createRadialGradient(0, 0, 0, 0, 0, sw); sg.addColorStop(0, 'rgba(8,6,4,0.62)'); sg.addColorStop(0.55, 'rgba(8,6,4,0.38)'); sg.addColorStop(1, 'rgba(8,6,4,0)');
+    g.fillStyle = sg; g.beginPath(); g.arc(0, 0, sw, 0, 7); g.fill(); g.restore();
+    g.fillStyle = 'rgba(6,4,3,0.7)'; g.beginPath(); g.ellipse(fx, fy - s * 0.01, sw * 0.42, sw * 0.42 * 0.28, 0, 0, 7); g.fill();
+    if (done) g.globalAlpha = A0 * 0.85;
+    if (filt) g.filter = filt;
     const lead = ox === slots[0][0] && oy === slots[0][1] ? leaderKind(u) : null;
     if (lead) { const ls = figSprite(lead, u.side, flip, oy); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); continue; }
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
@@ -1336,7 +1349,7 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
   $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
-    + `<span class="tb-dots${UP.pA ? ' wim' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag${UP['p' + fac(c)] ? ' img' : ''}"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
+    + `<span class="tb-dots${UP.pA ? ' wim' : ''}${OBJECTIVES.length >= 6 ? ' many' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag${UP['p' + fac(c)] ? ' img' : ''}"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
 }
 // Tooltips der oberen Leiste per Touch (Digitalboards): Knöpfe lang drücken, Anzeigen kurz antippen. Klick nach langem Druck entfällt.
 { let tm = 0, hide = 0, long = false;

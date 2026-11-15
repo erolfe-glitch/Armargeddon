@@ -551,6 +551,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 /* Wimpel als Bild (mit eigener Stange und Knauf): Stange steht am rechten Münzrand, Platz rechts daneben, damit nichts in den Rahmen ragt */
 /* Fester Abstand für Wimpel (Leiste springt nicht, wenn Felder erobert werden); hinten Platz, damit der letzte Wimpel nicht in die Messingecke ragt */
 .tb-dots:has(.tb-flag.img), .tb-dots.wim { gap: 24px; padding-right: 22px; }
+.tb-dots.wim .tb-obj:has(.tb-flag) { margin-right: 0; }   /* Platz ist schon im festen Abstand reserviert */
 .tb-flag.img { width: 0; height: 0; left: calc(100% - 6px); bottom: 14%; background: none; }
 .tb-flag.img::before { display: none; }
 .tb-flag.img img { left: auto; top: auto; bottom: 0; width: auto; height: 29px; filter: drop-shadow(0 2px 0 rgba(18,13,11,.75)); }
@@ -582,6 +583,9 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 @media (max-width: 1800px) { .tb-meter .tube { width: 96px; } .tb-meter .tb-medal { display: none; } .tb-medal { --m: 54px; } .tb-dots.wim, .tb-dots:has(.tb-flag.img) { gap: 21px; padding-right: 20px; } .tb-btn { width: 40px; height: 40px; } .tb-tools { gap: 3px; } .tb-pts { padding: 0 10px; } .tb-dots { padding-left: 8px; margin: 0 4px; } }
 @media (max-width: 1600px) { .tb-wind .k { display: none; } .tb-meter .tube { width: 130px; height: 34px; } .tb-meter .val { font-size: 17px; min-width: 48px; } .tb-mid { gap: 12px; } .tb-pts { font-size: 24px; height: 48px; padding: 0 14px; } }
 @media (max-width: 1400px) { .tb-meter .val { display: none; } .tb-left { gap: 8px; } .tb-plate:not(.tb-pts) { padding: 0 12px; font-size: 16px; } .tb-tools { gap: 4px; } .tb-meter .tube { width: 120px; } }
+/* Karten mit 6+ Zielfeldern: Münzen kleiner und enger, damit die Leiste ab 1280 px nicht über den Rand läuft (fester Abstand bleibt) */
+@media (max-width: 1600px) { .tb-dots.many { gap: 4px; } .tb-dots.many .tb-obj { width: 26px; height: 26px; font-size: 14px; border-width: 2.5px; }
+  .tb-dots.many.wim, .tb-dots.many:has(.tb-flag.img) { gap: 16px; padding-right: 16px; } .tb-dots.many .tb-flag.img img { height: 23px; } .tb-dots.many .tb-flag:not(.img) { height: 22px; } .tb-dots.many .tb-flag:not(.img) img { width: 25px; } }
 @media (max-width: 1150px) { .tb-dots { display: none; } .tb-meter .tube { width: 100px; } }
 @media (max-height: 520px), (max-width: 900px) {
   .tbar { height: 52px; gap: 6px; padding: 0 max(16px, env(safe-area-inset-left)); }
@@ -2814,18 +2818,24 @@ function sprite(kind, side, flip, h) {
     // Mit Bildregel: sichtbarer Inhalt = sh Soldatenhöhen; sonst alter Faktor hs (Bildhöhe in h)
     const bb = art.bb || [0, 0, 1, 1];
     const H = Math.round(art.sh ? art.sh * h / (bb[3] - bb[1]) : art.hs * h), W = Math.round(H * art.img.naturalWidth / art.img.naturalHeight);
-    // Heller Saum und leichte Aufhellung, damit sich die dunklen Bilder vom Schlammboden abheben
+    // Kontrast zum dunklen Gelände (STYLE.md „Kontrast im Spiel“): feine dunkle Außenkontur, leichte Aufhellung,
+    // feine helle Randkante oben links (Licht von oben links, unabhängig von der Spiegelung)
     const pad = Math.ceil(h * 0.08);
     const c2 = document.createElement('canvas'); c2.width = W + pad * 2; c2.height = H + pad * 2;
     const g2 = c2.getContext('2d'), mirror = !!flip !== (art.faces === 'L');
     g2.imageSmoothingQuality = 'high';
-    g2.save();
-    if (mirror) { g2.translate(c2.width, 0); g2.scale(-1, 1); }
-    g2.shadowColor = 'rgba(240,226,190,0.85)'; g2.shadowBlur = Math.max(2, h * 0.045);
-    try { g2.filter = 'brightness(1.12) contrast(1.05)'; } catch (e) {}
-    g2.drawImage(art.img, pad, pad, W, H);
-    g2.shadowColor = 'transparent'; g2.drawImage(art.img, pad, pad, W, H);
-    g2.restore();
+    const fig = document.createElement('canvas'); fig.width = c2.width; fig.height = c2.height;
+    const gf = fig.getContext('2d'); gf.imageSmoothingQuality = 'high';
+    gf.save(); if (mirror) { gf.translate(fig.width, 0); gf.scale(-1, 1); }
+    try { gf.filter = 'brightness(1.16) contrast(1.08)'; } catch (e) {}
+    gf.drawImage(art.img, pad, pad, W, H); gf.restore();
+    const tint = col => { const t = document.createElement('canvas'); t.width = fig.width; t.height = fig.height; const tg = t.getContext('2d'); tg.drawImage(fig, 0, 0); tg.globalCompositeOperation = 'source-in'; tg.fillStyle = col; tg.fillRect(0, 0, t.width, t.height); return t; };
+    const ink = tint('rgba(18,13,11,0.95)'), ro = Math.max(1, h * 0.012);
+    for (let a = 0; a < 8; a++) g2.drawImage(ink, Math.cos(a * Math.PI / 4) * ro, Math.sin(a * Math.PI / 4) * ro);
+    g2.drawImage(fig, 0, 0);
+    const rim = tint('rgba(255,234,196,1)'), rg = rim.getContext('2d'), rr = Math.max(1, h * 0.014);
+    rg.globalCompositeOperation = 'destination-out'; rg.drawImage(fig, rr, rr);
+    g2.save(); g2.globalAlpha = 0.6; g2.drawImage(rim, 0, 0); g2.restore();
     s = { cv: c2, ox: pad + (mirror ? W * (1 - art.ax) : W * art.ax), oy: pad + H * art.ay, painted: true, rule: !!art.sh };
     s.top = s.oy - pad - bb[1] * H; s.cw = (bb[2] - bb[0]) * W;   // Inhalt: Höhe über den Füßen, Breite
     cache.set(k, s);
@@ -3926,13 +3936,16 @@ const MAXW = 1.6, MAXWK = { smoke: 1.6, lobber: 1.5, miner: 1.6, demo: 1.6, wren
 const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK[k] *= 1.06;
 // Bildregeln (STYLE.md): 1 Soldatenhöhe = 0,95 Feldradien, Größe je Bild in FIG.SHT. Grenzen: Breite höchstens 1,9 Feldradien,
 // über die obere Feldkante höchstens eine halbe Hexhöhe. Reicht der Platz nicht, wird die Figur kleiner.
-const SH_R = 0.95, FIGW_R = 1.9;
-function figSprite(k, side, flip, oy) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
+// Überstand über die obere Feldkante: drei Viertel Hexhöhe; Mechs und Kolosse (big) ohne Höhengrenze, damit sie ihre 1,6 SH erreichen.
+const SH_R = 1.18, FIGW_R = 2.2, OVER = 0.75;
+function figSprite(k, side, flip, oy, big) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
   const s = L.s, h = s * SH_R, sp = FIG.sprite(k, side, flip, h);
   if (!sp.rule) return sp;
-  const f = Math.min(1, s * FIGW_R / sp.cw, s * K * (oy + SQ3) / sp.top);
+  const f = Math.min(1, s * FIGW_R / sp.cw, big ? 1 : s * K * (oy + SQ3 / 2 + OVER * SQ3) / sp.top);
   return f < 0.995 ? FIG.sprite(k, side, flip, h * f) : sp;
 }
+// Bis die Karten neu gemalt sind: Figuren in Wald, Totholz und Ruinen leicht abgedunkelt, damit sie „im“ Gelände stehen
+const DIM_T = new Set(['wald', 'waldweg', 'forest', 'village', 'fabrik', 'kirche']);
 
 // Kartenmarken nach STYLE.md (Wunsch des Nutzers): an der Figur nur ein schmaler Lebensbalken in Fraktionsfarbe, das Deckungsschild und EIN Zustandsplatz
 // (wichtigster Zustand, „+n“ bei mehreren). Eigene Einheiten am Zug: Messingpunkte unter dem Balken = Aktionspunkte. Alles in einer Zeile unter der Figur.
@@ -4047,15 +4060,25 @@ function drawUnit(u, d) {
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
   const oyMin = Math.min(...slots.slice(0, 2).map(q => q[1]));
-  let sp = figSprite(k, u.side, flip, oyMin);
+  const big = T.cls === 'walker';
+  let sp = figSprite(k, u.side, flip, oyMin, big);
   if (!sp.rule) { sp = FIG.sprite(k, u.side, flip, s * FH[k]); const mw = s * (MAXWK[k] || MAXW); if (sp.cv.width > mw) sp = FIG.sprite(k, u.side, flip, s * FH[k] * mw / sp.cv.width); }
   // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
   const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
-  if (done) { g.globalAlpha = A0 * 0.85; g.filter = 'grayscale(0.75) brightness(0.8)'; }   // fertig: leicht ausgegraut
+  const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
+  const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
   const duck = d.vs.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
-    g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
+    // Bodenschatten: weich und dunkel, Breite nach Figur; darunter kräftiger Kontaktschatten an den Füßen
+    g.filter = 'none'; g.globalAlpha = A0;
+    const sw = Math.max(s * 0.3, Math.min(s * 1.0, (sp.cw || s * 0.6) * 0.5)), sh = sw * 0.32;
+    g.save(); g.translate(fx, fy); g.scale(1, sh / sw);
+    const sg = g.createRadialGradient(0, 0, 0, 0, 0, sw); sg.addColorStop(0, 'rgba(8,6,4,0.62)'); sg.addColorStop(0.55, 'rgba(8,6,4,0.38)'); sg.addColorStop(1, 'rgba(8,6,4,0)');
+    g.fillStyle = sg; g.beginPath(); g.arc(0, 0, sw, 0, 7); g.fill(); g.restore();
+    g.fillStyle = 'rgba(6,4,3,0.7)'; g.beginPath(); g.ellipse(fx, fy - s * 0.01, sw * 0.42, sw * 0.42 * 0.28, 0, 0, 7); g.fill();
+    if (done) g.globalAlpha = A0 * 0.85;
+    if (filt) g.filter = filt;
     const lead = ox === slots[0][0] && oy === slots[0][1] ? leaderKind(u) : null;
     if (lead) { const ls = figSprite(lead, u.side, flip, oy); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); continue; }
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
@@ -4797,7 +4820,7 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
   $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
-    + `<span class="tb-dots${UP.pA ? ' wim' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag${UP['p' + fac(c)] ? ' img' : ''}"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
+    + `<span class="tb-dots${UP.pA ? ' wim' : ''}${OBJECTIVES.length >= 6 ? ' many' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag${UP['p' + fac(c)] ? ' img' : ''}"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
 }
 // Tooltips der oberen Leiste per Touch (Digitalboards): Knöpfe lang drücken, Anzeigen kurz antippen. Klick nach langem Druck entfällt.
 { let tm = 0, hide = 0, long = false;

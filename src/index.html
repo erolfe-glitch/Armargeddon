@@ -545,6 +545,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 /* Wimpel als Bild (mit eigener Stange und Knauf): Stange steht am rechten Münzrand, Platz rechts daneben, damit nichts in den Rahmen ragt */
 /* Fester Abstand für Wimpel (Leiste springt nicht, wenn Felder erobert werden); hinten Platz, damit der letzte Wimpel nicht in die Messingecke ragt */
 .tb-dots:has(.tb-flag.img), .tb-dots.wim { gap: 24px; padding-right: 22px; }
+.tb-dots.wim .tb-obj:has(.tb-flag) { margin-right: 0; }   /* Platz ist schon im festen Abstand reserviert */
 .tb-flag.img { width: 0; height: 0; left: calc(100% - 6px); bottom: 14%; background: none; }
 .tb-flag.img::before { display: none; }
 .tb-flag.img img { left: auto; top: auto; bottom: 0; width: auto; height: 29px; filter: drop-shadow(0 2px 0 rgba(18,13,11,.75)); }
@@ -576,6 +577,9 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 @media (max-width: 1800px) { .tb-meter .tube { width: 96px; } .tb-meter .tb-medal { display: none; } .tb-medal { --m: 54px; } .tb-dots.wim, .tb-dots:has(.tb-flag.img) { gap: 21px; padding-right: 20px; } .tb-btn { width: 40px; height: 40px; } .tb-tools { gap: 3px; } .tb-pts { padding: 0 10px; } .tb-dots { padding-left: 8px; margin: 0 4px; } }
 @media (max-width: 1600px) { .tb-wind .k { display: none; } .tb-meter .tube { width: 130px; height: 34px; } .tb-meter .val { font-size: 17px; min-width: 48px; } .tb-mid { gap: 12px; } .tb-pts { font-size: 24px; height: 48px; padding: 0 14px; } }
 @media (max-width: 1400px) { .tb-meter .val { display: none; } .tb-left { gap: 8px; } .tb-plate:not(.tb-pts) { padding: 0 12px; font-size: 16px; } .tb-tools { gap: 4px; } .tb-meter .tube { width: 120px; } }
+/* Karten mit 6+ Zielfeldern: Münzen kleiner und enger, damit die Leiste ab 1280 px nicht über den Rand läuft (fester Abstand bleibt) */
+@media (max-width: 1600px) { .tb-dots.many { gap: 4px; } .tb-dots.many .tb-obj { width: 26px; height: 26px; font-size: 14px; border-width: 2.5px; }
+  .tb-dots.many.wim, .tb-dots.many:has(.tb-flag.img) { gap: 16px; padding-right: 16px; } .tb-dots.many .tb-flag.img img { height: 23px; } .tb-dots.many .tb-flag:not(.img) { height: 22px; } .tb-dots.many .tb-flag:not(.img) img { width: 25px; } }
 @media (max-width: 1150px) { .tb-dots { display: none; } .tb-meter .tube { width: 100px; } }
 @media (max-height: 520px), (max-width: 900px) {
   .tbar { height: 52px; gap: 6px; padding: 0 max(16px, env(safe-area-inset-left)); }
