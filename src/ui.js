@@ -558,7 +558,7 @@ function drawUnit(u, d) {
       const R = s * 0.24; g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = bg; g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = s * 0.12; g.fill(); g.shadowBlur = 0; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#1d140d'; g.stroke();
       const hh = s * 0.38, ww = hh * im.naturalWidth / im.naturalHeight; g.filter = 'brightness(1.45) contrast(1.15)'; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
     g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
-    g.font = `900 ${Math.round(s * 0.21)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
+    g.font = `900 ${Math.round(s * 0.21)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
   };
   if (d.vs.rout) tag('↩', '#f3ead2', '#7a1c10', 'icSkull', 'rout');
   else if (d.vs.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear', 'broken');
@@ -573,7 +573,7 @@ function drawUnit(u, d) {
     const cx = x + s * 0.86, cy = y - s * 0.02, im = PJI.i_react, hh = s * 0.24, ww = Math.min(hh * im.naturalWidth / im.naturalHeight, s * 0.34);
     g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = '#F0EDE1'; g.stroke(); g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore();
   } else if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02;
- g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#F0EDE1'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
+ g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#F0EDE1'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
 }
 
 // ---------- Zeichnen ----------
@@ -594,7 +594,7 @@ function draw() {
     for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = n.march ? 'rgba(255,190,70,0.24)' : n.retreat ? 'rgba(255,160,120,0.26)' : 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = n.march ? 'rgba(255,196,90,0.85)' : 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
       if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = '#e2553c'; g.setLineDash([s * 0.1, s * 0.07]); g.lineWidth = Math.max(2, s * 0.06); g.stroke(); g.setLineDash([]); } }
     if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
-      g.font = `900 ${Math.round(s * 0.55)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
+      g.font = `900 ${Math.round(s * 0.55)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
     for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(220,40,30,0.10)'; g.fill(); g.strokeStyle = 'rgba(230,60,45,0.28)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
     for (const k of abilSet) { const c = Math.floor(k / 100), r = k % 100; hexPath(g, c, r, 0.9); g.fillStyle = `rgba(190,120,255,${0.24 + 0.1 * Math.sin(now / 260)})`; g.fill(); g.strokeStyle = '#d7a8ff'; g.lineWidth = Math.max(2, s * 0.055); g.stroke(); }
     for (const k of shellHexes) {
@@ -603,7 +603,7 @@ function draw() {
     }
     if (sightSet.size) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (sightSet.has(E.key(c, r))) {
       hexPath(g, c, r, 0.9); g.fillStyle = E.dist(sel.c, sel.r, c, r) > P.SPOT ? 'rgba(240,237,225,0.30)' : 'rgba(240,237,225,0.13)'; g.fill(); g.strokeStyle = 'rgba(240,237,225,0.55)'; g.lineWidth = Math.max(1, s * 0.03); g.stroke(); }
-    if (scoutSet.size) { g.font = `900 ${Math.round(s * 0.34)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    if (scoutSet.size) { g.font = `900 ${Math.round(s * 0.34)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (scoutSet.has(E.key(c, r))) { const [hx, hy] = center(c, r); g.lineWidth = Math.max(2, s * 0.08); g.strokeStyle = O; g.strokeText('◉', hx, hy); g.fillStyle = '#F0EDE1'; g.fillText('◉', hx, hy); } }
     for (const id of sendSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(194,164,97,0.30)'; g.fill(); g.strokeStyle = '#F0EDE1'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
     for (const id of recSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(255,200,90,0.3)'; g.fill(); g.strokeStyle = '#ffcf6a'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
@@ -629,7 +629,7 @@ function draw() {
     const fl = VIS.ctrl[o.id] && CFLAG[fac(VIS.ctrl[o.id])], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
     if (fim) { const fh = s * 0.95, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px + s * 0.02, top - s * 0.04, fw, fh); }
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
-    g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
+    g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
   }
   // Einheiten nach Tiefe
   const list = [];
@@ -645,7 +645,7 @@ function draw() {
       gr.addColorStop(0, 'rgba(225,225,220,0.55)'); gr.addColorStop(1, 'rgba(225,225,220,0)'); g.fillStyle = gr; g.fillRect(x - s * 1.2, y - s * 1.2, s * 2.4, s * 2.4); }
   }
   const mySide = human(G.side) ? G.side : ['A', 'D'].find(human);
-  g.font = `900 ${Math.round(s * 0.36)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `900 ${Math.round(s * 0.36)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   for (const q of G.tunnels || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText(`⛏${q.t}`, x, y + s * 0.15); g.fillStyle = '#ffb86a'; g.fillText(`⛏${q.t}`, x, y + s * 0.15); }
   for (const q of G.mines || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
   // Gaswolken
@@ -764,7 +764,7 @@ function draw() {
   // Schrittzahlen
   g.textAlign = 'center'; g.textBaseline = 'middle';
   if (sel && human(G.side) && !busy) {
-    g.font = `800 ${Math.round(s * 0.4)}px system-ui, sans-serif`;
+    g.font = `800 ${Math.round(s * 0.4)}px "Arm Text", system-ui, sans-serif`;
     for (const [, n] of reach) { const [x, y] = center(n.c, n.r); g.fillStyle = 'rgba(22,21,15,0.8)'; g.fillText(n.cost, x + 1.5, y + 1.5); g.fillStyle = '#fff6cf'; g.fillText(n.cost, x, y); }
   }
   for (let i = floaters.length - 1; i >= 0; i--) {
@@ -774,11 +774,11 @@ function draw() {
     if (f.icon) {   // Symbol statt Text: kurz aufpoppen, dann langsam steigen
       const k = Math.min(1, (f.max - f.life) / 6), hh = s * (f.big ? 0.95 : 0.8) * (0.7 + 0.3 * k), ww = hh * f.icon.naturalWidth / f.icon.naturalHeight;
       g.save(); g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = s * 0.18; g.drawImage(f.icon, f.x - ww / 2, f.y - hh * 0.8, ww, hh); g.restore();
-      if (f.sub) { g.font = `900 ${Math.round(s * 0.4)}px system-ui, sans-serif`; g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.lineJoin = 'round';
+      if (f.sub) { g.font = `900 ${Math.round(s * 0.4)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.lineJoin = 'round';
         g.strokeText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.fillStyle = f.col; g.fillText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.textAlign = 'center'; }
       continue;
     }
-    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.44 : 0.36) : f.big ? 0.26 : 0.22))}px system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers), Schadenszahlen groß
+    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.44 : 0.36) : f.big ? 0.26 : 0.22))}px "Arm Text", system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers), Schadenszahlen groß
     g.lineWidth = Math.max(2, s * (f.hold ? 0.09 : 0.065)); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
     g.fillStyle = f.col; g.fillText(f.text, f.x, f.y);
   }
@@ -1211,7 +1211,7 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
   $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
-    + `<span class="tb-dots">${OBJECTIVES.map(o => `<span class="tb-obj ${own(G.ctrl[o.id])}">${o.pts}</span>`).join('')}</span></span>`;
+    + `<span class="tb-dots">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && UP['f' + fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
 }
 // Knöpfe der oberen Leiste: flache Symbole in Knochenweiß, Werte als kleine Marke
 const TB_ICON = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? '#F0EDE1' : 'none'}" stroke="#F0EDE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -1520,7 +1520,7 @@ function drawMapPreview(cvs, id) {
     if (c <= m.zoneA) { g2.fillStyle = 'rgba(201,74,61,0.22)'; g2.fill(); }
   }
   for (const o of m.objectives) { const [x, y] = hp(o.c, o.r); g2.beginPath(); g2.arc(x, y, Math.max(5, s2 * 0.95), 0, 7); g2.fillStyle = '#C2A461'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#0a0706'; g2.stroke();
-    g2.fillStyle = '#fff'; g2.font = `800 ${Math.max(8, Math.round(s2 * 1.3))}px system-ui`; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText(o.pts, x, y + 0.5); }
+    g2.fillStyle = '#fff'; g2.font = `800 ${Math.max(8, Math.round(s2 * 1.3))}px "Arm Text", system-ui`; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText(o.pts, x, y + 0.5); }
 }
 // Hintergrund hinter dem Startmenü zeigt die gewählte Karte
 function bgGame() { G = E.newGame({ seed: 7, map: mapSel }); decals.length = 0; initDU(); layout(); syncAll(); updateUI(); }

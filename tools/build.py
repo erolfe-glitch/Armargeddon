@@ -8,7 +8,9 @@ for name in ['engine.js', 'figures.js', 'art.js', 'fx.js', 'paint.js', 'mapimg.j
     code = (src / name).read_text(encoding='utf8')
     assert '</script' not in code, name
     parts.append(f'<script>\n{code}\n</script>')
-out = html.replace('<!--SCRIPTS-->', '\n'.join(parts))
+fonts = (src / 'fonts.css').read_text(encoding='utf8')   # eingebettete Schriften, erzeugt von tools/fonts.py
+assert '</style' not in fonts
+out = html.replace('<!--FONTS-->', f'<style>\n{fonts}</style>').replace('<!--SCRIPTS-->', '\n'.join(parts))
 with open(root / 'index.html', 'w', encoding='utf8', newline='\n') as f:   # LF auch unter Windows
     f.write(out)
 print('index.html', len(out) // 1024, 'KB')

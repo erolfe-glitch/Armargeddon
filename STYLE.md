@@ -23,6 +23,7 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-life`      | `#BF4638` | Leben; Fraktionsfarbe **Konkordat** (Blutrot) |
 | `--s-foe-dark`  | `#713B36` | Feind dunkel |
 | `--s-friend`    | `#7D8471` | Fraktionsfarbe **Aschenwacht** (Feldgrau grünlich) |
+| `--s-friend-hi` | `#A0AC88` | Feldgrau aufgehellt, nur Füllung des Kampfkraft-Balkens der Aschenwacht |
 | `--s-legion`    | `#6F8FB5` | Fraktionsfarbe **Blaue Legion** (Horizontblau, einziges erlaubtes Blau) |
 | `--s-gas`       | `#8A8A2E` | Gas, Gefahr |
 | `--s-ink`       | `#120D0B` | Comic-Kontur, harte Schatten |
@@ -53,14 +54,18 @@ Im Code: CSS `--A` / `--D` und `FIG.PAL.accent`; `applySkin` in ui.js setzt sie 
 Die Seite erkennt man nie nur an der Farbe: dazu das Wappen bzw. der Name. Ersatzformen, falls ein Wappenbild fehlt: Schild (Konkordat/Legion) und Zackenraute (Aschenwacht). Reihenfolge in der Leiste nach Sicht: eigene Seite links, Gegner rechts.
 
 ## Schrift
-- **Headline** (`--s-head`): kantig, gut lesbar – Titel, Knöpfe, Namen. Großbuchstaben mit etwas Sperrung.
-- **Werte** (`--s-body`): schlicht, Ziffern mit fester Breite (`tabular-nums`).
+Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `tools/fonts.py` erzeugt `src/fonts.css`).
+- **Headline** (`--s-head`, Familie „Arm Kopf“): IM Fell English SC, alte Druckschrift – Titel, Knöpfe, Namen. Großbuchstaben mit etwas Sperrung.
+- **Alle Ziffern** sind in „Arm Kopf“ per `unicode-range` aus Alegreya Sans ersetzt, damit Zahlen immer klar lesbar sind (auch „Runde 1“).
+- **Werte und Fließtext** (`--s-body`, Familie „Arm Text“): Alegreya Sans, Versalziffern mit fester Breite (in `fonts.py` fest eingestellt). Tooltips, Beschreibungen, kleiner Text.
 - Mindestens **14 px** überall, auch in Tooltips und Kleingedrucktem.
 - **Kein Text in Grafiken.** Beschriftung immer als echte Schrift im HTML.
 
 ## Bauteile
 - Konturen 2–3 px in `--s-ink`, harter Schatten nach unten (kein Weichzeichner).
 - Balken: Rahmen texturiert, Füllung flach mit Segmentstrichen. Leben `--s-life`, Moral `--s-brass`.
+- **Ausnahme Kampfkraft-Balken (obere Leiste):** Füllung gemalt – Pinselform mit ausgefranstem Ende, feine Pinselstriche, Tintenkontur. Farbe bleibt die volle Fraktionsfarbe, Segmentstriche dünn.
+- **Zielfeld-Marken (obere Leiste):** kleine gemalte Messingmünzen (Verlauf aus Messingtönen um `--s-brass`) mit eingeprägter Zahl (dunkles Braun, heller Grat darunter), Rand immer `--s-rust`. Erobert: kleine Wappenflagge (`w_flagge`) an einer Stange neben der Münze, kein farbiger Rand.
 - Symbol-Knöpfe: Rostknopf aus Bogen 2, Symbol aus `bogen3b_symbole`. Symbol mit dünner Kontur (1 px) in Knochenweiß `#F0EDE1`, Knopffläche dahinter leicht abgedunkelt. Tooltip als Pergamentzettel mit Name, Kosten (nur Zahl), Kurztext.
 - Zustände: gewählt = Messingrand (Knopf „gewählt“); gesperrt = Knopf „gesperrt“, Symbol grau und gedimmt, **ohne** helle Kontur, dazu große Zahl (Abklingzeit).
 - Leistensymbole (Lupe, Lautsprecher, Vorspulen, Vollbild): einfache flache Zeichen in Knochenweiß `#F0EDE1`, kein gemalter Bogen.
