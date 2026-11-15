@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entwurf Einheiten-Panel</title>
+<style>
+/* Palette und Schrift aus STYLE.md */
+:root {
+  --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
+  --s-brass: #C2A461; --s-life: #BF4638; --s-foe-dark: #713B36; --s-friend: #7A8F99; --s-gas: #8A8A2E; --s-ink: #120D0B;
+  --s-head: "Bahnschrift SemiBold Condensed", "Bahnschrift", "DIN Condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --s-body: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+
+  /* Grafiken aus den Bögen des Nutzers (ui-quelle/teile) */
+  --g-leiste: url("@@bogen1_rahmen/leiste_holz:1600@@");
+  --g-rahmen: url("@@bogen1_rahmen/rahmen_quadrat:320@@");
+  --g-tafel: url("@@bogen1_rahmen/tafel_messing:420@@");
+  --g-perg: url("@@bogen1_rahmen/pergament_klein:520@@");
+  --g-knopf: url("@@bogen2_buttons/knopf_rost_1:160@@");
+  --g-knopf-an: url("@@bogen2_buttons/knopf_rost_1_gewaehlt:160@@");
+  --g-knopf-aus: url("@@bogen2_buttons/knopf_rost_1_gesperrt:160@@");
+  --g-balken: url("@@bogen2_buttons/balken_1:760@@");
+  --g-punkt: url("@@bogen2_buttons/punkt_voll:64@@");
+  --g-punkt-leer: url("@@bogen2_buttons/punkt_leer_1:64@@");
+
+  --ab: 72px;           /* Fähigkeitsknopf: Breite */
+  --bar: 300px;         /* Balken: höchstens so breit */
+  --pic: 150px;         /* Einheitenbild */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { min-height: 100vh; background: var(--s-bg); color: var(--s-text); font: 15px/1.3 var(--s-body); display: flex; flex-direction: column; }
+img { display: block; }
+
+/* --- Nur für den Entwurf --- */
+.demo { display: flex; gap: 10px; align-items: center; padding: 12px 16px; font: 14px var(--s-body); color: #cfc6b3; flex-wrap: wrap; }
+.demo b { font: 600 16px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-brass); margin-right: 8px; }
+.demo button { font: 600 14px var(--s-head); letter-spacing: .06em; text-transform: uppercase; padding: 6px 12px; color: var(--s-text); background: var(--s-panel); border: 2px solid var(--s-rust); border-radius: 3px; cursor: pointer; }
+.demo button[aria-pressed="true"] { border-color: var(--s-brass); color: var(--s-brass); }
+.field { flex: 1; min-height: 120px; display: grid; place-items: center; color: #6e6155; font: 14px var(--s-body); letter-spacing: .1em; text-transform: uppercase; background: radial-gradient(ellipse at 50% 40%, #3a3127, #1a1411 75%); }
+
+/* ================= Einheiten-Panel (Aufbau wie XCOM 2: links Einheit, Mitte Fähigkeiten, rechts Runde) ================= */
+.panel {
+  --side: var(--s-friend);
+  position: relative; display: grid; grid-template-columns: auto minmax(max-content, 1fr) auto; align-items: center; gap: 20px;
+  padding: 24px 36px 34px; min-height: 206px;
+  background: var(--g-leiste) center / 100% 100% no-repeat, var(--s-bg);
+}
+.panel.foe { --side: var(--s-life); }
+
+/* --- Links: Einheit --- */
+.unit { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.portrait { position: relative; flex: none; width: var(--pic); height: calc(var(--pic) * 1.04); background: var(--g-rahmen) center / 100% 100% no-repeat; }
+.portrait .win { position: absolute; inset: 11% 11% 11.5% 11%; overflow: hidden; display: grid; place-items: end center;
+  background: radial-gradient(ellipse at 50% 65%, rgba(90,80,66,.55), transparent 70%); }
+.portrait img { height: 100%; width: 100%; object-fit: contain; filter: drop-shadow(0 3px 0 rgba(0,0,0,.5)); }
+/* Seitenmarke: Form unterscheidet Freund (Schild) und Feind (Zackenraute) */
+.mark { position: absolute; left: -10px; top: -10px; width: 38px; height: 42px; filter: drop-shadow(0 3px 0 var(--s-ink)); }
+.mark svg { width: 100%; height: 100%; }
+
+.stats { display: flex; flex-direction: column; gap: 6px; width: var(--bar); flex: none; }
+.head { display: flex; align-items: center; gap: 10px; }
+.name { font: 700 22px/1.3 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.info { margin-left: auto; flex: none; font: 700 14px var(--s-head); letter-spacing: .04em; color: var(--s-bg); background: var(--s-brass); border: 2px solid var(--s-ink); border-radius: 3px; padding: 2px 8px; box-shadow: 0 2px 0 var(--s-ink); cursor: pointer; }
+.sub { font: 14px var(--s-body); color: #cbbfa6; margin-top: -4px; }
+.sub i { font-style: normal; font-weight: 700; color: var(--side); }
+
+/* Balken: Rohr aus Bogen 2, Füllung flach im Schlitz */
+.bar { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.tube { position: relative; height: 34px; background: var(--g-balken) center / 100% 100% no-repeat; }
+.tube .slot { position: absolute; inset: 27% 8.3% 27% 8.3%; overflow: hidden; border-radius: 2px; }
+.tube .fill { position: absolute; inset: 0 auto 0 0; background: var(--s-life); }
+.tube .fill::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); }
+.bar.mor .tube { height: 24px; }
+.bar.mor .slot { inset: 30% 8.3%; }
+.bar.mor .fill { background: var(--s-brass); }
+.bar.mor .fill::after { display: none; }
+.val { font: 700 17px var(--s-body); font-variant-numeric: tabular-nums; min-width: 66px; text-align: right; }
+.val small { font-size: 14px; font-weight: 400; color: #b9ae98; }
+.val .k { display: inline-block; font: 600 14px var(--s-head); letter-spacing: .06em; text-transform: uppercase; color: #cbbfa6; margin-right: 4px; }
+
+.tiles { display: flex; gap: 20px; align-items: center; margin-top: 2px; }
+.t { display: flex; align-items: center; gap: 7px; font: 700 17px var(--s-body); font-variant-numeric: tabular-nums; }
+.t img { width: 28px; height: 28px; object-fit: contain; }
+.t img.wide { width: 44px; height: 30px; margin-right: 3px; }
+.t img { filter: drop-shadow(0 0 1px #F0EDE1) drop-shadow(0 0 1px #F0EDE1); }
+.panel.foe .ab.on { background-image: var(--g-knopf); }
+.t small { font: 400 14px var(--s-body); color: #cbbfa6; }
+.pip { width: 22px; height: 22px; background: var(--g-punkt) center / contain no-repeat; }
+.pip.used { background-image: var(--g-punkt-leer); }
+
+/* --- Mitte: Fähigkeiten in einer Reihe, Tastenkürzel darunter --- */
+.abils { display: flex; justify-content: center; gap: 10px; }
+.slot-ab { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ab {
+  position: relative; width: var(--ab); height: calc(var(--ab) * 1.186); padding: 0; border: 0; cursor: pointer;
+  background: var(--g-knopf) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 0 rgba(0,0,0,.55));
+  transition: transform .08s;
+}
+.ab::before { /* Fläche hinter dem Symbol abdunkeln, damit es sich vom Rost abhebt */
+  content: ""; position: absolute; inset: 13% 11%; border-radius: 8px; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.85) 0 45%, rgba(18,13,11,.5) 66%, rgba(18,13,11,0) 84%); }
+/* Symbol mit dünner Kontur in Knochenweiß (STYLE.md: Inhalte klar und kontrastreich) */
+.ab > img { position: absolute; inset: 18% 14%; width: 72%; height: 64%; object-fit: contain;
+  filter: drop-shadow(.6px 0 0 #F0EDE1) drop-shadow(-.6px 0 0 #F0EDE1) drop-shadow(0 .6px 0 #F0EDE1) drop-shadow(0 -.6px 0 #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.6)); }
+.ab:hover { transform: translateY(-2px); }
+.ab:active { transform: translateY(2px); }
+.ab:focus-visible { outline: 3px solid var(--s-brass); outline-offset: 3px; }
+.ab.on { background-image: var(--g-knopf-an); }
+.ab.cd { background-image: var(--g-knopf-aus); cursor: not-allowed; }
+.ab.cd > img { filter: brightness(.45) saturate(.5); }   /* gesperrt: Symbol sichtbar, abgedunkelt, ohne hellen Rand */
+.ab.cd::before { background: rgba(18,13,11,.25); }
+/* Abklingzeit: kleine Sanduhr + Zahl unten links */
+.ab .cdn { position: absolute; left: -6px; bottom: -6px; display: flex; align-items: center; gap: 2px; padding: 2px 6px 2px 3px;
+  font: 700 15px/1 var(--s-body); color: var(--s-text); background: var(--s-ink); border: 2px solid #6e5a4b; border-radius: 12px; }
+.ab .cdn img { width: 16px; height: 18px; object-fit: contain; }
+/* Kosten: nur die Zahl, auf Messingknopf */
+.ab .ap { position: absolute; right: -8px; top: -8px; width: 26px; height: 26px; display: grid; place-items: center;
+  font: 700 15px var(--s-body); color: var(--s-ink); background: var(--g-punkt) center / contain no-repeat; }
+.key { font: 700 14px var(--s-head); color: #cbbfa6; min-width: 22px; text-align: center; padding: 0 5px; border: 1px solid #6e5a4b; border-radius: 3px; background: rgba(18,13,11,.6); }
+.slot-ab.on .key { color: var(--s-brass); border-color: var(--s-brass); }
+
+/* Tooltip auf Pergament */
+.tip { position: absolute; bottom: calc(100% + 12px); left: 50%; width: 250px; z-index: 5; padding: 16px 20px 18px; text-align: left; pointer-events: none;
+  color: var(--s-bg); background: var(--g-perg) center / 100% 100% no-repeat;
+  filter: drop-shadow(0 4px 0 rgba(0,0,0,.6)); opacity: 0; visibility: hidden; transform: translate(-50%, 4px); transition: opacity .12s, transform .12s; }
+.tip b { display: block; font: 700 17px var(--s-head); letter-spacing: .05em; text-transform: uppercase; }
+.tip .cost { display: block; font: 700 14px var(--s-body); color: #5a2a22; margin: 2px 0 4px; }
+.tip span { display: block; font: 14px/1.35 var(--s-body); }
+.ab:hover .tip, .ab:focus-visible .tip, .ab.show .tip { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+.panel.foe .ab { cursor: default; }
+.panel.foe .ab .ap, .panel.foe .key { visibility: hidden; }
+
+/* --- Rechts: Nachschub und Runde beenden --- */
+.turnbox { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: 190px; }
+.plate { border: 0; cursor: pointer; padding: 0 18px; color: var(--s-text); background: var(--g-tafel) center / 100% 100% no-repeat;
+  font: 700 17px var(--s-head); letter-spacing: .07em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)); }
+.plate.shop { height: 50px; color: var(--s-brass); }
+.plate.end { height: 70px; font-size: 20px; }
+.plate:hover { transform: translateY(-1px); } .plate:active { transform: translateY(2px); }
+
+/* Handy quer */
+@media (max-width: 1100px), (max-height: 520px) {
+  :root { --ab: 50px; --bar: 200px; --pic: 92px; }
+  .unit { gap: 10px; } .t small { display: none; }
+  .panel { padding: 16px 20px 24px; gap: 12px; min-height: 0; }
+  .name { font-size: 16px; letter-spacing: .02em; } .sub { display: none; } .info .long { display: none; } .val { min-width: 54px; font-size: 15px; } .t img.wide { width: 34px; }
+  .tube { height: 28px; } .bar.mor .tube { height: 20px; }
+  .tiles { gap: 14px; } .bar.hp .val small { display: none; } .t img { width: 22px; height: 22px; }
+  .abils { gap: 6px; }
+  .turnbox { width: 128px; gap: 6px; }
+  .plate.shop { height: 40px; font-size: 15px; } .plate.end { height: 52px; font-size: 16px; padding: 0 10px; }
+  .key { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo">
+  <b>Entwurf</b>
+  <button id="tFriend" aria-pressed="true">Eigene Einheit</button>
+  <button id="tFoe" aria-pressed="false">Feindliche Einheit</button>
+  <span>Fähigkeit überfahren, lange drücken oder Taste 1–6.</span>
+</div>
+<div class="field">Schlachtfeld</div>
+
+<footer class="panel" id="panel">
+  <div class="unit">
+    <div class="portrait">
+      <div class="win"><img id="pic" alt=""></div>
+      <div class="mark" id="mark"></div>
+    </div>
+    <div class="stats">
+      <div class="head"><span class="name" id="name"></span><button class="info">i<span class="long"> Info</span></button></div>
+      <div class="sub" id="sub"></div>
+      <div class="bar hp"><div class="tube"><div class="slot"><div class="fill" style="width:70%"></div></div></div><span class="val"><span class="k">Leben</span>70 <small>/ 100</small></span></div>
+      <div class="bar mor"><div class="tube"><div class="slot"><div class="fill" style="width:86%"></div></div></div><span class="val"><span class="k">Moral</span>60</span></div>
+      <div class="tiles">
+        <span class="t" title="Aktionen"><img src="@@bogen3b_symbole/s_blitz:64@@" alt="Aktionen"><i class="pip"></i><i class="pip used"></i></span>
+        <span class="t" title="Bewegung"><img src="@@bogen3b_symbole/s_marsch:64@@" alt="Bewegung">3 <small>Felder</small></span>
+        <span class="t" title="Reichweite"><img class="wide" src="@@bogen3b_symbole/s_gewehr:96@@" alt="Reichweite">2 <small>Felder</small></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="abils" id="abils"></div>
+
+  <div class="turnbox">
+    <button class="plate shop">Nachschub</button>
+    <button class="plate end">Runde beenden</button>
+  </div>
+</footer>
+
+<script>
+const SYM = {
+  sanduhr: "@@bogen3b_symbole/s_sanduhr:48@@",
+  zielen: "@@bogen3b_symbole/s_zielen:128@@", nahkampf: "@@bogen3b_symbole/s_nahkampf:128@@",
+  marsch: "@@bogen3b_symbole/s_marsch:128@@", fernglas: "@@bogen3b_symbole/s_fernglas:128@@",
+  zahnrad: "@@bogen3b_symbole/s_zahnrad:128@@", granate: "@@bogen3b_symbole/s_handgranate:128@@"
+};
+const PIC = { A: "@@art:inf_A@@", D: "@@art:inf_D@@" };
+const ABILS = [
+  { s: 'zielen',   n: 'Schießen',        ap: 1, t: 'Feuer auf einen Feind in 2 Feldern Reichweite.', on: true },
+  { s: 'nahkampf', n: 'Nahkampf',        ap: 2, t: 'Sturm auf ein Nachbarfeld. Kostet alle Aktionen.' },
+  { s: 'marsch',   n: 'Marsch',          ap: 2, t: 'Doppelte Zugweite. Kostet alle Aktionen.' },
+  { s: 'fernglas', n: 'Feuerbereit',     ap: 1, t: 'Schießt einmal auf den ersten Feind, der in Reichweite zieht.' },
+  { s: 'zahnrad',  n: 'Draht schneiden', ap: 1, t: 'Entfernt Stacheldraht auf einem Nachbarfeld.' },
+  { s: 'granate',  n: 'Granaten',        ap: 2, t: 'Wurf über Deckung, trifft auch im Graben.', cd: 2 }
+];
+const panel = document.getElementById('panel'), box = document.getElementById('abils');
+const btns = ABILS.map((a, i) => {
+  const w = document.createElement('div');
+  w.className = 'slot-ab' + (a.on ? ' on' : '');
+  const b = document.createElement('button');
+  b.className = 'ab' + (a.on ? ' on' : '') + (a.cd ? ' cd' : '');
+  b.setAttribute('aria-label', a.n + ', Taste ' + (i + 1));
+  b.innerHTML = `<img src="${SYM[a.s]}" alt=""><span class="ap">${a.ap}</span>`
+    + (a.cd ? `<span class="cdn" title="Wieder bereit in ${a.cd} Runden"><img src="${SYM.sanduhr}" alt="">${a.cd}</span>` : '')
+    + `<span class="tip" role="tooltip"><b>${a.n}</b><span class="cost">${a.ap} ${a.ap === 1 ? 'Aktion' : 'Aktionen'}${a.cd ? ' · wieder bereit in ' + a.cd + ' Runden' : ''}</span><span>${a.t}</span></span>`;
+  let tm;
+  b.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') tm = setTimeout(() => b.classList.add('show'), 420); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, () => { clearTimeout(tm); setTimeout(() => b.classList.remove('show'), 1600); }));
+  b.addEventListener('click', () => pick(i));
+  w.append(b, Object.assign(document.createElement('span'), { className: 'key', textContent: i + 1 }));
+  box.appendChild(w);
+  return w;
+});
+function pick(i) {
+  if (panel.classList.contains('foe') || ABILS[i].cd) return;
+  btns.forEach((w, j) => { w.classList.toggle('on', j === i); w.firstChild.classList.toggle('on', j === i); });
+}
+addEventListener('keydown', e => { const n = +e.key; if (n >= 1 && n <= ABILS.length) pick(n - 1); });
+
+const MARK = {
+  friend: '<svg viewBox="0 0 40 44"><path d="M4 4h32v16c0 11-7 18-16 21C11 38 4 31 4 20z" fill="#7A8F99" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M12 13h16M12 20h16" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>',
+  foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
+};
+function setSide(foe) {
+  panel.classList.toggle('foe', foe);
+  document.getElementById('mark').innerHTML = foe ? MARK.foe : MARK.friend;
+  document.getElementById('pic').src = foe ? PIC.D : PIC.A;
+  document.getElementById('name').textContent = foe ? 'Aschengrenadiere' : 'Schützenkohorte';
+  document.getElementById('sub').innerHTML = foe ? '<i>Aschenwacht</i> · Infanterie · Feind' : '<i>Konkordat</i> · Infanterie';
+  document.getElementById('tFriend').setAttribute('aria-pressed', !foe);
+  document.getElementById('tFoe').setAttribute('aria-pressed', foe);
+}
+document.getElementById('tFriend').onclick = () => setSide(false);
+document.getElementById('tFoe').onclick = () => setSide(true);
+setSide(location.hash.includes("feind"));
+if (location.hash.includes("tip")) btns[1].firstChild.classList.add("show");
+</script>
+</body>
+</html>

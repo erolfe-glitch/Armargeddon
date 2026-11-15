@@ -10,6 +10,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Nur in `src/` ändern, danach `python3 tools/build.py`. `index.html` im Hauptordner ist erzeugt und wird mit eingecheckt (GitHub Pages).
 - Nach jeder Regeländerung `node tools/sim.js 200` laufen lassen und Siegquote, Dauer und Verluste je Typ berichten. Sehr empfindlich: eine Einheit mehr oder weniger verschiebt die Quote um 20–40 Punkte.
 - Vor „fertig“ im Browser testen: PC zuerst, Handy quer als zweites. Handy hochkant wird nicht unterstützt.
+- **Jede UI-Änderung hält sich an `STYLE.md`** (Palette, Schrift, Freund/Feind-Formen, Grundregel „Rahmen dreckig, Inhalte sauber“).
 - Git: Repo ist mit github.com/erolfe-glitch/Armargeddon verbunden (Branch main). Commits als „Claude <noreply@anthropic.com>“.
 
 ## Designvorgaben (Wünsche des Nutzers)
@@ -41,7 +42,9 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - `src/index.html` – Gerüst und Stylesheet. Der Block „UI-Bogen des Nutzers“ am Ende überschreibt den älteren „Grimdark-Anstrich“.
 - Datendateien (nicht lesen, siehe oben): `art.js` (Einheiten-/Anführerbilder, Schlüssel `_A` Konkordat, `_D` Aschenwacht, `_F` Frankreich-Set; je Bild hs/ax/ay/faces), `fx.js` (FXDATA: tiles, fx, proj inkl. Symbole `i_*`, flags), `paint.js` (FXDATA.paint: Bodentexturen, Objektbilder), `mapimg.js` (FXDATA.mapimg: gemalte Ganzkarten), `sound.js` (Töne, Zuordnung im Dateikopf), `uiart.js` (UIART: Oberflächenteile, als CSS-Variablen `--ui-<name>`).
 - `tools/build.py` – baut `index.html`. `tools/sim.js` – KI gegen KI. `tools/costcheck.js` – Punktwerte prüfen.
-- `ui-quelle/` – Bildvorlagen des Nutzers für die Oberfläche.
+- `ui-quelle/` – Bildvorlagen des Nutzers für die Oberfläche. Gemini-Bögen (Magenta-Hintergrund) schneidet `tools/ui_cut.py` in `ui-quelle/teile/<bogen>/` (Übersicht: `teile/uebersicht.png`). Symbole: `bogen3b_symbole` gilt, `bogen3_symbole` ist alt.
+- `entwurf/` – UI-Entwürfe, noch nicht im Spiel. Quelle `einheiten-panel.src.html`, Bau mit `tools/entwurf.py` (bettet Teile und Einheitenbilder ein). `symbol-liste.md`: alle Knöpfe/Fähigkeiten mit Symbolzuordnung.
+- Python: `%LOCALAPPDATA%\Programs\Python\Python312\python.exe` (mit Pillow, numpy, scipy).
 - Fehlt ein Bild, greift immer die gezeichnete Fassung.
 
 ## Seiten und Einheiten

@@ -1,0 +1,266 @@
+{
+ "bogen1_rahmen/rahmen_breit": [
+  757,
+  483
+ ],
+ "bogen1_rahmen/rahmen_quadrat": [
+  503,
+  524
+ ],
+ "bogen1_rahmen/pergament_klein": [
+  507,
+  272
+ ],
+ "bogen1_rahmen/rahmen_klein": [
+  500,
+  294
+ ],
+ "bogen1_rahmen/rahmen_draht": [
+  682,
+  1007
+ ],
+ "bogen1_rahmen/pergament_gross": [
+  558,
+  364
+ ],
+ "bogen1_rahmen/stoffbanner": [
+  944,
+  230
+ ],
+ "bogen1_rahmen/leiste_holz": [
+  1951,
+  287
+ ],
+ "bogen1_rahmen/tafel_messing": [
+  542,
+  311
+ ],
+ "bogen2_buttons/knopf_rost_1": [
+  247,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_1_gewaehlt": [
+  248,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_1_gesperrt": [
+  247,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_2": [
+  247,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_2_gewaehlt": [
+  248,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_2_gesperrt": [
+  247,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_3": [
+  247,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_3_gewaehlt": [
+  248,
+  293
+ ],
+ "bogen2_buttons/knopf_rost_3_gesperrt": [
+  247,
+  293
+ ],
+ "bogen2_buttons/rund_1": [
+  315,
+  316
+ ],
+ "bogen2_buttons/rund_2": [
+  314,
+  316
+ ],
+ "bogen2_buttons/rund_3": [
+  316,
+  316
+ ],
+ "bogen2_buttons/rund_4": [
+  315,
+  316
+ ],
+ "bogen2_buttons/platte_1": [
+  302,
+  303
+ ],
+ "bogen2_buttons/platte_2": [
+  302,
+  303
+ ],
+ "bogen2_buttons/platte_3": [
+  303,
+  303
+ ],
+ "bogen2_buttons/platte_4": [
+  303,
+  303
+ ],
+ "bogen2_buttons/balken_1": [
+  825,
+  172
+ ],
+ "bogen2_buttons/balken_2": [
+  825,
+  172
+ ],
+ "bogen2_buttons/balken_3": [
+  824,
+  172
+ ],
+ "bogen2_buttons/punkt_voll": [
+  143,
+  144
+ ],
+ "bogen2_buttons/punkt_leer_1": [
+  144,
+  144
+ ],
+ "bogen2_buttons/punkt_leer_2": [
+  143,
+  144
+ ],
+ "bogen2_buttons/punkt_leer_3": [
+  144,
+  144
+ ],
+ "bogen2_buttons/punkt_leer_4": [
+  144,
+  144
+ ],
+ "bogen3_symbole/s_zielen": [
+  335,
+  338
+ ],
+ "bogen3_symbole/s_nahkampf": [
+  321,
+  325
+ ],
+ "bogen3_symbole/s_marsch": [
+  333,
+  297
+ ],
+ "bogen3_symbole/s_fahne": [
+  312,
+  306
+ ],
+ "bogen3_symbole/s_totenkopf": [
+  276,
+  303
+ ],
+ "bogen3_symbole/s_schild": [
+  278,
+  322
+ ],
+ "bogen3_symbole/s_gas": [
+  342,
+  309
+ ],
+ "bogen3_symbole/s_granate_artillerie": [
+  317,
+  316
+ ],
+ "bogen3_symbole/s_zahnrad": [
+  324,
+  326
+ ],
+ "bogen3_symbole/s_sanitaeter": [
+  316,
+  278
+ ],
+ "bogen3_symbole/s_blitz": [
+  274,
+  314
+ ],
+ "bogen3_symbole/s_handgranate": [
+  250,
+  315
+ ],
+ "bogen3_symbole/s_gewehr": [
+  509,
+  133
+ ],
+ "bogen3_symbole/s_pferd": [
+  436,
+  297
+ ],
+ "bogen3_symbole/s_fernglas": [
+  353,
+  265
+ ],
+ "bogen3_symbole/s_sanduhr": [
+  202,
+  315
+ ],
+ "bogen3b_symbole/s_zielen": [
+  430,
+  428
+ ],
+ "bogen3b_symbole/s_nahkampf": [
+  412,
+  419
+ ],
+ "bogen3b_symbole/s_marsch": [
+  493,
+  416
+ ],
+ "bogen3b_symbole/s_fahne": [
+  427,
+  424
+ ],
+ "bogen3b_symbole/s_totenkopf": [
+  359,
+  396
+ ],
+ "bogen3b_symbole/s_schild": [
+  332,
+  414
+ ],
+ "bogen3b_symbole/s_gas": [
+  430,
+  400
+ ],
+ "bogen3b_symbole/s_granate_artillerie": [
+  397,
+  415
+ ],
+ "bogen3b_symbole/s_zahnrad": [
+  411,
+  411
+ ],
+ "bogen3b_symbole/s_sanitaeter": [
+  300,
+  414
+ ],
+ "bogen3b_symbole/s_blitz": [
+  379,
+  405
+ ],
+ "bogen3b_symbole/s_handgranate": [
+  264,
+  407
+ ],
+ "bogen3b_symbole/s_gewehr": [
+  653,
+  396
+ ],
+ "bogen3b_symbole/s_pferd": [
+  488,
+  409
+ ],
+ "bogen3b_symbole/s_fernglas": [
+  433,
+  346
+ ],
+ "bogen3b_symbole/s_sanduhr": [
+  254,
+  411
+ ]
+}

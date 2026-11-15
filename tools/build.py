@@ -9,5 +9,6 @@ for name in ['engine.js', 'figures.js', 'art.js', 'fx.js', 'paint.js', 'mapimg.j
     assert '</script' not in code, name
     parts.append(f'<script>\n{code}\n</script>')
 out = html.replace('<!--SCRIPTS-->', '\n'.join(parts))
-(root / 'index.html').write_text(out, encoding='utf8')
+with open(root / 'index.html', 'w', encoding='utf8', newline='\n') as f:   # LF auch unter Windows
+    f.write(out)
 print('index.html', len(out) // 1024, 'KB')
