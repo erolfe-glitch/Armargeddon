@@ -233,8 +233,33 @@ const ARTS = {};
 // Bilderset je Seite: 'A' = England-Bogen, 'F' = Frankreich-Bogen, 'D' = Deutschland-Bogen
 const SKIN = { A: 'A', D: 'D' };
 function setSkin(side, s) { SKIN[side] = s; cache.clear(); }
+// Bildregeln (STYLE.md): feste Größe je Bild statt hs. Wert = Höhe des sichtbaren Bildinhalts in Soldatenhöhen (SH),
+// abgelesen an der Soldatenhöhe im Bild: stehend 1, kniend 0,75, liegend 0,45, Reiter 1,4, Panzer 1,3–1,4, Mech 1,6, Kampfanzug 1,15.
+// Werte über 1 bei Fußtruppen = Fahne, Lanze, Rauch o. ä. ragt über den Helm. Mannschaften an Geräten sind so groß wie Infanterie.
+// Was über eine halbe Hexhöhe hinausragen würde, verkleinert ui.js (drawUnit).
+const SHT = {
+  inf_A: 1, inf_D: 1, inf_F: 1, medic_A: 1, medic_D: 1, medic_F: 1, storm_D: 1, flame_D: 1, flamer_A: 1, shieldA_A: 1, shield_D: 1,
+  knight_D: 1, brawler_D: 1, heavy_D: 1, dog_A: 1, bike_A: 1, counter_D: 1, ammo_D: 1, gasmask_D: 1, miner_A: 1, lobber_A: 1, wrench_A: 0.95,
+  raider_A: 0.9, phone_A: 1.2, sapper_A: 1.08, sapperD_D: 1.08, signal_D: 1.07, demo_A: 1.08, smoke_A: 1.15, light_D: 1.17, banner_D: 1.31,
+  sniper_A: 0.75, atr_D: 0.75, mines_D: 0.75, stalker_D: 0.45,
+  mg_A: 0.75, mg_D: 0.75, mg_F: 0.8, mortar_A: 0.75, mortar_D: 1, mortar_F: 0.75,
+  art_A: 1, art_D: 1.05, art_F: 1, fgun_A: 1,
+  limber_A: 1.4, limber_D: 1.4, limber_F: 1.4, cav_A: 1.65, cav_F: 1.6,
+  walker_A: 1.4, walker_F: 1.3, suitA_A: 1.39, suitD_D: 1.28,
+  mech_D: 1.65, drill_D: 1.75, mechA_D: 1.65, mechB_D: 1.6, mechT_A: 1.65, mechK_A: 1.75, mechC_A: 1.6, balloon_A: 2,
+  leader0_A: 1, leader1_A: 1.1, leader2_A: 1.2, leader3_A: 1, leader4_A: 1, leader0_D: 1, leader1_D: 1, leader2_D: 1, leader3_D: 1.37, leader4_D: 1
+};
+// Sichtbarer Kasten (Alpha) eines Bildes, Anteile 0–1
+function bboxOf(img) {
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  let d; try { d = g.getImageData(0, 0, c.width, c.height).data; } catch (e) { return [0, 0, 1, 1]; }
+  let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  return x1 < x0 ? [0, 0, 1, 1] : [x0 / c.width, y0 / c.height, (x1 + 1) / c.width, (y1 + 1) / c.height];
+}
 function setArt(map) {
-  for (const k in map) { const a = Object.assign({}, map[k]); a.img = new Image(); a.img.onload = () => cache.clear(); a.img.src = a.src; ARTS[k] = a; }
+  for (const k in map) { const a = Object.assign({}, map[k]); a.sh = SHT[k]; a.img = new Image(); a.img.onload = () => { a.bb = bboxOf(a.img); cache.clear(); }; a.img.src = a.src; ARTS[k] = a; }
 }
 // Liefert { cv, ox, oy }: Füße liegen bei (ox, oy). h = Höhe eines Soldaten in Pixeln.
 function sprite(kind, side, flip, h) {
@@ -245,7 +270,9 @@ function sprite(kind, side, flip, h) {
   if (s) return s;
   const art = ARTS[kind + '_' + sk] || ARTS[kind + '_' + side];
   if (art && art.img.complete && art.img.naturalWidth) {
-    const H = Math.round(art.hs * h), W = Math.round(H * art.img.naturalWidth / art.img.naturalHeight);
+    // Mit Bildregel: sichtbarer Inhalt = sh Soldatenhöhen; sonst alter Faktor hs (Bildhöhe in h)
+    const bb = art.bb || [0, 0, 1, 1];
+    const H = Math.round(art.sh ? art.sh * h / (bb[3] - bb[1]) : art.hs * h), W = Math.round(H * art.img.naturalWidth / art.img.naturalHeight);
     // Heller Saum und leichte Aufhellung, damit sich die dunklen Bilder vom Schlammboden abheben
     const pad = Math.ceil(h * 0.08);
     const c2 = document.createElement('canvas'); c2.width = W + pad * 2; c2.height = H + pad * 2;
@@ -258,7 +285,8 @@ function sprite(kind, side, flip, h) {
     g2.drawImage(art.img, pad, pad, W, H);
     g2.shadowColor = 'transparent'; g2.drawImage(art.img, pad, pad, W, H);
     g2.restore();
-    s = { cv: c2, ox: pad + (mirror ? W * (1 - art.ax) : W * art.ax), oy: pad + H * art.ay, painted: true };
+    s = { cv: c2, ox: pad + (mirror ? W * (1 - art.ax) : W * art.ax), oy: pad + H * art.ay, painted: true, rule: !!art.sh };
+    s.top = s.oy - pad - bb[1] * H; s.cw = (bb[2] - bb[0]) * W;   // Inhalt: Höhe über den Füßen, Breite
     cache.set(k, s);
     return s;
   }
@@ -298,6 +326,6 @@ function sprite(kind, side, flip, h) {
   return s;
 }
 
-const FIG = { PAL, OUT, KIND, BOX, sprite, drawFigure, setArt, setSkin, ARTS };
+const FIG = { PAL, OUT, KIND, BOX, sprite, drawFigure, setArt, setSkin, ARTS, SHT };
 if (typeof module !== 'undefined' && module.exports) module.exports = FIG; else root.FIG = FIG;
 })(this);

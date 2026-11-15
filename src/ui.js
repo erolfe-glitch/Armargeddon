@@ -461,8 +461,17 @@ const FH = { smoke: 0.7, lobber: 0.66, miner: 0.66, demo: 0.7, wrench: 0.66, bal
   bike: 0.62, sniper: 0.64, dog: 0.62, atr: 0.64, signal: 0.6, sapper: 0.6, raider: 0.62, shield: 0.62, heavy: 0.62, mech: 0.64, drill: 0.64, mechA: 0.64, mechB: 0.64, mechT: 0.64, mechK: 0.64, mechC: 0.64, suitA: 0.6, suitD: 0.6,
   fgun: 0.7, leader1: 0.66, leader4: 0.66, flamer: 0.62, shieldA: 0.62, phone: 0.6, brawler: 0.62, knight: 0.64, sapperD: 0.6, banner: 0.74 };
 const MAXW = 1.6, MAXWK = { smoke: 1.6, lobber: 1.5, miner: 1.6, demo: 1.6, wrench: 1.6, balloon: 1.3, mines: 1.5, light: 1.6, counter: 1.5, gasmask: 1.7, ammo: 1.6, stalker: 1.6, walker: 2.05, limber: 1.95, art: 1.8, cav: 1.7, mech: 2.1, drill: 2.1, mechA: 2.1, mechB: 2.1, fgun: 1.8, atr: 1.5, sniper: 1.4, bike: 1.5, dog: 1.5 };   // größte Bildbreite in Feldradien
-// Figuren etwas größer seit den kleineren Karten (Wunsch des Nutzers)
+// Figuren etwas größer seit den kleineren Karten (Wunsch des Nutzers). FH/MAXWK gelten nur noch für gezeichnete Ersatzfiguren.
 const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK[k] *= 1.06;
+// Bildregeln (STYLE.md): 1 Soldatenhöhe = 0,95 Feldradien, Größe je Bild in FIG.SHT. Grenzen: Breite höchstens 1,9 Feldradien,
+// über die obere Feldkante höchstens eine halbe Hexhöhe. Reicht der Platz nicht, wird die Figur kleiner.
+const SH_R = 0.95, FIGW_R = 1.9;
+function figSprite(k, side, flip, oy) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
+  const s = L.s, h = s * SH_R, sp = FIG.sprite(k, side, flip, h);
+  if (!sp.rule) return sp;
+  const f = Math.min(1, s * FIGW_R / sp.cw, s * K * (oy + SQ3) / sp.top);
+  return f < 0.995 ? FIG.sprite(k, side, flip, h * f) : sp;
+}
 
 // Kartenmarken nach STYLE.md (Wunsch des Nutzers): an der Figur nur ein schmaler Lebensbalken in Fraktionsfarbe, das Deckungsschild und EIN Zustandsplatz
 // (wichtigster Zustand, „+n“ bei mehreren). Eigene Einheiten am Zug: Messingpunkte unter dem Balken = Aktionspunkte. Alles in einer Zeile unter der Figur.
@@ -576,8 +585,9 @@ function drawUnit(u, d) {
   // Figuren
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
-  let sp = FIG.sprite(k, u.side, flip, s * FH[k]);
-  { const mw = s * (MAXWK[k] || MAXW); if (sp.cv.width > mw) sp = FIG.sprite(k, u.side, flip, s * FH[k] * mw / sp.cv.width); }
+  const oyMin = Math.min(...slots.slice(0, 2).map(q => q[1]));
+  let sp = figSprite(k, u.side, flip, oyMin);
+  if (!sp.rule) { sp = FIG.sprite(k, u.side, flip, s * FH[k]); const mw = s * (MAXWK[k] || MAXW); if (sp.cv.width > mw) sp = FIG.sprite(k, u.side, flip, s * FH[k] * mw / sp.cv.width); }
   // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
   const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
   if (done) { g.globalAlpha = A0 * 0.85; g.filter = 'grayscale(0.75) brightness(0.8)'; }   // fertig: leicht ausgegraut
@@ -586,7 +596,7 @@ function drawUnit(u, d) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
     g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
     const lead = ox === slots[0][0] && oy === slots[0][1] ? leaderKind(u) : null;
-    if (lead) { const ls = FIG.sprite(lead, u.side, flip, s * FH.inf * 1.12); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); continue; }
+    if (lead) { const ls = figSprite(lead, u.side, flip, oy); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); continue; }
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
       const px = fx + (flip ? 0.2 : -0.2) * s, top = fy - s * 1.35;
       g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.07); g.beginPath(); g.moveTo(px, fy - s * 0.2); g.lineTo(px, top); g.stroke();
