@@ -10,6 +10,9 @@ const SQ3 = Math.sqrt(3);
 // Bilder aus dem UI-Bogen als CSS-Variablen (--ui-end, --ui-frame …) und für das Zeichnen (UIM)
 const UIM = {};
 { const A = window.UIART || {}; for (const k in A) { document.documentElement.style.setProperty('--ui-' + k, `url("${A[k]}")`); const im = new Image(); im.onload = () => UIM[k] = im; im.src = A[k]; } }
+// Panel-Grafiken (Symbole, Deckungsschilde) auch fürs Zeichnen auf der Karte
+const UPI = {};
+{ const A = window.UIPANEL || {}; for (const k in A) if (/^(s_|cov)/.test(k)) { const im = new Image(); im.onload = () => UPI[k] = im; im.src = A[k]; } }
 const $ = id => document.getElementById(id);
 const fmt = x => String(Math.max(0, Math.round(x * 10)));   // Anzeige in ganzen Zahlen: Stärke 10,0 → 100, Schaden 0,7 → 7 (Wunsch des Nutzers)
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
@@ -461,47 +464,77 @@ const MAXW = 1.6, MAXWK = { smoke: 1.6, lobber: 1.5, miner: 1.6, demo: 1.6, wren
 // Figuren etwas größer seit den kleineren Karten (Wunsch des Nutzers)
 const FSC = 1.12; for (const k in FH) FH[k] *= FSC; for (const k in MAXWK) MAXWK[k] *= 1.06;
 
+// Kartenmarken nach STYLE.md (Wunsch des Nutzers): an der Figur nur ein schmaler Lebensbalken in Fraktionsfarbe, das Deckungsschild und EIN Zustandsplatz
+// (wichtigster Zustand, „+n“ bei mehreren). Eigene Einheiten am Zug: Messingpunkte unter dem Balken = Aktionspunkte. Alles in einer Zeile unter der Figur.
+// STATES: Reihenfolge = Wichtigkeit. on(u, d) liest die Anzeige-Werte d.vs, damit Zustände erst beim Abspielen erscheinen.
+const STATES = [
+  { k: 'rout', sym: 'flucht', name: 'Flieht', on: (u, d) => d.vs.rout, text: () => 'Moral gebrochen: weicht zurück und gehorcht nicht. Gegner treffen sie ×1,6, Reiter ×2. Ein Anführer in der Nähe kann sie wieder sammeln.' },
+  { k: 'broken', sym: 'zahnrad', name: 'Panne', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Liegengeblieben: fällt noch ${upRunden(d.vs.broken)} aus. Ein Werkstatt-Trupp kann sie bergen.` },
+  { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
+  { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(d.vs.stuck)} nicht ziehen.` },
+  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde.' },
+  { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => 'Moral fast am Ende: Beim nächsten Treffer weicht die Einheit zurück.' },
+  { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
+  { k: 'limber', sym: 'pferd', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
+  { k: 'mgdown', sym: 'mg_dreibein', name: 'Nicht aufgebaut', on: u => TYPES[u.type].mg && !u.setup && E.active(u), text: () => 'Das MG muss erst aufgebaut werden (1 Aktion). Dann feuert es und gibt Reaktionsfeuer.' },
+  { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).' },
+  { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => 'Befehl des Anführers: Nahkampf ×1,25 in dieser Runde.' },
+  { k: 'hidden', sym: 'durchsickern', name: 'Getarnt', on: u => TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u), text: () => 'Der Gegner sieht die Einheit erst vom Nachbarfeld aus. Nach einem Schuss ist sie eine Runde lang enttarnt.' },
+  { k: 'relay', sym: 'fernglas', name: 'Aufklärer', on: u => TYPES[u.type].relay && E.active(u), text: () => 'Lenkt die eigene Artillerie: Ziele, die der Trupp sieht, treffen ohne Streuung und ×1,25.' },
+];
+const statesOf = (u, d) => d && d.vs ? STATES.filter(st => st.on(u, d)) : [];
+const COVER_NAME = ['', 'Bronze', 'Silber', 'Gold'];
+const coverTip = u => { const cv = E.coverOf(G, u), h = G.map[u.c][u.r]; return cv.tier ? { tier: cv.tier, name: `Deckung ${COVER_NAME[cv.tier]}`, text: `${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' auf der Höhe' : ''}: Verteidigung +${Math.round((cv.f - 1) * 100)} %. Bronze = leichte, Silber = gute, Gold = starke Deckung.` } : null; };
+// Trefferflächen der Marken auf der Karte (für Tooltips per Maus und Touch), jedes Bild neu gefüllt
+const MARKS = [], MARKQ = [];
+// Ersatzschild, falls das gemalte Bild fehlt
 const SHIELD_COL = { 1: ['#e6a868', '#a8662c', '#5c3412'], 2: ['#f4f5f7', '#b4b8be', '#5d6168'], 3: ['#fff1a0', '#e0ad2c', '#7a5408'] };
 function drawShield(g, cx, cy, h, tier) {
+  const im = UPI['cov' + tier];
+  if (im) { const w = h * im.naturalWidth / im.naturalHeight; g.save(); g.shadowColor = 'rgba(18,13,11,0.9)'; g.shadowOffsetY = Math.max(1, h * 0.06); g.drawImage(im, cx - w / 2, cy - h / 2, w, h); g.restore(); return; }
   const w = h * 0.82, [hi, mid, lo] = SHIELD_COL[tier];
   g.save(); g.translate(cx, cy);
-  const path = () => { g.beginPath(); g.moveTo(-w / 2, -h / 2); g.lineTo(w / 2, -h / 2); g.lineTo(w / 2, -h * 0.08); g.quadraticCurveTo(w * 0.46, h * 0.32, 0, h / 2); g.quadraticCurveTo(-w * 0.46, h * 0.32, -w / 2, -h * 0.08); g.closePath(); };
-  path(); const gr = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); gr.addColorStop(0, hi); gr.addColorStop(0.55, mid); gr.addColorStop(1, lo);
-  g.fillStyle = gr; g.shadowColor = 'rgba(0,0,0,0.75)'; g.shadowBlur = h * 0.25; g.fill(); g.shadowBlur = 0;
-  g.lineWidth = Math.max(1.5, h * 0.1); g.strokeStyle = '#1d140d'; g.stroke();
-  g.beginPath(); g.moveTo(-w * 0.32, -h * 0.36); g.lineTo(w * 0.32, -h * 0.36); g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = Math.max(1, h * 0.06); g.stroke();
-  g.strokeStyle = lo; g.lineWidth = Math.max(1.2, h * 0.09); g.lineCap = 'round';
-  for (let i = 0; i < tier; i++) { const xx = (i - (tier - 1) / 2) * w * 0.22; g.beginPath(); g.moveTo(xx, -h * 0.18); g.lineTo(xx, h * 0.16); g.stroke(); }
+  g.beginPath(); g.moveTo(-w / 2, -h / 2); g.lineTo(w / 2, -h / 2); g.lineTo(w / 2, -h * 0.08); g.quadraticCurveTo(w * 0.46, h * 0.32, 0, h / 2); g.quadraticCurveTo(-w * 0.46, h * 0.32, -w / 2, -h * 0.08); g.closePath();
+  const gr = g.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); gr.addColorStop(0, hi); gr.addColorStop(0.55, mid); gr.addColorStop(1, lo);
+  g.fillStyle = gr; g.fill(); g.lineWidth = Math.max(1.5, h * 0.1); g.strokeStyle = '#120D0B'; g.stroke();
   g.restore();
+}
+// Symbol auf dunkler Scheibe mit Rostrand (Karte)
+function drawSym(g, im, cx, cy, R) {
+  g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * 0.14); g.strokeStyle = '#66483A'; g.stroke();
+  if (!im) return;
+  const ww = Math.min(R * 1.45 * im.naturalWidth / im.naturalHeight, R * 1.6), h2 = ww * im.naturalHeight / im.naturalWidth;
+  g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 function drawUnit(u, d) {
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
   if (d.shake > 0) x += Math.sin(now / 22) * s * 0.05;
-  const g = ctx;
-  g.globalAlpha = d.alpha * (d.vs.rout ? 0.75 : 1);
+  const g = ctx, A0 = d.alpha * (d.vs.rout ? 0.75 : 1);
   const isSel = sel && sel.id === u.id;
-  const done = human(u.side) && G.side === u.side && E.active(u) && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
-  // Standring mit Blickrichtung
-  g.beginPath(); g.ellipse(x, y, s * 0.7, s * 0.7 * K, 0, 0, 7);
-  g.fillStyle = acc; g.globalAlpha *= done ? 0.12 : 0.28; g.fill();
-  g.globalAlpha = d.alpha * (done ? 0.45 : 1);
-  g.lineWidth = Math.max(2, s * (isSel ? 0.09 : 0.06)); g.strokeStyle = isSel ? '#fff7dd' : acc;
+  const own = human(u.side) && G.side === u.side && E.active(u);
+  const done = own && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
+  // Standplatz: dunkler Bodenschatten und dünner Ring in gedämpfter Fraktionsfarbe (keine knalligen Flächen)
+  g.globalAlpha = A0; g.beginPath(); g.ellipse(x, y, s * 0.66, s * 0.66 * K, 0, 0, 7); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
+  g.globalAlpha = A0 * (done ? 0.25 : 0.5); g.lineWidth = Math.max(1.5, s * 0.035); g.strokeStyle = acc;
   if (d.vs.rout) g.setLineDash([s * 0.14, s * 0.12]);
   g.stroke(); g.setLineDash([]);
-  if (isSel) { const pz = 0.5 + 0.5 * Math.sin(now / 260); g.save(); g.globalAlpha = 0.35 + 0.4 * pz; g.beginPath(); g.ellipse(x, y, s * (0.86 + 0.06 * pz), s * (0.86 + 0.06 * pz) * K, 0, 0, 7); g.strokeStyle = '#fff3c4'; g.lineWidth = Math.max(2.5, s * 0.07); g.shadowColor = '#ffe9a0'; g.shadowBlur = s * 0.3; g.stroke(); g.restore(); }
-  if (isSel && UIM.ringY) { const rw = s * 1.75, rh = rw * K; g.save(); g.globalAlpha = 0.9; g.drawImage(UIM.ringY, x - rw / 2, y - rh / 2, rw, rh); g.restore(); }
-  if (hoverU === u && !isSel) { g.beginPath(); g.ellipse(x, y, s * 0.8, s * 0.8 * K, 0, 0, 7); g.strokeStyle = 'rgba(255,250,225,0.85)'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); }
-  if (E.active(u)) {
-    const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.7, fy = y + Math.sin(a) * s * 0.7 * K;
-    g.beginPath(); g.arc(fx, fy, s * 0.11, 0, 7); g.fillStyle = isSel ? '#fff7dd' : acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.04); g.strokeStyle = O; g.stroke();
+  if (E.active(u)) {   // Blickrichtung: kleiner Punkt am Ring, so gedämpft wie der Ring
+    const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.66, fy = y + Math.sin(a) * s * 0.66 * K;
+    if (isSel) g.globalAlpha = A0;
+    g.beginPath(); g.arc(fx, fy, Math.max(2, s * 0.055), 0, 7); g.fillStyle = isSel ? '#C2A461' : acc; g.fill(); g.lineWidth = Math.max(1, s * 0.03); g.strokeStyle = '#120D0B'; g.stroke();
   }
-  if (previewT && previewT.id === u.id) {
-    g.beginPath(); g.ellipse(x, y, s * 0.84, s * 0.84 * K, 0, 0, 7); g.strokeStyle = '#ff4a30'; g.lineWidth = Math.max(2, s * 0.08);
-    g.globalAlpha = 0.6 + 0.4 * Math.sin(now / 110); g.stroke();
+  g.globalAlpha = A0;
+  if (isSel) {   // gewählt: Messingring, leicht pulsierend
+    const pz = 0.5 + 0.5 * Math.sin(now / 300), rr = s * (0.76 + 0.02 * pz);
+    g.beginPath(); g.ellipse(x, y, rr, rr * K, 0, 0, 7); g.lineWidth = Math.max(4, s * 0.09); g.strokeStyle = 'rgba(18,13,11,0.7)'; g.stroke();
+    g.globalAlpha = A0 * (0.8 + 0.2 * pz); g.lineWidth = Math.max(2.5, s * 0.05); g.strokeStyle = '#C2A461'; g.stroke(); g.globalAlpha = A0;
+  } else if (hoverU === u) { g.beginPath(); g.ellipse(x, y, s * 0.76, s * 0.76 * K, 0, 0, 7); g.strokeStyle = 'rgba(240,237,225,0.5)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); }
+  if (previewT && previewT.id === u.id) {   // Angriffsziel in der Vorschau
+    g.beginPath(); g.ellipse(x, y, s * 0.78, s * 0.78 * K, 0, 0, 7); g.strokeStyle = '#BF4638'; g.lineWidth = Math.max(2.5, s * 0.06);
+    g.globalAlpha = A0 * (0.6 + 0.4 * Math.sin(now / 160)); g.stroke(); g.globalAlpha = A0;
   }
-  g.globalAlpha = d.alpha * (d.vs.rout ? 0.75 : 1);
   // Figuren
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
@@ -509,71 +542,53 @@ function drawUnit(u, d) {
   { const mw = s * (MAXWK[k] || MAXW); if (sp.cv.width > mw) sp = FIG.sprite(k, u.side, flip, s * FH[k] * mw / sp.cv.width); }
   // Gemalte Bilder sind größer: höchstens zwei Figuren je Einheit, damit es übersichtlich bleibt
   const use = slots.slice(0, sp.painted ? Math.min(n, 2) : n).slice().sort((a, b) => a[1] - b[1]);
-  if (done) g.globalAlpha *= 0.6;
+  if (done) { g.globalAlpha = A0 * 0.85; g.filter = 'grayscale(0.75) brightness(0.8)'; }   // fertig: leicht ausgegraut
   const duck = d.vs.supp > 0 ? s * 0.1 : 0;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
     g.fillStyle = 'rgba(10,9,6,0.38)'; g.beginPath(); g.ellipse(fx, fy, s * (k === 'walker' ? 0.5 : 0.3), s * (k === 'walker' ? 0.16 : 0.1), 0, 0, 7); g.fill();
     const lead = ox === slots[0][0] && oy === slots[0][1] ? leaderKind(u) : null;
-    if (lead) { const ls = FIG.sprite(lead, u.side, flip, s * FH.inf * 1.12); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); g.font = `900 ${Math.round(s * 0.34)}px sans-serif`; g.textAlign = 'center'; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText('★', fx, fy - ls.oy + s * 0.02); g.fillStyle = u.cd > 0 ? '#9a917a' : '#ffd24a'; g.fillText('★', fx, fy - ls.oy + s * 0.02); continue; }
+    if (lead) { const ls = FIG.sprite(lead, u.side, flip, s * FH.inf * 1.12); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); g.font = `900 ${Math.round(s * 0.3)}px sans-serif`; g.textAlign = 'center'; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#120D0B'; g.strokeText('★', fx, fy - ls.oy + s * 0.02); g.fillStyle = u.cd > 0 ? '#7d7564' : '#C2A461'; g.fillText('★', fx, fy - ls.oy + s * 0.02); continue; }
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
       const px = fx + (flip ? 0.2 : -0.2) * s, top = fy - s * 1.35;
       g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.07); g.beginPath(); g.moveTo(px, fy - s * 0.2); g.lineTo(px, top); g.stroke();
       g.beginPath(); g.moveTo(px, top); g.lineTo(px + (flip ? 1 : -1) * s * 0.42, top + s * 0.13); g.lineTo(px, top + s * 0.28); g.closePath();
       g.fillStyle = acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
-      g.fillStyle = '#ffe9a8'; g.beginPath(); g.arc(px + (flip ? 1 : -1) * s * 0.14, top + s * 0.13, s * 0.045, 0, 7); g.fill();
     }
     g.drawImage(sp.cv, Math.round(fx - sp.ox), Math.round(fy - sp.oy));
   }
-  g.globalAlpha = 1;
+  g.filter = 'none'; g.globalAlpha = 1;
   if (!E.alive(u)) return;
-  // Balken
-  // Stärke oben (Farbe nach Zustand: grün, gelb, rot), Moral unten (gold); Striche alle 10 Punkte (Wunsch des Nutzers: eindeutiger)
-  const w = s * 0.96, bx = x - w / 2, by = y + s * K * 0.78, bh = Math.max(4, s * 0.11), bm = Math.max(3, s * 0.075), q = Math.max(0, Math.min(1, d.str / 10));
-  g.fillStyle = O; g.fillRect(bx - 2, by - 2, w + 4, bh + bm + 5);
-  g.fillStyle = '#2a2820'; g.fillRect(bx, by, w, bh); g.fillRect(bx, by + bh + 1, w, bm);
-  g.fillStyle = q > 0.66 ? '#8fd45e' : q > 0.33 ? '#f0c23a' : '#e8452e'; g.fillRect(bx, by, w * q, bh);
-  g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(bx, by, w * q, Math.max(1, bh * 0.3));
-  g.fillStyle = '#d9a53a'; g.fillRect(bx, by + bh + 1, w * Math.max(0, Math.min(1, d.mor / T.mor)), bm);
-  g.fillStyle = 'rgba(0,0,0,0.55)'; for (let i = 1; i < 10; i++) g.fillRect(Math.round(bx + w * i / 10), by, 1, bh);
-  // Aktionsmarken: links Bewegung (Pfeil), rechts Angriff (Raute). Leuchtet = noch möglich.
-  if (human(u.side) && G.side === u.side && E.active(u)) {
-    const ca = !u.attacked && !d.vs.broken && u.ap >= 1, pr = Math.max(4, s * 0.15), py = by + bh, ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0);
-    g.lineWidth = Math.max(1.5, s * 0.04); g.strokeStyle = O;
-    // Aktionspunkte: helle Kugeln links vom Balken (eine je Punkt)
-    for (let i = 0; i < Math.max(P.AP, ap); i++) { g.beginPath(); g.arc(bx - pr * (1.1 + i * 1.9), py, pr * 0.8, 0, 7); g.fillStyle = i < ap ? (i >= P.AP ? '#F0EDE1' : '#ffd24a') : '#2f2e25'; g.fill(); g.stroke(); }
-    const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
+  MARKQ.push(() => drawMarks(u, d, x, y, own, done, acc));   // Marken erst nach allen Figuren: keine Figur verdeckt sie
+}
+function drawMarks(u, d, x, y, own, done, acc) {
+  const g = ctx, s = L.s;
+  // Markenzeile unter der Figur: [Zustand] [Lebensbalken, darunter Aktionspunkte] [Deckung]
+  const bw = s * 0.74, bh = Math.max(4, s * 0.08), bx = x - bw / 2, by = y + s * K * 0.62, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
+  g.globalAlpha = done ? 0.7 : 1;
+  g.fillStyle = '#120D0B'; g.fillRect(bx - 1.5, by - 1.5, bw + 3, bh + 3);
+  g.fillStyle = '#221B18'; g.fillRect(bx, by, bw, bh);
+  g.fillStyle = acc; g.fillRect(bx, by, bw * q, bh);
+  g.fillStyle = 'rgba(18,13,11,0.75)'; for (let i = 1; i < 10; i++) g.fillRect(Math.round(bx + bw * i / 10), by, 1, bh);
+  MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: by + bh + 4, u, kind: 'hp' });
+  if (own) {   // Aktionspunkte: kleine Messingpunkte (leer = dunkel)
+    const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0), nn = Math.max(P.AP, ap), r = Math.max(2.5, s * 0.055), py = by + bh + r + 2;
+    for (let i = 0; i < nn; i++) { g.beginPath(); g.arc(x + (i - (nn - 1) / 2) * r * 3, py, r, 0, 7); g.fillStyle = i < ap ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, r * 0.4); g.strokeStyle = '#120D0B'; g.stroke(); }
+    MARKS.push({ x0: x - nn * r * 1.6, y0: py - r - 2, x1: x + nn * r * 1.6, y1: py + r + 3, u, kind: 'ap' });
   }
-  // Deckungsschild (Wunsch des Nutzers): Bronze = leichte, Silber = gute, Gold = starke Deckung durch das Gelände; Striche 1–3 zusätzlich zur Farbe
-  if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u); if (cv0.tier) drawShield(g, x + s * 0.68, y - s * 0.4, s * 0.24, cv0.tier); } }
-  // Zustandsmarken
-  const tagY = y - s * (['mech', 'drill', 'mechA', 'mechB', 'mechT', 'mechK', 'mechC'].includes(k) ? 1.55 : k === 'walker' ? 0.95 : k === 'cav' ? 1.05 : 0.85);
-  const tag = (glyph, bg, fg, ic, sym) => {
-    const cx = x - s * 0.84, cy = y - s * 0.1, r = s * 0.17, pim = sym && PJI['i_' + sym], im = UIM[ic];
-    if (pim) {   // Symbol aus den Bögen des Nutzers, klein, mit dunkler Scheibe dahinter
-      const hh = s * 0.3, ww = Math.min(hh * pim.naturalWidth / pim.naturalHeight, s * 0.36);
-      g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = bg; g.stroke();
-      g.drawImage(pim, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
-    if (im) {   // helle Scheibe mit Rand dahinter, Symbol aufgehellt: auf dunklem Boden gut zu sehen
-      const R = s * 0.24; g.save(); g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = bg; g.shadowColor = 'rgba(0,0,0,0.8)'; g.shadowBlur = s * 0.12; g.fill(); g.shadowBlur = 0; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#1d140d'; g.stroke();
-      const hh = s * 0.38, ww = hh * im.naturalWidth / im.naturalHeight; g.filter = 'brightness(1.45) contrast(1.15)'; g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore(); return; }
-    g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fillStyle = bg; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
-    g.font = `900 ${Math.round(s * 0.21)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = fg; g.fillText(glyph, cx, cy + 1);
-  };
-  if (d.vs.rout) tag('↩', '#f3ead2', '#7a1c10', 'icSkull', 'rout');
-  else if (d.vs.broken > 0) tag('✖', '#e8e0c8', '#1d140d', 'icGear', 'broken');
-  else if (u.limbered) tag('⇄', '#f0e2b8', '#1d140d', 'icArrows', 'limber');
-  else if (d.vs.supp > 0) tag('▼', '#ffe28a', '#5a1408', 'icDanger', 'supp');
-  else if (d.vs.stuck > 0) tag('≈', '#d9c49a', '#3a2410', null, 'stuck');
-  else if (d.vs.gassed) tag('G', '#e3ec8a', '#1d2408', 'icWarn', 'gas');
-  else if (u.ow) tag('◎', '#F0EDE1', '#2a211c', null, 'aim');
-  else if (TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u)) tag('◌', '#c8d6a8', '#22300f');
-  else if (TYPES[u.type].mg && !u.setup && E.active(u)) tag('⤓', '#e9dfc4', '#5a3a10');
-  if (TYPES[u.type].relay && E.active(u) && PJI.i_react) {   // Aufklärer: Auge aus dem Symbolbogen
-    const cx = x + s * 0.86, cy = y - s * 0.02, im = PJI.i_react, hh = s * 0.24, ww = Math.min(hh * im.naturalWidth / im.naturalHeight, s * 0.34);
-    g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = '#F0EDE1'; g.stroke(); g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore();
-  } else if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02;
- g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#F0EDE1'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
+  // Deckungsschild rechts (nur wenn die Einheit auf ihrem Feld steht, nicht während einer Bewegung)
+  if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u);
+    if (cv0.tier) { const sh = s * 0.36, cx = bx + bw + s * 0.2; drawShield(g, cx, mid, sh, cv0.tier); MARKS.push({ x0: cx - sh * 0.45, y0: mid - sh / 2, x1: cx + sh * 0.45, y1: mid + sh / 2, u, kind: 'cover' }); } } }
+  // Ein Zustandsplatz links: wichtigster Zustand, „+n“ bei mehreren
+  const sts = statesOf(u, d);
+  if (sts.length) {
+    const R = s * 0.17, cx = bx - s * 0.2;
+    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R);
+    if (sts.length > 1) { const t = '+' + (sts.length - 1), tx = cx + R * 0.85, ty = mid - R * 0.95; g.font = `700 ${Math.round(Math.max(13, s * 0.2))}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, tx, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, tx, ty); }
+    MARKS.push({ x0: cx - R * 1.1, y0: mid - R * 1.6, x1: cx + R * 1.6, y1: mid + R * 1.1, u, kind: 'state' });
+  }
+  g.globalAlpha = 1;
 }
 
 // ---------- Zeichnen ----------
@@ -583,6 +598,7 @@ function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.66
 function draw() {
   if (!L || !tcv) return;
   const g = ctx, s = L.s;
+  MARKS.length = 0;
   g.drawImage(tcv, 0, 0);
   for (const dc of decals) {
     const im = FXI['blood' + dc.v];
@@ -591,11 +607,12 @@ function draw() {
   }
   // Markierungen
   if (sel && human(G.side) && !busy) {
-    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); g.fillStyle = n.march ? 'rgba(255,190,70,0.24)' : n.retreat ? 'rgba(255,160,120,0.26)' : 'rgba(255,244,190,0.3)'; g.fill(); g.strokeStyle = n.march ? 'rgba(255,196,90,0.85)' : 'rgba(255,246,205,0.75)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
-      if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = '#e2553c'; g.setLineDash([s * 0.1, s * 0.07]); g.lineWidth = Math.max(2, s * 0.06); g.stroke(); g.setLineDash([]); } }
+    // Bewegungsfelder dezent (Wunsch des Nutzers): halbdurchsichtige Fläche, Gelände bleibt sichtbar. Ziehen = Knochenweiß, Marsch/Rückzug = Messing.
+    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); const far = n.march || n.retreat; g.fillStyle = far ? 'rgba(194,164,97,0.11)' : 'rgba(240,237,225,0.13)'; g.fill(); g.strokeStyle = far ? 'rgba(194,164,97,0.45)' : 'rgba(240,237,225,0.4)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke();
+      if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(191,70,56,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); } }
     if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
       g.font = `900 ${Math.round(s * 0.55)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
-    for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(220,40,30,0.10)'; g.fill(); g.strokeStyle = 'rgba(230,60,45,0.28)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
+    for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(191,70,56,0.06)'; g.fill(); g.strokeStyle = 'rgba(191,70,56,0.2)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
     for (const k of abilSet) { const c = Math.floor(k / 100), r = k % 100; hexPath(g, c, r, 0.9); g.fillStyle = `rgba(190,120,255,${0.24 + 0.1 * Math.sin(now / 260)})`; g.fill(); g.strokeStyle = '#d7a8ff'; g.lineWidth = Math.max(2, s * 0.055); g.stroke(); }
     for (const k of shellHexes) {
       const c = Math.floor(k / 100), r = k % 100;
@@ -636,6 +653,7 @@ function draw() {
   for (const u of G.units) { const d = DU.get(u.id); if (d && d.alpha > 0) list.push([d.y, u, d]); }
   list.sort((a, b) => a[0] - b[0]);
   for (const [, u, d] of list) drawUnit(u, d);
+  for (const f of MARKQ) f(); MARKQ.length = 0;
   // Nebel (grau), ausgeleuchtete Felder (gelb), eigene Stollen und Minen
   for (const k of VIS.lit) { hexPath(g, k.c, k.r, 0.98); g.fillStyle = 'rgba(255,240,170,0.16)'; g.fill(); }
   for (const k of VIS.smoke) {
@@ -763,10 +781,10 @@ function draw() {
   g.globalAlpha = 1;
   // Schrittzahlen
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  if (sel && human(G.side) && !busy) {
-    g.font = `800 ${Math.round(s * 0.4)}px "Arm Text", system-ui, sans-serif`;
-    for (const [, n] of reach) { const [x, y] = center(n.c, n.r); g.fillStyle = 'rgba(22,21,15,0.8)'; g.fillText(n.cost, x + 1.5, y + 1.5); g.fillStyle = '#fff6cf'; g.fillText(n.cost, x, y); }
-  }
+  // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
+  { const n = sel && human(G.side) && !busy && hoverHex && reach.get(E.key(hoverHex[0], hoverHex[1]));
+    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`; g.font = `700 ${Math.round(Math.max(14, s * 0.24))}px "Arm Text", system-ui, sans-serif`;
+      g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x, y - s * K * 0.45); g.fillStyle = '#F0EDE1'; g.fillText(t, x, y - s * K * 0.45); } }
   for (let i = floaters.length - 1; i >= 0; i--) {
     const f = floaters[i]; f.life -= f.hold ? STEP : FS; f.y -= s * STEP * (f.hold ? (f.life > f.max - 30 ? 0.012 : 0.0015) : 0.012);
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
@@ -1065,7 +1083,46 @@ cv.addEventListener('pointermove', ev => {
   hoverU = movable ? null : (p.uFig || p.uHex);
   if (sel && !busy) { const np = targetOf(p); if (np !== previewT) { previewT = np; updateHud(); } }
 });
-cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; });
+cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; hideTip(); });
+// Pergament-Tooltips für Marken (Karte und Panel), per Maus beim Drüberfahren, per Touch durch Antippen oder langes Drücken
+const mtip = document.createElement('div'); mtip.className = 'mtip'; mtip.setAttribute('role', 'tooltip'); document.body.appendChild(mtip);
+let tipKey = null, tipTm = 0;
+const tipHtml = list => list.filter(Boolean).map(t => `<b>${upEsc(t.name)}</b><span>${upEsc(t.text)}</span>`).join('');
+function showTip(list, cx, cy, key, ms) {
+  clearTimeout(tipTm); if (ms) tipTm = setTimeout(hideTip, ms);
+  if (key !== tipKey) { mtip.innerHTML = tipHtml(list); tipKey = key; }
+  const w = mtip.offsetWidth, h = mtip.offsetHeight;
+  mtip.style.left = Math.round(Math.max(8, Math.min(innerWidth - w - 8, cx - w / 2))) + 'px';
+  mtip.style.top = Math.round(cy - h - 18 < 8 ? cy + 26 : cy - h - 18) + 'px';
+  mtip.classList.add('show');
+}
+function hideTip() { clearTimeout(tipTm); tipKey = null; mtip.classList.remove('show'); }
+function markAt(x, y) { for (let i = MARKS.length - 1; i >= 0; i--) { const m = MARKS[i]; if (x >= m.x0 && x <= m.x1 && y >= m.y0 && y <= m.y1) return m; } return null; }
+function markTips(m) {
+  const u = m.u, d = DU.get(u.id), T = TYPES[u.type];
+  if (!d || !E.alive(u)) return [];
+  if (m.kind === 'state') return statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d) }));
+  if (m.kind === 'cover') return [coverTip(u)];
+  if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
+  return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
+}
+const markKey = m => m.u.id + m.kind;
+cv.addEventListener('pointermove', ev => {
+  if (ev.pointerType !== 'mouse' || !G || (drag && drag.moved)) return;
+  const [x, y] = evToPx(ev), m = markAt(x, y);
+  if (m) showTip(markTips(m), ev.clientX, ev.clientY, markKey(m)); else if (tipKey && !String(tipKey).startsWith('hud')) hideTip();
+});
+{ let tm = 0, long = false;
+  cv.addEventListener('pointerdown', ev => { long = false; clearTimeout(tm); if (ev.pointerType === 'mouse' || !G) return;
+    const [x, y] = evToPx(ev), m = markAt(x, y), cx = ev.clientX, cy = ev.clientY;
+    if (!m) return hideTip();
+    showTip(markTips(m), cx, cy, markKey(m), 3000);   // Antippen: zeigt den Tooltip, der Tipp wirkt trotzdem
+    tm = setTimeout(() => { long = true; showTip(markTips(m), cx, cy, markKey(m), 4000); }, 420); });   // langes Drücken: nur Tooltip
+  const stop = () => clearTimeout(tm);
+  cv.addEventListener('pointerup', stop); cv.addEventListener('pointercancel', stop);
+  cv.addEventListener('click', ev => { if (long) { long = false; ev.stopImmediatePropagation(); ev.preventDefault(); } }, true);
+  cv.addEventListener('contextmenu', ev => { if (ev.pointerType !== 'mouse') ev.preventDefault(); });
+}
 cv.addEventListener('click', ev => {
   if (performance.now() - dragged < 250) return;   // war ein Verschieben, kein Klick
   if (!G || busy || G.over || !human(G.side)) return;
@@ -1397,8 +1454,11 @@ function updateHud() {
     const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
     $('upMark').innerHTML = crest(u.side);
     $('hudName').textContent = T.name;
-    const st = u.status === 'rout' ? 'flieht' : u.broken > 0 ? 'Panne' : u.supp > 0 ? 'niedergehalten' : u.gassed ? 'im Gas' : null;
-    $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}${(() => { const cv = E.coverOf(G, u); return cv.tier ? ` · <b class="cov${cv.tier}">⛉ ${['', 'Bronze', 'Silber', 'Gold'][cv.tier]} +${Math.round((cv.f - 1) * 100)} %</b>` : ''; })()}${st ? ` · <em>${st}</em>` : ''}`;
+    $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ' · ★ ' + u.officer : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}`;
+    // Zeile mit ALLEN Zuständen als Symbole (Deckung zuerst), Tooltip je Symbol
+    { const d = DU.get(u.id), cv = coverTip(u);
+      hudTips = [cv && { ...cv, img: UP['cov' + cv.tier], cls: 'cov' }, ...statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d), img: upSym(st.sym) }))].filter(Boolean);
+      $('hudStates').innerHTML = hudTips.map((t, i) => `<span class="up-st${t.cls ? ' ' + t.cls : ''}" data-i="${i}" tabindex="0" aria-label="${upEsc(t.name)}"><img src="${t.img}" alt=""></span>`).join(''); }
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
     $('hudStats').innerHTML = upBar('hp', 'Leben', u.str, 10) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
       `<div class="up-tiles">${own ? `<span class="up-t" title="Aktionspunkte: ${ap} von ${P.AP}"><img src="${upSym('blitz')}" alt="Aktionen">${'<i class="up-pip"></i>'.repeat(Math.min(ap, P.AP))}${'<i class="up-pip used"></i>'.repeat(Math.max(0, P.AP - ap))}</span>` : ''}` +
@@ -1412,7 +1472,7 @@ function updateHud() {
     if (sel && human(sel.side) && sel.side === G.side) btns = unitButtons(T, hints);
     else if (!hints.length) hints.push(T.can);
   } else {
-    $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = ''; $('upMark').innerHTML = '';
+    $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = ''; $('upMark').innerHTML = ''; $('hudStates').innerHTML = ''; hudTips = [];
     if (placing) {
       $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
       $('hudSub').innerHTML = 'Aufstellen';
@@ -1428,6 +1488,7 @@ function updateHud() {
       hints.push(human(G.side) ? 'Tippe eine eigene Einheit an. Tippe auf Gegner oder Gelände für Infos.' : 'Bitte warten …');
     }
   }
+  $('hudSub').title = $('hudSub').textContent;
   hud.className = 'upanel' + (hasU ? ' ' + u.side : ' nounit') + (btns.length > 7 ? ' many' : '');
   const hn = $('hudHint'); hn.innerHTML = hints.filter(Boolean).join(' · '); hn.title = hn.textContent;
   // Draht-Knöpfe zuerst (Wunsch des Nutzers), dann die übrigen in fester Reihenfolge
@@ -1441,6 +1502,14 @@ function updateHud() {
     b.onclick = () => { if (long) { long = false; return; } if (b.classList.contains('off')) return; panelAct(b.dataset.act); };
   });
 }
+// Tooltips der Zustandssymbole im Panel: Maus beim Drüberfahren, Touch durch Antippen
+let hudTips = [];
+{ const box = $('hudStates'), at = e => e.target.closest('.up-st'), show = (el, ms) => { const t = hudTips[+el.dataset.i], r = el.getBoundingClientRect(); if (t) showTip([t], r.left + r.width / 2, r.top, 'hud' + el.dataset.i + t.name, ms); };
+  box.addEventListener('pointerover', e => { const el = at(e); if (el && e.pointerType === 'mouse') show(el); });
+  box.addEventListener('pointerout', e => { if (at(e) && e.pointerType === 'mouse') hideTip(); });
+  box.addEventListener('pointerdown', e => { const el = at(e); if (el && e.pointerType !== 'mouse') show(el, 3500); });
+  box.addEventListener('focusin', e => { const el = at(e); if (el) show(el); }); box.addEventListener('focusout', hideTip);
+  box.addEventListener('contextmenu', e => e.preventDefault()); }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
   if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: grün markierten Nachbarn anklicken.', 'i-send': 'Befehl überbringen: blau markierte Einheit anklicken.', 'i-rec': 'Bergen: gelb markierten Koloss anklicken.' }[a] || ''); return; }
@@ -1654,6 +1723,7 @@ window.__dbg = { PT, tcv: () => tcv, renderTerrain: () => renderTerrain(), paint
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
+  get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd
 };
 })();

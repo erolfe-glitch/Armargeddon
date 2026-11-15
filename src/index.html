@@ -589,6 +589,23 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 }
 @media (max-height: 520px) and (max-width: 940px) { .tb-side b { display: none; } .tb-side { padding: 0 6px; } .tb-side .tb-medal { margin-left: 0; margin-right: 0; } .tb-meter .tube { width: 64px; } }
 @media (max-height: 520px) and (max-width: 760px) { .tb-meter .tube { width: 40px; } .tb-medal { --m: 40px; } .tb-tools { gap: 2px; } .tb-left, .tb-mid, .tb-right { gap: 4px; } .tbar { gap: 4px; padding: 0 max(13px, env(safe-area-inset-left)); } .tb-plate { padding: 0 7px; } .tb-pts small, .tb-side small { display: none; } }
+/* ===== Zustandsmarken: Symbolzeile im Panel und Pergament-Tooltip (Karte und Panel) ===== */
+.up-subrow { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 28px; margin-top: -4px; }
+.up-subrow .up-sub { margin-top: 0 !important; min-width: 0; }
+.up-states { display: flex; align-items: center; gap: 2px; flex: none; }
+.up-states:empty { display: none; }
+.up-st { display: grid; place-items: center; width: 40px; height: 40px; margin: -6px -5px; cursor: help; border-radius: 50%; outline: none; }
+.up-st img { width: 26px; height: 26px; object-fit: contain; pointer-events: none;
+  filter: drop-shadow(.6px 0 0 #F0EDE1) drop-shadow(-.6px 0 0 #F0EDE1) drop-shadow(0 .6px 0 #F0EDE1) drop-shadow(0 -.6px 0 #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.6)); }
+.up-st.cov img { height: 28px; filter: drop-shadow(0 2px 0 var(--s-ink)); }
+.up-st:focus-visible { box-shadow: 0 0 0 2px var(--s-brass); }
+.mtip { position: fixed; left: 0; top: 0; z-index: 80; width: 270px; padding: 15px 19px 17px; pointer-events: none; text-align: left;
+  color: var(--s-bg); background: var(--up-perg) center / 100% 100% no-repeat; filter: drop-shadow(0 4px 0 rgba(0,0,0,.6));
+  opacity: 0; visibility: hidden; transition: opacity .12s; }
+.mtip.show { opacity: 1; visibility: visible; }
+.mtip b { display: block; font: 700 17px var(--s-head); letter-spacing: .05em; text-transform: uppercase; }
+.mtip span { display: block; font: 14px/1.35 var(--s-body); }
+.mtip span + b { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -622,7 +639,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
       <div class="up-pic"><canvas id="portrait"></canvas><div class="up-mark" id="upMark"></div></div>
       <div class="up-stats">
         <div class="up-head"><span class="up-name" id="hudName"></span><button class="up-info" id="btnInfo" title="Mehr über diese Einheit" hidden>i<span class="long"> Info</span></button></div>
-        <div class="up-sub" id="hudSub"></div>
+        <div class="up-subrow"><div class="up-states" id="hudStates"></div><div class="up-sub" id="hudSub"></div></div>
         <div class="up-vals" id="hudStats"></div>
       </div>
     </div>
