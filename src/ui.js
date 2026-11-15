@@ -1612,13 +1612,28 @@ function applySkin(sk) {
   skinA = sk; FIG.setSkin('A', sk); SIDES.A.name = ATTACKERS[sk].name; SIDES.A.short = ATTACKERS[sk].short;
   for (const sd of ['A', 'D']) { FIG.PAL[sd].accent = sideCol(sd); document.documentElement.style.setProperty('--' + sd, sideCol(sd)); }   // Ringe, Marken, Balken
   drawFlagPick();
-  $('facAName').textContent = ATTACKERS[sk].name;
-  drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
+}
+// Startmenü in Schritten: title → side → map → setup (dazu opts). Jede Seite hat „Zurück“.
+const curSide = () => (document.querySelector('input[name=side]:checked') || {}).value || 'A';   // A Konkordat, F Blaue Legion, D Aschenwacht
+const curSkin = () => curSide() === 'D' ? (document.querySelector('input[name=att]:checked') || {}).value || 'A' : curSide();
+function startStep(st) {
+  $('start').dataset.step = st;
+  if (st === 'side') drawFacUnits();
+  if (st === 'map') requestAnimationFrame(() => document.querySelectorAll('#mapPick canvas').forEach(c => drawMapPreview(c, c.dataset.map)));
+  if (st === 'setup') setupSync();
+}
+function drawFacUnits() {   // Einheitenbilder je Fraktionskarte; die Legion braucht kurz das Bilderset F
+  requestAnimationFrame(() => { for (const c of document.querySelectorAll('.sm-units canvas')) { if (c.dataset.sk) FIG.setSkin('A', c.dataset.sk); drawPortrait(c, c.dataset.k, c.dataset.s); } FIG.setSkin('A', skinA); });
+}
+function setupSync() {
+  const sd = curSide(), m = E.MAPS[mapSel], hot = curMode() === 'hot';
+  $('smAttRow').hidden = sd !== 'D';
+  $('smSum').textContent = (sd === 'D' ? 'Aschenwacht des Grauwalls' : ATTACKERS[sd].name) + ' · ' + (m ? m.name : '') + (hot ? ' · zu zweit' : ' · gegen die KI');
+  armyInfo();
 }
 function showStart(first) {
   $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; $('setZoom').textContent = 'Zoom ' + String(ZOOM).replace('.', ',') + '×'; $('closeStart').hidden = first;
-  drawPortraitLater($('pA1'), 'inf', 'A'); drawPortraitLater($('pA2'), 'walker', 'A'); drawPortraitLater($('pA3'), 'art', 'A');
-  drawPortraitLater($('pD1'), 'mg', 'D'); drawPortraitLater($('pD2'), 'storm', 'D'); drawPortraitLater($('pD3'), 'flame', 'D');
+  startStep('title');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
 const customArmy = { A: null, D: null };
@@ -1626,17 +1641,17 @@ const mechsOn = () => $('optMechs').checked;
 function mechChanged() { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); }
 const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
 function drawFlagPick() {   // jede Fraktion hat genau ein Wappen (keine Auswahl mehr)
-  $('facFlagA').src = UP['f' + fac('A')] || ''; $('facFlagD').src = UP.fD || '';
+  $('facFlagA').src = UP.fA || ''; $('facFlagF').src = UP.fF || ''; $('facFlagD').src = UP.fD || '';
 }
 let armySide = 'A', armyDraft = {};
-const curMode = () => document.querySelector('input[name=mode]:checked').value;
+const curMode = () => (document.querySelector('input[name=opp]:checked') || {}).value === 'hot' ? 'hot' : curSide() === 'D' ? 'D' : 'A';
 function armyInfo() {
   const sides = curMode() === 'hot' ? ['A', 'D'] : [curMode()];
   $('armyInfo').textContent = sides.map(sd => SIDES[sd].short + ': ' + (customArmy[sd] ? `eigene Armee (${E.armyCost(customArmy[sd])}/${E.ARMY_BUDGET[sd]} Punkte, ${E.armyCount(customArmy[sd])} Einheiten)` : 'Standardarmee')).join(' · ');
 }
 function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
-  applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
+  applySkin(curSkin());
   $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
   for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
   $('armyList').innerHTML = roster(sd).map(t => { const T = TYPES[t];
@@ -1685,15 +1700,15 @@ function drawMapPreview(cvs, id) {
 function bgGame() { G = E.newGame({ seed: 7, map: mapSel }); decals.length = 0; initDU(); layout(); syncAll(); updateUI(); }
 function drawMapPick() {
   $('mapPick').innerHTML = Object.values(E.MAPS).map(m => { const tot = m.objectives.reduce((n, o) => n + o.pts, 0);
-    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.cols} × ${m.rows} · Ziel ${m.goal || Math.round(tot * P.GOAL_K)} Siegpunkte</span><small>${m.desc}</small><span class="mwin">⚑ ${m.objectives.length} Ziele, ${tot} Punkte · Sieg ab ${m.winA || P.WIN_A}, Remis ab ${m.drawA || P.DRAW_A}</span></label>`; }).join('');
+    return `<label class="mapcard"><input type="radio" name="map" value="${m.id}" ${m.id === mapSel ? 'checked' : ''}><canvas data-map="${m.id}"></canvas><b>${m.name}</b><span class="msize">${m.size} · ${m.objectives.length} Zielfelder · Sieg bei ${m.goal || Math.round(tot * P.GOAL_K)} Punkten</span><small>${m.desc}</small></label>`; }).join('');
   requestAnimationFrame(() => document.querySelectorAll('#mapPick canvas').forEach(c => drawMapPreview(c, c.dataset.map)));
   document.querySelectorAll('input[name=map]').forEach(i => i.addEventListener('change', () => { setMap(i.value); customArmy.A = customArmy.D = null; armyInfo(); bgGame(); }));
 }
 
 function startGame() {
-  mode = document.querySelector('input[name=mode]:checked').value;
+  mode = curMode();
   blood = $('optBlood').checked; soundOn = $('optSound').checked; tbSync();
-  applySkin((document.querySelector('input[name=skin]:checked') || {}).value || 'A');
+  applySkin(curSkin());
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
   G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
@@ -1758,12 +1773,13 @@ $('armyClear').onclick = () => { armyDraft = {}; armyRefresh(); };
 $('armyOk').onclick = () => { if (armyKeep()) { $('army').hidden = true; armyInfo(); } };
 $('armyCancel').onclick = () => { $('army').hidden = true; armyInfo(); };
 $('armySwap').onclick = () => { if (E.armyOk(armySide, armyDraft, mechsOn())) armyKeep(); openArmy(armySide === 'A' ? 'D' : 'A'); };
-document.querySelectorAll('input[name=mode]').forEach(i => i.addEventListener('change', armyInfo));
-document.querySelectorAll('input[name=skin]').forEach(i => i.addEventListener('change', drawFlagPick));
+document.querySelectorAll('input[name=opp], input[name=side], input[name=att]').forEach(i => i.addEventListener('change', () => { applySkin(curSkin()); if (G) updateUI(); setupSync(); }));
+document.querySelectorAll('#start [data-go]').forEach(b => b.addEventListener('click', () => startStep(b.dataset.go)));
 document.querySelectorAll('input[name=mechs]').forEach(i => i.addEventListener('change', mechChanged));
 $('armyMech').onclick = () => { $('optMechs').checked = true; mechChanged(); const keep = armyDraft; openArmy(armySide); armyDraft = keep; armyRefresh(); };
 // Einstellungen schon im Startmenü
 $('setFull').onclick = () => $('btnFull').onclick();
+document.documentElement.style.setProperty('--sm-bg', window.TITLEBG ? `url("${window.TITLEBG}")` : 'none');   // Titelbild (tools/title_bg.py)
 $('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textContent = 'Tempo ' + speed + '×'; };
 $('setZoom').onclick = () => { ZOOM = ZOOM === 1 ? 1.3 : ZOOM === 1.3 ? 1.6 : 1; const t = String(ZOOM).replace('.', ',') + '×'; tbSync(); $('setZoom').textContent = 'Zoom ' + t; if (G) { layout(); syncAll(); } };
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
@@ -1783,7 +1799,6 @@ $('btnZoom').onclick = () => {
   board.scrollLeft = fx * board.scrollWidth - board.clientWidth / 2; board.scrollTop = fy * board.scrollHeight - board.clientHeight / 2;
 };
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
-document.querySelectorAll('input[name=skin]').forEach(r => r.onchange = () => { applySkin(r.value); if (G) { updateUI(); } });
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };

@@ -621,6 +621,83 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
 .up-end.flash { animation: endflash .6s ease-in-out 3; }
 @keyframes endflash { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(194,164,97,.95)) brightness(1.35); } }
+/* ===== Startmenü nach STYLE.md: Schritte Titel → Fraktion → Schlachtfeld → Schlacht. Hintergrund = Titelbild (src/titlebg.js, --sm-bg). ===== */
+.overlay.sm { padding: 0; overflow: hidden; background: var(--s-ink); font: 17px/1.35 var(--s-body); color: var(--s-text); -webkit-user-select: none; user-select: none; }
+.sm-bg { position: absolute; inset: 0; background: var(--sm-bg) center 40% / cover no-repeat, var(--s-bg); transition: filter .35s, transform .35s; }
+.sm-bg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 45%, rgba(18,13,11,.55) 75%, rgba(18,13,11,.92) 100%), linear-gradient(rgba(18,13,11,.35), transparent 22%, transparent 70%, rgba(18,13,11,.75)); }
+.sm:not([data-step="title"]) .sm-bg { filter: blur(6px) brightness(.32) saturate(.8); transform: scale(1.04); }
+.sm-page { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; padding: 28px 40px 24px; }
+.sm[data-step="title"] [data-page="title"], .sm[data-step="opts"] [data-page="opts"], .sm[data-step="side"] [data-page="side"], .sm[data-step="map"] [data-page="map"], .sm[data-step="setup"] [data-page="setup"] { display: flex; }
+.sm-kicker { font: 400 22px var(--s-head); letter-spacing: .22em; text-transform: uppercase; color: var(--s-brass); text-shadow: 0 2px 0 var(--s-ink), 0 0 10px rgba(18,13,11,.9); }
+/* Titelseite */
+.sm-title { justify-content: space-between; }
+.sm-logo { text-align: center; margin-top: 3vh; }
+.sm-h1 { margin: 4px 0 0; font: 400 clamp(84px, 8.4vw, 168px)/1 var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-text);
+  text-shadow: 0 5px 0 var(--s-ink), 3px 3px 0 var(--s-ink), -3px 3px 0 var(--s-ink), 0 0 40px rgba(18,13,11,.95), 0 0 90px rgba(18,13,11,.8); }
+.sm-menu { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 6vh; }
+.sm-note { margin: 0; max-width: 760px; text-align: center; font-size: 16px; color: var(--s-text); opacity: .8; text-shadow: 0 1px 0 var(--s-ink), 0 0 8px var(--s-ink); }
+/* Knöpfe: Messingtafel aus dem Einheiten-Panel */
+.sm-btn { min-width: 340px; height: 76px; padding: 0 36px; border: 0; cursor: pointer; background: var(--up-tafel) center / 100% 100% no-repeat; color: var(--s-text);
+  font: 400 28px var(--s-head); letter-spacing: .1em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); filter: drop-shadow(0 4px 0 rgba(18,13,11,.8)); transition: transform .08s, filter .12s; }
+.sm-btn:hover { filter: drop-shadow(0 4px 0 rgba(18,13,11,.8)) brightness(1.18); }
+.sm-btn:active { transform: translateY(3px); filter: drop-shadow(0 1px 0 rgba(18,13,11,.8)); }
+.sm-btn.main { color: var(--s-brass); }
+.sm-btn.small { min-width: 210px; height: 60px; font-size: 22px; }
+.sm-btn.go { min-width: 420px; height: 88px; font-size: 34px; color: var(--s-brass); filter: drop-shadow(0 4px 0 rgba(18,13,11,.8)) drop-shadow(0 0 14px rgba(194,164,97,.45)); }
+.sm-btn:disabled { opacity: .5; cursor: default; }
+/* Unterseiten: Kopf, Inhalt, Fuß mit Zurück/Weiter */
+.sm-head { text-align: center; margin-bottom: 18px; }
+.sm-h2 { margin: 2px 0 0; font: 400 58px/1.05 var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 4px 0 var(--s-ink), 0 0 24px rgba(18,13,11,.9); }
+.sm-body { flex: 1; min-height: 0; width: 100%; max-width: 1640px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding: 6px 8px; }
+.sm-foot { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1640px; padding-top: 16px; }
+/* Fraktionskarten: Eisenrahmen, Inhalt sauber */
+.sm-facs { display: grid; grid-template-columns: repeat(3, minmax(0, 470px)); gap: 28px; margin: auto 0; padding-top: 20px; }
+.sm-fac { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 6px 8px 10px; cursor: pointer;
+  border: 22px solid transparent; border-image: var(--ui-frame) 40 fill / 22px stretch; transition: transform .12s, filter .12s; }
+.sm-fac input { position: absolute; opacity: 0; pointer-events: none; }
+.sm-fac:hover { filter: brightness(1.1); }
+.sm-fac:has(input:checked) { transform: translateY(-6px); box-shadow: 0 0 0 4px var(--s-brass), 0 0 30px rgba(194,164,97,.5); }
+.sm-fac:has(input:checked)::after { content: "Gewählt"; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); padding: 3px 16px; background: var(--s-brass); color: var(--s-ink); font: 400 17px var(--s-head); letter-spacing: .12em; text-transform: uppercase; border: 2px solid var(--s-ink); }
+.sm-flag { height: 190px; width: auto; filter: drop-shadow(0 5px 0 rgba(18,13,11,.6)); }
+.sm-fac h3 { margin: 12px 0 0; padding-bottom: 8px; font: 400 29px/1.1 var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 2px 0 var(--s-ink); border-bottom: 5px solid var(--fc); }
+.sm-fac.A { --fc: #8E2B22; } .sm-fac.D { --fc: #7D8471; } .sm-fac.F { --fc: #6F8FB5; }
+.sm-fac p { margin: 12px 4px 16px; font-size: 17px; color: var(--s-text); opacity: .9; min-height: 4.1em; }
+.sm-units { display: flex; gap: 12px; margin-top: auto; }
+.sm-units canvas { width: 116px; height: 116px; border: 3px solid var(--s-ink); outline: 2px solid var(--s-rust); }
+/* Kartenwahl: aufgeräumte Kacheln */
+.sm .mappick { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 18px; width: 100%; }
+.sm .mapcard { position: relative; gap: 6px; padding: 4px; border: 14px solid transparent !important; border-image: var(--ui-frame) 40 fill / 14px stretch !important; filter: none; }
+.sm .mapcard:hover { filter: brightness(1.12); }
+.sm .mapcard:has(input:checked) { filter: none; box-shadow: 0 0 0 4px var(--s-brass), 0 0 24px rgba(194,164,97,.45); }
+.sm .mapcard canvas { height: 150px; background: var(--s-ink); border-radius: 0; }
+.sm .mapcard b { font: 400 24px/1.1 var(--s-head); letter-spacing: .04em; text-transform: uppercase; color: var(--s-text); }
+.sm .msize { font-size: 15px; color: var(--s-brass); }
+.sm .mapcard small { font-size: 15px; color: var(--s-text); opacity: .8; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+/* Schlacht-Einstellungen */
+.sm-setup { width: 100%; max-width: 1020px; margin: auto 0; padding: 16px 26px 22px; border: 26px solid transparent; border-image: var(--ui-frame) 40 fill / 26px stretch; }
+.sm-sum { margin: 0 0 6px; text-align: center; font: 400 22px var(--s-head); letter-spacing: .06em; color: var(--s-brass); }
+.sm-lbl { margin: 16px 0 8px; font: 400 18px var(--s-head); letter-spacing: .18em; text-transform: uppercase; color: var(--s-text); opacity: .75; }
+.sm-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sm-pick label { position: relative; display: block; min-height: 64px; padding: 10px 16px; cursor: pointer; background: rgba(18,13,11,.55); border: 3px solid var(--s-rust); }
+.sm-pick label:hover { border-color: #8a6a55; }
+.sm-pick label:has(input:checked) { border-color: var(--s-brass); background: rgba(194,164,97,.16); box-shadow: inset 0 0 0 1px var(--s-ink); }
+.sm-pick input { position: absolute; opacity: 0; pointer-events: none; }
+.sm-pick b { display: block; font: 400 22px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: var(--s-text); }
+.sm-pick label:has(input:checked) b { color: var(--s-brass); }
+.sm-pick small { font-size: 15px; color: var(--s-text); opacity: .8; }
+.sm-army { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.sm-army span { font-size: 16px; opacity: .85; }
+/* Optionen */
+.sm-opts { margin: auto 0; display: grid; gap: 16px; padding: 22px 30px; border: 26px solid transparent; border-image: var(--ui-frame) 40 fill / 26px stretch; }
+.sm-row { display: flex; align-items: center; gap: 14px; }
+.sm-row > span { width: 130px; font: 400 18px var(--s-head); letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+.sm-chip { display: inline-flex; align-items: center; gap: 10px; min-width: 150px; height: 52px; padding: 0 20px; justify-content: center; cursor: pointer; border: 0; background: var(--up-tafel) center / 100% 100% no-repeat; color: var(--s-text); font: 400 19px var(--s-head); letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+.sm-chip input { width: 20px; height: 20px; accent-color: var(--s-brass); }
+.sm-chip.on { color: var(--s-brass); }
+@media (max-width: 1500px) { .sm-flag { height: 150px; } .sm-units canvas { width: 96px; height: 96px; } .sm-h2 { font-size: 48px; } .sm-fac h3 { font-size: 25px; } }
+@media (min-width: 2200px) and (min-height: 1200px) { .sm-facs { grid-template-columns: repeat(3, minmax(0, 640px)); gap: 40px; } .sm-flag { height: 270px; } .sm-fac h3 { font-size: 38px; } .sm-fac p { font-size: 21px; } .sm-units canvas { width: 160px; height: 160px; }
+  .sm .mappick { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; } .sm-body, .sm-foot { max-width: 2200px; } .sm .mapcard canvas { height: 210px; } .sm .mapcard b { font-size: 30px; } .sm .msize, .sm .mapcard small { font-size: 18px; } }
+@media (max-height: 900px) { .sm-flag { height: 130px; } .sm-units canvas { width: 90px; height: 90px; } .sm-head { margin-bottom: 8px; } .sm-page { padding-top: 18px; } }
 </style>
 </head>
 <body>
@@ -669,40 +746,70 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 <div id="toast"></div>
 <div id="banner"></div>
 
-<div class="overlay" id="start" hidden>
-  <div class="sheet">
-    <div class="kicker">Die Schlacht am Grauwall</div>
-    <h1 class="title">Armargeddon</h1>
-    <p class="lead">Drei Jahre Grabenkrieg. Heute soll der Grauwall fallen: mit Landkolossen, Donnerrohren und Gas gegen Draht, Gräben und Maschinengewehre.</p>
-    <div class="factions">
-      <div class="fac A"><img class="facflag" id="facFlagA" alt=""><h3 id="facAName">Konkordat von Valmor</h3><p>Kommt von links. Mehr Truppen, Landkolosse und schwere Haubitzen. Muss durch Niemandsland und Draht zu den Zielfeldern (⚑).</p><div class="row"><canvas id="pA1"></canvas><canvas id="pA2"></canvas><canvas id="pA3"></canvas></div></div>
-      <div class="fac D"><img class="facflag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Kommt von rechts. Zäh in Gräben und Ruinen. Zur Mitte der Schlacht trifft die Reserve mit Sturmbrechern und Brandwerfern ein.</p><div class="row"><canvas id="pD1"></canvas><canvas id="pD2"></canvas><canvas id="pD3"></canvas></div></div>
-    </div>
-    <p class="lbl">Schlachtfeld</p>
-    <div class="mappick" id="mapPick"></div>
-    <p class="lbl">Wer greift an?</p>
-    <div class="modes" style="grid-template-columns:repeat(2,1fr)">
-      <label><input type="radio" name="skin" value="A" checked><b>Konkordat von Valmor</b><small>Khaki, flache Stahlhelme, schwerer Landkoloss.</small></label>
-      <label><input type="radio" name="skin" value="F"><b>Blaue Legion von Arvenne</b><small>Horizontblau, Kammhelme, leichter Landkoloss mit Turm.</small></label>
-    </div>
-    <p class="lbl">Wer führt?</p>
-    <div class="modes">
-      <label><input type="radio" name="mode" value="A" checked><b>Angreifer</b><small>Du greifst an, die KI verteidigt.</small></label>
-      <label><input type="radio" name="mode" value="D"><b>Verteidiger</b><small>Du führst die Aschenwacht, die KI greift an.</small></label>
-      <label><input type="radio" name="mode" value="hot"><b>2 Spieler</b><small>Gegeneinander an einem Gerät.</small></label>
-    </div>
-    <p class="lbl">Kampfmaschinen</p>
-    <div class="modes" style="grid-template-columns:repeat(2,1fr)">
-      <label><input type="radio" name="mechs" value="0" checked><b>Ohne Kampfmaschinen</b><small>Nur Truppen und Gerät wie im Ersten Weltkrieg.</small></label>
-      <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit Kampfmaschinen</b><small>Je Seite mehrere Mechs und ein Trupp in Kampfanzügen. Du holst sie über „Armee zusammenstellen“ oder im Nachschub.</small></label>
-    </div>
-    <p class="lbl">Armee</p>
-    <div class="optrow armyrow"><button class="tbtn" id="btnArmy">Armee zusammenstellen</button><span id="armyInfo">Standardarmee</span></div>
-    <p class="lbl">Einstellungen</p>
-    <div class="optrow armyrow"><button class="tbtn" id="setFull">⛶ Vollbild</button><button class="tbtn" id="setSpeed">Tempo 1×</button><button class="tbtn" id="setZoom">Zoom 1×</button><label><input type="checkbox" id="optBlood" checked> Blut-Effekte</label><label><input type="checkbox" id="optSound" checked> Ton</label></div>
-    <div class="startrow"><button class="endbtn" id="startBtn">Schlacht beginnen</button><button class="tbtn" id="btnRules">Regeln</button><button class="tbtn" id="closeStart" hidden>Zurück</button></div>
-    <p class="note">Die Welt ist erfunden. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918. Tippe im Spiel bei einer Einheit auf „i“, dann steht dort, wie es im echten Krieg war.</p>
-  </div>
+<div class="overlay sm" id="start" hidden data-step="title">
+  <div class="sm-bg" aria-hidden="true"></div>
+  <!-- 1 Startbildschirm -->
+  <section class="sm-page sm-title" data-page="title">
+    <header class="sm-logo"><div class="sm-kicker">Die Schlacht am Grauwall</div><h1 class="sm-h1">Armargeddon</h1></header>
+    <nav class="sm-menu">
+      <button class="sm-btn main" data-go="side">Neue Schlacht</button>
+      <button class="sm-btn" id="btnRules">Regeln</button>
+      <button class="sm-btn" data-go="opts">Optionen</button>
+      <button class="sm-btn" id="closeStart" hidden>Zurück zum Spiel</button>
+    </nav>
+    <p class="sm-note">Eine erfundene Welt. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918.</p>
+  </section>
+  <!-- Optionen -->
+  <section class="sm-page" data-page="opts">
+    <header class="sm-head"><div class="sm-kicker">Einstellungen</div><h2 class="sm-h2">Optionen</h2></header>
+    <div class="sm-body"><div class="sm-opts">
+      <div class="sm-row"><span>Anzeige</span><button class="sm-chip" id="setFull">Vollbild</button><button class="sm-chip" id="setZoom">Zoom 1×</button></div>
+      <div class="sm-row"><span>Tempo</span><button class="sm-chip" id="setSpeed">Tempo 1×</button></div>
+      <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
+    </div></div>
+    <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
+  </section>
+  <!-- 2 Fraktion -->
+  <section class="sm-page" data-page="side">
+    <header class="sm-head"><div class="sm-kicker">Schritt 1 von 3</div><h2 class="sm-h2">Fraktion wählen</h2></header>
+    <div class="sm-body"><div class="sm-facs">
+      <label class="sm-fac A"><input type="radio" name="side" value="A" checked><img class="sm-flag" id="facFlagA" alt=""><h3>Konkordat von Valmor</h3><p>Greift an. Viele Truppen, Landkolosse und schwere Haubitzen. Muss durch Draht und Niemandsland zu den Zielfeldern.</p><div class="sm-units"><canvas data-k="inf" data-s="A" data-sk="A"></canvas><canvas data-k="walker" data-s="A" data-sk="A"></canvas><canvas data-k="art" data-s="A" data-sk="A"></canvas></div></label>
+      <label class="sm-fac F"><input type="radio" name="side" value="F"><img class="sm-flag" id="facFlagF" alt=""><h3>Blaue Legion von Arvenne</h3><p>Greift an, mit denselben Truppen wie das Konkordat. Horizontblau, Kammhelme, leichter Landkoloss mit Turm.</p><div class="sm-units"><canvas data-k="inf" data-s="A" data-sk="F"></canvas><canvas data-k="walker" data-s="A" data-sk="F"></canvas><canvas data-k="art" data-s="A" data-sk="F"></canvas></div></label>
+      <label class="sm-fac D"><input type="radio" name="side" value="D"><img class="sm-flag" id="facFlagD" alt=""><h3>Aschenwacht des Grauwalls</h3><p>Verteidigt. Zäh in Gräben und Ruinen. Zur Mitte der Schlacht kommt die Reserve mit Sturmbrechern und Brandwerfern.</p><div class="sm-units"><canvas data-k="mg" data-s="D"></canvas><canvas data-k="storm" data-s="D"></canvas><canvas data-k="flame" data-s="D"></canvas></div></label>
+    </div></div>
+    <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button><button class="sm-btn small main" data-go="map">Weiter</button></footer>
+  </section>
+  <!-- 3 Schlachtfeld -->
+  <section class="sm-page" data-page="map">
+    <header class="sm-head"><div class="sm-kicker">Schritt 2 von 3</div><h2 class="sm-h2">Schlachtfeld wählen</h2></header>
+    <div class="sm-body"><div class="mappick" id="mapPick"></div></div>
+    <footer class="sm-foot"><button class="sm-btn small" data-go="side">Zurück</button><button class="sm-btn small main" data-go="setup">Weiter</button></footer>
+  </section>
+  <!-- 4 Einstellungen der Schlacht -->
+  <section class="sm-page" data-page="setup">
+    <header class="sm-head"><div class="sm-kicker">Schritt 3 von 3</div><h2 class="sm-h2">Die Schlacht</h2></header>
+    <div class="sm-body"><div class="sm-setup">
+      <p class="sm-sum" id="smSum"></p>
+      <div class="sm-lbl">Gegner</div>
+      <div class="sm-pick">
+        <label><input type="radio" name="opp" value="ai" checked><b>Gegen die KI</b><small>Die KI führt die andere Seite.</small></label>
+        <label><input type="radio" name="opp" value="hot"><b>Zu zweit</b><small>Zwei Spieler an einem Gerät, abwechselnd.</small></label>
+      </div>
+      <div id="smAttRow"><div class="sm-lbl">Angreifer</div>
+      <div class="sm-pick">
+        <label><input type="radio" name="att" value="A" checked><b>Konkordat von Valmor</b><small>Ochsenblut, flache Stahlhelme, schwerer Landkoloss.</small></label>
+        <label><input type="radio" name="att" value="F"><b>Blaue Legion von Arvenne</b><small>Horizontblau, Kammhelme, leichter Landkoloss mit Turm.</small></label>
+      </div></div>
+      <div class="sm-lbl">Kampfmaschinen</div>
+      <div class="sm-pick">
+        <label><input type="radio" name="mechs" value="0" checked><b>Ohne</b><small>Nur Truppen und Gerät wie im Ersten Weltkrieg.</small></label>
+        <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit</b><small>Je Seite Mechs und ein Trupp in Kampfanzügen, über Armee oder Nachschub.</small></label>
+      </div>
+      <div class="sm-lbl">Armee</div>
+      <div class="sm-army"><button class="sm-btn small" id="btnArmy">Armee zusammenstellen</button><span id="armyInfo">Standardarmee</span></div>
+    </div></div>
+    <footer class="sm-foot"><button class="sm-btn small" data-go="map">Zurück</button><button class="sm-btn go" id="startBtn">In die Schlacht</button></footer>
+  </section>
 </div>
 
 <div class="overlay rules" id="rules" hidden>
