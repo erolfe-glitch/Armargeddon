@@ -20,9 +20,9 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-text`      | `#F0EDE1` | Text auf dunklem Grund |
 | `--s-parch`     | `#BBA583` | Pergament (Text darauf: `--s-bg`) |
 | `--s-brass`     | `#C2A461` | Akzent Messing: Auswahl, Fähigkeiten, Hauptknopf |
-| `--s-life`      | `#BF4638` | Leben, Feind |
+| `--s-life`      | `#BF4638` | Leben; Fraktionsfarbe **Konkordat** (Blutrot) |
 | `--s-foe-dark`  | `#713B36` | Feind dunkel |
-| `--s-friend`    | `#7A8F99` | Freund, Feldgrau |
+| `--s-friend`    | `#7A8F99` | Fraktionsfarbe **Aschenwacht** (Feldgrau) |
 | `--s-gas`       | `#8A8A2E` | Gas, Gefahr |
 | `--s-ink`       | `#120D0B` | Comic-Kontur, harte Schatten |
 
@@ -31,17 +31,21 @@ Jede Fraktion hat genau ein Wappen (Quelle `ui-quelle/wappen_*.png`, Teile in `u
 - **Konkordat:** eiserner Löwenkopf im Strahlenkranz, Bronze.
 - **Aschenwacht:** Stahlhelm mit Sehschlitz im Strahlenkranz, Stahlgrau.
 
-Das **Emblem** ist die Marke der Seite: obere Leiste (Seite am Zug, Kampfkraft, Siegpunkte) und Marke am Einheitenbild, leicht aufgehellt (`.crest`).
-- Ab **40 px** das ganze Emblem (`w_emblem`, mit Strahlenkranz).
-- **Unter 40 px** nur der Kern (`w_kern`: Löwenkopf bzw. Helm ohne Strahlenkranz, mit Tintenkontur), damit die Umrisse klar verschieden bleiben. Mindestens 22 px. Erzeugt von `tools/ui_cut.py` (Umriss in `KERN`).
+Das **ganze Emblem** (`w_emblem`, immer mit Strahlenkranz, nie beschnitten) ist die Marke der Seite, leicht aufgehellt (`.crest`). **Weniger, aber groß:**
+- Obere Leiste: je Seite **ein** Medaillon (`.tb-medal`, bei 1920 px 64 px, Handy 40–46 px), darf über den Leistenrand ragen. Links neben dem eigenen Kampfkraft-Balken, rechts neben dem des Gegners; dazu eins bei „Seite am Zug“.
+- Am Einheitenbild im Panel (50 px).
+- Bei Siegpunkten und anderen kleinen Stellen **kein** Emblem, dort zeigt die Farbe die Seite.
 
 Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im Startmenü. Die Flaggen dahinter (Union-Jack-artig beim Konkordat, Schwarz-Weiß-Rot bei der Aschenwacht) sind **gewollt** und bleiben so; die alten echten Nationalflaggen-Bilder sind entfernt.
 
-## Freund und Feind
-Nie nur über Farbe. Die Seite erkennt man am Wappen (Form), dazu die Farbe:
-- **Freund:** Feldgrau (Balken, Zielfeld-Kreise).
-- **Feind:** Blutrot.
-- Ersatzformen, falls ein Wappenbild fehlt: Freund = Schild (oben gerade, unten rund), Feind = Raute mit Zacken.
+## Fraktionsfarben
+Fest je Fraktion, nicht nach Freund/Feind:
+- **Konkordat:** Blutrot `#BF4638` (`--s-life`, `--A`).
+- **Aschenwacht:** Feldgrau `#7A8F99` (`--s-friend`, `--D`).
+
+Gilt für Kampfkraft-Balken, Siegpunkt-Zahlen, Zielfeld-Marken (Leiste und Karte), Ringe unter den Einheiten und Figuren-Akzente (`FIG.PAL.accent`). **Kein Blau im Spiel**, auch nicht für Hilfsmarkierungen (dafür Knochenweiß oder Messing).
+Die Seite erkennt man nie nur an der Farbe: dazu das Wappen bzw. der Name. Ersatzformen, falls ein Wappenbild fehlt: Schild (Konkordat) und Zackenraute (Aschenwacht).
+Die Reihenfolge in der Leiste folgt der Sicht: eigene Seite links, Gegner rechts.
 
 ## Schrift
 - **Headline** (`--s-head`): kantig, gut lesbar – Titel, Knöpfe, Namen. Großbuchstaben mit etwas Sperrung.

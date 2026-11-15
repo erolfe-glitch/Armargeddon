@@ -541,7 +541,7 @@ function drawUnit(u, d) {
     const ca = !u.attacked && !d.vs.broken && u.ap >= 1, pr = Math.max(4, s * 0.15), py = by + bh, ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0);
     g.lineWidth = Math.max(1.5, s * 0.04); g.strokeStyle = O;
     // Aktionspunkte: helle Kugeln links vom Balken (eine je Punkt)
-    for (let i = 0; i < Math.max(P.AP, ap); i++) { g.beginPath(); g.arc(bx - pr * (1.1 + i * 1.9), py, pr * 0.8, 0, 7); g.fillStyle = i < ap ? (i >= P.AP ? '#7fd8ff' : '#ffd24a') : '#2f2e25'; g.fill(); g.stroke(); }
+    for (let i = 0; i < Math.max(P.AP, ap); i++) { g.beginPath(); g.arc(bx - pr * (1.1 + i * 1.9), py, pr * 0.8, 0, 7); g.fillStyle = i < ap ? (i >= P.AP ? '#F0EDE1' : '#ffd24a') : '#2f2e25'; g.fill(); g.stroke(); }
     const rx0 = bx + w + pr * 1.4; g.beginPath(); g.moveTo(rx0, py - pr * 1.1); g.lineTo(rx0 + pr * 1.1, py); g.lineTo(rx0, py + pr * 1.1); g.lineTo(rx0 - pr * 1.1, py); g.closePath(); g.fillStyle = ca ? '#ff5a3c' : '#2f2e25'; g.fill(); g.stroke();
   }
   // Deckungsschild (Wunsch des Nutzers): Bronze = leichte, Silber = gute, Gold = starke Deckung durch das Gelände; Striche 1–3 zusätzlich zur Farbe
@@ -566,14 +566,14 @@ function drawUnit(u, d) {
   else if (d.vs.supp > 0) tag('▼', '#ffe28a', '#5a1408', 'icDanger', 'supp');
   else if (d.vs.stuck > 0) tag('≈', '#d9c49a', '#3a2410', null, 'stuck');
   else if (d.vs.gassed) tag('G', '#e3ec8a', '#1d2408', 'icWarn', 'gas');
-  else if (u.ow) tag('◎', '#cfe9ff', '#0f3550', null, 'aim');
+  else if (u.ow) tag('◎', '#F0EDE1', '#2a211c', null, 'aim');
   else if (TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u)) tag('◌', '#c8d6a8', '#22300f');
   else if (TYPES[u.type].mg && !u.setup && E.active(u)) tag('⤓', '#e9dfc4', '#5a3a10');
   if (TYPES[u.type].relay && E.active(u) && PJI.i_react) {   // Aufklärer: Auge aus dem Symbolbogen
     const cx = x + s * 0.86, cy = y - s * 0.02, im = PJI.i_react, hh = s * 0.24, ww = Math.min(hh * im.naturalWidth / im.naturalHeight, s * 0.34);
-    g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = '#bfe0f2'; g.stroke(); g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore();
+    g.save(); g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = 'rgba(20,16,10,0.72)'; g.fill(); g.lineWidth = Math.max(1.2, s * 0.035); g.strokeStyle = '#F0EDE1'; g.stroke(); g.drawImage(im, cx - ww / 2, cy - hh / 2, ww, hh); g.restore();
   } else if (TYPES[u.type].relay && E.active(u)) { const cx = x + s * 0.86, cy = y - s * 0.02;
- g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#bfe0f2'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
+ g.beginPath(); g.arc(cx, cy, s * 0.2, 0, 7); g.fillStyle = '#F0EDE1'; g.fill(); g.strokeStyle = '#1d140d'; g.lineWidth = Math.max(1.5, s * 0.045); g.stroke(); g.font = `900 ${Math.round(s * 0.24)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#12303f'; g.fillText('◉', cx, cy + 1); }
 }
 
 // ---------- Zeichnen ----------
@@ -602,10 +602,10 @@ function draw() {
       hexPath(g, c, r, 0.92); g.fillStyle = `rgba(235,40,30,${0.36 + 0.1 * Math.sin(now / 260)})`; g.fill(); g.strokeStyle = '#ff5a40'; g.lineWidth = Math.max(2, s * 0.06); g.stroke();
     }
     if (sightSet.size) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (sightSet.has(E.key(c, r))) {
-      hexPath(g, c, r, 0.9); g.fillStyle = E.dist(sel.c, sel.r, c, r) > P.SPOT ? 'rgba(120,200,240,0.30)' : 'rgba(120,200,240,0.13)'; g.fill(); g.strokeStyle = 'rgba(170,225,250,0.55)'; g.lineWidth = Math.max(1, s * 0.03); g.stroke(); }
+      hexPath(g, c, r, 0.9); g.fillStyle = E.dist(sel.c, sel.r, c, r) > P.SPOT ? 'rgba(240,237,225,0.30)' : 'rgba(240,237,225,0.13)'; g.fill(); g.strokeStyle = 'rgba(240,237,225,0.55)'; g.lineWidth = Math.max(1, s * 0.03); g.stroke(); }
     if (scoutSet.size) { g.font = `900 ${Math.round(s * 0.34)}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (scoutSet.has(E.key(c, r))) { const [hx, hy] = center(c, r); g.lineWidth = Math.max(2, s * 0.08); g.strokeStyle = O; g.strokeText('◉', hx, hy); g.fillStyle = '#bfe0f2'; g.fillText('◉', hx, hy); } }
-    for (const id of sendSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(120,200,255,0.30)'; g.fill(); g.strokeStyle = '#7fd8ff'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
+      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (scoutSet.has(E.key(c, r))) { const [hx, hy] = center(c, r); g.lineWidth = Math.max(2, s * 0.08); g.strokeStyle = O; g.strokeText('◉', hx, hy); g.fillStyle = '#F0EDE1'; g.fillText('◉', hx, hy); } }
+    for (const id of sendSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(194,164,97,0.30)'; g.fill(); g.strokeStyle = '#F0EDE1'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
     for (const id of recSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(255,200,90,0.3)'; g.fill(); g.strokeStyle = '#ffcf6a'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); }
     for (const id of healSet) { const hu = unitById(id); hexPath(g, hu.c, hu.r, 0.92); g.fillStyle = 'rgba(110,220,180,0.34)'; g.fill(); g.strokeStyle = '#8fe0c8'; g.lineWidth = Math.max(2, s * 0.06); g.stroke(); if (PJI.cross) { const [cx, cy] = center(hu.c, hu.r), hh = s * 0.5; g.globalAlpha = 0.75 + 0.25 * Math.sin(now / 200); g.drawImage(PJI.cross, cx - hh / 2, cy - s * 1.25, hh, hh * PJI.cross.naturalHeight / PJI.cross.naturalWidth); g.globalAlpha = 1; } }
     for (const [, t] of targets) {
@@ -886,7 +886,7 @@ async function playEvent(e) {
       shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       await wait(dur * 16.667);
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
-      if (e.guided) floater(x2, y2 - s * 1.5, '◉ gelenkt ×1,25', '#bfe0f2', false, true);
+      if (e.guided) floater(x2, y2 - s * 1.5, '◉ gelenkt ×1,25', '#F0EDE1', false, true);
       playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[unitById(e.a).type].mobile ? 'boom' : 'boomH', 0.7);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
       else if (e.mode === 'gas') { boom(x2, y2, s * 1.0, 'gas'); visSync('clouds'); }   // Wolke erst beim Einschlag
@@ -957,7 +957,7 @@ async function playEvent(e) {
     }
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
-    case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+1 Aktion', '#7fd8ff', true); await wait(300); break; }
+    case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+1 Aktion', '#F0EDE1', true); await wait(300); break; }
     case 'order': {
       const d0 = DU.get(e.u), rl = e.kind === 'rally'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.75);   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
       toast(`${e.name}: ${rl ? 'Sammeln!' : 'Sturmbefehl!'}`); floater(...headPos(e.u), rl ? 'Sammeln!' : 'Vorwärts!', rl ? '#b8ff7c' : '#ffb04a', true);
@@ -986,11 +986,11 @@ async function playEvent(e) {
     case 'clear': { visSync('clouds'); playSound('flame', 0.35); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
     case 'ammo': { playSound('clank', 0.5); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
-    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#ff8a7a' : '#8fc4ff', true); } await wait(350); updateUI(); break; }
+    case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, e.side === 'A' ? '#BF4638' : '#7A8F99', true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
     case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
-    case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#9fd8ff', true); await wait(220); break;
+    case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); break;
     case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
@@ -1194,23 +1194,23 @@ function banner(title, sub) {
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
 }
 function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau, Feind = Zackenstern/Blutrot (Sicht der Seite am Zug bzw. des Spielers)
-  const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode), ff = sd => sd === mine ? 'fr' : 'fo', mk = crest;
+  const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode), ff = sd => sd === mine ? 'fr' : 'fo';
   $('turn').textContent = `Runde ${G.turn}`;
   const ch = $('sidechip'); ch.className = 'tb-plate tb-side ' + ff(G.side);
-  ch.innerHTML = `<i class="tb-mark">${mk(G.side)}</i><b>${SIDES[G.side].short}</b>${human(G.side) ? '' : '<small>KI</small>'}`;
+  ch.innerHTML = `<i class="tb-medal">${crest(G.side)}</i><b>${SIDES[G.side].short}</b>${human(G.side) ? '' : '<small>KI</small>'}`;
   ch.dataset.tip = `Am Zug: ${SIDES[G.side].name || SIDES[G.side].short}${human(G.side) ? '' : ' (Computer)'}`;
   $('windArrow').style.transform = `rotate(${WIND_DEG[G.wind]}deg)`;
   for (const sd of ['A', 'D']) {
     const v = Math.max(0, 1 - E.losses(G, sd)), el = $('meter' + sd), pc = Math.round(v * 100);
-    el.className = 'tb-meter ' + ff(sd);
+    el.className = 'tb-meter ' + ff(sd) + ' ' + sd;   // Platz nach Sicht (eigener links), Farbe fest je Fraktion
     el.style.setProperty('--v', Math.max(0.001, v)); el.style.setProperty('--brk', 1 - P.BREAK[sd]);
-    el.querySelector('.tb-mark').innerHTML = mk(sd);
+    el.querySelector('.tb-medal').innerHTML = crest(sd);
     el.querySelector('.val').textContent = pc + ' %';
     el.dataset.tip = `Kampfkraft ${SIDES[sd].short}: ${pc} %. Messingstrich: darunter bricht das Heer zusammen.`;
   }
-  const own = c => c === 'A' || c === 'D' ? ff(c) : '';
+  const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
-  $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><i class="tb-mark">${mk(mine)}</i>${G.vp[mine]}<i class="sep">:</i>${G.vp[foe]}<i class="tb-mark">${mk(foe)}</i><small>/ ${G.goal}</small>`
+  $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
     + `<span class="tb-dots">${OBJECTIVES.map(o => `<span class="tb-obj ${own(G.ctrl[o.id])}">${o.pts}</span>`).join('')}</span></span>`;
 }
 // Knöpfe der oberen Leiste: flache Symbole in Knochenweiß, Werte als kleine Marke
@@ -1266,7 +1266,7 @@ function drawPortrait(canvas, kind, side) {
   canvas.width = cw * dpr; canvas.height = chh * dpr;
   const g = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
   const gr = g.createRadialGradient(W / 2, H * 0.55, W * 0.1, W / 2, H * 0.55, W * 0.75);
-  gr.addColorStop(0, side === 'A' ? '#8a7a45' : '#5c6f82'); gr.addColorStop(1, '#22231c');
+  gr.addColorStop(0, side === 'A' ? '#8a7a45' : '#5f6b70'); gr.addColorStop(1, '#22231c');
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   g.fillStyle = 'rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(W / 2, H * 0.88, W * 0.36, H * 0.07, 0, 0, 7); g.fill();
   const t0 = FIG.sprite(kind, side, 0, 100);
@@ -1285,8 +1285,7 @@ const UP_MARK = {   // Ersatz, falls die Wappenbilder fehlen: Freund = Schild (F
   foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
 };
 // Fraktionswappen (ui-quelle/wappen_*): Konkordat = eiserner Löwenkopf, Aschenwacht = Stahlhelm. Emblem allein als Marke, mit Flagge auf Zielfeldern.
-// Unter 40 px zeigt CSS nur den Kern (.k: Kopf/Helm ohne Strahlenkranz), darüber das ganze Emblem (.f).
-const crest = sd => UP['w' + sd] ? `<img class="crest k" src="${UP['k' + sd] || UP['w' + sd]}" alt="${SIDES[sd].short}"><img class="crest f" src="${UP['w' + sd]}" alt="">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
+const crest = sd => UP['w' + sd] ? `<img class="crest" src="${UP['w' + sd]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
 const CFLAG = {};
 for (const sd of ['A', 'D']) if (UP['f' + sd]) { const im = new Image(); im.src = UP['f' + sd]; CFLAG[sd] = im; }
 const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
@@ -1514,7 +1513,7 @@ function drawMapPreview(cvs, id) {
     if (M[c][r].ridge) { g2.fillStyle = 'rgba(255,226,160,0.18)'; g2.fill(); }
     if (c <= m.zoneA) { g2.fillStyle = 'rgba(201,74,61,0.22)'; g2.fill(); }
   }
-  for (const o of m.objectives) { const [x, y] = hp(o.c, o.r); g2.beginPath(); g2.arc(x, y, Math.max(5, s2 * 0.95), 0, 7); g2.fillStyle = '#5a9fd8'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#0a0706'; g2.stroke();
+  for (const o of m.objectives) { const [x, y] = hp(o.c, o.r); g2.beginPath(); g2.arc(x, y, Math.max(5, s2 * 0.95), 0, 7); g2.fillStyle = '#C2A461'; g2.fill(); g2.lineWidth = 1.5; g2.strokeStyle = '#0a0706'; g2.stroke();
     g2.fillStyle = '#fff'; g2.font = `800 ${Math.max(8, Math.round(s2 * 1.3))}px system-ui`; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillText(o.pts, x, y + 0.5); }
 }
 // Hintergrund hinter dem Startmenü zeigt die gewählte Karte

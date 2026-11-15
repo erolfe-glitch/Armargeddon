@@ -177,36 +177,5 @@ def overview(index):
     sheet.convert('RGB').save(OUT / 'uebersicht.png')
 
 
-# Kern der Fraktionsembleme (Kopf bzw. Helm ohne Strahlenkranz) für kleine Marken unter ca. 40 px.
-# Umriss von Hand als Vieleck in Pixeln von w_emblem; Schnittkante bekommt eine Tintenkontur.
-KERN = {
-    'wappen_konkordat': [(126, 150), (133, 116), (166, 116), (192, 143), (232, 134), (274, 143), (300, 116), (332, 116),
-                         (340, 150), (326, 200), (330, 250), (325, 300), (310, 345), (290, 376), (255, 396), (232, 399),
-                         (206, 396), (170, 376), (150, 345), (140, 300), (135, 250), (140, 200)],
-    'wappen_aschenwacht': [(233, 44), (246, 94), (276, 104), (306, 124), (318, 160), (326, 200), (328, 260), (325, 300),
-                           (300, 340), (266, 375), (233, 396), (200, 375), (165, 340), (140, 300), (137, 260), (140, 200),
-                           (148, 160), (161, 124), (191, 104), (221, 94)],
-}
-
-
-def make_kern():
-    from PIL import ImageDraw, ImageFilter
-    for sheet, poly in KERN.items():
-        src = Image.open(OUT / sheet / 'w_emblem.png').convert('RGBA')
-        k = 4
-        big = Image.new('L', (src.width * k, src.height * k), 0)
-        ImageDraw.Draw(big).polygon([(x * k, y * k) for x, y in poly], fill=255)
-        mask = big.resize(src.size, Image.LANCZOS)
-        a = np.minimum(np.asarray(src)[..., 3], np.asarray(mask))
-        core = np.asarray(src).copy(); core[..., 3] = a
-        ring = np.asarray(Image.fromarray(a).filter(ImageFilter.MaxFilter(9)))   # Tintenkontur ca. 4 px
-        out = np.zeros_like(core); out[..., :3] = (18, 13, 11); out[..., 3] = ring
-        o = Image.fromarray(out); o.alpha_composite(Image.fromarray(core))
-        o = o.crop(o.getbbox())
-        o.save(OUT / sheet / 'w_kern.png', optimize=True)
-        print(f'{sheet}/w_kern: {o.width}x{o.height}')
-
-
 if __name__ == '__main__':
     main()
-    make_kern()
