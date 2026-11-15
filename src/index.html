@@ -9,7 +9,7 @@
 /* Spiel-HUD: Schlachtfeld füllt den Bildschirm, oben eine schmale Statusleiste, unten die Einheitenkarte. */
 :root {
   --ink: #12130f; --panel: #23241d; --panel-2: #2e3027; --edge: #4a4c3c; --edge-d: #0b0c08;
-  --text: #f0e9d6; --muted: #a9a48e; --A: #BF4638; --D: #7D8471; --gold: #e5b23a; --bad: #e2553c; --go: #d9722c;
+  --text: #f0e9d6; --muted: #a9a48e; --A: #8E2B22; --D: #7D8471; --gold: #e5b23a; --bad: #e2553c; --go: #d9722c;
   --display: "Arm Kopf", "Palatino Linotype", Georgia, serif;
   --body: "Arm Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
@@ -17,7 +17,7 @@
 /* ---- STYLE.md – Palette (zentral; jede UI-Änderung nutzt diese Werte) ---- */
 :root {
   --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
-  --s-brass: #C2A461; --s-life: #BF4638; --s-foe-dark: #713B36; --s-friend: #7D8471; --s-friend-hi: #A0AC88; --s-legion: #6F8FB5; --s-gas: #8A8A2E; --s-ink: #120D0B;
+  --s-brass: #C2A461; --s-life: #8E2B22; --s-foe-dark: #713B36; --s-friend: #7D8471; --s-friend-hi: #A0AC88; --s-legion: #6F8FB5; --s-gas: #8A8A2E; --s-ink: #120D0B;
   --s-head: "Arm Kopf", "Palatino Linotype", Georgia, serif;   /* IM Fell English SC, Ziffern aus Alegreya Sans (tools/fonts.py) */
   --s-body: "Arm Text", "Segoe UI", system-ui, sans-serif;   /* Alegreya Sans */
   --s-min: 14px;
@@ -171,7 +171,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 /* ---- Grimdark-Anstrich: Rost, Eisen, Pergament. Nur Farben und Flächen, Maße bleiben. ---- */
 :root {
   --ink: #0f0c0a; --panel: #241c17; --panel-2: #33271f; --edge: #6a4a35; --edge-d: #0a0706;
-  --text: #ecdfc2; --muted: #a8977c; --A: #BF4638; --D: #7D8471; --gold: #d8a63c; --bad: #d8472e; --go: #a8351f;
+  --text: #ecdfc2; --muted: #a8977c; --A: #8E2B22; --D: #7D8471; --gold: #d8a63c; --bad: #d8472e; --go: #a8351f;
   --serif: "Arm Kopf", "Palatino Linotype", Georgia, serif;
   --iron: linear-gradient(#3a2e27, #1c1512);
   --rivets: radial-gradient(circle at 6px 6px, #8a6a52 0 1.6px, #120d0a 1.7px 3px, transparent 3.2px);
@@ -609,6 +609,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 #hud .up-name { padding-top: .2em; margin-top: -.2em; }   /* Platz für Umlautpunkte, sonst schneidet overflow sie ab */
 #hud .up-name.two { white-space: normal; text-overflow: clip; font-size: 16px; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 #hud .up-sub .up-orden { height: 18px; width: auto; vertical-align: -3px; margin-right: 3px; }
+/* Seitenname im Panel: Knochenweiß, Fraktionsfarbe als Strich darunter (Ochsenblut ist als Schrift auf Dunkel zu schwach) */
+#hud .up-sub i.A, #hud .up-sub i.D { color: var(--s-text); border-bottom: 3px solid; border-bottom-color: var(--A); padding-bottom: 1px; } #hud .up-sub i.D { border-bottom-color: var(--D); }
 </style>
 </head>
 <body>

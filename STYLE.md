@@ -25,7 +25,7 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-text`      | `#F0EDE1` | Text auf dunklem Grund |
 | `--s-parch`     | `#BBA583` | Pergament (Text darauf: `--s-bg`) |
 | `--s-brass`     | `#C2A461` | Akzent Messing: Auswahl, Fähigkeiten, Hauptknopf |
-| `--s-life`      | `#BF4638` | Leben; Fraktionsfarbe **Konkordat** (Blutrot) |
+| `--s-life`      | `#8E2B22` | Leben; Fraktionsfarbe **Konkordat** (Ochsenblut, wie die Konkordat-Wappenflagge) |
 | `--s-foe-dark`  | `#713B36` | Feind dunkel |
 | `--s-friend`    | `#7D8471` | Fraktionsfarbe **Aschenwacht** (Feldgrau grünlich) |
 | `--s-friend-hi` | `#A0AC88` | Feldgrau aufgehellt, nur Füllung des Kampfkraft-Balkens der Aschenwacht |
@@ -48,7 +48,7 @@ Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im S
 
 ## Fraktionsfarben
 Fest je Fraktion, nicht nach Freund/Feind. Alle drei klar verschieden:
-- **Konkordat:** Blutrot `#BF4638`.
+- **Konkordat:** Ochsenblut `#8E2B22` (tief, nicht orange). Auf dunklem Grund trägt die Tintenkontur bzw. ein helles Glanzlicht die Farbe, nie ein helleres Orange-Rot. Als Schrift zu dunkel: Seitennamen in Knochenweiß mit Farbstrich darunter.
 - **Aschenwacht:** Feldgrau grünlich `#7D8471`.
 - **Blaue Legion:** Horizontblau `#6F8FB5` – die **einzige erlaubte Blau-Farbe** im Spiel.
 
@@ -74,3 +74,8 @@ Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `to
 - Symbol-Knöpfe: Rostknopf aus Bogen 2, Symbol aus `bogen3b_symbole`. Symbol mit dünner Kontur (1 px) in Knochenweiß `#F0EDE1`, Knopffläche dahinter leicht abgedunkelt. Tooltip als Pergamentzettel mit Name, Kosten (nur Zahl), Kurztext.
 - Zustände: gewählt = Messingrand (Knopf „gewählt“); gesperrt = Knopf „gesperrt“, Symbol grau und gedimmt, **ohne** helle Kontur, dazu große Zahl (Abklingzeit).
 - Leistensymbole (Lupe, Lautsprecher, Vorspulen, Vollbild): einfache flache Zeichen in Knochenweiß `#F0EDE1`, kein gemalter Bogen.
+
+## Kartenmarken an den Einheiten
+- Eine kompakte Zeile an den Füßen der eigenen Figuren, ganz im eigenen Feld: links **ein** Zustandsplatz (wichtigstes Symbol, „+n“), Mitte Pinsel-Lebensbalken in Fraktionsfarbe mit kleinen Messingmünzen darunter (Aktionspunkte, nur eigene Einheiten), rechts kleines Deckungsschild (Bronze/Silber/Gold aus `kartenmarken.png`). Anführer: Orden rechts neben der Figur.
+- Marken werden in Tiefenreihenfolge mit der eigenen Figur gezeichnet: Figuren davor dürfen sie verdecken, sie malen **nie** über fremde Figuren.
+- Ringe: gemalter Pinselstrich in gedämpfter Fraktionsfarbe, Auswahl Messing. Jede Marke hat einen Pergament-Tooltip (Maus und Touch).

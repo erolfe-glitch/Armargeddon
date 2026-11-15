@@ -18,7 +18,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 ## Designvorgaben (Wünsche des Nutzers)
 - Oberfläche klar halten, „nicht zu doll“; wenig Text; PC und Digitalboards ab 1280 px, kein Handy.
 - Oberfläche komplett aus dem UI-Bogen des Nutzers (uiart.js): Eisenrahmen, Pergament, Holzleisten, Stacheldraht, Rohrbalken; Text kommt aus dem HTML, nicht aus den Bildern.
-- Seitenfarben: Konkordat Karminrot (#c94a3d), Aschenwacht Blau. Serifenschrift für Titel, Runde, Hauptknopf.
+- Seitenfarben: Konkordat Ochsenblut (#8E2B22), Aschenwacht Feldgrau (#7D8471), Blaue Legion Horizontblau (siehe STYLE.md). Serifenschrift für Titel, Runde, Hauptknopf.
 - Menüs und Schrift groß genug; Fähigkeiten als goldene Schlagworte sichtbar; „i Info“-Knopf; Nachschub-Knopf golden.
 - Weniger Felder, etwas größere Figuren; Gerät und Pferde größer im Verhältnis zu Soldaten. Figuren dürfen Nachbarfelder nicht verdecken.
 - Zustandsmarken klein links am Standring als Symbole (nur Zustände: niedergehalten, flieht, gebrochen, aufgeprotzt, festgefahren, Gas, feuerbereit); Aufklärer rechts mit Auge. Aktionsmeldungen bleiben kurzer Text.

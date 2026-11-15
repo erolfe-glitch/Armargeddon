@@ -567,7 +567,7 @@ function drawUnit(u, d) {
     g.globalAlpha = A0 * (0.85 + 0.15 * pz); drawRing(g, '#C2A461', x, y, s * (0.7 + 0.02 * pz), true); g.globalAlpha = A0;
   } else if (hoverU === u) { g.beginPath(); g.ellipse(x, y, s * 0.76, s * 0.76 * K, 0, 0, 7); g.strokeStyle = 'rgba(240,237,225,0.5)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); }
   if (previewT && previewT.id === u.id) {   // Angriffsziel in der Vorschau
-    g.beginPath(); g.ellipse(x, y, s * 0.78, s * 0.78 * K, 0, 0, 7); g.strokeStyle = '#BF4638'; g.lineWidth = Math.max(2.5, s * 0.06);
+    g.beginPath(); g.ellipse(x, y, s * 0.78, s * 0.78 * K, 0, 0, 7); g.strokeStyle = '#8E2B22'; g.lineWidth = Math.max(2.5, s * 0.06);
     g.globalAlpha = A0 * (0.6 + 0.4 * Math.sin(now / 160)); g.stroke(); g.globalAlpha = A0;
   }
   // Figuren
@@ -594,12 +594,12 @@ function drawUnit(u, d) {
   }
   g.filter = 'none'; g.globalAlpha = 1;
   if (!E.alive(u)) return;
-  MARKQ.push(() => drawMarks(u, d, x, y, own, done, acc));   // Marken erst nach allen Figuren: keine Figur verdeckt sie
+  drawMarks(u, d, x, y, own, done, acc);   // Marken gleich nach der eigenen Figur (Tiefenreihenfolge): Figuren davor dürfen sie verdecken, sie malen nie über fremde
 }
 function drawMarks(u, d, x, y, own, done, acc) {
   const g = ctx, s = L.s;
   // Markenzeile unter der Figur: [Zustand] [Lebensbalken, darunter Aktionspunkte] [Deckung]
-  const bw = s * 0.74, bh = Math.max(5, s * 0.1), bx = x - bw / 2, by = y + s * K * 0.62, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
+  const bw = s * 0.5, bh = Math.max(3.5, s * 0.065), bx = x - bw / 2, by = y + s * K * 0.3, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
   g.globalAlpha = done ? 0.7 : 1;
   // Pinsel-Lebensbalken wie die Kampfkraft-Balken oben: dunkle Pinselform als Grund, Füllung in Fraktionsfarbe, Segmentstriche
   drawBrushBar(g, '#221B18', bx, by, bw, bh);
@@ -607,14 +607,14 @@ function drawMarks(u, d, x, y, own, done, acc) {
   g.fillStyle = 'rgba(18,13,11,0.7)'; for (let i = 1; i < 10 * q - 0.2; i++) g.fillRect(Math.round(bx + bw * i / 10), by + bh * 0.15, 1, bh * 0.7);
   MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: by + bh + 4, u, kind: 'hp' });
   if (own) {   // Aktionspunkte: kleine Messingpunkte (leer = dunkel)
-    const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0), nn = Math.max(P.AP, ap), r = Math.max(4, s * 0.075), py = by + bh + r + 1;
-    for (let i = 0; i < nn; i++) { const cx = x + (i - (nn - 1) / 2) * r * 2.3, im = UPI[i < ap ? 'muenze' : 'muenzeLeer'];   // volle / leere Messingmünze
+    const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0), nn = Math.max(P.AP, ap), r = Math.max(2.5, s * 0.042), py = by + bh + r + 1.5;
+    for (let i = 0; i < nn; i++) { const cx = x + (i - (nn - 1) / 2) * r * 2.4, im = UPI[i < ap ? 'muenze' : 'muenzeLeer'];   // volle / leere Messingmünze
       if (im) g.drawImage(im, cx - r, py - r, r * 2, r * 2); else { g.beginPath(); g.arc(cx, py, r, 0, 7); g.fillStyle = i < ap ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, r * 0.3); g.strokeStyle = '#120D0B'; g.stroke(); } }
     MARKS.push({ x0: x - nn * r * 1.25, y0: py - r - 1, x1: x + nn * r * 1.25, y1: py + r + 2, u, kind: 'ap' });
   }
   // Deckungsschild rechts (nur wenn die Einheit auf ihrem Feld steht, nicht während einer Bewegung)
   if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u);
-    if (cv0.tier) { const sh = s * 0.28, cx = bx + bw + s * 0.17; drawShield(g, cx, mid, sh, cv0.tier); MARKS.push({ x0: cx - sh * 0.45, y0: mid - sh / 2, x1: cx + sh * 0.45, y1: mid + sh / 2, u, kind: 'cover' }); } } }
+    if (cv0.tier) { const sh = Math.max(9, s * 0.15), cx = bx + bw + sh * 0.55; drawShield(g, cx, mid, sh, cv0.tier); MARKS.push({ x0: cx - sh * 0.45, y0: mid - sh / 2, x1: cx + sh * 0.45, y1: mid + sh / 2, u, kind: 'cover' }); } } }
   // Anführer-Orden rechts neben der Figur, im eigenen Feld; abgedunkelt, solange kein Befehl möglich ist
   if (u.officer && E.active(u)) { const oi = UPI.orden, oh = s * 0.4, ox = x + s * 0.5, oy = y - s * K * 0.3, ready = orderReady(u);
     if (oi) { const ow = oh * oi.naturalWidth / oi.naturalHeight; if (!ready) g.filter = 'grayscale(0.7) brightness(0.45)'; g.drawImage(oi, ox - ow / 2, oy - oh / 2, ow, oh); g.filter = 'none'; }
@@ -623,7 +623,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
   // Ein Zustandsplatz links: wichtigster Zustand, „+n“ bei mehreren
   const sts = statesOf(u, d);
   if (sts.length) {
-    const R = s * 0.17, cx = bx - s * 0.2;
+    const R = Math.max(7, s * 0.13), cx = bx - R - 2;
     drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R);
     if (sts.length > 1) { const t = '+' + (sts.length - 1), tx = cx + R * 0.85, ty = mid - R * 0.95; g.font = `700 ${Math.round(Math.max(13, s * 0.2))}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, tx, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, tx, ty); }
@@ -636,7 +636,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
 // STEP = vergangene Zeit in 60-Hz-Bildern (gleich schnell bei 30, 60 oder 144 Hz); FS = dazu das Spieltempo, passend zu wait()
 let lastT = 0, STEP = 1, FS = 1;
 // Hilfsmarkierung auf einem Feld: Fläche und Rand in einem Palettenton, wahlweise gestrichelt oder schraffiert, Symbol oben im Feld
-const BONE = '240,237,225', BRASS = '194,164,97', PARCH = '187,165,131', LIFE = '191,70,56';
+const BONE = '240,237,225', BRASS = '194,164,97', PARCH = '187,165,131', LIFE = '142,43,34';
 function hexMark(c, r, o) {
   const g = ctx, s = L.s, pz = 0.5 + 0.5 * Math.sin(now / 320);
   hexPath(g, c, r, 0.9); g.fillStyle = `rgba(${o.rgb},${(o.fill ?? 0.14) + 0.05 * pz})`; g.fill();
@@ -662,10 +662,10 @@ function draw() {
   if (sel && human(G.side) && !busy) {
     // Bewegungsfelder dezent (Wunsch des Nutzers): halbdurchsichtige Fläche, Gelände bleibt sichtbar. Ziehen = Knochenweiß, Marsch/Rückzug = Messing.
     for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); const far = n.march || n.retreat; g.fillStyle = far ? 'rgba(194,164,97,0.11)' : 'rgba(240,237,225,0.13)'; g.fill(); g.strokeStyle = far ? 'rgba(194,164,97,0.45)' : 'rgba(240,237,225,0.4)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke();
-      if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(191,70,56,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); } }
+      if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(142,43,34,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); } }
     if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
       g.font = `900 ${Math.round(s * 0.55)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
-    for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(191,70,56,0.06)'; g.fill(); g.strokeStyle = 'rgba(191,70,56,0.2)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
+    for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(142,43,34,0.06)'; g.fill(); g.strokeStyle = 'rgba(142,43,34,0.2)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
     // Hilfsmarkierungen nach STYLE.md: gedämpfte Palettentöne, unterscheidbar über Muster und Symbol (Wunsch des Nutzers)
     { const sym = sel && TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')];
       const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]);
@@ -1404,12 +1404,12 @@ for (const k in UP) document.documentElement.style.setProperty('--up-' + k, `url
 const upSym = k => UP['s_' + k] || '';
 const UP_MARK = {   // Ersatz, falls die Wappenbilder fehlen: Freund = Schild (Feldgrau), Feind = Zackenraute (Rot)
   friend: '<svg viewBox="0 0 40 44"><path d="M4 4h32v16c0 11-7 18-16 21C11 38 4 31 4 20z" fill="#7A8F99" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M12 13h16M12 20h16" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>',
-  foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#BF4638" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
+  foe: '<svg viewBox="0 0 40 44"><path d="M20 2l5 9 9-3-3 10 7 4-7 4 3 10-9-3-5 9-5-9-9 3 3-10-7-4 7-4-3-10 9 3z" fill="#8E2B22" stroke="#120D0B" stroke-width="3" stroke-linejoin="round"/><path d="M14 16l12 12M26 16 14 28" stroke="#120D0B" stroke-width="3" stroke-linecap="round"/></svg>'
 };
 // Fraktionswappen (ui-quelle/wappen_*): Konkordat = eiserner Löwenkopf, Aschenwacht = Stahlhelm. Emblem allein als Marke, mit Flagge auf Zielfeldern.
 // Fraktion je Seite: A = Konkordat oder Blaue Legion (Bilderset F), D = Aschenwacht. Wappen und Farbe hängen an der Fraktion.
 const fac = sd => sd === 'D' ? 'D' : skinA === 'F' ? 'F' : 'A';
-const FCOL = { A: '#BF4638', D: '#7D8471', F: '#6F8FB5' };   // Blutrot, Feldgrau grünlich, Horizontblau (STYLE.md)
+const FCOL = { A: '#8E2B22', D: '#7D8471', F: '#6F8FB5' };   // Blutrot, Feldgrau grünlich, Horizontblau (STYLE.md)
 const sideCol = sd => FCOL[fac(sd)];
 const crest = sd => UP['w' + fac(sd)] ? `<img class="crest" src="${UP['w' + fac(sd)]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
 const CFLAG = {};

@@ -8,7 +8,7 @@ const OUT = '#0e0d09';
 const PAL = {
   A: { coat: '#5f5a3c', coatD: '#454128', coatL: '#7a744e', helm: '#4a4d30', helmL: '#676a45', mask: '#2c2a20', lens: '#a8f070',
        pack: '#5e4830', boot: '#211c15', steel: '#7c8078', steelD: '#4e524c', wood: '#5f4229', armor: '#565a40', armorD: '#3b3e2b',
-       armorL: '#74785a', accent: '#BF4638', horse: '#4a3a2b', horseD: '#32271c', cloth: '#b9b29a', skin: '#c9a27e' },
+       armorL: '#74785a', accent: '#8E2B22', horse: '#4a3a2b', horseD: '#32271c', cloth: '#b9b29a', skin: '#c9a27e' },
   D: { coat: '#4c5158', coatD: '#373b41', coatL: '#676d75', helm: '#32363b', helmL: '#4f555c', mask: '#1f2124', lens: '#ff4a36',
        pack: '#3f382f', boot: '#17181a', steel: '#868c92', steelD: '#555a60', wood: '#48392a', armor: '#41464d', armorD: '#2c3036',
        armorL: '#5f656e', accent: '#7D8471', horse: '#33353a', horseD: '#222327', cloth: '#aeb2b6', skin: '#c9a27e' }
