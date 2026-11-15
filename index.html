@@ -24,7 +24,7 @@
 :root {
   --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
   --s-brass: #C2A461; --s-life: #8E2B22; --s-foe-dark: #713B36; --s-friend: #7D8471; --s-friend-hi: #A0AC88; --s-legion: #6F8FB5; --s-gas: #8A8A2E; --s-ink: #120D0B;
-  --s-moss: #6B7A3A; --s-ochre: #B08A2E;   /* Lebensbalken: über 60 % Moos, 30–60 % Ocker, darunter --s-life */
+  --s-moss: #6B7A3A; --s-ochre: #B08A2E; --s-range: #A8473A;   /* Lebensbalken: über 60 % Moos, 30–60 % Ocker, darunter --s-life */
   --s-head: "Arm Kopf", "Palatino Linotype", Georgia, serif;   /* IM Fell English SC, Ziffern aus Alegreya Sans (tools/fonts.py) */
   --s-body: "Arm Text", "Segoe UI", system-ui, sans-serif;   /* Alegreya Sans */
   --s-min: 14px;
@@ -794,6 +794,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
       <div class="sm-row"><span>Anzeige</span><button class="sm-chip" id="setFull">Vollbild</button><button class="sm-chip" id="setZoom">Zoom 1×</button></div>
       <div class="sm-row"><span>Tempo</span><button class="sm-chip" id="setSpeed">Tempo 1×</button></div>
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
+      <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
@@ -3511,6 +3512,10 @@ let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
 let recSet = new Set(), abilSet = new Set(), abilMode = false;
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
+// Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
+let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
+const OPT = { ready: true, strag: true };
+try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); if (typeof o.ready === 'boolean') OPT.ready = o.ready; if (typeof o.strag === 'boolean') OPT.strag = o.strag; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
 let skinA = 'A';
@@ -4045,6 +4050,20 @@ function drawShield(g, cx, cy, h, tier) {
   g.fillStyle = gr; g.fill(); g.lineWidth = Math.max(1.5, h * 0.1); g.strokeStyle = '#120D0B'; g.stroke();
   g.restore();
 }
+const RANGE_COL = '#A8473A';   // STYLE.md --s-range: Kontur der Schussreichweite, Bedrohung
+// Nachzügler-Winkel: Messing, Tintenkontur, zeigt nach unten auf die Figur
+function chevron(x, y, w) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x - w, y - w * 0.6); g.lineTo(x, y + w * 0.25); g.lineTo(x + w, y - w * 0.6); g.lineTo(x + w, y - w * 0.05); g.lineTo(x, y + w * 0.8); g.lineTo(x - w, y - w * 0.05); g.closePath();
+  g.fillStyle = '#C2A461'; g.fill(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, w * 0.18); g.strokeStyle = '#120D0B'; g.stroke(); g.restore(); }
+// Zielmarke: vier Messing-Eckklammern mit Tintenschatten
+function brackets(cx, cy, R, col) { const g = ctx, ry = R * K * 1.2, ln = R * 0.4, lw = Math.max(2, L.s * 0.035);
+  const seg = () => { for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { g.beginPath(); g.moveTo(cx + sx * R, cy + sy * ry - sy * ln * 0.8); g.lineTo(cx + sx * R, cy + sy * ry); g.lineTo(cx + sx * R - sx * ln, cy + sy * ry); g.stroke(); } };
+  g.save(); g.lineCap = 'square'; g.strokeStyle = '#120D0B'; g.lineWidth = lw + 3; seg(); g.strokeStyle = col; g.lineWidth = lw; seg(); g.restore(); }
+// Warndreieck (Ochsenblut, Knochenweiß „!“) mit Zahl der Gegner, die dorthin schießen können
+function warnMark(x, y, R, n) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x, y - R); g.lineTo(x + R * 1.08, y + R * 0.82); g.lineTo(x - R * 1.08, y + R * 0.82); g.closePath();
+  g.fillStyle = '#8E2B22'; g.fill(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, R * 0.16); g.strokeStyle = '#120D0B'; g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.font = `900 ${Math.round(R * 1.1)}px "Arm Text", system-ui, sans-serif`; g.fillText('!', x, y + R * 0.22);
+  if (n > 1) { const t = String(n); g.font = `700 ${Math.round(Math.max(14, R * 0.95))}px "Arm Text", system-ui, sans-serif`; g.lineWidth = Math.max(3, R * 0.2); g.strokeText(t, x + R * 1.25, y - R * 0.7); g.fillText(t, x + R * 1.25, y - R * 0.7); }
+  g.restore(); }
 // Symbol auf dunkler Scheibe mit Rostrand (Karte)
 function drawSym(g, im, cx, cy, R) {
   g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * 0.14); g.strokeStyle = '#66483A'; g.stroke();
@@ -4061,9 +4080,11 @@ function drawUnit(u, d) {
   const isSel = sel && sel.id === u.id;
   const own = human(u.side) && G.side === u.side && E.active(u);
   const done = own && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
+  const ready = own && !busy && !G.over && !spent.has(u.id) && !placing;   // kann in dieser Runde noch handeln
   // Standplatz: dunkler Bodenschatten und dünner Ring in gedämpfter Fraktionsfarbe (keine knalligen Flächen)
   g.globalAlpha = A0; g.beginPath(); g.ellipse(x, y, s * 0.66, s * 0.66 * K, 0, 0, 7); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
   g.globalAlpha = A0 * (done ? 0.25 : d.vs.rout ? 0.3 : 0.45); if (!isSel) drawRing(g, acc, x, y, s * 0.66);   // Pinselstrich-Ring, gedämpft
+  if (ready && OPT.ready && !isSel) { g.globalAlpha = A0 * (0.6 + 0.35 * (0.5 + 0.5 * Math.sin(now / 520 + u.id))); drawRing(g, '#C2A461', x, y, s * 0.74); }   // bereit: dezenter pulsierender Messingring
   if (E.active(u)) {   // Blickrichtung: kleiner Punkt am Ring, so gedämpft wie der Ring
     const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.66, fy = y + Math.sin(a) * s * 0.66 * K;
     if (isSel) g.globalAlpha = A0;
@@ -4090,6 +4111,7 @@ function drawUnit(u, d) {
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
   const duck = d.vs.supp > 0 ? s * 0.1 : 0;
+  let topY = y - s;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
     // Bodenschatten: weich und dunkel, Breite nach Figur; darunter kräftiger Kontaktschatten an den Füßen
@@ -4102,16 +4124,18 @@ function drawUnit(u, d) {
     if (done) g.globalAlpha = A0 * 0.85;
     if (filt) g.filter = filt;
     const lead = ox === slots[0][0] && oy === slots[0][1] ? leaderKind(u) : null;
-    if (lead) { const ls = figSprite(lead, u.side, flip, oy); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); continue; }
+    if (lead) { const ls = figSprite(lead, u.side, flip, oy); g.drawImage(ls.cv, Math.round(fx - ls.ox), Math.round(fy - ls.oy)); topY = Math.min(topY, fy - ls.oy); continue; }
     if (u.officer && ox === slots[0][0] && oy === slots[0][1]) {
       const px = fx + (flip ? 0.2 : -0.2) * s, top = fy - s * 1.35;
       g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.07); g.beginPath(); g.moveTo(px, fy - s * 0.2); g.lineTo(px, top); g.stroke();
       g.beginPath(); g.moveTo(px, top); g.lineTo(px + (flip ? 1 : -1) * s * 0.42, top + s * 0.13); g.lineTo(px, top + s * 0.28); g.closePath();
       g.fillStyle = acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     }
-    g.drawImage(sp.cv, Math.round(fx - sp.ox), Math.round(fy - sp.oy));
+    g.drawImage(sp.cv, Math.round(fx - sp.ox), Math.round(fy - sp.oy)); topY = Math.min(topY, fy - sp.oy);
   }
   g.filter = 'none'; g.globalAlpha = 1;
+  // Nachzügler (höchstens 3 eigene Einheiten können noch handeln): Messingwinkel über der Figur, leicht wippend
+  if (ready && OPT.strag && readyN <= 3 && !isSel) { const ty = Math.max(topY - s * 0.22, L.top + s * 0.2) + Math.sin(now / 300) * s * 0.04; MARKQ.push(() => chevron(x, ty, s * 0.17)); }
   if (!E.alive(u)) return;
   if (isSel || hoverU === u || marksAll()) MARKQ.push(() => drawMarks(u, d, x, y, own, done, acc));   // gewählt, überfahren oder „Alle Marken“: obenauf
   else drawMarks(u, d, x, y, own, done, acc);   // Marken gleich nach der eigenen Figur (Tiefenreihenfolge): Figuren davor dürfen sie verdecken, sie malen nie über fremde
@@ -4185,7 +4209,16 @@ function draw() {
       if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(142,43,34,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); } }
     if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
       g.font = `900 ${Math.round(s * 0.55)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
-    for (const k of rangeSet) { if (shellHexes.has(k)) continue; hexPath(g, Math.floor(k / 100), k % 100, 0.96); g.fillStyle = 'rgba(142,43,34,0.06)'; g.fill(); g.strokeStyle = 'rgba(142,43,34,0.2)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
+    // Sicht: verdeckte Felder abgedunkelt und fein schraffiert (Tinte), Gelände bleibt erkennbar
+    for (const k of hideSet) { const c = Math.floor(k / 100), r = k % 100; hexPath(g, c, r, 0.98); g.fillStyle = 'rgba(18,13,11,0.4)'; g.fill();
+      g.save(); hexPath(g, c, r, 0.98); g.clip(); const [cx, cy] = center(c, r); g.strokeStyle = 'rgba(18,13,11,0.5)'; g.lineWidth = Math.max(1, s * 0.016); g.beginPath();
+      for (let i = -7; i <= 7; i++) { const d = i * s * 0.15; g.moveTo(cx + d - s, cy + s); g.lineTo(cx + d + s, cy - s); } g.stroke(); g.restore(); }
+    // Schuss: eine gestrichelte Kontur um das ganze Reichweitengebiet (Ochsenblut hell auf Tintenschatten), keine Flächen
+    if (rangeEdges.length) { g.save(); g.lineCap = 'round';
+      const edges = () => { g.beginPath(); for (const [c, r, i] of rangeEdges) { const [x, y] = center(c, r), a = Math.PI / 3 * i, b = a + Math.PI / 3, k = 0.97;
+        g.moveTo(x + s * k * Math.cos(a), y + s * k * Math.sin(a) * K); g.lineTo(x + s * k * Math.cos(b), y + s * k * Math.sin(b) * K); } g.stroke(); };
+      g.strokeStyle = 'rgba(18,13,11,0.7)'; g.lineWidth = Math.max(3, s * 0.065); edges();
+      g.strokeStyle = RANGE_COL; g.lineWidth = Math.max(1.6, s * 0.028); g.setLineDash([s * 0.12, s * 0.08]); edges(); g.restore(); }
     // Hilfsmarkierungen nach STYLE.md: gedämpfte Palettentöne, unterscheidbar über Muster und Symbol (Wunsch des Nutzers)
     { const sym = sel && TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')];
       const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]);
@@ -4202,6 +4235,20 @@ function draw() {
     for (const id of recSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BRASS, sym: UPI.s_schraubenschluessel }); }
     for (const id of healSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, sym: UPI.s_sanitaeter }); }
     for (const [, t] of targets) { const u = unitById(t.id), fire = t.kind === 'fire'; hexMark(u.c, u.r, { rgb: fire ? BRASS : LIFE, fill: 0.2, sym: UPI[fire ? 's_zielen' : 's_nahkampf'] }); }
+    // Ziele in Schussreichweite: Messing-Eckklammern um die Figur (obenauf)
+    for (const [, t] of targets) if (t.kind === 'fire' || t.both) { const u = unitById(t.id), [x, y] = center(u.c, u.r); MARKQ.push(() => brackets(x, y - s * 0.38, s * 0.6, '#C2A461')); }
+    // Vorschau vom erreichbaren Feld unter Maus/Finger
+    { const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]), pv = hk != null && !abilMode && reach.has(hk) && !(hoverHex[0] === sel.c && hoverHex[1] === sel.r) && previewFrom(hoverHex[0], hoverHex[1]);
+      if (pv) { const [hx, hy] = center(pv.c, pv.r);
+        MARKQ.push(() => { for (const f of pv.threat) { const [x, y] = center(f.c, f.r); g.beginPath(); g.ellipse(x, y, s * 0.76, s * 0.76 * K, 0, 0, 7); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
+          g.setLineDash([s * 0.09, s * 0.07]); g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = RANGE_COL; g.stroke(); g.setLineDash([]); } });   // Gegner mit Schussfeld auf das Feld: gestrichelt umrandet (obenauf, sonst verdeckt der Bodenschatten)
+        MARKQ.push(() => { g.save(); g.lineCap = 'round';
+          for (const f of pv.hit) { const [x, y] = center(f.c, f.r); g.setLineDash([s * 0.06, s * 0.09]); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.lineWidth = Math.max(3.5, s * 0.05); g.beginPath(); g.moveTo(hx, hy - s * 0.3); g.lineTo(x, y - s * 0.3); g.stroke();
+            g.strokeStyle = 'rgba(194,164,97,0.95)'; g.lineWidth = Math.max(1.6, s * 0.025); g.stroke(); g.setLineDash([]); drawSym(g, UPI.s_zielen, x + s * 0.42, y - s * 0.95, s * 0.19); }
+          g.restore();
+          if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * K * 0.92, s * 0.22, pv.threat.length);
+          if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * K * 0.92, s * 0.36, pv.cov); });
+        if (pv.threat.length || pv.cov) MARKS.push({ x0: hx - s * 0.8, y0: hy - s * K * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * K * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
   }
   if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: PARCH, fill: 0.22, dash: true });
   if (hoverHex) {
@@ -4221,6 +4268,7 @@ function draw() {
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
   }
   // Einheiten nach Tiefe
+  readyN = G.over || !human(G.side) ? 0 : G.units.filter(u => u.side === G.side && E.active(u) && !spent.has(u.id)).length;
   const list = [];
   for (const u of G.units) { const d = DU.get(u.id); if (d && d.alpha > 0) list.push([d.y, u, d]); }
   list.sort((a, b) => a[0] - b[0]);
@@ -4675,11 +4723,14 @@ function markTips(m) {
   if (!d || !E.alive(u)) return [];
   if (m.kind === 'state') return statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d) }));
   if (m.kind === 'cover') return [coverTip(u)];
+  if (m.kind === 'pv') { const pv = m.pv, cn = ['', 'Bronze', 'Silber', 'Gold'][pv.cov];
+    return [{ name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite.` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Deckung ${cn}.` : 'Keine Deckung.'}` },
+      pv.threat.length && { name: 'Unter Beschuss', text: `${pv.threat.length} ${pv.threat.length === 1 ? 'Gegner kann' : 'Gegner können'} auf dieses Feld schießen (rot umrandet).` }]; }
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
   if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
   return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
 }
-const markKey = m => m.u.id + m.kind;
+const markKey = m => m.u.id + m.kind + (m.pv ? m.pv.id : '');
 cv.addEventListener('pointermove', ev => {
   if (ev.pointerType !== 'mouse' || !G || (drag && drag.moved)) return;
   const [x, y] = evToPx(ev), m = markAt(x, y);
@@ -4708,7 +4759,9 @@ cv.addEventListener('click', ev => {
     if (TYPES[sel.type].cls === 'art' && h && shellHexes.has(E.key(h[0], h[1]))) return doShell(h[0], h[1]);
     const tu = targetOf(p);
     if (tu) { if (previewT === tu || lastPT === 'mouse') return doAttack(tu); previewT = tu; updateHud(); return; }
-    if (h && reach.has(E.key(h[0], h[1]))) return doMove(h[0], h[1]);
+    if (h && reach.has(E.key(h[0], h[1]))) {   // Finger: erstes Antippen zeigt die Vorschau von dort, zweites zieht (wie beim Angriff)
+      const k = E.key(h[0], h[1]); if (lastPT === 'mouse' || touchMove === k) return doMove(h[0], h[1]);
+      touchMove = k; hoverHex = h; updateHud(); return; }
   }
   const u = p.uFig || p.uHex;
   { const hu = [p.uHex, p.uFig].find(q => q && healSet.has(q.id)); if (sel && hu) return act(m => E.heal(G, m, hu)); }
@@ -4724,8 +4777,26 @@ function select(u) {
   sel = u; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
 }
+// Nachbar über Kante i eines Felds (Ecke i liegt bei 60°·i, y nach unten; Spalten mit ungerader Nummer liegen halb tiefer)
+function edgeNb(c, r, i) { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][i]; }
+// Außenkanten einer Feldmenge (für eine einzige Kontur statt Rahmen um jedes Feld)
+function contourOf(set) { const out = []; for (const k of set) { const c = Math.floor(k / 100), r = k % 100; for (let i = 0; i < 6; i++) { const [nc, nr] = edgeNb(c, r, i); if (!set.has(E.key(nc, nr))) out.push([c, r, i]); } } return out; }
+// Vorschau: was die gewählte Einheit VON einem erreichbaren Feld aus beschießen könnte, wer dorthin schießen kann, welche Deckung es hat
+function previewFrom(c, r) {
+  const n = reach.get(E.key(c, r)); if (!n || !sel) return null;
+  const id = sel.id + ':' + c + ':' + r; if (pvCache && pvCache.id === id) return pvCache;
+  const T0 = TYPES[sel.type], ghost = { ...sel, c, r, ap: n.march || n.retreat ? 0 : Math.max(0, (sel.ap || 0) - 1), setup: T0.mg ? false : sel.setup };   // MG muss nach dem Zug neu aufbauen
+  const foes = G.units.filter(f => f.side !== sel.side && E.alive(f));
+  const hit = T0.cls === 'art' ? [] : foes.filter(f => E.canFire(G, ghost, f));
+  const threat = foes.filter(f => { const F = TYPES[f.type]; if (!E.active(f) || f.supp > 0) return false; const d = E.dist(f.c, f.r, c, r);
+    if (F.cls === 'art') return d >= 1 && d <= F.rng && (E.isDirect(G, f, c, r) || (d >= P.ART_MIN && E.spotted(G, f.side, c, r)));
+    if (!(F.rng > 1) || E.immune(F, T0) || (T0.hidden && !(sel.revealed > 0) && d > 1)) return false;
+    return d <= E.rangeOf(G, f, c, r) && E.hasLOS(G, f.c, f.r, c, r); });
+  pvCache = { id, c, r, hit, threat, cov: E.coverOf(G, ghost).tier }; return pvCache;
+}
 function computeOptions() {
   reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sightSet = new Set(); scoutSet = new Set();
+  hideSet = new Set(); rangeEdges = []; touchMove = null; pvCache = null;
   if (!sel || !E.active(sel) || sel.side !== G.side) return;
   if (TYPES[sel.type].relay) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const dd = E.dist(sel.c, sel.r, c, r); if (dd > 0 && dd <= TYPES[sel.type].spot && E.hasLOS(G, sel.c, sel.r, c, r)) sightSet.add(E.key(c, r)); }
   reach = E.reachable(G, sel);
@@ -4735,7 +4806,11 @@ function computeOptions() {
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
   { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= (T0.mobile ? 1 : 2) && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= 1 && (!T0.mg || sel.setup));
-    if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r))) rangeSet.add(E.key(c, r)); } }
+    if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r))) rangeSet.add(E.key(c, r)); }
+    // Sicht: Felder in Sicht- bzw. Schussweite ohne Sichtlinie (Wald, Dorf, Fabrik, Kirche dazwischen, Rauch). Artillerie sieht selbst nur bis zur Direktschussweite.
+    const SP = T0.cls === 'art' ? P.ART_DIRECT : Math.max(T0.spot || P.SPOT, T0.rng || 0, G.map[sel.c][sel.r].t === 'kirche' ? 6 : 0);
+    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= SP && !E.hasLOS(G, sel.c, sel.r, c, r, T0.aerial)) hideSet.add(E.key(c, r)); }
+    rangeEdges = contourOf(rangeSet); }
   if (TYPES[sel.type].cls === 'art') {
     const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== sel.side; };
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
@@ -5071,6 +5146,7 @@ function updateHud() {
     el.style.fontSize = ''; el.classList.remove('two');
     for (let fs = 20; fs >= 15 && over(); fs--) el.style.fontSize = fs + 'px';
     if (over()) { el.style.fontSize = ''; el.classList.add('two'); } }
+  if (touchMove != null && sel && lastPT !== 'mouse') hints.unshift('<em>Nochmal tippen zum Ziehen</em>');
   const hn = $('hudHint'); hn.innerHTML = hints.filter(Boolean).join(' · '); hn.title = hn.textContent;
   // Draht-Knöpfe zuerst (Wunsch des Nutzers), dann die übrigen in fester Reihenfolge
   btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
@@ -5314,6 +5390,9 @@ $('btnZoom').onclick = () => {
   layout(); syncAll();
   board.scrollLeft = fx * board.scrollWidth - board.clientWidth / 2; board.scrollTop = fy * board.scrollHeight - board.clientHeight / 2;
 };
+// Hilfen (Optionen): sofort wirksam, im Browser gemerkt
+$('optReady').checked = OPT.ready; $('optStrag').checked = OPT.strag;
+for (const [id, k] of [['optReady', 'ready'], ['optStrag', 'strag']]) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} });
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
@@ -5345,7 +5424,7 @@ window.__dbg = { PT, tcv: () => tcv, renderTerrain: () => renderTerrain(), paint
   hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

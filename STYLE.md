@@ -33,6 +33,7 @@ Zentral als CSS-Variablen in `src/index.html` (Block „STYLE.md – Palette“)
 | `--s-gas`       | `#8A8A2E` | Gas, Gefahr |
 | `--s-moss`      | `#6B7A3A` | Lebensbalken über 60 % (Moosgrün) |
 | `--s-ochre`     | `#B08A2E` | Lebensbalken 30–60 % (Ocker); darunter `--s-life` |
+| `--s-range`     | `#A8473A` | Ochsenblut aufgehellt, nur Linien: Kontur der Schussreichweite, Bedrohung in der Vorschau |
 | `--s-ink`       | `#120D0B` | Comic-Kontur, harte Schatten |
 
 ## Fraktionswappen
@@ -84,6 +85,14 @@ Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `to
 - Eine kompakte Zeile an den Füßen der eigenen Figuren, ganz im eigenen Feld: links **ein** Zustandsplatz (wichtigstes Symbol, „+n“), Mitte Pinsel-Lebensbalken (Farbe nach Stand, siehe Balken) mit kleinen Messingmünzen darunter (Aktionspunkte, nur eigene Einheiten), rechts kleines Deckungsschild (Bronze/Silber/Gold aus `kartenmarken.png`). Anführer: Orden rechts neben der Figur.
 - Marken werden in Tiefenreihenfolge mit der eigenen Figur gezeichnet: Figuren davor dürfen sie verdecken, sie malen **nie** über fremde Figuren.
 - Ringe: gemalter Pinselstrich in gedämpfter Fraktionsfarbe, Auswahl Messing. Jede Marke hat einen Pergament-Tooltip (Maus und Touch).
+
+## Übersicht auf dem Feld (gewählte Einheit)
+Drei Darstellungen, klar getrennt, gedämpft – das Gelände bleibt sichtbar:
+- **Bewegung:** Flächen, Knochenweiß (ziehen) bzw. Messing (Marsch/Rückzug).
+- **Schuss:** **eine** gestrichelte Kontur um das ganze Reichweitengebiet in `--s-range` auf Tintenschatten, keine Flächen. Ziele in Reichweite: Messing-Eckklammern um die Figur.
+- **Sicht:** Felder in Sicht- bzw. Schussweite ohne Sichtlinie mit Tinte abgedunkelt und fein schraffiert.
+- **Vorschau** (Maus über erreichbarem Feld, Finger: erstes Antippen, zweites zieht): gestrichelte Messinglinien zu den Zielen von dort, Gegner mit Schussfeld auf das Feld gestrichelt in `--s-range` umrandet, oben links am Feld Warndreieck (Ochsenblut, „!“, Zahl), oben rechts das Deckungsschild des Felds. Tooltip per Maus und Touch.
+- **Bereite Einheiten** (eigene Runde): dezenter pulsierender Messingring am Boden. Können nur noch höchstens 3 handeln, zusätzlich ein Messingwinkel über der Figur. Beides in den Optionen abschaltbar („Hilfen“).
 
 ## Bildregeln für Einheiten und Karten
 Gelten für jedes neue oder neu gemalte Bild. Bestandsaufnahme und Begründung: `entwurf/bestand/BESTAND.md` (lokal).

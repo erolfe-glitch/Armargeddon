@@ -18,7 +18,7 @@
 :root {
   --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
   --s-brass: #C2A461; --s-life: #8E2B22; --s-foe-dark: #713B36; --s-friend: #7D8471; --s-friend-hi: #A0AC88; --s-legion: #6F8FB5; --s-gas: #8A8A2E; --s-ink: #120D0B;
-  --s-moss: #6B7A3A; --s-ochre: #B08A2E;   /* Lebensbalken: über 60 % Moos, 30–60 % Ocker, darunter --s-life */
+  --s-moss: #6B7A3A; --s-ochre: #B08A2E; --s-range: #A8473A;   /* Lebensbalken: über 60 % Moos, 30–60 % Ocker, darunter --s-life */
   --s-head: "Arm Kopf", "Palatino Linotype", Georgia, serif;   /* IM Fell English SC, Ziffern aus Alegreya Sans (tools/fonts.py) */
   --s-body: "Arm Text", "Segoe UI", system-ui, sans-serif;   /* Alegreya Sans */
   --s-min: 14px;
@@ -788,6 +788,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
       <div class="sm-row"><span>Anzeige</span><button class="sm-chip" id="setFull">Vollbild</button><button class="sm-chip" id="setZoom">Zoom 1×</button></div>
       <div class="sm-row"><span>Tempo</span><button class="sm-chip" id="setSpeed">Tempo 1×</button></div>
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
+      <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
