@@ -34,6 +34,34 @@ def key(a):
     return out
 
 
+def key_any(a):
+    """Hintergrund in anderer Farbe (z. B. Pink 224,0,122): Farbe vom Bildrand nehmen, nach Farbabstand ausblenden
+    und die Kantenfarben entmischen (Anteil des Hintergrunds herausrechnen), damit kein farbiger Saum bleibt."""
+    rgb = a[..., :3].astype(np.float64)
+    border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
+    bg = np.median(border, axis=0)
+    d = np.sqrt(((rgb - bg) ** 2).sum(axis=2))
+    alpha = np.clip((d - 35) / 75, 0, 1)
+    al = np.maximum(alpha, 1e-3)[..., None]
+    fg = np.clip((rgb - (1 - alpha[..., None]) * bg) / al, 0, 255)
+    out = np.where(alpha[..., None] > 0, fg, rgb)
+    # Farbstich an den Rändern: Tinte + Hintergrund ergibt dunkles Lila/Pink. Nur nahe der Kante: Rot und Blau nicht über Grün
+    # hinaus anheben (Überschuss abziehen) – echte Farben wie Ochsenblut (wenig Blau) bleiben unberührt.
+    edge = ndimage.binary_dilation(alpha < 0.98, iterations=5)
+    if bg[0] > 150 and bg[2] > 90 and bg[1] < 80:
+        ex = np.clip(np.minimum(out[..., 0], out[..., 2]) - out[..., 1], 0, None) * edge
+        out[..., 0] -= ex; out[..., 2] -= ex
+    return np.dstack([np.clip(out, 0, 255), alpha * 255]), bg
+
+
+def keyed(a):
+    """Freistellen: Hintergrundfarbe vom Bildrand (Magenta, Pink …), Farbabstand + Entmischen der Kanten (key_any).
+    Seit 2026-11-16 für alle Bögen; das ältere reine Magenta-Verfahren (key) ließ in Haaren und Mähnen lila Reste."""
+    k, bg = key_any(a)
+    print(f'  Hintergrund {bg.round().astype(int).tolist()}')
+    return k
+
+
 def remove_flash(q):
     """Mündungsfeuer: sehr helle, gelb-orange Pixel (und ihr Schein) entfernen."""
     rgb = q[..., :3]; r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
@@ -57,7 +85,7 @@ def remove_flash(q):
 TRUPP = {'soldat', 'sturm', 'pionier'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
-SH_SINGLE = {'mg': 0.98, 'mg_marsch': 1.05, 'geschuetz': 1.2, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5}   # 2026-11-16: MG und Geschütz 1,2× im Verhältnis, Fahrzeuge 1,5 SH
+SH_SINGLE = {'mg': 0.98, 'mg_marsch': 1.05, 'geschuetz': 1.2, 'geschuetz_marsch': 1.8, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5}   # 2026-11-16: MG und Geschütz 1,2× im Verhältnis, Fahrzeuge 1,5 SH
 GAME = ROOT / 'ui-quelle' / 'teile' / 'figuren'   # Bilder fürs Spiel (eingebettet in src/figs.js)
 
 
@@ -82,7 +110,7 @@ def keep_parts(q, single):
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
     H, W = a.shape[:2]
-    k = key(a)
+    k = keyed(a)
     kind = kind_of(name)
     if kind not in TRUPP:   # Einzelmodell
         q, fl = k, 0   # Einzelmodelle: nur Magenta weg (Kisten, Fahnen, Messing, Flamme gehören zum Modell)
