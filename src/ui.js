@@ -1163,6 +1163,7 @@ function drawFloaters(g, s, bb) {
 // FIGW_MAX Feldradien breit. Fahrzeuge (Panzer, Kolosse): 1,35 SH hoch, Breite nach Bild, dürfen etwas über den Feldrand ragen (belegen ein Feld).
 const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Soldat 0,8; Fahrzeuge (1,5 SH) höchstens 2,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
+const ANZUG = { slots: [[-0.2, -0.06], [0.2, 0.2]] };   // Kampfanzug-Trupps: breit und groß, eng gestellt, damit nichts über den Feldrand ragt
 const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäter eng beieinander: Lauf- und Trage-Posen sind breit und ragten sonst aus dem Feld
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
@@ -1172,6 +1173,7 @@ const FIGMAP = {
   grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['sturm', 1],
   pionierD: ['pionier', 1], minen: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
+  stahl: ['stahl', 1, 2, ANZUG], panzerk: ['panzerknecht', 1, 2, ANZUG],   // Kampfanzüge: 2 Figuren, 1,25 SH, eng im Feld
   ballon: ['ballon'], signal: ['signal', 1, 2],   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
