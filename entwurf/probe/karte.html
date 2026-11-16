@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karte aus Bausteinen</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #120D0B; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .lbl { position: fixed; left: 18px; bottom: 14px; max-width: 520px; padding: 10px 14px; font: 600 17px/1.35 "Segoe UI", system-ui, sans-serif; color: #F0EDE1;
+    background: rgba(18,13,11,.84); border: 2px solid #66483A; }
+  .lbl small { display: block; margin-top: 4px; font-weight: 400; font-size: 14px; color: #cbbfa6; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="lbl"><span id="titel">Karte aus Gelände-Bausteinen</span>
+<small>Testseite, nicht im Spiel. Gelände je Feld aus den Kartendaten (engine.js), Bausteine zufällig gemischt und gespiegelt. Trupps nur zur Größenprobe.</small></div>
+<script src="gelaende_bau.js"></script>
+<script>
+// Ganze Karte in der neuen Ansicht aus Gelände-Bausteinen (Testseite). Kartendaten: karte_<id>.json (node tools/karte_json.js <id>).
+// Aufruf: entwurf/probe/karte.html?karte=grauwall · &ganz=1 ganze Karte · &zoom=1.5&ziel=c,r näher · &seed=n andere Mischung · &namen=0
+const Q = new URLSearchParams(location.search), id = Q.get('karte') || 'grauwall';
+(async () => {
+  const K = await (await fetch(`karte_${id}.json`)).json();
+  document.getElementById('titel').textContent = `${K.name} – aus Gelände-Bausteinen`;
+  // Trupps zur Größenprobe: Konkordat im eigenen Graben und davor, Aschenwacht in Gräben, Dorf und Totholz
+  const TRUPPS = { grauwall: [
+    { side: 'A', c: 2, r: 3, name: 'Graben' }, { side: 'A', c: 2, r: 6 }, { side: 'A', c: 1, r: 4, name: 'offen' }, { side: 'A', c: 4, r: 5, name: 'Trichter' },
+    { side: 'D', c: 7, r: 2, name: 'Graben' }, { side: 'D', c: 7, r: 7 }, { side: 'D', c: 10, r: 5, name: 'Schanze' }, { side: 'D', c: 12, r: 4, name: 'Dorf' }, { side: 'D', c: 13, r: 1, name: 'Totholz' }] };
+  await GBau.bauen({
+    canvas: document.getElementById('cv'), cols: K.cols, rows: K.rows,
+    terr: (c, r) => K.cells[c][r][0], flags: (c, r) => ({ road: !!K.cells[c][r][1], river: !!K.cells[c][r][2] }),
+    trupps: TRUPPS[id] || [],
+    seed: +(Q.get('seed') || 1917), ganz: Q.get('ganz') === '1', zoom: +(Q.get('zoom') || 1), ziel: Q.get('ziel') ? Q.get('ziel').split(',').map(Number) : null,
+    punkte: Q.get('punkte') === '1', namen: Q.get('namen') !== '0',
+  });
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body>
+</html>

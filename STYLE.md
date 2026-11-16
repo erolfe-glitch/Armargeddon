@@ -184,3 +184,14 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
 - **Bunker:** Aufsteller 1,15 SH, höchstens 1,8 R breit, Fußpunkt 0,25 R vor der Feldmitte.
 - **Stumpf:** Aufsteller 0,6–0,9 SH.
 - **Große Gebäude über mehrere Felder** (Kirche, Fabrik): noch offen, siehe IDEEN.md.
+- **Zusammensetzen je Geländeart** (umgesetzt in `entwurf/probe/gelaende_bau.js`, gilt für Probe und Karten-Testseite `entwurf/probe/karte.html`):
+  - Boden: Schlamm als Grund. Darüber weiche Schichten: Gras auf offenen Feldern nach großflächigem Rauschen (nicht feldweise), Waldboden (Totholz, Wald), Trümmer (Dorf, Trümmerfeld, Barrikade), Sumpf (Sumpf, Schlamm). Straßen als Kopfstein-Band, Kanal als Wasser-Band mit dunkler Uferkante.
+  - Die gelieferten Texturen sind sehr dunkel (Helligkeit 0,08–0,17); der Boden wird im Ganzen um ×1,5 aufgehellt, Straßen etwas mehr.
+  - Flache Details nach Feld: Trichterfeld (ein großer oder zwei kleine Trichter), Schlamm (Pfützen, Spuren), offen (gelegentlich kleiner Trichter, Spuren, Bretter, Pfütze), Dorf/Trümmer (Trümmerstreu).
+  - Totholz: drei Stümpfe verteilt, oft ein schlanker Stamm hinten.
+  - Wald: drei schlanke Stämme an den hinteren Ecken, Unterholz vorn.
+  - Trümmerfeld: zwei Trümmerhaufen und ein niedriger Mauerrest quer zur Blickrichtung (schräge Kanten wirken sonst wie schmale Platten).
+  - Draht: zwei Stücke je Feld, quer zur Blickrichtung, leicht schräg, hinten und vorn.
+  - Bunker: heil oder beschädigt. Brücke: Laufrost-Bohlen quer über das Wasser.
+  - Gräben werden aus den Grabenfeldern zu Zügen verbunden; Züge am Kartenrand laufen bis zur Kante weiter (ohne Erdwall).
+  - **Abwechslung:** Jedes Feld wählt Variante, Spiegelung, Größe (±15 %) und Streifen-Anfang aus seinem eigenen Zufallswert; dieselbe Karte sieht immer gleich aus, `seed` ändert die Mischung.

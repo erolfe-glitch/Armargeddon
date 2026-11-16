@@ -5,7 +5,11 @@
 # Arten:
 #   wand  – waagrecht kachelbarer Streifen (Wandstück): Unterkante = Fußlinie, links/rechts nahtlos gemacht, Höhe = SH × 320 px
 #   sohle – waagrecht kachelbarer Streifen von oben (Grabensohle): nahtlos, Höhe = Grabenbreite 1,0 R = 400 px
-#   bogen – mehrere Aufsteller auf einem Bogen: jedes Teil einzeln, Fuß = unterste Zeile, Höhe je Teil in SH
+#   bogen – mehrere Aufsteller auf einem Bogen: jedes Teil einzeln, Fuß = unterste Zeile; Höhe je Teil in SH (Liste)
+#           oder ('gemeinsam', H): ein Maßstab für den ganzen Bogen, das höchste Teil wird H SH hoch (Größenverhältnisse bleiben)
+#   einzel – ein Aufsteller, Höhe in SH
+#   flach – Bogen mit flachen Details (von oben): größte Ausdehnung je Teil in Feldradien R
+#   textur – Bodentextur, an allen vier Seiten nahtlos gemacht, 1 Kachel = 2 R (eine Feldbreite)
 # Aufruf: python tools/gelaende_cut.py [name …]   (ohne Namen: alle in TEILE)
 import sys
 from pathlib import Path
@@ -31,9 +35,35 @@ TEILE = {
     'ruine_hinten':        ('wand', 1.2),
     'ruine_vorn':          ('wand', 0.45),
     'ruine_ecken':         ('bogen', [1.2, 0.8, 0.45, 1.4]),
-    'ruine_paar_aufsteller': ('bogen', [1.3, 0.9]),           # Extra (Deko, noch nicht verwendet)
-    'ruinen_test_weiss':   ('bogen', [1.2, 1.2, 0.8, 1.3]),    # Extra, weißer Hintergrund
+    'ruine_paar_aufsteller': ('bogen', [1.3, 0.9]),           # Extra (Deko, nicht verwenden)
+    'ruinen_test_weiss':   ('bogen', [1.2, 1.2, 0.8, 1.3]),    # Extra, weißer Hintergrund, nicht verwenden
+    'draht':               ('wand', 0.6),
+    'barrikade':           ('wand', 0.55),
+    'wald_unterholz':      ('wand', 0.3),
+    'bunker':              ('bogen', ('gemeinsam', 1.15)),     # 1 heil, 2 beschädigt
+    'wald_staemme':        ('bogen', ('gemeinsam', 1.8)),
+    'wald_staemme_b':      ('bogen', ('gemeinsam', 1.8)),
+    'wald_stamm_1':        ('einzel', 1.9),                    # dicker, Reserve
+    'wald_stamm_2':        ('einzel', 1.9),
+    'wald_stamm_3':        ('einzel', 1.9),
+    'stuempfe':            ('bogen', ('gemeinsam', 0.9)),
+    'stuempfe_b':          ('bogen', ('gemeinsam', 0.9)),
+    'stuempfe_c':          ('bogen', ('gemeinsam', 0.9)),
+    'truemmer':            ('bogen', ('gemeinsam', 0.6)),
+    'truemmer_b':          ('bogen', ('gemeinsam', 0.6)),
+    'truemmer_c':          ('bogen', ('gemeinsam', 0.6)),
+    'truemmer_d':          ('bogen', ('gemeinsam', 0.6)),
+    # Trichter klein/groß, Pfütze, lange Pfütze, Bretter, Laufrost, Trümmerstreu, Spuren
+    'flach_details':       ('flach', [0.65, 1.25, 0.6, 1.0, 0.6, 0.6, 1.0, 1.0]),
+    'boden_schlamm':       ('textur', None),
+    'boden_gras':          ('textur', None),
+    'boden_waldboden':     ('textur', None),
+    'boden_truemmer':      ('textur', None),
+    'boden_sumpf':         ('textur', None),
+    'boden_wasser':        ('textur', None),
+    'boden_kopfstein':     ('textur', None),
 }
+TEX_PX, TEX_PROBE = 1024, 768
 
 
 def freistellen(path):
@@ -88,10 +118,10 @@ def zeilen(q, thr=40):
     return q[ys.min():ys.max() + 1]
 
 
-def speichern(q, name, h_px):
+def speichern(q, name, h_px, w_px=None):
     im = Image.fromarray(np.clip(q, 0, 255).astype(np.uint8), 'RGBA')
-    w = round(im.width * h_px / im.height)
-    im = im.resize((w, round(h_px)), Image.LANCZOS)
+    w = round(w_px) if w_px else round(im.width * h_px / im.height)
+    im = im.resize((max(1, w), max(1, round(h_px))), Image.LANCZOS)
     OUT.mkdir(parents=True, exist_ok=True); PROBE.mkdir(parents=True, exist_ok=True)
     im.save(OUT / f'{name}.png')
     im.save(PROBE / f'g_{name}.webp', quality=88, method=6)
@@ -121,7 +151,62 @@ def streifen(name, art, sh):
     speichern(q, name, PX_SH * sh if art == 'wand' else PX_R)
 
 
+def textur(name):
+    a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')).astype(np.float64)
+    h, w = a.shape[:2]
+    nx, ny = naht(a), naht(a.transpose(1, 0, 2))
+    if max(nx, ny) > 1.4:   # Hälfte verschieben (Naht liegt dann in der Mitte) und mit dem Original überblenden: Ränder aus der verschobenen Fassung, Mitte aus dem Original
+        rl = np.roll(a, (h // 2, w // 2), axis=(0, 1))
+        y = np.minimum(np.arange(h), h - 1 - np.arange(h))[:, None]; x = np.minimum(np.arange(w), w - 1 - np.arange(w))[None, :]
+        ramp = 0.16
+        t = np.clip(np.minimum(y / (h * ramp), x / (w * ramp)), 0, 1); t = t * t * (3 - 2 * t)
+        a = a * t[..., None] + rl * (1 - t[..., None])
+    hell = a.mean() / 255
+    print(f'  Naht waagrecht {nx:.1f}×, senkrecht {ny:.1f}× → {naht(a):.1f}×, {naht(a.transpose(1, 0, 2)):.1f}×; Helligkeit {hell:.2f}')
+    im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), 'RGB')
+    OUT.mkdir(parents=True, exist_ok=True); PROBE.mkdir(parents=True, exist_ok=True)
+    im.resize((TEX_PX, TEX_PX), Image.LANCZOS).save(OUT / f'{name}.png')
+    im.resize((TEX_PROBE, TEX_PROBE), Image.LANCZOS).save(PROBE / f'g_{name}.webp', quality=86, method=6)
+    print(f'  → {name}: {TEX_PX}×{TEX_PX}')
+
+
+def teile_finden(q, n_min=0.08):
+    al = ndimage.binary_closing(q[..., 3] > 60, iterations=6)
+    lab, n = ndimage.label(al)
+    sizes = ndimage.sum(al, lab, range(1, n + 1))
+    teile = [i + 1 for i, v in enumerate(sizes) if v > sizes.max() * n_min]
+    fo = ndimage.find_objects(lab); boxes = [fo[i - 1] for i in teile]
+    H = q.shape[0]
+    boxes.sort(key=lambda b: (((b[0].start + b[0].stop) / 2) > H / 2, b[1].start))
+    out = []
+    for b in boxes:
+        t = q[b].copy(); maske = ndimage.binary_dilation((lab[b] > 0) & np.isin(lab[b], teile), iterations=3); t[~maske, 3] = 0
+        ys, xs = np.where(t[..., 3] > 40); out.append(t[ys.min():ys.max() + 1, xs.min():xs.max() + 1])
+    return out
+
+
+def flach(name, groessen):
+    stuecke = teile_finden(freistellen(SRC / f'{name}.png'), 0.05)
+    if len(stuecke) != len(groessen):
+        print(f'  WARNUNG: {len(stuecke)} Teile gefunden, {len(groessen)} erwartet')
+    for k, (t, g) in enumerate(zip(stuecke, groessen), 1):
+        f = g * PX_R / max(t.shape[:2])
+        speichern(t, f'{name}_{k}', t.shape[0] * f, t.shape[1] * f)
+
+
+def einzel(name, h):
+    t = teile_finden(freistellen(SRC / f'{name}.png'))[0]
+    speichern(t, name, PX_SH * h)
+
+
 def bogen(name, hoehen):
+    if isinstance(hoehen, tuple):   # ein Maßstab für den ganzen Bogen
+        stuecke = teile_finden(freistellen(SRC / f'{name}.png'))
+        f = hoehen[1] * PX_SH / max(t.shape[0] for t in stuecke)
+        for k, t in enumerate(stuecke, 1):
+            speichern(t, f'{name}_{k}', t.shape[0] * f)
+        print(f'  {len(stuecke)} Teile, gemeinsamer Maßstab')
+        return
     q = freistellen(SRC / f'{name}.png')
     al = ndimage.binary_closing(q[..., 3] > 60, iterations=6)
     lab, n = ndimage.label(al)
@@ -146,5 +231,11 @@ if __name__ == '__main__':
         print(name)
         if art == 'bogen':
             bogen(name, h)
+        elif art == 'flach':
+            flach(name, h)
+        elif art == 'einzel':
+            einzel(name, h)
+        elif art == 'textur':
+            textur(name)
         else:
             streifen(name, art, h)
