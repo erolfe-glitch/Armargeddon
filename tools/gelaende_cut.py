@@ -55,7 +55,9 @@ TEILE = {
     'truemmer_d':          ('bogen', ('gemeinsam', 0.6)),
     # Trichter klein/groß, Pfütze, lange Pfütze, Bretter, Laufrost, Trümmerstreu, Spuren
     'flach_details':       ('flach', [0.65, 1.25, 0.6, 1.0, 0.6, 0.6, 1.0, 1.0]),
-    'draht_stuecke':       ('bogen', ('gemeinsam', 0.8)),     # ganze Drahtverhau-Stücke (seit 2026-11-16 der einzige Draht im Spiel)
+    'draht_stuecke':       ('bogen', ('gemeinsam', 0.8)),
+    # Festung 3×3: 1 Mauer mit Zinnen, 2 Ecke, 3 Mauer glatt, 4 Tor klein, 5 Tor groß, 6 Tor zerstört, 7 Bunker heil, 8 Bunker zerstört, 9 Turm
+    'festung':             ('bogen', ('gemeinsam', 1.6, 3)),   # Mauer damit ca. 1,4 SH     # ganze Drahtverhau-Stücke (seit 2026-11-16 der einzige Draht im Spiel)
     'panzersperren':       ('bogen', ('gemeinsam', 0.75)),    # Tschechenigel, Höckerlinie, Igel mit Draht, Pfahlreihe
     'panzersperren_b':     ('bogen', ('gemeinsam', 0.95)),    # wie oben, Pfähle länger
     'trichter_gross':      ('flach', [1.5]),
@@ -237,14 +239,14 @@ def textur(name, ziel=None):
     print(f'  → {name}: {TEX_PX}×{TEX_PX}')
 
 
-def teile_finden(q, n_min=0.08):
+def teile_finden(q, n_min=0.08, reihen=2):
     al = ndimage.binary_closing(q[..., 3] > 60, iterations=6)
     lab, n = ndimage.label(al)
     sizes = ndimage.sum(al, lab, range(1, n + 1))
     teile = [i + 1 for i, v in enumerate(sizes) if v > sizes.max() * n_min]
     fo = ndimage.find_objects(lab); boxes = [fo[i - 1] for i in teile]
     H = q.shape[0]
-    boxes.sort(key=lambda b: (((b[0].start + b[0].stop) / 2) > H / 2, b[1].start))
+    boxes.sort(key=lambda b: (int((b[0].start + b[0].stop) / 2 / (H / reihen)), b[1].start))
     out = []
     for b in boxes:
         t = q[b].copy(); maske = ndimage.binary_dilation((lab[b] > 0) & np.isin(lab[b], teile), iterations=3); t[~maske, 3] = 0
@@ -268,7 +270,7 @@ def einzel(name, h):
 
 def bogen(name, hoehen):
     if isinstance(hoehen, tuple):   # ein Maßstab für den ganzen Bogen
-        stuecke = teile_finden(freistellen(SRC / f'{name}.png'))
+        stuecke = teile_finden(freistellen(SRC / f'{name}.png'), reihen=hoehen[2] if len(hoehen) > 2 else 2)
         f = hoehen[1] * PX_SH / max(t.shape[0] for t in stuecke)
         for k, t in enumerate(stuecke, 1):
             speichern(t, f'{name}_{k}', t.shape[0] * f)

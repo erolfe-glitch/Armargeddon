@@ -112,6 +112,7 @@ Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel 
   - Panzer und Kolosse **1,5 SH** hoch, höchstens **2,4 Feldradien** breit, Breite nach Bild (nicht aufblasen). Belegen ein Feld; Ketten-Unterkante etwas nach vorn (Richtung Betrachter) im Feld auf dem Boden, Kontaktschatten unter der ganzen Kettenlänge.
   - Alle Figuren mit den Füßen auf dem Feldboden, weicher dunkler Kontaktschatten direkt darunter; Ringe klein und dezent.
   - Im Code: `FIG_SH`, `FIGW_MAX`, `FIGW_VEH`, `FIGMAP` in ui.js, Bildhöhen der Einzelmodelle `SH_SINGLE` in `tools/figure_cut.py`.
+  - Reiter (Trupp aus 2 der 3 Posen): höchste Pose mit erhobener Waffe/Lanze 1,75 SH. Bögen mit Posen in einer Reihe (`REIHE` in figure_cut.py) werden über zusammenhängende Flächen geteilt. Neue, detailreichere Bögen werden mit `--angleichen` an Sättigung, Wärme und Helligkeit der Soldaten- und Sturmbögen der Fraktion angeglichen.
 - **Größe zum Feld, alte Ansicht** (feste Klassen, im Code `SHT` in `figures.js`):
   - stehend 1,0 SH · kniend 0,75 · liegend 0,4 (echte Höhe, nicht aufblasen)
   - Mannschaft an Gerät (MG, Mörser, Geschütz, Gespann) hat **dieselbe** Soldatenhöhe wie Infanterie; das Gerät richtet sich nach ihr
@@ -180,7 +181,8 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
   - Aufrecht: Grabenkante vorn (Sandsäcke Außenseite, 0,32 SH) und hinten (Verschalung Innenseite mit Sandsack obenauf, **0,28 SH**, seit 2026-11-16 auf 2/3 gesenkt), je ±0,38 R neben der Linie. Welche Kante: zeigt die Innenseite eines Abschnitts deutlich vom Betrachter weg (nach Norden), steht dort „vorn“, sonst „hinten“ – fest nach Blickrichtung, damit beim Schwenken nichts wechselt.
   - Abschnitte, die in die Tiefe laufen (Verbindungsgräben): Seitenwände als Verschalung, **nach außen gekippt**. Die Oberkante liegt bis 0,9 × Wandhöhe neben der Fußlinie (projiziert) und auf 0,65 × Höhe, damit die Wand perspektivisch als Fläche sichtbar ist und der Graben nicht wie ein Steg wirkt. Übergang je nach Richtung stufenlos.
   - An Kreuzungen und Abzweigen lässt der Code die Kante dort weg, wo ein anderer Grabenzug näher als 0,42 R ist.
-  - Einheit im Graben (seit 2026-11-16): Figuren **eingesunken** – der untere Teil (44 % der Bildhöhe, etwa bis zur Hüfte) fehlt, darüber ein weicher Übergang in die dunkle Sohle; nur Oberkörper, Helm und Gewehr ragen heraus, unabhängig von der Grabenrichtung. Figuren hintereinander auf der Grabenlinie (Abstand 0,4 R, seitlich höchstens 0,07 R). Jede Figur wird einzeln mit den Wandstücken nach Tiefe sortiert: Sohle → hintere Wand → Figur → vordere Wand.
+  - Einheit im Graben (seit 2026-11-16): Figuren **eingesunken** – der untere Teil (30 % der Bildhöhe, bis etwa Oberschenkel/Hüfte; Gürtel und Taschen sichtbar) fehlt, darüber ein weicher Übergang in die dunkle Sohle; nur Oberkörper, Helm und Gewehr ragen heraus, unabhängig von der Grabenrichtung. Figuren hintereinander auf der Grabenlinie (Abstand 0,4 R, seitlich höchstens 0,07 R). Jede Figur wird einzeln mit den Wandstücken nach Tiefe sortiert: Sohle → hintere Wand → Figur → vordere Wand.
+  - Grabensohle als durchgehendes Band (gemittelte Normalen an jedem Punkt, Bildzuordnung über Dreiecke): keine Lücken an Feldgrenzen und Knicken.
   - Grabenbreite: Sohlenstreifen **1,3 R**, Kanten **0,5 R** neben der Linie (vorher 1,0 R und 0,38 R).
 - **Wald im Spielfeld (licht):**
   - Waldboden-Textur.

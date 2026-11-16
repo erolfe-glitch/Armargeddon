@@ -28,7 +28,7 @@ const LISTE = {
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k)],   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k)],   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
 const NAMEN = [...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand];
 
@@ -40,7 +40,7 @@ async function bilder(quelle) {
 
 // Figur im Graben: der untere Teil (cut = Anteil der Bildhöhe, etwa bis zur Hüfte) fehlt, darüber ein weicher Übergang in die dunkle Grabensohle.
 // Zwischengespeichert je Bild; gezeichnet wird das Ergebnis mit seiner Unterkante auf dem Grabenboden.
-const EINSINK = 0.44, SUNK = new Map();
+const EINSINK = 0.3, SUNK = new Map();   // 30 % der Bildhöhe weg: bis etwa Oberschenkel/Hüfte, Gürtel und Taschen bleiben sichtbar
 function eingesunken(im, cut = EINSINK) {
   const key = im; if (SUNK.has(key)) return SUNK.get(key);
   const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, h = Math.round(H * (1 - cut));
@@ -235,18 +235,36 @@ function aufbauen(cfg, IM) {
   if (TR.length && IM.graben_sohle) {
     const TW = GW * R, SOHLE = IM.graben_sohle;
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * (GW + 0.15)); w.restore();
+    // Sohle als durchgehendes Band: an jedem Punkt eine gemittelte Normale (Gehrung), je Abschnitt zwei Dreiecke mit Bildzuordnung –
+    // keine Lücken oder Sprünge an Feldgrenzen und Zickzack-Knicken; das Bild läuft entlang des ganzen Zugs fortlaufend weiter.
+    const dreieck = (im, s0, s1, s2, d0, d1, d2) => {   // Bilddreieck s → Zieldreieck d (affin), Ziel minimal vergrößert gegen Haarrisse
+      const den = (s1[0] - s0[0]) * (s2[1] - s0[1]) - (s2[0] - s0[0]) * (s1[1] - s0[1]); if (Math.abs(den) < 1e-9) return;
+      const a = ((d1[0] - d0[0]) * (s2[1] - s0[1]) - (d2[0] - d0[0]) * (s1[1] - s0[1])) / den, b = ((d1[1] - d0[1]) * (s2[1] - s0[1]) - (d2[1] - d0[1]) * (s1[1] - s0[1])) / den;
+      const c = ((d2[0] - d0[0]) * (s1[0] - s0[0]) - (d1[0] - d0[0]) * (s2[0] - s0[0])) / den, d = ((d2[1] - d0[1]) * (s1[0] - s0[0]) - (d1[1] - d0[1]) * (s2[0] - s0[0])) / den;
+      const e = d0[0] - a * s0[0] - c * s0[1], f = d0[1] - b * s0[0] - d * s0[1];
+      const mx = (d0[0] + d1[0] + d2[0]) / 3, my = (d0[1] + d1[1] + d2[1]) / 3, gr = q => { const vx = q[0] - mx, vy = q[1] - my, l = Math.hypot(vx, vy) || 1; return [q[0] + vx / l * 0.7, q[1] + vy / l * 0.7]; };
+      const [e0, e1, e2] = [gr(d0), gr(d1), gr(d2)];
+      w.save(); w.beginPath(); w.moveTo(e0[0], e0[1]); w.lineTo(e1[0], e1[1]); w.lineTo(e2[0], e2[1]); w.closePath(); w.clip();
+      w.setTransform(a, b, c, d, e, f); w.drawImage(im, 0, 0); w.restore();
+    };
     const sohleAlong = (pts, rows) => {
-      const im = SOHLE, ih = im.height, iw = im.width, s = TW / ih, [ya, yb] = rows || [0, ih];
-      let u = hrnd(pts.length, 3, 1) * iw;
-      for (let i = 0; i < pts.length - 1; i++) {
-        const [a, b] = [pts[i], pts[i + 1]], len = Math.hypot(b[0] - a[0], b[1] - a[1]); if (len < 0.01) continue;
-        const dx = (b[0] - a[0]) / len, dy = (b[1] - a[1]) / len, nx = -dy, ny = dx;
+      const im = SOHLE, ih = im.height, iw = im.width, s = TW / ih, [ya, yb] = rows || [0, ih], n = pts.length;
+      const seg = i => { const a = pts[i], b = pts[i + 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / l, (b[1] - a[1]) / l, l]; };
+      const N = pts.map((p, i) => {   // Gehrung: Mittel der angrenzenden Abschnittsnormalen, Länge so, dass die Breite erhalten bleibt (begrenzt)
+        const A = i > 0 ? seg(i - 1) : seg(0), B = i < n - 1 ? seg(i) : seg(n - 2), nx = -(A[1] + B[1]), ny = A[0] + B[0], l = Math.hypot(nx, ny) || 1;
+        const cos = (nx / l) * -B[1] + (ny / l) * B[0]; const k = 1 / Math.max(0.66, cos); return [nx / l * k, ny / l * k]; });
+      const at = (i, v) => [pts[i][0] + N[i][0] * (v - ih / 2) * s, pts[i][1] + N[i][1] * (v - ih / 2) * s];
+      let u = hrnd(n, 3, 1) * iw;
+      for (let i = 0; i < n - 1; i++) {
+        const len = seg(i)[2]; if (len < 0.01) continue;
         let done = 0;
-        while (done < len - 1e-6) {
-          const sx = u % iw, seg = Math.min(len - done, (iw - sx) * s), sw = seg / s, cw = Math.min(sw + 1.5, iw - sx);
-          w.setTransform(dx * s, dy * s, nx * s, ny * s, a[0] + dx * done - nx * TW / 2, a[1] + dy * done - ny * TW / 2);
-          w.drawImage(im, sx, ya, cw, yb - ya, 0, ya, cw, yb - ya);
-          done += seg; u += sw;
+        while (done < len - 1e-6) {   // an der Bildkante teilen (Bild wiederholt sich entlang des Zugs)
+          const sx = u % iw, part = Math.min(len - done, (iw - sx) * s), t0 = done / len, t1 = (done + part) / len, sx1 = sx + part / s;
+          const P = (t, v) => { const p0 = at(i, v), p1 = at(i + 1, v); return [p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t]; };
+          const a0 = P(t0, ya), a1 = P(t0, yb), b0 = P(t1, ya), b1 = P(t1, yb);
+          dreieck(im, [sx, ya], [sx1, ya], [sx, yb], a0, b0, a1);
+          dreieck(im, [sx1, ya], [sx1, yb], [sx, yb], b0, b1, a1);
+          done += part; u += part / s;
         }
       }
       w.setTransform(1, 0, 0, 1, 0, 0);
@@ -330,6 +348,9 @@ function aufbauen(cfg, IM) {
       if (im) SHADOW.push(() => { w.save(); w.translate(hx, hy); w.rotate(ang + Math.PI / 2); w.fillStyle = 'rgba(8,6,4,0.55)'; w.fillRect(-L / 2, -Wd / 2 + R * 0.06, L, Wd); w.drawImage(im, -L / 2, -Wd / 2, L, Wd); w.restore(); });
     }
   }
+  // Festung (Vorschlag, cfg.festung): Teile an Feldkoordinaten { k: 1–9, c, r, dx, dy (in R), h (SH), flip }
+  // 1 Mauer mit Zinnen, 2 Ecke, 3 Mauer glatt, 4 Tor klein, 5 Tor groß, 6 Tor zerstört, 7 Bunker heil, 8 Bunker zerstört, 9 Turm
+  for (const f of cfg.festung || []) { const [x, y] = atW(f.c, f.r); stand(IM['festung_' + f.k], x + (f.dx || 0) * R, y + (f.dy || 0) * R, (f.h || 1.4) * SH, { flip: !!f.flip, shadeK: 0.5 }); }
   // Waldrand mit Kronen hinter der Karte (Platzhalter, bis A7 geliefert ist)
   if (cfg.edgeCrowns) { const im = cfg.edgeCrowns; for (let x = R * 0.2; x < WW; x += R * (0.8 + rnd() * 0.5)) { const y = TOP - R * (0.3 + rnd() * 0.8); if (cfg.edgeCrownsX && x > cfg.edgeCrownsX) break; stand(im, x, y, 2.6 * SH * (0.85 + rnd() * 0.3), { flip: rnd() < 0.5, shadeK: 0.35 }); } }
 

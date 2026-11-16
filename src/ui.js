@@ -1067,7 +1067,8 @@ function drawFloaters(g, s, bb) {
 const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Soldat 0,8; Fahrzeuge (1,5 SH) höchstens 2,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const FIGMAP = {
-  kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], granate: ['sturm', 1], raeumer: ['sturm', 1],
+  kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], reiter: ['reiter', 1, 2], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen (groß), Flammentrupp 4 Posen
+  brand: ['flammen', 1], granate: ['sturm', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['hauptmann'],
   grenadier: ['soldat', 1], sturm: ['sturm', 1], grabenk: ['sturm', 1], eingreif: ['sturm', 1],
@@ -1086,8 +1087,8 @@ function newFigs(u, d) {
   const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
   let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
-  const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i) : [pre + sheet];
-  const ims = keys.map(figImg); if (ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
+  const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
+  const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
   return { ims, trupp: !!m[1], max: m[2] || 4, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
@@ -1124,8 +1125,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) {
-      if (pl && pl.pts) { const q = pl.pts[[1, 2, 0, 3][i]]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
-      const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
+      if (pl && pl.pts) { const q = pl.pts[[1, 2, 0, 3][i]]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
+      const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
     }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s : 0;   // im Graben tiefer, unterhalb der Grabenkante abgeschnitten

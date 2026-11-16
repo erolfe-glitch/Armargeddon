@@ -12,6 +12,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from scipy import ndimage
+sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'ui-quelle' / 'figuren'
@@ -83,6 +84,12 @@ def remove_flash(q):
 
 # Bögen mit 4 Posen im 2×2-Raster (Trupps); alle anderen sind Einzelmodelle (ein Bild, alle Teile behalten).
 TRUPP = {'soldat', 'sturm', 'pionier'}
+# Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
+REIHE = {'reiter': 3, 'flammen': 4}
+# Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
+SH_REIHE = {'reiter': 1.75}
+# Gezeichnete Bodenschatten unter den Füßen entfernen (dunkles Magenta/Pink unten an den Posen)
+OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
 SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5}   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
@@ -112,7 +119,7 @@ def cut(name, out=OUT):
     H, W = a.shape[:2]
     k = keyed(a)
     kind = kind_of(name)
-    if kind not in TRUPP:   # Einzelmodell
+    if kind not in TRUPP and kind not in REIHE:   # Einzelmodell
         q, fl = k, 0   # Einzelmodelle: nur Magenta weg (Kisten, Fahnen, Messing, Flamme gehören zum Modell)
         q = keep_parts(q, True)
         s = H_OUT * SH_SINGLE.get(kind, 1.0) / q.shape[0]
@@ -123,6 +130,24 @@ def cut(name, out=OUT):
         print(f'{name}: {im.width}×{im.height} ({SH_SINGLE.get(kind, 1.0)} SH, Breite/Höhe {im.width / im.height:.2f})' + (f'  (Mündungsfeuer entfernt: {fl} px)' if fl else ''))
         return
     poses = []
+    if kind in REIHE:   # Posen nebeneinander: größte zusammenhängende Teile, von links nach rechts
+        if name in OHNE_SCHATTEN:   # gemalter Schatten = Hintergrundfarbe abgedunkelt: rot/blau deutlich über grün, nicht hell
+            r, g, b = [a[..., i].astype(int) for i in range(3)]
+            sch = (np.minimum(r, b) - g > 28) & ((r + g + b) < 560)
+            k = k.copy(); k[ndimage.binary_dilation(sch, iterations=1), 3] = 0
+        al = ndimage.binary_closing(k[..., 3] > 60, iterations=4); lab, n = ndimage.label(al)
+        sizes = ndimage.sum(al, lab, range(1, n + 1)); big = sorted(range(1, n + 1), key=lambda i: -sizes[i - 1])[:REIHE[kind]]
+        fo = ndimage.find_objects(lab); big.sort(key=lambda i: fo[i - 1][1].start)
+        for j, i in enumerate(big, 1):
+            sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0
+            poses.append((j, keep_parts(t, True), 0))
+        hmax = max(p[1].shape[0] for p in poses); s = H_OUT * SH_REIHE.get(kind, 1.0) / hmax
+        out.mkdir(parents=True, exist_ok=True)
+        for i, q, fl in poses:
+            im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
+            im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
+            im.save(out / f'{name}_{i}.png'); print(f'{name}_{i}: {im.width}×{im.height}')
+        return
     for i, (y0, x0) in enumerate([(0, 0), (0, W // 2), (H // 2, 0), (H // 2, W // 2)], 1):
         q = k[y0:y0 + H // 2, x0:x0 + W // 2]
         q, fl = remove_flash(q)
@@ -136,6 +161,23 @@ def cut(name, out=OUT):
         im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
         im.save(out / f'{name}_{i}.png')
         print(f'{name}_{i}: {im.width}×{im.height}' + (f'  (Mündungsfeuer entfernt: {fl} px)' if fl else ''))
+
+
+def angleichen(names):
+    """Farbe/Helligkeit neuer Bilder an die vorhandenen Figuren der Fraktion angleichen (Mittel der Soldaten- und Sturmbögen):
+    Sättigung, Wärme (R−B) und Helligkeit über die deckenden Pixel, Verfahren aus tools/unit_color.py."""
+    sys.path.insert(0, str(ROOT / 'tools'))
+    import unit_color as uc
+    for fr in ('konkordat', 'aschenwacht'):
+        ref = [f for f in GAME.glob(f'{fr}_*.png') if any(t in f.stem for t in ('_soldat_', '_sturm_'))]
+        st = [uc.stats(np.asarray(Image.open(f).convert('RGBA'))[..., :3] / 255, np.asarray(Image.open(f).convert('RGBA'))[..., 3] > 128) for f in ref]
+        ziel = {k: float(np.mean([x[k] for x in st])) for k in ('sätt', 'wärme', 'hell')}
+        for f in sorted(GAME.glob(f'{fr}_*.png')):
+            if not any(f.stem == n or f.stem.startswith(n + '_') for n in names if n.startswith(fr)): continue
+            a = np.asarray(Image.open(f).convert('RGBA')).astype(np.float64); rgb, m = a[..., :3] / 255, a[..., 3] > 128
+            vor = uc.stats(rgb, m); rgb = uc.correct(rgb, m, ziel['sätt'], ziel['wärme'], ziel['hell'])
+            a[..., :3] = rgb * 255; Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8), 'RGBA').save(f)
+            print(f"  {f.stem}: hell {vor['hell']:.2f}→{ziel['hell']:.2f}, sätt {vor['sätt']:.2f}→{ziel['sätt']:.2f}, wärme {vor['wärme']:.3f}→{ziel['wärme']:.3f}")
 
 
 def embed():
@@ -161,5 +203,7 @@ if __name__ == '__main__':
     names = args or sorted(p.stem for p in SRC.glob('*.png'))
     for n in names:
         cut(n, GAME if game else OUT)
+    if game and '--angleichen' in sys.argv:
+        angleichen(names)
     if game:
         embed()
