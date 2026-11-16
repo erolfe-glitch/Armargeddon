@@ -337,8 +337,12 @@ function aufbauen(cfg, IM) {
     if (t === 'trench' && TR.length) {
       let best = null; for (const p of TR) p.forEach((pt, i) => { const d = Math.hypot(pt[0] - hx, pt[1] - hy); if (!best || d < best.d) best = { d, p, i }; });
       if (!best || best.d > R * 0.9) return null;
-      const a = best.p[Math.max(0, best.i - 3)], b = best.p[Math.min(best.p.length - 1, best.i + 3)], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, dx = (b[0] - a[0]) / L, dy = (b[1] - a[1]) / L, base = best.p[best.i];
-      return { pts: [-0.48, -0.16, 0.16, 0.48].map((s, i) => [base[0] + dx * s * R + (i % 2 ? 0.05 : -0.05) * R * -dy, base[1] + dy * s * R + (i % 2 ? 0.05 : -0.05) * R * dx]), sink: 0.32 };
+      // entlang des Zugs (auch durch die Zickzack-Knicke) hintereinander, leicht versetzt; seitlich höchstens 0,06 R: alle Füße in der Sohle (0,4 R breit)
+      const p = best.p, arc = [0]; for (let i = 1; i < p.length; i++) arc.push(arc[i - 1] + Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]));
+      const at = sx => { sx = Math.max(0, Math.min(arc[arc.length - 1], sx)); let i = 1; while (i < arc.length - 1 && arc[i] < sx) i++;
+        const t = (sx - arc[i - 1]) / ((arc[i] - arc[i - 1]) || 1), dx = p[i][0] - p[i - 1][0], dy = p[i][1] - p[i - 1][1], l = Math.hypot(dx, dy) || 1;
+        return [p[i - 1][0] + dx * t, p[i - 1][1] + dy * t, dx / l, dy / l]; };
+      return { pts: [-0.6, -0.2, 0.2, 0.6].map((o, i) => { const [x, y, dx, dy] = at(arc[best.i] + o * R), q = (i % 2 ? 0.06 : -0.06) * R; return [x - dy * q, y + dx * q]; }), sink: 0.32 };
     }
     if (t === 'village') return { sy: 0.85 };
     return null;

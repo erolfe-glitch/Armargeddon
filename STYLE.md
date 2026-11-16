@@ -173,7 +173,7 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
   - Aufrecht: Grabenkante vorn (Sandsäcke Außenseite, 0,32 SH) und hinten (Verschalung Innenseite mit Sandsack obenauf, **0,28 SH**, seit 2026-11-16 auf 2/3 gesenkt), je ±0,38 R neben der Linie. Welche Kante: zeigt die Innenseite eines Abschnitts deutlich vom Betrachter weg (nach Norden), steht dort „vorn“, sonst „hinten“ – fest nach Blickrichtung, damit beim Schwenken nichts wechselt.
   - Abschnitte, die in die Tiefe laufen (Verbindungsgräben): Seitenwände als Verschalung, **nach außen gekippt**. Die Oberkante liegt bis 0,9 × Wandhöhe neben der Fußlinie (projiziert) und auf 0,65 × Höhe, damit die Wand perspektivisch als Fläche sichtbar ist und der Graben nicht wie ein Steg wirkt. Übergang je nach Richtung stufenlos.
   - An Kreuzungen und Abzweigen lässt der Code die Kante dort weg, wo ein anderer Grabenzug näher als 0,42 R ist.
-  - Einheit im Graben: **0,32 SH tiefer**, Figuren auf der Grabenlinie aufgereiht (Tiefe × 0,38 um die Linie), unterhalb der vorderen Kante abgeschnitten.
+  - Einheit im Graben: **0,32 SH tiefer**, Figuren hintereinander auf der Grabenlinie (entlang des Zugs, auch durch die Zickzack-Knicke, Abstand 0,4 R, seitlich höchstens 0,06 R – alle Füße in der Sohle), unterhalb der Kante abgeschnitten. Im Spiel wird jede Figur einzeln mit den Wandstücken nach Tiefe sortiert: Sohle → hintere Wand → Figur → vordere Wand.
 - **Wald im Spielfeld (licht):**
   - Waldboden-Textur.
   - Je Feld schmale Stämme (Aufsteller) an den Ecken 4 und 5, Einzug 0,85, 1,4–1,8 SH.
