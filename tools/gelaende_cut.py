@@ -177,6 +177,15 @@ def pfaehle_ausduennen(name, jede=2):
     for i in idx:
         if grp and i - grp[-1][1] <= 3: grp[-1][1] = i
         else: grp.append([i, i])
+    # Einzelne Pfähle als Aufsteller (draht_pfahl_k): der Draht wird im Spiel als gespannte Linien zwischen den Pfählen gezeichnet
+    for k, (a, b) in enumerate(grp, 1):
+        t = im[:, max(0, a - 3):b + 4].copy()
+        core = (t[..., 3] > 128).sum(axis=1) >= (b - a + 1) * 0.5   # Zeilen, in denen der Pfahl selbst steht
+        rows = np.where(core)[0]
+        t = t[rows.min():rows.max() + 1]
+        t[(t[..., 3] < 140), 3] = 0   # halbdurchsichtige Reste (Drahtsaum) weg
+        out = Image.fromarray(t, 'RGBA'); out.save(OUT / f'draht_pfahl_{k}.png'); out.save(PROBE / f'g_draht_pfahl_{k}.webp', quality=90, method=6)
+        print(f'  → draht_pfahl_{k}: {t.shape[1]}×{t.shape[0]}')
     weg = np.zeros(im.shape[1], bool)
     for k, (a, b) in enumerate(grp):
         if k % jede: weg[max(0, a - 4):b + 5] = True

@@ -22,7 +22,7 @@ const LISTE = {
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4'],   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k)],   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
 
 async function bauen(cfg) {
@@ -32,7 +32,7 @@ async function bauen(cfg) {
   await Promise.all([...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand].map(async n => IM[n] = await load(`gelaende/g_${n}.webp`)));
   const FIG = {}; for (const s of ['konkordat', 'aschenwacht']) FIG[s] = await Promise.all([1, 2, 3, 4].map(i => load(`gelaende/fig_${s}_soldat_${i}.webp`)));
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]);
-  const SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
+  const PFAEHLE = pool('draht_pfahl'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
 
   // ---------- Welt ----------
   const R = cfg.R || 120, SH = 0.8 * R, COLS = cfg.cols, ROWS = cfg.rows, MX = R * 1.4, TOP = R * 2.4, MB = R * 1.2;   // Ränder: Gelände läuft über die Karte hinaus
@@ -125,13 +125,13 @@ async function bauen(cfg) {
     const k = size * R / Math.max(im.width, im.height);
     w.save(); w.globalAlpha = alpha; w.translate(x, y); w.rotate(rot); w.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k); w.restore();
   }
-  const F = i => IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost, 7 Trümmerstreu, 8 Spuren
+  const F = i => IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), q = hrnd(c, r, 9);
     if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? IM.trichter_gross_1 : F(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(F(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(F(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
-    else if (t === 'mud') { flach(F(q < 0.5 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.7 + q * 0.4, q * 30); if (q > 0.3) flach(F(8), ...jit(c, r, 3, 0.6), 0.9, q * 17, 0.85); }
-    else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(F(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.28) flach(F(8), ...jit(c, r, 1, 0.8), 0.9, q * 40, 0.8); else if (q < 0.34) flach(F(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.42) flach(F(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
+    else if (t === 'mud') { flach(F(q < 0.5 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.7 + q * 0.4, q * 30); }
+    else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(F(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.34) flach(F(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.42) flach(F(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
     else if (t === 'village' || t === 'rubble') { flach(F(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
     else if (t === 'wire') { if (q < 0.4) flach(F(1), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
   }
@@ -201,6 +201,30 @@ async function bauen(cfg) {
     if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.42); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(8,6,4,0.55)'); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
   }
   const flipR = (c, r, k) => hrnd(c, r, k) < 0.5;
+  // Drahtzaun A→B: Pfähle etwa alle 0,5 R (Aufsteller), dazwischen drei gespannte Drähte mit Stacheln, dunkel und ohne Fläche dahinter
+  function zaun(A, B, sd) {
+    const len = Math.hypot(B[0] - A[0], B[1] - A[1]), n = Math.max(1, Math.round(len / (R * 0.5))), hP = 0.55 * SH, P = [];
+    for (let i = 0; i <= n; i++) { const t = i / n, x = A[0] + (B[0] - A[0]) * t, y = A[1] + (B[1] - A[1]) * t, im = PFAEHLE[(sd + i * 3) % PFAEHLE.length], h = hP * (0.88 + hrnd(sd, i, 1) * 0.2);
+      P.push([x, y, h, hrnd(sd, i, 2) < 0.5]); stand(im, x, y, h, { flip: P[i][3], shadeK: 0.5 }); }
+    for (let i = 0; i < n; i++) {
+      const [x1, y1, h1] = P[i], [x2, y2, h2] = P[i + 1];
+      DRAW.push({ y: (y1 + y2) / 2 + R * 0.001, f: () => {
+        const a = proj(x1, y1), b = proj(x2, y2); if (a[2] <= 1 || b[2] <= 1) return;
+        const sa = Fk() / a[2], sb = Fk() / b[2], lw = Math.max(1, 0.011 * R * (sa + sb) / 2);
+        g.save(); g.lineCap = 'round'; g.strokeStyle = '#1d1510'; g.lineWidth = lw;
+        for (const f of [0.28, 0.55, 0.82]) {   // drei Drähte, leicht durchhängend
+          const ya = a[1] - h1 * sa * f, yb = b[1] - h2 * sb * f, mx = (a[0] + b[0]) / 2, my = (ya + yb) / 2 + 0.035 * SH * (sa + sb) / 2;
+          g.beginPath(); g.moveTo(a[0], ya); g.quadraticCurveTo(mx, my, b[0], yb); g.stroke();
+          const nb = Math.max(2, Math.round(Math.hypot(b[0] - a[0], yb - ya) / (9 * U)));   // Stacheln: kleine Kreuze entlang des Drahts
+          g.beginPath();
+          for (let j = 1; j < nb; j++) { const t = j / nb, x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], y = (1 - t) * (1 - t) * ya + 2 * (1 - t) * t * my + t * t * yb, d = lw * 1.8;
+            g.moveTo(x - d, y - d); g.lineTo(x + d, y + d); g.moveTo(x - d, y + d); g.lineTo(x + d, y - d); }
+          g.lineWidth = lw * 0.8; g.stroke(); g.lineWidth = lw;
+        }
+        g.restore();
+      } });
+    }
+  }
 
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
@@ -300,10 +324,9 @@ async function bauen(cfg) {
       for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) });
     } else if (t === 'bunker') {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
-    } else if (t === 'wire') {   // Drahtgürtel: zwei Stücke quer zur Blickrichtung, leicht schräg, hinten und vorn im Feld
-      for (const [k, dy] of [[1, -0.36], [2, 0.28]]) { const ang = (q(k) - 0.5) * 0.6, L = R * (0.75 + q(k + 5) * 0.2), cx = hx + (q(k + 9) - 0.5) * R * 0.3, cy = hy + dy * R;
-        wall(IM.draht, [cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], 0.6 * SH, { u0: q(k + 3) * 3, shade: 0.2,
-          filter: hS => hS > 45 * U ? `brightness(1.3) drop-shadow(0 0 ${Math.max(1, Math.round(1.2 * U))}px rgba(215,195,160,0.7))` : 'brightness(1.7) contrast(1.1)', alpha: hS => hS > 45 * U ? 1 : 0.85 }); }   // heller Saum nur von nah; von weit Rostfarbe aufgehellt   // Streifen mit ausgedünnten Pfählen (gelaende_cut.py), Draht aufgehellt
+    } else if (t === 'wire') {   // Drahtgürtel: zwei Zäune je Feld, quer zur Blickrichtung, leicht schräg: einzelne Pfähle, dazwischen gespannter Draht
+      for (const [k, dy] of [[1, -0.36], [2, 0.3]]) { const ang = (q(k) - 0.5) * 0.6, L = R * (0.72 + q(k + 5) * 0.2), cx = hx + (q(k + 9) - 0.5) * R * 0.3, cy = hy + dy * R;
+        zaun([cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], c * 31 + r * 7 + k); }
     } else if (t === 'barrikade') {
       const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });
     } else if (t === 'bridge') {   // Brücke: Bohlen quer über das Wasser
@@ -321,7 +344,14 @@ async function bauen(cfg) {
   const NAMES = [];
   for (const tp of cfg.trupps || []) {
     const { side, c, r } = tp, ims = side === 'A' ? FIG.konkordat : FIG.aschenwacht, flip = side === 'D', [hx, hy] = hexC(c, r), t = terr(c, r);
-    SHADOW.push(() => { w.save(); w.lineWidth = R * 0.03; w.strokeStyle = side === 'A' ? 'rgba(142,43,34,0.85)' : 'rgba(125,132,113,0.9)'; w.beginPath(); w.ellipse(hx, hy + R * 0.02, R * 0.78, R * 0.7, 0, 0, 7); w.stroke(); w.restore(); });
+    SHADOW.push(() => {   // Standring: nah dezent; herausgezoomt kräftiger und etwas größer, damit man die Trupps findet
+      const sc = Fk() / proj(hx, hy)[2], fern = Math.max(0, Math.min(1, (130 * U - R * sc) / (70 * U)));   // 0 = nah (Feldradius ≥ 130 px), 1 = weit (≤ 60 px)
+      const lw = Math.max(R * 0.03, (2.2 + 2.3 * fern) * U / sc), rr = 1 + 0.1 * fern, col = side === 'A' ? [196, 62, 46] : [178, 188, 160];
+      w.save();
+      if (fern > 0) { w.lineWidth = lw * 2.2; w.strokeStyle = `rgba(10,7,5,${0.55 * fern})`; w.beginPath(); w.ellipse(hx, hy + R * 0.02, R * 0.78 * rr, R * 0.7 * rr, 0, 0, 7); w.stroke(); }
+      w.lineWidth = lw; w.strokeStyle = fern > 0 ? `rgba(${col},${0.85 + 0.15 * fern})` : (side === 'A' ? 'rgba(142,43,34,0.85)' : 'rgba(125,132,113,0.9)');
+      w.beginPath(); w.ellipse(hx, hy + R * 0.02, R * 0.78 * rr, R * 0.7 * rr, 0, 0, 7); w.stroke(); w.restore();
+    });
     let pos;
     if (t === 'trench' && TR.length) {   // im Graben: auf der Grabenlinie aufgereiht, entlang ihrer Richtung
       let best = null; for (const p of TR) p.forEach((pt, i) => { const d = Math.hypot(pt[0] - hx, pt[1] - hy); if (!best || d < best.d) best = { d, p, i }; });

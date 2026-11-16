@@ -196,7 +196,9 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
   - Gräben werden aus den Grabenfeldern zu Zügen verbunden; Züge am Kartenrand laufen bis zur Kante weiter (ohne Erdwall).
   - **Gräben im Zickzack** (Schulterwehren, seit 2026-11-16, Schalter `zickzack`): Der Zug wird alle 0,87 R neu gesetzt und abwechselnd um ±0,3 R seitlich versetzt. Das ist nur Darstellung innerhalb der Grabenfelder; welche Felder Graben sind, bestimmen weiter die Kartendaten (Regeln unverändert).
   - **Brustwehr zur Feindseite:** Bei Stücken, die in die Tiefe laufen, steht auf der Feindseite zusätzlich eine aufrechte Sandsack-Brustwehr (Kante vorn, 0,4 SH), 0,24 R weiter außen. Feindseite: Konkordat nach Osten, Aschenwacht nach Westen; Besitzer nach Aufstellungszone.
-  - **Draht:** jeder zweite Pfahl ist aus dem Streifen herausgeschnitten, die Drahtlinien um 1 px verdickt (rostbraun). Von nah bekommt der Draht einen hellen Saum, von weit wird er aufgehellt.
+  - **Draht** (seit 2026-11-16 ohne Streifenbild): einzelne Pfähle (aus dem Drahtbogen geschnitten, `draht_pfahl_1–4`) etwa alle 0,5 R, dazwischen drei gespannte, leicht durchhängende Drähte mit Stacheln, vom Code gezeichnet, dunkel, ohne Fläche dahinter. Zwei Zäune je Feld.
+  - **Standringe:** nah dezent wie bisher. Herausgezoomt (Feldradius unter 130 px auf dem Schirm) werden sie kräftiger, heller, mit dunklem Saum und bis 10 % größer, damit man die Trupps findet.
+  - Flaches Detail „Spuren“ (`flach_details_8`) nicht verwenden: wirkt als dunkles Rechteck.
   - **Panzersperren** (Feldart `sperre`): zwei Teile je Feld. Großer Trichter: zweite Variante auf Trichterfeldern.
   - **Helligkeit:** Boden ×1,7, Kontrast ×1,2, damit sich die Trupps abheben.
   - **Bilder mit schwarzem Hintergrund** lassen sich nicht sauber freistellen (dunkle Trichter und Wasser werden löchrig). Für Gelände immer Magenta verwenden.
