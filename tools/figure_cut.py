@@ -87,15 +87,17 @@ TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall'}
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
-SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
+SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3}
+# Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
+TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85}   # Pirschjäger: höchste Pose geduckt
+SH_REIHE = {'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17}   # Pirschjäger: höchste Pose geduckt
 # Gezeichnete Bodenschatten unter den Füßen entfernen (dunkles Magenta/Pink unten an den Posen)
 OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
 SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5,
-             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
+             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
 # Aschenwacht-Fahnen: Schwarz-Weiß-Rot (echte Flagge) → eigene Farben Aschgrau / Schwarz / Knochenweiß, nur im Fahnenbereich (Anteile x0, y0, x1, y1)
 FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
 ASCHGRAU, KNOCHEN = np.array([108, 106, 100.]), np.array([222, 212, 186.])
@@ -142,6 +144,13 @@ def cut(name, out=OUT):
     H, W = a.shape[:2]
     k = keyed(a)
     kind = kind_of(name)
+    if name in TEILUNG:   # unten Winde mit Mann, oben Ballon mit Korb; gleicher Maßstab, Seil zeichnet das Spiel
+        y = int(H * TEILUNG[name]); lo = k.copy(); lo[:y, :, 3] = 0; hi = k.copy(); hi[y:, :, 3] = 0
+        lo = keep_parts(lo, True); hi = keep_parts(hi, True); s = H_OUT * SH_SINGLE.get(kind, 1.0) / lo.shape[0]; out.mkdir(parents=True, exist_ok=True)
+        for q, nm in ((lo, name), (hi, name + '_luft')):
+            im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA'); im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
+            im.save(out / f'{nm}.png'); print(f'{nm}: {im.width}×{im.height}')
+        return
     if kind in SPALTEN:   # Posen an festen Stellen getrennt, je Streifen alle großen Teile (Mann + Hund)
         sp = SPALTEN[kind]
         if isinstance(sp, int):   # automatisch: je Trennstelle die Spalte mit der wenigsten Deckung nahe der gleichmäßigen Teilung

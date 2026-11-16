@@ -1172,6 +1172,7 @@ const FIGMAP = {
   grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['sturm', 1],
   pionierD: ['pionier', 1], minen: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
+  ballon: ['ballon'], signal: ['signal', 1, 2],   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
 };
@@ -1189,7 +1190,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -1217,6 +1218,16 @@ function vehEnv(im) {
   for (let x = 0; x < W; x += step) { for (let y = H - 1; y >= 0; y--) if (data[(y * W + x) * 4 + 3] > 120) { pts.push([x / W, (y + 1) / H]); break; } }
   const env = pts.length ? { pts, mid: pts.reduce((n, q) => n + q[1], 0) / pts.length } : null;
   VEH_ENV.set(im, env); return env;
+}
+// Fesselballon: Ballon mit Korb kleiner und deutlich höher über der Winde, Halteseil von der Seiltrommel zum Korb, leichtes Schwanken
+function drawBallon(g, s, u, x, top, w, h, flip, filt) {
+  const im = figImg((u.side === 'A' ? 'konkordat_' : 'aschenwacht_') + 'ballon_luft'); if (!im) return;
+  const k = 0.7, bh = im.naturalHeight / 320 * FIG_SH * s * k, bw = bh * im.naturalWidth / im.naturalHeight, sw = Math.sin(now / 1100 + u.id) * s * 0.04;
+  const sx = v => flip ? x + w / 2 - v * w : x - w / 2 + v * w;
+  const ax = sx(0.3), ay = top + h * 0.22;   // Seiltrommel der Winde
+  const bx = ax + (flip ? 1 : -1) * s * 0.15 + sw, by = top - s * 1.1 + Math.sin(now / 900 + u.id) * s * 0.03;   // Korbunterkante über dem Feld
+  g.save(); g.strokeStyle = 'rgba(30,24,16,0.9)'; g.lineWidth = Math.max(1, s * 0.018); g.beginPath(); g.moveTo(ax, ay); g.quadraticCurveTo((ax + bx) / 2 + s * 0.06, (ay + by) / 2, bx, by); g.stroke();
+  if (filt) g.filter = filt; g.translate(bx, by); if (flip) g.scale(-1, 1); g.drawImage(im, -bw * 0.53, -bh, bw, bh); g.restore(); g.filter = 'none';
 }
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
@@ -1275,6 +1286,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
     g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore();
     g.filter = 'none';
+    if (u.type === 'ballon') drawBallon(g, s, u, x, top, w, h, flip, filt);
     return top;
   }
   for (const f of list) {
