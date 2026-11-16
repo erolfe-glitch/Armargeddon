@@ -1,22 +1,28 @@
-// Gelände aus Bausteinen für die neue Ansicht (Probe, nicht im Spiel). Regeln: STYLE.md „Gelände-Bausteine“.
-// Gemeinsam genutzt von entwurf/probe/gelaende.html (Probe) und entwurf/probe/karte.html (ganze Karte).
-// Bilder: gelaende/g_*.webp (tools/gelaende_cut.py), Figuren gelaende/fig_*.webp.
-// Aufruf: GBau.bauen(cfg) mit
-//   cols, rows          Kartengröße in Feldern
-//   terr(c, r)          Geländeart je Feld (Namen wie TERRAIN in engine.js: open, mud, crater, trench, wire, village, forest, wald,
-//                       bunker, barrikade, sumpf, canal, bridge; dazu 'rubble' = Trümmerfeld, 'grass' = Gras)
-//   flags(c, r)         { road, river } (optional)
-//   trench              Grabenzüge als Listen von Feldkoordinaten [c, r] (optional; sonst aus den trench-Feldern zusammengesetzt)
-//   trupps              [{ side: 'A'|'D', c, r, name }]
-//   edgeCrowns          Bild für Baumkronen am hinteren Kartenrand (optional, Platzhalter bis zur Lieferung A7)
-//   seed, zoom, ziel, ganz, punkte, namen
+// Gelände aus Bausteinen für die neue Ansicht. Regeln: STYLE.md „Gelände-Bausteine“.
+// Genutzt vom Spiel (ui.js, neue Ansicht, zuerst nur Grauwall) und von den Testseiten entwurf/probe/gelaende.html und karte.html.
+// Bilder: im Spiel aus window.GELAENDE (src/gelaende.js, erzeugt mit tools/gelaende_cut.py --einbetten), auf den Testseiten gelaende/g_*.webp.
+//
+// GBau.bilder(quelle)       lädt alle Bausteine → Promise<IM>; quelle(name) liefert die Bildadresse
+// GBau.aufbauen(cfg, IM)    baut das flache Weltbild (Boden, flache Details, Grabensohle, Schatten) und die Liste der aufrechten Teile:
+//   cols, rows              Kartengröße in Feldern
+//   terr(c, r)              Geländeart je Feld (Namen wie TERRAIN in engine.js: open, mud, crater, trench, wire, village, forest, wald,
+//                           bunker, barrikade, sumpf, canal, bridge; dazu 'rubble' = Trümmerfeld, 'grass' = Gras, 'sperre' = Panzersperren)
+//   flags(c, r)             { road, river } (optional)
+//   trench                  Grabenzüge als Listen von Feldkoordinaten [c, r] (optional; sonst aus den trench-Feldern zusammengesetzt)
+//   zickzack, grabenSeite(c, r) → 'A'|'D'   Gräben im Zickzack, Brustwehr zur Feindseite
+//   R, rand {mx, top, mb}   Feldradius im Weltbild und Ränder um die Karte (Spiel: R = L.s, mx 0, top L.top)
+//   raster (Standard an), seed, edgeCrowns, edgeCrownsX
+// → { ground, pieces, platz(c, r), setView({ g, proj, F, U, units }), hexC, R, SH, WW, WH, TR }
+//   pieces: [{ y, f }] nach Tiefe sortiert; f() zeichnet mit den zuletzt per setView gesetzten Werten (proj(x, y) → [sx, sy, Tiefe], F = Brennweite).
+//   platz(c, r): wie Trupps im Feld stehen (Graben: Weltpunkte auf der Grabenlinie + Absenkung; Ruine: Tiefe gestaucht) oder null.
+// GBau.bauen(cfg)           Testseiten: alles laden, aufbauen, eigene Kamera, Trupps, auf cfg.canvas zeichnen.
 (function () {
 'use strict';
 const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
 const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: ['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n),
-  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1'],
+  flach: [...[1, 2, 3, 4, 5, 6, 7].map(k => 'flach_details_' + k), 'trichter_gross_1'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'draht', 'barrikade', 'wald_unterholz'],
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
@@ -24,18 +30,24 @@ const LISTE = {
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k)],   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
+const NAMEN = [...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand];
 
-async function bauen(cfg) {
-  const cv = cfg.canvas, g = cv.getContext('2d');
-  const W = cv.width = Math.round(innerWidth * devicePixelRatio), H = cv.height = Math.round(innerHeight * devicePixelRatio), U = W / 1920;
+async function bilder(quelle) {
   const IM = {};
-  await Promise.all([...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand].map(async n => IM[n] = await load(`gelaende/g_${n}.webp`)));
-  const FIG = {}; for (const s of ['konkordat', 'aschenwacht']) FIG[s] = await Promise.all([1, 2, 3, 4].map(i => load(`gelaende/fig_${s}_soldat_${i}.webp`)));
-  const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]);
+  await Promise.all(NAMEN.map(async n => IM[n] = await load(quelle(n))));
+  return IM;
+}
+
+function aufbauen(cfg, IM) {
+  const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
   const PFAEHLE = pool('draht_pfahl'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
+  // Ansicht (setView): wird erst beim Zeichnen gebraucht
+  let g = null, proj = null, F = 1, U = 1, UNITS = [];
+  const Fk = () => F;
 
   // ---------- Welt ----------
-  const R = cfg.R || 120, SH = 0.8 * R, COLS = cfg.cols, ROWS = cfg.rows, MX = R * 1.4, TOP = R * 2.4, MB = R * 1.2;   // Ränder: Gelände läuft über die Karte hinaus
+  const R = cfg.R || 120, SH = 0.8 * R, COLS = cfg.cols, ROWS = cfg.rows;
+  const rd = cfg.rand || {}, MX = rd.mx ?? R * 1.4, TOP = rd.top ?? R * 2.4, MB = rd.mb ?? R * 1.2;   // Ränder: Gelände läuft über die Karte hinaus
   const WW = Math.round(MX * 2 + R * (1.5 * COLS + 0.5)), WH = Math.round(TOP + R * SQ3 * (ROWS + 0.5) + MB);
   const hexC = (c, r) => [MX + R * (1 + 1.5 * c), TOP + R * SQ3 * (r + 0.5 * (c & 1) + 0.5)];
   const atW = (c, r) => [MX + R * (1 + 1.5 * c), TOP + R * SQ3 * (r + 0.5 * (Math.round(c) & 1) + 0.5)];   // Feldkoordinate mit Bruchteil
@@ -46,7 +58,6 @@ async function bauen(cfg) {
   const flags = (c, r) => (inMap(c, r) && cfg.flags && cfg.flags(c, r)) || {};
   const nbrs = (c, r) => (c & 1 ? [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, 1], [1, 1]] : [[0, -1], [0, 1], [-1, -1], [1, -1], [-1, 0], [1, 0]]).map(([dc, dr]) => [c + dc, r + dr]);
   let seed = cfg.seed || 1917; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const pick = a => a[Math.floor(rnd() * a.length)];
   const hrnd = (c, r, k = 0) => { let s = (c * 73856093) ^ (r * 19349663) ^ (k * 83492791) ^ (cfg.seed || 1917); s = (s ^ (s >>> 13)) * 1274126177; return ((s ^ (s >>> 16)) >>> 0) / 4294967296; };
 
   const WCV = document.createElement('canvas'); WCV.width = WW; WCV.height = WH; const w = WCV.getContext('2d');
@@ -69,7 +80,7 @@ async function bauen(cfg) {
   }
   const felder = test => { const out = []; for (let c = -1; c <= COLS; c++) for (let r = -2; r <= ROWS; r++) if (test(terr(c, r), c, r)) out.push([c, r]); return out; };
   // Gras: offene Felder nach großflächigem Rauschen (nicht feldweise), Feldart 'grass' immer
-  const noise = (x, y) => Math.sin(x * 0.011 + 1.3) * Math.sin(y * 0.013 + 0.4) + 0.6 * Math.sin(x * 0.023 + y * 0.017);
+  const noise = (x, y) => Math.sin(x * 0.011 * 120 / R + 1.3) * Math.sin(y * 0.013 * 120 / R + 0.4) + 0.6 * Math.sin((x * 0.023 + y * 0.017) * 120 / R);
   schicht('boden_gras', ctx => { for (const [c, r] of felder((t, c, r) => t === 'grass' || ((t === 'open' || t === 'out') && noise(...hexC(c, r)) > 0.15))) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.22, 0.95, 37);
   schicht('boden_waldboden', ctx => { for (const [c, r] of felder(t => t === 'forest' || t === 'wald')) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.16, 1, 91);
   schicht('boden_truemmer', ctx => { for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 1, 13);
@@ -77,8 +88,7 @@ async function bauen(cfg) {
   // Großflächige Helligkeitsflecken gegen Kachelwiederholung
   for (let i = 0; i < WW * WH / (R * R) * 0.35; i++) { const x = rnd() * WW, y = rnd() * WH, rr = R * (0.8 + rnd() * 1.8), d = rnd() < 0.55;
     const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, d ? 'rgba(10,7,5,0.2)' : 'rgba(150,130,100,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); w.fillStyle = gr; w.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
-
-  // Boden insgesamt aufhellen: die gelieferten Texturen sind sehr dunkel (Helligkeit 0,08–0,17), Figuren sollen sich abheben (STYLE: Figuren eine Stufe heller als der Boden)
+  // Boden insgesamt aufhellen: die gelieferten Texturen sind sehr dunkel (Helligkeit 0,08–0,17), Figuren sollen sich abheben
   l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.filter = `brightness(${cfg.hell || 1.7}) contrast(${cfg.kontrast || 1.2}) saturate(0.95)`; l.drawImage(WCV, 0, 0); l.filter = 'none';
   w.clearRect(0, 0, WW, WH); w.drawImage(LY, 0, 0);
 
@@ -122,45 +132,27 @@ async function bauen(cfg) {
 
   // ---------- 2. Flache Details ----------
   function flach(im, x, y, size, rot, alpha = 1) {   // size: größte Ausdehnung in R
+    if (!im) return;
     const k = size * R / Math.max(im.width, im.height);
     w.save(); w.globalAlpha = alpha; w.translate(x, y); w.rotate(rot); w.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k); w.restore();
   }
-  const F = i => IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
+  const Fd = i => IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), q = hrnd(c, r, 9);
-    if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? IM.trichter_gross_1 : F(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(F(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(F(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
-    else if (t === 'mud') { flach(F(q < 0.5 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.7 + q * 0.4, q * 30); }
-    else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(F(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.34) flach(F(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.42) flach(F(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
-    else if (t === 'village' || t === 'rubble') { flach(F(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
-    else if (t === 'wire') { if (q < 0.4) flach(F(1), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
+    if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? IM.trichter_gross_1 : Fd(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(Fd(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(Fd(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
+    else if (t === 'mud') { flach(Fd(q < 0.5 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.7 + q * 0.4, q * 30); }
+    else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(Fd(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.34) flach(Fd(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.42) flach(Fd(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
+    else if (t === 'village' || t === 'rubble') { flach(Fd(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
+    else if (t === 'wire') { if (q < 0.4) flach(Fd(1), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
   }
 
-  // ---------- Kamera ----------
-  let ZOOM = cfg.zoom || 1, TGT;
-  const cam = () => {
-    const pitch = (39 + 19 * Math.max(0, Math.min(1, (1 - ZOOM) / 0.65))) * Math.PI / 180, ca = Math.cos(pitch), sa = Math.sin(pitch), RC = 23 * R;
-    const F = W * RC / ((8.5 / ZOOM) * 1.5 * R);
-    return { F, C: [TGT[0], TGT[1] + RC * ca, RC * sa], f: [-ca, -sa], up: [-sa, ca] };
-  };
-  let K;
-  const proj = (x, y, z = 0) => { const dy = y - K.C[1], dz = z - K.C[2], zc = dy * K.f[0] + dz * K.f[1]; return [W / 2 + K.F * (x - K.C[0]) / zc, H / 2 - K.F * (dy * K.up[0] + dz * K.up[1]) / zc, zc]; };
-  const unprojY = sy => { const k = -(sy - H / 2) / K.F, dy = K.f[0] + k * K.up[0], dz = K.f[1] + k * K.up[1]; if (dz >= -1e-6) return null; return K.C[1] - K.C[2] / dz * dy; };
-  const x0 = hexC(0, 0)[0] - R, x1 = hexC(COLS - 1, 0)[0] + R, y0 = TOP, y1 = hexC(0, ROWS - 1)[1] + R * SQ3 * 0.5 + R * 0.4;
-  if (cfg.ganz) {   // größter Zoom, bei dem alle vier Kartenecken ins Bild passen (wie „ganze Karte“ im Spiel)
-    TGT = [(x0 + x1) / 2, (y0 + y1) / 2];
-    const fits = z => { ZOOM = z; K = cam(); return [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].every(([x, y]) => { const p = proj(x, y); return p[2] > 0 && p[0] >= -2 && p[0] <= W + 2 && p[1] >= H * 0.05 && p[1] <= H + 2; }); };
-    let lo = 0.08, hi = 1; for (let i = 0; i < 40; i++) { const md = (lo + hi) / 2; if (fits(md)) lo = md; else hi = md; } ZOOM = lo;
-    // Ziel nach unten schieben, bis die unterste Reihe am Bildrand liegt
-    K = cam(); const off = (H * 0.985 - proj(x0, y1)[1]); if (off > 0) { for (let i = 0; i < 30; i++) { TGT[1] -= R * 0.1; K = cam(); if (proj(x0, y1)[1] >= H * 0.985 || proj(x0, y0)[1] < H * 0.04) { TGT[1] += R * 0.1; break; } } }
-  } else TGT = cfg.ziel ? atW(...cfg.ziel) : hexC(COLS / 2, ROWS / 2);
-  K = cam();
-  const Fk = () => K.F;
-
-  // ---------- 3. Aufrechte Teile ----------
-  const DRAW = [], SHADOW = [], UNITS = [];
+  // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
+  const DRAW = [], SHADOW = [];
   const hides = (x, y) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < R * 1.95 && Math.abs(hx - x) < R * 1.0);
+  const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
   function wall(im, A, B, hW, o = {}) {   // Wandstück: Bild steht über der Bodenlinie A→B, entlang der Linie gekachelt
+    if (!im) return o.u0 || 0;
     const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height * (o.stretch || 1), n = Math.max(1, Math.ceil(len / (R * 0.25)));
     let u = o.u0 || 0;
     for (let i = 0; i < n; i++) {
@@ -173,7 +165,7 @@ async function bauen(cfg) {
     return u;
   }
   function strip(im, a, b, hW, u0, du, o) {
-    const pa = proj(a[0], a[1]), pb = proj(b[0], b[1]); if (pa[2] <= 1 || pb[2] <= 1) return;
+    const pa = proj(a[0], a[1]), pb = proj(b[0], b[1]); if (pa[2] <= 1 || pb[2] <= 1 || offscreen(pa, pb)) return;
     const sc = Fk() / ((pa[2] + pb[2]) / 2), hS = hW * sc, iw = im.width, ih = im.height;
     let s0 = ((u0 % 1) + 1) % 1, s1 = s0 + du; const parts = s1 <= 1 ? [[s0, s1, 0, 1]] : [[s0, 1, 0, (1 - s0) / du], [0, s1 - 1, (1 - s0) / du, 1]];
     let V = [0, -hS];
@@ -186,17 +178,17 @@ async function bauen(cfg) {
       if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) g.globalAlpha = 0.45;
       g.drawImage(im, x0 * iw, 0, Math.min(sw + 0.6, iw - x0 * iw), ih, 0, 0, Math.min(sw + 0.6, iw - x0 * iw), ih); g.restore();
     }
-    if (cfg.punkte) { g.save(); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
+    if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
   }
   function stand(im, x, y, hW, o = {}) {   // Aufsteller am Fußpunkt (x, y), Höhe hW
     if (!im) return;
     DRAW.push({ y: y + (o.bias || 0), f: () => {
-      const [px, py, zc] = proj(x, y); if (zc <= 1) return;
+      const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
-      g.save(); if (hW > 0.6 * SH && hides(x, y)) g.globalAlpha = 0.45;
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y)) g.globalAlpha = 0.45;
       g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, -h, wd, h); g.restore();
-      if (cfg.punkte) { g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); }
+      if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
     } });
     if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.42); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(8,6,4,0.55)'); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
   }
@@ -220,7 +212,7 @@ async function bauen(cfg) {
   const TRENCH = cfg.trench ? cfg.trench.map(z => ({ pts: z.map(p => atW(...p)), ends: [false, false] }))
     : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: cfg.zickzack ? zickzack(v.pts) : v.pts }; });
   const TR = TRENCH.map(z => chaikin(z.pts, cfg.zickzack && z.ch ? 1 : 3));
-  if (TR.length) {
+  if (TR.length && IM.graben_sohle) {
     const TW = 1.0 * R, SOHLE = IM.graben_sohle;
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * 1.15); w.restore();
     const sohleAlong = (pts, rows) => {
@@ -318,38 +310,93 @@ async function bauen(cfg) {
     } else if (t === 'bridge') {   // Brücke: Bohlen quer über das Wasser
       const rv = RIVERS.find(p => distTo([hx, hy], p) < R * 0.6); let ang = Math.PI / 2;
       if (rv) { let bi = 0, bd = 1e9; rv.forEach((p, i) => { const d = Math.hypot(p[0] - hx, p[1] - hy); if (d < bd) { bd = d; bi = i; } }); const a = rv[Math.max(0, bi - 1)], b = rv[Math.min(rv.length - 1, bi + 1)]; ang = Math.atan2(b[1] - a[1], b[0] - a[0]); }
-      const im = IM.flach_details_6, L = R * 1.9, Wd = R * 0.7;
-      SHADOW.push(() => { w.save(); w.translate(hx, hy); w.rotate(ang + Math.PI / 2); w.fillStyle = 'rgba(8,6,4,0.55)'; w.fillRect(-L / 2, -Wd / 2 + R * 0.06, L, Wd); w.drawImage(im, -L / 2, -Wd / 2, L, Wd); w.restore(); });
+      const im = Fd(6), L = R * 1.9, Wd = R * 0.7;
+      if (im) SHADOW.push(() => { w.save(); w.translate(hx, hy); w.rotate(ang + Math.PI / 2); w.fillStyle = 'rgba(8,6,4,0.55)'; w.fillRect(-L / 2, -Wd / 2 + R * 0.06, L, Wd); w.drawImage(im, -L / 2, -Wd / 2, L, Wd); w.restore(); });
     }
   }
   // Waldrand mit Kronen hinter der Karte (Platzhalter, bis A7 geliefert ist)
   if (cfg.edgeCrowns) { const im = cfg.edgeCrowns; for (let x = R * 0.2; x < WW; x += R * (0.8 + rnd() * 0.5)) { const y = TOP - R * (0.3 + rnd() * 0.8); if (cfg.edgeCrownsX && x > cfg.edgeCrownsX) break; stand(im, x, y, 2.6 * SH * (0.85 + rnd() * 0.3), { flip: rnd() < 0.5, shadeK: 0.35 }); } }
 
-  // ---------- Trupps ----------
+  // Schatten der Teile ins Weltbild, dann Raster und abgedunkelter Kartenrand
+  for (const s of SHADOW) s();
+  if (cfg.raster !== false) {
+    w.lineWidth = R * 0.014; w.strokeStyle = 'rgba(240,237,225,0.15)';
+    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { w.beginPath(); for (let i = 0; i <= 6; i++) { const p = corner(c, r, i); i ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1]); } w.stroke(); }
+  }
+  if (MX > 0) { w.save(); w.fillStyle = 'rgba(10,7,5,0.32)'; w.beginPath(); w.rect(0, 0, WW, WH);
+    const out = []; for (let c = 0; c < COLS; c++) { const p4 = corner(c, 0, 4), p5 = corner(c, 0, 5); out.push(p4, p5); }
+    for (let c = COLS - 1; c >= 0; c--) { const p1 = corner(c, ROWS - 1, 1), p2 = corner(c, ROWS - 1, 2); out.push(p1, p2); }
+    w.moveTo(corner(0, 0, 3)[0], corner(0, 0, 3)[1]); for (const p of out) w.lineTo(p[0], p[1]); w.lineTo(corner(0, ROWS - 1, 3)[0], corner(0, ROWS - 1, 3)[1]); w.closePath();
+    w.fill('evenodd'); w.restore(); }
+  if (cfg.punkte) { w.fillStyle = '#E2B04A'; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) for (let i = 0; i < 6; i++) { const p = corner(c, r, i), mm = edgeMid(c, r, i); w.fillRect(p[0] - 3, p[1] - 3, 6, 6); w.beginPath(); w.arc(mm[0], mm[1], 3, 0, 7); w.fill(); } }
+  DRAW.sort((a, b) => a.y - b.y);
+
+  // Wie stehen Trupps im Feld? Graben: vier Weltpunkte auf der Grabenlinie, entlang ihrer Richtung, Absenkung 0,32 SH. Ruine: Tiefe × 0,85.
+  function platz(c, r) {
+    const t = terr(c, r), [hx, hy] = hexC(c, r);
+    if (t === 'trench' && TR.length) {
+      let best = null; for (const p of TR) p.forEach((pt, i) => { const d = Math.hypot(pt[0] - hx, pt[1] - hy); if (!best || d < best.d) best = { d, p, i }; });
+      if (!best || best.d > R * 0.9) return null;
+      const a = best.p[Math.max(0, best.i - 3)], b = best.p[Math.min(best.p.length - 1, best.i + 3)], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, dx = (b[0] - a[0]) / L, dy = (b[1] - a[1]) / L, base = best.p[best.i];
+      return { pts: [-0.48, -0.16, 0.16, 0.48].map((s, i) => [base[0] + dx * s * R + (i % 2 ? 0.05 : -0.05) * R * -dy, base[1] + dy * s * R + (i % 2 ? 0.05 : -0.05) * R * dx]), sink: 0.32 };
+    }
+    if (t === 'village') return { sy: 0.85 };
+    return null;
+  }
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr,
+    setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
+}
+
+// ---------- Testseiten: alles in einem ----------
+async function bauen(cfg) {
+  const cv = cfg.canvas, g = cv.getContext('2d');
+  const W = cv.width = Math.round(innerWidth * devicePixelRatio), H = cv.height = Math.round(innerHeight * devicePixelRatio), U = W / 1920;
+  const IM = await bilder(cfg.bild || (n => `gelaende/g_${n}.webp`));
+  const FIG = {}; for (const s of ['konkordat', 'aschenwacht']) FIG[s] = await Promise.all([1, 2, 3, 4].map(i => load(`gelaende/fig_${s}_soldat_${i}.webp`)));
+  const B = aufbauen(cfg, IM), { R, SH, hexC } = B, WCV = B.ground, w = WCV.getContext('2d'), COLS = cfg.cols, ROWS = cfg.rows;
+  const TOP = hexC(0, 0)[1] - R * SQ3 * 0.5;
+
+  // Kamera (wie im Spiel: 39°, beim Herauszoomen steiler)
+  let ZOOM = cfg.zoom || 1, TGT;
+  const cam = () => {
+    const pitch = (39 + 19 * Math.max(0, Math.min(1, (1 - ZOOM) / 0.65))) * Math.PI / 180, ca = Math.cos(pitch), sa = Math.sin(pitch), RC = 23 * R;
+    const Fo = W * RC / ((8.5 / ZOOM) * 1.5 * R);
+    return { F: Fo, C: [TGT[0], TGT[1] + RC * ca, RC * sa], f: [-ca, -sa], up: [-sa, ca] };
+  };
+  let K;
+  const proj = (x, y, z = 0) => { const dy = y - K.C[1], dz = z - K.C[2], zc = dy * K.f[0] + dz * K.f[1]; return [W / 2 + K.F * (x - K.C[0]) / zc, H / 2 - K.F * (dy * K.up[0] + dz * K.up[1]) / zc, zc]; };
+  const unprojY = sy => { const k = -(sy - H / 2) / K.F, dy = K.f[0] + k * K.up[0], dz = K.f[1] + k * K.up[1]; if (dz >= -1e-6) return null; return K.C[1] - K.C[2] / dz * dy; };
+  const atW = (c, r) => [hexC(0, 0)[0] + R * 1.5 * c, TOP + R * SQ3 * (r + 0.5 * (Math.round(c) & 1) + 0.5)];
+  const x0 = hexC(0, 0)[0] - R, x1 = hexC(COLS - 1, 0)[0] + R, y0 = TOP, y1 = hexC(0, ROWS - 1)[1] + R * SQ3 * 0.5 + R * 0.4;
+  if (cfg.ganz) {   // größter Zoom, bei dem alle vier Kartenecken ins Bild passen (wie „ganze Karte“ im Spiel)
+    TGT = [(x0 + x1) / 2, (y0 + y1) / 2];
+    const fits = z => { ZOOM = z; K = cam(); return [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].every(([x, y]) => { const p = proj(x, y); return p[2] > 0 && p[0] >= -2 && p[0] <= W + 2 && p[1] >= H * 0.05 && p[1] <= H + 2; }); };
+    let lo = 0.08, hi = 1; for (let i = 0; i < 40; i++) { const md = (lo + hi) / 2; if (fits(md)) lo = md; else hi = md; } ZOOM = lo;
+    K = cam(); const off = (H * 0.985 - proj(x0, y1)[1]); if (off > 0) { for (let i = 0; i < 30; i++) { TGT[1] -= R * 0.1; K = cam(); if (proj(x0, y1)[1] >= H * 0.985 || proj(x0, y0)[1] < H * 0.04) { TGT[1] += R * 0.1; break; } } }
+  } else TGT = cfg.ziel ? atW(...cfg.ziel) : hexC(COLS / 2, ROWS / 2);
+  K = cam();
+
+  // Trupps
   const SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];
-  const NAMES = [];
+  const NAMES = [], UNITS = [], OWN = [];
   for (const tp of cfg.trupps || []) {
-    const { side, c, r } = tp, ims = side === 'A' ? FIG.konkordat : FIG.aschenwacht, flip = side === 'D', [hx, hy] = hexC(c, r), t = terr(c, r);
-    SHADOW.push(() => {   // Standring: nah dezent; herausgezoomt kräftiger und etwas größer, damit man die Trupps findet
-      const sc = Fk() / proj(hx, hy)[2], fern = Math.max(0, Math.min(1, (130 * U - R * sc) / (70 * U)));   // 0 = nah (Feldradius ≥ 130 px), 1 = weit (≤ 60 px)
+    const { side, c, r } = tp, ims = side === 'A' ? FIG.konkordat : FIG.aschenwacht, flip = side === 'D', [hx, hy] = hexC(c, r);
+    { // Standring: nah dezent; herausgezoomt kräftiger und etwas größer, damit man die Trupps findet
+      const sc = K.F / proj(hx, hy)[2], fern = Math.max(0, Math.min(1, (130 * U - R * sc) / (70 * U)));   // 0 = nah (Feldradius ≥ 130 px), 1 = weit (≤ 60 px)
       const lw = Math.max(R * 0.03, (2.2 + 2.3 * fern) * U / sc), rr = 1 + 0.1 * fern, col = side === 'A' ? [196, 62, 46] : [178, 188, 160];
       w.save();
       if (fern > 0) { w.lineWidth = lw * 2.2; w.strokeStyle = `rgba(10,7,5,${0.55 * fern})`; w.beginPath(); w.ellipse(hx, hy + R * 0.02, R * 0.78 * rr, R * 0.7 * rr, 0, 0, 7); w.stroke(); }
       w.lineWidth = lw; w.strokeStyle = fern > 0 ? `rgba(${col},${0.85 + 0.15 * fern})` : (side === 'A' ? 'rgba(142,43,34,0.85)' : 'rgba(125,132,113,0.9)');
       w.beginPath(); w.ellipse(hx, hy + R * 0.02, R * 0.78 * rr, R * 0.7 * rr, 0, 0, 7); w.stroke(); w.restore();
-    });
-    let pos;
-    if (t === 'trench' && TR.length) {   // im Graben: auf der Grabenlinie aufgereiht, entlang ihrer Richtung
-      let best = null; for (const p of TR) p.forEach((pt, i) => { const d = Math.hypot(pt[0] - hx, pt[1] - hy); if (!best || d < best.d) best = { d, p, i }; });
-      const a = best.p[Math.max(0, best.i - 3)], b = best.p[Math.min(best.p.length - 1, best.i + 3)], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, dx = (b[0] - a[0]) / L, dy = (b[1] - a[1]) / L, base = best.p[best.i];
-      pos = [-0.48, -0.16, 0.16, 0.48].map((s, i) => [base[0] + dx * s * R + (i % 2 ? 0.05 : -0.05) * R * -dy, base[1] + dy * s * R + (i % 2 ? 0.05 : -0.05) * R * dx]);
-    } else { const sy = t === 'village' ? 0.85 : 1; pos = SLOTS4.map(([ox, oy]) => [hx + ox * R * (flip ? -1 : 1), hy + oy * R * sy]); }
-    const sink = t === 'trench' ? 0.32 : 0;
+    }
+    const pl = B.platz(c, r);
+    const pos = pl && pl.pts ? pl.pts : SLOTS4.map(([ox, oy]) => [hx + ox * R * (flip ? -1 : 1), hy + oy * R * (pl && pl.sy || 1)]);
+    const sink = pl && pl.sink || 0;
     pos.forEach(([x, y], i) => {
       const im = ims[(i + c + r) % 4], back = y < hy - R * 0.1;
-      DRAW.push({ y, f: () => {
+      OWN.push({ y, f: () => {
         const [px, py, zc] = proj(x, y); if (zc <= 1) return;
-        const sc = Fk() / zc, h = im.height / 320 * SH * sc, wd = h * im.width / im.height, sk = sink * SH * sc;
+        const sc = K.F / zc, h = im.height / 320 * SH * sc, wd = h * im.width / im.height, sk = sink * SH * sc;
         g.save(); g.fillStyle = 'rgba(6,4,3,0.5)'; g.beginPath(); g.ellipse(px, py, wd * 0.3, wd * 0.08, 0, 0, 7); g.fill(); g.restore();
         g.save(); if (sk) { g.beginPath(); g.rect(px - wd, py - h * 2, wd * 2, h * 2 + sk * 0.25); g.clip(); }
         g.translate(px, py + sk); if (flip) g.scale(-1, 1); if (back) g.filter = 'brightness(0.88)';
@@ -359,28 +406,19 @@ async function bauen(cfg) {
     UNITS.push([hx, hy]); NAMES.push([hx, hy, tp.name]);
   }
 
-  // ---------- Zeichnen ----------
-  for (const s of SHADOW) s();
-  // Hexraster und Kartenrand (außerhalb der Karte etwas dunkler)
-  w.lineWidth = R * 0.014; w.strokeStyle = 'rgba(240,237,225,0.15)';
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { w.beginPath(); for (let i = 0; i <= 6; i++) { const p = corner(c, r, i); i ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1]); } w.stroke(); }
-  { w.save(); w.fillStyle = 'rgba(10,7,5,0.32)'; w.beginPath(); w.rect(0, 0, WW, WH);
-    const out = []; for (let c = 0; c < COLS; c++) { const r = 0, p4 = corner(c, r, 4), p5 = corner(c, r, 5); out.push(p4, p5); }
-    for (let c = COLS - 1; c >= 0; c--) { const r = ROWS - 1, p1 = corner(c, r, 1), p2 = corner(c, r, 2); out.push(p1, p2); }
-    w.moveTo(corner(0, 0, 3)[0], corner(0, 0, 3)[1]); for (const p of out) w.lineTo(p[0], p[1]); w.lineTo(corner(0, ROWS - 1, 3)[0], corner(0, ROWS - 1, 3)[1]); w.closePath();
-    w.fill('evenodd'); w.restore(); }
-  if (cfg.punkte) { w.fillStyle = '#E2B04A'; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) for (let i = 0; i < 6; i++) { const p = corner(c, r, i), mm = edgeMid(c, r, i); w.fillRect(p[0] - 3, p[1] - 3, 6, 6); w.beginPath(); w.arc(mm[0], mm[1], 3, 0, 7); w.fill(); } }
+  // Zeichnen
   const sky = g.createLinearGradient(0, 0, 0, H * 0.55); sky.addColorStop(0, '#0d0907'); sky.addColorStop(0.6, '#241a14'); sky.addColorStop(1, '#3a2a1e'); g.fillStyle = sky; g.fillRect(0, 0, W, H);
   for (let ys = 0; ys < H; ys++) {
-    const wy = unprojY(ys + 0.5); if (wy == null || wy < 0 || wy > WH) continue;
+    const wy = unprojY(ys + 0.5); if (wy == null || wy < 0 || wy > B.WH) continue;
     const zc = (wy - K.C[1]) * K.f[0] + (0 - K.C[2]) * K.f[1], sw = W * zc / K.F;
     g.drawImage(WCV, K.C[0] - sw / 2, wy, sw, 1, 0, ys, W, 1);
   }
-  DRAW.sort((a, b) => a.y - b.y).forEach(d => d.f());
+  B.setView({ g, proj, F: K.F, U, units: UNITS });
+  [...B.pieces, ...OWN].sort((a, b) => a.y - b.y).forEach(d => d.f());
   const fog = g.createLinearGradient(0, 0, 0, H); fog.addColorStop(0, 'rgba(18,13,11,0.55)'); fog.addColorStop(0.4, 'rgba(18,13,11,0.12)'); fog.addColorStop(1, 'rgba(18,13,11,0)'); g.fillStyle = fog; g.fillRect(0, 0, W, H);
   if (cfg.namen) { g.font = `600 ${Math.round(17 * U)}px "Segoe UI", sans-serif`; g.textAlign = 'center';
     for (const [x, y, n] of NAMES) if (n) { const p = proj(x, y + R * 0.95); g.lineWidth = 5 * U; g.strokeStyle = '#120D0B'; g.strokeText(n, p[0], p[1]); g.fillStyle = '#E2B04A'; g.fillText(n, p[0], p[1]); } }
   return { proj, hexC, R };
 }
-window.GBau = { bauen };
+window.GBau = { bilder, aufbauen, bauen, NAMEN };
 })();

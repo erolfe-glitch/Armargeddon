@@ -283,7 +283,27 @@ def bogen(name, hoehen):
         speichern(zeilen(t), f'{name}_{k}', PX_SH * h)
 
 
+def einbetten():
+    """Bausteine fürs Spiel in src/gelaende.js einbetten (window.GELAENDE = { name: data-URI }); nur was gelaende_bau.js lädt."""
+    import base64, re
+    NL = chr(10)
+    js = (ROOT / 'src' / 'gelaende_bau.js').read_text(encoding='utf8')
+    weg = ('ruine_paar_aufsteller', 'ruinen_test_weiss', 'flach_details_8', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
+    teile = []
+    for f in sorted(PROBE.glob('g_*.webp')):
+        n = f.stem[2:]
+        if any(n.startswith(w) for w in weg): continue
+        teile.append(f'"{n}": "data:image/webp;base64,{base64.b64encode(f.read_bytes()).decode()}"')
+    out = ROOT / 'src' / 'gelaende.js'
+    kopf = ('// ===== ARMARGEDDON GELÄNDE-BAUSTEINE (neue Ansicht) =====' + NL +
+            '// Erzeugt von tools/gelaende_cut.py --einbetten aus entwurf/probe/gelaende/g_*.webp. Datendatei, nicht von Hand ändern, nicht komplett lesen.' + NL)
+    out.write_text(kopf + 'window.GELAENDE = {' + NL + (',' + NL).join(teile) + NL + '};' + NL, encoding='utf8', newline=NL)
+    print(f'src/gelaende.js: {len(teile)} Bilder, {out.stat().st_size // 1024} KB')
+
+
 if __name__ == '__main__':
+    if '--einbetten' in sys.argv:
+        einbetten(); sys.exit(0)
     args = [x for x in sys.argv[1:] if x != '--schwarz']
     if '--schwarz' in sys.argv:
         for name in args: TEILE[name] = ('flach', [0.9] * 8)

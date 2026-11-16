@@ -40,7 +40,8 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
     - Regeln: STYLE.md „Gelände-Bausteine“. Vier Arten: Bodentextur, flaches Detail, Wandstück, Aufsteller.
     - Prompts G1–G14 in `entwurf/GEMINI_PROMPTS.md`; die Bilder kommen nach `ui-quelle/gelaende/`.
     - Danach: Freistell-Werkzeug für Streifen und Texturen, Einbau in die neue Ansicht. Die Karten werden dann aus Feldcodes zusammengesetzt statt aus gemalten Ganzbildern.
-    - Stand 2026-11-16: alle Bausteine G1–G14 geliefert und freigestellt; Grauwall als ganze Karte aus Bausteinen auf der Testseite `entwurf/probe/karte.html`. Offen: Baumkronen für den Kartenrand (A7, noch Platzhalter), Einbau ins Spiel (neue Ansicht), übrige Karten (Kirche/Fabrik als große Gebäude, Bahn).
+    - Stand 2026-11-16: alle Bausteine G1–G14 geliefert und freigestellt; Grauwall als ganze Karte aus Bausteinen auf der Testseite `entwurf/probe/karte.html`. Offen: Baumkronen für den Kartenrand (A7, noch Platzhalter), übrige Karten (Kirche/Fabrik als große Gebäude, Bahn).
+    - Stand 2026-11-16: im Spiel eingebaut für Grauwall (neue Ansicht): Boden, Gräben im Zickzack, Draht, Ruinen, Totholz, Kanal; Trupps im Graben abgesenkt, in Ruinen gestaucht. Nächste Karten: in `GB_KARTEN` aufnehmen, fehlende Geländearten (Kirche, Fabrik, Bahn, Furt) ergänzen.
   - **Später: große Gebäude über mehrere Felder (2026-11-16).** Kirche, Fabrik, Bahnhof, Gutshof über 2–4 Felder. Idee:
     - jedes Feld bekommt seine eigenen Wandstücke (hinten hoch, vorn niedrig);
     - ein Turm bzw. Schornstein steht als einzelner hoher Aufsteller auf einem Randfeld des Gebäudes und wird durchsichtig, wenn er Einheiten verdeckt;

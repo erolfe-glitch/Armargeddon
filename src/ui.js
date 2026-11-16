@@ -338,10 +338,35 @@ function renderPainted(g) {
   // 6) feine Feldlinien, damit man die Felder noch zählen kann
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.2)'; g.lineWidth = Math.max(1, s * 0.018); g.stroke(); }
 }
+// ---------- Gelände-Bausteine (neue Ansicht, STYLE.md „Gelände-Bausteine“) ----------
+// Nur mit Schalter „Neue Ansicht (Test)“ und zuerst nur auf GB_KARTEN. Bilder: window.GELAENDE (src/gelaende.js), Aufbau: GBau (src/gelaende_bau.js).
+// GBW = aufgebaute Welt: flaches Weltbild (ersetzt tcv), aufrechte Teile (in drawTilt mit den Einheiten nach Tiefe gemischt), platz() für Trupps.
+const GB_KARTEN = new Set(['grauwall']);
+let GBW = null, GBIM = null, gbLaden = null, gbKey = '';
+const gbAn = () => VIEW.tilt() && GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE && !window.NOGB;
+function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
+  if (!gbAn() || !L || !G) return false;
+  if (!GBIM) { if (!gbLaden) gbLaden = GBau.bilder(n => window.GELAENDE[n]).then(im => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
+  const key = E.MAP.id + ':' + L.W + 'x' + L.H + ':' + G.map.map(col => col.map(h => h.t[0] + h.t.length).join('')).join('|');
+  if (GBW && gbKey === key) return true;
+  const t0 = performance.now();
+  GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
+    terr: (c, r) => G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river }),
+    zickzack: true, grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917 }, GBIM);
+  gbKey = key; window.__gbMs = Math.round(performance.now() - t0);
+  return true;
+}
+// Wie stehen die Figuren eines Trupps im Feld (Graben: auf der Grabenlinie, abgesenkt; Ruine: Tiefe gestaucht)? Nur in Ruhe auf der Feldmitte.
+function gbPlatz(u, d) {
+  if (!GBW || !gbAn()) return null;
+  const [cx, cy] = center(u.c, u.r); if (Math.hypot(d.x - cx, d.y - cy) > L.s * 0.05) return null;
+  return GBW.platz(u.c, u.r);
+}
 function renderTerrain() {
   const { s, W, H, dpr } = L;
   tcv = tcv || document.createElement('canvas'); tcv.width = W; tcv.height = H;
   const g = tcv.getContext('2d');
+  if (VIEW.tilt() && gbBereit()) { g.drawImage(GBW.ground, 0, 0); return; }   // neue Ansicht: Boden aus Bausteinen (Raster ist schon drin)
   g.fillStyle = '#1c1d17'; g.fillRect(0, 0, W, H);
   const sky = g.createLinearGradient(0, 0, 0, L.top * 1.2);
   sky.addColorStop(0, 'rgba(120,22,12,0.78)'); sky.addColorStop(0.55, 'rgba(110,30,14,0.38)'); sky.addColorStop(1, 'rgba(110,30,14,0)');
@@ -1070,10 +1095,15 @@ function vehEnv(im) {
 }
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
+  const pl = VIEW.tilt() ? gbPlatz(u, d) : null, [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
-    for (let i = 0; i < n; i++) { const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: slot[0], oy: slot[1] }); }
+    for (let i = 0; i < n; i++) {
+      if (pl && pl.pts) { const q = pl.pts[[1, 2, 0, 3][i]]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
+      const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
+    }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
+  const sink = pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s : 0;   // im Graben tiefer, unterhalb der Grabenkante abgeschnitten
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
@@ -1104,12 +1134,13 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     }
     const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
-    g.save(); g.translate(x, top); if (flip) g.scale(-1, 1); g.drawImage(im, -w / 2, 0, w, h); g.restore();
+    g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
+    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(im, -w / 2, 0, w, h); g.restore();
     g.filter = 'none';
     return top;
   }
   for (const f of list) {
-    const fx = x + (flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
+    const fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
     let h = f.im.naturalHeight / 320 * FIG_SH * s, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s; if (w > wmax) { h *= wmax / w; w = wmax; }
     // Bodenschatten
@@ -1124,7 +1155,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : '', back ? 'brightness(0.86)' : ''].filter(Boolean).join(' ');
     if (done) g.globalAlpha = A0 * 0.85;
     if (filt) g.filter = filt;
-    g.save(); g.translate(fx, fy + h * 0.012); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h); g.restore();   // Sohlen minimal in den Boden: kein Spalt
+    g.save(); if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
+    g.translate(fx, fy + h * 0.012 + sink); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h); g.restore();   // Sohlen minimal in den Boden: kein Spalt
     topY = Math.min(topY, fy - h);
   }
   g.filter = 'none';
@@ -1228,7 +1260,11 @@ function drawTilt() {
   drawFlags(g, s, up); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
   // Einheiten als Aufsteller am Fußpunkt; Marken und spätere Marken (MARKQ) behalten ihren Aufsteller
   UBOX.length = 0;
-  for (const [, u, d] of unitList()) {
+  const ul = unitList(), GP = GBW && gbAn() ? GBW.pieces : null; let gpi = 0;
+  if (GP) GBW.setView({ g, proj, F: PJ.F, U: cv.width / 1920, units: ul.map(([, , d]) => [d.x, d.y]) });
+  const gbBis = y => { while (GP && gpi < GP.length && GP[gpi].y <= y) { g.setTransform(1, 0, 0, 1, 0, 0); GP[gpi++].f(); } };   // Geländeteile bis zur Tiefe y
+  for (const [, u, d] of ul) {
+    gbBis(d.y);
     const bb = bbAt(d.x, d.y); if (!bb || bb.px < -PJ.W * 0.2 || bb.px > PJ.W * 1.2 || bb.py < -PJ.H * 0.2 || bb.py > PJ.H * 1.5) continue;
     const tf = new DOMMatrix([bb.sc, 0, 0, bb.sc, bb.px - bb.sc * d.x, bb.py - bb.sc * d.y]);
     g.setTransform(tf); VIEW.bbK = bb.k;
@@ -1239,6 +1275,7 @@ function drawTilt() {
     const big = TYPES[u.type].cls === 'walker' ? 1.5 : 1;
     UBOX.push({ u, x0: bb.px - bb.sc * s * 0.75 * big, x1: bb.px + bb.sc * s * 0.75 * big, y0: bb.py - bb.sc * s * FIG_SH * 1.1, y1: bb.py + bb.sc * s * 0.45 });
   }
+  gbBis(Infinity); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
   VIEW.up = up;   // Klammern, Symbole, Vorschau, Warndreieck, Schilde: aufrecht an ihrem Punkt
   try { for (const f of MARKQ) f(); MARKQ.length = 0; g.setTransform(1, 0, 0, 1, 0, 0); drawAir(g, s, up); }
   finally { VIEW.up = null; g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; }
@@ -1269,10 +1306,10 @@ function camToTilt(x, y, ms, force) {   // weich zum Bodenpunkt (Weltbild) fahre
   const tx = Math.max(0, Math.min(L.W, x)), ty = Math.max(L.top, Math.min(L.H, y + L.s * 0.5)), x0 = CAM.x, y0 = CAM.y;
   if (Math.hypot(tx - x0, ty - y0) < 2) return Promise.resolve();
   const dur = speed >= INSTANT ? 0 : ms / Math.min(speed, 2), me = {}; camAnim = me;
-  if (!dur) { CAM.x = tx; CAM.y = ty; return Promise.resolve(); }
+  if (!dur) { CAM.x = tx; CAM.y = ty; camClamp(); return Promise.resolve(); }
   return new Promise(res => { const st = performance.now();
     const step = () => { if (camAnim !== me) return res(); const k = Math.min(1, (performance.now() - st) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      CAM.x = x0 + (tx - x0) * e; CAM.y = y0 + (ty - y0) * e; if (k < 1) requestAnimationFrame(step); else { camAnim = null; res(); } };
+      CAM.x = x0 + (tx - x0) * e; CAM.y = y0 + (ty - y0) * e; camClamp(); if (k < 1) requestAnimationFrame(step); else { camAnim = null; res(); } };
     requestAnimationFrame(step); });
 }
 
