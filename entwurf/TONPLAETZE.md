@@ -115,6 +115,7 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 | **reparieren** | Bergen, Instandsetzen (Werkstatt, Pioniere) | Aschenwacht | 492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg (0.73 s ab 0.11 s) |
 |  |  | Konkordat | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav (2 s ab 0 s) |
 | **nachladen** | Nachladen (Munitionsträger) | beide | 847367__adrian_sommer__gun-reloading-walther-p99.wav (0.58 s ab 1.82 s) |
+| **drahtlatch** | Einheit läuft in Stacheldraht | beide | freesound_community-latch-metallic-43692.mp3 (0.7 s ab 0.04 s) |
 | **cut** | Draht schneiden | beide | vorhanden (cut) |
 |  |  | beide | freesound_community-cutting-clipping-wire-copper-80373.mp3 (0.18 s ab 1.45 s) |
 | **clank** | Aufprotzen, MG aufbauen/abbauen | beide | vorhanden (clank) |

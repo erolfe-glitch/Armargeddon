@@ -1016,6 +1016,18 @@
   "note": "nur Ende"
  },
  {
+  "pool": "drahtlatch",
+  "key": "drahtlatch_1",
+  "s": null,
+  "f": "freesound_community-latch-metallic-43692.mp3",
+  "dur": 0.7,
+  "src": 8.06,
+  "start": 0.04,
+  "gain": 6.2,
+  "kb": 8,
+  "note": "Einheit läuft in Stacheldraht (2026-11-17, Wunsch 14)"
+ },
+ {
   "pool": "cut",
   "key": "cut",
   "s": null,

@@ -12,9 +12,9 @@ Stand: 56 Einheiten (28 je Seite). Bild ✓ = Figurenbogen im neuen Stil vorhand
 | Führung | Hauptmann ✓, General ✓ | Hauptmann ✓, General ✓, Bannerträger ✓ |
 | Aufklärung / Befehle | Meldegänger mit Hund ✓, Fernsprechtrupp –, Ballonbeobachter –, Radfahrer-Trupp – | Signaltrupp –, Scheinwerfer-Trupp – |
 | Linieninfanterie | Schützenkohorte ✓ | Aschengrenadiere ✓ |
-| Sturm / Nahkampf | Grabenräumer ✓ | Sturmbrecher ✓, Grabenkämpfer –, Eingreiftrupp –, Kettenritter – |
+| Sturm / Nahkampf | Grabenräumer ✓ | Sturmbrecher ✓, Eingreiftrupp – |
 | Gepanzerte Infanterie | Stahlgänger-Trupp – | Panzerknechte – |
-| Schild / schwer | Schildwall ✓ | Schildträger –, Schwere Grabenwacht ✓ |
+| Schild / schwer | Schildwall ✓ | Schwere Grabenwacht ✓ |
 | Scharfschützen | Scharfschütze ✓ | Pirschjäger ✓ |
 | Maschinengewehr | Mahlwerk-Trupp ✓ | Sensenwerk-Trupp ✓ |
 | Artillerie | Donnerrohr-Batterie ✓, Feldkanone ?, Grabenmörser ✓ | Grabengeschütz ✓, Minenwerfer ✓ |
@@ -65,3 +65,11 @@ Jetzt im Code: Draht macht keinen Schaden (beendet nur die Bewegung, Abwehr ×0,
 - **General:** Befehle seiner Seite jede Runde, 3 Felder. Einmal je Schlacht großer Befehl für alle eigenen Einheiten: Konkordat „Halten um jeden Preis“ (bis zum nächsten eigenen Zug keine Flucht, Abwehr ×1,25), Aschenwacht „Generalangriff“ (sofort +1 Aktionspunkt). Eigener Knopf, danach grau „verbraucht“; Ansage mit Pfeife bzw. Horn. KI frühestens ab Runde 3, nur wenn es zählt.
 - **Bannerträger:** „Banner aufpflanzen“ (1 Punkt): Träger zieht nicht, Wirkung 3 statt 2 Felder, dort flieht niemand. „Banner aufnehmen“ (1 Punkt). Banner im Boden neben der Figur, Bereich golden, wenn gewählt.
 - **Meldegänger:** unverändert.
+
+## Gruppe 3: Infanterie und Sturm (2026-11-17, umgesetzt)
+- **Gestrichen:** Grabenkämpfer, Kettenritter (keine Karte nutzte sie fest).
+- **Schildträger + Schwere Grabenwacht → „Schwere Grabenwacht“:** Werte wie der Schildwall (Angriff 4, Abwehr 6, Moral 8, 2 Felder, nur Nahkampf), Bild aschenwacht_schwer, Draht stoppt sie nicht.
+- **Eingraben** (Schützenkohorte, Aschengrenadiere, 1 Punkt): nur offenes Gelände oder Trichter, Abwehr ×1,3, bis die Einheit zieht; kleiner Erdwall vor der Figur.
+- **Schilde vor** (Schildwall, Schwere Grabenwacht, 1 Punkt): eigene Nachbarn bis zum nächsten eigenen Zug Beschuss ×0,75; Nachbarfelder stahlgrau umrandet.
+- **Sturmlauf** (Stahlgänger, Panzerknechte, alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, Sperrfeuer/Feuerbereitschaft unterwegs wie sonst, am Ende sofort Nahkampf gegen den schwächsten Gegner daneben.
+- Neuer Ton beim Betreten von Stacheldraht: `latch-metallic` (Platz `drahtlatch`).

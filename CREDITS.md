@@ -72,6 +72,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | reparieren | reparieren_1 | 492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg | Freesound / firetie | CC0 1.0 | <https://freesound.org/s/492434/> |
 | reparieren | reparieren_2 | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav | Freesound / rudmer_rotteveel | CC0 1.0 | <https://freesound.org/s/591529/> |
 | nachladen | nachladen_1 | 847367__adrian_sommer__gun-reloading-walther-p99.wav | Freesound / adrian_sommer | CC0 1.0 | <https://freesound.org/s/847367/> |
+| drahtlatch | drahtlatch_1 | freesound_community-latch-metallic-43692.mp3 | Pixabay / freesound_community | Pixabay Content License | <https://pixabay.com/sound-effects/latch-metallic-43692/> |
 | cut | cut_1 | freesound_community-cutting-clipping-wire-copper-80373.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | clank | clank_1 | freesound_community-tank-reload-47828.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | mgsetup | mgsetup_1 | 800863__tyranttim__soldier-guns_up.wav | Freesound / tyranttim | CC0 1.0 | <https://freesound.org/s/800863/> |

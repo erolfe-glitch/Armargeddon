@@ -495,7 +495,7 @@ function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
 const VIS = { clouds: [], smoke: [], lit: [], marks: [], ctrl: {} };
-const vsOf = u => ({ fireFree: !!u.fireFree, hold: !!(G && G.hold && G.hold[u.side]), planted: !!u.planted, sperr: u.sperr || 0, supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
+const vsOf = u => ({ dug: !!u.dug, shields: !!u.shields, fireFree: !!u.fireFree, hold: !!(G && G.hold && G.hold[u.side]), planted: !!u.planted, sperr: u.sperr || 0, supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
 function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what || what === 'marks') VIS.marks = cp(G.marks); if (!what) { const old = VIS.ctrl || {};
     for (const o of OBJECTIVES) { const a = old[o.id], b = (G.ctrl || {})[o.id]; if (a === b || !b) continue;
       const me = human('A') && !human('D') ? 'A' : human('D') && !human('A') ? 'D' : null;   // gegen die KI: Verlust der eigenen Seite eigens hörbar
@@ -555,6 +555,8 @@ const STATES = [
   { k: 'mgup', sym: 'mg_auf', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt oder gibt Sperrfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
   { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).' },
   { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => 'Befehl des Anführers: Nahkampf ×1,25 in dieser Runde.' },
+  { k: 'dug', sym: 'spitzhacke', ring: '#8a6a44', name: 'Eingegraben', on: (u, d) => d.vs.dug && E.active(u), text: () => 'Hat sich eingegraben: Abwehr ×1,3, bis die Einheit wieder zieht.' },
+  { k: 'shields', sym: 'schild', ring: '#9aa3ab', name: 'Schilde vor', on: (u, d) => d.vs.shields && E.active(u), text: () => 'Schilde vor: eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.' },
   { k: 'fireFree', sym: 'zielen', ring: '#E2B04A', name: 'Feuer frei', on: (u, d) => d.vs.fireFree && E.alive(u), text: () => 'Befehl des Hauptmanns: Fernkampf ×1,25 bis zum nächsten eigenen Zug.' },
   { k: 'hold', sym: 'schild', ring: '#C2A461', name: 'Halten um jeden Preis', on: (u, d) => d.vs.hold && E.active(u), text: () => 'Befehl des Generals: flieht bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.' },
   { k: 'planted', sym: 'fahne', ring: '#C2A461', name: 'Banner steht', on: (u, d) => d.vs.planted && E.active(u), text: () => 'Aufgepflanzt: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, bis er das Banner aufnimmt.' },
@@ -735,6 +737,9 @@ function drawPlanted(g, s, u, x, y) {
 function drawMarks(u, d, x, y, own, done, acc) {
   const g = ctx, s = L.s;
   if (d.vs && d.vs.planted && E.active(u)) drawPlanted(g, s, u, x, y);
+  if (d.vs && d.vs.dug && E.active(u)) { const k = kAt(x, y), fy = y + s * 0.42 * k;   // eingegraben: kleiner Erdwall vor der Einheit
+    g.save(); g.fillStyle = '#4a3a28'; g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.03); g.beginPath(); g.moveTo(x - s * 0.55, fy); g.quadraticCurveTo(x, fy - s * 0.22, x + s * 0.55, fy); g.quadraticCurveTo(x, fy + s * 0.06, x - s * 0.55, fy); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = 'rgba(120,96,64,0.8)'; for (let i = -2; i <= 2; i++) { g.beginPath(); g.ellipse(x + i * s * 0.18, fy - s * 0.07 + Math.abs(i) * s * 0.03, s * 0.07, s * 0.035, 0, 0, 7); g.fill(); } g.restore(); }
   // Markenzeile unter der Figur: [Zustand] [Lebensbalken, darunter Aktionspunkte] [Deckung]
   const bw = s * 0.5, bh = Math.max(3.5, s * 0.065), bx = x - bw / 2, by = y + s * kAt(x, y) * 0.3, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
   g.globalAlpha = done ? 0.7 : 1;
@@ -811,6 +816,9 @@ function drawGround(g, s) {
     if (im) { const w = dc.r * 5, hh = w * im.naturalHeight / im.naturalWidth * Math.max(0.6, kAt(dc.x, dc.y)); g.globalAlpha = 0.85; g.drawImage(im, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; }
     else { g.fillStyle = dc.col; g.beginPath(); gEllipse(g, dc.x, dc.y, dc.r, dc.r); g.fill(); }
   }
+  // Schilde vor: Nachbarfelder stahlgrau umrandet, solange sie stehen (und als Vorschau, wenn ein Schildträger gewählt ist)
+  for (const u of G.units) { const dd = DU.get(u.id); const show = (dd && dd.vs && dd.vs.shields && E.active(u)) || (sel === u && TYPES[u.type].shieldWall && E.canShields(G, u)); if (!show) continue;
+    for (const [c, r] of E.neighbors(u.c, u.r)) { if (c < 0 || r < 0 || c >= COLS || r >= ROWS) continue; hexPath(g, c, r, 0.9); g.fillStyle = dd && dd.vs.shields ? 'rgba(170,180,190,0.16)' : 'rgba(170,180,190,0.08)'; g.fill(); g.lineWidth = Math.max(1.5, s * 0.03); g.strokeStyle = 'rgba(190,200,210,0.6)'; g.stroke(); } }
   // Bannerträger gewählt: Wirkbereich (2 Felder, aufgepflanzt 3) als goldene Fläche
   if (sel && TYPES[sel.type].banner && E.active(sel)) { const R = sel.planted ? P.BANNER_R_PLANTED : P.BANNER_R;
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.dist(sel.c, sel.r, c, r) <= R) { hexPath(g, c, r, 0.94); g.fillStyle = sel.planted ? 'rgba(226,176,74,0.26)' : 'rgba(226,176,74,0.16)'; g.fill(); g.lineWidth = Math.max(1.5, s * 0.03); g.strokeStyle = 'rgba(226,176,74,0.55)'; g.stroke(); } }
@@ -1161,7 +1169,7 @@ const FIGMAP = {
   brand: ['flammen', 1], granate: ['sturm', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
-  grenadier: ['soldat', 1], sturm: ['sturm', 1], grabenk: ['sturm', 1], eingreif: ['sturm', 1],
+  grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['sturm', 1],
   pionierD: ['pionier', 1], minen: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
@@ -1651,7 +1659,7 @@ async function playEvent(e) {
         const mech = au && TYPES[au.type].mech;
         const du0 = unitById(e.d), foot = x => x && ['inf', 'mg', 'storm', 'medic', 'flame'].includes(TYPES[x.type].cls) && !TYPES[x.type].suit;
         const tank = au && TYPES[au.type].cls === 'walker' && !mech;
-        playSound(mech ? 'heavy' : tank ? 'impact' : af === 'shield' ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : foot(au) && foot(du0) ? 'punch' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : au && TYPES[au.type].cls === 'cav' ? 'slash' : 'punch', (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
+        playSound(mech ? 'heavy' : tank ? 'impact' : af === 'shield' || af === 'heavy' ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : foot(au) && foot(du0) ? 'punch' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : au && TYPES[au.type].cls === 'cav' ? 'slash' : 'punch', (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35);
         if (af === 'mechB') playSound(Math.random() < 0.5 ? 'snarl' : 'tiger', 0.4);   // Klauenschreiter knurrt
       };
@@ -1701,7 +1709,7 @@ async function playEvent(e) {
     }
     case 'gas': { const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
       floater(...headPos(e.u), e.late ? 'Vergiftet' : 'Gas!', e.late ? '#a8c870' : '#d6e670'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
-    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('cut', 0.45); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
+    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.55); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
@@ -1755,6 +1763,9 @@ async function playEvent(e) {
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
     case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound(e.planted ? 'bauen' : 'clank', 0.45); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
     case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
+    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('bauen', 0.35); floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
+    case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
+    case 'rush': playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('clank', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
     case 'mark': { const [x, y] = center(e.c, e.r); visSync('marks'); playSound('whistle', 0.25); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
@@ -2180,7 +2191,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/wimpel_fraktionen.png, sonst gezeichnet
-const ABIL_SYM = { mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 const upBar = (cls, k, v, max) => `<div class="up-bar ${cls}"><div class="tube"><div class="slot"><i style="width:${Math.round(Math.max(0, Math.min(1, v / max)) * 100)}%"></i></div></div><span class="val"><span class="k">${k}</span>${fmt(v)}<small> / ${fmt(max)}</small></span></div>`;
@@ -2239,6 +2250,8 @@ function unitButtons(T, hints) {
   }
   if (T.cmd === 2) { const B = E.BIG[sel.side], used = G.bigUsed && G.bigUsed[sel.side];   // großer Befehl des Generals: einmal je Schlacht
     btns.push({ act: 'big', sym: B.k === 'hold' ? 'schild' : 'blitz', name: B.name, cost: 1, pulse: E.canBig(G, sel), text: B.k === 'hold' ? 'Einmal je Schlacht: alle eigenen Einheiten auf der Karte fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.' : 'Einmal je Schlacht: alle eigenen Einheiten auf der Karte erhalten sofort 1 Aktionspunkt.', off: !E.canBig(G, sel), why: used ? 'Verbraucht: nur einmal je Schlacht.' : 'Braucht 1 Aktionspunkt.' }); }
+  if (T.dig) btns.push({ act: 'dig', sym: 'spitzhacke', name: 'Eingraben', cost: 1, on: !!sel.dug, text: 'Im offenen Gelände oder Trichter: Abwehr ×1,3, bis die Einheit wieder zieht.', off: !E.canDig(G, sel), why: sel.dug ? 'Ist schon eingegraben.' : !['open', 'crater'].includes(G.map[sel.c][sel.r].t) ? 'Nur im offenen Gelände oder Trichter.' : 'Braucht 1 Aktionspunkt.' });
+  if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
   if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', cost: 1, text: 'Einheit mit Hundesymbol anklicken: Sie bekommt +1 Aktionspunkt.', off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
@@ -2337,6 +2350,8 @@ async function panelAct(a) {
   if (a === 'o-rally' || a === 'o-storm' || a === 'o-fire') return act(() => E.order(G, sel, a.slice(2)));
   if (a === 'big') return act(u => E.bigOrder(G, u));
   if (a === 'plant') return act(u => E.plantBanner(G, u));
+  if (a === 'dig') return act(u => E.dig(G, u));
+  if (a === 'shields') return act(u => E.shieldsUp(G, u));
   if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
   if (!sel || busy) return;
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
@@ -2718,6 +2733,9 @@ function noteEvent(e, u) {
     case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }
     case 'order': return logAdd(`${e.name}: ${e.kind === 'rally' ? 'Sammeln' : e.kind === 'fire' ? 'Feuer frei' : 'Sturmbefehl'}`, u && u.side, ...at(u));
     case 'bigorder': logAdd(`General: ${e.name}!`, e.side, ...at(u), true); return headline(`${e.name}!`, e.side);
+    case 'dig': return logAdd(`${N(u)}: eingegraben`, u && u.side, ...at(u));
+    case 'shields': return logAdd(`${N(u)}: Schilde vor`, u && u.side, ...at(u));
+    case 'rush': return logAdd(`${N(u)}: Sturmlauf`, u && u.side, e.c, e.r, true);
     case 'banner': return logAdd(`${N(u)}: Banner ${e.planted ? 'aufgepflanzt' : 'aufgenommen'}`, u && u.side, ...at(u));
     case 'score': { const n = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side).reduce((m, o) => m + o.pts, 0); if (n) logAdd(`${SIDES[e.side].short}: +${n} Siegpunkte`, e.side, null, null); return; }
     case 'spawn': return logAdd(`Nachschub: ${N(u)}`, u.side, ...at(u));
