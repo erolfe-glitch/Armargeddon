@@ -38,7 +38,7 @@ function threatAt(G, u, c, r) {
       th += P.DMG * T.atk * mm / (D.def * (t === 'trench' ? 1.3 : defm)) * 0.5 * (o.str / 10);
     }
   }
-  if (E.cloudAt(G, c, r)) th += 0.8;
+  if (E.cloudAt(G, c, r) && !E.gasSafe(G, u)) th += 0.8;
   return th;
 }
 function nearestObjDist(G, c, r, side) {
@@ -84,7 +84,16 @@ function nearestEnemyDist(G, side, c, r) {
   return best;
 }
 
-function posValue(G, u, c, r) {
+// Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke und hält auf, Gas wirkt nach – stärker meiden
+function hazard(G, u, c, r) {
+  const T = TYPES[u.type]; let h = 0;
+  if (E.hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !E.wireProof(T) && (c !== u.c || r !== u.r)) h += W_HAZ.wire;
+  if (E.cloudAt(G, c, r) && !E.gasSafe(G, u)) h += W_HAZ.gas;
+  return h;
+}
+const W_HAZ = { wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
+function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
+function posValue0(G, u, c, r) {
   const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay ? 'medic' : E.cls(u);
   const th = threatAt(G, u, c, r);
   let v;
@@ -363,7 +372,7 @@ function exec(G, uid, s) {
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
     let best = null;
-    for (const [nc, nr] of E.neighbors(u.c, u.r)) { const o = E.unitAt(G, nc, nr); if (o && E.canHeal(G, u, o) && (!best || o.str < best.str)) best = o; }
+    for (const [nc, nr] of E.neighbors(u.c, u.r)) { const o = E.unitAt(G, nc, nr); if (o && E.canHeal(G, u, o) && (!best || o.str - (o.poison > 0 ? 2 : 0) < best.str - (best.poison > 0 ? 2 : 0))) best = o; }   // Vergiftete zuerst
     return best ? E.heal(G, u, best) : [];
   }
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);

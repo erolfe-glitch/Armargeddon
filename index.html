@@ -1037,7 +1037,9 @@ const P = {
   PTS_TURN: { A: 10, D: 10 }, PTS_KILL: 20, PTS_OBJ: 10, HEAL: 2.5, HEAL_MOR: 1.5,
   // Bewegung und Aktionen (Paket 1): Marsch = doppelte Zugweite für beide Punkte, Feuerbereitschaft, Aufbauen der MG, Abklingzeiten
   GOAL_K: 7, MAX_ROUNDS: 40, D_BAND: 6,
-  MARCH: 2, OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2, STUCK_TURNS: 2
+  MARCH: 2, OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2, STUCK_TURNS: 2,
+  // Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke beim Betreten, Gas wirkt nach (vergiftet: ½, dann ¼ des Gasschadens), Sperrfeuer mit Abklingzeit
+  WIRE_DMG: 1.0, POISON_TURNS: 2, POISON_K: [0.25, 0.5], BARRAGE_CD: 2
 };
 
 // Größe des Schlachtfelds: hängt von der gewählten Karte ab (useMap), Grauwall 16 × 10
@@ -1061,7 +1063,7 @@ const TYPES = {
     can: 'Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert: Gewehre und MG prallen ab. Walzt Stacheldraht nieder, überquert Gräben. Bleibt manchmal mit einer Panne liegen.',
+    can: 'Gepanzert: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben. Bleibt manchmal mit einer Panne liegen.',
     real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
   reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
@@ -1085,13 +1087,13 @@ const TYPES = {
 
 Object.assign(TYPES, {
   feldscher: { side: 'A', name: 'Feldscher', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +15 und Moral +10. Kaum Kampfkraft.',
+    can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +15 und Moral +10, heilt auch Vergiftung. Kaum Kampfkraft.',
     real: 'Sanitäter und Krankenträger holten Verwundete oft unter Beschuss aus dem Niemandsland. Viele von ihnen fielen dabei selbst.' },
   moerser: { side: 'A', name: 'Grabenmörser', cls: 'art', fig: 'mortar', mobile: true, atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
     can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann in derselben Runde ziehen und feuern.',
     real: 'Der britische Stokes-Mörser von 1915 war so leicht, dass ihn wenige Männer in den vordersten Graben tragen konnten.' },
   heiler: { side: 'D', name: 'Aschenpfleger', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +15 und Moral +10. Kaum Kampfkraft.',
+    can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +15 und Moral +10, heilt auch Vergiftung. Kaum Kampfkraft.',
     real: 'Auf den Verbandplätzen direkt hinter der Front wurden Verwundete zuerst versorgt und nach Dringlichkeit sortiert.' },
   minenwerfer: { side: 'D', name: 'Minenwerfer', cls: 'art', fig: 'mortar', mobile: true, atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
     can: 'Leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer. Kann in derselben Runde ziehen und feuern.',
@@ -1121,8 +1123,8 @@ Object.assign(TYPES, {
   buechse: { side: 'D', name: 'Panzerbüchsen-Trupp', cls: 'inf', fig: 'atr', at: 2, atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 3,
     can: 'Schießt 3 Felder weit. Durchschlägt Panzerung: Beschuss trifft Landkolosse ×2.',
     real: 'Das deutsche Tankgewehr M1918 war die erste Panzerbüchse der Welt. Es verschoss 13-mm-Geschosse und hatte einen sehr starken Rückstoß.' },
-  schwer: { side: 'D', name: 'Schwere Grabenwacht', cls: 'inf', fig: 'heavy', atk: 4, def: 5, mor: 8, mv: 2, rng: 2, fs: 2,
-    can: 'Infanterie mit Brustpanzer: bessere Abwehr und Moral als Grenadiere, aber nur 2 Felder Bewegung.',
+  schwer: { side: 'D', name: 'Schwere Grabenwacht', cls: 'inf', fig: 'heavy', wireProof: true, atk: 4, def: 5, mor: 8, mv: 2, rng: 2, fs: 2,
+    can: 'Infanterie mit Brustpanzer: bessere Abwehr und Moral als Grenadiere, aber nur 2 Felder Bewegung. Stacheldraht verletzt und hält sie nicht auf.',
     real: 'Der deutsche Stahlhelm wurde 1916 eingeführt und senkte die Zahl der Kopfverletzungen deutlich. Für Posten gab es zusätzlich eine Stirnplatte.' },
   signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 6, relay: true, atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Lenkt die Artillerie: Auf Felder, die der Trupp sieht (6 Felder weit), streuen Granaten nicht und Sprenggranaten treffen ×1,25. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
@@ -1143,10 +1145,10 @@ Object.assign(TYPES, {
     can: 'Schwer gepanzerte Kampfmaschine mit Maschinengewehr und Stahlfaust. Am zähesten von allen, schießt aber schwächer. Bleibt manchmal mit einer Panne liegen.',
     real: 'Panzerbesatzungen trugen Lederhelme und Kettenmasken gegen Splitter, die beim Beschuss innen von der Panzerwand absprangen.' },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
-    can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb. Stärker als Infanterie, aber kein Koloss: Geschütze und Nahkampf treffen voll.',
+    can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Stärker als Infanterie, aber kein Koloss: Geschütze und Nahkampf treffen voll.',
     real: 'Motorisierte Kampfanzüge gab es nie. Käuflich war aber Körperpanzer wie der britische „Dayfield Body Shield“, der gegen Splitter half, gegen Gewehrkugeln kaum.' },
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
-    can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb. Stärker als Infanterie, aber kein Koloss: Geschütze und Nahkampf treffen voll.',
+    can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Stärker als Infanterie, aber kein Koloss: Geschütze und Nahkampf treffen voll.',
     real: 'Motorisierte Kampfanzüge gab es nie. Der deutsche Grabenpanzer aus Stahlplatten wog rund zehn Kilogramm und wurde vor allem von Posten und MG-Schützen getragen.' },
   flammen: { side: 'A', name: 'Flammentrupp', cls: 'flame', fig: 'flamer', atk: 2, def: 3, mor: 7, mv: 2, rng: 1, fs: 7, flame: true,
     can: 'Flammenstrahl auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Wird er beschossen, trifft es ihn ×1,5.',
@@ -1164,7 +1166,7 @@ Object.assign(TYPES, {
     can: 'Nahkämpfer mit Grabenschwert und Keule. Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf.',
     real: 'Deutsche Stoßtrupps trugen für den Grabenkampf Handgranaten, Pistolen, Grabendolche und geschärfte Spaten statt langer Gewehre.' },
   ritter: { side: 'D', name: 'Kettenritter', cls: 'inf', fig: 'knight', suit: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 0, fs: 0,
-    can: 'Gepanzerter Nahkämpfer mit Axt und Stachelschild. Gewehr- und MG-Feuer wirkt nur halb. Langsam, keine Schusswaffe.',
+    can: 'Gepanzerter Nahkämpfer mit Axt und Stachelschild. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Langsam, keine Schusswaffe.',
     real: 'Ritterrüstungen gab es im Ersten Weltkrieg nicht. Echte Körperpanzer wogen um die zehn Kilogramm und schützten nur Brust und Bauch.' },
   pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', fig: 'sapperD', sapper: true, recover: true, wirelayer: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Zieht Stacheldraht: legt einen Drahtgürtel auf das freie Feld, in das er blickt. Danach kein Angriff mehr in der Runde.',
@@ -1252,7 +1254,7 @@ Object.assign(TYPES, {
     can: 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde).',
     real: 'Die deutsche Abwehr setzte ab 1917 auf Eingreiftruppen, die eingebrochene Angreifer sofort im Gegenstoß zurückwarfen.' },
   gasschutz: { side: 'D', name: 'Gasschutz-Trupp', cls: 'inf', fig: 'gasmask', gasproof: true, abil: 'clear', atk: 3, def: 3, mor: 7, mv: 3, rng: 1, fs: 2,
-    can: 'Gas schadet ihm und seinen Nachbarn nicht. Entgiften (1 ●, alle 2 Runden): löst Gaswolken bis 1 Feld auf.',
+    can: 'Gas schadet ihm und seinen Nachbarn nicht, auch keine Vergiftung. Entgiften (1 ●, alle 2 Runden): löst Gaswolken bis 1 Feld auf.',
     real: 'Gasschutzoffiziere schulten die Truppe im schnellen Aufsetzen der Masken und prüften die Filter. Nach einem Angriff wurden Unterstände mit Feuer und Chlorkalk entgiftet.' },
   munition: { side: 'D', name: 'Munitionsträger', cls: 'inf', fig: 'ammo', abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 4, rng: 0, fs: 0,
     can: 'Nachladen (1 ●, alle 2 Runden): ein MG oder Geschütz im Nachbarfeld darf noch einmal feuern.',
@@ -1262,7 +1264,7 @@ Object.assign(TYPES, {
     real: 'Deutsche Scharfschützen mit Zielfernrohr beherrschten 1915 das Niemandsland. Die Briten richteten daraufhin eigene Scharfschützenschulen ein.' }
 });
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn"], "heiler": ["Versorgt einen Nachbarn"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 4 Felder"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +1 Aktionspunkt", "Zieht 5 Felder"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5"], "hauptA": ["Befehl alle 2 Runden, 2 Felder"], "hauptD": ["Befehl alle 2 Runden, 2 Felder"], "generalA": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder"], "mahlwerk": ["Reaktionsfeuer", "Zieht oder schießt"], "sense": ["Reaktionsfeuer", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Ziehen und feuern", "Steilfeuer 4 Felder"], "radler": ["Zieht 4 Felder"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +1 Aktionspunkt", "Zieht 5 Felder"], "signal": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "schild": ["Sehr zäh", "Keine Schusswaffe"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Brustpanzer", "Draht hält nicht auf", "Langsam"], "knecht": ["Gepanzert", "Sturmkanone", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Schuss 2 Felder"], "flammen": ["Flammenstrahl", "Deckung schützt nicht"], "schildwall": ["Sehr zäh", "Keine Schusswaffe"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Lenkt Artillerie: ×1,25, keine Streuung", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "grabenk": ["Sickert durch", "Handgranaten"], "ritter": ["Rüstung: Beschuss ×0,5", "Draht hält nicht auf", "Keine Schusswaffe"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5"], "hauptA": ["Befehl alle 2 Runden, 2 Felder"], "hauptD": ["Befehl alle 2 Runden, 2 Felder"], "generalA": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Schuss 2 Felder"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
 Object.assign(SPECIALS, { turm: ["Gepanzert", "Geschützturm", "Schuss 3 Felder", "Panne möglich"], orden: ["Gepanzert", "Drehlauf", "Kettensäge", "Panne möglich"], kreuz: ["Schwer gepanzert", "Stahlfaust", "Panne möglich"] });
 // Paket 1: Schlagworte für neue Regeln
@@ -1287,7 +1289,7 @@ const TERRAIN = {
              real: 'Trichter füllten sich oft mit Wasser. 1917 bei Passchendaele ertranken Soldaten im Schlamm.' },
   trench:  { name: 'Schützengraben', cost: 1, info: 'Abwehr ×1,6 gegen Beschuss und Angriffe von vorn. Halber Moralverlust.',
              real: 'Die Gräben waren oft über zwei Meter tief, mit Sandsäcken, Unterständen und Verbindungsgräben nach hinten.' },
-  wire:    { name: 'Stacheldraht', cost: 1, info: 'Beendet die Bewegung. Wer drinsteht: Abwehr ×0,6, MG-Feuer ×2. Infanterie kann ihn schneiden, Landkolosse walzen ihn nieder.',
+  wire:    { name: 'Stacheldraht', cost: 1, info: 'Wer ihn betritt, verliert etwa 10 Stärke und bleibt stehen. Wer drinsteht: Abwehr ×0,6, MG-Feuer ×2. Infanterie kann ihn schneiden, Landkolosse walzen ihn nieder. Gepanzerte Infanterie geht unverletzt hindurch.',
              real: 'Vor den Gräben lagen Drahtgürtel, oft viele Meter tief. Artillerie sollte sie zerschießen, scheiterte aber oft daran.' },
   village: { name: 'Ruinen', cost: 1, info: 'Abwehr ×1,5.' },
   forest:  { name: 'Totholz', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,4. Versperrt die Sicht.',
@@ -1896,7 +1898,7 @@ function reachable(G, u, opt) {
     const [cst, c, r] = queue.shift();
     if (cst > best.get(key(c, r))) continue;
     const here = key(c, r);
-    if (here !== start && ((hex(G, c, r).t === 'wire' && T.cls !== 'walker') || (!free && isZOC(G, c, r, u.side)))) continue;
+    if (here !== start && ((hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !wireProof(T)) || (!free && isZOC(G, c, r, u.side)))) continue;
     for (const [nc, nr] of neighbors(c, r)) {
       const occ = unitAt(G, nc, nr);
       if (occ && (occ.side !== u.side || occ.status === 'rout')) continue;
@@ -1930,6 +1932,8 @@ function autoFace(G, u) {
   if (e && dist(u.c, u.r, e.c, e.r) <= 4) u.face = faceIndex(angleTo(u.c, u.r, e.c, e.r));
   else u.face = u.side === 'A' ? 0 : 3;
 }
+// Gepanzerte Infanterie (Kampfanzug, Rüstung, Brustpanzer): Draht verletzt sie nicht und hält sie nicht auf
+function wireProof(T) { return T.cls !== 'walker' && !!(T.suit || T.wireProof); }
 function openGround(G, c, r) { return ['open', 'mud', 'crater', 'wire', 'bridge', 'furt', 'sumpf', 'waldweg', 'bahn'].includes(hex(G, c, r).t); }
 
 function moveUnit(G, u, c, r) {
@@ -1955,6 +1959,11 @@ function moveUnit(G, u, c, r) {
       u.ap = 0; u.moved = true; claimObjective(G, u); ev.push(...checkEnd(G)); return ev;
     }
     if (T.cls === 'walker' && h.t === 'wire') { h.t = 'open'; flush(); ev.push({ t: 'crush', u: u.id, c: nc, r: nr }); }
+    if (h.t === 'wire' && T.cls !== 'walker' && !wireProof(T) && !TOG.NOWIREDMG) {   // Stacheldraht: Schnitte und Hängenbleiben kosten Stärke
+      flush(); ev.push({ t: 'wirehurt', u: u.id, c: nc, r: nr });
+      applyDamage(G, null, u, P.WIRE_DMG * (0.8 + G.rng() * 0.4), 'front', ev, { morMul: 0.5 });
+      if (!alive(u) || u.status !== 'ok') { claimObjective(G, u); ev.push(...checkEnd(G)); return ev; }
+    }
     claimObjective(G, u);
     if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); u.stuck = P.STUCK_TURNS; ev.push({ t: 'stuck', u: u.id }); break; }
     if (T.cls !== 'walker' && openGround(G, nc, nr)) {
@@ -2292,6 +2301,7 @@ function canShell(G, a, c, r, mode) {
   const d = dist(a.c, a.r, c, r);
   if (d < 1 || d > T.rng) return false;
   if (mode === 'gas' && a.gas <= 0) return false;
+  if (mode === 'barrage' && a.cdP > 0) return false;   // Sperrfeuer: Abklingzeit
   if (isDirect(G, a, c, r)) return mode === 'he';
   return d >= P.ART_MIN && spotted(G, a.side, c, r);
 }
@@ -2322,6 +2332,7 @@ function shell(G, a, c, r, mode) {
   if (!canShell(G, a, c, r, mode)) return [];
   const ev = [];
   a.attacked = true; spend(a, TYPES[a.type].mobile ? 1 : 2);
+  if (mode === 'barrage') a.cdP = P.BARRAGE_CD;
   a.face = faceIndex(angleTo(a.c, a.r, c, r));
   const direct = isDirect(G, a, c, r);
   let tc = c, tr = r, sc = false;
@@ -2390,7 +2401,7 @@ function startTurn(G) {
     u.fireDmg = 0;
     if (u.side === s) {
       u.ap = P.AP; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false;
-      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA']) if (u[k] > 0) u[k]--;
+      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP']) if (u[k] > 0) u[k]--;
       if (u.revealed > 0) u.revealed--;
       if (TYPES[u.type].counterStrike) u.cready = true;
       if (u.stuck > 0) { u.stuck--; if (!u.stuck) ev.push({ t: 'unstuck', u: u.id }); }
@@ -2400,9 +2411,19 @@ function startTurn(G) {
   for (const u of G.units.filter(x => x.side === s && alive(x))) {
     if (cloudAt(G, u.c, u.r) && !gasSafe(G, u)) {
       u.str = Math.max(0, u.str - P.GAS_STR); u.mor = Math.max(0, u.mor - P.GAS_MOR); u.gassed = true;
-      ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor });
+      u.poison = P.POISON_TURNS;   // wirkt nach dem Verlassen der Wolke noch nach
+      ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor, poison: u.poison });
       if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
       if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0)) { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); }
+    }
+    else if (u.poison > 0) {   // vergiftet (außerhalb der Wolke): halber, dann viertel Gasschaden
+      const k = P.POISON_K[Math.min(u.poison, P.POISON_K.length) - 1]; u.poison--;
+      if (!gasSafe(G, u) && !TOG.NOPOISON) {
+        u.str = Math.max(0, u.str - P.GAS_STR * k); u.mor = Math.max(0, u.mor - P.GAS_MOR * k);
+        ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor, poison: u.poison, late: true });
+        if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
+        if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0)) { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); }
+      }
     }
     if (u.broken > 0) {
       u.broken--;
@@ -2472,7 +2493,8 @@ const ABILS = {
   ammo: { name: 'Nachladen', icon: '▤', ap: 1, cd: 2 }
 };
 const FORT = ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village'];
-function gasSafe(G, u) { return !!TYPES[u.type].gasproof || G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].gasproof && dist(o.c, o.r, u.c, u.r) === 1); }
+function gasSafe(G, u) { return !!TYPES[u.type].gasproof || TYPES[u.type].cls === 'walker' ||   // Kolosse und Maschinen: geschlossen, immun
+   G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].gasproof && dist(o.c, o.r, u.c, u.r) === 1); }
 function abilTargets(G, u) {
   const T = TYPES[u.type], k = T.abil, A = ABILS[k];
   if (!A || !active(u) || u.side !== G.side || u.ap < A.ap || u.cdA > 0 || u.supp > 0 || u.broken > 0 || (A.atk && u.attacked)) return [];
@@ -2574,13 +2596,14 @@ function order(G, u, kind) {
 // ---------- Sanitäter ----------
 function canHeal(G, m, t) {
   return active(m) && cls(m) === 'medic' && m.ap >= 1 && !m.attacked && !(m.supp > 0) && !(m.cdH > 0) && t && t !== m && t.side === m.side && active(t) && (cls(t) === 'walker') === !!TYPES[m.type].repair &&
-    dist(m.c, m.r, t.c, t.r) === 1 && (t.str < 10 || t.mor < TYPES[t.type].mor);
+    dist(m.c, m.r, t.c, t.r) === 1 && (t.str < 10 || t.mor < TYPES[t.type].mor || t.poison > 0);
 }
 function heal(G, m, t) {
   if (!canHeal(G, m, t)) return [];
   m.attacked = true; spend(m, 1); m.cdH = P.HEAL_CD; m.face = faceIndex(angleTo(m.c, m.r, t.c, t.r));
   t.str = Math.min(10, t.str + P.HEAL); t.mor = Math.min(TYPES[t.type].mor, t.mor + P.HEAL_MOR);
-  return [{ t: 'heal', u: t.id, by: m.id, str: t.str, morv: t.mor }];
+  const cured = t.poison > 0; t.poison = 0;   // Sanitäter heilen auch die Vergiftung
+  return [{ t: 'heal', u: t.id, by: m.id, str: t.str, morv: t.mor, cured }];
 }
 // ---------- Nachschub ----------
 function spawnHexes(G, side, type) {
@@ -2629,7 +2652,7 @@ const E = {
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  ABILS, abilTargets, canAbil, useAbil, smokeAt, litAt, concealed, gasSafe,
+  ABILS, abilTargets, canAbil, useAbil, smokeAt, litAt, concealed, gasSafe, wireProof,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
@@ -3931,7 +3954,7 @@ function threatAt(G, u, c, r) {
       th += P.DMG * T.atk * mm / (D.def * (t === 'trench' ? 1.3 : defm)) * 0.5 * (o.str / 10);
     }
   }
-  if (E.cloudAt(G, c, r)) th += 0.8;
+  if (E.cloudAt(G, c, r) && !E.gasSafe(G, u)) th += 0.8;
   return th;
 }
 function nearestObjDist(G, c, r, side) {
@@ -3977,7 +4000,16 @@ function nearestEnemyDist(G, side, c, r) {
   return best;
 }
 
-function posValue(G, u, c, r) {
+// Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke und hält auf, Gas wirkt nach – stärker meiden
+function hazard(G, u, c, r) {
+  const T = TYPES[u.type]; let h = 0;
+  if (E.hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !E.wireProof(T) && (c !== u.c || r !== u.r)) h += W_HAZ.wire;
+  if (E.cloudAt(G, c, r) && !E.gasSafe(G, u)) h += W_HAZ.gas;
+  return h;
+}
+const W_HAZ = { wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
+function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
+function posValue0(G, u, c, r) {
   const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay ? 'medic' : E.cls(u);
   const th = threatAt(G, u, c, r);
   let v;
@@ -4256,7 +4288,7 @@ function exec(G, uid, s) {
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
     let best = null;
-    for (const [nc, nr] of E.neighbors(u.c, u.r)) { const o = E.unitAt(G, nc, nr); if (o && E.canHeal(G, u, o) && (!best || o.str < best.str)) best = o; }
+    for (const [nc, nr] of E.neighbors(u.c, u.r)) { const o = E.unitAt(G, nc, nr); if (o && E.canHeal(G, u, o) && (!best || o.str - (o.poison > 0 ? 2 : 0) < best.str - (best.poison > 0 ? 2 : 0))) best = o; }   // Vergiftete zuerst
     return best ? E.heal(G, u, best) : [];
   }
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
@@ -4770,7 +4802,7 @@ function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
 const VIS = { clouds: [], smoke: [], lit: [], ctrl: {} };
-const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
+const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
 function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what) VIS.ctrl = { ...(G.ctrl || {}) }; }
 function addDU(u) { const [x, y] = L ? center(u.c, u.r) : [0, 0]; DU.set(u.id, { x, y, face: u.face, str: u.str, mor: u.mor, alpha: 1, shake: 0, lunge: null, vs: vsOf(u) }); }
 function syncAll() {
@@ -4816,7 +4848,8 @@ const STATES = [
   { k: 'broken', sym: 'zahnrad', name: 'Panne', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Liegengeblieben: fällt noch ${upRunden(d.vs.broken)} aus. Ein Werkstatt-Trupp kann sie bergen.` },
   { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
   { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(d.vs.stuck)} nicht ziehen.` },
-  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde.' },
+  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde. Wirkt nach dem Verlassen der Wolke noch 2 Runden nach (vergiftet).' },
+  { k: 'poison', sym: 'gas', ring: '#7FA04A', name: 'Vergiftet', on: (u, d) => d.vs.poison > 0 && !d.vs.gassed, text: (u, d) => `Hat Gas abbekommen: verliert noch ${upRunden(d.vs.poison)} Stärke und Moral (erst halb so viel wie in der Wolke, dann ein Viertel). Ein Sanitäter kann die Vergiftung heilen.` },
   { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => 'Moral fast am Ende: Beim nächsten Treffer weicht die Einheit zurück.' },
   { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
   { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
@@ -4905,9 +4938,9 @@ function warnMark(x, y, R, n) { if (VIEW.up) VIEW.up(x, y); const g = ctx; g.sav
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.font = `900 ${Math.round(Math.max(14, R * 1.05))}px "Arm Text", system-ui, sans-serif`; g.fillText(String(n), x, y + R * 0.24);
   g.restore(); }
 // Symbol auf dunkler Scheibe mit Rostrand (Karte)
-function drawSym(g, im, cx, cy, R) {
+function drawSym(g, im, cx, cy, R, ring) {
   if (VIEW.up) VIEW.up(cx, cy);
-  g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * 0.14); g.strokeStyle = '#66483A'; g.stroke();
+  g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = ring ? 'rgba(36,48,18,0.88)' : 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * (ring ? 0.2 : 0.14)); g.strokeStyle = ring || '#66483A'; g.stroke();   // ring: farbiger Rand (vergiftet = grünlich)
   if (!im) return;
   const ww = Math.min(R * 1.45 * im.naturalWidth / im.naturalHeight, R * 1.6), h2 = ww * im.naturalHeight / im.naturalWidth;
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
@@ -5015,7 +5048,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
   const sts = statesOf(u, d).filter(st => !st.panel);   // Karte: nur echte Zustände
   if (sts.length) {
     const R = Math.max(7, s * 0.13), cx = bx - R - 2;
-    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R);
+    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R, sts[0].ring);
     if (sts.length > 1) { const t = '+' + (sts.length - 1), tx = cx + R * 0.85, ty = mid - R * 0.95; g.font = `700 ${Math.round(Math.max(13, s * 0.2))}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, tx, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, tx, ty); }
     MARKS.push({ x0: cx - R * 1.1, y0: mid - R * 1.6, x1: cx + R * 1.6, y1: mid + R * 1.1, u, kind: 'state' });
@@ -5912,7 +5945,9 @@ async function playEvent(e) {
       } else floater(...headPos(e.u), 'Panik', '#f0d27a');
       await wait(e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern
     }
-    case 'gas': { const d = DU.get(e.u); d.vs.gassed = true; d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'Gas!', '#d6e670'); await wait(220); break; }
+    case 'gas': { const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
+      floater(...headPos(e.u), e.late ? 'Vergiftet' : 'Gas!', e.late ? '#a8c870' : '#d6e670'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
+    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('cut', 0.45); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
@@ -5965,7 +6000,7 @@ async function playEvent(e) {
     case 'limber': DU.get(e.u).vs.limbered = !!e.on; playSound('clank', 0.6); floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
       for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
-    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
+    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.cured) { d.vs.poison = 0; floater(...headPos(e.u), 'Entgiftet', '#a8c870'); } if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
       rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); floater(...headPos(e.u), 'versorgt', '#8fe0c8', true); await wait(350); break; }
     case 'gascloud': visSync('clouds'); break;
     case 'reinf': {
@@ -6402,7 +6437,8 @@ function unitButtons(T, hints) {
       ? { act: 'limber', sym: 'abprotzen', name: 'Abprotzen', cost: sel.ap, costTxt: 'alle Aktionen', text: 'In Stellung gehen. Ab der nächsten Runde feuerbereit.' }
       : { act: 'limber', sym: 'aufprotzen', name: 'Aufprotzen', cost: 1, text: `Anspannen: zieht ${P.LIMBER_MV} Felder, feuert aber nicht.` });
     btns.push({ act: 'm-he', sym: 'granate_artillerie', name: 'Sprenggranate', cost: c, text: 'Trifft ein Feld. Zerstört auch Draht.', on: can && artMode === 'he', off: !can, why });
-    btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, text: T.mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.', on: can && artMode === 'barrage', off: !can, why });
+    const bcd = sel.cdP > 0;   // Sperrfeuer: Abklingzeit P.BARRAGE_CD Runden
+    btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, cd: sel.cdP, text: (T.mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.') + ` Danach ${P.BARRAGE_CD} Runden Pause.`, on: can && !bcd && artMode === 'barrage', off: !can || bcd, why: bcd ? `Wieder in ${upRunden(sel.cdP)}.` : why });
     if (sel.gas > 0 || T.gas > 0) btns.push({ act: 'm-gas', sym: 'gas', name: 'Gasgranate', cost: c, cnt: sel.gas, text: 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.', on: can && artMode === 'gas', off: !can || !(sel.gas > 0), why: sel.gas > 0 ? why : 'Keine Gasgranaten mehr.' });
     hints.push(can ? (shellHexes.size ? 'Zielfeld anklicken.' : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).') : why);
     if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.`);
@@ -6890,6 +6926,8 @@ function noteEvent(e, u) {
     case 'stuck': logAdd(`${N(u)} steckt im Schlamm fest`, u.side, ...at(u), true); return headline(`${N(u)} steckt fest!`, u.side);
     case 'breakdown': logAdd(`${N(u)}: Panne`, u.side, ...at(u), true); return headline(`${N(u)}: Panne!`, u.side);
     case 'mine': logAdd('Mine detoniert', null, e.c, e.r, true); return headline('Mine!', null);
+    case 'wirehurt': return logAdd(`${N(u)}: im Stacheldraht verletzt`, u && u.side, e.c, e.r);
+    case 'gas': if (e.late) return logAdd(`${N(u)}: Vergiftung`, u && u.side, ...at(u)); return;
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
     case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
       if (e.reaction) { logAdd(`Reaktionsfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Reaktionsfeuer auf ${N(d)}!`, a.side); }

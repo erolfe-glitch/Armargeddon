@@ -495,7 +495,7 @@ function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
 const VIS = { clouds: [], smoke: [], lit: [], ctrl: {} };
-const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
+const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
 function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what) VIS.ctrl = { ...(G.ctrl || {}) }; }
 function addDU(u) { const [x, y] = L ? center(u.c, u.r) : [0, 0]; DU.set(u.id, { x, y, face: u.face, str: u.str, mor: u.mor, alpha: 1, shake: 0, lunge: null, vs: vsOf(u) }); }
 function syncAll() {
@@ -541,7 +541,8 @@ const STATES = [
   { k: 'broken', sym: 'zahnrad', name: 'Panne', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Liegengeblieben: fällt noch ${upRunden(d.vs.broken)} aus. Ein Werkstatt-Trupp kann sie bergen.` },
   { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
   { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(d.vs.stuck)} nicht ziehen.` },
-  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde.' },
+  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde. Wirkt nach dem Verlassen der Wolke noch 2 Runden nach (vergiftet).' },
+  { k: 'poison', sym: 'gas', ring: '#7FA04A', name: 'Vergiftet', on: (u, d) => d.vs.poison > 0 && !d.vs.gassed, text: (u, d) => `Hat Gas abbekommen: verliert noch ${upRunden(d.vs.poison)} Stärke und Moral (erst halb so viel wie in der Wolke, dann ein Viertel). Ein Sanitäter kann die Vergiftung heilen.` },
   { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => 'Moral fast am Ende: Beim nächsten Treffer weicht die Einheit zurück.' },
   { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
   { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
@@ -630,9 +631,9 @@ function warnMark(x, y, R, n) { if (VIEW.up) VIEW.up(x, y); const g = ctx; g.sav
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.font = `900 ${Math.round(Math.max(14, R * 1.05))}px "Arm Text", system-ui, sans-serif`; g.fillText(String(n), x, y + R * 0.24);
   g.restore(); }
 // Symbol auf dunkler Scheibe mit Rostrand (Karte)
-function drawSym(g, im, cx, cy, R) {
+function drawSym(g, im, cx, cy, R, ring) {
   if (VIEW.up) VIEW.up(cx, cy);
-  g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * 0.14); g.strokeStyle = '#66483A'; g.stroke();
+  g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = ring ? 'rgba(36,48,18,0.88)' : 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * (ring ? 0.2 : 0.14)); g.strokeStyle = ring || '#66483A'; g.stroke();   // ring: farbiger Rand (vergiftet = grünlich)
   if (!im) return;
   const ww = Math.min(R * 1.45 * im.naturalWidth / im.naturalHeight, R * 1.6), h2 = ww * im.naturalHeight / im.naturalWidth;
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
@@ -740,7 +741,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
   const sts = statesOf(u, d).filter(st => !st.panel);   // Karte: nur echte Zustände
   if (sts.length) {
     const R = Math.max(7, s * 0.13), cx = bx - R - 2;
-    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R);
+    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R, sts[0].ring);
     if (sts.length > 1) { const t = '+' + (sts.length - 1), tx = cx + R * 0.85, ty = mid - R * 0.95; g.font = `700 ${Math.round(Math.max(13, s * 0.2))}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, tx, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, tx, ty); }
     MARKS.push({ x0: cx - R * 1.1, y0: mid - R * 1.6, x1: cx + R * 1.6, y1: mid + R * 1.1, u, kind: 'state' });
@@ -1637,7 +1638,9 @@ async function playEvent(e) {
       } else floater(...headPos(e.u), 'Panik', '#f0d27a');
       await wait(e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern
     }
-    case 'gas': { const d = DU.get(e.u); d.vs.gassed = true; d.str = e.str; d.mor = e.morv; floater(...headPos(e.u), 'Gas!', '#d6e670'); await wait(220); break; }
+    case 'gas': { const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
+      floater(...headPos(e.u), e.late ? 'Vergiftet' : 'Gas!', e.late ? '#a8c870' : '#d6e670'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
+    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('cut', 0.45); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
@@ -1690,7 +1693,7 @@ async function playEvent(e) {
     case 'limber': DU.get(e.u).vs.limbered = !!e.on; playSound('clank', 0.6); floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
       for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
-    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
+    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.cured) { d.vs.poison = 0; floater(...headPos(e.u), 'Entgiftet', '#a8c870'); } if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
       rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); floater(...headPos(e.u), 'versorgt', '#8fe0c8', true); await wait(350); break; }
     case 'gascloud': visSync('clouds'); break;
     case 'reinf': {
@@ -2127,7 +2130,8 @@ function unitButtons(T, hints) {
       ? { act: 'limber', sym: 'abprotzen', name: 'Abprotzen', cost: sel.ap, costTxt: 'alle Aktionen', text: 'In Stellung gehen. Ab der nächsten Runde feuerbereit.' }
       : { act: 'limber', sym: 'aufprotzen', name: 'Aufprotzen', cost: 1, text: `Anspannen: zieht ${P.LIMBER_MV} Felder, feuert aber nicht.` });
     btns.push({ act: 'm-he', sym: 'granate_artillerie', name: 'Sprenggranate', cost: c, text: 'Trifft ein Feld. Zerstört auch Draht.', on: can && artMode === 'he', off: !can, why });
-    btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, text: T.mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.', on: can && artMode === 'barrage', off: !can, why });
+    const bcd = sel.cdP > 0;   // Sperrfeuer: Abklingzeit P.BARRAGE_CD Runden
+    btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, cd: sel.cdP, text: (T.mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.') + ` Danach ${P.BARRAGE_CD} Runden Pause.`, on: can && !bcd && artMode === 'barrage', off: !can || bcd, why: bcd ? `Wieder in ${upRunden(sel.cdP)}.` : why });
     if (sel.gas > 0 || T.gas > 0) btns.push({ act: 'm-gas', sym: 'gas', name: 'Gasgranate', cost: c, cnt: sel.gas, text: 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.', on: can && artMode === 'gas', off: !can || !(sel.gas > 0), why: sel.gas > 0 ? why : 'Keine Gasgranaten mehr.' });
     hints.push(can ? (shellHexes.size ? 'Zielfeld anklicken.' : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).') : why);
     if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.`);
@@ -2615,6 +2619,8 @@ function noteEvent(e, u) {
     case 'stuck': logAdd(`${N(u)} steckt im Schlamm fest`, u.side, ...at(u), true); return headline(`${N(u)} steckt fest!`, u.side);
     case 'breakdown': logAdd(`${N(u)}: Panne`, u.side, ...at(u), true); return headline(`${N(u)}: Panne!`, u.side);
     case 'mine': logAdd('Mine detoniert', null, e.c, e.r, true); return headline('Mine!', null);
+    case 'wirehurt': return logAdd(`${N(u)}: im Stacheldraht verletzt`, u && u.side, e.c, e.r);
+    case 'gas': if (e.late) return logAdd(`${N(u)}: Vergiftung`, u && u.side, ...at(u)); return;
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
     case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
       if (e.reaction) { logAdd(`Reaktionsfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Reaktionsfeuer auf ${N(d)}!`, a.side); }
