@@ -68,3 +68,10 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 - **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle.
 - **Etappe 7 – Balance:** Kosten, Werte und Siegquoten mit `tools/sim.js` und `tools/costcheck.js` abstimmen.
 - **Etappe 8 – Feldzug:** Weltkarte mit aufeinanderfolgenden Schlachten, Land- und Seeschlachten.
+
+## Töne (2026-11-16)
+- **Kugelhagel** (spätere Fähigkeit): ganze Datei `sound-quelle/Infantry Guns/337773__lubini__street-battle-lviv…` dafür aufgehoben.
+- **Luftschiff/Verstärkung aus der Luft:** `Musiker/704440__roemergruft__viking-horn-in-d.wav` gekürzt, wenn es Luftschiffe gibt.
+- **Frauenstimmen** (`woman-fighting`, `communication-voicelines-woman`) für später aufgehoben.
+- **Titanen/Railgun der Mechs:** `509015`, `510084` (Notizen des Nutzers).
+- **Namensnennung im Spiel:** CC-BY-Töne (siehe `CREDITS.md`) in einem Credits-Fenster nennen; CC-BY-NC-Töne vor einem Verkauf ersetzen.

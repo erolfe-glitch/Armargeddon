@@ -1,0 +1,1171 @@
+[
+ {
+  "pool": "rifle",
+  "key": "rifle_1",
+  "s": null,
+  "f": "Infantry Guns/410442__superphat__enfieldrifle.wav",
+  "dur": 1.6,
+  "src": 3.5,
+  "start": 0,
+  "gain": -0.7,
+  "kb": 19,
+  "note": "Gewehr 1 (Korrektur 3)"
+ },
+ {
+  "pool": "rifle2",
+  "key": "rifle2",
+  "s": null,
+  "f": "(vorhanden) rifle2"
+ },
+ {
+  "pool": "rifle3",
+  "key": "rifle3",
+  "s": "D",
+  "f": "(vorhanden) rifle3"
+ },
+ {
+  "pool": "rifle3",
+  "key": "rifle3_1",
+  "s": null,
+  "f": "Infantry Guns/855843__serutonin-deprivd__an-ak-47-being-shot-has-distinctive-metallic-kalashnikov-esque-report-punchy-sounding-w-distant-trailing-reverb.wav",
+  "dur": 1.8,
+  "src": 2.28,
+  "start": 0,
+  "gain": -1,
+  "kb": 21
+ },
+ {
+  "pool": "rifle4",
+  "key": "rifle4_1",
+  "s": null,
+  "f": "Infantry Guns/337773__lubini__street-battle-lviv-ukraine-ww1-reconstruction.wav",
+  "dur": 1.6,
+  "src": 13.83,
+  "start": 0.3,
+  "gain": 2,
+  "kb": 19,
+  "note": "nur Anfang (Korrektur 4); ganze Datei für „Kugelhagel“ aufgehoben"
+ },
+ {
+  "pool": "sniper",
+  "key": "sniper",
+  "s": null,
+  "f": "(vorhanden) sniper"
+ },
+ {
+  "pool": "sniper",
+  "key": "sniper_1",
+  "s": null,
+  "f": "182435__qubodup__sniper-shots-dod-56706-dod-146324.flac",
+  "dur": 1.46,
+  "src": 23.31,
+  "start": 1,
+  "gain": -3.1,
+  "kb": 17,
+  "note": "erster Schuss"
+ },
+ {
+  "pool": "sniper",
+  "key": "sniper_2",
+  "s": "A",
+  "f": "Infantry Guns/816114__qubodup__fps-sniper-shot.wav",
+  "dur": 1.46,
+  "src": 1.55,
+  "start": 0,
+  "gain": -5.6,
+  "kb": 17
+ },
+ {
+  "pool": "pistol",
+  "key": "pistol",
+  "s": "D",
+  "f": "(vorhanden) pistol"
+ },
+ {
+  "pool": "pistol",
+  "key": "pistol_1",
+  "s": "A",
+  "f": "Infantry Guns/581773__hz37__shoot-1-hza-01-08-2021.wav",
+  "dur": 1.2,
+  "src": 2.38,
+  "start": 0.09,
+  "gain": -1.1,
+  "kb": 14
+ },
+ {
+  "pool": "pistol",
+  "key": "pistol_2",
+  "s": "A",
+  "f": "Infantry Guns/dragon-studio-gunshot-511311.mp3",
+  "dur": 1.2,
+  "src": 2.23,
+  "start": 0.03,
+  "gain": -8,
+  "kb": 14
+ },
+ {
+  "pool": "semi",
+  "key": "semi",
+  "s": null,
+  "f": "(vorhanden) semi"
+ },
+ {
+  "pool": "semi",
+  "key": "semi_1",
+  "s": "A",
+  "f": "Infantry Guns/417148__superphat__slowfiringheavyweapon.wav",
+  "dur": 1.6,
+  "src": 35.41,
+  "start": 0.05,
+  "gain": -4.1,
+  "kb": 19
+ },
+ {
+  "pool": "mg",
+  "key": "mg",
+  "s": "A",
+  "f": "(vorhanden) mg"
+ },
+ {
+  "pool": "mg",
+  "key": "mg_1",
+  "s": "A",
+  "f": "Infantry Guns/417688__superphat__lightmachinegun1.wav",
+  "dur": 2.12,
+  "src": 30,
+  "start": 1.99,
+  "gain": -1.7,
+  "kb": 25,
+  "note": "Ausschnitt (Korrektur 7)"
+ },
+ {
+  "pool": "mg",
+  "key": "mg3",
+  "s": "D",
+  "f": "(vorhanden) mg3"
+ },
+ {
+  "pool": "mg",
+  "key": "mg2",
+  "s": "D",
+  "f": "(vorhanden) mg2"
+ },
+ {
+  "pool": "buechse",
+  "key": "buechse_1",
+  "s": "D",
+  "f": "Infantry Guns/721431__the_epic1357__new-barrett.mp3",
+  "dur": 2.2,
+  "src": 5.77,
+  "start": 0.04,
+  "gain": -3.3,
+  "kb": 26,
+  "note": "Panzerbüchse (Korrektur 10)"
+ },
+ {
+  "pool": "cannon",
+  "key": "cannon",
+  "s": "A",
+  "f": "(vorhanden) cannon"
+ },
+ {
+  "pool": "cannon",
+  "key": "cannon_1",
+  "s": "A",
+  "f": "Heavy firing sounds/850499__vulkanbruder__little-cannon.wav",
+  "dur": 0.36,
+  "src": 0.4,
+  "start": 0,
+  "gain": -9.2,
+  "kb": 4,
+  "note": "Feldkanone / Landkoloss (Korrektur 2)"
+ },
+ {
+  "pool": "cannon",
+  "key": "cannon_2",
+  "s": "D",
+  "f": "239137__qubodup__artillery-gunfire.flac",
+  "dur": 2.96,
+  "src": 6.91,
+  "start": 0,
+  "gain": -7.9,
+  "kb": 35
+ },
+ {
+  "pool": "panzerkanone",
+  "key": "panzerkanone_1",
+  "s": "D",
+  "f": "Heavy firing sounds/457044__gerainsan__slow-motion-gun-shot.wav",
+  "dur": 3,
+  "src": 8.56,
+  "start": 0.34,
+  "gain": 0.1,
+  "kb": 35
+ },
+ {
+  "pool": "cannonH",
+  "key": "cannonH",
+  "s": null,
+  "f": "(vorhanden) cannonH"
+ },
+ {
+  "pool": "cannonH",
+  "key": "cannonH_1",
+  "s": null,
+  "f": "212689__tb0y298__water-explosion-1.wav",
+  "dur": 2.5,
+  "src": 2.8,
+  "start": 0,
+  "gain": -10.5,
+  "kb": 29
+ },
+ {
+  "pool": "boomH",
+  "key": "boomH",
+  "s": null,
+  "f": "(vorhanden) boomH"
+ },
+ {
+  "pool": "boomH",
+  "key": "boomH_1",
+  "s": null,
+  "f": "Crash vehicle damage/511884__audiopapkin__impact-sfx-016.wav",
+  "dur": 2.2,
+  "src": 2.92,
+  "start": 0,
+  "gain": -4.4,
+  "kb": 26
+ },
+ {
+  "pool": "barrage",
+  "key": "barrage",
+  "s": null,
+  "f": "(vorhanden) barrage"
+ },
+ {
+  "pool": "barrage",
+  "key": "barrage_1",
+  "s": null,
+  "f": "210901__originalmaja__three-cannon-shots.mp3",
+  "dur": 4.5,
+  "src": 8.14,
+  "start": 0.11,
+  "gain": 0.5,
+  "kb": 53
+ },
+ {
+  "pool": "launch",
+  "key": "launch",
+  "s": null,
+  "f": "(vorhanden) launch"
+ },
+ {
+  "pool": "launch",
+  "key": "launch_1",
+  "s": null,
+  "f": "Heavy firing sounds/freesound_community-mortar-96223.mp3",
+  "dur": 2.5,
+  "src": 4.78,
+  "start": 0.04,
+  "gain": -5.8,
+  "kb": 29
+ },
+ {
+  "pool": "boom2",
+  "key": "boom2",
+  "s": null,
+  "f": "(vorhanden) boom2"
+ },
+ {
+  "pool": "boom2",
+  "key": "boom2_1",
+  "s": null,
+  "f": "Crash vehicle damage/Canon explode.wav",
+  "dur": 3,
+  "src": 6.07,
+  "start": 0,
+  "gain": -6.1,
+  "kb": 35
+ },
+ {
+  "pool": "grenade2",
+  "key": "grenade2",
+  "s": null,
+  "f": "(vorhanden) grenade2"
+ },
+ {
+  "pool": "grenade2",
+  "key": "grenade2_1",
+  "s": "D",
+  "f": "Explosion/609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac",
+  "dur": 1.78,
+  "src": 5.32,
+  "start": 0,
+  "gain": 1.4,
+  "kb": 21
+ },
+ {
+  "pool": "blast",
+  "key": "blast_1",
+  "s": null,
+  "f": "Explosion/Explosionssound.mp3",
+  "dur": 3,
+  "src": 5.56,
+  "start": 0.06,
+  "gain": -2.6,
+  "kb": 35,
+  "note": "Sprengsatz explodiert"
+ },
+ {
+  "pool": "blast",
+  "key": "blast_2",
+  "s": null,
+  "f": "Explosion/magiaz-grenade_explosion-416962.mp3",
+  "dur": 2.32,
+  "src": 5.18,
+  "start": 2.87,
+  "gain": -9.3,
+  "kb": 27
+ },
+ {
+  "pool": "wasser",
+  "key": "wasser_1",
+  "s": null,
+  "f": "519008__sheyvan__water-explosion.wav",
+  "dur": 2,
+  "src": 2,
+  "start": 0,
+  "gain": -1.5,
+  "kb": 24
+ },
+ {
+  "pool": "minigun",
+  "key": "minigun",
+  "s": null,
+  "f": "(vorhanden) minigun"
+ },
+ {
+  "pool": "flame",
+  "key": "flame",
+  "s": null,
+  "f": "(vorhanden) flame"
+ },
+ {
+  "pool": "flame",
+  "key": "flame_1",
+  "s": null,
+  "f": "Flamethrower/freesound_community-gas-torch-burn-74271.mp3",
+  "dur": 2.5,
+  "src": 15.12,
+  "start": 0.09,
+  "gain": -3.7,
+  "kb": 29
+ },
+ {
+  "pool": "feuer",
+  "key": "feuer_1",
+  "s": null,
+  "f": "563765__florianreichelt__fire-auto-car-on-fire.mp3",
+  "dur": 5,
+  "src": 18.14,
+  "start": 0.02,
+  "gain": -1.1,
+  "kb": 59
+ },
+ {
+  "pool": "gas",
+  "key": "gas",
+  "s": null,
+  "f": "(vorhanden) gas"
+ },
+ {
+  "pool": "gas",
+  "key": "gas_1",
+  "s": null,
+  "f": "Gas smoke/808013__artninja__tmnt_2012_inspired_smokebomb_sounds_05202025.wav",
+  "dur": 2.04,
+  "src": 25.55,
+  "start": 0.12,
+  "gain": 0.9,
+  "kb": 24
+ },
+ {
+  "pool": "rauch",
+  "key": "rauch_1",
+  "s": null,
+  "f": "Gas smoke/583262__pfranzen__dropping-a-smoke-bomb-on-the-ground.ogg",
+  "dur": 3,
+  "src": 7.16,
+  "start": 0,
+  "gain": 1.5,
+  "kb": 35
+ },
+ {
+  "pool": "gasmaske",
+  "key": "gasmaske_1",
+  "s": null,
+  "f": "Gas smoke/256519__kodack__mask-breathing-sound.wav",
+  "dur": 2.5,
+  "src": 15.81,
+  "start": 0.05,
+  "gain": -4.5,
+  "kb": 29
+ },
+ {
+  "pool": "gasmaske",
+  "key": "gasmaske_2",
+  "s": null,
+  "f": "Gas smoke/536372__hoggington__mask-grunt-sound.ogg",
+  "dur": 0.58,
+  "src": 0.67,
+  "start": 0.05,
+  "gain": 0.2,
+  "kb": 7
+ },
+ {
+  "pool": "selGas",
+  "key": "selGas_1",
+  "s": null,
+  "f": "Gas smoke/543010__awesometrainmaster1__mask-breathing-for-killer-or-other.ogg",
+  "dur": 1.8,
+  "src": 22.28,
+  "start": 0,
+  "gain": 10.7,
+  "kb": 21,
+  "note": "Gasschutz ausgewählt (Korrektur 10)"
+ },
+ {
+  "pool": "pain",
+  "key": "pain",
+  "s": null,
+  "f": "(vorhanden) pain"
+ },
+ {
+  "pool": "pain",
+  "key": "pain_1",
+  "s": "A",
+  "f": "131710__oldedgar__male-being-impaledbeaten-ac.wav",
+  "dur": 1.3,
+  "src": 14.81,
+  "start": 0.67,
+  "gain": 5.3,
+  "kb": 15,
+  "note": "nur Anfang"
+ },
+ {
+  "pool": "pain",
+  "key": "pain_2",
+  "s": "A",
+  "f": "338146__artordie__scream-augh.wav",
+  "dur": 1.45,
+  "src": 1.49,
+  "start": 0.01,
+  "gain": -5.5,
+  "kb": 17
+ },
+ {
+  "pool": "pain",
+  "key": "pain_3",
+  "s": null,
+  "f": "Melee hit infantry/559975__starkvind__man-dies.wav",
+  "dur": 0.65,
+  "src": 0.71,
+  "start": 0.06,
+  "gain": 2.3,
+  "kb": 8
+ },
+ {
+  "pool": "pain",
+  "key": "pain_4",
+  "s": "D",
+  "f": "Pain death/695389__fmaudio__male-death-cry-6.wav",
+  "dur": 0.93,
+  "src": 0.94,
+  "start": 0.01,
+  "gain": 6.1,
+  "kb": 11
+ },
+ {
+  "pool": "pain",
+  "key": "pain_5",
+  "s": "A",
+  "f": "Pain death/applehillstudios-hurt-amp-death-pain-groin-5-543683.mp3",
+  "dur": 1.6,
+  "src": 3.6,
+  "start": 0.11,
+  "gain": 1.6,
+  "kb": 19
+ },
+ {
+  "pool": "medic",
+  "key": "medic",
+  "s": null,
+  "f": "(vorhanden) medic"
+ },
+ {
+  "pool": "panic",
+  "key": "panic",
+  "s": null,
+  "f": "(vorhanden) panic"
+ },
+ {
+  "pool": "panic",
+  "key": "panic_1",
+  "s": null,
+  "f": "Voices/freesound_community-033205_human-male-scream-small-crowd-panic-fearmp3-76274.mp3",
+  "dur": 2.5,
+  "src": 31.78,
+  "start": 0.12,
+  "gain": 11.5,
+  "kb": 29,
+  "note": "Einheit flieht (Korrektur 10)"
+ },
+ {
+  "pool": "charge",
+  "key": "charge_1",
+  "s": "D",
+  "f": "233068__newciv1__loud-tiger-ii-audio-test.wav",
+  "dur": 2.4,
+  "src": 24.48,
+  "start": 0.04,
+  "gain": -3.6,
+  "kb": 28,
+  "note": "nur Anfang: Ruf, Gegenstoß der Aschenwacht (Korrektur 1)"
+ },
+ {
+  "pool": "forward",
+  "key": "forward",
+  "s": "A",
+  "f": "(vorhanden) forward"
+ },
+ {
+  "pool": "forward",
+  "key": "forward_1",
+  "s": "A",
+  "f": "Voices/applehillstudios-combat-voice-charge-2-543675.mp3",
+  "dur": 0.67,
+  "src": 0.79,
+  "start": 0.06,
+  "gain": 1,
+  "kb": 8
+ },
+ {
+  "pool": "stand",
+  "key": "stand",
+  "s": "A",
+  "f": "(vorhanden) stand"
+ },
+ {
+  "pool": "stand",
+  "key": "stand_1",
+  "s": "A",
+  "f": "Voices/458070__theuncertainman__form-ranks-british-warrior.wav",
+  "dur": 1.01,
+  "src": 1.92,
+  "start": 0.47,
+  "gain": -2.9,
+  "kb": 12
+ },
+ {
+  "pool": "comeon",
+  "key": "comeon",
+  "s": null,
+  "f": "(vorhanden) comeon"
+ },
+ {
+  "pool": "select",
+  "key": "select_1",
+  "s": "A",
+  "f": "Voices/402019__theuncertainman__yes-british-male.wav",
+  "dur": 0.55,
+  "src": 1.53,
+  "start": 0.5,
+  "gain": -2.1,
+  "kb": 7,
+  "note": "Einheit ausgewählt (Korrektur 10)"
+ },
+ {
+  "pool": "select",
+  "key": "select_2",
+  "s": "D",
+  "f": "Voices/338147__artordie__talking-to-me.wav",
+  "dur": 1.1,
+  "src": 1.11,
+  "start": 0.01,
+  "gain": -1,
+  "kb": 13
+ },
+ {
+  "pool": "roar",
+  "key": "roar",
+  "s": null,
+  "f": "(vorhanden) roar"
+ },
+ {
+  "pool": "roar",
+  "key": "roar_1",
+  "s": null,
+  "f": "Voices/jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3",
+  "dur": 3,
+  "src": 7.92,
+  "start": 0.54,
+  "gain": 0.1,
+  "kb": 35
+ },
+ {
+  "pool": "roar",
+  "key": "roar_2",
+  "s": "A",
+  "f": "Voices/764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav",
+  "dur": 2.6,
+  "src": 11.03,
+  "start": 0.51,
+  "gain": 1.4,
+  "kb": 31,
+  "note": "nur erste 2–3 s"
+ },
+ {
+  "pool": "scream",
+  "key": "scream",
+  "s": null,
+  "f": "(vorhanden) scream"
+ },
+ {
+  "pool": "scream",
+  "key": "scream_1",
+  "s": "D",
+  "f": "Voices/763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav",
+  "dur": 2.6,
+  "src": 11.03,
+  "start": 0.51,
+  "gain": 11.7,
+  "kb": 31,
+  "note": "nur erste 2–3 s"
+ },
+ {
+  "pool": "march",
+  "key": "march",
+  "s": null,
+  "f": "(vorhanden) march"
+ },
+ {
+  "pool": "march",
+  "key": "march_1",
+  "s": "A",
+  "f": "Ereignisse/324539__deleted_user_2104797__whistle-army-old.wav",
+  "dur": 3,
+  "src": 16.5,
+  "start": 0.28,
+  "gain": -0.1,
+  "kb": 35
+ },
+ {
+  "pool": "march",
+  "key": "march_2",
+  "s": "D",
+  "f": "Ereignisse/freesound_community-horn-a-37752.mp3",
+  "dur": 3,
+  "src": 5.93,
+  "start": 0.16,
+  "gain": 2.2,
+  "kb": 36
+ },
+ {
+  "pool": "march",
+  "key": "march_3",
+  "s": null,
+  "f": "Repair reload heal etc/alex_jauk-whistle-sound-600668.mp3",
+  "dur": 0.96,
+  "src": 0.99,
+  "start": 0.03,
+  "gain": 2.6,
+  "kb": 11
+ },
+ {
+  "pool": "erobert",
+  "key": "erobert_1",
+  "s": "D",
+  "f": "Eroberungspunkte/405513__zagi2__warfare-snare-drum.wav",
+  "dur": 3,
+  "src": 13,
+  "start": 0.12,
+  "gain": 3.9,
+  "kb": 35,
+  "note": "Zielfeld erobert"
+ },
+ {
+  "pool": "erobert",
+  "key": "erobert_2",
+  "s": "A",
+  "f": "Eroberungspunkte/Win Point 2.wav",
+  "dur": 1.32,
+  "src": 2.08,
+  "start": 0,
+  "gain": 3.4,
+  "kb": 16,
+  "note": "Win Point und Win Point 2 identisch, nur eine (Korrektur 11)"
+ },
+ {
+  "pool": "verloren",
+  "key": "verloren_1",
+  "s": null,
+  "f": "Eroberungspunkte/Lost Point.wav",
+  "dur": 2.61,
+  "src": 3.05,
+  "start": 0,
+  "gain": -4.8,
+  "kb": 31
+ },
+ {
+  "pool": "dog",
+  "key": "dog",
+  "s": null,
+  "f": "(vorhanden) dog"
+ },
+ {
+  "pool": "gallop2",
+  "key": "gallop2",
+  "s": null,
+  "f": "(vorhanden) gallop2"
+ },
+ {
+  "pool": "gallop2",
+  "key": "gallop2_1",
+  "s": null,
+  "f": "Animals/Pferdegalopp.mp3",
+  "dur": 3,
+  "src": 14.32,
+  "start": 0.25,
+  "gain": 0.9,
+  "kb": 35
+ },
+ {
+  "pool": "steps",
+  "key": "steps",
+  "s": null,
+  "f": "(vorhanden) steps"
+ },
+ {
+  "pool": "steps",
+  "key": "steps_1",
+  "s": null,
+  "f": "Footsteps robot mud marching/freesound_community-footsteps-mud-68694.mp3",
+  "dur": 2.5,
+  "src": 50.62,
+  "start": 0.17,
+  "gain": 10.4,
+  "kb": 30
+ },
+ {
+  "pool": "stepsWald",
+  "key": "stepsWald_1",
+  "s": null,
+  "f": "Footsteps robot mud marching/478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav",
+  "dur": 2.5,
+  "src": 28.49,
+  "start": 0,
+  "gain": 4.5,
+  "kb": 29,
+  "note": "nur Wald und Gebüsch"
+ },
+ {
+  "pool": "mech",
+  "key": "mech",
+  "s": null,
+  "f": "(vorhanden) mech"
+ },
+ {
+  "pool": "tank",
+  "key": "tank",
+  "s": null,
+  "f": "(vorhanden) tank"
+ },
+ {
+  "pool": "tank",
+  "key": "tankmove",
+  "s": null,
+  "f": "(vorhanden) tankmove"
+ },
+ {
+  "pool": "crash",
+  "key": "crash",
+  "s": "D",
+  "f": "(vorhanden) crash"
+ },
+ {
+  "pool": "crash",
+  "key": "crash_1",
+  "s": "A",
+  "f": "Crash vehicle damage/423116__ogsoundfx__guns-explosions-album-heavy-object-impact-4.wav",
+  "dur": 1.38,
+  "src": 1.72,
+  "start": 0,
+  "gain": -4.6,
+  "kb": 16
+ },
+ {
+  "pool": "crash",
+  "key": "crash_2",
+  "s": null,
+  "f": "Crash vehicle damage/freesound_community-crashing-6429.mp3",
+  "dur": 2.5,
+  "src": 15.7,
+  "start": 0.15,
+  "gain": -3.5,
+  "kb": 29
+ },
+ {
+  "pool": "smash",
+  "key": "smash",
+  "s": null,
+  "f": "(vorhanden) smash"
+ },
+ {
+  "pool": "smash",
+  "key": "smash_1",
+  "s": "D",
+  "f": "Crash vehicle damage/509004__audiopapkin__mechanical-sfx_m023.wav",
+  "dur": 2.5,
+  "src": 9.92,
+  "start": 0,
+  "gain": -2.7,
+  "kb": 29
+ },
+ {
+  "pool": "heavy",
+  "key": "heavy1",
+  "s": null,
+  "f": "(vorhanden) heavy1"
+ },
+ {
+  "pool": "heavy",
+  "key": "heavy2",
+  "s": null,
+  "f": "(vorhanden) heavy2"
+ },
+ {
+  "pool": "heavy",
+  "key": "heavy3",
+  "s": null,
+  "f": "(vorhanden) heavy3"
+ },
+ {
+  "pool": "heavy",
+  "key": "heavy_1",
+  "s": null,
+  "f": "Heavy Meelee Mechs large/mixkit-heavy-sword-smashes-metal-2795.wav",
+  "dur": 1.07,
+  "src": 1.52,
+  "start": 0.07,
+  "gain": -4.1,
+  "kb": 13
+ },
+ {
+  "pool": "heavy",
+  "key": "heavy_2",
+  "s": "D",
+  "f": "Crash vehicle damage/509007__audiopapkin__mechanical-sfx_m013.wav",
+  "dur": 2.5,
+  "src": 6.82,
+  "start": 0,
+  "gain": -3.3,
+  "kb": 29,
+  "note": "Seite mit dem Bohr-Mech"
+ },
+ {
+  "pool": "armor",
+  "key": "armor",
+  "s": null,
+  "f": "(vorhanden) armor"
+ },
+ {
+  "pool": "armor",
+  "key": "armor_1",
+  "s": null,
+  "f": "Defelcting/mixkit-metallic-sword-strike-2160.wav",
+  "dur": 0.66,
+  "src": 1.33,
+  "start": 0.01,
+  "gain": -4.8,
+  "kb": 8
+ },
+ {
+  "pool": "armor",
+  "key": "armor_2",
+  "s": null,
+  "f": "Explosion/daviddumaisaudio-grenade-explosion-14-190266.mp3",
+  "dur": 1.8,
+  "src": 2.16,
+  "start": 0.02,
+  "gain": -0.4,
+  "kb": 21
+ },
+ {
+  "pool": "impact",
+  "key": "impact",
+  "s": "A",
+  "f": "(vorhanden) impact"
+ },
+ {
+  "pool": "slash",
+  "key": "slash",
+  "s": "D",
+  "f": "(vorhanden) slash"
+ },
+ {
+  "pool": "sword",
+  "key": "sword",
+  "s": null,
+  "f": "(vorhanden) sword"
+ },
+ {
+  "pool": "sword",
+  "key": "sword_1",
+  "s": null,
+  "f": "Heavy Meelee Mechs large/yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3",
+  "dur": 0.58,
+  "src": 1.03,
+  "start": 0.01,
+  "gain": -6.6,
+  "kb": 7
+ },
+ {
+  "pool": "sword",
+  "key": "sword_2",
+  "s": "A",
+  "f": "Melee hit infantry/universfield-punch-with-male-scream-121575.mp3",
+  "dur": 0.55,
+  "src": 3.03,
+  "start": 0.29,
+  "gain": -5,
+  "kb": 7,
+  "note": "nur der Schlag am Anfang"
+ },
+ {
+  "pool": "axe",
+  "key": "axe",
+  "s": null,
+  "f": "(vorhanden) axe"
+ },
+ {
+  "pool": "axe",
+  "key": "axe_1",
+  "s": null,
+  "f": "Melee hit infantry/392973__morganpurkis__trench-club-2.wav",
+  "dur": 0.92,
+  "src": 1.38,
+  "start": 0,
+  "gain": -10.2,
+  "kb": 11
+ },
+ {
+  "pool": "robot",
+  "key": "robot",
+  "s": "A",
+  "f": "(vorhanden) robot"
+ },
+ {
+  "pool": "heal",
+  "key": "heal",
+  "s": null,
+  "f": "(vorhanden) heal"
+ },
+ {
+  "pool": "heal",
+  "key": "heal_1",
+  "s": null,
+  "f": "Repair reload heal etc/floraphonic-duct-tape-3-183995.mp3",
+  "dur": 2,
+  "src": 2.66,
+  "start": 0.07,
+  "gain": 3.5,
+  "kb": 24
+ },
+ {
+  "pool": "reparieren",
+  "key": "reparieren_1",
+  "s": "D",
+  "f": "Repair reload heal etc/492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg",
+  "dur": 0.73,
+  "src": 0.86,
+  "start": 0.11,
+  "gain": -1.2,
+  "kb": 9
+ },
+ {
+  "pool": "reparieren",
+  "key": "reparieren_2",
+  "s": "A",
+  "f": "Repair reload heal etc/591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav",
+  "dur": 2,
+  "src": 5.07,
+  "start": 0,
+  "gain": 1.2,
+  "kb": 24
+ },
+ {
+  "pool": "nachladen",
+  "key": "nachladen_1",
+  "s": null,
+  "f": "847367__adrian_sommer__gun-reloading-walther-p99.wav",
+  "dur": 0.58,
+  "src": 3.44,
+  "start": 1.82,
+  "gain": 4.7,
+  "kb": 7,
+  "note": "nur Ende"
+ },
+ {
+  "pool": "cut",
+  "key": "cut",
+  "s": null,
+  "f": "(vorhanden) cut"
+ },
+ {
+  "pool": "cut",
+  "key": "cut_1",
+  "s": null,
+  "f": "Repair reload heal etc/freesound_community-cutting-clipping-wire-copper-80373.mp3",
+  "dur": 0.18,
+  "src": 3.82,
+  "start": 1.45,
+  "gain": -1.1,
+  "kb": 2
+ },
+ {
+  "pool": "clank",
+  "key": "clank",
+  "s": null,
+  "f": "(vorhanden) clank"
+ },
+ {
+  "pool": "clank",
+  "key": "clank_1",
+  "s": null,
+  "f": "Repair reload heal etc/freesound_community-tank-reload-47828.mp3",
+  "dur": 0.47,
+  "src": 0.62,
+  "start": 0.09,
+  "gain": 2.3,
+  "kb": 6
+ },
+ {
+  "pool": "mgsetup",
+  "key": "mgsetup_1",
+  "s": "A",
+  "f": "Voices/800863__tyranttim__soldier-guns_up.wav",
+  "dur": 0.71,
+  "src": 0.94,
+  "start": 0.11,
+  "gain": -1.7,
+  "kb": 9,
+  "note": "MG aufbauen, Konkordat (Korrektur 5)"
+ },
+ {
+  "pool": "tick",
+  "key": "tick_1",
+  "s": null,
+  "f": "320862__urupin__old-watch-in-a-small-antique-shop.flac",
+  "dur": 1.6,
+  "src": 35.7,
+  "start": 1.17,
+  "gain": 21.5,
+  "kb": 19,
+  "note": "Sprengsatz legen (Korrektur 6)"
+ },
+ {
+  "pool": "bauen",
+  "key": "bauen_1",
+  "s": null,
+  "f": "Repair reload heal etc/675138__craigsmith__s17-03-hand-to-hand-battle-with-yelling-and-armor-noise-many-voices.wav",
+  "dur": 2.5,
+  "src": 16.23,
+  "start": 1.5,
+  "gain": -5.9,
+  "kb": 29,
+  "note": "Befestigungen bauen, kurz und leise (Korrektur 8)"
+ },
+ {
+  "pool": "ui",
+  "key": "ui_1",
+  "s": null,
+  "f": "Buttons/488534__ranner__ui-click.wav",
+  "dur": 0.35,
+  "src": 0.6,
+  "start": 0.21,
+  "gain": 23.6,
+  "kb": 4
+ },
+ {
+  "pool": "ui",
+  "key": "ui_2",
+  "s": null,
+  "f": "Buttons/677861__el_boss__ui-button-click.wav",
+  "dur": 0.05,
+  "src": 0.05,
+  "start": 0,
+  "gain": 0,
+  "kb": 1
+ },
+ {
+  "pool": "ui",
+  "key": "ui_3",
+  "s": null,
+  "f": "Buttons/117651__jppi_stu__sw_switchoffon.wav",
+  "dur": 0.6,
+  "src": 1.81,
+  "start": 0.3,
+  "gain": 12.1,
+  "kb": 7
+ },
+ {
+  "pool": "ambient",
+  "key": "ambient",
+  "s": null,
+  "f": "(vorhanden) ambient"
+ },
+ {
+  "pool": "ambient",
+  "key": "ambient_1",
+  "s": null,
+  "f": "Ambience/armed_unit-distant-war-377958.mp3",
+  "dur": 45,
+  "src": 234.42,
+  "start": 14.04,
+  "gain": -0.9,
+  "kb": 527
+ },
+ {
+  "pool": "wetter",
+  "key": "wetter_1",
+  "s": null,
+  "f": "447809__florianreichelt__light-rain-and-thunder.wav",
+  "dur": 30,
+  "src": 63.48,
+  "start": 0,
+  "gain": 2.2,
+  "kb": 352
+ },
+ {
+  "pool": "musikTitel",
+  "key": "musikTitel_1",
+  "s": null,
+  "f": "Musiker/744062__xloenp__heroic-war-march-symphony-loop-2.flac",
+  "dur": 104.73,
+  "src": 104.73,
+  "start": 0,
+  "gain": -7.2,
+  "kb": 1228
+ },
+ {
+  "pool": "musikNiederlage",
+  "key": "musikNiederlage_1",
+  "s": null,
+  "f": "Musiker/693767__composingatnight__taps-for-the-fallen.wav",
+  "dur": 62.19,
+  "src": 63.56,
+  "start": 0.11,
+  "gain": 1.9,
+  "kb": 729
+ }
+]

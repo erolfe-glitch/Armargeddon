@@ -7,3 +7,6 @@ entwurf/bestand/
 
 # Sound-Quellen (nur lokal, solange sortiert wird)
 sound-quelle/
+
+# Ton-Kopien aus tools/sound_bau.mjs (nur lokal, eingebettet in src/sound.js)
+ui-quelle/toene/
