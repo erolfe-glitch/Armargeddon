@@ -23,12 +23,12 @@ const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: ['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n),
   flach: [...[1, 2, 3, 4, 5, 6, 7].map(k => 'flach_details_' + k), 'trichter_gross_1'],
-  wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'draht', 'barrikade', 'wald_unterholz'],
+  wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz'],
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k)],   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k)],   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
 const NAMEN = [...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand];
 
@@ -55,7 +55,7 @@ function eingesunken(im, cut = EINSINK) {
 
 function aufbauen(cfg, IM) {
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
-  const PFAEHLE = pool('draht_pfahl'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
+  const DRAHT = pool('draht_stuecke'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
   // Ansicht (setView): wird erst beim Zeichnen gebraucht
   let g = null, proj = null, F = 1, U = 1, UNITS = [];
   const Fk = () => F;
@@ -307,18 +307,14 @@ function aufbauen(cfg, IM) {
       for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) });
     } else if (t === 'bunker') {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
-    } else if (t === 'wire') {   // Drahtfeld: 1–2 kurze Stücke des gemalten Spiralstreifens, schräg und versetzt, dazu einzelne schiefe Pfähle; nichts auf Straßen
-      const aufWeg = (x, y) => ROADS.some(rd => distTo([x, y], rd) < R * 0.42);
-      const n = q(1) < 0.45 ? 1 : 2;
+    } else if (t === 'wire') {   // Drahtfeld: 1–2 ganze Drahtverhau-Stücke (nicht zerschnitten), versetzt und gespiegelt, nach Tiefe mit den Figuren; nichts auf Straßen
+      const aufWeg = (x, y) => ROADS.some(rd => distTo([x, y], rd) < R * 0.45);
+      const n = q(1) < 0.4 ? 1 : 2, used = [];
       for (let k = 0; k < n; k++) {
-        const ang = (q(k * 7 + 2) - 0.5) * 1.1, L = R * (0.32 + q(k * 7 + 3) * 0.3), cx = hx + (q(k * 7 + 4) - 0.5) * R * 0.9, cy = hy + (n === 1 ? (q(k * 7 + 5) - 0.5) * 0.5 : (k ? 0.3 : -0.32) + (q(k * 7 + 5) - 0.5) * 0.2) * R;
-        wall(IM.draht, [cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], (0.5 + q(k * 7 + 6) * 0.15) * SH,
-          { u0: q(k * 7 + 8) * 5, shade: 0.3, shadeW: 0.12, skip: aufWeg, filter: hS => hS < 45 * U ? 'brightness(1.4) contrast(1.1)' : '' });   // von weit etwas heller, damit man ihn erkennt
-      }
-      for (let k = 0; k < 1 + Math.floor(q(30) * 2.2); k++) {   // einzelne schiefe Pfähle, teils ohne Draht
-        const x = hx + (q(k * 5 + 31) - 0.5) * R * 1.2, y = hy + (q(k * 5 + 32) - 0.5) * R * 1.1;
-        if (aufWeg(x, y)) continue;
-        stand(PFAEHLE[Math.floor(q(k * 5 + 33) * PFAEHLE.length)], x, y, 0.55 * SH * (0.7 + q(k * 5 + 34) * 0.4), { rot: (q(k * 5 + 35) - 0.5) * 0.7, flip: flipR(c, r, k + 40), shadeK: 0.5 });
+        let x = hx + (q(k * 7 + 2) - 0.5) * R * (n === 1 ? 0.5 : 0.8), y = hy + (n === 1 ? (q(k * 7 + 3) - 0.5) * 0.4 : (k ? 0.32 : -0.3) + (q(k * 7 + 3) - 0.5) * 0.16) * R;
+        if (aufWeg(x, y)) { const alt = [hx + (x > hx ? -1 : 1) * R * 0.45, y]; if (aufWeg(...alt)) continue; [x, y] = alt; }   // neben die Straße ausweichen
+        let i = Math.floor(q(k * 7 + 4) * DRAHT.length); if (used.includes(i)) i = (i + 1) % DRAHT.length; used.push(i);
+        stand(DRAHT[i], x, y, 0.8 * SH * (0.85 + q(k * 7 + 5) * 0.25), { flip: flipR(c, r, k * 7 + 6), shadeK: 0.45 });
       }
     } else if (t === 'barrikade') {
       const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });

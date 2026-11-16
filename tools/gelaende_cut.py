@@ -55,6 +55,7 @@ TEILE = {
     'truemmer_d':          ('bogen', ('gemeinsam', 0.6)),
     # Trichter klein/groß, Pfütze, lange Pfütze, Bretter, Laufrost, Trümmerstreu, Spuren
     'flach_details':       ('flach', [0.65, 1.25, 0.6, 1.0, 0.6, 0.6, 1.0, 1.0]),
+    'draht_stuecke':       ('bogen', ('gemeinsam', 0.8)),     # ganze Drahtverhau-Stücke (seit 2026-11-16 der einzige Draht im Spiel)
     'panzersperren':       ('bogen', ('gemeinsam', 0.75)),    # Tschechenigel, Höckerlinie, Igel mit Draht, Pfahlreihe
     'panzersperren_b':     ('bogen', ('gemeinsam', 0.95)),    # wie oben, Pfähle länger
     'trichter_gross':      ('flach', [1.5]),
@@ -293,6 +294,7 @@ def einbetten():
     for f in sorted(PROBE.glob('g_*.webp')):
         n = f.stem[2:]
         if any(n.startswith(w) for w in weg): continue
+        if n == 'draht' or n.startswith('draht_pfahl'): continue   # alter Draht (Streifen, Einzelpfähle) wird nicht mehr benutzt
         teile.append(f'"{n}": "data:image/webp;base64,{base64.b64encode(f.read_bytes()).decode()}"')
     out = ROOT / 'src' / 'gelaende.js'
     kopf = ('// ===== ARMARGEDDON GELÄNDE-BAUSTEINE (neue Ansicht) =====' + NL +

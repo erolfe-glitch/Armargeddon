@@ -26,8 +26,8 @@ let recSet = new Set(), abilSet = new Set(), abilMode = false;
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
-const OPT = { ready: true, strag: true, cam: true, shake: true, tilt: false };   // tilt: „Neue Ansicht (Test)“, Standard aus   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
-try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === 'boolean') OPT[k] = o[k]; } catch (e) {}
+const OPT = { ready: true, strag: true, cam: true, shake: true, tilt: false, base: 0 };   // base: „Base“ unter Einheiten in der neuen Ansicht (0 aus … 3 deutlich)   // tilt: „Neue Ansicht (Test)“, Standard aus   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
+try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === typeof OPT[k]) OPT[k] = o[k]; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
 let skinA = 'A';
@@ -783,6 +783,15 @@ function drawGround(g, s) {
     if (im) { const w = dc.r * 5, hh = w * im.naturalHeight / im.naturalWidth * Math.max(0.6, kAt(dc.x, dc.y)); g.globalAlpha = 0.85; g.drawImage(im, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; }
     else { g.fillStyle = dc.col; g.beginPath(); gEllipse(g, dc.x, dc.y, dc.r, dc.r); g.fill(); }
   }
+  // „Base“ unter Einheiten wie bei einer Tabletop-Miniatur (Test, Option): Feld leicht abgedunkelt, Boden schimmert durch, feiner Rand in Fraktionsfarbe
+  if (VIEW.tilt() && OPT.base > 0) {
+    const st = [null, [0.16, 0.4, 0.022], [0.28, 0.6, 0.03], [0.42, 0.85, 0.04]][OPT.base];
+    for (const u of G.units) { const d = DU.get(u.id); if (!d || d.alpha <= 0 || !E.alive(u)) continue;
+      const c = FIG.PAL[u.side] ? FIG.PAL[u.side].accent : '#8a8070', rgb = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)), m = rgb.map(v => Math.round(v * 0.75 + 40));
+      g.beginPath(); for (let i = 0; i < 6; i++) { const q = hexCorner(d.x, d.y, i, 0.93); i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.closePath();
+      g.globalAlpha = d.alpha; g.fillStyle = `rgba(14,10,7,${st[0]})`; g.fill();
+      g.lineWidth = s * st[2]; g.strokeStyle = `rgba(${m},${st[1]})`; g.stroke(); g.globalAlpha = 1; }
+  }
   // Markierungen
   if (sel && human(G.side) && !busy) {
     // Bewegungsfelder dezent (Wunsch des Nutzers): halbdurchsichtige Fläche, Gelände bleibt sichtbar. Ziehen = Knochenweiß, Marsch/Rückzug = Messing.
@@ -1079,11 +1088,25 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i) : [pre + sheet];
   const ims = keys.map(figImg); if (ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { ims, trupp: !!m[1], max: m[2] || 4, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
 const VEH_ENV = new Map();
+// Ketten leicht eingesunken: unterer Rand (entlang der gemessenen Unterkante) mit dunklem Schlamm überzogen, je Bild zwischengespeichert
+const SCHLAMM = new Map();
+function schlammrand(im, env) {
+  if (SCHLAMM.has(im)) return SCHLAMM.get(im);
+  const W = im.naturalWidth, H = im.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-atop';
+  const pts = env ? env.pts : [[0, 1], [1, 1]], band = H * 0.14;
+  for (let i = 0; i < pts.length; i++) {   // je Spalte: Verlauf von der Unterkante nach oben
+    const px = pts[i][0] * W, py = pts[i][1] * H, wd = W / Math.max(1, pts.length - 1) + 2;
+    const gd = x.createLinearGradient(0, py - band, 0, py); gd.addColorStop(0, 'rgba(40,29,19,0)'); gd.addColorStop(0.55, 'rgba(40,29,19,0.55)'); gd.addColorStop(1, 'rgba(30,22,14,0.9)');
+    x.fillStyle = gd; x.fillRect(px - wd / 2, py - band, wd, band + 2);
+  }
+  SCHLAMM.set(im, c); return c;
+}
 function vehEnv(im) {
   if (VEH_ENV.has(im)) return VEH_ENV.get(im);
   const W = im.naturalWidth, H = im.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H;
@@ -1095,6 +1118,7 @@ function vehEnv(im) {
   VEH_ENV.set(im, env); return env;
 }
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
+  if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
   const pl = VIEW.tilt() ? gbPlatz(u, d) : null, [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
   if (nf.trupp) {
@@ -1123,20 +1147,20 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       const cx = (x0 + x1) / 2, cy = (yA + yB) / 2 + s * 0.02, rx = Math.abs(x1 - x0) / 2 + s * 0.12, ry = Math.max((yB - yA) / 2 + s * 0.06 * k, s * 0.14 * k);
       // breite flache Ellipse von vorn bis hinten, weich auslaufend
       g.save(); g.translate(cx, cy); g.scale(1, ry / rx);
-      const gr = g.createRadialGradient(0, 0, 0, 0, 0, rx); gr.addColorStop(0, 'rgba(6,4,3,0.55)'); gr.addColorStop(0.65, 'rgba(6,4,3,0.32)'); gr.addColorStop(1, 'rgba(6,4,3,0)');
-      g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rx, 0, 7); g.fill(); g.restore();
+      const ka = nf.kette ? 1.45 : 1, gr = g.createRadialGradient(0, 0, 0, 0, 0, rx * (nf.kette ? 1.12 : 1)); gr.addColorStop(0, `rgba(6,4,3,${0.55 * ka})`); gr.addColorStop(0.65, `rgba(6,4,3,${0.32 * ka})`); gr.addColorStop(1, 'rgba(6,4,3,0)');
+      g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rx * (nf.kette ? 1.12 : 1), 0, 7); g.fill(); g.restore();
       // kleine Kontaktflecken unter jedem Aufstandspunkt (Füße, Räder, Ketten), auch weiter hinten
-      g.fillStyle = 'rgba(4,3,2,0.5)';
+      g.fillStyle = nf.kette ? 'rgba(4,3,2,0.78)' : 'rgba(4,3,2,0.5)';
       for (let n = 0; n < lows.length; n++) { const q = lows[n], a = lows[n - 2], b = lows[n + 2];
         if ((a && a[1] > q[1]) || (b && b[1] > q[1])) continue;   // nur örtlich tiefste Punkte
-        g.beginPath(); g.ellipse(sx(q[0]), top + q[1] * h, s * 0.13, s * 0.045 * Math.max(0.6, k), 0, 0, 7); g.fill(); }
+        g.beginPath(); g.ellipse(sx(q[0]), top + q[1] * h, s * (nf.kette ? 0.17 : 0.13), s * (nf.kette ? 0.06 : 0.045) * Math.max(0.6, k), 0, 0, 7); g.fill(); }
     } else {
       g.fillStyle = 'rgba(6,4,3,0.45)'; g.beginPath(); g.ellipse(x, fy, w * 0.45, s * 0.15 * k, 0, 0, 7); g.fill();
     }
-    const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
+    const filt = [nf.kette ? 'brightness(0.84) contrast(0.92) saturate(0.8) sepia(0.1)' : '', done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');   // Panzer: Farbstimmung der Umgebung
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
-    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(im, -w / 2, 0, w, h); g.restore();
+    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore();
     g.filter = 'none';
     return top;
   }
@@ -1282,7 +1306,9 @@ function drawTilt() {
     const tf = new DOMMatrix([bb.sc, 0, 0, bb.sc, bb.px - bb.sc * d.x, bb.py - bb.sc * d.y]);
     g.setTransform(tf); VIEW.bbK = bb.k;
     const n0 = MARKQ.length, m0 = MARKS.length;
-    drawUnit(u, d);
+    const shPx = FIG_SH * s * bb.sc / L.dpr, fade = marksAll() ? 1 : Math.max(0, Math.min(1, (46 - shPx) / 14));   // Soldat unter ca. 40 px: Marke statt Figur
+    if (fade > 0) SMARK.push({ u, d, bb, fade }); VIEW.figFade = fade;
+    drawUnit(u, d); VIEW.figFade = 0;
     if (FIGQ) { for (const it of FIGQ) { let i = 0; while (i < PEND.length && PEND[i].y <= it.y) i++; PEND.splice(i, 0, it); } FIGQ = null; }
     for (let i = m0; i < MARKS.length; i++) MARKS[i].tf = tf;
     for (let i = n0; i < MARKQ.length; i++) { const fn = MARKQ[i], k = bb.k; MARKQ[i] = () => { g.setTransform(tf); VIEW.bbK = k; const m1 = MARKS.length; fn(); for (let j = m1; j < MARKS.length; j++) MARKS[j].tf = tf; }; }
@@ -1290,12 +1316,55 @@ function drawTilt() {
     UBOX.push({ u, x0: bb.px - bb.sc * s * 0.75 * big, x1: bb.px + bb.sc * s * 0.75 * big, y0: bb.py - bb.sc * s * FIG_SH * 1.1, y1: bb.py + bb.sc * s * 0.45 });
   }
   gbBis(Infinity); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
-  VIEW.up = up;   // Klammern, Symbole, Vorschau, Warndreieck, Schilde: aufrecht an ihrem Punkt
+  VIEW.up = up;
+  MARK_AFTER = true;   // Klammern, Symbole, Vorschau, Warndreieck, Schilde: aufrecht an ihrem Punkt
   try { for (const f of MARKQ) f(); MARKQ.length = 0; g.setTransform(1, 0, 0, 1, 0, 0); drawAir(g, s, up); }
   finally { VIEW.up = null; g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; }
   // Schwebende Texte aufrecht am jeweiligen Punkt
   drawFloaters(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });
   g.setTransform(1, 0, 0, 1, 0, 0);
+  drawStratMarks(g); SMARK.length = 0;
+}
+// ---------- Strategie-Marken (neue Ansicht, herausgezoomt) ----------
+// Wird ein Soldat kleiner als ca. 40 px, erscheint über jeder Einheit ein Schild in Fraktionsfarbe mit dem Symbol der Einheitenart
+// und einem schmalen Lebensbalken, in fester Bildschirmgröße, weich eingeblendet. Eigene Einheiten, die noch handeln können: Messingrand.
+// Mit „Alle Marken“ (Knopf bzw. Alt gedrückt) auch nah. Anklickbar wie die Einheit (UBOX), Name unter Maus/Finger.
+const SMARK = []; let MARK_AFTER = false;
+function stratSym(u) {
+  const T = TYPES[u.type];
+  const k = T.cmd ? 'fahne' : T.cls === 'walker' ? 'zahnrad' : T.cls === 'mg' ? 'mg_dreibein' : T.cls === 'art' ? (T.mobile ? 'granate_artillerie' : 'lafette')
+    : T.cls === 'cav' ? 'pferd' : T.cls === 'medic' ? 'sanitaeter' : T.flame ? 'flamme' : (T.sapper || T.wirelayer) ? 'spitzhacke' : (T.relay || T.spot) ? 'fernglas'
+    : T.cls === 'storm' ? 'handgranate' : 'gewehr';
+  return UPI['s_' + k] || UPI.s_gewehr;
+}
+function drawStratMarks(g) {
+  if (!SMARK.length) return;
+  const dpr = L.dpr, S = 38 * dpr, own = human(G.side);
+  for (const { u, d, bb, fade } of SMARK) {
+    const T = TYPES[u.type], hFig = FIG_SH * L.s * bb.sc * (T.cls === 'walker' ? 1.5 : 1);
+    const cx = bb.px, cy = Math.max(S * 0.7, bb.py - hFig * (0.55 + 0.45 * fade) - S * 0.55);   // über der Einheit, beim Herauszoomen näher an den Fuß
+    const col = FIG.PAL[u.side] ? FIG.PAL[u.side].accent : '#8a8070', act = own && u.side === G.side && E.active(u) && !spent.has(u.id);
+    g.save(); g.globalAlpha = fade * d.alpha;
+    // Schild: oben gerade, unten spitz
+    const w = S * 0.86, h = S, x0 = cx - w / 2, y0 = cy - h / 2;
+    const shield = () => { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + w, y0); g.lineTo(x0 + w, y0 + h * 0.55); g.quadraticCurveTo(x0 + w, y0 + h * 0.85, cx, y0 + h); g.quadraticCurveTo(x0, y0 + h * 0.85, x0, y0 + h * 0.55); g.closePath(); };
+    g.shadowColor = 'rgba(0,0,0,0.55)'; g.shadowBlur = 4 * dpr; g.shadowOffsetY = 1.5 * dpr;
+    shield(); g.fillStyle = col; g.fill(); g.shadowColor = 'transparent';
+    const gr = g.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, 'rgba(255,240,210,0.18)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)'); g.fillStyle = gr; g.fill();
+    g.lineWidth = 2 * dpr; g.strokeStyle = '#120D0B'; g.stroke();
+    if (act) { g.lineWidth = 2.2 * dpr; g.strokeStyle = '#C2A461'; shield(); g.save(); g.translate(cx, cy); g.scale(1.12, 1.1); g.translate(-cx, -cy); shield(); g.restore(); g.stroke(); }
+    const im = stratSym(u); if (im) { const z = S * 0.62; g.drawImage(im, cx - z / 2, y0 + h * 0.1, z, z); }
+    // Lebensbalken
+    const bw = S * 0.95, bh = Math.max(3, 4.5 * dpr), by = y0 + h + 3 * dpr, f = Math.max(0, Math.min(1, d.str / 10));
+    g.fillStyle = '#120D0B'; g.fillRect(cx - bw / 2 - dpr, by - dpr, bw + 2 * dpr, bh + 2 * dpr);
+    g.fillStyle = f > 0.6 ? LIFE_COL.hi : f > 0.3 ? LIFE_COL.mid : LIFE_COL.low; g.fillRect(cx - bw / 2, by, bw * f, bh);
+    // Name unter Maus/Finger
+    if (hoverU === u || sel === u) { const t = T.name; g.font = `600 ${Math.round(13 * dpr)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'top';
+      const tw = g.measureText(t).width + 12 * dpr, ty = by + bh + 4 * dpr; g.fillStyle = 'rgba(232,220,190,0.95)'; g.fillRect(cx - tw / 2, ty, tw, 18 * dpr); g.strokeStyle = '#120D0B'; g.lineWidth = dpr; g.strokeRect(cx - tw / 2, ty, tw, 18 * dpr);
+      g.fillStyle = '#120D0B'; g.fillText(t, cx, ty + 2.5 * dpr); }
+    g.restore();
+    if (fade > 0.4) UBOX.push({ u, x0: x0 - 4 * dpr, x1: x0 + w + 4 * dpr, y0: y0 - 4 * dpr, y1: by + bh + 4 * dpr });   // Marke anklickbar wie die Einheit
+  }
 }
 // Kamera bewegen
 function camPan(fx, fy) {   // Anteile der Bildbreite/-höhe
@@ -2337,6 +2406,7 @@ const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam']
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
