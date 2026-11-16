@@ -199,6 +199,11 @@ def pfaehle_ausduennen(name, jede=2):
     q[neu, 3] = np.maximum(q[neu, 3], 220); q[neu, :3] = [70, 46, 32]
     # kein Schleier: halbdurchsichtige Reste zwischen den Drähten ganz weg, Draht und Pfähle voll deckend
     q[..., 3] = np.where(q[..., 3] < 140, 0, 255)
+    # rostiger Glanz: Drahtpixel mit freier Oberseite (Licht von oben links) bekommen eine helle Rostkante, alle Drähte etwas rostiger
+    d = q[..., 3] > 0; d[:, pf] = False
+    oben = d & ~np.roll(d, 1, axis=0) | d & ~np.roll(np.roll(d, 1, axis=0), 1, axis=1)
+    q[d, :3] = q[d, :3] * 0.7 + np.array([118, 74, 46]) * 0.3
+    q[oben, :3] = q[oben, :3] * 0.45 + np.array([190, 124, 76]) * 0.55
     q = np.clip(q, 0, 255).astype(np.uint8)
     print(f'  {len(grp)} Pfähle, {sum(1 for k in range(len(grp)) if k % jede)} entfernt → Breite {q.shape[1]} px')
     out = Image.fromarray(q, 'RGBA'); out.save(OUT / f'{name}.png'); out.save(PROBE / f'g_{name}.webp', quality=88, method=6)

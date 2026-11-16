@@ -306,7 +306,7 @@ async function bauen(cfg) {
       for (let k = 0; k < n; k++) {
         const ang = (q(k * 7 + 2) - 0.5) * 1.1, L = R * (0.32 + q(k * 7 + 3) * 0.3), cx = hx + (q(k * 7 + 4) - 0.5) * R * 0.9, cy = hy + (n === 1 ? (q(k * 7 + 5) - 0.5) * 0.5 : (k ? 0.3 : -0.32) + (q(k * 7 + 5) - 0.5) * 0.2) * R;
         wall(IM.draht, [cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], (0.5 + q(k * 7 + 6) * 0.15) * SH,
-          { u0: q(k * 7 + 8) * 5, shade: 0.3, shadeW: 0.12, skip: aufWeg });
+          { u0: q(k * 7 + 8) * 5, shade: 0.3, shadeW: 0.12, skip: aufWeg, filter: hS => hS < 45 * U ? 'brightness(1.4) contrast(1.1)' : '' });   // von weit etwas heller, damit man ihn erkennt
       }
       for (let k = 0; k < 1 + Math.floor(q(30) * 2.2); k++) {   // einzelne schiefe Pfähle, teils ohne Draht
         const x = hx + (q(k * 5 + 31) - 0.5) * R * 1.2, y = hy + (q(k * 5 + 32) - 0.5) * R * 1.1;
