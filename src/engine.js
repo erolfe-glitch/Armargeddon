@@ -697,6 +697,10 @@ function angleTo(c1, r1, c2, r2) {
 }
 function faceIndex(angle) { return Math.round(angle / 60) % 6; }
 function angDiff(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
+// MG-Schussfächer (Wunsch 2026-11-16): drei Feldseiten in Blickrichtung (vorn, schräg links und rechts), also ±90°. Außerhalb weder Schuss
+// noch Reaktionsfeuer. Drehen (frei) richtet den Fächer aus. Andere Einheiten schießen rundum. Abschalter für die Sim: NOFAN.
+const MG_FAN = 90;
+function inFan(G, u, c, r) { if (!TYPES[u.type].mg || TOG.NOFAN || (u.c === c && u.r === r)) return true; return angDiff(angleTo(u.c, u.r, c, r), u.face * 60) <= MG_FAN + 1; }
 const key = (c, r) => c * 100 + r;
 function line(c1, r1, c2, r2) {
   const n = dist(c1, r1, c2, r2), out = [];
@@ -865,6 +869,7 @@ function cost(G, u, c, r) {
 function reachable(G, u, opt) {
   const res = new Map(), march = !!(opt && opt.march);
   if (!active(u) || u.ap < 1 || u.supp > 0 || u.broken > 0 || u.stuck > 0 || u.zocStop) return res;
+  if (TYPES[u.type].mg && u.setup && !TOG.NOSETUP) return res;   // aufgebautes MG zieht nicht (erst abbauen)
   const T = TYPES[u.type], free = T.cls === 'storm' || T.cls === 'walker';
   const retreat = !free && !TOG.NORETREAT && isZOC(G, u.c, u.r, u.side);   // Rückzug aus der Feindberührung: volle Zugweite, kostet beide Punkte
   if (retreat && (u.ap < 2 || u.mvd > 0 || march)) return res;
@@ -943,7 +948,7 @@ function moveUnit(G, u, c, r) {
     if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); u.stuck = P.STUCK_TURNS; ev.push({ t: 'stuck', u: u.id }); break; }
     if (T.cls !== 'walker' && openGround(G, nc, nr)) {
       const mg = !concealed(G, u, -99, -99) && G.units.find(m => m.side !== u.side && active(m) && TYPES[m.type].mg && m.react && m.setup && !m.supp && !m.fellBack && !held(G, m) &&
-        dist(m.c, m.r, nc, nr) <= rangeOf(G, m, nc, nr) && hasLOS(G, m.c, m.r, nc, nr));
+        dist(m.c, m.r, nc, nr) <= rangeOf(G, m, nc, nr) && hasLOS(G, m.c, m.r, nc, nr) && inFan(G, m, nc, nr));
       if (mg) {
         flush();
         mg.react = false;
@@ -1051,6 +1056,7 @@ function canFire(G, a, d) {
   if (immune(T, TYPES[d.type])) return false;
   const dd = dist(a.c, a.r, d.c, d.r);
   if (concealed(G, d, a.c, a.r)) return false;
+  if (!inFan(G, a, d.c, d.r)) return false;   // MG nur im Schussfächer
   return dd >= 1 && dd <= rangeOf(G, a, d.c, d.r) && hasLOS(G, a.c, a.r, d.c, d.r);
 }
 function defMods(G, d, arc, ranged, tags, noTrench, lob) {
@@ -1429,6 +1435,9 @@ function sendOrder(G, m, t) { if (!canSend(G, m, t)) return []; m.sent = true; s
 // MG aufbauen (1 Punkt): erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.
 function canSetup(G, u) { return active(u) && !!TYPES[u.type].mg && u.side === G.side && !u.setup && u.ap >= 1 && !u.broken && u.supp <= 0; }
 function setupMG(G, u) { if (!canSetup(G, u)) return []; u.setup = true; spend(u, 1); return [{ t: 'setup', u: u.id }]; }
+// MG abbauen (Wunsch 2026-11-16): eigene Aktion für 1 Aktionspunkt. Aufgebaut kann das MG schießen, aber nicht ziehen; abgebaut umgekehrt.
+function canTeardown(G, u) { return active(u) && !!TYPES[u.type].mg && u.side === G.side && !!u.setup && u.ap >= 1 && !u.broken && !TOG.NOSETUP; }
+function teardownMG(G, u) { if (!canTeardown(G, u)) return []; u.setup = false; u.ow = false; spend(u, 1); return [{ t: 'teardown', u: u.id }]; }
 // Feuerbereitschaft (beide Punkte): schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8)
 function canOverwatch(G, u) { const T = TYPES[u.type]; return active(u) && u.side === G.side && u.ap >= 2 && !u.attacked && !u.mvd && T.rng >= 2 && T.cls !== 'art' && T.cls !== 'walker' && !T.mg && u.supp <= 0; }
 function overwatch(G, u) { if (!canOverwatch(G, u)) return []; u.ow = true; u.ap = 0; u.moved = true; u.attacked = true; return [{ t: 'ow', u: u.id }]; }
@@ -1607,7 +1616,7 @@ function checkEnd(G) {
 const E = {
   P, SIDES, TYPES, TERRAIN, MAPS, costParts, barrageCells, coverOf, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
-  canMarch, cutCost, canSetup, setupMG, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
+  canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
   ABILS, abilTargets, canAbil, useAbil, smokeAt, litAt, concealed, gasSafe,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,

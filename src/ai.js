@@ -283,12 +283,27 @@ function next(G) {
     if (ab) steps.push(ab.step);
     if (TYPES[u.type].recover) for (const w of G.units) if (E.canRecover(G, u, w)) { steps.push({ k: 'recover', t: w.id }); break; }
     if (o.limber) steps.push({ k: 'limber' });
+    // MG: Ziel nur außerhalb des Fächers? Erst drehen (frei), dann schießen
+    if (TYPES[u.type].mg && u.setup && !o.atk && u.ap >= 1 && !u.attacked) {
+      const f0 = u.face; let best = null;
+      for (let f = 0; f < 6 && !best; f++) { if (f === f0) continue; u.face = f; const o3 = planUnit(G, u); if (o3.atk && o3.atk.kind === 'fire') best = [f, o3.atk]; }
+      u.face = f0;
+      if (best) return { u: u.id, steps: [{ k: 'turn', face: best[0] }, { k: 'fire', d: best[1].d.id }] };
+    }
+    // Aufgebautes MG ohne Ziel: prüfen, ob sich ein Stellungswechsel lohnt (abbauen 1 AP, dann ziehen); aufgebaut wird später
+    if (TYPES[u.type].mg && u.setup && !o.atk && E.canTeardown(G, u)) {
+      const near = nearestEnemyDist(G, u.side, u.c, u.r);
+      if (near > TYPES[u.type].rng) { u.setup = false; u.ap -= 1; const o2 = planUnit(G, u); u.setup = true; u.ap += 1;
+        if (o2.move) return { u: u.id, steps: [{ k: 'teardown' }, { k: 'move', c: o2.move[0], r: o2.move[1] }] }; }
+    }
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
     if (o.cut) steps.push({ k: 'cut' });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk && TYPES[u.type].mg && !u.setup && !o.move) steps.push({ k: 'setup' });
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
     if (TYPES[u.type].mg && !o.atk && nearestEnemyDist(G, u.side, o.move ? o.move[0] : u.c, o.move ? o.move[1] : u.r) <= 7) steps.push({ k: 'setup' });
+    // MG ohne Angriff: Fächer zum nächsten Gegner drehen (Reaktionsfeuer in der gegnerischen Runde)
+    if (TYPES[u.type].mg && !o.atk && !o.move) { const e = E.nearestEnemy(G, u); if (e && !E.inFan(G, u, e.c, e.r)) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, e.c, e.r)) }); }
     if (!o.move && !o.atk && !o.cut && !o.shell && !o.limber && E.canOverwatch(G, u) && nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 3 &&
         !(typeof process !== 'undefined' && process.env && process.env['NOOW_' + u.side])) steps.push({ k: 'ow' });
     if (E.cls(u) === 'medic') steps.push({ k: 'heal' });
@@ -340,6 +355,7 @@ function exec(G, uid, s) {
   if (s.k === 'wire') { if (!u.attacked && E.nearestEnemy && E.canLay(G, u)) { const [c, r] = E.layTarget(G, u); let near = 99; for (const o of G.units) if (o.side !== u.side && E.active(o)) near = Math.min(near, E.dist(c, r, o.c, o.r)); if (near <= 5 && near >= 2) return E.layWire(G, u); } return []; }
   if (s.k === 'limber') return E.limber(G, u);
   if (s.k === 'setup') return E.setupMG(G, u);
+  if (s.k === 'teardown') return E.teardownMG(G, u);
   if (s.k === 'abil') return E.useAbil(G, u, s.c, s.r);
   if (s.k === 'ow') return E.overwatch(G, u);
   if (s.k === 'recover') { const t = G.units.find(x => x.id === s.t); return t ? E.recover(G, u, t) : []; }

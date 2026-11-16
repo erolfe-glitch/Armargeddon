@@ -518,7 +518,8 @@ const STATES = [
   { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => 'Moral fast am Ende: Beim nächsten Treffer weicht die Einheit zurück.' },
   { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
   { k: 'limber', sym: 'pferd', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
-  { k: 'mgdown', sym: 'mg_dreibein', name: 'Nicht aufgebaut', on: u => TYPES[u.type].mg && !u.setup && E.active(u), text: () => 'Das MG muss erst aufgebaut werden (1 Aktion). Dann feuert es und gibt Reaktionsfeuer.' },
+  { k: 'mgdown', sym: 'marsch', name: 'MG abgebaut', on: (u, d) => TYPES[u.type].mg && !d.vs.setup && E.active(u), text: () => 'Marschbereit: kann ziehen, aber nicht schießen. Aufbauen kostet 1 Aktion, dann feuert es und gibt Reaktionsfeuer.' },
+  { k: 'mgup', sym: 'mg_dreibein', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt und gibt Reaktionsfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
   { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).' },
   { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => 'Befehl des Anführers: Nahkampf ×1,25 in dieser Runde.' },
   { k: 'hidden', sym: 'durchsickern', name: 'Getarnt', on: u => TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u), text: () => 'Der Gegner sieht die Einheit erst vom Nachbarfeld aus. Nach einem Schuss ist sie eine Runde lang enttarnt.' },
@@ -709,7 +710,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
     else { g.font = `900 ${Math.round(s * 0.3)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#120D0B'; g.strokeText('★', ox, oy); g.fillStyle = ready ? '#C2A461' : '#7d7564'; g.fillText('★', ox, oy); }
     MARKS.push({ x0: ox - oh * 0.3, y0: oy - oh / 2, x1: ox + oh * 0.3, y1: oy + oh / 2, u, kind: 'lead' }); }
   // Ein Zustandsplatz links: wichtigster Zustand, „+n“ bei mehreren
-  const sts = statesOf(u, d);
+  const sts = statesOf(u, d).filter(st => !st.panel);   // Karte: nur echte Zustände
   if (sts.length) {
     const R = Math.max(7, s * 0.13), cx = bx - R - 2;
     drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R);
@@ -804,6 +805,9 @@ function drawGround(g, s) {
           if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.36, pv.cov); });
         MARKS.push({ x0: hx - s * 0.8, y0: hy - s * kAt(hx, hy) * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * kAt(hx, hy) * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
   }
+  // MG-Schussfächer: gewähltes MG oder feindliches MG unter Maus/Finger
+  { const pickMG = u => u && TYPES[u.type].mg && E.active(u) && DU.get(u.id) ? u : null;
+    const fu = pickMG(sel) || pickMG(hoverU && hoverU.side !== G.side ? hoverU : null) || pickMG(inspect && inspect.unit); if (fu) drawFan(g, fu); }
   if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: PARCH, fill: 0.22, dash: true });
   if (hoverHex) {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
@@ -813,6 +817,23 @@ function drawGround(g, s) {
     }
   }
   if (!VIEW.tilt()) drawFlags(g, s);
+}
+// MG-Schussfächer (Regel E.inFan): ausgefächerte Fläche am Boden, Ochsenblut zur Mitte, nach außen in Messing auslaufend,
+// gestrichelte Fächerkanten; Felder in Reichweite innerhalb des Fächers dezent umrandet. Blickrichtung aus dem Anzeige-Zustand.
+function drawFan(g, u) {
+  const d = DU.get(u.id), [x, y] = center(u.c, u.r), s = L.s, k = kAt(x, y), T = TYPES[u.type];
+  const R = (T.rng + 0.55) * s * SQ3, mid = d.face * 60, a0 = (mid - E.MG_FAN) * Math.PI / 180, a1 = (mid + E.MG_FAN) * Math.PI / 180, pz = 0.5 + 0.5 * Math.sin(now / 600);
+  g.save(); g.translate(x, y); g.scale(1, k);
+  const gr = g.createRadialGradient(0, 0, s * 0.4, 0, 0, R);
+  gr.addColorStop(0, `rgba(168,71,58,${0.42 + 0.06 * pz})`); gr.addColorStop(0.55, 'rgba(168,71,58,0.24)'); gr.addColorStop(0.85, 'rgba(194,164,97,0.14)'); gr.addColorStop(1, 'rgba(194,164,97,0)');
+  g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fillStyle = gr; g.fill();
+  g.setLineDash([s * 0.12, s * 0.09]); g.lineWidth = Math.max(1.5, s * 0.03); g.strokeStyle = 'rgba(168,71,58,0.75)';
+  g.beginPath(); g.moveTo(Math.cos(a0) * s * 0.5, Math.sin(a0) * s * 0.5); g.lineTo(Math.cos(a0) * R, Math.sin(a0) * R); g.moveTo(Math.cos(a1) * s * 0.5, Math.sin(a1) * s * 0.5); g.lineTo(Math.cos(a1) * R, Math.sin(a1) * R); g.stroke();
+  g.setLineDash([]); g.restore();
+  const save = u.face; u.face = d.face;   // Felder nach der gezeigten Blickrichtung
+  g.lineWidth = Math.max(1, s * 0.022); g.strokeStyle = 'rgba(194,164,97,0.45)';
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const dd = E.dist(u.c, u.r, c, r); if (dd >= 1 && dd <= E.rangeOf(G, u, c, r) && E.inFan(G, u, c, r)) { hexPath(g, c, r, 0.86); g.stroke(); } }
+  u.face = save;
 }
 // Zielfahnen
 function drawFlags(g, s, up) {
@@ -1459,6 +1480,7 @@ async function playEvent(e) {
     case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
     case 'setup': { DU.get(e.u).vs.setup = true; playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
+    case 'teardown': { DU.get(e.u).vs.setup = false; playSound('clank', 0.5); floater(...headPos(e.u), 'abgebaut', '#ffe7a0'); await wait(200); break; }
     case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); break;
     case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
@@ -1564,7 +1586,7 @@ function markAt(x, y) { for (let i = MARKS.length - 1; i >= 0; i--) { const m = 
 function markTips(m) {
   const u = m.u, d = DU.get(u.id), T = TYPES[u.type];
   if (!d || !E.alive(u)) return [];
-  if (m.kind === 'state') return statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d) }));
+  if (m.kind === 'state') return statesOf(u, d).filter(st => !st.panel).map(st => ({ name: st.name, text: st.text(u, d) }));
   if (m.kind === 'cover') return [coverTip(u)];
   if (m.kind === 'pv') { const pv = m.pv, cn = ['', 'Bronze', 'Silber', 'Gold'][pv.cov];
     const n = reach.get(E.key(pv.c, pv.r));
@@ -1651,7 +1673,7 @@ function computeOptions() {
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
   { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= (T0.mobile ? 1 : 2) && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= 1 && (!T0.mg || sel.setup));
-    if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r))) rangeSet.add(E.key(c, r)); }
+    if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r)) && E.inFan(G, sel, c, r)) rangeSet.add(E.key(c, r)); }   // MG: nur im Schussfächer
     // Sicht: Felder in Sicht- bzw. Schussweite ohne Sichtlinie (Wald, Dorf, Fabrik, Kirche dazwischen, Rauch). Artillerie sieht selbst nur bis zur Direktschussweite.
     const SP = T0.cls === 'art' ? P.ART_DIRECT : Math.max(T0.spot || P.SPOT, T0.rng || 0, G.map[sel.c][sel.r].t === 'kirche' ? 6 : 0);
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= SP && !E.hasLOS(G, sel.c, sel.r, c, r, T0.aerial)) hideSet.add(E.key(c, r)); }
@@ -1924,7 +1946,8 @@ function unitButtons(T, hints) {
     btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: A.ap, cd: sel.cdA, text: T.can, on: abilMode, off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < A.ap ? `Braucht ${A.ap} Aktionspunkte.` : 'Kein Ziel.' });
     if (abilMode) hints.push('<i>Schraffiert:</i> Zielfeld anklicken.'); }
-  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_dreibein', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
+  if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'marsch', name: 'Abbauen', cost: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Keine Aktionspunkte mehr.' });
+  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_dreibein', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es und gibt Reaktionsfeuer; aufgebaut kann es nicht ziehen.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
   if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 2, text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht beide Aktionspunkte, noch nicht gezogen und nicht angegriffen.' });
   if (sel.officer) for (const [k, sym, name, tip] of [['rally', 'fahne', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +15, Niederhalten endet.'], ['storm', 'blitz', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde.']]) {
     const cd = k === 'rally' ? sel.cdR : sel.cdS;
@@ -2033,6 +2056,7 @@ async function panelAct(a) {
   if (a === 'lay') return act(u => E.layWire(G, u));
   if (a === 'limber') return act(u => E.limber(G, u));
   if (a === 'setup') return act(u => E.setupMG(G, u));
+  if (a === 'teardown') return act(u => E.teardownMG(G, u));
   if (a === 'abil') { abilMode = !abilMode; previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'ow') return act(u => E.overwatch(G, u));
 }
