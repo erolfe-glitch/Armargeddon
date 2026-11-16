@@ -22,7 +22,7 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
 const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: ['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n),
-  flach: [...[1, 2, 3, 4, 5, 6, 7].map(k => 'flach_details_' + k), 'trichter_gross_1'],
+  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz'],
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
@@ -76,7 +76,7 @@ function aufbauen(cfg, IM) {
   const hrnd = (c, r, k = 0) => { let s = (c * 73856093) ^ (r * 19349663) ^ (k * 83492791) ^ (cfg.seed || 1917); s = (s ^ (s >>> 13)) * 1274126177; return ((s ^ (s >>> 16)) >>> 0) / 4294967296; };
 
   const WCV = document.createElement('canvas'); WCV.width = WW; WCV.height = WH; const w = WCV.getContext('2d');
-  const TILE = 2 * R;
+  const TILE = (cfg.kachel || 3.2) * R;   // eine Texturkachel deckt gut 1,5 Feldbreiten: die ruhigen Texturen haben große, flache Formen, die sonst verschwimmen
   const pattern = (ctx, im, ox = 0, oy = 0, k = 1) => { const p = ctx.createPattern(im, 'repeat'); p.setTransform(new DOMMatrix().translate(ox, oy).scale(TILE * k / im.width)); return p; };
 
   // ---------- 1. Boden: Grundboden Schlamm, darüber weiche Schichten je Geländeart ----------
@@ -98,13 +98,14 @@ function aufbauen(cfg, IM) {
   const noise = (x, y) => Math.sin(x * 0.011 * 120 / R + 1.3) * Math.sin(y * 0.013 * 120 / R + 0.4) + 0.6 * Math.sin((x * 0.023 + y * 0.017) * 120 / R);
   schicht('boden_gras', ctx => { for (const [c, r] of felder((t, c, r) => t === 'grass' || ((t === 'open' || t === 'out') && noise(...hexC(c, r)) > 0.15))) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.22, 0.95, 37);
   schicht('boden_waldboden', ctx => { for (const [c, r] of felder(t => t === 'forest' || t === 'wald')) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.16, 1, 91);
-  schicht('boden_truemmer', ctx => { for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 1, 13);
+  schicht('boden_truemmer', ctx => {   // Trümmerboden leicht gedämpft (unruhiger als die übrigen)
+    for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 0.92, 13, 0.86);
   schicht('boden_sumpf', ctx => { for (const [c, r] of felder(t => t === 'sumpf' || t === 'mud')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 53);
   // Großflächige Helligkeitsflecken gegen Kachelwiederholung
   for (let i = 0; i < WW * WH / (R * R) * 0.35; i++) { const x = rnd() * WW, y = rnd() * WH, rr = R * (0.8 + rnd() * 1.8), d = rnd() < 0.55;
     const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, d ? 'rgba(10,7,5,0.2)' : 'rgba(150,130,100,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); w.fillStyle = gr; w.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
   // Boden insgesamt aufhellen: die gelieferten Texturen sind sehr dunkel (Helligkeit 0,08–0,17), Figuren sollen sich abheben
-  l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.filter = `brightness(${cfg.hell || 1.7}) contrast(${cfg.kontrast || 1.2}) saturate(0.95)`; l.drawImage(WCV, 0, 0); l.filter = 'none';
+  l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.filter = `brightness(${cfg.hell || 1.2}) contrast(${cfg.kontrast || 1.12}) saturate(0.95)`; l.drawImage(WCV, 0, 0); l.filter = 'none';   // ruhige Texturen (seit 2026-11-16) sind heller als die ersten
   w.clearRect(0, 0, WW, WH); w.drawImage(LY, 0, 0);
 
   // ---------- Linienzüge (Gräben, Straßen, Kanal) aus Feldern ----------
@@ -138,7 +139,7 @@ function aufbauen(cfg, IM) {
 
   // Straßen (Kopfstein) und Kanal (Wasser mit dunkler Uferkante)
   const ROADS = ketten((c, r) => flags(c, r).road && terr(c, r) !== 'canal').filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
-  if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.7) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
+  if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.2) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
   const RIVERS = ketten((c, r) => flags(c, r).river || ['canal', 'bridge', 'furt'].includes(terr(c, r))).filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
   if (RIVERS.length) {
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(28,21,14,0.95)'; strokeLines(w, RIVERS, R * 1.55); w.restore();
@@ -151,13 +152,17 @@ function aufbauen(cfg, IM) {
     const k = size * R / Math.max(im.width, im.height);
     w.save(); w.globalAlpha = alpha; w.translate(x, y); w.rotate(rot); w.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k); w.restore();
   }
-  const Fd = i => IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
+  const WEICH = new Map(), weich = im => { if (!im) return im; if (WEICH.has(im)) return WEICH.get(im);   // Rand weich ausblenden (Spuren-Bild ist eckig)
+    const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'destination-in';
+    const r0 = Math.min(im.width, im.height) / 2, gr = x.createRadialGradient(im.width / 2, im.height / 2, r0 * 0.35, im.width / 2, im.height / 2, r0); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = gr; x.fillRect(0, 0, im.width, im.height); WEICH.set(im, c); return c; };
+  const Fd = i => i === 8 ? weich(IM.flach_details_8) : IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), q = hrnd(c, r, 9);
     if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? IM.trichter_gross_1 : Fd(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(Fd(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(Fd(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
-    else if (t === 'mud') { flach(Fd(q < 0.5 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.7 + q * 0.4, q * 30); }
-    else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(Fd(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.34) flach(Fd(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.42) flach(Fd(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
+    else if (t === 'mud') { if (q < 0.3) flach(Fd(q < 0.15 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.6 + q * 0.6, q * 30); else if (q > 0.75) flach(Fd(8), ...jit(c, r, 3, 0.6), 0.85, q * 17, 0.8); }   // sparsam: Pfütze oder Spuren
+    else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(Fd(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.3) flach(Fd(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.34) flach(Fd(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); else if (q < 0.38) flach(Fd(8), ...jit(c, r, 1, 0.8), 0.8, q * 40, 0.75); }
     else if (t === 'village' || t === 'rubble') { flach(Fd(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
     else if (t === 'wire') { if (q < 0.4) flach(Fd(1), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
   }
@@ -331,7 +336,7 @@ function aufbauen(cfg, IM) {
   // Schatten der Teile ins Weltbild, dann Raster und abgedunkelter Kartenrand
   for (const s of SHADOW) s();
   if (cfg.raster !== false) {
-    w.lineWidth = R * 0.014; w.strokeStyle = 'rgba(240,237,225,0.15)';
+    w.lineWidth = R * 0.012; w.strokeStyle = 'rgba(240,237,225,0.09)';   // dezent: auf dem ruhigen Boden fällt das Raster sonst stark auf
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { w.beginPath(); for (let i = 0; i <= 6; i++) { const p = corner(c, r, i); i ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1]); } w.stroke(); }
   }
   if (MX > 0) { w.save(); w.fillStyle = 'rgba(10,7,5,0.32)'; w.beginPath(); w.rect(0, 0, WW, WH);

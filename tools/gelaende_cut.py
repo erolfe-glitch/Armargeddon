@@ -69,6 +69,13 @@ TEILE = {
     'boden_sumpf':         ('textur', None),
     'boden_wasser':        ('textur', None),
     'boden_kopfstein':     ('textur', None),
+    # Ruhige Fassungen (2026-11-16) ersetzen die bisherigen Böden; gespeichert unter dem alten Namen (Wasser bleibt)
+    'boden_schlamm_ruhig':   ('textur', 'boden_schlamm'),
+    'boden_gras_ruhig':      ('textur', 'boden_gras'),
+    'boden_waldboden_ruhig': ('textur', 'boden_waldboden'),
+    'boden_truemmer_ruhig':  ('textur', 'boden_truemmer'),
+    'boden_sumpf_ruhig':     ('textur', 'boden_sumpf'),
+    'boden_kopfstein_ruhig': ('textur', 'boden_kopfstein'),
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
@@ -210,8 +217,9 @@ def pfaehle_ausduennen(name, jede=2):
     out = Image.fromarray(q, 'RGBA'); out.save(OUT / f'{name}.png'); out.save(PROBE / f'g_{name}.webp', quality=88, method=6)
 
 
-def textur(name):
+def textur(name, ziel=None):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')).astype(np.float64)
+    name_q, name = name, ziel or name
     h, w = a.shape[:2]
     nx, ny = naht(a), naht(a.transpose(1, 0, 2))
     if max(nx, ny) > 1.4:   # Hälfte verschieben (Naht liegt dann in der Mitte) und mit dem Original überblenden: Ränder aus der verschobenen Fassung, Mitte aus dem Original
@@ -289,7 +297,7 @@ def einbetten():
     import base64, re
     NL = chr(10)
     js = (ROOT / 'src' / 'gelaende_bau.js').read_text(encoding='utf8')
-    weg = ('ruine_paar_aufsteller', 'ruinen_test_weiss', 'flach_details_8', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
+    weg = ('ruine_paar_aufsteller', 'ruinen_test_weiss', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
     teile = []
     for f in sorted(PROBE.glob('g_*.webp')):
         n = f.stem[2:]
@@ -319,7 +327,7 @@ if __name__ == '__main__':
         elif art == 'einzel':
             einzel(name, h)
         elif art == 'textur':
-            textur(name)
+            textur(name, h)
         else:
             streifen(name, art, h)
             if name == 'draht': pfaehle_ausduennen(name)

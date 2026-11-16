@@ -208,6 +208,6 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
   - **Standringe:** nah dezent wie bisher. Herausgezoomt (Feldradius unter 130 px auf dem Schirm) werden sie kräftiger, heller, mit dunklem Saum und bis 10 % größer, damit man die Trupps findet.
   - Flaches Detail „Spuren“ (`flach_details_8`) nicht verwenden: wirkt als dunkles Rechteck.
   - **Panzersperren** (Feldart `sperre`): zwei Teile je Feld. Großer Trichter: zweite Variante auf Trichterfeldern.
-  - **Helligkeit:** Boden ×1,7, Kontrast ×1,2, damit sich die Trupps abheben.
+  - **Helligkeit:** seit den ruhigen Bodentexturen (2026-11-16, `boden_*_ruhig`, ersetzen die ersten; Wasser bleibt) Boden ×1,2, Kontrast ×1,12; eine Texturkachel deckt 3,2 R (große, flache Formen). Trümmerboden gedämpft (×0,86). Pfützen und Fußspuren nur noch als einzelne flache Details, sparsam (Spuren mit weich ausgeblendetem Rand).
   - **Bilder mit schwarzem Hintergrund** lassen sich nicht sauber freistellen (dunkle Trichter und Wasser werden löchrig). Für Gelände immer Magenta verwenden.
   - **Abwechslung:** Jedes Feld wählt Variante, Spiegelung, Größe (±15 %) und Streifen-Anfang aus seinem eigenen Zufallswert; dieselbe Karte sieht immer gleich aus, `seed` ändert die Mischung.
