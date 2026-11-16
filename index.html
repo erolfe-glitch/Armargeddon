@@ -3683,7 +3683,7 @@ function layout() {
 // Flache Ansicht: Karte senkrecht gestaucht um K, überall gleich groß. Neue Ansicht (Schalter OPT.tilt, „Neue Ansicht (Test)“):
 // perspektivisch gekippt – wird hier eingehängt (Umbauplan Schritt 1 ff.); bis dahin zeichnen beide Schalterstellungen gleich.
 // Das Gelände (renderTerrain) zeichnet weiter flach in tcv; die neue Ansicht projiziert diesen Puffer später ungestaucht.
-const VIEW = { tilt: () => !!OPT.tilt, bbK: null };   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
+const VIEW = { tilt: () => !!OPT.tilt, bbK: null, up: null };   // up(x, y): neue Ansicht, Phase „aufrecht“ – Aufsteller für ein Element am Punkt (x, y) einstellen   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
 function center(c, r) { return [L.s * (1 + 1.5 * c), L.top + L.s * K * SQ3 * (r + 0.5 * (c & 1) + 0.5)]; }
 function kAt(x, y) { return VIEW.bbK != null ? VIEW.bbK : K; }   // senkrechte Verkürzung des Bodens am Bildpunkt (x, y); neue Ansicht: im Weltbild 1, am Aufsteller die Verkürzung am Fußpunkt
 function sAt(x, y) { return L.s; }   // Feldradius in Bildpunkten am Bildpunkt (x, y)
@@ -4184,6 +4184,7 @@ function drawBrushBar(g, col, bx, by, bw, bh) {   // Breite bw = gefüllter Ante
 // Ersatzschild, falls das gemalte Bild fehlt
 const SHIELD_COL = { 1: ['#e6a868', '#a8662c', '#5c3412'], 2: ['#f4f5f7', '#b4b8be', '#5d6168'], 3: ['#fff1a0', '#e0ad2c', '#7a5408'] };
 function drawShield(g, cx, cy, h, tier) {
+  if (VIEW.up) VIEW.up(cx, cy);
   const im = UPI['cov' + tier];
   if (im) { const w = h * im.naturalWidth / im.naturalHeight; g.save(); g.shadowColor = 'rgba(18,13,11,0.9)'; g.shadowOffsetY = Math.max(1, h * 0.06); g.drawImage(im, cx - w / 2, cy - h / 2, w, h); g.restore(); return; }
   const w = h * 0.82, [hi, mid, lo] = SHIELD_COL[tier];
@@ -4194,20 +4195,23 @@ function drawShield(g, cx, cy, h, tier) {
   g.restore();
 }
 const RANGE_COL = '#A8473A';   // STYLE.md --s-range: Kontur der Schussreichweite, Bedrohung
+// Linie zwischen zwei Punkten; neue Ansicht (aufrecht): beide Enden projiziert, auf dem Schirm gezogen
+function pathLine(g, x1, y1, x2, y2) { if (VIEW.up) { const a = proj(x1, y1), b = proj(x2, y2); g.setTransform(1, 0, 0, 1, 0, 0); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); } else { g.moveTo(x1, y1); g.lineTo(x2, y2); } }
 // Nachzügler-Winkel: Messing, Tintenkontur, zeigt nach unten auf die Figur
 function chevron(x, y, w) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x - w, y - w * 0.6); g.lineTo(x, y + w * 0.25); g.lineTo(x + w, y - w * 0.6); g.lineTo(x + w, y - w * 0.05); g.lineTo(x, y + w * 0.8); g.lineTo(x - w, y - w * 0.05); g.closePath();
   g.fillStyle = '#C2A461'; g.fill(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, w * 0.18); g.strokeStyle = '#120D0B'; g.stroke(); g.restore(); }
 // Zielmarke: vier Messing-Eckklammern mit Tintenschatten
-function brackets(cx, cy, R, col) { const g = ctx, ry = R * kAt(cx, cy) * 1.2, ln = R * 0.4, lw = Math.max(2, L.s * 0.035);
+function brackets(cx, cy, R, col) { if (VIEW.up) VIEW.up(cx, cy); const g = ctx, ry = R * kAt(cx, cy) * 1.2, ln = R * 0.4, lw = Math.max(2, L.s * 0.035);
   const seg = () => { for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { g.beginPath(); g.moveTo(cx + sx * R, cy + sy * ry - sy * ln * 0.8); g.lineTo(cx + sx * R, cy + sy * ry); g.lineTo(cx + sx * R - sx * ln, cy + sy * ry); g.stroke(); } };
   g.save(); g.lineCap = 'square'; g.strokeStyle = '#120D0B'; g.lineWidth = lw + 3; seg(); g.strokeStyle = col; g.lineWidth = lw; seg(); g.restore(); }
 // Warndreieck (Ochsenblut) mit genau EINER Zahl: wie viele Gegner auf dieses Feld schießen können
-function warnMark(x, y, R, n) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x, y - R); g.lineTo(x + R * 1.08, y + R * 0.82); g.lineTo(x - R * 1.08, y + R * 0.82); g.closePath();
+function warnMark(x, y, R, n) { if (VIEW.up) VIEW.up(x, y); const g = ctx; g.save(); g.beginPath(); g.moveTo(x, y - R); g.lineTo(x + R * 1.08, y + R * 0.82); g.lineTo(x - R * 1.08, y + R * 0.82); g.closePath();
   g.fillStyle = '#8E2B22'; g.fill(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, R * 0.16); g.strokeStyle = '#120D0B'; g.stroke();
   g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.font = `900 ${Math.round(Math.max(14, R * 1.05))}px "Arm Text", system-ui, sans-serif`; g.fillText(String(n), x, y + R * 0.24);
   g.restore(); }
 // Symbol auf dunkler Scheibe mit Rostrand (Karte)
 function drawSym(g, im, cx, cy, R) {
+  if (VIEW.up) VIEW.up(cx, cy);
   g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fillStyle = 'rgba(18,13,11,0.82)'; g.fill(); g.lineWidth = Math.max(1.5, R * 0.14); g.strokeStyle = '#66483A'; g.stroke();
   if (!im) return;
   const ww = Math.min(R * 1.45 * im.naturalWidth / im.naturalHeight, R * 1.6), h2 = ww * im.naturalHeight / im.naturalWidth;
@@ -4397,10 +4401,10 @@ function drawGround(g, s) {
     // Vorschau vom erreichbaren Feld unter Maus/Finger
     { const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]), pv = hk != null && !abilMode && reach.has(hk) && !(hoverHex[0] === sel.c && hoverHex[1] === sel.r) && previewFrom(hoverHex[0], hoverHex[1]);
       if (pv) { const [hx, hy] = center(pv.c, pv.r);
-        MARKQ.push(() => { for (const f of pv.threat) { const [x, y] = center(f.c, f.r); g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
+        MARKQ.push(() => { for (const f of pv.threat) { const [x, y] = center(f.c, f.r); if (VIEW.up && !VIEW.up(x, y)) continue; g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
           g.setLineDash([s * 0.09, s * 0.07]); g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = RANGE_COL; g.stroke(); g.setLineDash([]); } });   // Gegner mit Schussfeld auf das Feld: gestrichelt umrandet (obenauf, sonst verdeckt der Bodenschatten)
         MARKQ.push(() => { g.save(); g.lineCap = 'round';
-          for (const f of pv.hit) { const [x, y] = center(f.c, f.r); g.setLineDash([s * 0.06, s * 0.09]); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.lineWidth = Math.max(3.5, s * 0.05); g.beginPath(); g.moveTo(hx, hy - s * 0.3); g.lineTo(x, y - s * 0.3); g.stroke();
+          for (const f of pv.hit) { const [x, y] = center(f.c, f.r); g.setLineDash([s * 0.06, s * 0.09]); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.lineWidth = Math.max(3.5, s * 0.05); g.beginPath(); pathLine(g, hx, hy - s * 0.3, x, y - s * 0.3); g.stroke();
             g.strokeStyle = 'rgba(194,164,97,0.95)'; g.lineWidth = Math.max(1.6, s * 0.025); g.stroke(); g.setLineDash([]); drawSym(g, UPI.s_zielen, x + s * 0.42, y - s * 0.95, s * 0.19); }
           g.restore();
           if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.22, pv.threat.length);
@@ -4415,9 +4419,13 @@ function drawGround(g, s) {
       for (const [c, r] of cells) { hexPath(g, c, r, 0.9); g.fillStyle = artMode === 'gas' ? 'rgba(196,214,70,0.45)' : 'rgba(255,120,60,0.4)'; g.fill(); }
     }
   }
-  // Zielfahnen
+  if (!VIEW.tilt()) drawFlags(g, s);
+}
+// Zielfahnen
+function drawFlags(g, s, up) {
   for (const o of OBJECTIVES) {
-    const [x, y] = center(o.c, o.r), col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), top = base - s * 1.25;
+    const [x, y] = center(o.c, o.r); if (up && !up(x, y)) continue;
+    const col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
     const fl = VIS.ctrl[o.id] && CFLAG[fac(VIS.ctrl[o.id])], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
     if (fim) { const fh = s * 0.95, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px + s * 0.02, top - s * 0.04, fw, fh); }
@@ -4435,22 +4443,22 @@ function unitList() {
 function drawUnits() { for (const [, u, d] of unitList()) drawUnit(u, d); }
 function drawDiaryMark(g) { if (diaryMark && now - diaryMark.t < 2400) { const k = (now - diaryMark.t) / 2400, pz = 0.5 + 0.5 * Math.sin(now / 140); g.globalAlpha = 1 - k * 0.6; hexMark(diaryMark.c, diaryMark.r, { rgb: BRASS, fill: 0.18 + 0.1 * pz }); g.globalAlpha = 1; } }   // Ort aus dem Kriegstagebuch
 // Luft: Nebel, Gas, Regen, Effekte, Wegkosten
-function drawAir(g, s) {
+function drawAir(g, s, up) {
   // Nebel (grau), ausgeleuchtete Felder (gelb), eigene Stollen und Minen
-  for (const k of VIS.lit) { hexPath(g, k.c, k.r, 0.98); g.fillStyle = 'rgba(255,240,170,0.16)'; g.fill(); }
+  for (const k of VIS.lit) { if (up) { const [lx, ly] = center(k.c, k.r); if (!up(lx, ly)) continue; } hexPath(g, k.c, k.r, 0.98); g.fillStyle = 'rgba(255,240,170,0.16)'; g.fill(); }
   for (const k of VIS.smoke) {
-    const [x, y] = center(k.c, k.r);
+    const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue;
     for (let i = 0; i < 4; i++) { const a = i * 1.6 + now / 1700 + k.c, rx = s * (0.5 + 0.08 * Math.sin(now / 800 + i));
       const gr = g.createRadialGradient(x + Math.cos(a) * s * 0.3, y - s * 0.2 + Math.sin(a) * s * 0.15, 0, x + Math.cos(a) * s * 0.3, y - s * 0.2, rx);
       gr.addColorStop(0, 'rgba(225,225,220,0.55)'); gr.addColorStop(1, 'rgba(225,225,220,0)'); g.fillStyle = gr; g.fillRect(x - s * 1.2, y - s * 1.2, s * 2.4, s * 2.4); }
   }
   const mySide = human(G.side) ? G.side : ['A', 'D'].find(human);
   g.font = `900 ${Math.round(s * 0.36)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  for (const q of G.tunnels || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText(`⛏${q.t}`, x, y + s * 0.15); g.fillStyle = '#ffb86a'; g.fillText(`⛏${q.t}`, x, y + s * 0.15); }
-  for (const q of G.mines || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
+  for (const q of G.tunnels || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText(`⛏${q.t}`, x, y + s * 0.15); g.fillStyle = '#ffb86a'; g.fillText(`⛏${q.t}`, x, y + s * 0.15); }
+  for (const q of G.mines || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
   // Gaswolken
   for (const k of VIS.clouds) {
-    const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v];
+    const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v]; if (up && !up(x, y)) continue;
     if (im) {
       const hh = s * (1.25 + 0.06 * Math.sin(now / 700 + k.c)), w = fxw(im, hh), dx = Math.sin(now / 1300 + k.r) * s * 0.08;
       g.globalAlpha = 0.82; g.drawImage(im, x - w / 2 + dx, y + s * kAt(x, y) * 0.6 - hh, w, hh); g.globalAlpha = 1;
@@ -4464,13 +4472,19 @@ function drawAir(g, s) {
   }
   // Nebelschwaden und Nieselregen
   for (let i = 0; i < 5; i++) {
-    const fx = ((now / (38 + i * 9) + i * L.W * 0.27) % (L.W * 1.4)) - L.W * 0.2, fy = L.top + (L.H - L.top) * (0.12 + 0.2 * i);
+    const fx = ((now / (38 + i * 9) + i * L.W * 0.27) % (L.W * 1.4)) - L.W * 0.2, fy = L.top + (L.H - L.top) * (0.12 + 0.2 * i); if (up && !up(fx, fy)) continue;
     const fg = g.createRadialGradient(fx, fy, 0, fx, fy, s * 7); fg.addColorStop(0, 'rgba(176,170,150,0.10)'); fg.addColorStop(1, 'rgba(176,170,150,0)');
     g.fillStyle = fg; g.save(); g.translate(fx, fy); g.scale(1, 0.3); g.translate(-fx, -fy); g.fillRect(fx - s * 7, fy - s * 7, s * 14, s * 14); g.restore();
   }
+  if (up) {   // neue Ansicht: Nieselregen über dem ganzen Schirm
+    g.setTransform(1, 0, 0, 1, 0, 0); const W = cv.width, H = cv.height, u0 = Math.max(1, W / 1920);
+    g.strokeStyle = 'rgba(200,205,205,0.10)'; g.lineWidth = u0; g.beginPath();
+    for (let i = 0; i < 90; i++) { const rx = (i * 211.3 + now * 0.3) % W, ry = (i * 97.7 + now * 1.1) % H; g.moveTo(rx, ry); g.lineTo(rx - 8 * u0, ry + 30 * u0); }
+    g.stroke();
+  } else {
   g.strokeStyle = 'rgba(200,205,205,0.10)'; g.lineWidth = Math.max(1, s * 0.02); g.beginPath();
   for (let i = 0; i < 70; i++) { const rx = (i * 173.3 + now * 0.25) % L.W, ry = (i * 97.7 + now * 0.9) % L.H; g.moveTo(rx, ry); g.lineTo(rx - s * 0.12, ry + s * 0.5); }
-  g.stroke();
+  g.stroke(); }
   // Effekte
   g.lineCap = 'round';
   for (let i = tracers.length - 1; i >= 0; i--) {
@@ -4482,6 +4496,7 @@ function drawAir(g, s) {
       const ang = Math.atan2(tr.y2 - tr.y1, tr.x2 - tr.x1), hh = s * tr.sz, w = fxw(pim, hh), reps = tr.stream ? tr.n : tr.n > 1 ? 2 : 1;
       for (let n = 0; n < reps; n++) {   // MG: Kette einzelner Geschosse mit kleinem Abstand (Wunsch des Nutzers)
         const p = tr.stream ? k * 1.9 - n * 0.11 : k * 1.15 - n * 0.3; if (p < 0 || p > 1) continue;
+        if (up && !up(tr.x1 + (tr.x2 - tr.x1) * p, tr.y1 + (tr.y2 - tr.y1) * p)) continue;
         g.save(); g.translate(tr.x1 + (tr.x2 - tr.x1) * p, tr.y1 + (tr.y2 - tr.y1) * p); g.rotate(ang); if (tr.x2 < tr.x1) g.scale(1, -1);
         g.drawImage(pim, -w, -hh / 2, w, hh); g.restore();
       }
@@ -4491,14 +4506,16 @@ function drawAir(g, s) {
       const p = (k * 1.5 + n * 0.16) % 1.15; if (p > 1) continue;
       const q = Math.max(0, p - 0.1);
       const xa = tr.x1 + (tr.x2 - tr.x1) * q, ya = tr.y1 + (tr.y2 - tr.y1) * q, xb = tr.x1 + (tr.x2 - tr.x1) * p, yb = tr.y1 + (tr.y2 - tr.y1) * p;
+      if (up && !up(xa, ya)) continue;
       g.strokeStyle = O; g.lineWidth = s * 0.11; g.beginPath(); g.moveTo(xa, ya); g.lineTo(xb, yb); g.stroke();
       g.strokeStyle = tr.col; g.lineWidth = s * 0.055; g.beginPath(); g.moveTo(xa, ya); g.lineTo(xb, yb); g.stroke();
     }
-    if (tr.life > tr.max - 5) { g.fillStyle = '#fff1a0'; g.beginPath(); g.arc(tr.x1, tr.y1, s * 0.16, 0, 7); g.fill(); }
+    if (tr.life > tr.max - 5 && (!up || up(tr.x1, tr.y1))) { g.fillStyle = '#fff1a0'; g.beginPath(); g.arc(tr.x1, tr.y1, s * 0.16, 0, 7); g.fill(); }
   }
   for (let i = flames.length - 1; i >= 0; i--) {
     const f = flames[i]; f.life -= FS;
     if (f.life <= 0) { flames.splice(i, 1); continue; }
+    if (up && !up(f.x1, f.y1)) continue;
     const k = Math.min(1, (f.max - f.life) / 6), im = PJI.jet && f.life % 12 >= 8 ? PJI.jet : FXI[f.life % 8 < 4 ? 'flame1' : 'flame2'];
     if (im) {
       const len = Math.hypot(f.x2 - f.x1, f.y2 - f.y1) * 1.2 * k, hh = len * im.naturalHeight / im.naturalWidth * 1.25;
@@ -4517,6 +4534,7 @@ function drawAir(g, s) {
     const sh = shells[i]; sh.t += FS / sh.dur;
     if (sh.t >= 1) { shells.splice(i, 1); continue; }
     const x = sh.x1 + (sh.x2 - sh.x1) * sh.t, y = sh.y1 + (sh.y2 - sh.y1) * sh.t - Math.sin(Math.PI * sh.t) * s * (sh.arc ?? 3.2);
+    if (up && !up(x, y)) continue;
     const pim = PJI[sh.img];
     if (pim) {
       const t2 = Math.min(1, sh.t + 0.02), nx = sh.x1 + (sh.x2 - sh.x1) * t2, ny = sh.y1 + (sh.y2 - sh.y1) * t2 - Math.sin(Math.PI * t2) * s * (sh.arc ?? 3.2);
@@ -4527,7 +4545,7 @@ function drawAir(g, s) {
   }
   for (let i = muzzles.length - 1; i >= 0; i--) {
     const mz = muzzles[i]; mz.life -= FS; if (mz.life <= 0) { muzzles.splice(i, 1); continue; }
-    const im = PJI[mz.img]; if (!im) continue;
+    const im = PJI[mz.img]; if (!im) continue; if (up && !up(mz.x, mz.y)) continue;
     const hh = s * mz.sz * (0.85 + 0.15 * Math.sin(mz.life)), w = fxw(im, hh);
     g.save(); g.translate(mz.x, mz.y); if (mz.center) { if (mz.flip) g.scale(-1, 1); g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w / 2, -hh * (mz.up || 0.5), w, hh); }
     else { g.rotate(mz.ang); if (Math.cos(mz.ang) < 0) g.scale(1, -1); g.globalAlpha = Math.min(1, mz.life / (mz.max * 0.5)); g.drawImage(im, -w * (mz.off || 0), -hh / 2, w, hh); }
@@ -4535,14 +4553,14 @@ function drawAir(g, s) {
   }
   for (let i = rings.length - 1; i >= 0; i--) {
     const rg = rings[i]; rg.life -= FS; if (rg.life <= 0) { rings.splice(i, 1); continue; }
-    const k = 1 - rg.life / rg.max, im = PJI[rg.img];
+    const k = 1 - rg.life / rg.max, im = PJI[rg.img]; if (up && !up(rg.x, rg.y)) continue;
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
     else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
   for (let i = booms.length - 1; i >= 0; i--) {
     const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
     if (b.life <= 0) { booms.splice(i, 1); continue; }
-    const k = 1 - b.life / b.max, im = FXI[b.img];
+    const k = 1 - b.life / b.max, im = FXI[b.img]; if (up && !up(b.x, b.y)) continue;
     if (im) {
       const grow = b.kind === 'smoke' ? 0.7 + 0.5 * k : 0.45 + 0.55 * Math.sqrt(Math.min(1, k * 2.2));
       const hh = b.r * 2.3 * grow, w = fxw(im, hh), rise = b.kind === 'smoke' ? k * b.r * 1.2 : 0;
@@ -4558,6 +4576,7 @@ function drawAir(g, s) {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i]; p.x += p.vx * FS; p.y += p.vy * FS; p.vy += p.g * FS; p.life -= FS;
     if (p.life <= 0) { particles.splice(i, 1); continue; }
+    if (up && !up(p.x, p.y)) continue;
     g.globalAlpha = Math.min(1, p.life / 12); g.fillStyle = p.col; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 7); g.fill();
   }
   g.globalAlpha = 1;
@@ -4565,7 +4584,7 @@ function drawAir(g, s) {
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
   { const n = sel && human(G.side) && !busy && hoverHex && !abilSet.has(E.key(hoverHex[0], hoverHex[1])) && reach.get(E.key(hoverHex[0], hoverHex[1]));
-    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)), ty = y - s * kAt(x, y) * 0.45;
+    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)); if (up) up(x, y); const ty = y - s * kAt(x, y) * 0.45;
       g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
       if (im) { g.save(); g.filter = 'brightness(1.9) sepia(0.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B)'; g.drawImage(im, x0, ty - iw / 2, iw, iw); g.restore(); }   // Stiefel: das ist der Weg, keine Warnzahl
       g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
@@ -4735,11 +4754,14 @@ function drawTilt() {
   camSetup();
   const s = L.s;
   WCTX.setTransform(1, 0, 0, 1, 0, 0);
-  ctx = WCTX;   // flaches Weltbild: Boden, Bodenmarkierungen, Effekte (Schritt 2 stellt Effekte aufrecht)
-  try { drawGround(WCTX, s); drawDiaryMark(WCTX); for (const f of MARKQ) f(); MARKQ.length = 0; drawAir(WCTX, s); }
+  ctx = WCTX;   // flaches Weltbild: nur Boden und Bodenmarkierungen; alles Aufrechte kommt danach auf den Schirm
+  try { drawGround(WCTX, s); drawDiaryMark(WCTX); }
   finally { ctx = MAINCTX; }
   const g = MAINCTX; g.setTransform(1, 0, 0, 1, 0, 0);
   projectGround(g);
+  // Aufrecht verankern: Element am Punkt (x, y) steht als Aufsteller dort (Maßstab und Bodenverkürzung der Tiefe)
+  const up = (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); VIEW.bbK = b.k; return true; };
+  drawFlags(g, s, up); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
   // Einheiten als Aufsteller am Fußpunkt; Marken und spätere Marken (MARKQ) behalten ihren Aufsteller
   UBOX.length = 0;
   for (const [, u, d] of unitList()) {
@@ -4753,8 +4775,9 @@ function drawTilt() {
     const big = TYPES[u.type].cls === 'walker' ? 1.5 : 1;
     UBOX.push({ u, x0: bb.px - bb.sc * s * 0.75 * big, x1: bb.px + bb.sc * s * 0.75 * big, y0: bb.py - bb.sc * s * FIG_SH * 1.1, y1: bb.py + bb.sc * s * 0.45 });
   }
-  for (const f of MARKQ) f(); MARKQ.length = 0;
-  g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
+  VIEW.up = up;   // Klammern, Symbole, Vorschau, Warndreieck, Schilde: aufrecht an ihrem Punkt
+  try { for (const f of MARKQ) f(); MARKQ.length = 0; g.setTransform(1, 0, 0, 1, 0, 0); drawAir(g, s, up); }
+  finally { VIEW.up = null; g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; }
   // Schwebende Texte aufrecht am jeweiligen Punkt
   drawFloaters(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });
   g.setTransform(1, 0, 0, 1, 0, 0);
