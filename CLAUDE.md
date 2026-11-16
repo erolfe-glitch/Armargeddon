@@ -58,7 +58,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Konkordat (Karminrot, Bilder England-Bogen) gegen Aschenwacht (Blau, Deutschland-Bogen). Frankreich-Set „Blaue Legion von Arvenne“ = zweites Bilderset fürs Konkordat, gleiche Werte.
 - Klassen: inf, mg, art (mit/ohne `mobile`), cav, storm, walker (Kolosse, Mechs), medic. Schalter in TYPES z. B. `suit`, `mech`, `gat`, `pin`, `at`, `relay`, `spot`, `hidden`, `wirelayer`, `banner`, `abil`. Schlagworte `sp` (E.SPECIALS) erscheinen in Einheitenkarte und Info-Fenster.
 - Kampfmaschinen nur mit Startmenü-Schalter (G.mechs, E.isMech). Sim: Standard ohne, `MECHS=1` mit.
-- Kommandotrupps: Hauptmann (Befehl alle 2 Runden, 2 Felder, max. 3), General (jede Runde, 3 Felder, max. 1). Befehle „Sammeln“ und „Sturmbefehl“.
+- Kommandotrupps: Hauptmann (Befehl alle 2 Runden, 2 Felder, max. 3), General (jede Runde, 3 Felder, max. 1). Befehle je Seite (E.orderKinds, Gruppe 2 vom 2026-11-16): beide „Sammeln“, Konkordat „Feuer frei“ (u.fireFree, Fernkampf ×1,25 bis zum nächsten eigenen Zug), Aschenwacht „Sturmbefehl“ (u.zeal). General zusätzlich einmal je Schlacht (G.bigUsed): Konkordat „Halten um jeden Preis“ (G.hold: keine Flucht, Abwehr ×1,25), Aschenwacht „Generalangriff“ (alle +1 Aktionspunkt). Bannerträger: „Banner aufpflanzen/aufnehmen“ (u.planted: 3 statt 2 Felder, dort keine Flucht über E.noFlee, Träger zieht nicht). KI-Abschalter NOBIG_x, NOPLANT.
 - Sonderfähigkeiten über T.abil / E.ABILS / abilTargets / useAbil (Rauch, Granaten, Stollen, Sprengladung, Minen, Scheinwerfer, Gegenstoß, Gasschutz, Munition, Pirschjäger …).
 
 ## Spielmechanik (Kurzfassung)

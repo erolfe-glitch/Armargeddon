@@ -285,15 +285,41 @@ function next(G) {
   if (G.over) return null;
   const tk = G.turn + G.side;
   if (G._aiKey !== tk) { G._aiKey = tk; G._aiDone = new Set(); }
+  const ENVX = typeof process !== 'undefined' && process.env || {};
+  // Großer Befehl des Generals (einmal je Schlacht): nicht in den ersten Runden verschwenden, erst wenn es wirklich zählt
+  for (const u of G.units) {
+    if (!E.canBig(G, u) || G._aiDone.has('b' + u.id) || G.turn < 3 || ENVX['NOBIG_' + u.side]) continue;
+    G._aiDone.add('b' + u.id);
+    const own = G.units.filter(o => o.side === u.side && E.active(o));
+    if (u.side === 'A') {   // Halten um jeden Preis: viele eigene Einheiten in Feindberührung oder mit wankender Moral
+      const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
+      if (shaky >= Math.max(4, Math.round(own.length * 0.35))) return { u: u.id, steps: [{ k: 'big' }] };
+    } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
+      const ready = own.filter(o => !o.attacked && o.ap >= 2 && nearestEnemyDist(G, o.side, o.c, o.r) <= TYPES[o.type].mv + 2 && TYPES[o.type].atk >= 3).length;
+      const half = o => u.side === 'D' ? o.c >= E.COLS / 2 : o.c < E.COLS / 2;   // Zielfelder auf der eigenen Hälfte
+      const threat = E.OBJECTIVES.some(o => half(o) && (G.ctrl[o.id] && G.ctrl[o.id] !== u.side || G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, o.c, o.r) <= 1)));   // Gegner steht an oder auf einem eigenen Zielfeld
+      if (ready >= Math.max(6, Math.round(own.length * 0.5)) && (threat || G.turn >= 6)) return { u: u.id, steps: [{ k: 'big' }] };
+    }
+  }
+  // Bannerträger: aufpflanzen, wenn der Kampf nah ist und eigene Truppen im Bereich stehen; aufnehmen, wenn der Gegner weit weg ist
+  for (const u of G.units) {
+    if (u.side !== G.side || !TYPES[u.type].banner || !E.canPlant(G, u) || G._aiDone.has('p' + u.id) || ENVX.NOPLANT) continue;
+    G._aiDone.add('p' + u.id);
+    const near = nearestEnemyDist(G, u.side, u.c, u.r), friends = G.units.filter(o => o !== u && o.side === u.side && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= P.BANNER_R_PLANTED).length;
+    if (!u.planted && near <= 4 && friends >= 3 && (u.mvd || near <= 2 || G.map[u.c][u.r].obj)) return { u: u.id, steps: [{ k: 'plant' }] };
+    if (u.planted && near > 6) return { u: u.id, steps: [{ k: 'plant' }] };
+  }
   for (const u of G.units) {   // Befehle der Anführer zuerst
     if (!E.canOrder(G, u) || G._aiDone.has('o' + u.id)) continue;
     G._aiDone.add('o' + u.id);
-    let weak = 0, close = 0;
+    let weak = 0, close = 0, shoot = 0;
     for (const o of G.units) {
-      if (o.side !== u.side || !E.active(o) || E.cls(o) === 'walker' || E.dist(o.c, o.r, u.c, u.r) > E.P.OFFICER_RANGE) continue;
+      if (o.side !== u.side || !E.active(o) || E.cls(o) === 'walker' || E.dist(o.c, o.r, u.c, u.r) > E.cmdRange(u)) continue;
       if (o.supp > 0) weak += 2; else if (o.mor <= E.TYPES[o.type].mor - 1.5) weak++;
       if (E.TYPES[o.type].atk >= 4 && nearestEnemyDist(G, o.side, o.c, o.r) <= E.TYPES[o.type].mv) close++;
+      if (E.TYPES[o.type].rng >= 2 && E.TYPES[o.type].fs >= 2 && !o.attacked && nearestEnemyDist(G, o.side, o.c, o.r) <= E.TYPES[o.type].rng + 1) shoot++;   // Feuer frei lohnt sich
     }
+    if (shoot >= 2 && E.canOrderKind(G, u, 'fire')) return { u: u.id, steps: [{ k: 'order', kind: 'fire' }] };
     if (weak >= 2 && E.canOrderKind(G, u, 'rally')) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
     if (close >= 2 && E.canOrderKind(G, u, 'storm')) return { u: u.id, steps: [{ k: 'order', kind: 'storm' }] };
   }
@@ -386,6 +412,8 @@ function exec(G, uid, s) {
   if (s.k === 'sperr') return E.canSperr(G, u) ? E.sperr(G, u) : [];
   if (s.k === 'recover') { const t = G.units.find(x => x.id === s.t); return t ? E.recover(G, u, t) : []; }
   if (s.k === 'order') return E.order(G, u, s.kind);
+  if (s.k === 'big') return E.bigOrder(G, u);
+  if (s.k === 'plant') return E.plantBanner(G, u);
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
     let best = null;

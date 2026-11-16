@@ -10,7 +10,7 @@ Stand: 56 Einheiten (28 je Seite). Bild ✓ = Figurenbogen im neuen Stil vorhand
 | Rolle | Konkordat (A) | Aschenwacht (D) |
 |---|---|---|
 | Führung | Hauptmann ✓, General ✓ | Hauptmann ✓, General ✓, Bannerträger ✓ |
-| Aufklärung / Befehle | Meldegänger mit Hund ✓, Fernsprechtrupp –, Ballonbeobachter – | Signaltrupp – |
+| Aufklärung / Befehle | Meldegänger mit Hund ✓, Fernsprechtrupp –, Ballonbeobachter –, Radfahrer-Trupp – | Signaltrupp –, Scheinwerfer-Trupp – |
 | Linieninfanterie | Schützenkohorte ✓ | Aschengrenadiere ✓ |
 | Sturm / Nahkampf | Grabenräumer ✓ | Sturmbrecher ✓, Grabenkämpfer –, Eingreiftrupp –, Kettenritter – |
 | Gepanzerte Infanterie | Stahlgänger-Trupp – | Panzerknechte – |
@@ -36,7 +36,7 @@ Stand: 56 Einheiten (28 je Seite). Bild ✓ = Figurenbogen im neuen Stil vorhand
 - „Lenkt Artillerie" (keine Streuung, Sprenggranaten ×1,25): Fernsprechtrupp, Ballonbeobachter, Signaltrupp.
 - Meldegänger: Befehl überbringen. Radfahrer: schnelle Infanterie, Schuss 2.
 
-## Entscheidungen – Gruppe 1: MG und Aufklärer (2026-11-16, umgesetzt)
+## Entscheidungen – Gruppe 1: MG und Aufklärer (2026-11-16)
 
 - **MG-Sperrfeuer:** Kein automatisches Feuer mehr. Neuer Befehl „Sperrfeuer" (MG aufgebaut, in dieser Runde nicht bewegt und nicht geschossen, kostet die restlichen Punkte). Im gegnerischen Zug bis zu **2 Schüsse** auf Gegner, die sich im Schussfeld bewegen. Sonst Häkchen „Erledigt".
 - **Ballonbeobachter** (Konkordat) und **Signaltrupp** (Aschenwacht) = die Beobachter. Neuer Befehl **„Ziel markieren"**: ein Feld in Sicht markieren; dort trifft Artillerie ohne Streuung und stärker, versteckte Gegner und Minen im Feld und daneben werden aufgedeckt.
@@ -44,15 +44,24 @@ Stand: 56 Einheiten (28 je Seite). Bild ✓ = Figurenbogen im neuen Stil vorhand
 - **Gestrichen:** Radfahrer-Trupp, Scheinwerfer-Trupp.
 - Meldegänger mit Hund: bleibt (Befehl überbringen) – wird mit der Gruppe „Führung" besprochen.
 
-## Entscheidungen – Gelände-Gefahren (2026-11-16, umgesetzt)
+## Wünsche: Gelände-Gefahren und Effekte (2026-11-16)
 
-- **Stacheldraht:** Betreten kostet ca. 10 Stärke (Blut + Zahl). Gepanzerte Infanterie (Stahlgänger, Panzerknechte, Schwere Grabenwacht, Kettenritter) unverletzt, Draht hält sie nicht auf. Kolosse walzen ihn wie bisher.
-- **Giftgas:** Nach der Wolke 2 Runden vergiftet (½, dann ¼ des Gasschadens), grünlich umrandetes Gas-Symbol. Feldscher und Aschenpfleger heilen die Vergiftung. Gasschutz-Trupp (mit Nachbarn) und Kolosse immun.
-- **Artillerie-Sperrfeuer:** 2 Runden Abklingzeit, Sanduhr am Knopf.
-- KI meidet Draht und Gas stärker.
+- **Ziel markieren – Effekt (später):** z. B. ein Leuchtgeschoss ins Zielfeld oder ein kurzes Aufblitzen am Ballon (Fernrohr-Glanz). Gestaltung kommt später.
+- **Artillerie-Sperrfeuer:** bekommt eine Abklingzeit.
+- **Stacheldraht:** macht den meisten Einheiten beim Betreten leichten Schaden, mit Bluteffekt. Gepanzerte Einheiten kommen besser durch.
+- **Giftgas:** Giftschaden, der nach dem Verlassen der Wolke noch weiter runtertickt. Geschützte Einheiten (z. B. Gasschutz-Trupp) sind davon nicht betroffen.
 
-### Umsetzung Gruppe 1 (2026-11-16)
-- MG: Knopf „Sperrfeuer“ (alle Punkte), Marke mit goldenem Ring am MG, bis zu 2 Schüsse in der gegnerischen Runde. Kein automatisches Reaktionsfeuer mehr.
-- Ballonbeobachter, Signaltrupp: „Ziel markieren“ (1 Punkt), Zielkreuz auf der Karte bis zum nächsten eigenen Zug, deckt Pirschjäger und Minen im Feld und daneben auf.
-- Fernsprechtrupp: „Feuerschlag anfordern“ (alle Punkte, alle 3 Runden), Granate kommt von hinter der eigenen Front, 25 % Streuung (auf markierten Feldern keine).
-- Radfahrer-Trupp und Scheinwerfer-Trupp sind gestrichen (keine Karte nutzte sie fest).
+Jetzt im Code: Draht macht keinen Schaden (beendet nur die Bewegung, Abwehr ×0,6). Gas schadet nur, solange man in der Wolke steht. Sperrfeuer hat keine Abklingzeit.
+
+## Entscheidungen – Gruppe 2: Führung (2026-11-16)
+
+- **Hauptmann:** Befehle je Seite eigen. Beide: „Sammeln". Konkordat zusätzlich **„Feuer frei"** (Fernkampf +25 %), Aschenwacht **„Sturmbefehl"** (Nahkampf +25 %). Reichweite 2, je 2 Runden Pause wie bisher.
+- **General:** normale Befehle wie bisher (jede Runde, 3 Felder) plus **ein großer Befehl einmal pro Schlacht**: Konkordat **„Halten um jeden Preis"** (eine Runde lang keine Flucht, Abwehr +25 % für alle eigenen Einheiten), Aschenwacht **„Generalangriff"** (alle eigenen Einheiten +1 Aktionspunkt).
+- **Bannerträger:** neuer Befehl **„Banner aufpflanzen"** (1 Punkt): bleibt stehen, Wirkung auf 3 Felder, Einheiten darin fliehen nicht. Aufnehmen kostet wieder 1 Punkt.
+- **Meldegänger mit Hund:** bleibt wie er ist.
+
+## Gruppe 2: Führung (2026-11-16, umgesetzt)
+- **Hauptmann:** Befehle je Seite. Beide „Sammeln“. Konkordat „Feuer frei“ (eigene Einheiten bis 2 Felder: Fernkampf ×1,25 bis zu ihrem nächsten Zug), Aschenwacht „Sturmbefehl“ (Nahkampf ×1,25). Reichweite und Pausen wie bisher.
+- **General:** Befehle seiner Seite jede Runde, 3 Felder. Einmal je Schlacht großer Befehl für alle eigenen Einheiten: Konkordat „Halten um jeden Preis“ (bis zum nächsten eigenen Zug keine Flucht, Abwehr ×1,25), Aschenwacht „Generalangriff“ (sofort +1 Aktionspunkt). Eigener Knopf, danach grau „verbraucht“; Ansage mit Pfeife bzw. Horn. KI frühestens ab Runde 3, nur wenn es zählt.
+- **Bannerträger:** „Banner aufpflanzen“ (1 Punkt): Träger zieht nicht, Wirkung 3 statt 2 Felder, dort flieht niemand. „Banner aufnehmen“ (1 Punkt). Banner im Boden neben der Figur, Bereich golden, wenn gewählt.
+- **Meldegänger:** unverändert.
