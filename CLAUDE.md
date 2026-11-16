@@ -73,6 +73,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Vorhanden: grauwall, selm, lerne, varn, front, stein, waldfl, kasem, kanal. Gemalte Karten: renderPainted (paint.js) bzw. renderImageMap (mapimg.js).
 
 ## Darstellung (wichtige Fallstricke)
+- **Ansicht:** Geometrie, die vom Blick auf die Karte abhängt, nur über den Abschnitt „Ansicht“ in ui.js (`center`, `pixToHex`, `hexCorner`/`hexPath`, `kAt`, `sAt`, `gEllipse`), nie direkt mit `K` rechnen. Grund: neue gekippte Ansicht (Schalter `OPT.tilt`, „Neue Ansicht (Test)“, Umbauplan in IDEEN.md) setzt dort an. Ausnahmen: Geländerendern (zeichnet flach in `tcv`) und `figSprite`.
 - Anzeige-Zustand: Regeln ändern G sofort, gezeichnet wird VIS und d.vs je Einheit; Ereignisse setzen sie beim Abspielen, syncAll() nach jedem Stapel. **Neue Zustände immer so einhängen**, sonst erscheinen sie zu früh.
 - Effekte laufen nach Uhrzeit (STEP/FS in frame()), nicht nach Bildrate.
 - Zahlen in der Anzeige ×10 als ganze Zahlen über fmt(); die Regeln rechnen mit 10er-Werten.

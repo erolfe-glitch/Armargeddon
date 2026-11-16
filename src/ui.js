@@ -26,7 +26,7 @@ let recSet = new Set(), abilSet = new Set(), abilMode = false;
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
-const OPT = { ready: true, strag: true, cam: true, shake: true };   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
+const OPT = { ready: true, strag: true, cam: true, shake: true, tilt: false };   // tilt: „Neue Ansicht (Test)“, Standard aus   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
 try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === 'boolean') OPT[k] = o[k]; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
@@ -66,7 +66,18 @@ function layout() {
   renderTerrain();
   for (const u of G.units) { const d = DU.get(u.id); if (d) { const [x, y] = center(u.c, u.r); d.x = x; d.y = y; } }
 }
+// ---------- Ansicht ----------
+// Alle Geometrie, die vom Blick auf die Karte abhängt, läuft über diesen Abschnitt: Feldmitte (center), Feld unter dem Zeiger (pixToHex),
+// Feldecken (hexCorner/hexPath), Verkürzung des Bodens (kAt), Feldgröße an einer Stelle (sAt), Kreise auf dem Boden (gEllipse).
+// Flache Ansicht: Karte senkrecht gestaucht um K, überall gleich groß. Neue Ansicht (Schalter OPT.tilt, „Neue Ansicht (Test)“):
+// perspektivisch gekippt – wird hier eingehängt (Umbauplan Schritt 1 ff.); bis dahin zeichnen beide Schalterstellungen gleich.
+// Das Gelände (renderTerrain) zeichnet weiter flach in tcv; die neue Ansicht projiziert diesen Puffer später ungestaucht.
+const VIEW = { tilt: () => !!OPT.tilt && false };   // „&& false“: neue Ansicht noch nicht gebaut (Schritt 0), Schalter wirkt noch nicht
 function center(c, r) { return [L.s * (1 + 1.5 * c), L.top + L.s * K * SQ3 * (r + 0.5 * (c & 1) + 0.5)]; }
+function kAt(x, y) { return K; }   // senkrechte Verkürzung des Bodens am Bildpunkt (x, y)
+function sAt(x, y) { return L.s; }   // Feldradius in Bildpunkten am Bildpunkt (x, y)
+function gEllipse(g, x, y, rx, ry) { g.ellipse(x, y, rx, ry * kAt(x, y), 0, 0, 7); }   // Kreis/Ellipse auf dem Boden um (x, y), Radien waagrecht gemessen
+function hexCorner(x, y, i, k) { const a = Math.PI / 3 * i; return [x + L.s * k * Math.cos(a), y + L.s * k * Math.sin(a) * kAt(x, y)]; }   // Ecke i des Felds mit Mitte (x, y), k = Anteil des Radius
 function pixToHex(x, y) {
   const X = (x - L.s) / L.s, Y = (y - L.top) / (L.s * K) - SQ3 * 0.5;
   const q = 2 / 3 * X, a = -X / 3 + SQ3 / 3 * Y, s = -q - a;
@@ -79,7 +90,7 @@ function pixToHex(x, y) {
 function hexPath(g, c, r, k = 1) {
   const [x, y] = center(c, r);
   g.beginPath();
-  for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i; g.lineTo(x + L.s * k * Math.cos(a), y + L.s * k * Math.sin(a) * K); }
+  for (let i = 0; i < 6; i++) { const [px, py] = hexCorner(x, y, i, k); g.lineTo(px, py); }
   g.closePath();
 }
 
@@ -486,7 +497,7 @@ const OVER_K = { balloon: 1.5 };   // Fesselballon schwebt: darf weiter nach obe
 function figSprite(k, side, flip, oy, big) {   // oy = Fußpunkt unter der Feldmitte (Anteil von s, wie SLOTS)
   const s = L.s, h = s * SH_R, sp = FIG.sprite(k, side, flip, h);
   if (!sp.rule) return sp;
-  const f = Math.min(1, s * FIGW_R / sp.cw, big ? 1 : s * K * (oy + SQ3 / 2 + (OVER_K[k] || OVER) * SQ3) / sp.top);
+  const f = Math.min(1, s * FIGW_R / sp.cw, big ? 1 : s * K * (oy + SQ3 / 2 + (OVER_K[k] || OVER) * SQ3) / sp.top);   // K: flache Ansicht; neue Ansicht bekommt eigene Figurengrößen (Umbauplan Schritt 3)
   return f < 0.995 ? FIG.sprite(k, side, flip, h * f) : sp;
 }
 // Bis die Karten neu gemalt sind: Figuren in Wald, Totholz und Ruinen leicht abgedunkelt, damit sie „im“ Gelände stehen
@@ -549,10 +560,10 @@ const brushRing = (col, wide) => svgSprite('ring' + col + (wide ? 'w' : ''), `<s
 <filter id="q" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter>
 <g filter="url(#r)" fill="none" stroke-linecap="round"><circle cx="100" cy="100" r="84" stroke="#120D0B" stroke-width="${wide ? 15 : 9}" opacity=".5"/><circle cx="100" cy="100" r="84" stroke="${col}" stroke-width="${wide ? 9 : 4.5}" stroke-dasharray="470 18 30 10"/></g>
 <g filter="url(#q)" fill="none" stroke-linecap="round"><circle cx="100" cy="100" r="88" stroke="${col}" stroke-width="2.4" opacity=".6" stroke-dasharray="60 25 90 40 120 30"/></g></svg>`, 256, 256);
-function drawRing(g, col, x, y, R, wide) {   // R = Radius in Bildpunkten (waagrecht), gestaucht mit K
+function drawRing(g, col, x, y, R, wide) {   // R = Radius in Bildpunkten (waagrecht), auf dem Boden verkürzt (kAt)
   const sp = brushRing(col, wide);
-  if (!sp) { g.beginPath(); g.ellipse(x, y, R, R * K, 0, 0, 7); g.lineWidth = Math.max(1.5, L.s * (wide ? 0.05 : 0.035)); g.strokeStyle = col; g.stroke(); return; }
-  const w = R * 2 * 100 / 84, h = w * K; g.drawImage(sp, x - w / 2, y - h / 2, w, h);
+  if (!sp) { g.beginPath(); gEllipse(g, x, y, R, R); g.lineWidth = Math.max(1.5, L.s * (wide ? 0.05 : 0.035)); g.strokeStyle = col; g.stroke(); return; }
+  const w = R * 2 * 100 / 84, h = w * kAt(x, y); g.drawImage(sp, x - w / 2, y - h / 2, w, h);
 }
 function drawBrushBar(g, col, bx, by, bw, bh) {   // Breite bw = gefüllter Anteil; Rand der Form ragt etwas über
   const sp = brushBar(col);
@@ -576,7 +587,7 @@ const RANGE_COL = '#A8473A';   // STYLE.md --s-range: Kontur der Schussreichweit
 function chevron(x, y, w) { const g = ctx; g.save(); g.beginPath(); g.moveTo(x - w, y - w * 0.6); g.lineTo(x, y + w * 0.25); g.lineTo(x + w, y - w * 0.6); g.lineTo(x + w, y - w * 0.05); g.lineTo(x, y + w * 0.8); g.lineTo(x - w, y - w * 0.05); g.closePath();
   g.fillStyle = '#C2A461'; g.fill(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, w * 0.18); g.strokeStyle = '#120D0B'; g.stroke(); g.restore(); }
 // Zielmarke: vier Messing-Eckklammern mit Tintenschatten
-function brackets(cx, cy, R, col) { const g = ctx, ry = R * K * 1.2, ln = R * 0.4, lw = Math.max(2, L.s * 0.035);
+function brackets(cx, cy, R, col) { const g = ctx, ry = R * kAt(cx, cy) * 1.2, ln = R * 0.4, lw = Math.max(2, L.s * 0.035);
   const seg = () => { for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { g.beginPath(); g.moveTo(cx + sx * R, cy + sy * ry - sy * ln * 0.8); g.lineTo(cx + sx * R, cy + sy * ry); g.lineTo(cx + sx * R - sx * ln, cy + sy * ry); g.stroke(); } };
   g.save(); g.lineCap = 'square'; g.strokeStyle = '#120D0B'; g.lineWidth = lw + 3; seg(); g.strokeStyle = col; g.lineWidth = lw; seg(); g.restore(); }
 // Warndreieck (Ochsenblut) mit genau EINER Zahl: wie viele Gegner auf dieses Feld schießen können
@@ -602,11 +613,11 @@ function drawUnit(u, d) {
   const done = own && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
   const ready = own && !busy && !G.over && !spent.has(u.id) && !placing;   // kann in dieser Runde noch handeln
   // Standplatz: dunkler Bodenschatten und dünner Ring in gedämpfter Fraktionsfarbe (keine knalligen Flächen)
-  g.globalAlpha = A0; g.beginPath(); g.ellipse(x, y, s * 0.66, s * 0.66 * K, 0, 0, 7); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
+  g.globalAlpha = A0; g.beginPath(); gEllipse(g, x, y, s * 0.66, s * 0.66); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
   g.globalAlpha = A0 * (done ? 0.25 : d.vs.rout ? 0.3 : 0.45); if (!isSel) drawRing(g, acc, x, y, s * 0.66);   // Pinselstrich-Ring, gedämpft
   if (ready && OPT.ready && !isSel) { g.globalAlpha = A0 * (0.6 + 0.35 * (0.5 + 0.5 * Math.sin(now / 520 + u.id))); drawRing(g, '#C2A461', x, y, s * 0.74); }   // bereit: dezenter pulsierender Messingring
   if (E.active(u)) {   // Blickrichtung: kleiner Punkt am Ring, so gedämpft wie der Ring
-    const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.66, fy = y + Math.sin(a) * s * 0.66 * K;
+    const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.66, fy = y + Math.sin(a) * s * 0.66 * kAt(x, y);
     if (isSel) g.globalAlpha = A0;
     g.beginPath(); g.arc(fx, fy, Math.max(2, s * 0.055), 0, 7); g.fillStyle = isSel ? '#C2A461' : acc; g.fill(); g.lineWidth = Math.max(1, s * 0.03); g.strokeStyle = '#120D0B'; g.stroke();
   }
@@ -615,9 +626,9 @@ function drawUnit(u, d) {
   if (isSel) {   // gewählt: Messingring, leicht pulsierend
     const pz = 0.5 + 0.5 * Math.sin(now / 300);
     g.globalAlpha = A0 * (0.85 + 0.15 * pz); drawRing(g, '#C2A461', x, y, s * (0.7 + 0.02 * pz), true); g.globalAlpha = A0;
-  } else if (hoverU === u) { g.beginPath(); g.ellipse(x, y, s * 0.76, s * 0.76 * K, 0, 0, 7); g.strokeStyle = 'rgba(240,237,225,0.5)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); }
+  } else if (hoverU === u) { g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.strokeStyle = 'rgba(240,237,225,0.5)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); }
   if (previewT && previewT.id === u.id) {   // Angriffsziel in der Vorschau
-    g.beginPath(); g.ellipse(x, y, s * 0.78, s * 0.78 * K, 0, 0, 7); g.strokeStyle = '#8E2B22'; g.lineWidth = Math.max(2.5, s * 0.06);
+    g.beginPath(); gEllipse(g, x, y, s * 0.78, s * 0.78); g.strokeStyle = '#8E2B22'; g.lineWidth = Math.max(2.5, s * 0.06);
     g.globalAlpha = A0 * (0.6 + 0.4 * Math.sin(now / 160)); g.stroke(); g.globalAlpha = A0;
   }
   // Figuren
@@ -634,7 +645,7 @@ function drawUnit(u, d) {
   const duck = d.vs.supp > 0 ? s * 0.1 : 0;
   let topY = y - s;
   for (const [ox, oy] of use) {
-    const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * K + duck;
+    const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * kAt(x, y) + duck;
     // Bodenschatten: weich und dunkel, Breite nach Figur; darunter kräftiger Kontaktschatten an den Füßen
     g.filter = 'none'; g.globalAlpha = A0;
     const sw = Math.max(s * 0.3, Math.min(s * 1.0, (sp.cw || s * 0.6) * 0.5)), sh = sw * 0.32;
@@ -664,7 +675,7 @@ function drawUnit(u, d) {
 function drawMarks(u, d, x, y, own, done, acc) {
   const g = ctx, s = L.s;
   // Markenzeile unter der Figur: [Zustand] [Lebensbalken, darunter Aktionspunkte] [Deckung]
-  const bw = s * 0.5, bh = Math.max(3.5, s * 0.065), bx = x - bw / 2, by = y + s * K * 0.3, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
+  const bw = s * 0.5, bh = Math.max(3.5, s * 0.065), bx = x - bw / 2, by = y + s * kAt(x, y) * 0.3, q = Math.max(0, Math.min(1, d.str / 10)), mid = by + bh / 2;
   g.globalAlpha = done ? 0.7 : 1;
   // Pinsel-Lebensbalken wie die Kampfkraft-Balken oben: dunkle Pinselform als Grund, Füllung nach Stand (LIFE_COL), Tintenrand, Segmentstriche
   drawBrushBar(g, '#221B18', bx, by, bw, bh);
@@ -681,7 +692,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
   if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u);
     if (cv0.tier) { const sh = Math.max(9, s * 0.15), cx = bx + bw + sh * 0.55; drawShield(g, cx, mid, sh, cv0.tier); MARKS.push({ x0: cx - sh * 0.45, y0: mid - sh / 2, x1: cx + sh * 0.45, y1: mid + sh / 2, u, kind: 'cover' }); } } }
   // Anführer-Orden rechts neben der Figur, im eigenen Feld; abgedunkelt, solange kein Befehl möglich ist
-  if (u.officer && E.active(u)) { const oi = UPI.orden, oh = s * 0.4, ox = x + s * 0.5, oy = y - s * K * 0.3, ready = orderReady(u);
+  if (u.officer && E.active(u)) { const oi = UPI.orden, oh = s * 0.4, ox = x + s * 0.5, oy = y - s * kAt(x, y) * 0.3, ready = orderReady(u);
     if (oi) { const ow = oh * oi.naturalWidth / oi.naturalHeight; if (!ready) g.filter = 'grayscale(0.7) brightness(0.45)'; g.drawImage(oi, ox - ow / 2, oy - oh / 2, ow, oh); g.filter = 'none'; }
     else { g.font = `900 ${Math.round(s * 0.3)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#120D0B'; g.strokeText('★', ox, oy); g.fillStyle = ready ? '#C2A461' : '#7d7564'; g.fillText('★', ox, oy); }
     MARKS.push({ x0: ox - oh * 0.3, y0: oy - oh / 2, x1: ox + oh * 0.3, y1: oy + oh / 2, u, kind: 'lead' }); }
@@ -710,7 +721,7 @@ function hexMark(c, r, o) {
   hexPath(g, c, r, 0.9); g.strokeStyle = `rgba(${o.rgb},${o.soft ? 0.45 : 0.85})`; g.lineWidth = Math.max(o.soft ? 1.2 : 2, s * (o.soft ? 0.025 : 0.05));
   if (o.dash) g.setLineDash([s * 0.14, s * 0.1]);
   g.stroke(); g.setLineDash([]);
-  if (o.sym) { const [cx, cy] = center(c, r); MARKQ.push(() => { g.globalAlpha = 0.85 + 0.15 * pz; drawSym(g, o.sym, cx, cy - s * K * (o.inHex ? 0.1 : 0.62), s * 0.2); g.globalAlpha = 1; }); }   // Symbol über den Figuren
+  if (o.sym) { const [cx, cy] = center(c, r); MARKQ.push(() => { g.globalAlpha = 0.85 + 0.15 * pz; drawSym(g, o.sym, cx, cy - s * kAt(cx, cy) * (o.inHex ? 0.1 : 0.62), s * 0.2); g.globalAlpha = 1; }); }   // Symbol über den Figuren
 }
 function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; shakeStep(); draw(); requestAnimationFrame(frame); }
 function draw() {
@@ -720,8 +731,8 @@ function draw() {
   g.drawImage(tcv, 0, 0);
   for (const dc of decals) {
     const im = FXI['blood' + dc.v];
-    if (im) { const w = dc.r * 5, hh = w * im.naturalHeight / im.naturalWidth * Math.max(0.6, K); g.globalAlpha = 0.85; g.drawImage(im, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; }
-    else { g.fillStyle = dc.col; g.beginPath(); g.ellipse(dc.x, dc.y, dc.r, dc.r * K, 0, 0, 7); g.fill(); }
+    if (im) { const w = dc.r * 5, hh = w * im.naturalHeight / im.naturalWidth * Math.max(0.6, kAt(dc.x, dc.y)); g.globalAlpha = 0.85; g.drawImage(im, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; }
+    else { g.fillStyle = dc.col; g.beginPath(); gEllipse(g, dc.x, dc.y, dc.r, dc.r); g.fill(); }
   }
   // Markierungen
   if (sel && human(G.side) && !busy) {
@@ -736,8 +747,8 @@ function draw() {
       for (let i = -7; i <= 7; i++) { const d = i * s * 0.15; g.moveTo(cx + d - s, cy + s); g.lineTo(cx + d + s, cy - s); } g.stroke(); g.restore(); }
     // Schuss: eine gestrichelte Kontur um das ganze Reichweitengebiet (Ochsenblut hell auf Tintenschatten), keine Flächen
     if (rangeEdges.length) { g.save(); g.lineCap = 'round';
-      const edges = () => { g.beginPath(); for (const [c, r, i] of rangeEdges) { const [x, y] = center(c, r), a = Math.PI / 3 * i, b = a + Math.PI / 3, k = 0.97;
-        g.moveTo(x + s * k * Math.cos(a), y + s * k * Math.sin(a) * K); g.lineTo(x + s * k * Math.cos(b), y + s * k * Math.sin(b) * K); } g.stroke(); };
+      const edges = () => { g.beginPath(); for (const [c, r, i] of rangeEdges) { const [x, y] = center(c, r), p = hexCorner(x, y, i, 0.97), q = hexCorner(x, y, i + 1, 0.97);
+        g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); } g.stroke(); };
       g.strokeStyle = 'rgba(18,13,11,0.7)'; g.lineWidth = Math.max(3, s * 0.065); edges();
       g.strokeStyle = RANGE_COL; g.lineWidth = Math.max(1.6, s * 0.028); g.setLineDash([s * 0.12, s * 0.08]); edges(); g.restore(); }
     // Hilfsmarkierungen nach STYLE.md: gedämpfte Palettentöne, unterscheidbar über Muster und Symbol (Wunsch des Nutzers)
@@ -761,15 +772,15 @@ function draw() {
     // Vorschau vom erreichbaren Feld unter Maus/Finger
     { const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]), pv = hk != null && !abilMode && reach.has(hk) && !(hoverHex[0] === sel.c && hoverHex[1] === sel.r) && previewFrom(hoverHex[0], hoverHex[1]);
       if (pv) { const [hx, hy] = center(pv.c, pv.r);
-        MARKQ.push(() => { for (const f of pv.threat) { const [x, y] = center(f.c, f.r); g.beginPath(); g.ellipse(x, y, s * 0.76, s * 0.76 * K, 0, 0, 7); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
+        MARKQ.push(() => { for (const f of pv.threat) { const [x, y] = center(f.c, f.r); g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
           g.setLineDash([s * 0.09, s * 0.07]); g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = RANGE_COL; g.stroke(); g.setLineDash([]); } });   // Gegner mit Schussfeld auf das Feld: gestrichelt umrandet (obenauf, sonst verdeckt der Bodenschatten)
         MARKQ.push(() => { g.save(); g.lineCap = 'round';
           for (const f of pv.hit) { const [x, y] = center(f.c, f.r); g.setLineDash([s * 0.06, s * 0.09]); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.lineWidth = Math.max(3.5, s * 0.05); g.beginPath(); g.moveTo(hx, hy - s * 0.3); g.lineTo(x, y - s * 0.3); g.stroke();
             g.strokeStyle = 'rgba(194,164,97,0.95)'; g.lineWidth = Math.max(1.6, s * 0.025); g.stroke(); g.setLineDash([]); drawSym(g, UPI.s_zielen, x + s * 0.42, y - s * 0.95, s * 0.19); }
           g.restore();
-          if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * K * 0.92, s * 0.22, pv.threat.length);
-          if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * K * 0.92, s * 0.36, pv.cov); });
-        MARKS.push({ x0: hx - s * 0.8, y0: hy - s * K * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * K * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
+          if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.22, pv.threat.length);
+          if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.36, pv.cov); });
+        MARKS.push({ x0: hx - s * 0.8, y0: hy - s * kAt(hx, hy) * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * kAt(hx, hy) * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
   }
   if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: PARCH, fill: 0.22, dash: true });
   if (hoverHex) {
@@ -781,7 +792,7 @@ function draw() {
   }
   // Zielfahnen
   for (const o of OBJECTIVES) {
-    const [x, y] = center(o.c, o.r), col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * K, top = base - s * 1.25;
+    const [x, y] = center(o.c, o.r), col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
     const fl = VIS.ctrl[o.id] && CFLAG[fac(VIS.ctrl[o.id])], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
     if (fim) { const fh = s * 0.95, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px + s * 0.02, top - s * 0.04, fw, fh); }
@@ -813,11 +824,11 @@ function draw() {
     const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v];
     if (im) {
       const hh = s * (1.25 + 0.06 * Math.sin(now / 700 + k.c)), w = fxw(im, hh), dx = Math.sin(now / 1300 + k.r) * s * 0.08;
-      g.globalAlpha = 0.82; g.drawImage(im, x - w / 2 + dx, y + s * K * 0.6 - hh, w, hh); g.globalAlpha = 1;
+      g.globalAlpha = 0.82; g.drawImage(im, x - w / 2 + dx, y + s * kAt(x, y) * 0.6 - hh, w, hh); g.globalAlpha = 1;
     } else {
       for (let i = 0; i < 5; i++) {
         const a = i * 1.26 + now / 1400, rx = s * (0.42 + 0.1 * Math.sin(now / 900 + i));
-        g.beginPath(); g.ellipse(x + Math.cos(a) * s * 0.36, y - s * 0.25 + Math.sin(a * 1.3) * s * 0.22 * K, rx, rx * 0.72, 0, 0, 7);
+        g.beginPath(); g.ellipse(x + Math.cos(a) * s * 0.36, y - s * 0.25 + Math.sin(a * 1.3) * s * 0.22 * kAt(x, y), rx, rx * 0.72, 0, 0, 7);
         g.fillStyle = 'rgba(200,216,72,0.26)'; g.fill();
       }
     }
@@ -897,7 +908,7 @@ function draw() {
     const rg = rings[i]; rg.life -= FS; if (rg.life <= 0) { rings.splice(i, 1); continue; }
     const k = 1 - rg.life / rg.max, im = PJI[rg.img];
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
-    else { g.beginPath(); g.ellipse(rg.x, rg.y, s * rg.r * k, s * rg.r * k * K, 0, 0, 7); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
+    else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
   for (let i = booms.length - 1; i >= 0; i--) {
     const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
@@ -925,7 +936,7 @@ function draw() {
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
   { const n = sel && human(G.side) && !busy && hoverHex && !abilSet.has(E.key(hoverHex[0], hoverHex[1])) && reach.get(E.key(hoverHex[0], hoverHex[1]));
-    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)), ty = y - s * K * 0.45;
+    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)), ty = y - s * kAt(x, y) * 0.45;
       g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
       if (im) { g.save(); g.filter = 'brightness(1.9) sepia(0.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B)'; g.drawImage(im, x0, ty - iw / 2, iw, iw); g.restore(); }   // Stiefel: das ist der Weg, keine Warnzahl
       g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
@@ -1107,7 +1118,7 @@ async function playEvent(e) {
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
         if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 6 + nb * 3, ['#9a1612', '#74100c', '#b3221a'], { up: 0.16, spread: 0.2 });
           boom(x, y + s * 0.5, s * 0.34, 'blood');
-          for (let q = 0; q < nb; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.1, y: d.y + (Math.random() - 0.3) * s * 0.7 * K, r: s * (0.06 + Math.random() * 0.13), col: Math.random() < 0.5 ? 'rgba(110,16,12,0.62)' : 'rgba(78,10,8,0.6)' });
+          for (let q = 0; q < nb; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.1, y: d.y + (Math.random() - 0.3) * s * 0.7 * kAt(d.x, d.y), r: s * (0.06 + Math.random() * 0.13), col: Math.random() < 0.5 ? 'rgba(110,16,12,0.62)' : 'rgba(78,10,8,0.6)' });
           while (decals.length > 700) decals.shift(); }
         floater(...headPos(e.u), '−' + fmt(e.dmg), e.dmg >= 1.5 ? '#ff6a4a' : '#ff9a7a', e.dmg >= 1.5, true);
         if (human(G.side) || human(u.side)) toast(`${nm(u)}: −${fmt(e.dmg)} Stärke · ${e.dmg >= 2 ? 'schwerer Treffer' : e.dmg >= 1 ? 'guter Treffer' : e.dmg >= 0.4 ? 'leichter Treffer' : 'kaum Wirkung'} · noch ${fmt(e.str)}`);
@@ -1121,7 +1132,7 @@ async function playEvent(e) {
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
       if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { boom(d.x, d.y, s * 1.1, 'he'); playSound('boom2', 0.75); shake(8); }
-      else if (blood) { boom(d.x, d.y, s * 0.6, 'blood'); decals.push({ v: 3, x: d.x, y: d.y, r: s * 0.36, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * K, r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); burst(d.x, d.y - s * 0.4, 18, ['#9a1612', '#74100c'], { up: 0.2, spread: 0.3 }); }
+      else if (blood) { boom(d.x, d.y, s * 0.6, 'blood'); decals.push({ v: 3, x: d.x, y: d.y, r: s * 0.36, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * kAt(d.x, d.y), r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); burst(d.x, d.y - s * 0.4, 18, ['#9a1612', '#74100c'], { up: 0.2, spread: 0.3 }); }
       for (let k = 0; k < 10; k++) { d.alpha = 1 - k / 10; await wait(28); } d.alpha = 0; break;
     }
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
@@ -1198,7 +1209,7 @@ function pick(x, y) {
   for (const u of G.units) {
     if (!E.alive(u)) continue;
     const d = DU.get(u.id);
-    if (Math.abs(x - d.x) < L.s * 0.42 && y < d.y + L.s * K * 0.5 && y > d.y - L.s * Math.min(0.62, SQ3 * K * 0.55)) if (!uFig || d.y > DU.get(uFig.id).y) uFig = u;
+    if (Math.abs(x - d.x) < L.s * 0.42 && y < d.y + L.s * kAt(d.x, d.y) * 0.5 && y > d.y - L.s * Math.min(0.62, SQ3 * kAt(d.x, d.y) * 0.55)) if (!uFig || d.y > DU.get(uFig.id).y) uFig = u;
   }
   return { h, uHex, uFig };
 }
@@ -1935,7 +1946,7 @@ $('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,
   const bc = board.getBoundingClientRect(); setZoom(nz, bc.left + bc.width / 2, bc.top + bc.height / 2, nz <= ZFIT + 0.001, true);
 };
 // Hilfen (Optionen): sofort wirksam, im Browser gemerkt
-const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake']];
+const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake'], ['optTilt', 'tilt']];
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} });
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
