@@ -468,7 +468,7 @@ function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
 const VIS = { clouds: [], smoke: [], lit: [], ctrl: {} };
-const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0 });
+const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup });
 function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what) VIS.ctrl = { ...(G.ctrl || {}) }; }
 function addDU(u) { const [x, y] = L ? center(u.c, u.r) : [0, 0]; DU.set(u.id, { x, y, face: u.face, str: u.str, mor: u.mor, alpha: 1, shake: 0, lunge: null, vs: vsOf(u) }); }
 function syncAll() {
@@ -634,7 +634,11 @@ function drawUnit(u, d) {
     g.beginPath(); gEllipse(g, x, y, s * 0.78, s * 0.78); g.strokeStyle = '#8E2B22'; g.lineWidth = Math.max(2.5, s * 0.06);
     g.globalAlpha = A0 * (0.6 + 0.4 * Math.sin(now / 160)); g.stroke(); g.globalAlpha = A0;
   }
-  // Figuren
+  // Figuren. Neue Ansicht: Trupps aus Einzelfiguren bzw. Einzelmodelle aus den neuen Bögen (FIGMAP); ohne neues Bild wie bisher
+  let topY = y - s;
+  const nf = VIEW.tilt() ? newFigs(u, d) : null;
+  if (nf) topY = drawNewFigs(g, u, d, nf, x, y, flip, A0, done);
+  else {
   const slots = SLOTS[k];
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
   const oyMin = Math.min(...slots.slice(0, 2).map(q => q[1]));
@@ -646,7 +650,6 @@ function drawUnit(u, d) {
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
   const duck = d.vs.supp > 0 ? s * 0.1 : 0;
-  let topY = y - s;
   for (const [ox, oy] of use) {
     const fx = x + (flip ? -ox : ox) * s, fy = y + oy * s * kAt(x, y) + duck;
     // Bodenschatten: weich und dunkel, Breite nach Figur; darunter kräftiger Kontaktschatten an den Füßen
@@ -667,6 +670,7 @@ function drawUnit(u, d) {
       g.fillStyle = acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     }
     g.drawImage(sp.cv, Math.round(fx - sp.ox), Math.round(fy - sp.oy)); topY = Math.min(topY, fy - sp.oy);
+  }
   }
   g.filter = 'none'; g.globalAlpha = 1;
   // Nachzügler (höchstens 3 eigene Einheiten können noch handeln): Messingwinkel über der Figur, leicht wippend
@@ -979,6 +983,63 @@ function drawFloaters(g, s, bb) {
   g.globalAlpha = 1;
 }
 
+// ---------- Figuren der neuen Ansicht (Umbauplan Schritt 3) ----------
+// Bilder aus src/figs.js (tools/figure_cut.py --game): 320 px Bildhöhe = 1 Soldatenhöhe (SH), Füße am unteren Rand, Blick nach rechts.
+// Maßstab: 1 SH = FIG_SH Feldradien. Trupps: bis zu 4 Einzelfiguren in lockerer Formation im eigenen Feld, Verluste lassen Figuren wegfallen.
+// Einzelmodelle (MG, Geschütz, Anführer, Panzer): ein Bild, Breite höchstens FIGW_MAX Feldradien. Ohne Eintrag oder Bild: altes Bild.
+const FIG_SH = 1.3, FIGW_MAX = 2.6;
+// Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
+const FIGMAP = {
+  kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], granate: ['sturm', 1], raeumer: ['sturm', 1],
+  pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
+  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['hauptmann'],
+  grenadier: ['soldat', 1], sturm: ['sturm', 1], grabenk: ['sturm', 1], eingreif: ['sturm', 1],
+  pionierD: ['pionier', 1], minen: ['pionier', 1],
+  sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['hauptmann'], bohrer: ['bohrkoloss'],
+};
+const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
+const FIGI = {};
+function figImg(key) {
+  if (key in FIGI) return FIGI[key] && FIGI[key].complete && FIGI[key].naturalWidth ? FIGI[key] : null;
+  const src = window.FIGS && window.FIGS[key]; if (!src) { FIGI[key] = null; return null; }
+  const im = new Image(); im.src = src; FIGI[key] = im; return null;
+}
+function newFigs(u, d) {
+  const m = FIGMAP[u.type]; if (!m || fac(u.side) === 'F') return null;   // Blaue Legion: noch keine neuen Bögen
+  const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
+  let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
+  const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i) : [pre + sheet];
+  const ims = keys.map(figImg); if (ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
+  return { ims, trupp: !!m[1], max: m[2] || 4, vehicle: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet) };
+}
+function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
+  const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
+  if (nf.trupp) {
+    const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
+    for (let i = 0; i < n; i++) { const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: slot[0], oy: slot[1] }); }
+  } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.42 : 0.18 });
+  list.sort((a, b) => a.oy - b.oy);
+  const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
+  let topY = y - s;
+  for (const f of list) {
+    const fx = x + (flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
+    let h = f.im.naturalHeight / 320 * FIG_SH * s, w = h * f.im.naturalWidth / f.im.naturalHeight;
+    if (w > FIGW_MAX * s) { h *= FIGW_MAX * s / w; w = FIGW_MAX * s; }
+    // Bodenschatten
+    g.filter = 'none'; g.globalAlpha = A0;
+    const sw = Math.min(w * 0.42, s * (nf.vehicle ? 1.2 : 0.45));
+    g.fillStyle = 'rgba(6,4,3,0.5)'; g.beginPath(); g.ellipse(fx, fy - s * 0.01, sw, sw * 0.32 * Math.max(0.5, k), 0, 0, 7); g.fill();
+    const back = nf.trupp && f.oy < -0.1;
+    const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : '', back ? 'brightness(0.86)' : ''].filter(Boolean).join(' ');
+    if (done) g.globalAlpha = A0 * 0.85;
+    if (filt) g.filter = filt;
+    g.save(); g.translate(fx, fy); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h); g.restore();
+    topY = Math.min(topY, fy - h);
+  }
+  g.filter = 'none';
+  return topY;
+}
+
 // ---------- Neue Ansicht (Test): gekippte Karte, Schritt 1 Kamera und Boden ----------
 // Schalter OPT.tilt („Neue Ansicht (Test)“). Alles Bisherige rechnet weiter in einem flachen Weltbild (K = 1, Feldradius WS):
 // center(), d.x/d.y, Hilfsmarkierungen und Effekte. Das Weltbild wird zeilenweise perspektivisch auf den Schirm projiziert
@@ -1010,7 +1071,18 @@ function bbAt(wx, wy) {   // Aufsteller am Bodenpunkt: Schirmpunkt, Maßstab, Bo
   const p = proj(wx, wy); if (p[2] <= 1) return null;
   const sc = PJ.F / p[2], q = proj(wx, wy + 1); return { px: p[0], py: p[1], sc, k: (q[1] - p[1]) / sc };
 }
-function camClamp() { CAM.x = Math.max(L.s, Math.min(L.W - L.s, CAM.x)); CAM.y = Math.max(L.top + L.s, Math.min(L.H - L.s * 1.5, CAM.y)); }   // nicht über den Kartenrand hinaus fahren
+function camClamp() {   // nicht über den Kartenrand hinaus: unten und seitlich kein leerer Bereich (oben darf Himmel sein)
+  if (!L || !cv.width) return;
+  for (let it = 0; it < 3; it++) {
+    camSetup();
+    const bl = unproj(0, PJ.H), br = unproj(PJ.W, PJ.H);   // unterste Bildzeile = breiteste Stelle des sichtbaren Bodens
+    if (!bl || !br) break;
+    const half = (br[0] - bl[0]) / 2;
+    CAM.x = half * 2 >= L.W ? L.W / 2 : Math.max(half, Math.min(L.W - half, CAM.x));
+    if (bl[1] > L.H) CAM.y -= bl[1] - L.H;   // unterer Kartenrand nicht über die unterste Bildzeile hinaus
+    CAM.y = Math.max(L.top, CAM.y);
+  }
+}
 function layoutTilt() {
   const wrap = board.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   board.classList.add('tilt');
@@ -1070,8 +1142,8 @@ function drawTilt() {
     drawUnit(u, d);
     for (let i = m0; i < MARKS.length; i++) MARKS[i].tf = tf;
     for (let i = n0; i < MARKQ.length; i++) { const fn = MARKQ[i], k = bb.k; MARKQ[i] = () => { g.setTransform(tf); VIEW.bbK = k; const m1 = MARKS.length; fn(); for (let j = m1; j < MARKS.length; j++) MARKS[j].tf = tf; }; }
-    const big = TYPES[u.type].cls === 'walker' ? 1.6 : 1;
-    UBOX.push({ u, x0: bb.px - bb.sc * s * 0.6 * big, x1: bb.px + bb.sc * s * 0.6 * big, y0: bb.py - bb.sc * s * 1.45 * big, y1: bb.py + bb.sc * s * 0.35 });
+    const big = TYPES[u.type].cls === 'walker' ? 1.5 : 1;
+    UBOX.push({ u, x0: bb.px - bb.sc * s * 0.75 * big, x1: bb.px + bb.sc * s * 0.75 * big, y0: bb.py - bb.sc * s * FIG_SH * 1.1, y1: bb.py + bb.sc * s * 0.45 });
   }
   for (const f of MARKQ) f(); MARKQ.length = 0;
   g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
@@ -1320,7 +1392,7 @@ async function playEvent(e) {
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('clank', 0.7); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
-    case 'setup': { playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
+    case 'setup': { DU.get(e.u).vs.setup = true; playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
     case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); break;
     case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
@@ -2279,7 +2351,7 @@ initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
 window.__dbg = { PT, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
-  hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; },
+  hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },

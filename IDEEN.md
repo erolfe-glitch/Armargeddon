@@ -31,7 +31,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Maßstab: stehender Soldat ca. 1,3 Feldradien.
   - Trupps: 4 Figuren je Trupp in lockerer Formation, Füße alle im eigenen Feld; Verluste lassen Figuren wegfallen.
   - Figurenbögen: Blickwinkel genau wie bei `konkordat_soldat.png` / `aschenwacht_soldat.png`, nicht steiler (Einheitlichkeit geht vor). Prompts für die erste Lieferung: `entwurf/GEMINI_PROMPTS.md`.
-  - Umbau im Spiel hinter dem Schalter „Neue Ansicht (Test)“: Schritt 0 (Schalter, Ansichts-Abschnitt in ui.js) und Schritt 1 (Kamera und Boden: Weltbild flach, perspektivisch projiziert, Einheiten als Aufsteller, Klicks/Ziehen/Zoom/Kamera-Folgen) erledigt 2026-11-16; weiter mit 2 Hilfsmarkierungen und Effekte aufrecht (Zielfahnen, Explosionen, Klammern liegen noch flach), 3 Figuren, 4 Aufsteller (Gelände in zwei Ebenen, Höhenfelder mit Böschung), 5 Feinschliff.
+  - Umbau im Spiel hinter dem Schalter „Neue Ansicht (Test)“: Schritt 0 (Schalter, Ansichts-Abschnitt in ui.js) und Schritt 1 (Kamera und Boden: Weltbild flach, perspektivisch projiziert, Einheiten als Aufsteller, Klicks/Ziehen/Zoom/Kamera-Folgen) erledigt 2026-11-16; Schritt 3 (Figuren: Trupps zu viert, Einzelmodelle, Zuordnung FIGMAP in ui.js) erledigt 2026-11-16, vor Schritt 2; weiter mit 2 Hilfsmarkierungen und Effekte aufrecht (Zielfahnen, Explosionen, Klammern liegen noch flach), 3 Figuren, 4 Aufsteller (Gelände in zwei Ebenen, Höhenfelder mit Böschung), 5 Feinschliff.
   - Gelände muss für diesen Winkel neu gemalt werden: plastisch, Draht, Trichter und Gräben mit Tiefe (Seitenwände, Schatten, Pfähle stehen hoch). Das heutige Gelände ist für die Draufsicht gemalt und wirkt gekippt flach.
 - **Etappe 4b – Einheitenbilder (angehalten):** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion. Wartet auf das Ergebnis des Probebilds.
 - **Etappe 4c – Sound und Musik:** UI-Klicks, Waffen, Einschläge, Gas, Ketten, Atmosphäre; Musik mit Suno: Titelthema und 1–2 Schlachtmusiken.
@@ -42,6 +42,8 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Festfahren seltener; nach aktiver Reparatur längerer Schutz, nach bloßem Ablaufen kein Schutz.
   - Beim Ziehen über Gelände sofort Vor- und Nachteil des Felds als Symbol zeigen.
   - Fähigkeiten: Radius und betroffene Felder bzw. Einheiten anzeigen.
+  - Bohrkoloss: kurzer Flammenstoß auf ein Nachbarfeld als Fähigkeit (das neue Bild zeigt einen Flammenwerfer, 2026-11-16).
+  - Aschenwacht braucht eine eigene Panzer-Einheit „Sturmpanzer“ (Gegenstück zum Landkoloss, ohne Kampfmaschinen-Schalter); Bild `aschenwacht_panzer.png` liegt schon vor, ist aber noch keiner Einheit zugeordnet.
 - **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle.
 - **Etappe 7 – Balance:** Kosten, Werte und Siegquoten mit `tools/sim.js` und `tools/costcheck.js` abstimmen.
 - **Etappe 8 – Feldzug:** Weltkarte mit aufeinanderfolgenden Schlachten, Land- und Seeschlachten.
