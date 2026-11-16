@@ -1033,6 +1033,19 @@ function newFigs(u, d) {
   const ims = keys.map(figImg); if (ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
   return { ims, trupp: !!m[1], max: m[2] || 4, vehicle: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet) };
 }
+// Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
+// pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
+const VEH_ENV = new Map();
+function vehEnv(im) {
+  if (VEH_ENV.has(im)) return VEH_ENV.get(im);
+  const W = im.naturalWidth, H = im.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const cx = c.getContext('2d', { willReadFrequently: true }); cx.drawImage(im, 0, 0);
+  let data; try { data = cx.getImageData(0, 0, W, H).data; } catch (e) { VEH_ENV.set(im, null); return null; }
+  const pts = [], step = Math.max(1, Math.round(W / 60));
+  for (let x = 0; x < W; x += step) { for (let y = H - 1; y >= 0; y--) if (data[(y * W + x) * 4 + 3] > 120) { pts.push([x / W, (y + 1) / H]); break; } }
+  const env = pts.length ? { pts, mid: pts.reduce((n, q) => n + q[1], 0) / pts.length } : null;
+  VEH_ENV.set(im, env); return env;
+}
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
   if (nf.trupp) {
@@ -1042,6 +1055,26 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
+  if (nf.vehicle) {   // Panzer/Koloss: mittlere Ketten-Unterkante auf den Feldboden etwas unter der Feldmitte, Schatten unter der ganzen Kettenlänge
+    const im = list[0].im, env = vehEnv(im);
+    let h = im.naturalHeight / 320 * FIG_SH * s, w = h * im.naturalWidth / im.naturalHeight;
+    const wmax = FIGW_VEH * s; if (w > wmax) { h *= wmax / w; w = wmax; }
+    const fy = y + 0.06 * s * k, top = fy - (env ? env.mid : 1) * h, sx = v => flip ? x + w / 2 - v * w : x - w / 2 + v * w;
+    g.filter = 'none'; g.globalAlpha = A0;
+    if (env) {   // Band entlang der Unterkante, weich (Weichzeichner im Canvas), darunter ein flacher Bodenschatten
+      g.save(); g.filter = `blur(${Math.max(2, s * 0.04 * (g.getTransform().a || 1)).toFixed(1)}px)`; g.fillStyle = 'rgba(5,4,3,0.7)'; g.beginPath();
+      env.pts.forEach(([px, py], i) => { const X = sx(px), Y = top + py * h - h * 0.02; i ? g.lineTo(X, Y) : g.moveTo(X, Y); });
+      for (let i = env.pts.length - 1; i >= 0; i--) { const [px, py] = env.pts[i]; g.lineTo(sx(px), top + py * h + s * 0.09 * k); }
+      g.closePath(); g.fill(); g.restore();
+    }
+    const gr = g.createRadialGradient(x, fy, 0, x, fy, w * 0.55); gr.addColorStop(0, 'rgba(6,4,3,0.38)'); gr.addColorStop(1, 'rgba(6,4,3,0)');
+    g.save(); g.translate(x, fy); g.scale(1, 0.3 * Math.max(0.55, k)); g.translate(-x, -fy); g.fillStyle = gr; g.fillRect(x - w * 0.6, fy - w * 0.6, w * 1.2, w * 1.2); g.restore();
+    const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');
+    if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
+    g.save(); g.translate(x, top); if (flip) g.scale(-1, 1); g.drawImage(im, -w / 2, 0, w, h); g.restore();
+    g.filter = 'none';
+    return top;
+  }
   for (const f of list) {
     const fx = x + (flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
     let h = f.im.naturalHeight / 320 * FIG_SH * s, w = h * f.im.naturalWidth / f.im.naturalHeight;
