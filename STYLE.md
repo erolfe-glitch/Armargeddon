@@ -128,6 +128,12 @@ Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel 
 - **Kontur:** Außenkontur Tinte `--s-ink` (`#120D0B`), im Spiel 2–3 px (in der 200-px-Quelle ≈ 5 px), Innenlinien halb so stark. Kleinteile (Nieten, Schnallen) zusammenfassen, nichts feiner als ½ px im Spiel.
 - **Farbe:** gedämpft (Sättigung 0,25–0,40), Grundhelligkeit 0,18–0,25. Fraktionsfarbe nur in Uniform und Anstrich: Konkordat Khaki-Braun mit Ochsenblut-Akzent, Aschenwacht Feldgrau, Blaue Legion Horizontblau. Metall, Leder, Holz bei allen gleich (Rost, gedämpftes Messing). Kräftige Farben nur für Feuer, Blut, Mündungsfeuer. Figuren eine Stufe heller und kontrastreicher als der Boden.
 
+## Zielflagge, Anführer-Orden, Fahnenfarben (2026-11-16)
+- **Zielflagge:** verwitterte Stofffahne an Holzpfahl, Nummer auf Holzschild. Neutral grau-beige, erobert Ochsenblut / Stahlgrau / Horizontblau. Klein (55 %), am Feldrand, nie über Figuren oder Ruinen.
+- **Obere Leiste:** eroberte Zielmünzen nur mit Rand in Fraktionsfarbe, keine Wimpel (verdeckten die Zahlen).
+- **Anführer-Orden** (Hauptmann/General, Befehl möglich; dunkel = gerade nicht): klein, Band in Fraktionsfarbe, Stern Messing.
+- **Aschenwacht-Fahnen** in Aschgrau / Schwarz / Knochenweiß, nie Schwarz-Weiß-Rot (echte Flagge). Umfärben beim Freistellen (`FAHNE` in tools/figure_cut.py).
+
 ## Schanze, Pfützen, Durchsicht (neue Ansicht, 2026-11-16)
 - **Schanze** nur aus Bunker + Sandsäcken (bunker.png, barrikade.png), Bunker hinter dem Graben auf der eigenen Seite. Keine Festungsteile mit Zinnen im Spiel.
 - **Wasser auf dem Boden** (Pfützen, Trichter) dunkel und schlammig: Braun-Oliv mit leichtem Glanz, nie hell graublau (wirkt sonst wie ein Loch im Bild). Umfärben in `schlammig()` (gelaende_bau.js).

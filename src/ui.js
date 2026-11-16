@@ -732,8 +732,8 @@ function drawMarks(u, d, x, y, own, done, acc) {
   if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u);
     if (cv0.tier) { const sh = Math.max(9, s * 0.15), cx = bx + bw + sh * 0.55; drawShield(g, cx, mid, sh, cv0.tier); MARKS.push({ x0: cx - sh * 0.45, y0: mid - sh / 2, x1: cx + sh * 0.45, y1: mid + sh / 2, u, kind: 'cover' }); } } }
   // Anführer-Orden rechts neben der Figur, im eigenen Feld; abgedunkelt, solange kein Befehl möglich ist
-  if (u.officer && E.active(u)) { const oi = UPI.orden, oh = s * 0.4, ox = x + s * 0.5, oy = y - s * kAt(x, y) * 0.3, ready = orderReady(u);
-    if (oi) { const ow = oh * oi.naturalWidth / oi.naturalHeight; if (!ready) g.filter = 'grayscale(0.7) brightness(0.45)'; g.drawImage(oi, ox - ow / 2, oy - oh / 2, ow, oh); g.filter = 'none'; }
+  if (u.officer && E.active(u)) { const oi = ordenBild(fac(u.side)), oh = s * 0.24, ox = x + s * 0.5, oy = y - s * kAt(x, y) * 0.3, ready = orderReady(u);   // klein, Band in Fraktionsfarbe (2026-11-16)
+    if (oi) { const ow = oh * oi.width / oi.height; if (!ready) g.filter = 'grayscale(0.7) brightness(0.45)'; g.drawImage(oi, ox - ow / 2, oy - oh / 2, ow, oh); g.filter = 'none'; }
     else { g.font = `900 ${Math.round(s * 0.3)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#120D0B'; g.strokeText('★', ox, oy); g.fillStyle = ready ? '#C2A461' : '#7d7564'; g.fillText('★', ox, oy); }
     MARKS.push({ x0: ox - oh * 0.3, y0: oy - oh / 2, x1: ox + oh * 0.3, y1: oy + oh / 2, u, kind: 'lead' }); }
   // Ein Zustandsplatz links: wichtigster Zustand, „+n“ bei mehreren
@@ -872,13 +872,18 @@ function drawFan(g, u) {
   u.face = save;
 }
 // Zielfahnen
-// Vorschlag Zielflagge (2026-11-16, nur mit window.FAHNE_NEU = true): verwitterte Stofffahne an krummem Holzpfahl, neutral grau-beige,
+// Zielflagge (2026-11-16): verwitterte Stofffahne an krummem Holzpfahl, neutral grau-beige,
 // Nummer auf einem kleinen Holzschild am Pfahl; erobert in Fraktionsfarbe (Konkordat Ochsenblut, Aschenwacht Stahlgrau, Blaue Legion Horizontblau).
-const FAHNE_FARBE = { A: [142, 43, 34], D: [112, 118, 108], F: [111, 143, 181] }, FAHNE_NEUTRAL = [158, 150, 128];
+const FAHNE_VOR = new Set(['village', 'rubble', 'fabrik', 'kirche']), FAHNE_K = 0.55, FAHNE_FARBE = { A: [142, 43, 34], D: [98, 104, 98], F: [111, 143, 181] }, FAHNE_NEUTRAL = [158, 150, 128];
+// Ort der Fahne im Feld (Feldradien): sonst hinterer rechter Rand (hinter den Einheiten); in Ruinenfeldern vorn links (Stoff weht über das Feld, Einheiten davor),
+// weil hohe Mauern (eigene und die des rechten Nachbarfelds) sie hinten verdecken würden. [dx, dy, Tiefe für die Sortierung]
+const fahneOrt = o => { const h = G.map[o.c] && G.map[o.c][o.r]; return h && FAHNE_VOR.has(h.t) ? [-0.45, 0.42, -0.02, 0.92] : [0.6, -0.45, -0.5, 0.62]; };   // [dx, dy, Tiefe, Höhe des Nummernschilds am Pfahl]
 function drawFahne(g, s, x, y, o) {
   const sd = VIS.ctrl[o.id], [cr, cg, cb] = sd ? FAHNE_FARBE[fac(sd)] || FAHNE_NEUTRAL : FAHNE_NEUTRAL, sh = (v, k) => Math.round(Math.max(0, Math.min(255, v * k)));
   const col = k => `rgb(${sh(cr, k)},${sh(cg, k)},${sh(cb, k)})`, seed = o.c * 7 + o.r * 13;
-  const px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), H = s * 1.3, lean = s * 0.05, top = [px + lean, base - H];
+  // 55 % der Vorschlagsgröße, am hinteren rechten Feldrand: verdeckt weder Figuren noch Ruinen (wird hinter den Einheiten gezeichnet)
+  const [ox, oy] = fahneOrt(o), px0 = x + s * ox, base0 = y + s * oy * kAt(x, y); g.save(); g.translate(px0, base0); const fk = VIEW.tilt() ? FAHNE_K : 0.9; g.scale(fk, fk); g.translate(-px0, -base0);   // alte Ansicht: Felder kleiner, Fahne verhältnismäßig größer
+  const px = px0, base = base0, H = s * 1.3, lean = s * 0.05, top = [px + lean, base - H];
   // Pfahl: grobes Holz, leicht schief, oben abgesplittert
   g.save(); g.lineCap = 'round';
   g.fillStyle = 'rgba(6,4,3,0.4)'; g.beginPath(); g.ellipse(px, base, s * 0.12, s * 0.04, 0, 0, 7); g.fill();
@@ -904,25 +909,31 @@ function drawFahne(g, s, x, y, o) {
   for (const [u, v] of [[0.55, 0.35], [0.74, 0.7]]) { const [qx, qy] = at(u, v); g.fillStyle = 'rgba(20,16,10,0.85)'; g.beginPath(); g.ellipse(qx, qy, s * 0.03, s * 0.02, 0.6, 0, 7); g.fill(); }   // Löcher
   shape(); g.strokeStyle = 'rgba(22,21,15,0.85)'; g.lineWidth = Math.max(1, s * 0.022); g.stroke();
   // Holzschild mit der Nummer, am Pfahl angenagelt
-  const bw = s * 0.34, bh = s * 0.26, bx = px + lean * 0.35 - bw * 0.5, by = base - s * 0.62;
+  const bw = s * 0.34, bh = s * 0.26, bx = px + lean * 0.35 - bw * 0.5, by = base - s * fahneOrt(o)[3];
   g.save(); g.translate(bx + bw / 2, by + bh / 2); g.rotate(((seed % 5) - 2) * 0.03);
   g.fillStyle = '#6b5236'; g.strokeStyle = O; g.lineWidth = Math.max(1.2, s * 0.03); g.beginPath(); g.rect(-bw / 2, -bh / 2, bw, bh); g.fill(); g.stroke();
   g.strokeStyle = 'rgba(30,22,12,0.5)'; g.lineWidth = Math.max(0.6, s * 0.01); g.beginPath(); g.moveTo(-bw / 2, -bh * 0.05); g.lineTo(bw / 2, -bh * 0.1); g.stroke();
   g.fillStyle = '#2a2016'; for (const nx of [-bw * 0.38, bw * 0.38]) { g.beginPath(); g.arc(nx, -bh * 0.3, s * 0.016, 0, 7); g.fill(); }
   g.fillStyle = '#e8dfc6'; g.font = `800 ${Math.round(s * 0.21)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, 0, s * 0.01);
-  g.restore(); g.restore();
+  g.restore(); g.restore(); g.restore();
 }
-function drawFlags(g, s, up, nur) {
+function drawFlags(g, s, up, nur) {   // Zielflaggen: Stofffahne am Holzpfahl (Standard seit 2026-11-16, alte weiße Tafel entfernt)
   for (const o of nur ? [nur] : OBJECTIVES) {
     const [x, y] = center(o.c, o.r); if (up && !up(x, y)) continue;
-    if (up && window.FAHNE_NEU) { drawFahne(g, s, x, y, o); continue; }
-    const col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), top = base - s * 1.25;
-    g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
-    const fl = VIS.ctrl[o.id] && CFLAG[fac(VIS.ctrl[o.id])], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
-    if (fim) { const fh = s * 0.95, fw = fh * fim.naturalWidth / fim.naturalHeight; g.drawImage(fim, px + s * 0.02, top - s * 0.04, fw, fh); }
-    g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
-    g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
+    drawFahne(g, s, x, y, o);
   }
+}
+// Anführer-Orden: rotes Band in Fraktionsfarbe umgefärbt (Stern bleibt Messing), je Fraktion zwischengespeichert
+const ORDEN = {};
+function ordenBild(f) {
+  const oi = UPI.orden; if (!oi) return null; if (ORDEN[f]) return ORDEN[f];
+  const [cr, cg, cb] = FAHNE_FARBE[f] || FAHNE_FARBE.A, c = document.createElement('canvas'); c.width = oi.naturalWidth; c.height = oi.naturalHeight;
+  const x = c.getContext('2d'); x.drawImage(oi, 0, 0);
+  try { const id = x.getImageData(0, 0, c.width, c.height), d = id.data;
+    for (let i = 0; i < d.length; i += 4) { const r = d[i], g = d[i + 1], b = d[i + 2], m = Math.min(1, Math.max(0, (Math.min(r - g, r - b) - 25) / 30)); if (!m) continue;
+      const v = Math.max(r, g, b) / 150; d[i] += (cr * v - r) * m; d[i + 1] += (cg * v - g) * m; d[i + 2] += (cb * v - b) * m; }
+    x.putImageData(id, 0, 0); } catch (e) { return oi; }
+  return (ORDEN[f] = c);
 }
 // Einheiten nach Tiefe (hinten zuerst)
 function unitList() {
@@ -1109,12 +1120,14 @@ function drawFloaters(g, s, bb) {
 const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Soldat 0,8; Fahrzeuge (1,5 SH) höchstens 2,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const FIGMAP = {
-  kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
+  kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], granate: ['sturm', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
-  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['hauptmann'],
+  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
   grenadier: ['soldat', 1], sturm: ['sturm', 1], grabenk: ['sturm', 1], eingreif: ['sturm', 1],
   pionierD: ['pionier', 1], minen: ['pionier', 1],
+  feldscher: ['sanitaeter', 1, 2], heiler: ['sanitaeter', 1, 2], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
+  schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['hauptmann'], bohrer: ['bohrkoloss'],
 };
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
@@ -1131,7 +1144,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -1350,7 +1363,7 @@ function drawTilt() {
   // Einheiten als Aufsteller am Fußpunkt; Marken und spätere Marken (MARKQ) behalten ihren Aufsteller
   UBOX.length = 0;
   const ul = unitList(), GP = GBW && gbAn() ? GBW.pieces : null, PEND = []; let gpi = 0;
-  if (flagsTief) { for (const o of OBJECTIVES) PEND.push({ y: center(o.c, o.r)[1] - s * 0.3, f: () => { drawFlags(g, s, up, o); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; } }); PEND.sort((a, b) => a.y - b.y); }
+  if (flagsTief) { for (const o of OBJECTIVES) PEND.push({ y: center(o.c, o.r)[1] + s * fahneOrt(o)[2], f: () => { drawFlags(g, s, up, o); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; } }); PEND.sort((a, b) => a.y - b.y); }
   if (GP) GBW.setView({ g, proj, F: PJ.F, U: cv.width / 1920, units: ul.map(([, , d]) => [d.x, d.y]) });
   // Geländeteile und einzeln gezeichnete Grabenfiguren (PEND) bis zur Tiefe y, beide nach Tiefe gemischt
   const gbBis = y => { for (;;) { const a = GP && gpi < GP.length ? GP[gpi].y : Infinity, b = PEND.length ? PEND[0].y : Infinity, m = Math.min(a, b); if (m > y || m === Infinity) break;
@@ -1976,7 +1989,7 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
   $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
-    + `<span class="tb-dots${UP.pA ? ' wim' : ''}${OBJECTIVES.length >= 6 ? ' many' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]), fl = c && PENNANT[fac(c)]; return `<span class="tb-obj ${c}">${o.pts}${fl ? `<i class="tb-flag${UP['p' + fac(c)] ? ' img' : ''}"><img src="${fl}" alt=""></i>` : ''}</span>`; }).join('')}</span></span>`;
+    + `<span class="tb-dots${OBJECTIVES.length >= 6 ? ' many' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]); return `<span class="tb-obj ${c ? 'f' + fac(c) : ''}">${o.pts}</span>`; }).join('')}</span></span>`;   // erobert: Rand in Fraktionsfarbe (Wimpel überdeckten die Zahlen, 2026-11-16)
 }
 // Tooltips der oberen Leiste per Touch (Digitalboards): Knöpfe lang drücken, Anzeigen kurz antippen. Klick nach langem Druck entfällt.
 { let tm = 0, hide = 0, long = false;
@@ -2075,8 +2088,6 @@ const fac = sd => sd === 'D' ? 'D' : skinA === 'F' ? 'F' : 'A';
 const FCOL = { A: '#8E2B22', D: '#7D8471', F: '#6F8FB5' };   // Blutrot, Feldgrau grünlich, Horizontblau (STYLE.md)
 const sideCol = sd => FCOL[fac(sd)];
 const crest = sd => UP['w' + fac(sd)] ? `<img class="crest" src="${UP['w' + fac(sd)]}" alt="${SIDES[sd].short}">` : (sd === 'A' ? UP_MARK.friend : UP_MARK.foe);
-const CFLAG = {};
-for (const f of ['A', 'D', 'F']) if (UP['f' + f]) { const im = new Image(); im.src = UP['f' + f]; CFLAG[f] = im; }
 // Ersatz-Wimpel (nur falls das Bild UP.pA/pD/pF fehlt) für eroberte Zielmarken (oben in der Leiste): Dreieck in Fraktionsfarbe, ausgefranstes Ende, Pinselstriche,
 // Tintenkontur, helle Form drauf (Konkordat Krone, Aschenwacht Helmspitze, Legion Hahnenkamm). Als Bild, damit die Filter-IDs getrennt bleiben.
 const PENN_SYM = {

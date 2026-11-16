@@ -83,16 +83,38 @@ def remove_flash(q):
 
 
 # Bögen mit 4 Posen im 2×2-Raster (Trupps); alle anderen sind Einzelmodelle (ein Bild, alle Teile behalten).
-TRUPP = {'soldat', 'sturm', 'pionier'}
+TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall'}
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
-REIHE = {'reiter': 3, 'flammen': 4}
+REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
+# Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
+SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'reiter': 1.75}
+SH_REIHE = {'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08}
 # Gezeichnete Bodenschatten unter den Füßen entfernen (dunkles Magenta/Pink unten an den Posen)
 OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
-SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5}   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
+SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5,
+             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
+# Aschenwacht-Fahnen: Schwarz-Weiß-Rot (echte Flagge) → eigene Farben Aschgrau / Schwarz / Knochenweiß, nur im Fahnenbereich (Anteile x0, y0, x1, y1)
+FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
+ASCHGRAU, KNOCHEN = np.array([108, 106, 100.]), np.array([222, 212, 186.])
+
+
+def fahne_umfaerben(a, box):
+    """Weiß → Aschgrau, Rot → Knochenweiß (Schattierung bleibt), Schwarz bleibt; weiche Masken gegen harte Kanten."""
+    a = a.astype(np.float64); H, W = a.shape[:2]; x0, y0, x1, y1 = box
+    sl = (slice(int(y0 * H), int(y1 * H)), slice(int(x0 * W), int(x1 * W))); q = a[sl]
+    r, g, b = q[..., 0], q[..., 1], q[..., 2]; mx, mn = q.max(-1), q.min(-1); lum = 0.3 * r + 0.59 * g + 0.11 * b
+    rot = np.clip((np.minimum(r - g, r - b) - 30) / 25, 0, 1)
+    weiss = np.clip((lum - 135) / 30, 0, 1) * np.clip((45 - (mx - mn)) / 20, 0, 1)
+    v_rot = np.clip(mx / 160, 0.35, 1.05)[..., None]; v_w = np.clip(lum / 205, 0.5, 1.08)[..., None]
+    q[:] = q * (1 - rot[..., None]) + KNOCHEN * v_rot * rot[..., None]
+    q[:] = q * (1 - weiss[..., None]) + ASCHGRAU * v_w * weiss[..., None]
+    print(f'  Fahne umgefärbt: rot {int((rot > 0.5).sum())} px, weiß {int((weiss > 0.5).sum())} px')
+    return np.clip(a, 0, 255).astype(np.uint8)
+
+
 GAME = ROOT / 'ui-quelle' / 'teile' / 'figuren'   # Bilder fürs Spiel (eingebettet in src/figs.js)
 
 
@@ -100,14 +122,14 @@ def kind_of(name):
     return name.split('_', 1)[1]
 
 
-def keep_parts(q, single):
+def keep_parts(q, single, frac=0.02):
     """Krümel weg: Trupp-Pose nur die größte Figur, Einzelmodell alle großen Teile (Kisten, Sandsäcke, zweite Figur)."""
     al = q[..., 3] > 40
     lab, n = ndimage.label(al)
     if not n:
         return q
     sizes = ndimage.sum(al, lab, range(1, n + 1))
-    keep = np.isin(lab, [i + 1 for i, v in enumerate(sizes) if v >= (sizes.max() * 0.02 if single else sizes.max())])
+    keep = np.isin(lab, [i + 1 for i, v in enumerate(sizes) if v >= (sizes.max() * frac if single else sizes.max())])
     keep = ndimage.binary_dilation(keep, iterations=2)
     q = q.copy(); q[~keep, 3] = 0
     ys, xs = np.where(q[..., 3] > 40)
@@ -116,9 +138,24 @@ def keep_parts(q, single):
 
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
+    if name in FAHNE: a = fahne_umfaerben(a, FAHNE[name])
     H, W = a.shape[:2]
     k = keyed(a)
     kind = kind_of(name)
+    if kind in SPALTEN:   # Posen an festen Stellen getrennt, je Streifen alle großen Teile (Mann + Hund)
+        sp = SPALTEN[kind]
+        if isinstance(sp, int):   # automatisch: je Trennstelle die Spalte mit der wenigsten Deckung nahe der gleichmäßigen Teilung
+            prof = ndimage.uniform_filter1d((k[..., 3] > 60).sum(0).astype(float), 15); cols = np.nonzero(prof > 0)[0]; xa, xb = cols.min(), cols.max(); L = xb - xa
+            sp = [(xa + int(np.argmin(prof[int(xa + L * (i / sp - 0.1)):int(xa + L * (i / sp + 0.1))])) + int(L * (i / sp - 0.1))) / W for i in range(1, sp)]
+        xs = [0] + [int(f * W) for f in sp] + [W]; poses = []
+        for j in range(len(xs) - 1):
+            t = k.copy(); t[:, :xs[j], 3] = 0; t[:, xs[j + 1]:, 3] = 0; poses.append(keep_parts(t, True, 0.12))   # abgeschnittene Waffenstücke der Nachbarpose weg
+        s = H_OUT * SH_REIHE.get(kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)
+        for j, q in enumerate(poses, 1):
+            im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
+            im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
+            im.save(out / f'{name}_{j}.png'); print(f'{name}_{j}: {im.width}×{im.height}')
+        return
     if kind not in TRUPP and kind not in REIHE:   # Einzelmodell
         q, fl = k, 0   # Einzelmodelle: nur Magenta weg (Kisten, Fahnen, Messing, Flamme gehören zum Modell)
         q = keep_parts(q, True)

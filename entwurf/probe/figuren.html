@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neue Figuren</title>
+<style>
+  :root { --bg: #2a231b; --tafel: #3a3127; --text: #e8dfc6; --leise: #b7aa8c; --A: #8E2B22; --D: #7D8471; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 Georgia, serif; }
+  h1 { font-size: 24px; margin: 16px 24px 4px; } p.info { margin: 0 24px 12px; color: var(--leise); }
+  .reihe { display: flex; flex-wrap: wrap; gap: 14px; padding: 0 24px 18px; }
+  .karte { background: radial-gradient(ellipse at 50% 85%, #5b4a35 0%, #3d3226 55%, var(--tafel) 100%); border: 2px solid #120d0b; border-top: 4px solid var(--seite); padding: 8px 10px 6px; border-radius: 3px; }
+  .karte.A { --seite: var(--A); } .karte.D { --seite: var(--D); }
+  .karte b { display: block; font-size: 15px; } .karte small { color: var(--leise); display: block; margin-bottom: 4px; }
+  .posen { display: flex; align-items: flex-end; gap: 6px; height: 190px; }
+  .posen img { height: calc(var(--h) * 120px); filter: drop-shadow(0 4px 3px rgba(0,0,0,.55)); }
+</style>
+</head>
+<body>
+<h1>Neue Figurenbögen (2026-11-16)</h1>
+<p class="info">Freigestellt, farblich an die Fraktion angeglichen, Höhe im Maßstab (1 Soldatenhöhe = 120 px). Aschenwacht-Fahnen in eigenen Farben: Aschgrau / Schwarz / Knochenweiß.</p>
+<div class="reihe" id="liste"></div>
+<script src="../../src/figs.js"></script>
+<script>
+// Bogen → Einheit im Spiel (FIGMAP in ui.js); alle diese Einheiten gibt es schon, Kampfmaschinen nur mit Schalter im Startmenü
+const NEU = [
+  ['konkordat_sanitaeter', 'A', 'Feldscher'], ['aschenwacht_sanitaeter', 'D', 'Aschenpfleger'],
+  ['konkordat_moerser', 'A', 'Grabenmörser'], ['aschenwacht_minenwerfer', 'D', 'Minenwerfer'],
+  ['konkordat_scharfschuetze', 'A', 'Scharfschütze'], ['konkordat_schildwall', 'A', 'Schildwall'],
+  ['aschenwacht_schwer', 'D', 'Schwere Grabenwacht'], ['konkordat_melder', 'A', 'Meldegänger mit Hund'],
+  ['aschenwacht_banner', 'D', 'Bannerträger'], ['konkordat_rauchwerfer', 'A', 'Rauchwerfer-Trupp'],
+  ['aschenwacht_panzerbuechse', 'D', 'Panzerbüchsen-Trupp'], ['konkordat_general', 'A', 'General mit Stab'],
+  ['aschenwacht_bohrkoloss', 'D', 'Bohrkoloss (Kampfmaschine)'], ['aschenwacht_panzer', 'D', 'Sturmpanzer (noch keine Einheit)'],
+];
+const box = document.getElementById('liste');
+for (const [k, s, name] of NEU) {
+  const keys = window.FIGS[k] ? [k] : [1, 2, 3, 4].map(i => k + '_' + i).filter(x => window.FIGS[x]);
+  const d = document.createElement('div'); d.className = 'karte ' + s;
+  d.innerHTML = `<b>${name}</b><small>${k} · ${keys.length > 1 ? keys.length + ' Posen' : 'Einzelmodell'}</small><div class="posen"></div>`;
+  for (const key of keys) { const im = new Image(); im.onload = () => im.style.setProperty('--h', im.naturalHeight / 320); im.src = window.FIGS[key]; d.querySelector('.posen').append(im); }
+  box.append(d);
+}
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
