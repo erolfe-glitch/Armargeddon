@@ -620,20 +620,21 @@ function drawUnit(u, d) {
   const done = own && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
   const ready = own && !busy && !G.over && !spent.has(u.id) && !placing;   // kann in dieser Runde noch handeln
   // Standplatz: dunkler Bodenschatten und dünner Ring in gedämpfter Fraktionsfarbe (keine knalligen Flächen)
-  g.globalAlpha = A0; g.beginPath(); gEllipse(g, x, y, s * 0.66, s * 0.66); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
-  g.globalAlpha = A0 * (done ? 0.25 : d.vs.rout ? 0.3 : 0.45); if (!isSel) drawRing(g, acc, x, y, s * 0.66);   // Pinselstrich-Ring, gedämpft
-  if (ready && OPT.ready && !isSel) { g.globalAlpha = A0 * (0.6 + 0.35 * (0.5 + 0.5 * Math.sin(now / 520 + u.id))); drawRing(g, '#C2A461', x, y, s * 0.74); }   // bereit: dezenter pulsierender Messingring
+  const RS = VIEW.tilt() ? 0.72 : 1, RA = VIEW.tilt() ? 0.55 : 1;   // neue Ansicht: Ringe kleiner und dezenter, Figuren stehen auf dem Boden statt auf einer Scheibe
+  g.globalAlpha = A0 * RA; g.beginPath(); gEllipse(g, x, y, s * 0.66 * RS, s * 0.66 * RS); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
+  g.globalAlpha = A0 * RA * (done ? 0.25 : d.vs.rout ? 0.3 : 0.45); if (!isSel) drawRing(g, acc, x, y, s * 0.66 * RS);   // Pinselstrich-Ring, gedämpft
+  if (ready && OPT.ready && !isSel) { g.globalAlpha = A0 * RA * (0.6 + 0.35 * (0.5 + 0.5 * Math.sin(now / 520 + u.id))); drawRing(g, '#C2A461', x, y, s * 0.74 * RS); }   // bereit: dezenter pulsierender Messingring
   if (E.active(u)) {   // Blickrichtung: kleiner Punkt am Ring, so gedämpft wie der Ring
-    const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.66, fy = y + Math.sin(a) * s * 0.66 * kAt(x, y);
+    const a = d.face * Math.PI / 3, fx = x + Math.cos(a) * s * 0.66 * RS, fy = y + Math.sin(a) * s * 0.66 * RS * kAt(x, y);
     if (isSel) g.globalAlpha = A0;
     g.beginPath(); g.arc(fx, fy, Math.max(2, s * 0.055), 0, 7); g.fillStyle = isSel ? '#C2A461' : acc; g.fill(); g.lineWidth = Math.max(1, s * 0.03); g.strokeStyle = '#120D0B'; g.stroke();
   }
   g.globalAlpha = A0;
-  if (activeU === u.id && !isSel) { const pz = 0.5 + 0.5 * Math.sin(now / 160); g.globalAlpha = A0 * (0.7 + 0.3 * pz); drawRing(g, '#C2A461', x, y, s * (0.72 + 0.03 * pz), true); g.globalAlpha = A0; }   // KI: diese Einheit ist dran
+  if (activeU === u.id && !isSel) { const pz = 0.5 + 0.5 * Math.sin(now / 160); g.globalAlpha = A0 * (0.7 + 0.3 * pz); drawRing(g, '#C2A461', x, y, s * (0.72 + 0.03 * pz) * RS, true); g.globalAlpha = A0; }   // KI: diese Einheit ist dran
   if (isSel) {   // gewählt: Messingring, leicht pulsierend
     const pz = 0.5 + 0.5 * Math.sin(now / 300);
-    g.globalAlpha = A0 * (0.85 + 0.15 * pz); drawRing(g, '#C2A461', x, y, s * (0.7 + 0.02 * pz), true); g.globalAlpha = A0;
-  } else if (hoverU === u) { g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.strokeStyle = 'rgba(240,237,225,0.5)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); }
+    g.globalAlpha = A0 * (0.85 + 0.15 * pz); drawRing(g, '#C2A461', x, y, s * (0.7 + 0.02 * pz) * RS, true); g.globalAlpha = A0;
+  } else if (hoverU === u) { g.beginPath(); gEllipse(g, x, y, s * 0.76 * RS, s * 0.76 * RS); g.strokeStyle = 'rgba(240,237,225,0.5)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); }
   if (previewT && previewT.id === u.id) {   // Angriffsziel in der Vorschau
     g.beginPath(); gEllipse(g, x, y, s * 0.78, s * 0.78); g.strokeStyle = '#8E2B22'; g.lineWidth = Math.max(2.5, s * 0.06);
     g.globalAlpha = A0 * (0.6 + 0.4 * Math.sin(now / 160)); g.stroke(); g.globalAlpha = A0;
@@ -1007,7 +1008,7 @@ function drawFloaters(g, s, bb) {
 // Maßstab: 1 SH = FIG_SH Feldradien (Wunsch 2026-11-16: 1,1 – Felder groß genug, nichts überdimensioniert). Trupps: bis zu 4 Einzelfiguren in
 // lockerer Formation im eigenen Feld, Verluste lassen Figuren wegfallen. Einzelmodelle (MG, Geschütz, Anführer) im selben Maßstab, höchstens
 // FIGW_MAX Feldradien breit. Fahrzeuge (Panzer, Kolosse): 1,35 SH hoch, Breite nach Bild, dürfen etwas über den Feldrand ragen (belegen ein Feld).
-const FIG_SH = 1.1, FIGW_MAX = 2.4, FIGW_VEH = 3.6;
+const FIG_SH = 0.9, FIGW_MAX = 2.0, FIGW_VEH = 2.8;   // Wunsch 2026-11-16: Soldat 0,9; Fahrzeuge höchstens ±1,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], granate: ['sturm', 1], raeumer: ['sturm', 1],
@@ -1037,7 +1038,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) { const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: slot[0], oy: slot[1] }); }
-  } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.36 : 0.18 });
+  } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
@@ -1047,13 +1048,17 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s; if (w > wmax) { h *= wmax / w; w = wmax; }
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
-    const sw = Math.min(w * 0.42, s * (nf.vehicle ? 1.2 : 0.45));
-    g.fillStyle = 'rgba(6,4,3,0.5)'; g.beginPath(); g.ellipse(fx, fy - s * 0.01, sw, sw * 0.32 * Math.max(0.5, k), 0, 0, 7); g.fill();
+    // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
+    const sw = Math.min(w * (nf.vehicle ? 0.5 : 0.36), s * (nf.vehicle ? 1.35 : 0.34)), sk = sw * 0.34 * Math.max(0.55, k);
+    g.save(); g.translate(fx, fy); g.scale(1, sk / sw);
+    const sg = g.createRadialGradient(0, 0, 0, 0, 0, sw); sg.addColorStop(0, 'rgba(6,4,3,0.72)'); sg.addColorStop(0.5, 'rgba(6,4,3,0.42)'); sg.addColorStop(1, 'rgba(6,4,3,0)');
+    g.fillStyle = sg; g.beginPath(); g.arc(0, 0, sw, 0, 7); g.fill(); g.restore();
+    g.fillStyle = 'rgba(4,3,2,0.55)'; g.beginPath(); g.ellipse(fx, fy, sw * 0.45, sk * 0.42, 0, 0, 7); g.fill();
     const back = nf.trupp && f.oy < -0.1;
     const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : '', back ? 'brightness(0.86)' : ''].filter(Boolean).join(' ');
     if (done) g.globalAlpha = A0 * 0.85;
     if (filt) g.filter = filt;
-    g.save(); g.translate(fx, fy); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h); g.restore();
+    g.save(); g.translate(fx, fy + h * 0.012); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h); g.restore();   // Sohlen minimal in den Boden: kein Spalt
     topY = Math.min(topY, fy - h);
   }
   g.filter = 'none';
