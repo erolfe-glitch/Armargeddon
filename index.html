@@ -61,6 +61,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 
 /* Schlachtfeld */
 .board { position: relative; overflow: auto; background: #1c1d17; min-height: 0; }
+.board.tilt { overflow: hidden; }   /* neue Ansicht: Kamera statt Scrollen */
 #map { display: block; touch-action: none; cursor: pointer; }   /* Ziehen und Pinch-Zoom macht ui.js selbst */
 #toast { position: fixed; left: 50%; top: 58px; transform: translate(-50%, -8px); background: rgba(18,19,15,.9); border: 2px solid var(--edge); padding: 6px 14px; border-radius: 6px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 5; max-width: 90vw; text-align: center; }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
@@ -3602,10 +3603,13 @@ let L = null, K = 0.62, tcv = null, now = 0, ZOOM = 1, ZFIT = 1, zoomFit = false
 const Z_MAX = 2;   // stufenloser Zoom zwischen „ganze Karte“ (ZFIT) und 2×
 const human = side => mode === 'hot' || mode === side;
 
-const board = $('board'), cv = $('map'), ctx = cv.getContext('2d');
+const board = $('board'), cv = $('map'), MAINCTX = cv.getContext('2d');
+let ctx = MAINCTX;   // neue Ansicht: beim Zeichnen des flachen Weltbilds zeigt ctx kurz auf dessen Canvas (WCTX)
 
 // ---------- Layout ----------
 function layout() {
+  if (VIEW.tilt()) return layoutTilt();
+  board.classList.remove('tilt');
   const wrap = board.getBoundingClientRect();
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   const portrait = matchMedia('(orientation: portrait)').matches;
@@ -3636,9 +3640,9 @@ function layout() {
 // Flache Ansicht: Karte senkrecht gestaucht um K, überall gleich groß. Neue Ansicht (Schalter OPT.tilt, „Neue Ansicht (Test)“):
 // perspektivisch gekippt – wird hier eingehängt (Umbauplan Schritt 1 ff.); bis dahin zeichnen beide Schalterstellungen gleich.
 // Das Gelände (renderTerrain) zeichnet weiter flach in tcv; die neue Ansicht projiziert diesen Puffer später ungestaucht.
-const VIEW = { tilt: () => !!OPT.tilt && false };   // „&& false“: neue Ansicht noch nicht gebaut (Schritt 0), Schalter wirkt noch nicht
+const VIEW = { tilt: () => !!OPT.tilt, bbK: null };   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
 function center(c, r) { return [L.s * (1 + 1.5 * c), L.top + L.s * K * SQ3 * (r + 0.5 * (c & 1) + 0.5)]; }
-function kAt(x, y) { return K; }   // senkrechte Verkürzung des Bodens am Bildpunkt (x, y)
+function kAt(x, y) { return VIEW.bbK != null ? VIEW.bbK : K; }   // senkrechte Verkürzung des Bodens am Bildpunkt (x, y); neue Ansicht: im Weltbild 1, am Aufsteller die Verkürzung am Fußpunkt
 function sAt(x, y) { return L.s; }   // Feldradius in Bildpunkten am Bildpunkt (x, y)
 function gEllipse(g, x, y, rx, ry) { g.ellipse(x, y, rx, ry * kAt(x, y), 0, 0, 7); }   // Kreis/Ellipse auf dem Boden um (x, y), Radien waagrecht gemessen
 function hexCorner(x, y, i, k) { const a = Math.PI / 3 * i; return [x + L.s * k * Math.cos(a), y + L.s * k * Math.sin(a) * kAt(x, y)]; }   // Ecke i des Felds mit Mitte (x, y), k = Anteil des Radius
@@ -4290,8 +4294,18 @@ function hexMark(c, r, o) {
 function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; shakeStep(); draw(); requestAnimationFrame(frame); }
 function draw() {
   if (!L || !tcv) return;
-  const g = ctx, s = L.s;
   MARKS.length = 0;
+  if (VIEW.tilt()) return drawTilt();
+  const g = ctx, s = L.s;
+  drawGround(g, s);
+  drawUnits();
+  for (const f of MARKQ) f(); MARKQ.length = 0;
+  drawDiaryMark(g);
+  drawAir(g, s);
+  drawFloaters(g, s);
+}
+// Boden: Gelände, Flecken, Hilfsmarkierungen, Zielfahnen
+function drawGround(g, s) {
   g.drawImage(tcv, 0, 0);
   for (const dc of decals) {
     const im = FXI['blood' + dc.v];
@@ -4363,14 +4377,18 @@ function draw() {
     g.beginPath(); g.rect(px, fim ? base - s * 0.36 : top, s * (fim ? 0.36 : 0.5), s * 0.34); g.fillStyle = col; g.fill(); g.strokeStyle = O; g.lineWidth = Math.max(1.5, s * 0.05); g.stroke();
     g.fillStyle = '#16150f'; g.font = `800 ${Math.round(s * 0.28)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, px + s * (fim ? 0.18 : 0.25), (fim ? base - s * 0.36 : top) + s * 0.18);
   }
-  // Einheiten nach Tiefe
+}
+// Einheiten nach Tiefe (hinten zuerst)
+function unitList() {
   readyN = G.over || !human(G.side) ? 0 : G.units.filter(u => u.side === G.side && E.active(u) && !spent.has(u.id)).length;
   const list = [];
   for (const u of G.units) { const d = DU.get(u.id); if (d && d.alpha > 0) list.push([d.y, u, d]); }
-  list.sort((a, b) => a[0] - b[0]);
-  for (const [, u, d] of list) drawUnit(u, d);
-  for (const f of MARKQ) f(); MARKQ.length = 0;
-  if (diaryMark && now - diaryMark.t < 2400) { const k = (now - diaryMark.t) / 2400, pz = 0.5 + 0.5 * Math.sin(now / 140); g.globalAlpha = 1 - k * 0.6; hexMark(diaryMark.c, diaryMark.r, { rgb: BRASS, fill: 0.18 + 0.1 * pz }); g.globalAlpha = 1; }   // Ort aus dem Kriegstagebuch
+  return list.sort((a, b) => a[0] - b[0]);
+}
+function drawUnits() { for (const [, u, d] of unitList()) drawUnit(u, d); }
+function drawDiaryMark(g) { if (diaryMark && now - diaryMark.t < 2400) { const k = (now - diaryMark.t) / 2400, pz = 0.5 + 0.5 * Math.sin(now / 140); g.globalAlpha = 1 - k * 0.6; hexMark(diaryMark.c, diaryMark.r, { rgb: BRASS, fill: 0.18 + 0.1 * pz }); g.globalAlpha = 1; } }   // Ort aus dem Kriegstagebuch
+// Luft: Nebel, Gas, Regen, Effekte, Wegkosten
+function drawAir(g, s) {
   // Nebel (grau), ausgeleuchtete Felder (gelb), eigene Stollen und Minen
   for (const k of VIS.lit) { hexPath(g, k.c, k.r, 0.98); g.fillStyle = 'rgba(255,240,170,0.16)'; g.fill(); }
   for (const k of VIS.smoke) {
@@ -4504,9 +4522,13 @@ function draw() {
       g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
       if (im) { g.save(); g.filter = 'brightness(1.9) sepia(0.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B)'; g.drawImage(im, x0, ty - iw / 2, iw, iw); g.restore(); }   // Stiefel: das ist der Weg, keine Warnzahl
       g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
+}
+// Schwebende Texte (Schadenszahlen, Meldungen). bb: neue Ansicht, stellt je Text den Aufsteller am Fußpunkt ein
+function drawFloaters(g, s, bb) {
   for (let i = floaters.length - 1; i >= 0; i--) {
     const f = floaters[i]; f.life -= f.hold ? STEP : FS; f.y -= s * STEP * (f.hold ? (f.life > f.max - 30 ? 0.012 : 0.0015) : 0.012);
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
+    if (bb && !bb(f.x, f.y)) continue;
     g.globalAlpha = Math.min(1, f.life / 18);
     if (f.icon) {   // Symbol statt Text: kurz aufpoppen, dann langsam steigen
       const k = Math.min(1, (f.max - f.life) / 6), hh = s * (f.big ? 0.95 : 0.8) * (0.7 + 0.3 * k), ww = hh * f.icon.naturalWidth / f.icon.naturalHeight;
@@ -4520,6 +4542,136 @@ function draw() {
     g.fillStyle = f.col; g.fillText(f.text, f.x, f.y);
   }
   g.globalAlpha = 1;
+}
+
+// ---------- Neue Ansicht (Test): gekippte Karte, Schritt 1 Kamera und Boden ----------
+// Schalter OPT.tilt („Neue Ansicht (Test)“). Alles Bisherige rechnet weiter in einem flachen Weltbild (K = 1, Feldradius WS):
+// center(), d.x/d.y, Hilfsmarkierungen und Effekte. Das Weltbild wird zeilenweise perspektivisch auf den Schirm projiziert
+// (wie im Probebild entwurf/probe/?v=D). Einheiten stehen als aufrechte Aufsteller an ihrem Fußpunkt, nach Tiefe sortiert.
+// Kamera: Ziel (CAM.x, CAM.y) auf dem Boden, Zoom CAM.z (1 = vorn ca. 8,5 Felder über die Bildbreite), Kippwinkel 39°,
+// beim Herauszoomen steiler (bis 58° bei „ganze Karte“). Oben dunkler Himmel mit Rauch statt Leere.
+// Noch nicht hier (Umbauplan): Hilfsmarkierungen/Effekte aufrecht (Schritt 2), Figurengröße 1,3 und Trupps (3), Aufsteller fürs Gelände (4).
+const WS = 100;   // Feldradius im Weltbild (Pixel); vorn wird leicht vergrößert, weiter hinten verkleinert
+const CAM = { x: 0, y: 0, z: 1, init: false };
+const WCV = document.createElement('canvas'), WCTX = WCV.getContext('2d');
+const UBOX = [];   // Kästen der gezeichneten Einheiten auf dem Schirm (Klicktreffer)
+let PJ = null;
+const camPitch = z => { const t = Math.max(0, Math.min(1, (1 - z) / Math.max(0.05, 1 - ZFIT))); return (39 + (58 - 39) * t) * Math.PI / 180; };
+function camSetup() {   // Projektionswerte aus CAM und Schirmgröße
+  const W = cv.width, H = cv.height, a = camPitch(CAM.z), ca = Math.cos(a), sa = Math.sin(a), R = 23 * L.s;
+  const F = W * R / ((8.5 / CAM.z) * 1.5 * L.s);
+  PJ = { W, H, F, R, C: [CAM.x, CAM.y + R * ca, R * sa], f: [-ca, -sa], u: [-sa, ca] };   // f/u: Blickrichtung und Oben (nur y- und z-Anteil)
+}
+function proj(wx, wy, wz = 0) {   // Weltbild → Schirm [x, y, Tiefe]
+  const P = PJ, dx = wx - P.C[0], dy = wy - P.C[1], dz = wz - P.C[2], zc = dy * P.f[0] + dz * P.f[1];
+  return [P.W / 2 + P.F * dx / zc, P.H / 2 - P.F * (dy * P.u[0] + dz * P.u[1]) / zc, zc];
+}
+function unproj(sx, sy) {   // Schirm → Bodenpunkt im Weltbild (Strahl trifft z = 0)
+  const P = PJ, k = -(sy - P.H / 2) / P.F, dy = P.f[0] + k * P.u[0], dz = P.f[1] + k * P.u[1];
+  if (dz >= -1e-6) return null;
+  const t = -P.C[2] / dz; return [P.C[0] + (sx - P.W / 2) * t / P.F, P.C[1] + t * dy];
+}
+function bbAt(wx, wy) {   // Aufsteller am Bodenpunkt: Schirmpunkt, Maßstab, Bodenverkürzung
+  const p = proj(wx, wy); if (p[2] <= 1) return null;
+  const sc = PJ.F / p[2], q = proj(wx, wy + 1); return { px: p[0], py: p[1], sc, k: (q[1] - p[1]) / sc };
+}
+function camClamp() { CAM.x = Math.max(L.s, Math.min(L.W - L.s, CAM.x)); CAM.y = Math.max(L.top + L.s, Math.min(L.H - L.s * 1.5, CAM.y)); }   // nicht über den Kartenrand hinaus fahren
+function layoutTilt() {
+  const wrap = board.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  board.classList.add('tilt');
+  K = 1; const s = WS, top = s * 1.55, H = Math.ceil(top + s * SQ3 * (ROWS + 0.5) + s * 0.45);
+  L = { dpr, s, top, W: Math.round(s * (1.5 * COLS + 0.5)), H };
+  WCV.width = L.W; WCV.height = L.H;
+  cv.width = Math.round(wrap.width * dpr); cv.height = Math.round(wrap.height * dpr);
+  cv.style.width = wrap.width + 'px'; cv.style.height = wrap.height + 'px'; cv.style.marginLeft = cv.style.marginTop = '0px';
+  renderTerrain();
+  // „Ganze Karte“: größter Zoom, bei dem alle vier Kartenecken mit Rand ins Bild passen (Ziel = Kartenmitte)
+  const sv = { ...CAM }; CAM.x = L.W / 2; CAM.y = (L.top + L.H) / 2;
+  let lo = 0.08, hi = 1;
+  const fits = z => { CAM.z = z; camSetup(); return [[0, L.top], [L.W, L.top], [0, L.H], [L.W, L.H]].every(([x, y]) => { const p = proj(x, y); return p[2] > 0 && p[0] >= -2 && p[0] <= PJ.W + 2 && p[1] >= PJ.H * 0.04 && p[1] <= PJ.H + 2; }); };
+  ZFIT = 1; if (!fits(1)) { for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; } ZFIT = lo; }
+  Object.assign(CAM, sv);
+  if (!CAM.init) { CAM.init = true; CAM.x = L.W / 2; CAM.y = L.top + (L.H - L.top) * 0.6; CAM.z = 1; }
+  if (zoomFit) { CAM.z = ZFIT; CAM.x = L.W / 2; CAM.y = (L.top + L.H) / 2; }
+  CAM.z = Math.max(ZFIT, Math.min(Z_MAX, CAM.z)); ZOOM = CAM.z; camClamp(); camSetup();
+}
+// Boden projizieren: jede Schirmzeile ist eine Tiefe auf dem Boden; darüber dunkler Himmel mit Rauch
+function projectGround(g) {
+  const P = PJ, W = P.W, H = P.H;
+  const sky = g.createLinearGradient(0, 0, 0, H * 0.55); sky.addColorStop(0, '#0d0907'); sky.addColorStop(0.6, '#241a14'); sky.addColorStop(1, '#3a2a1e');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 6; i++) {   // Rauchschwaden am Horizont, langsam ziehend
+    const x = ((now / (60 + i * 14) + i * W * 0.31) % (W * 1.6)) - W * 0.3, y = H * (0.08 + 0.05 * (i % 3)), r = W * (0.18 + 0.04 * (i % 2));
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(70,58,48,0.35)'); gr.addColorStop(1, 'rgba(70,58,48,0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  const y0 = L.top - L.s * 0.4;
+  for (let ys = 0; ys < H; ys++) {
+    const w = unproj(W / 2, ys + 0.5); if (!w) continue;
+    const wy = w[1]; if (wy < y0 || wy > L.H) continue;
+    const zc = (wy - P.C[1]) * P.f[0] + (0 - P.C[2]) * P.f[1], sw = W * zc / P.F;
+    g.drawImage(WCV, P.C[0] - sw / 2, wy, sw, 1, 0, ys, W, 1);
+  }
+  // Dunst nach hinten
+  const fog = g.createLinearGradient(0, 0, 0, H); fog.addColorStop(0, 'rgba(18,13,11,0.55)'); fog.addColorStop(0.4, 'rgba(18,13,11,0.12)'); fog.addColorStop(1, 'rgba(18,13,11,0)');
+  g.fillStyle = fog; g.fillRect(0, 0, W, H);
+}
+function drawTilt() {
+  camSetup();
+  const s = L.s;
+  WCTX.setTransform(1, 0, 0, 1, 0, 0);
+  ctx = WCTX;   // flaches Weltbild: Boden, Bodenmarkierungen, Effekte (Schritt 2 stellt Effekte aufrecht)
+  try { drawGround(WCTX, s); drawDiaryMark(WCTX); for (const f of MARKQ) f(); MARKQ.length = 0; drawAir(WCTX, s); }
+  finally { ctx = MAINCTX; }
+  const g = MAINCTX; g.setTransform(1, 0, 0, 1, 0, 0);
+  projectGround(g);
+  // Einheiten als Aufsteller am Fußpunkt; Marken und spätere Marken (MARKQ) behalten ihren Aufsteller
+  UBOX.length = 0;
+  for (const [, u, d] of unitList()) {
+    const bb = bbAt(d.x, d.y); if (!bb || bb.px < -PJ.W * 0.2 || bb.px > PJ.W * 1.2 || bb.py < -PJ.H * 0.2 || bb.py > PJ.H * 1.5) continue;
+    const tf = new DOMMatrix([bb.sc, 0, 0, bb.sc, bb.px - bb.sc * d.x, bb.py - bb.sc * d.y]);
+    g.setTransform(tf); VIEW.bbK = bb.k;
+    const n0 = MARKQ.length, m0 = MARKS.length;
+    drawUnit(u, d);
+    for (let i = m0; i < MARKS.length; i++) MARKS[i].tf = tf;
+    for (let i = n0; i < MARKQ.length; i++) { const fn = MARKQ[i], k = bb.k; MARKQ[i] = () => { g.setTransform(tf); VIEW.bbK = k; const m1 = MARKS.length; fn(); for (let j = m1; j < MARKS.length; j++) MARKS[j].tf = tf; }; }
+    const big = TYPES[u.type].cls === 'walker' ? 1.6 : 1;
+    UBOX.push({ u, x0: bb.px - bb.sc * s * 0.6 * big, x1: bb.px + bb.sc * s * 0.6 * big, y0: bb.py - bb.sc * s * 1.45 * big, y1: bb.py + bb.sc * s * 0.35 });
+  }
+  for (const f of MARKQ) f(); MARKQ.length = 0;
+  g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
+  // Schwebende Texte aufrecht am jeweiligen Punkt
+  drawFloaters(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });
+  g.setTransform(1, 0, 0, 1, 0, 0);
+}
+// Kamera bewegen
+function camPan(fx, fy) {   // Anteile der Bildbreite/-höhe
+  camSetup(); const w = PJ.W * PJ.R / PJ.F; CAM.x += fx * w; CAM.y += fy * w * 0.8; camClamp();
+}
+function camDrag(dr, ev) {   // Boden „anfassen“: der Punkt unter dem Finger bleibt unter dem Finger
+  const r = cv.getBoundingClientRect(), k = cv.width / r.width, sx = (ev.clientX - r.left) * k, sy = (ev.clientY - r.top) * k;
+  if (!dr.cam) { dr.cam = { x: CAM.x, y: CAM.y }; camSetup(); dr.w0 = unproj((dr.x - r.left) * k, (dr.y - r.top) * k); }
+  CAM.x = dr.cam.x; CAM.y = dr.cam.y; camSetup(); const w1 = unproj(sx, sy);
+  if (dr.w0 && w1) { CAM.x = dr.cam.x + dr.w0[0] - w1[0]; CAM.y = dr.cam.y + dr.w0[1] - w1[1]; camClamp(); }
+}
+function zoomTilt(z, cx, cy, fit) {   // Zoom auf den Punkt unter Zeiger/Fingern; Kippwinkel folgt dem Zoom
+  const r = cv.getBoundingClientRect(), k = cv.width / r.width, sx = (cx - r.left) * k, sy = (cy - r.top) * k;
+  camSetup(); const w0 = unproj(sx, sy);
+  CAM.z = Math.max(ZFIT, Math.min(Z_MAX, z)); zoomFit = !!fit || CAM.z <= ZFIT + 0.01; if (zoomFit) CAM.z = ZFIT;
+  if (zoomFit) { CAM.x = L.W / 2; CAM.y = (L.top + L.H) / 2; }
+  else if (w0) for (let i = 0; i < 3; i++) { camSetup(); const w1 = unproj(sx, sy); if (!w1) break; CAM.x += w0[0] - w1[0]; CAM.y += w0[1] - w1[1]; }
+  camClamp(); camSetup(); ZOOM = CAM.z; zPend = 0; tbSync(); if ($('setZoom')) $('setZoom').textContent = zoomTxt();
+}
+function camToTilt(x, y, ms, force) {   // weich zum Bodenpunkt (Weltbild) fahren
+  if (!L || (!force && !camOn())) return Promise.resolve();
+  const tx = Math.max(0, Math.min(L.W, x)), ty = Math.max(L.top, Math.min(L.H, y + L.s * 0.5)), x0 = CAM.x, y0 = CAM.y;
+  if (Math.hypot(tx - x0, ty - y0) < 2) return Promise.resolve();
+  const dur = speed >= INSTANT ? 0 : ms / Math.min(speed, 2), me = {}; camAnim = me;
+  if (!dur) { CAM.x = tx; CAM.y = ty; return Promise.resolve(); }
+  return new Promise(res => { const st = performance.now();
+    const step = () => { if (camAnim !== me) return res(); const k = Math.min(1, (performance.now() - st) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      CAM.x = x0 + (tx - x0) * e; CAM.y = y0 + (ty - y0) * e; if (k < 1) requestAnimationFrame(step); else { camAnim = null; res(); } };
+    requestAnimationFrame(step); });
 }
 
 // ---------- Ton ----------
@@ -4765,10 +4917,14 @@ async function runQueue() {
 }
 
 // ---------- Eingabe ----------
-function evToPx(ev) { const r = cv.getBoundingClientRect(); return [(ev.clientX - r.left) * cv.width / r.width, (ev.clientY - r.top) * cv.height / r.height]; }
+let lastSP = [0, 0];   // letzter Zeigerpunkt in Schirm-Pixeln des Canvas (neue Ansicht: Aufsteller und Marken werden dort getroffen)
+function evToPx(ev) { const r = cv.getBoundingClientRect(), sx = (ev.clientX - r.left) * cv.width / r.width, sy = (ev.clientY - r.top) * cv.height / r.height; lastSP = [sx, sy];
+  if (VIEW.tilt()) { camSetup(); return unproj(sx, sy) || [-1e6, -1e6]; }   // neue Ansicht: Punkt auf dem Boden im Weltbild
+  return [sx, sy]; }
 // Was liegt unter dem Zeiger? h = Feld, uHex = Einheit auf diesem Feld, uFig = vorderste Figur, deren Körper man dort sieht
 function pick(x, y) {
   const h = pixToHex(x, y), uHex = h ? E.unitAt(G, h[0], h[1]) : null;
+  if (VIEW.tilt()) { let uFig = null; for (let i = UBOX.length - 1; i >= 0; i--) { const b = UBOX[i]; if (lastSP[0] >= b.x0 && lastSP[0] <= b.x1 && lastSP[1] >= b.y0 && lastSP[1] <= b.y1) { uFig = b.u; break; } } return { h, uHex, uFig }; }   // Aufsteller: vorderster getroffener Kasten
   let uFig = null;
   for (const u of G.units) {
     if (!E.alive(u)) continue;
@@ -4786,10 +4942,11 @@ window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = p
 const SCR = {};
 for (const [k, ch] of [['l', '◀'], ['r', '▶'], ['u', '▲'], ['d', '▼']]) {
   const el = document.createElement('button'); el.className = 'scrhint ' + k; el.textContent = ch; el.hidden = true; el.setAttribute('aria-label', 'Karte verschieben');
-  el.addEventListener('click', () => { userCam(); const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
+  el.addEventListener('click', () => { userCam(); const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; if (VIEW.tilt()) return camPan(dx * 0.4, dy * 0.4); board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
   document.body.appendChild(el); SCR[k] = el;
 }
 function updScroll() {
+  if (VIEW.tilt()) { for (const k in SCR) SCR[k].hidden = true; return; }   // neue Ansicht: Kamera statt Scrollen
   const b = board.getBoundingClientRect(), sl = board.scrollLeft, st = board.scrollTop, mx = board.scrollWidth - board.clientWidth, my = board.scrollHeight - board.clientHeight;
   const show = { l: sl > 4, r: sl < mx - 4, u: st > 4, d: st < my - 4 };
   for (const k in SCR) {
@@ -4801,11 +4958,12 @@ function updScroll() {
 board.addEventListener('scroll', updScroll, { passive: true }); addEventListener('resize', () => setTimeout(updScroll, 50)); setInterval(updScroll, 700);
 board.addEventListener('wheel', ev => {   // Mausrad (und Touchpad-Pinch = Strg) zoomt auf den Punkt unter dem Zeiger; Umschalt + Rad verschiebt waagrecht
   if (!G) return; ev.preventDefault(); userCam();
-  if (ev.shiftKey && !ev.ctrlKey) { board.scrollLeft += ev.deltaY || ev.deltaX; return; }
+  if (ev.shiftKey && !ev.ctrlKey) { if (VIEW.tilt()) camPan((ev.deltaY || ev.deltaX) / 600, 0); else board.scrollLeft += ev.deltaY || ev.deltaX; return; }
   const dy = ev.deltaMode === 1 ? ev.deltaY * 30 : ev.deltaY; setZoom((zPend || ZOOM) * Math.exp(-dy * (ev.ctrlKey ? 0.006 : 0.0015)), ev.clientX, ev.clientY);
 }, { passive: false });
 cv.addEventListener('pointermove', ev => {
-  if (drag && !pinch && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > (ev.pointerType === 'mouse' ? 8 : 14)) { drag.moved = true; userCam(); cv.style.cursor = 'grabbing'; board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; return; } }
+  if (drag && !pinch && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > (ev.pointerType === 'mouse' ? 8 : 14)) { drag.moved = true; userCam(); cv.style.cursor = 'grabbing';
+    if (VIEW.tilt()) camDrag(drag, ev); else { board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; } return; } }
   if (!G || ev.pointerType !== 'mouse') return;
   const [x, y] = evToPx(ev), p = pick(x, y);
   hoverHex = p.h;
@@ -4827,7 +4985,9 @@ function showTip(list, cx, cy, key, ms) {
   mtip.classList.add('show');
 }
 function hideTip() { clearTimeout(tipTm); tipKey = null; mtip.classList.remove('show'); }
-function markAt(x, y) { for (let i = MARKS.length - 1; i >= 0; i--) { const m = MARKS[i]; if (x >= m.x0 && x <= m.x1 && y >= m.y0 && y <= m.y1) return m; } return null; }
+function markAt(x, y) { for (let i = MARKS.length - 1; i >= 0; i--) { const m = MARKS[i]; let px = x, py = y;
+    if (m.tf) { const q = new DOMPoint(lastSP[0], lastSP[1]).matrixTransform(m.tf.inverse()); px = q.x; py = q.y; }   // Marke am Aufsteller: Zeigerpunkt in dessen Koordinaten
+    if (px >= m.x0 && px <= m.x1 && py >= m.y0 && py <= m.y1) return m; } return null; }
 function markTips(m) {
   const u = m.u, d = DU.get(u.id), T = TYPES[u.type];
   if (!d || !E.alive(u)) return [];
@@ -5468,6 +5628,7 @@ function nextUnit(back) {
   const u = list[((i < 0 ? (back ? 0 : -1) : i) + (back ? -1 : 1) + list.length) % list.length];
   select(u);
   const [x, y] = center(u.c, u.r), rc = cv.getBoundingClientRect(), bc = board.getBoundingClientRect();
+  if (VIEW.tilt()) { camTo(x, y, 400, true); return; }
   board.scrollBy({ left: rc.left + x * rc.width / cv.width - (bc.left + bc.width / 2), top: rc.top + y * rc.height / cv.height - (bc.top + bc.height / 2), behavior: 'smooth' });
 }
 $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext').dataset.long; return; } nextUnit(false); };
@@ -5512,7 +5673,8 @@ $('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,
 // Hilfen (Optionen): sofort wirksam, im Browser gemerkt
 const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake'], ['optTilt', 'tilt']];
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
-for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} });
+for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
+  if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
 $('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
@@ -5529,7 +5691,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Alt') { if (gameKeys(e)) e.preventDefault(); altHeld = true; return; }
   if (e.key === 'Tab' && gameKeys(e) && !e.ctrlKey && !e.altKey) { e.preventDefault(); nextUnit(e.shiftKey); return; }
   const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-  if (pan && $('start').hidden && !e.target.closest('input')) { userCam(); board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
+  if (pan && $('start').hidden && !e.target.closest('input')) { userCam(); if (VIEW.tilt()) camPan(pan[0] * 0.18, pan[1] * 0.18); else board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
   // Tasten 1–n: Fähigkeiten-Knöpfe des Panels
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
@@ -5543,11 +5705,13 @@ const camOn = () => OPT.cam && speed < INSTANT && !camHold;
 function userCam() { camAnim = null; if (G && busy && !human(G.side)) camHold = true; }   // Spieler verschiebt selbst: Kamera hält still bis zur nächsten KI-Einheit
 function toBoard(x, y) { const rc = cv.getBoundingClientRect(), bc = board.getBoundingClientRect(); return [rc.left - bc.left + board.scrollLeft + x * rc.width / cv.width, rc.top - bc.top + board.scrollTop + y * rc.height / cv.height]; }
 function inView(x, y, m = 0.18) {
+  if (VIEW.tilt()) { camSetup(); const p = proj(x, y), W = cv.width, H = cv.height; return p[2] > 0 && p[0] >= W * m && p[0] <= W * (1 - m) && p[1] >= H * m && p[1] <= H * (1 - m); }
   const [bx, by] = toBoard(x, y), w = board.clientWidth, h = board.clientHeight, sl = board.scrollLeft, st = board.scrollTop;
   const mx = board.scrollWidth - w > 2 ? m : 0, my = board.scrollHeight - h > 2 ? m : 0;   // ohne Verschieben zählt das ganze Bild
   return bx >= sl + w * mx && bx <= sl + w * (1 - mx) && by >= st + h * my && by <= st + h * (1 - my);
 }
 function camTo(x, y, ms = 380, force) {   // weich zum Punkt (Canvas-Pixel) fahren; Promise endet bei Ankunft oder Abbruch
+  if (VIEW.tilt()) return camToTilt(x, y, ms, force);
   if (!L || (!force && !camOn())) return Promise.resolve();
   const [bx, by] = toBoard(x, y), w = board.clientWidth, h = board.clientHeight;
   const tl = Math.max(0, Math.min(board.scrollWidth - w, bx - w / 2)), tt = Math.max(0, Math.min(board.scrollHeight - h, by - h / 2));
@@ -5587,6 +5751,7 @@ function shakeStep() {
 let zPend = 0, zTm = 0, pinch = null;
 const zoomTxt = () => zoomFit || ZOOM <= ZFIT + 0.01 ? 'Zoom: ganze Karte' : 'Zoom ' + String(Math.round(ZOOM * 10) / 10).replace('.', ',') + '×';
 function setZoom(z, cx, cy, fit, at) {
+  if (VIEW.tilt()) return zoomTilt(z, cx, cy, fit);
   if (!G || !L) return;
   const cur = zPend || ZOOM, nz = Math.max(ZFIT, Math.min(Z_MAX, z));
   zoomFit = !!fit || nz <= ZFIT + 0.001;
@@ -5679,7 +5844,7 @@ initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
 window.__dbg = { PT, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
-  hexCss: (c, r) => { const [x, y] = center(c, r), rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; },
+  hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; },
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },

@@ -55,6 +55,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 
 /* Schlachtfeld */
 .board { position: relative; overflow: auto; background: #1c1d17; min-height: 0; }
+.board.tilt { overflow: hidden; }   /* neue Ansicht: Kamera statt Scrollen */
 #map { display: block; touch-action: none; cursor: pointer; }   /* Ziehen und Pinch-Zoom macht ui.js selbst */
 #toast { position: fixed; left: 50%; top: 58px; transform: translate(-50%, -8px); background: rgba(18,19,15,.9); border: 2px solid var(--edge); padding: 6px 14px; border-radius: 6px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 5; max-width: 90vw; text-align: center; }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }

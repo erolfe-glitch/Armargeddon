@@ -1,6 +1,6 @@
 # Gemini-Prompts: erste Lieferung Figurenbögen (neue Ansicht, Variante D)
 
-Stand 2026-11-16. Je Fraktion 6 Bögen: Sturmtruppe, Pionier, MG (Einzelmodell), Geschütz (Einzelmodell), Anführer (Einzelmodell), Panzer bzw. Koloss (Einzelmodell).
+Stand 2026-11-16. Je Fraktion 6 Bögen: Sturmtruppe, Pionier, MG (Einzelmodell), Geschütz (Einzelmodell), Anführer (Einzelmodell), Panzer (Einzelmodell); dazu für die Aschenwacht zusätzlich der Bohrkoloss.
 
 ## So vorgehen
 
@@ -165,9 +165,21 @@ Figure: an officer (captain) of the "Aschenwacht des Grauwalls", standing in a c
 Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours, rust and mud, a world inspired by the First World War but our own fictional setting – no real nations, no real insignia, no existing franchise. Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet – three-quarter view from front-right, slightly from above, facing right, light from top-left. Background: flat pure magenta (#FF00FF) everywhere, no gradient, no floor, no ground plane, no cast shadow, no smoke, no muzzle flash, no sparks, no text, no frame. Nothing may touch the image border.
 ```
 
-### 12. Koloss „Bohrkoloss“ (Einzelmodell) → `aschenwacht_bohrkoloss.png`
+### 12. Panzer „Sturmpanzer“ (Einzelmodell) → `aschenwacht_panzer.png`
 
-Hinweis: Die Aschenwacht hat keinen gewöhnlichen Panzer; ihr Koloss ist der Bohrkoloss (Kampfmaschine, nur mit eingeschalteten Kampfmaschinen im Spiel). Soll es stattdessen ein eigener Aschenwacht-Panzer werden, sag Bescheid, dann schreibe ich den Prompt um.
+Eigener Panzer der Aschenwacht (Wunsch 2026-11-16): schwer und kastenförmig, angelehnt an den A7V, aber düster-fantastisch und eigene Welt.
+
+```
+Create ONE single vehicle, centred on a wide 1792×1024 image, filling about 85% of the width, at the same soldier scale as the attached soldier sheet (aschenwacht_soldat.png): the hull is about 1.4 times as tall as a standing soldier.
+
+Vehicle: the "Sturmpanzer" of the "Aschenwacht des Grauwalls", a huge heavy assault tank with a tall boxy armoured hull – inspired by the early box-shaped German tank of 1918, but a dark gothic fantasy version of our own world, not a real vehicle: steep slab sides of heavily riveted dark iron plates, a blunt front with a short heavy cannon in the bow pointing to the RIGHT, several machine-gun ports with stubby barrels along the side, a raised command cupola with vision slits on the roof, low tracks almost hidden behind armoured skirts that hang down to the ground, spikes and chains on the skirts, exhaust stacks at the back, field-grey paint with a greenish tint (#7D8471) worn, rusted and caked with mud, an embossed visored-helm emblem on the side plate, faded black-white-red stripes painted on the bow (no real insignia, no crosses). Orientation: seen mostly from the side, driving to the RIGHT, only a slight three-quarter turn so the front is a little visible – not strongly angled. No crew outside, no muzzle flash, no exhaust smoke.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours, rust and mud, a world inspired by the First World War but our own fictional setting – no real nations, no real insignia, no existing franchise. Camera: same height and tilt as the attached soldier sheet, light from top-left. Background: flat pure magenta (#FF00FF) everywhere, no gradient, no floor, no ground plane, no cast shadow, no smoke, no muzzle flash, no sparks, no text, no frame. Nothing may touch the image border.
+```
+
+### 13. Koloss „Bohrkoloss“ (Einzelmodell, zusätzlich) → `aschenwacht_bohrkoloss.png`
+
+Hinweis: Der Bohrkoloss ist eine Kampfmaschine und erscheint nur mit eingeschalteten Kampfmaschinen im Spiel. Er bleibt zusätzlich zum Sturmpanzer drin.
 
 ```
 Create ONE single vehicle, centred on a wide 1792×1024 image, filling about 85% of the width, at the same soldier scale as the attached soldier sheet (aschenwacht_soldat.png): the machine is about 1.5 times as tall as a standing soldier.
