@@ -877,7 +877,8 @@ function drawFan(g, u) {
 const FAHNE_VOR = new Set(['village', 'rubble', 'fabrik', 'kirche']), FAHNE_K = 0.55, FAHNE_FARBE = { A: [142, 43, 34], D: [98, 104, 98], F: [111, 143, 181] }, FAHNE_NEUTRAL = [158, 150, 128];
 // Ort der Fahne im Feld (Feldradien): sonst hinterer rechter Rand (hinter den Einheiten); in Ruinenfeldern vorn links (Stoff weht über das Feld, Einheiten davor),
 // weil hohe Mauern (eigene und die des rechten Nachbarfelds) sie hinten verdecken würden. [dx, dy, Tiefe für die Sortierung]
-const fahneOrt = o => { const h = G.map[o.c] && G.map[o.c][o.r]; return h && FAHNE_VOR.has(h.t) ? [-0.45, 0.42, -0.02, 0.92] : [0.6, -0.45, -0.5, 0.62]; };   // [dx, dy, Tiefe, Höhe des Nummernschilds am Pfahl]
+const fahneOrt = o => { const h = G.map[o.c] && G.map[o.c][o.r]; if (/schanze/i.test(o.id) && GBW && gbAn()) return [0.95, 0.5, 0.5, 0.62];   // Schanze: vorn rechts neben dem Bunker (dahinter wäre das Schild verdeckt)
+  return h && FAHNE_VOR.has(h.t) ? [-0.45, 0.42, -0.02, 0.92] : [0.6, -0.45, -0.5, 0.62]; };   // [dx, dy, Tiefe, Höhe des Nummernschilds am Pfahl]
 function drawFahne(g, s, x, y, o) {
   const sd = VIS.ctrl[o.id], [cr, cg, cb] = sd ? FAHNE_FARBE[fac(sd)] || FAHNE_NEUTRAL : FAHNE_NEUTRAL, sh = (v, k) => Math.round(Math.max(0, Math.min(255, v * k)));
   const col = k => `rgb(${sh(cr, k)},${sh(cg, k)},${sh(cb, k)})`, seed = o.c * 7 + o.r * 13;
@@ -1119,6 +1120,7 @@ function drawFloaters(g, s, bb) {
 // FIGW_MAX Feldradien breit. Fahrzeuge (Panzer, Kolosse): 1,35 SH hoch, Breite nach Bild, dürfen etwas über den Feldrand ragen (belegen ein Feld).
 const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Soldat 0,8; Fahrzeuge (1,5 SH) höchstens 2,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
+const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäter eng beieinander: Lauf- und Trage-Posen sind breit und ragten sonst aus dem Feld
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], granate: ['sturm', 1], raeumer: ['sturm', 1],
@@ -1126,9 +1128,9 @@ const FIGMAP = {
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
   grenadier: ['soldat', 1], sturm: ['sturm', 1], grabenk: ['sturm', 1], eingreif: ['sturm', 1],
   pionierD: ['pionier', 1], minen: ['pionier', 1],
-  feldscher: ['sanitaeter', 1, 2], heiler: ['sanitaeter', 1, 2], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
+  feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
-  sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['hauptmann'], bohrer: ['bohrkoloss'],
+  sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
 };
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
 const FIGI = {};
