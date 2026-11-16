@@ -194,6 +194,8 @@ Style: dark gothic trench-warfare comic illustration, exactly like the attached 
 
 # Gelände-Aufsteller (Umbauplan Schritt 4)
 
+> **Teilweise ersetzt (2026-11-16) durch den Teil „Gelände-Bausteine“ am Ende dieser Datei.** A1 (Ruinen), A4 (Bunker), A5 (Totholz), A6 (Wald), A8 (Draht), A9 (Barrikaden) und A10 (Grabenkanten) bitte **nicht mehr** erzeugen, dafür die G-Prompts. Weiter gültig: A2 Kirche und A3 Fabrik (für große Gebäude, später), A7 Waldrand (nur Kartenrand), A11 Bahn, A12 Böschung (ist schon ein Wandstück nach STYLE.md).
+
 Stand 2026-11-16. Hohe Geländeobjekte stehen in der neuen Ansicht als aufrechte Einzelbilder („Aufsteller“) auf ihrem Feld und werden mit den Figuren nach Tiefe sortiert. Der flache Boden (Schlamm, Gras, Trichter, Gräben, Wege) kommt **nicht** von hier.
 
 ## So vorgehen
@@ -375,4 +377,263 @@ Hinweis: Das ist kein Einzelobjekt, sondern ein **waagrecht kachelbarer Streifen
 Create ONE horizontally tileable strip on a wide 1792×512 image: the front face of a low earth embankment (the edge of a raised hill field), seen exactly from the same angle as the attached soldier sheet. The strip runs across the full width of the image and its left and right ends must match seamlessly so it can be repeated side by side. Height of the embankment face about 0.5 soldiers (relative to the attached soldier): packed dark earth and mud, a few stones, exposed roots, tufts of dead grass hanging over the top edge, a darker shaded lower part. The top edge is the level of the raised field (no ground drawn above it), the bottom edge is where it meets the lower ground (no ground drawn below it).
 
 Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), mud and soot, a world inspired by the First World War but our own fictional setting. Light from top-left. Background above and below the strip: flat pure magenta (#FF00FF), no gradient, no shadow, no text, no frame.
+```
+
+---
+
+# Gelände-Bausteine (neue Ansicht, ersetzt A1, A4–A6, A8–A10)
+
+Stand 2026-11-16.
+- Regeln, Maße und Anschlusspunkte: **STYLE.md, Abschnitt „Gelände-Bausteine“**.
+- Probe mit Platzhaltern: `entwurf/probe/gelaende.html`.
+- Alle Ergebnisse als **PNG** in den neuen Ordner **`ui-quelle/gelaende/`**, unter genau dem angegebenen Dateinamen.
+
+## So vorgehen
+
+1. Bilder mitgeben:
+   - bei **allen** Prompts `ui-quelle/konzept/einzel_konzept.png` (Stilvorlage),
+   - bei Wandstücken und Aufstellern (G4–G14) zusätzlich `ui-quelle/figuren/konkordat_soldat.png` (Blickwinkel und Maßstab).
+2. Es gibt vier Arten, jede mit eigenem Baustein-Text (steht im Prompt schon drin):
+   - **Bodentextur** (G1): von oben, an allen vier Seiten nahtlos.
+   - **Flaches Detail** (G2, G3): von oben, freigestellt bzw. als Längsstreifen.
+   - **Wandstück** (G4–G7, G9, G11): waagrechter Streifen, links und rechts nahtlos, Unterkante = Fußlinie.
+   - **Aufsteller** (G8, G10, G12–G14): Einzelobjekt mit kleinem Sockel, Blickwinkel wie die Figurenbögen.
+3. Maßstab immer am Soldaten: ein Feld ist gut **2,5 Soldaten** breit, ein Wandstück-Streifen **5 Soldaten** lang (2 Feldbreiten).
+
+Prüfen vor dem Speichern:
+- Texturen: keine sichtbare Naht beim Nebeneinanderlegen (2×2 testen), kein Einzelobjekt, das beim Kacheln auffällt, gleichmäßige Helligkeit.
+- Alle anderen: reiner Magenta-Hintergrund ohne Verlauf, nichts berührt den Bildrand, kein Schlagschatten, kein Rauch, kein Licht, kein Text.
+- Wandstücke: Unterkante gerade und waagrecht, linker und rechter Rand passen aneinander, beide Enden gleich groß (kein Fluchtpunkt).
+
+## Baustein-Texte (stehen in den Prompts schon drin)
+
+**Stil (alle):**
+> Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+
+**Bodentextur:**
+> Format: ONE seamless tileable texture on a square 1024×1024 image, seen straight from above (top-down, 90°), flat even lighting, no strong directional shadows, no single large eye-catching object, details evenly spread so the tile can be repeated many times without visible pattern. All four edges must match seamlessly. The image covers a ground area about 2.5 standing soldiers wide.
+
+**Flaches Detail:**
+> Format: seen straight from above (top-down, 90°), neutral light from above so the pieces can be rotated freely, every piece cut out on flat pure magenta (#FF00FF) with clear magenta space around it, soft irregular outer edge that blends into any ground, no cast shadow outside the piece.
+
+**Wandstück:**
+> Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+**Aufsteller:**
+> Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet (konkordat_soldat.png) – three-quarter view from front-right, slightly from above, light from top-left. Each object stands on its own small, flat, irregular base of mud (only directly under the object). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams. Nothing may touch the image border or the neighbouring object.
+
+---
+
+## Boden
+
+### G1. Bodentexturen → `boden_schlamm.png`, `boden_gras.png`, `boden_waldboden.png`, `boden_truemmer.png`, `boden_sumpf.png`, `boden_wasser.png`, `boden_kopfstein.png`
+
+Ein Prompt je Textur: die Zeile „Ground:“ austauschen, den Rest gleich lassen.
+
+```
+Create ONE seamless tileable ground texture for a battlefield map.
+
+Ground: <siehe Liste unten>
+
+Format: ONE seamless tileable texture on a square 1024×1024 image, seen straight from above (top-down, 90°), flat even lighting, no strong directional shadows, no single large eye-catching object, details evenly spread so the tile can be repeated many times without visible pattern. All four edges must match seamlessly. The image covers a ground area about 2.5 standing soldiers wide.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+Zeilen für „Ground:“:
+- `boden_schlamm.png`: `churned dark brown mud with boot prints, small puddle glints, tiny stones and splinters – the base ground of the whole map`
+- `boden_gras.png`: `trampled, half-burnt dry grass in muted olive and ochre on mud, small bare patches`
+- `boden_waldboden.png`: `dark forest floor: dead leaves, pine needles, twigs, moss and roots on black earth`
+- `boden_truemmer.png`: `rubble ground of a destroyed village: broken bricks, roof tile shards, plaster dust, splintered wood, on grey-brown dirt`
+- `boden_sumpf.png`: `boggy marsh ground: dark wet mud, reeds lying flat, small pools of murky water, green-brown`
+- `boden_wasser.png`: `murky, dark grey-green standing water seen from above, small ripples, a few floating leaves, no shore`
+- `boden_kopfstein.png`: `old cobblestone road surface, many stones loose or missing, mud in the gaps, cart ruts`
+
+### G2. Flache Details → `flach_details.png`
+
+```
+Create a sheet of 8 flat ground details for a battlefield map, arranged in a 4×2 grid on a wide 1792×1024 image, each piece centred in its cell.
+
+Pieces (top row left to right, then bottom row):
+1. a small shell crater, round, about 1.5 soldiers across: raised rim of thrown-up earth, dark muddy water at the bottom
+2. a large shell crater, round, about 3 soldiers across, deep, with a pool of dark water and splinters on the rim
+3. an irregular muddy puddle, about 1.5 soldiers across, dull grey reflection
+4. a long narrow puddle in a cart rut, about 2.5 soldiers long
+5. three loose wooden planks lying crossed, about 1.5 soldiers long
+6. a short piece of wooden duckboard (trench grating), about 1.5 soldiers long
+7. scattered rubble: bricks, tiles and a broken beam lying flat, about 2.5 soldiers across
+8. a patch of churned mud with deep boot and wheel tracks, about 2.5 soldiers across
+
+Format: seen straight from above (top-down, 90°), neutral light from above so the pieces can be rotated freely, every piece cut out on flat pure magenta (#FF00FF) with clear magenta space around it, soft irregular outer edge that blends into any ground, no cast shadow outside the piece.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+## Graben
+
+Gerade Stücke, Kurven und Kreuzungen brauchen **keine eigenen Bilder**: Der Code legt die Streifen G3–G5 entlang des Grabenzugs (über Feldmitten und Kantenmitten) und lässt die Kanten an Abzweigen offen.
+
+### G3. Grabensohle (flacher Streifen) → `graben_sohle.png`
+
+```
+Create ONE horizontally tileable strip on a wide 1792×512 image: the inside of a trench seen straight from above (top-down, 90°). The trench runs exactly horizontally across the full width of the image; its left and right ends must match seamlessly so it can be repeated. From top to bottom: a narrow band of thrown-up earth, the timber revetment of the trench wall (vertical planks and stakes, seen from above as a band of plank ends), the trench floor with a wooden duckboard grating running along the middle, mud and small puddles between the slats, then the other revetment band and earth band (mirror of the top). Total trench width about 2.5 standing soldiers, the duckboard about 1 soldier wide. Above and below the strip flat pure magenta (#FF00FF). Neutral light from above, no cast shadow outside the strip.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G4. Grabenkante vorn (Wandstück) → `graben_kante_vorn.png`
+
+```
+Create the FRONT parapet of a trench as ONE horizontally tileable strip: the outer side of a low wall of stacked sandbags (two to three layers, some burst, a few wooden stakes and a strand of barbed wire on top), about 0.35 standing soldiers high, seen from the side facing away from the trench. Soldiers will stand behind it in the trench, so it must stay low; its top edge is irregular but continuous.
+
+Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G5. Grabenkante hinten (Wandstück) → `graben_kante_hinten.png`
+
+```
+Create the REAR wall of a trench as ONE horizontally tileable strip, seen from inside the trench: the timber revetment (vertical wooden planks held by stakes and wire, wet and muddy, one or two planks broken with earth spilling out) with a row of sandbags lying on top, about 0.45 standing soldiers high in total, darker and wetter at the bottom.
+
+Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+## Ruine (zweiteilig, als Paar erzeugen)
+
+G6, G7 und G8 bitte **im selben Gespräch nacheinander** erzeugen, damit Mauerwerk und Farbe gleich bleiben.
+
+### G6. Ruine hinten (Wandstück) → `ruine_hinten.png`
+
+```
+Create the BACK walls of a ruined village house as ONE horizontally tileable strip, seen from inside the ruin: shattered brick-and-stone wall with grey plaster, about 1.2 standing soldiers high, broken jagged top edge that rises and falls, two empty window openings with splintered frames, a doorway gap, charred beam ends sticking out, wallpaper remnants, rubble heaped along the foot of the wall.
+
+Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G7. Ruine vorn (Wandstück) → `ruine_vorn.png`
+
+```
+Same brick and plaster as the previous image. Create the FRONT remains of the same ruined house as ONE horizontally tileable strip, seen from outside: a low broken wall stump, only about 0.45 standing soldiers high (knee to hip height), uneven top with loose bricks, a few rubble piles leaning against it, one low gap. Soldiers will stand behind it, so it must stay low.
+
+Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G8. Ruinen-Ecken (Aufsteller) → `ruine_ecken.png`
+
+Decken die Stöße, wo zwei Mauerstücke an einer Hexecke zusammenkommen.
+
+```
+Same brick and plaster as the previous images. Create a sheet of 4 different corner pieces of the same ruined house, arranged in a 2×2 grid on a square 1264×1264 image, each centred in its quarter with clear magenta space around it, all at the same scale as the soldier on the attached sheet.
+
+Pieces (top left, top right, bottom left, bottom right):
+1. a tall broken corner pillar of brick, about 1.2 soldiers high, narrow (about 0.5 soldiers wide)
+2. a lower broken corner, about 0.8 soldiers high, with a charred beam leaning on it
+3. a low corner stump, about 0.45 soldiers high, loose bricks around it
+4. a chimney stack standing alone, about 1.4 soldiers high, narrow
+
+Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet (konkordat_soldat.png) – three-quarter view from front-right, slightly from above, light from top-left. Each object stands on its own small, flat, irregular base of mud (only directly under the object). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams. Nothing may touch the image border or the neighbouring object.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+## Wald
+
+Im Spielfeld licht: schmale Stämme hinten (G10), niedriges Unterholz vorn (G9). Kronen nur am Kartenrand: weiter **A7** (`aufsteller_waldrand.png`).
+
+### G9. Unterholz (Wandstück, vorn) → `wald_unterholz.png`
+
+```
+Create low forest undergrowth as ONE horizontally tileable strip: ferns, brambles, dead branches, a fallen thin log and young saplings, only about 0.3 standing soldiers high, open and airy at the top so soldiers behind it stay visible, muted dark green and brown.
+
+Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G10. Waldstämme (Aufsteller, hinten) → `wald_staemme.png`
+
+```
+Create a sheet of 4 different single tree trunks for a playable forest field, arranged in a 2×2 grid on a square 1264×1264 image, each centred in its quarter with clear magenta space around it, all at the same scale as the soldier on the attached sheet. The crowns are NOT shown: each trunk ends at the top in a jagged shell-broken stump or a few bare branch stubs – no leaves above head height.
+
+Pieces (top left, top right, bottom left, bottom right):
+1. a straight pine trunk, about 1.8 soldiers high, about 0.3 soldiers thick, a few dry branch stubs
+2. a thicker oak trunk with rough bark and a broken low branch, about 1.6 soldiers high
+3. two thin trunks growing close together, about 1.7 soldiers high, together not wider than 0.6 soldiers
+4. a birch trunk with peeling bark, snapped at about 1.4 soldiers high
+
+Each trunk with a few roots and a little moss at its foot. Narrow pieces only – soldiers behind them must stay visible.
+
+Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet (konkordat_soldat.png) – three-quarter view from front-right, slightly from above, light from top-left. Each object stands on its own small, flat, irregular base of mud (only directly under the object). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams. Nothing may touch the image border or the neighbouring object.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+## Weitere Teile
+
+### G11. Draht und Barrikade (Wandstücke) → `draht.png`, `barrikade.png`
+
+Zwei Prompts, jeweils die erste Zeile einsetzen:
+- `draht.png`: `Create a barbed-wire obstacle as ONE horizontally tileable strip: crooked wooden stakes and rusty iron screw pickets every 1.5 soldiers, dense tangled barbed wire in several rows between them, about 0.6 standing soldiers high. Draw the wire with clear thick ink lines; the spaces between the wires are empty magenta (see-through).`
+- `barrikade.png`: `Create a street barricade as ONE horizontally tileable strip: stacked timber beams, railway sleepers, sandbags, a broken cart wheel and crates, about 0.55 standing soldiers high, uneven top.`
+
+```
+<erste Zeile von oben>
+
+Format: ONE horizontally tileable strip on a wide 1792×512 image (the strip itself may be lower than the image; keep magenta above it). Camera: seen from the front, the strip runs exactly parallel to the image, slightly from above like the attached soldier sheet so the top edge is just visible, NO perspective convergence – both ends exactly the same size. The left and right ends must match seamlessly so the strip can be repeated side by side. The bottom edge of the strip is a straight horizontal line where it stands on the ground; no ground drawn in front of or behind it. The strip is about 5 standing soldiers long (relative to the attached soldier sheet). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G12. Bunker (Aufsteller) → `bunker.png`
+
+```
+Create a sheet of 2 variants of the same concrete bunker, side by side on a wide 1792×1024 image, each centred in its half with clear magenta space around it, at the same scale as the soldier on the attached sheet.
+
+Object: a squat reinforced-concrete machine-gun bunker, about 1.15 soldiers high and not wider than 2.2 soldiers, rounded edges, a wide horizontal firing slit facing to the right, rusty steel door, sandbags piled against the base, earth heaped over the back half of the roof.
+Left: intact but weathered, stained concrete. Right: damaged – chipped concrete, exposed bent rebar, a cracked corner.
+
+Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet (konkordat_soldat.png) – three-quarter view from front-right, slightly from above, light from top-left. Each object stands on its own small, flat, irregular base of mud (only directly under the object). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams. Nothing may touch the image border or the neighbouring object.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G13. Stümpfe (Aufsteller) → `stuempfe.png`
+
+```
+Create a sheet of 4 different shell-shattered tree stumps, arranged in a 2×2 grid on a square 1264×1264 image, each centred in its quarter with clear magenta space around it, all at the same scale as the soldier on the attached sheet.
+
+Pieces (top left, top right, bottom left, bottom right):
+1. a single splintered stump, about 0.9 soldiers high, jagged top
+2. a cluster of three low jagged stumps with torn roots, about 0.6 soldiers high
+3. a charred stump with one long splinter pointing up, about 0.8 soldiers high
+4. a short thick stump with a fallen piece of trunk leaning on it, about 0.6 soldiers high
+
+No leaves, no green, dead grey-brown wood with soot.
+
+Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet (konkordat_soldat.png) – three-quarter view from front-right, slightly from above, light from top-left. Each object stands on its own small, flat, irregular base of mud (only directly under the object). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams. Nothing may touch the image border or the neighbouring object.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
+```
+
+### G14. Trümmerhaufen (Aufsteller) → `truemmer.png`
+
+```
+Create a sheet of 4 different rubble heaps for a destroyed village, arranged in a 2×2 grid on a square 1264×1264 image, each centred in its quarter with clear magenta space around it, all at the same scale as the soldier on the attached sheet.
+
+Pieces (top left, top right, bottom left, bottom right):
+1. a heap of bricks and roof tiles with a charred beam sticking out, about 0.5 soldiers high, about 1.5 soldiers wide
+2. a pile of broken furniture: a chair, a wardrobe door, a bent iron bed frame, about 0.6 soldiers high
+3. a toppled stone garden wall section with a rusty gate, about 0.5 soldiers high, about 2 soldiers long
+4. a small heap of stones and plaster with a broken cartwheel, about 0.4 soldiers high
+
+Camera: exactly the same viewing angle, perspective and scale as the attached soldier sheet (konkordat_soldat.png) – three-quarter view from front-right, slightly from above, light from top-left. Each object stands on its own small, flat, irregular base of mud (only directly under the object). Background: flat pure magenta (#FF00FF), no gradient, no cast shadow, no smoke, no fire, no light beams. Nothing may touch the image border or the neighbouring object.
+
+Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise. No people, no text, no frame.
 ```

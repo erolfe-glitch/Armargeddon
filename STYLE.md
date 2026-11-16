@@ -126,3 +126,60 @@ Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel 
 - **Licht:** Hauptlicht von **oben links vorn** (ca. 45°): Glanzkanten links/oben, Eigenschatten rechts/unten. Gebäudeschatten auf Karten fallen nach rechts unten.
 - **Kontur:** Außenkontur Tinte `--s-ink` (`#120D0B`), im Spiel 2–3 px (in der 200-px-Quelle ≈ 5 px), Innenlinien halb so stark. Kleinteile (Nieten, Schnallen) zusammenfassen, nichts feiner als ½ px im Spiel.
 - **Farbe:** gedämpft (Sättigung 0,25–0,40), Grundhelligkeit 0,18–0,25. Fraktionsfarbe nur in Uniform und Anstrich: Konkordat Khaki-Braun mit Ochsenblut-Akzent, Aschenwacht Feldgrau, Blaue Legion Horizontblau. Metall, Leder, Holz bei allen gleich (Rost, gedämpftes Messing). Kräftige Farben nur für Feuer, Blut, Mündungsfeuer. Figuren eine Stufe heller und kontrastreicher als der Boden.
+
+## Gelände-Bausteine (neue Ansicht)
+Verbindlich seit 2026-11-16. Ziel: das ganze Gelände für die gekippte Ansicht neu malen, aus wenigen Bausteinarten, die der Code zusammensetzt. Probe mit Platzhaltern: `entwurf/probe/gelaende.html` (`?punkte=1` zeigt Anschlusspunkte und Fußlinien). Gemini-Prompts: `entwurf/GEMINI_PROMPTS.md`, Teil „Gelände-Bausteine“. Ablage der gelieferten Bilder: `ui-quelle/gelaende/`.
+
+**Maße.** R = Feldradius, Feld = 2 R breit, Hexkante = 1 R lang. 1 SH (stehender Soldat) = 0,8 R; ein Feld ist also gut 2,5 Soldaten breit. Malmaßstab nach dem Freistellen: **320 px = 1 SH, 400 px = 1 R**. Kamera im Spiel 39° (beim Herauszoomen bis 58°).
+
+**Ebenen (Zeichenreihenfolge).**
+1. **Boden** – Kacheltexturen, flach im Weltbild, mitprojiziert.
+2. **Flache Details** – liegen auf dem Boden (Trichter, Pfützen, Bretter, Grabensohle), flach im Weltbild.
+3. **Kontaktschatten** – macht der Code: weicher Streifen unter jedem Wandstück, Ellipse unter jedem Aufsteller, Standring der Einheit.
+4. **Aufrechte Teile und Figuren** – gemeinsam nach Tiefe des Fußpunkts sortiert (hinten zuerst). Wandstücke werden dafür in Abschnitte von höchstens 0,25 R zerlegt, jeder Abschnitt sortiert sich selbst.
+5. Luft (Rauch, Gas, Effekte), Dunst nach hinten.
+
+**Die vier Bausteinarten**
+
+| Art | Blickwinkel | Format | Anschluss | Beispiele |
+|---|---|---|---|---|
+| **Bodentextur** | senkrecht von oben (90°) | quadratisch, an allen 4 Seiten nahtlos; 1 Kachel = 2 R × 2 R | Übergänge macht der Code: weiche Maske mit unruhigem Rand (Unschärfe ca. 0,16 R), keine gemalten Übergangskacheln | Schlamm (Grundboden), verbranntes Gras, Waldboden, Trümmerpflaster, Sumpf, Wasser, Kopfstein |
+| **Flaches Detail** | senkrecht von oben (90°), Licht neutral | Einzelteil freigestellt, weicher Rand, frei drehbar | Mittelpunkt; Größe als Durchmesser in R | Trichter klein 0,6 R und groß 1,2 R, Pfütze 0,5–1 R, Bretter/Laufrost 0,6 R, Trümmerstreu 1 R, Grabensohle (Streifen, siehe Graben) |
+| **Wandstück** (aufrecht, entlang einer Bodenlinie) | von vorn, Wand parallel zum Bild, leicht von oben wie die Figurenbögen (Mauerkrone gerade noch sichtbar), **ohne Fluchtpunkt** (beide Enden gleich groß) | waagrecht kachelbarer Streifen, links/rechts nahtlos; Unterkante = Fußlinie, gerade; 1 Kachel = 4 R lang (= 5 Soldaten) | Fußlinie von Punkt A nach Punkt B (Hexecken, Kantenmitten oder Grabenlinie); der Code schert den Streifen auf die Linie und kachelt ihn fortlaufend, deshalb gehen Kurven, schräge Kanten und Kreuzungen ohne eigene Bilder | Ruinenmauer hinten und vorn, Grabenkante vorn und hinten, Draht, Barrikade, Unterholz, Böschung |
+| **Aufsteller** (aufrecht, an einem Punkt) | wie die Figurenbögen: Dreiviertelansicht von vorn rechts, leicht von oben, Licht oben links | Einzelteil freigestellt, kleiner Sockel nur direkt unter dem Objekt | Fußpunkt = Mitte der Unterkante (Sockelmitte); spiegeln erlaubt | Bunker, Stümpfe, Waldstämme, Ruinen-Eckpfeiler, Trümmerhaufen, Bäume mit Krone (nur Rand) |
+
+Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Farbe nach „Bildregeln“, **kein Schlagschatten im Bild**, kein Rauch, kein Licht. Die unteren 15–25 % eines Aufstellers bzw. Wandstücks blendet der Code weich in den Boden aus.
+
+**Anschlusspunkte im Feld.** Ecken 0–5 (0 rechts, 1 rechts vorn, 2 links vorn, 3 links, 4 links hinten, 5 rechts hinten), Kanten 0–5 zwischen Ecke i und i+1 (1 = vordere, 4 = hintere Kante). „Einzug k“: Punkt auf k × Radius (k = 1 genau auf der Hexkante).
+- **Hinten** (hinter der Einheit): Kanten 3, 4, 5 bzw. Ecken 4, 5 mit Einzug 0,85–0,9.
+- **Vorn** (vor der Einheit): Kanten 0, 1, 2 bzw. Ecken 1, 2; vorn nur niedrige Teile.
+
+**Höhen (verbindlich).**
+- Hinten: Mauern höchstens **1,2 SH**; einzelne schmale Stämme bis **1,8 SH**, je Stamm höchstens 0,5 R breit.
+- Vorn: höchstens **0,5 SH**.
+- Bäume mit Kronen (2,5–3 SH): **nur am Kartenrand**, außerhalb der bespielbaren Felder.
+- Hohe Teile (über 0,6 SH), die eine Einheit bis 2 R dahinter verdecken, macht der Code **zu 45 % durchsichtig**.
+
+**Gelände-Arten aus Bausteinen**
+- **Haus / Ruine (zweiteilig):**
+  - Wandstück „Ruine hinten“ (1,2 SH, Innenseite mit Fensterhöhlen) auf den Kanten 3–5, Einzug 0,86.
+  - Wandstück „Ruine vorn“ (Mauerrest 0,45 SH) auf den Kanten 1 und halb 2, Einzug **0,66** (weiter innen, damit er die Füße der vorderen Figuren deckt). Lücke an Kante 0 als Eingang.
+  - Eckpfeiler (Aufsteller) decken die Stöße.
+  - Reihenfolge ergibt sich aus der Tiefe: hinten → Einheit → vorn.
+  - Figuren im Haus in der Tiefe auf 85 % gestaucht.
+- **Graben (eingelassen):**
+  - Grabenzug als Linie über Feldmitten und Kantenmitten (Anschluss an der Kantenmitte, Richtungswechsel 60°/120°/180° ergeben sich von selbst).
+  - Flach: Aushub 1,0 R breit, Schnitt 0,7 R, Verschalung bis 0,64 R, Sohle 0,4 R mit Laufrost. Bild: kachelbarer Längsstreifen „Grabensohle“, von oben.
+  - Aufrecht: Grabenkante vorn (Sandsäcke Außenseite, 0,32 SH) und hinten (Verschalung Innenseite mit Sandsack obenauf, 0,42 SH), je ±0,38 R neben der Linie.
+  - An Kreuzungen und Abzweigen lässt der Code die Kante dort weg, wo ein anderer Grabenzug näher als 0,42 R ist.
+  - Einheit im Graben: **0,32 SH tiefer**, Figuren entlang des Grabens aufgereiht (Tiefe × 0,38), unterhalb der vorderen Kante abgeschnitten.
+- **Wald im Spielfeld (licht):**
+  - Waldboden-Textur.
+  - Je Feld schmale Stämme (Aufsteller) an den Ecken 4 und 5, Einzug 0,85, 1,4–1,8 SH.
+  - Unterholz (Wandstück, 0,3 SH) an Kante 1, Einzug 0,88.
+  - Keine Kronen über bespielbaren Feldern.
+- **Draht:** Wandstück 0,6 SH, Drahtlinien kräftig, Zwischenräume durchsichtig.
+- **Barrikade:** Wandstück 0,55 SH.
+- **Bunker:** Aufsteller 1,15 SH, höchstens 1,8 R breit, Fußpunkt 0,25 R vor der Feldmitte.
+- **Stumpf:** Aufsteller 0,6–0,9 SH.
+- **Große Gebäude über mehrere Felder** (Kirche, Fabrik): noch offen, siehe IDEEN.md.

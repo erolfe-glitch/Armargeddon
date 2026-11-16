@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probe Gelände-Bausteine</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #120D0B; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .lbl { position: fixed; left: 18px; bottom: 14px; max-width: 560px; padding: 10px 14px; font: 600 17px/1.35 "Segoe UI", system-ui, sans-serif; color: #F0EDE1;
+    background: rgba(18,13,11,.84); border: 2px solid #66483A; }
+  .lbl small { display: block; margin-top: 4px; font-weight: 400; font-size: 14px; color: #cbbfa6; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="lbl"><span>Probe: Gelände-Bausteine (Platzhalter aus vorhandenen Bildern)</span>
+<small>Boden aus Kacheltexturen mit weichen Übergängen · flache Details (Trichter, Pfützen, Bretter, Grabensohle) · aufrechte Wandstücke und Aufsteller, mit den Figuren nach Tiefe sortiert.
+Haus: Mauern hinten → Trupp → Mauerrest vorn. Graben: Trupp tiefer, Sandsackkante vorn deckt die Beine. Wald: Stämme hinten hoch, Unterholz vorn niedrig, Kronen nur am Kartenrand.</small></div>
+<script>
+// Probe zu Umbauplan Schritt 4 (Gelände der neuen Ansicht). Nicht im Spiel.
+// Aufruf: entwurf/probe/gelaende.html  ·  ?punkte=1 zeigt Anschlusspunkte und Fußlinien  ·  ?namen=0 ohne Beschriftung
+// Regeln und Maße: STYLE.md, Abschnitt „Gelände-Bausteine“. Kamera, Maßstab und Projektion wie im Spiel (ui.js, Abschnitt „Neue Ansicht“).
+const Q = new URLSearchParams(location.search), PUNKTE = Q.get('punkte') === '1', NAMEN = Q.get('namen') !== '0';
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const W = cv.width = Math.round(innerWidth * devicePixelRatio), H = cv.height = Math.round(innerHeight * devicePixelRatio);
+const U = W / 1920;   // Schirmmaß für Linien und Schrift
+const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
+
+// ---------- Welt: flaches Hexfeld wie im Spiel (Feldradius R, Soldatenhöhe SH = 0,8 R) ----------
+const R = 100, SQ3 = Math.sqrt(3), SH = 0.8 * R, COLS = 12, ROWS = 8, TOP = R * 2.2;   // TOP: Platz hinter der Karte für den Waldrand
+const WW = Math.round(R * (1.5 * COLS + 0.5)), WH = Math.round(TOP + R * SQ3 * (ROWS + 0.5));
+const hexC = (c, r) => [R * (1 + 1.5 * c), TOP + R * SQ3 * (r + 0.5 * (c & 1) + 0.5)];
+const corner = (c, r, i, k = 1) => { const [x, y] = hexC(c, r), a = i * Math.PI / 3; return [x + R * k * Math.cos(a), y + R * k * Math.sin(a)]; };   // Ecke i: 0 rechts, 1 rechts vorn, 2 links vorn, 3 links, 4 links hinten, 5 rechts hinten
+const edgeMid = (c, r, i, k = 1) => { const a = corner(c, r, i, k), b = corner(c, r, (i + 1) % 6, k); return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; };   // Kante i: zwischen Ecke i und i+1 (0 rechts vorn, 1 vorn, 2 links vorn, 3 links hinten, 4 hinten, 5 rechts hinten)
+// Gelände je Feld: . Schlamm (Grundboden), g Gras, w Wald, r Trümmer, h Haus (Ruine), t Graben, s Sumpf
+const T = {}; const set = (code, list) => list.forEach(([c, r]) => T[c + ',' + r] = code);
+set('g', [[0, 0], [1, 0], [5, 0], [6, 0], [0, 1], [8, 1], [9, 1], [10, 0], [11, 1], [0, 5], [1, 6], [2, 6], [3, 7], [10, 5], [11, 4], [6, 6], [7, 7]]);
+set('w', [[2, 0], [3, 0], [1, 1], [2, 1], [3, 1], [1, 2], [2, 2], [0, 3], [1, 3], [2, 3], [0, 4], [1, 4]]);
+set('r', [[3, 3], [4, 2], [5, 2], [3, 4], [4, 4], [5, 3]]);
+set('h', [[4, 3]]);
+set('s', [[9, 5], [10, 6], [9, 6], [11, 5]]);
+const TRENCH = [[[5.6, 3], [6, 3], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3], [11.5, 3]], [[7, 3], [7, 2], [7, 1], [7, 0.4]]];   // Grabenzüge über Feldmitten
+TRENCH.flat().forEach(([c, r]) => { if (c % 1 === 0 && r % 1 === 0) T[c + ',' + r] = 't'; });
+const terr = (c, r) => T[c + ',' + r] || '.';
+
+(async () => {
+  const IM = {}, names = ['tex_mud', 'tex_grass', 'tex_forestfloor', 'tex_rubble', 'tex_swamp', 'tex_water',
+    'p_ruine_hinten', 'p_ruine_vorn', 'p_sandsack', 'p_staemme', 'p_unterholz', 'p_krone', 'p_draht', 'p_stumpf', 'p_bunker', 'p_barrikade', 'p_trichter'];
+  await Promise.all(names.map(async n => IM[n] = await load(`gelaende/${n}.${n.startsWith('p_') ? 'png' : 'webp'}`)));
+  const FIG = {}; for (const s of ['konkordat', 'aschenwacht']) FIG[s] = await Promise.all([1, 2, 3, 4].map(i => load(`gelaende/fig_${s}_soldat_${i}.webp`)));
+
+  // ---------- 1. Boden: Kacheltexturen je Geländeart, weich überblendet ----------
+  const WCV = document.createElement('canvas'); WCV.width = WW; WCV.height = WH; const w = WCV.getContext('2d');
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const TILE = 2 * R;   // eine Texturkachel = 2 Feldradien (= 1 Feldbreite)
+  const pat = (im, dark = 0) => { const p = w.createPattern(im, 'repeat'); p.setTransform(new DOMMatrix().scale(TILE / im.width)); return p; };
+  w.fillStyle = pat(IM.tex_mud); w.fillRect(0, 0, WW, WH);
+  const LAYERS = { g: 'tex_grass', w: 'tex_forestfloor', r: 'tex_rubble', h: 'tex_rubble', s: 'tex_swamp' };
+  function jitterHex(m, x, y, k) {   // Feld mit unruhigem Rand: Übergänge sollen nicht der Hexkante folgen
+    m.beginPath(); for (let i = 0; i <= 36; i++) { const a = i / 36 * Math.PI * 2, rr = R * k * (1 + 0.16 * Math.sin(a * 3 + x * 0.05) + 0.1 * Math.sin(a * 7 + y * 0.07));
+      i ? m.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.92) : m.moveTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.92); } m.fill();
+  }
+  for (const code of ['g', 'w', 'r', 's']) {
+    const mk = document.createElement('canvas'); mk.width = WW; mk.height = WH; const m = mk.getContext('2d');
+    m.filter = `blur(${R * 0.16}px)`; m.fillStyle = '#fff';
+    for (let c = -1; c <= COLS; c++) for (let r = -2; r <= ROWS; r++) { const t = terr(c, r); if (t === code || (code === 'r' && t === 'h') || (code === 'w' && r < 0 && c < 5)) { const [x, y] = hexC(c, r); jitterHex(m, x, y, 1.0); } }
+    if (code === 'w') { m.fillRect(0, 0, WW * 0.45, TOP * 0.9); }   // Waldboden auch hinter der Karte (Waldrand)
+    const ly = document.createElement('canvas'); ly.width = WW; ly.height = WH; const l = ly.getContext('2d');
+    const p = l.createPattern(IM[LAYERS[code]], 'repeat'); p.setTransform(new DOMMatrix().translate(code.charCodeAt(0) * 37, 0).scale(TILE / IM[LAYERS[code]].width));
+    l.fillStyle = p; l.fillRect(0, 0, WW, WH); l.globalCompositeOperation = 'destination-in'; l.drawImage(mk, 0, 0);
+    w.drawImage(ly, 0, 0);
+  }
+  // großflächige Helligkeitsflecken gegen Kachelwiederholung
+  for (let i = 0; i < 60; i++) { const x = rnd() * WW, y = rnd() * WH, rr = R * (0.8 + rnd() * 1.8), d = rnd() < 0.55;
+    const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, d ? 'rgba(10,7,5,0.22)' : 'rgba(150,130,100,0.10)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); w.fillStyle = gr; w.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
+
+  // ---------- 2. Flache Details (von oben, liegen im Boden und werden mitprojiziert) ----------
+  const crater = (x, y, d, rot = 0) => { w.save(); w.translate(x, y); w.rotate(rot); w.drawImage(IM.p_trichter, -d / 2, -d / 2, d, d); w.restore(); };
+  function puddle(x, y, rx, ry) {
+    w.save(); w.translate(x, y); w.beginPath(); for (let i = 0; i <= 24; i++) { const a = i / 24 * Math.PI * 2, k = 1 + 0.18 * Math.sin(a * 3 + x);
+      i ? w.lineTo(Math.cos(a) * rx * k, Math.sin(a) * ry * k) : w.moveTo(Math.cos(a) * rx * k, Math.sin(a) * ry * k); } w.closePath();
+    w.fillStyle = 'rgba(24,20,16,0.7)'; w.fill(); w.save(); w.clip(); const p = w.createPattern(IM.tex_water, 'repeat'); p.setTransform(new DOMMatrix().scale(0.5)); w.fillStyle = p; w.globalAlpha = 0.85; w.fill();
+    w.globalAlpha = 1; w.strokeStyle = 'rgba(200,210,205,0.25)'; w.lineWidth = 1.5; w.beginPath(); w.ellipse(-rx * 0.2, -ry * 0.3, rx * 0.45, ry * 0.25, 0, Math.PI * 1.1, Math.PI * 1.8); w.stroke(); w.restore();
+    w.strokeStyle = 'rgba(12,9,7,0.8)'; w.lineWidth = 2; w.stroke(); w.restore();
+  }
+  function boards(x, y, n, rot) {   // lose Bretter / Laufroste
+    w.save(); w.translate(x, y); w.rotate(rot);
+    for (let i = 0; i < n; i++) { const bx = -n * 7 + i * 14 + (rnd() - 0.5) * 3, len = 46 + rnd() * 18;
+      w.save(); w.translate(bx, 0); w.rotate((rnd() - 0.5) * 0.12); w.fillStyle = `rgb(${92 + rnd() * 20},${70 + rnd() * 14},${46 + rnd() * 10})`; w.fillRect(-5, -len / 2, 10, len);
+      w.strokeStyle = 'rgba(20,14,10,0.9)'; w.lineWidth = 1.6; w.strokeRect(-5, -len / 2, 10, len); w.fillStyle = 'rgba(20,14,10,0.6)'; w.fillRect(-1, -len / 2 + 6, 2, 2); w.fillRect(-1, len / 2 - 8, 2, 2); w.restore(); }
+    w.restore();
+  }
+  for (const [c, r, k, ox, oy] of [[6, 5, 1.1, 0.2, 0.1], [5, 6, 0.8, -0.3, 0.2], [8, 6, 1.2, 0.1, 0], [3, 6, 0.7, 0.2, -0.2], [10, 2, 0.9, -0.4, 0.3], [6, 1, 0.8, 0.3, 0.1], [9, 7, 1.0, 0, 0], [4, 1, 0.7, 0, 0.2]]) {
+    const [x, y] = hexC(c, r); crater(x + ox * R, y + oy * R, R * k, rnd() * 6);
+  }
+  for (const [c, r, ox, oy, rx, ry] of [[7, 5, -0.2, 0.3, 0.42, 0.26], [9, 5, 0.1, 0.1, 0.6, 0.38], [10, 6, -0.1, -0.2, 0.5, 0.3], [4, 5, 0.3, -0.1, 0.3, 0.2], [6, 4, -0.5, 0.4, 0.28, 0.16]]) {
+    const [x, y] = hexC(c, r); puddle(x + ox * R, y + oy * R, rx * R, ry * R);
+  }
+  for (const [c, r, ox, oy, n, rot] of [[6, 4, 0.2, -0.2, 4, 0.5], [4, 4, -0.2, 0.2, 3, 1.8], [9, 4, 0.3, 0.3, 3, 2.6]]) { const [x, y] = hexC(c, r); boards(x + ox * R, y + oy * R, n, rot); }
+
+  // Graben: flacher Teil (Aushub, Schnitt, Verschalung, Sohle mit Laufrost); die Sandsackkanten stehen aufrecht (unten)
+  const chaikin = (pts, n = 3) => { for (let k = 0; k < n; k++) { const o = [pts[0]]; for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]];
+      o.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]); } o.push(pts[pts.length - 1]); pts = o; } return pts; };
+  const toW = ([c, r]) => { if (c % 1 || r % 1) { const c0 = Math.floor(c), r0 = Math.floor(r), a = hexC(c0, r0); if (c % 1) { const b = hexC(c0 + 1, r0); const t = c - c0; return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]; } return [a[0], a[1] + R * SQ3 * (r - r0)]; } return hexC(c, r); };
+  const TR = TRENCH.map(z => chaikin(z.map(toW)));
+  const strokeAll = (wd, col, dash) => { for (const p of TR) { w.beginPath(); p.forEach((q, i) => i ? w.lineTo(q[0], q[1]) : w.moveTo(q[0], q[1])); w.lineWidth = wd; w.strokeStyle = col; w.setLineDash(dash || []); w.stroke(); } w.setLineDash([]); };
+  w.lineCap = 'round'; w.lineJoin = 'round';
+  w.save(); w.filter = `blur(${R * 0.07}px)`; strokeAll(R * 1.02, 'rgba(118,98,70,0.75)'); w.restore();   // Aushub: helle, aufgeworfene Erde
+  strokeAll(R * 0.7, '#1a140f');                                                                           // Schnitt
+  strokeAll(R * 0.64, '#5a4630'); strokeAll(R * 0.64, 'rgba(25,18,12,0.9)', [2, 9]);                       // Verschalung: Bretter mit Fugen
+  strokeAll(R * 0.4, '#2b231b');                                                                           // Sohle
+  strokeAll(R * 0.22, '#6b5236', [5, 7]);                                                                  // Laufrost (Duckboards)
+  // Hexraster wie im Spiel
+  w.lineWidth = 1.4; w.strokeStyle = 'rgba(240,237,225,0.16)';
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { w.beginPath(); for (let i = 0; i <= 6; i++) { const p = corner(c, r, i); i ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1]); } w.stroke(); }
+
+  // ---------- Kamera und Projektion wie im Spiel (39°, vorn 8,5 Felder) ----------
+  const pitch = 39 * Math.PI / 180, ca = Math.cos(pitch), sa = Math.sin(pitch), RC = 23 * R, F = W * RC / (8.5 * 1.5 * R);
+  const TGT = [hexC(5.6, 3)[0], hexC(5, 1)[1] + R * 0.6];
+  const C = [TGT[0], TGT[1] + RC * ca, RC * sa], f = [-ca, -sa], up = [-sa, ca];
+  const proj = (x, y, z = 0) => { const dy = y - C[1], dz = z - C[2], zc = dy * f[0] + dz * f[1]; return [W / 2 + F * (x - C[0]) / zc, H / 2 - F * (dy * up[0] + dz * up[1]) / zc, zc]; };
+  const unprojY = sy => { const k = -(sy - H / 2) / F, dy = f[0] + k * up[0], dz = f[1] + k * up[1]; if (dz >= -1e-6) return null; return C[1] - C[2] / dz * dy; };
+  const scAt = (x, y) => F / proj(x, y)[2];
+
+  // ---------- 3. Aufrechte Teile: Wandstücke (entlang einer Bodenlinie) und Aufsteller (an einem Punkt) ----------
+  const DRAW = [], SHADOW = [], NAMES = [];
+  // Wandstück: Bild steht senkrecht über der Bodenlinie A→B; Höhe hW (Welt), Bild wird entlang der Linie gekachelt (u = Lauflänge / Bildbreite)
+  function wall(im, A, B, hW, o = {}) {
+    const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height * (o.stretch || 1), n = Math.max(1, Math.ceil(len / (R * 0.25)));
+    let u = o.u0 || 0;
+    for (let i = 0; i < n; i++) {
+      const a = [A[0] + (B[0] - A[0]) * i / n, A[1] + (B[1] - A[1]) * i / n], b = [A[0] + (B[0] - A[0]) * (i + 1) / n, A[1] + (B[1] - A[1]) * (i + 1) / n], du = len / n / iwW, u0 = u;
+      u += du; const my = (a[1] + b[1]) / 2;
+      if (o.skip && o.skip((a[0] + b[0]) / 2, my)) continue;
+      DRAW.push({ y: my + (o.bias || 0), f: () => strip(im, a, b, hW, u0, du, o) });
+    }
+    SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = `rgba(8,6,4,${o.shade ?? 0.55})`; w.lineWidth = R * (o.shadeW || 0.16); w.lineCap = 'round'; w.beginPath(); w.moveTo(A[0], A[1] + R * 0.03); w.lineTo(B[0], B[1] + R * 0.03); w.stroke(); w.restore(); });
+    return u;
+  }
+  function strip(im, a, b, hW, u0, du, o) {
+    const pa = proj(a[0], a[1]), pb = proj(b[0], b[1]), sc = F / ((pa[2] + pb[2]) / 2), hS = hW * sc, iw = im.width, ih = im.height;
+    let s0 = ((u0 % 1) + 1) % 1, s1 = s0 + du; const parts = s1 <= 1 ? [[s0, s1, 0, 1]] : [[s0, 1, 0, (1 - s0) / du], [0, s1 - 1, (1 - s0) / du, 1]];
+    for (const [x0, x1, t0, t1] of parts) {
+      const qa = [pa[0] + (pb[0] - pa[0]) * t0, pa[1] + (pb[1] - pa[1]) * t0], qb = [pa[0] + (pb[0] - pa[0]) * t1, pa[1] + (pb[1] - pa[1]) * t1], sw = (x1 - x0) * iw;
+      if (sw < 0.5) continue;
+      g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, 0, hS / ih, qa[0], qa[1] - hS + (o.sink || 0) * sc);
+      if (o.filter) g.filter = o.filter; if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) g.globalAlpha = 0.45;
+      g.drawImage(im, x0 * iw, 0, sw + 0.6, ih, 0, 0, sw + 0.6, ih); g.restore();
+    }
+    if (PUNKTE) { g.save(); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
+  }
+  // Verdeckt ein hohes Teil am Bodenpunkt (x, y) eine Einheit dahinter? (Einheit bis knapp 2 Feldradien weiter hinten, seitlich nah)
+  const hides = (x, y) => NAMES.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < R * 1.95 && Math.abs(hx - x) < R * 1.0);
+  // Aufsteller: Bild steht am Fußpunkt (x, y), Fuß = unterer Bildrand (bzw. Anteil fy von oben), Höhe hW (Welt)
+  function stand(im, x, y, hW, o = {}) {
+    DRAW.push({ y: y + (o.bias || 0), f: () => {
+      const [px, py, zc] = proj(x, y), sc = F / zc, h = hW * sc, wd = h * im.width / im.height;
+      g.save(); if (hW > 0.6 * SH && hides(x, y)) g.globalAlpha = 0.45;   // hohes Teil vor einer Einheit: durchsichtig
+      g.translate(px, py); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
+      g.drawImage(im, -wd * (o.ax ?? 0.5), -h * (o.fy ?? 1), wd, h); g.restore();
+      if (PUNKTE) { g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); }
+    } });
+    if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.4); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(8,6,4,0.55)'); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
+  }
+
+  // Haus (Ruine, zweiteilig): Mauern hinten auf den drei hinteren Kanten, niedriger Mauerrest vorn mit Lücke (Eingang)
+  { const c = 4, r = 3, k = 0.86, kv = 0.66; let u = 0.05;   // kv: Mauerrest vorn steht weiter innen, damit er die Füße der vorderen Figuren deckt
+    for (const e of [3, 4, 5]) { const A = corner(c, r, e, k), B = corner(c, r, (e + 1) % 6, k); u = wall(IM.p_ruine_hinten, A, B, 1.2 * SH, { u0: u }); }
+    wall(IM.p_ruine_vorn, corner(c, r, 2, kv), corner(c, r, 1, kv), 0.45 * SH, { u0: 0.1, shade: 0.45, filter: 'brightness(0.6)' });
+    const A = corner(c, r, 3, kv), B = corner(c, r, 2, kv); wall(IM.p_ruine_vorn, A, [A[0] + (B[0] - A[0]) * 0.55, A[1] + (B[1] - A[1]) * 0.55], 0.45 * SH, { u0: 0.5, shade: 0.45, filter: 'brightness(0.6)' });
+    stand(IM.p_stumpf, ...corner(c, r, 0, 0.95), 0.9 * SH, { noShadow: false });   // Mauerecke/Balken rechts
+  }
+  // Trümmerfelder daneben: einzelne niedrige Mauerreste
+  { const A = corner(5, 2, 4, 0.85), B = corner(5, 2, 5, 0.85); wall(IM.p_ruine_hinten, A, B, 0.9 * SH, { u0: 0.6, stretch: 0.55 }); }
+  { const A = corner(3, 4, 1, 0.8), B = corner(3, 4, 2, 0.8); wall(IM.p_ruine_vorn, A, B, 0.3 * SH, { u0: 0.3 }); }
+
+  // Graben: Sandsackkanten links und rechts des Grabenzugs; an Abzweigen (Kreuzung) offen
+  const distTo = (p, pts) => { let d = 1e9; for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]], vx = b[0] - a[0], vy = b[1] - a[1], t = Math.max(0, Math.min(1, ((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / (vx * vx + vy * vy)));
+    d = Math.min(d, Math.hypot(p[0] - a[0] - vx * t, p[1] - a[1] - vy * t)); } return d; };
+  TR.forEach((pts, ti) => {
+    for (const side of [-1, 1]) {
+      const off = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [p[0] - dy / l * side * R * 0.38, p[1] + dx / l * side * R * 0.38]; });
+      let u = side * 0.37;
+      for (let i = 0; i < off.length - 1; i++) {
+        const front = (off[i][1] + off[i + 1][1]) / 2 > (pts[i][1] + pts[i + 1][1]) / 2;
+        u = wall(IM.p_sandsack, off[i], off[i + 1], (front ? 0.32 : 0.42) * SH, { u0: u, shade: 0.4, shadeW: 0.1, filter: front ? '' : 'brightness(0.8)',
+          skip: (x, y) => TR.some((q, j) => j !== ti && distTo([x, y], q) < R * 0.42) });
+      }
+    }
+  });
+  // Draht vor dem Graben, Barrikade, Bunker, Stümpfe
+  { const A = [hexC(7, 4)[0] - R * 0.5, hexC(7, 4)[1] - R * 0.15], B = [hexC(10, 4)[0] + R * 0.1, hexC(10, 4)[1] - R * 0.1], M = hexC(8, 4); wall(IM.p_draht, A, [M[0], M[1] - R * 0.35], 0.6 * SH, { shade: 0.3 }); wall(IM.p_draht, [M[0], M[1] - R * 0.35], B, 0.6 * SH, { u0: 0.4, shade: 0.3 }); }
+  { const [x, y] = hexC(5, 5); wall(IM.p_barrikade, [x - R * 0.6, y - R * 0.1], [x + R * 0.55, y - R * 0.3], 0.55 * SH, { stretch: 0.8 }); }
+  { const [x, y] = hexC(10, 1); stand(IM.p_bunker, x, y + R * 0.25, 1.15 * SH, { shadeK: 0.45 }); }
+  for (const [c, r, ox, oy, h] of [[6, 1, -0.4, -0.3, 0.9], [8, 6, 0.4, -0.4, 0.7], [3, 6, -0.3, 0.1, 0.8], [10, 4, 0.5, 0.2, 0.6]]) { const [x, y] = hexC(c, r); stand(IM.p_stumpf, x + ox * R, y + oy * R, h * SH, { flip: (c + r) % 2 === 1 }); }
+
+  // Wald im Spielfeld (licht): je Waldfeld Stämme an den hinteren Ecken (hoch), Unterholz an der vorderen Kante (niedrig)
+  for (const key in T) if (T[key] === 'w') {
+    const [c, r] = key.split(',').map(Number);
+    stand(IM.p_stumpf, ...corner(c, r, 4, 0.85), 1.7 * SH, { flip: c % 2 === 0, shadeK: 0.3 });
+    stand(IM.p_stumpf, ...corner(c, r, 5, 0.85), 1.4 * SH, { flip: c % 2 === 1, shadeK: 0.3 });
+    wall(IM.p_unterholz, corner(c, r, 2, 0.88), corner(c, r, 1, 0.88), 0.3 * SH, { u0: c * 0.3 + r * 0.17, shade: 0.35, stretch: 1.4 });
+  }
+  // Waldrand mit Kronen: nur außerhalb des Spielfelds (hinter der hintersten Reihe)
+  for (let i = 0; i < 9; i++) { const x = R * (0.2 + i * 0.95) + (i % 2) * R * 0.3, y = TOP - R * (0.35 + (i % 3) * 0.32); stand(IM.p_krone, x, y, 2.6 * SH * (0.9 + (i % 2) * 0.15), { flip: i % 2 === 1, shadeK: 0.35, fy: 0.9 }); }
+
+  // ---------- Trupps (Figuren wie im Spiel: Bildhöhe 320 px = 1 SH) ----------
+  const SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];
+  function trupp(side, c, r, name, o = {}) {
+    const ims = side === 'A' ? FIG.konkordat : FIG.aschenwacht, flip = side === 'D', [hx, hy] = hexC(c, r);
+    // Standring flach auf dem Boden
+    SHADOW.push(() => { w.save(); w.lineWidth = 3; w.strokeStyle = side === 'A' ? 'rgba(142,43,34,0.85)' : 'rgba(125,132,113,0.9)'; w.beginPath(); w.ellipse(hx, hy + R * 0.02, R * 0.78, R * 0.7, 0, 0, 7); w.stroke(); w.restore(); });
+    SLOTS4.forEach(([ox, oy], i) => {
+      const x = hx + ox * R * (flip ? -1 : 1) * (o.sx || 1), y = hy + oy * R * (o.sy || 1), im = ims[(i + c) % 4];
+      DRAW.push({ y, f: () => {
+        const [px, py, zc] = proj(x, y), sc = F / zc, h = im.height / 320 * SH * sc, wd = h * im.width / im.height, sink = (o.sink || 0) * SH * sc;
+        g.save(); g.fillStyle = 'rgba(6,4,3,0.5)'; g.beginPath(); g.ellipse(px, py, wd * 0.3, wd * 0.08, 0, 0, 7); g.fill(); g.restore();
+        g.save(); if (sink) { g.beginPath(); g.rect(px - wd, py - h * 2, wd * 2, h * 2 + sink * 0.25); g.clip(); }
+        g.translate(px, py + sink); if (flip) g.scale(-1, 1); if (oy < -0.1) g.filter = 'brightness(0.88)';
+        g.drawImage(im, -wd / 2, -h, wd, h); g.restore();
+      } });
+    });
+    NAMES.push([hx, hy, name]);
+  }
+  trupp('A', 4, 3, 'im Haus', { sy: 0.85 });
+  trupp('D', 8, 3, 'im Graben', { sy: 0.38, sx: 1.1, sink: 0.32 });
+  trupp('A', 2, 2, 'im Wald');
+  trupp('D', 6, 2, 'offen (Vergleich)');
+
+  // ---------- Zeichnen ----------
+  for (const s of SHADOW) s();
+  if (PUNKTE) { w.fillStyle = '#E2B04A'; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) for (let i = 0; i < 6; i++) { const p = corner(c, r, i), m = edgeMid(c, r, i); w.fillRect(p[0] - 3, p[1] - 3, 6, 6); w.beginPath(); w.arc(m[0], m[1], 3, 0, 7); w.fill(); } }
+  // Himmel, Boden zeilenweise projiziert, Dunst (wie projectGround im Spiel)
+  const sky = g.createLinearGradient(0, 0, 0, H * 0.55); sky.addColorStop(0, '#0d0907'); sky.addColorStop(0.6, '#241a14'); sky.addColorStop(1, '#3a2a1e'); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  for (let ys = 0; ys < H; ys++) {
+    const wy = unprojY(ys + 0.5); if (wy == null || wy < 0 || wy > WH) continue;
+    const zc = (wy - C[1]) * f[0] + (0 - C[2]) * f[1], sw = W * zc / F;
+    g.drawImage(WCV, C[0] - sw / 2, wy, sw, 1, 0, ys, W, 1);
+  }
+  DRAW.sort((a, b) => a.y - b.y).forEach(d => d.f());
+  const fog = g.createLinearGradient(0, 0, 0, H); fog.addColorStop(0, 'rgba(18,13,11,0.55)'); fog.addColorStop(0.4, 'rgba(18,13,11,0.12)'); fog.addColorStop(1, 'rgba(18,13,11,0)'); g.fillStyle = fog; g.fillRect(0, 0, W, H);
+  if (NAMEN) { g.font = `600 ${Math.round(17 * U)}px "Segoe UI", sans-serif`; g.textAlign = 'center';
+    for (const [x, y, n] of NAMES) { const p = proj(x, y + R * 0.95); g.lineWidth = 5 * U; g.strokeStyle = '#120D0B'; g.strokeText(n, p[0], p[1]); g.fillStyle = '#E2B04A'; g.fillText(n, p[0], p[1]); } }
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body>
+</html>

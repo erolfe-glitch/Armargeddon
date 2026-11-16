@@ -35,6 +35,17 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Figurenbögen: Blickwinkel genau wie bei `konkordat_soldat.png` / `aschenwacht_soldat.png`, nicht steiler (Einheitlichkeit geht vor). Prompts für die erste Lieferung: `entwurf/GEMINI_PROMPTS.md`.
   - Umbau im Spiel hinter dem Schalter „Neue Ansicht (Test)“: Schritt 0 (Schalter, Ansichts-Abschnitt in ui.js) und Schritt 1 (Kamera und Boden: Weltbild flach, perspektivisch projiziert, Einheiten als Aufsteller, Klicks/Ziehen/Zoom/Kamera-Folgen) erledigt 2026-11-16; Schritt 3 (Figuren: Trupps zu viert, Einzelmodelle, Zuordnung FIGMAP in ui.js) erledigt 2026-11-16, vor Schritt 2; Schritt 2 (Zielfahnen, Symbole, Klammern, Vorschau, Rauch, Gas, Effekte aufrecht) erledigt 2026-11-16; weiter mit 4 Aufsteller (Gelände in zwei Ebenen, Höhenfelder mit Böschung), 5 Feinschliff.
   - Gelände muss für diesen Winkel neu gemalt werden: plastisch, Draht, Trichter und Gräben mit Tiefe (Seitenwände, Schatten, Pfähle stehen hoch). Das heutige Gelände ist für die Draufsicht gemalt und wirkt gekippt flach.
+  - **Baustein-System festgelegt (2026-11-16):**
+    - Probe mit Platzhaltern: `entwurf/probe/gelaende.html`.
+    - Regeln: STYLE.md „Gelände-Bausteine“. Vier Arten: Bodentextur, flaches Detail, Wandstück, Aufsteller.
+    - Prompts G1–G14 in `entwurf/GEMINI_PROMPTS.md`; die Bilder kommen nach `ui-quelle/gelaende/`.
+    - Danach: Freistell-Werkzeug für Streifen und Texturen, Einbau in die neue Ansicht. Die Karten werden dann aus Feldcodes zusammengesetzt statt aus gemalten Ganzbildern.
+  - **Später: große Gebäude über mehrere Felder (2026-11-16).** Kirche, Fabrik, Bahnhof, Gutshof über 2–4 Felder. Idee:
+    - jedes Feld bekommt seine eigenen Wandstücke (hinten hoch, vorn niedrig);
+    - ein Turm bzw. Schornstein steht als einzelner hoher Aufsteller auf einem Randfeld des Gebäudes und wird durchsichtig, wenn er Einheiten verdeckt;
+    - innen keine Wände zwischen den Feldern, nur Trümmer.
+    
+    Offen: Regeln (gemeinsame Deckung, Sicht durch das Gebäude), Prompts A2/A3 dafür umschreiben.
 - **Etappe 4b – Einheitenbilder (angehalten):** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion. Wartet auf das Ergebnis des Probebilds.
 - **Etappe 4c – Sound und Musik:** UI-Klicks, Waffen, Einschläge, Gas, Ketten, Atmosphäre; Musik mit Suno: Titelthema und 1–2 Schlachtmusiken.
 - **Etappe 5 – Gameplay:** Missionstypen (nicht nur Siegpunkte), stärkere und nachvollziehbare KI, Blaue Legion als vollwertige Seite. Dazu (2026-11-16):
