@@ -16,12 +16,13 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
 const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: ['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n),
-  flach: [1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k),
+  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'draht', 'barrikade', 'wald_unterholz'],
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`))],
+    ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4'],   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
 
 async function bauen(cfg) {
@@ -31,7 +32,7 @@ async function bauen(cfg) {
   await Promise.all([...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand].map(async n => IM[n] = await load(`gelaende/g_${n}.webp`)));
   const FIG = {}; for (const s of ['konkordat', 'aschenwacht']) FIG[s] = await Promise.all([1, 2, 3, 4].map(i => load(`gelaende/fig_${s}_soldat_${i}.webp`)));
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]);
-  const STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
+  const SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
 
   // ---------- Welt ----------
   const R = cfg.R || 120, SH = 0.8 * R, COLS = cfg.cols, ROWS = cfg.rows, MX = R * 1.4, TOP = R * 2.4, MB = R * 1.2;   // Ränder: Gelände läuft über die Karte hinaus
@@ -78,7 +79,7 @@ async function bauen(cfg) {
     const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, d ? 'rgba(10,7,5,0.2)' : 'rgba(150,130,100,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); w.fillStyle = gr; w.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
 
   // Boden insgesamt aufhellen: die gelieferten Texturen sind sehr dunkel (Helligkeit 0,08–0,17), Figuren sollen sich abheben (STYLE: Figuren eine Stufe heller als der Boden)
-  l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.filter = `brightness(${cfg.hell || 1.5}) saturate(0.95)`; l.drawImage(WCV, 0, 0); l.filter = 'none';
+  l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.filter = `brightness(${cfg.hell || 1.7}) contrast(${cfg.kontrast || 1.2}) saturate(0.95)`; l.drawImage(WCV, 0, 0); l.filter = 'none';
   w.clearRect(0, 0, WW, WH); w.drawImage(LY, 0, 0);
 
   // ---------- Linienzüge (Gräben, Straßen, Kanal) aus Feldern ----------
@@ -112,7 +113,7 @@ async function bauen(cfg) {
 
   // Straßen (Kopfstein) und Kanal (Wasser mit dunkler Uferkante)
   const ROADS = ketten((c, r) => flags(c, r).road && terr(c, r) !== 'canal').filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
-  if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.5) * 1.1); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
+  if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.7) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
   const RIVERS = ketten((c, r) => flags(c, r).river || ['canal', 'bridge', 'furt'].includes(terr(c, r))).filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
   if (RIVERS.length) {
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(28,21,14,0.95)'; strokeLines(w, RIVERS, R * 1.55); w.restore();
@@ -128,7 +129,7 @@ async function bauen(cfg) {
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), q = hrnd(c, r, 9);
-    if (t === 'crater') { if (q < 0.55) flach(F(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(F(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(F(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
+    if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? IM.trichter_gross_1 : F(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(F(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(F(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
     else if (t === 'mud') { flach(F(q < 0.5 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.7 + q * 0.4, q * 30); if (q > 0.3) flach(F(8), ...jit(c, r, 3, 0.6), 0.9, q * 17, 0.85); }
     else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(F(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.28) flach(F(8), ...jit(c, r, 1, 0.8), 0.9, q * 40, 0.8); else if (q < 0.34) flach(F(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.42) flach(F(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
     else if (t === 'village' || t === 'rubble') { flach(F(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
@@ -160,7 +161,7 @@ async function bauen(cfg) {
   const DRAW = [], SHADOW = [], UNITS = [];
   const hides = (x, y) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < R * 1.95 && Math.abs(hx - x) < R * 1.0);
   function wall(im, A, B, hW, o = {}) {   // Wandstück: Bild steht über der Bodenlinie A→B, entlang der Linie gekachelt
-    const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height, n = Math.max(1, Math.ceil(len / (R * 0.25)));
+    const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height * (o.stretch || 1), n = Math.max(1, Math.ceil(len / (R * 0.25)));
     let u = o.u0 || 0;
     for (let i = 0; i < n; i++) {
       const a = [A[0] + (B[0] - A[0]) * i / n, A[1] + (B[1] - A[1]) * i / n], b = [A[0] + (B[0] - A[0]) * (i + 1) / n, A[1] + (B[1] - A[1]) * (i + 1) / n], du = len / n / iwW, u0 = u;
@@ -181,7 +182,8 @@ async function bauen(cfg) {
       const qa = [pa[0] + (pb[0] - pa[0]) * t0, pa[1] + (pb[1] - pa[1]) * t0], qb = [pa[0] + (pb[0] - pa[0]) * t1, pa[1] + (pb[1] - pa[1]) * t1], sw = (x1 - x0) * iw;
       if (sw < 0.5) continue;
       g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, -V[0] / ih, -V[1] / ih, qa[0] + V[0], qa[1] + V[1] + (o.sink || 0) * sc);
-      if (o.filter) g.filter = o.filter; if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) g.globalAlpha = 0.45;
+      const flt = typeof o.filter === 'function' ? o.filter(hS) : o.filter; if (flt) g.filter = flt; if (o.alpha) g.globalAlpha = typeof o.alpha === 'function' ? o.alpha(hS) : o.alpha;
+      if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) g.globalAlpha = 0.45;
       g.drawImage(im, x0 * iw, 0, Math.min(sw + 0.6, iw - x0 * iw), ih, 0, 0, Math.min(sw + 0.6, iw - x0 * iw), ih); g.restore();
     }
     if (cfg.punkte) { g.save(); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
@@ -201,9 +203,23 @@ async function bauen(cfg) {
   const flipR = (c, r, k) => hrnd(c, r, k) < 0.5;
 
   // Graben
+  // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
+  // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
+  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866;
+  function zickzack(pts) {
+    const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
+    const n = Math.max(2, Math.round(L / ZZ_STEP)), out = [];
+    for (let j = 0; j <= n; j++) {
+      let s = L * j / n, i = 0; while (i < segL.length - 1 && s > segL[i]) { s -= segL[i]; i++; }
+      const a = pts[i], b = pts[i + 1], t = segL[i] ? s / segL[i] : 0, dx = (b[0] - a[0]) / (segL[i] || 1), dy = (b[1] - a[1]) / (segL[i] || 1);
+      const o = j === 0 || j === n ? 0 : (j % 2 ? ZZ_A : -ZZ_A);
+      out.push([a[0] + (b[0] - a[0]) * t - dy * o, a[1] + (b[1] - a[1]) * t + dx * o]);
+    }
+    return out;
+  }
   const TRENCH = cfg.trench ? cfg.trench.map(z => ({ pts: z.map(p => atW(...p)), ends: [false, false] }))
-    : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(verlaengern);
-  const TR = TRENCH.map(z => chaikin(z.pts));
+    : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: cfg.zickzack ? zickzack(v.pts) : v.pts }; });
+  const TR = TRENCH.map(z => chaikin(z.pts, cfg.zickzack && z.ch ? 1 : 3));
   if (TR.length) {
     const TW = 1.0 * R, SOHLE = IM.graben_sohle;
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * 1.15); w.restore();
@@ -235,13 +251,21 @@ async function bauen(cfg) {
     TR.forEach((pts, ti) => {
       for (const side of [-1, 1]) {
         const off = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1; return [p[0] - dy / ln * side * R * 0.38, p[1] + dx / ln * side * R * 0.38]; });
-        const uu = { v: hrnd(ti, side, 4), h: hrnd(ti, side, 5) };
+        const uu = { v: hrnd(ti, side, 4), h: hrnd(ti, side, 5), p: hrnd(ti, side, 6) };
+        // Feindseite des Grabens (cfg.grabenSeite: wem gehört der Graben): Konkordat schaut nach Osten (+x), Aschenwacht nach Westen
+        const own = cfg.grabenSeite && TRENCH[ti].ch ? cfg.grabenSeite(...TRENCH[ti].ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 0;
         for (let i = 0; i < off.length - 1; i++) {
           const mx = (off[i][0] + off[i + 1][0]) / 2, my = (off[i][1] + off[i + 1][1]) / 2, cx = (pts[i][0] + pts[i + 1][0]) / 2, cy = (pts[i][1] + pts[i + 1][1]) / 2;
           const dl = Math.hypot(cx - mx, cy - my) || 1, inY = (cy - my) / dl, back = inY > -0.5, key = back ? 'h' : 'v';
           const sd = Math.max(0, 1 - Math.abs(inY) / 0.85), lean = sd > 0.05 ? { nx: (mx - cx) / dl, ny: (my - cy) / dl, L: 0.9 * sd, U: 1 - 0.35 * sd } : null;
           uu[key] = wall(back ? IM.graben_kante_hinten : IM.graben_kante_vorn, off[i], off[i + 1], (back ? 0.28 : 0.32) * SH, { u0: uu[key], shade: 0.4, shadeW: 0.1, lean,
             skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * 0.42) });
+          // Stücke, die in die Tiefe laufen: auf der Feindseite zusätzlich eine aufrechte Brustwehr aus Sandsäcken, etwas weiter außen
+          if (ex && sd > 0.3 && Math.sign(mx - cx) === ex) {
+            const nx = (mx - cx) / dl, ny = (my - cy) / dl, o2 = R * 0.24, A2 = [off[i][0] + nx * o2, off[i][1] + ny * o2], B2 = [off[i + 1][0] + nx * o2, off[i + 1][1] + ny * o2];
+            uu.p = wall(IM.graben_kante_vorn, A2, B2, 0.4 * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
+              skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * 0.55) });
+          }
         }
       }
     });
@@ -272,11 +296,14 @@ async function bauen(cfg) {
       for (const [e, k] of [[4, 0.85], [5, 0.85], [q(60) < 0.5 ? 3 : 0, 0.8]]) stand(STAEMME[Math.floor(q(e + 61) * STAEMME.length)], ...corner(c, r, e, k), 1.8 * SH * (0.8 + q(e + 70) * 0.2), { flip: flipR(c, r, e + 80), shadeK: 0.3 });
       wall(IM.wald_unterholz, corner(c, r, 2, 0.88), corner(c, r, 1, 0.88), 0.3 * SH, { u0: q(90) * 4, shade: 0.35 });
       if (q(91) < 0.6) stand(STUEMPFE[Math.floor(q(92) * STUEMPFE.length)], ...corner(c, r, 3, 0.45), 0.6 * SH, { flip: flipR(c, r, 93) });
+    } else if (t === 'sperre') {   // Panzersperren: zwei Teile je Feld, quer verteilt
+      for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) });
     } else if (t === 'bunker') {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
     } else if (t === 'wire') {   // Drahtgürtel: zwei Stücke quer zur Blickrichtung, leicht schräg, hinten und vorn im Feld
       for (const [k, dy] of [[1, -0.36], [2, 0.28]]) { const ang = (q(k) - 0.5) * 0.6, L = R * (0.75 + q(k + 5) * 0.2), cx = hx + (q(k + 9) - 0.5) * R * 0.3, cy = hy + dy * R;
-        wall(IM.draht, [cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], 0.6 * SH, { u0: q(k + 3) * 3, shade: 0.25 }); }
+        wall(IM.draht, [cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], 0.6 * SH, { u0: q(k + 3) * 3, shade: 0.2,
+          filter: hS => hS > 45 * U ? `brightness(1.3) drop-shadow(0 0 ${Math.max(1, Math.round(1.2 * U))}px rgba(215,195,160,0.7))` : 'brightness(1.7) contrast(1.1)', alpha: hS => hS > 45 * U ? 1 : 0.85 }); }   // heller Saum nur von nah; von weit Rostfarbe aufgehellt   // Streifen mit ausgedünnten Pfählen (gelaende_cut.py), Draht aufgehellt
     } else if (t === 'barrikade') {
       const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });
     } else if (t === 'bridge') {   // Brücke: Bohlen quer über das Wasser

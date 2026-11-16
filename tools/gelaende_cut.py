@@ -55,6 +55,12 @@ TEILE = {
     'truemmer_d':          ('bogen', ('gemeinsam', 0.6)),
     # Trichter klein/groß, Pfütze, lange Pfütze, Bretter, Laufrost, Trümmerstreu, Spuren
     'flach_details':       ('flach', [0.65, 1.25, 0.6, 1.0, 0.6, 0.6, 1.0, 1.0]),
+    'panzersperren':       ('bogen', ('gemeinsam', 0.75)),    # Tschechenigel, Höckerlinie, Igel mit Draht, Pfahlreihe
+    'panzersperren_b':     ('bogen', ('gemeinsam', 0.95)),    # wie oben, Pfähle länger
+    'trichter_gross':      ('flach', [1.5]),
+    # Schwarzer Hintergrund (trichter_schwarz_a/b/c, details_schwarz): Versuch 2026-11-16 nicht sauber – dunkle Trichter, Wasser und
+    # Schatten gehen in den Hintergrund über und werden löchrig. Nicht verwenden; bei Bedarf neu mit Magenta-Hintergrund erzeugen.
+    # Zum erneuten Ausprobieren: python tools/gelaende_cut.py --schwarz trichter_schwarz_a (Ergebnis nur ansehen, nicht einbauen).
     'boden_schlamm':       ('textur', None),
     'boden_gras':          ('textur', None),
     'boden_waldboden':     ('textur', None),
@@ -68,6 +74,17 @@ TEX_PX, TEX_PROBE = 1024, 768
 
 def freistellen(path):
     a = np.asarray(Image.open(path).convert('RGB'))
+    rand_px = np.concatenate([a[0], a[-1], a[:, 0], a[:, -1]]).astype(float)
+    if np.median(rand_px, axis=0).max() < 30:   # schwarzer Hintergrund: Deckung nach Helligkeit, Farben nicht entmischen (dunkler Saum = Schatten)
+        lum = a.astype(float).mean(axis=2)
+        al = np.clip((lum - 14) / 26, 0, 1)
+        lab, _ = ndimage.label(al < 0.5)
+        rand = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+        innen = (lab > 0) & ~np.isin(lab, list(rand))
+        al[innen] = 1   # eingeschlossenes Dunkel (Wasser im Trichter) bleibt deckend
+        al = ndimage.gaussian_filter(al, 1.0)
+        print('  Hintergrund schwarz (Versuch)')
+        return np.dstack([a.astype(float), al * 255])
     q, bg = key_any(a)
     if bg.min() > 200:   # weißer Hintergrund: helle Putzflächen im Bild nicht mit ausblenden – nur was mit dem Rand zusammenhängt
         lab, _ = ndimage.label(q[..., 3] < 128)
@@ -151,6 +168,31 @@ def streifen(name, art, sh):
     speichern(q, name, PX_SH * sh if art == 'wand' else PX_R)
 
 
+def pfaehle_ausduennen(name, jede=2):
+    """Drahtstreifen: jeden zweiten Pfahl herausschneiden (Wunsch 2026-11-16: weniger Pfähle, mehr Draht dazwischen).
+    Pfähle = Spalten, die über 60 % der Höhe gedeckt sind; geschnitten wird mit 4 px Rand, die Drahtwirbel stoßen dann aneinander."""
+    im = np.asarray(Image.open(OUT / f'{name}.png')).copy()
+    cov = (im[..., 3] > 128).mean(axis=0); idx = np.where(cov > 0.6)[0]
+    grp = []
+    for i in idx:
+        if grp and i - grp[-1][1] <= 3: grp[-1][1] = i
+        else: grp.append([i, i])
+    weg = np.zeros(im.shape[1], bool)
+    for k, (a, b) in enumerate(grp):
+        if k % jede: weg[max(0, a - 4):b + 5] = True
+    q = im[:, ~weg].astype(np.float64)
+    # Drahtlinien verdicken (im Spiel wird der Streifen auf ca. ein Drittel verkleinert, feine Linien verschwinden sonst):
+    # deckende Drahtpixel um 1 px ausbreiten, neu gedeckte Pixel rostbraun; Pfähle bleiben unverändert
+    pf = np.zeros(q.shape[1], bool); cov2 = (q[..., 3] > 128).mean(axis=0); pf[ndimage.binary_dilation(cov2 > 0.6, iterations=5)] = True
+    draht = q[..., 3] > 150
+    neu = ndimage.binary_dilation(draht, structure=np.ones((3, 3), bool)) & ~draht
+    neu[:, pf] = False
+    q[neu, 3] = np.maximum(q[neu, 3], 220); q[neu, :3] = [70, 46, 32]
+    q = np.clip(q, 0, 255).astype(np.uint8)
+    print(f'  {len(grp)} Pfähle, {sum(1 for k in range(len(grp)) if k % jede)} entfernt → Breite {q.shape[1]} px')
+    out = Image.fromarray(q, 'RGBA'); out.save(OUT / f'{name}.png'); out.save(PROBE / f'g_{name}.webp', quality=88, method=6)
+
+
 def textur(name):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')).astype(np.float64)
     h, w = a.shape[:2]
@@ -226,7 +268,10 @@ def bogen(name, hoehen):
 
 
 if __name__ == '__main__':
-    for name in sys.argv[1:] or TEILE:
+    args = [x for x in sys.argv[1:] if x != '--schwarz']
+    if '--schwarz' in sys.argv:
+        for name in args: TEILE[name] = ('flach', [0.9] * 8)
+    for name in args or TEILE:
         art, h = TEILE[name]
         print(name)
         if art == 'bogen':
@@ -239,3 +284,4 @@ if __name__ == '__main__':
             textur(name)
         else:
             streifen(name, art, h)
+            if name == 'draht': pfaehle_ausduennen(name)

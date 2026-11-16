@@ -34,6 +34,7 @@ set('mud', [[7, 5], [5, 6]]);
 set('wire', [[8, 4], [9, 4], [10, 4]]);
 set('barrikade', [[5, 5]]);
 set('bunker', [[10, 1]]);
+set('sperre', [[6, 6], [4, 6]]);   // Panzersperren
 const TRENCH = [[[5, 3], [6, 3], [7, 3], [8, 3], [9, 3], [10, 3], [11, 3], [11.6, 3]], [[7, 3], [7, 2], [7, 1], [7, 0.4]]];   // Grabenzüge über Feldmitten (Abzweig nach hinten)
 for (const z of TRENCH) for (const [c, r] of z) if (c % 1 === 0 && r % 1 === 0) T[c + ',' + r] = 'trench';
 const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });

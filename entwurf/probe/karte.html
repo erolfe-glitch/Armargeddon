@@ -31,7 +31,7 @@ const Q = new URLSearchParams(location.search), id = Q.get('karte') || 'grauwall
   await GBau.bauen({
     canvas: document.getElementById('cv'), cols: K.cols, rows: K.rows,
     terr: (c, r) => K.cells[c][r][0], flags: (c, r) => ({ road: !!K.cells[c][r][1], river: !!K.cells[c][r][2] }),
-    trupps: TRUPPS[id] || [],
+    trupps: TRUPPS[id] || [], zickzack: true, grabenSeite: (c, r) => c <= (K.zoneA ?? 2) ? 'A' : 'D',   // Gräben im Zickzack; Besitzer nach Aufstellungszone
     seed: +(Q.get('seed') || 1917), ganz: Q.get('ganz') === '1', zoom: +(Q.get('zoom') || 1), ziel: Q.get('ziel') ? Q.get('ziel').split(',').map(Number) : null,
     punkte: Q.get('punkte') === '1', namen: Q.get('namen') !== '0',
   });
