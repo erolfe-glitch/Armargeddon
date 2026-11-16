@@ -56,8 +56,8 @@ def remove_flash(q):
 # Bögen mit 4 Posen im 2×2-Raster (Trupps); alle anderen sind Einzelmodelle (ein Bild, alle Teile behalten).
 TRUPP = {'soldat', 'sturm', 'pionier'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
-# im Spiel zusätzlich auf eine Höchstbreite begrenzt (ui.js FIGW_MAX).
-SH_SINGLE = {'mg': 0.82, 'mg_marsch': 1.05, 'geschuetz': 1.0, 'hauptmann': 1.2, 'koloss': 1.4, 'panzer': 1.4, 'bohrkoloss': 1.45}
+# Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
+SH_SINGLE = {'mg': 0.82, 'mg_marsch': 1.05, 'geschuetz': 1.0, 'hauptmann': 1.2, 'koloss': 1.35, 'panzer': 1.35, 'bohrkoloss': 1.35}
 GAME = ROOT / 'ui-quelle' / 'teile' / 'figuren'   # Bilder fürs Spiel (eingebettet in src/figs.js)
 
 

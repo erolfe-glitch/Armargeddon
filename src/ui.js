@@ -1004,9 +1004,10 @@ function drawFloaters(g, s, bb) {
 
 // ---------- Figuren der neuen Ansicht (Umbauplan Schritt 3) ----------
 // Bilder aus src/figs.js (tools/figure_cut.py --game): 320 px Bildhöhe = 1 Soldatenhöhe (SH), Füße am unteren Rand, Blick nach rechts.
-// Maßstab: 1 SH = FIG_SH Feldradien. Trupps: bis zu 4 Einzelfiguren in lockerer Formation im eigenen Feld, Verluste lassen Figuren wegfallen.
-// Einzelmodelle (MG, Geschütz, Anführer, Panzer): ein Bild, Breite höchstens FIGW_MAX Feldradien. Ohne Eintrag oder Bild: altes Bild.
-const FIG_SH = 1.3, FIGW_MAX = 2.6;
+// Maßstab: 1 SH = FIG_SH Feldradien (Wunsch 2026-11-16: 1,1 – Felder groß genug, nichts überdimensioniert). Trupps: bis zu 4 Einzelfiguren in
+// lockerer Formation im eigenen Feld, Verluste lassen Figuren wegfallen. Einzelmodelle (MG, Geschütz, Anführer) im selben Maßstab, höchstens
+// FIGW_MAX Feldradien breit. Fahrzeuge (Panzer, Kolosse): 1,35 SH hoch, Breite nach Bild, dürfen etwas über den Feldrand ragen (belegen ein Feld).
+const FIG_SH = 1.1, FIGW_MAX = 2.4, FIGW_VEH = 3.6;
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], granate: ['sturm', 1], raeumer: ['sturm', 1],
@@ -1036,14 +1037,14 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) { const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % 4], ox: slot[0], oy: slot[1] }); }
-  } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.42 : 0.18 });
+  } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.36 : 0.18 });
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
   for (const f of list) {
     const fx = x + (flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
     let h = f.im.naturalHeight / 320 * FIG_SH * s, w = h * f.im.naturalWidth / f.im.naturalHeight;
-    if (w > FIGW_MAX * s) { h *= FIGW_MAX * s / w; w = FIGW_MAX * s; }
+    const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s; if (w > wmax) { h *= wmax / w; w = wmax; }
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
     const sw = Math.min(w * 0.42, s * (nf.vehicle ? 1.2 : 0.45));

@@ -9,6 +9,8 @@ Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hi
 - Bildkarten 1, 4, 7, 8 des Nutzers verbauen (aus CLAUDE.md übernommen).
 - Kartenbeschreibungen (`desc`) an den Siegpunkt-Modus anpassen (aus CLAUDE.md übernommen).
 
+- Optional: feine helle Umrandung um Figuren als Schalter in den Optionen (2026-11-16, noch nicht bauen).
+
 ## Gesamtplan (Stand 2026-11-16)
 
 Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Kamera und Spielgefühl, Etappe 4a UI-Flächen gekachelt.
@@ -28,7 +30,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Probebild dazu: Testseite `entwurf/probe/` (nicht im Spiel), Figuren aus `ui-quelle/figuren/`.
 - **Gewählt (2026-11-16, Probebild Variante D, `entwurf/probe/?v=D`):**
   - Kamera: perspektivisch gekippt, ca. 38–40° Blick nach unten (Probe: 39°), hinten kleiner; vorn ca. 8–9 Felder über die Bildbreite (1920 px). Herausgezoomt muss die ganze Karte ins Bild passen (`?v=D&ganz=1`); dabei bleibt oben viel Leerraum, im Spiel deshalb beim Herauszoomen steiler kippen oder Himmel bzw. Hinterland zeigen.
-  - Maßstab: stehender Soldat ca. 1,3 Feldradien.
+  - Maßstab: stehender Soldat ca. 1,3 Feldradien. **Geändert 2026-11-16: 1,1 Feldradien** (Felder im Verhältnis größer, nichts überdimensioniert); Einzelmodelle im selben Verhältnis; Panzer und Kolosse 1,35 Soldatenhöhen hoch, Breite nach Bild, dürfen etwas über den Feldrand ragen, belegen ein Feld.
   - Trupps: 4 Figuren je Trupp in lockerer Formation, Füße alle im eigenen Feld; Verluste lassen Figuren wegfallen.
   - Figurenbögen: Blickwinkel genau wie bei `konkordat_soldat.png` / `aschenwacht_soldat.png`, nicht steiler (Einheitlichkeit geht vor). Prompts für die erste Lieferung: `entwurf/GEMINI_PROMPTS.md`.
   - Umbau im Spiel hinter dem Schalter „Neue Ansicht (Test)“: Schritt 0 (Schalter, Ansichts-Abschnitt in ui.js) und Schritt 1 (Kamera und Boden: Weltbild flach, perspektivisch projiziert, Einheiten als Aufsteller, Klicks/Ziehen/Zoom/Kamera-Folgen) erledigt 2026-11-16; Schritt 3 (Figuren: Trupps zu viert, Einzelmodelle, Zuordnung FIGMAP in ui.js) erledigt 2026-11-16, vor Schritt 2; Schritt 2 (Zielfahnen, Symbole, Klammern, Vorschau, Rauch, Gas, Effekte aufrecht) erledigt 2026-11-16; weiter mit 4 Aufsteller (Gelände in zwei Ebenen, Höhenfelder mit Böschung), 5 Feinschliff.
@@ -43,6 +45,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Beim Ziehen über Gelände sofort Vor- und Nachteil des Felds als Symbol zeigen.
   - Fähigkeiten: Radius und betroffene Felder bzw. Einheiten anzeigen.
   - Bohrkoloss: kurzer Flammenstoß auf ein Nachbarfeld als Fähigkeit (das neue Bild zeigt einen Flammenwerfer, 2026-11-16).
+  - Fahrzeuge belegen 2 Felder (2026-11-16, prüfen): Panzer und Kolosse sind maßstäblich breiter als ein Feld.
   - Aschenwacht braucht eine eigene Panzer-Einheit „Sturmpanzer“ (Gegenstück zum Landkoloss, ohne Kampfmaschinen-Schalter); Bild `aschenwacht_panzer.png` liegt schon vor, ist aber noch keiner Einheit zugeordnet.
 - **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle.
 - **Etappe 7 – Balance:** Kosten, Werte und Siegquoten mit `tools/sim.js` und `tools/costcheck.js` abstimmen.
