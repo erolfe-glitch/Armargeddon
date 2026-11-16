@@ -353,7 +353,8 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   const t0 = performance.now();
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
     terr: (c, r) => G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river }),
-    zickzack: true, grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917 }, GBIM);
+    zickzack: true, grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
+    schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]) }, GBIM);   // Schanze = Bunker + Sandsäcke
   gbKey = key; window.__gbMs = Math.round(performance.now() - t0);
   return true;
 }
@@ -871,9 +872,50 @@ function drawFan(g, u) {
   u.face = save;
 }
 // Zielfahnen
-function drawFlags(g, s, up) {
-  for (const o of OBJECTIVES) {
+// Vorschlag Zielflagge (2026-11-16, nur mit window.FAHNE_NEU = true): verwitterte Stofffahne an krummem Holzpfahl, neutral grau-beige,
+// Nummer auf einem kleinen Holzschild am Pfahl; erobert in Fraktionsfarbe (Konkordat Ochsenblut, Aschenwacht Stahlgrau, Blaue Legion Horizontblau).
+const FAHNE_FARBE = { A: [142, 43, 34], D: [112, 118, 108], F: [111, 143, 181] }, FAHNE_NEUTRAL = [158, 150, 128];
+function drawFahne(g, s, x, y, o) {
+  const sd = VIS.ctrl[o.id], [cr, cg, cb] = sd ? FAHNE_FARBE[fac(sd)] || FAHNE_NEUTRAL : FAHNE_NEUTRAL, sh = (v, k) => Math.round(Math.max(0, Math.min(255, v * k)));
+  const col = k => `rgb(${sh(cr, k)},${sh(cg, k)},${sh(cb, k)})`, seed = o.c * 7 + o.r * 13;
+  const px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), H = s * 1.3, lean = s * 0.05, top = [px + lean, base - H];
+  // Pfahl: grobes Holz, leicht schief, oben abgesplittert
+  g.save(); g.lineCap = 'round';
+  g.fillStyle = 'rgba(6,4,3,0.4)'; g.beginPath(); g.ellipse(px, base, s * 0.12, s * 0.04, 0, 0, 7); g.fill();
+  g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.085); g.beginPath(); g.moveTo(px, base); g.lineTo(top[0], top[1]); g.stroke();
+  g.strokeStyle = '#5a4630'; g.lineWidth = Math.max(1.2, s * 0.055); g.beginPath(); g.moveTo(px, base); g.lineTo(top[0], top[1]); g.stroke();
+  g.strokeStyle = 'rgba(150,120,80,0.55)'; g.lineWidth = Math.max(0.6, s * 0.014); g.beginPath(); g.moveTo(px - s * 0.01, base - s * 0.05); g.lineTo(top[0] - s * 0.012, top[1] + s * 0.1); g.stroke();
+  // Stoff: weht nach rechts, Wellen nach Zeit, ausgefranstes Ende, zwei Risse
+  const fw = s * 0.82, fh = s * 0.5, t = now / 700, N = 14, ay = top[1] + s * 0.04;
+  const at = (u, v) => { const lx = top[0] - lean * (v * fh / H); const wv = Math.sin(u * 4.2 - t + seed) * s * 0.05 * u + u * u * s * 0.06; return [lx + u * fw, ay + v * fh + wv]; };
+  const fray = u => (u > 0.82 ? Math.sin(u * 61 + seed) * 0.5 + 0.5 : 0) * s * 0.07;
+  const shape = () => { g.beginPath(); for (let i = 0; i <= N; i++) { const u = i / N, [qx, qy] = at(u, 0); g[i ? 'lineTo' : 'moveTo'](qx, qy); }
+    for (let j = 0; j <= 8; j++) { const v = j / 8, [qx, qy] = at(1, v); g.lineTo(qx - (Math.sin(v * 23 + seed) * 0.5 + 0.5) * s * 0.11, qy); }   // Fransen
+    for (let i = N; i >= 0; i--) { const u = i / N, [qx, qy] = at(u, 1); g.lineTo(qx, qy - fray(u)); } g.closePath(); };
+  shape(); g.fillStyle = col(1); g.fill();
+  g.save(); shape(); g.clip();
+  for (let i = 0; i < N; i++) { const u = i / N, d = Math.cos(u * 4.2 - t + seed); const [q0x, q0y] = at(u, 0), [q1x] = at(u + 1 / N, 0);   // Falten: hell/dunkel nach Wellenneigung
+    g.fillStyle = d > 0 ? `rgba(255,250,230,${0.1 * d})` : `rgba(10,8,6,${-0.22 * d})`; g.fillRect(q0x, q0y - s * 0.2, q1x - q0x + 1, fh + s * 0.4); }
+  const gr = g.createLinearGradient(0, ay, 0, ay + fh); gr.addColorStop(0, 'rgba(20,16,10,0)'); gr.addColorStop(1, 'rgba(40,30,18,0.38)'); g.fillStyle = gr; g.fillRect(top[0], ay - s * 0.2, fw + s * 0.2, fh + s * 0.4);   // Dreck unten
+  for (let k = 0; k < 26; k++) { const [qx, qy] = at(((seed * 0.13 + k * 0.383) % 1), ((seed * 0.29 + k * 0.618) % 1)); g.fillStyle = k % 2 ? 'rgba(60,46,28,0.16)' : 'rgba(235,225,200,0.08)'; g.beginPath(); g.ellipse(qx, qy, s * 0.07, s * 0.03, k, 0, 7); g.fill(); }   // Stoffstruktur, ausgeblichen
+  const sm = g.createLinearGradient(top[0], 0, top[0] + fw, 0); sm.addColorStop(0, 'rgba(30,22,12,0.3)'); sm.addColorStop(0.25, 'rgba(30,22,12,0)'); sm.addColorStop(0.8, 'rgba(30,22,12,0)'); sm.addColorStop(1, 'rgba(30,22,12,0.35)'); g.fillStyle = sm; g.fillRect(top[0], ay - s * 0.2, fw + s * 0.2, fh + s * 0.4);   // Ränder verschmutzt
+  g.fillStyle = 'rgba(30,24,16,0.45)'; for (let k = 0; k < 7; k++) { const [qx, qy] = at(0.15 + ((seed * 0.37 + k * 0.29) % 0.75), 0.15 + ((seed * 0.53 + k * 0.41) % 0.7)); g.beginPath(); g.arc(qx, qy, s * (0.012 + (k % 3) * 0.008), 0, 7); g.fill(); }   // Flecken
+  g.restore();
+  for (const [u, v] of [[0.55, 0.35], [0.74, 0.7]]) { const [qx, qy] = at(u, v); g.fillStyle = 'rgba(20,16,10,0.85)'; g.beginPath(); g.ellipse(qx, qy, s * 0.03, s * 0.02, 0.6, 0, 7); g.fill(); }   // Löcher
+  shape(); g.strokeStyle = 'rgba(22,21,15,0.85)'; g.lineWidth = Math.max(1, s * 0.022); g.stroke();
+  // Holzschild mit der Nummer, am Pfahl angenagelt
+  const bw = s * 0.34, bh = s * 0.26, bx = px + lean * 0.35 - bw * 0.5, by = base - s * 0.62;
+  g.save(); g.translate(bx + bw / 2, by + bh / 2); g.rotate(((seed % 5) - 2) * 0.03);
+  g.fillStyle = '#6b5236'; g.strokeStyle = O; g.lineWidth = Math.max(1.2, s * 0.03); g.beginPath(); g.rect(-bw / 2, -bh / 2, bw, bh); g.fill(); g.stroke();
+  g.strokeStyle = 'rgba(30,22,12,0.5)'; g.lineWidth = Math.max(0.6, s * 0.01); g.beginPath(); g.moveTo(-bw / 2, -bh * 0.05); g.lineTo(bw / 2, -bh * 0.1); g.stroke();
+  g.fillStyle = '#2a2016'; for (const nx of [-bw * 0.38, bw * 0.38]) { g.beginPath(); g.arc(nx, -bh * 0.3, s * 0.016, 0, 7); g.fill(); }
+  g.fillStyle = '#e8dfc6'; g.font = `800 ${Math.round(s * 0.21)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.pts, 0, s * 0.01);
+  g.restore(); g.restore();
+}
+function drawFlags(g, s, up, nur) {
+  for (const o of nur ? [nur] : OBJECTIVES) {
     const [x, y] = center(o.c, o.r); if (up && !up(x, y)) continue;
+    if (up && window.FAHNE_NEU) { drawFahne(g, s, x, y, o); continue; }
     const col = VIS.ctrl[o.id] ? FIG.PAL[VIS.ctrl[o.id]].accent : '#b9b4a6', px = x + s * 0.5, base = y - s * 0.2 * kAt(x, y), top = base - s * 1.25;
     g.strokeStyle = O; g.lineWidth = Math.max(2, s * 0.08); g.beginPath(); g.moveTo(px, base); g.lineTo(px, top); g.stroke();
     const fl = VIS.ctrl[o.id] && CFLAG[fac(VIS.ctrl[o.id])], fim = fl && fl.complete && fl.naturalWidth ? fl : null;   // Wappenflagge hängt rechts an der Stange
@@ -1067,7 +1109,7 @@ function drawFloaters(g, s, bb) {
 const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Soldat 0,8; Fahrzeuge (1,5 SH) höchstens 2,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const FIGMAP = {
-  kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], reiter: ['reiter', 1, 2], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen (groß), Flammentrupp 4 Posen
+  kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], granate: ['sturm', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['hauptmann'],
@@ -1089,7 +1131,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -1126,7 +1168,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) {
       if (pl && pl.pts) { const q = pl.pts[[1, 2, 0, 3][i]]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
-      const slot = FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
+      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
     }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s : 0;   // im Graben tiefer, unterhalb der Grabenkante abgeschnitten
@@ -1146,6 +1188,17 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       const xs = lows.map(q => q[0]), ys = lows.map(q => q[1]);
       const x0 = sx(Math.min(...xs)), x1 = sx(Math.max(...xs)), yA = top + Math.min(...ys) * h, yB = top + ymax * h;
       const cx = (x0 + x1) / 2, cy = (yA + yB) / 2 + s * 0.02, rx = Math.abs(x1 - x0) / 2 + s * 0.12, ry = Math.max((yB - yA) / 2 + s * 0.06 * k, s * 0.14 * k);
+      if (nf.kette) {   // Kettenfahrzeuge: Schatten direkt unter den Ketten – dunkles Band entlang der gemessenen Unterkante, kaum darunter hinaus (2026-11-16)
+        const ym = top + lows.reduce((n, q) => n + q[1], 0) / lows.length * h;
+        g.save(); g.translate(cx, ym - s * 0.03); g.scale(1, Math.max(0.2, (yB - yA) / 2 + s * 0.03) / (Math.abs(x1 - x0) / 2 + s * 0.04));
+        const gr = g.createRadialGradient(0, 0, 0, 0, 0, Math.abs(x1 - x0) / 2 + s * 0.04); gr.addColorStop(0, 'rgba(6,4,3,0.6)'); gr.addColorStop(0.7, 'rgba(6,4,3,0.4)'); gr.addColorStop(1, 'rgba(6,4,3,0)');
+        g.fillStyle = gr; g.beginPath(); g.arc(0, 0, Math.abs(x1 - x0) / 2 + s * 0.04, 0, 7); g.fill(); g.restore();
+        const lp = [...lows].sort((p, q) => p[0] - q[0]);
+        g.save(); g.filter = `blur(${Math.max(1, s * 0.022)}px)`; g.fillStyle = 'rgba(4,3,2,0.85)'; g.beginPath();
+        lp.forEach((q, i) => g[i ? 'lineTo' : 'moveTo'](sx(q[0]), top + q[1] * h + s * 0.012));
+        for (let i = lp.length - 1; i >= 0; i--) g.lineTo(sx(lp[i][0]), top + lp[i][1] * h - s * 0.13);
+        g.closePath(); g.fill(); g.restore();
+      } else {
       // breite flache Ellipse von vorn bis hinten, weich auslaufend
       g.save(); g.translate(cx, cy); g.scale(1, ry / rx);
       const ka = nf.kette ? 1.45 : 1, gr = g.createRadialGradient(0, 0, 0, 0, 0, rx * (nf.kette ? 1.12 : 1)); gr.addColorStop(0, `rgba(6,4,3,${0.55 * ka})`); gr.addColorStop(0.65, `rgba(6,4,3,${0.32 * ka})`); gr.addColorStop(1, 'rgba(6,4,3,0)');
@@ -1154,7 +1207,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       g.fillStyle = nf.kette ? 'rgba(4,3,2,0.78)' : 'rgba(4,3,2,0.5)';
       for (let n = 0; n < lows.length; n++) { const q = lows[n], a = lows[n - 2], b = lows[n + 2];
         if ((a && a[1] > q[1]) || (b && b[1] > q[1])) continue;   // nur örtlich tiefste Punkte
-        g.beginPath(); g.ellipse(sx(q[0]), top + q[1] * h, s * (nf.kette ? 0.17 : 0.13), s * (nf.kette ? 0.06 : 0.045) * Math.max(0.6, k), 0, 0, 7); g.fill(); }
+        const ry2 = s * 0.045 * Math.max(0.6, k); g.beginPath(); g.ellipse(sx(q[0]), top + q[1] * h - ry2 * 0.4, s * 0.13, ry2, 0, 0, 7); g.fill(); }   // Mitte leicht über dem Aufstandspunkt: nichts ragt nach unten heraus
+      }
     } else {
       g.fillStyle = 'rgba(6,4,3,0.45)'; g.beginPath(); g.ellipse(x, fy, w * 0.45, s * 0.15 * k, 0, 0, 7); g.fill();
     }
@@ -1167,8 +1221,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   }
   for (const f of list) {
     const fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
-    let h = f.im.naturalHeight / 320 * FIG_SH * s, w = h * f.im.naturalWidth / f.im.naturalHeight;
-    const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s; if (w > wmax) { h *= wmax / w; w = wmax; }
+    let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
+    const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
@@ -1291,10 +1345,12 @@ function drawTilt() {
   projectGround(g);
   // Aufrecht verankern: Element am Punkt (x, y) steht als Aufsteller dort (Maßstab und Bodenverkürzung der Tiefe)
   const up = (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); VIEW.bbK = b.k; return true; };
-  drawFlags(g, s, up); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null;
+  const flagsTief = GBW && gbAn();   // mit Gelände-Bausteinen: Zielflaggen nach Tiefe zwischen Grabenwände und Figuren einsortiert
+  if (!flagsTief) { drawFlags(g, s, up); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; }
   // Einheiten als Aufsteller am Fußpunkt; Marken und spätere Marken (MARKQ) behalten ihren Aufsteller
   UBOX.length = 0;
   const ul = unitList(), GP = GBW && gbAn() ? GBW.pieces : null, PEND = []; let gpi = 0;
+  if (flagsTief) { for (const o of OBJECTIVES) PEND.push({ y: center(o.c, o.r)[1] - s * 0.3, f: () => { drawFlags(g, s, up, o); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; } }); PEND.sort((a, b) => a.y - b.y); }
   if (GP) GBW.setView({ g, proj, F: PJ.F, U: cv.width / 1920, units: ul.map(([, , d]) => [d.x, d.y]) });
   // Geländeteile und einzeln gezeichnete Grabenfiguren (PEND) bis zur Tiefe y, beide nach Tiefe gemischt
   const gbBis = y => { for (;;) { const a = GP && gpi < GP.length ? GP[gpi].y : Infinity, b = PEND.length ? PEND[0].y : Infinity, m = Math.min(a, b); if (m > y || m === Infinity) break;

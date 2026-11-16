@@ -39,7 +39,7 @@ const Q = new URLSearchParams(location.search), id = Q.get('karte') || 'grauwall
     { k: 7, c: 10, r: 5, dx: 0.55, dy: 0.45, h: 1.15 },                 // Bunker an der Schanze
     { k: 7, c: 7, r: 2, dx: 0.75, dy: 0.4, h: 1.1, flip: true }, { k: 8, c: 7, r: 7, dx: 0.75, dy: 0.4, h: 1.1 },   // Nord- und Südgraben
   ] : null;
-  await GBau.bauen({ festung: FESTUNG,
+  await GBau.bauen({ festung: FESTUNG, schanzen: Q.get('festung') === '1' ? [] : (K.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]),
     canvas: document.getElementById('cv'), cols: K.cols, rows: K.rows,
     terr: (c, r) => K.cells[c][r][0], flags: (c, r) => ({ road: !!K.cells[c][r][1], river: !!K.cells[c][r][2] }),
     trupps: TRUPPS[id] || [], zickzack: true, grabenSeite: (c, r) => c <= (K.zoneA ?? 2) ? 'A' : 'D',   // Gräben im Zickzack; Besitzer nach Aufstellungszone

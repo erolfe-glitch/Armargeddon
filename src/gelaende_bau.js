@@ -156,11 +156,23 @@ function aufbauen(cfg, IM) {
     const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'destination-in';
     const r0 = Math.min(im.width, im.height) / 2, gr = x.createRadialGradient(im.width / 2, im.height / 2, r0 * 0.35, im.width / 2, im.height / 2, r0); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
     x.fillStyle = gr; x.fillRect(0, 0, im.width, im.height); WEICH.set(im, c); return c; };
-  const Fd = i => i === 8 ? weich(IM.flach_details_8) : IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
+  // Wasser in Pfützen und Trichtern schlammig: helle, graublaue Flächen → dunkles Braun-Oliv mit leichtem Glanz (sonst wirken sie wie Löcher im Bild)
+  const SCHL = new Map(), schlammig = im => { if (!im) return im; if (SCHL.has(im)) return SCHL.get(im);
+    const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+    const id = x.getImageData(0, 0, c.width, c.height), d = id.data;
+    for (let i = 0; i < d.length; i += 4) { if (!d[i + 3]) continue;
+      const r = d[i], gg = d[i + 1], b = d[i + 2], mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), lum = 0.3 * r + 0.59 * gg + 0.11 * b;
+      const kalt = Math.min(1, Math.max(0, (b - r + 25) / 15)), hell = Math.min(1, Math.max(0, (lum - 55) / 30)), grau = Math.min(1, Math.max(0, (40 - (mx - mn)) / 25));
+      const m = kalt * hell * grau; if (m <= 0) continue;
+      const gl = Math.max(0, lum - 125) * 0.45;   // Glanz nur an den hellsten Stellen
+      const nr = 50 + lum * 0.12 + gl, ng = 44 + lum * 0.12 + gl, nb = 27 + lum * 0.08 + gl * 0.8;
+      d[i] = r + (nr - r) * m; d[i + 1] = gg + (ng - gg) * m; d[i + 2] = b + (nb - b) * m; }
+    x.putImageData(id, 0, 0); SCHL.set(im, c); return c; };
+  const Fd = i => i === 8 ? weich(IM.flach_details_8) : i <= 4 ? schlammig(IM['flach_details_' + i]) : IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), q = hrnd(c, r, 9);
-    if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? IM.trichter_gross_1 : Fd(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(Fd(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(Fd(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
+    if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? schlammig(IM.trichter_gross_1) : Fd(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(Fd(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(Fd(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
     else if (t === 'mud') { if (q < 0.3) flach(Fd(q < 0.15 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.6 + q * 0.6, q * 30); else if (q > 0.75) flach(Fd(8), ...jit(c, r, 3, 0.6), 0.85, q * 17, 0.8); }   // sparsam: Pfütze oder Spuren
     else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(Fd(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.3) flach(Fd(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.34) flach(Fd(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); else if (q < 0.38) flach(Fd(8), ...jit(c, r, 1, 0.8), 0.8, q * 40, 0.75); }
     else if (t === 'village' || t === 'rubble') { flach(Fd(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
@@ -169,7 +181,8 @@ function aufbauen(cfg, IM) {
 
   // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
   const DRAW = [], SHADOW = [];
-  const hides = (x, y) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < R * 1.95 && Math.abs(hx - x) < R * 1.0);
+  // Durchsichtig nur, wenn eine Einheit wirklich dahinter steht: seitlich innerhalb der Teilbreite, nicht bloß daneben (2026-11-16)
+  const hides = (x, y, hb = R * 0.45, hW = SH) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < hW * 1.3 + R * 0.3 && Math.abs(hx - x) < hb * 0.75);
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
   function wall(im, A, B, hW, o = {}) {   // Wandstück: Bild steht über der Bodenlinie A→B, entlang der Linie gekachelt
     if (!im) return o.u0 || 0;
@@ -195,7 +208,7 @@ function aufbauen(cfg, IM) {
       if (sw < 0.5) continue;
       g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, -V[0] / ih, -V[1] / ih, qa[0] + V[0], qa[1] + V[1] + (o.sink || 0) * sc);
       const flt = typeof o.filter === 'function' ? o.filter(hS) : o.filter; if (flt) g.filter = flt; if (o.alpha) g.globalAlpha = typeof o.alpha === 'function' ? o.alpha(hS) : o.alpha;
-      if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) g.globalAlpha = 0.45;
+      if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, R * 0.45, hW)) g.globalAlpha = 0.45;
       g.drawImage(im, x0 * iw, 0, Math.min(sw + 0.6, iw - x0 * iw), ih, 0, 0, Math.min(sw + 0.6, iw - x0 * iw), ih); g.restore();
     }
     if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
@@ -205,7 +218,7 @@ function aufbauen(cfg, IM) {
     DRAW.push({ y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
-      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y)) g.globalAlpha = 0.45;
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45;
       g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, -h, wd, h); g.restore();
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
@@ -348,7 +361,18 @@ function aufbauen(cfg, IM) {
       if (im) SHADOW.push(() => { w.save(); w.translate(hx, hy); w.rotate(ang + Math.PI / 2); w.fillStyle = 'rgba(8,6,4,0.55)'; w.fillRect(-L / 2, -Wd / 2 + R * 0.06, L, Wd); w.drawImage(im, -L / 2, -Wd / 2, L, Wd); w.restore(); });
     }
   }
-  // Festung (Vorschlag, cfg.festung): Teile an Feldkoordinaten { k: 1–9, c, r, dx, dy (in R), h (SH), flip }
+  // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
+  // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).
+  for (const [c, r] of cfg.schanzen || []) {
+    const [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k + 100), own = cfg.grabenSeite ? cfg.grabenSeite(c, r) : 'D', ex = own === 'A' ? -1 : 1;   // eigene Seite = hinter dem Graben
+    const bx = hx + ex * R * 0.8, by = hy - R * 0.12;
+    stand(BUNKER[0], bx, by, 0.95 * SH, { flip: ex < 0, shadeK: 0.45 });
+    // Sandsackwall als Haken um den Bunker: vorn quer, an der Außenseite schräg nach hinten (kurze Stücke, keine frei stehenden Blöcke)
+    const P0 = [bx + ex * R * 0.02, by + R * 0.34], P1 = [bx + ex * R * 0.5, by + R * 0.3], P2 = [bx + ex * R * 0.92, by + R * 0.02];
+    const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45 });
+    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45 });
+  }
+  // Festung (Vorschlag, cfg.festung, nur Testseite): Teile an Feldkoordinaten { k: 1–9, c, r, dx, dy (in R), h (SH), flip }
   // 1 Mauer mit Zinnen, 2 Ecke, 3 Mauer glatt, 4 Tor klein, 5 Tor groß, 6 Tor zerstört, 7 Bunker heil, 8 Bunker zerstört, 9 Turm
   for (const f of cfg.festung || []) { const [x, y] = atW(f.c, f.r); stand(IM['festung_' + f.k], x + (f.dx || 0) * R, y + (f.dy || 0) * R, (f.h || 1.4) * SH, { flip: !!f.flip, shadeK: 0.5 }); }
   // Waldrand mit Kronen hinter der Karte (Platzhalter, bis A7 geliefert ist)

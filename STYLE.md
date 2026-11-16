@@ -128,6 +128,13 @@ Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel 
 - **Kontur:** Außenkontur Tinte `--s-ink` (`#120D0B`), im Spiel 2–3 px (in der 200-px-Quelle ≈ 5 px), Innenlinien halb so stark. Kleinteile (Nieten, Schnallen) zusammenfassen, nichts feiner als ½ px im Spiel.
 - **Farbe:** gedämpft (Sättigung 0,25–0,40), Grundhelligkeit 0,18–0,25. Fraktionsfarbe nur in Uniform und Anstrich: Konkordat Khaki-Braun mit Ochsenblut-Akzent, Aschenwacht Feldgrau, Blaue Legion Horizontblau. Metall, Leder, Holz bei allen gleich (Rost, gedämpftes Messing). Kräftige Farben nur für Feuer, Blut, Mündungsfeuer. Figuren eine Stufe heller und kontrastreicher als der Boden.
 
+## Schanze, Pfützen, Durchsicht (neue Ansicht, 2026-11-16)
+- **Schanze** nur aus Bunker + Sandsäcken (bunker.png, barrikade.png), Bunker hinter dem Graben auf der eigenen Seite. Keine Festungsteile mit Zinnen im Spiel.
+- **Wasser auf dem Boden** (Pfützen, Trichter) dunkel und schlammig: Braun-Oliv mit leichtem Glanz, nie hell graublau (wirkt sonst wie ein Loch im Bild). Umfärben in `schlammig()` (gelaende_bau.js).
+- **Durchsichtige Geländeteile** (45 %) nur, wenn eine Einheit wirklich dahinter steht (seitlich innerhalb der Teilbreite), nicht schon daneben.
+- **Fahrzeugschatten** liegt direkt unter den Ketten (Band entlang der gemessenen Unterkante), nicht als Fleck darunter.
+- **Reiter** auf 85 %, eng gestellt, bleiben im eigenen Feld.
+
 ## Strategie-Marken, Base, Fahrzeuge (neue Ansicht)
 Seit 2026-11-16, im Code `drawStratMarks`, `stratSym`, Base in `drawGround`, `schlammrand` in ui.js.
 - **Strategie-Marken:** Wird ein stehender Soldat auf dem Schirm kleiner als ca. 40 px, blendet über der Einheit ein Schild ein (fest 38 px, weich zwischen 46 und 32 px Soldatenhöhe). Schild in Fraktionsfarbe mit Tintenrand und dem Symbol der Einheitenart aus dem Panel-Bogen (Gewehr, MG-Dreibein, Lafette, Granate = Mörser, Pferd, Spitzhacke = Pionier, Handgranate = Sturm, Flamme, Sanitäter, Fernglas = Aufklärer, Fahne = Anführer, Zahnrad = Panzer/Koloss – ein eigenes Panzersymbol fehlt noch), darunter schmaler Lebensbalken. Figuren treten beim Einblenden auf 65 % zurück. Eigene Einheiten, die noch handeln können: Messingrand. Anklickbar wie die Einheit; Name unter Maus/Finger. Mit „Alle Marken“ (Knopf, Alt) auch nah.
