@@ -32,7 +32,7 @@ const PROC = `async (url, o) => {
   let pk = 0; for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(x[i]));
   const thr = pk * 0.05; let on = 0; while (on < n && Math.abs(x[on]) < thr) on++; on = Math.max(0, on - Math.round(SR * 0.01));
   let last = n - 1; while (last > on && Math.abs(x[last]) < pk * 0.01) last--;
-  let a = o.st < 0 ? Math.max(on, last + Math.round(o.st * SR)) : on + Math.round((o.st || 0) * SR);
+  let a = o.ab != null ? Math.round(o.ab * SR) : o.st < 0 ? Math.max(on, last + Math.round(o.st * SR)) : on + Math.round((o.st || 0) * SR);   // ab = fester Start in der Quelle (lange Einleitung)
   let b = Math.min(n, a + Math.round(o.max * SR)), cut = b < last;
   // Ende: nach dem letzten 20-ms-Fenster über −40 dB der Spitze kürzen
   const W = Math.round(SR * 0.02); let e2 = b; for (let i = b - W; i > a; i -= W) { let m = 0; for (let j = i; j < i + W; j++) m = Math.max(m, Math.abs(x[j])); if (m > pk * 0.01) { e2 = Math.min(b, i + W * 2); break; } }
@@ -69,10 +69,10 @@ for (const e of SPEC.eintraege) {
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');
-  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps })})`, awaitPromise: true, returnByValue: true });
+  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps })})`, awaitPromise: true, returnByValue: true });
   const v = r.result?.result?.value; if (v && !v.b64) console.log("Antwort ohne Daten:", JSON.stringify(v).slice(0, 300), JSON.stringify(r).slice(0, 300));
   if (!v) { console.log('FEHLER', e.f, JSON.stringify(r.result?.exceptionDetails?.exception?.description || r.result).slice(0, 300)); continue; }
-  NEW[key] = 'data:audio/aac;base64,' + v.b64; POOLS[e.pool].push([key, e.s || null]);
+  NEW[key] = 'data:audio/aac;base64,' + v.b64; POOLS[e.pool].push(e.w ? [key, e.s || null, e.w] : [key, e.s || null]);   // w = Gewicht (Hauptton öfter)
   mkdirSync(join(ROOT, 'ui-quelle', 'toene'), { recursive: true }); writeFileSync(join(ROOT, 'ui-quelle', 'toene', key + '.aac'), Buffer.from(v.b64, 'base64'));
   rows.push({ pool: e.pool, key, s: e.s, f: e.f, dur: v.dur, src: v.src, start: v.start, gain: v.gainDb, kb: v.kb, note: e.note });
   console.log(`${key.padEnd(18)} ${String(v.dur).padStart(6)} s  (Quelle ${v.src} s, ab ${v.start} s, ${v.gainDb > 0 ? '+' : ''}${v.gainDb} dB, ${v.kb} KB)  ${e.f}`);

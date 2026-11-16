@@ -15,16 +15,20 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 | **pistol** | Hauptmann, General (Stab) | Aschenwacht | vorhanden (pistol) |
 |  |  | Konkordat | 581773__hz37__shoot-1-hza-01-08-2021.wav (1.2 s ab 0.09 s) |
 |  |  | Konkordat | dragon-studio-gunshot-511311.mp3 (1.2 s ab 0.03 s) |
+|  |  | Konkordat | freesound_community-darkscape-1911-a1-101298.mp3 (0.9 s ab 0.06 s) |
 | **semi** | Kampfanzüge (Stahlgänger, Panzerknechte) | beide | vorhanden (semi) |
 |  |  | Konkordat | 417148__superphat__slowfiringheavyweapon.wav (1.6 s ab 0.05 s) |
-| **mg** | MG schießt (Mahlwerk Konkordat / Sensenwerk Aschenwacht) | Konkordat | vorhanden (mg) |
+| **mg** | MG schießt (Mahlwerk Konkordat / Sensenwerk Aschenwacht) | Konkordat | freesound_community-1866-ww1-machine-gun-free-sound-fx-cinematic-sound-effects-94651.mp3 (2.4 s ab 2.6 s) |
 |  |  | Konkordat | 417688__superphat__lightmachinegun1.wav (2.12 s ab 1.99 s) |
 |  |  | Aschenwacht | vorhanden (mg3) |
 |  |  | Aschenwacht | vorhanden (mg2) |
+|  |  | Aschenwacht | kave_msri-machine-gun-sfx-320986.mp3 (2 s ab 0.06 s) |
+| **huelsen** | leise Patronenhülsen nach einer MG-Salve | beide | freesound_community-shells-hitting-ground-40-39791.mp3 (1.4 s ab 0.12 s) |
 | **buechse** | Panzerbüchsen-Trupp schießt | Aschenwacht | 721431__the_epic1357__new-barrett.mp3 (2.2 s ab 0.04 s) |
 | **cannon** | Kanone: Landkoloss, Feldkanone (Konkordat); Abschuss Grabengeschütz (Aschenwacht, mit cannonH gemischt) | Konkordat | vorhanden (cannon) |
 |  |  | Konkordat | 850499__vulkanbruder__little-cannon.wav (0.36 s ab 0 s) |
 |  |  | Aschenwacht | 239137__qubodup__artillery-gunfire.flac (2.96 s ab 0 s) |
+|  |  | Konkordat | freesound_community-cannon-shot-14799.mp3 (1.55 s ab 0.02 s) |
 | **panzerkanone** | Kanone der Aschenwacht-Fahrzeuge (Eisenknecht u. a.) | Aschenwacht | 457044__gerainsan__slow-motion-gun-shot.wav (3 s ab 0.34 s) |
 | **cannonH** | Abschuss schwere Artillerie | beide | vorhanden (cannonH) |
 |  |  | beide | 212689__tb0y298__water-explosion-1.wav (2.5 s ab 0 s) |
@@ -48,6 +52,13 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 | **gas** | Gasgranate | beide | vorhanden (gas) |
 |  |  | beide | 808013__artninja__tmnt_2012_inspired_smokebomb_sounds_05202025.wav (2.04 s ab 0.12 s) |
 | **rauch** | Nebelwand (Rauchwerfer) | beide | 583262__pfranzen__dropping-a-smoke-bomb-on-the-ground.ogg (3 s ab 0 s) |
+| **werfer** | Abschuss Rauchwerfer | beide | 49053354-rocket-launcher-307512.mp3 (1.29 s ab 0.13 s) |
+| **flinte** | Nahkampf Grabenräumer/Sturmbrecher (kurzer Schuss) | beide | freesound_community-shotgun-shooting-things-105837.mp3 (0.8 s ab 0.1 s) |
+| **vorbei** | Kugel pfeift vorbei (kaum Wirkung, niedergehalten) | beide | dennish18-bullet-passing-by-fast-146492.mp3 (0.8 s ab 0.13 s) |
+| **einschlag** | Kugeleinschlag bei Treffer (Gewehr, MG) | beide | u_68csiaifb5-bulletimpact1-442717.mp3 (0.6 s ab 0.06 s) |
+|  |  | beide | u_68csiaifb5-bulletimpact2-442718.mp3 (0.58 s ab 0.09 s) |
+| **einsturz** | Gebäude, Bunker, Ruine zerstört | beide | shrek_30-building-demolished-472876.mp3 (3.5 s ab 11.9 s) |
+|  |  | beide | magiazzz-massive-building-548236.mp3 (3.5 s ab 0.01 s) |
 | **gasmaske** | Entgiften (Gasschutz-Trupp) | beide | 256519__kodack__mask-breathing-sound.wav (2.5 s ab 0.05 s) |
 |  |  | beide | 536372__hoggington__mask-grunt-sound.ogg (0.58 s ab 0.05 s) |
 | **selGas** | Gasschutz-Trupp angewählt | beide | 543010__awesometrainmaster1__mask-breathing-for-killer-or-other.ogg (1.8 s ab 0 s) |
@@ -73,6 +84,10 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 |  |  | Konkordat | 764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav (2.6 s ab 0.51 s) |
 | **scream** | Kampfschrei (Nahkampf) | beide | vorhanden (scream) |
 |  |  | Aschenwacht | 763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav (2.6 s ab 0.51 s) |
+| **cry** | Kampfschrei (Nahkampf, Sturmangriff) | beide | vorhanden (cry) |
+|  |  | beide | freesound_community-middle-ages-war-crywav-14780.mp3 (1.18 s ab 0.12 s) |
+| **marschtritt** | Befehl „Marsch“ | beide | naeftali-march2-137357.mp3 (3 s ab 0.02 s) |
+| **generalhorn** | Aschenwacht „Generalangriff“ | Aschenwacht | trading_nation-low-horn-185556.mp3 (4 s ab 0.67 s) |
 | **march** | Schlachtbeginn, Verstärkung (Pfeife Konkordat, Horn Aschenwacht) | beide | vorhanden (march) |
 |  |  | Konkordat | 324539__deleted_user_2104797__whistle-army-old.wav (3 s ab 0.28 s) |
 |  |  | Aschenwacht | freesound_community-horn-a-37752.mp3 (3 s ab 0.16 s) |
@@ -81,6 +96,8 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 |  |  | Konkordat | Win Point 2.wav (1.32 s ab 0 s) |
 | **verloren** | eigenes Zielfeld verloren (gegen die KI) | beide | Lost Point.wav (2.61 s ab 0 s) |
 | **dog** | Meldegänger mit Hund zieht | beide | vorhanden (dog) |
+|  |  | beide | audiopapkin-german-shepherd-barking-302356.mp3 (1.3 s ab 0.04 s) |
+|  |  | beide | spinopel-german-shepherd-barking-321489.mp3 (1.3 s ab 0.19 s) |
 | **gallop2** | Reiter ziehen | beide | vorhanden (gallop2) |
 |  |  | beide | Pferdegalopp.mp3 (3 s ab 0.25 s) |
 | **steps** | Fußtruppen im Schlamm | beide | vorhanden (steps) |
@@ -89,6 +106,7 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 | **mech** | Kampfmaschinen ziehen | beide | vorhanden (mech) |
 | **tank** | Landkoloss fährt | beide | vorhanden (tank) |
 |  |  | beide | vorhanden (tankmove) |
+|  |  | beide | freesound_community-driving-tank-engine-88503.mp3 (3 s ab 0.04 s) |
 | **crash** | Panne, Festfahren | Aschenwacht | vorhanden (crash) |
 |  |  | Konkordat | 423116__ogsoundfx__guns-explosions-album-heavy-object-impact-4.wav (1.38 s ab 0 s) |
 |  |  | beide | freesound_community-crashing-6429.mp3 (2.5 s ab 0.15 s) |
@@ -114,7 +132,9 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 |  |  | beide | floraphonic-duct-tape-3-183995.mp3 (2 s ab 0.07 s) |
 | **reparieren** | Bergen, Instandsetzen (Werkstatt, Pioniere) | Aschenwacht | 492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg (0.73 s ab 0.11 s) |
 |  |  | Konkordat | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav (2 s ab 0 s) |
-| **nachladen** | Nachladen (Munitionsträger) | beide | 847367__adrian_sommer__gun-reloading-walther-p99.wav (0.58 s ab 1.82 s) |
+| **nachladen** | Nachladen (Munitionsträger) | Konkordat | 847367__adrian_sommer__gun-reloading-walther-p99.wav (0.58 s ab 1.82 s) |
+|  |  | Aschenwacht | u_azd0z4ksl5-kar98_rechamber-506178.mp3 (0.58 s ab 0.35 s) |
+| **drahtwackeln** | Draht wackelt beim Betreten | beide | freesound_community-shaking-chain-link-fence-vibration-94438.mp3 (1.2 s ab 0.12 s) |
 | **drahtlatch** | Einheit läuft in Stacheldraht | beide | freesound_community-latch-metallic-43692.mp3 (0.7 s ab 0.04 s) |
 | **cut** | Draht schneiden | beide | vorhanden (cut) |
 |  |  | beide | freesound_community-cutting-clipping-wire-copper-80373.mp3 (0.18 s ab 1.45 s) |

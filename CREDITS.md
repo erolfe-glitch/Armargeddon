@@ -13,11 +13,16 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | sniper | sniper_2 | 816114__qubodup__fps-sniper-shot.wav | Freesound / qubodup | CC0 1.0 | <https://freesound.org/s/816114/> |
 | pistol | pistol_1 | 581773__hz37__shoot-1-hza-01-08-2021.wav | Freesound / hz37 | CC0 1.0 | <https://freesound.org/s/581773/> |
 | pistol | pistol_2 | dragon-studio-gunshot-511311.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| pistol | pistol_3 | freesound_community-darkscape-1911-a1-101298.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | semi | semi_1 | 417148__superphat__slowfiringheavyweapon.wav | Freesound / superphat | CC0 1.0 | <https://freesound.org/s/417148/> |
-| mg | mg_1 | 417688__superphat__lightmachinegun1.wav | Freesound / superphat | CC0 1.0 | <https://freesound.org/s/417688/> |
+| mg | mg_1 | freesound_community-1866-ww1-machine-gun-free-sound-fx-cinematic-sound-effects-94651.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| mg | mg_2 | 417688__superphat__lightmachinegun1.wav | Freesound / superphat | CC0 1.0 | <https://freesound.org/s/417688/> |
+| mg | mg_3 | kave_msri-machine-gun-sfx-320986.mp3 | Pixabay / kave_msri | Pixabay Content License | – |
+| huelsen | huelsen_1 | freesound_community-shells-hitting-ground-40-39791.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | buechse | buechse_1 | 721431__the_epic1357__new-barrett.mp3 | Freesound / the_epic1357 | CC0 1.0 | <https://freesound.org/s/721431/> |
 | cannon | cannon_1 | 850499__vulkanbruder__little-cannon.wav | Freesound / vulkanbruder | CC0 1.0 | <https://freesound.org/s/850499/> |
 | cannon | cannon_2 | 239137__qubodup__artillery-gunfire.flac | Freesound / qubodup | CC0 1.0 | <https://freesound.org/s/239137/> |
+| cannon | cannon_3 | freesound_community-cannon-shot-14799.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | panzerkanone | panzerkanone_1 | 457044__gerainsan__slow-motion-gun-shot.wav | Freesound / gerainsan | CC0 1.0 | <https://freesound.org/s/457044/> |
 | cannonH | cannonH_1 | 212689__tb0y298__water-explosion-1.wav | Freesound / tb0y298 | CC0 1.0 | <https://freesound.org/s/212689/> |
 | boomH | boomH_1 | 511884__audiopapkin__impact-sfx-016.wav | Freesound / audiopapkin | CC0 1.0 | <https://freesound.org/s/511884/> |
@@ -32,6 +37,13 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | feuer | feuer_1 | 563765__florianreichelt__fire-auto-car-on-fire.mp3 | Freesound / florianreichelt | CC0 1.0 | <https://freesound.org/s/563765/> |
 | gas | gas_1 | 808013__artninja__tmnt_2012_inspired_smokebomb_sounds_05202025.wav | Freesound / artninja | CC BY 4.0 | <https://freesound.org/s/808013/> |
 | rauch | rauch_1 | 583262__pfranzen__dropping-a-smoke-bomb-on-the-ground.ogg | Freesound / pfranzen | CC BY 4.0 | <https://freesound.org/s/583262/> |
+| werfer | werfer_1 | 49053354-rocket-launcher-307512.mp3 | Pixabay / 49053354 | Pixabay Content License | – |
+| flinte | flinte_1 | freesound_community-shotgun-shooting-things-105837.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| vorbei | vorbei_1 | dennish18-bullet-passing-by-fast-146492.mp3 | Pixabay / dennish18 | Pixabay Content License | – |
+| einschlag | einschlag_1 | u_68csiaifb5-bulletimpact1-442717.mp3 | Pixabay / u_68csiaifb5 | Pixabay Content License | – |
+| einschlag | einschlag_2 | u_68csiaifb5-bulletimpact2-442718.mp3 | Pixabay / u_68csiaifb5 | Pixabay Content License | – |
+| einsturz | einsturz_1 | shrek_30-building-demolished-472876.mp3 | Pixabay / shrek_30 | Pixabay Content License | – |
+| einsturz | einsturz_2 | magiazzz-massive-building-548236.mp3 | Pixabay / magiazzz | Pixabay Content License | – |
 | gasmaske | gasmaske_1 | 256519__kodack__mask-breathing-sound.wav | Freesound / kodack | CC0 1.0 | <https://freesound.org/s/256519/> |
 | gasmaske | gasmaske_2 | 536372__hoggington__mask-grunt-sound.ogg | Freesound / hoggington | CC0 1.0 | <https://freesound.org/s/536372/> |
 | selGas | selGas_1 | 543010__awesometrainmaster1__mask-breathing-for-killer-or-other.ogg | Freesound / awesometrainmaster1 | CC0 1.0 | <https://freesound.org/s/543010/> |
@@ -48,6 +60,9 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | select | select_2 | 338147__artordie__talking-to-me.wav | Freesound / artordie | CC BY 4.0 | <https://freesound.org/s/338147/> |
 | roar | roar_1 | jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3 | Pixabay / jesuschristisgod | Pixabay Content License | – |
 | roar | roar_2 | 764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav | Freesound / shangusburger | CC0 1.0 | <https://freesound.org/s/764158/> |
+| cry | cry_1 | freesound_community-middle-ages-war-crywav-14780.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| marschtritt | marschtritt_1 | naeftali-march2-137357.mp3 | Pixabay / naeftali | Pixabay Content License | – |
+| generalhorn | generalhorn_1 | trading_nation-low-horn-185556.mp3 | Pixabay / trading_nation | Pixabay Content License | – |
 | scream | scream_1 | 763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav | Freesound / shangusburger | CC0 1.0 | <https://freesound.org/s/763940/> |
 | march | march_1 | 324539__deleted_user_2104797__whistle-army-old.wav | Freesound / deleted_user_2104797 | CC0 1.0 | <https://freesound.org/s/324539/> |
 | march | march_2 | freesound_community-horn-a-37752.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
@@ -55,9 +70,12 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | erobert | erobert_1 | 405513__zagi2__warfare-snare-drum.wav | Freesound / zagi2 | CC BY-NC 4.0 | <https://freesound.org/s/405513/> |
 | erobert | erobert_2 | Win Point 2.wav | unbekannt | unbekannt | – |
 | verloren | verloren_1 | Lost Point.wav | unbekannt | unbekannt | – |
+| dog | dog_1 | audiopapkin-german-shepherd-barking-302356.mp3 | Pixabay / audiopapkin | Pixabay Content License | – |
+| dog | dog_2 | spinopel-german-shepherd-barking-321489.mp3 | Pixabay / spinopel | Pixabay Content License | – |
 | gallop2 | gallop2_1 | Pferdegalopp.mp3 | unbekannt | unbekannt | – |
 | steps | steps_1 | freesound_community-footsteps-mud-68694.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | stepsWald | stepsWald_1 | 478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav | Freesound / elonen | CC0 1.0 | <https://freesound.org/s/478389/> |
+| tank | tank_1 | freesound_community-driving-tank-engine-88503.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | crash | crash_1 | 423116__ogsoundfx__guns-explosions-album-heavy-object-impact-4.wav | Freesound / ogsoundfx | CC BY 4.0 | <https://freesound.org/s/423116/> |
 | crash | crash_2 | freesound_community-crashing-6429.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | smash | smash_1 | 509004__audiopapkin__mechanical-sfx_m023.wav | Freesound / audiopapkin | CC0 1.0 | <https://freesound.org/s/509004/> |
@@ -72,7 +90,9 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | reparieren | reparieren_1 | 492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg | Freesound / firetie | CC0 1.0 | <https://freesound.org/s/492434/> |
 | reparieren | reparieren_2 | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav | Freesound / rudmer_rotteveel | CC0 1.0 | <https://freesound.org/s/591529/> |
 | nachladen | nachladen_1 | 847367__adrian_sommer__gun-reloading-walther-p99.wav | Freesound / adrian_sommer | CC0 1.0 | <https://freesound.org/s/847367/> |
-| drahtlatch | drahtlatch_1 | freesound_community-latch-metallic-43692.mp3 | Pixabay / freesound_community | Pixabay Content License | <https://pixabay.com/sound-effects/latch-metallic-43692/> |
+| nachladen | nachladen_2 | u_azd0z4ksl5-kar98_rechamber-506178.mp3 | Pixabay / u_azd0z4ksl5 | Pixabay Content License | – |
+| drahtwackeln | drahtwackeln_1 | freesound_community-shaking-chain-link-fence-vibration-94438.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| drahtlatch | drahtlatch_1 | freesound_community-latch-metallic-43692.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | cut | cut_1 | freesound_community-cutting-clipping-wire-copper-80373.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | clank | clank_1 | freesound_community-tank-reload-47828.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | mgsetup | mgsetup_1 | 800863__tyranttim__soldier-guns_up.wav | Freesound / tyranttim | CC0 1.0 | <https://freesound.org/s/800863/> |

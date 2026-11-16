@@ -75,3 +75,4 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 - **Frauenstimmen** (`woman-fighting`, `communication-voicelines-woman`) für später aufgehoben.
 - **Titanen/Railgun der Mechs:** `509015`, `510084` (Notizen des Nutzers).
 - **Namensnennung im Spiel:** CC-BY-Töne (siehe `CREDITS.md`) in einem Credits-Fenster nennen; CC-BY-NC-Töne vor einem Verkauf ersetzen.
+- **Dämonen-Stimmen** (2026-11-17, noch nicht eingebaut): `four_voices_whispering`, `schizophrenic-voices`, `sisters-voices`, `the-prowler` in `sound-quelle/`.
