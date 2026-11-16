@@ -20,6 +20,12 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Panzer eher seitlich nach rechts ausgerichtet statt stark schräg.
   - Gelände-Tiles und Props plastischer.
   - **Nächster Schritt:** Probebild mit vorhandenen Bildern (gekipptes Hexraster, größere Karte, Trupps aus Einzelfiguren), bevor neu gemalt wird.
+- **Festlegungen neue Grafik-Richtung (2026-11-16):**
+  - Einheitenstil: Comic-Tinte wie `ui-quelle/konzept/einzel_konzept.png`, düster-gotischer Grabenkrieg (Richtung Trench Crusade, aber eigene Welt, nichts übernehmen).
+  - Trupps aus mehreren Einzelfiguren (4 Posen je Figurentyp), Verluste lassen Figuren wegfallen; dazu Einzelmodelle (Helden, Mechs, Panzer).
+  - Erst nur Konkordat und Aschenwacht neu; Blaue Legion und Russland später; noch später eine dämonische Gegnerseite (Menschen dann verbündet, Koop).
+  - Gekipptes Hexraster mit mehr Tiefe, größere Karten.
+  - Probebild dazu: Testseite `entwurf/probe/` (nicht im Spiel), Figuren aus `ui-quelle/figuren/`.
 - **Etappe 4b – Einheitenbilder (angehalten):** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion. Wartet auf das Ergebnis des Probebilds.
 - **Etappe 4c – Sound und Musik:** UI-Klicks, Waffen, Einschläge, Gas, Ketten, Atmosphäre; Musik mit Suno: Titelthema und 1–2 Schlachtmusiken.
 - **Etappe 5 – Gameplay:** Missionstypen (nicht nur Siegpunkte), stärkere und nachvollziehbare KI, Blaue Legion als vollwertige Seite. Dazu (2026-11-16):

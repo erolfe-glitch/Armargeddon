@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probebild – gekipptes Hexraster</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #120D0B; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .lbl { position: fixed; left: 18px; top: 14px; padding: 8px 14px; font: 600 18px/1.3 "Segoe UI", system-ui, sans-serif; color: #F0EDE1;
+    background: rgba(18,13,11,.82); border: 2px solid #66483A; }
+  .lbl small { display: block; font-weight: 400; font-size: 14px; color: #cbbfa6; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="lbl" id="lbl"></div>
+<script>
+// Probebild (Etappe „Darstellung klären“): Grauwall-Gelände auf einer perspektivisch gekippten Ebene, Trupps aus Einzelfiguren.
+// Nicht im Spiel. Aufruf: entwurf/probe/?v=A|B|C
+// Gelände: grauwall_gelaende.webp = Spielgelände mit K = 0.86 (fast von oben), wird hier entstaucht und neu projiziert.
+const V = {   // Kippwinkel (Blick nach unten, 90° = senkrecht), Kameraabstand (Ebene-px), Felder über die vordere Bildbreite, Soldatenhöhe in Feldradien
+  A: { name: 'A – leicht gekippt, Figuren klein', pitch: 60, R: 4200, cols: 12, sh: 0.95 },
+  B: { name: 'B – mittel gekippt', pitch: 46, R: 2500, cols: 10, sh: 1.15 },
+  C: { name: 'C – stark gekippt, Figuren größer', pitch: 34, R: 1600, cols: 8, sh: 1.4 },
+};
+const v = V[new URLSearchParams(location.search).get('v') || 'B'] || V.B;
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
+const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+
+(async () => {
+  const meta = await (await fetch('grauwall_gelaende.json')).json();
+  const terr = await load('grauwall_gelaende.webp');
+  const P = {}; for (const s of ['konkordat', 'aschenwacht']) P[s] = await Promise.all([1, 2, 3, 4].map(i => load(`fig/${s}_soldat_${i}.png`)));
+  const heute = { A: await load('heute_inf_A.png'), D: await load('heute_inf_D.png') };
+  const SQ3 = Math.sqrt(3), K0 = meta.vy / (meta.s * SQ3), s = meta.s, top = meta.y0 - s * K0 * SQ3 * 0.5;
+  // Ebene: x wie im Bild, y entstaucht (Bild-y = top + y * K0)
+  const hexC = (c, r) => [s * (1 + 1.5 * c), s * SQ3 * (r + 0.5 * (c & 1) + 0.5)];
+  const planeH = (terr.height - top) / K0;
+
+  // Kamera: Ziel T auf der Ebene, Blick nach Norden (−y) und um pitch nach unten
+  const a = v.pitch * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+  const T = [hexC(7.5, 0)[0], 0];
+  let C, F;
+  const f = [0, -ca, -sa], u = [0, -sa, ca];
+  const setCam = ty => { T[1] = ty; C = [T[0], ty + v.R * ca, v.R * sa]; };
+  const proj = (x, y, z = 0) => { const d = [x - C[0], y - C[1], z - C[2]]; const zc = d[1] * f[1] + d[2] * f[2]; return [W / 2 + F * d[0] / zc, H / 2 - F * (d[1] * u[1] + d[2] * u[2]) / zc, zc]; };
+  // Bildzeile → Tiefe und Ebene-y
+  const rowGround = ys => { const k = -(ys - H / 2) / F, dir = [0, f[1] + k * u[1], f[2] + k * u[2]]; const t = -C[2] / dir[2]; return t > 0 ? [C[1] + t * dir[1], t] : null; };
+  // Ziel so legen, dass die vorderste Feldreihe unten im Bild liegt und vorn v.cols Felder ins Bild passen
+  const yNear = hexC(0, 9.6)[1];
+  const fit = ty => { setCam(ty); const zn = (yNear - C[1]) * f[1] + (0 - C[2]) * f[2]; F = W * zn / (v.cols * 1.5 * s); return proj(T[0], yNear)[1]; };
+  { let lo = -planeH, hi = planeH * 2;   // Bisektion: vordere Feldreihe genau unten im Bild (näheres Ziel → Reihe wandert nach oben)
+    for (let it = 0; it < 80; it++) { const m = (lo + hi) / 2; if (fit(m) > H * 0.98) lo = m; else hi = m; } fit((lo + hi) / 2); }
+
+  // Gelände zeilenweise zeichnen (jede Bildzeile = eine Tiefe auf der Ebene)
+  { const bg = g.createLinearGradient(0, 0, 0, H * 0.4); bg.addColorStop(0, '#120D0B'); bg.addColorStop(1, '#2a221c'); g.fillStyle = bg; g.fillRect(0, 0, W, H); }
+  for (let ys = 0; ys < H; ys++) {
+    const gr = rowGround(ys + 0.5); if (!gr) continue;
+    const [py, zc] = gr; if (py < 0 || py > planeH) continue;
+    const sw = W * zc / F, sx = T[0] - sw / 2, sy = top + py * K0;
+    // dunstig nach hinten: leichte Abdunklung
+    g.drawImage(terr, sx, sy, sw, 1, 0, ys, W, 1);
+  }
+  { const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(18,13,11,0.45)'); gr.addColorStop(0.45, 'rgba(18,13,11,0.08)'); gr.addColorStop(1, 'rgba(18,13,11,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H); }
+  // Hexraster: Kanten projiziert (bleiben gerade), dünn und gedämpft
+  g.lineWidth = Math.max(1, W / 1920); g.strokeStyle = 'rgba(240,237,225,0.16)';
+  for (let c = 0; c < meta.cols; c++) for (let r = 0; r < meta.rows; r++) {
+    const [x, y] = hexC(c, r); g.beginPath();
+    for (let i = 0; i <= 6; i++) { const an = Math.PI / 3 * i, p = proj(x + s * Math.cos(an), y + s * Math.sin(an) * 1); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
+    g.stroke();
+  }
+
+  // Figuren: Trupp = Einzelfiguren in einem Feld, leicht versetzt, hinten kleiner und dunkler
+  const SLOTS5 = [[-0.5, -0.22], [0.18, -0.3], [-0.2, 0.08], [0.5, 0.02], [0.08, 0.36]];   // Feldradien (x, y), y > 0 = vorn
+  const draws = [];
+  function trupp(side, c, r, n, seed) {
+    const ims = side === 'A' ? P.konkordat : P.aschenwacht, flip = side === 'D';
+    const [hx, hy] = hexC(c, r);
+    // Ring unter dem Trupp: Pinselring in Fraktionsfarbe (gedämpft)
+    draws.push({ y: hy - s, f: () => { g.save(); g.beginPath(); for (let i = 0; i <= 48; i++) { const an = i / 48 * Math.PI * 2, p = proj(hx + Math.cos(an) * s * 0.78, hy + Math.sin(an) * s * 0.7); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
+      g.fillStyle = 'rgba(18,13,11,0.35)'; g.fill(); g.lineWidth = W / 1920 * 3; g.strokeStyle = side === 'A' ? 'rgba(142,43,34,0.8)' : 'rgba(125,132,113,0.85)'; g.stroke(); g.restore(); } });
+    const order = [0, 1, 2, 3, 4].map(i => (i * 3 + seed) % 5);
+    for (let k = 0; k < n; k++) {
+      const [ox, oy] = SLOTS5[order[k]], pose = ims[(k + seed) % 4];
+      const x = hx + ox * s * (flip ? -1 : 1), y = hy + oy * s;
+      const back = oy < -0.1;
+      draws.push({ y, f: () => figure(pose, x, y, flip, back) });
+    }
+  }
+  function figure(im, x, y, flip, back) {
+    const [px, py, zc] = proj(x, y);
+    const h = v.sh * s * F / zc * (back ? 0.94 : 1) * (im.height / 320);   // Posen sind auf 320 px = stehend normiert, kniend entsprechend kleiner
+    const w = h * im.width / im.height;
+    // Bodenschatten
+    g.save(); g.fillStyle = 'rgba(6,4,3,0.45)'; g.beginPath(); g.ellipse(px, py, w * 0.32, w * 0.09, 0, 0, 7); g.fill(); g.restore();
+    g.save(); if (back) g.filter = 'brightness(0.8)';
+    g.translate(px, py); if (flip) g.scale(-1, 1);
+    g.drawImage(im, -w * 0.5, -h, w, h); g.restore();
+  }
+  function heuteU(side, c, r) {   // heutige Einheit zum Vergleich, so groß wie im Spiel (1 SH = 1,18 Feldradien, Bild = 1,4 SH)
+    const im = heute[side], [hx, hy] = hexC(c, r), flip = side === 'D';
+    draws.push({ y: hy, f: () => { const [px, py, zc] = proj(hx, hy + s * 0.25); const h = 1.4 * 1.18 * s * F / zc, w = h * im.width / im.height;
+      g.save(); g.translate(px, py); if (flip) g.scale(-1, 1); g.drawImage(im, -w * 0.4, -h * 0.975, w, h); g.restore();
+      g.save(); g.font = `600 ${Math.round(15 * W / 1920)}px Segoe UI, sans-serif`; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = '#120D0B'; g.fillStyle = '#F0EDE1';
+      g.strokeText('heute', px, py + 22 * W / 1920); g.fillText('heute', px, py + 22 * W / 1920); g.restore(); } });
+  }
+  // Konkordat (links, greift an) und Aschenwacht (rechts, im Graben)
+  trupp('A', 6, 6, 5, 0); trupp('A', 6, 8, 3, 2);
+  trupp('D', 9, 5, 5, 1); trupp('D', 9, 7, 2, 3);
+  heuteU('A', 5, 5); heuteU('D', 10, 8);
+  draws.sort((p, q) => p.y - q.y).forEach(d => d.f());
+  document.getElementById('lbl').innerHTML = `Variante ${v.name}<small>Kippwinkel ${v.pitch}°, vorn ${v.cols} Felder breit, Soldat ${v.sh} Feldradien · Trupps aus Einzelfiguren, einer je Seite mit Verlusten</small>`;
+  document.body.dataset.ready = '1';
+})();
+</script>
+</body>
+</html>
