@@ -128,7 +128,7 @@ Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel 
 - **Farbe:** gedämpft (Sättigung 0,25–0,40), Grundhelligkeit 0,18–0,25. Fraktionsfarbe nur in Uniform und Anstrich: Konkordat Khaki-Braun mit Ochsenblut-Akzent, Aschenwacht Feldgrau, Blaue Legion Horizontblau. Metall, Leder, Holz bei allen gleich (Rost, gedämpftes Messing). Kräftige Farben nur für Feuer, Blut, Mündungsfeuer. Figuren eine Stufe heller und kontrastreicher als der Boden.
 
 ## Gelände-Bausteine (neue Ansicht)
-Verbindlich seit 2026-11-16. Ziel: das ganze Gelände für die gekippte Ansicht neu malen, aus wenigen Bausteinarten, die der Code zusammensetzt. Probe mit Platzhaltern: `entwurf/probe/gelaende.html` (`?punkte=1` zeigt Anschlusspunkte und Fußlinien). Gemini-Prompts: `entwurf/GEMINI_PROMPTS.md`, Teil „Gelände-Bausteine“. Ablage der gelieferten Bilder: `ui-quelle/gelaende/`.
+Verbindlich seit 2026-11-16. Ziel: das ganze Gelände für die gekippte Ansicht neu malen, aus wenigen Bausteinarten, die der Code zusammensetzt. Probe mit Platzhaltern: `entwurf/probe/gelaende.html` (`?punkte=1` zeigt Anschlusspunkte und Fußlinien). Gemini-Prompts: `entwurf/GEMINI_PROMPTS.md`, Teil „Gelände-Bausteine“. Ablage der gelieferten Bilder: `ui-quelle/gelaende/`. Freistellen: `tools/gelaende_cut.py` (Kachelstreifen werden an der Stelle geschnitten, wo sich das Muster wiederholt, und auf Nahtlosigkeit geprüft; Ergebnis `ui-quelle/teile/gelaende/`, 320 px = 1 SH).
 
 **Maße.** R = Feldradius, Feld = 2 R breit, Hexkante = 1 R lang. 1 SH (stehender Soldat) = 0,8 R; ein Feld ist also gut 2,5 Soldaten breit. Malmaßstab nach dem Freistellen: **320 px = 1 SH, 400 px = 1 R**. Kamera im Spiel 39° (beim Herauszoomen bis 58°).
 
@@ -169,10 +169,10 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
   - Figuren im Haus in der Tiefe auf 85 % gestaucht.
 - **Graben (eingelassen):**
   - Grabenzug als Linie über Feldmitten und Kantenmitten (Anschluss an der Kantenmitte, Richtungswechsel 60°/120°/180° ergeben sich von selbst).
-  - Flach: Aushub 1,0 R breit, Schnitt 0,7 R, Verschalung bis 0,64 R, Sohle 0,4 R mit Laufrost. Bild: kachelbarer Längsstreifen „Grabensohle“, von oben.
-  - Aufrecht: Grabenkante vorn (Sandsäcke Außenseite, 0,32 SH) und hinten (Verschalung Innenseite mit Sandsack obenauf, 0,42 SH), je ±0,38 R neben der Linie.
+  - Flach: Längsstreifen „Grabensohle“ (von oben), Bildhöhe = 1,0 R Grabenbreite, entlang der Linie gekachelt. Zweimal gelegt: erst ganz, dann nur das mittlere Drittel (Sohle) – so verbinden sich an Abzweigen die Böden. Offene Enden bekommen einen Erdwall.
+  - Aufrecht: Grabenkante vorn (Sandsäcke Außenseite, 0,32 SH) und hinten (Verschalung Innenseite mit Sandsack obenauf, 0,42 SH), je ±0,38 R neben der Linie. Welche Kante: zeigt die Innenseite eines Abschnitts zum Betrachter (nach Süden), steht dort „hinten“, sonst „vorn“ – fest nach Blickrichtung, damit beim Schwenken nichts wechselt.
   - An Kreuzungen und Abzweigen lässt der Code die Kante dort weg, wo ein anderer Grabenzug näher als 0,42 R ist.
-  - Einheit im Graben: **0,32 SH tiefer**, Figuren entlang des Grabens aufgereiht (Tiefe × 0,38), unterhalb der vorderen Kante abgeschnitten.
+  - Einheit im Graben: **0,32 SH tiefer**, Figuren auf der Grabenlinie aufgereiht (Tiefe × 0,38 um die Linie), unterhalb der vorderen Kante abgeschnitten.
 - **Wald im Spielfeld (licht):**
   - Waldboden-Textur.
   - Je Feld schmale Stämme (Aufsteller) an den Ecken 4 und 5, Einzug 0,85, 1,4–1,8 SH.
