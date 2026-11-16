@@ -57,7 +57,7 @@ def remove_flash(q):
 TRUPP = {'soldat', 'sturm', 'pionier'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
-SH_SINGLE = {'mg': 0.82, 'mg_marsch': 1.05, 'geschuetz': 1.0, 'hauptmann': 1.2, 'koloss': 1.15, 'panzer': 1.15, 'bohrkoloss': 1.15}
+SH_SINGLE = {'mg': 0.98, 'mg_marsch': 1.05, 'geschuetz': 1.2, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5}   # 2026-11-16: MG und Geschütz 1,2× im Verhältnis, Fahrzeuge 1,5 SH
 GAME = ROOT / 'ui-quelle' / 'teile' / 'figuren'   # Bilder fürs Spiel (eingebettet in src/figs.js)
 
 

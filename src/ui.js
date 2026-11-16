@@ -1008,7 +1008,7 @@ function drawFloaters(g, s, bb) {
 // Maßstab: 1 SH = FIG_SH Feldradien (Wunsch 2026-11-16: 1,1 – Felder groß genug, nichts überdimensioniert). Trupps: bis zu 4 Einzelfiguren in
 // lockerer Formation im eigenen Feld, Verluste lassen Figuren wegfallen. Einzelmodelle (MG, Geschütz, Anführer) im selben Maßstab, höchstens
 // FIGW_MAX Feldradien breit. Fahrzeuge (Panzer, Kolosse): 1,35 SH hoch, Breite nach Bild, dürfen etwas über den Feldrand ragen (belegen ein Feld).
-const FIG_SH = 0.9, FIGW_MAX = 2.0, FIGW_VEH = 2.8;   // Wunsch 2026-11-16: Soldat 0,9; Fahrzeuge höchstens ±1,4 Feldradien breit
+const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Soldat 0,8; Fahrzeuge (1,5 SH) höchstens 2,4 Feldradien breit
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['soldat', 1, 2], granate: ['sturm', 1], raeumer: ['sturm', 1],
@@ -1059,7 +1059,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const im = list[0].im, env = vehEnv(im);
     let h = im.naturalHeight / 320 * FIG_SH * s, w = h * im.naturalWidth / im.naturalHeight;
     const wmax = FIGW_VEH * s; if (w > wmax) { h *= wmax / w; w = wmax; }
-    const fy = y + 0.06 * s * k, top = fy - (env ? env.mid : 1) * h, sx = v => flip ? x + w / 2 - v * w : x - w / 2 + v * w;
+    const fy = y + 0.3 * s * k, top = fy - (env ? env.mid : 1) * h,   // Ketten etwas Richtung Betrachter versetzt, auf dem Feldboden
+      sx = v => flip ? x + w / 2 - v * w : x - w / 2 + v * w;
     g.filter = 'none'; g.globalAlpha = A0;
     if (env) {   // Band entlang der Unterkante, weich (Weichzeichner im Canvas), darunter ein flacher Bodenschatten
       g.save(); g.filter = `blur(${Math.max(2, s * 0.04 * (g.getTransform().a || 1)).toFixed(1)}px)`; g.fillStyle = 'rgba(5,4,3,0.7)'; g.beginPath();
