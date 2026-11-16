@@ -47,6 +47,8 @@ SYMBOLS = {
                         'scheinwerfer', 'gasmaske', 'munitionskiste'],
     # Zustandsmarken (Karte und Panel)
     'bogen4c_symbole': ['niedergehalten', 'flucht', 'gebrochen', 'festgefahren', 'durchsickern'],
+    # Stellungswechsel: MG auf-/abbauen, Auf-/Abprotzen (Knöpfe und Zustandsmarken)
+    'bogen6_stellung': ['mg_auf', 'mg_ab', 'aufprotzen', 'abprotzen'],
 }
 # Kartenmarken (ui-quelle/kartenmarken.png): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
 PARTS.update({
