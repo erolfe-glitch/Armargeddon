@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sound-Sortierer</title>
+<style>
+/* Palette und Schrift aus STYLE.md */
+:root {
+  --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583;
+  --s-brass: #C2A461; --s-life: #BF4638; --s-foe-dark: #713B36; --s-friend: #7A8F99; --s-gas: #8A8A2E; --s-ink: #120D0B;
+  --s-head: "Bahnschrift SemiBold Condensed", "Bahnschrift", "DIN Condensed", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --s-body: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --dim: #a99c86;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--s-bg); color: var(--s-text); font: 16px/1.35 var(--s-body); }
+header { position: sticky; top: 0; z-index: 5; background: var(--s-panel); border-bottom: 3px solid var(--s-rust); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,.4); }
+h1 { margin: 0 10px 0 0; font: 600 26px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-brass); }
+button, select, input { font: inherit; color: var(--s-text); background: var(--s-bg); border: 2px solid var(--s-rust); border-radius: 3px; min-height: 44px; }
+button { font: 600 16px var(--s-head); letter-spacing: .06em; text-transform: uppercase; padding: 0 14px; cursor: pointer; }
+button:hover, select:hover { border-color: var(--s-brass); }
+button.gold { background: var(--s-brass); color: var(--s-ink); border-color: var(--s-ink); box-shadow: 0 2px 0 var(--s-ink); }
+select { padding: 0 8px; }
+input[type=search] { padding: 0 10px; width: 220px; }
+label.chk { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; cursor: pointer; }
+label.chk input { width: 22px; height: 22px; min-height: 0; }
+.stat { color: var(--dim); font-size: 15px; margin-left: auto; }
+.stat b { color: var(--s-brass); }
+main { padding: 8px 16px 60px; }
+.grp { margin: 18px 0 6px; font: 600 18px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-parch); border-bottom: 1px solid var(--s-rust); padding-bottom: 3px; }
+.row { display: grid; grid-template-columns: 56px minmax(260px, 1fr) 92px 230px minmax(160px, 260px); gap: 6px 12px; align-items: center; padding: 8px 10px; border-radius: 4px; background: rgba(50,41,35,.55); margin: 5px 0; border-left: 5px solid transparent; }
+.row.chg { border-left-color: var(--s-brass); }
+.row.bad { border-left-color: var(--s-life); background: rgba(113,59,54,.35); }
+.row.play { outline: 2px solid var(--s-brass); }
+.pl { width: 52px; height: 52px; font-size: 22px; padding: 0; }
+.row.play .pl { background: var(--s-brass); color: var(--s-ink); }
+.nm { min-width: 0; }
+.nm .f { font-weight: 600; overflow-wrap: anywhere; }
+.nm .d { color: var(--dim); font-size: 14px; }
+.nm .src { font-size: 14px; color: var(--dim); }
+.nm .src a { color: var(--s-friend); }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.tag { font: 600 13px var(--s-head); letter-spacing: .05em; text-transform: uppercase; padding: 1px 7px; border-radius: 3px; background: var(--s-rust); color: var(--s-text); }
+.tag.rot { background: var(--s-life); }
+.tag.gelb { background: var(--s-gas); }
+.len { text-align: right; font: 600 18px var(--s-head); }
+.len small { display: block; font: 13px var(--s-body); color: var(--dim); }
+.cat select { width: 100%; }
+.cat .vs { font-size: 13px; color: var(--dim); margin-top: 2px; }
+.note input { width: 100%; padding: 0 8px; }
+.prog { grid-column: 2 / -1; height: 4px; background: var(--s-ink); border-radius: 2px; display: none; }
+.row.play .prog { display: block; }
+.prog i { display: block; height: 100%; width: 0; background: var(--s-brass); }
+.leer { color: var(--dim); padding: 30px; text-align: center; }
+.hilfe { color: var(--dim); font-size: 15px; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sound-Sortierer</h1>
+  <input type="search" id="q" placeholder="Suchen …" aria-label="Suchen">
+  <select id="fcat" aria-label="Kategorie filtern"><option value="">Alle Kategorien</option></select>
+  <select id="sort" aria-label="Ordnen nach">
+    <option value="ordner">nach Ordner</option>
+    <option value="kat">nach Kategorie</option>
+    <option value="len">nach Länge</option>
+  </select>
+  <label class="chk"><input type="checkbox" id="fhint"> nur mit Hinweis</label>
+  <label class="chk"><input type="checkbox" id="auto"> nächste nach Ende</label>
+  <button class="gold" id="save">Liste speichern</button>
+  <button id="reset" title="Alle Auswahlen und Notizen auf den Vorschlag zurücksetzen">Zurücksetzen</button>
+  <span class="stat" id="stat"></span>
+</header>
+<main>
+  <p class="hilfe">Vorauswahl = Vorschlag aus Dateiname, Ordner, Länge und Lautstärke. Geänderte Zeilen haben links einen goldenen Rand. Alles wird im Browser gespeichert; „Liste speichern“ lädt die Liste als JSON herunter.</p>
+  <div id="list"></div>
+</main>
+<audio id="au" preload="none"></audio>
+
+<script src="sound-daten.js"></script>
+<script>
+'use strict';
+const KATS = ['Gewehr', 'MG', 'Geschütz/Artillerie', 'Mörser', 'Flammenwerfer', 'Panzerkanone',
+  'Einschlag klein', 'Einschlag groß', 'Einschlag Wasser', 'Treffer auf Metall/Fahrzeug', 'Nahkampf',
+  'Schritte Infanterie', 'Pferde', 'Panzerketten', 'Mech-Schritte', 'Befehle/Rufe', 'Schmerz/Tod',
+  'Schlachtruf', 'Nachladen', 'Reparieren', 'Draht schneiden', 'Sanitäter', 'Gas/Maske', 'Rauch',
+  'UI-Klick', 'Ereignis (Pfeife/Horn)', 'Zielpunkt erobert', 'Zielpunkt verloren',
+  'Atmosphäre/Ferne Schlacht', 'Regen/Wetter', 'Feuer', 'Musik', 'Dämonen (später)', 'Aussortiert'];
+
+// Vorschlag je Datei: [Kategorie, kurze Begründung]. Schlüssel = Dateiname ohne Ordner.
+const VS = {
+  '131710__oldedgar__male-being-impaledbeaten-ac.wav': ['Schmerz/Tod', 'Mann wird erschlagen'],
+  '155973__mrpokephile__zombie-flesh-bites.mp3': ['Dämonen (später)', 'Zombie-Bisse'],
+  '17548__dynamicell__fire_forest_inferno.aiff': ['Feuer', 'Waldbrand, lang'],
+  '182435__qubodup__sniper-shots-dod-56706-dod-146324.flac': ['Gewehr', 'Scharfschützen-Schüsse, mehrere'],
+  '210901__originalmaja__three-cannon-shots.mp3': ['Geschütz/Artillerie', 'drei Kanonenschüsse'],
+  '212689__tb0y298__water-explosion-1.wav': ['Einschlag Wasser', 'Wasserexplosion'],
+  '233068__newciv1__loud-tiger-ii-audio-test.wav': ['Panzerketten', 'Panzer fährt (Tiger II) – reinhören, evtl. auch Schuss'],
+  '239137__qubodup__artillery-gunfire.flac': ['Geschütz/Artillerie', 'Artilleriefeuer'],
+  '271631__carmsie__feel-free-to-scream.wav': ['Schmerz/Tod', 'Schrei'],
+  '320862__urupin__old-watch-in-a-small-antique-shop.flac': ['Aussortiert', 'Uhrticken – evtl. später für Zeitanzeige'],
+  '338146__artordie__scream-augh.wav': ['Schmerz/Tod', 'kurzer Schrei'],
+  '339191__shillsuqat__chewing-zombie_wav.wav': ['Dämonen (später)', 'Zombie kaut'],
+  '397370__jgrzinich__forest-gun-shots-and-gunfire.wav': ['Atmosphäre/Ferne Schlacht', 'Schüsse im Wald, lang'],
+  '447809__florianreichelt__light-rain-and-thunder.wav': ['Regen/Wetter', 'Regen und Donner'],
+  '519008__sheyvan__water-explosion.wav': ['Einschlag Wasser', 'Wasserexplosion'],
+  '563765__florianreichelt__fire-auto-car-on-fire.mp3': ['Feuer', 'brennendes Fahrzeug'],
+  '612277__robinhood76__10835-big-fire-loop.wav': ['Feuer', 'großes Feuer, Schleife'],
+  '847367__adrian_sommer__gun-reloading-walther-p99.wav': ['Nachladen', 'Pistole nachladen'],
+  '568974__trp__201111-ww1-bi-plane-flying-around-close-distant-helicopter-roof-11am.flac': ['Atmosphäre/Ferne Schlacht', 'Doppeldecker (Erster Weltkrieg), sehr lang'],
+  'cryptowista-airplane-jet-take-off-121957.mp3': ['Aussortiert', 'Düsenjet – passt nicht in die Zeit'],
+  'u_lbl9t264ov-jet-sound-militar-185708.mp3': ['Aussortiert', 'Düsenjet – passt nicht in die Zeit'],
+  'armed_unit-distant-war-377958.mp3': ['Atmosphäre/Ferne Schlacht', 'ferner Krieg, sehr lang'],
+  'Pferdegalopp.mp3': ['Pferde', 'Galopp'],
+  'dragon-studio-dog-barking-406629.mp3': ['Befehle/Rufe', 'Hundegebell – evtl. Meldegänger mit Hund'],
+  '117651__jppi_stu__sw_switchoffon.wav': ['UI-Klick', 'Schalter'],
+  '488534__ranner__ui-click.wav': ['UI-Klick', 'Klick (leise)'],
+  '677861__el_boss__ui-button-click.wav': ['UI-Klick', 'Knopfklick'],
+  '423116__ogsoundfx__guns-explosions-album-heavy-object-impact-4.wav': ['Treffer auf Metall/Fahrzeug', 'schwerer Aufprall'],
+  '509004__audiopapkin__mechanical-sfx_m023.wav': ['Treffer auf Metall/Fahrzeug', 'Mechanik – evtl. Panne'],
+  '509007__audiopapkin__mechanical-sfx_m013.wav': ['Treffer auf Metall/Fahrzeug', 'Mechanik – evtl. Panne'],
+  '509015__audiopapkin__mechanical-sfx_m019.wav': ['Treffer auf Metall/Fahrzeug', 'Mechanik – evtl. Panne'],
+  '510084__audiopapkin__impact-sfx-011.wav': ['Treffer auf Metall/Fahrzeug', 'Aufprall'],
+  '511884__audiopapkin__impact-sfx-016.wav': ['Treffer auf Metall/Fahrzeug', 'Aufprall'],
+  '511911__audiopapkin__impact-sfx-022.wav': ['Treffer auf Metall/Fahrzeug', 'Aufprall, lang'],
+  '511914__audiopapkin__impact-sfx-025.wav': ['Treffer auf Metall/Fahrzeug', 'Aufprall, lang'],
+  '712881__audiopapkin__factory-machine-011.wav': ['Reparieren', 'Fabrikmaschine – evtl. Motor/Werkstatt'],
+  '841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav': ['Einschlag groß', 'Felsexplosion, dröhnend'],
+  'Canon explode.wav': ['Einschlag groß', 'Kanone/Explosion – reinhören'],
+  'dragon-studio-car-crash-sound-effect-376874.mp3': ['Treffer auf Metall/Fahrzeug', 'Autounfall – evtl. Panne/Festfahren'],
+  'freesound_community-crashing-6429.mp3': ['Treffer auf Metall/Fahrzeug', 'Krachen, lang'],
+  'mixkit-metallic-sword-strike-2160.wav': ['Treffer auf Metall/Fahrzeug', 'Metall-Abpraller'],
+  '324539__deleted_user_2104797__whistle-army-old.wav': ['Ereignis (Pfeife/Horn)', 'alte Armeepfeife'],
+  'freesound_community-horn-a-37752.mp3': ['Ereignis (Pfeife/Horn)', 'Horn'],
+  '405513__zagi2__warfare-snare-drum.wav': ['Zielpunkt erobert', 'Trommelwirbel – evtl. Ereignis'],
+  'Lost Point.wav': ['Zielpunkt verloren', 'Ordnername'],
+  'Win Point 2.wav': ['Zielpunkt erobert', 'Ordnername'],
+  'Win Point.wav': ['Zielpunkt erobert', 'Ordnername'],
+  '609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac': ['Einschlag klein', 'Granate, mittel'],
+  'daviddumaisaudio-grenade-explosion-14-190266.mp3': ['Einschlag klein', 'Granate'],
+  'Explosionssound.mp3': ['Einschlag groß', 'Explosion'],
+  'magiaz-grenade_explosion-416962.mp3': ['Einschlag klein', 'Granate'],
+  'freesound_community-gas-torch-burn-74271.mp3': ['Flammenwerfer', 'Gasbrenner'],
+  '478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav': ['Schritte Infanterie', 'Soldat geht im Wald'],
+  'daviddumaisaudio-robot-heavy-mechanical-footsteps-194039.mp3': ['Mech-Schritte', 'schwere Roboterschritte'],
+  'freesound_community-footsteps-mud-68694.mp3': ['Schritte Infanterie', 'Schritte im Schlamm (nur Schlamm)'],
+  '256519__kodack__mask-breathing-sound.wav': ['Gas/Maske', 'Atmen in Maske'],
+  '536372__hoggington__mask-grunt-sound.ogg': ['Gas/Maske', 'Stöhnen in Maske'],
+  '536603__hoggington__pain-sound-in-mask.wav': ['Gas/Maske', 'Schmerz in Maske'],
+  '543010__awesometrainmaster1__mask-breathing-for-killer-or-other.ogg': ['Gas/Maske', 'Atmen in Maske, lang'],
+  '583262__pfranzen__dropping-a-smoke-bomb-on-the-ground.ogg': ['Rauch', 'Rauchtopf fällt'],
+  '808013__artninja__tmnt_2012_inspired_smokebomb_sounds_05202025.wav': ['Rauch', 'Rauchbomben, mehrere'],
+  'chromascension-slash-542396.mp3': ['Nahkampf', 'Hieb (Mech/schwer)'],
+  'dragon-studio-hard-heavy-impact-515256.mp3': ['Nahkampf', 'schwerer Schlag (Mech)'],
+  'mixkit-heavy-sword-smashes-metal-2795.wav': ['Nahkampf', 'Schwert auf Metall (Mech)'],
+  'yodguard-a-massive-axe-impact-hitting-metal-1-450251.mp3': ['Nahkampf', 'Axt auf Metall (Mech)'],
+  'yodguard-a-massive-axe-impact-hitting-metal-2-450253.mp3': ['Nahkampf', 'Axt auf Metall (Mech)'],
+  'yodguard-a-massive-axe-impact-hitting-metal-3-450254.mp3': ['Nahkampf', 'Axt auf Metall (Mech)'],
+  'yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3': ['Nahkampf', 'Axt auf Holz'],
+  '457044__gerainsan__slow-motion-gun-shot.wav': ['Panzerkanone', 'Schuss in Zeitlupe, tief'],
+  '850499__vulkanbruder__little-cannon.wav': ['Geschütz/Artillerie', 'kleine Kanone'],
+  'freesound_community-mortar-96223.mp3': ['Mörser', 'Mörser'],
+  'u_w4utmqapnm-mini-gun-154177.mp3': ['MG', 'Minigun – evtl. Mech-Gatling'],
+  '337773__lubini__street-battle-lviv-ukraine-ww1-reconstruction.wav': ['Atmosphäre/Ferne Schlacht', 'Gefecht (WWI-Nachstellung)'],
+  '410442__superphat__enfieldrifle.wav': ['Gewehr', 'Enfield-Gewehr (passt zur Zeit)'],
+  '417148__superphat__slowfiringheavyweapon.wav': ['MG', 'langsames schweres MG'],
+  '417688__superphat__lightmachinegun1.wav': ['MG', 'leichtes MG'],
+  '581773__hz37__shoot-1-hza-01-08-2021.wav': ['Gewehr', 'Schuss'],
+  '721431__the_epic1357__new-barrett.mp3': ['Gewehr', 'schweres Gewehr – evtl. Panzerbüchse'],
+  '816114__qubodup__fps-sniper-shot.wav': ['Gewehr', 'Scharfschütze'],
+  '855843__serutonin-deprivd__an-ak-47-being-shot-has-distinctive-metallic-kalashnikov-esque-report-punchy-sounding-w-distant-trailing-reverb.wav': ['Gewehr', 'Sturmgewehr mit Hall – modern'],
+  'Rifle Fire Sound Effect.mp3': ['Gewehr', 'Gewehrschuss'],
+  'dragon-studio-gunshot-511311.mp3': ['Gewehr', 'Schuss'],
+  'foisal72-gun-fire-346766.mp3': ['Gewehr', 'Schüsse – reinhören, evtl. MG'],
+  'freesound_community-battle-rifle-42734.mp3': ['Gewehr', 'Gewehr'],
+  'freesound_community-m1-garand-rifle-80192.mp3': ['Gewehr', 'Selbstladegewehr'],
+  'gutierrreztom-walther-p38-firing-sound-effect-11651.mp3': ['Gewehr', 'Pistole – evtl. Offiziere'],
+  '392973__morganpurkis__trench-club-2.wav': ['Nahkampf', 'Grabenkeule (passt zur Zeit)'],
+  '559975__starkvind__man-dies.wav': ['Schmerz/Tod', 'Mann stirbt'],
+  'ribhavagrawal-swords-collide-230574.mp3': ['Nahkampf', 'Klingen prallen'],
+  'universfield-human-roar-250239.mp3': ['Schlachtruf', 'Brüllen'],
+  'universfield-punch-04-383965.mp3': ['Nahkampf', 'Schlag'],
+  'universfield-punch-140236.mp3': ['Nahkampf', 'Schlag'],
+  'universfield-punch-impact-hit-567196.mp3': ['Nahkampf', 'Schlag'],
+  'universfield-punch-with-male-scream-121575.mp3': ['Nahkampf', 'Schlag mit Schrei'],
+  '797717__colinleblancsound__warhorn-c3.wav': ['Ereignis (Pfeife/Horn)', 'Kriegshorn'],
+  '871255__audiomirage__when-the-rain-remembers.wav': ['Musik', 'Stück, fast 10 Minuten'],
+  'dennish18-tank-moving-143104.mp3': ['Panzerketten', 'Panzer fährt'],
+  '370271__ignacioasmp__nicol-singing-seven-nation-army.wav': ['Aussortiert', 'geschützter Song'],
+  '693767__composingatnight__taps-for-the-fallen.wav': ['Musik', 'Trompete, Totengedenken'],
+  '704440__roemergruft__viking-horn-in-d.wav': ['Ereignis (Pfeife/Horn)', 'Horn'],
+  '744062__xloenp__heroic-war-march-symphony-loop-2.flac': ['Musik', 'Marsch, Schleife'],
+  '695389__fmaudio__male-death-cry-6.wav': ['Schmerz/Tod', 'Todesschrei'],
+  'applehillstudios-hurt-amp-death-pain-groin-5-543683.mp3': ['Schmerz/Tod', 'Schmerzlaut'],
+  '492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg': ['Nachladen', 'Verschluss'],
+  '591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav': ['Reparieren', 'Ratsche'],
+  '654374__njjjjjjjjjjjjjjjjjjjjjjjj__loading-gun.wav': ['Nachladen', 'Waffe laden'],
+  '675138__craigsmith__s17-03-hand-to-hand-battle-with-yelling-and-armor-noise-many-voices.wav': ['Nahkampf', 'Getümmel mit Rufen'],
+  '701620__robinhood76__11588-plumber-using-wrench.wav': ['Reparieren', 'Schraubenschlüssel'],
+  'alex_jauk-whistle-sound-600668.mp3': ['Ereignis (Pfeife/Horn)', 'Pfiff'],
+  'floraphonic-duct-tape-3-183995.mp3': ['Sanitäter', 'Klebeband – evtl. Verband'],
+  'freesound_community-cutting-clipping-wire-copper-80373.mp3': ['Draht schneiden', 'Draht schneiden'],
+  'freesound_community-tank-reload-47828.mp3': ['Nachladen', 'Panzer/Geschütz laden'],
+  '338147__artordie__talking-to-me.wav': ['Befehle/Rufe', 'Ruf'],
+  '402019__theuncertainman__yes-british-male.wav': ['Befehle/Rufe', '„Yes“ (Englisch)'],
+  '405328__drotzruhn__woman-fighting.wav': ['Schlachtruf', 'Frauenstimme im Kampf, lang'],
+  '439287__dreamstobecome__battle-laugh.wav': ['Schlachtruf', 'Lachen im Kampf'],
+  '458070__theuncertainman__form-ranks-british-warrior.wav': ['Befehle/Rufe', '„Form ranks“ (Englisch)'],
+  '529837__airborne80__aint-nothin-like-a-war.mp3': ['Befehle/Rufe', 'Spruch (Englisch)'],
+  '639447__laurenponder__communication-voicelines-woman.wav': ['Befehle/Rufe', 'Funksprüche Frau, leise'],
+  '763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav': ['Schlachtruf', 'Menge stürmt (Mikro 1)'],
+  '764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav': ['Schlachtruf', 'Menge stürmt (Mikro 2)'],
+  '764267__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_spacedomni-mk012.wav': ['Schlachtruf', 'Menge stürmt (Mikro 3)'],
+  '800863__tyranttim__soldier-guns_up.wav': ['Befehle/Rufe', '„Guns up“'],
+  'applehillstudios-combat-voice-charge-2-543675.mp3': ['Befehle/Rufe', '„Charge“ – Sturmbefehl'],
+  'applehillstudios-combat-voice-forward-march-543679.mp3': ['Befehle/Rufe', '„Forward march“'],
+  'applehillstudios-combat-voice-stand-your-ground-1-543681.mp3': ['Befehle/Rufe', '„Stand your ground“ – Sammeln'],
+  'applehillstudios-hurt-amp-death-i-need-a-medic-543678.mp3': ['Sanitäter', '„I need a medic“'],
+  'freesound_community-033205_human-male-scream-small-crowd-panic-fearmp3-76274.mp3': ['Schmerz/Tod', 'Panik – evtl. Flucht/gebrochen'],
+  'jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3': ['Schlachtruf', 'Heer brüllt'],
+  'phatphrogstudio-robot-voice-damage-sustained-487076.mp3': ['Treffer auf Metall/Fahrzeug', 'Roboterstimme „Schaden“ – evtl. Mech'],
+  'universfield-come-on-man-323595.mp3': ['Befehle/Rufe', '„Come on, man“'],
+};
+
+// Quelle aus dem Dateinamen
+function quelle(name) {
+  let m = name.match(/^(\d+)__(.+?)__/);
+  if (m) return { text: 'Freesound #' + m[1] + ' (' + m[2] + ')', url: 'https://freesound.org/s/' + m[1] + '/', anbieter: 'Freesound', id: m[1], urheber: m[2] };
+  m = name.match(/^mixkit-.*-(\d+)\.\w+$/);
+  if (m) return { text: 'Mixkit #' + m[1], url: '', anbieter: 'Mixkit', id: m[1] };
+  m = name.match(/^([a-z0-9_]+(?:-[a-z0-9_]+)*?)-.*-(\d{4,6})\.\w+$/i);
+  if (m && !/\s/.test(name)) {
+    const urh = name.match(/^(dragon-studio|the-vampires|[^-]+)-/)[1];
+    return { text: 'Pixabay #' + m[2] + ' (' + urh + ')', url: '', anbieter: 'Pixabay', id: m[2], urheber: urh };
+  }
+  return { text: 'Quelle unbekannt', url: '', anbieter: 'unbekannt' };
+}
+
+const MESS = window.SOUND_MESS || {};
+const FILES = Object.keys(MESS).map(p => {
+  const i = p.lastIndexOf('/');
+  const name = i < 0 ? p : p.slice(i + 1), dir = i < 0 ? '(Hauptordner)' : p.slice(0, i);
+  const m = MESS[p], v = VS[name] || (dir === 'Monster' ? ['Dämonen (später)', 'Monster/Kreatur'] : ['Aussortiert', 'kein Vorschlag']);
+  const hints = [];
+  if (/seven-nation-army/i.test(name)) hints.push(['nicht verwendbar – geschützter Song', 'rot']);
+  if (m.size > 5e6) hints.push(['zu groß (' + (m.size / 1e6).toFixed(1).replace('.', ',') + ' MB)', 'rot']);
+  if (/\.aiff?$/i.test(name)) hints.push(['spielt im Browser nicht (AIFF)', 'rot']);
+  if (m.dur > 20) hints.push(['lang – Ausschnitt nötig', 'gelb']);
+  if (m.peak != null && m.peak < -15) hints.push(['leise', 'gelb']);
+  if (m.peak != null && m.peak > 0.5) hints.push(['übersteuert?', 'gelb']);
+  if (m.start != null && m.start >= 0.5) hints.push(['Stille am Anfang (' + m.start.toFixed(1).replace('.', ',') + ' s)', 'gelb']);
+  return { path: p, name, dir, m, vs: v[0], grund: v[1], q: quelle(name), hints };
+});
+
+// gespeicherte Auswahl
+const KEY = 'armargeddon.soundsortierer.v1';
+let ST = {};
+try { ST = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { ST = {}; }
+function store() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
+const catOf = f => (ST[f.path] && ST[f.path].cat) || f.vs;
+const noteOf = f => (ST[f.path] && ST[f.path].note) || '';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmtLen = s => s >= 60 ? Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0') + ' min' : s.toFixed(1).replace('.', ',') + ' s';
+const optHtml = KATS.map(k => `<option>${esc(k)}</option>`).join('');
+$('fcat').insertAdjacentHTML('beforeend', KATS.map(k => `<option>${esc(k)}</option>`).join(''));
+
+function render() {
+  const q = $('q').value.trim().toLowerCase(), fc = $('fcat').value, fh = $('fhint').checked, so = $('sort').value;
+  let list = FILES.filter(f => (!q || f.path.toLowerCase().includes(q) || noteOf(f).toLowerCase().includes(q))
+    && (!fc || catOf(f) === fc) && (!fh || f.hints.length));
+  const gkey = so === 'kat' ? catOf : so === 'ordner' ? (f => f.dir) : (() => '');
+  if (so === 'kat') list.sort((a, b) => KATS.indexOf(catOf(a)) - KATS.indexOf(catOf(b)) || a.path.localeCompare(b.path, 'de'));
+  else if (so === 'len') list.sort((a, b) => a.m.dur - b.m.dur);
+  else list.sort((a, b) => (a.dir === '(Hauptordner)' ? -1 : 0) - (b.dir === '(Hauptordner)' ? -1 : 0) || a.dir.localeCompare(b.dir, 'de') || a.name.localeCompare(b.name, 'de'));
+  let html = '', last = null;
+  for (const f of list) {
+    const g = gkey(f);
+    if (g && g !== last) { html += `<div class="grp">${esc(g)}</div>`; last = g; }
+    const cat = catOf(f), chg = cat !== f.vs || noteOf(f);
+    const bad = f.hints.some(h => h[1] === 'rot');
+    const tags = f.hints.map(h => `<span class="tag ${h[1]}">${esc(h[0])}</span>`).join('');
+    const src = f.q.url ? `<a href="${f.q.url}" target="_blank" rel="noopener">${esc(f.q.text)}</a>` : esc(f.q.text);
+    const lvl = f.m.peak == null ? 'nicht gemessen' : `Spitze ${f.m.peak} dB · Mittel ${f.m.rms} dB`;
+    html += `<div class="row${chg ? ' chg' : ''}${bad ? ' bad' : ''}${playing === f.path ? ' play' : ''}" data-p="${esc(f.path)}">
+      <button class="pl" aria-label="Abspielen">${playing === f.path ? '■' : '▶'}</button>
+      <div class="nm"><div class="f">${esc(f.name)}</div><div class="d">${esc(f.dir)}</div><div class="src">${src}</div>${tags ? `<div class="tags">${tags}</div>` : ''}</div>
+      <div class="len">${fmtLen(f.m.dur)}<small>${(f.m.size / 1e6).toFixed(1).replace('.', ',')} MB</small></div>
+      <div class="cat"><select aria-label="Kategorie">${optHtml}</select><div class="vs" title="${esc(lvl)}">Vorschlag: ${esc(f.vs)} – ${esc(f.grund)}</div></div>
+      <div class="note"><input type="text" placeholder="Notiz" value="${esc(noteOf(f))}" aria-label="Notiz"></div>
+      <div class="prog"><i></i></div>
+    </div>`;
+  }
+  $('list').innerHTML = html || '<div class="leer">Keine Treffer.</div>';
+  for (const row of $('list').querySelectorAll('.row')) row.querySelector('select').value = catOf(byPath[row.dataset.p]);
+  stat(list.length);
+}
+const byPath = Object.fromEntries(FILES.map(f => [f.path, f]));
+
+function stat(shown) {
+  const chg = FILES.filter(f => ST[f.path] && (ST[f.path].cat && ST[f.path].cat !== f.vs || ST[f.path].note)).length;
+  const aus = FILES.filter(f => catOf(f) === 'Aussortiert').length;
+  $('stat').innerHTML = `<b>${shown}</b> von ${FILES.length} · geändert <b>${chg}</b> · aussortiert ${aus}`;
+}
+
+function set(path, k, v) {
+  const f = byPath[path];
+  const e = ST[path] || (ST[path] = {});
+  e[k] = v;
+  if ((!e.cat || e.cat === f.vs) && !e.note) delete ST[path];
+  store();
+  const row = document.querySelector(`.row[data-p="${CSS.escape(path)}"]`);
+  if (row) row.classList.toggle('chg', !!ST[path]);
+  stat(document.querySelectorAll('#list .row').length);
+}
+
+// Abspielen: ein gemeinsames Audio-Element
+const au = $('au');
+let playing = null;
+const srcOf = p => '../sound-quelle/' + p.split('/').map(encodeURIComponent).join('/');
+function rowOf(p) { return document.querySelector(`.row[data-p="${CSS.escape(p)}"]`); }
+function stop() {
+  au.pause();
+  const r = playing && rowOf(playing);
+  if (r) { r.classList.remove('play'); r.querySelector('.pl').textContent = '▶'; }
+  playing = null;
+}
+function play(p) {
+  stop();
+  playing = p;
+  au.src = srcOf(p);
+  const r = rowOf(p);
+  if (r) { r.classList.add('play'); r.querySelector('.pl').textContent = '■'; r.querySelector('.prog i').style.width = '0'; }
+  au.play().catch(err => { if (playing === p) { stop(); flash(p, 'Abspielen geht nicht: ' + err.message); } });
+}
+function flash(p, msg) { const r = rowOf(p); if (r) { const d = r.querySelector('.vs'); d.textContent = msg; d.style.color = '#e88'; } }
+au.addEventListener('timeupdate', () => {
+  const r = playing && rowOf(playing);
+  if (r && au.duration) r.querySelector('.prog i').style.width = (au.currentTime / au.duration * 100) + '%';
+});
+au.addEventListener('ended', () => {
+  const p = playing; stop();
+  if ($('auto').checked) {
+    const rows = [...document.querySelectorAll('#list .row')];
+    const i = rows.findIndex(r => r.dataset.p === p);
+    if (i >= 0 && rows[i + 1]) { rows[i + 1].scrollIntoView({ block: 'center', behavior: 'smooth' }); play(rows[i + 1].dataset.p); }
+  }
+});
+au.addEventListener('error', () => { if (playing) { const p = playing; stop(); flash(p, 'Datei lässt sich im Browser nicht abspielen'); } });
+
+$('list').addEventListener('click', e => {
+  const b = e.target.closest('.pl'); if (!b) return;
+  const p = b.closest('.row').dataset.p;
+  if (playing === p) stop(); else play(p);
+});
+$('list').addEventListener('change', e => {
+  if (e.target.tagName === 'SELECT') set(e.target.closest('.row').dataset.p, 'cat', e.target.value);
+});
+$('list').addEventListener('input', e => {
+  if (e.target.tagName === 'INPUT') set(e.target.closest('.row').dataset.p, 'note', e.target.value.trim() ? e.target.value : '');
+});
+for (const id of ['q', 'fcat', 'sort', 'fhint']) $(id).addEventListener(id === 'q' ? 'input' : 'change', render);
+
+$('save').addEventListener('click', () => {
+  const out = {
+    erstellt: new Date().toISOString(), quelle: 'sound-quelle/', anzahl: FILES.length,
+    dateien: FILES.map(f => ({
+      datei: f.path, kategorie: catOf(f), vorschlag: f.vs, notiz: noteOf(f),
+      quelle: f.q.text, quelle_url: f.q.url || null, anbieter: f.q.anbieter,
+      laenge_s: f.m.dur, groesse_mb: Math.round(f.m.size / 1e5) / 10, spitze_db: f.m.peak, mittel_db: f.m.rms,
+      hinweise: f.hints.map(h => h[0]),
+    })),
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sound-liste.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('reset').addEventListener('click', () => {
+  if (!confirm('Alle Auswahlen und Notizen auf den Vorschlag zurücksetzen?')) return;
+  ST = {}; store(); render();
+});
+
+render();
+</script>
+</body>
+</html>
