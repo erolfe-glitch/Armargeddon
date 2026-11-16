@@ -26,6 +26,11 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Erst nur Konkordat und Aschenwacht neu; Blaue Legion und Russland später; noch später eine dämonische Gegnerseite (Menschen dann verbündet, Koop).
   - Gekipptes Hexraster mit mehr Tiefe, größere Karten.
   - Probebild dazu: Testseite `entwurf/probe/` (nicht im Spiel), Figuren aus `ui-quelle/figuren/`.
+- **Gewählt (2026-11-16, Probebild Variante D, `entwurf/probe/?v=D`):**
+  - Kamera: perspektivisch gekippt, ca. 38–40° Blick nach unten (Probe: 39°), hinten kleiner; vorn ca. 8–9 Felder über die Bildbreite (1920 px). Herausgezoomt muss die ganze Karte ins Bild passen (`?v=D&ganz=1`); dabei bleibt oben viel Leerraum, im Spiel deshalb beim Herauszoomen steiler kippen oder Himmel bzw. Hinterland zeigen.
+  - Maßstab: stehender Soldat ca. 1,3 Feldradien.
+  - Trupps: 4 Figuren je Trupp in lockerer Formation, Füße alle im eigenen Feld; Verluste lassen Figuren wegfallen.
+  - Gelände muss für diesen Winkel neu gemalt werden: plastisch, Draht, Trichter und Gräben mit Tiefe (Seitenwände, Schatten, Pfähle stehen hoch). Das heutige Gelände ist für die Draufsicht gemalt und wirkt gekippt flach.
 - **Etappe 4b – Einheitenbilder (angehalten):** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion. Wartet auf das Ergebnis des Probebilds.
 - **Etappe 4c – Sound und Musik:** UI-Klicks, Waffen, Einschläge, Gas, Ketten, Atmosphäre; Musik mit Suno: Titelthema und 1–2 Schlachtmusiken.
 - **Etappe 5 – Gameplay:** Missionstypen (nicht nur Siegpunkte), stärkere und nachvollziehbare KI, Blaue Legion als vollwertige Seite. Dazu (2026-11-16):

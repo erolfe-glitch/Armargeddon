@@ -17,14 +17,15 @@
 <div class="lbl" id="lbl"></div>
 <script>
 // Probebild (Etappe „Darstellung klären“): Grauwall-Gelände auf einer perspektivisch gekippten Ebene, Trupps aus Einzelfiguren.
-// Nicht im Spiel. Aufruf: entwurf/probe/?v=A|B|C
+// Nicht im Spiel. Aufruf: entwurf/probe/?v=A|B|C|D, dazu &ganz=1 = herausgezoomt (ganze Karte im Bild)
 // Gelände: grauwall_gelaende.webp = Spielgelände mit K = 0.86 (fast von oben), wird hier entstaucht und neu projiziert.
 const V = {   // Kippwinkel (Blick nach unten, 90° = senkrecht), Kameraabstand (Ebene-px), Felder über die vordere Bildbreite, Soldatenhöhe in Feldradien
   A: { name: 'A – leicht gekippt, Figuren klein', pitch: 60, R: 4200, cols: 12, sh: 0.95 },
   B: { name: 'B – mittel gekippt', pitch: 46, R: 2500, cols: 10, sh: 1.15 },
   C: { name: 'C – stark gekippt, Figuren größer', pitch: 34, R: 1600, cols: 8, sh: 1.4 },
+  D: { name: 'D – gewählt: 39°, Soldat 1,3, Trupps zu viert', pitch: 39, R: 1800, cols: 8.5, sh: 1.3, four: true },   // Richtung des Nutzers (2026-11-16)
 };
-const v = V[new URLSearchParams(location.search).get('v') || 'B'] || V.B;
+const Q = new URLSearchParams(location.search), v = { ...(V[Q.get('v') || 'B'] || V.B) }, ganz = Q.get('ganz') === '1';
 const cv = document.getElementById('cv'), g = cv.getContext('2d');
 const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
 const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
@@ -51,8 +52,12 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
   // Ziel so legen, dass die vorderste Feldreihe unten im Bild liegt und vorn v.cols Felder ins Bild passen
   const yNear = hexC(0, 9.6)[1];
   const fit = ty => { setCam(ty); const zn = (yNear - C[1]) * f[1] + (0 - C[2]) * f[2]; F = W * zn / (v.cols * 1.5 * s); return proj(T[0], yNear)[1]; };
-  { let lo = -planeH, hi = planeH * 2;   // Bisektion: vordere Feldreihe genau unten im Bild (näheres Ziel → Reihe wandert nach oben)
-    for (let it = 0; it < 80; it++) { const m = (lo + hi) / 2; if (fit(m) > H * 0.98) lo = m; else hi = m; } fit((lo + hi) / 2); }
+  const place = () => { let lo = -planeH, hi = planeH * 2;   // Bisektion: vordere Feldreihe genau unten im Bild (näheres Ziel → Reihe wandert nach oben)
+    for (let it = 0; it < 80; it++) { const m = (lo + hi) / 2; if (fit(m) > H * 0.98) lo = m; else hi = m; } fit((lo + hi) / 2); };
+  if (ganz) {   // herausgezoomt: ganze Kartenbreite vorn, und so weit zurück, bis auch die hinterste Reihe im Bild ist
+    v.cols = (1.5 * meta.cols + 0.5) / 1.5 * 1.02; place();
+    for (let it = 0; it < 60 && proj(T[0], 0)[1] < H * 0.06; it++) { v.cols *= 1.04; place(); }
+  } else place();
 
   // Gelände zeilenweise zeichnen (jede Bildzeile = eine Tiefe auf der Ebene)
   { const bg = g.createLinearGradient(0, 0, 0, H * 0.4); bg.addColorStop(0, '#120D0B'); bg.addColorStop(1, '#2a221c'); g.fillStyle = bg; g.fillRect(0, 0, W, H); }
@@ -74,6 +79,7 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
 
   // Figuren: Trupp = Einzelfiguren in einem Feld, leicht versetzt, hinten kleiner und dunkler
   const SLOTS5 = [[-0.5, -0.22], [0.18, -0.3], [-0.2, 0.08], [0.5, 0.02], [0.08, 0.36]];   // Feldradien (x, y), y > 0 = vorn
+  const SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // vier Figuren locker, Füße sicher im eigenen Feld
   const draws = [];
   function trupp(side, c, r, n, seed) {
     const ims = side === 'A' ? P.konkordat : P.aschenwacht, flip = side === 'D';
@@ -81,9 +87,9 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
     // Ring unter dem Trupp: Pinselring in Fraktionsfarbe (gedämpft)
     draws.push({ y: hy - s, f: () => { g.save(); g.beginPath(); for (let i = 0; i <= 48; i++) { const an = i / 48 * Math.PI * 2, p = proj(hx + Math.cos(an) * s * 0.78, hy + Math.sin(an) * s * 0.7); i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }
       g.fillStyle = 'rgba(18,13,11,0.35)'; g.fill(); g.lineWidth = W / 1920 * 3; g.strokeStyle = side === 'A' ? 'rgba(142,43,34,0.8)' : 'rgba(125,132,113,0.85)'; g.stroke(); g.restore(); } });
-    const order = [0, 1, 2, 3, 4].map(i => (i * 3 + seed) % 5);
-    for (let k = 0; k < n; k++) {
-      const [ox, oy] = SLOTS5[order[k]], pose = ims[(k + seed) % 4];
+    const SL = v.four ? SLOTS4 : SLOTS5, order = SL.map((_, i) => (i * 3 + seed) % SL.length);
+    for (let k = 0; k < Math.min(n, SL.length); k++) {
+      const [ox, oy] = SL[order[k]], pose = ims[(k + seed) % 4];
       const x = hx + ox * s * (flip ? -1 : 1), y = hy + oy * s;
       const back = oy < -0.1;
       draws.push({ y, f: () => figure(pose, x, y, flip, back) });
@@ -107,11 +113,13 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
       g.strokeText('heute', px, py + 22 * W / 1920); g.fillText('heute', px, py + 22 * W / 1920); g.restore(); } });
   }
   // Konkordat (links, greift an) und Aschenwacht (rechts, im Graben)
-  trupp('A', 6, 6, 5, 0); trupp('A', 6, 8, 3, 2);
-  trupp('D', 9, 5, 5, 1); trupp('D', 9, 7, 2, 3);
+  const full = v.four ? 4 : 5;
+  trupp('A', 6, 6, full, 0); trupp('A', 6, 8, v.four ? 2 : 3, 2);
+  trupp('D', 9, 5, full, 1); trupp('D', 9, 7, 2, 3);
+  if (ganz) { trupp('A', 3, 3, full, 1); trupp('A', 2, 7, full, 3); trupp('D', 12, 2, full, 0); trupp('D', 13, 8, 3, 2); }
   heuteU('A', 5, 5); heuteU('D', 10, 8);
   draws.sort((p, q) => p.y - q.y).forEach(d => d.f());
-  document.getElementById('lbl').innerHTML = `Variante ${v.name}<small>Kippwinkel ${v.pitch}°, vorn ${v.cols} Felder breit, Soldat ${v.sh} Feldradien · Trupps aus Einzelfiguren, einer je Seite mit Verlusten</small>`;
+  document.getElementById('lbl').innerHTML = `Variante ${v.name}${ganz ? ' · ganze Karte' : ''}<small>Kippwinkel ${v.pitch}°, vorn ${Math.round(v.cols * 10) / 10} Felder breit, Soldat ${v.sh} Feldradien · Trupps aus Einzelfiguren, einer je Seite mit Verlusten</small>`;
   document.body.dataset.ready = '1';
 })();
 </script>
