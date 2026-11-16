@@ -3277,6 +3277,21 @@ async function bilder(quelle) {
   return IM;
 }
 
+// Figur im Graben: der untere Teil (cut = Anteil der Bildhöhe, etwa bis zur Hüfte) fehlt, darüber ein weicher Übergang in die dunkle Grabensohle.
+// Zwischengespeichert je Bild; gezeichnet wird das Ergebnis mit seiner Unterkante auf dem Grabenboden.
+const EINSINK = 0.44, SUNK = new Map();
+function eingesunken(im, cut = EINSINK) {
+  const key = im; if (SUNK.has(key)) return SUNK.get(key);
+  const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, h = Math.round(H * (1 - cut));
+  const c = document.createElement('canvas'); c.width = W; c.height = h; const x = c.getContext('2d');
+  x.drawImage(im, 0, 0, W, h, 0, 0, W, h);
+  x.globalCompositeOperation = 'source-atop';   // nur auf der Figur: unten abdunkeln (Erde, Schatten im Graben)
+  const gd = x.createLinearGradient(0, h * 0.62, 0, h); gd.addColorStop(0, 'rgba(26,19,13,0)'); gd.addColorStop(1, 'rgba(26,19,13,0.92)'); x.fillStyle = gd; x.fillRect(0, 0, W, h);
+  x.globalCompositeOperation = 'destination-out';   // und die letzten Pixel weich ausblenden
+  const ga = x.createLinearGradient(0, h * 0.9, 0, h); ga.addColorStop(0, 'rgba(0,0,0,0)'); ga.addColorStop(1, 'rgba(0,0,0,1)'); x.fillStyle = ga; x.fillRect(0, 0, W, h);
+  const r = { cv: c, frac: 1 - cut }; SUNK.set(key, r); return r;
+}
+
 function aufbauen(cfg, IM) {
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
   const PFAEHLE = pool('draht_pfahl'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
@@ -3436,7 +3451,7 @@ function aufbauen(cfg, IM) {
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
   // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
-  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866;
+  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, GW = 1.3, GK = 0.5;   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
   function zickzack(pts) {
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const n = Math.max(2, Math.round(L / ZZ_STEP)), out = [];
@@ -3452,8 +3467,8 @@ function aufbauen(cfg, IM) {
     : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: cfg.zickzack ? zickzack(v.pts) : v.pts }; });
   const TR = TRENCH.map(z => chaikin(z.pts, cfg.zickzack && z.ch ? 1 : 3));
   if (TR.length && IM.graben_sohle) {
-    const TW = 1.0 * R, SOHLE = IM.graben_sohle;
-    w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * 1.15); w.restore();
+    const TW = GW * R, SOHLE = IM.graben_sohle;
+    w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * (GW + 0.15)); w.restore();
     const sohleAlong = (pts, rows) => {
       const im = SOHLE, ih = im.height, iw = im.width, s = TW / ih, [ya, yb] = rows || [0, ih];
       let u = hrnd(pts.length, 3, 1) * iw;
@@ -3474,14 +3489,14 @@ function aufbauen(cfg, IM) {
     for (const p of TR) sohleAlong(p, [SOHLE.height * 0.33, SOHLE.height * 0.67]);
     TRENCH.forEach((z, ti) => [0, 1].forEach(e => {   // offenes Ende (nicht am Kartenrand, nicht am Abzweig): Erdwall
       const p = TR[ti], pt = e ? p[p.length - 1] : p[0];
-      if (z.ends[e] || TR.some((q, j) => j !== ti && distTo(pt, q) < R * 0.5)) return;
-      const gr = w.createRadialGradient(pt[0], pt[1], 0, pt[0], pt[1], R * 0.45); gr.addColorStop(0, 'rgba(48,37,26,1)'); gr.addColorStop(0.55, 'rgba(48,37,26,0.8)'); gr.addColorStop(1, 'rgba(48,37,26,0)');
-      w.fillStyle = gr; w.beginPath(); w.arc(pt[0], pt[1], R * 0.45, 0, 7); w.fill();
+      if (z.ends[e] || TR.some((q, j) => j !== ti && distTo(pt, q) < R * (GK + 0.1))) return;
+      const gr = w.createRadialGradient(pt[0], pt[1], 0, pt[0], pt[1], R * (GW * 0.45)); gr.addColorStop(0, 'rgba(48,37,26,1)'); gr.addColorStop(0.55, 'rgba(48,37,26,0.8)'); gr.addColorStop(1, 'rgba(48,37,26,0)');
+      w.fillStyle = gr; w.beginPath(); w.arc(pt[0], pt[1], R * (GW * 0.45), 0, 7); w.fill();
     }));
-    const TRIM = TR.map((pts, ti) => TR.map((q, j) => j === ti ? [] : q.filter(pt => distTo(pt, pts) > R * 0.36)));
+    const TRIM = TR.map((pts, ti) => TR.map((q, j) => j === ti ? [] : q.filter(pt => distTo(pt, pts) > R * (GK - 0.02))));
     TR.forEach((pts, ti) => {
       for (const side of [-1, 1]) {
-        const off = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1; return [p[0] - dy / ln * side * R * 0.38, p[1] + dx / ln * side * R * 0.38]; });
+        const off = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1; return [p[0] - dy / ln * side * R * GK, p[1] + dx / ln * side * R * GK]; });
         const uu = { v: hrnd(ti, side, 4), h: hrnd(ti, side, 5), p: hrnd(ti, side, 6) };
         // Feindseite des Grabens (cfg.grabenSeite: wem gehört der Graben): Konkordat schaut nach Osten (+x), Aschenwacht nach Westen
         const own = cfg.grabenSeite && TRENCH[ti].ch ? cfg.grabenSeite(...TRENCH[ti].ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 0;
@@ -3490,12 +3505,12 @@ function aufbauen(cfg, IM) {
           const dl = Math.hypot(cx - mx, cy - my) || 1, inY = (cy - my) / dl, back = inY > -0.5, key = back ? 'h' : 'v';
           const sd = Math.max(0, 1 - Math.abs(inY) / 0.85), lean = sd > 0.05 ? { nx: (mx - cx) / dl, ny: (my - cy) / dl, L: 0.9 * sd, U: 1 - 0.35 * sd } : null;
           uu[key] = wall(back ? IM.graben_kante_hinten : IM.graben_kante_vorn, off[i], off[i + 1], (back ? 0.28 : 0.32) * SH, { u0: uu[key], shade: 0.4, shadeW: 0.1, lean,
-            skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * 0.42) });
+            skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.04)) });
           // Stücke, die in die Tiefe laufen: auf der Feindseite zusätzlich eine aufrechte Brustwehr aus Sandsäcken, etwas weiter außen
           if (ex && sd > 0.3 && Math.sign(mx - cx) === ex) {
             const nx = (mx - cx) / dl, ny = (my - cy) / dl, o2 = R * 0.24, A2 = [off[i][0] + nx * o2, off[i][1] + ny * o2], B2 = [off[i + 1][0] + nx * o2, off[i + 1][1] + ny * o2];
             uu.p = wall(IM.graben_kante_vorn, A2, B2, 0.4 * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
-              skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * 0.55) });
+              skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
           }
         }
       }
@@ -3581,7 +3596,7 @@ function aufbauen(cfg, IM) {
       const at = sx => { sx = Math.max(0, Math.min(arc[arc.length - 1], sx)); let i = 1; while (i < arc.length - 1 && arc[i] < sx) i++;
         const t = (sx - arc[i - 1]) / ((arc[i] - arc[i - 1]) || 1), dx = p[i][0] - p[i - 1][0], dy = p[i][1] - p[i - 1][1], l = Math.hypot(dx, dy) || 1;
         return [p[i - 1][0] + dx * t, p[i - 1][1] + dy * t, dx / l, dy / l]; };
-      return { pts: [-0.6, -0.2, 0.2, 0.6].map((o, i) => { const [x, y, dx, dy] = at(arc[best.i] + o * R), q = (i % 2 ? 0.06 : -0.06) * R; return [x - dy * q, y + dx * q]; }), sink: 0.32 };
+      return { pts: [-0.6, -0.2, 0.2, 0.6].map((o, i) => { const [x, y, dx, dy] = at(arc[best.i] + o * R), q = (i % 2 ? 0.07 : -0.07) * R; return [x - dy * q, y + dx * q]; }), sink: 0.32, cut: EINSINK };
     }
     if (t === 'village') return { sy: 0.85 };
     return null;
@@ -3641,9 +3656,10 @@ async function bauen(cfg) {
         const [px, py, zc] = proj(x, y); if (zc <= 1) return;
         const sc = K.F / zc, h = im.height / 320 * SH * sc, wd = h * im.width / im.height, sk = sink * SH * sc;
         g.save(); g.fillStyle = 'rgba(6,4,3,0.5)'; g.beginPath(); g.ellipse(px, py, wd * 0.3, wd * 0.08, 0, 0, 7); g.fill(); g.restore();
-        g.save(); if (sk) { g.beginPath(); g.rect(px - wd, py - h * 2, wd * 2, h * 2 + sk * 0.25); g.clip(); }
-        g.translate(px, py + sk); if (flip) g.scale(-1, 1); if (back) g.filter = 'brightness(0.88)';
-        g.drawImage(im, -wd / 2, -h, wd, h); g.restore();
+        g.save(); g.translate(px, py); if (flip) g.scale(-1, 1); if (back) g.filter = 'brightness(0.88)';
+        if (pl && pl.cut) { const e = eingesunken(im, pl.cut), hh = h * e.frac; g.drawImage(e.cv, -wd / 2, -hh + h * 0.02, wd, hh); }   // im Graben: nur Oberkörper ragt heraus
+        else g.drawImage(im, -wd / 2, -h, wd, h);
+        g.restore();
       } });
     });
     UNITS.push([hx, hy]); NAMES.push([hx, hy, tp.name]);
@@ -3663,7 +3679,7 @@ async function bauen(cfg) {
     for (const [x, y, n] of NAMES) if (n) { const p = proj(x, y + R * 0.95); g.lineWidth = 5 * U; g.strokeStyle = '#120D0B'; g.strokeText(n, p[0], p[1]); g.fillStyle = '#E2B04A'; g.fillText(n, p[0], p[1]); } }
   return { proj, hexC, R };
 }
-window.GBau = { bilder, aufbauen, bauen, NAMEN };
+window.GBau = { bilder, aufbauen, bauen, eingesunken, NAMEN };
 })();
 
 </script>
@@ -5311,8 +5327,13 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     if (done) g.globalAlpha = A0 * 0.85;
     if (filt) g.filter = filt;
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
-      if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
-      g.translate(fx, fy + h * 0.012 + sink); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h); g.restore(); };   // Sohlen minimal in den Boden: kein Spalt
+      if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
+        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flip) g.scale(-1, 1); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
+      } else {
+        if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
+        g.translate(fx, fy + h * 0.012 + sink); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
+      }
+      g.restore(); };
     if (FIGQ && f.abs) { const tf = g.getTransform(), al = g.globalAlpha, fl = filt; FIGQ.push({ y: y + f.oy * s, f: () => zeichne(tf, al, fl) }); }   // Graben: später nach Tiefe
     else zeichne();
     topY = Math.min(topY, fy - h);
