@@ -494,9 +494,9 @@ function renderTerrain() {
 function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
-const VIS = { clouds: [], smoke: [], lit: [], ctrl: {} };
-const vsOf = u => ({ supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
-function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what) VIS.ctrl = { ...(G.ctrl || {}) }; }
+const VIS = { clouds: [], smoke: [], lit: [], marks: [], ctrl: {} };
+const vsOf = u => ({ sperr: u.sperr || 0, supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
+function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what || what === 'marks') VIS.marks = cp(G.marks); if (!what) VIS.ctrl = { ...(G.ctrl || {}) }; }
 function addDU(u) { const [x, y] = L ? center(u.c, u.r) : [0, 0]; DU.set(u.id, { x, y, face: u.face, str: u.str, mor: u.mor, alpha: 1, shake: 0, lunge: null, vs: vsOf(u) }); }
 function syncAll() {
   for (const u of G.units) {
@@ -539,6 +539,7 @@ const DIM_T = new Set(['wald', 'waldweg', 'forest', 'village', 'fabrik', 'kirche
 const STATES = [
   { k: 'rout', sym: 'flucht', name: 'Flieht', on: (u, d) => d.vs.rout, text: () => 'Moral gebrochen: weicht zurück und gehorcht nicht. Gegner treffen sie ×1,6, Reiter ×2. Ein Anführer in der Nähe kann sie wieder sammeln.' },
   { k: 'broken', sym: 'zahnrad', name: 'Panne', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Liegengeblieben: fällt noch ${upRunden(d.vs.broken)} aus. Ein Werkstatt-Trupp kann sie bergen.` },
+  { k: 'sperr', sym: 'sperrfeuer', ring: '#E2B04A', name: 'Sperrfeuer', on: (u, d) => d.vs.sperr > 0 && E.alive(u), text: (u, d) => `Schießt in der gegnerischen Runde noch ${d.vs.sperr}-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.` },
   { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
   { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(d.vs.stuck)} nicht ziehen.` },
   { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde. Wirkt nach dem Verlassen der Wolke noch 2 Runden nach (vergiftet).' },
@@ -546,12 +547,12 @@ const STATES = [
   { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => 'Moral fast am Ende: Beim nächsten Treffer weicht die Einheit zurück.' },
   { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
   { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
-  { k: 'mgdown', sym: 'mg_ab', name: 'MG abgebaut', on: (u, d) => TYPES[u.type].mg && !d.vs.setup && E.active(u), text: () => 'Marschbereit: kann ziehen, aber nicht schießen. Aufbauen kostet 1 Aktion, dann feuert es und gibt Reaktionsfeuer.' },
-  { k: 'mgup', sym: 'mg_auf', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt und gibt Reaktionsfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
+  { k: 'mgdown', sym: 'mg_ab', name: 'MG abgebaut', on: (u, d) => TYPES[u.type].mg && !d.vs.setup && E.active(u), text: () => 'Marschbereit: kann ziehen, aber nicht schießen. Aufbauen kostet 1 Aktion, dann feuert es und kann Sperrfeuer geben.' },
+  { k: 'mgup', sym: 'mg_auf', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt oder gibt Sperrfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
   { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).' },
   { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => 'Befehl des Anführers: Nahkampf ×1,25 in dieser Runde.' },
   { k: 'hidden', sym: 'durchsickern', name: 'Getarnt', on: u => TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u), text: () => 'Der Gegner sieht die Einheit erst vom Nachbarfeld aus. Nach einem Schuss ist sie eine Runde lang enttarnt.' },
-  { k: 'relay', sym: 'fernglas', name: 'Aufklärer', on: u => TYPES[u.type].relay && E.active(u), text: () => 'Lenkt die eigene Artillerie: Ziele, die der Trupp sieht, treffen ohne Streuung und ×1,25.' },
+  { k: 'relay', sym: 'fernglas', name: 'Beobachter', panel: true, on: u => TYPES[u.type].relay && E.active(u), text: u => TYPES[u.type].abil === 'strike' ? 'Fordert Feuerschläge auf Felder in Sicht an.' : 'Markiert Ziele für die eigene Artillerie: ohne Streuung, ×1,25, deckt Verstecktes auf.' },
 ];
 // Anführer kann jetzt einen Befehl geben (Sammeln oder Sturmbefehl nicht in Abklingzeit, in dieser Runde noch keiner gegeben)
 const orderReady = u => !u.ordered && (!(u.cdR > 0) || !(u.cdS > 0));
@@ -780,7 +781,13 @@ function draw() {
 // Boden: Gelände, Flecken, Hilfsmarkierungen, Zielfahnen
 function drawGround(g, s) {
   g.drawImage(tcv, 0, 0);
+  for (let i = decals.length - 1; i >= 0; i--) if (decals[i].wire && G.turn - decals[i].turn >= 4) decals.splice(i, 1);   // Drahtblut: nach 4 Runden weg
   for (const dc of decals) {
+    if (dc.wire) {   // erst ein kleiner Spritzer, nach 1,5 s nur noch ein dunkler Fleck; blasst über die Runden aus
+      const a = Math.min(1, (now - dc.born) / 1500), age = G.turn - dc.turn, rr = dc.r * (1.6 - 0.6 * a), al = (0.75 - 0.25 * a) * Math.max(0, 1 - age / 4);
+      g.fillStyle = `rgba(${Math.round(70 - 25 * a)},${Math.round(22 - 8 * a)},${Math.round(14 - 6 * a)},${al.toFixed(3)})`; g.beginPath(); gEllipse(g, dc.x, dc.y, rr, rr); g.fill();
+      continue;
+    }
     const im = FXI['blood' + dc.v];
     if (im) { const w = dc.r * 5, hh = w * im.naturalHeight / im.naturalWidth * Math.max(0.6, kAt(dc.x, dc.y)); g.globalAlpha = 0.85; g.drawImage(im, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; }
     else { g.fillStyle = dc.col; g.beginPath(); gEllipse(g, dc.x, dc.y, dc.r, dc.r); g.fill(); }
@@ -959,7 +966,12 @@ function drawAir(g, s, up) {
   const mySide = human(G.side) ? G.side : ['A', 'D'].find(human);
   g.font = `900 ${Math.round(s * 0.36)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   for (const q of G.tunnels || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText(`⛏${q.t}`, x, y + s * 0.15); g.fillStyle = '#ffb86a'; g.fillText(`⛏${q.t}`, x, y + s * 0.15); }
-  for (const q of G.mines || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
+  // Markierte Ziele der eigenen Seite: Messing-Zielkreuz am Boden (gilt bis zum nächsten eigenen Zug)
+  for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
+    g.save(); g.globalAlpha = pz; g.strokeStyle = O; g.lineWidth = Math.max(4, s * 0.1); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
+    g.strokeStyle = '#E2B04A'; g.lineWidth = Math.max(2, s * 0.05); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
+    g.beginPath(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.moveTo(x + dx * s * 0.4, y + dy * s * 0.4 * kk); g.lineTo(x + dx * s * 0.75, y + dy * s * 0.75 * kk); } g.stroke(); g.restore(); }
+  for (const q of G.mines || []) if (q.side === mySide || q.known === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
   // Gaswolken
   for (const k of VIS.clouds) {
     const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v]; if (up && !up(x, y)) continue;
@@ -1505,7 +1517,7 @@ function boom(x, y, r, kind, delay = 0) {
   if (kind === 'he') { boom(x, y, r * 0.9, 'dust'); boom(x, y - r * 0.2, r * 0.9, 'smoke', 14); }
 }
 // Effekt-Texte als Symbole (Wunsch des Nutzers; Symbolbögen in FXDATA.proj i_*). [Textanfang, Symbol, Zahl aus dem Text]
-const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktionsfeuer', 'react'], ['Streuung', 'scatter'], ['Panik', 'rout'], ['flieht', 'rout'],
+const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktionsfeuer', 'react'], ['Sperrfeuer', 'react'], ['Streuung', 'scatter'], ['Panik', 'rout'], ['flieht', 'rout'],
   ['Gas!', 'gas'], ['Schreck', 'fear', /−\d+/], ['niedergehalten', 'supp'], ['aufgerieben', 'worn'], ['Sammeln', 'rally'], ['gesammelt', 'rally'], ['Moral +', 'morup'],
   ['Vorwärts', 'whistle'], ['Sturm!', 'whistle'], ['Draht geschnitten', 'cut'], ['Draht niedergewalzt', 'crush'], ['steckt im Schlamm', 'stuck'], ['Panne', 'broken'],
   ['wieder flott', 'repair'], ['wieder frei', 'repair'], ['instand gesetzt', 'repair'], ['geborgen', 'repair'], ['Nebelwand', 'smoke'], ['Stollen', 'tunnel', /\d+/],
@@ -1551,7 +1563,7 @@ async function playEvent(e) {
     case 'fire': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), 'Reaktionsfeuer!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
+      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), 'Sperrfeuer!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6); flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); }
       else {
@@ -1568,18 +1580,22 @@ async function playEvent(e) {
       break;
     }
     case 'shell': {
-      const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = center(e.c, e.r);
+      const a = DU.get(e.a), [x2, y2] = center(e.c, e.r), ua = unitById(e.a);
+      const [x1, y1] = e.strike ? [x2 - (ua.side === 'A' ? 1 : -1) * s * 7, y2 - s * 5] : bodyPos(e.a);   // Feuerschlag: Batterie hinter der eigenen Front
+      if (e.strike) { floater(...headPos(e.a), 'Feuerschlag!', '#E2B04A', true); playSound('cannonH', 0.35); }
+      else {
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);   // Abschuss zeigen, danach folgt die Kamera der Granate
-      a.face = e.face; playSound(TYPES[unitById(e.a).type].mobile ? 'launch' : 'cannonH', TYPES[unitById(e.a).type].mobile ? 0.42 : 0.8);   // Mörser: Mörserton, Geschütze: Kanonenschuss
-      if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
+      a.face = e.face; playSound(TYPES[ua.type].mobile ? 'launch' : 'cannonH', TYPES[ua.type].mobile ? 0.42 : 0.8);   // Mörser: Mörserton, Geschütze: Kanonenschuss
+      }
+      if (e.strike) {} else if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn
-      shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[unitById(e.a).type].mobile ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
+      shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       if (camOn() && !inView(x2, y2, 0.12)) camTo(x2, y2, dur * 16.667 * 0.8);
       await wait(dur * 16.667);
       shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
-      if (e.guided) floater(x2, y2 - s * 1.5, '◉ gelenkt ×1,25', '#F0EDE1', false, true);
-      playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[unitById(e.a).type].mobile ? 'boom' : 'boomH', 0.7);
+      if (e.guided) floater(x2, y2 - s * 1.5, '◉ markiert ×1,25', '#F0EDE1', false, true);
+      playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[ua.type].mobile && !e.strike ? 'boom' : 'boomH', 0.7);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
       else if (e.mode === 'gas') { boom(x2, y2, s * 1.0, 'gas'); visSync('clouds'); }   // Wolke erst beim Einschlag
       else { boom(x2, y2, s * 0.7, 'he'); (e.cells || [[e.c, e.r], ...E.neighbors(e.c, e.r)]).slice(1).forEach(([c, r], i) => { const [bx, by] = center(c, r); boom(bx, by, s * 0.6, i % 2 ? 'dust' : 'he', 3 + i * 3); }); }
@@ -1629,7 +1645,10 @@ async function playEvent(e) {
         if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('neigh', 0.5);
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45);
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
-        if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 6 + nb * 3, ['#9a1612', '#74100c', '#b3221a'], { up: 0.16, spread: 0.2 });
+        if (blood && e.wire) {   // Stacheldraht: wenig, dunkles Rotbraun, keine Tropfspuren; wird zu einem kleinen Fleck, der nach einigen Runden vergeht
+          burst(x, y + s * 0.15, 7, ['#4a1810', '#3a120c', '#5c2216'], { up: 0.1, spread: 0.12 });
+          decals.push({ wire: true, x: d.x + (Math.random() - 0.5) * s * 0.4, y: d.y + s * 0.12 * kAt(d.x, d.y), r: s * 0.09, born: now, turn: G.turn });
+        } else if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 6 + nb * 3, ['#9a1612', '#74100c', '#b3221a'], { up: 0.16, spread: 0.2 });
           boom(x, y + s * 0.5, s * 0.34, 'blood');
           for (let q = 0; q < nb; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.1, y: d.y + (Math.random() - 0.3) * s * 0.7 * kAt(d.x, d.y), r: s * (0.06 + Math.random() * 0.13), col: Math.random() < 0.5 ? 'rgba(110,16,12,0.62)' : 'rgba(78,10,8,0.6)' });
           while (decals.length > 700) decals.shift(); }
@@ -1687,6 +1706,10 @@ async function playEvent(e) {
     case 'setup': { DU.get(e.u).vs.setup = true; playSound('clank', 0.5); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('clank', 0.5); floater(...headPos(e.u), 'abgebaut', '#ffe7a0'); await wait(200); break; }
     case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
+    case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('clank', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
+    case 'mark': { const [x, y] = center(e.c, e.r); visSync('marks'); playSound('whistle', 0.25); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
+      if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
+      rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); break;
     case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
@@ -2107,7 +2130,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/wimpel_fraktionen.png, sonst gezeichnet
-const ABIL_SYM = { smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 const upBar = (cls, k, v, max) => `<div class="up-bar ${cls}"><div class="tube"><div class="slot"><i style="width:${Math.round(Math.max(0, Math.min(1, v / max)) * 100)}%"></i></div></div><span class="val"><span class="k">${k}</span>${fmt(v)}<small> / ${fmt(max)}</small></span></div>`;
@@ -2134,7 +2157,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, cd: sel.cdP, text: (T.mobile ? 'Hält das Ziel und zwei Nachbarfelder nieder. Kein Schaden.' : 'Hält Ziel und Nachbarfelder nieder. Kein Schaden.') + ` Danach ${P.BARRAGE_CD} Runden Pause.`, on: can && !bcd && artMode === 'barrage', off: !can || bcd, why: bcd ? `Wieder in ${upRunden(sel.cdP)}.` : why });
     if (sel.gas > 0 || T.gas > 0) btns.push({ act: 'm-gas', sym: 'gas', name: 'Gasgranate', cost: c, cnt: sel.gas, text: 'Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen.', on: can && artMode === 'gas', off: !can || !(sel.gas > 0), why: sel.gas > 0 ? why : 'Keine Gasgranaten mehr.' });
     hints.push(can ? (shellHexes.size ? 'Zielfeld anklicken.' : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).') : why);
-    if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> vom Aufklärer gelenkt: keine Streuung, ×1,25.`);
+    if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> markiert: keine Streuung, ×1,25.`);
     return btns;
   }
   const onWire = G.map[sel.c][sel.r].t === 'wire';
@@ -2151,11 +2174,13 @@ function unitButtons(T, hints) {
   }
   if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: Math.max(1, sel.ap), costTxt: 'alle Aktionen', text: 'Gegner auf einem Nachbarfeld anklicken (rot).', on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
-    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: A.ap, cd: sel.cdA, text: T.can, on: abilMode, off: !at.length,
+    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: A.all ? sel.ap : A.ap, costTxt: A.all ? 'alle Aktionen' : undefined, cd: sel.cdA, text: T.can, on: abilMode, off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < A.ap ? `Braucht ${A.ap} Aktionspunkte.` : 'Kein Ziel.' });
     if (abilMode) hints.push('<i>Schraffiert:</i> Zielfeld anklicken.'); }
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', cost: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Keine Aktionspunkte mehr.' });
-  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es und gibt Reaktionsfeuer; aufgebaut kann es nicht ziehen.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
+  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer; aufgebaut kann es nicht ziehen.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
+  if (T.mg) btns.push({ act: 'sperr', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: sel.ap, costTxt: 'alle Aktionen', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
+    why: sel.sperr > 0 ? 'Sperrfeuer steht.' : !sel.setup ? 'Erst aufbauen.' : sel.mvd ? 'Hat sich in dieser Runde bewegt.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : 'Kein Aktionspunkt mehr.' });
   if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 2, text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht beide Aktionspunkte, noch nicht gezogen und nicht angegriffen.' });
   if (sel.officer) for (const [k, sym, name, tip] of [['rally', 'fahne', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +15, Niederhalten endet.'], ['storm', 'blitz', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde.']]) {
     const cd = k === 'rally' ? sel.cdR : sel.cdS;
@@ -2173,7 +2198,7 @@ function unitButtons(T, hints) {
   if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
   else if (T.rng > 0 && E.held(G, sel)) hints.push('⚔ Im Nahkampf gebunden: Schießen geht nicht.');
   else if (sel.fellBack) hints.push('MG ist zurückgewichen und schießt in dieser Runde nicht mehr.');
-  if (T.relay) hints.push('<i>Helle Felder:</i> Hier sieht der Trupp und lenkt eure Artillerie.');
+  if (T.relay) hints.push('<i>Helle Felder:</i> Sicht des Trupps.');
   hints.push(sel.broken ? 'Panne: fällt diese Runde aus.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
     `${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit).' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte.' : [...reach.values()].some(n => n.march) ? 'Hell: ziehen (1 ●). Messing: Marsch (2 ●).' : 'Helle Felder: ziehen.') : ''}${sel.attacked ? '' : targets.size ? ' Rot: Nahkampf, Messing: Beschuss.' : ''}`);
   return btns;
@@ -2267,6 +2292,7 @@ async function panelAct(a) {
   if (a === 'teardown') return act(u => E.teardownMG(G, u));
   if (a === 'abil') { abilMode = !abilMode; previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'ow') return act(u => E.overwatch(G, u));
+  if (a === 'sperr') return act(u => E.sperr(G, u));
 }
 function showDetail() {
   const u = sel || (inspect && inspect.unit); if (!u) return;
@@ -2623,7 +2649,7 @@ function noteEvent(e, u) {
     case 'gas': if (e.late) return logAdd(`${N(u)}: Vergiftung`, u && u.side, ...at(u)); return;
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
     case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
-      if (e.reaction) { logAdd(`Reaktionsfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Reaktionsfeuer auf ${N(d)}!`, a.side); }
+      if (e.reaction) { logAdd(`Sperrfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Sperrfeuer auf ${N(d)}!`, a.side); }
       else logAdd(`Beschuss: ${N(a)} auf ${N(d)}`, a.side, ...at(d)); return; }
     case 'melee': { const a = unitById(e.a), d = unitById(e.d); if (a && d) logAdd(`Nahkampf: ${N(a)} gegen ${N(d)}`, a.side, ...at(d)); return; }
     case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }

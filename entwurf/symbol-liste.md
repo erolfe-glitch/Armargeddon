@@ -52,7 +52,7 @@ Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über all
 | Stollen graben | Mineure | s_spitzhacke | nein |
 | Haftladung | Sprengtrupp | s_sprengladung | nein |
 | Mine legen | Minenleger | s_tellermine | nein |
-| Ausleuchten | Scheinwerfer-Trupp | s_scheinwerfer | nein |
+| Ausleuchten | Scheinwerfer-Trupp (gestrichen 2026-11-16) | s_scheinwerfer | nein |
 | Entgiften | Gasschutz-Trupp | s_gasmaske | nein |
 | Nachladen | Munitionsträger | s_munitionskiste | nein |
 

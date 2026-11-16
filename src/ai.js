@@ -71,12 +71,26 @@ function abilPlan(G, u) {
     else if (k === 'charge') { const x = foe(c, r); v = x ? 2 + (E.cls(x) === 'walker' ? 3 : 0) + (G.map[c][r].t === 'bunker' ? 2 : 0) : (G.map[c][r].t === 'bunker' ? 0.5 : 0); }
     else if (k === 'mine') { const n = nearestEnemyDist(G, u.side, c, r); v = n <= 6 ? 7 - n + (G.map[c][r].t === 'open' || G.map[c][r].t === 'mud' ? 0.5 : 0) : 0; }
     else if (k === 'light') { for (const [a, b] of area(c, r)) if (foe(a, b)) v += 1; v = v >= 1 ? v : 0; }
+    else if (k === 'mark') {   // Ziel markieren: Gegner, auf den eigene Artillerie in dieser Runde noch schießen kann
+      const x = foe(c, r);
+      if (x && E.active(x)) {
+        const arts = G.units.filter(a => a.side === u.side && E.active(a) && E.cls(a) === 'art' && !a.attacked && !a.limbered && a.ap >= (TYPES[a.type].mobile ? 1 : 2) && E.canShell(G, a, c, r, 'he'));
+        v = arts.length ? 1.5 + arts.length * 0.8 + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1 : 0) + (G.map[c][r].obj ? 0.8 : 0) + (x.revealed > 0 ? 0 : 0) : 0;
+      }
+    }
+    else if (k === 'strike') {   // Feuerschlag: wertvolles Ziel, keine eigenen Truppen nebenan (Streuung)
+      const x = foe(c, r);
+      if (x && E.active(x)) {
+        v = 2 + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + (G.map[c][r].obj ? 1 : 0) + (10 - x.str) * 0.08 + (E.cls(x) === 'walker' ? -1 : 0);
+        for (const [a, b] of E.neighbors(c, r)) { const y = E.inMap(a, b) && E.unitAt(G, a, b); if (y && y.side === u.side) v -= 1.2; }
+      }
+    }
     else if (k === 'clear') { for (const [a, b] of area(c, r)) { const x = E.unitAt(G, a, b); if (x && x.side === u.side) v += 1; } }
     if (v > bv) { bv = v; best = [c, r]; }
   }
   if (!best) return null;
   const A = E.ABILS[k];
-  return { only: A.ap >= 2, step: { k: 'abil', c: best[0], r: best[1] } };
+  return { only: A.ap >= 2 || !!A.all, step: { k: 'abil', c: best[0], r: best[1] } };
 }
 function nearestEnemyDist(G, side, c, r) {
   let best = 99;
@@ -175,8 +189,8 @@ function planArt(G, u) {
     if (d.side === u.side || !E.active(d)) continue;
     if (E.canShell(G, u, d.c, d.r, 'he')) {
       const direct = E.isDirect(G, u, d.c, d.r);
-      const dmg = E.shellDmg(G, u, d, direct);
-      let v = dmg * 4;
+      const gd = !direct && E.guided(G, u.side, d.c, d.r), dmg = E.shellDmg(G, u, d, direct) * (gd ? P.GUIDED : 1);
+      let v = dmg * 4 + (gd ? 0.8 : 0);   // markiertes Ziel: trifft sicher
       if (!d.supp && E.cls(d) !== 'walker' && d.fireDmg + dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
       if (d.str - dmg < 1.5 || d.mor - dmg * 0.8 <= 0) v += 2.5;
       if (E.cls(d) === 'walker' && direct) v += 1.5;
@@ -243,7 +257,8 @@ function planUnit(G, u) {
 function order(G, side) {
   const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked && !u.broken && u.ap >= 1);
   const dir = E.SIDES[side].dir;
-  return us.sort((a, b) => (ORDER[E.cls(a)] - ORDER[E.cls(b)]) || (b.c - a.c) * dir);
+  const ord = u => TYPES[u.type].abil === 'mark' ? -1 : ORDER[E.cls(u)];   // Beobachter markieren vor der Artillerie
+  return us.sort((a, b) => (ord(a) - ord(b)) || (b.c - a.c) * dir);
 }
 
 // Nachschub kaufen: der Reihe nach die Wunschliste, aufgestellt am eigenen Rand nahe am Geschehen
@@ -312,7 +327,8 @@ function next(G) {
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
     if (TYPES[u.type].mg && !o.atk && nearestEnemyDist(G, u.side, o.move ? o.move[0] : u.c, o.move ? o.move[1] : u.r) <= 7) steps.push({ k: 'setup' });
     // MG ohne Angriff: Fächer zum nächsten Gegner drehen (Reaktionsfeuer in der gegnerischen Runde)
-    if (TYPES[u.type].mg && !o.atk && !o.move) { const e = E.nearestEnemy(G, u); if (e && !E.inFan(G, u, e.c, e.r)) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, e.c, e.r)) }); }
+    if (TYPES[u.type].mg && !o.atk && !o.move) { const e = E.nearestEnemy(G, u); if (e && !E.inFan(G, u, e.c, e.r)) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, e.c, e.r)) });
+      if (nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 3 && !(typeof process !== 'undefined' && process.env && process.env['NOSPERR_' + u.side])) steps.push({ k: 'sperr' }); }   // Sperrfeuer für die gegnerische Runde
     if (!o.move && !o.atk && !o.cut && !o.shell && !o.limber && E.canOverwatch(G, u) && nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 3 &&
         !(typeof process !== 'undefined' && process.env && process.env['NOOW_' + u.side])) steps.push({ k: 'ow' });
     if (E.cls(u) === 'medic') steps.push({ k: 'heal' });
@@ -367,6 +383,7 @@ function exec(G, uid, s) {
   if (s.k === 'teardown') return E.teardownMG(G, u);
   if (s.k === 'abil') return E.useAbil(G, u, s.c, s.r);
   if (s.k === 'ow') return E.overwatch(G, u);
+  if (s.k === 'sperr') return E.canSperr(G, u) ? E.sperr(G, u) : [];
   if (s.k === 'recover') { const t = G.units.find(x => x.id === s.t); return t ? E.recover(G, u, t) : []; }
   if (s.k === 'order') return E.order(G, u, s.kind);
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
