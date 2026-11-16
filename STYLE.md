@@ -106,7 +106,13 @@ Drei Darstellungen, klar getrennt, gedämpft – das Gelände bleibt sichtbar:
 Gelten für jedes neue oder neu gemalte Bild. Bestandsaufnahme und Begründung: `entwurf/bestand/BESTAND.md` (lokal).
 Maß: **SH** = Soldatenhöhe (stehender Soldat, Sohle bis Helmspitze). Im Spiel ist **1 SH = 1,18 Feldradien** (gut sichtbar auch auf dunklen gemalten Karten).
 
-- **Größe zum Feld** (feste Klassen, im Code `SHT` in `figures.js`):
+- **Maßstab der neuen Ansicht (verbindlich seit 2026-11-16, gekippte Karte, Schalter „Neue Ansicht (Test)“):** gilt für alle neuen Figurenbögen und Aufsteller.
+  - Stehender Soldat **0,8 Feldradien** (Feld = 2 Feldradien breit). Trupps (4 Figuren) und Anführer im selben Maßstab.
+  - Geschütze und aufgebautes MG **1,2×** im Verhältnis zur Infanterie (Bildhöhe Geschütz 1,2 SH, MG mit kniender Mannschaft 0,98 SH); marschbereites MG (Träger) wie Infanterie.
+  - Panzer und Kolosse **1,5 SH** hoch, höchstens **2,4 Feldradien** breit, Breite nach Bild (nicht aufblasen). Belegen ein Feld; Ketten-Unterkante etwas nach vorn (Richtung Betrachter) im Feld auf dem Boden, Kontaktschatten unter der ganzen Kettenlänge.
+  - Alle Figuren mit den Füßen auf dem Feldboden, weicher dunkler Kontaktschatten direkt darunter; Ringe klein und dezent.
+  - Im Code: `FIG_SH`, `FIGW_MAX`, `FIGW_VEH`, `FIGMAP` in ui.js, Bildhöhen der Einzelmodelle `SH_SINGLE` in `tools/figure_cut.py`.
+- **Größe zum Feld, alte Ansicht** (feste Klassen, im Code `SHT` in `figures.js`):
   - stehend 1,0 SH · kniend 0,75 · liegend 0,4 (echte Höhe, nicht aufblasen)
   - Mannschaft an Gerät (MG, Mörser, Geschütz, Gespann) hat **dieselbe** Soldatenhöhe wie Infanterie; das Gerät richtet sich nach ihr
   - Reiter 1,4 SH · Panzer 1,3–1,5 SH · Mech 1,6 SH · Kampfanzug 1,15 SH
