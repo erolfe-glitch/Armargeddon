@@ -167,10 +167,13 @@ const terr = (c, r) => T[c + ',' + r] || '.';
   function strip(im, a, b, hW, u0, du, o) {
     const pa = proj(a[0], a[1]), pb = proj(b[0], b[1]), sc = F / ((pa[2] + pb[2]) / 2), hS = hW * sc, iw = im.width, ih = im.height;
     let s0 = ((u0 % 1) + 1) % 1, s1 = s0 + du; const parts = s1 <= 1 ? [[s0, s1, 0, 1]] : [[s0, 1, 0, (1 - s0) / du], [0, s1 - 1, (1 - s0) / du, 1]];
+    // Höhenvektor V (Schirm): aufrecht wie ein Aufsteller; mit o.lean = { nx, ny, L, U } nach außen gekippt (Grabenwände, die in die Tiefe laufen)
+    let V = [0, -hS];
+    if (o.lean) { const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], pm = proj(m[0], m[1]), pt = proj(m[0] + o.lean.nx * o.lean.L * hW, m[1] + o.lean.ny * o.lean.L * hW); V = [pt[0] - pm[0], pt[1] - pm[1] - o.lean.U * hS]; }
     for (const [x0, x1, t0, t1] of parts) {
       const qa = [pa[0] + (pb[0] - pa[0]) * t0, pa[1] + (pb[1] - pa[1]) * t0], qb = [pa[0] + (pb[0] - pa[0]) * t1, pa[1] + (pb[1] - pa[1]) * t1], sw = (x1 - x0) * iw;
       if (sw < 0.5) continue;
-      g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, 0, hS / ih, qa[0], qa[1] - hS + (o.sink || 0) * sc);
+      g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, -V[0] / ih, -V[1] / ih, qa[0] + V[0], qa[1] + V[1] + (o.sink || 0) * sc);
       if (o.filter) g.filter = o.filter; if (hW > 0.6 * SH && hides((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)) g.globalAlpha = 0.45;
       g.drawImage(im, x0 * iw, 0, sw + 0.6, ih, 0, 0, sw + 0.6, ih); g.restore();
     }
@@ -218,8 +221,10 @@ const terr = (c, r) => T[c + ',' + r] || '.';
         // Innenseite zum Betrachter (Wand hinter dem Graben) → Kante hinten (Verschalung, G5); sonst Außenseite → Kante vorn (Sandsäcke, G4).
         // Fest nach Blickrichtung Norden, nicht nach Kamera-x: beim Schwenken wechseln die Bilder nicht.
         const mx = (off[i][0] + off[i + 1][0]) / 2, my = (off[i][1] + off[i + 1][1]) / 2, cx = (pts[i][0] + pts[i + 1][0]) / 2, cy = (pts[i][1] + pts[i + 1][1]) / 2;
-        const inY = (cy - my) / (Math.hypot(cx - mx, cy - my) || 1), back = inY > 0.3, key = back ? 'h' : 'v';
-        uu[key] = wall(back ? IM.g_graben_kante_hinten : IM.g_graben_kante_vorn, off[i], off[i + 1], (back ? 0.42 : 0.32) * SH, { u0: uu[key], shade: 0.4, shadeW: 0.1,
+        const dl = Math.hypot(cx - mx, cy - my) || 1, inY = (cy - my) / dl, back = inY > -0.5, key = back ? 'h' : 'v';
+        // Abschnitte, die in die Tiefe laufen (Innenseite zeigt seitlich): Verschalung nach außen gekippt, damit die Seitenwand sichtbar ist (sonst nur ein Strich)
+        const side = Math.max(0, 1 - Math.abs(inY) / 0.85), lean = side > 0.05 ? { nx: (mx - cx) / dl, ny: (my - cy) / dl, L: 0.9 * side, U: 1 - 0.35 * side } : null;
+        uu[key] = wall(back ? IM.g_graben_kante_hinten : IM.g_graben_kante_vorn, off[i], off[i + 1], (back ? 0.28 : 0.32) * SH, { u0: uu[key], shade: 0.4, shadeW: 0.1, lean,
           skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * 0.42) });
       }
     }
