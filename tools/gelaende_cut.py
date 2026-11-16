@@ -197,6 +197,8 @@ def pfaehle_ausduennen(name, jede=2):
     neu = ndimage.binary_dilation(draht, structure=np.ones((3, 3), bool)) & ~draht
     neu[:, pf] = False
     q[neu, 3] = np.maximum(q[neu, 3], 220); q[neu, :3] = [70, 46, 32]
+    # kein Schleier: halbdurchsichtige Reste zwischen den Drähten ganz weg, Draht und Pfähle voll deckend
+    q[..., 3] = np.where(q[..., 3] < 140, 0, 255)
     q = np.clip(q, 0, 255).astype(np.uint8)
     print(f'  {len(grp)} Pfähle, {sum(1 for k in range(len(grp)) if k % jede)} entfernt → Breite {q.shape[1]} px')
     out = Image.fromarray(q, 'RGBA'); out.save(OUT / f'{name}.png'); out.save(PROBE / f'g_{name}.webp', quality=88, method=6)

@@ -194,37 +194,13 @@ async function bauen(cfg) {
       const [px, py, zc] = proj(x, y); if (zc <= 1) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
       g.save(); if (hW > 0.6 * SH && hides(x, y)) g.globalAlpha = 0.45;
-      g.translate(px, py + h * 0.015); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
+      g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, -h, wd, h); g.restore();
       if (cfg.punkte) { g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); }
     } });
     if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.42); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(8,6,4,0.55)'); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
   }
   const flipR = (c, r, k) => hrnd(c, r, k) < 0.5;
-  // Drahtzaun A→B: Pfähle etwa alle 0,5 R (Aufsteller), dazwischen drei gespannte Drähte mit Stacheln, dunkel und ohne Fläche dahinter
-  function zaun(A, B, sd) {
-    const len = Math.hypot(B[0] - A[0], B[1] - A[1]), n = Math.max(1, Math.round(len / (R * 0.5))), hP = 0.55 * SH, P = [];
-    for (let i = 0; i <= n; i++) { const t = i / n, x = A[0] + (B[0] - A[0]) * t, y = A[1] + (B[1] - A[1]) * t, im = PFAEHLE[(sd + i * 3) % PFAEHLE.length], h = hP * (0.88 + hrnd(sd, i, 1) * 0.2);
-      P.push([x, y, h, hrnd(sd, i, 2) < 0.5]); stand(im, x, y, h, { flip: P[i][3], shadeK: 0.5 }); }
-    for (let i = 0; i < n; i++) {
-      const [x1, y1, h1] = P[i], [x2, y2, h2] = P[i + 1];
-      DRAW.push({ y: (y1 + y2) / 2 + R * 0.001, f: () => {
-        const a = proj(x1, y1), b = proj(x2, y2); if (a[2] <= 1 || b[2] <= 1) return;
-        const sa = Fk() / a[2], sb = Fk() / b[2], lw = Math.max(1, 0.011 * R * (sa + sb) / 2);
-        g.save(); g.lineCap = 'round'; g.strokeStyle = '#1d1510'; g.lineWidth = lw;
-        for (const f of [0.28, 0.55, 0.82]) {   // drei Drähte, leicht durchhängend
-          const ya = a[1] - h1 * sa * f, yb = b[1] - h2 * sb * f, mx = (a[0] + b[0]) / 2, my = (ya + yb) / 2 + 0.035 * SH * (sa + sb) / 2;
-          g.beginPath(); g.moveTo(a[0], ya); g.quadraticCurveTo(mx, my, b[0], yb); g.stroke();
-          const nb = Math.max(2, Math.round(Math.hypot(b[0] - a[0], yb - ya) / (9 * U)));   // Stacheln: kleine Kreuze entlang des Drahts
-          g.beginPath();
-          for (let j = 1; j < nb; j++) { const t = j / nb, x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * mx + t * t * b[0], y = (1 - t) * (1 - t) * ya + 2 * (1 - t) * t * my + t * t * yb, d = lw * 1.8;
-            g.moveTo(x - d, y - d); g.lineTo(x + d, y + d); g.moveTo(x - d, y + d); g.lineTo(x + d, y - d); }
-          g.lineWidth = lw * 0.8; g.stroke(); g.lineWidth = lw;
-        }
-        g.restore();
-      } });
-    }
-  }
 
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
@@ -324,9 +300,19 @@ async function bauen(cfg) {
       for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) });
     } else if (t === 'bunker') {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
-    } else if (t === 'wire') {   // Drahtgürtel: zwei Zäune je Feld, quer zur Blickrichtung, leicht schräg: einzelne Pfähle, dazwischen gespannter Draht
-      for (const [k, dy] of [[1, -0.36], [2, 0.3]]) { const ang = (q(k) - 0.5) * 0.6, L = R * (0.72 + q(k + 5) * 0.2), cx = hx + (q(k + 9) - 0.5) * R * 0.3, cy = hy + dy * R;
-        zaun([cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], c * 31 + r * 7 + k); }
+    } else if (t === 'wire') {   // Drahtfeld: 1–2 kurze Stücke des gemalten Spiralstreifens, schräg und versetzt, dazu einzelne schiefe Pfähle; nichts auf Straßen
+      const aufWeg = (x, y) => ROADS.some(rd => distTo([x, y], rd) < R * 0.42);
+      const n = q(1) < 0.45 ? 1 : 2;
+      for (let k = 0; k < n; k++) {
+        const ang = (q(k * 7 + 2) - 0.5) * 1.1, L = R * (0.32 + q(k * 7 + 3) * 0.3), cx = hx + (q(k * 7 + 4) - 0.5) * R * 0.9, cy = hy + (n === 1 ? (q(k * 7 + 5) - 0.5) * 0.5 : (k ? 0.3 : -0.32) + (q(k * 7 + 5) - 0.5) * 0.2) * R;
+        wall(IM.draht, [cx - Math.cos(ang) * L, cy - Math.sin(ang) * L], [cx + Math.cos(ang) * L, cy + Math.sin(ang) * L], (0.5 + q(k * 7 + 6) * 0.15) * SH,
+          { u0: q(k * 7 + 8) * 5, shade: 0.3, shadeW: 0.12, skip: aufWeg });
+      }
+      for (let k = 0; k < 1 + Math.floor(q(30) * 2.2); k++) {   // einzelne schiefe Pfähle, teils ohne Draht
+        const x = hx + (q(k * 5 + 31) - 0.5) * R * 1.2, y = hy + (q(k * 5 + 32) - 0.5) * R * 1.1;
+        if (aufWeg(x, y)) continue;
+        stand(PFAEHLE[Math.floor(q(k * 5 + 33) * PFAEHLE.length)], x, y, 0.55 * SH * (0.7 + q(k * 5 + 34) * 0.4), { rot: (q(k * 5 + 35) - 0.5) * 0.7, flip: flipR(c, r, k + 40), shadeK: 0.5 });
+      }
     } else if (t === 'barrikade') {
       const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });
     } else if (t === 'bridge') {   // Brücke: Bohlen quer über das Wasser
