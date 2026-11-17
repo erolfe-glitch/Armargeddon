@@ -104,6 +104,70 @@ const TIMG = {}, FXI = {}, PJI = {};
   load(TIMG, D.tiles); load(FXI, D.fx); load(PJI, D.proj || {}); }
 const fxw = (im, h) => h * im.naturalWidth / im.naturalHeight;
 
+// ---------- Neue Effektbögen (2026-11-17): tools/fx_cut.py → src/fxneu.js (FXNEU) ----------
+// Zufällige Variante, im Code bewegt (wachsen, steigen, drehen, ausblenden). Leuchtende Bögen (Schwarzgrund) aufhellend ('lighter').
+// Fehlt ein Bild, greifen die alten Effekte aus fx.js.
+const FXN = {};
+{ const D = window.FXNEU || {}; for (const k in D) { const m = k.match(/^(.+)_(\d+)$/); if (!m) continue; const im = new Image(); im.src = D[k]; (FXN[m[1]] = FXN[m[1]] || [])[+m[2] - 1] = im; } }
+const FX_GLOW = new Set(['muendung', 'explosion', 'feuer', 'funken', 'leuchtkugel', 'leuchtspur', 'flammenstrahl', 'drehlauf', 'nahkampf']);
+// Größe: längste Seite des größten Teils eines Bogens in Feldradien (Soldat ≈ 0,8 Feldradien hoch)
+const FX_SZ = { muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
+const GESCHOSS_ANG = [-18, -15, -40, 0, -15, -15].map(a => a * Math.PI / 180);   // Grundrichtung der Geschosse im Bogen (gemessen)
+const fxIm = (b, i) => { const a = FXN[b]; if (!a || !a.length) return null; const im = a[i != null ? i : Math.floor(Math.random() * a.length)]; return im && im.complete && im.naturalWidth ? im : null; };
+const fxN = b => (FXN[b] || []).length;
+const fxDim = (im, b, mul = 1) => { const k = L.s * FX_SZ[b] * mul / 320; return [im.naturalWidth * k, im.naturalHeight * k]; };
+const fxs = [], gmarks = [];   // laufende Effekte; Spuren am Boden (bleiben einige Runden)
+// o: life/delay in 60-Hz-Bildern (mit Spieltempo), mul Größe, anchor 'unten'|'mitte'|'links'|'rechts', ang, flip, flipY, rise (Feldradien),
+//    grow (Anteil), spin (Bogenmaß über die Lebenszeit), alpha, fadeIn, fadeOut (Anteil), len (Länge in px, Strahlen/Spuren), move [x2, y2] (fliegt hin)
+function fx(b, i, x, y, o = {}) { const im = fxIm(b, i); if (!im) return null; const e = Object.assign({ b, im, x, y, life: 30, delay: 0, mul: 1, anchor: 'unten', ang: 0, rise: 0, grow: 0, spin: 0, alpha: 1, fadeIn: 0, fadeOut: 0.4 }, o); e.max = e.life; fxs.push(e); return e; }
+function drawFxs(g, s, up) {
+  for (let i = fxs.length - 1; i >= 0; i--) {
+    const e = fxs[i]; if (e.delay > 0) { e.delay -= FS; continue; } e.life -= FS;
+    if (e.life <= 0) { fxs.splice(i, 1); continue; }
+    const k = 1 - e.life / e.max, x = e.move ? e.x + (e.move[0] - e.x) * Math.min(1, k * 1.15) : e.x, y = e.move ? e.y + (e.move[1] - e.y) * Math.min(1, k * 1.15) : e.y;
+    if (up && !up(x, y)) continue;
+    let [w, h] = fxDim(e.im, e.b, e.mul * (1 + e.grow * k));
+    if (e.len) { const r = e.len / w; w = e.len * (e.lenIn ? Math.min(1, (e.max - e.life) / e.lenIn) : 1); h *= Math.min(1.5, Math.max(0.6, Math.sqrt(r))); }   // Strahl wächst in lenIn Bildern auf volle Länge
+    const fo = Math.min(1, e.life / (e.max * e.fadeOut)), fi = e.fadeIn ? Math.min(1, (e.max - e.life) / e.fadeIn) : 1;
+    g.save(); g.globalAlpha = e.alpha * fo * fi; if (FX_GLOW.has(e.b)) g.globalCompositeOperation = 'lighter';
+    g.translate(x, y - e.rise * s * k); if (e.ang || e.spin) g.rotate(e.ang + e.spin * k); if (e.flip) g.scale(-1, 1); if (e.flipY) g.scale(1, -1);
+    const ax = e.anchor === 'links' ? 0 : e.anchor === 'rechts' ? -w : -w / 2, ay = e.anchor === 'unten' ? -h : -h / 2;
+    g.drawImage(e.im, ax, ay, w, h); g.restore();
+  }
+}
+// Spur am Boden (Brandfleck, Einschlag, Öl, Drahtreste, Kettenspur, Trichter): bleibt „turns“ Runden, die letzte blasst aus
+function gmark(b, i, x, y, o = {}) { const im = fxIm(b, i); if (!im || !G) return; gmarks.push(Object.assign({ b, im, x, y, mul: 1, flip: Math.random() < 0.5, turn: G.turn, turns: 3, alpha: 0.9, born: now }, o)); if (gmarks.length > 160) gmarks.shift(); }
+function drawGmarks(g) {
+  for (let i = gmarks.length - 1; i >= 0; i--) { const m = gmarks[i], age = G.turn - m.turn; if (age >= m.turns) { gmarks.splice(i, 1); continue; }
+    const [w, h0] = fxDim(m.im, m.b, m.mul), h = h0 * Math.max(0.55, kAt(m.x, m.y)) * 0.8, fin = Math.min(1, (now - m.born) / 400);
+    g.save(); g.globalAlpha = m.alpha * fin * (age === m.turns - 1 ? 0.55 : 1); g.translate(m.x, m.y); if (m.ang) g.rotate(m.ang); if (m.flip) g.scale(-1, 1); g.drawImage(m.im, -w / 2, -h / 2, w, h); g.restore(); }
+}
+// Laufmündung einer Einheit: gemessen (MUZ) oder vordere Kante der q-ten Figur in Laufhöhe hf (Anteil der Figurhöhe von oben)
+function fxMuzzle(id, q = 0, hf = 0.3) {
+  const d = DU.get(id); if (!d) return null; const lf = facesLeft(d.face);
+  if (d.muz) return [d.x + (!!d.muz[2] === lf ? d.muz[0] : -d.muz[0]), d.y + d.muz[1]];
+  const bs = d.fbx || []; if (!bs.length) return null;
+  let [x0, y0, w, h, fl] = bs[q % bs.length]; if (!!fl !== lf) x0 = -(x0 + w);
+  return [d.x + (lf ? x0 : x0 + w), d.y + y0 + h * hf];
+}
+// Richtung für Bilder, die nach rechts zeigen: nach links gespiegelt statt kopfüber gedreht
+function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-lim, Math.min(lim, Math.atan2(y2 - y1, Math.abs(x2 - x1) || 1e-6))); return { flip: fl, ang: fl ? -a0 : a0 }; }
+// Mündungsfeuer (≈ 0,1 s): v 0 Gewehr, 1 MG, 2 Pistole, 3 Kanone, 4 Mörser (nach oben), 5 lang und dünn (Scharfschütze, Panzerbüchse)
+function fxFlash(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 0.5); return fx('muendung', v, p[0], p[1], Object.assign({ anchor: 'links', life: 6, fadeOut: 0.7, flip: dr.flip, ang: dr.ang, mul: 1 }, o)); }
+// Leuchtspur fliegt von p zum Ziel: v 0 Gewehr, 1 MG-Striche, 5 Panzerbüchse
+function fxTracer(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 1.2); return fx('leuchtspur', v, p[0], p[1], Object.assign({ anchor: 'rechts', move: [tx, ty], life: 14, fadeOut: 0.25, flip: dr.flip, ang: dr.ang, mul: 0.55 }, o)); }
+// Artillerie-, Mörser-, Granateinschlag: Feuerkern (4 Stufen, ca. 0,5 s), dann Erdfontäne, danach steigt Rauch; Spur am Boden
+function fxImpact(x, y, r, o = {}) {
+  if (!fxIm('explosion') || !fxIm('erdfontaene')) return false;
+  const s = L.s, m = r / (s * 0.95), by = y + s * 0.3 * Math.min(1.2, m), dl = o.delay || 0, fl = Math.random() < 0.5;
+  if (o.alt) fx('explosion', 4 + (Math.random() < 0.5 ? 0 : 1), x, by, { delay: dl, life: 26, mul: m, grow: 0.15, fadeOut: 0.5 });
+  else for (let st = 0; st < 4; st++) fx('explosion', st, x, by, { delay: dl + st * 7.5, life: st < 3 ? 9 : 16, mul: m * (st ? 1 : 0.8), fadeOut: st < 3 ? 0.15 : 0.6, flip: fl });
+  fx('erdfontaene', null, x, by, { delay: dl + 4, life: 64, mul: m, grow: 0.2, flip: fl, fadeOut: 0.45 });
+  fx('rauch', null, x, by - s * 0.1 * m, { delay: dl + 24, life: 150, mul: m * 0.75, grow: 0.35, rise: 0.9, alpha: 0.72, fadeIn: 18, fadeOut: 0.6, flip: Math.random() < 0.5 });
+  if (!o.noMark) setTimeout(() => gmark('bodenspuren', Math.random() < 0.55 ? 1 : 5, x, y + s * 0.15, { mul: 0.7 * Math.min(1.4, m) }), (dl * 16.667 + 200) / speed);
+  return true;
+}
+
 // ---------- Gelände ----------
 const hash = (a, b) => { const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return n - Math.floor(n); };
 const TC = { open: ['#5a5a3a', '#545436', '#5f5e3d'], mud: ['#4c4030', '#473b2c', '#514433'], crater: ['#575638', '#515034', '#5b5a3b'],
@@ -653,7 +717,7 @@ function drawSym(g, im, cx, cy, R, ring) {
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
 const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472] };
 function drawUnit(u, d) {
-  d.muz = null;   // wird beim Zeichnen der Figur gesetzt, wenn die Mündung des Bildes bekannt ist
+  d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
@@ -719,6 +783,7 @@ function drawUnit(u, d) {
       g.fillStyle = acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     }
     g.drawImage(sp.cv, Math.round(fx - sp.ox), Math.round(fy - sp.oy)); topY = Math.min(topY, fy - sp.oy);
+    if (sp.rule) d.fbx.push([fx - sp.cw / 2 - d.x, fy - sp.top - d.y, sp.cw, sp.top, flip]);
     if (sp.at && MUZ[sp.art] && !d.muz) { const [mx, my] = sp.at(...MUZ[sp.art]); d.muz = [fx - sp.ox + mx - d.x, fy - sp.oy + my - d.y, flip]; }   // relativ zur Einheit
   }
   }
@@ -811,8 +876,12 @@ function draw() {
 // Boden: Gelände, Flecken, Hilfsmarkierungen, Zielfahnen
 function drawGround(g, s) {
   g.drawImage(tcv, 0, 0);
-  for (let i = decals.length - 1; i >= 0; i--) if (decals[i].wire && G.turn - decals[i].turn >= 4) decals.splice(i, 1);   // Drahtblut: nach 4 Runden weg
+  drawGmarks(g);
+  for (let i = decals.length - 1; i >= 0; i--) { const dc = decals[i]; if (dc.turn == null) dc.turn = G.turn; if (G.turn - dc.turn >= (dc.wire ? 4 : 3)) decals.splice(i, 1); }   // Blut bleibt kurz liegen (Draht 4, sonst 3 Runden)
   for (const dc of decals) {
+    if (dc.bim === undefined) { dc.bim = fxIm('blut', 3 + Math.floor(Math.random() * 3)) || null; dc.born = dc.born || now; }   // neue Bodenflecken (Blutbogen 4–6)
+    if (dc.bim) { const age = G.turn - dc.turn, lim = dc.wire ? 4 : 3, w = dc.wire ? dc.r * 2.4 : dc.r * 3.2, hh = w * dc.bim.naturalHeight / dc.bim.naturalWidth * Math.max(0.55, kAt(dc.x, dc.y));
+      g.globalAlpha = 0.85 * Math.min(1, (now - dc.born) / 300 + 0.3) * (age >= lim - 1 ? 0.5 : 1); g.drawImage(dc.bim, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; continue; }
     if (dc.wire) {   // erst ein kleiner Spritzer, nach 1,5 s nur noch ein dunkler Fleck; blasst über die Runden aus
       const a = Math.min(1, (now - dc.born) / 1500), age = G.turn - dc.turn, rr = dc.r * (1.6 - 0.6 * a), al = (0.75 - 0.25 * a) * Math.max(0, 1 - age / 4);
       g.fillStyle = `rgba(${Math.round(70 - 25 * a)},${Math.round(22 - 8 * a)},${Math.round(14 - 6 * a)},${al.toFixed(3)})`; g.beginPath(); gEllipse(g, dc.x, dc.y, rr, rr); g.fill();
@@ -1000,6 +1069,10 @@ function drawAir(g, s, up) {
   for (const k of VIS.lit) { if (up) { const [lx, ly] = center(k.c, k.r); if (!up(lx, ly)) continue; } hexPath(g, k.c, k.r, 0.98); g.fillStyle = 'rgba(255,240,170,0.16)'; g.fill(); }
   for (const k of VIS.smoke) {
     const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue;
+    if (fxN('nebel')) { for (let i = 0; i < 2; i++) { const im = fxIm('nebel', (k.c * 2 + k.r + i * 3) % fxN('nebel')); if (!im) continue;   // Nebelwand des Rauchwerfers: zwei Bänke, ziehen langsam
+        const [w, h] = fxDim(im, 'nebel', 0.95 + 0.05 * Math.sin(now / 1500 + i)), dx = Math.sin(now / 2100 + k.c + i * 2) * s * 0.12;
+        g.save(); g.globalAlpha = 0.82; g.translate(x + dx + (i ? s * 0.18 : -s * 0.18), y + (i ? s * 0.35 : -s * 0.05) * kAt(x, y)); if ((k.r + i) % 2) g.scale(-1, 1); g.drawImage(im, -w / 2, -h, w, h); g.restore(); }
+      continue; }
     for (let i = 0; i < 4; i++) { const a = i * 1.6 + now / 1700 + k.c, rx = s * (0.5 + 0.08 * Math.sin(now / 800 + i));
       const gr = g.createRadialGradient(x + Math.cos(a) * s * 0.3, y - s * 0.2 + Math.sin(a) * s * 0.15, 0, x + Math.cos(a) * s * 0.3, y - s * 0.2, rx);
       gr.addColorStop(0, 'rgba(225,225,220,0.55)'); gr.addColorStop(1, 'rgba(225,225,220,0)'); g.fillStyle = gr; g.fillRect(x - s * 1.2, y - s * 1.2, s * 2.4, s * 2.4); }
@@ -1007,10 +1080,22 @@ function drawAir(g, s, up) {
   const mySide = human(G.side) ? G.side : ['A', 'D'].find(human);
   g.font = `900 ${Math.round(s * 0.36)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   for (const q of G.tunnels || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText(`⛏${q.t}`, x, y + s * 0.15); g.fillStyle = '#ffb86a'; g.fillText(`⛏${q.t}`, x, y + s * 0.15); }
-  // Brennende Felder: kleine flackernde Flammen
-  for (const f of VIS.fires || []) { const [cx, cy] = center(f.c, f.r); for (let i = 0; i < 8; i++) { const a = i * 0.785 + f.c * 0.7, rr = 0.5 + 0.12 * ((i * 37) % 3), x = cx + Math.cos(a) * s * rr, y = cy + Math.sin(a) * s * rr * 0.75 * kAt(cx, cy); if (up && !up(x, y)) continue;   // am Feldrand, die Truppe in der Mitte bleibt frei
+  // Brennende Felder: Flammen aus dem Feuerbogen (aufhellend) am Feldrand, die Truppe in der Mitte bleibt frei; sonst die alten kleinen Flammen
+  if (fxN('feuer')) for (const f of VIS.fires || []) { const [cx, cy] = center(f.c, f.r), kk = kAt(cx, cy);
+    for (let i = 0; i < 4; i++) { const a = i * 1.571 + 0.6 + f.c * 0.7, x = cx + Math.cos(a) * s * 0.58, y = cy + Math.sin(a) * s * 0.5 * kk; if (up && !up(x, y)) continue;
+      const im = fxIm('feuer', (f.c * 3 + f.r * 5 + i) % fxN('feuer')); if (!im) continue; const t = now / 140 + i * 2.3 + f.r, fl = 0.9 + 0.1 * Math.sin(t) + 0.05 * Math.sin(t * 2.7);
+      const [w, h] = fxDim(im, 'feuer', 0.85 + 0.1 * (i % 2)); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.9; g.translate(x, y + s * 0.05); if ((i + f.c) % 2) g.scale(-1, 1); g.scale(1, fl); g.drawImage(im, -w / 2, -h, w, h); g.restore(); } }
+  else for (const f of VIS.fires || []) { const [cx, cy] = center(f.c, f.r); for (let i = 0; i < 8; i++) { const a = i * 0.785 + f.c * 0.7, rr = 0.5 + 0.12 * ((i * 37) % 3), x = cx + Math.cos(a) * s * rr, y = cy + Math.sin(a) * s * rr * 0.75 * kAt(cx, cy); if (up && !up(x, y)) continue;   // am Feldrand, die Truppe in der Mitte bleibt frei
     const t = now / 110 + i * 2.1, h = s * (0.14 + 0.05 * Math.sin(t) + 0.03 * (i % 2)), w = s * 0.05;
     for (const [col, kk] of [['rgba(170,50,10,0.55)', 1], ['rgba(240,130,35,0.65)', 0.66], ['rgba(255,214,110,0.7)', 0.34]]) { g.beginPath(); g.moveTo(x - w * kk, y); g.quadraticCurveTo(x - w * kk * 1.2, y - h * kk * 0.5, x + Math.sin(t) * w * 0.4, y - h * kk); g.quadraticCurveTo(x + w * kk * 1.2, y - h * kk * 0.5, x + w * kk, y); g.closePath(); g.fillStyle = col; g.fill(); } } }
+  // Leuchtkugel am Fallschirm über jedem markierten Feld, solange die Markierung gilt (für alle sichtbar), dazu Lichtschein am Boden
+  if (fxN('leuchtkugel')) for (const k of VIS.marks || []) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue;
+    const pz = 0.8 + 0.2 * Math.sin(now / 90 + k.c) * Math.sin(now / 37), sw = Math.sin(now / 900 + k.r) * s * 0.12, fy = y - s * 2.1;
+    const lg = g.createRadialGradient(x, y, 0, x, y, s * 1.1); lg.addColorStop(0, `rgba(255,200,120,${(0.16 * pz).toFixed(3)})`); lg.addColorStop(1, 'rgba(255,200,120,0)');
+    g.save(); g.globalCompositeOperation = 'lighter'; g.translate(x, y); g.scale(1, kAt(x, y)); g.translate(-x, -y); g.fillStyle = lg; g.beginPath(); g.arc(x, y, s * 1.1, 0, 7); g.fill(); g.restore();
+    const sch = fxIm('leuchtkugel', 2), gl = fxIm('leuchtkugel', 3 + (k.c + k.r) % 3);
+    if (gl) { const [w, h] = fxDim(gl, 'leuchtkugel', 0.55 * pz); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.85; g.drawImage(gl, x + sw - w / 2, fy + s * 0.32 - h / 2, w, h); g.restore(); }
+    if (sch) { const [w, h] = fxDim(sch, 'leuchtkugel', 0.75); g.save(); g.globalCompositeOperation = 'lighter'; g.translate(x + sw, fy); g.rotate(Math.sin(now / 900 + k.r) * 0.08); g.drawImage(sch, -w / 2, -h * 0.55, w, h); g.restore(); } }
   // Markierte Ziele der eigenen Seite: Messing-Zielkreuz am Boden (gilt bis zum nächsten eigenen Zug)
   for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
     g.save(); g.globalAlpha = pz; g.strokeStyle = O; g.lineWidth = Math.max(4, s * 0.1); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
@@ -1020,7 +1105,11 @@ function drawAir(g, s, up) {
   // Gaswolken
   for (const k of VIS.clouds) {
     const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v]; if (up && !up(x, y)) continue;
-    if (im) {
+    const gi = fxIm('gas', (k.c * 3 + k.r) % Math.max(1, fxN('gas')));
+    if (gi) {   // Gaswolke wabert langsam: Breite und Höhe gegenläufig, leichtes Treiben
+      const [w, h] = fxDim(gi, 'gas', 0.9), sx = 1 + 0.06 * Math.sin(now / 900 + k.c), sy = 1 + 0.07 * Math.sin(now / 1100 + k.r + 1), dx = Math.sin(now / 1700 + k.r) * s * 0.1;
+      g.save(); g.globalAlpha = 0.8; g.translate(x + dx, y + s * 0.45 * kAt(x, y)); if ((k.c + k.r) % 2) g.scale(-1, 1); g.scale(sx, sy); g.drawImage(gi, -w / 2, -h, w, h); g.restore();
+    } else if (im) {
       const hh = s * (1.25 + 0.06 * Math.sin(now / 700 + k.c)), w = fxw(im, hh), dx = Math.sin(now / 1300 + k.r) * s * 0.08;
       g.globalAlpha = 0.82; g.drawImage(im, x - w / 2 + dx, y + s * kAt(x, y) * 0.6 - hh, w, hh); g.globalAlpha = 1;
     } else {
@@ -1096,8 +1185,14 @@ function drawAir(g, s, up) {
     if (sh.t >= 1) { shells.splice(i, 1); continue; }
     const x = sh.x1 + (sh.x2 - sh.x1) * sh.t, y = sh.y1 + (sh.y2 - sh.y1) * sh.t - Math.sin(Math.PI * sh.t) * s * (sh.arc ?? 3.2);
     if (up && !up(x, y)) continue;
-    const pim = PJI[sh.img];
-    if (pim) {
+    const pim = PJI[sh.img], gim = sh.fxi != null ? fxIm('geschosse', sh.fxi) : null;
+    if (gim) {   // Geschoss aus dem neuen Bogen: auf die Flugbahn gedreht (Handgranaten drehen sich), dahinter Schweif bzw. Zündschnur-Funken
+      const t2 = Math.min(1, sh.t + 0.02), nx = sh.x1 + (sh.x2 - sh.x1) * t2, ny = sh.y1 + (sh.y2 - sh.y1) * t2 - Math.sin(Math.PI * t2) * s * (sh.arc ?? 3.2), fa = Math.atan2(ny - y, nx - x), left = sh.x2 < sh.x1;
+      const tim = fxIm('leuchtspur', sh.spin ? 4 : 2);
+      if (tim) { const [tw, th] = fxDim(tim, 'leuchtspur', sh.spin ? 0.35 : 0.5); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.85; g.translate(x, y); g.rotate(fa); if (left) g.scale(1, -1); g.drawImage(tim, -tw, -th / 2, tw, th); g.restore(); }
+      const [w, hh] = fxDim(gim, 'geschosse', sh.fxs || 1);
+      g.save(); g.translate(x, y); g.rotate(sh.spin ? sh.t * 14 : fa); if (left && !sh.spin) g.scale(1, -1); g.rotate(-GESCHOSS_ANG[sh.fxi]); g.drawImage(gim, -w / 2, -hh / 2, w, hh); g.restore();
+    } else if (pim) {
       const t2 = Math.min(1, sh.t + 0.02), nx = sh.x1 + (sh.x2 - sh.x1) * t2, ny = sh.y1 + (sh.y2 - sh.y1) * t2 - Math.sin(Math.PI * t2) * s * (sh.arc ?? 3.2);
       const hh = s * (sh.sz || 0.36), w = fxw(pim, hh);
       g.save(); g.translate(x, y); g.rotate(Math.atan2(ny - y, nx - x) + (sh.spin ? sh.t * 9 : 0)); if (sh.x2 < sh.x1 && !sh.spin) g.scale(1, -1);
@@ -1118,6 +1213,7 @@ function drawAir(g, s, up) {
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
     else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
+  drawFxs(g, s, up);
   for (let i = booms.length - 1; i >= 0; i--) {
     const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
     if (b.life <= 0) { booms.splice(i, 1); continue; }
@@ -1304,6 +1400,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
     g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore();
+    d.fbx = [[x - w / 2 - d.x, top + sink * 0.8 - d.y, w, h, flip]];
     { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip]; }   // Laufmündung (neue Ansicht)
     g.filter = 'none';
     if (u.type === 'ballon') drawBallon(g, s, u, x, top, w, h, flip, filt);
@@ -1333,6 +1430,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
         g.translate(fx, fy + h * 0.012 + sink); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
+    if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip]);
     if (FIGQ && f.abs) { const tf = g.getTransform(), al = g.globalAlpha, fl = filt; FIGQ.push({ y: y + f.oy * s, f: () => zeichne(tf, al, fl) }); }   // Graben: später nach Tiefe
     else zeichne();
     topY = Math.min(topY, fy - h);
@@ -1603,6 +1701,12 @@ function burst(x, y, n, cols, o = {}) {
 }
 const BOOM_IMG = { he: ['expl'], dust: ['dirt1', 'dirt2'], gas: ['gas2'], blood: ['splash'], smoke: ['smokeL1', 'smokeL2', 'smokeD'] };
 function boom(x, y, r, kind, delay = 0) {
+  { const s = L.s, m = r / s, fl = Math.random() < 0.5;   // neue Effektbögen, sonst unten die alten
+    if (kind === 'he' && fxImpact(x, y, r, { delay })) return;
+    if (kind === 'smoke' && fx('rauch', null, x, y + s * 0.3, { delay, life: 140, mul: m * 0.8, grow: 0.3, rise: 0.8, alpha: 0.72, fadeIn: 16, fadeOut: 0.6, flip: fl })) return;
+    if (kind === 'dust' && fx('truemmer', 2, x, y + s * 0.35, { delay, life: 44, mul: m * 0.75, grow: 0.3, rise: 0.15, alpha: 0.85, flip: fl })) return;
+    if (kind === 'gas' && fx('gas', null, x, y + s * 0.4, { delay, life: 70, mul: m * 0.7, grow: 0.4, alpha: 0.8, fadeIn: 10, flip: fl })) return;
+    if (kind === 'blood' && fx('blut', Math.floor(Math.random() * 3), x, y - s * 0.3, { delay, life: 30, mul: m * 0.9, anchor: 'mitte', grow: 0.2, flip: fl })) return; }
   const cols = kind === 'gas' ? [['#a9bd3a', 1], ['#d6e670', 0.6]] : kind === 'dust' ? [['#8a7a52', 1], ['#b7a678', 0.55]] : kind === 'blood' ? [['#8a1a14', 1]] : kind === 'smoke' ? [['#77736a', 1]] : [['#e8762a', 1], ['#ffd15a', 0.62], ['#fff6c4', 0.3]];
   const opts = BOOM_IMG[kind] || [], life = kind === 'smoke' ? 70 : kind === 'he' ? 30 : 24;
   booms.push({ x, y, r, cols, kind, img: opts[Math.floor(Math.random() * opts.length)], flip: Math.random() < 0.5, life, max: life, delay });
@@ -1633,6 +1737,10 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
   try {
   for (let i = 1; i < path.length; i++) {
     const [x0, y0] = center(path[i - 1][0], path[i - 1][1]), [x1, y1] = center(path[i][0], path[i][1]);
+    { const uu = unitById(id), T = uu && TYPES[uu.type];
+      if (T && T.cls === 'walker' && !d.vs.rout) { const sh = FIGMAP[uu.type] && FIGMAP[uu.type][0];
+        if (sh && SCHREITER.includes(sh)) fx('truemmer', Math.random() < 0.5 ? 5 : 2, x1, y1 + L.s * 0.3, { life: 40, mul: 0.5, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });   // Schreiter: Staub bei jedem Schritt
+        else gmark('bodenspuren', 4, (x0 + x1) / 2, (y0 + y1) / 2 + L.s * 0.1, { mul: 0.6, alpha: 0.7, flip: false, ang: Math.atan2(y1 - y0, x1 - x0) + 0.52 }); } }   // Kolosse: Kettenspur
     if (x1 !== x0 && !keepFace) d.face = x1 > x0 ? (facesLeft(d.face) ? 0 : d.face) : (facesLeft(d.face) ? d.face : 3);   // nur die Seite wechseln, senkrechte Schritte drehen nicht
     if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
@@ -1658,7 +1766,11 @@ async function playEvent(e) {
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
       if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), 'Sperrfeuer!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
-      if (e.kind === 'flame') { playSound('flame', 0.6); flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); }
+      if (e.kind === 'flame') { playSound('flame', 0.6);
+        const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
+        const dr = fxDir(p[0], p[1], x2, y2, 1.2), len = Math.hypot(x2 - p[0], y2 - p[1]) * 1.08, v = deck ? 3 : [0, 1, 2, 4, 5][Math.floor(Math.random() * 5)];
+        if (fx('flammenstrahl', v, p[0], p[1], { anchor: 'links', len, lenIn: 6, life: 30, fadeOut: 0.35, flip: dr.flip, ang: dr.ang })) await wait(450);
+        else { flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); } }
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
         const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
@@ -1669,13 +1781,26 @@ async function playEvent(e) {
           // unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert: „pam – pam-pam – pam“. Abstände zufällig 0–0,25 s, manchmal zwei fast zugleich;
           // jeder Schuss kurz (ohne Nachhall), nur der letzte klingt voll aus (Spieltest 2026-11-17, gilt für beide Seiten)
           let t = 0; for (let q = 0; q < n; q++) { if (q) t += Math.random() < 0.3 ? Math.random() * 40 : Math.random() * 250;
-            const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed); } }
+            const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
+            const p = fxMuzzle(e.a, q); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } } }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
         else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
-        if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
+        // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
+        const pm = fxMuzzle(e.a, 0, mini ? 0.45 : can ? 0.42 : 0.3), neu = !!(pm && fxIm('muendung'));
+        if (neu) {
+          if (mini && fxIm('drehlauf')) { const dr = fxDir(pm[0], pm[1], x2, y2, 0.5); for (let q = 0; q < 6; q++) fx('drehlauf', q % 2 ? 3 + Math.floor(Math.random() * 3) : Math.floor(Math.random() * 3), pm[0], pm[1], { anchor: q % 2 ? 'links' : 'mitte', delay: q * 4.5, life: 5, fadeOut: 0.6, flip: dr.flip, ang: dr.ang, mul: q % 2 ? 0.9 : 0.6 });
+            for (let q = 0; q < 4; q++) fxTracer(1, pm, x2, y2, { delay: q * 6, life: 12 }); }
+          else if (mg) { for (let q = 0; q < 6; q++) fxFlash(1, pm, x2, y2, { delay: q * 4.5, life: 4, mul: 0.75 + Math.random() * 0.2 }); for (let q = 0; q < 4; q++) fxTracer(1, pm, x2, y2, { delay: 2 + q * 6, life: 12 }); }
+          else if (can) fxFlash(3, pm, x2, y2, { life: 8, mul: 0.9 });
+          else if (!salve) { const bu = au && au.type === 'buechse', v = bu || rs === 'sniper' ? 5 : rs === 'pistol' ? 2 : 0;
+            if (rs !== 'grenade') { fxFlash(v, pm, x2, y2, { mul: v === 2 ? 0.7 : 0.85 }); fxTracer(bu ? 5 : 0, pm, x2, y2, bu ? { mul: 0.7 } : {}); } }
+        }
+        if (neu && !can) {}
+        else if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
+        else if (neu) {}
         else if (mg && PJI.mgfire) { const lf = facesLeft(a.face), mz = a.muz, [mx, my] = mz ? [a.x + (!!mz[2] === lf ? mz[0] : -mz[0]), a.y + mz[1]] : [x1 + Math.cos(ang) * s * 0.25, y1 + Math.sin(ang) * s * 0.25];   // an der Laufmündung (im letzten Bild gemessen, bei Wendung gespiegelt)
           muzzles.push({ img: 'mgfire', x: mx, y: my, ang: mz ? (lf ? Math.PI : 0) : ang, sz: 0.85, off: 0.02, life: 26, max: 26 }); }
         else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
-        tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 30 : 15, max: mg ? 30 : 15, n: mg ? 9 : 1, stream: mg, col: can ? '#ff9a3a' : '#ffe27a', img: can ? 'shard' : 'bullet', sz: mg ? 0.17 : can ? 0.34 : 0.2 });
+        if (!neu || can) tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 30 : 15, max: mg ? 30 : 15, n: mg ? 9 : 1, stream: mg, col: can ? '#ff9a3a' : '#ffe27a', img: can ? 'shard' : 'bullet', sz: mg ? 0.17 : can ? 0.34 : 0.2 });
         await wait((mg ? 30 : 15) * 16.667 * 0.9);
         if (can) { boom(x2, y2 + s * 0.4, s * 0.5, 'he'); playSound('boom', 0.45); }
       }
@@ -1689,9 +1814,12 @@ async function playEvent(e) {
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);   // Abschuss zeigen, danach folgt die Kamera der Granate
       a.face = e.face; playSound(TYPES[ua.type].mobile ? 'launch' : ua.type === 'feldkanone' ? 'cannon' : ua.side === 'D' ? 'artD' : 'cannonH', TYPES[ua.type].mobile ? 0.42 : 0.8);   // Mörser: Mörserton, Geschütze: Kanonenschuss
       }
-      if (e.strike) {} else if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
+      const mob = TYPES[ua.type].mobile, pa = !e.strike && fxIm('muendung') ? fxMuzzle(e.a, 0, mob ? 0.12 : 0.32) : null;
+      if (pa) { if (mob) fx('muendung', 4, pa[0], pa[1], { anchor: 'mitte', life: 7, fadeOut: 0.7, flip: x2 < x1, mul: 0.8 }); else fxFlash(3, pa, x2, y2 - s * 2, { life: 8 });   // Mörser: kurzer Blitz nach oben, Geschütz: großer Mündungskegel
+        fx('rauch', 0, pa[0], pa[1] + s * 0.2, { life: 70, mul: 0.3, grow: 0.6, rise: 0.5, alpha: 0.6, fadeIn: 6, fadeOut: 0.7 }); }
+      else if (e.strike) {} else if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn
-      shells.push({ x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
+      shells.push({ fxi: e.mode === 'gas' ? 5 : TYPES[ua.type].mobile && !e.strike ? 1 : 0, x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       if (camOn() && !inView(x2, y2, 0.12)) camTo(x2, y2, dur * 16.667 * 0.8);
       await wait(dur * 16.667);
       shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
@@ -1722,7 +1850,7 @@ async function playEvent(e) {
         if (af === 'mechB') playSound(Math.random() < 0.5 ? 'snarl' : 'tiger', 0.4);   // Klauenschreiter knurrt
       };
       let thrown = false;
-      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, shells.push({ x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
+      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
       strikeSnd();
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
@@ -1734,14 +1862,20 @@ async function playEvent(e) {
         else if (kc === 'cav' || af === 'raider' || af === 'brawler' || af === 'knight') k = 'mswing';
         else if (af === 'shield' || af === 'shieldA' || kc === 'walker') k = 'msmash';
         else if (kc !== 'art') k = ['mstab', 'msmash', 'mswing'][Math.floor(Math.random() * 3)];
-        if (k === 'mstab' && PJI.mstab) muzzles.push({ img: 'mstab', x: a.x + (d.x - a.x) * 0.25, y: a.y - s * 0.45 + (d.y - a.y) * 0.25, ang, off: 0, sz: 0.4, life: 34, max: 34 });
+        const heavy = kc === 'walker' || af === 'drill', metal = armored || (du && TYPES[du.type].suit && T0 && T0.suit);
+        const nv = heavy ? 5 : metal ? 4 : k === 'mstab' ? 3 : k === 'msmash' ? 2 : k ? (Math.random() < 0.5 ? 0 : 1) : null;   // Schwung/Kreuzhieb, Aufprallstern, Stich, Funkenstern, Bodenschlag
+        if (nv != null && fx('nahkampf', nv, nv === 5 ? d.x : d.x + (fl ? 1 : -1) * s * 0.12, nv === 5 ? d.y + s * 0.35 : d.y - s * 0.45, { anchor: nv === 5 ? 'unten' : 'mitte', life: 20, fadeOut: 0.6, grow: 0.25, flip: fl, mul: nv === 5 ? 1.1 : 0.85 })) {
+          if (blood && du && !['walker', 'art'].includes(TYPES[du.type].cls)) fx('blut', Math.floor(Math.random() * 3), d.x + (fl ? -1 : 1) * s * 0.15, d.y - s * 0.4, { anchor: 'mitte', life: 32, mul: 0.6, grow: 0.2, flip: fl });
+          if (af === 'drill') fx('truemmer', 3, d.x, d.y + s * 0.35, { life: 40, mul: 0.7, grow: 0.3, flip: fl });   // Bohrkoloss: Grus
+        }
+        else if (k === 'mstab' && PJI.mstab) muzzles.push({ img: 'mstab', x: a.x + (d.x - a.x) * 0.25, y: a.y - s * 0.45 + (d.y - a.y) * 0.25, ang, off: 0, sz: 0.4, life: 34, max: 34 });
         else if (k && PJI[k]) muzzles.push({ img: k, x: d.x, y: d.y - s * 0.1, center: true, up: 0.85, sz: k === 'mswing' ? 1.3 : 1.25, flip: fl, life: 42, max: 42 });
-        if (PJI.mimpact) muzzles.push({ img: 'mimpact', x: mx, y: my + s * 0.25, center: true, up: 0.5, sz: kc === 'walker' ? 1.1 : 0.85, life: 26, max: 26 });
-        if (blood && PJI.msplat && du && TYPES[du.type].cls !== 'walker' && TYPES[du.type].cls !== 'art') muzzles.push({ img: 'msplat', x: d.x + (fl ? -1 : 1) * s * 0.15, y: d.y - s * 0.35, center: true, up: 0.5, sz: 0.9, flip: fl, life: 54, max: 54 });
+        if (fxN('nahkampf')) {} else if (PJI.mimpact) muzzles.push({ img: 'mimpact', x: mx, y: my + s * 0.25, center: true, up: 0.5, sz: kc === 'walker' ? 1.1 : 0.85, life: 26, max: 26 });
+        if (blood && !fxN('nahkampf') && PJI.msplat && du && TYPES[du.type].cls !== 'walker' && TYPES[du.type].cls !== 'art') muzzles.push({ img: 'msplat', x: d.x + (fl ? -1 : 1) * s * 0.15, y: d.y - s * 0.35, center: true, up: 0.5, sz: 0.9, flip: fl, life: 54, max: 54 });
       }
-      if (au && TYPES[au.type].mech && TYPES[au.type].cls === 'walker' && PJI.hammer) muzzles.push({ img: 'hammer', x: d.x, y: d.y + s * 0.35, center: true, up: 0.75, sz: 1.7, life: 34, max: 34 });
-      if (af === 'drill') muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
-      if (armored || af === 'drill' || af === 'mechA' || af === 'mechK' || af === 'mechC') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
+      if (fxN('nahkampf')) {} else if (au && TYPES[au.type].mech && TYPES[au.type].cls === 'walker' && PJI.hammer) muzzles.push({ img: 'hammer', x: d.x, y: d.y + s * 0.35, center: true, up: 0.75, sz: 1.7, life: 34, max: 34 });
+      if (af === 'drill' && !fxN('truemmer')) muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
+      if (armored || af === 'drill' || af === 'mechA' || af === 'mechK' || af === 'mechC') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); if (!fx('funken', null, d.x, d.y - s * 0.45, { anchor: 'mitte', life: 16, fadeOut: 0.6, mul: 0.8, flip: Math.random() < 0.5 })) muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
       await wait(170); a.lunge = null; await wait(70); break;
     }
     case 'hit': {
@@ -1754,6 +1888,7 @@ async function playEvent(e) {
         if (lastFire.kind !== 'rifle' && soft) playSound('einschlag', 0.22, null, { rate: 0.78 + Math.random() * 0.08, dur: 260 });   // MG-Treffer: dumpfer Einschlag in den Körper, tiefer gestimmt, kurz und leise (Spieltest 2026-11-17)
         else playSound(e.dmg >= 0.3 ? 'einschlag' : 'vorbei', 0.35);
       }
+      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('neigh', 0.5);
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45);
@@ -1780,7 +1915,7 @@ async function playEvent(e) {
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
-      if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { boom(d.x, d.y, s * 1.1, 'he'); playSound('boom2', 0.75); if (TYPES[u.type].cls === 'walker') playSound('feuer', 0.35); shake(8); }
+      if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { if (!fxImpact(d.x, d.y, s * 1.1, { alt: true, noMark: true })) boom(d.x, d.y, s * 1.1, 'he'); gmark('bodenspuren', TYPES[u.type].cls === 'walker' ? 2 : 0, d.x, d.y + s * 0.2, { turns: 4, mul: 0.8 }); playSound('boom2', 0.75); if (TYPES[u.type].cls === 'walker') playSound('feuer', 0.35); shake(8); }
       else if (blood) { boom(d.x, d.y, s * 0.6, 'blood'); decals.push({ v: 3, x: d.x, y: d.y, r: s * 0.36, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * kAt(d.x, d.y), r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); burst(d.x, d.y - s * 0.4, 18, ['#9a1612', '#74100c'], { up: 0.2, spread: 0.3 }); }
       for (let k = 0; k < 10; k++) { d.alpha = 1 - k / 10; await wait(28); } d.alpha = 0; break;
     }
@@ -1799,14 +1934,20 @@ async function playEvent(e) {
     }
     case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; floater(...headPos(e.u), 'gesammelt!', '#b8ff7c', true); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
     case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
-    case 'crush': { const [x, y] = center(e.c, e.r); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
-    case 'terrain': { renderTerrain(); if (e.what === 'Draht gezogen') playSound('bauen', 0.3); if (e.what === 'Stollen gesprengt') playSound('blast', 0.8); if (e.what === 'gesprengt' || e.what === 'Stollen gesprengt') playSound('einsturz', 0.7); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
+    case 'crush': { const [x, y] = center(e.c, e.r); gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
+    case 'terrain': { renderTerrain();
+      { const [x, y] = center(e.c, e.r), w = e.what || '';
+        if (w === 'gesprengt') fx('truemmer', [0, 1, 4][Math.floor(Math.random() * 3)], x, y + s * 0.4, { life: 80, grow: 0.25, rise: 0.15, fadeOut: 0.5 });   // Bunker/Barrikade: Ziegel, Holz, Sandsäcke
+        if (w === 'Stollen gesprengt') { fx('truemmer', 4, x, y + s * 0.4, { life: 90, mul: 1.2, grow: 0.3, rise: 0.3, fadeOut: 0.5 }); fx('truemmer', 0, x + s * 0.3, y + s * 0.3, { delay: 6, life: 80, mul: 0.8, grow: 0.25 }); }
+        if (/^Draht (verbrannt|zerschossen|zerrissen|niedergewalzt)/.test(w)) gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); } if (e.what === 'Draht gezogen') playSound('bauen', 0.3); if (e.what === 'Stollen gesprengt') playSound('blast', 0.8); if (e.what === 'gesprengt' || e.what === 'Stollen gesprengt') playSound('einsturz', 0.7); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
     case 'stuck': { DU.get(e.u).vs.stuck = 1; playSound('crash', 0.65); const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
     case 'breakdown': { const d0 = DU.get(e.u); d0.vs.broken = 1; muzzles.push({ img: 'engine', x: d0.x + s * 0.1, y: d0.y + s * 0.35, center: true, up: 0.92, sz: 2.3, life: 80, max: 80 }); }
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
       playSound('crash', 0.7); floater(...headPos(e.u), 'Panne!', '#ffb04a', true); toast(`${nm(u)} bleibt mit einer Panne liegen.`); await wait(350); break;
     case 'repaired': DU.get(e.u).vs.broken = 0; floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
-    case 'smoke': { if (u && u.type === 'rauch') playSound('werfer', 0.55); playSound('rauch', 0.5); for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
+    case 'smoke': { if (u && u.type === 'rauch') playSound('werfer', 0.55); playSound('rauch', 0.5);
+      if (u && fxIm('geschosse', 4)) { const du = DU.get(u.id); for (const [c, r] of e.cells) { const [x, y] = center(c, r); shells.push({ fxi: 4, fxs: 0.8, x1: du.x, y1: du.y - s * 0.6, x2: x, y2: y, t: 0, dur: 18, arc: 1.4, spin: true, sz: 0.3 }); } await wait(18 * 16.667); }
+      for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
     case 'tunnel': { playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
@@ -1829,14 +1970,16 @@ async function playEvent(e) {
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
     case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound(e.planted ? 'bauen' : 'clank', 0.45); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
     case 'ignite': visSync('fires'); playSound('flame', 0.4); break;
-    case 'fireout': visSync('fires'); break;
+    case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': floater(...headPos(e.u), 'brennt!', '#ffb04a'); await wait(120); break;
     case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
     case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('bauen', 0.35); floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
     case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
     case 'rush': playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('clank', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
-    case 'mark': { const [x, y] = center(e.c, e.r); visSync('marks'); playSound('whistle', 0.25); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
+    case 'mark': { const [x, y] = center(e.c, e.r);
+      if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
+      visSync('marks'); playSound('whistle', 0.25); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
       rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); playSound('marschtritt', 0.5); break;
@@ -2588,7 +2731,7 @@ function startGame() {
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
   G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
-  decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
+  fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); LOG.length = 0; lastSel.A = lastSel.D = null; renderDiary(); updateUI();
@@ -2878,7 +3021,7 @@ window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get 
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

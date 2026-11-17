@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Effektbögen</title>
+<style>
+  :root { --bg: #17120e; --panel: #241c15; --line: #4a3c2c; --text: #e9e1cf; --muted: #b3a68c; --brass: #c2a461; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 Georgia, serif; }
+  header { padding: 18px 24px 6px; }
+  h1 { margin: 0; font-size: 26px; color: var(--brass); letter-spacing: .04em; }
+  p { margin: 6px 0; color: var(--muted); max-width: 1100px; }
+  .row { margin: 14px 24px; padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  .row h2 { margin: 0 0 4px; font-size: 18px; }
+  .row h2 small { color: var(--muted); font-weight: normal; font-size: 14px; }
+  .cells { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cell { text-align: center; color: var(--muted); font-size: 13px; }
+  canvas { display: block; border-radius: 4px; }
+  button { background: #3a2d20; color: var(--text); border: 1px solid var(--brass); border-radius: 4px; padding: 8px 14px; min-height: 40px; font: inherit; cursor: pointer; margin-left: 10px; }
+  #demo { margin: 14px 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Effektbögen im Spiel</h1>
+  <p>Alle Varianten aus <code>ui-quelle/effekte/</code>, freigestellt mit <code>tools/fx_cut.py</code>. Leuchtende Bögen (Schwarzgrund) aufhellend über dem Boden, die übrigen deckend. Größen wie im Spiel: Feldradius 60 px, Soldat ≈ 0,8 Feldradien.</p>
+</header>
+<div id="demo" class="row"><h2>Ablauf im Spiel <button id="play">Abspielen</button></h2>
+  <div class="cells"><canvas id="demoCv" width="1100" height="340"></canvas></div></div>
+<div id="rows"></div>
+<script src="../../src/fxneu.js"></script>
+<script>
+const S = 60;   // Feldradius
+const SHEETS = [
+  ['muendung', 'Mündungsfeuer', 'Gewehr · MG · Pistole · Kanone · Mörser · Scharfschütze/Panzerbüchse', 0.7, 1],
+  ['explosion', 'Explosion', '1–4 Stufen nacheinander (0,5 s) · 5–6 zerstörtes Gerät, Minen', 1.7, 1],
+  ['erdfontaene', 'Erdfontäne', 'nach dem Feuerkern', 2.0, 0],
+  ['rauch', 'Rauch', 'steigt danach auf (Fahne am Bildrand weggelassen)', 2.3, 0],
+  ['nebel', 'Nebelwand', 'Rauchwerfer', 1.7, 0],
+  ['gas', 'Giftgas', 'wabert langsam (abgeschnittene Wolke weggelassen)', 1.8, 0],
+  ['feuer', 'Feuer', 'brennende Felder', 0.75, 1],
+  ['funken', 'Funken', 'Treffer auf Panzerung', 0.95, 1],
+  ['blut', 'Blut', '1–3 Spritzer · 4–6 Bodenflecken (3 Runden)', 0.8, 0],
+  ['leuchtkugel', 'Leuchtkugel', 'Ziel markieren: steigt, platzt, hängt am Schirm · Glühen', 1.0, 1],
+  ['truemmer', 'Trümmer', 'Mauer · Holz · Schrittstaub · Bohrgrus · Sandsack · Staubring', 1.6, 0],
+  ['bodenspuren', 'Bodenspuren', 'Brand · Einschlag · Öl · Drahtreste · Kettenspur · Trichter (einige Runden)', 1.4, 0],
+  ['geschosse', 'Geschosse', 'Granate · Mörsermine · Stielhandgranate · Handgranate · Rauchtopf · Gasgranate', 0.42 * 3, 0],
+  ['leuchtspur', 'Leuchtspur', 'Gewehr · MG · Granatschweif · Mörserbogen · Zündschnur · Panzerbüchse', 1.2, 1],
+  ['flammenstrahl', 'Flammenstrahl', 'Länge nach Entfernung · Variante 4 prallt an Deckung ab', 1.8, 1],
+  ['drehlauf', 'Drehlauf', 'Schreiter und Eisenknecht (gemalte Läufe entfernt)', 0.95, 1],
+  ['nahkampf', 'Nahkampf', 'Schwung · Kreuzhieb · Aufprall · Stich · Metall auf Metall · Bodenschlag', 1.15, 1],
+];
+const IM = {};
+for (const k in window.FXNEU) { const m = k.match(/^(.+)_(\d+)$/); const im = new Image(); im.src = FXNEU[k]; (IM[m[1]] = IM[m[1]] || [])[+m[2] - 1] = im; }
+function ground(g, w, h) {   // dunkler Schlammboden mit Hexraster
+  g.fillStyle = '#4a4232'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(${30 + (i * 37) % 40},${26 + (i * 17) % 30},${18 + (i * 11) % 20},0.35)`; g.beginPath(); g.ellipse((i * 97) % w, (i * 53) % h, 6 + i % 14, 3 + i % 6, 0, 0, 7); g.fill(); }
+}
+const ready = () => Object.values(IM).every(a => a.every(im => im.complete));
+function drawRows() {
+  const root = document.getElementById('rows'); root.innerHTML = '';
+  for (const [b, name, txt, sz, glow] of SHEETS) {
+    const row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = `<h2>${name} <small>fx_${b} · ${(IM[b] || []).length} Varianten · ${txt}</small></h2><div class="cells"></div>`;
+    const cells = row.querySelector('.cells');
+    (IM[b] || []).forEach((im, i) => {
+      const k = S * sz / 320, w = im.naturalWidth * k, h = im.naturalHeight * k, cw = Math.max(150, Math.ceil(w) + 20), ch = Math.max(110, Math.ceil(h) + 20);
+      const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; const g = cv.getContext('2d'); ground(g, cw, ch);
+      if (glow) g.globalCompositeOperation = 'lighter'; g.drawImage(im, (cw - w) / 2, (ch - h) / 2, w, h);
+      const c = document.createElement('div'); c.className = 'cell'; c.appendChild(cv); c.appendChild(document.createTextNode(b + '_' + (i + 1))); cells.appendChild(c);
+    });
+    root.appendChild(row);
+  }
+  document.body.dataset.ready = '1';
+}
+// Ablauf: Gewehrsalve, MG, Artillerie-Einschlag (Feuerkern → Erdfontäne → Rauch), Flammenstrahl, Leuchtkugel
+function demo() {
+  const cv = document.getElementById('demoCv'), g = cv.getContext('2d'), t0 = performance.now();
+  const at = (b, i, x, y, sz, o = {}) => { const im = IM[b][i], k = S * sz * (o.mul || 1) / 320, w = (o.len || im.naturalWidth * k), h = im.naturalHeight * k * (o.len ? Math.min(1.5, Math.sqrt(o.len / (im.naturalWidth * k))) : 1);
+    g.save(); g.globalAlpha = o.a ?? 1; if (o.glow) g.globalCompositeOperation = 'lighter'; g.translate(x, y); if (o.flip) g.scale(-1, 1); g.drawImage(im, o.left ? 0 : -w / 2, o.mid ? -h / 2 : -h, w, h); g.restore(); };
+  function step(now) {
+    const t = (now - t0) / 1000; ground(g, cv.width, cv.height);
+    // Artillerie-Einschlag bei x 300
+    const st = Math.floor(t / 0.125); if (t < 0.5) at('explosion', Math.min(3, st), 300, 270, 1.7, { glow: 1 });
+    if (t > 0.07 && t < 1.2) at('erdfontaene', 0, 300, 270, 2.0 * (1 + 0.2 * (t - 0.07)), { a: Math.min(1, (1.2 - t) / 0.5) });
+    if (t > 0.4 && t < 2.9) at('rauch', 2, 300, 260 - (t - 0.4) * 40, 2.3 * 0.75 * (1 + 0.14 * (t - 0.4)), { a: 0.72 * Math.min(1, (t - 0.4) / 0.3, (2.9 - t) / 1.2) });
+    if (t > 0.3) at('bodenspuren', 1, 300, 300, 1.4 * 0.7, { mid: 1, a: 0.9 });
+    // Flammenstrahl bei x 560
+    if (t > 0.6 && t < 1.2) at('flammenstrahl', 1, 520, 230, 1, { glow: 1, left: 1, mid: 1, len: 240 * Math.min(1, (t - 0.6) / 0.1) });
+    // MG-Feuer bei x 900
+    if (t > 0.2 && t < 0.9 && Math.floor(t * 13) % 2 === 0) at('muendung', 1, 860, 220, 0.7 * 0.8, { glow: 1, left: 1, mid: 1 });
+    if (t > 0.2 && t < 0.9) { const p = ((t - 0.2) * 3) % 1; at('leuchtspur', 1, 860 + p * 200, 220, 1.2 * 0.55, { glow: 1, mid: 1 }); }
+    // Leuchtkugel bei x 1000
+    if (t > 1.0 && t < 1.6) at('leuchtkugel', 0, 1020, 300 - (t - 1) * 300, 1.0 * 0.75, { glow: 1 });
+    if (t > 1.6 && t < 1.9) at('leuchtkugel', 1, 1020, 120, 1.0 * 0.8, { glow: 1, mid: 1 });
+    if (t > 1.9) { at('leuchtkugel', 4, 1020, 125, 0.55, { glow: 1, mid: 1, a: 0.85 }); at('leuchtkugel', 2, 1020, 160, 0.75, { glow: 1 }); }
+    if (t < 3.4) requestAnimationFrame(step); else setTimeout(demo, 600);   // in Schleife
+  }
+  requestAnimationFrame(step);
+}
+document.getElementById('play').onclick = demo;
+(function wait() { if (ready()) { drawRows(); demo(); } else setTimeout(wait, 100); })();
+</script>
+</body>
+</html>
