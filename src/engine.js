@@ -32,7 +32,8 @@ const P = {
   // Gruppe 1 (2026-11-16): MG-Sperrfeuer 2 Schüsse, Ziel markieren (bis zum nächsten eigenen Zug), Feuerschlag des Fernsprechtrupps
   SPERR_SHOTS: 2, STRIKE_CD: 3, STRIKE_SCATTER: 0.25,
   // Gruppe 2 Führung (2026-11-16): Feuer frei (Konkordat) ×1,25 Fernkampf, „Halten um jeden Preis“ Abwehr ×1,25, Banner aufgepflanzt 3 Felder
-  FIRE_FREE: 1.25, HOLD_DEF: 1.25, BANNER_R: 2, BANNER_R_PLANTED: 3,
+  FIRE_FREE: 1.25, NEBEL_IN: 0.5, NEBEL_AUS: 0.75, HOLD_DEF: 1.25,   // Nebelwand (2026-11-18): Beschuss auf Ziele im Nebel ×0,5, aus dem Nebel heraus ×0,75
+  BANNER_R: 2, BANNER_R_PLANTED: 3,
   // Spieltest Runde 2, Paket 8 (2026-11-17): Pannen/Festfahren seltener (oben ≈ ⅓), dafür 3 eigene Runden; Befehle 1 Feld, 3× je Anführer; großer Befehl 3 Felder;
   // Gas 3 Runden Abklingzeit; Artillerie-Sperrfeuer höchstens 2× je Geschütz, Schaden ×0,7 eines Einzelschusses; Zweitwaffe (Seiten-MG, Turm-MG) ×0,5, Reichweite 2
   // Fahrplan 2 (2026-11-17): Schusswinkel für Fahrzeuge und Schreiter – Hauptwaffe ±60°, Seitenwaffen (Zweitwaffe, zweiter Schuss der Breitseite) vorn und seitlich bis 135°;
@@ -199,9 +200,9 @@ Object.assign(TYPES, {
 //             Nahkampf = Angriff, Reiter ×1,2, Sturmtruppen ×1,15). Zähigkeit = Abwehr (Kolosse ×1,6, Rüstung ×1,4) + halbe Moral.
 // Dazu Fähigkeiten (ABIL) und ein kleiner Abgleich aus der Simulation (ADJ). Prüfen: node tools/costcheck.js
 const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
-  signal: ['Ziel markieren', 10], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
+  signal: ['Ziel markieren', 5], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
   hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
-  pionierD: ['Draht ziehen oder Minen (3), Bergen', 20], pionier: ['Haftladung, Bergen', 15], knecht: ['Sturmkanone', 20],
+  pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Sturmkanone', 20],
   rauch: ['Nebelwand', 15], mineur: ['Stollen', 10], werkstatt: ['Reparieren, Bergen, Nachladen', 40], ballon: ['Ziel markieren, Sicht von oben', 50],
   eingreif: ['Gegenstoß', 40], gasschutz: ['Gasschutz', 15], munition: ['Reparieren, Bergen, Nachladen', 40], pirsch: ['Getarnt, Niederhalten', 35] };
 // Abgleich nach tools/costcheck.js (Grauwall, 140 Spiele je Typ): Angreifer-Infanterie nimmt Zielfelder und ist für den Angreifer mehr wert,
@@ -209,9 +210,12 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // Paket 2 nach tools/costcheck.js 120: Minenleger +23 %, Eingreiftrupp +26 % (zu billig), Rauchwerfer −34 %, Mineure −17 %, Werkstatt nur mit Kolossen sinnvoll
 // Balance 2026-11-17 (entwurf/BALANCE.md, costcheck ADD=80, 200 Spiele, Probe-Einheiten zufällig in der Startzone): Aschenwacht-Sturm und
 // -Fahrzeuge zu billig (+15 bis +27 Punkte Siegquote gegenüber gleich viel Grundinfanterie), Konkordat-Spezialisten zu teuer (−16 bis −37).
-const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -10, reiter: -10, lanzeD: -10, feldscher: -10, heiler: -5,
-  sturm: 40, knecht: 60, bohrer: 70, brand: 5, sturmpz: 10, eingreif: 10, klaue: 15, saeger: 10, gasschutz: -5, rauch: -5, melder: -5,
-  feldkanone: -10, haubitze: -5, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5 };
+// Zweite Runde 2026-11-18 (costcheck mit der neuen KI: Fahrzeuge vorsichtiger, Spezialisten gezielter): Konkordat-Kolosse/Schreiter −19 bis −24,
+// Aschenwacht-Spezialisten −13 bis −29, Aschenwacht-Maschinen weiter +10 bis +16.
+const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
+  sturm: 40, knecht: 60, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
+  feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -10, orden: -10,
+  schwer: -5, banner: -5, munition: -5 };
 function costParts(k) {
   const t = TYPES[k], c = t.cls;
   let F = t.rng > 0 ? (t.fs || 0) * (1 + 0.15 * (t.rng - 1)) : 0; if (c === 'art') F *= 1.3;
@@ -229,7 +233,7 @@ const COST = {}; for (const k in TYPES) COST[k] = costParts(k).total;
 // Paket 2: Skirmish-Trupps (Bögen des Nutzers)
 Object.assign(TYPES, {
   rauch: { side: 'A', name: 'Rauchwerfer-Trupp', cls: 'inf', fig: 'smoke', abil: 'smoke', atk: 2, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Nebelwand (Aktion, alle 3 Runden): Zielfeld bis 3 Felder und alle Nachbarn liegen bis zur nächsten eigenen Runde im Nebel. Dort kann niemand hinein- oder herausschießen.',
+    can: 'Nebelwand (Aktion, alle 3 Runden): Zielfeld bis 3 Felder und alle Nachbarn liegen bis zur nächsten eigenen Runde im Nebel. Wer im Nebel steht, wird kaum getroffen (Beschuss ×0,5) und schießt nur schwach heraus (×0,75); durch die Wand hindurch sieht niemand, und kein Beobachter lenkt Artillerie in den Nebel. Am besten vor dem Vorrücken legen, dann in den Nebel ziehen.',
     real: 'Bei Loos legten die Briten im September 1915 neben Gas auch künstlichen Nebel aus Rauchkerzen, um den Angriff zu verschleiern. Später verschossen Stokes-Mörser Nebelgranaten.' },
   mineur: { side: 'A', name: 'Mineure (Tunnelgräber)', cls: 'inf', fig: 'miner', abil: 'tunnel', sapper: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Stollen graben (Aktion, alle 4 Runden): unter einen Graben, Bunker oder ein Gebäude bis 2 Felder. Zwei eigene Runden später fliegt das Feld in die Luft (schwerer Schaden, wird zum Trichter).',
@@ -772,6 +776,7 @@ function deploy(G, side, army) {
   // Reihenfolge: Typen abwechselnd, damit sich die Truppen über die Front verteilen
   const left = Object.assign({}, army), list = [];
   for (let more = true; more;) { more = false; for (const t of ROSTER[side]) if (left[t] > 0) { left[t]--; list.push(t); more = true; } }
+  if (G.mischen) for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(G.rng() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }   // nur Tests (sim.js MISCHEN=1): Aufstellung je Schlacht anders
   const ROWS_OUT = rowsOut(), zA = MAP.zoneA;
   const lead = () => null;   // Offiziere nur noch als eigene Einheiten (Hauptmann/General mit Stab), keine Titel mehr für Schützen (Spieltest 2026-11-17)
   const free = (t, c, r) => inMap(c, r) && !unitAt(G, c, r) && cost(G, { type: t, side }, c, r) < 99;
@@ -851,7 +856,7 @@ function newGame(opts) {
     mapId: MAP.id, maxT: MAP.maxT || P.MAXT, winA: MAP.winA || P.WIN_A, drawA: MAP.drawA || P.DRAW_A, reinfTurn: MAP.reinfTurn || P.REINF_TURN,
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
-    ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs
+    mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
   G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
@@ -1107,11 +1112,13 @@ function smokeAt(G, c, r) { return !!(G.smoke && G.smoke.some(k => k.c === c && 
 function litAt(G, c, r, side) { return !!(G.lit && G.lit.some(k => k.c === c && k.r === r && k.side === side)); }
 // Getarnt (Pirschjäger): nur aus dem Nachbarfeld angreifbar, bis er geschossen hat
 function concealed(G, d, c, r) { return !!TYPES[d.type].hidden && !(d.revealed > 0) && dist(c, r, d.c, d.r) > 1; }
+// Nebelwand (2026-11-18): Wer IM Nebel steht, ist sichtbar und schießt heraus (Schaden siehe preview: ×0,5 auf ihn, ×0,75 von ihm);
+// eine Sichtlinie, die nur DURCH den Nebel geht (Schütze und Ziel außerhalb), ist gesperrt.
 function hasLOS(G, c1, r1, c2, r2, aerial) {
-  if (smokeAt(G, c2, r2) || smokeAt(G, c1, r1)) return false;
+  const drin = smokeAt(G, c2, r2) || smokeAt(G, c1, r1);
   for (const [c, r] of line(c1, r1, c2, r2)) {
     if (!inMap(c, r)) continue;
-    if (smokeAt(G, c, r)) return false;
+    if (!drin && smokeAt(G, c, r)) return false;
     if (aerial) continue;
     if (!inMap(c, r)) continue;
     const t = hex(G, c, r).t;
@@ -1222,6 +1229,8 @@ function preview(G, a, d, kind, o) {
   if (flame) tags.push('Flammen: Deckung schützt nicht');
   else dm = defMods(G, d, geo, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
   if (ranged && litAt(G, d.c, d.r, a.side)) { m *= 1.25; tags.push('ausgeleuchtet ×1,25'); }
+  if (ranged && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }
+  if (ranged && smokeAt(G, ac, ar)) { m *= P.NEBEL_AUS; tags.push('aus dem Nebel ×0,75'); }
   const dmg = P.DMG * ((ranged ? A.fs : A.atk) / (D.def * dm)) * (0.4 + 0.6 * a.str / 10) * m;
   let counter = 0;
   if (!ranged && d.status === 'ok' && D.atk > 0) counter = counterDmg(G, d, a, ac, ar, arc, Math.max(0, d.str - dmg));
@@ -1414,6 +1423,7 @@ function claimObjective(G, u) {
 // ---------- Artillerie ----------
 function spotted(G, side, c, r) {
   if (litAt(G, c, r, side)) return true;
+  if (smokeAt(G, c, r)) return false;   // in den Nebel hinein sieht kein Beobachter (Artillerie, Feuerschlag, Markieren)
   return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= Math.max(TYPES[u.type].spot || P.SPOT, hex(G, u.c, u.r).t === 'kirche' ? 6 : 0) && hasLOS(G, u.c, u.r, c, r, TYPES[u.type].aerial));
 }
 function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
@@ -1434,6 +1444,7 @@ function shellDmg(G, a, d, direct, tags) {
   tags = tags || [];
   let m = 1;
   if (cls(d) === 'walker' && direct) { m *= P.ART_VS_WALKER; tags.push('direkter Schuss auf Koloss ×2,5'); }
+  if (direct && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }   // direkter Schuss in den Nebel
   if (cls(d) === 'flame') m *= P.FLAME_HIT;
   const dm = defMods(G, d, 'front', true, tags);
   return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * (0.4 + 0.6 * a.str / 10) * m;
@@ -1650,7 +1661,7 @@ function abilTargets(G, u) {
     else if (k === 'light' && d >= 1 && d <= 4 && hasLOS(G, u.c, u.r, c, r)) out.push([c, r]);
     else if (k === 'clear' && d === 0 && G.clouds.some(q => dist(q.c, q.r, c, r) <= 1)) out.push([c, r]);
     else if (k === 'rush' && rushPath(G, u, c, r)) out.push([c, r]);
-    else if ((k === 'mark' || k === 'strike') && d >= 1 && d <= (T.spot || P.SPOT) && hasLOS(G, u.c, u.r, c, r, T.aerial) && !(k === 'mark' && guided(G, u.side, c, r))) out.push([c, r]);
+    else if ((k === 'mark' || k === 'strike') && d >= 1 && d <= (T.spot || P.SPOT) && !smokeAt(G, c, r) && hasLOS(G, u.c, u.r, c, r, T.aerial) && !(k === 'mark' && guided(G, u.side, c, r))) out.push([c, r]);
     else if (k === 'ammo' && !u.task && d === 1 && x && x.side === u.side && active(x) && (TYPES[x.type].mg || TYPES[x.type].cls === 'art') && x.attacked && !x.ammoed) out.push([c, r]);
   }
   return out;

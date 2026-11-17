@@ -280,9 +280,116 @@ Die Spezialisten bringen der KI jetzt deutlich mehr, bleiben aber hinter gleich 
 
 Die gemischten Fälle (erweitert gegen Standard) sind auseinandergegangen. Das erweiterte Konkordat profitiert von den besseren Spezialisten. Die erweiterte Aschenwacht hat mit Signaltrupp, Gasschutz und Panzerkürass wenig Nahkampfwucht, und auch ihre Fahrzeuge halten sich jetzt zurück. Nicht korrigiert, weil der Auftrag nur den Grauwall mit Standardarmeen ausgleicht. Bei Bedarf als Nächstes die Kostenprüfung mit der neuen KI wiederholen (`ADD=80 PAR=28 node tools/costcheck.js 200`).
 
+## Nebelwand neu und zweite Kostenrunde (2026-11-18)
+
+### 1. Nebelwand (Regel, Wunsch des Nutzers)
+
+**Regel:**
+
+| Lage | Wirkung |
+|---|---|
+| Ziel **im** Nebel | Beschuss ×0,5 (`P.NEBEL_IN`; auch direkter Geschützschuss) |
+| Schütze im Nebel | schießt heraus mit ×0,75 (`P.NEBEL_AUS`) |
+| Schütze und Ziel außerhalb, Sichtlinie geht durch die Wand | gesperrt wie bisher |
+| Beobachter | sehen nicht in den Nebel: keine Artillerie, kein Feuerschlag, kein Markieren auf Nebelfelder |
+
+Die Nebelwand gilt weiter bis zur nächsten eigenen Runde. Die Angriffsvorschau zeigt „Ziel im Nebel ×0,5“ bzw. „aus dem Nebel ×0,75“.
+
+**KI:**
+- Der Rauchwerfer handelt jetzt **vor** den anderen (wie die Beobachter).
+- Er legt die Wand dorthin, wo eigene Truppen in diesem Zug vorrücken können (erreichbare Felder näher am Feind oder auf Zielfeldern) und dabei offen im gegnerischen Schussfeld stünden (MG-Fächer ×1, Schützen ×0,4, Felder mit guter Deckung ×0,4).
+- Etwas Wert haben auch eigene Trupps, die schon im Nebelbereich stehen; Abzug für eigene Schützen, deren Sichtlinie durch die Wand ginge.
+- Die Bedrohungsrechnung (`threatAt`) halbiert Beschuss auf Nebelfelder, deshalb ziehen die Angreifer von selbst hinein.
+
+**Texte:** Einheitentext Rauchwerfer (Tooltip des Knopfs und Info), Geländeinfo beim Antippen eines Nebelfelds, Regeln „Weitere Fähigkeiten“.
+
+**Messwert** (2 Rauchwerfer zusätzlich zur Standardarmee, Grauwall, je 200 Schlachten; Grundwert 51 % / 47 %):
+
+| | Startwert 1 | Startwert 5000 | Mittel |
+|---|---|---|---|
+| alte Regel, alte KI | 35 % | 44 % | −10 |
+| alte Regel, KI-Runde | 43 % | 45 % | −5 |
+| **neue Regel** | **66 %** | **63 %** | **+15,5** |
+
+Rauch je Schlacht: 1,3 → 5,6.
+
+### 2. Kostenprüfung mit der neuen KI
+
+`ADD=80 PAR=28 node tools/costcheck.js 200`. Differenz = Siegquote mit etwa 80 Punkten des Typs minus gleich viel Grundinfanterie; Rauschen ±5.
+
+| Einheit | Differenz vorher (alte KI) → jetzt | Kosten | Änderung |
+|---|---|---|---|
+| Landkoloss | −9 → −24 | 80 → 70 | Abgleich −10 (vorsichtiger, also weniger Wirkung) |
+| Turm-, Kreuz-, Ordensschreiter | −5…−10 → −19…−21 | 80/90/85 → 70/80/75 | Abgleich −10 |
+| Donnerrohr-Batterie | −21 → −18 | 55 → 50 | Abgleich −5 → −10 |
+| Drahtpioniere | −8 → −29 | 45 → 35 | Fähigkeiten 20 → 10 |
+| Signaltrupp | −16 → −22 | 20 → 15 | Ziel markieren 10 → 5 |
+| Minenwerfer | −6 → −19 | 30 → 25 | Abgleich −10 → −15 |
+| Brandwerfer | −2 → −17 | 50 → 45 | Abgleich 5 → 0 |
+| Gasschutz-Trupp | −10 → −16 | 35 → 30 | Abgleich −5 → −10 |
+| Schwere Grabenwacht | −3 → −16 | 40 → 35 | Abgleich −5 |
+| Bannerträger | −5 → −15 | 45 → 40 | Abgleich −5 |
+| Aschenpfleger | −4 → −13 | 25 → 20 | Abgleich −5 → −10 |
+| Sprenglanzen-Reiter | +8 → −13 | 30 → 25 | Abgleich −10 → −15 |
+| Versorgungstrupp (Aschenwacht) | −2 → −12 | 45 → 40 | Abgleich −5 |
+| Klauenschreiter | +27 → +14 | 95 → 105 | Abgleich 15 → 25 |
+| Sägeschreiter | +22 → +10 | 95 → 105 | Abgleich 10 → 20 |
+| Bohrkoloss | +22 → +16 | 150 → 160 | Abgleich 70 → 80 |
+
+**Jetzt im Rahmen** (nach der ersten Kostenrunde bzw. dank der KI):
+
+| Seite | Einheiten |
+|---|---|
+| Aschenwacht | Sturmbrecher −3, Sturmpanzer +4, Eingreiftrupp −2, Panzerkürass +2, Pirschjäger −2, Sensenwerk −1 |
+| Konkordat | Mahlwerk −1, Scharfschütze +1, Pioniere +3, Grabenräumer +6, Reiter +2, Stahlkürass −2, Rauch −8 |
+
+**Bewusst nicht weiter gesenkt:** Konkordat-Spezialisten (Fernsprech −31, Versorgung −31, Flammen −28, Hauptmann −28, Mörser −27, Ballon −26, Melder −25, Feldkanone −23, Mineure −20, Feldscher −17, Schildwall −17).
+- Sie wurden schon einmal gesenkt und bringen der KI etwas (siehe KI-Runde).
+- Beim Konkordat schlägt aber jede Kohorte stark zu Buche, weil Zielfelder mit Trupps gehalten werden.
+- Billiger würde sie vor allem für menschliche Spieler zu stark machen.
+
+**Budget Grauwall** jetzt Konkordat 910, Aschenwacht 675 (Kolosse und Donnerrohre der Standardarmee sind billiger geworden).
+
+### 3. Gemischte Armeen richtig messen: MISCHEN=1
+
+Die bisherigen Werte „erweitert gegen Standard 77 % / 33 %“ und nach den neuen Kosten „85 % / 58 %“ waren zum großen Teil ein Messfehler:
+- Eine feste Armeeliste bekommt in allen 200 Schlachten dieselbe automatische Aufstellung.
+- Nimmt man aus der erweiterten Konkordat-Armee eine einzige Einheit heraus, springt die Quote zwischen 2 % und 98 %.
+
+**Neu:**
+- `MISCHEN=1` in sim.js mischt je Schlacht die Aufstellungsreihenfolge (`G.mischen`, nur für Tests; im Spiel unverändert).
+- Damit werden viele Aufstellungen gemittelt. Zufällige Aufstellung schadet dem Angreifer allgemein: Standard gegen Standard liegt dann bei 34 / 43 %. Deshalb sind die gemischten Fälle mit diesem Wert zu vergleichen.
+
+**Siegquote Konkordat mit MISCHEN=1** (je 200 Schlachten, Startwert 1 / 5000; erweiterte Aschenwacht jetzt mit Bannerträger, um ihr Budget zu füllen):
+
+| | Konkordat |
+|---|---|
+| Standard gegen Standard (Vergleichswert) | 34 / 43 % |
+| erweitertes Konkordat gegen Standard | 36 / 33 % |
+| Standard gegen erweiterte Aschenwacht | 47 / 46 % |
+| beide erweitert | 43 % |
+| Konkordat mit Maschinen gegen Standard | 61 % |
+| Standard gegen Aschenwacht mit Maschinen | 34 % |
+| beide mit Maschinen | 46 % |
+
+Alle gemischten Fälle liegen in 33–61 %, also im Ziel 35–65 % oder knapp darunter, und keiner kippt. Verglichen mit „Standard gegen Standard“:
+- Das erweiterte Konkordat liegt ungefähr gleichauf (−4).
+- Die erweiterte Aschenwacht ist etwas schwächer als ihre Standardarmee (−8).
+- Konkordat-Maschinen sind etwas stärker (+22, nur eine Zusammenstellung gemessen), Aschenwacht-Maschinen fast gleich.
+
+### 4. Grauwall mit Standardarmeen (feste Aufstellung wie „Automatisch aufstellen“)
+
+| | Siegquote Konkordat |
+|---|---|
+| Startwerte 1 / 5000 / 9000 / 13000, je 200 Schlachten | 59 / 46 / 47 / 40 % |
+| **Mittel über 800 Schlachten** | **48 %** |
+| Landkoloss-Verluste | 46 % |
+
+Die Streuung zwischen Startwerten ist hier größer als die ±4 je Messung. Für Entscheidungen deshalb künftig mindestens zwei, besser vier Startwerte nehmen.
+
 ## Gemeldet statt geändert (Regel bzw. KI ist das Problem)
 
-0. **Rauch hilft der Seite mit weniger Feuerkraft.** Die Nebelwand sperrt Sichtlinien in beide Richtungen. Das Konkordat schießt etwa doppelt so oft wie die Aschenwacht (82 zu 49 je Schlacht) und verliert dadurch meist mehr, als es gewinnt; Rauch bleibt bei etwa −5. **Vorschlag (Regel):** Nebel nur gegen Schüsse *in* den Nebel hinein bzw. heraus, nicht für Sichtlinien, die ihn nur streifen – oder eine eigene Nebelseite: eigene Truppen dürfen aus dem eigenen Nebel heraus schießen.
+0. **Rauch hilft der Seite mit weniger Feuerkraft.** Erledigt mit der neuen Nebelwand-Regel (2026-11-18): Rauch bringt jetzt +15 statt −5.
 
 1. **Landkoloss fällt in 88 % der Schlachten.** Wie oben gemessen war es keine Regel-, sondern eine KI-Frage. **Erledigt in der KI-Runde vom 2026-11-18:** 44–46 %.
 2. **(Kosten-Runde) Rauchwerfer, Mineure, Melder, Mörser bringen der KI kaum etwas.** Inzwischen verbessert, siehe KI-Runde; offen bleibt nur Rauch (Punkt 0). Teils ist die Siegquote mit ihnen sogar niedriger als ohne. Das ist eine Frage der KI-Nutzung, nicht der Kosten: Rauch 3,8× je Schlacht, steht aber oft vor den eigenen Schützen. Kosten nur leicht gesenkt. **Vorschlag:** Rauch nur vor eigene Angreifer legen, die in MG-Reichweite ziehen.

@@ -2929,7 +2929,7 @@ function updateHud() {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = (h.river && h.t === 'canal' ? 'Fluss' : T.name) + (h.ridge ? ' auf der Höhe' : '');
       $('hudSub').innerHTML = o ? `Zielfeld: ${o.name} · ${o.pts} Punkte` : 'Gelände';
-      hints.push(`${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${T.real ? ' <em>Im echten Krieg: ' + T.real + '</em>' : ''}`);
+      hints.push(`${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${E.smokeAt(G, inspect.hex[0], inspect.hex[1]) ? ' Nebelwand: wer hier steht, wird kaum getroffen (×0,5) und schießt nur schwach heraus (×0,75); durch den Nebel sieht niemand.' : ''}${T.real ? ' <em>Im echten Krieg: ' + T.real + '</em>' : ''}`);
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
       $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} · Siegpunkte ${G.vp.A} : ${G.vp.D}, Ziel ${G.goal}`;

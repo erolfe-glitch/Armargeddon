@@ -70,6 +70,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Gruppe 4 (2026-11-17): Granatwerfer gestrichen. Minenwerfer `noMoveFire`, `heMul` 1,5, `breaker` (Draht/Barrikade). Brennende Felder G.fires (E.fireAt, ignite/burn, P.FIRE_DMG, Kolosse ×0,5) nach Flammenstrahl bis zum nächsten Zug des Anzünders; KI `hazard` W_FIRE; Sim-Abschalter NOFIRE.
 - Gruppe 5 (2026-11-17): Sprengtrupp und Minenleger gestrichen; Graben-Pioniere `abil: 'charge'`, Drahtpioniere `abil: 'mine'` (mit `wirelayer`: Mine ODER Draht je Runde). Versorgungstrupp = werkstatt/munition (medic, repair, recover, abil ammo; je Runde eine Aufgabe über u.task).
 - Gruppe 6 (2026-11-17): Sturmpanzer `sturmpz` (walker, `broadside`: zweiter Schuss auf anderes Ziel bis 2 Felder über u.bsT, beide ×P.BROADSIDE 0,6). Sprenglanzen-Reiter `lanzeD` (cav, `blastLance`: erster Nahkampf ×P.BLAST_LANCE 1,5, u.lanceUsed, Ereignis `lanceblast`).
+- **Nebelwand (2026-11-18):** Ziel im Nebel ×`P.NEBEL_IN` 0,5, Schütze im Nebel ×`P.NEBEL_AUS` 0,75, Sichtlinie nur durch den Nebel gesperrt (hasLOS), Beobachter sehen nicht hinein (spotted, mark/strike). KI: Rauchwerfer handelt zuerst und legt die Wand vor das Vorrücken.
 - Sonderfähigkeiten über T.abil / E.ABILS / abilTargets / useAbil (Rauch, Granaten, Stollen, Sprengladung, Minen, Scheinwerfer, Gegenstoß, Gasschutz, Munition, Pirschjäger …).
 
 ## Spielmechanik (Kurzfassung)
@@ -108,7 +109,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 
 ## Test-Werkzeuge
 - `node tools/sim.js 200`, Varianten: `MAP=selm`, `MECHS=1`, `ARMY_A="typ:n,…"`, `ARMY_D`, `M_goal`, `MA_<typ>=n`, `MD_<typ>=n`, Abschalter NOMARCH_x, NOOW_x, NOABIL, NOHELD, NOSUPP u. a. (TOG in engine.js).
-- `ADD=80 PAR=28 node tools/costcheck.js 200 [typen]` (Probe-Einheiten nach der Standardarmee, je Schlacht zufällig in der Startzone: sim.js `EXTRA_A`/`EXTRA_D`). Konkordat-Infanterie zählt sehr viel (Zielfelder halten), Aschenwacht-Grenadiere wenig. Gleichgewicht und Kosten: `entwurf/BALANCE.md`.
+- `ADD=80 PAR=28 node tools/costcheck.js 200 [typen]` (Probe-Einheiten nach der Standardarmee, je Schlacht zufällig in der Startzone: sim.js `EXTRA_A`/`EXTRA_D`). Konkordat-Infanterie zählt sehr viel (Zielfelder halten), Aschenwacht-Grenadiere wenig. Gleichgewicht und Kosten: `entwurf/BALANCE.md`. Armee-Vergleiche (eigene Armeelisten) immer mit `MISCHEN=1` (Aufstellung je Schlacht gemischt), sonst entscheidet die feste Aufstellung um ±30 Punkte. Grauwall-Messungen mit vier Startwerten mitteln.
 - Draht „Bild = Regel“: `node tools/test_draht.js` (Regeln) und `node tools/test_draht_bild.mjs` (Bild, Vorschau-Server nötig).
 - Im Browser: `window.__dbg` (fx, vis, mz, play([...])). Headless-Browser rendern langsam, Effekte früh fotografieren.
 

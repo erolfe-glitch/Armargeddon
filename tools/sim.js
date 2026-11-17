@@ -44,7 +44,7 @@ for (let g = 0; g < N; g++) {
   const parse = v => v ? Object.fromEntries(v.split(',').map(x => { const [t, n] = x.split(':'); return [t, +n]; })) : null;
   const army = { A: parse(process.env.ARMY_A), D: parse(process.env.ARMY_D) };
   for (const sd of ['A', 'D']) if (army[sd] && !process.env.ARMY_FREE && !E.armyOk(sd, army[sd], true)) { console.log('Armee ungültig', sd, E.armyCost(army[sd]), E.armyCount(army[sd])); process.exit(1); }
-  const G = E.newGame({ seed: seed0 + g * 7919, army, map: process.env.MAP, mechs: !!process.env.MECHS || !!army.A || !!army.D, free: !!process.env.ARMY_FREE });
+  const G = E.newGame({ seed: seed0 + g * 7919, army, map: process.env.MAP, mechs: !!process.env.MECHS || !!army.A || !!army.D, free: !!process.env.ARMY_FREE, mischen: !!process.env.MISCHEN });   // MISCHEN=1: Aufstellungsreihenfolge je Schlacht zufällig (Armee-Vergleiche)
   // EXTRA_A/EXTRA_D="typ:n,…": zusätzlich NACH der unveränderten Standardarmee aufstellen (tools/costcheck.js; sonst verschiebt jede
   // zusätzliche Einheit die ganze Aufstellung, und weil die in allen Schlachten gleich ist, verfälscht das den Vergleich um 20–40 Punkte)
   for (const sd of ['A', 'D']) { const ex = parse(process.env['EXTRA_' + sd]); if (ex) { const n0 = G.units.length; E.deploy(G, sd, ex); for (const u of G.units.slice(n0)) { const T = E.TYPES[u.type];

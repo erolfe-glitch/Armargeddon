@@ -62,7 +62,7 @@ function threatAt(G, u, c, r) {
       let f = T.fs;
       if (T.mg && (t === 'wire' || D.cls === 'cav')) f *= 2;
       if (D.cls === 'flame') f *= 1.5;
-      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * (0.4 + 0.6 * o.str / 10);
+      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * (0.4 + 0.6 * o.str / 10) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen
     }
     if (d <= T.mv + 1 && T.atk >= 4) {
       const mm = D.cls === 'walker' ? (T.cls === 'storm' ? 1.5 : T.cls === 'walker' ? 1 : 0.4) : 1;
@@ -108,12 +108,32 @@ function abilPlan(G, u) {
     for (const x of G.units) { if (x.side !== u.side || !E.active(x) || E.cls(x) === 'art') continue; const T = TYPES[x.type]; if (!(T.rng >= 2) || (T.mg && !x.setup)) continue;   // eigene Schützen, die durch den Nebel nicht mehr treffen
       for (const e of G.units) { if (e.side === u.side || !E.active(e)) continue; const d = E.dist(e.c, e.r, x.c, x.r); if (d < 1 || d > T.rng || !E.hasLOS(G, x.c, x.r, e.c, e.r)) continue; sicht.push([x, e, -(T.mg ? 0.6 : 0.3)]); } }
   }
+  // Nebelwand neu (2026-11-18): Rauch vor dem Vorrücken – Felder, die eigene Truppen in diesem Zug erreichen und die offen im gegnerischen
+  // Schussfeld (MG-Fächer, Schützen) liegen; dort stehen sie bis zur gegnerischen Runde im Nebel (Beschuss ×0,5). Der Rauchwerfer handelt deshalb zuerst.
+  let vorruecker = null, offen = null;
+  if (k === 'smoke') {
+    offen = new Map();
+    const schuetzen = G.units.filter(e => e.side !== u.side && E.active(e) && E.cls(e) !== 'art' && TYPES[e.type].rng >= 2 && !(e.supp > 0) && !(TYPES[e.type].mg && !e.setup));
+    const expo = (a, b) => { const key = a + ',' + b; if (offen.has(key)) return offen.get(key); let x = 0;
+      for (const e of schuetzen) { const T = TYPES[e.type], d = E.dist(e.c, e.r, a, b); if (d < 1 || d > T.rng || !E.hasLOS(G, e.c, e.r, a, b) || (T.mg && !E.inFan(G, e, a, b))) continue; x += T.mg ? 1 : 0.4; }
+      x = Math.min(x, 2) * (coverVal(E.hex(G, a, b).t) >= 0.7 ? 0.4 : 1); offen.set(key, x); return x; };
+    vorruecker = [];
+    for (const x of G.units) {
+      if (x.side !== u.side || !E.active(x) || x.attacked || x.id === u.id || (G._aiDone && G._aiDone.has(x.id)) || E.cls(x) === 'art' || E.cls(x) === 'medic' || TYPES[x.type].relay || (TYPES[x.type].mg && x.setup) || !(x.bp > 0)) continue;
+      if (TYPES[x.type].atk < 3 && !(TYPES[x.type].rng >= 2)) continue;
+      const nd0 = nearestEnemyDist(G, x.side, x.c, x.r), ziele = new Map();
+      for (const [, n] of E.reachable(G, x)) { if (n.retreat || E.unitAt(G, n.c, n.r)) continue; const vor = nearestEnemyDist(G, x.side, n.c, n.r) < nd0 || !!E.hex(G, n.c, n.r).obj; if (!vor) continue; const w = expo(n.c, n.r); if (w > 0) ziele.set(n.c + ',' + n.r, w); }
+      if (ziele.size) vorruecker.push(ziele);
+    }
+  }
   for (const [c, r] of tg) {
     let v = 0;
     if (k === 'smoke') {
       const cells = area(c, r), neu = cells.filter(([a, b]) => !E.smokeAt(G, a, b)).map(([a, b]) => ({ c: a, r: b, side: u.side }));
+      for (const z of vorruecker) { let m = 0; for (const [a, b] of cells) m = Math.max(m, z.get(a + ',' + b) || 0); v += m * 0.9; }
+      for (const [a, b] of cells) { const x = E.unitAt(G, a, b); if (x && x.side === u.side && E.active(x) && x.id !== u.id) v += Math.min(1, threatAt(G, x, a, b)) * 0.5; }   // wer schon drinsteht, wird kaum getroffen
       G.smoke.push(...neu);
-      for (const [e, x, w] of sicht) if (!E.hasLOS(G, e.c, e.r, x.c, x.r)) v += w;
+      for (const [e, x, w] of sicht) if (!E.hasLOS(G, e.c, e.r, x.c, x.r) && !cells.some(([a, b]) => a === x.c && b === x.r)) v += w * 0.6;
       G.smoke.length -= neu.length;
       v = v >= 2 ? v : 0;
     }
@@ -360,7 +380,7 @@ function planUnit(G, u) {
 function order(G, side) {
   const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked && !u.broken && u.ap >= 1);
   const dir = E.SIDES[side].dir;
-  const ord = u => TYPES[u.type].abil === 'mark' ? -1 : ORDER[E.cls(u)];   // Beobachter markieren vor der Artillerie
+  const ord = u => TYPES[u.type].abil === 'mark' || TYPES[u.type].abil === 'smoke' ? -1 : ORDER[E.cls(u)];   // Beobachter markieren vor der Artillerie; Rauch vor dem Vorrücken
   return us.sort((a, b) => (ord(a) - ord(b)) || (b.c - a.c) * dir);
 }
 
