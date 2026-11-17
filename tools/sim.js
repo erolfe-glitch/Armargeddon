@@ -28,6 +28,17 @@ for (const [k, v] of Object.entries(process.env)) {
 }
 const res = { A: 0, D: 0, draw: 0 }, why = {}, turns = [], pts = [], loss = { A: [], D: [] };
 const typeLoss = {}, typeCount = {}, objHeld = {};
+// Nutzung (2026-11-17, KI-Durchsicht): wie oft die KI jede Handlung bzw. Fähigkeit ausführt (nur erfolgreiche Schritte), je Seite
+const nutz = { A: {}, D: {} }, zaehl = (sd, k) => { nutz[sd][k] = (nutz[sd][k] || 0) + 1; };
+function schrittName(G, u, s, ev) {
+  const T = E.TYPES[u.type];
+  if (s.k === 'abil') return 'Fähigkeit ' + T.abil;
+  if (s.k === 'order') return 'Befehl ' + s.kind;
+  if (s.k === 'shell') return 'Artillerie ' + s.mode;
+  if (s.k === 'move') return ev.some(e => e.t === 'march') ? 'Marsch' : 'Zug';
+  if (s.k === 'fire' || s.k === 'melee') return s.k === 'fire' ? (T.broadside && (u.bsT || []).length > 1 ? 'Breitseite 2. Schuss' : 'Beschuss') : 'Nahkampf';
+  return s.k;
+}
 let errors = 0;
 for (let g = 0; g < N; g++) {
   const parse = v => v ? Object.fromEntries(v.split(',').map(x => { const [t, n] = x.split(':'); return [t, +n]; })) : null;
@@ -41,10 +52,12 @@ for (let g = 0; g < N; g++) {
   try {
     let bk = '';
     while (!G.over && guard++ < 8000) {
-      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; AI.buy(G); }
+      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; const bev = AI.buy(G) || []; for (const e of bev) if (e.t === 'spawn') { const u = G.units.find(x => x.id === e.u); zaehl(u.side, 'Nachschub' + (E.OBJECTIVES.some(o => E.dist(o.c, o.r, u.c, u.r) <= 1) ? ' an Zielfeld' : ' am Rand')); } }
       const act = AI.next(G);
       if (!act) { E.endTurn(G); continue; }
-      for (const s of act.steps) { AI.exec(G, act.u, s); if (G.over) break; }
+      for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || [];
+        if (u && ev.length) { zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); } }
+        if (G.over) break; }
     }
   } catch (e) { errors++; if (errors < 3) console.error(e); continue; }
   const r = G.over || { winner: null, why: 'guard' };
@@ -65,3 +78,8 @@ console.log('Ausgang:', JSON.stringify(why));
 console.log(`Runden Ø ${avg(turns).toFixed(1)}  Punkte Ø ${avg(pts).toFixed(1)}  Ausfälle Ø Konkordat ${(100 * avg(loss.A)).toFixed(0)} %  Aschenwacht ${(100 * avg(loss.D)).toFixed(0)} %`);
 console.log('Zielfelder beim Konkordat:', JSON.stringify(Object.fromEntries(E.OBJECTIVES.map(o => [o.id, pc(objHeld[o.id] || 0)]))));
 console.log('Verluste je Typ:', JSON.stringify(Object.fromEntries(Object.keys(typeLoss).map(t => [t, (100 * typeLoss[t] / typeCount[t]).toFixed(0) + ' %']))));
+if (!process.env.KURZ) {
+  const alle = [...new Set([...Object.keys(nutz.A), ...Object.keys(nutz.D)])].sort();
+  console.log('Nutzung je Schlacht (Konkordat / Aschenwacht):');
+  for (const k of alle) { const a = (nutz.A[k] || 0) / N, d = (nutz.D[k] || 0) / N; console.log(`  ${k.padEnd(40)} ${a.toFixed(2).padStart(6)} / ${d.toFixed(2).padStart(6)}${a + d < 0.1 ? '   ← selten' : ''}`); }
+}

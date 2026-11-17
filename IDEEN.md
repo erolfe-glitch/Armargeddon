@@ -105,8 +105,8 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 ## Fahrplan bis zum Content-Ausbau (Enrico + Claude, 2026-11-17)
 Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr Karten, Modi, Seiten.
 1. Oberfläche fertig: Paket 5 (unteres Bedienfeld im Total-War-Stil, Rekrutierung nach Kategorien) + neues Titelbild (ui-quelle/titelbild_neu.png, noch nicht eingebaut).
-2. Restliche Grundregeln aus Etappe 5: ~~Aufstellungsphase zu Beginn~~ erledigt (fb74781); ~~Schusswinkel für Fahrzeuge und Schreiter~~ erledigt (fb74781); Bewegungs- und Aktionspunkte sauber trennen (Schritt 1 Regeln und Anzeige in Arbeit, Schritt 2 KI danach); ~~Draht schneiden nur Spezialisten~~ erledigt; ~~Festfahren seltener~~ erledigt; Geländehinweis beim Ziehen; ~~Bohrkoloss-Flammenstoß~~ erledigt; ~~Entscheidung „Fahrzeuge auf 2 Feldern"~~ entschieden: bleiben auf 1 Feld.
-3. KI-Durchsicht: nutzt sie alle neuen Befehle sinnvoll, ist sie nicht zu defensiv, spielt sie den Grauwall gut.
+2. Restliche Grundregeln aus Etappe 5: ~~Aufstellungsphase zu Beginn~~ erledigt (fb74781); ~~Schusswinkel für Fahrzeuge und Schreiter~~ erledigt (fb74781); ~~Bewegungs- und Aktionspunkte sauber trennen~~ erledigt (Schritt 1 16fa417, Schritt 2 KI mit der KI-Durchsicht); ~~Draht schneiden nur Spezialisten~~ erledigt; ~~Festfahren seltener~~ erledigt; Geländehinweis beim Ziehen; ~~Bohrkoloss-Flammenstoß~~ erledigt; ~~Entscheidung „Fahrzeuge auf 2 Feldern"~~ entschieden: bleiben auf 1 Feld.
+3. ~~KI-Durchsicht: nutzt sie alle neuen Befehle sinnvoll, ist sie nicht zu defensiv, spielt sie den Grauwall gut.~~ erledigt 2026-11-17, Bericht entwurf/KI_DURCHSICHT.md (Grauwall 60 %; offen: Gas selten, Kasematten/Front einseitig → Punkt 5).
 4. Grauwall komplett: Gelände, Effekte, Ton, Musik (Suno: Titelthema + Schlachtmusik), Hilfe/Regeltexte auf neuem Stand.
 5. Balance (Etappe 7): Anführer-Befehle, Kolosse (84 % Verluste), Kosten, Siegquote um 50 %.
 6. Danach Content: weitere Karten, Missionstypen, KI-Charaktere, Einheitengrenzen je Typ, Blaue Legion, Feldzug.

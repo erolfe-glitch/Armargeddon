@@ -16,6 +16,8 @@ const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, b
 function coverVal(t) { return COVER[t] || 0; }
 
 if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const m = k.match(/^W_([AD])_(\w+)$/); if (m) W[m[1]][m[2]] = +process.env[k]; }
+const ENVW = typeof process !== 'undefined' && process.env || {};
+const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
   const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8 };
@@ -135,6 +137,10 @@ function posValue0(G, u, c, r) {
     v += Math.min(friends, 3) * 0.12;
     if (k === 'walker' && h.t === 'wire') v += 1.0;
     if (h.obj && k !== 'art') v += 1 + 0.4 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
+    // Sturmstellung (BP/AP Schritt 2): Nahkämpfer, die angreifen müssen, enden 2 Felder vor einem Gegner auf einem Zielfeld bzw. im Graben –
+    // nächste Runde reicht ein halber Zug bis daneben und der Sturm
+    if (W_STURM && TYPES[u.type].atk >= 3 && !E.nahFrei({ type: u.type, bpUsed: 99, bp: 0 }) && mussAngreifen(G, u))
+      for (const o of G.units) if (o.side !== u.side && E.active(o) && E.dist(o.c, o.r, c, r) === 2 && (E.hex(G, o.c, o.r).obj || ['trench', 'bunker', 'village', 'kirche', 'fabrik'].includes(E.hex(G, o.c, o.r).t))) { v += W_STURM; break; }
   } else if (k === 'storm' || k === 'flame') {
     v = coverVal(h.t) * 0.3 - th * 0.25 * 6 - nearestEnemyDist(G, 'D', c, r) * 0.7;
     for (const o of E.OBJECTIVES) if (G.ctrl[o.id] !== 'D') v -= E.dist(c, r, o.c, o.r) * 0.15;
@@ -163,7 +169,7 @@ function attackValue(G, a, d, kind, o) {
   if (d.officer) v += 0.8;
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
   if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
-  if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += 0.6;
+  if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += mussAngreifen(G, a) ? W_OBJSTURM : 0.6;   // Zielfeld stürmen, wenn die Seite angreifen muss
   return v;
 }
 // Schusswinkel (Fahrplan 2): Fahrzeuge/Schreiter schießen mit der Hauptwaffe nur nach vorn (±60°). Ohne Zug darf die KI vorher drehen (1 Punkt), wenn noch 2 Punkte da sind.
@@ -237,6 +243,11 @@ function planArt(G, u) {
   return best;
 }
 
+// Muss die Seite angreifen? Wenn der Gegner mehr Zielfelder hält oder bei Siegpunkten vorn liegt (dann keine Feuerbereitschaft, kein bloßes Warten)
+function mussAngreifen(G, u) {
+  const sd = u.side, fo = sd === 'A' ? 'D' : 'A', meine = E.OBJECTIVES.filter(o => G.ctrl[o.id] === sd).length, seine = E.OBJECTIVES.filter(o => G.ctrl[o.id] === fo).length;
+  return seine >= meine || (G.vp && G.vp[fo] > G.vp[sd]);
+}
 function planUnit(G, u) {
   const k = E.cls(u);
   if (k === 'art') {
@@ -378,7 +389,7 @@ function next(G) {
     // MG ohne Angriff: Fächer zum nächsten Gegner drehen (Reaktionsfeuer in der gegnerischen Runde)
     if (TYPES[u.type].mg && !o.atk && !o.move) { const e = E.nearestEnemy(G, u); if (e && !E.inFan(G, u, e.c, e.r)) steps.unshift({ k: 'turn', face: E.faceIndex(E.angleTo(u.c, u.r, e.c, e.r)) });
       if (nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 3 && !(typeof process !== 'undefined' && process.env && process.env['NOSPERR_' + u.side])) steps.push({ k: 'sperr' }); }   // Sperrfeuer für die gegnerische Runde
-    if (!o.move && !o.atk && !o.cut && !o.shell && !o.limber && E.canOverwatch(G, u) && nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 3 &&
+    if (!o.move && !o.atk && !o.cut && !o.shell && !o.limber && E.canOverwatch(G, u) && nearestEnemyDist(G, u.side, u.c, u.r) <= TYPES[u.type].rng + 1 && coverVal(E.hex(G, u.c, u.r).t) >= 0.4 && !mussAngreifen(G, u) &&   // KI-Durchsicht: nur in Deckung, Gegner nah, nicht wenn die Seite vorrücken muss
         !(typeof process !== 'undefined' && process.env && process.env['NOOW_' + u.side])) steps.push({ k: 'ow' });
     if (TYPES[u.type].dig && !o.move && nearestEnemyDist(G, u.side, u.c, u.r) <= 6) steps.push({ k: 'dig' });   // stehen bleiben: eingraben
     if (TYPES[u.type].shieldWall && !o.move && E.neighbors(u.c, u.r).some(([a, b]) => { const x = E.inMap(a, b) && E.unitAt(G, a, b); return x && x.side === u.side && E.active(x) && threatAt(G, x, a, b) > 0.3; })) steps.push({ k: 'shields' });
@@ -425,6 +436,11 @@ function next(G) {
     if (o.cut) steps.push({ k: 'cut', c: o.cut[0], r: o.cut[1] });
     if (TYPES[u.type].mg && !steps.length && E.canSetup(G, u)) steps.push({ k: 'setup' });
     if (steps.length) return { u: u.id, steps };
+  }
+  for (const u of G.units) {   // KI-Durchsicht (BP/AP Schritt 2): wer schon gehandelt hat und noch BP hat, zieht in Deckung bzw. vor (nur wenn es die Lage verbessert)
+    if (u.side !== G.side || !E.active(u) || !u.attacked || !(u.bp > 0) || G._aiDone2.has('r' + u.id) || E.cls(u) === 'art' || (TYPES[u.type].mg && u.setup)) continue;
+    G._aiDone2.add('r' + u.id);
+    const o = planUnit(G, u); if (o.move && (o.v || 0) > posValue(G, u, u.c, u.r) + 0.15) return { u: u.id, steps: [{ k: 'move', c: o.move[0], r: o.move[1] }] };
   }
   for (const u of G.units) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG) mit übrigen Punkten
     if (u.side !== G.side || !TYPES[u.type].zweit || G._aiDone.has('z' + u.id)) continue;
