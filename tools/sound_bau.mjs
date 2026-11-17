@@ -81,7 +81,7 @@ const head = old.slice(0, old.indexOf('(function (root)')).split('\n').filter(l 
 const OLD = {}; for (const m of old.matchAll(/^  ([A-Za-z0-9_]+): '(data:audio\/[^']+)',?$/gm)) OLD[m[1]] = m[2];
 const drop = new Set(SPEC.drop || []);
 // wiederholbar: Töne aus einem früheren Lauf (<platz>_<n>) werden neu erzeugt, nicht als alt übernommen
-const POOLNAMES = new Set(SPEC.eintraege.map(e => e.pool)); for (const k of Object.keys(OLD)) { const m = k.match(/^(.+)_(\d+)$/); if (m && POOLNAMES.has(m[1])) delete OLD[k]; }
+const POOLNAMES = new Set([...SPEC.eintraege.map(e => e.pool), ...(SPEC.dropPools || [])]); /* dropPools: entfallene Plätze, ihre <platz>_<n> verschwinden */ for (const k of Object.keys(OLD)) { const m = k.match(/^(.+)_(\d+)$/); if (m && POOLNAMES.has(m[1])) delete OLD[k]; }
 const NEW = {}, POOLS = {}, rows = [], cnt = {};
 for (const e of SPEC.eintraege) {
   POOLS[e.pool] = POOLS[e.pool] || [];

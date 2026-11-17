@@ -795,8 +795,8 @@
   "f": "(vorhanden) comeon"
  },
  {
-  "pool": "select",
-  "key": "select_1",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_01_leicht.wav",
   "dur": 0.83,
@@ -804,11 +804,11 @@
   "start": 0.05,
   "gain": -8.4,
   "kb": 10,
-  "note": "Einheit ausgewählt: eigene Sprachaufnahmen (Suno Pro), Gasmaske leicht – Auswahl tools/stimmen_auswahl.json (2026-11-17)"
+  "note": "Spruch beim Anklicken (bei jedem Klick, feste Stimme je Einheit, 2026-11-17): Infanterie, Reiter, Geschütze usw. – Gasmaske leicht"
  },
  {
-  "pool": "select",
-  "key": "select_2",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_02_leicht.wav",
   "dur": 0.62,
@@ -818,8 +818,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_3",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_03_leicht.wav",
   "dur": 0.8,
@@ -829,8 +829,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_4",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_04_leicht.wav",
   "dur": 0.57,
@@ -840,8 +840,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_5",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_05_leicht.wav",
   "dur": 1.05,
@@ -851,8 +851,8 @@
   "kb": 13
  },
  {
-  "pool": "select",
-  "key": "select_6",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_06_leicht.wav",
   "dur": 0.4,
@@ -862,8 +862,8 @@
   "kb": 5
  },
  {
-  "pool": "select",
-  "key": "select_7",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_07_leicht.wav",
   "dur": 0.74,
@@ -873,8 +873,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_8",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_8",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_08_leicht.wav",
   "dur": 0.47,
@@ -884,8 +884,8 @@
   "kb": 6
  },
  {
-  "pool": "select",
-  "key": "select_9",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_9",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_09_leicht.wav",
   "dur": 0.4,
@@ -895,8 +895,8 @@
   "kb": 5
  },
  {
-  "pool": "select",
-  "key": "select_10",
+  "pool": "sv_inf_A1",
+  "key": "sv_inf_A1_10",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s1_10_leicht.wav",
   "dur": 1.16,
@@ -906,8 +906,8 @@
   "kb": 14
  },
  {
-  "pool": "select",
-  "key": "select_11",
+  "pool": "sv_inf_A2",
+  "key": "sv_inf_A2_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s2_01_leicht.wav",
   "dur": 1,
@@ -917,8 +917,8 @@
   "kb": 12
  },
  {
-  "pool": "select",
-  "key": "select_12",
+  "pool": "sv_inf_A2",
+  "key": "sv_inf_A2_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s2_02_leicht.wav",
   "dur": 0.45,
@@ -928,8 +928,8 @@
   "kb": 5
  },
  {
-  "pool": "select",
-  "key": "select_13",
+  "pool": "sv_inf_A2",
+  "key": "sv_inf_A2_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s2_03_leicht.wav",
   "dur": 0.62,
@@ -939,8 +939,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_14",
+  "pool": "sv_inf_A2",
+  "key": "sv_inf_A2_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s2_04_leicht.wav",
   "dur": 3.47,
@@ -950,8 +950,8 @@
   "kb": 41
  },
  {
-  "pool": "select",
-  "key": "select_15",
+  "pool": "sv_inf_A2",
+  "key": "sv_inf_A2_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s2_05_leicht.wav",
   "dur": 2.36,
@@ -961,8 +961,8 @@
   "kb": 28
  },
  {
-  "pool": "select",
-  "key": "select_16",
+  "pool": "sv_inf_A2",
+  "key": "sv_inf_A2_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s2_06_leicht.wav",
   "dur": 1.15,
@@ -972,8 +972,8 @@
   "kb": 14
  },
  {
-  "pool": "select",
-  "key": "select_17",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_01_leicht.wav",
   "dur": 0.84,
@@ -983,8 +983,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_18",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_02_leicht.wav",
   "dur": 0.66,
@@ -994,8 +994,8 @@
   "kb": 8
  },
  {
-  "pool": "select",
-  "key": "select_19",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_03_leicht.wav",
   "dur": 0.74,
@@ -1005,8 +1005,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_20",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_04_leicht.wav",
   "dur": 0.61,
@@ -1016,8 +1016,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_21",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_05_leicht.wav",
   "dur": 0.91,
@@ -1027,8 +1027,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_22",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_06_leicht.wav",
   "dur": 0.85,
@@ -1038,8 +1038,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_23",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_07_leicht.wav",
   "dur": 0.51,
@@ -1049,8 +1049,8 @@
   "kb": 6
  },
  {
-  "pool": "select",
-  "key": "select_24",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_8",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_08_leicht.wav",
   "dur": 1.08,
@@ -1060,8 +1060,8 @@
   "kb": 13
  },
  {
-  "pool": "select",
-  "key": "select_25",
+  "pool": "sv_inf_A3",
+  "key": "sv_inf_A3_9",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s3_10_leicht.wav",
   "dur": 1.03,
@@ -1071,8 +1071,8 @@
   "kb": 12
  },
  {
-  "pool": "select",
-  "key": "select_26",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_01_leicht.wav",
   "dur": 0.99,
@@ -1082,8 +1082,8 @@
   "kb": 12
  },
  {
-  "pool": "select",
-  "key": "select_27",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_02_leicht.wav",
   "dur": 0.62,
@@ -1093,8 +1093,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_28",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_03_leicht.wav",
   "dur": 0.74,
@@ -1104,8 +1104,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_29",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_04_leicht.wav",
   "dur": 0.57,
@@ -1115,8 +1115,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_30",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_05_leicht.wav",
   "dur": 3,
@@ -1126,8 +1126,8 @@
   "kb": 35
  },
  {
-  "pool": "select",
-  "key": "select_31",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_06_leicht.wav",
   "dur": 1.44,
@@ -1137,8 +1137,8 @@
   "kb": 17
  },
  {
-  "pool": "select",
-  "key": "select_32",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_07_leicht.wav",
   "dur": 0.94,
@@ -1148,8 +1148,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_33",
+  "pool": "sv_inf_A4",
+  "key": "sv_inf_A4_8",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s4_08_leicht.wav",
   "dur": 0.96,
@@ -1159,8 +1159,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_34",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_01_leicht.wav",
   "dur": 0.6,
@@ -1170,8 +1170,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_35",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_02_leicht.wav",
   "dur": 0.5,
@@ -1181,8 +1181,8 @@
   "kb": 6
  },
  {
-  "pool": "select",
-  "key": "select_36",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_03_leicht.wav",
   "dur": 0.66,
@@ -1192,8 +1192,8 @@
   "kb": 8
  },
  {
-  "pool": "select",
-  "key": "select_37",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_04_leicht.wav",
   "dur": 0.47,
@@ -1203,8 +1203,8 @@
   "kb": 6
  },
  {
-  "pool": "select",
-  "key": "select_38",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_05_leicht.wav",
   "dur": 0.7,
@@ -1214,8 +1214,8 @@
   "kb": 8
  },
  {
-  "pool": "select",
-  "key": "select_39",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_06_leicht.wav",
   "dur": 0.77,
@@ -1225,8 +1225,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_40",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_07_leicht.wav",
   "dur": 0.84,
@@ -1236,8 +1236,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_41",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_8",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_08_leicht.wav",
   "dur": 1.24,
@@ -1247,8 +1247,8 @@
   "kb": 15
  },
  {
-  "pool": "select",
-  "key": "select_42",
+  "pool": "sv_inf_A5",
+  "key": "sv_inf_A5_9",
   "s": "A",
   "f": "Voices/eigene/sprueche/konkordat_s5_09_leicht.wav",
   "dur": 0.53,
@@ -1258,8 +1258,8 @@
   "kb": 6
  },
  {
-  "pool": "select",
-  "key": "select_43",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_01_leicht.wav",
   "dur": 0.9,
@@ -1269,8 +1269,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_44",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_02_leicht.wav",
   "dur": 0.75,
@@ -1280,8 +1280,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_45",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_03_leicht.wav",
   "dur": 0.68,
@@ -1291,8 +1291,8 @@
   "kb": 8
  },
  {
-  "pool": "select",
-  "key": "select_46",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_04_leicht.wav",
   "dur": 0.91,
@@ -1302,8 +1302,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_47",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_05_leicht.wav",
   "dur": 1.34,
@@ -1313,8 +1313,8 @@
   "kb": 16
  },
  {
-  "pool": "select",
-  "key": "select_48",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_06_leicht.wav",
   "dur": 0.77,
@@ -1324,8 +1324,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_49",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_07_leicht.wav",
   "dur": 2.27,
@@ -1335,8 +1335,8 @@
   "kb": 27
  },
  {
-  "pool": "select",
-  "key": "select_50",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_8",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_08_leicht.wav",
   "dur": 1.07,
@@ -1346,8 +1346,8 @@
   "kb": 13
  },
  {
-  "pool": "select",
-  "key": "select_51",
+  "pool": "sv_inf_D1",
+  "key": "sv_inf_D1_9",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s1_09_leicht.wav",
   "dur": 0.81,
@@ -1357,8 +1357,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_52",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_01_leicht.wav",
   "dur": 0.74,
@@ -1368,8 +1368,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_53",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_02_leicht.wav",
   "dur": 0.52,
@@ -1379,8 +1379,8 @@
   "kb": 6
  },
  {
-  "pool": "select",
-  "key": "select_54",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_03_leicht.wav",
   "dur": 0.64,
@@ -1390,8 +1390,8 @@
   "kb": 8
  },
  {
-  "pool": "select",
-  "key": "select_55",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_04_leicht.wav",
   "dur": 0.78,
@@ -1401,8 +1401,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_56",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_05_leicht.wav",
   "dur": 0.95,
@@ -1412,8 +1412,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_57",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_06_leicht.wav",
   "dur": 1,
@@ -1423,8 +1423,8 @@
   "kb": 12
  },
  {
-  "pool": "select",
-  "key": "select_58",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_07_leicht.wav",
   "dur": 0.77,
@@ -1434,8 +1434,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_59",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_8",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_08_leicht.wav",
   "dur": 0.8,
@@ -1445,8 +1445,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_60",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_9",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_10_leicht.wav",
   "dur": 0.94,
@@ -1456,8 +1456,8 @@
   "kb": 11
  },
  {
-  "pool": "select",
-  "key": "select_61",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_10",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_12_leicht.wav",
   "dur": 2.21,
@@ -1467,8 +1467,8 @@
   "kb": 26
  },
  {
-  "pool": "select",
-  "key": "select_62",
+  "pool": "sv_inf_D2",
+  "key": "sv_inf_D2_11",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s2_15_leicht.wav",
   "dur": 1.7,
@@ -1478,8 +1478,8 @@
   "kb": 20
  },
  {
-  "pool": "select",
-  "key": "select_63",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_01_leicht.wav",
   "dur": 0.68,
@@ -1489,8 +1489,8 @@
   "kb": 8
  },
  {
-  "pool": "select",
-  "key": "select_64",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_02_leicht.wav",
   "dur": 0.6,
@@ -1500,8 +1500,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_65",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_03_leicht.wav",
   "dur": 0.78,
@@ -1511,8 +1511,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_66",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_04_leicht.wav",
   "dur": 0.87,
@@ -1522,8 +1522,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_67",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_05_leicht.wav",
   "dur": 0.88,
@@ -1533,8 +1533,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_68",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_06_leicht.wav",
   "dur": 0.81,
@@ -1544,8 +1544,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_69",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_07_leicht.wav",
   "dur": 0.79,
@@ -1555,8 +1555,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_70",
+  "pool": "sv_inf_D3",
+  "key": "sv_inf_D3_8",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s3_08_leicht.wav",
   "dur": 0.75,
@@ -1566,8 +1566,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_71",
+  "pool": "sv_inf_D4",
+  "key": "sv_inf_D4_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s4_03_leicht.wav",
   "dur": 0.62,
@@ -1577,8 +1577,8 @@
   "kb": 7
  },
  {
-  "pool": "select",
-  "key": "select_72",
+  "pool": "sv_inf_D4",
+  "key": "sv_inf_D4_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s4_04_leicht.wav",
   "dur": 0.78,
@@ -1588,8 +1588,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_73",
+  "pool": "sv_inf_D4",
+  "key": "sv_inf_D4_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s4_06_leicht.wav",
   "dur": 0.78,
@@ -1599,8 +1599,8 @@
   "kb": 9
  },
  {
-  "pool": "select",
-  "key": "select_74",
+  "pool": "sv_inf_D4",
+  "key": "sv_inf_D4_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s4_13_leicht.wav",
   "dur": 0.84,
@@ -1610,8 +1610,8 @@
   "kb": 10
  },
  {
-  "pool": "select",
-  "key": "select_75",
+  "pool": "sv_inf_D4",
+  "key": "sv_inf_D4_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/aschenwacht_s4_15_leicht.wav",
   "dur": 0.46,
@@ -1621,8 +1621,1660 @@
   "kb": 6
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_1",
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_01_mittel.wav",
+  "dur": 0.83,
+  "src": 0.88,
+  "start": 0.05,
+  "gain": -10.4,
+  "kb": 10,
+  "note": "Spruch beim Anklicken (bei jedem Klick, feste Stimme je Einheit, 2026-11-17): Kampfanzüge (Stahlgänger, Panzerknechte) – Gasmaske mittel"
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_02_mittel.wav",
+  "dur": 0.62,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -6.1,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_03_mittel.wav",
+  "dur": 0.8,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -10.4,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_04_mittel.wav",
+  "dur": 0.57,
+  "src": 0.62,
+  "start": 0.05,
+  "gain": -10.4,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_05_mittel.wav",
+  "dur": 1.06,
+  "src": 1.1,
+  "start": 0.04,
+  "gain": -8.5,
+  "kb": 13
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_06_mittel.wav",
+  "dur": 0.4,
+  "src": 0.4,
+  "start": 0,
+  "gain": -7.9,
+  "kb": 5
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_07_mittel.wav",
+  "dur": 0.74,
+  "src": 0.8,
+  "start": 0.06,
+  "gain": -10.1,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_08_mittel.wav",
+  "dur": 0.52,
+  "src": 0.52,
+  "start": 0,
+  "gain": -11.3,
+  "kb": 6
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_9",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_09_mittel.wav",
+  "dur": 0.4,
+  "src": 0.4,
+  "start": 0,
+  "gain": -9,
+  "kb": 5
+ },
+ {
+  "pool": "sv_anzug_A1",
+  "key": "sv_anzug_A1_10",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_10_mittel.wav",
+  "dur": 1.17,
+  "src": 1.22,
+  "start": 0.05,
+  "gain": -9.8,
+  "kb": 14
+ },
+ {
+  "pool": "sv_anzug_A2",
+  "key": "sv_anzug_A2_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_01_mittel.wav",
+  "dur": 1.02,
+  "src": 1.02,
+  "start": 0,
+  "gain": -9.5,
+  "kb": 12
+ },
+ {
+  "pool": "sv_anzug_A2",
+  "key": "sv_anzug_A2_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_02_mittel.wav",
+  "dur": 0.45,
+  "src": 0.52,
+  "start": 0.07,
+  "gain": -9.8,
+  "kb": 5
+ },
+ {
+  "pool": "sv_anzug_A2",
+  "key": "sv_anzug_A2_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_03_mittel.wav",
+  "dur": 0.62,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -9.8,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A2",
+  "key": "sv_anzug_A2_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_04_mittel.wav",
+  "dur": 3.51,
+  "src": 3.52,
+  "start": 0.01,
+  "gain": -8.7,
+  "kb": 41
+ },
+ {
+  "pool": "sv_anzug_A2",
+  "key": "sv_anzug_A2_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_05_mittel.wav",
+  "dur": 2.35,
+  "src": 2.42,
+  "start": 0.07,
+  "gain": -7.5,
+  "kb": 28
+ },
+ {
+  "pool": "sv_anzug_A2",
+  "key": "sv_anzug_A2_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_06_mittel.wav",
+  "dur": 1.16,
+  "src": 1.24,
+  "start": 0.04,
+  "gain": -6,
+  "kb": 14
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_01_mittel.wav",
+  "dur": 0.84,
+  "src": 0.84,
+  "start": 0,
+  "gain": -9.6,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_02_mittel.wav",
+  "dur": 0.67,
+  "src": 0.72,
+  "start": 0.05,
+  "gain": -9.1,
+  "kb": 8
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_03_mittel.wav",
+  "dur": 0.74,
+  "src": 0.8,
+  "start": 0.06,
+  "gain": -8.6,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_04_mittel.wav",
+  "dur": 0.62,
+  "src": 0.66,
+  "start": 0.04,
+  "gain": -8.4,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_05_mittel.wav",
+  "dur": 0.94,
+  "src": 0.98,
+  "start": 0.04,
+  "gain": -9.8,
+  "kb": 11
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_06_mittel.wav",
+  "dur": 0.85,
+  "src": 0.9,
+  "start": 0.05,
+  "gain": -10.4,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_07_mittel.wav",
+  "dur": 0.52,
+  "src": 0.58,
+  "start": 0.06,
+  "gain": -10.1,
+  "kb": 6
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_08_mittel.wav",
+  "dur": 1.08,
+  "src": 1.14,
+  "start": 0.06,
+  "gain": -8,
+  "kb": 13
+ },
+ {
+  "pool": "sv_anzug_A3",
+  "key": "sv_anzug_A3_9",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_10_mittel.wav",
+  "dur": 1.06,
+  "src": 1.12,
+  "start": 0.06,
+  "gain": -7.7,
+  "kb": 13
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_01_mittel.wav",
+  "dur": 0.99,
+  "src": 1.06,
+  "start": 0.07,
+  "gain": -9.2,
+  "kb": 12
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_02_mittel.wav",
+  "dur": 0.62,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -8.2,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_03_mittel.wav",
+  "dur": 0.76,
+  "src": 0.82,
+  "start": 0.06,
+  "gain": -9.4,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_04_mittel.wav",
+  "dur": 0.57,
+  "src": 0.64,
+  "start": 0.07,
+  "gain": -9.6,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_05_mittel.wav",
+  "dur": 3.1,
+  "src": 3.12,
+  "start": 0.02,
+  "gain": -8.5,
+  "kb": 37
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_06_mittel.wav",
+  "dur": 1.5,
+  "src": 1.5,
+  "start": 0,
+  "gain": -10.7,
+  "kb": 18
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_07_mittel.wav",
+  "dur": 1,
+  "src": 1,
+  "start": 0,
+  "gain": -7,
+  "kb": 12
+ },
+ {
+  "pool": "sv_anzug_A4",
+  "key": "sv_anzug_A4_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_08_mittel.wav",
+  "dur": 0.98,
+  "src": 1.02,
+  "start": 0.04,
+  "gain": -6.6,
+  "kb": 12
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_01_mittel.wav",
+  "dur": 0.61,
+  "src": 0.66,
+  "start": 0.05,
+  "gain": -10.1,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_02_mittel.wav",
+  "dur": 0.51,
+  "src": 0.56,
+  "start": 0.05,
+  "gain": -10.5,
+  "kb": 6
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_03_mittel.wav",
+  "dur": 0.66,
+  "src": 0.72,
+  "start": 0.06,
+  "gain": -9.9,
+  "kb": 8
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_04_mittel.wav",
+  "dur": 0.49,
+  "src": 0.54,
+  "start": 0.05,
+  "gain": -9.8,
+  "kb": 6
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_05_mittel.wav",
+  "dur": 0.7,
+  "src": 0.76,
+  "start": 0.06,
+  "gain": -9.1,
+  "kb": 8
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_06_mittel.wav",
+  "dur": 0.77,
+  "src": 0.82,
+  "start": 0.05,
+  "gain": -9.7,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_07_mittel.wav",
+  "dur": 0.85,
+  "src": 0.9,
+  "start": 0.05,
+  "gain": -10.2,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_08_mittel.wav",
+  "dur": 1.3,
+  "src": 1.3,
+  "start": 0,
+  "gain": -9.7,
+  "kb": 15
+ },
+ {
+  "pool": "sv_anzug_A5",
+  "key": "sv_anzug_A5_9",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_09_mittel.wav",
+  "dur": 0.55,
+  "src": 0.6,
+  "start": 0.05,
+  "gain": -9.7,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_01_mittel.wav",
+  "dur": 0.9,
+  "src": 0.96,
+  "start": 0.06,
+  "gain": -9.2,
+  "kb": 11
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_02_mittel.wav",
+  "dur": 0.76,
+  "src": 0.82,
+  "start": 0.06,
+  "gain": -9.3,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_03_mittel.wav",
+  "dur": 0.68,
+  "src": 0.76,
+  "start": 0.08,
+  "gain": -8.6,
+  "kb": 8
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_04_mittel.wav",
+  "dur": 0.91,
+  "src": 0.96,
+  "start": 0.05,
+  "gain": -10.5,
+  "kb": 11
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_05_mittel.wav",
+  "dur": 1.35,
+  "src": 1.42,
+  "start": 0.07,
+  "gain": -8.7,
+  "kb": 16
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_6",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_06_mittel.wav",
+  "dur": 0.79,
+  "src": 0.86,
+  "start": 0.07,
+  "gain": -7.7,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_7",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_07_mittel.wav",
+  "dur": 2.27,
+  "src": 2.34,
+  "start": 0.07,
+  "gain": -8.6,
+  "kb": 27
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_8",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_08_mittel.wav",
+  "dur": 1.08,
+  "src": 1.14,
+  "start": 0.06,
+  "gain": -8.2,
+  "kb": 13
+ },
+ {
+  "pool": "sv_anzug_D1",
+  "key": "sv_anzug_D1_9",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_09_mittel.wav",
+  "dur": 0.81,
+  "src": 0.86,
+  "start": 0.05,
+  "gain": -9.2,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_01_mittel.wav",
+  "dur": 0.74,
+  "src": 0.74,
+  "start": 0,
+  "gain": -10.1,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_02_mittel.wav",
+  "dur": 0.52,
+  "src": 0.58,
+  "start": 0.06,
+  "gain": -9,
+  "kb": 6
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_03_mittel.wav",
+  "dur": 0.64,
+  "src": 0.7,
+  "start": 0.06,
+  "gain": -9.2,
+  "kb": 8
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_04_mittel.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -9.4,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_05_mittel.wav",
+  "dur": 0.95,
+  "src": 1,
+  "start": 0.05,
+  "gain": -5.8,
+  "kb": 11
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_6",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_06_mittel.wav",
+  "dur": 1,
+  "src": 1.06,
+  "start": 0.06,
+  "gain": -9,
+  "kb": 12
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_7",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_07_mittel.wav",
+  "dur": 0.77,
+  "src": 0.84,
+  "start": 0.07,
+  "gain": -9.1,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_8",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_08_mittel.wav",
+  "dur": 0.8,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -9.1,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_9",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_10_mittel.wav",
+  "dur": 0.94,
+  "src": 1,
+  "start": 0.06,
+  "gain": -8.7,
+  "kb": 11
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_10",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_12_mittel.wav",
+  "dur": 2.29,
+  "src": 2.32,
+  "start": 0.03,
+  "gain": -6.2,
+  "kb": 27
+ },
+ {
+  "pool": "sv_anzug_D2",
+  "key": "sv_anzug_D2_11",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_15_mittel.wav",
+  "dur": 1.71,
+  "src": 1.8,
+  "start": 0.09,
+  "gain": -5.2,
+  "kb": 20
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_01_mittel.wav",
+  "dur": 0.7,
+  "src": 0.7,
+  "start": 0,
+  "gain": -9.2,
+  "kb": 8
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_02_mittel.wav",
+  "dur": 0.61,
+  "src": 0.66,
+  "start": 0.05,
+  "gain": -9,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_03_mittel.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -9.7,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_04_mittel.wav",
+  "dur": 0.87,
+  "src": 0.92,
+  "start": 0.05,
+  "gain": -10.2,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_05_mittel.wav",
+  "dur": 0.88,
+  "src": 0.94,
+  "start": 0.06,
+  "gain": -7.4,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_6",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_06_mittel.wav",
+  "dur": 0.82,
+  "src": 0.88,
+  "start": 0.06,
+  "gain": -8.5,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_7",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_07_mittel.wav",
+  "dur": 0.8,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -9.3,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D3",
+  "key": "sv_anzug_D3_8",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_08_mittel.wav",
+  "dur": 0.75,
+  "src": 0.8,
+  "start": 0.05,
+  "gain": -8.1,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D4",
+  "key": "sv_anzug_D4_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_03_mittel.wav",
+  "dur": 0.62,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -10.1,
+  "kb": 7
+ },
+ {
+  "pool": "sv_anzug_D4",
+  "key": "sv_anzug_D4_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_04_mittel.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -9.5,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D4",
+  "key": "sv_anzug_D4_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_06_mittel.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -8.4,
+  "kb": 9
+ },
+ {
+  "pool": "sv_anzug_D4",
+  "key": "sv_anzug_D4_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_13_mittel.wav",
+  "dur": 0.84,
+  "src": 0.9,
+  "start": 0.06,
+  "gain": -8.1,
+  "kb": 10
+ },
+ {
+  "pool": "sv_anzug_D4",
+  "key": "sv_anzug_D4_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_15_mittel.wav",
+  "dur": 0.5,
+  "src": 0.5,
+  "start": 0,
+  "gain": -9,
+  "kb": 6
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_01_roh.wav",
+  "dur": 0.82,
+  "src": 0.88,
+  "start": 0.06,
+  "gain": -6.8,
+  "kb": 10,
+  "note": "Spruch beim Anklicken (bei jedem Klick, feste Stimme je Einheit, 2026-11-17): Hauptmann und General – ohne Filter"
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_02_roh.wav",
+  "dur": 0.6,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -4.3,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_03_roh.wav",
+  "dur": 0.78,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -6.6,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_04_roh.wav",
+  "dur": 0.56,
+  "src": 0.62,
+  "start": 0.06,
+  "gain": -5,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_05_roh.wav",
+  "dur": 0.84,
+  "src": 1.1,
+  "start": 0.26,
+  "gain": -6.6,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_06_roh.wav",
+  "dur": 0.4,
+  "src": 0.4,
+  "start": 0,
+  "gain": -1.7,
+  "kb": 5
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_07_roh.wav",
+  "dur": 0.71,
+  "src": 0.8,
+  "start": 0.07,
+  "gain": -4.5,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_08_roh.wav",
+  "dur": 0.45,
+  "src": 0.52,
+  "start": 0.05,
+  "gain": -6.4,
+  "kb": 5
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_9",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_09_roh.wav",
+  "dur": 0.4,
+  "src": 0.4,
+  "start": 0,
+  "gain": -3.3,
+  "kb": 5
+ },
+ {
+  "pool": "sv_fuehrer_A1",
+  "key": "sv_fuehrer_A1_10",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s1_10_roh.wav",
+  "dur": 1.17,
+  "src": 1.22,
+  "start": 0.05,
+  "gain": -6.4,
+  "kb": 14
+ },
+ {
+  "pool": "sv_fuehrer_A2",
+  "key": "sv_fuehrer_A2_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_01_roh.wav",
+  "dur": 1,
+  "src": 1.02,
+  "start": 0,
+  "gain": -7,
+  "kb": 12
+ },
+ {
+  "pool": "sv_fuehrer_A2",
+  "key": "sv_fuehrer_A2_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_02_roh.wav",
+  "dur": 0.46,
+  "src": 0.52,
+  "start": 0.06,
+  "gain": -6.3,
+  "kb": 6
+ },
+ {
+  "pool": "sv_fuehrer_A2",
+  "key": "sv_fuehrer_A2_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_03_roh.wav",
+  "dur": 0.61,
+  "src": 0.68,
+  "start": 0.07,
+  "gain": -6.1,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A2",
+  "key": "sv_fuehrer_A2_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_04_roh.wav",
+  "dur": 3.41,
+  "src": 3.52,
+  "start": 0.11,
+  "gain": -6.1,
+  "kb": 40
+ },
+ {
+  "pool": "sv_fuehrer_A2",
+  "key": "sv_fuehrer_A2_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_05_roh.wav",
+  "dur": 2.36,
+  "src": 2.42,
+  "start": 0.06,
+  "gain": -4.8,
+  "kb": 28
+ },
+ {
+  "pool": "sv_fuehrer_A2",
+  "key": "sv_fuehrer_A2_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s2_06_roh.wav",
+  "dur": 1.09,
+  "src": 1.24,
+  "start": 0.11,
+  "gain": -3.4,
+  "kb": 13
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_01_roh.wav",
+  "dur": 0.84,
+  "src": 0.84,
+  "start": 0,
+  "gain": -7.4,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_02_roh.wav",
+  "dur": 0.65,
+  "src": 0.72,
+  "start": 0.07,
+  "gain": -6.4,
+  "kb": 8
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_03_roh.wav",
+  "dur": 0.74,
+  "src": 0.8,
+  "start": 0.06,
+  "gain": -6,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_04_roh.wav",
+  "dur": 0.6,
+  "src": 0.66,
+  "start": 0.06,
+  "gain": -1.2,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_05_roh.wav",
+  "dur": 0.92,
+  "src": 0.98,
+  "start": 0.06,
+  "gain": -7.4,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_06_roh.wav",
+  "dur": 0.83,
+  "src": 0.9,
+  "start": 0.05,
+  "gain": -6,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_07_roh.wav",
+  "dur": 0.52,
+  "src": 0.58,
+  "start": 0.06,
+  "gain": -9,
+  "kb": 6
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_08_roh.wav",
+  "dur": 1.07,
+  "src": 1.14,
+  "start": 0.07,
+  "gain": -6.7,
+  "kb": 13
+ },
+ {
+  "pool": "sv_fuehrer_A3",
+  "key": "sv_fuehrer_A3_9",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s3_10_roh.wav",
+  "dur": 1.06,
+  "src": 1.12,
+  "start": 0.06,
+  "gain": -5.4,
+  "kb": 13
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_01_roh.wav",
+  "dur": 0.99,
+  "src": 1.06,
+  "start": 0.07,
+  "gain": -5.6,
+  "kb": 12
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_02_roh.wav",
+  "dur": 0.62,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -4.9,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_03_roh.wav",
+  "dur": 0.74,
+  "src": 0.82,
+  "start": 0.06,
+  "gain": -6.4,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_04_roh.wav",
+  "dur": 0.57,
+  "src": 0.64,
+  "start": 0.07,
+  "gain": -3.7,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_05_roh.wav",
+  "dur": 2.81,
+  "src": 3.12,
+  "start": 0.31,
+  "gain": -4.8,
+  "kb": 33
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_06_roh.wav",
+  "dur": 1.44,
+  "src": 1.5,
+  "start": 0.06,
+  "gain": -7.5,
+  "kb": 17
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_07_roh.wav",
+  "dur": 0.94,
+  "src": 1,
+  "start": 0.06,
+  "gain": -3.2,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_A4",
+  "key": "sv_fuehrer_A4_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s4_08_roh.wav",
+  "dur": 0.95,
+  "src": 1.02,
+  "start": 0.07,
+  "gain": -5.4,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_1",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_01_roh.wav",
+  "dur": 0.57,
+  "src": 0.66,
+  "start": 0.07,
+  "gain": -5.5,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_2",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_02_roh.wav",
+  "dur": 0.46,
+  "src": 0.56,
+  "start": 0.06,
+  "gain": -5.9,
+  "kb": 6
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_3",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_03_roh.wav",
+  "dur": 0.62,
+  "src": 0.72,
+  "start": 0.06,
+  "gain": -5.6,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_4",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_04_roh.wav",
+  "dur": 0.44,
+  "src": 0.54,
+  "start": 0.06,
+  "gain": -5.7,
+  "kb": 5
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_5",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_05_roh.wav",
+  "dur": 0.66,
+  "src": 0.76,
+  "start": 0.06,
+  "gain": -6.5,
+  "kb": 8
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_6",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_06_roh.wav",
+  "dur": 0.72,
+  "src": 0.82,
+  "start": 0.06,
+  "gain": -5.4,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_7",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_07_roh.wav",
+  "dur": 0.82,
+  "src": 0.9,
+  "start": 0.08,
+  "gain": -5.1,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_8",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_08_roh.wav",
+  "dur": 1.2,
+  "src": 1.3,
+  "start": 0.06,
+  "gain": -4.6,
+  "kb": 14
+ },
+ {
+  "pool": "sv_fuehrer_A5",
+  "key": "sv_fuehrer_A5_9",
+  "s": "A",
+  "f": "Voices/eigene/sprueche/konkordat_s5_09_roh.wav",
+  "dur": 0.51,
+  "src": 0.6,
+  "start": 0.05,
+  "gain": -4.3,
+  "kb": 6
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_01_roh.wav",
+  "dur": 0.89,
+  "src": 0.96,
+  "start": 0.07,
+  "gain": -6.6,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_02_roh.wav",
+  "dur": 0.76,
+  "src": 0.82,
+  "start": 0.06,
+  "gain": -4.5,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_03_roh.wav",
+  "dur": 0.69,
+  "src": 0.76,
+  "start": 0.07,
+  "gain": -5.6,
+  "kb": 8
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_04_roh.wav",
+  "dur": 0.91,
+  "src": 0.96,
+  "start": 0.05,
+  "gain": -6.6,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_05_roh.wav",
+  "dur": 1.35,
+  "src": 1.42,
+  "start": 0.07,
+  "gain": -5.7,
+  "kb": 16
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_6",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_06_roh.wav",
+  "dur": 0.79,
+  "src": 0.86,
+  "start": 0.07,
+  "gain": -3.5,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_7",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_07_roh.wav",
+  "dur": 2.28,
+  "src": 2.34,
+  "start": 0.06,
+  "gain": -5.5,
+  "kb": 27
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_8",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_08_roh.wav",
+  "dur": 1.03,
+  "src": 1.14,
+  "start": 0.11,
+  "gain": -3.5,
+  "kb": 12
+ },
+ {
+  "pool": "sv_fuehrer_D1",
+  "key": "sv_fuehrer_D1_9",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s1_09_roh.wav",
+  "dur": 0.81,
+  "src": 0.86,
+  "start": 0.05,
+  "gain": -3.1,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_01_roh.wav",
+  "dur": 0.74,
+  "src": 0.74,
+  "start": 0,
+  "gain": -7.3,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_02_roh.wav",
+  "dur": 0.5,
+  "src": 0.58,
+  "start": 0.06,
+  "gain": -6.1,
+  "kb": 6
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_03_roh.wav",
+  "dur": 0.65,
+  "src": 0.7,
+  "start": 0.05,
+  "gain": -6.6,
+  "kb": 8
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_04_roh.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -7.4,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_05_roh.wav",
+  "dur": 0.95,
+  "src": 1,
+  "start": 0.05,
+  "gain": -6.5,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_6",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_06_roh.wav",
+  "dur": 1,
+  "src": 1.06,
+  "start": 0.06,
+  "gain": -3.5,
+  "kb": 12
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_7",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_07_roh.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -5.2,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_8",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_08_roh.wav",
+  "dur": 0.8,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -6.4,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_9",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_10_roh.wav",
+  "dur": 0.94,
+  "src": 1,
+  "start": 0.06,
+  "gain": -5.5,
+  "kb": 11
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_10",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_12_roh.wav",
+  "dur": 2.14,
+  "src": 2.32,
+  "start": 0.18,
+  "gain": -3.3,
+  "kb": 25
+ },
+ {
+  "pool": "sv_fuehrer_D2",
+  "key": "sv_fuehrer_D2_11",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s2_15_roh.wav",
+  "dur": 1.7,
+  "src": 1.8,
+  "start": 0.1,
+  "gain": -5.2,
+  "kb": 20
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_01_roh.wav",
+  "dur": 0.67,
+  "src": 0.7,
+  "start": 0.03,
+  "gain": -6.1,
+  "kb": 8
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_02_roh.wav",
+  "dur": 0.6,
+  "src": 0.66,
+  "start": 0.06,
+  "gain": -6.8,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_03_roh.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -7.6,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_04_roh.wav",
+  "dur": 0.87,
+  "src": 0.92,
+  "start": 0.05,
+  "gain": -6.3,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_05_roh.wav",
+  "dur": 0.88,
+  "src": 0.94,
+  "start": 0.06,
+  "gain": -3.8,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_6",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_06_roh.wav",
+  "dur": 0.82,
+  "src": 0.88,
+  "start": 0.06,
+  "gain": -5.3,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_7",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_07_roh.wav",
+  "dur": 0.8,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -7.2,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D3",
+  "key": "sv_fuehrer_D3_8",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s3_08_roh.wav",
+  "dur": 0.75,
+  "src": 0.8,
+  "start": 0.05,
+  "gain": -6.5,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D4",
+  "key": "sv_fuehrer_D4_1",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_03_roh.wav",
+  "dur": 0.62,
+  "src": 0.68,
+  "start": 0.06,
+  "gain": -6.5,
+  "kb": 7
+ },
+ {
+  "pool": "sv_fuehrer_D4",
+  "key": "sv_fuehrer_D4_2",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_04_roh.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -6.1,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D4",
+  "key": "sv_fuehrer_D4_3",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_06_roh.wav",
+  "dur": 0.78,
+  "src": 0.84,
+  "start": 0.06,
+  "gain": -5.1,
+  "kb": 9
+ },
+ {
+  "pool": "sv_fuehrer_D4",
+  "key": "sv_fuehrer_D4_4",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_13_roh.wav",
+  "dur": 0.8,
+  "src": 0.9,
+  "start": 0.06,
+  "gain": -4.7,
+  "kb": 10
+ },
+ {
+  "pool": "sv_fuehrer_D4",
+  "key": "sv_fuehrer_D4_5",
+  "s": "D",
+  "f": "Voices/eigene/sprueche/aschenwacht_s4_15_roh.wav",
+  "dur": 0.44,
+  "src": 0.5,
+  "start": 0.06,
+  "gain": -7.6,
+  "kb": 5
+ },
+ {
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_01_stark.wav",
   "dur": 1.1,
@@ -1630,11 +3282,11 @@
   "start": 0,
   "gain": -5.6,
   "kb": 13,
-  "note": "Landkoloss/Sturmpanzer/Bohrkoloss ausgewählt: Besatzung über Bordfunk (eigene Aufnahmen, Suno Pro, Stärke stark) – dazu das Motor-Aufheulen"
+  "note": "Spruch beim Anklicken (bei jedem Klick, feste Stimme je Einheit, 2026-11-17): Landkoloss, Sturmpanzer, Bohrkoloss – Bordfunk stark"
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_2",
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_02_stark.wav",
   "dur": 1.1,
@@ -1644,8 +3296,8 @@
   "kb": 13
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_3",
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_03_stark.wav",
   "dur": 1.42,
@@ -1655,8 +3307,8 @@
   "kb": 17
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_4",
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_04_stark.wav",
   "dur": 1.32,
@@ -1666,8 +3318,8 @@
   "kb": 16
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_5",
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_05_stark.wav",
   "dur": 0.8,
@@ -1677,8 +3329,8 @@
   "kb": 10
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_6",
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_06_stark.wav",
   "dur": 1,
@@ -1688,8 +3340,8 @@
   "kb": 12
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_7",
+  "pool": "sv_panzer_A1",
+  "key": "sv_panzer_A1_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s1_07_stark.wav",
   "dur": 0.74,
@@ -1699,8 +3351,8 @@
   "kb": 9
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_8",
+  "pool": "sv_panzer_A2",
+  "key": "sv_panzer_A2_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s2_01_stark.wav",
   "dur": 1.18,
@@ -1710,8 +3362,8 @@
   "kb": 14
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_9",
+  "pool": "sv_panzer_A2",
+  "key": "sv_panzer_A2_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s2_02_stark.wav",
   "dur": 1.26,
@@ -1721,8 +3373,8 @@
   "kb": 15
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_10",
+  "pool": "sv_panzer_A2",
+  "key": "sv_panzer_A2_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s2_03_stark.wav",
   "dur": 1.26,
@@ -1732,8 +3384,8 @@
   "kb": 15
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_11",
+  "pool": "sv_panzer_A2",
+  "key": "sv_panzer_A2_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s2_04_stark.wav",
   "dur": 1.26,
@@ -1743,8 +3395,8 @@
   "kb": 15
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_12",
+  "pool": "sv_panzer_A2",
+  "key": "sv_panzer_A2_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s2_05_stark.wav",
   "dur": 1.04,
@@ -1754,8 +3406,8 @@
   "kb": 12
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_13",
+  "pool": "sv_panzer_A2",
+  "key": "sv_panzer_A2_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/panzer_konkordat_s2_06_stark.wav",
   "dur": 1.6,
@@ -1765,8 +3417,8 @@
   "kb": 19
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_14",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_01_stark.wav",
   "dur": 1.14,
@@ -1776,8 +3428,8 @@
   "kb": 14
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_15",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_02_stark.wav",
   "dur": 1.14,
@@ -1787,8 +3439,8 @@
   "kb": 14
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_16",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_03_stark.wav",
   "dur": 1.26,
@@ -1798,8 +3450,8 @@
   "kb": 15
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_17",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_04_stark.wav",
   "dur": 1.24,
@@ -1809,8 +3461,8 @@
   "kb": 15
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_18",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_05_stark.wav",
   "dur": 0.76,
@@ -1820,8 +3472,8 @@
   "kb": 9
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_19",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_06_stark.wav",
   "dur": 0.62,
@@ -1831,8 +3483,8 @@
   "kb": 7
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_20",
+  "pool": "sv_panzer_D1",
+  "key": "sv_panzer_D1_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s1_07_stark.wav",
   "dur": 1.32,
@@ -1842,8 +3494,8 @@
   "kb": 16
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_21",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_01_stark.wav",
   "dur": 1.44,
@@ -1853,8 +3505,8 @@
   "kb": 17
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_22",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_02_stark.wav",
   "dur": 1.08,
@@ -1864,8 +3516,8 @@
   "kb": 13
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_23",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_03_stark.wav",
   "dur": 1.32,
@@ -1875,8 +3527,8 @@
   "kb": 16
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_24",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_04_stark.wav",
   "dur": 0.76,
@@ -1886,8 +3538,8 @@
   "kb": 9
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_25",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_05_stark.wav",
   "dur": 0.9,
@@ -1897,8 +3549,8 @@
   "kb": 11
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_26",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_06_stark.wav",
   "dur": 1.3,
@@ -1908,8 +3560,8 @@
   "kb": 15
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_27",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_07_stark.wav",
   "dur": 0.84,
@@ -1919,8 +3571,8 @@
   "kb": 10
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_28",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_8",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_08_stark.wav",
   "dur": 1.36,
@@ -1930,8 +3582,8 @@
   "kb": 16
  },
  {
-  "pool": "panzer_funk",
-  "key": "panzer_funk_29",
+  "pool": "sv_panzer_D2",
+  "key": "sv_panzer_D2_9",
   "s": "D",
   "f": "Voices/eigene/sprueche/panzer_aschenwacht_s2_09_stark.wav",
   "dur": 1.04,
@@ -1941,8 +3593,8 @@
   "kb": 12
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_1",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_01_mittel.wav",
   "dur": 1.08,
@@ -1950,11 +3602,11 @@
   "start": 0.1,
   "gain": -1.8,
   "kb": 13,
-  "note": "Schreiter/Eisenknecht ausgewählt: Maschinenstimme (eigene Aufnahmen, Suno Pro, Stärke mittel)"
+  "note": "Spruch beim Anklicken (bei jedem Klick, feste Stimme je Einheit, 2026-11-17): Schreiter und Eisenknecht – Maschine mittel"
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_2",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_02_mittel.wav",
   "dur": 0.72,
@@ -1964,8 +3616,8 @@
   "kb": 9
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_3",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_03_mittel.wav",
   "dur": 1.06,
@@ -1975,8 +3627,8 @@
   "kb": 13
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_4",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_04_mittel.wav",
   "dur": 1.02,
@@ -1986,8 +3638,8 @@
   "kb": 12
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_5",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_05_mittel.wav",
   "dur": 1.2,
@@ -1997,8 +3649,8 @@
   "kb": 14
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_6",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_06_mittel.wav",
   "dur": 1.03,
@@ -2008,8 +3660,8 @@
   "kb": 12
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_7",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_07_mittel.wav",
   "dur": 0.87,
@@ -2019,8 +3671,8 @@
   "kb": 10
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_8",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_8",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_08_mittel.wav",
   "dur": 0.86,
@@ -2030,8 +3682,8 @@
   "kb": 10
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_9",
+  "pool": "sv_schreiter_A1",
+  "key": "sv_schreiter_A1_9",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s1_09_mittel.wav",
   "dur": 1.09,
@@ -2041,8 +3693,8 @@
   "kb": 13
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_10",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_1",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_01_mittel.wav",
   "dur": 0.96,
@@ -2052,8 +3704,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_11",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_2",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_02_mittel.wav",
   "dur": 0.68,
@@ -2063,8 +3715,8 @@
   "kb": 8
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_12",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_3",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_03_mittel.wav",
   "dur": 0.89,
@@ -2074,8 +3726,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_13",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_4",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_04_mittel.wav",
   "dur": 1.3,
@@ -2085,8 +3737,8 @@
   "kb": 15
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_14",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_5",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_05_mittel.wav",
   "dur": 1.05,
@@ -2096,8 +3748,8 @@
   "kb": 13
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_15",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_6",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_06_mittel.wav",
   "dur": 0.91,
@@ -2107,8 +3759,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_16",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_7",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_07_mittel.wav",
   "dur": 0.89,
@@ -2118,8 +3770,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_17",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_8",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_08_mittel.wav",
   "dur": 0.72,
@@ -2129,8 +3781,8 @@
   "kb": 9
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_18",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_9",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_09_mittel.wav",
   "dur": 0.82,
@@ -2140,8 +3792,8 @@
   "kb": 10
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_19",
+  "pool": "sv_schreiter_A2",
+  "key": "sv_schreiter_A2_10",
   "s": "A",
   "f": "Voices/eigene/sprueche/schreiter_konkordat_s2_10_mittel.wav",
   "dur": 4.05,
@@ -2151,8 +3803,8 @@
   "kb": 48
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_20",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_01_mittel.wav",
   "dur": 1.1,
@@ -2162,8 +3814,8 @@
   "kb": 13
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_21",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_02_mittel.wav",
   "dur": 0.84,
@@ -2173,8 +3825,8 @@
   "kb": 10
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_22",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_03_mittel.wav",
   "dur": 1.17,
@@ -2184,8 +3836,8 @@
   "kb": 14
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_23",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_04_mittel.wav",
   "dur": 1.07,
@@ -2195,8 +3847,8 @@
   "kb": 13
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_24",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_05_mittel.wav",
   "dur": 0.61,
@@ -2206,8 +3858,8 @@
   "kb": 7
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_25",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_06_mittel.wav",
   "dur": 0.89,
@@ -2217,8 +3869,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_26",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_07_mittel.wav",
   "dur": 1.17,
@@ -2228,8 +3880,8 @@
   "kb": 14
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_27",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_8",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_08_mittel.wav",
   "dur": 0.56,
@@ -2239,8 +3891,8 @@
   "kb": 7
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_28",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_9",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_09_mittel.wav",
   "dur": 0.84,
@@ -2250,8 +3902,8 @@
   "kb": 10
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_29",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_10",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_13_mittel.wav",
   "dur": 0.9,
@@ -2261,8 +3913,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_30",
+  "pool": "sv_schreiter_D1",
+  "key": "sv_schreiter_D1_11",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_17_mittel.wav",
   "dur": 0.94,
@@ -2272,8 +3924,8 @@
   "kb": 11
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_31",
+  "pool": "sv_schreiter_D2",
+  "key": "sv_schreiter_D2_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_01_mittel.wav",
   "dur": 2.01,
@@ -2283,8 +3935,8 @@
   "kb": 24
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_32",
+  "pool": "sv_schreiter_D2",
+  "key": "sv_schreiter_D2_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_02_mittel.wav",
   "dur": 1.42,
@@ -2294,8 +3946,8 @@
   "kb": 17
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_33",
+  "pool": "sv_schreiter_D2",
+  "key": "sv_schreiter_D2_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_03_mittel.wav",
   "dur": 1.66,
@@ -2305,8 +3957,8 @@
   "kb": 20
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_34",
+  "pool": "sv_schreiter_D2",
+  "key": "sv_schreiter_D2_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_04_mittel.wav",
   "dur": 0.99,
@@ -2316,8 +3968,8 @@
   "kb": 12
  },
  {
-  "pool": "schreiter_stimme",
-  "key": "schreiter_stimme_35",
+  "pool": "sv_schreiter_D2",
+  "key": "sv_schreiter_D2_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_05_mittel.wav",
   "dur": 0.75,

@@ -2306,39 +2306,54 @@ cv.addEventListener('click', ev => {
   { const hu = [p.uHex, p.uFig].find(q => q && healSet.has(q.id)); if (sel && hu) return act(m => E.heal(G, m, hu)); }
   { const ru = [p.uHex, p.uFig].find(q => q && recSet.has(q.id)); if (sel && ru) return act(m => E.recover(G, m, ru)); }
   { const su = [p.uHex, p.uFig].find(q => q && sendSet.has(q.id)); if (sel && su) return act(m => E.sendOrder(G, m, su)); }
-  if (u && u.side === G.side && E.active(u)) return select(u);
+  if (u && u.side === G.side && E.active(u)) { if (u === sel && human(u.side)) selectVoice(u); return select(u); }   // auch erneutes Anklicken der gewählten Einheit
   if (u) { select(null); inspect = { unit: u }; updateHud(); return; }
   select(null);
   if (h) { inspect = { hex: h }; updateHud(); }
 });
 
-// Auswahl-Stimme (2026-11-17): nur etwa bei jedem dritten Anwählen, frühestens 8 s nach der letzten, nie zweimal derselbe Spruch nacheinander; leiser
-let selClicks = 0, selNeed = 3, selLast = -1e9, selLastKey = null;
+// Auswahl-Stimme (2026-11-17, neu): bei JEDEM Anklicken einer eigenen Einheit ein Spruch aus ihrem Satz – Infanterie (Gasmaske leicht),
+// Kampfanzüge (Gasmaske mittel), Anführer (ohne Filter), Panzer (Bordfunk, Motor leise darunter), Schreiter/Eisenknecht (Maschine), Reiter (Pferd + Spruch).
+// Jede Einheit hat fest eine Stimme ihres Satzes (reihum verteilt, auch beim Nachschub); je Stimme reihum gemischt, nie derselbe Spruch zweimal nacheinander.
+// Wer sehr schnell nacheinander klickt (< 1 s), bricht den laufenden Spruch ab statt ihn zu überlagern. Tonplätze sv_<satz>_<Seite><Stimme>.
+const stimmeVon = new Map(), stimmeNaechste = {}, stimmeBeutel = {};
+let stimmeLauf = null;
+function stimmSatz(u) { const T = TYPES[u.type]; return PANZER.includes(u.type) ? 'panzer' : T.cls === 'walker' ? 'schreiter' : T.suit ? 'anzug' : T.cmd ? 'fuehrer' : 'inf'; }
+function stimmPool(u) {
+  const satz = stimmSatz(u), basis = `sv_${satz}_${u.side}`; let n = 0; while (SND_POOLS[basis + (n + 1)]) n++; if (!n) return null;
+  if (!stimmeVon.has(u.id)) { const z = stimmeNaechste[basis] || 0; stimmeVon.set(u.id, (z % n) + 1); stimmeNaechste[basis] = z + 1; }   // feste Stimme, reihum
+  return basis + stimmeVon.get(u.id);
+}
+function stimmZiehen(pool) {   // Beutel: alle Sprüche der Stimme gemischt, nacheinander; neuer Beutel beginnt nie mit dem letzten Spruch
+  const alle = (SND_POOLS[pool] || []).map(e => e[0]).filter(k => SND[k]); if (!alle.length) return null;
+  let b = stimmeBeutel[pool]; if (!b || !b.rest.length) { const neu = alle.slice().sort(() => Math.random() - 0.5); if (b && neu.length > 1 && neu[0] === b.letzt) neu.push(neu.shift()); b = stimmeBeutel[pool] = { rest: neu, letzt: b && b.letzt }; }
+  const k = b.rest.shift(); b.letzt = k; return k;
+}
 function selectVoice(u) {
-  if (++selClicks < selNeed) return;
-  const t = performance.now(); if (t - selLast < 8000) return;
-  const T = TYPES[u.type];
-  const pool = PANZER.includes(u.type) ? 'panzer_funk' : T.cls === 'walker' ? 'schreiter_stimme' : T.cls === 'cav' ? 'pferd_auswahl' : T.gasproof ? 'selGas' : 'select'; let k = null;   // Panzer: Besatzung über Bordfunk (dazu Motor), Schreiter/Eisenknecht: Maschinenstimme (2026-11-17)
-  if (pool === 'panzer_funk') { const m = sndPick('motor_auswahl', u.side); if (m) motorRev(m); }
-  if (pool === 'pferd_auswahl' && !sndPick(pool, u.side)) return;   // Tonplatz „pferd_auswahl“ ist noch leer (Dateien folgen): still
-  for (let i = 0; i < 8; i++) { k = sndPick(pool, u.side); if (k !== selLastKey) break; }   // anderer Spruch als zuletzt; gibt es nur einen, darf er (selten) wiederkommen
-  if (!k) return;
-  selClicks = 0; selNeed = 2 + Math.floor(Math.random() * 3); selLast = t; selLastKey = k;
-  if (pool === 'motor_auswahl') return motorRev(k);
-  playSound(k, pool === 'pferd_auswahl' ? 0.3 : 0.26, u.side);
+  if (!soundOn || speed >= INSTANT) return;
+  const pool = stimmPool(u); const k = pool && stimmZiehen(pool); if (!k) return;
+  const t = performance.now();
+  if (stimmeLauf && t - stimmeLauf.t < 1000) { try { stimmeLauf.a.pause(); } catch (e) {} if (stimmeLauf.m) stimmeLauf.m.stop(); }   // sehr schnell geklickt: abbrechen statt überlagern
+  const T = TYPES[u.type], panzer = PANZER.includes(u.type);
+  let m = null; if (panzer) { const mk = sndPick('motor_auswahl', u.side); if (mk) m = motorRev(mk, { vol: 0.13, dauer: 0.7 }); }   // Motor leiser und kürzer, die Stimme liegt klar darüber
+  if (T.cls === 'cav') playSound('pferd_auswahl', 0.26, u.side, { noGap: true });   // Reiter: Pferd und Spruch
+  try { const a = SND[k].cloneNode(); a.volume = Math.min(1, 0.34 * effektVol); const p = a.play(); if (p && p.catch) p.catch(() => {});
+    stimmeLauf = { a, t, m }; window.__sndBy = window.__sndBy || {}; window.__sndBy[k] = (window.__sndBy[k] || 0) + 1; } catch (e) {}
 }
 // Motor kurz aufheulen lassen („Rumm“, ca. 1 s): einblenden, Tonhöhe 0,8× → 1,2× wie leicht Gas geben, ausblenden (Paket 4)
-function motorRev(k) {
-  if (!soundOn || !SND[k] || speed >= INSTANT) return;
+function motorRev(k, o = {}) {   // o.vol (Grundlautstärke), o.dauer (s): beim Anklicken leiser und kürzer, damit die Stimme darüber klar bleibt
+  if (!soundOn || !SND[k] || speed >= INSTANT) return null;
+  const V = o.vol || 0.32, D = o.dauer || 1.1; let aus = false;
   try { const a = SND[k].cloneNode(); a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.volume = 0; a.playbackRate = 0.8;
     const p = a.play(); if (p && p.catch) p.catch(() => {}); const t0 = performance.now();
-    const tick = () => { const t = (performance.now() - t0) / 1000; if (t > 1.1) { a.pause(); return; }
-      try { a.volume = 0.32 * effektVol * Math.min(1, t / 0.08) * Math.min(1, Math.max(0, (1.1 - t) / 0.4)); a.playbackRate = 0.8 + 0.4 * Math.min(1, t / 0.45); } catch (e) {}
+    const tick = () => { const t = (performance.now() - t0) / 1000; if (t > D || aus) { a.pause(); return; }
+      try { a.volume = V * effektVol * Math.min(1, t / 0.08) * Math.min(1, Math.max(0, (D - t) / (D * 0.36))); a.playbackRate = 0.8 + 0.4 * Math.min(1, t / (D * 0.4)); } catch (e) {}
       setTimeout(tick, 30); };
     tick(); window.__sndBy = window.__sndBy || {}; window.__sndBy[k] = (window.__sndBy[k] || 0) + 1; } catch (e) {}
+  return { stop: () => { aus = true; } };
 }
 function select(u) {
-  if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) { if (TYPES[u.type].cls === 'cav') playSound('pferd_auswahl', 0.32, u.side); else selectVoice(u); }   // Reiter: Schnauben häufig, Wiehern etwa jedes 4. Mal (Gewicht im Tonplatz)   // Stimme beim Anwählen (selten, siehe selectVoice)
+  if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) selectVoice(u);   // Spruch bei jedem Anwählen (Reiter: Pferd + Spruch)   // Reiter: Schnauben häufig, Wiehern etwa jedes 4. Mal (Gewicht im Tonplatz)   // Stimme beim Anwählen (selten, siehe selectVoice)
   if (u !== sel) wayPt = null;
   sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
@@ -3063,7 +3078,7 @@ function startGame() {
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   E.startTurn(G);
-  sel = null; inspect = null; placing = null; spawnSet = new Set(); LOG.length = 0; lastSel.A = lastSel.D = null; renderDiary(); updateUI();
+  sel = null; inspect = null; placing = null; spawnSet = new Set(); LOG.length = 0; lastSel.A = lastSel.D = null; stimmeVon.clear(); for (const k in stimmeNaechste) delete stimmeNaechste[k]; renderDiary(); updateUI();
   requestAnimationFrame(() => camHome(true));
   banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();

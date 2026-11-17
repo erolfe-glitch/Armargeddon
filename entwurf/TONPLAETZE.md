@@ -201,3 +201,6 @@ Zu den Stimm-Plätzen pain, medic, cry, scream, panic, forward, roar, stand, cha
 | **einschlagH** | Einschlag eines einzelnen Artilleriegeschosses | rock_explosion_impact_booming (Bass +5 dB) mit grenade-explosion-meaty bzw. impact-sfx-016 darunter |
 
 Lautstärken: Konkordat-MG −17 dB (vorher −14), Galopp −19 dB, Pferd beim Anwählen −16 dB, Wiehern leiser abgespielt; Anführer-Befehle 0,45 (vorher 0,75), großer Befehl 0,5 (vorher 0,85), Banner 0,32.
+
+## Auswahl-Sprüche bei jedem Anklicken (2026-11-17)
+Die Plätze select, panzer_funk und schreiter_stimme sind ersetzt durch `sv_<satz>_<Seite><Stimme>`: inf (Gasmaske leicht; Infanterie, Reiter, Geschütze), anzug (Gasmaske mittel; Stahlgänger, Panzerknechte), fuehrer (ohne Filter; Hauptmann, General), panzer (Bordfunk stark), schreiter (Maschine mittel). Konkordat 5, Aschenwacht 4 Stimmen je Infanterie-Satz, Panzer und Schreiter je 2. Jede Einheit behält ihre Stimme; je Stimme reihum gemischt.
