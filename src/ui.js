@@ -1686,26 +1686,54 @@ for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); S
 // Hintergrundkulisse als leise Schleife
 let ambient = null;
 let wetter = null, musik = null, feuerTon = null;
+// Lautstärke (Optionen, gespeichert): Musik und Effekte getrennt, 0–1 (2026-11-17)
+let musikVol = 0.8, effektVol = 1;
+try { const m = localStorage.getItem('arm.musikvol'), f = localStorage.getItem('arm.effektvol'); if (m != null && m !== '') musikVol = Math.max(0, Math.min(1, +m)); if (f != null && f !== '') effektVol = Math.max(0, Math.min(1, +f)); } catch (e) {}
+const KULISSE = { ambient: 0.22, wetter: 0.12, feuer: 0.12 };   // Grundlautstärke der Schleifen, mal effektVol
+function kulisseVol() { if (ambient) ambient.volume = KULISSE.ambient * effektVol; if (wetter) wetter.volume = KULISSE.wetter * effektVol; if (feuerTon) feuerTon.volume = KULISSE.feuer * effektVol; }
 // Brennende Felder: leise Feuer-Schleife, solange irgendwo etwas brennt
 function fireLoop() {
   const on = soundOn && G && !G.over && (VIS.fires || []).length > 0;
-  if (on && !feuerTon) { const k = sndPick('feuer'); if (!k) return; feuerTon = SND[k].cloneNode(); feuerTon.loop = true; feuerTon.volume = 0.12; }
+  if (on && !feuerTon) { const k = sndPick('feuer'); if (!k) return; feuerTon = SND[k].cloneNode(); feuerTon.loop = true; feuerTon.volume = KULISSE.feuer * effektVol; }
   if (feuerTon) try { if (on) { const p = feuerTon.play(); if (p && p.catch) p.catch(() => {}); } else feuerTon.pause(); } catch (e) {}
 }
 function setAmbient(on) {
-  if (!ambient) { const k = sndPick('ambient'); if (!k) return; ambient = SND[k]; ambient.loop = true; ambient.volume = 0.22; }
-  if (!wetter) { const k = sndPick('wetter'); if (k) { wetter = SND[k]; wetter.loop = true; wetter.volume = 0.12; } }
+  if (!ambient) { const k = sndPick('ambient'); if (!k) return; ambient = SND[k]; ambient.loop = true; }
+  if (!wetter) { const k = sndPick('wetter'); if (k) { wetter = SND[k]; wetter.loop = true; } }
+  kulisseVol();
   for (const a of [ambient, wetter]) if (a) try { if (on) { const p = a.play(); if (p && p.catch) p.catch(() => {}); } else a.pause(); } catch (e) {}
-  if (on) setMusik(null);
+  if (on) setMusik('musik_schlacht', 3); else if (musikName === 'musik_schlacht') setMusik(null, 2.5);   // Schlacht: Menümusik weich in die Schlachtmusik überblenden; Ende: ausblenden
   fireLoop();
 }
-// Musik: „musikTitel“ im Startmenü (Schleife), „musikNiederlage“ nach einer verlorenen Schlacht; null = aus
-function setMusik(name) {
-  if (musik) { try { musik.pause(); } catch (e) {} musik = null; }
-  const k = name && soundOn && sndPick(name); if (!k) return;
-  musik = SND[k].cloneNode(); musik.loop = name === 'musikTitel'; musik.volume = 0.32;
-  try { const p = musik.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+// Musik (2026-11-17, eigene Stücke, Suno Pro): „musik_titel“ im Startmenü (auch Armee-Auswahl, Regeln), „musik_schlacht“ in der Schlacht,
+// „musikNiederlage“ (Taps) nach einer verlorenen Schlacht. Mehrere Spuren gleichzeitig: Wechsel blenden weich über (fade s),
+// Schleifen blenden 2 s vor dem Ende in eine neue Spur desselben Stücks über. null = Musik aus (ausblenden).
+const MUSIK_VOL = { musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32 };   // Schlachtmusik deutlich unter den Effekten
+const musikSp = []; let musikName = null;
+function setMusik(name, fade = 1.5) {
+  const want = soundOn ? name : null;
+  if (want && want === musikName && musikSp.some(t => !t.aus)) return;   // läuft schon
+  for (const t of musikSp) { t.aus = true; t.fade = fade; }
+  musikName = want;
+  const k = want && sndPick(want); if (!k) return;
+  musikSpur(want, k, musikSp.length ? fade : 0.6);
 }
+function musikSpur(name, k, fade) {
+  const a = SND[k].cloneNode(); a.loop = false; a.volume = 0;
+  const t = { a, name, k, lvl: 0, fade, aus: false, schleife: name !== 'musikNiederlage', weiter: false }; musikSp.push(t);
+  try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+  musik = a;
+}
+setInterval(() => {   // Lautstärken nachführen (alle 50 ms), Schleifen überblenden
+  for (let i = musikSp.length - 1; i >= 0; i--) { const t = musikSp[i], a = t.a;
+    t.lvl = Math.max(0, Math.min(1, t.lvl + (t.aus ? -1 : 1) * 0.05 / Math.max(0.1, t.fade)));
+    try { a.volume = Math.min(1, t.lvl * (MUSIK_VOL[t.name] || 0.3) * musikVol); } catch (e) {}
+    if (t.schleife && !t.aus && !t.weiter && a.duration && a.currentTime > a.duration - 2) { t.weiter = true; t.aus = true; t.fade = 2; musikSpur(t.name, t.k, 2); }   // 2 s Überblendung am Schleifenende
+    if ((t.aus && t.lvl <= 0) || a.ended) { try { a.pause(); } catch (e) {} musikSp.splice(i, 1); }
+  }
+  musik = (musikSp.find(t => !t.aus) || {}).a || null;
+}, 50);
+function musikWecken() { for (const t of musikSp) if (!t.aus && t.a.paused) { const p = t.a.play(); if (p && p.catch) p.catch(() => {}); } }   // Browser erlaubt Ton erst nach der ersten Berührung
 // Abwechslung: Gruppen von Tönen, aus denen zufällig gewählt wird (Wunsch des Nutzers)
 // Seit 2026-11-16: Tonplätze (SOUND_POOLS) mit Varianten je Seite; SND_VAR fasst Plätze zusammen. Die Seite kommt aus dem gerade abgespielten Ereignis (sndSide).
 const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'] };
@@ -1725,7 +1753,7 @@ function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur } 
   const t = performance.now(); if (!(opt && opt.noGap)) { if (lastSnd[gapKey] != null && t - lastSnd[gapKey] < (SND_GAP[gapKey] || SND_GAP[name] || 100)) return; lastSnd[gapKey] = t; }   // nicht mehrfach im selben Augenblick
   window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
   window.__snd = (window.__snd || 0) + 1;
-  try { const a = SND[name].cloneNode(); a.volume = vol; a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {});
+  try { const a = SND[name].cloneNode(); vol = Math.min(1, vol * effektVol); a.volume = vol; a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {});
     if (opt && opt.dur) { let k = 0; setTimeout(function fade() { k++; try { a.volume = Math.max(0, vol * (1 - k / 5)); } catch (e) {} if (k < 5) setTimeout(fade, 12); else a.pause(); }, opt.dur); }   // ca. 60 ms ausblenden
   } catch (e) {}
 }
@@ -2250,7 +2278,7 @@ function motorRev(k) {
   try { const a = SND[k].cloneNode(); a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.volume = 0; a.playbackRate = 0.8;
     const p = a.play(); if (p && p.catch) p.catch(() => {}); const t0 = performance.now();
     const tick = () => { const t = (performance.now() - t0) / 1000; if (t > 1.1) { a.pause(); return; }
-      try { a.volume = 0.32 * Math.min(1, t / 0.08) * Math.min(1, Math.max(0, (1.1 - t) / 0.4)); a.playbackRate = 0.8 + 0.4 * Math.min(1, t / 0.45); } catch (e) {}
+      try { a.volume = 0.32 * effektVol * Math.min(1, t / 0.08) * Math.min(1, Math.max(0, (1.1 - t) / 0.4)); a.playbackRate = 0.8 + 0.4 * Math.min(1, t / 0.45); } catch (e) {}
       setTimeout(tick, 30); };
     tick(); window.__sndBy = window.__sndBy || {}; window.__sndBy[k] = (window.__sndBy[k] || 0) + 1; } catch (e) {}
 }
@@ -2846,7 +2874,7 @@ function setupSync() {
   armyInfo();
 }
 function showStart(first) {
-  setMusik('musikTitel');   // Titelmusik im Startmenü (Schleife)
+  setMusik('musik_titel', 2);   // Titelmusik im Startmenü (Schleife, aus der Schlacht weich übergeblendet)
   $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = speedTxt(); $('setZoom').textContent = zoomTxt(); $('closeStart').hidden = first;
   startStep('title');
 }
@@ -2965,7 +2993,7 @@ function showEnd() {
 // Klick-Ton für Knöpfe (Oberfläche); Titelmusik startet, sobald der Browser Ton erlaubt (erste Berührung)
 document.addEventListener('pointerdown', ev => {
   const b = ev.target.closest && ev.target.closest('button, .up-btn, .tb-btn, [role="button"], label.mapcard'); if (b) playSound('ui', 0.3, null);
-  if (!$('start').hidden) { if (!musik) setMusik('musikTitel'); else if (musik.paused) { const p = musik.play(); if (p && p.catch) p.catch(() => {}); } }   // Browser erlaubt Ton erst nach der ersten Berührung
+  if (!$('start').hidden && musikName !== 'musik_titel') setMusik('musik_titel'); musikWecken();   // Browser erlaubt Ton erst nach der ersten Berührung
 }, true);
 // ---------- Knöpfe ----------
 $('btnEnd').onclick = endTurn;
@@ -3029,11 +3057,16 @@ for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
+// Lautstärke-Regler (Optionen): Musik und Effekte getrennt, gespeichert
+{ const set = () => { $('volMusik').value = Math.round(musikVol * 100); $('volEffekte').value = Math.round(effektVol * 100); $('volMusikW').textContent = $('volMusik').value; $('volEffekteW').textContent = $('volEffekte').value; }; set();
+  $('volMusik').addEventListener('input', () => { musikVol = +$('volMusik').value / 100; try { localStorage.setItem('arm.musikvol', musikVol); } catch (e) {} set(); });
+  $('volEffekte').addEventListener('input', () => { effektVol = +$('volEffekte').value / 100; try { localStorage.setItem('arm.effektvol', effektVol); } catch (e) {} kulisseVol(); set(); });
+  $('volEffekte').addEventListener('change', () => playSound('whistle', 0.4)); }
 // Ton an/aus: obere Leiste, Startmenü und Optionen schalten dasselbe und merken es sich
 function setSound(on) {
   soundOn = !!on; $('optSound').checked = soundOn; try { localStorage.setItem('arm.ton', soundOn ? '1' : '0'); } catch (e) {}
   tbSync();
-  if (!$('start').hidden) setMusik(soundOn ? 'musikTitel' : null); else setAmbient(soundOn && !!G && !G.over);
+  if (!$('start').hidden) setMusik(soundOn ? 'musik_titel' : null); else setAmbient(soundOn && !!G && !G.over);
   if (!soundOn) { setMusik(null); if (feuerTon) try { feuerTon.pause(); } catch (e) {} }
 }
 $('btnSound').onclick = () => { setSound(!soundOn); if (soundOn) playSound('whistle', 0.4); };
@@ -3220,7 +3253,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

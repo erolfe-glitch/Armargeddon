@@ -5,7 +5,7 @@
     "s = Seite A (Konkordat) / D (Aschenwacht) / null (beide), st = Start nach dem ersten Laut (negativ = so viele Sekunden vor dem Ende), ab = fester Start in der Quelle, w = Gewicht (Hauptton öfter), max = höchstens so lang (s),",
     "lvl = Ziellautstärke (dB, 90-%-Wert der 50-ms-Fenster). Kodierung AAC 96 kbit/s mono (kleinste Rate des Windows-AAC-Kodierers in Chrome). drop = alte Schlüssel, die entfallen."
   ],
-  "drop": ["rifle", "charge", "punch4", "mg"],
+  "drop": ["rifle", "charge", "punch4", "mg", "musikTitel_1"],
   "eintraege": [
     { "pool": "rifle", "f": "Infantry Guns/410442__superphat__enfieldrifle.wav", "s": "A", "max": 1.6, "note": "Hauptgewehr Konkordat: Enfield (2026-11-17)" },
     { "pool": "rifle", "alt": "rifle2", "s": "D", "note": "Hauptgewehr Aschenwacht: battle-rifle – trockener (Ausklang 0,76 s statt 1,1 s) und dunkler als die Enfield" },
@@ -180,7 +180,8 @@
     { "pool": "ambient", "alt": "ambient", "s": null },
     { "pool": "ambient", "f": "Ambience/armed_unit-distant-war-377958.mp3", "s": null, "st": 5, "max": 45, "lvl": -24, "kbps": 48 },
     { "pool": "wetter", "f": "Ambience/447809__florianreichelt__light-rain-and-thunder.wav", "s": null, "max": 30, "lvl": -26, "kbps": 48 },
-    { "pool": "musikTitel", "f": "Musiker/744062__xloenp__heroic-war-march-symphony-loop-2.flac", "s": null, "max": 105, "lvl": -20, "kbps": 64 },
+    { "pool": "musik_titel", "f": "Musiker/the_grimdark_front.wav", "s": null, "max": 400, "lvl": -20, "stereo": true, "kbps": 128, "note": "Titelthema (eigenes Stück, erstellt mit Suno Pro): Startmenü, Armee-Auswahl, Regeln – Schleife mit Überblendung" },
+    { "pool": "musik_schlacht", "f": "Musiker/grimdark_trench.wav", "s": null, "max": 400, "lvl": -20, "stereo": true, "kbps": 128, "note": "Schlachtmusik (eigenes Stück, erstellt mit Suno Pro): Schleife mit 2 s Überblendung, leise unter den Effekten" },
     { "pool": "musikNiederlage", "f": "Musiker/693767__composingatnight__taps-for-the-fallen.wav", "s": null, "max": 64, "lvl": -20, "kbps": 48 }
   ]
 }

@@ -177,5 +177,6 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **ambient** | Hintergrund (Schleife, zufällig eine) | beide | vorhanden (ambient) |
 |  |  | beide | armed_unit-distant-war-377958.mp3 (45 s ab 14.04 s) |
 | **wetter** | Regen und Donner (Schleife, leise) | beide | Ambience/447809__florianreichelt__light-rain-and-thunder.wav (30 s ab 0 s) |
-| **musikTitel** | Startmenü (Schleife) | beide | 744062__xloenp__heroic-war-march-symphony-loop-2.flac (104.73 s ab 0 s) |
+| **musik_titel** | Titelthema: Startmenü, Armee-Auswahl, Regeln; Schleife mit 2 s Überblendung, Wechsel weich (ui.js `setMusik`) | beide | Musiker/the_grimdark_front.wav – eigenes Stück (Suno Pro), Stereo 128 kbit/s, 178 s (ersetzt 744062 heroic-war-march) |
+| **musik_schlacht** | Schlachtmusik: während der Schlacht, Schleife mit 2 s Überblendung, deutlich unter den Effekten; Menü → Schlacht überblendet, bei Sieg ausgeblendet, bei Niederlage → Taps | beide | Musiker/grimdark_trench.wav – eigenes Stück (Suno Pro), Stereo 128 kbit/s, 239 s |
 | **musikNiederlage** | nach einer verlorenen Schlacht | beide | 693767__composingatnight__taps-for-the-fallen.wav (62.19 s ab 0.11 s) |

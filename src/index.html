@@ -746,7 +746,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 /* Optionen */
 .sm-opts { margin: auto 0; display: grid; gap: 16px; padding: 22px 30px; border: 26px solid transparent; border-image: var(--ui-frame) 40 fill / 26px stretch; }
 .sm-row { display: flex; align-items: center; gap: 14px; }
-.sm-row > span { width: 130px; font: 400 18px var(--s-head); letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+.sm-row > span { width: 162px; flex: none; font: 400 18px var(--s-head); letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
 .sm-chip { display: inline-flex; align-items: center; gap: 10px; min-width: 150px; height: 52px; padding: 0 20px; justify-content: center; cursor: pointer; border: 0; background: var(--up-tafel) center / 100% 100% no-repeat; color: var(--s-text); font: 400 19px var(--s-head); letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
 .sm-chip input { width: 20px; height: 20px; accent-color: var(--s-brass); }
 .sm-chip.on { color: var(--s-brass); }
@@ -917,6 +917,8 @@ body.neu #hud.nounit .neu-mehr, body.neu #hud.nounit #btnInfo { display: none; }
 #neuKK .up-states { flex: 1; min-width: 0; }
 body.neu #hud #neuKK #btnInfo { margin-left: auto; }
 body.neu .overlay { z-index: 30; }   /* Startmenü, Nachschub, Regeln, Armee, Info, Ende: über Karte, Hinweis und Knöpfen des Bedienfelds (z 11–12) */
+/* Lautstärke-Regler im Startmenü (Musik, Effekte), Finger-tauglich */
+.sm-chip.vol { gap: 12px; min-width: 260px; } .sm-chip.vol input[type=range] { width: 140px; height: 40px; accent-color: var(--s-brass); cursor: pointer; } .sm-chip.vol b { min-width: 34px; text-align: right; font-family: var(--s-num, inherit); }
 </style>
 </head>
 <body>
@@ -989,6 +991,7 @@ body.neu .overlay { z-index: 30; }   /* Startmenü, Nachschub, Regeln, Armee, In
     <div class="sm-body"><div class="sm-opts">
       <div class="sm-row"><span>Anzeige</span><button class="sm-chip" id="setFull">Vollbild</button><button class="sm-chip" id="setZoom">Zoom 1×</button></div>
       <div class="sm-row"><span>Tempo</span><button class="sm-chip" id="setSpeed">Tempo 1×</button></div>
+      <div class="sm-row"><span>Lautstärke</span><label class="sm-chip vol">Musik <input type="range" id="volMusik" min="0" max="100" step="5"><b id="volMusikW">80</b></label><label class="sm-chip vol">Effekte <input type="range" id="volEffekte" min="0" max="100" step="5"><b id="volEffekteW">100</b></label></div>
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
       <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>

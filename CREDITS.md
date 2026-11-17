@@ -119,10 +119,11 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | ui | ui_3 | 117651__jppi_stu__sw_switchoffon.wav | Freesound / jppi_stu | CC BY 4.0 | <https://freesound.org/s/117651/> |
 | ambient | ambient_1 | armed_unit-distant-war-377958.mp3 | Pixabay / armed_unit | Pixabay Content License | – |
 | wetter | wetter_1 | Ambience/447809__florianreichelt__light-rain-and-thunder.wav | Freesound / florianreichelt | CC0 1.0 | <https://freesound.org/s/447809/> |
-| musikTitel | musikTitel_1 | 744062__xloenp__heroic-war-march-symphony-loop-2.flac | Freesound / xloenp | CC BY-NC 4.0 | <https://freesound.org/s/744062/> |
+| musik_titel | musik_titel_1 | Musiker/the_grimdark_front.wav („The Grimdark Front“, Titelthema, Stereo 128 kbit/s) | eigenes Stück, erstellt mit Suno Pro | frei verwendbar | – |
+| musik_schlacht | musik_schlacht_1 | Musiker/grimdark_trench.wav („Grimdark Trench“, Schlachtmusik, Stereo 128 kbit/s) | eigenes Stück, erstellt mit Suno Pro | frei verwendbar | – |
 | musikNiederlage | musikNiederlage_1 | 693767__composingatnight__taps-for-the-fallen.wav | Freesound / composingatnight | CC0 1.0 | <https://freesound.org/s/693767/> |
 
-**Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1, musikTitel_1
+**Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1 (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)
 
 **Quelle unbekannt (vom Nutzer geliefert, bitte klären):** boom2_1 (Crash vehicle damage/Canon explode.wav); blast_1 (Explosion/Explosionssound.mp3); erobert_2 (Eroberungspunkte/Win Point 2.wav); verloren_1 (Eroberungspunkte/Lost Point.wav); gallop2_1 (Animals/Pferdegalopp.mp3)
 

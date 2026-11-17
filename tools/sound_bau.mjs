@@ -37,19 +37,22 @@ const PROC = `async (url, o) => {
   // Ende: nach dem letzten 20-ms-Fenster über −40 dB der Spitze kürzen
   const W = Math.round(SR * 0.02); let e2 = b; for (let i = b - W; i > a; i -= W) { let m = 0; for (let j = i; j < i + W; j++) m = Math.max(m, Math.abs(x[j])); if (m > pk * 0.01) { e2 = Math.min(b, i + W * 2); break; } }
   if (e2 < b) { b = e2; cut = false; }
+  // stereo (Musik, 2026-11-17): beide Kanäle getrennt behalten; Analyse (Einsatz, Ende, Lautstärke) weiter über die Mono-Summe
   const y = x.slice(a, b), L = y.length, fo = Math.min(L, Math.round(SR * (cut ? Math.min(0.35, o.max * 0.15) : 0.04))), fi = Math.min(L, Math.round(SR * 0.004));
-  for (let i = 0; i < fi; i++) y[i] *= i / fi;
-  for (let i = 0; i < fo; i++) y[L - 1 - i] *= i / fo;
+  const kan = o.stereo && ab.numberOfChannels > 1 ? [0, 1].map(c => ab.getChannelData(c).slice(a, b)) : [y];
+  for (const z of kan) { for (let i = 0; i < fi; i++) z[i] *= i / fi; for (let i = 0; i < fo; i++) z[L - 1 - i] *= i / fo; }
+  if (kan.length > 1) for (let i = 0; i < fi; i++) y[i] *= i / fi;
   // Lautstärke: 90-%-Wert der 50-ms-RMS-Fenster auf lvl dB, Spitze höchstens −1 dB
   const R = [], w = Math.round(SR * 0.05); for (let i = 0; i + w <= L; i += w) { let s = 0; for (let j = i; j < i + w; j++) s += y[j] * y[j]; R.push(Math.sqrt(s / w)); }
   R.sort((p, q) => p - q); const r90 = R.length ? R[Math.floor(R.length * 0.9)] : 0.1; let p2 = 0; for (let i = 0; i < L; i++) p2 = Math.max(p2, Math.abs(y[i]));
   const g = Math.min(Math.pow(10, (o.lvl - 20 * Math.log10(r90 || 1e-6)) / 20), 0.89 / (p2 || 1));
-  for (let i = 0; i < L; i++) y[i] *= g;
+  for (const z of kan) for (let i = 0; i < L; i++) z[i] *= g;
   // AAC (ADTS) kodieren
   const parts = []; let err = null;
   const enc = new AudioEncoder({ output: ch => { const u = new Uint8Array(ch.byteLength); ch.copyTo(u); parts.push(u); }, error: e => err = e });
-  enc.configure({ codec: 'mp4a.40.2', sampleRate: SR, numberOfChannels: 1, bitrate: 96000, aac: { format: 'adts' } });
-  const F = 1024 * 8; for (let i = 0; i < L; i += F) { const f = y.subarray(i, Math.min(L, i + F)); enc.encode(new AudioData({ format: 'f32-planar', sampleRate: SR, numberOfFrames: f.length, numberOfChannels: 1, timestamp: Math.round(i / SR * 1e6), data: f })); }
+  const NC = kan.length; enc.configure({ codec: 'mp4a.40.2', sampleRate: SR, numberOfChannels: NC, bitrate: o.stereo && o.kbps ? o.kbps * 1000 : 96000, aac: { format: 'adts' } });   // Bitrate nur für stereo-Einträge (kbps), sonst wie bisher 96 kbit/s
+  const F = 1024 * 8; for (let i = 0; i < L; i += F) { const j = Math.min(L, i + F), n2 = j - i, f = new Float32Array(n2 * NC); kan.forEach((z, c) => f.set(z.subarray(i, j), c * n2));
+    enc.encode(new AudioData({ format: 'f32-planar', sampleRate: SR, numberOfFrames: n2, numberOfChannels: NC, timestamp: Math.round(i / SR * 1e6), data: f })); }
   await enc.flush(); enc.close(); if (err) throw err;
   let tot = 0; for (const p of parts) tot += p.length; const out = new Uint8Array(tot); let k = 0; for (const p of parts) { out.set(p, k); k += p.length; }
   let bin = ''; for (let i = 0; i < out.length; i += 0x8000) bin += String.fromCharCode.apply(null, out.subarray(i, i + 0x8000));
@@ -70,7 +73,7 @@ for (const e of SPEC.eintraege) {
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');
-  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps })})`, awaitPromise: true, returnByValue: true });
+  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo })})`, awaitPromise: true, returnByValue: true });
   const v = r.result?.result?.value; if (v && !v.b64) console.log("Antwort ohne Daten:", JSON.stringify(v).slice(0, 300), JSON.stringify(r).slice(0, 300));
   if (!v) { console.log('FEHLER', e.f, JSON.stringify(r.result?.exceptionDetails?.exception?.description || r.result).slice(0, 300)); continue; }
   NEW[key] = 'data:audio/aac;base64,' + v.b64; POOLS[e.pool].push(e.w ? [key, e.s || null, e.w] : [key, e.s || null]);   // w = Gewicht (Hauptton öfter)
