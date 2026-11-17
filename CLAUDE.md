@@ -108,7 +108,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 
 ## Test-Werkzeuge
 - `node tools/sim.js 200`, Varianten: `MAP=selm`, `MECHS=1`, `ARMY_A="typ:n,…"`, `ARMY_D`, `M_goal`, `MA_<typ>=n`, `MD_<typ>=n`, Abschalter NOMARCH_x, NOOW_x, NOABIL, NOHELD, NOSUPP u. a. (TOG in engine.js).
-- `node tools/costcheck.js 140 [typen]`.
+- `ADD=80 PAR=28 node tools/costcheck.js 200 [typen]` (Probe-Einheiten nach der Standardarmee, je Schlacht zufällig in der Startzone: sim.js `EXTRA_A`/`EXTRA_D`). Konkordat-Infanterie zählt sehr viel (Zielfelder halten), Aschenwacht-Grenadiere wenig. Gleichgewicht und Kosten: `entwurf/BALANCE.md`.
 - Draht „Bild = Regel“: `node tools/test_draht.js` (Regeln) und `node tools/test_draht_bild.mjs` (Bild, Vorschau-Server nötig).
 - Im Browser: `window.__dbg` (fx, vis, mz, play([...])). Headless-Browser rendern langsam, Effekte früh fotografieren.
 

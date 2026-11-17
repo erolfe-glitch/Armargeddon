@@ -232,9 +232,13 @@ function planArt(G, u) {
       consider(v, d.c, d.r, 'barrage');
     }
     if (u.gas > 0 && E.canShell(G, u, d.c, d.r, 'gas')) {
-      let ne = 0, nf = 0;
-      for (const [gc, gr] of E.gasCells(G, d.c, d.r)) { const x = E.unitAt(G, gc, gr); if (x && E.active(x)) { if (x.side === u.side) nf++; else ne++; } }
-      if (ne >= 2 && !friendsNear(d.c, d.r, 2)) consider(ne * 1.7 - nf * 3, d.c, d.r, 'gas');
+      // Gas (Balance 2026-11-17): Wert je ungeschütztem Gegner in der Wolke, mehr gegen Gegner in Deckung (Gas fragt nicht nach Deckung, Sprenggranaten schon);
+      // eigene Truppen in der Wolke kosten viel, daneben (Drift) etwas. Vorher nur bei 2 Gegnern in der Wolke und keinem Freund bis 2 Felder – kam fast nie vor.
+      const zellen = E.gasCells(G, d.c, d.r); let v = 0, ne = 0;
+      for (const [gc, gr] of zellen) { const x = E.unitAt(G, gc, gr); if (!x || !E.active(x) || E.gasSafe(G, x)) continue;
+        if (x.side === u.side) v -= 3; else { ne++; v += 1.6 + 0.8 * E.coverOf(G, x).tier + (TYPES[x.type].mg ? 0.6 : 0); } }
+      for (const o of G.units) if (o.side === u.side && E.active(o) && !E.gasSafe(G, o) && !zellen.some(([gc, gr]) => gc === o.c && gr === o.r) && zellen.some(([gc, gr]) => E.dist(gc, gr, o.c, o.r) === 1)) v -= 0.8;
+      if (ne >= 1 && v >= 3) consider(v, d.c, d.r, 'gas');
     }
   }
   if (u.side === 'A') {

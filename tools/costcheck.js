@@ -11,9 +11,8 @@ const jobs = [];
 for (const side of ['A', 'D']) for (const t of E.SHOP[side]) {
   if (t === base[side] || (only && !only.includes(t))) continue;
   const c = E.COST[t], k = Math.max(1, Math.round(T / c)), add = k * c, nb = Math.max(1, Math.round(add / E.COST[base[side]]));
-  const army = { ...E.defaultArmy(side) }; army[t] = (army[t] || 0) + k;
-  const ref = { ...E.defaultArmy(side) }; ref[base[side]] += nb;
-  jobs.push({ side, type: t, k, add, ref: nb * E.COST[base[side]], env: { ['ARMY_' + side]: str(army) }, renv: { ['ARMY_' + side]: str(ref) } });
+  // Standardarmee unverändert aufstellen, die Probe-Einheiten danach (EXTRA_x in sim.js) – Balance 2026-11-17
+  jobs.push({ side, type: t, k, add, ref: nb * E.COST[base[side]], env: { ['EXTRA_' + side]: t + ':' + k }, renv: { ['EXTRA_' + side]: base[side] + ':' + nb } });
 }
 let run = 0, done = 0; const out = [], cache = {};
 function report(r, w) { console.log(`${r.side} ${r.type.padEnd(11)} ${r.k}× für ${r.add}: Sieg ${r.win} %  | gleich viele Punkte Grundinfanterie (${r.ref}): ${w} %  → Differenz ${r.win - w}`); }
@@ -22,7 +21,7 @@ function next() {
   const j = jobs.shift(), key = JSON.stringify(j.env);
   if (j.refOf && cache[key] !== undefined) { report(j.refOf, cache[key]); return next(); }
   run++;
-  const p = spawn('node', [__dirname + '/sim.js', String(N), '3'], { env: { ...process.env, ...j.env, MAP: map, MECHS: '1', ARMY_FREE: '1' } });
+  const p = spawn('node', [__dirname + '/sim.js', String(N), process.env.SEED || '3'], { env: { ...process.env, ...j.env, MAP: map, MECHS: '1' } });
   let txt = ''; p.stdout.on('data', d => txt += d);
   p.on('close', () => {
     const m = txt.match(/Konkordat (\d+) %  Aschenwacht (\d+) %/);
@@ -33,4 +32,4 @@ function next() {
     run--; done++; next();
   });
 }
-for (let i = 0; i < 2; i++) next();
+for (let i = 0; i < +(process.env.PAR || 2); i++) next();   // PAR=n: n Simulationen gleichzeitig

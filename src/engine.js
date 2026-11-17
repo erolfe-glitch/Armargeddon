@@ -173,16 +173,16 @@ Object.assign(TYPES, {
   banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
     can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr. Banner aufpflanzen (Aktion): wirkt 3 Felder weit, dort flieht niemand; der Träger zieht nicht, bis er es wieder aufnimmt (Aktion).',
     real: 'Im Ersten Weltkrieg trugen Regimenter ihre Fahnen kaum noch ins Gefecht. Sie waren zu auffällig und wurden ab 1914 meist hinter der Front verwahrt.' },
-  hauptA: { side: 'A', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 3, mor: 9, mv: 3, rng: 2, fs: 2,
+  hauptA: { side: 'A', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ (Fernkampf ×1,25 bis zu ihrem nächsten Zug). Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
     real: 'Ein Hauptmann führte eine Kompanie von rund 200 Mann. Die Verluste unter jungen Offizieren waren sehr hoch, weil sie beim Angriff vorangingen.' },
-  generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 3, mor: 10, mv: 3, rng: 1, fs: 1,
+  generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
     can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht („Sammeln“ oder „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: eigene Einheiten bis 3 Felder fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
     real: 'Generäle führten meist aus Hauptquartieren weit hinter der Front, verbunden über Telefon und Meldegänger. Trotzdem fielen im Ersten Weltkrieg über 70 britische Generäle.' },
-  hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 3, mor: 9, mv: 3, rng: 2, fs: 2,
+  hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht: „Sammeln“ (Moral +15, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde). Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
     real: 'In der deutschen Armee führte ein Hauptmann meist eine Kompanie. Ab 1916 übernahmen oft Leutnants diese Aufgabe, weil zu viele Offiziere gefallen waren.' },
-  generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 3, mor: 10, mv: 3, rng: 1, fs: 1,
+  generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
     can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht („Sammeln“ oder „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: eigene Einheiten bis 3 Felder erhalten sofort +2 Bewegungspunkte und +1 Aktion. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
     real: 'Deutsche Divisionen wurden von Generalmajoren geführt. Die Stäbe arbeiteten mit Karten, Telefon und Luftbildern meist mehrere Kilometer hinter der Front.' },
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', fig: 'mech', mech: true, atk: 6, def: 6, mor: 8, mv: 2, rng: 2, fs: 4,
@@ -199,16 +199,19 @@ Object.assign(TYPES, {
 //             Nahkampf = Angriff, Reiter ×1,2, Sturmtruppen ×1,15). Zähigkeit = Abwehr (Kolosse ×1,6, Rüstung ×1,4) + halbe Moral.
 // Dazu Fähigkeiten (ABIL) und ein kleiner Abgleich aus der Simulation (ADJ). Prüfen: node tools/costcheck.js
 const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
-  signal: ['Ziel markieren', 15], fernsprech: ['Feuerschlag anfordern', 15], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
-  hauptA: ['Befehle', 15], hauptD: ['Befehle', 15], generalA: ['Befehle jede Runde', 50], generalD: ['Befehle jede Runde', 50],
-  pionierD: ['Draht ziehen oder Minen (3), Bergen', 30], pionier: ['Haftladung, Bergen', 20], knecht: ['Sturmkanone', 20],
-  rauch: ['Nebelwand', 15], mineur: ['Stollen', 20], werkstatt: ['Reparieren, Bergen, Nachladen', 40], ballon: ['Ziel markieren, Sicht von oben', 55],
+  signal: ['Ziel markieren', 10], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
+  hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
+  pionierD: ['Draht ziehen oder Minen (3), Bergen', 20], pionier: ['Haftladung, Bergen', 15], knecht: ['Sturmkanone', 20],
+  rauch: ['Nebelwand', 15], mineur: ['Stollen', 10], werkstatt: ['Reparieren, Bergen, Nachladen', 40], ballon: ['Ziel markieren, Sicht von oben', 50],
   eingreif: ['Gegenstoß', 40], gasschutz: ['Gasschutz', 15], munition: ['Reparieren, Bergen, Nachladen', 40], pirsch: ['Getarnt, Niederhalten', 35] };
 // Abgleich nach tools/costcheck.js (Grauwall, 140 Spiele je Typ): Angreifer-Infanterie nimmt Zielfelder und ist für den Angreifer mehr wert,
 // Sturmtruppen, Kampfmaschinen, Scharfschützen waren zu billig, Mörser, Reiter und Sanitäter zu teuer.
 // Paket 2 nach tools/costcheck.js 120: Minenleger +23 %, Eingreiftrupp +26 % (zu billig), Rauchwerfer −34 %, Mineure −17 %, Werkstatt nur mit Kolossen sinnvoll
-const ADJ = { kohorte: 5, grenadier: -5, scharf: 10, pionier: 5, moerser: -10, minenwerfer: -10, reiter: -10, lanzeD: -10, feldscher: -5, heiler: -5,
-  sturm: 30, knecht: 50, bohrer: 60, brand: 5 };
+// Balance 2026-11-17 (entwurf/BALANCE.md, costcheck ADD=80, 200 Spiele, Probe-Einheiten zufällig in der Startzone): Aschenwacht-Sturm und
+// -Fahrzeuge zu billig (+15 bis +27 Punkte Siegquote gegenüber gleich viel Grundinfanterie), Konkordat-Spezialisten zu teuer (−16 bis −37).
+const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -10, reiter: -10, lanzeD: -10, feldscher: -10, heiler: -5,
+  sturm: 40, knecht: 60, bohrer: 70, brand: 5, sturmpz: 10, eingreif: 10, klaue: 15, saeger: 10, gasschutz: -5, rauch: -5, melder: -5,
+  feldkanone: -10, haubitze: -5, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5 };
 function costParts(k) {
   const t = TYPES[k], c = t.cls;
   let F = t.rng > 0 ? (t.fs || 0) * (1 + 0.15 * (t.rng - 1)) : 0; if (c === 'art') F *= 1.3;
@@ -1850,7 +1853,7 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, costParts, barrageCells, coverOf, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, barrageCells, coverOf, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,

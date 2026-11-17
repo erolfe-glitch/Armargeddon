@@ -45,6 +45,11 @@ for (let g = 0; g < N; g++) {
   const army = { A: parse(process.env.ARMY_A), D: parse(process.env.ARMY_D) };
   for (const sd of ['A', 'D']) if (army[sd] && !process.env.ARMY_FREE && !E.armyOk(sd, army[sd], true)) { console.log('Armee ungültig', sd, E.armyCost(army[sd]), E.armyCount(army[sd])); process.exit(1); }
   const G = E.newGame({ seed: seed0 + g * 7919, army, map: process.env.MAP, mechs: !!process.env.MECHS || !!army.A || !!army.D, free: !!process.env.ARMY_FREE });
+  // EXTRA_A/EXTRA_D="typ:n,…": zusätzlich NACH der unveränderten Standardarmee aufstellen (tools/costcheck.js; sonst verschiebt jede
+  // zusätzliche Einheit die ganze Aufstellung, und weil die in allen Schlachten gleich ist, verfälscht das den Vergleich um 20–40 Punkte)
+  for (const sd of ['A', 'D']) { const ex = parse(process.env['EXTRA_' + sd]); if (ex) { const n0 = G.units.length; E.deploy(G, sd, ex); for (const u of G.units.slice(n0)) { const T = E.TYPES[u.type];
+    // je Schlacht auf ein zufälliges freies Feld der Startzone (sonst prüft man 150-mal dieselbe gute oder schlechte Stelle)
+    const fz = E.startZone(G, sd).filter(([c, r]) => !E.unitAt(G, c, r) && E.cost(G, u, c, r) < 99); if (fz.length) { const h = fz[Math.floor(G.rng() * fz.length)]; u.c = h[0]; u.r = h[1]; } if (T.mg) u.setup = true; if (T.mines) u.mines = T.mines; if (T.counterStrike) u.cready = true; } } }
   if (noA.length) G.units = G.units.filter(u => !(u.side === 'A' && noA.includes(E.cls(u))));
   for (const [t, n] of Object.entries(drop)) for (let i = 0; i < n; i++) { const x = G.units.findIndex(u => u.type === t); if (x >= 0) G.units.splice(x, 1); }
   E.startTurn(G);
