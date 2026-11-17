@@ -4,7 +4,7 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 
 | Tonplatz | Wann | Seite | Datei (Ausschnitt) |
 |---|---|---|---|
-| **rifle** | Gewehrschuss der Infanterie (Gewehr 1) | beide | 410442__superphat__enfieldrifle.wav (1.6 s ab 0 s) |
+| **rifle** | Gewehrschuss der Infanterie (Gewehr 1); Gewehrinfanterie feuert eine Salve: je lebende Figur ein Schuss (1–4) aus allen Gewehr-Plätzen gemischt, innerhalb 0,4 s, eigene Tonhöhe und Lautstärke | beide | 410442__superphat__enfieldrifle.wav (1.6 s ab 0 s) |
 | **rifle2** | Gewehrschuss, Variante | beide | vorhanden (rifle2) |
 | **rifle3** | Gewehrschuss, Variante | Aschenwacht | vorhanden (rifle3) |
 |  |  | beide | 855843__serutonin-deprivd__an-ak-47-being-shot-has-distinctive-metallic-kalashnikov-esque-report-punchy-sounding-w-distant-trailing-reverb.wav (1.8 s ab 0 s) |
