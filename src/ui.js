@@ -2101,7 +2101,7 @@ async function playEvent(e) {
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('clank', 0.5); floater(...headPos(e.u), 'abgebaut', '#ffe7a0'); await wait(200); break; }
     case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
-      playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   // Anführer-Fähigkeiten leiser (Spieltest Runde 2) banner(e.name + '!', e.kind === 'hold' ? 'Alle Einheiten: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug' : 'Alle Einheiten: +1 Aktionspunkt');
+      playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   /* Anführer-Fähigkeiten leiser (Spieltest Runde 2) */ banner(e.name + '!', e.kind === 'hold' ? `Einheiten bis ${P.BIG_R} Felder: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug` : `Einheiten bis ${P.BIG_R} Felder: +1 Aktionspunkt`);
       for (const id of e.ids || []) { const dd = DU.get(id); if (!dd) continue; if (e.kind === 'hold') dd.vs.hold = true; rings.push({ x: dd.x, y: dd.y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); }
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
     case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound(e.planted ? 'bauen' : 'clank', 0.32); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
@@ -2458,6 +2458,7 @@ async function endTurn() {
   await play(ev);
   busy = false; updateUI();
   if (G.over) return;
+  rundenSchild();
   if (mode === 'hot') { camHome(); return showHandover(); }
   if (!human(G.side)) await aiTurn();
 }
@@ -2483,13 +2484,23 @@ async function aiTurnLauf() {
   }
   if (G.over) { busy = false; return; }
   await play(E.endTurn(G));
-  busy = false; activeU = null; updateUI();
+  busy = false; activeU = null; updateUI(); rundenSchild();
   camHome();   // Rundenbeginn: zurück zur eigenen Einheit bzw. Front
 }
 
 // ---------- Anzeige ----------
 let toastT = 0;
 function toast(text) { const el = $('toast'); el.textContent = text; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 3800); }
+// Rundenschild beim Zugwechsel (2026-11-17): ca. 2 s mittig unter der Siegpunkt-Anzeige, Holz mit Eisen-Messing-Rahmen, „Runde n“, Wappen, „… ist am Zug“;
+// Klick oder Tippen blendet sofort aus, blockiert keine Eingaben. Ton: eigener Zug Trommelwirbel, Gegnerzug Wirbel mit tiefem Horn (leiser als Befehle)
+let rundenT = 0;
+function rundenSchild() {
+  if (!G || G.over) return; const el = $('rundenSchild'), sd = G.side, eigen = human(sd) || mode === 'hot';
+  el.innerHTML = `<b>Runde ${G.turn}</b><span class="rs-w">${crest(sd)}</span><span class="rs-t">${sd === 'A' ? SIDES.A.name : SIDES[sd].short} ist am Zug</span>`;
+  el.className = 'rs ' + sd; void el.offsetWidth; el.classList.add('an'); clearTimeout(rundenT); rundenT = setTimeout(() => el.classList.remove('an'), 2300);
+  playSound(eigen ? 'zug_eigen' : 'zug_gegner', 0.35, null, { noGap: true });
+}
+document.addEventListener('pointerdown', () => { const el = $('rundenSchild'); if (el && el.classList.contains('an')) { clearTimeout(rundenT); el.classList.remove('an'); } }, true);
 function banner(title, sub) {
   const el = $('banner'); el.innerHTML = `<b>${title}</b><span>${sub || ''}</span>`;
   el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
@@ -3372,7 +3383,7 @@ showStart(true);
 window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
-  setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
+  setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },

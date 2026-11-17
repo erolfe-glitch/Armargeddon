@@ -204,3 +204,9 @@ Lautstärken: Konkordat-MG −17 dB (vorher −14), Galopp −19 dB, Pferd beim 
 
 ## Auswahl-Sprüche bei jedem Anklicken (2026-11-17)
 Die Plätze select, panzer_funk und schreiter_stimme sind ersetzt durch `sv_<satz>_<Seite><Stimme>`: inf (Gasmaske leicht; Infanterie, Reiter, Geschütze), anzug (Gasmaske mittel; Stahlgänger, Panzerknechte), fuehrer (ohne Filter; Hauptmann, General), panzer (Bordfunk stark), schreiter (Maschine mittel). Konkordat 5, Aschenwacht 4 Stimmen je Infanterie-Satz, Panzer und Schreiter je 2. Jede Einheit behält ihre Stimme; je Stimme reihum gemischt.
+
+## Zugwechsel (2026-11-17)
+| Platz | Wann | Quelle |
+|---|---|---|
+| **zug_eigen** | eigener Zug beginnt (Rundenschild) | 405513 warfare-snare-drum, 1,5 s |
+| **zug_gegner** | Gegnerzug beginnt | derselbe Wirbel, darunter trading_nation low-horn (−9 dB) |

@@ -931,6 +931,17 @@ body.neu #hud #neuKK #btnInfo { margin-left: auto; }
 body.neu .overlay { z-index: 30; }   /* Startmenü, Nachschub, Regeln, Armee, Info, Ende: über Karte, Hinweis und Knöpfen des Bedienfelds (z 11–12) */
 /* Lautstärke-Regler im Startmenü (Musik, Effekte), Finger-tauglich */
 .sm-chip.vol { gap: 12px; min-width: 260px; } .sm-chip.vol input[type=range] { width: 140px; height: 40px; accent-color: var(--s-brass); cursor: pointer; } .sm-chip.vol b { min-width: 34px; text-align: right; font-family: var(--s-num, inherit); }
+/* Rundenschild beim Zugwechsel (2026-11-17): Holz mit Eisen-Messing-Rahmen, sanft ein- und ausblenden, blockiert nichts */
+#rundenSchild { position: fixed; top: calc(var(--tb-unten, 70px) + 10px); left: 50%; transform: translateX(-50%); z-index: 26; pointer-events: none; opacity: 0; visibility: hidden;
+  display: grid; justify-items: center; gap: 4px; min-width: 300px; padding: 8px 30px 10px; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
+  background: var(--tx-ink35), var(--up-txHolz) 0 0 repeat; background-clip: padding-box; box-shadow: inset 0 0 0 2px rgba(194,164,97,.75), 0 10px 26px rgba(0,0,0,.55); text-align: center; }
+#rundenSchild b { font: 400 34px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink), 0 0 12px rgba(0,0,0,.6); }
+#rundenSchild .rs-w img, #rundenSchild .rs-w svg { height: 58px; width: auto; filter: drop-shadow(0 2px 0 var(--s-ink)); }
+#rundenSchild .rs-t { font: 400 19px var(--s-head); letter-spacing: .05em; color: var(--s-text, #F0EDE1); text-shadow: 0 2px 0 var(--s-ink); white-space: nowrap; }
+#rundenSchild.A .rs-t { color: #f3c9bd; } #rundenSchild.D .rs-t { color: #d6dccb; }
+#rundenSchild.an { visibility: visible; animation: rsAn 2.3s ease both; }
+@keyframes rsAn { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px); } 14% { opacity: 1; transform: translateX(-50%) translateY(0); } 78% { opacity: 1; } 100% { opacity: 0; } }
+@media (min-width: 2200px) { #rundenSchild b { font-size: 42px; } #rundenSchild .rs-t { font-size: 23px; } #rundenSchild .rs-w img { height: 70px; } }
 </style>
 </head>
 <body>
@@ -980,6 +991,7 @@ body.neu .overlay { z-index: 30; }   /* Startmenü, Nachschub, Regeln, Armee, In
   </footer>
 </div>
 <div id="nachOben"></div>
+<div id="rundenSchild" class="rs" aria-live="polite"></div>
 <div id="toast"></div>
 <div id="banner"></div>
 

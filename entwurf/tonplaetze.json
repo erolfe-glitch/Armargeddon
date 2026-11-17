@@ -4155,6 +4155,30 @@
   "note": "Win Point und Win Point 2 identisch, nur eine (Korrektur 11)"
  },
  {
+  "pool": "zug_eigen",
+  "key": "zug_eigen_1",
+  "s": null,
+  "f": "Eroberungspunkte/405513__zagi2__warfare-snare-drum.wav",
+  "dur": 1.5,
+  "src": 13,
+  "start": 0.12,
+  "gain": 0.7,
+  "kb": 18,
+  "note": "Zugwechsel, eigener Zug: kurzer Trommelwirbel (Rundenschild, 2026-11-17)"
+ },
+ {
+  "pool": "zug_gegner",
+  "key": "zug_gegner_1",
+  "s": null,
+  "f": "Eroberungspunkte/405513__zagi2__warfare-snare-drum.wav",
+  "dur": 1.6,
+  "src": 13,
+  "start": 0.12,
+  "gain": 1.8,
+  "kb": 19,
+  "note": "Zugwechsel, Gegnerzug: derselbe Wirbel mit leisem tiefem Horn darunter"
+ },
+ {
   "pool": "verloren",
   "key": "verloren_1",
   "s": null,

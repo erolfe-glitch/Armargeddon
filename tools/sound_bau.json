@@ -395,6 +395,8 @@
     { "pool": "march", "f": "Repair reload heal etc/alex_jauk-whistle-sound-600668.mp3", "s": null, "max": 1.0, "rate": 0.84, "lp": 2600 },
     { "pool": "erobert", "f": "Eroberungspunkte/405513__zagi2__warfare-snare-drum.wav", "s": "D", "max": 3.0, "note": "Zielfeld erobert" },
     { "pool": "erobert", "f": "Eroberungspunkte/Win Point 2.wav", "s": "A", "max": 2.2, "note": "Win Point und Win Point 2 identisch, nur eine (Korrektur 11)" },
+    { "pool": "zug_eigen", "f": "Eroberungspunkte/405513__zagi2__warfare-snare-drum.wav", "s": null, "max": 1.5, "lvl": -18, "note": "Zugwechsel, eigener Zug: kurzer Trommelwirbel (Rundenschild, 2026-11-17)" },
+    { "pool": "zug_gegner", "f": "Eroberungspunkte/405513__zagi2__warfare-snare-drum.wav", "s": null, "max": 1.6, "lvl": -18, "mix": [{ "f": "Ereignisse/trading_nation-low-horn-185556.mp3", "at": 0.05, "db": -9, "max": 1.5 }], "note": "Zugwechsel, Gegnerzug: derselbe Wirbel mit leisem tiefem Horn darunter" },
     { "pool": "verloren", "f": "Eroberungspunkte/Lost Point.wav", "s": null, "max": 3.1 },
     { "pool": "dog", "alt": "dog", "s": null },
     { "pool": "dog", "f": "Animals/audiopapkin-german-shepherd-barking-302356.mp3", "s": null, "max": 1.3 },
