@@ -146,7 +146,7 @@
   "dur": 2.4,
   "src": 10.61,
   "start": 2.6,
-  "gain": -0.2,
+  "gain": -3.2,
   "kb": 28,
   "note": "Hauptton Mahlwerk (2026-11-17)"
  },
@@ -158,7 +158,7 @@
   "dur": 2.12,
   "src": 30,
   "start": 1.99,
-  "gain": -1.7,
+  "gain": -4.7,
   "kb": 25,
   "note": "Ausschnitt (Korrektur 7)"
  },
@@ -252,6 +252,29 @@
   "note": "Donnerrohr/Feldkanone, Abwechslung zu little-cannon"
  },
  {
+  "pool": "kolosskanone",
+  "key": "kolosskanone_1",
+  "s": null,
+  "f": "Heavy firing sounds/850499__vulkanbruder__little-cannon.wav",
+  "dur": 0.36,
+  "src": 0.4,
+  "start": 0,
+  "gain": -8.7,
+  "kb": 4,
+  "note": "Landkoloss und Turmschreiter (dazu MG): kleine Kanone statt Gewehrklang – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "kolosskanone",
+  "key": "kolosskanone_2",
+  "s": null,
+  "f": "Heavy firing sounds/freesound_community-cannon-shot-14799.mp3",
+  "dur": 1.5,
+  "src": 1.67,
+  "start": 0.02,
+  "gain": -12,
+  "kb": 18
+ },
+ {
   "pool": "panzerkanone",
   "key": "panzerkanone_1",
   "s": "D",
@@ -295,6 +318,29 @@
   "start": 0,
   "gain": -4.4,
   "kb": 26
+ },
+ {
+  "pool": "einschlagH",
+  "key": "einschlagH_1",
+  "s": null,
+  "f": "Crash vehicle damage/841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav",
+  "dur": 2.6,
+  "src": 46.05,
+  "start": 1.05,
+  "gain": -5.9,
+  "kb": 31,
+  "note": "Einschlag eines einzelnen Artilleriegeschosses: mehr Volumen und Tiefe (Bass +5 dB, zweite Explosion darunter) – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "einschlagH",
+  "key": "einschlagH_2",
+  "s": null,
+  "f": "Crash vehicle damage/841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav",
+  "dur": 2.6,
+  "src": 46.05,
+  "start": 5.05,
+  "gain": -8.4,
+  "kb": 31
  },
  {
   "pool": "barrage",
@@ -563,6 +609,40 @@
   "start": 0.05,
   "gain": 0.2,
   "kb": 7
+ },
+ {
+  "pool": "grunzen",
+  "key": "grunzen_1",
+  "s": null,
+  "f": "Gas smoke/536372__hoggington__mask-grunt-sound.ogg",
+  "dur": 0.58,
+  "src": 0.67,
+  "start": 0.05,
+  "gain": -2.8,
+  "kb": 7,
+  "note": "Eingraben: kurze Grunz-Laute (Stimmfilter wie die Infanterie über tools/stimmfilter.py) – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "grunzen",
+  "key": "grunzen_2",
+  "s": null,
+  "f": "Gas smoke/536372__hoggington__mask-grunt-sound.ogg",
+  "dur": 0.64,
+  "src": 0.74,
+  "start": 0.06,
+  "gain": -2.4,
+  "kb": 8
+ },
+ {
+  "pool": "grunzen",
+  "key": "grunzen_3",
+  "s": null,
+  "f": "Gas smoke/536372__hoggington__mask-grunt-sound.ogg",
+  "dur": 0.32,
+  "src": 0.62,
+  "start": 0.08,
+  "gain": -3,
+  "kb": 4
  },
  {
   "pool": "selGas",
@@ -2312,6 +2392,18 @@
   "note": "Befehl „Marsch“"
  },
  {
+  "pool": "marschtritt",
+  "key": "marschtritt_2",
+  "s": null,
+  "f": "aus_spiel/tramp.wav",
+  "dur": 1.7,
+  "src": 1.7,
+  "start": 0,
+  "gain": -11.2,
+  "kb": 20,
+  "note": "alter Marschtritt tramp, jetzt nur bei Marsch/Sturmlauf und gleich laut"
+ },
+ {
   "pool": "generalhorn",
   "key": "generalhorn_1",
   "s": "D",
@@ -2336,6 +2428,18 @@
   "note": "nur erste 2–3 s"
  },
  {
+  "pool": "whistle",
+  "key": "whistle_1",
+  "s": null,
+  "f": "aus_spiel/whistle.wav",
+  "dur": 1.12,
+  "src": 1.18,
+  "start": 0.04,
+  "gain": -3.7,
+  "kb": 13,
+  "note": "Pfeife (Nachschub, Ziel markiert, Schlachtbeginn): tiefer (×0,84), Höhen weg (Tiefpass 2,6 kHz); alter Ton whistle aus src/sound.js – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
   "pool": "march",
   "key": "march",
   "s": null,
@@ -2346,11 +2450,11 @@
   "key": "march_1",
   "s": "A",
   "f": "Ereignisse/324539__deleted_user_2104797__whistle-army-old.wav",
-  "dur": 3,
-  "src": 16.5,
-  "start": 0.28,
-  "gain": -0.1,
-  "kb": 35
+  "dur": 1.9,
+  "src": 19.64,
+  "start": 0.34,
+  "gain": -1.9,
+  "kb": 23
  },
  {
   "pool": "march",
@@ -2368,11 +2472,11 @@
   "key": "march_3",
   "s": null,
   "f": "Repair reload heal etc/alex_jauk-whistle-sound-600668.mp3",
-  "dur": 0.96,
-  "src": 0.99,
-  "start": 0.03,
-  "gain": 2.6,
-  "kb": 11
+  "dur": 1,
+  "src": 1.18,
+  "start": 0.04,
+  "gain": 0.7,
+  "kb": 12
  },
  {
   "pool": "erobert",
@@ -2439,19 +2543,13 @@
  },
  {
   "pool": "gallop2",
-  "key": "gallop2",
-  "s": null,
-  "f": "(vorhanden) gallop2"
- },
- {
-  "pool": "gallop2",
   "key": "gallop2_1",
   "s": null,
   "f": "Animals/Pferdegalopp.mp3",
   "dur": 3,
   "src": 14.32,
   "start": 0.25,
-  "gain": 0.9,
+  "gain": -3.1,
   "kb": 35
  },
  {
@@ -2462,7 +2560,7 @@
   "dur": 3,
   "src": 14.63,
   "start": 0.8,
-  "gain": -0.2,
+  "gain": -0.7,
   "kb": 35,
   "note": "Reiter ziehen: Abwechslung (2026-11-17)"
  },
@@ -2491,9 +2589,43 @@
   "dur": 2.5,
   "src": 28.49,
   "start": 0,
-  "gain": 4.5,
+  "gain": -1,
   "kb": 29,
   "note": "nur Wald und Gebüsch"
+ },
+ {
+  "pool": "schritte",
+  "key": "schritte_1",
+  "s": null,
+  "f": "Footsteps robot mud marching/freesound_community-footsteps-mud-68694.mp3",
+  "dur": 2,
+  "src": 50.62,
+  "start": 0.2,
+  "gain": 10.4,
+  "kb": 24,
+  "note": "normales Ziehen der Fußtruppen (Marschtritt nur bei Marsch/Sturmlauf) – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "schritte",
+  "key": "schritte_2",
+  "s": null,
+  "f": "Footsteps robot mud marching/freesound_community-footsteps-mud-68694.mp3",
+  "dur": 2,
+  "src": 50.62,
+  "start": 4.4,
+  "gain": 11.7,
+  "kb": 24
+ },
+ {
+  "pool": "schritte",
+  "key": "schritte_3",
+  "s": null,
+  "f": "Footsteps robot mud marching/478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav",
+  "dur": 2.2,
+  "src": 28.49,
+  "start": 1.2,
+  "gain": -1,
+  "kb": 26
  },
  {
   "pool": "mech",
@@ -2765,6 +2897,46 @@
   "start": 0.01,
   "gain": -6.6,
   "kb": 7
+ },
+ {
+  "pool": "saebel",
+  "key": "saebel_1",
+  "s": null,
+  "f": "Melee hit infantry/ribhavagrawal-swords-collide-230574.mp3",
+  "dur": 0.86,
+  "src": 1.65,
+  "start": 0.26,
+  "gain": 0.2,
+  "kb": 10,
+  "note": "Reiter-Nahkampf: Klingen und Hiebe statt Holzschlag – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "saebel",
+  "key": "saebel_2",
+  "s": null,
+  "f": "Heavy Meelee Mechs large/chromascension-slash-542396.mp3",
+  "dur": 1.2,
+  "src": 2.16,
+  "start": 0.4,
+  "gain": -7.9,
+  "kb": 14
+ },
+ {
+  "pool": "saebel",
+  "key": "saebel_3",
+  "s": null,
+  "f": "Defelcting/mixkit-metallic-sword-strike-2160.wav",
+  "dur": 0.66,
+  "src": 1.33,
+  "start": 0.01,
+  "gain": -5.8,
+  "kb": 8
+ },
+ {
+  "pool": "saebel",
+  "key": "slash",
+  "s": null,
+  "f": "(vorhanden) slash"
  },
  {
   "pool": "robot",
@@ -3410,6 +3582,74 @@
   "note": "Maschine mittel (Schreiter/Eisenknecht): robot gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
  {
+  "pool": "grunzen_gm",
+  "key": "grunzen_gm_1",
+  "s": null,
+  "f": "Voices/eigene/filter/grunzen_1_gm.wav",
+  "dur": 0.56,
+  "src": 0.58,
+  "start": 0,
+  "gain": -8.1,
+  "kb": 7,
+  "note": "Gasmaske leicht: grunzen gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
+  "pool": "grunzen_gm",
+  "key": "grunzen_gm_2",
+  "s": null,
+  "f": "Voices/eigene/filter/grunzen_2_gm.wav",
+  "dur": 0.61,
+  "src": 0.65,
+  "start": 0,
+  "gain": -7.7,
+  "kb": 7
+ },
+ {
+  "pool": "grunzen_gm",
+  "key": "grunzen_gm_3",
+  "s": null,
+  "f": "Voices/eigene/filter/grunzen_3_gm.wav",
+  "dur": 0.32,
+  "src": 0.33,
+  "start": 0,
+  "gain": -9.1,
+  "kb": 4
+ },
+ {
+  "pool": "grunzen_gs",
+  "key": "grunzen_gs_1",
+  "s": null,
+  "f": "Voices/eigene/filter/grunzen_1_gs.wav",
+  "dur": 0.56,
+  "src": 0.58,
+  "start": 0,
+  "gain": -8.8,
+  "kb": 7,
+  "note": "Gasmaske mittel (Kampfanzug): grunzen gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
+  "pool": "grunzen_gs",
+  "key": "grunzen_gs_2",
+  "s": null,
+  "f": "Voices/eigene/filter/grunzen_2_gs.wav",
+  "dur": 0.61,
+  "src": 0.65,
+  "start": 0,
+  "gain": -8.4,
+  "kb": 7
+ },
+ {
+  "pool": "grunzen_gs",
+  "key": "grunzen_gs_3",
+  "s": null,
+  "f": "Voices/eigene/filter/grunzen_3_gs.wav",
+  "dur": 0.32,
+  "src": 0.33,
+  "start": 0,
+  "gain": -10.7,
+  "kb": 4
+ },
+ {
   "pool": "pferd_auswahl",
   "key": "pferd_auswahl_1",
   "s": null,
@@ -3417,7 +3657,7 @@
   "dur": 1.1,
   "src": 6.07,
   "start": 2.4,
-  "gain": -4.6,
+  "gain": -0.6,
   "kb": 13,
   "note": "Reiter angewählt: Schnauben (häufig), Wiehern selten (Gewicht 5 gegen 4×3)"
  },
@@ -3429,7 +3669,7 @@
   "dur": 0.8,
   "src": 10.1,
   "start": 0.2,
-  "gain": 3.8,
+  "gain": 7.8,
   "kb": 10
  },
  {
@@ -3440,7 +3680,7 @@
   "dur": 0.9,
   "src": 10.1,
   "start": 1.6,
-  "gain": 6.3,
+  "gain": 10.3,
   "kb": 11
  },
  {
@@ -3451,7 +3691,7 @@
   "dur": 1,
   "src": 10.1,
   "start": 7.7,
-  "gain": -0.9,
+  "gain": 3.1,
   "kb": 12
  },
  {
@@ -3462,7 +3702,7 @@
   "dur": 1.2,
   "src": 1.47,
   "start": 0.15,
-  "gain": 4.2,
+  "gain": 8.2,
   "kb": 14,
   "note": "Wiehern: etwa jedes 4. Mal"
  },
@@ -3587,12 +3827,57 @@
   "key": "ueberrollen_1",
   "s": null,
   "f": "Crash vehicle damage/tank_crunch_fence.wav",
-  "dur": 2.2,
+  "dur": 1.6,
   "src": 4.08,
-  "start": 0,
-  "gain": -9.6,
-  "kb": 26,
-  "note": "Koloss/Sturmpanzer/Bohrkoloss/Schreiter walzt Draht nieder oder fährt über eine Barrikade (InspectorJ, CC BY 4.0)"
+  "start": 0.5,
+  "gain": -13,
+  "kb": 19,
+  "note": "wumm – krach, krach, krach: dumpfer Schlag, Zermalmen (Bass +6 dB), Draht und Riegel darunter – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "ueberrollen",
+  "key": "ueberrollen_2",
+  "s": null,
+  "f": "Crash vehicle damage/tank_crunch_fence.wav",
+  "dur": 1.2,
+  "src": 4.08,
+  "start": 0.95,
+  "gain": -12.1,
+  "kb": 14
+ },
+ {
+  "pool": "holzknacken",
+  "key": "holzknacken_1",
+  "s": null,
+  "f": "Footsteps robot mud marching/478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav",
+  "dur": 0.22,
+  "src": 28.49,
+  "start": 2.47,
+  "gain": -1,
+  "kb": 3,
+  "note": "Infanterie läuft in Draht: kurzes Holzknacken (dazu drahtlatch, drahtwackeln) – Spieltest Runde 2, Paket 6 (2026-11-17)"
+ },
+ {
+  "pool": "holzknacken",
+  "key": "holzknacken_2",
+  "s": null,
+  "f": "Footsteps robot mud marching/478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav",
+  "dur": 0.22,
+  "src": 28.49,
+  "start": 2.97,
+  "gain": -1,
+  "kb": 3
+ },
+ {
+  "pool": "holzknacken",
+  "key": "holzknacken_3",
+  "s": null,
+  "f": "Footsteps robot mud marching/478389__elonen__pine-forest-ww2-soldier-walk-twigs.wav",
+  "dur": 0.2,
+  "src": 28.49,
+  "start": 0.17,
+  "gain": -1,
+  "kb": 3
  },
  {
   "pool": "cut",
@@ -3679,23 +3964,24 @@
   "pool": "ui",
   "key": "ui_2",
   "s": null,
-  "f": "Buttons/677861__el_boss__ui-button-click.wav",
-  "dur": 0.05,
-  "src": 0.05,
-  "start": 0,
-  "gain": 0,
-  "kb": 1
- },
- {
-  "pool": "ui",
-  "key": "ui_3",
-  "s": null,
   "f": "Buttons/117651__jppi_stu__sw_switchoffon.wav",
   "dur": 0.6,
   "src": 1.81,
   "start": 0.3,
   "gain": 12.1,
   "kb": 7
+ },
+ {
+  "pool": "klick",
+  "key": "klick_1",
+  "s": null,
+  "f": "Buttons/488534__ranner__ui-click.wav",
+  "dur": 0.35,
+  "src": 0.6,
+  "start": 0.21,
+  "gain": 23.6,
+  "kb": 4,
+  "note": "Nächste Einheit und Fertig: deutlicher Klick, auch per Taste – Spieltest Runde 2, Paket 6 (2026-11-17)"
  },
  {
   "pool": "ambient",

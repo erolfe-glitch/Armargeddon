@@ -24,11 +24,19 @@ const cmd = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] 
 await cmd('Page.navigate', { url: BASE + '/tools/sound_bau.json' }); await sleep(800);
 
 // Verarbeitung im Browser (eine Datei je Aufruf)
+// Klangbearbeitung (2026-11-17, Spieltest Runde 2): rate = tiefer und langsamer abspielen (0,8 = 80 %), lp/hp = Tief-/Hochpass (Hz),
+// bass = Bassanhebung (dB, Kuhschwanz bei 150 Hz), komp = weiches Begrenzen (Stärke, z. B. 4), mix = weitere Töne darunterlegen [{ f, at (s ab Beginn des Ausschnitts), db (Spitze relativ), ab, max, rate, lp, hp, bass }]
 const PROC = `async (url, o) => {
-  const SR = 44100, buf = await (await fetch(url)).arrayBuffer();
-  const ab = await new OfflineAudioContext(1, 1, SR).decodeAudioData(buf);
-  const n = ab.length, x = new Float32Array(n);
-  for (let c = 0; c < ab.numberOfChannels; c++) { const d = ab.getChannelData(c); for (let i = 0; i < n; i++) x[i] += d[i] / ab.numberOfChannels; }
+  const SR = 44100;
+  const lade = async (u, q) => {   // Datei → Mono-Float32 (mit rate/lp/hp/bass)
+    const ab = await new OfflineAudioContext(1, 1, SR).decodeAudioData(await (await fetch(u)).arrayBuffer());
+    if (!(q.rate || q.lp || q.hp || q.bass)) { const n = ab.length, x = new Float32Array(n); for (let c = 0; c < ab.numberOfChannels; c++) { const d = ab.getChannelData(c); for (let i = 0; i < n; i++) x[i] += d[i] / ab.numberOfChannels; } return [x, ab]; }
+    const r = q.rate || 1, ctx = new OfflineAudioContext(1, Math.ceil(ab.length / r), SR), src = ctx.createBufferSource(); src.buffer = ab; src.playbackRate.value = r; let node = src;
+    const bq = (type, f, g) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; if (g != null) b.gain.value = g; node.connect(b); node = b; };
+    if (q.hp) bq('highpass', q.hp); if (q.lp) bq('lowpass', q.lp); if (q.bass) bq('lowshelf', 150, q.bass);
+    node.connect(ctx.destination); src.start(); const out = await ctx.startRendering(); return [out.getChannelData(0), ab];
+  };
+  const [x0, ab] = await lade(url, o), x = x0, n = x.length;
   let pk = 0; for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(x[i]));
   const thr = pk * 0.05; let on = 0; while (on < n && Math.abs(x[on]) < thr) on++; on = Math.max(0, on - Math.round(SR * 0.01));
   let last = n - 1; while (last > on && Math.abs(x[last]) < pk * 0.01) last--;
@@ -38,7 +46,15 @@ const PROC = `async (url, o) => {
   const W = Math.round(SR * 0.02); let e2 = b; for (let i = b - W; i > a; i -= W) { let m = 0; for (let j = i; j < i + W; j++) m = Math.max(m, Math.abs(x[j])); if (m > pk * 0.01) { e2 = Math.min(b, i + W * 2); break; } }
   if (e2 < b) { b = e2; cut = false; }
   // stereo (Musik, 2026-11-17): beide Kanäle getrennt behalten; Analyse (Einsatz, Ende, Lautstärke) weiter über die Mono-Summe
-  const y = x.slice(a, b), L = y.length, fo = Math.min(L, Math.round(SR * (cut ? Math.min(0.35, o.max * 0.15) : 0.04))), fi = Math.min(L, Math.round(SR * 0.004));
+  let y = x.slice(a, b);
+  for (const m of o.mix || []) {   // darunterlegen: Spitze des Zusatztons = Spitze des Haupttons + db
+    const [z0] = await lade(m.url, m); let za = Math.round((m.ab || 0) * SR), zb = Math.min(z0.length, m.max ? za + Math.round(m.max * SR) : z0.length); const z = z0.subarray(za, zb);
+    let pz = 0, py = 0; for (const v of z) pz = Math.max(pz, Math.abs(v)); for (const v of y) py = Math.max(py, Math.abs(v)); const gz = py / (pz || 1) * Math.pow(10, (m.db || 0) / 20), off = Math.round((m.at || 0) * SR);
+    if (off + z.length > y.length) { const y2 = new Float32Array(off + z.length); y2.set(y); y = y2; b = a + y.length; }
+    for (let i = 0; i < z.length; i++) y[off + i] += z[i] * gz;
+  }
+  if (o.komp) { let p = 0; for (const v of y) p = Math.max(p, Math.abs(v)); const k = o.komp, t = Math.tanh(k); for (let i = 0; i < y.length; i++) y[i] = Math.tanh(y[i] / (p || 1) * k) / t; }   // komp = weiches Begrenzen (Spitzen einzelner Knackser), damit leise Schritte lauter werden können
+  const L = y.length, fo = Math.min(L, Math.round(SR * (cut ? Math.min(0.35, o.max * 0.15) : 0.04))), fi = Math.min(L, Math.round(SR * 0.004));
   const kan = o.stereo && ab.numberOfChannels > 1 ? [0, 1].map(c => ab.getChannelData(c).slice(a, b)) : [y];
   for (const z of kan) { for (let i = 0; i < fi; i++) z[i] *= i / fi; for (let i = 0; i < fo; i++) z[L - 1 - i] *= i / fo; }
   if (kan.length > 1) for (let i = 0; i < fi; i++) y[i] *= i / fi;
@@ -73,7 +89,7 @@ for (const e of SPEC.eintraege) {
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');
-  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo })})`, awaitPromise: true, returnByValue: true });
+  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo, rate: e.rate, lp: e.lp, hp: e.hp, bass: e.bass, komp: e.komp, mix: (e.mix || []).map(m => ({ ...m, url: BASE + '/sound-quelle/' + m.f.split('/').map(encodeURIComponent).join('/') })) })})`, awaitPromise: true, returnByValue: true });
   const v = r.result?.result?.value; if (v && !v.b64) console.log("Antwort ohne Daten:", JSON.stringify(v).slice(0, 300), JSON.stringify(r).slice(0, 300));
   if (!v) { console.log('FEHLER', e.f, JSON.stringify(r.result?.exceptionDetails?.exception?.description || r.result).slice(0, 300)); continue; }
   NEW[key] = 'data:audio/aac;base64,' + v.b64; POOLS[e.pool].push(e.w ? [key, e.s || null, e.w] : [key, e.s || null]);   // w = Gewicht (Hauptton öfter)

@@ -90,5 +90,8 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 ## Fahrzeuge (2026-11-17)
 - Zweites Fahrzeug für das Konkordat, z. B. Flammenpanzer oder Mörserpanzer (Gegengewicht zu Sturmpanzer + Bohrkoloss der Aschenwacht).
 
+## Tempo (2026-11-17)
+- Vorschlag: eigenes Tempo für den Gegnerzug, z. B. eigenes Tempo × 1,2 (bei ½× also 0,6×). Messung Grauwall: ein Gegnerzug dauert bei 0,5× etwa 21 s, bei 0,6× etwa 19 s, bei 1× etwa 17 s (KI-Denkzeit und feste Wartezeiten zählen mit).
+
 ## Einheitlicher Stimmfilter (2026-11-17) – erledigt (tools/stimmfilter.py)
 - Für ALLE Stimm-Tonplätze ein Filter je Sprecher: Infanterie, Sturmtruppen, Pioniere, Sanitäter, Reiter usw. Gasmaske; Kampfanzüge (Stahlgänger, Panzerknechte) Gasmaske etwas stärker; Hauptmann und General ohne Filter; Panzerbesatzung Bordfunk; Schreiter und Eisenknecht (auch robot-voice-damage) Roboter. Waffen, Explosionen, Motoren bleiben unverändert.

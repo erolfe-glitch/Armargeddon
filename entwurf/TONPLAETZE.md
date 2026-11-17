@@ -185,3 +185,19 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 
 ## Stimmfilter je Sprecher (2026-11-17)
 Zu den Stimm-Plätzen pain, medic, cry, scream, panic, forward, roar, stand, charge, comeon, husten und robot gibt es gefilterte Varianten (tools/stimmfilter.py): `_gm` Gasmaske leicht (Fußtruppen, Reiter, Pioniere, Sanitäter …), `_gs` Gasmaske mittel (Stahlgänger, Panzerknechte), `_bf` Bordfunk stark (Landkoloss, Sturmpanzer, Bohrkoloss), `_mr` Maschine mittel (Schreiter, Eisenknecht; robot jetzt für beide Seiten). Hauptmann und General rufen ohne Filter. panic_1 (Fluchtschreie einer Menge) bleibt nur ungefiltert. Waffen, Explosionen und Motoren unverändert.
+
+## Spieltest Runde 2, Paket 6 (2026-11-17)
+| Platz | Wann | Quelle / Bearbeitung |
+|---|---|---|
+| **ueberrollen** | Fahrzeug walzt Draht/Barrikade | tank_crunch_fence (Ausschnitt ab 0,5 bzw. 0,95 s, Bass +6 dB), darunter hard-heavy-impact (Tiefpass), chain-link-fence und latch-metallic |
+| **holzknacken** | Infanterie läuft in Draht (mit drahtlatch, drahtwackeln) | soldier-walk-twigs, drei Knackser, weich begrenzt |
+| **whistle**, Pfeifen in **march** | Nachschub, Ziel markiert, Schlachtbeginn, großer Befehl Konkordat | tiefer (×0,84), Tiefpass 2,6 kHz |
+| **grunzen** (+ _gm/_gs) | Eingraben, zwei kurze Laute | mask-grunt, drei Fassungen, Gasmaske je Sprecher |
+| **klick** | Nächste Einheit, Fertig (auch per Taste) | 488534 ui-click |
+| **schritte** | normales Ziehen der Fußtruppen | footsteps-mud (zwei Ausschnitte), soldier-walk-twigs; alle −20 dB |
+| **marschtritt** | nur Marsch und Sturmlauf | naeftali-march2 und alter tramp, beide −18 dB |
+| **saebel** | Reiter im Nahkampf | swords-collide, slash, metallic-sword-strike, alter slash |
+| **kolosskanone** | Landkoloss, Turmschreiter (dazu MG) | little-cannon, cannon-shot (Bass +3 dB) |
+| **einschlagH** | Einschlag eines einzelnen Artilleriegeschosses | rock_explosion_impact_booming (Bass +5 dB) mit grenade-explosion-meaty bzw. impact-sfx-016 darunter |
+
+Lautstärken: Konkordat-MG −17 dB (vorher −14), Galopp −19 dB, Pferd beim Anwählen −16 dB, Wiehern leiser abgespielt; Anführer-Befehle 0,45 (vorher 0,75), großer Befehl 0,5 (vorher 0,85), Banner 0,32.

@@ -18,7 +18,7 @@ const fmt = x => String(Math.max(0, Math.round(x * 10)));   // Anzeige in ganzen
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 
 // ---------- Zustand ----------
-let G = null, mode = 'A', blood = true, speed = 1, busy = false;
+let G = null, mode = 'A', blood = true, speed = 0.5, busy = false;   // Standard für neue Spieler ½× (Spieltest Runde 2); gespeichertes Tempo gilt weiter
 try { const v = +localStorage.getItem('arm.tempo'); if ([0.5, 1, 2, 99].includes(v)) speed = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
 const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
 const speedTxt = () => speed >= INSTANT ? 'Tempo sofort' : 'Tempo ' + speed + '×';
@@ -1820,12 +1820,13 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
 const unitById = id => G.units.find(u => u.id === id);
 const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 
+let marschU = null;   // Einheit im Marsch/Sturmlauf: ihr Zug klingt nach Marschtritt (Spieltest Runde 2)
 async function playEvent(e) {
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)) ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(marschU === e.u ? 'marschtritt' : e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)) ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -1852,7 +1853,8 @@ async function playEvent(e) {
           let t = 0; for (let q = 0; q < n; q++) { if (q) t += Math.random() < 0.3 ? Math.random() * 40 : Math.random() * 250;
             const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
             const p = fxMuzzle(e.a, q); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } } }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
-        else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
+        else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
+        if (au && au.type === 'turm' && !mg) setTimeout(() => playSound('mg', 0.4, au.side), 260 / speed);   // Turmschreiter: Geschützturm und MG
         // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
         const pm = fxMuzzle(e.a, 0, mini ? 0.45 : can ? 0.42 : 0.3), neu = !!(pm && fxIm('muendung'));
         if (neu) {
@@ -1920,7 +1922,7 @@ async function playEvent(e) {
       shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
       if (e.guided) floater(x2, y2 - s * 1.5, '◉ markiert ×1,25', '#F0EDE1', false, true);
-      playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[ua.type].mobile && !e.strike ? 'boom' : 'boomH', 0.7);
+      playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[ua.type].mobile && !e.strike ? 'boom' : 'einschlagH', e.mode === 'he' && !(TYPES[ua.type].mobile && !e.strike) ? 0.8 : 0.7);   // Einzelschuss: Einschlag mit mehr Volumen und Tiefe
       if (e.mode === 'he' && G.map[e.c] && G.map[e.c][e.r] && (G.map[e.c][e.r].river || ['canal', 'sumpf', 'furt'].includes(G.map[e.c][e.r].t))) playSound('wasser', 0.6);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
       else if (e.mode === 'gas') { boom(x2, y2, s * 1.0, 'gas'); visSync('clouds'); }   // Wolke erst beim Einschlag
@@ -1938,7 +1940,7 @@ async function playEvent(e) {
         // Grundklang je Fraktion (2026-11-17): Konkordat Klingen/Keule/Fäuste (nahA), Aschenwacht Spaten/Metall (nahD); eigene Töne nur für
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
-        playSound(mech ? 'heavy' : tank ? 'impact' : suit ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : base, (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
+        playSound(mech ? 'heavy' : tank ? 'impact' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : base, (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35, null, { u: au });
         if (au && ['raeumer', 'sturm'].includes(au.type)) playSound('flinte', 0.5);   // kurzer Schuss im Grabenkampf
         if (au && TYPES[au.type].cls === 'storm' && e.t === 'melee') playSound('cry', 0.45, null, { u: au });   // Kampfschrei beim Sturmangriff
@@ -1985,7 +1987,7 @@ async function playEvent(e) {
       }
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
       if (!e.panic) {
-        if (TYPES[u.type].cls === 'cav') playSound(Math.random() < 0.65 ? 'pferd_unruhe' : 'neigh', 0.5); else if (u.limbered) playSound('neigh', 0.5);   // Reiter beschossen: unruhige Pferde
+        if (TYPES[u.type].cls === 'cav') playSound(Math.random() < 0.65 ? 'pferd_unruhe' : 'neigh', Math.random() < 0.65 ? 0.5 : 0.35); else if (u.limbered) playSound('neigh', 0.35);   // Pferde gleich laut (Spieltest Runde 2)   // Reiter beschossen: unruhige Pferde
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45, null, { u });
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
         if (e.burn) burst(x, y, 12, ['#ff9a2a', '#ffcf5a', '#c8461a', '#3a2a1a'], { up: 0.24, spread: 0.18 });   // Feuer: Funken und Ruß statt Blut
@@ -2004,7 +2006,8 @@ async function playEvent(e) {
     case 'gas': { husten();   // Husten: 1–2 Figuren, je nachdem wie viele Einheiten getroffen werden
       const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
       floater(...headPos(e.u), e.late ? 'Vergiftet' : 'Gas!', e.late ? '#a8c870' : '#d6e670'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
-    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.55); playSound('drahtwackeln', 0.4); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
+    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('holzknacken', 0.5); playSound('drahtlatch', 0.5); playSound('drahtwackeln', 0.4);   // Holzpfähle knacken, Draht klirrt (Spieltest Runde 2)
+      floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
@@ -2018,7 +2021,7 @@ async function playEvent(e) {
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
     case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45, null, { u: unitById(e.by) }); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+1 Aktion', '#F0EDE1', true); await wait(300); break; }
     case 'order': {
-      const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.75, null, { u: unitById(e.u) });   // Befehl: Offiziere ohne Filter
+      const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.45, null, { u: unitById(e.u) });   // Befehl: Offiziere ohne Filter
       if (ff) for (const id of e.ids || []) { const dd = DU.get(id); if (dd) dd.vs.fireFree = true; }   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
       toast(`${e.name}: ${rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Sturmbefehl!'}`); floater(...headPos(e.u), rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Vorwärts!', rl ? '#b8ff7c' : '#ffb04a', true);
       for (let q = 0; q < 2; q++) rings.push({ x: d0.x, y: d0.y, r: 2.6 + q * 1.4, col: rl ? '#b8ff7c' : '#ffb04a', life: 34 + q * 10, max: 34 + q * 10 });
@@ -2060,24 +2063,24 @@ async function playEvent(e) {
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('clank', 0.5); floater(...headPos(e.u), 'abgebaut', '#ffe7a0'); await wait(200); break; }
     case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
-      playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.85, e.side); banner(e.name + '!', e.kind === 'hold' ? 'Alle Einheiten: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug' : 'Alle Einheiten: +1 Aktionspunkt');
+      playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   // Anführer-Fähigkeiten leiser (Spieltest Runde 2) banner(e.name + '!', e.kind === 'hold' ? 'Alle Einheiten: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug' : 'Alle Einheiten: +1 Aktionspunkt');
       for (const id of e.ids || []) { const dd = DU.get(id); if (!dd) continue; if (e.kind === 'hold') dd.vs.hold = true; rings.push({ x: dd.x, y: dd.y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); }
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
-    case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound(e.planted ? 'bauen' : 'clank', 0.45); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
+    case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound(e.planted ? 'bauen' : 'clank', 0.32); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
     case 'ignite': visSync('fires'); playSound('flame', 0.4); break;
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': floater(...headPos(e.u), 'brennt!', '#ffb04a'); await wait(120); break;
     case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
-    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('bauen', 0.35); floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
+    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('bauen', 0.35); for (let q = 0; q < 2; q++) setTimeout(() => playSound('grunzen', 0.4, null, { u, noGap: true }), (120 + q * (380 + Math.random() * 200)) / speed);   /* kurze Grunz-Laute, Gasmaske wie die Infanterie */ floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
     case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
-    case 'rush': playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
+    case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('clank', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
     case 'mark': { const [x, y] = center(e.c, e.r);
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
       visSync('marks'); playSound('whistle', 0.25); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
       rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
-    case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); playSound('marschtritt', 0.5); break;
+    case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)
     case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
     case 'freeblow': { const a = DU.get(e.a), d = DU.get(e.u); if (!a || !d) break; const fl = d.x < a.x; a.face = d.x >= a.x ? 0 : 3;   // Freischlag: kurzer Nahkampf-Effekt am Weichenden
       a.lunge = { dx: (d.x - a.x) * 0.18, dy: (d.y - a.y) * 0.18 }; { const sd = unitById(e.a).side; playSound(sd === 'A' ? 'nahA' : 'nahD', 0.45, sd); }
@@ -2819,7 +2822,7 @@ let hudTips = [];
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
   if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); return; }
-  if (a === 'pass') { E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
+  if (a === 'pass') { playSound('klick', 0.5, null); E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
   if (a === 'o-rally' || a === 'o-storm' || a === 'o-fire') return act(() => E.order(G, sel, a.slice(2)));
   if (a === 'big') return act(u => E.bigOrder(G, u));
   if (a === 'plant') return act(u => E.plantBanner(G, u));
@@ -2997,7 +3000,7 @@ function showEnd() {
 
 // Klick-Ton für Knöpfe (Oberfläche); Titelmusik startet, sobald der Browser Ton erlaubt (erste Berührung)
 document.addEventListener('pointerdown', ev => {
-  const b = ev.target.closest && ev.target.closest('button, .up-btn, .tb-btn, [role="button"], label.mapcard'); if (b) playSound('ui', 0.3, null);
+  const b = ev.target.closest && ev.target.closest('button, .up-btn, .tb-btn, [role="button"], label.mapcard'); if (b && b.id !== 'btnNext' && b.dataset.act !== 'pass') playSound('ui', 0.3, null);   // diese beiden haben den eigenen Klick
   if (!$('start').hidden && musikName !== 'musik_titel') setMusik('musik_titel'); musikWecken();   // Browser erlaubt Ton erst nach der ersten Berührung
 }, true);
 // ---------- Knöpfe ----------
@@ -3007,6 +3010,7 @@ $('btnMarks').onclick = () => { marksOn = !marksOn; tbSync(); };
 // Sind alle fertig, leuchtet „Runde beenden“ kurz auf.
 function nextUnit(back) {
   if (!G || busy || G.over || !human(G.side) || placing) return;
+  playSound('klick', 0.5, null);   // deutlicher Klick, auch per Taste (Spieltest Runde 2)
   refreshSpent();
   const list = G.units.filter(u => u.side === G.side && E.active(u) && !spent.has(u.id)).sort((a, b) => a.c - b.c || a.r - b.r);
   if (!list.length) { const be = $('btnEnd'); be.classList.remove('flash'); void be.offsetWidth; be.classList.add('flash'); setTimeout(() => be.classList.remove('flash'), 1900); return; }

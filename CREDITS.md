@@ -26,6 +26,10 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | panzerkanone | panzerkanone_1 | 457044__gerainsan__slow-motion-gun-shot.wav | Freesound / gerainsan | CC0 1.0 | <https://freesound.org/s/457044/> |
 | cannonH | cannonH_1 | Water/212689__tb0y298__water-explosion-1.wav | Freesound / tb0y298 | CC0 1.0 | <https://freesound.org/s/212689/> |
 | boomH | boomH_1 | 511884__audiopapkin__impact-sfx-016.wav | Freesound / audiopapkin | CC0 1.0 | <https://freesound.org/s/511884/> |
+| einschlagH | einschlagH_1, _2 | 841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav | Freesound / Artninja | CC BY 4.0 | <https://freesound.org/s/841046/> |
+| ueberrollen | ueberrollen_1, _2 (darunter) | dragon-studio-hard-heavy-impact-515256.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| saebel | saebel_1 | ribhavagrawal-swords-collide-230574.mp3 | Pixabay / ribhavagrawal | Pixabay Content License | – |
+| saebel | saebel_2 | chromascension-slash-542396.mp3 | Pixabay / chromascension | Pixabay Content License | – |
 | barrage | barrage_1 | Heavy firing sounds/210901__originalmaja__three-cannon-shots.mp3 | Freesound / originalmaja | CC BY-NC 4.0 | <https://freesound.org/s/210901/> |
 | launch | launch_1 | freesound_community-mortar-96223.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | boom2 | boom2_1 | Canon explode.wav | unbekannt | unbekannt | – |
