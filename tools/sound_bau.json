@@ -166,6 +166,7 @@
     { "pool": "motor_auswahl", "f": "Moving tanks/dennish18-tank-moving-143104.mp3", "s": null, "ab": 0.5, "max": 1.4, "lvl": -14 },
     { "pool": "drahtwackeln", "f": "Repair reload heal etc/freesound_community-shaking-chain-link-fence-vibration-94438.mp3", "s": null, "max": 1.2, "lvl": -20, "note": "Draht wackelt (zusätzlich zu latch)" },
     { "pool": "drahtlatch", "f": "Repair reload heal etc/freesound_community-latch-metallic-43692.mp3", "s": null, "max": 0.7, "lvl": -16, "note": "Einheit läuft in Stacheldraht (2026-11-17, Wunsch 14)" },
+    { "pool": "ueberrollen", "f": "Crash vehicle damage/tank_crunch_fence.wav", "s": null, "max": 2.2, "lvl": -14, "note": "Koloss/Sturmpanzer/Bohrkoloss/Schreiter walzt Draht nieder oder fährt über eine Barrikade (InspectorJ, CC BY 4.0)" },
     { "pool": "cut", "alt": "cut", "s": null },
     { "pool": "cut", "f": "Repair reload heal etc/freesound_community-cutting-clipping-wire-copper-80373.mp3", "s": null, "max": 1.6 },
     { "pool": "clank", "alt": "clank", "s": null },

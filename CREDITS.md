@@ -99,6 +99,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | drahtlatch | drahtlatch_1 | Repair reload heal etc/freesound_community-latch-metallic-43692.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | cut | cut_1 | freesound_community-cutting-clipping-wire-copper-80373.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | clank | clank_1 | freesound_community-tank-reload-47828.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| ueberrollen | ueberrollen_1 | Crash vehicle damage/tank_crunch_fence.wav (vom Nutzer als „tank crunsh fence.wav“; Metadaten: InspectorJ, „17.8.16“) | Freesound / InspectorJ – vermutlich aus der Reihe „Crunching/Smashing, Wooden Fence“ vom 17.08.2016, genaue Datei nicht sicher | CC BY 4.0 (alle InspectorJ-Aufnahmen dieser Reihe) | <https://freesound.org/people/InspectorJ/sounds/352207/> |
 | husten | husten_1 | Gas smoke/743360__qubodup__strong-double-cough.wav | Freesound / qubodup | CC0 1.0 | <https://freesound.org/s/743360/> |
 | husten | husten_2–4 | Gas smoke/739416__qubodup__pepper-spray-coughing.flac (3 Ausschnitte) | Freesound / qubodup | CC BY 4.0 | <https://freesound.org/s/739416/> |
 | pferd_auswahl | pferd_auswahl_1 | Animals/32044__erh__horse-snort-7.wav | Freesound / ERH | CC BY 4.0 | <https://freesound.org/s/32044/> |

@@ -157,6 +157,7 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **husten** | Gasschaden: 1–2 Figuren husten | beide | Gas smoke/743360 strong-double-cough (ganz); Gas smoke/739416 pepper-spray-coughing (3 Ausschnitte: 1,2 s ab 18,9 s, 1,2 s ab 23,9 s, 0,9 s ab 26,3 s) |
 | **pferd_auswahl** | Reiter angewählt: bei jedem Anwählen (höchstens alle 2,5 s) Schnauben, etwa jedes 4. Mal Wiehern (Gewichte 4×3 gegen 4) | beide | Animals/32044 horse-snort-7 (1,1 s ab 2,4 s); Animals/horse-snort-95874 (3 Ausschnitte); Animals/269571 horse-neigh-shortened |
 | **pferd_unruhe** | Reiter beschossen (65 %, sonst neigh), weichen zurück, fliehen oder Moral wankt: unruhige Pferde | beide | Animals/271266 nervous-horses (3 × 1,5 s ab 0,3 / 3,7 / 12,3 s) – **CC BY-NC 3.0** |
+| **ueberrollen** | Koloss, Sturmpanzer, Bohrkoloss oder Schreiter walzt Draht nieder oder fährt über eine Barrikade (Panzersperren gibt es als Gelände noch nicht) | beide | Crash vehicle damage/tank_crunch_fence.wav (2,2 s) – InspectorJ, CC BY 4.0 |
 | **gespann** + **wagenknarren** | aufgeprotztes Geschütz/Gespann fährt: Hufe und Räder, darunter leises Knarren (statt gallop) | beide | Wagen/horse-and-chariot (2 × 3 s ab 5 / 20 s); Wagen/o0specter0o creaky-carriage (3 s ab 0,5 s) |
 | (gallop2) | Reiter ziehen: zweite Variante | beide | Animals/tanweraman-horse-running (3 s ab 0,8 s) |
 | (später) | Winterkarte: Schritte im Schnee – noch nicht eingebaut | – | Footsteps robot mud marching/freesound_community-steps-on-snow-30305.mp3 |
