@@ -83,10 +83,29 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 - **Einheitenbegrenzung je Typ (später):** nicht nur eine Gesamtgrenze, sondern bestimmte Typen gezielt begrenzen (z. B. höchstens 1 General, wenige Kolosse, wenige MG). Ändert das Balancing stark – deshalb erst nach der Einheiten-Durchsicht.
   - Jetzt im Code: je Typ höchstens 9 (ARMY_CAP), höchstens 4 Kolosse/Kampfmaschinen, General höchstens 1.
 
+## Artillerie später (2026-11-17)
+- **Leichte Artillerie für die Aschenwacht** (Gegenstück zur Feldkanone: direkter Schuss, beweglich, gut gegen Kolosse).
+- **Schwere Artillerie für beide Seiten** (große Reichweite, langsam, starke Einschläge). Danach entscheiden, ob das Grabengeschütz seinen direkten Schuss behält.
+
+## Fahrzeuge (2026-11-17)
+- Zweites Fahrzeug für das Konkordat, z. B. Flammenpanzer oder Mörserpanzer (Gegengewicht zu Sturmpanzer + Bohrkoloss der Aschenwacht).
+
+## Tempo (2026-11-17)
+- Vorschlag: eigenes Tempo für den Gegnerzug, z. B. eigenes Tempo × 1,2 (bei ½× also 0,6×). Messung Grauwall: ein Gegnerzug dauert bei 0,5× etwa 21 s, bei 0,6× etwa 19 s, bei 1× etwa 17 s (KI-Denkzeit und feste Wartezeiten zählen mit).
+
+## Einheitlicher Stimmfilter (2026-11-17) – erledigt (tools/stimmfilter.py)
+- Für ALLE Stimm-Tonplätze ein Filter je Sprecher: Infanterie, Sturmtruppen, Pioniere, Sanitäter, Reiter usw. Gasmaske; Kampfanzüge (Stahlgänger, Panzerknechte) Gasmaske etwas stärker; Hauptmann und General ohne Filter; Panzerbesatzung Bordfunk; Schreiter und Eisenknecht (auch robot-voice-damage) Roboter. Waffen, Explosionen, Motoren bleiben unverändert.
+
+## Zweitwaffen – Vorschlag (2026-11-17) – entschieden und gebaut: Bohrkoloss Flammenstoß (statt Turm-MG), Kreuzschreiter Löwenmaul-Kanone, Sturmpanzer behält nur die Breitseite
+- Sturmpanzer: Seiten-MG wie der Landkoloss (Modell zeigt mehrere Schießscharten an der Seite). Dafür die Breitseite (zweiter Kanonenschuss) streichen oder behalten – Entscheidung offen.
+- Bohrkoloss: kleines Turm-MG (Modell hat einen Lauf auf dem Aufbau), Reichweite 2; bisher nur Nahkampf mit dem Bohrer.
+- Kreuzschreiter: Kanone im Löwenmaul als Zweitwaffe (Reichweite 2–3) neben dem schweren MG in der Hand.
+- Keine Zweitwaffe: Ordens-, Säge-, Klauenschreiter, Eisenknecht (eine Fernwaffe + Nahkampfarm), Stahlgänger und Panzerknechte (Infanterie).
+
 ## Fahrplan bis zum Content-Ausbau (Enrico + Claude, 2026-11-17)
 Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr Karten, Modi, Seiten.
 1. Oberfläche fertig: Paket 5 (unteres Bedienfeld im Total-War-Stil, Rekrutierung nach Kategorien) + neues Titelbild (ui-quelle/titelbild_neu.png, noch nicht eingebaut).
-2. Restliche Grundregeln aus Etappe 5: Aufstellungsphase zu Beginn; Bewegungs- und Aktionspunkte sauber trennen; Draht schneiden nur Spezialisten; Festfahren seltener; Geländehinweis beim Ziehen; Bohrkoloss-Flammenstoß; Entscheidung „Fahrzeuge auf 2 Feldern".
+2. Restliche Grundregeln aus Etappe 5: ~~Aufstellungsphase zu Beginn~~ erledigt (fb74781); ~~Schusswinkel für Fahrzeuge und Schreiter~~ erledigt (fb74781); Bewegungs- und Aktionspunkte sauber trennen (Schritt 1 Regeln und Anzeige in Arbeit, Schritt 2 KI danach); ~~Draht schneiden nur Spezialisten~~ erledigt; ~~Festfahren seltener~~ erledigt; Geländehinweis beim Ziehen; ~~Bohrkoloss-Flammenstoß~~ erledigt; ~~Entscheidung „Fahrzeuge auf 2 Feldern"~~ entschieden: bleiben auf 1 Feld.
 3. KI-Durchsicht: nutzt sie alle neuen Befehle sinnvoll, ist sie nicht zu defensiv, spielt sie den Grauwall gut.
 4. Grauwall komplett: Gelände, Effekte, Ton, Musik (Suno: Titelthema + Schlachtmusik), Hilfe/Regeltexte auf neuem Stand.
 5. Balance (Etappe 7): Anführer-Befehle, Kolosse (84 % Verluste), Kosten, Siegquote um 50 %.

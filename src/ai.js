@@ -78,7 +78,7 @@ function abilPlan(G, u) {
     else if (k === 'mark') {   // Ziel markieren: Gegner, auf den eigene Artillerie in dieser Runde noch schießen kann
       const x = foe(c, r);
       if (x && E.active(x)) {
-        const arts = G.units.filter(a => a.side === u.side && E.active(a) && E.cls(a) === 'art' && !a.attacked && !a.limbered && a.ap >= (TYPES[a.type].mobile ? 1 : 2) && E.canShell(G, a, c, r, 'he'));
+        const arts = G.units.filter(a => a.side === u.side && E.active(a) && E.cls(a) === 'art' && !a.attacked && !a.limbered && a.ap >= 1 && E.canShell(G, a, c, r, 'he'));
         v = arts.length ? 1.5 + arts.length * 0.8 + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1 : 0) + (G.map[c][r].obj ? 0.8 : 0) + (x.revealed > 0 ? 0 : 0) : 0;
       }
     }
@@ -94,7 +94,7 @@ function abilPlan(G, u) {
   }
   if (!best) return null;
   const A = E.ABILS[k];
-  return { only: A.ap >= 2 || !!A.all, step: { k: 'abil', c: best[0], r: best[1] } };
+  return { only: !!A.all, step: { k: 'abil', c: best[0], r: best[1] } };
 }
 function nearestEnemyDist(G, side, c, r) {
   let best = 99;
@@ -171,19 +171,20 @@ function imBogen(G, u, c, r, d, moved) {
   if (E.cls(u) !== 'walker') return true;
   const f = moved ? E.faceToward(u.face, u.c, u.r, c, r) : u.face;
   if (E.angDiff(E.angleTo(c, r, d.c, d.r), f * 60) <= P.FZ_FAN + 1) return true;
-  return !moved && u.ap >= 1 + E.drehKosten(u);
+  return !moved && u.ap >= 1 && (u.bp || 0) >= E.drehKosten(u, E.faceToward(u.face, c, r, d.c, d.r));   // Drehen kostet Fahrzeuge BP
 }
-function bestAttackFrom(G, u, c, r, moved, run) {
+function bestAttackFrom(G, u, c, r, moved, run, kosten) {
+  const nahOk = E.nahFrei(Object.assign({}, u, { bpUsed: (u.bpUsed || 0) + (moved ? kosten || 0 : 0) }));   // Nahkampf nur mit höchstens halb verbrauchten BP (Reiter, Sturm, Kampfanzug frei)
   const T = TYPES[u.type];
   let best = null;
   for (const d of G.units) {
     if (d.side === u.side || !E.alive(d)) continue;
     const dd = E.dist(c, r, d.c, d.r);
-    if (dd === 1 && T.atk >= 3 && !(u.supp > 0)) {
+    if (dd === 1 && T.atk >= 3 && !(u.supp > 0) && nahOk) {
       const v = attackValue(G, u, d, 'melee', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.mg && (moved || (!u.setup && u.ap < 2))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+    if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
         dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r) && imBogen(G, u, c, r, d, moved)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
@@ -193,7 +194,7 @@ function bestAttackFrom(G, u, c, r, moved, run) {
 }
 
 function planArt(G, u) {
-  if (u.attacked || u.ap < (TYPES[u.type].mobile ? 1 : 2) || u.supp > 0) return null;
+  if (u.attacked || u.ap < 1 || u.supp > 0) return null;
   let best = null;
   const consider = (v, c, r, mode) => { if (v > 0.5 && (!best || v > best.v)) best = { v, c, r, mode }; };
   const friendsNear = (c, r, n) => G.units.some(o => o.side === u.side && E.active(o) && E.cls(o) !== 'art' && E.dist(o.c, o.r, c, r) <= n);
@@ -258,7 +259,7 @@ function planUnit(G, u) {
   }
   for (const [, n] of E.reachable(G, u)) {
     const pv = posValue(G, u, n.c, n.r);
-    const atk = n.retreat ? null : bestAttackFrom(G, u, n.c, n.r, true, n.path.length);
+    const atk = n.retreat ? null : bestAttackFrom(G, u, n.c, n.r, true, n.path.length, n.cost);
     opts.push({ v: pv + (atk ? Math.max(0, atk.v) : 0) - 0.05 * n.cost - (n.retreat ? 0.4 : 0), move: [n.c, n.r], atk: atk && atk.v > 0 ? atk : null });
   }
   if (!(typeof process !== 'undefined' && process.env && process.env['NOMARCH_' + u.side]))
@@ -311,7 +312,7 @@ function next(G) {
       const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
       if (shaky >= Math.max(3, Math.round(own.length * 0.35))) return { u: u.id, steps: [{ k: 'big' }] };
     } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
-      const ready = own.filter(o => !o.attacked && o.ap >= 2 && nearestEnemyDist(G, o.side, o.c, o.r) <= TYPES[o.type].mv + 2 && TYPES[o.type].atk >= 3).length;
+      const ready = own.filter(o => !o.attacked && o.ap >= 1 && nearestEnemyDist(G, o.side, o.c, o.r) <= TYPES[o.type].mv + 2 && TYPES[o.type].atk >= 3).length;
       const half = o => u.side === 'D' ? o.c >= E.COLS / 2 : o.c < E.COLS / 2;   // Zielfelder auf der eigenen Hälfte
       const threat = E.OBJECTIVES.some(o => half(o) && (G.ctrl[o.id] && G.ctrl[o.id] !== u.side || G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, o.c, o.r) <= 1)));   // Gegner steht an oder auf einem eigenen Zielfeld
       if (ready >= Math.max(3, Math.round(own.length * 0.5)) && (threat || G.turn >= 6)) return { u: u.id, steps: [{ k: 'big' }] };
@@ -365,7 +366,7 @@ function next(G) {
     // Aufgebautes MG ohne Ziel: prüfen, ob sich ein Stellungswechsel lohnt (abbauen 1 AP, dann ziehen); aufgebaut wird später
     if (TYPES[u.type].mg && u.setup && !o.atk && E.canTeardown(G, u)) {
       const near = nearestEnemyDist(G, u.side, u.c, u.r);
-      if (near > TYPES[u.type].rng) { u.setup = false; u.ap -= 1; const o2 = planUnit(G, u); u.setup = true; u.ap += 1;
+      if (near > TYPES[u.type].rng) { u.setup = false; u.bp -= 1; const o2 = planUnit(G, u); u.setup = true; u.bp += 1;
         if (o2.move) return { u: u.id, steps: [{ k: 'teardown' }, { k: 'move', c: o2.move[0], r: o2.move[1] }] }; }
     }
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
@@ -393,7 +394,7 @@ function next(G) {
   if (typeof process !== 'undefined' && process.env && process.env['NO2_' + G.side]) return null;
   // Sturmpanzer: zweiter Schuss der Breitseite auf ein anderes Ziel bis 2 Felder (schwächstes zuerst)
   for (const u of G.units) {
-    if (u.side !== G.side || !TYPES[u.type].broadside || !E.active(u) || !u.attacked || (u.bsT || []).length !== 1 || u.ap < 1) continue;
+    if (u.side !== G.side || !TYPES[u.type].broadside || !E.active(u) || !u.attacked || (u.bsT || []).length !== 1) continue;
     const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => x.str - y.str)[0];
     if (t) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
   }
@@ -407,7 +408,7 @@ function next(G) {
     G._aiDone2.add('s' + m.id);
     let best = null, bv = 0;
     for (const t of G.units) {
-      if (!E.canSend(G, m, t) || t.attacked || t.ap > 1) continue;
+      if (!E.canSend(G, m, t) || t.attacked || (t.bp || 0) > E.bpMax(t)) continue;
       const v = TYPES[t.type].atk + (nearestEnemyDist(G, t.side, t.c, t.r) <= TYPES[t.type].mv + 2 ? 3 : 0);
       if (v > bv) { bv = v; best = t; }
     }
@@ -463,7 +464,7 @@ function exec(G, uid, s) {
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
   if (s.k === 'fire') {   // Fahrzeug/Schreiter: Ziel außerhalb des Schussfelds – erst drehen (kostet 1 Punkt), dann schießen
-    if (!E.canFire(G, u, d) && E.cls(u) === 'walker' && !u.attacked && u.ap >= 1 + E.drehKosten(u)) { const ev = E.turnUnit(G, u, E.faceToward(u.face, u.c, u.r, d.c, d.r)); if (E.canFire(G, u, d)) return ev.concat(E.fire(G, u, d)); return ev; }
+    if (!E.canFire(G, u, d) && E.cls(u) === 'walker' && !u.attacked && u.ap >= 1 && (u.bp || 0) >= E.drehKosten(u, E.faceToward(u.face, u.c, u.r, d.c, d.r))) { const ev = E.turnUnit(G, u, E.faceToward(u.face, u.c, u.r, d.c, d.r)); if (E.canFire(G, u, d)) return ev.concat(E.fire(G, u, d)); return ev; }
     return E.canFire(G, u, d) ? E.fire(G, u, d) : []; }
   if (s.k === 'melee') return E.canMelee(G, u, d) ? E.melee(G, u, d) : [];
   return [];

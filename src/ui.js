@@ -837,11 +837,13 @@ function drawMarks(u, d, x, y, own, done, acc) {
   if (q > 0.01) drawBrushBar(g, LIFE_COL[lifeTier(q)], bx, by, bw * q, bh);   // Farbe nach Stand, Fraktion zeigt der Ring
   g.fillStyle = 'rgba(18,13,11,0.7)'; for (let i = 1; i < 10 * q - 0.2; i++) g.fillRect(Math.round(bx + bw * i / 10), by + bh * 0.15, 1, bh * 0.7);
   MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: by + bh + 4, u, kind: 'hp' });
-  if (own) {   // Aktionspunkte: kleine Messingpunkte (leer = dunkel)
-    const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0), nn = Math.max(P.AP, ap), r = Math.max(2.5, s * 0.042), py = by + bh + r + 1.5;
-    for (let i = 0; i < nn; i++) { const cx = x + (i - (nn - 1) / 2) * r * 2.4, im = UPI[i < ap ? 'muenze' : 'muenzeLeer'];   // volle / leere Messingmünze
-      if (im) g.drawImage(im, cx - r, py - r, r * 2, r * 2); else { g.beginPath(); g.arc(cx, py, r, 0, 7); g.fillStyle = i < ap ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, r * 0.3); g.strokeStyle = '#120D0B'; g.stroke(); } }
-    MARKS.push({ x0: x - nn * r * 1.25, y0: py - r - 1, x1: x + nn * r * 1.25, y1: py + r + 2, u, kind: 'ap' });
+  if (own) {   // Fahrplan 2: Bewegungspunkte als kleine Punkte (hell = übrig), daneben die Aktionsmünze (+ kleine Münze der Zweitwaffe)
+    const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), bm = Math.max(E.bpMax(u), bp), r = Math.max(2.8, s * 0.046), rb = Math.max(1.8, s * 0.026), py = by + bh + r + 1.5;
+    const zw = TYPES[u.type].zweit, wB = bm * rb * 2.3, w = wB + r * 2.6 + (zw ? r * 2 : 0); let cx = x - w / 2 + rb;
+    for (let i = 0; i < bm; i++) { g.beginPath(); g.arc(cx, py, rb, 0, 7); g.fillStyle = i < bp ? '#E8DDB8' : '#2A221C'; g.fill(); g.lineWidth = Math.max(1, rb * 0.45); g.strokeStyle = '#120D0B'; g.stroke(); cx += rb * 2.3; }
+    const coin = (rr, voll) => { const im = UPI[voll ? 'muenze' : 'muenzeLeer']; cx += rr; if (im) g.drawImage(im, cx - rr, py - rr, rr * 2, rr * 2); else { g.beginPath(); g.arc(cx, py, rr, 0, 7); g.fillStyle = voll ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, rr * 0.3); g.strokeStyle = '#120D0B'; g.stroke(); } cx += rr + r * 0.3; };
+    cx += r * 0.4 - rb; coin(r, ap >= 1); if (zw) coin(r * 0.7, !u.zw && !aus);
+    MARKS.push({ x0: x - w / 2 - 2, y0: py - r - 1, x1: x + w / 2 + 2, y1: py + r + 2, u, kind: 'ap' });
   }
   // Deckungsschild rechts (nur wenn die Einheit auf ihrem Feld steht, nicht während einer Bewegung)
   if (E.active(u)) { const [tx, ty] = center(u.c, u.r); if (Math.abs(tx - d.x) + Math.abs(ty - d.y) < 2) { const cv0 = E.coverOf(G, u);
@@ -1294,6 +1296,9 @@ function drawAir(g, s, up) {
         for (const k of i === pts.length - 1 ? [0.5] : [0.5, 1]) { const x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k; if (up && !up(x, y)) continue;
           g.beginPath(); g.arc(x, y, Math.max(3, s * (k === 1 ? 0.075 : 0.055)), 0, 7); g.fillStyle = hz && k === 1 || hz && i === pts.length - 1 ? 'rgba(200,52,40,0.72)' : 'rgba(240,237,225,0.55)'; g.fill();
           g.lineWidth = Math.max(1, s * 0.018); g.strokeStyle = 'rgba(18,13,11,0.55)'; g.stroke(); } }
+      { const [c1, r1] = pts[pts.length - 1], [x, y] = center(c1, r1); if (!up || up(x, y)) {   // Rest-BP am Zielfeld (Fahrplan 2)
+          const t = String(n.rest), R = Math.max(10, s * 0.19), yy = y + s * 0.05; g.beginPath(); g.arc(x, yy, R, 0, 7); g.fillStyle = n.march ? 'rgba(226,176,74,0.92)' : 'rgba(232,221,184,0.92)'; g.fill();
+          g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = '#120D0B'; g.stroke(); g.font = `400 ${Math.round(R * 1.25)}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#120D0B'; g.fillText(t, x, yy + R * 0.06); } }
       if (warnAt) { const [x, y, hz] = warnAt, ty = y - s * 0.55; if (!up || up(x, ty)) { const r = Math.max(9, s * 0.17);   // Warndreieck
           g.beginPath(); g.moveTo(x, ty - r); g.lineTo(x + r * 1.05, ty + r * 0.75); g.lineTo(x - r * 1.05, ty + r * 0.75); g.closePath(); g.fillStyle = '#C8342A'; g.fill(); g.lineWidth = Math.max(2, s * 0.04); g.strokeStyle = '#120D0B'; g.stroke();
           g.font = `900 ${Math.round(r * 1.2)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.fillText('!', x, ty + r * 0.12); } } } }
@@ -2273,10 +2278,11 @@ function markTips(m) {
     const n = reach.get(E.key(pv.c, pv.r));
     return [pv.threat.length && { name: `Warndreieck: ${pv.threat.length} ${pv.threat.length === 1 ? 'Schütze' : 'Schützen'}`, text: `So viele Gegner können auf dieses Feld schießen (rot umrandet).` },
       { name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite (Messinglinien).` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Schild: Deckung ${cn}.` : 'Keine Deckung.'}` },
-      n && (n.march ? { name: 'Marsch – danach keine Aktion mehr', text: `Stiefel mit Flügeln: doppelte Zugweite für beide Aktionspunkte, Weg ${n.cost}. Danach kann die Einheit in dieser Runde nichts mehr tun.` }
-        : { name: `Stiefel: Weg ${n.cost}${n.retreat ? ' · Rückzug' : ''}`, text: n.retreat ? `Rückzug aus der Feindberührung, kostet beide Aktionspunkte.${E.freeBlows(G, sel).length ? ` Freischlag: jeder angrenzende Nahkämpfer trifft einmal (je etwa −10 Stärke, wie Stacheldraht), zusammen ${fbTxt(sel).replace(' · Freischlag ', '')} Stärke (keine Moral).` : ' Kein Freischlag: kein Gegner daneben kann zuschlagen.'}` : `Bewegung bis hierher für 1 Aktionspunkt.${n.via ? ' Über den Wegpunkt.' : ' Umschalt+Klick (Finger: lange drücken) setzt einen Wegpunkt.'}` })]; }
+      n && (n.march ? { name: `Marsch – noch ${n.rest} BP, keine Aktion mehr`, text: `Stiefel mit Flügeln: die Aktion wird zu +50 % Bewegung, Weg ${n.cost}. Danach kann die Einheit in dieser Runde nicht mehr schießen oder handeln.` }
+        : { name: `Stiefel: Weg ${n.cost} · noch ${n.rest} BP${n.retreat ? ' · Rückzug' : ''}`, text: n.retreat ? `Rückzug aus der Feindberührung, kostet die Aktion und alle Bewegungspunkte.${E.freeBlows(G, sel).length ? ` Freischlag: jeder angrenzende Nahkämpfer trifft einmal (je etwa −10 Stärke, wie Stacheldraht), zusammen ${fbTxt(sel).replace(' · Freischlag ', '')} Stärke (keine Moral).` : ' Kein Freischlag: kein Gegner daneben kann zuschlagen.'}` : `Bewegung bis hierher für 1 Aktionspunkt.${n.via ? ' Über den Wegpunkt.' : ' Umschalt+Klick (Finger: lange drücken) setzt einen Wegpunkt.'}` })]; }
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
-  if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
+  if (m.kind === 'ap') { const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), Z = TYPES[u.type].zweit;
+    return [{ name: `Bewegung ${bp} von ${E.bpMax(u)} · Aktion ${ap ? 'frei' : 'verbraucht'}`, text: `Helle Punkte = Bewegungspunkte (Gelände kostet 1–3), die Münze = die eine Aktion der Runde (Schießen, Nahkampf, Befehl, Fähigkeit, Marsch).${Z ? ` Kleine Münze: ${Z.name}, einmal je Runde zusätzlich.` : ''}` }]; }
   return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
 }
 const markKey = m => m.u.id + m.kind + (m.pv ? m.pv.id : '');
@@ -2384,7 +2390,7 @@ function contourOf(set) { const out = []; for (const k of set) { const c = Math.
 function previewFrom(c, r) {
   const n = reach.get(E.key(c, r)); if (!n || !sel) return null;
   const id = sel.id + ':' + c + ':' + r; if (pvCache && pvCache.id === id) return pvCache;
-  const T0 = TYPES[sel.type], ghost = { ...sel, c, r, ap: n.march || n.retreat ? 0 : Math.max(0, (sel.ap || 0) - 1), setup: T0.mg ? false : sel.setup };   // MG muss nach dem Zug neu aufbauen
+  const T0 = TYPES[sel.type], ghost = { ...sel, c, r, ap: n.march || n.retreat ? 0 : sel.ap, bp: n.rest, bpUsed: (sel.bpUsed || 0) + n.cost, setup: T0.mg ? false : sel.setup };   // MG muss nach dem Zug neu aufbauen
   const foes = G.units.filter(f => f.side !== sel.side && E.alive(f));
   const hit = T0.cls === 'art' ? [] : foes.filter(f => E.canFire(G, ghost, f));
   const threat = foes.filter(f => { const F = TYPES[f.type]; if (!E.active(f) || f.supp > 0) return false; const d = E.dist(f.c, f.r, c, r);
@@ -2405,7 +2411,7 @@ function computeOptions() {
   recSet = new Set(); if (TYPES[sel.type].recover) for (const o of G.units) if (E.canRecover(G, sel, o)) recSet.add(o.id);
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
-  { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= (T0.mobile ? 1 : 2) && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= 1 && (!T0.mg || sel.setup));
+  { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= 1 && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= 1 && (!T0.mg || sel.setup));
     if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r)) && E.inFan(G, sel, c, r)) rangeSet.add(E.key(c, r)); }   // MG: nur im Schussfächer
     // Sicht: Felder in Sicht- bzw. Schussweite ohne Sichtlinie (Wald, Dorf, Fabrik, Kirche dazwischen, Rauch). Artillerie sieht selbst nur bis zur Direktschussweite.
     const SP = T0.cls === 'art' ? P.ART_DIRECT : Math.max(T0.spot || P.SPOT, T0.rng || 0, G.map[sel.c][sel.r].t === 'kirche' ? 6 : 0);
@@ -2436,7 +2442,7 @@ async function act(fn) {
   previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
   await play(fn(u));
   busy = false;
-  sel = (u && E.active(u) && u.ap >= 1) ? u : null;
+  sel = (u && E.active(u) && (u.ap >= 1 || u.bp > 0)) ? u : null;   // bleibt gewählt, solange Aktion oder BP übrig sind
   computeOptions(); updateUI();
 }
 const doMove = (c, r) => { const n = reach.get(E.key(c, r)), via = wayPt; wayPt = null; return act(u => via && n && n.via ? E.moveUnit(G, u, c, r, n) : E.moveUnit(G, u, c, r)); };   // mit Wegpunkt: genau der gezeigte Weg
@@ -2582,8 +2588,8 @@ function tbSync() {
 const spent = new Set();
 function hasAction(u) {
   if (u.broken > 0) return false;
-  if (u.ap < 1) return false;
-  if (!u.supp && E.reachable(G, u).size) return true;
+  if (!u.supp && E.reachable(G, u).size) return true;   // noch Bewegungspunkte
+  if (u.ap < 1) return E.canSetup(G, u) || E.canTeardown(G, u);
   if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o) || E.canRecover(G, u, o))) return true;
   if (E.canSetup(G, u)) return true;
   // Bereit heißt: irgendeine Aktion ist noch möglich (Wunsch 2026-11-16), nicht nur Ziehen. Aufgebautes MG kann abbauen,
@@ -2681,9 +2687,9 @@ function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
 }
 const upBar = (cls, k, v, max, nach) => `<div class="up-bar ${cls}"><div class="tube"><div class="slot">${nach != null ? `<i class="nach" style="width:${(Math.max(0, Math.min(1, nach / max)) * 100).toFixed(1)}%"></i>` : ''}<i style="width:${Math.round(Math.max(0, Math.min(1, v / max)) * 100)}%"></i></div></div><span class="val"><span class="k">${k}</span>${fmt(v)}<small> / ${fmt(max)}</small></span></div>`;
 function upBtn(b, i) {
-  const cost = b.cost > 0 ? `<span class="ap">${b.cost}</span>` : '';
+  const cost = b.bp > 0 ? `<span class="ap bp">${b.bp}</span>` : b.cost > 0 ? `<span class="ap">${b.cost}</span>` : '';   // Fahrplan 2: Münze = Aktion, Stiefel-Zahl = BP
   const corner = b.cd > 0 ? `<span class="cdn"><img src="${upSym('sanduhr')}" alt="">${b.cd}</span>` : b.cnt != null ? `<span class="cdn cnt">×${b.cnt}</span>` : '';
-  const costTxt = b.costTxt || (b.cost > 0 ? `${b.cost} Aktion${b.cost > 1 ? 'en' : ''}` : 'kostet nichts');
+  const costTxt = b.costTxt || (b.bp > 0 ? `${b.bp} Bewegungspunkt${b.bp > 1 ? 'e' : ''}` : b.cost > 0 ? 'die Aktion' : 'kostet nichts');
   const tip = `<span class="up-tip" role="tooltip"><b>${b.name}</b><span class="cost">${costTxt}${b.cd > 0 ? ' · wieder bereit in ' + upRunden(b.cd) : ''}</span><span>${b.text}</span>${b.off && b.why ? `<span class="why">${b.why}</span>` : ''}</span>`;
   const cls = 'up-ab' + (b.on ? ' on' : '') + (b.off ? ' off' : '') + (b.pulse && !b.off ? ' pulse' : '') + (b.mirror ? ' mirror' : '');
   return `<div class="up-slot${b.on ? ' on' : ''}"><button class="${cls}" data-act="${b.act}" aria-label="${upEsc(b.name)}, Taste ${i + 1}"${b.off ? ' aria-disabled="true"' : ''}><img src="${upSym(b.sym)}" alt="">${cost}${corner}${tip}</button><span class="up-key">${i + 1}</span></div>`;
@@ -2795,10 +2801,10 @@ function drawArea(g, s) {
 function unitButtons(T, hints) {
   const btns = [], tg = [...targets.values()];
   if (T.cls === 'art') {
-    const c = T.mobile ? 1 : 2, can = !sel.attacked && sel.ap >= c && !sel.supp && !sel.limbered;
-    const why = sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: erst abprotzen.' : sel.attacked ? 'Hat diese Runde schon gehandelt.' : sel.ap < c ? `Braucht ${c} Aktionspunkte.` : '';
+    const c = 1, can = !sel.attacked && sel.ap >= c && !sel.supp && !sel.limbered;
+    const why = sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: erst abprotzen.' : sel.attacked ? 'Hat diese Runde schon gehandelt.' : sel.ap < c ? 'Aktion schon verbraucht.' : '';
     if (E.canLimber(G, sel)) btns.push(sel.limbered
-      ? { act: 'limber', sym: 'abprotzen', name: 'Abprotzen', cost: sel.ap, costTxt: 'alle Aktionen', text: 'In Stellung gehen. Ab der nächsten Runde feuerbereit.' }
+      ? { act: 'limber', sym: 'abprotzen', name: 'Abprotzen', costTxt: 'alle restlichen Bewegungspunkte', text: 'In Stellung gehen. Ab der nächsten Runde feuerbereit.' }
       : { act: 'limber', sym: 'aufprotzen', name: 'Aufprotzen', cost: 1, text: `Anspannen: zieht ${P.LIMBER_MV} Felder, feuert aber nicht.` });
     btns.push({ act: 'm-he', sym: 'granate_artillerie', name: 'Sprenggranate', cost: c, text: 'Trifft ein Feld. Zerstört auch Draht.', on: can && artMode === 'he', off: !can, why });
     const bcd = sel.cdP > 0;   // Sperrfeuer: Abklingzeit P.BARRAGE_CD Runden
@@ -2812,38 +2818,38 @@ function unitButtons(T, hints) {
   if (T.cutter) {   // Paket 8: nur Drahtschneider, vom Nachbarfeld aus
     const ct = E.cutTargets(G, sel);
     btns.push({ act: 'cut', sym: 'drahtschere', name: 'Draht schneiden', cost: 1, text: 'Stacheldraht auf diesem oder einem Nachbarfeld entfernen, ohne hineinzulaufen (kein Drahtschaden). Danach darf die Einheit noch angreifen.', pulse: ct.length > 0, on: abilMode && feldArt === 'cut', off: !ct.length,
-      why: sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Kein Aktionspunkt mehr.' : 'Kein Draht auf diesem Feld oder daneben.' });
+      why: sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : 'Kein Draht auf diesem Feld oder daneben.' });
     if (abilMode && feldArt === 'cut') hints.push('<i>Messing markiert:</i> Drahtfeld anklicken.');
   }
   if (T.zweit) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG)
     const zt = E.zweitTargets(G, sel), Z = T.zweit;
-    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'granate_artillerie' : 'garbe', name: Z.name, cost: 1, text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
-      why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Kein Aktionspunkt mehr.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
+    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'granate_artillerie' : 'garbe', name: Z.name, costTxt: 'einmal je Runde zusätzlich, kostet keine Aktion', text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
+      why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
     if (abilMode && feldArt === 'zweit') hints.push('<i>Messing markiert:</i> Ziel anklicken.');
   }
   if (T.wirelayer && !sel.attacked) btns.push({ act: 'lay', sym: 'drahtrolle', name: 'Draht ziehen', cost: 1, text: 'Stacheldraht auf das Feld legen, in das die Einheit blickt.', pulse: true, off: !E.canLay(G, sel), why: 'Zu einem freien Feld drehen (Drehen-Knöpfe).' });
-  const atkWhy = sel.supp > 0 ? 'Niedergehalten: kann nicht schießen oder stürmen.' : sel.attacked ? 'Hat diese Runde schon angegriffen.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' : 'Kein Ziel in Reichweite.';
+  const atkWhy = sel.supp > 0 ? 'Niedergehalten: kann nicht schießen oder stürmen.' : sel.attacked ? 'Hat diese Runde schon angegriffen.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : 'Kein Ziel in Reichweite.';
   if (T.rng > 0) {
     const sym = T.lob ? 'handgranate' : T.flame ? 'flamme' : 'zielen', name = T.lob ? 'Granatwurf' : T.flame ? 'Flammenstrahl' : 'Beschuss';
     const why = T.mg && !sel.setup ? 'MG erst aufbauen.' : !sel.supp && !sel.attacked && E.held(G, sel) ? 'Im Nahkampf gebunden: Schießen geht nicht.' : atkWhy;
     if (T.broadside) {   // Sturmpanzer: Breitseite deutlich (2026-11-17) – zwei Schüsse je Runde auf zwei Ziele, Zähler am Knopf, nach dem ersten Schuss pulsiert er
       const n = (sel.bsT || []).length, zweiter = sel.attacked && n === 1, frei = tg.some(t => t.kind === 'fire' || t.both);
-      btns.push({ act: 'p-fire', sym: 'zielen', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${T.rng} Felder, danach ein anderes bis 2 Felder (je 1 ●).`, on: atkPref === 'fire', off: !frei,
+      btns.push({ act: 'p-fire', sym: 'zielen', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${T.rng} Felder, danach ein anderes bis 2 Felder (beide Schüsse zusammen die Aktion).`, on: atkPref === 'fire', off: !frei,
         why: n >= 2 ? 'Beide Schüsse der Breitseite sind abgegeben.' : zweiter ? 'Kein zweites Ziel bis 2 Felder.' : why });
       if (zweiter && frei) hints.push('<i>Breitseite:</i> zweites Ziel bis 2 Felder anklicken (×0,6).');
     } else
     btns.push({ act: 'p-fire', sym, name, cost: 1, text: `Ziel auf der Karte anklicken (Messing, Zielsymbol). Reichweite ${T.rng} Felder.`, on: atkPref === 'fire', off: !tg.some(t => t.kind === 'fire' || t.both), why });
   }
-  if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: Math.max(1, sel.ap), costTxt: 'alle Aktionen', text: 'Gegner auf einem Nachbarfeld anklicken (rot).', on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });
+  if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
-    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: A.all ? sel.ap : A.ap, costTxt: A.all ? 'alle Aktionen' : undefined, cd: sel.cdA, text: T.can, on: abilMode && feldArt === 'abil', off: !at.length,
-      why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < A.ap ? `Braucht ${A.ap} Aktionspunkte.` : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
+    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: T.can, on: abilMode && feldArt === 'abil', off: !at.length,
+      why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
     if (abilMode && feldArt === 'abil') hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
-  if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', cost: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Keine Aktionspunkte mehr.' });
-  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer; aufgebaut kann es nicht ziehen.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
-  if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: sel.ap, costTxt: 'alle Aktionen', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
-    why: sel.sperr > 0 ? 'Sperrfeuer steht.' : !sel.setup ? 'Erst aufbauen.' : sel.mvd ? 'Hat sich in dieser Runde bewegt.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : 'Kein Aktionspunkt mehr.' });
-  if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 2, text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht beide Aktionspunkte, noch nicht gezogen und nicht angegriffen.' });
+  if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', bp: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Aktion schon verbraucht.' });
+  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', bp: 1, costTxt: '1 Bewegungspunkt, nimmt alle restlichen', text: 'MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer; aufgebaut kann es nicht ziehen. Schießen geht danach mit der Aktion.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Aktion schon verbraucht.' });
+  if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
+    why: sel.sperr > 0 ? 'Sperrfeuer steht.' : !sel.setup ? 'Erst aufbauen.' : sel.mvd ? 'Hat sich in dieser Runde bewegt.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : 'Aktion schon verbraucht.' });
+  if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht die Aktion; nur ohne Bewegung in dieser Runde.' });
   const ORD = { rally: ['fahne', 'Sammeln', 'Eigene Truppen im Umkreis von 1 Feld: Moral +15, Niederhalten endet.'], storm: ['blitz', 'Sturmbefehl', 'Eigene Truppen im Umkreis von 1 Feld: Nahkampf ×1,25 in dieser Runde.'], fire: ['zielen', 'Feuer frei', 'Eigene Truppen im Umkreis von 1 Feld: Fernkampf ×1,25 bis zu ihrem nächsten Zug.'] };
   if (sel.officer) for (const [k, sym, name, tip] of E.orderKinds(sel).map(k => [k, ...ORD[k]])) {
     const cd = k === 'rally' ? sel.cdR : sel.cdS;
@@ -2856,12 +2862,12 @@ function unitButtons(T, hints) {
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
-  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', cost: 1, text: 'Einheit mit Hundesymbol anklicken: Sie bekommt +1 Aktionspunkt.', off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
+  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', cost: 1, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte.`, off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
   if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', cost: 1, cd: sel.cdB, text: 'Koloss bzw. Maschine mit Schraubenschlüssel anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
-  if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) {
-    const dk = E.drehKosten(sel), dt = T.cls === 'walker' ? (dk ? `Fahrzeuge und Schreiter: Drehen auf der Stelle kostet ${dk} Punkt, danach in dieser Runde frei. Die Hauptwaffe schießt nur nach vorn (±${P.FZ_FAN}°).` : 'In dieser Runde schon gedreht: weiteres Drehen ist frei.') : 'Blickrichtung ändern. Drehen kostet nichts.';
-    btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', cost: dk, text: dt, off: sel.ap < Math.max(1, dk), why: 'Kein Aktionspunkt mehr.' });
-    btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', cost: dk, mirror: true, text: dt, off: sel.ap < Math.max(1, dk), why: 'Kein Aktionspunkt mehr.' });
+  if (!sel.supp && !sel.broken) {
+    const dk = E.drehKosten(sel), dt = T.cls === 'walker' ? `Fahrzeuge und Schreiter: Drehen auf der Stelle kostet ${P.DREH_BP} Bewegungspunkt je 60°. Die Hauptwaffe schießt nur nach vorn (±${P.FZ_FAN}°).` : 'Blickrichtung ändern. Drehen kostet nichts.';
+    btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', bp: dk, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
+    btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
   if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
   // Hinweiszeile
@@ -2869,8 +2875,8 @@ function unitButtons(T, hints) {
   else if (T.rng > 0 && E.held(G, sel)) hints.push('⚔ Im Nahkampf gebunden: Schießen geht nicht.');
   else if (sel.fellBack) hints.push('MG ist zurückgewichen und schießt in dieser Runde nicht mehr.');
   if (T.relay) hints.push('<i>Helle Felder:</i> Sicht des Trupps.');
-  hints.push(sel.broken ? 'Panne: fällt diese Runde aus.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
-    `${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit).' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte.' : [...reach.values()].some(n => n.march) ? `Hell <img class="hint-sym" src="${upSym('stiefel')}" alt="Stiefel">: ziehen (1 ●). Gelb gestrichelt <img class="hint-sym" src="${upSym('marsch')}" alt="Stiefel mit Flügeln">: Marsch (2 ●), danach keine Aktion.` : `Helle Felder <img class="hint-sym" src="${upSym('stiefel')}" alt="Stiefel">: ziehen.`) : ''}${sel.attacked ? '' : targets.size ? ' Rot: Nahkampf, Messing: Beschuss.' : ''}`);
+  hints.push(sel.broken ? 'Panne: fällt diese Runde aus.' : sel.ap < 1 && !(sel.bp > 0) ? 'Aktion und Bewegung verbraucht.' :
+    `${reach.size ? (sel.mvd ? `Helle Felder: weiterziehen (noch ${sel.bp || 0} BP).` : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: Aktion und alle BP.' : [...reach.values()].some(n => n.march) ? `Hell <img class="hint-sym" src="${upSym('stiefel')}" alt="Stiefel">: ziehen (${sel.bp || 0} BP). Gelb gestrichelt <img class="hint-sym" src="${upSym('marsch')}" alt="Stiefel mit Flügeln">: Marsch (Aktion für +50 % BP). Zahl am Zielfeld = restliche BP.` : `Helle Felder <img class="hint-sym" src="${upSym('stiefel')}" alt="Stiefel">: ziehen.`) : ''}${sel.attacked ? '' : targets.size ? ' Rot: Nahkampf, Messing: Beschuss.' : ''}`);
   return btns;
 }
 function updateHud() {
@@ -2892,8 +2898,8 @@ function updateHud() {
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
     const hn = hudHN[u.id] = hudHN[u.id] || {}; hpNach(hn, u.str); setTimeout(() => hudNachLauf(u.id), 0);
     $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10, hpNachV(hn._hn, performance.now())) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
-      `<div class="up-tiles">${own ? `<span class="up-t" title="Aktionspunkte: ${ap} von ${P.AP}"><img src="${upSym('blitz')}" alt="Aktionen">${'<i class="up-pip"></i>'.repeat(Math.min(ap, P.AP))}${'<i class="up-pip used"></i>'.repeat(Math.max(0, P.AP - ap))}</span>` : ''}` +
-      `<span class="up-t" title="Bewegung (Stiefel); Marsch doppelt so weit (Stiefel mit Flügeln)"><img src="${upSym('stiefel')}" alt="Bewegung">${u.limbered ? P.LIMBER_MV : T.mv} <small>Felder</small></span>` +
+      `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung">${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''} BP</small></span>` +
+      (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
     $('btnInfo').hidden = false;
     if (previewT && sel) {
@@ -3197,7 +3203,7 @@ function nextUnit(back) {
 }
 $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext').dataset.long; return; } nextUnit(false); };
 // Tooltip am Knopf: Maus beim Drüberfahren, Touch durch langes Drücken (dann kein Klick)
-{ const b = $('btnNext'), tip = [{ name: 'Nächste Einheit', text: 'Wählt die nächste eigene Einheit, die noch Aktionspunkte hat, und schiebt die Karte hin. Taste Tab (Umschalt+Tab rückwärts).' }];
+{ const b = $('btnNext'), tip = [{ name: 'Nächste Einheit', text: 'Wählt die nächste eigene Einheit, die noch eine Aktion oder Bewegungspunkte hat, und schiebt die Karte hin. Taste Tab (Umschalt+Tab rückwärts).' }];
   let tm = 0; const at = () => { const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top]; };
   b.addEventListener('pointerover', e => { if (e.pointerType === 'mouse') showTip(tip, ...at(), 'next'); });
   b.addEventListener('pointerout', e => { if (e.pointerType === 'mouse') hideTip(); });
