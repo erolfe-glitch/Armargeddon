@@ -198,20 +198,93 @@ Mit erweiterten Armeen (200 Schlachten):
 
 Fast nie: Breitseite (der Sturmpanzer kommt in Standardschlachten kaum vor), Bergen, Entgiften, Banner.
 
+## KI-Runde: Fahrzeuge und Spezialisten (2026-11-18)
+
+Nur ai.js; Kosten und Werte unverändert, weil der Grauwall im Ziel bleibt.
+
+### Fahrzeuge (Landkoloss, Sturmpanzer, Bohrkoloss, Schreiter)
+
+**Vorher:**
+- Fahrzeuge werteten Bedrohung nur mit 0,2 × dem Gewicht der Infanterie und achteten nicht auf Begleitung.
+- Der Koloss fuhr als Spitze allein vor; 70 % seines Schadens kamen von Sturmbrechern im Nahkampf.
+
+**Jetzt** (`fzNahGefahr`, `fzBegleitung` in posValue):
+- **Nahkampf-Gefahr:** Erwarteter Nahkampfschaden aller gegnerischen Sturmtruppen, Reiter, Kampfanzüge und Pioniere, die ein Nachbarfeld in ihrer nächsten Runde erreichen (BP + 1). Mit Panzerungs-Faktor (Sturm/Pioniere ×1,5, sonst ×0,4). Jeder eigene Trupp auf einem Nachbarfeld versperrt einen Anmarschweg (−30 %, höchstens −75 %). Gewicht `W_FZ_NAH` 10.
+- **Begleitung:** eigene Fußtruppen höchstens 2 Felder entfernt und höchstens 2 Spalten dahinter. Ohne Begleitung kostet ein Feld, das vorwärts geht oder nah am Feind liegt (bis 5 Felder), `W_FZ_BEGL` 4; mit nur einem Trupp 40 % davon.
+- Schießen bleibt unverändert attraktiv; bedrohte Fahrzeuge bleiben also auf Abstand und schießen.
+
+**Gewichte gewählt nach 200 Schlachten, zwei Startwerte:**
+
+| W_FZ_NAH / W_FZ_BEGL | Siegquote (Startwert 1 / 5000) | Koloss-Verluste |
+|---|---|---|
+| 0 / 0 (vorher) | 47 / 52 % | 88–89 % |
+| 4 / 1,6 | 47 / 37 % | 67–68 % |
+| 7 / 3 | 47 / 46 % | 51–53 % |
+| **10 / 4 (gewählt)** | **51 / 46 %** | **44–46 %** |
+| 12 / 5 | 45 / 42 % | 37–38 % |
+
+12/5 senkt die Verluste weiter, drückt aber die Siegquote an den Rand. Die Fahrzeuge stehen nicht nur hinten:
+
+| | vorher | nachher |
+|---|---|---|
+| Zweitwaffe des Kolosses je Schlacht | 22,8 | 29,3 |
+| Beschuss Konkordat je Schlacht | 78,6 | 82,0 |
+| Südgraben beim Konkordat | 60 % | 82 % |
+| Nordgraben beim Konkordat | 82 % | 65 % |
+
+### Spezialisten
+
+- **Rauchwerfer:**
+  - Die Nebelwand wird gewertet nach den Sichtlinien gegnerischer Schützen auf eigene Truppen, die sie unterbricht (MG ×1, sonst ×0,4; vorrückende Trupps ×1,3).
+  - Abzug für Sichtlinien eigener Schützen auf Gegner, die sie ebenfalls unterbricht.
+  - Der Trupp steht jetzt hinten wie Sanitäter und Beobachter (Reichweite 3 genügt). Vorher lief er mit der Infanterie vor und fiel (Verluste 17–52 % → 1–2 %).
+  - Rauch kommt jetzt seltener (4,3 → 1,3 je Schlacht), dafür gezielter.
+- **Mineure:**
+  - Stollen gezielt unter Verteidiger in Graben, Bunker oder auf Zielfeldern, mehr bei MG und Geschützen.
+  - Mehr Wert, wenn eigene Angreifer 2–5 Felder entfernt sind; der Stollen fliegt 2 Runden später, also rechtzeitig vor dem Sturm.
+  - Die Mineure ziehen bis auf 1–2 Felder an solche Ziele heran.
+  - Stollen je Schlacht 0,9 → 1,3.
+- **Meldegänger:**
+  - +2 BP weiterhin im zweiten Durchgang, also an Einheiten, die noch nicht gehandelt haben und sofort danach ziehen.
+  - Neu: Bonus, wenn die Einheit damit ein freies, fremdes Zielfeld oder neue Felder neben einem Gegner (Sturm) erreicht.
+  - Ein Versuch im ersten Durchgang (vor allen anderen Zügen) war schlechter (+5 statt +20) und wurde verworfen.
+- **Grabenmörser/Minenwerfer:**
+  - Sprenggranaten auf Gegner in Graben, Bunker, Ort oder neben Draht zählen +1,5, wenn eigene Angreifer bis 3 Felder heran sind; auf markierte Ziele (Ballon, Signaltrupp) +1 mehr.
+  - Draht vor eigener Infanterie beschießen Mörser jetzt eher (0,9 → 1,6).
+
+**Nutzen der Spezialisten:** Siegquote Konkordat mit zusätzlichen Einheiten zur Standardarmee (je 200 Schlachten). Grundwert ohne Zusatz: alte KI 47 % (Startwert 1) / 52 % (5000), neue KI 51 % / 47 %.
+
+| Zusatz | alte KI | neue KI | Gewinn alt → neu |
+|---|---|---|---|
+| 2 Mineure | 55 % | 65 % | +8 → +14 |
+| 3 Grabenmörser | 58 % | 69 % | +11 → +18 |
+| 2 Meldegänger (zwei Startwerte) | 67 / 65 % | 64 / 64 % | +16 → +15 |
+| 2 Rauchwerfer (zwei Startwerte) | 35 / 44 % | 43 / 45 % | −10 → −5 |
+| 3 Minenwerfer der Aschenwacht (Siegquote Aschenwacht) | 35 % | 48 % | −18 → −1 |
+| Paket Rauch + Mineure + Melder + 2 Mörser + Ballon (145 Punkte) | 66 % | 80 % | +19 → +29 |
+| zum Vergleich: 4 Kohorten (160 Punkte) | 93 % | 92 % | +46 → +41 |
+
+Die Spezialisten bringen der KI jetzt deutlich mehr, bleiben aber hinter gleich viel Infanterie zurück. Der Grund: Siegpunkte entscheiden sich an Trupps auf den Zielfeldern. Tauscht man 4 Kohorten gegen das Paket, fällt das Konkordat auf 8–10 %. Die Aschenwacht verliert dann sogar mehr (31 % statt 28 %), aber der Nordgraben ist nur noch in 24 % der Schlachten beim Konkordat.
+
+### Gesamtmessung nach der KI-Runde (200 Schlachten, Siegquote Konkordat)
+
+| | vorher (Kosten-Runde) | nachher |
+|---|---|---|
+| Grauwall Standard, Startwert 1 / 5000 | 47 / 52 % | **51 / 47 %** |
+| Landkoloss-Verluste | 88 % | **44–46 %** |
+| Ausfälle Konkordat / Aschenwacht | 36 / 28 % | 29 / 30 % |
+| Gas je Schlacht | 1,1 / 1,75 | 1,5 / 1,7 |
+| Konkordat mit Maschinen / Aschenwacht mit Maschinen / beide | 47 / 37 / 62 % | 40 / 34 / 67 % |
+| erweiterte Armeen beide | 73 % | 62 % |
+| erweitert gegen Standard / Standard gegen erweitert | 61 / 42 % | 77 / 33 % |
+
+Die gemischten Fälle (erweitert gegen Standard) sind auseinandergegangen. Das erweiterte Konkordat profitiert von den besseren Spezialisten. Die erweiterte Aschenwacht hat mit Signaltrupp, Gasschutz und Panzerkürass wenig Nahkampfwucht, und auch ihre Fahrzeuge halten sich jetzt zurück. Nicht korrigiert, weil der Auftrag nur den Grauwall mit Standardarmeen ausgleicht. Bei Bedarf als Nächstes die Kostenprüfung mit der neuen KI wiederholen (`ADD=80 PAR=28 node tools/costcheck.js 200`).
+
 ## Gemeldet statt geändert (Regel bzw. KI ist das Problem)
 
-1. **Landkoloss fällt in 88 % der Schlachten.**
-   - Etwa 70 % seines Schadens kommen von Sturmbrechern im Nahkampf, 15 % von Geschützen.
-   - Das liegt *nicht* an den Regelwerten:
+0. **Rauch hilft der Seite mit weniger Feuerkraft.** Die Nebelwand sperrt Sichtlinien in beide Richtungen. Das Konkordat schießt etwa doppelt so oft wie die Aschenwacht (82 zu 49 je Schlacht) und verliert dadurch meist mehr, als es gewinnt; Rauch bleibt bei etwa −5. **Vorschlag (Regel):** Nebel nur gegen Schüsse *in* den Nebel hinein bzw. heraus, nicht für Sichtlinien, die ihn nur streifen – oder eine eigene Nebelseite: eigene Truppen dürfen aus dem eigenen Nebel heraus schießen.
 
-     | Probe | Koloss-Verluste | Siegquote |
-     |---|---|---|
-     | Sturmbrecher gegen Koloss ×1,5 → ×1,0 | 84 % | 53 % |
-     | Flanke/Rücken ×1,4/×1,8 → ×1,0 | 80 % | 52 % |
-     | Abwehr 7 → 8 | 85 % | 58 % |
-
-   - Ursache ist die KI: Der Koloss fährt als Spitze allein vor und wird von den Sturmbrechern (seinem vorgesehenen Gegner) gestellt. Die Siegquote stimmt trotzdem, weil er die Sturmbrecher bindet.
-   - **Vorschlag:** In einer KI-Runde den Koloss bei Sturmbrechern in 2 Feldern nur mit Infanterie daneben vorziehen lassen, bzw. ihn gegen Sturmbrecher zurückweichen und schießen lassen. Keine Regeländerung.
-2. **Rauchwerfer, Mineure, Melder, Mörser bringen der KI kaum etwas.** Teils ist die Siegquote mit ihnen sogar niedriger als ohne. Das ist eine Frage der KI-Nutzung, nicht der Kosten: Rauch 3,8× je Schlacht, steht aber oft vor den eigenen Schützen. Kosten nur leicht gesenkt. **Vorschlag:** Rauch nur vor eigene Angreifer legen, die in MG-Reichweite ziehen.
+1. **Landkoloss fällt in 88 % der Schlachten.** Wie oben gemessen war es keine Regel-, sondern eine KI-Frage. **Erledigt in der KI-Runde vom 2026-11-18:** 44–46 %.
+2. **(Kosten-Runde) Rauchwerfer, Mineure, Melder, Mörser bringen der KI kaum etwas.** Inzwischen verbessert, siehe KI-Runde; offen bleibt nur Rauch (Punkt 0). Teils ist die Siegquote mit ihnen sogar niedriger als ohne. Das ist eine Frage der KI-Nutzung, nicht der Kosten: Rauch 3,8× je Schlacht, steht aber oft vor den eigenen Schützen. Kosten nur leicht gesenkt. **Vorschlag:** Rauch nur vor eigene Angreifer legen, die in MG-Reichweite ziehen.
 3. **Anführer-Befehle:** Kein Regelproblem mehr. Der starke Ausschlag kam von früh fallenden Generälen und ist mit der höheren Abwehr behoben (General-Verluste 51 → 7 %).
 4. **Alte Karten** (siehe Tabelle): Kasematten (1 %), Grauwall-Front (15 %) und Lerne (94 %) sind grundsätzlich einseitig. Wie beauftragt nicht korrigiert, gehört zum Neubau.

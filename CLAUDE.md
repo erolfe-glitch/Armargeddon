@@ -39,7 +39,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 
 ## Projektstruktur
 - `src/engine.js` – Regeln, Spielzustand G, Typen (TYPES), Karten (E.MAPS), Kosten (costParts), Konstanten P.
-- `src/ai.js` – KI (posValue, abilPlan, zweiter Durchgang). Test-Gewichte W_A_x/W_D_x.
+- `src/ai.js` – KI (posValue, abilPlan, zweiter Durchgang). Test-Gewichte W_A_x/W_D_x. Fahrzeuge (2026-11-17): `fzNahGefahr` (Nahkämpfer, die das Feld nächste Runde erreichen, gedeckt durch eigene Nachbarn) und `fzBegleitung` (Fußtruppen höchstens 2 Felder), Gewichte `W_FZ_NAH` 10 / `W_FZ_BEGL` 4. Rauchwerfer stehen wie Unterstützung hinten.
 - `src/ui.js` – Zeichnen, Bedienung, Effekte, Töne abspielen (playSound, SND_VAR), Layout. Untere Leiste = Einheiten-Panel nach STYLE.md: `updateHud` + `unitButtons` (Knöpfe je Einheit, Tasten 1–n), CSS-Block „Einheiten-Panel nach STYLE.md“ am Ende von `src/index.html`.
 - `src/figures.js` – gezeichnete Ersatzfiguren (FIG, FIG.setSkin).
 - `src/index.html` – Gerüst und Stylesheet. Der Block „UI-Bogen des Nutzers“ am Ende überschreibt den älteren „Grimdark-Anstrich“.

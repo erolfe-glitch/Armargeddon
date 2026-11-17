@@ -4958,6 +4958,35 @@ function coverVal(t) { return COVER[t] || 0; }
 
 if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const m = k.match(/^W_([AD])_(\w+)$/); if (m) W[m[1]][m[2]] = +process.env[k]; }
 const ENVW = typeof process !== 'undefined' && process.env || {};
+// Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
+const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
+const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit || !!T.sapper;
+// Erwarteter Nahkampfschaden gegen ein Fahrzeug auf (c, r) in der nächsten gegnerischen Runde: Sturmtruppen, Reiter, Kampfanzüge, Pioniere,
+// die ein Nachbarfeld erreichen können. Eigene Trupps auf den Nachbarfeldern versperren Anmarschwege (je Trupp −30 %).
+function fzNahGefahr(G, u, c, r) {
+  const D = TYPES[u.type]; let th = 0;
+  for (const o of G.units) {
+    if (o.side === u.side || !E.active(o) || o.broken > 0) continue;
+    const T = TYPES[o.type]; if (!nahKaempfer(T) || T.atk < 3) continue;
+    if (E.dist(o.c, o.r, c, r) > E.bpMax(o) + 1) continue;
+    const mm = T.cls === 'storm' || T.sapper ? P.STORM_VS_WALKER : P.MELEE_VS_WALKER;
+    th += P.DMG * T.atk * mm / D.def * (o.str / 10) * (o.supp > 0 ? 0.35 : 1);
+  }
+  if (!th) return 0;
+  let deck = 0;
+  for (const [nc, nr] of E.neighbors(c, r)) { const x = E.inMap(nc, nr) && E.unitAt(G, nc, nr); if (x && x.side === u.side && E.active(x) && x.id !== u.id && E.cls(x) !== 'art') deck++; }
+  return th * Math.max(0.25, 1 - 0.3 * deck);
+}
+// Begleitung: eigene Fußtruppen höchstens 2 Felder entfernt, die nicht mehr als 1 Feld hinter dem Fahrzeug stehen
+function fzBegleitung(G, u, c, r) {
+  const dir = u.side === 'A' ? 1 : -1; let n = 0;
+  for (const o of G.units) {
+    if (o.side !== u.side || !E.active(o) || o.id === u.id) continue;
+    const k = E.cls(o); if (k === 'walker' || k === 'art' || k === 'medic' || TYPES[o.type].relay) continue;
+    if (E.dist(o.c, o.r, c, r) <= 2 && (o.c - c) * dir >= -2) n++;
+  }
+  return n;
+}
 const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
@@ -5008,10 +5037,34 @@ function abilPlan(G, u) {
   const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== u.side && E.alive(x) ? x : null; };
   const area = (c, r) => [[c, r], ...E.neighbors(c, r)].filter(([a, b]) => E.inMap(a, b));
   let best = null, bv = 0;
+  // Rauch (KI-Runde 2026-11-17): Sichtlinien gegnerischer Schützen auf eigene Truppen, die die Nebelwand unterbricht – MG und vorrückende Trupps zählen mehr;
+  // eigene Schützen im Nebel, die gerade ein Ziel hätten, sind dann blind (Abzug). Vorher: nur eigene bedrohte Trupps im Nebel, oft vor den eigenen Schützen.
+  let sicht = null;
+  if (k === 'smoke') {
+    sicht = []; const angr = mussAngreifen(G, u);
+    for (const e of G.units) { if (e.side === u.side || !E.active(e) || e.supp > 0) continue; const T = TYPES[e.type]; if (!(T.rng >= 2) || E.cls(e) === 'art' || (T.mg && !e.setup)) continue;
+      for (const x of G.units) { if (x.side !== u.side || !E.active(x) || E.cls(x) === 'art' || E.immune(T, TYPES[x.type])) continue; const d = E.dist(e.c, e.r, x.c, x.r);
+        if (d < 1 || d > T.rng || !E.hasLOS(G, e.c, e.r, x.c, x.r) || (T.mg && !E.inFan(G, e, x.c, x.r))) continue;
+        sicht.push([e, x, (T.mg ? 1.0 : 0.4) * (angr && TYPES[x.type].atk >= 3 ? 1.3 : 1)]); } }
+    for (const x of G.units) { if (x.side !== u.side || !E.active(x) || E.cls(x) === 'art') continue; const T = TYPES[x.type]; if (!(T.rng >= 2) || (T.mg && !x.setup)) continue;   // eigene Schützen, die durch den Nebel nicht mehr treffen
+      for (const e of G.units) { if (e.side === u.side || !E.active(e)) continue; const d = E.dist(e.c, e.r, x.c, x.r); if (d < 1 || d > T.rng || !E.hasLOS(G, x.c, x.r, e.c, e.r)) continue; sicht.push([x, e, -(T.mg ? 0.6 : 0.3)]); } }
+  }
   for (const [c, r] of tg) {
     let v = 0;
-    if (k === 'smoke') { for (const [a, b] of area(c, r)) { const x = E.unitAt(G, a, b); if (x && x.side === u.side && E.active(x) && threatAt(G, x, a, b) > 0.3) v += 1; if (foe(a, b)) v -= 0.6; } v = v >= 2 ? v : 0; }
-    else if (k === 'tunnel') { const x = foe(c, r); v = x ? 2 + (G.map[c][r].obj ? 2 : 0) + (10 - x.str) * 0.05 : 0; }
+    if (k === 'smoke') {
+      const cells = area(c, r), neu = cells.filter(([a, b]) => !E.smokeAt(G, a, b)).map(([a, b]) => ({ c: a, r: b, side: u.side }));
+      G.smoke.push(...neu);
+      for (const [e, x, w] of sicht) if (!E.hasLOS(G, e.c, e.r, x.c, x.r)) v += w;
+      G.smoke.length -= neu.length;
+      v = v >= 2 ? v : 0;
+    }
+    else if (k === 'tunnel') {   // Stollen (KI-Runde 2026-11-17): Verteidiger in Deckung bzw. auf Zielfeldern, auf die eigene Angreifer zuziehen (fliegt 2 Runden später)
+      const x = foe(c, r);
+      if (x && E.cls(x) !== 'cav' && E.cls(x) !== 'walker') {
+        let angr = 0; for (const o of G.units) if (o.side === u.side && E.active(o) && E.cls(o) !== 'art' && TYPES[o.type].atk >= 3 && E.dist(o.c, o.r, c, r) >= 2 && E.dist(o.c, o.r, c, r) <= 5) angr++;
+        v = 2 + (G.map[c][r].obj ? 2 : 0) + E.coverOf(G, x).tier * 0.5 + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1 : 0) + Math.min(angr, 4) * 0.5 + (10 - x.str) * 0.05;
+      }
+    }
     else if (k === 'charge') { const x = foe(c, r); v = x ? 2 + (E.cls(x) === 'walker' ? 3 : 0) + (G.map[c][r].t === 'bunker' ? 2 : 0) : (G.map[c][r].t === 'bunker' ? 0.5 : 0); }
     else if (k === 'mine') { const n = nearestEnemyDist(G, u.side, c, r); v = n <= 6 ? 7 - n + (G.map[c][r].t === 'open' || G.map[c][r].t === 'mud' ? 0.5 : 0) : 0; }
     else if (k === 'light') { for (const [a, b] of area(c, r)) if (foe(a, b)) v += 1; v = v >= 1 ? v : 0; }
@@ -5057,7 +5110,7 @@ function hazard(G, u, c, r) {
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
 function posValue0(G, u, c, r) {
-  const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay ? 'medic' : E.cls(u);
+  const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay || TYPES[u.type].abil === 'smoke' ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
   const th = threatAt(G, u, c, r);
   let v;
   if (k === 'medic') {
@@ -5082,6 +5135,11 @@ function posValue0(G, u, c, r) {
       for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && !TYPES[o.type].cmd && E.cls(o) !== 'art' && nearestEnemyDist(G, o.side, o.c, o.r) < nd) vor++;
       if (vor < 2) v -= 1.6 * (2 - vor); if (nd <= 2) v -= 1.2; }
     if (k === 'walker' && h.t === 'wire') v += 1.0;
+    if (k === 'walker') {   // KI-Runde 2026-11-17: nicht allein vor, keine Felder, die Sturmtruppen nächste Runde erreichen (außer gedeckt)
+      v -= fzNahGefahr(G, u, c, r) * W_FZ_NAH;
+      const vor = (u.side === 'A' ? c - u.c : u.c - c) > 0, nd = nearestEnemyDist(G, u.side, c, r);
+      if (nd <= 5 && (vor || nd <= 3)) { const b = fzBegleitung(G, u, c, r); if (b === 0) v -= W_FZ_BEGL; else if (b === 1) v -= W_FZ_BEGL * 0.4; }
+    }
     if (h.obj && k !== 'art') v += 1 + 0.4 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
     // Sturmstellung (BP/AP Schritt 2): Nahkämpfer, die angreifen müssen, enden 2 Felder vor einem Gegner auf einem Zielfeld bzw. im Graben –
     // nächste Runde reicht ein halber Zug bis daneben und der Sturm
@@ -5095,6 +5153,8 @@ function posValue0(G, u, c, r) {
     v -= openObjDist(G, u, c, r) * w.hold;
     if (h.obj) v += 2 + 0.5 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
   }
+  if (TYPES[u.type].abil === 'tunnel' && !(u.cdA > 0))   // Mineure: auf 1–2 Felder an einen Gegner in Graben/Bunker heran
+    for (const o of G.units) if (o.side !== u.side && E.active(o) && ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village'].includes(E.hex(G, o.c, o.r).t) && E.dist(o.c, o.r, c, r) <= 2 && E.dist(o.c, o.r, c, r) >= 1) { v += 1.2 + (E.hex(G, o.c, o.r).obj ? 0.8 : 0); break; }
   if (TYPES[u.type].recover) for (const w of G.units) if (w.side === u.side && E.alive(w) && E.cls(w) === 'walker' && (w.stuck > 0 || w.broken > 0) && E.dist(w.c, w.r, c, r) === 1) v += 2.5;
   if (TYPES[u.type].mg) {
     let tgt = 0;
@@ -5159,6 +5219,11 @@ function planArt(G, u) {
       if (!d.supp && E.cls(d) !== 'walker' && d.fireDmg + dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
       if (d.str - dmg < 1.5 || d.mor - dmg * 0.8 <= 0) v += 2.5;
       if (E.cls(d) === 'walker' && direct) v += 1.5;
+      if (TYPES[u.type].mobile && E.cls(d) !== 'walker') {   // KI-Runde 2026-11-17: Mörser/Minenwerfer auf Gegner in Stellung oder hinter Draht, wenn eigene Angreifer herankommen
+        const t = E.hex(G, d.c, d.r).t, fest = ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village'].includes(t) || E.neighbors(d.c, d.r).some(([a, b]) => E.inMap(a, b) && E.hex(G, a, b).t === 'wire');
+        const angr = G.units.some(o => o.side === u.side && E.active(o) && E.cls(o) !== 'art' && TYPES[o.type].atk >= 3 && E.dist(o.c, o.r, d.c, d.r) <= 3);
+        if (fest && angr) v += 1.5 + (gd ? 1 : 0);
+      }
       for (const [nc, nr] of E.neighbors(d.c, d.r)) { const f = E.unitAt(G, nc, nr); if (f && f.side === u.side) v -= 0.4; }
       consider(v, d.c, d.r, 'he');
     }
@@ -5187,7 +5252,7 @@ function planArt(G, u) {
       if (E.hex(G, c, r).t !== 'wire' || !E.canShell(G, u, c, r, 'he')) continue;
       const inf = G.units.some(o => o.side === 'A' && E.active(o) && E.cls(o) === 'inf' && E.dist(o.c, o.r, c, r) <= 2);
       const wal = G.units.some(o => o.side === 'A' && E.active(o) && E.cls(o) === 'walker' && !o.broken && E.dist(o.c, o.r, c, r) <= 3);
-      if (inf && !wal) consider(0.9, c, r, 'he');
+      if (inf && !wal) consider(TYPES[u.type].mobile ? 1.6 : 0.9, c, r, 'he');
     }
   }
   return best;
@@ -5372,7 +5437,15 @@ function next(G) {
     let best = null, bv = 0;
     for (const t of G.units) {
       if (!E.canSend(G, m, t) || t.attacked || (t.bp || 0) > E.bpMax(t)) continue;
-      const v = TYPES[t.type].atk + (nearestEnemyDist(G, t.side, t.c, t.r) <= TYPES[t.type].mv + 2 ? 3 : 0);
+      let v = TYPES[t.type].atk + (nearestEnemyDist(G, t.side, t.c, t.r) <= TYPES[t.type].mv + 2 ? 3 : 0);
+      if (E.cls(t) !== 'art' && (t.ap || 0) >= 1) {   // KI-Runde 2026-11-17: gezielt – erreicht die Einheit mit +2 BP ein Zielfeld oder eine Sturmstellung, die sie jetzt nicht erreicht?
+        const vor = new Set([...E.reachable(G, t).keys()]); t.bp = (t.bp || 0) + P.MELDER_BP; const nach = E.reachable(G, t); t.bp -= P.MELDER_BP;
+        let ziel = 0, nk = 0;
+        for (const [key, n] of nach) { if (vor.has(key) || n.retreat) continue;
+          const ob = E.hex(G, n.c, n.r).obj; if (ob && G.ctrl[ob] !== t.side && !E.unitAt(G, n.c, n.r)) ziel = Math.max(ziel, 4 + (E.OBJECTIVES.find(o => o.id === ob) || { pts: 1 }).pts * 0.5);
+          if (TYPES[t.type].atk >= 4 && E.neighbors(n.c, n.r).some(([a, b]) => { const x = E.inMap(a, b) && E.unitAt(G, a, b); return x && x.side !== t.side && E.active(x); })) nk++; }
+        v += ziel + Math.min(nk, 2) * 2;
+      }
       if (v > bv) { bv = v; best = t; }
     }
     if (best) { G._aiDone2.delete(best.id); return { u: m.id, steps: [{ k: 'send', t: best.id }] }; }
