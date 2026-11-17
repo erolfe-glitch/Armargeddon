@@ -97,8 +97,10 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **stand** | Sammeln (Konkordat) | Konkordat | vorhanden (stand) |
 |  |  | Konkordat | 458070__theuncertainman__form-ranks-british-warrior.wav (1.01 s ab 0.47 s) |
 | **comeon** | Befehl überbringen (Meldegänger) | beide | vorhanden (comeon) |
-| **select** | Einheit angewählt (Stimme je Seite; nur etwa jedes 3. Mal, mind. 8 s Pause, leiser) | Konkordat: 34 Sprüche Englisch, Aschenwacht: 35 Sprüche Deutsch | eigene Sprachaufnahmen (Suno Pro), mit Gasmasken-Effekt „leicht“, Auswahl `tools/stimmen_auswahl.json`, Dateien `Voices/eigene/sprueche/` (seit 2026-11-17; ersetzt 402019 yes-british-male und 338147 talking-to-me) |
+| **select** | Einheit angewählt (Stimme je Seite; nur etwa jedes 3. Mal, mind. 8 s Pause, leiser) | Konkordat: 42 Sprüche Englisch, Aschenwacht: 33 Sprüche Deutsch | eigene Sprachaufnahmen (Suno Pro), mit Gasmasken-Effekt „leicht“, Auswahl `tools/stimmen_auswahl.json`, Dateien `Voices/eigene/sprueche/` (seit 2026-11-17; ersetzt 402019 yes-british-male und 338147 talking-to-me) |
 |  |  | Aschenwacht | 338147__artordie__talking-to-me.wav (1.1 s ab 0.01 s) |
+| **panzer_funk** | Landkoloss, Sturmpanzer, Bohrkoloss angewählt (selten wie select; dazu motor_auswahl) | Konkordat: 13, Aschenwacht: 16 Sprüche | eigene Sprachaufnahmen (Suno Pro), Bordfunk „stark“ (Bandpass 650–2100 Hz, Rauschen, Knistern, Verzerrung, Motorbrummen, Funkklick), seit 2026-11-17 |
+| **schreiter_stimme** | Schreiter und Eisenknecht angewählt (selten wie select) | Konkordat: 19, Aschenwacht: 16 Sprüche | eigene Sprachaufnahmen (Suno Pro), Maschine „mittel“ (85 % Tonhöhe, Ringmodulation, Kammfilter, metallischer Hall), seit 2026-11-17 |
 | **roar** | Kampfschrei (Nahkampf, Befehl der Aschenwacht) | beide | vorhanden (roar) |
 |  |  | beide | jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3 (3 s ab 0.54 s) |
 |  |  | Konkordat | 764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav (2.6 s ab 0.51 s) |

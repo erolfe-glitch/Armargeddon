@@ -2264,7 +2264,8 @@ function selectVoice(u) {
   if (++selClicks < selNeed) return;
   const t = performance.now(); if (t - selLast < 8000) return;
   const VEH = ['koloss', 'sturmpz', 'bohrer'], T = TYPES[u.type];
-  const pool = VEH.includes(u.type) ? 'motor_auswahl' : T.cls === 'cav' ? 'pferd_auswahl' : T.gasproof ? 'selGas' : 'select'; let k = null;
+  const pool = VEH.includes(u.type) ? 'panzer_funk' : T.mech ? 'schreiter_stimme' : T.cls === 'cav' ? 'pferd_auswahl' : T.gasproof ? 'selGas' : 'select'; let k = null;   // Panzer: Besatzung über Bordfunk (dazu Motor), Schreiter/Eisenknecht: Maschinenstimme (2026-11-17)
+  if (pool === 'panzer_funk') { const m = sndPick('motor_auswahl', u.side); if (m) motorRev(m); }
   if (pool === 'pferd_auswahl' && !sndPick(pool, u.side)) return;   // Tonplatz „pferd_auswahl“ ist noch leer (Dateien folgen): still
   for (let i = 0; i < 8; i++) { k = sndPick(pool, u.side); if (k !== selLastKey) break; }   // anderer Spruch als zuletzt; gibt es nur einen, darf er (selten) wiederkommen
   if (!k) return;
