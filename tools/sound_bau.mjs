@@ -66,6 +66,7 @@ const POOLNAMES = new Set(SPEC.eintraege.map(e => e.pool)); for (const k of Obje
 const NEW = {}, POOLS = {}, rows = [], cnt = {};
 for (const e of SPEC.eintraege) {
   POOLS[e.pool] = POOLS[e.pool] || [];
+  if (e.leer) { rows.push({ pool: e.pool, key: '–', s: null, f: '(noch leer)', note: e.note }); continue; }   // Platz angelegt, Dateien folgen
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');

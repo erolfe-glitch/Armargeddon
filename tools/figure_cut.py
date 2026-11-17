@@ -138,6 +138,19 @@ def keep_parts(q, single, frac=0.02):
     return q[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
 
 
+def seam(op, x0, w):
+    """Senkrechte Trennnaht (je Zeile eine Spalte) im Bereich x0±w mit möglichst wenig deckenden Pixeln (dynamische Programmierung)."""
+    H, W = op.shape; a, b = max(1, x0 - w), min(W - 1, x0 + w)
+    cost = 1 + op[:, a:b].astype(np.float64) * 1000; n = b - a
+    M = cost.copy(); back = np.zeros((H, n), np.int64)
+    for y in range(1, H):
+        prev = M[y - 1]; l = np.r_[np.inf, prev[:-1]]; r = np.r_[prev[1:], np.inf]; st = np.stack([l, prev, r]); i = st.argmin(0)
+        M[y] += st[i, np.arange(n)]; back[y] = i - 1
+    xs = np.zeros(H, np.int64); xs[-1] = int(M[-1].argmin())
+    for y in range(H - 1, 0, -1): xs[y - 1] = min(n - 1, max(0, xs[y] + back[y, xs[y]]))
+    return xs + a
+
+
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
     if name in FAHNE: a = fahne_umfaerben(a, FAHNE[name])
@@ -156,9 +169,15 @@ def cut(name, out=OUT):
         if isinstance(sp, int):   # automatisch: je Trennstelle die Spalte mit der wenigsten Deckung nahe der gleichmäßigen Teilung
             prof = ndimage.uniform_filter1d((k[..., 3] > 60).sum(0).astype(float), 15); cols = np.nonzero(prof > 0)[0]; xa, xb = cols.min(), cols.max(); L = xb - xa
             sp = [(xa + int(np.argmin(prof[int(xa + L * (i / sp - 0.1)):int(xa + L * (i / sp + 0.1))])) + int(L * (i / sp - 0.1))) / W for i in range(1, sp)]
-        xs = [0] + [int(f * W) for f in sp] + [W]; poses = []
-        for j in range(len(xs) - 1):
-            t = k.copy(); t[:, :xs[j], 3] = 0; t[:, xs[j + 1]:, 3] = 0; poses.append(keep_parts(t, True, 0.12))   # abgeschnittene Waffenstücke der Nachbarpose weg
+        # Trennnaht statt gerader Linie (2026-11-17): der Schnitt sucht sich von oben nach unten den Weg durch den freien Hintergrund
+        # und geht um lange Waffen herum, die in die Spalte der Nachbarpose ragen (Gewehrlauf des liegenden Scharfschützen)
+        seams = [seam(k[..., 3] > 40, int(f * W), int(W * 0.14)) for f in sp]
+        cols = np.arange(W)[None, :]; poses = []
+        for j in range(len(seams) + 1):
+            m = np.ones((H, W), bool)
+            if j > 0: m &= cols >= seams[j - 1][:, None]
+            if j < len(seams): m &= cols < seams[j][:, None]
+            t = k.copy(); t[~m, 3] = 0; poses.append(keep_parts(t, True, 0.12))   # Krümel der Nachbarpose weg
         s = H_OUT * SH_REIHE.get(kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)
         for j, q in enumerate(poses, 1):
             im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')

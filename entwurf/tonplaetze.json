@@ -1240,6 +1240,13 @@
   "note": "Gewehr durchladen (Aschenwacht)"
  },
  {
+  "pool": "husten",
+  "key": "–",
+  "s": null,
+  "f": "(noch leer)",
+  "note": "Husten bei Gasschaden – Dateien folgen (2026-11-17)"
+ },
+ {
   "pool": "drahtwackeln",
   "key": "drahtwackeln_1",
   "s": null,

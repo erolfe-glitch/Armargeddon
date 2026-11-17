@@ -77,7 +77,7 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 | **stand** | Sammeln (Konkordat) | Konkordat | vorhanden (stand) |
 |  |  | Konkordat | 458070__theuncertainman__form-ranks-british-warrior.wav (1.01 s ab 0.47 s) |
 | **comeon** | Befehl überbringen (Meldegänger) | beide | vorhanden (comeon) |
-| **select** | Einheit angewählt (Stimme je Seite) | Konkordat | 402019__theuncertainman__yes-british-male.wav (0.55 s ab 0.5 s) |
+| **select** | Einheit angewählt (Stimme je Seite; nur etwa jedes 3. Mal, mind. 8 s Pause, leiser) | Konkordat | 402019__theuncertainman__yes-british-male.wav (0.55 s ab 0.5 s) |
 |  |  | Aschenwacht | 338147__artordie__talking-to-me.wav (1.1 s ab 0.01 s) |
 | **roar** | Kampfschrei (Nahkampf, Befehl der Aschenwacht) | beide | vorhanden (roar) |
 |  |  | beide | jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3 (3 s ab 0.54 s) |
@@ -134,6 +134,7 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 |  |  | Konkordat | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav (2 s ab 0 s) |
 | **nachladen** | Nachladen (Munitionsträger) | Konkordat | 847367__adrian_sommer__gun-reloading-walther-p99.wav (0.58 s ab 1.82 s) |
 |  |  | Aschenwacht | u_azd0z4ksl5-kar98_rechamber-506178.mp3 (0.58 s ab 0.35 s) |
+| **husten** | Gasschaden: 1–2 Figuren husten (Dateien folgen) | beide | (noch leer) |
 | **drahtwackeln** | Draht wackelt beim Betreten | beide | freesound_community-shaking-chain-link-fence-vibration-94438.mp3 (1.2 s ab 0.12 s) |
 | **drahtlatch** | Einheit läuft in Stacheldraht | beide | freesound_community-latch-metallic-43692.mp3 (0.7 s ab 0.04 s) |
 | **cut** | Draht schneiden | beide | vorhanden (cut) |

@@ -315,6 +315,7 @@ function aufbauen(cfg, IM) {
   }
 
   // Felder mit aufrechten Teilen
+  const DRAHTFELD = new Set();
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k);
     if (t === 'village') {   // Ruine zweiteilig: Mauern hinten, Mauerrest vorn (weiter innen), Ecken auf den Stößen
@@ -343,14 +344,19 @@ function aufbauen(cfg, IM) {
       for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) });
     } else if (t === 'bunker') {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
-    } else if (t === 'wire') {   // Drahtfeld: 1–2 ganze Drahtverhau-Stücke (nicht zerschnitten), versetzt und gespiegelt, nach Tiefe mit den Figuren; nichts auf Straßen
+    } else if (t === 'wire') {   // Drahtfeld (DRAHTFELD: Felder mit gezeichnetem Draht, für den Test Bild = Regel): 1–2 ganze Drahtverhau-Stücke (nicht zerschnitten), versetzt und gespiegelt, nach Tiefe mit den Figuren; nichts auf Straßen
       const aufWeg = (x, y) => ROADS.some(rd => distTo([x, y], rd) < R * 0.45);
       const n = q(1) < 0.4 ? 1 : 2, used = [];
       for (let k = 0; k < n; k++) {
         let x = hx + (q(k * 7 + 2) - 0.5) * R * (n === 1 ? 0.5 : 0.8), y = hy + (n === 1 ? (q(k * 7 + 3) - 0.5) * 0.4 : (k ? 0.32 : -0.3) + (q(k * 7 + 3) - 0.5) * 0.16) * R;
-        if (aufWeg(x, y)) { const alt = [hx + (x > hx ? -1 : 1) * R * 0.45, y]; if (aufWeg(...alt)) continue; [x, y] = alt; }   // neben die Straße ausweichen
-        let i = Math.floor(q(k * 7 + 4) * DRAHT.length); if (used.includes(i)) i = (i + 1) % DRAHT.length; used.push(i);
-        stand(DRAHT[i], x, y, 0.8 * SH * (0.85 + q(k * 7 + 5) * 0.25), { flip: flipR(c, r, k * 7 + 6), shadeK: 0.45 });
+        if (aufWeg(x, y)) {   // neben die Straße ausweichen: Stelle rund ums Feld mit dem größten Abstand zur Straße; nie ganz weglassen (Bild = Regel, 2026-11-17)
+          let best = null, bd = -1;
+          for (let a = 0; a < 12; a++) { const px = hx + Math.cos(a * Math.PI / 6) * R * 0.55, py = hy + Math.sin(a * Math.PI / 6) * R * 0.42, d = Math.min(...ROADS.map(rd => distTo([px, py], rd)));
+            if (d > bd && !used.some(u => Math.hypot(u.x - px, u.y - py) < R * 0.3)) { bd = d; best = [px, py]; } }
+          if (best) [x, y] = best;
+        }
+        let i = Math.floor(q(k * 7 + 4) * DRAHT.length); if (used.some(u => u.i === i)) i = (i + 1) % DRAHT.length; used.push({ i, x, y });
+        stand(DRAHT[i], x, y, 0.8 * SH * (0.85 + q(k * 7 + 5) * 0.25), { flip: flipR(c, r, k * 7 + 6), shadeK: 0.45 }); DRAHTFELD.add(c + ',' + r);
       }
     } else if (t === 'barrikade') {
       const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });
@@ -408,7 +414,7 @@ function aufbauen(cfg, IM) {
     if (t === 'village') return { sy: 0.85 };
     return null;
   }
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr,
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 

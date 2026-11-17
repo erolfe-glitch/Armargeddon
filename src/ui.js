@@ -1536,7 +1536,7 @@ function camToTilt(x, y, ms, force) {   // weich zum Bodenpunkt (Weltbild) fahre
 
 // ---------- Ton ----------
 let soundOn = true;
-const lastSnd = {}, SND_GAP = { select: 500, selGas: 900, ui: 50, erobert: 900, verloren: 900, tick: 600, bauen: 1500, wasser: 300, feuer: 2000, blast: 300, cannonH: 200, boomH: 250, mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
+const lastSnd = {}, SND_GAP = { husten: 300, select: 500, selGas: 900, ui: 50, erobert: 900, verloren: 900, tick: 600, bauen: 1500, wasser: 300, feuer: 2000, blast: 300, cannonH: 200, boomH: 250, mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 // Hintergrundkulisse als leise Schleife
@@ -1566,6 +1566,8 @@ function setMusik(name) {
 // Seit 2026-11-16: Tonplätze (SOUND_POOLS) mit Varianten je Seite; SND_VAR fasst Plätze zusammen. Die Seite kommt aus dem gerade abgespielten Ereignis (sndSide).
 const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3', 'rifle4'], cry: ['cry', 'scream'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'] };
 const SND_POOLS = window.SOUND_POOLS || {};
+let hustenT = -1e9, hustenN = 0;
+function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
 let sndSide = null, lastFire = null;   // lastFire: zuletzt abgespielter Schuss (Kugeleinschlag beim folgenden Treffer); sndSide: Seite der Einheit, die gerade handelt (playEvent), für Konkordat-/Aschenwacht-Varianten
 function sndPick(name, side) {
   const cand = [], add = n => { if (SND_POOLS[n]) for (const [k, sd, w] of SND_POOLS[n]) { if (SND[k]) for (let i = 0; i < (w || 1); i++) cand.push([k, sd]); } else if (SND_VAR[n]) for (const m of SND_VAR[n]) add(m); else if (SND[n]) cand.push([n, null]); };   // Gewicht w: Hauptton öfter
@@ -1742,7 +1744,8 @@ async function playEvent(e) {
       } else floater(...headPos(e.u), 'Panik', '#f0d27a');
       await wait(e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern
     }
-    case 'gas': { const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
+    case 'gas': { husten();   // Husten: 1–2 Figuren, je nachdem wie viele Einheiten getroffen werden
+      const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
       floater(...headPos(e.u), e.late ? 'Vergiftet' : 'Gas!', e.late ? '#a8c870' : '#d6e670'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.55); playSound('drahtwackeln', 0.4); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
@@ -1966,8 +1969,19 @@ cv.addEventListener('click', ev => {
   if (h) { inspect = { hex: h }; updateHud(); }
 });
 
+// Auswahl-Stimme (2026-11-17): nur etwa bei jedem dritten Anwählen, frühestens 8 s nach der letzten, nie zweimal derselbe Spruch nacheinander; leiser
+let selClicks = 0, selNeed = 3, selLast = -1e9, selLastKey = null;
+function selectVoice(u) {
+  if (++selClicks < selNeed) return;
+  const t = performance.now(); if (t - selLast < 8000) return;
+  const pool = TYPES[u.type].gasproof ? 'selGas' : 'select'; let k = null;
+  for (let i = 0; i < 8; i++) { k = sndPick(pool, u.side); if (k !== selLastKey) break; }   // anderer Spruch als zuletzt; gibt es nur einen, darf er (selten) wiederkommen
+  if (!k) return;
+  selClicks = 0; selNeed = 2 + Math.floor(Math.random() * 3); selLast = t; selLastKey = k;
+  playSound(k, 0.26, u.side);
+}
 function select(u) {
-  if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) playSound(TYPES[u.type].gasproof ? 'selGas' : 'select', 0.4, u.side);   // Stimme beim Anwählen (je Seite), Gasschutz: Atmen in der Maske
+  if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) selectVoice(u);   // Stimme beim Anwählen (selten, siehe selectVoice)
   sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
 }
@@ -2043,9 +2057,9 @@ function openShop() {
   const sd = G.side;
   $('shopPts').textContent = G.pts[sd];
   $('shopList').innerHTML = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)).map(t => { const T = TYPES[t], ok = E.canBuy(G, sd, t) && E.spawnHexes(G, sd, t).length;
-    return `<button class="item ${sd}" data-t="${t}" ${ok ? '' : 'disabled'}><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small></button>`; }).join('');
+    return `<button class="item ${sd}" data-t="${t}" ${ok ? '' : 'disabled'}><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small></button>`; }).join('');
   $('shop').hidden = false;
-  requestAnimationFrame(() => $('shopList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd)));
+  requestAnimationFrame(() => $('shopList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   $('shopList').querySelectorAll('.item').forEach(b => b.onclick = () => {
     $('shop').hidden = true; select(null);
     placing = b.dataset.t; spawnSet = new Set(E.spawnHexes(G, sd, placing).map(h => E.key(h[0], h[1]))); updateHud();
@@ -2186,7 +2200,16 @@ function updateUI() {
   if (sel && (!E.active(sel) || sel.side !== G.side)) sel = null;
   computeOptions(); updateHud();
 }
-function drawPortrait(canvas, kind, side) {
+// Porträts aus den neuen Figurenbögen (2026-11-17): je Bogen eine gut erkennbare Pose, bei Einzelmodellen das Modell; sonst das alte Bild
+const PORTRAIT_POSE = { soldat: 1, sturm: 1, pionier: 1, sanitaeter: 4, flammen: 1, reiter: 1, scharfschuetze: 3, schildwall: 1, schwer: 1, melder: 1, banner: 1, pirschjaeger: 2, signal: 1, stahl: 1, panzerknecht: 1 };
+function portraitKey(type, side, limbered) {
+  const m = type && FIGMAP[type]; if (!m || !window.FIGS || fac(side) === 'F') return null;
+  const pre = side === 'A' ? 'konkordat_' : 'aschenwacht_'; let sheet = m[0];
+  if (limbered && sheet === 'geschuetz' && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';
+  const key = m[1] ? pre + sheet + '_' + (PORTRAIT_POSE[sheet] || 1) : pre + sheet;
+  return window.FIGS[key] ? key : null;
+}
+function drawPortrait(canvas, kind, side, type, limbered) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5), cw = canvas.clientWidth || 84, chh = canvas.clientHeight || 84;
   canvas.width = cw * dpr; canvas.height = chh * dpr;
   const g = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
@@ -2194,6 +2217,13 @@ function drawPortrait(canvas, kind, side) {
   gr.addColorStop(0, side === 'A' ? '#8a7a45' : '#5f6b70'); gr.addColorStop(1, '#22231c');
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   g.fillStyle = 'rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(W / 2, H * 0.88, W * 0.36, H * 0.07, 0, 0, 7); g.fill();
+  const pk = portraitKey(type, side, limbered);
+  if (pk) {   // neuer Figurenbogen
+    const im = figImg(pk);
+    if (!im) { const ld = FIGI[pk]; if (ld && !ld.__pw) { ld.__pw = true; ld.addEventListener('load', () => drawPortrait(canvas, kind, side, type, limbered)); } return; }
+    const k = Math.min(H * 0.86 / im.naturalHeight, W * 0.94 / im.naturalWidth), w = im.naturalWidth * k, h = im.naturalHeight * k;
+    g.drawImage(im, Math.round((W - w) / 2), Math.round(H * 0.93 - h), w, h); return;
+  }
   const t0 = FIG.sprite(kind, side, 0, 100);
   const k0 = Math.min(H * 0.84 / t0.cv.height, W * 0.94 / t0.cv.width);
   const sp = FIG.sprite(kind, side, 0, 100 * k0);
@@ -2315,7 +2345,7 @@ function updateHud() {
   const hints = []; let btns = [];
   if (hasU) {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
-    $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side);
+    $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side, u.type, u.limbered);
     const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
     $('upMark').innerHTML = crest(u.side);
     $('hudName').textContent = T.name;
@@ -2406,7 +2436,7 @@ async function panelAct(a) {
 function showDetail() {
   const u = sel || (inspect && inspect.unit); if (!u) return;
   const T = TYPES[u.type];
-  drawPortraitLater($('detPortrait'), figOf(T), u.side);
+  drawPortraitLater($('detPortrait'), figOf(T), u.side, u.type);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
   $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');
@@ -2416,7 +2446,7 @@ function showDetail() {
   $('detOff').hidden = !u.officer;
   $('detail').hidden = false;
 }
-function drawPortraitLater(c, k, s) { requestAnimationFrame(() => drawPortrait(c, k, s)); }
+function drawPortraitLater(c, k, s, t) { requestAnimationFrame(() => drawPortrait(c, k, s, t)); }
 
 // ---------- Bildschirme ----------
 const ATTACKERS = { A: { name: 'Konkordat von Valmor', short: 'Konkordat' }, F: { name: 'Blaue Legion von Arvenne', short: 'Legion' } };
@@ -2435,7 +2465,7 @@ function startStep(st) {
   if (st === 'setup') setupSync();
 }
 function drawFacUnits() {   // Einheitenbilder je Fraktionskarte; die Legion braucht kurz das Bilderset F
-  requestAnimationFrame(() => { for (const c of document.querySelectorAll('.sm-units canvas')) { if (c.dataset.sk) FIG.setSkin('A', c.dataset.sk); drawPortrait(c, c.dataset.k, c.dataset.s); } FIG.setSkin('A', skinA); });
+  requestAnimationFrame(() => { for (const c of document.querySelectorAll('.sm-units canvas')) { if (c.dataset.sk) FIG.setSkin('A', c.dataset.sk); drawPortrait(c, c.dataset.k, c.dataset.s, c.dataset.sk === 'F' ? null : c.dataset.t); } FIG.setSkin('A', skinA); });
 }
 function setupSync() {
   const sd = curSide(), m = E.MAPS[mapSel], hot = curMode() === 'hot';
@@ -2468,9 +2498,9 @@ function openArmy(sd) {
   $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
   for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
   $('armyList').innerHTML = roster(sd).map(t => { const T = TYPES[t];
-    return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small><span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span></div>`; }).join('');
+    return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small><span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span></div>`; }).join('');
   $('army').hidden = false;
-  requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd)));
+  requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   $('armyList').querySelectorAll('.stepper button').forEach(b => b.onclick = () => {
     const t = b.closest('.item').dataset.t; armyDraft[t] = Math.max(0, Math.min(E.ARMY_CAP, (armyDraft[t] || 0) + +b.dataset.d)); armyRefresh();
   });
@@ -2799,7 +2829,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, sndPick, SND, get musik() { return musik; }, get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
