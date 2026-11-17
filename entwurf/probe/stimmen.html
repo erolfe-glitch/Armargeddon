@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stimmen-Hörprobe</title>
+<style>
+  :root { --bg: #17120e; --panel: #241c15; --line: #4a3c2c; --text: #e9e1cf; --muted: #b3a68c; --brass: #c2a461; --rot: #8E2B22; --grau: #7D8471; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+  header { padding: 18px 24px 6px; } h1 { margin: 0; font: 400 26px Georgia, serif; color: var(--brass); }
+  p { color: var(--muted); max-width: 1100px; margin: 6px 0; }
+  .leiste { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 24px; background: rgba(23,18,14,.96); border-bottom: 1px solid var(--line); }
+  .leiste label { display: inline-flex; gap: 8px; align-items: center; min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 4px; background: #2a211b; cursor: pointer; }
+  .leiste input { width: 20px; height: 20px; accent-color: var(--brass); }
+  button { min-height: 40px; min-width: 44px; padding: 0 12px; border: 1px solid #5a4a32; border-radius: 4px; background: #2a211b; color: var(--text); font: 600 14px "Segoe UI", sans-serif; cursor: pointer; }
+  button:hover { border-color: var(--brass); } button.spielt { background: #5a4520; border-color: var(--brass); color: #ffe9b0; }
+  section { margin: 14px 24px; } h2 { margin: 0 0 6px; font: 400 21px Georgia, serif; } h2.A { color: #d9796b; } h2.D { color: #a8b39a; }
+  .stimme { margin: 10px 0 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; }
+  .stimme h3 { margin: 0 0 6px; font: 600 16px "Segoe UI", sans-serif; color: var(--brass); display: flex; gap: 10px; align-items: center; }
+  table { border-collapse: collapse; width: 100%; } td { padding: 4px 6px; border-top: 1px solid #3a2e22; vertical-align: middle; }
+  td.n { width: 120px; font-family: Consolas, monospace; color: var(--muted); } td.d { width: 60px; text-align: right; color: var(--muted); }
+  td.k { display: flex; gap: 6px; flex-wrap: wrap; } td.h { color: #e0a36a; font-size: 13px; } td.h .g { color: var(--muted); }
+  td.w { width: 64px; text-align: center; } td.w input { width: 24px; height: 24px; accent-color: var(--brass); cursor: pointer; }
+  tr.gewaehlt { background: rgba(194,164,97,.12); }
+  #auswahl { width: 100%; min-height: 90px; margin-top: 6px; background: #120d0b; color: var(--text); border: 1px solid var(--line); border-radius: 4px; font: 13px Consolas, monospace; padding: 8px; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<header><h1>Stimmen-Hörprobe: Sprüche beim Anklicken</h1>
+<p>Eigene Aufnahmen (Suno Sprachausgabe, Suno Pro), an den Pausen geschnitten (tools/stimmen_cut.py). Jeder Spruch ohne Effekt und mit Gasmasken-Effekt in drei Stärken: <b>leicht</b> (250–3500 Hz, wenig Verzerrung, 60 ms Raum), <b>mittel</b> (300–3000 Hz), <b>stark</b> (400–2400 Hz, deutlichere Verzerrung, 100 ms Raum). Auf Wunsch mit kurzem Atemzug davor. <b>Noch nicht im Spiel.</b> Häkchen setzen = in die Auswahl übernehmen; die Liste unten kann kopiert werden.</p>
+<p>Ausgelassen: echte Dubletten (gleiche Aufnahme). Derselbe Spruch in einer anderen Stimme bleibt drin und ist vermerkt. „Auffällig“ ist nur nach Klang geprüft (sehr kurz/lang, Ende abgeschnitten, übersteuert) – ob ein Spruch verschluckt, falsch betont oder ein Klammerwort vorgelesen ist, bitte beim Hören entscheiden.</p></header>
+<div class="leiste"><label><input type="checkbox" id="atem">Atemzug voranstellen</label>
+  <span style="color:var(--muted)">Stärke für die Auswahl:</span><label><input type="radio" name="st" value="roh">ohne</label><label><input type="radio" name="st" value="leicht">leicht</label><label><input type="radio" name="st" value="mittel" checked>mittel</label><label><input type="radio" name="st" value="stark">stark</label>
+  <button id="stop">Stopp</button></div>
+<div id="inhalt"></div>
+<section><h2>Meine Auswahl</h2><textarea id="auswahl" readonly></textarea><p><button id="kopieren">Auswahl kopieren</button> <button id="leeren">Auswahl leeren</button></p></section>
+<script src="stimmen/stimmen_liste.js"></script>
+<script>
+const L = (window.STIMMEN || []).filter(e => !e.dublette_von), STUFEN = [['roh', 'ohne'], ['leicht', 'leicht'], ['mittel', 'mittel'], ['stark', 'stark']];
+let sel = new Set(); try { sel = new Set(JSON.parse(localStorage.getItem('stimmen.auswahl') || '[]')); } catch (e) {}
+const FR = { konkordat: ['A', 'Konkordat (Englisch, „On Your Word“)'], aschenwacht: ['D', 'Aschenwacht (Deutsch, „Zu Befehl“)'] };
+let html = '';
+for (const fr of ['konkordat', 'aschenwacht']) {
+  html += `<section><h2 class="${FR[fr][0]}">${FR[fr][1]}</h2>`;
+  for (const st of [...new Set(L.filter(e => e.fraktion === fr).map(e => e.stimme))].sort()) {
+    const rows = L.filter(e => e.fraktion === fr && e.stimme === st);
+    html += `<div class="stimme"><h3>Stimme ${st} <small style="color:var(--muted);font-weight:400">(${fr}_stimme_${st}.wav, ${rows.length} Sprüche)</small><button data-alle="${fr}_s${st}_">alle nacheinander</button></h3><table>` + rows.map(e => `<tr data-n="${e.name}" class="${sel.has(e.name) ? 'gewaehlt' : ''}"><td class="w"><input type="checkbox" ${sel.has(e.name) ? 'checked' : ''} aria-label="auswählen"></td><td class="n">${e.name}</td><td class="d">${e.dauer.toFixed(2)} s</td><td class="k">${STUFEN.map(([k, t]) => `<button data-f="${e.name}_${k}">${t}</button>`).join('')}</td><td class="h">${e.auffaellig.length ? 'auffällig: ' + e.auffaellig.join(', ') : ''}${e.gleicher_spruch_wie ? `<span class="g">${e.auffaellig.length ? ' · ' : ''}gleicher Spruch wie ${e.gleicher_spruch_wie}</span>` : ''}</td></tr>`).join('') + '</table></div>';
+  }
+  html += '</section>';
+}
+document.getElementById('inhalt').innerHTML = html;
+let cur = null, queue = [];
+const stop = () => { queue = []; if (cur) { cur.pause(); cur = null; } document.querySelectorAll('button.spielt').forEach(b => b.classList.remove('spielt')); };
+function spiele(files, btn) {
+  stop(); queue = files.slice(); if (btn) btn.classList.add('spielt');
+  const next = () => { const f = queue.shift(); if (!f) { if (btn) btn.classList.remove('spielt'); cur = null; return; } cur = new Audio(`stimmen/${f}.aac`); cur.onended = next; cur.play().catch(next); };
+  next();
+}
+const mitAtem = f => document.getElementById('atem').checked && !f.endsWith('_roh') ? ['atem', f] : [f];
+document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => spiele(mitAtem(b.dataset.f), b));
+document.querySelectorAll('[data-alle]').forEach(b => b.onclick = () => { const k = document.querySelector('input[name=st]:checked').value; spiele(L.filter(e => e.name.startsWith(b.dataset.alle)).flatMap(e => mitAtem(`${e.name}_${k}`)), b); });
+document.getElementById('stop').onclick = stop;
+function auswahlText() { const k = document.querySelector('input[name=st]:checked').value, atem = document.getElementById('atem').checked;
+  document.getElementById('auswahl').value = `Stärke: ${k === 'roh' ? 'ohne Effekt' : k}${atem ? ', mit Atemzug' : ''}\n` + ['konkordat', 'aschenwacht'].map(fr => `${fr}: ${[...sel].filter(n => n.startsWith(fr)).sort().join(', ') || '–'}`).join('\n');
+  try { localStorage.setItem('stimmen.auswahl', JSON.stringify([...sel])); } catch (e) {} }
+document.querySelectorAll('tr[data-n] input').forEach(c => c.onchange = () => { const tr = c.closest('tr'); if (c.checked) sel.add(tr.dataset.n); else sel.delete(tr.dataset.n); tr.classList.toggle('gewaehlt', c.checked); auswahlText(); });
+document.querySelectorAll('input[name=st], #atem').forEach(i => i.onchange = auswahlText);
+document.getElementById('kopieren').onclick = () => { const t = document.getElementById('auswahl'); t.select(); navigator.clipboard ? navigator.clipboard.writeText(t.value) : document.execCommand('copy'); };
+document.getElementById('leeren').onclick = () => { sel.clear(); document.querySelectorAll('tr[data-n]').forEach(tr => { tr.classList.remove('gewaehlt'); tr.querySelector('input').checked = false; }); auswahlText(); };
+auswahlText(); document.body.dataset.ready = '1';
+</script>
+</body>
+</html>

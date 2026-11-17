@@ -1,0 +1,1146 @@
+// Erzeugt von tools/stimmen_aac.mjs aus stimmen_liste.json (tools/stimmen_cut.py)
+window.STIMMEN = [
+ {
+  "name": "konkordat_s1_01",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 1,
+  "start": 0.16,
+  "dauer": 0.88,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_02",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 2,
+  "start": 2.56,
+  "dauer": 0.68,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_03",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 3,
+  "start": 4.38,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_04",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 4,
+  "start": 6.4,
+  "dauer": 0.62,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_05",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 5,
+  "start": 7.78,
+  "dauer": 1.1,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_06",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 6,
+  "start": 9.08,
+  "dauer": 0.4,
+  "auffaellig": [
+   "sehr kurz"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_07",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 7,
+  "start": 9.64,
+  "dauer": 0.8,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_08",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 8,
+  "start": 11.64,
+  "dauer": 0.52,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_09",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 9,
+  "start": 12.58,
+  "dauer": 0.4,
+  "auffaellig": [
+   "sehr kurz",
+   "Ende abgeschnitten?"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_10",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 10,
+  "start": 13.2,
+  "dauer": 1.22,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_11",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 11,
+  "start": 15.26,
+  "dauer": 4.54,
+  "auffaellig": [
+   "sehr lang (mehrere Wörter ohne Pause?)"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_12",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 12,
+  "start": 20.8,
+  "dauer": 2.82,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s1_13",
+  "fraktion": "konkordat",
+  "stimme": 1,
+  "nr": 13,
+  "start": 23.78,
+  "dauer": 0.44,
+  "auffaellig": [
+   "sehr kurz"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_01",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 1,
+  "start": 0.0,
+  "dauer": 1.02,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_02",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 2,
+  "start": 2.3,
+  "dauer": 0.52,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_03",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 3,
+  "start": 4.54,
+  "dauer": 0.68,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_04",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 4,
+  "start": 6.54,
+  "dauer": 3.52,
+  "auffaellig": [
+   "sehr lang (mehrere Wörter ohne Pause?)"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_05",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 5,
+  "start": 10.78,
+  "dauer": 2.42,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_06",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 6,
+  "start": 13.88,
+  "dauer": 1.24,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s2_07",
+  "fraktion": "konkordat",
+  "stimme": 2,
+  "nr": 7,
+  "start": 15.88,
+  "dauer": 2.56,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_01",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 1,
+  "start": 0.0,
+  "dauer": 0.84,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_02",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 2,
+  "start": 2.42,
+  "dauer": 0.72,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "konkordat_s1_02"
+ },
+ {
+  "name": "konkordat_s3_03",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 3,
+  "start": 4.8,
+  "dauer": 0.8,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_04",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 4,
+  "start": 6.86,
+  "dauer": 0.66,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_05",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 5,
+  "start": 8.12,
+  "dauer": 0.98,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_06",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 6,
+  "start": 9.96,
+  "dauer": 0.9,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "konkordat_s1_07"
+ },
+ {
+  "name": "konkordat_s3_07",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 7,
+  "start": 12.1,
+  "dauer": 0.58,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "konkordat_s2_03"
+ },
+ {
+  "name": "konkordat_s3_08",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 8,
+  "start": 14.44,
+  "dauer": 1.14,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_09",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 9,
+  "start": 16.8,
+  "dauer": 0.66,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_10",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 10,
+  "start": 17.6,
+  "dauer": 1.12,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s3_11",
+  "fraktion": "konkordat",
+  "stimme": 3,
+  "nr": 11,
+  "start": 19.94,
+  "dauer": 0.98,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_01",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 1,
+  "start": 0.08,
+  "dauer": 1.06,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_02",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 2,
+  "start": 2.56,
+  "dauer": 0.68,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_03",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 3,
+  "start": 4.4,
+  "dauer": 0.82,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "konkordat_s1_03"
+ },
+ {
+  "name": "konkordat_s4_04",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 4,
+  "start": 6.16,
+  "dauer": 0.64,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_05",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 5,
+  "start": 7.38,
+  "dauer": 3.12,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_06",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 6,
+  "start": 10.78,
+  "dauer": 1.5,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_07",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 7,
+  "start": 12.8,
+  "dauer": 1.0,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_08",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 8,
+  "start": 14.48,
+  "dauer": 1.02,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s4_09",
+  "fraktion": "konkordat",
+  "stimme": 4,
+  "nr": 9,
+  "start": 15.68,
+  "dauer": 4.06,
+  "auffaellig": [
+   "sehr lang (mehrere Wörter ohne Pause?)"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_01",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 1,
+  "start": 0.18,
+  "dauer": 0.66,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_02",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 2,
+  "start": 2.18,
+  "dauer": 0.56,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "konkordat_s1_02"
+ },
+ {
+  "name": "konkordat_s5_03",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 3,
+  "start": 4.0,
+  "dauer": 0.72,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_04",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 4,
+  "start": 5.68,
+  "dauer": 0.54,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_05",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 5,
+  "start": 7.64,
+  "dauer": 0.76,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_06",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 6,
+  "start": 9.2,
+  "dauer": 0.82,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "konkordat_s1_07"
+ },
+ {
+  "name": "konkordat_s5_07",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 7,
+  "start": 12.0,
+  "dauer": 0.9,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_08",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 8,
+  "start": 14.0,
+  "dauer": 1.3,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_09",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 9,
+  "start": 16.44,
+  "dauer": 0.6,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "konkordat_s5_10",
+  "fraktion": "konkordat",
+  "stimme": 5,
+  "nr": 10,
+  "start": 17.88,
+  "dauer": 1.82,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_01",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 1,
+  "start": 0.14,
+  "dauer": 0.96,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_02",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 2,
+  "start": 2.4,
+  "dauer": 0.82,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_03",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 3,
+  "start": 4.38,
+  "dauer": 0.76,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_04",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 4,
+  "start": 6.48,
+  "dauer": 0.96,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_05",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 5,
+  "start": 8.4,
+  "dauer": 1.42,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_06",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 6,
+  "start": 10.92,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_07",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 7,
+  "start": 12.68,
+  "dauer": 2.34,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_08",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 8,
+  "start": 15.76,
+  "dauer": 1.14,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s1_09",
+  "fraktion": "aschenwacht",
+  "stimme": 1,
+  "nr": 9,
+  "start": 17.78,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_01",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 1,
+  "start": 0.0,
+  "dauer": 0.74,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_02",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 2,
+  "start": 2.28,
+  "dauer": 0.58,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_03",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 3,
+  "start": 4.38,
+  "dauer": 0.7,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "aschenwacht_s1_03"
+ },
+ {
+  "name": "aschenwacht_s2_04",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 4,
+  "start": 6.82,
+  "dauer": 0.84,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_05",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 5,
+  "start": 9.18,
+  "dauer": 1.0,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_06",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 6,
+  "start": 11.7,
+  "dauer": 1.06,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_07",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 7,
+  "start": 13.9,
+  "dauer": 0.84,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_08",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 8,
+  "start": 16.16,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_09",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 9,
+  "start": 17.9,
+  "dauer": 1.56,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_10",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 10,
+  "start": 20.9,
+  "dauer": 1.0,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "aschenwacht_s1_09"
+ },
+ {
+  "name": "aschenwacht_s2_11",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 11,
+  "start": 24.12,
+  "dauer": 0.54,
+  "auffaellig": [
+   "Ende abgeschnitten?"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_12",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 12,
+  "start": 28.0,
+  "dauer": 2.32,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_13",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 13,
+  "start": 33.5,
+  "dauer": 1.16,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_14",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 14,
+  "start": 37.74,
+  "dauer": 0.42,
+  "auffaellig": [
+   "sehr kurz"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_15",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 15,
+  "start": 40.34,
+  "dauer": 1.8,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_16",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 16,
+  "start": 44.54,
+  "dauer": 0.68,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s2_17",
+  "fraktion": "aschenwacht",
+  "stimme": 2,
+  "nr": 17,
+  "start": 48.82,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_01",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 1,
+  "start": 0.0,
+  "dauer": 0.7,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_02",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 2,
+  "start": 2.54,
+  "dauer": 0.66,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_03",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 3,
+  "start": 4.8,
+  "dauer": 0.84,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_04",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 4,
+  "start": 7.0,
+  "dauer": 0.92,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_05",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 5,
+  "start": 9.24,
+  "dauer": 0.94,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_06",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 6,
+  "start": 11.62,
+  "dauer": 0.88,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_07",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 7,
+  "start": 13.62,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_08",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 8,
+  "start": 15.76,
+  "dauer": 0.8,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_09",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 9,
+  "start": 17.88,
+  "dauer": 2.16,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_10",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 10,
+  "start": 21.38,
+  "dauer": 1.42,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s3_11",
+  "fraktion": "aschenwacht",
+  "stimme": 3,
+  "nr": 11,
+  "start": 23.8,
+  "dauer": 5.72,
+  "auffaellig": [
+   "sehr lang (mehrere Wörter ohne Pause?)"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_01",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 1,
+  "start": 0.0,
+  "dauer": 0.68,
+  "auffaellig": [],
+  "dublette_von": "aschenwacht_s3_01",
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_02",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 2,
+  "start": 2.54,
+  "dauer": 0.62,
+  "auffaellig": [],
+  "dublette_von": "aschenwacht_s3_02",
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_03",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 3,
+  "start": 4.8,
+  "dauer": 0.68,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_04",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 4,
+  "start": 7.0,
+  "dauer": 0.84,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_05",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 5,
+  "start": 9.24,
+  "dauer": 0.94,
+  "auffaellig": [],
+  "dublette_von": "aschenwacht_s3_05",
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_06",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 6,
+  "start": 11.62,
+  "dauer": 0.84,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_07",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 7,
+  "start": 13.62,
+  "dauer": 0.86,
+  "auffaellig": [],
+  "dublette_von": "aschenwacht_s3_07",
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_08",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 8,
+  "start": 15.74,
+  "dauer": 0.82,
+  "auffaellig": [],
+  "dublette_von": "aschenwacht_s3_08",
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_09",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 9,
+  "start": 18.38,
+  "dauer": 0.44,
+  "auffaellig": [
+   "sehr kurz"
+  ],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_10",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 10,
+  "start": 19.32,
+  "dauer": 0.8,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_11",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 11,
+  "start": 22.02,
+  "dauer": 0.74,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_12",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 12,
+  "start": 24.24,
+  "dauer": 0.58,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_13",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 13,
+  "start": 26.4,
+  "dauer": 0.9,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_14",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 14,
+  "start": 27.8,
+  "dauer": 0.82,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": null
+ },
+ {
+  "name": "aschenwacht_s4_15",
+  "fraktion": "aschenwacht",
+  "stimme": 4,
+  "nr": 15,
+  "start": 28.82,
+  "dauer": 0.5,
+  "auffaellig": [],
+  "dublette_von": null,
+  "gleicher_spruch_wie": "aschenwacht_s2_14"
+ }
+];
