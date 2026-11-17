@@ -78,7 +78,7 @@ function layout() {
 // Flache Ansicht: Karte senkrecht gestaucht um K, überall gleich groß. Neue Ansicht (Schalter OPT.tilt, „Neue Ansicht (Test)“):
 // perspektivisch gekippt – wird hier eingehängt (Umbauplan Schritt 1 ff.); bis dahin zeichnen beide Schalterstellungen gleich.
 // Das Gelände (renderTerrain) zeichnet weiter flach in tcv; die neue Ansicht projiziert diesen Puffer später ungestaucht.
-const VIEW = { tilt: () => !!OPT.tilt, bbK: null, up: null };   // up(x, y): neue Ansicht, Phase „aufrecht“ – Aufsteller für ein Element am Punkt (x, y) einstellen   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
+const VIEW = { tilt: () => true, bbK: null, up: null };   // seit 2026-11-17 fester Standard: immer die neue Ansicht (Schalter entfernt). Die alte, flache Ansicht ist nicht mehr erreichbar und wird nicht weitergepflegt.   // up(x, y): neue Ansicht, Phase „aufrecht“ – Aufsteller für ein Element am Punkt (x, y) einstellen   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
 function center(c, r) { return [L.s * (1 + 1.5 * c), L.top + L.s * K * SQ3 * (r + 0.5 * (c & 1) + 0.5)]; }
 function kAt(x, y) { return VIEW.bbK != null ? VIEW.bbK : K; }   // senkrechte Verkürzung des Bodens am Bildpunkt (x, y); neue Ansicht: im Weltbild 1, am Aufsteller die Verkürzung am Fußpunkt
 function sAt(x, y) { return L.s; }   // Feldradius in Bildpunkten am Bildpunkt (x, y)
@@ -3024,7 +3024,7 @@ $('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,
   const bc = board.getBoundingClientRect(); setZoom(nz, bc.left + bc.width / 2, bc.top + bc.height / 2, nz <= ZFIT + 0.001, true);
 };
 // Hilfen (Optionen): sofort wirksam, im Browser gemerkt
-const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake'], ['optTilt', 'tilt']];
+const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake']];   // „Neue Ansicht (Test)“ entfernt: immer neue Ansicht
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
