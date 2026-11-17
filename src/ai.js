@@ -244,7 +244,11 @@ function planUnit(G, u) {
   const here = posValue(G, u, u.c, u.r);
   const atkHere = u.attacked ? null : bestAttackFrom(G, u, u.c, u.r, false, 0);
   opts.push({ v: here + (atkHere ? Math.max(0, atkHere.v) : 0), move: null, atk: atkHere && atkHere.v > 0 ? atkHere : null });
-  if (E.canCut(G, u) && W[u.side].cut > 0) opts.push({ v: here + W[u.side].cut + 1.2, move: null, cut: true });
+  if (W[u.side].cut > 0) {   // Paket 8: Drahtschneider schneiden vom Nachbarfeld aus – den Draht, der Richtung Gegner liegt
+    const nd0 = nearestEnemyDist(G, u.side, u.c, u.r); let best = null;
+    for (const [c, r] of E.cutTargets(G, u)) { const nd = nearestEnemyDist(G, u.side, c, r); if (nd <= nd0 && (!best || nd < best[2])) best = [c, r, nd]; }
+    if (best) opts.push({ v: here + W[u.side].cut + 1.2, move: null, cut: [best[0], best[1]] });
+  }
   for (const [, n] of E.reachable(G, u)) {
     const pv = posValue(G, u, n.c, n.r);
     const atk = n.retreat ? null : bestAttackFrom(G, u, n.c, n.r, true, n.path.length);
@@ -295,15 +299,15 @@ function next(G) {
   for (const u of G.units) {
     if (!E.canBig(G, u) || G._aiDone.has('b' + u.id) || G.turn < 3 || ENVX['NOBIG_' + u.side]) continue;
     G._aiDone.add('b' + u.id);
-    const own = G.units.filter(o => o.side === u.side && E.active(o));
+    const own = G.units.filter(o => o.side === u.side && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= P.BIG_R);   // Paket 8: wirkt nur 3 Felder um den General
     if (u.side === 'A') {   // Halten um jeden Preis: viele eigene Einheiten in Feindberührung oder mit wankender Moral
       const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
-      if (shaky >= Math.max(4, Math.round(own.length * 0.35))) return { u: u.id, steps: [{ k: 'big' }] };
+      if (shaky >= Math.max(3, Math.round(own.length * 0.35))) return { u: u.id, steps: [{ k: 'big' }] };
     } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
       const ready = own.filter(o => !o.attacked && o.ap >= 2 && nearestEnemyDist(G, o.side, o.c, o.r) <= TYPES[o.type].mv + 2 && TYPES[o.type].atk >= 3).length;
       const half = o => u.side === 'D' ? o.c >= E.COLS / 2 : o.c < E.COLS / 2;   // Zielfelder auf der eigenen Hälfte
       const threat = E.OBJECTIVES.some(o => half(o) && (G.ctrl[o.id] && G.ctrl[o.id] !== u.side || G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, o.c, o.r) <= 1)));   // Gegner steht an oder auf einem eigenen Zielfeld
-      if (ready >= Math.max(6, Math.round(own.length * 0.5)) && (threat || G.turn >= 6)) return { u: u.id, steps: [{ k: 'big' }] };
+      if (ready >= Math.max(3, Math.round(own.length * 0.5)) && (threat || G.turn >= 6)) return { u: u.id, steps: [{ k: 'big' }] };
     }
   }
   // Bannerträger: aufpflanzen, wenn der Kampf nah ist und eigene Truppen im Bereich stehen; aufnehmen, wenn der Gegner weit weg ist
@@ -352,7 +356,7 @@ function next(G) {
         if (o2.move) return { u: u.id, steps: [{ k: 'teardown' }, { k: 'move', c: o2.move[0], r: o2.move[1] }] }; }
     }
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
-    if (o.cut) steps.push({ k: 'cut' });
+    if (o.cut) steps.push({ k: 'cut', c: o.cut[0], r: o.cut[1] });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk && TYPES[u.type].mg && !u.setup && !o.move) steps.push({ k: 'setup' });
     if (o.atk) steps.push({ k: o.atk.kind, d: o.atk.d.id });
@@ -404,9 +408,15 @@ function next(G) {
     const ENV = typeof process !== 'undefined' && process.env || {};
     if (o.move && !ENV['NOMV2_' + G.side]) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
     if (o.atk && !ENV['NOATK2_' + G.side] && (!o.move || !ENV['NOMV2_' + G.side])) steps.push({ k: o.atk.kind, d: o.atk.d.id });
-    if (o.cut) steps.push({ k: 'cut' });
+    if (o.cut) steps.push({ k: 'cut', c: o.cut[0], r: o.cut[1] });
     if (TYPES[u.type].mg && !steps.length && E.canSetup(G, u)) steps.push({ k: 'setup' });
     if (steps.length) return { u: u.id, steps };
+  }
+  for (const u of G.units) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG) mit übrigen Punkten
+    if (u.side !== G.side || !TYPES[u.type].zweit || G._aiDone.has('z' + u.id)) continue;
+    const tg = E.zweitTargets(G, u); if (!tg.length) continue;
+    G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
+    return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
   }
   return null;
 }
@@ -415,7 +425,8 @@ function exec(G, uid, s) {
   if (!u || !E.active(u)) return [];
   if (s.k === 'move') return E.moveUnit(G, u, s.c, s.r);
   if (s.k === 'turn') return E.turnUnit(G, u, s.face);
-  if (s.k === 'cut') return E.cutWire(G, u);
+  if (s.k === 'cut') return E.cutWire(G, u, s.c, s.r);
+  if (s.k === 'zweit') { const d = G.units.find(x => x.id === s.d); return d ? E.zweitFire(G, u, d) : []; }
   if (s.k === 'wire') { if (!u.attacked && E.nearestEnemy && E.canLay(G, u)) { const [c, r] = E.layTarget(G, u); let near = 99; for (const o of G.units) if (o.side !== u.side && E.active(o)) near = Math.min(near, E.dist(c, r, o.c, o.r)); if (near <= 5 && near >= 2) return E.layWire(G, u); } return []; }
   if (s.k === 'limber') return E.limber(G, u);
   if (s.k === 'setup') return E.setupMG(G, u);

@@ -65,7 +65,7 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 21. Mineure: Fähigkeit wählbar, aber gültige Felder sind nicht zu sehen – gültige Felder markieren, Knopf grau, wenn keins da ist.
 22. „Niedergehalten" muss als wichtigster Zustand groß neben der Einheit stehen; ein aktives Sperrfeuer, das durch Niederhalten blockiert ist, als blockiert zeigen.
 
-## Paket 8 – Regeln
+## Paket 8 – Regeln – erledigt 2026-11-17 (Zweitwaffen weiterer Fahrzeuge: Vorschlag in IDEEN.md, wartet auf Zustimmung)
 23. Pannen bei Fahrzeugen viel seltener, dafür dann 3 Runden festgefahren. Panne sieht aus wie im Schlamm festgefahren (Dreck, Spritzer), nicht wie Rauch/Brand.
 24. Schützenkohorte kann keinen Draht mehr schneiden. Je Armee mindestens zwei Einheitentypen mit Drahtschneiden; sie schneiden vom Nachbarfeld aus, ohne hineinzulaufen.
 25. Zweitwaffen: Landkoloss bekommt seine Seiten-MGs (schießen nach links und rechts), Turmschreiter Kanone + MG; bei anderen Fahrzeugen/Schreitern, wo das Modell es zeigt.

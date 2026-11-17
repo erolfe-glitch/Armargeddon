@@ -12,9 +12,12 @@ function game(side = 'A') { const G = E.newGame({ seed: 4242 }); G.side = side; 
 function target(G, a, n) { for (let f = 0; f < 6; f++) { let p = [a.c, a.r]; for (let i = 0; i < n; i++) p = E.step ? E.step(p[0], p[1], f) : p; if (!E.inMap(p[0], p[1])) continue; G.lit.push({ c: p[0], r: p[1], side: a.side }); if (E.canShell(G, a, p[0], p[1], 'he')) return { c: p[0], r: p[1] }; } return null; }
 function freeNear(G, u) { return E.neighbors(u.c, u.r).find(([c, r]) => E.inMap(c, r) && !E.unitAt(G, c, r)); }
 
-{ // Draht schneiden
-  const G = game(), u = G.units.find(x => x.side === 'A' && x.type === 'kohorte'); E.hex(G, u.c, u.r).t = 'wire'; u.ap = 2; u.attacked = false;
-  const ev = E.cutWire(G, u); ok('Schneiden', E.hex(G, u.c, u.r).t !== 'wire' && redraws(ev, u.c, u.r), JSON.stringify(ev.map(e => e.t)));
+{ // Draht schneiden (Paket 8): nur Drahtschneider, vom Nachbarfeld aus; Schützenkohorte nicht mehr
+  const G = game(), k = G.units.find(x => x.side === 'A' && x.type === 'kohorte'); k.type = 'pionier'; k.ap = 2; k.attacked = false;
+  const [c, r] = freeNear(G, k); E.hex(G, c, r).t = 'wire'; const c0 = k.c, r0 = k.r;
+  const ev = E.cutWire(G, k, c, r); ok('Schneiden vom Nachbarfeld', E.hex(G, c, r).t !== 'wire' && redraws(ev, c, r) && k.c === c0 && k.r === r0 && k.ap === 1, JSON.stringify(ev.map(e => e.t)));
+  const G2 = game(), u = G2.units.find(x => x.side === 'A' && x.type === 'kohorte'); u.ap = 2; const [c2, r2] = freeNear(G2, u); E.hex(G2, c2, r2).t = 'wire';
+  ok('Kohorte schneidet nicht', !E.canCut(G2, u) && !E.cutWire(G2, u, c2, r2).length && E.hex(G2, c2, r2).t === 'wire');
 }
 { // Koloss walzt
   const G = game(), u = G.units.find(x => x.side === 'A' && x.type === 'koloss'); u.ap = 2; u.mvd = 0; const [c, r] = freeNear(G, u); E.hex(G, c, r).t = 'wire';

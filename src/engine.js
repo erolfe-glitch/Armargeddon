@@ -20,7 +20,7 @@ const P = {
   SUPP: 0.6, SUPP_ATK: 0.5,
   ART_MIN: 2, SPOT: 4, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
-  BREAKDOWN: 0.14, STUCK: 0.25, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
+  BREAKDOWN: 0.05, STUCK: 0.08, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
   REINF_TURN: 8, LIMBER_MV: 3,
   PTS_TURN: { A: 10, D: 10 }, PTS_KILL: 20, PTS_OBJ: 10, HEAL: 2.5, HEAL_MOR: 1.5,
@@ -33,6 +33,9 @@ const P = {
   SPERR_SHOTS: 2, STRIKE_CD: 3, STRIKE_SCATTER: 0.25,
   // Gruppe 2 Führung (2026-11-16): Feuer frei (Konkordat) ×1,25 Fernkampf, „Halten um jeden Preis“ Abwehr ×1,25, Banner aufgepflanzt 3 Felder
   FIRE_FREE: 1.25, HOLD_DEF: 1.25, BANNER_R: 2, BANNER_R_PLANTED: 3,
+  // Spieltest Runde 2, Paket 8 (2026-11-17): Pannen/Festfahren seltener (oben ≈ ⅓), dafür 3 eigene Runden; Befehle 1 Feld, 3× je Anführer; großer Befehl 3 Felder;
+  // Gas 3 Runden Abklingzeit; Artillerie-Sperrfeuer höchstens 2× je Geschütz, Schaden ×0,7 eines Einzelschusses; Zweitwaffe (Seiten-MG, Turm-MG) ×0,5, Reichweite 2
+  PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 3, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
   DIG_DEF: 1.3, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
@@ -59,8 +62,8 @@ const TYPES = {
   haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 2,
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
-  koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben. Bleibt manchmal mit einer Panne liegen.',
+  koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', zweit: { name: 'Seiten-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
+    can: 'Gepanzert: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben. Kanone vorn; dazu Seiten-MG (1 ●, einmal je Runde, 2 Felder) nur nach links und rechts. Fährt sich selten fest und fällt dann 3 Runden aus.',
     real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
   sturmpz: { side: 'D', name: 'Sturmpanzer', cls: 'walker', broadside: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Gepanzert wie der Landkoloss: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben, bleibt manchmal mit einer Panne liegen. Breitseite: in einer Runde zwei Schüsse auf zwei verschiedene Ziele bis 2 Felder, jeder ×0,6.',
@@ -77,8 +80,8 @@ const TYPES = {
   geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 1,
     can: 'Mittlere Artillerie. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Aufgeprotzt zieht es 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Bei Flesquières schossen deutsche Feldgeschütze am 20. November 1917 im direkten Richten zahlreiche britische Panzer ab.' },
-  sturm: { side: 'D', name: 'Sturmbrecher', cls: 'storm', atk: 6, def: 5, mor: 9, mv: 3, rng: 0, fs: 0,
-    can: 'Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Landkolosse im Nahkampf ×1,5.',
+  sturm: { side: 'D', name: 'Sturmbrecher', cls: 'storm', cutter: true, atk: 6, def: 5, mor: 9, mv: 3, rng: 0, fs: 0,
+    can: 'Sickert durch: Gegner halten ihn nicht auf. Schneidet Draht vom Nachbarfeld aus (1 ●). Handgranaten heben den Grabenschutz auf. Gegen Landkolosse im Nahkampf ×1,5.',
     real: 'Deutsche Stoßtrupps griffen ab 1916 in kleinen Gruppen mit Handgranaten an und umgingen starke Stellungen.' },
   brand: { side: 'D', name: 'Brandwerfer', cls: 'flame', atk: 2, def: 3, mor: 7, mv: 2, rng: 1, fs: 7, flame: true,
     can: 'Flammenstrahl auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Das Feld brennt bis zum nächsten eigenen Zug: wer dort steht oder hineinzieht, nimmt Feuerschaden, Draht verbrennt. Wird er beschossen, trifft es ihn ×1,5.',
@@ -111,11 +114,11 @@ Object.assign(TYPES, {
   melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', courier: true, atk: 2, def: 2, mor: 7, mv: 5, rng: 0, fs: 0,
     can: 'Schnell (5 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +1 Aktionspunkt, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
     real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
-  pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', fig: 'sapper', sapper: true, recover: true, abil: 'charge', atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
-    can: 'Schneidet Draht und kann danach noch angreifen. Haftladung (2 ●, alle 2 Runden) an einem Nachbarfeld: schwerer Schaden, doppelt gegen Kolosse und Kampfmaschinen, Bunkerschutz zählt nicht; Bunker und Barrikaden werden zu Trichtern, Draht wird zerrissen. Im Nahkampf ×1,5 gegen Kolosse und Kampfmaschinen. Bergt festgefahrene Fahrzeuge.',
+  pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', cutter: true, fig: 'sapper', sapper: true, recover: true, abil: 'charge', atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
+    can: 'Schneidet Draht vom Nachbarfeld aus (1 ●), ohne hineinzulaufen, und kann danach noch angreifen. Haftladung (2 ●, alle 2 Runden) an einem Nachbarfeld: schwerer Schaden, doppelt gegen Kolosse und Kampfmaschinen, Bunkerschutz zählt nicht; Bunker und Barrikaden werden zu Trichtern, Draht wird zerrissen. Im Nahkampf ×1,5 gegen Kolosse und Kampfmaschinen. Bergt festgefahrene Fahrzeuge.',
     real: 'Pioniere schnitten nachts Gassen in den Draht, legten Sprengladungen und gruben Stollen unter die gegnerischen Linien.' },
-  raeumer: { side: 'A', name: 'Grabenräumer', cls: 'storm', fig: 'raider', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
-    can: 'Nahkämpfer ohne Gewehr. Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Kampfmaschinen im Nahkampf ×1,5.',
+  raeumer: { side: 'A', name: 'Grabenräumer', cls: 'storm', cutter: true, fig: 'raider', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
+    can: 'Nahkämpfer ohne Gewehr. Schneidet Draht vom Nachbarfeld aus (1 ●). Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Kampfmaschinen im Nahkampf ×1,5.',
     real: 'Für nächtliche Grabenüberfälle nutzten Soldaten Grabendolche, Keulen und geschärfte Spaten, weil Gewehre im engen Graben zu lang waren.' },
   buechse: { side: 'D', name: 'Panzerbüchsen-Trupp', cls: 'inf', fig: 'atr', at: 2, atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 3,
     can: 'Schießt 3 Felder weit. Durchschlägt Panzerung: Beschuss trifft Landkolosse ×2.',
@@ -132,8 +135,8 @@ Object.assign(TYPES, {
   klaue: { side: 'D', name: 'Klauenschreiter', cls: 'walker', fig: 'mechB', mech: true, gat: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
     can: 'Schreitende Kampfmaschine mit Maschinenwaffe und Greifklaue. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
     real: 'Der deutsche A7V trug sechs Maschinengewehre und eine 5,7-cm-Kanone. Am 24. April 1918 traf er bei Villers-Bretonneux auf britische Panzer, das erste Panzergefecht.' },
-  turm: { side: 'A', name: 'Turmschreiter', cls: 'walker', fig: 'mechT', mech: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
-    can: 'Schreitende Kampfmaschine mit Geschützturm und Maschinengewehr. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
+  turm: { side: 'A', name: 'Turmschreiter', cls: 'walker', zweit: { name: 'Turm-MG', rng: 2 }, fig: 'mechT', mech: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
+    can: 'Schreitende Kampfmaschine mit Geschützturm und Maschinengewehr: Kanone wie bisher, dazu Turm-MG (1 ●, einmal je Runde, 2 Felder). Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Fährt sich selten fest und fällt dann 3 Runden aus.',
     real: 'Britische Panzer gab es als „Male“ mit 6-Pfünder-Kanonen und als „Female“ nur mit Maschinengewehren. Ab 1917 kamen „Hermaphrodites“ mit beidem.' },
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
@@ -159,8 +162,8 @@ Object.assign(TYPES, {
   fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 6, relay: true, abil: 'strike', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Feuerschlag anfordern (alle Punkte, alle 3 Runden): eine Batterie hinter der Front schießt auf ein Feld in Sicht (6 Felder), wie eine Haubitze; 25 % Streuung auf ein Nachbarfeld. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben.',
     real: 'Feldtelefone verbanden die Gräben mit den Batterien. Die Leitungen wurden tief eingegraben, rissen im Trommelfeuer aber trotzdem ständig.' },
-  pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', fig: 'sapperD', sapper: true, recover: true, wirelayer: true, abil: 'mine', mines: 3, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
-    can: 'Zieht Stacheldraht: legt einen Drahtgürtel auf das freie Feld, in das er blickt. Oder legt stattdessen eine Mine (1 ●) auf ein freies Nachbarfeld, drei Stück je Trupp: der Gegner sieht sie nicht, wer hineinzieht, nimmt Schaden und bleibt stehen, Kolosse bleiben liegen. Danach kein Angriff mehr in der Runde.',
+  pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', cutter: true, fig: 'sapperD', sapper: true, recover: true, wirelayer: true, abil: 'mine', mines: 3, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
+    can: 'Schneidet Draht vom Nachbarfeld aus (1 ●). Zieht Stacheldraht: legt einen Drahtgürtel auf das freie Feld, in das er blickt. Oder legt stattdessen eine Mine (1 ●) auf ein freies Nachbarfeld, drei Stück je Trupp: der Gegner sieht sie nicht, wer hineinzieht, nimmt Schaden und bleibt stehen, Kolosse bleiben liegen. Danach kein Angriff mehr in der Runde.',
     real: 'Drahtverhaue wurden meist nachts gebaut. Arbeitstrupps schraubten Eisenpfähle in den Boden und spannten Rollen Stacheldraht dazwischen.' },
   banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
     can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr. Banner aufpflanzen (1 ●): wirkt 3 Felder weit, dort flieht niemand; der Träger zieht nicht, bis er es wieder aufnimmt (1 ●).',
@@ -254,8 +257,9 @@ for (const t in TYPES) if (!TYPES[t].sp && SPECIALS[t]) TYPES[t].sp = SPECIALS[t
 for (const t in TYPES) { const T = TYPES[t], sp = T.sp || (T.sp = []);
   if (T.mg) { const i = sp.indexOf('Zieht oder schießt'); if (i >= 0) sp[i] = 'Erst aufbauen, dann feuern'; }
   if (T.recover) sp.push('Bergt Kolosse und Maschinen');
-  if (T.sapper) { const i = sp.indexOf('Schneidet Draht'); if (i >= 0) sp.splice(i, 1); if (!sp.some(x => /Draht schneiden/.test(x))) sp.push('Draht schneiden für 1 Punkt'); }
-  if (T.cls === 'storm') sp.push('Drahtschere: 1 Punkt');
+  { const i = sp.indexOf('Schneidet Draht'); if (i >= 0) sp.splice(i, 1); }   // Paket 8: nur noch die Drahtschneider (cutter) schneiden, vom Nachbarfeld aus
+  if (T.cutter) sp.unshift('Draht schneiden (Nachbarfeld, 1 Punkt)');
+  if (T.zweit) sp.push(T.zweit.name + ' (2 Felder)');
   if (T.rng >= 2 && T.cls !== 'art' && T.cls !== 'walker' && !T.mg) sp.push('Feuerbereitschaft');
 }
 const SHOP = { A: ['hauptA', 'generalA', 'kohorte', 'melder', 'fernsprech', 'feldscher', 'pionier', 'scharf', 'schildwall', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'flammen', 'feldkanone', 'haubitze', 'koloss', 'stahl', 'turm', 'orden', 'kreuz', 'rauch', 'mineur', 'werkstatt', 'ballon'],
@@ -846,7 +850,7 @@ function isZOC(G, c, r, side) {
 }
 function bannerAt(G, side, c, r) { return G.units.some(o => TYPES[o.type].banner && o.side === side && active(o) && dist(o.c, o.r, c, r) <= (o.planted ? P.BANNER_R_PLANTED : P.BANNER_R)); }
 // Wer flieht nicht? Konkordat unter „Halten um jeden Preis“ (bis zum nächsten eigenen Zug) und alle Einheiten im Bereich eines aufgepflanzten Banners
-function noFlee(G, u) { return !!(G.hold && G.hold[u.side]) || G.units.some(o => TYPES[o.type].banner && o.planted && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.BANNER_R_PLANTED); }
+function noFlee(G, u) { return !!u.holdB || G.units.some(o => TYPES[o.type].banner && o.planted && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.BANNER_R_PLANTED); }
 function officerAt(G, side, c, r) {
   return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= cmdRange(o));
 }
@@ -861,7 +865,7 @@ function arcOf(G, d, ac, ar) {
 // ---------- Bewegung ----------
 // Marsch: Fußtruppen und Reiter ziehen doppelt so weit, verbrauchen beide Punkte, dürfen nicht neben dem Feind enden
 function canMarch(u) { const k = cls(u); return k !== 'art' && k !== 'walker' && !u.limbered; }
-function cutCost(u) { const T = TYPES[u.type]; return T.sapper || T.cls === 'storm' ? 1 : 2; }
+function cutCost(u) { return 1; }
 function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
   if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt'].includes(t) && k !== 'cav') return 1;   // Straße
@@ -989,7 +993,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
       if (!alive(u) || u.status !== 'ok') { claimObjective(G, u); ev.push(...checkEnd(G)); return ev; }
     }
     claimObjective(G, u);
-    if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); u.stuck = P.STUCK_TURNS; ev.push({ t: 'stuck', u: u.id }); break; }
+    if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); u.stuck = P.PANNE_RUNDEN + 1; ev.push({ t: 'stuck', u: u.id }); break; }
     if (T.cls !== 'walker' && openGround(G, nc, nr)) {
       const mg = !concealed(G, u, -99, -99) && G.units.find(m => m.side !== u.side && active(m) && TYPES[m.type].mg && m.sperr > 0 && m.setup && !m.supp && !m.fellBack && !held(G, m) &&
         dist(m.c, m.r, nc, nr) <= rangeOf(G, m, nc, nr) && hasLOS(G, m.c, m.r, nc, nr) && inFan(G, m, nc, nr));
@@ -1017,7 +1021,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
       e.seenWalker = true; e.mor = Math.max(0.5, e.mor - P.WALKER_FEAR);
       ev.push({ t: 'fear', u: e.id, morv: e.mor });
     }
-    if (G.rng() < P.BREAKDOWN) { u.broken = 3; u.attacked = true; ev.push({ t: 'breakdown', u: u.id }); }
+    if (G.rng() < P.BREAKDOWN) { u.broken = P.PANNE_RUNDEN + 1; u.attacked = true; ev.push({ t: 'breakdown', u: u.id }); }   // fällt die nächsten 3 eigenen Runden aus
   }
   if (P.ZOC_STOP && T.cls !== 'storm' && T.cls !== 'walker' && isZOC(G, u.c, u.r, u.side)) u.zocStop = true;   // Feindberührung beendet die Bewegung für die Runde
   ev.push(...checkEnd(G));
@@ -1040,12 +1044,16 @@ function limber(G, u) {
   else { u.limbered = true; u.attacked = true; spend(u, 1); }
   return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
-// Draht schneiden: Pioniere und Sturmtruppen (Drahtscheren) für 1 Punkt, übrige Fußtruppen für beide; Reiter, Radler, Geschütze gar nicht, Kolosse walzen ihn nieder
-function canCut(G, u) { const T = TYPES[u.type]; return active(u) && !(u.supp > 0) && u.ap >= cutCost(u) && (!u.attacked || T.sapper) && ['inf', 'storm', 'medic', 'flame'].includes(T.cls) && !T.mg && !T.noCut && hex(G, u.c, u.r).t === 'wire'; }   // MG-Trupps schneiden keinen Draht (Wunsch des Nutzers)
-function cutWire(G, u) {
-  if (!canCut(G, u)) return [];
-  hex(G, u.c, u.r).t = 'open'; u.attacked = u.attacked || !TYPES[u.type].sapper; spend(u, cutCost(u));
-  return [{ t: 'cut', u: u.id, c: u.c, r: u.r }];
+// Draht schneiden (Spieltest Runde 2, Paket 8): nur die Drahtschneider (cutter: Graben-Pioniere, Grabenräumer, Drahtpioniere, Sturmbrecher), 1 Punkt,
+// vom Nachbarfeld (oder dem eigenen Feld) aus, ohne hineinzulaufen und ohne Drahtschaden; danach darf die Einheit noch angreifen. Kolosse walzen Draht nieder.
+function cutTargets(G, u) { const T = TYPES[u.type]; if (!active(u) || !T.cutter || u.side !== G.side || u.supp > 0 || u.ap < 1) return [];
+  return [[u.c, u.r], ...neighbors(u.c, u.r)].filter(([c, r]) => inMap(c, r) && hex(G, c, r).t === 'wire' && !(unitAt(G, c, r) && unitAt(G, c, r).side !== u.side)); }
+function canCut(G, u, c, r) { const t = cutTargets(G, u); return c == null ? t.length > 0 : t.some(h => h[0] === c && h[1] === r); }
+function cutWire(G, u, c, r) {
+  const t = cutTargets(G, u); if (!t.length) return [];
+  if (c == null) [c, r] = t[0]; else if (!t.some(h => h[0] === c && h[1] === r)) return [];
+  hex(G, c, r).t = 'open'; spend(u, 1); u.face = faceToward(u.face, u.c, u.r, c, r);
+  return [{ t: 'cut', u: u.id, c, r }];
 }
 
 // ---------- Kampf ----------
@@ -1121,7 +1129,7 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
   if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
   if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
   if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
-  if (G.hold && G.hold[d.side]) { m *= P.HOLD_DEF; tags.push('Halten um jeden Preis ×1,25'); }
+  if (d.holdB) { m *= P.HOLD_DEF; tags.push('Halten um jeden Preis ×1,25'); }
   if (d.dug) { m *= P.DIG_DEF; tags.push('eingegraben ×1,3'); }
   return m;
 }
@@ -1298,6 +1306,22 @@ function burn(G, u, ev) {   // Feuerschaden beim Hineinziehen oder Stehen im bre
   const n0 = ev.length; applyDamage(G, null, u, dmg, 'front', ev, { morMul: 0.5 });
   for (let i = n0; i < ev.length; i++) if (ev[i].t === 'hit') ev[i].burn = true;
 }
+// Zweitwaffe (Paket 8): Landkoloss Seiten-MG nur seitlich (nicht vorn, nicht hinten), Turmschreiter Turm-MG rundum; 1 Punkt, einmal je Runde, neben dem Hauptangriff
+function canZweit(G, a, d) {
+  const T = TYPES[a.type], Z = T.zweit; if (!Z || !active(a) || a.side !== G.side || a.zw || a.ap < 1 || a.broken || a.supp > 0 || held(G, a)) return false;
+  if (!d || !alive(d) || d.side === a.side || cls(d) === 'walker' || concealed(G, d, a.c, a.r)) return false;   // MG gegen Panzerung wirkungslos
+  const dd = dist(a.c, a.r, d.c, d.r); if (dd < 1 || dd > Z.rng || !hasLOS(G, a.c, a.r, d.c, d.r)) return false;
+  if (Z.seiten) { const w = angDiff(angleTo(a.c, a.r, d.c, d.r), a.face * 60); if (w < 45 || w > 135) return false; }
+  return true;
+}
+function zweitTargets(G, a) { return G.units.filter(d => canZweit(G, a, d)); }
+function zweitFire(G, a, d) {
+  if (!canZweit(G, a, d)) return [];
+  const ev = [], p = preview(G, a, d, 'fire'); a.zw = true; spend(a, 1);
+  ev.push({ t: 'fire', a: a.id, d: d.id, kind: 'mg', zweit: TYPES[a.type].zweit.name, face: a.face });
+  applyDamage(G, a, d, p.dmg * (0.75 + G.rng() * 0.5) * P.ZWEIT_MUL, p.arc, ev, { ranged: true });
+  ev.push(...checkEnd(G)); return ev;
+}
 function fire(G, a, d) {
   if (!canFire(G, a, d)) return [];
   const ev = resolveFire(G, a, d, false);
@@ -1347,8 +1371,8 @@ function canShell(G, a, c, r, mode) {
   if (!active(a) || T.cls !== 'art' || a.limbered || a.attacked || a.ap < (T.mobile ? 1 : 2) || a.supp > 0 || held(G, a)) return false;
   const d = dist(a.c, a.r, c, r);
   if (d < 1 || d > T.rng) return false;
-  if (mode === 'gas' && a.gas <= 0) return false;
-  if (mode === 'barrage' && a.cdP > 0) return false;   // Sperrfeuer: Abklingzeit
+  if (mode === 'gas' && (a.gas <= 0 || a.cdG > 0)) return false;   // Gas: 3 Runden Abklingzeit
+  if (mode === 'barrage' && (a.cdP > 0 || (a.barr || 0) >= P.BARRAGE_MAX)) return false;   // Sperrfeuer: Abklingzeit, höchstens 2× je Schlacht
   if (T.noMoveFire && a.mvd) return false;   // Minenwerfer: ziehen oder feuern
   if (isDirect(G, a, c, r)) return mode === 'he';
   return d >= P.ART_MIN && spotted(G, a.side, c, r);
@@ -1380,7 +1404,8 @@ function shell(G, a, c, r, mode) {
   if (!canShell(G, a, c, r, mode)) return [];
   const ev = [];
   a.attacked = true; spend(a, TYPES[a.type].mobile ? 1 : 2);
-  if (mode === 'barrage') a.cdP = P.BARRAGE_CD;
+  if (mode === 'barrage') { a.cdP = P.BARRAGE_CD; a.barr = (a.barr || 0) + 1; }
+  if (mode === 'gas') a.cdG = P.GAS_CD;
   a.face = faceToward(a.face, a.c, a.r, c, r);
   const direct = isDirect(G, a, c, r);
   let tc = c, tr = r, sc = false;
@@ -1397,6 +1422,7 @@ function shell(G, a, c, r, mode) {
   } else if (mode === 'barrage') {
     for (const [hc, hr] of barrageCells(G, a, tc, tr)) {
       const u = unitAt(G, hc, hr);
+      if (u && alive(u)) applyDamage(G, a, u, shellDmg(G, a, u, false) * P.BARRAGE_DMG * (0.75 + G.rng() * 0.5), 'front', ev, { ranged: true });   // Paket 8: Schaden ×0,7 eines Einzelschusses
       if (u && active(u) && cls(u) !== 'walker' && !u.supp) { u.supp = 1; ev.push({ t: 'supp', u: u.id }); }
     }
   } else if (mode === 'gas') {
@@ -1452,8 +1478,8 @@ function startTurn(G) {
   for (const u of G.units) {
     u.fireDmg = 0;
     if (u.side === s) {
-      u.ap = P.AP; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null;
-      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP']) if (u[k] > 0) u[k]--;
+      u.ap = P.AP; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false;
+      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG']) if (u[k] > 0) u[k]--;
       if (u.revealed > 0) u.revealed--;
       if (TYPES[u.type].counterStrike) u.cready = true;
       if (u.stuck > 0) { u.stuck--; if (!u.stuck) ev.push({ t: 'unstuck', u: u.id }); }
@@ -1673,12 +1699,12 @@ function counterStrike(G, mover, ev) {
 
 // ---------- Befehle der Anführer ----------
 // Einmal alle zwei eigenen Runden. 'rally' = Sammeln (Moral +1,5, Niederhalten endet), 'storm' = Sturmbefehl (Nahkampf ×1,25 in dieser Runde).
-function cmdRange(u) { return TYPES[u.type].cmd === 2 ? 3 : P.OFFICER_RANGE; }
+function cmdRange(u) { return P.ORDER_R; }   // Paket 8: normale Befehle nur 1 Feld weit (auch der General)
 // Abklingzeit je Befehl: Sammeln 3 Runden, Sturmbefehl/Feuer frei 2; General und Funker in der Nähe je 1 weniger (mindestens 1). Höchstens ein Befehl je Runde.
 // Befehle je Seite (Gruppe 2, 2026-11-16): beide „Sammeln“; Konkordat „Feuer frei“ (Fernkampf ×1,25 bis zum nächsten eigenen Zug), Aschenwacht „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde).
 const ORDER_KINDS = { A: ['rally', 'fire'], D: ['rally', 'storm'] };
 function orderKinds(u) { return ORDER_KINDS[u.side] || ['rally', 'storm']; }
-function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && u.ap >= 1 && !(u.supp > 0) && !u.ordered && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }
+function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && u.ap >= 1 && !(u.supp > 0) && !u.ordered && (u.befehle || 0) < P.ORDER_MAX && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }
 function canOrder(G, u) { return orderKinds(u || {}).some(k => canOrderKind(G, u, k)); }
 function orderCd(G, u, kind) {
   const relay = G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].relay && dist(o.c, o.r, u.c, u.r) <= 3);
@@ -1687,7 +1713,7 @@ function orderCd(G, u, kind) {
 function order(G, u, kind) {
   if (!canOrderKind(G, u, kind)) return [];
   if (kind === 'rally') u.cdR = orderCd(G, u, kind); else u.cdS = orderCd(G, u, kind);
-  u.ordered = true; spend(u, 1); const ids = [];
+  u.ordered = true; u.befehle = (u.befehle || 0) + 1; spend(u, 1); const ids = [];
   for (const o of G.units) {
     if (o.side !== u.side || !active(o) || cls(o) === 'walker' || dist(o.c, o.r, u.c, u.r) > cmdRange(u)) continue;
     if (kind === 'rally') { o.mor = Math.min(TYPES[o.type].mor, o.mor + P.ORDER_MOR); o.supp = 0; } else if (kind === 'fire') o.fireFree = true; else o.zeal = true;
@@ -1704,8 +1730,9 @@ function bigOrder(G, u) {
   if (!canBig(G, u)) return [];
   G.bigUsed = G.bigUsed || {}; G.bigUsed[u.side] = true; spend(u, 1);
   const B = BIG[u.side], ids = [];
-  if (B.k === 'hold') { G.hold = G.hold || {}; G.hold[u.side] = true; for (const o of G.units) if (o.side === u.side && active(o)) ids.push(o.id); }
-  else for (const o of G.units) if (o.side === u.side && active(o)) { o.ap = (o.ap || 0) + 1; if (o.ap >= 1) o.moved = false; ids.push(o.id); }
+  const inR = o => o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.BIG_R;   // Paket 8: nur noch 3 Felder um den General
+  if (B.k === 'hold') { for (const o of G.units) if (inR(o)) { o.holdB = true; ids.push(o.id); } }
+  else for (const o of G.units) if (inR(o)) { o.ap = (o.ap || 0) + 1; if (o.ap >= 1) o.moved = false; ids.push(o.id); }
   return [{ t: 'bigorder', u: u.id, side: u.side, kind: B.k, name: B.name, ids }];
 }
 // Eingraben (Schützenkohorte, Aschengrenadiere, 1 Punkt): nur im offenen Gelände oder Trichter; Abwehr ×1,3, bis die Einheit zieht
@@ -1735,7 +1762,7 @@ function spawnHexes(G, side, type) {
   const out = [], probe = { type, side }, seen = new Set(), add = (c, r) => { const k = key(c, r); if (seen.has(k) || !inMap(c, r) || unitAt(G, c, r) || cost(G, probe, c, r) >= 99) return; seen.add(k); out.push([c, r]); };
   for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) add(c, r); }
   // Paket 3: jedes eigene Zielfeld ist ein Aufstellungsort – das Feld und seine Nachbarn, wenn frei und nicht in Feindberührung
-  for (const o of OBJECTIVES) if (G.ctrl[o.id] === side) for (const [c, r] of [[o.c, o.r], ...neighbors(o.c, o.r)]) if (inMap(c, r) && !isZOC(G, c, r, side)) add(c, r);
+  for (const o of OBJECTIVES) if (G.ctrl[o.id] === side) for (const [c, r] of [[o.c, o.r], ...neighbors(o.c, o.r)]) if (inMap(c, r) && (side === 'A' ? c <= o.c : c >= o.c) && !isZOC(G, c, r, side)) add(c, r);   // Paket 8: nie hinter der Flagge Richtung Gegner
   return out;
 }
 function canBuy(G, side, type) { return !G.over && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
@@ -1776,7 +1803,7 @@ function checkEnd(G) {
 
 const E = {
   P, SIDES, TYPES, TERRAIN, MAPS, costParts, barrageCells, coverOf, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
-  newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
+  newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
   ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,

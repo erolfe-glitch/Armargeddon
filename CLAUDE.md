@@ -86,6 +86,8 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Punkte/Kosten werden aus Werten berechnet (costParts: Kampfwert + ABIL + ADJ, auf 5 gerundet). Einnahmen: P.PTS_TURN, PTS_KILL, PTS_OBJ. Nachschub-Kaufmenü im Spiel.
 - Armee-Auswahl im Startmenü: Budget = Wert der Standardarmee (E.ARMY_BUDGET), Grenzen ARMY_CAP/ARMY_WALKERS. KI nimmt immer die Standardarmee.
 
+- **Spieltest Runde 2, Paket 8 (2026-11-17):** Pannen/Festfahren ≈ ⅓ so oft (P.BREAKDOWN 0,05, P.STUCK 0,08), dann `P.PANNE_RUNDEN` 3 eigene Runden aus (broken/stuck = 4); Anzeige Schlamm (erdfontaene, eingesunken über `sink`). Draht schneiden nur `cutter` (pionier, raeumer, pionierD, sturm) vom Nachbarfeld (`cutTargets`, `cutWire(G, u, c, r)`, 1 Punkt, kein Angriff verbraucht). Zweitwaffe `T.zweit` (koloss Seiten-MG `seiten`, turm Turm-MG): `canZweit`/`zweitFire`, u.zw je Runde, ×P.ZWEIT_MUL 0,5, nicht gegen Kolosse. Befehle 1 Feld (`P.ORDER_R`), höchstens 3 je Anführer (u.befehle); großer Befehl `P.BIG_R` 3 Felder, „Halten“ je Einheit (u.holdB). Gas Abklingzeit u.cdG `P.GAS_CD` 3; Sperrfeuer höchstens 2× (u.barr, `P.BARRAGE_MAX`), Schaden ×`P.BARRAGE_DMG` 0,7 eines Einzelschusses. Nachschub an Flaggen nur auf der eigenen Seite (spawnHexes). UI: Feld-Auswahl `feldArt` ('abil' | 'cut' | 'zweit') über abilMode/abilSet; Zähler am Knopf `cnt`.
+
 ## Karten
 - E.MAPS in engine.js, jede Karte = Daten: build() mit mapTools oder `img` + `grid` (Zeichen siehe GRID_CODE), objectives, army, reinf, zoneA, band. Neue Karte = neuer Eintrag.
 - Vorhanden: grauwall, selm, lerne, varn, front, stein, waldfl, kasem, kanal. Gemalte Karten: renderPainted (paint.js) bzw. renderImageMap (mapimg.js).

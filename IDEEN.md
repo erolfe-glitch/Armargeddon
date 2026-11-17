@@ -95,3 +95,9 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 
 ## Einheitlicher Stimmfilter (2026-11-17) – erledigt (tools/stimmfilter.py)
 - Für ALLE Stimm-Tonplätze ein Filter je Sprecher: Infanterie, Sturmtruppen, Pioniere, Sanitäter, Reiter usw. Gasmaske; Kampfanzüge (Stahlgänger, Panzerknechte) Gasmaske etwas stärker; Hauptmann und General ohne Filter; Panzerbesatzung Bordfunk; Schreiter und Eisenknecht (auch robot-voice-damage) Roboter. Waffen, Explosionen, Motoren bleiben unverändert.
+
+## Zweitwaffen – Vorschlag (2026-11-17, erst nach Zustimmung bauen)
+- Sturmpanzer: Seiten-MG wie der Landkoloss (Modell zeigt mehrere Schießscharten an der Seite). Dafür die Breitseite (zweiter Kanonenschuss) streichen oder behalten – Entscheidung offen.
+- Bohrkoloss: kleines Turm-MG (Modell hat einen Lauf auf dem Aufbau), Reichweite 2; bisher nur Nahkampf mit dem Bohrer.
+- Kreuzschreiter: Kanone im Löwenmaul als Zweitwaffe (Reichweite 2–3) neben dem schweren MG in der Hand.
+- Keine Zweitwaffe: Ordens-, Säge-, Klauenschreiter, Eisenknecht (eine Fernwaffe + Nahkampfarm), Stahlgänger und Panzerknechte (Infanterie).
