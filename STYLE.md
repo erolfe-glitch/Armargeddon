@@ -66,6 +66,7 @@ Die Seite erkennt man nie nur an der Farbe: dazu das Wappen bzw. der Name. Ersat
 Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `tools/fonts.py` erzeugt `src/fonts.css`).
 - **Headline** (`--s-head`, Familie „Arm Kopf“): IM Fell English SC, alte Druckschrift – Titel, Knöpfe, Namen. Großbuchstaben mit etwas Sperrung.
 - **Alle Ziffern** sind in „Arm Kopf“ per `unicode-range` aus Alegreya Sans ersetzt, damit Zahlen immer klar lesbar sind (auch „Runde 1“).
+- **Zahlen der oberen Leiste und Schadenszahlen** (seit 2026-11-17): eigene kantige Ziffernschrift „Arm Ziffer“ (Stil „Gebrochen“, `tools/ziffern.py`, nur Ziffern und Rechenzeichen per `unicode-range`, Buchstaben bleiben in der bisherigen Schrift). Schadenszahlen ≈ 60 % der alten Größe, dunkler Rand, kurzes Ausblenden. Vergleich der Stile: `entwurf/probe/ziffern.html`.
 - **Werte und Fließtext** (`--s-body`, Familie „Arm Text“): Alegreya Sans, Versalziffern mit fester Breite (in `fonts.py` fest eingestellt). Tooltips, Beschreibungen, kleiner Text.
 - Mindestens **14 px** überall, auch in Tooltips und Kleingedrucktem.
 - **Kein Text in Grafiken.** Beschriftung immer als echte Schrift im HTML.

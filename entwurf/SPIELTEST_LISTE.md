@@ -2,7 +2,7 @@
 
 Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claude Code.
 
-## Paket 1 – Fehler (schnell) – erledigt 2026-11-17 (Bilder: entwurf/probe/paket1/)
+## Paket 1 – Fehler (schnell)
 1. Musik im Startbildschirm lässt sich nicht abschalten.
 2. Einheiten-Auswahlmenü: Klick neben das Fenster (links/rechts) soll es schließen.
 3. Konkordat-Landkoloss (und etwas die Lanzenreiter) wirken blass/ausgegraut – sieht aus wie „schon bewegt".
@@ -11,10 +11,10 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 6. Konkordat-Scharfschütze: Dem liegenden Schützen fehlt weiter der Lauf.
 7. Gewehrsalve Konkordat klingt wie ein MG – soll unregelmäßiges „pam – pam-pam – pam" sein, wie eine Gruppe, die fast gleichzeitig feuert.
 8. MG-Mündungsfeuer kommt nicht aus der Laufhöhe.
-9. MG-Ton am Ende der Salve passt nicht – lieber deutliches Klirren fallender Hülsen; bei Treffern evtl. ein Einschlag-Ton. (Nachtrag: Hülsen-Ton raus, dumpfer Körpertreffer)
-10. (Nachtrag) General ist Pflicht: genau einer je Armee, in der Auswahl fest, gilt auch für KI und alle Karten.
+9. MG-Ton am Ende der Salve klingt wie herumfliegende Splitter – stattdessen bei Treffern ein dumpfer Einschlag in den Körper.
+10. Armee-Auswahl: Ein General ist immer Pflicht (höchstens einer, mindestens einer).
 
-## Paket 2 – Bedienung und Anzeige
+## Paket 2 – Bedienung und Anzeige – erledigt 2026-11-17 (Bilder: entwurf/probe/paket2/, Ziffern: entwurf/probe/ziffern.html)
 10. Bewegungsreichweite: normale Reichweite und Marsch (danach keine Aktion mehr) klar unterscheiden – Marschfelder leicht gelb.
 11. Pfadvorschau: kleine, halbdurchsichtige Punkte zeigen den Weg bis zum Zielfeld.
 12. Mauszeiger: Schwert über Gegnern, die man im Nahkampf angreifen kann (Fadenkreuz für Beschuss).

@@ -21,6 +21,7 @@
   --s-moss: #6B7A3A; --s-ochre: #B08A2E; --s-range: #A8473A;   /* Lebensbalken: über 60 % Moos, 30–60 % Ocker, darunter --s-life */
   --s-head: "Arm Kopf", "Palatino Linotype", Georgia, serif;   /* IM Fell English SC, Ziffern aus Alegreya Sans (tools/fonts.py) */
   --s-body: "Arm Text", "Segoe UI", system-ui, sans-serif;   /* Alegreya Sans */
+  --s-num: "Arm Ziffer";   /* kantige Ziffern (tools/ziffern.py, nur Ziffern und Rechenzeichen per unicode-range) */
   --s-min: 14px;
 }
 * { box-sizing: border-box; }
@@ -795,6 +796,11 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .shoplist .item .cost { grid-column: 2; grid-row: 2; justify-self: start; }
 .shoplist .item small { grid-column: 2; grid-row: 3; }
 .stepper.fixed { min-height: 36px; } .stepper.fixed em { font-style: normal; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--s-brass); }
+/* Paket 2: Zahlen der oberen Leiste in der kantigen Ziffernschrift (Buchstaben fallen auf die bisherige Schrift zurück) */
+#topbar { --s-head: "Arm Ziffer", "Arm Kopf", "Palatino Linotype", Georgia, serif; --s-body: "Arm Ziffer", "Arm Text", "Segoe UI", system-ui, sans-serif; }
+#topbar .tb-plate, #topbar .tb-pts b, #topbar .tb-pts small, #topbar .tb-obj, #topbar .val, #topbar .tb-v { font-family: "Arm Ziffer", "Arm Kopf", "Palatino Linotype", Georgia, serif !important; }
+#topbar .tb-meter .val, #topbar .tb-v { font-family: "Arm Ziffer", "Arm Text", system-ui, sans-serif; letter-spacing: .02em; }
+.hint-sym { height: 1.35em; width: auto; vertical-align: -0.35em; margin: 0 2px; filter: drop-shadow(0 1px 0 #120D0B); }
 </style>
 </head>
 <body>

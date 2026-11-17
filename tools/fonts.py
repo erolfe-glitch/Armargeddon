@@ -11,6 +11,7 @@ root = pathlib.Path(__file__).resolve().parent.parent
 srcdir = root / 'ui-quelle' / 'schriften'
 TEXT = 'U+0020-007E,U+00A0-00FF,U+0152-0153,U+2010-2027,U+2030,U+2039-203A,U+20AC,U+2122,U+2190-2199,U+2212'
 DIGITS = 'U+0025,U+002B,U+0030-0039,U+00D7,U+2212'
+ZIFF = 'U+0025,U+002B-002F,U+0030-003A,U+00D7,U+2212'
 
 def woff2(name, ranges):
     font = TTFont(srcdir / name)
@@ -34,6 +35,8 @@ css = [
     face('Arm Kopf', 'AlegreyaSans-Medium.ttf', 400, DIGITS, DIGITS),   # später deklariert = gewinnt bei Ziffern
     face('Arm Text', 'AlegreyaSans-Regular.ttf', 400, TEXT),
     face('Arm Text', 'AlegreyaSans-Bold.ttf', 700, TEXT),
+    # Paket 2: kantige Ziffern für Schadenszahlen und obere Leiste (tools/ziffern.py; Stile Gebrochen, Schablone, Kantig – hier wählen)
+    face('Arm Ziffer', 'ArmZiffern-Gebrochen.ttf', 400, ZIFF, ZIFF),
 ]
 out = root / 'src' / 'fonts.css'
 out.write_text('\n'.join(css) + '\n', encoding='utf8')

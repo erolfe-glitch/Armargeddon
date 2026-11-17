@@ -49,6 +49,8 @@ SYMBOLS = {
     'bogen4c_symbole': ['niedergehalten', 'flucht', 'gebrochen', 'festgefahren', 'durchsickern'],
     # Stellungswechsel: MG auf-/abbauen, Auf-/Abprotzen (Knöpfe und Zustandsmarken)
     'bogen6_stellung': ['mg_auf', 'mg_ab', 'aufprotzen', 'abprotzen'],
+    # abgeleitet (tools/sym_ableiten.py, 2026-11-17): Stiefel ohne Flügel = normales Ziehen, Garbe = MG-Sperrfeuer
+    'abgeleitet': ['stiefel', 'garbe'],
 }
 # Kartenmarken (ui-quelle/kartenmarken.png): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
 PARTS.update({

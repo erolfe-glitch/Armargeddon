@@ -19,6 +19,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, speed = 1, busy = false;
+try { const v = +localStorage.getItem('arm.tempo'); if ([0.5, 1, 2, 99].includes(v)) speed = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
 const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
 const speedTxt = () => speed >= INSTANT ? 'Tempo sofort' : 'Tempo ' + speed + '×';
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
@@ -607,7 +608,7 @@ const DIM_T = new Set(['wald', 'waldweg', 'forest', 'village', 'fabrik', 'kirche
 const STATES = [
   { k: 'rout', sym: 'flucht', name: 'Flieht', on: (u, d) => d.vs.rout, text: () => 'Moral gebrochen: weicht zurück und gehorcht nicht. Gegner treffen sie ×1,6, Reiter ×2. Ein Anführer in der Nähe kann sie wieder sammeln.' },
   { k: 'broken', sym: 'zahnrad', name: 'Panne', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Liegengeblieben: fällt noch ${upRunden(d.vs.broken)} aus. Ein Versorgungstrupp oder Pioniere können sie bergen.` },
-  { k: 'sperr', sym: 'sperrfeuer', ring: '#E2B04A', name: 'Sperrfeuer', on: (u, d) => d.vs.sperr > 0 && E.alive(u), text: (u, d) => `Schießt in der gegnerischen Runde noch ${d.vs.sperr}-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.` },
+  { k: 'sperr', sym: 'garbe', ring: '#E2B04A', name: 'Sperrfeuer', on: (u, d) => d.vs.sperr > 0 && E.alive(u), text: (u, d) => `Schießt in der gegnerischen Runde noch ${d.vs.sperr}-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.` },
   { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
   { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(d.vs.stuck)} nicht ziehen.` },
   { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde. Wirkt nach dem Verlassen der Wolke noch 2 Runden nach (vergiftet).' },
@@ -722,7 +723,7 @@ function drawUnit(u, d) {
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
   if (d.shake > 0) x += Math.sin(now / 22) * s * 0.05;
-  const g = ctx, A0 = d.alpha * (d.vs.rout ? 0.75 : 1);
+  const g = ctx, A0 = d.alpha * (d.vs.rout ? 0.75 : 1) * (areaNow && areaNow.ok && !areaNow.ok(u) ? 0.4 : 1);   // Wirkungsbereich: nicht Betroffene abgedunkelt
   const isSel = sel && sel.id === u.id;
   const own = human(u.side) && G.side === u.side && E.active(u);
   const done = own && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
@@ -860,7 +861,7 @@ function hexMark(c, r, o) {
   g.stroke(); g.setLineDash([]);
   if (o.sym) { const [cx, cy] = center(c, r); MARKQ.push(() => { g.globalAlpha = 0.85 + 0.15 * pz; drawSym(g, o.sym, cx, cy - s * kAt(cx, cy) * (o.inHex ? 0.1 : 0.62), s * 0.2); g.globalAlpha = 1; }); }   // Symbol über den Figuren
 }
-function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; shakeStep(); draw(); requestAnimationFrame(frame); }
+function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; shakeStep(); areaNow = null; draw(); requestAnimationFrame(frame); }
 function draw() {
   if (!L || !tcv) return;
   MARKS.length = 0;
@@ -914,16 +915,20 @@ function drawGround(g, s) {
   // Markierungen
   if (sel && human(G.side) && !busy) {
     // Bewegungsfelder dezent (Wunsch des Nutzers): halbdurchsichtige Fläche, Gelände bleibt sichtbar. Ziehen = Knochenweiß, Marsch/Rückzug = Messing.
-    for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); const far = n.march || n.retreat; g.fillStyle = far ? 'rgba(194,164,97,0.11)' : 'rgba(240,237,225,0.13)'; g.fill(); g.strokeStyle = far ? 'rgba(194,164,97,0.45)' : 'rgba(240,237,225,0.4)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke();
+    // Paket 2: Marschfelder (nur mit Marsch erreichbar, danach keine Aktion) deutlich in leichtem Gelb/Messing mit gestrichelter Kante
+    if (!abilArea(areaAct)) for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); const far = n.march || n.retreat; g.fillStyle = far ? 'rgba(226,190,90,0.24)' : 'rgba(240,237,225,0.13)'; g.fill();
+      if (far) { g.strokeStyle = 'rgba(18,13,11,0.55)'; g.lineWidth = Math.max(2, s * 0.05); g.stroke(); g.setLineDash([s * 0.11, s * 0.08]); g.strokeStyle = 'rgba(236,200,100,0.9)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); g.setLineDash([]); }
+      else { g.strokeStyle = 'rgba(240,237,225,0.4)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
       if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(142,43,34,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); } }
     if (E.canCut(G, sel)) { const [cx, cy] = center(sel.c, sel.r), pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, sel.c, sel.r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.5 + pu * 0.5})`; g.lineWidth = Math.max(3, s * 0.1); g.stroke();
       g.font = `900 ${Math.round(s * 0.55)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.1); g.strokeStyle = O; g.strokeText('✂', cx + s * 0.62, cy - s * 0.95); g.fillStyle = '#ffe078'; g.fillText('✂', cx + s * 0.62, cy - s * 0.95); }
+    areaNow = null; drawArea(g, s);   // Wirkungsbereich des überfahrenen Knopfs (Paket 2)
     // Sicht: verdeckte Felder abgedunkelt und fein schraffiert (Tinte), Gelände bleibt erkennbar
     for (const k of hideSet) { const c = Math.floor(k / 100), r = k % 100; hexPath(g, c, r, 0.98); g.fillStyle = 'rgba(18,13,11,0.4)'; g.fill();
       g.save(); hexPath(g, c, r, 0.98); g.clip(); const [cx, cy] = center(c, r); g.strokeStyle = 'rgba(18,13,11,0.5)'; g.lineWidth = Math.max(1, s * 0.016); g.beginPath();
       for (let i = -7; i <= 7; i++) { const d = i * s * 0.15; g.moveTo(cx + d - s, cy + s); g.lineTo(cx + d + s, cy - s); } g.stroke(); g.restore(); }
     // Schuss: eine gestrichelte Kontur um das ganze Reichweitengebiet (Ochsenblut hell auf Tintenschatten), keine Flächen
-    if (rangeEdges.length) { g.save(); g.lineCap = 'round';
+    if (rangeEdges.length && !abilArea(areaAct)) { g.save(); g.lineCap = 'round';
       const edges = () => { g.beginPath(); for (const [c, r, i] of rangeEdges) { const [x, y] = center(c, r), p = hexCorner(x, y, i, 0.97), q = hexCorner(x, y, i + 1, 0.97);
         g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); } g.stroke(); };
       g.strokeStyle = 'rgba(18,13,11,0.7)'; g.lineWidth = Math.max(3, s * 0.065); edges();
@@ -1237,14 +1242,34 @@ function drawAir(g, s, up) {
     g.globalAlpha = Math.min(1, p.life / 12); g.fillStyle = p.col; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 7); g.fill();
   }
   g.globalAlpha = 1;
+  // Pfadvorschau (Paket 2): kleine halbdurchsichtige Punkte Feld für Feld bis zum Zielfeld; Gefahr (Draht, Gas, Feuer, MG-Sperrfeuer) rot mit Warnzeichen
+  { const n = sel && human(G.side) && !busy && hoverHex && reach.get(E.key(hoverHex[0], hoverHex[1]));
+    if (n && n.path && n.path.length) { const pts = [[sel.c, sel.r], ...n.path]; let warnAt = null;
+      for (let i = 1; i < pts.length; i++) { const [c0, r0] = pts[i - 1], [c1, r1] = pts[i], [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1), hz = pathHazard(sel, c1, r1);
+        if (hz && !warnAt) warnAt = [x1, y1, hz];
+        for (const k of i === pts.length - 1 ? [0.5] : [0.5, 1]) { const x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k; if (up && !up(x, y)) continue;
+          g.beginPath(); g.arc(x, y, Math.max(3, s * (k === 1 ? 0.075 : 0.055)), 0, 7); g.fillStyle = hz && k === 1 || hz && i === pts.length - 1 ? 'rgba(200,52,40,0.72)' : 'rgba(240,237,225,0.55)'; g.fill();
+          g.lineWidth = Math.max(1, s * 0.018); g.strokeStyle = 'rgba(18,13,11,0.55)'; g.stroke(); } }
+      if (warnAt) { const [x, y, hz] = warnAt, ty = y - s * 0.55; if (!up || up(x, ty)) { const r = Math.max(9, s * 0.17);   // Warndreieck
+          g.beginPath(); g.moveTo(x, ty - r); g.lineTo(x + r * 1.05, ty + r * 0.75); g.lineTo(x - r * 1.05, ty + r * 0.75); g.closePath(); g.fillStyle = '#C8342A'; g.fill(); g.lineWidth = Math.max(2, s * 0.04); g.strokeStyle = '#120D0B'; g.stroke();
+          g.font = `900 ${Math.round(r * 1.2)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.fillText('!', x, ty + r * 0.12); } } } }
   // Schrittzahlen
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
   { const n = sel && human(G.side) && !busy && hoverHex && !abilSet.has(E.key(hoverHex[0], hoverHex[1])) && reach.get(E.key(hoverHex[0], hoverHex[1]));
-    if (n) { const [x, y] = center(n.c, n.r), t = `${n.cost}${n.march ? ' · Marsch' : n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)); if (up) up(x, y); const ty = y - s * kAt(x, y) * 0.45;
-      g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
+    if (n) { const [x, y] = center(n.c, n.r), t = n.march ? 'Marsch – danach keine Aktion mehr' : `${n.cost}${n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)); if (up) up(x, y); const ty = y - s * kAt(x, y) * 0.45;
+      g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = n.march ? UPI.s_marsch : UPI.s_stiefel || UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
       if (im) { g.save(); g.filter = 'brightness(1.9) sepia(0.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B)'; g.drawImage(im, x0, ty - iw / 2, iw, iw); g.restore(); }   // Stiefel: das ist der Weg, keine Warnzahl
       g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
+}
+// Gefahr auf einem Wegfeld für die Pfadvorschau: 'draht' | 'gas' | 'feuer' | 'mg' oder null
+function pathHazard(u, c, r) {
+  const T = TYPES[u.type], h = G.map[c] && G.map[c][r]; if (!h) return null;
+  if (h.t === 'wire' && T.cls !== 'walker' && !E.wireProof(T)) return 'draht';
+  if ((VIS.clouds || []).some(k => k.c === c && k.r === r) && !E.gasSafe(G, u)) return 'gas';
+  if ((VIS.fires || []).some(k => k.c === c && k.r === r)) return 'feuer';
+  if (T.cls !== 'walker' && E.openGround(G, c, r) && G.units.some(m => m.side !== u.side && E.active(m) && TYPES[m.type].mg && m.sperr > 0 && m.setup && !m.supp && E.dist(m.c, m.r, c, r) <= E.rangeOf(G, m, c, r) && E.hasLOS(G, m.c, m.r, c, r) && E.inFan(G, m, c, r))) return 'mg';
+  return null;
 }
 // Schwebende Texte (Schadenszahlen, Meldungen). bb: neue Ansicht, stellt je Text den Aufsteller am Fußpunkt ein
 function drawFloaters(g, s, bb) {
@@ -1260,8 +1285,10 @@ function drawFloaters(g, s, bb) {
         g.strokeText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.fillStyle = f.col; g.fillText(f.sub, f.x + ww * 0.45, f.y - hh * 0.15); g.textAlign = 'center'; }
       continue;
     }
-    g.font = `900 ${Math.round(s * (f.hold ? (f.big ? 0.44 : 0.36) : f.big ? 0.26 : 0.22))}px "Arm Text", system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers), Schadenszahlen groß
-    g.lineWidth = Math.max(2, s * (f.hold ? 0.09 : 0.065)); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
+    g.font = f.hold ? `400 ${Math.round(s * (f.big ? 0.27 : 0.22))}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`   // Schadenszahlen (Paket 2): ≈60 %, kantige Ziffern, dunkler Rand
+      : `900 ${Math.round(s * (f.big ? 0.26 : 0.22))}px "Arm Text", system-ui, sans-serif`;   // kurze Meldungen klein (Wunsch des Nutzers)
+    if (f.hold) g.globalAlpha = Math.min(1, f.life / 10);   // kurz ausblenden
+    g.lineWidth = Math.max(2.5, s * (f.hold ? 0.075 : 0.065)); g.strokeStyle = O; g.lineJoin = 'round'; g.strokeText(f.text, f.x, f.y);
     g.fillStyle = f.col; g.fillText(f.text, f.x, f.y);
   }
   g.globalAlpha = 1;
@@ -2065,8 +2092,26 @@ cv.addEventListener('pointermove', ev => {
   const movable = sel && !busy && p.h && reach.has(E.key(p.h[0], p.h[1]));
   hoverU = movable ? null : (p.uFig || p.uHex);
   if (sel && !busy) { const np = targetOf(p); if (np !== previewT) { previewT = np; updateHud(); } }
+  { const c = cursorFor(p); if (cv.style.cursor !== c && cv.style.cursor !== 'grabbing') cv.style.cursor = c; }
 });
-cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; hideTip(); });
+cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; hideTip(); cv.style.cursor = ''; });
+// Mauszeiger (Paket 2, nur Maus): Schwert über Gegnern für Nahkampf, Fadenkreuz für Beschuss, durchgestrichener Kreis, wenn nichts geht
+const CUR = (svg, x, y, fb) => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>${svg}</svg>`)}") ${x} ${y}, ${fb}`;
+const CURSOR = {
+  schwert: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M3 3 L8 4.5 L22 18.5 L18.5 22 L4.5 8 Z' fill='#E8E2D0'/><path d='M8 4.5 L21 17.5' stroke='#9a917c' stroke-width='1'/><path d='M16.5 24 L24 16.5 L26 18.5 L18.5 26 Z' fill='#C2A461'/><path d='M22.5 22.5 L28 28' stroke-width='5' stroke-linecap='round'/><path d='M22.5 22.5 L28 28' stroke='#6b4a2a' stroke-width='2.6' stroke-linecap='round'/></g>", 3, 3, 'crosshair'),
+  ziel: CUR("<g fill='none' stroke-linecap='round'><circle cx='16' cy='16' r='9.5' stroke='#120D0B' stroke-width='5'/><circle cx='16' cy='16' r='9.5' stroke='#C2A461' stroke-width='2.4'/><path d='M16 1.5v8M16 22.5v8M1.5 16h8M22.5 16h8' stroke='#120D0B' stroke-width='5'/><path d='M16 2.5v7M16 22.5v7M2.5 16h7M22.5 16h7' stroke='#E8E2D0' stroke-width='2.2'/></g><circle cx='16' cy='16' r='1.8' fill='#8E2B22' stroke='#120D0B'/>", 16, 16, 'crosshair'),
+  nein: CUR("<g fill='none'><circle cx='16' cy='16' r='10' stroke='#120D0B' stroke-width='6'/><path d='M9 23 L23 9' stroke='#120D0B' stroke-width='6' stroke-linecap='round'/><circle cx='16' cy='16' r='10' stroke='#8E2B22' stroke-width='3'/><path d='M9 23 L23 9' stroke='#8E2B22' stroke-width='3' stroke-linecap='round'/></g>", 16, 16, 'not-allowed'),
+};
+function cursorFor(p) {
+  if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
+  const u = p.uFig || p.uHex;
+  if (u && u.side !== sel.side && E.alive(u)) { const t = targets.get(u.id); if (!t) return CURSOR.nein;
+    const k = t.both ? (atkPref !== 'auto' ? atkPref : t.kind) : t.kind; return k === 'melee' ? CURSOR.schwert : CURSOR.ziel; }
+  if (u && u.side === sel.side) return '';
+  const k = p.h && E.key(p.h[0], p.h[1]);
+  if (!k || reach.has(k) || abilSet.has(k) || shellHexes.has(k) || healSet.has(k) || sendSet.has(k) || recSet.has(k) || spawnSet.has(k)) return '';
+  return CURSOR.nein;
+}
 // Pergament-Tooltips für Marken (Karte und Panel), per Maus beim Drüberfahren, per Touch durch Antippen oder langes Drücken
 const mtip = document.createElement('div'); mtip.className = 'mtip'; mtip.setAttribute('role', 'tooltip'); document.body.appendChild(mtip);
 let tipKey = null, tipTm = 0;
@@ -2092,7 +2137,8 @@ function markTips(m) {
     const n = reach.get(E.key(pv.c, pv.r));
     return [pv.threat.length && { name: `Warndreieck: ${pv.threat.length} ${pv.threat.length === 1 ? 'Schütze' : 'Schützen'}`, text: `So viele Gegner können auf dieses Feld schießen (rot umrandet).` },
       { name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite (Messinglinien).` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Schild: Deckung ${cn}.` : 'Keine Deckung.'}` },
-      n && { name: `Stiefel: Weg ${n.cost}`, text: `Bewegung bis hierher${n.march ? ', als Marsch (danach keine Aktion mehr)' : n.retreat ? ', als Rückzug' : ''}.` }]; }
+      n && (n.march ? { name: 'Marsch – danach keine Aktion mehr', text: `Stiefel mit Flügeln: doppelte Zugweite für beide Aktionspunkte, Weg ${n.cost}. Danach kann die Einheit in dieser Runde nichts mehr tun.` }
+        : { name: `Stiefel: Weg ${n.cost}`, text: `Bewegung bis hierher${n.retreat ? ', als Rückzug' : ' für 1 Aktionspunkt'}.` })]; }
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
   if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
   return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
@@ -2443,6 +2489,30 @@ function upBtn(b, i) {
   return `<div class="up-slot${b.on ? ' on' : ''}"><button class="${cls}" data-act="${b.act}" aria-label="${upEsc(b.name)}, Taste ${i + 1}"${b.off ? ' aria-disabled="true"' : ''}><img src="${upSym(b.sym)}" alt="">${cost}${corner}${tip}</button><span class="up-key">${i + 1}</span></div>`;
 }
 let upBtns = [];
+// Wirkungsbereich (Paket 2): Befehle, großer Befehl, Banner, Schilde vor, Entgiften, Ziel markieren. Knopf überfahren (Maus) oder halten (Touch)
+let areaAct = null;
+function abilArea(act) {
+  if (!sel || !act) return null; const T = TYPES[sel.type], own = o => o.side === sel.side && E.active(o), cells = new Set(), within = R => { for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.dist(sel.c, sel.r, c, r) <= R) cells.add(E.key(c, r)); };
+  if (act.startsWith('o-')) { within(E.cmdRange(sel)); return { cells, ok: o => own(o) && TYPES[o.type].cls !== 'walker' && E.dist(o.c, o.r, sel.c, sel.r) <= E.cmdRange(sel) }; }   // Befehle: keine Kolosse/Kampfmaschinen
+  if (act === 'big') return { cells, ok: own };
+  if (act === 'plant' || (act === 'sel' && T.banner)) { const R = (act === 'plant' ? !sel.planted : sel.planted) ? P.BANNER_R_PLANTED : P.BANNER_R; within(R); return { cells, ok: o => own(o) && E.dist(o.c, o.r, sel.c, sel.r) <= R }; }
+  if (act === 'shields') { within(1); return { cells, ok: o => own(o) && o !== sel && E.dist(o.c, o.r, sel.c, sel.r) <= 1 }; }
+  if (act === 'abil' && T.abil === 'clear') { within(1); return { cells, ok: o => own(o) && E.dist(o.c, o.r, sel.c, sel.r) <= 1 }; }
+  if (act === 'abil' && (T.abil === 'mark' || T.abil === 'strike' || T.abil === 'smoke')) { for (const [c, r] of E.abilTargets(G, sel)) cells.add(E.key(c, r)); return { cells, ok: null }; }
+  return null;
+}
+let areaNow = null;
+function drawArea(g, s) {
+  const A = areaNow = abilArea(areaAct); if (!A) return;
+  for (const k of A.cells) { const c = Math.floor(k / 100), r = k % 100; hexPath(g, c, r, 0.96); g.fillStyle = 'rgba(226,176,74,0.26)'; g.fill(); }
+  g.save(); g.lineCap = 'round'; g.beginPath();   // Außenkante des Bereichs
+  for (const [c, r, i] of contourOf(A.cells)) { const [x, y] = center(c, r), p0 = hexCorner(x, y, i, 0.98), p1 = hexCorner(x, y, i + 1, 0.98); g.moveTo(p0[0], p0[1]); g.lineTo(p1[0], p1[1]); }
+  g.strokeStyle = 'rgba(18,13,11,0.8)'; g.lineWidth = Math.max(5, s * 0.1); g.stroke(); g.strokeStyle = 'rgba(246,214,120,1)'; g.lineWidth = Math.max(2.5, s * 0.045); g.stroke(); g.restore();
+  if (!A.ok) return;
+  for (const u of G.units) { if (!E.alive(u)) continue; const d = DU.get(u.id); if (!d || d.alpha <= 0) continue;
+    if (A.ok(u)) { g.save(); g.beginPath(); gEllipse(g, d.x, d.y, s * 0.78, s * 0.78); g.strokeStyle = '#120D0B'; g.lineWidth = Math.max(4, s * 0.1); g.stroke(); g.strokeStyle = '#F6E3A8'; g.lineWidth = Math.max(2, s * 0.05); g.stroke(); g.restore(); }   // betroffen: hell umrandet
+  }   // nicht betroffen: abgedunkelt
+}
 // Knöpfe der gewählten eigenen Einheit (gleiche Bedingungen wie bisher, nur als Symbole)
 function unitButtons(T, hints) {
   const btns = [], tg = [...targets.values()];
@@ -2479,7 +2549,7 @@ function unitButtons(T, hints) {
     if (abilMode) hints.push('<i>Schraffiert:</i> Zielfeld anklicken.'); }
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', cost: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Keine Aktionspunkte mehr.' });
   if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer; aufgebaut kann es nicht ziehen.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
-  if (T.mg) btns.push({ act: 'sperr', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: sel.ap, costTxt: 'alle Aktionen', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
+  if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: sel.ap, costTxt: 'alle Aktionen', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
     why: sel.sperr > 0 ? 'Sperrfeuer steht.' : !sel.setup ? 'Erst aufbauen.' : sel.mvd ? 'Hat sich in dieser Runde bewegt.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : 'Kein Aktionspunkt mehr.' });
   if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 2, text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht beide Aktionspunkte, noch nicht gezogen und nicht angegriffen.' });
   const ORD = { rally: ['fahne', 'Sammeln', 'Eigene Truppen in Reichweite: Moral +15, Niederhalten endet.'], storm: ['blitz', 'Sturmbefehl', 'Eigene Truppen in Reichweite: Nahkampf ×1,25 in dieser Runde.'], fire: ['zielen', 'Feuer frei', 'Eigene Truppen in Reichweite: Fernkampf ×1,25 bis zu ihrem nächsten Zug.'] };
@@ -2506,7 +2576,7 @@ function unitButtons(T, hints) {
   else if (sel.fellBack) hints.push('MG ist zurückgewichen und schießt in dieser Runde nicht mehr.');
   if (T.relay) hints.push('<i>Helle Felder:</i> Sicht des Trupps.');
   hints.push(sel.broken ? 'Panne: fällt diese Runde aus.' : sel.ap < 1 ? 'Keine Aktionspunkte mehr.' :
-    `${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit).' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte.' : [...reach.values()].some(n => n.march) ? 'Hell: ziehen (1 ●). Messing: Marsch (2 ●).' : 'Helle Felder: ziehen.') : ''}${sel.attacked ? '' : targets.size ? ' Rot: Nahkampf, Messing: Beschuss.' : ''}`);
+    `${reach.size ? (sel.mvd ? 'Helle Felder: ziehen (2. Zug halb so weit).' : [...reach.values()].some(n => n.retreat) ? 'Rückzug aus der Feindberührung: beide Punkte.' : [...reach.values()].some(n => n.march) ? `Hell <img class="hint-sym" src="${upSym('stiefel')}" alt="Stiefel">: ziehen (1 ●). Gelb gestrichelt <img class="hint-sym" src="${upSym('marsch')}" alt="Stiefel mit Flügeln">: Marsch (2 ●), danach keine Aktion.` : `Helle Felder <img class="hint-sym" src="${upSym('stiefel')}" alt="Stiefel">: ziehen.`) : ''}${sel.attacked ? '' : targets.size ? ' Rot: Nahkampf, Messing: Beschuss.' : ''}`);
   return btns;
 }
 function updateHud() {
@@ -2528,7 +2598,7 @@ function updateHud() {
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
     $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
       `<div class="up-tiles">${own ? `<span class="up-t" title="Aktionspunkte: ${ap} von ${P.AP}"><img src="${upSym('blitz')}" alt="Aktionen">${'<i class="up-pip"></i>'.repeat(Math.min(ap, P.AP))}${'<i class="up-pip used"></i>'.repeat(Math.max(0, P.AP - ap))}</span>` : ''}` +
-      `<span class="up-t" title="Bewegung"><img src="${upSym('marsch')}" alt="Bewegung">${u.limbered ? P.LIMBER_MV : T.mv} <small>Felder</small></span>` +
+      `<span class="up-t" title="Bewegung (Stiefel); Marsch doppelt so weit (Stiefel mit Flügeln)"><img src="${upSym('stiefel')}" alt="Bewegung">${u.limbered ? P.LIMBER_MV : T.mv} <small>Felder</small></span>` +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
     $('btnInfo').hidden = false;
     if (previewT && sel) {
@@ -2567,6 +2637,11 @@ function updateHud() {
   btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
   upBtns = btns;
   $('hudRow').innerHTML = btns.map(upBtn).join('') + (placing ? '<button class="up-text" data-act="cancel">Abbrechen</button>' : '');
+  $('hudRow').querySelectorAll('.up-ab[data-act]').forEach(b => {   // Wirkungsbereich zeigen: Maus beim Überfahren, Finger solange gedrückt (+1,5 s)
+    b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') areaAct = b.dataset.act; });
+    b.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && areaAct === b.dataset.act) areaAct = null; });
+    b.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { areaAct = b.dataset.act; clearTimeout(b._at); } });
+    b.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') b._at = setTimeout(() => { if (areaAct === b.dataset.act) areaAct = null; }, 1500); }); });
   $('hudRow').querySelectorAll('[data-act]').forEach(b => {
     let tm = 0, long = false;
     b.onpointerdown = e => { long = false; if (e.pointerType !== 'mouse') tm = setTimeout(() => { long = true; b.classList.add('show'); }, 420); };
@@ -2844,7 +2919,7 @@ $('closeDetail').onclick = () => { $('detail').hidden = true; };
 // Klick (oder Antippen) in den dunklen Bereich neben dem Fenster schließt es wie der Schließen-Knopf (Spieltest 2026-11-17)
 for (const [ov, btn] of [['army', 'armyCancel'], ['shop', 'closeShop'], ['detail', 'closeDetail'], ['rules', 'closeRules']])
   $(ov).addEventListener('click', e => { if (e.target === $(ov)) $(btn).click(); });
-$('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? INSTANT : 1; tbSync(); };   // 1×, 2×, Sofort
+$('btnSpeed').onclick = () => { speed = speed === 0.5 ? 1 : speed === 1 ? 2 : speed === 2 ? INSTANT : 0.5; try { localStorage.setItem('arm.tempo', String(speed)); } catch (e) {} tbSync(); };   // ½×, 1×, 2×, Sofort (Paket 2: langsamere Stufe, gespeichert)
 tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;

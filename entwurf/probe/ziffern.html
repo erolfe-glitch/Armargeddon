@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ziffernschriften</title>
+<style>
+  @font-face { font-family: "Z Gebrochen"; src: url(ziffern-gebrochen.woff2) format("woff2"); }
+  @font-face { font-family: "Z Schablone"; src: url(ziffern-schablone.woff2) format("woff2"); }
+  @font-face { font-family: "Z Kantig"; src: url(ziffern-kantig.woff2) format("woff2"); }
+  @font-face { font-family: "Z Alegreya"; src: url(../../ui-quelle/schriften/AlegreyaSans-Bold.ttf); }
+  :root { --bg: #17120e; --panel: #241c15; --line: #4a3c2c; --text: #e9e1cf; --muted: #b3a68c; --brass: #c2a461; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.4 Georgia, serif; }
+  header { padding: 18px 24px 4px; } h1 { margin: 0; font-size: 26px; color: var(--brass); }
+  p { color: var(--muted); margin: 6px 0; max-width: 1100px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 12px 24px 24px; }
+  .col { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+  .col.pick { border-color: var(--brass); box-shadow: 0 0 0 2px var(--brass) inset; }
+  .col h2 { margin: 0 0 8px; font-size: 18px; } .col h2 small { color: var(--muted); font-size: 13px; font-weight: normal; }
+  .feld { position: relative; height: 170px; border-radius: 4px; background: radial-gradient(ellipse at 50% 70%, #5b5139, #3c3426 70%); overflow: hidden; }
+  .dmg { position: absolute; font-size: 30px; color: #ff6a4a; -webkit-text-stroke: 5px #120D0B; paint-order: stroke fill; letter-spacing: .02em; }
+  .dmg.klein { font-size: 24px; color: #ff9a7a; }
+  .alt { font-size: 50px; }
+  .bar { margin-top: 10px; display: flex; gap: 10px; align-items: center; background: #2f241b; border: 2px solid #120D0B; padding: 6px 10px; border-radius: 3px; color: #F0EDE1; font-size: 20px; }
+  .coin { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(#e2c27a, #9b7a3a); color: #1d140d; font-size: 17px; border: 2px solid #120D0B; }
+  .big { font-size: 64px; letter-spacing: .03em; margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<header><h1>Ziffern für Schadenszahlen und obere Leiste</h1>
+<p>Drei eigene kantige Ziffernschriften (tools/ziffern.py, aus Strichen gebaut, keine fremden Dateien) neben der bisherigen Alegreya. Schadenszahlen in neuer Größe (etwa 60 %) mit dunklem Rand; darunter die Zahlen der oberen Leiste. Gewählt ist „Gebrochen“ (Messingrahmen); umstellen geht in tools/fonts.py mit einer Zeile.</p></header>
+<div class="grid" id="grid"></div>
+<script>
+const fonts = [['Gebrochen', 'blackletter-nah: dicke Senkrechten, dünne Waagerechten, Rautenköpfe', 1], ['Schablone', 'gesprüht, Stege an den Ecken', 0], ['Kantig', 'schmal, achteckig, harte Ecken', 0], ['Alegreya', 'bisher (rundlich), Schadenszahl in alter Größe', 0]];
+const g = document.getElementById('grid');
+for (const [f, txt, pick] of fonts) {
+  const ff = `'Z ${f}', Georgia, serif`, old = f === 'Alegreya';
+  g.insertAdjacentHTML('beforeend', `<div class="col${pick ? ' pick' : ''}"><h2>${f} <small>${txt}</small></h2>
+    <div class="feld" style="font-family:${ff}"><span class="dmg${old ? ' alt' : ''}" style="left:24px;top:18px">−25</span><span class="dmg klein${old ? ' alt' : ''}" style="left:150px;top:80px">−8</span><span class="dmg${old ? ' alt' : ''}" style="left:60px;top:110px">−130</span></div>
+    <div class="bar" style="font-family:${ff}"><span>Runde 12</span><span>100 %</span><span>3 : 17 /56</span><span class="coin">1</span><span class="coin">2</span><span class="coin">3</span></div>
+    <div class="big" style="font-family:${ff}">0123456789</div><div style="font-family:${ff};font-size:34px">+15 % ×1,25 −4</div></div>`);
+}
+document.fonts.ready.then(() => { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>
