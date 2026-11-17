@@ -17,7 +17,7 @@ function coverVal(t) { return COVER[t] || 0; }
 
 if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const m = k.match(/^W_([AD])_(\w+)$/); if (m) W[m[1]][m[2]] = +process.env[k]; }
 const ENVW = typeof process !== 'undefined' && process.env || {};
-const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6;
+const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
   const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8 };
@@ -45,7 +45,8 @@ function threatAt(G, u, c, r) {
 }
 function nearestObjDist(G, c, r, side) {
   side = side || 'A'; let best = 99;
-  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === side) continue; best = Math.min(best, E.dist(c, r, o.c, o.r) - o.pts * 0.3); }
+  const tk = G.turn + side; if (G._oc !== tk) { G._oc = tk; G._ocN = {}; for (const o of E.OBJECTIVES) G._ocN[o.id] = G.units.filter(x => x.side === side && E.active(x) && E.cls(x) !== 'art' && E.dist(x.c, x.r, o.c, o.r) <= 2).length; }
+  for (const o of E.OBJECTIVES) { if (G.ctrl[o.id] === side) continue; best = Math.min(best, E.dist(c, r, o.c, o.r) - o.pts * 0.3 + Math.max(0, G._ocN[o.id] - 3) * W_VERTEIL); }   // Spieltest Runde 3: Angriff auf mehrere Zielfelder verteilen
   return best === 99 ? 0 : best;
 }
 // Verteidiger: nächstes Zielfeld, das noch nicht uns gehört oder auf dem kein eigener Trupp steht
@@ -112,7 +113,7 @@ function hazard(G, u, c, r) {
   if (E.fireAt(G, c, r)) h += W_HAZ.fire * (T.cls === 'walker' ? 0.5 : 1);   // brennende Felder meiden
   return h;
 }
-const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 1.4), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
+const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
 function posValue0(G, u, c, r) {
   const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay ? 'medic' : E.cls(u);
@@ -135,6 +136,10 @@ function posValue0(G, u, c, r) {
     let friends = 0;
     for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
     v += Math.min(friends, 3) * 0.12;
+    if (TYPES[u.type].cmd) {   // Spieltest Runde 3: Anführer nicht vorneweg – mindestens zwei eigene Trupps sollen näher am Feind stehen
+      const nd = nearestEnemyDist(G, u.side, c, r); let vor = 0;
+      for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && !TYPES[o.type].cmd && E.cls(o) !== 'art' && nearestEnemyDist(G, o.side, o.c, o.r) < nd) vor++;
+      if (vor < 2) v -= 1.6 * (2 - vor); if (nd <= 2) v -= 1.2; }
     if (k === 'walker' && h.t === 'wire') v += 1.0;
     if (h.obj && k !== 'art') v += 1 + 0.4 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
     // Sturmstellung (BP/AP Schritt 2): Nahkämpfer, die angreifen müssen, enden 2 Felder vor einem Gegner auf einem Zielfeld bzw. im Graben –
@@ -271,7 +276,8 @@ function planUnit(G, u) {
   for (const [, n] of E.reachable(G, u)) {
     const pv = posValue(G, u, n.c, n.r);
     const atk = n.retreat ? null : bestAttackFrom(G, u, n.c, n.r, true, n.path.length, n.cost);
-    opts.push({ v: pv + (atk ? Math.max(0, atk.v) : 0) - 0.05 * n.cost - (n.retreat ? 0.4 : 0), move: [n.c, n.r], atk: atk && atk.v > 0 ? atk : null });
+    const feuerWeg = n.path.slice(0, -1).filter(([c, r]) => E.fireAt(G, c, r)).length * W_HAZ.fire * (E.cls(u) === 'walker' ? 0.5 : 1);   // Spieltest Runde 3: nicht durch brennende Felder
+    opts.push({ v: pv + (atk ? Math.max(0, atk.v) : 0) - 0.05 * n.cost - (n.retreat ? 0.4 : 0) - feuerWeg, move: [n.c, n.r], atk: atk && atk.v > 0 ? atk : null });
   }
   if (!(typeof process !== 'undefined' && process.env && process.env['NOMARCH_' + u.side]))
     for (const [, n] of E.reachable(G, u, { march: true })) {   // Marsch nur zum Anmarsch: Ziel außer Reichweite des Feindes
@@ -344,8 +350,9 @@ function next(G) {
     for (const o of G.units) {
       if (o.side !== u.side || !E.active(o) || E.cls(o) === 'walker' || E.dist(o.c, o.r, u.c, u.r) > E.cmdRange(u)) continue;
       if (o.supp > 0) weak += 2; else if (o.mor <= E.TYPES[o.type].mor - 1.5) weak++;
-      if (E.TYPES[o.type].atk >= 4 && nearestEnemyDist(G, o.side, o.c, o.r) <= E.TYPES[o.type].mv) close++;
-      if (E.TYPES[o.type].rng >= 2 && E.TYPES[o.type].fs >= 2 && !o.attacked && nearestEnemyDist(G, o.side, o.c, o.r) <= E.TYPES[o.type].rng + 1) shoot++;   // Feuer frei lohnt sich
+      // Spieltest Runde 3: nur Befehle, die in dieser Runde wirken – Sturmbefehl, wenn der Trupp gleich stürmen kann; Feuer frei, wenn er ein Ziel hat
+      if (E.TYPES[o.type].atk >= 4 && !o.attacked && o.ap >= 1 && nearestEnemyDist(G, o.side, o.c, o.r) <= (E.nahFrei(o) ? 2 : 1)) close++;
+      if (E.TYPES[o.type].rng >= 2 && E.TYPES[o.type].fs >= 2 && !o.attacked && o.ap >= 1 && G.units.some(e => e.side !== o.side && E.canFire(G, o, e))) shoot++;
     }
     if (shoot >= 2 && E.canOrderKind(G, u, 'fire')) return { u: u.id, steps: [{ k: 'order', kind: 'fire' }] };
     if (weak >= 2 && E.canOrderKind(G, u, 'rally')) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
