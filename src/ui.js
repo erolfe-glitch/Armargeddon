@@ -650,7 +650,10 @@ function drawSym(g, im, cx, cy, R, ring) {
   const ww = Math.min(R * 1.45 * im.naturalWidth / im.naturalHeight, R * 1.6), h2 = ww * im.naturalHeight / im.naturalWidth;
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
+// Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
+const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472] };
 function drawUnit(u, d) {
+  d.muz = null;   // wird beim Zeichnen der Figur gesetzt, wenn die Mündung des Bildes bekannt ist
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
   let x = d.x, y = d.y;
   if (d.lunge) { x += d.lunge.dx; y += d.lunge.dy; }
@@ -716,6 +719,7 @@ function drawUnit(u, d) {
       g.fillStyle = acc; g.fill(); g.lineWidth = Math.max(1.5, s * 0.045); g.stroke();
     }
     g.drawImage(sp.cv, Math.round(fx - sp.ox), Math.round(fy - sp.oy)); topY = Math.min(topY, fy - sp.oy);
+    if (sp.at && MUZ[sp.art] && !d.muz) { const [mx, my] = sp.at(...MUZ[sp.art]); d.muz = [fx - sp.ox + mx - d.x, fy - sp.oy + my - d.y, flip]; }   // relativ zur Einheit
   }
   }
   g.filter = 'none'; g.globalAlpha = 1;
@@ -1205,7 +1209,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { key: keys[0], ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -1300,6 +1304,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
     g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore();
+    { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip]; }   // Laufmündung (neue Ansicht)
     g.filter = 'none';
     if (u.type === 'ballon') drawBallon(g, s, u, x, top, w, h, flip, filt);
     return top;
@@ -1540,6 +1545,7 @@ function camToTilt(x, y, ms, force) {   // weich zum Bodenpunkt (Weltbild) fahre
 
 // ---------- Ton ----------
 let soundOn = true;
+try { soundOn = localStorage.getItem('arm.ton') !== '0'; } catch (e) {}   // Ton-Einstellung bleibt gespeichert (Spieltest 2026-11-17)
 const lastSnd = {}, SND_GAP = { husten: 300, select: 500, selGas: 900, ui: 50, erobert: 900, verloren: 900, tick: 600, bauen: 1500, wasser: 300, feuer: 2000, blast: 300, cannonH: 200, boomH: 250, mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
 const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
@@ -1579,13 +1585,15 @@ function sndPick(name, side) {
   const sd = side || sndSide, own = cand.filter(c => !c[1] || c[1] === sd), list = own.length ? own : cand.filter(c => !c[1]);
   return list.length ? list[Math.floor(Math.random() * list.length)][0] : null;   // nur Varianten der anderen Seite: lieber still
 }
-function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate } – Salven: kein Mindestabstand, eigene Tonhöhe
+function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
   const gapKey = name; name = sndPick(name, side) || name;
   if (!soundOn || !SND[name] || (speed >= INSTANT && qRunning)) return;
   const t = performance.now(); if (!(opt && opt.noGap)) { if (lastSnd[gapKey] != null && t - lastSnd[gapKey] < (SND_GAP[gapKey] || SND_GAP[name] || 100)) return; lastSnd[gapKey] = t; }   // nicht mehrfach im selben Augenblick
   window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
   window.__snd = (window.__snd || 0) + 1;
-  try { const a = SND[name].cloneNode(); a.volume = vol; a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+  try { const a = SND[name].cloneNode(); a.volume = vol; a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {});
+    if (opt && opt.dur) { let k = 0; setTimeout(function fade() { k++; try { a.volume = Math.max(0, vol * (1 - k / 5)); } catch (e) {} if (k < 5) setTimeout(fade, 12); else a.pause(); }, opt.dur); }   // ca. 60 ms ausblenden
+  } catch (e) {}
 }
 
 // ---------- Effekte ----------
@@ -1620,12 +1628,12 @@ function headPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.t
 // ---------- Ereignis-Animation ----------
 const wait = ms => new Promise(r => setTimeout(r, ms / speed));
 const raf = () => new Promise(r => requestAnimationFrame(r));
-async function animPath(id, path, msPer) {
+async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweichen mit Blick zum Feind
   const d = DU.get(id); d.moving = true;   // neue Ansicht: Geschütz zeigt beim Ziehen das Gespann
   try {
   for (let i = 1; i < path.length; i++) {
     const [x0, y0] = center(path[i - 1][0], path[i - 1][1]), [x1, y1] = center(path[i][0], path[i][1]);
-    if (x1 !== x0) d.face = x1 > x0 ? 0 : 3;
+    if (x1 !== x0 && !keepFace) d.face = x1 > x0 ? (facesLeft(d.face) ? 0 : d.face) : (facesLeft(d.face) ? d.face : 3);   // nur die Seite wechseln, senkrechte Schritte drehen nicht
     if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
     for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; }
@@ -1642,7 +1650,7 @@ async function playEvent(e) {
   switch (e.t) {
     case 'move': { const k0 = TYPES[u.type].cls; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gallop', 0.5); else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)) ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'tramp', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
-    case 'fallback': await animPath(e.u, e.path, 200); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
+    case 'fallback': await animPath(e.u, e.path, 200, true); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
@@ -1654,14 +1662,18 @@ async function playEvent(e) {
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
         const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
-        lastFire = { kind: e.kind, t: performance.now() }; if (mg && !mini) setTimeout(() => playSound('huelsen', 0.3), 650 / speed);   // leise Patronenhülsen nach der MG-Salve
+        lastFire = { kind: e.kind, t: performance.now() };   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
         const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
         if (salve) { const n = Math.max(1, Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001)));   // so viele Schüsse wie lebende Figuren
           const key = sndPick('rifle', au && au.side) || 'rifle';   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
-          for (let q = 0; q < n; q++) setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12 }), (q ? Math.random() * 400 : 0) / speed); }
+          // unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert: „pam – pam-pam – pam“. Abstände zufällig 0–0,25 s, manchmal zwei fast zugleich;
+          // jeder Schuss kurz (ohne Nachhall), nur der letzte klingt voll aus (Spieltest 2026-11-17, gilt für beide Seiten)
+          let t = 0; for (let q = 0; q < n; q++) { if (q) t += Math.random() < 0.3 ? Math.random() * 40 : Math.random() * 250;
+            const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed); } }
         else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
         if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
-        else if (mg && PJI.mgfire) muzzles.push({ img: 'mgfire', x: x1 + Math.cos(ang) * s * 0.25, y: y1 + Math.sin(ang) * s * 0.25, ang, sz: 0.85, off: 0.02, life: 26, max: 26 });
+        else if (mg && PJI.mgfire) { const lf = facesLeft(a.face), mz = a.muz, [mx, my] = mz ? [a.x + (!!mz[2] === lf ? mz[0] : -mz[0]), a.y + mz[1]] : [x1 + Math.cos(ang) * s * 0.25, y1 + Math.sin(ang) * s * 0.25];   // an der Laufmündung (im letzten Bild gemessen, bei Wendung gespiegelt)
+          muzzles.push({ img: 'mgfire', x: mx, y: my, ang: mz ? (lf ? Math.PI : 0) : ang, sz: 0.85, off: 0.02, life: 26, max: 26 }); }
         else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
         tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 30 : 15, max: mg ? 30 : 15, n: mg ? 9 : 1, stream: mg, col: can ? '#ff9a3a' : '#ffe27a', img: can ? 'shard' : 'bullet', sz: mg ? 0.17 : can ? 0.34 : 0.2 });
         await wait((mg ? 30 : 15) * 16.667 * 0.9);
@@ -1737,7 +1749,11 @@ async function playEvent(e) {
       if (E.isMech(u.type)) playSound('robot', 0.5);
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) { shake(e.dmg >= 2.5 ? 6 : 4); playSound('impact', 0.3); }
-      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) playSound(e.dmg >= 0.3 ? 'einschlag' : 'vorbei', 0.35);   // schwerer Treffer: Wucht
+      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) {
+        const soft = !['walker', 'art'].includes(TYPES[u.type].cls);
+        if (lastFire.kind !== 'rifle' && soft) playSound('einschlag', 0.22, null, { rate: 0.78 + Math.random() * 0.08, dur: 260 });   // MG-Treffer: dumpfer Einschlag in den Körper, tiefer gestimmt, kurz und leise (Spieltest 2026-11-17)
+        else playSound(e.dmg >= 0.3 ? 'einschlag' : 'vorbei', 0.35);
+      }
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('neigh', 0.5);
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45);
@@ -2172,7 +2188,7 @@ const TB_SVG = {
 const tbNum = n => String(n).replace('.', ',') + '×';
 function tbSync() {
   $('btnZoom').innerHTML = TB_SVG.zoom + `<b class="tb-v">${zoomFit || ZOOM <= ZFIT + 0.01 ? 'Karte' : tbNum(Math.round(ZOOM * 10) / 10)}</b>`;
-  $('btnSound').innerHTML = soundOn ? TB_SVG.sndOn : TB_SVG.sndOff;
+  $('btnSound').innerHTML = soundOn ? TB_SVG.sndOn : TB_SVG.sndOff; $('smSound').innerHTML = $('btnSound').innerHTML;
   $('btnSpeed').innerHTML = speed >= INSTANT ? TB_SVG.instant : TB_SVG.speed + `<b class="tb-v">${tbNum(speed)}</b>`; $('btnSpeed').dataset.tip = 'Tempo der Abläufe: ' + speedTxt().replace('Tempo ', '');
   $('btnDiary').innerHTML = TB_SVG.diary; $('btnDiary').classList.toggle('on', !$('diary').hidden);
   $('btnMarks').innerHTML = TB_SVG.marks; $('btnMarks').classList.toggle('on', marksOn); $('btnMarks').setAttribute('aria-pressed', marksOn);
@@ -2499,6 +2515,9 @@ function drawFlagPick() {   // jede Fraktion hat genau ein Wappen (keine Auswahl
   $('facFlagA').src = UP.fA || ''; $('facFlagF').src = UP.fF || ''; $('facFlagD').src = UP.fD || '';
 }
 let armySide = 'A', armyDraft = {};
+// General ist Pflicht: genau einer je Armee, in der Auswahl fest gesetzt (Spieltest 2026-11-17)
+const isGeneral = t => TYPES[t] && TYPES[t].cmd === 2;
+function armyFixGeneral(sd) { for (const t in armyDraft) if (isGeneral(t)) delete armyDraft[t]; const g = roster(sd).find(isGeneral); if (g) armyDraft[g] = 1; }
 const curMode = () => (document.querySelector('input[name=opp]:checked') || {}).value === 'hot' ? 'hot' : curSide() === 'D' ? 'D' : 'A';
 function armyInfo() {
   const sides = curMode() === 'hot' ? ['A', 'D'] : [curMode()];
@@ -2509,8 +2528,9 @@ function openArmy(sd) {
   applySkin(curSkin());
   $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
   for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
+  armyFixGeneral(sd);
   $('armyList').innerHTML = roster(sd).map(t => { const T = TYPES[t];
-    return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small><span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span></div>`; }).join('');
+    return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small>${isGeneral(t) ? '<span class="stepper fixed" data-tip="Pflicht: Jede Armee hat genau einen General."><i>1</i><em>Pflicht</em></span>' : '<span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span>'}</div>`; }).join('');
   $('army').hidden = false;
   requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   $('armyList').querySelectorAll('.stepper button').forEach(b => b.onclick = () => {
@@ -2563,7 +2583,7 @@ function drawMapPick() {
 function startGame() {
   setMusik(null);
   mode = curMode();
-  blood = $('optBlood').checked; soundOn = $('optSound').checked; tbSync();
+  blood = $('optBlood').checked; tbSync();
   applySkin(curSkin());
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
@@ -2632,7 +2652,7 @@ $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext
 $('startBtn').onclick = startGame;
 $('btnArmy').onclick = () => openArmy(curMode() === 'D' ? 'D' : 'A');
 $('armyStd').onclick = () => { armyDraft = Object.assign({}, E.defaultArmy(armySide)); armyRefresh(); };
-$('armyClear').onclick = () => { armyDraft = {}; armyRefresh(); };
+$('armyClear').onclick = () => { armyDraft = {}; armyFixGeneral(armySide); armyRefresh(); };
 $('armyOk').onclick = () => { if (armyKeep()) { $('army').hidden = true; armyInfo(); } };
 $('armyCancel').onclick = () => { $('army').hidden = true; armyInfo(); };
 $('armySwap').onclick = () => { if (E.armyOk(armySide, armyDraft, mechsOn())) armyKeep(); openArmy(armySide === 'A' ? 'D' : 'A'); };
@@ -2665,10 +2685,22 @@ for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
-$('btnSound').onclick = () => { soundOn = !soundOn; $('optSound').checked = soundOn; tbSync(); setAmbient(soundOn && !!G && !G.over); if (soundOn) playSound('whistle', 0.4); };
+// Ton an/aus: obere Leiste, Startmenü und Optionen schalten dasselbe und merken es sich
+function setSound(on) {
+  soundOn = !!on; $('optSound').checked = soundOn; try { localStorage.setItem('arm.ton', soundOn ? '1' : '0'); } catch (e) {}
+  tbSync();
+  if (!$('start').hidden) setMusik(soundOn ? 'musikTitel' : null); else setAmbient(soundOn && !!G && !G.over);
+  if (!soundOn) { setMusik(null); if (feuerTon) try { feuerTon.pause(); } catch (e) {} }
+}
+$('btnSound').onclick = () => { setSound(!soundOn); if (soundOn) playSound('whistle', 0.4); };
+$('smSound').onclick = e => { e.stopPropagation(); setSound(!soundOn); };
+$('optSound').checked = soundOn; $('optSound').addEventListener('change', () => setSound($('optSound').checked));
 $('btnShop').onclick = openShop;
 $('closeShop').onclick = () => { $('shop').hidden = true; };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
+// Klick (oder Antippen) in den dunklen Bereich neben dem Fenster schließt es wie der Schließen-Knopf (Spieltest 2026-11-17)
+for (const [ov, btn] of [['army', 'armyCancel'], ['shop', 'closeShop'], ['detail', 'closeDetail'], ['rules', 'closeRules']])
+  $(ov).addEventListener('click', e => { if (e.target === $(ov)) $(btn).click(); });
 $('btnSpeed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? INSTANT : 1; tbSync(); };   // 1×, 2×, Sofort
 tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
@@ -2846,7 +2878,7 @@ window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get 
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

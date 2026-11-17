@@ -676,6 +676,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
 /* ===== Startmenü nach STYLE.md: Schritte Titel → Fraktion → Schlachtfeld → Schlacht. Hintergrund = Titelbild (src/titlebg.js, --sm-bg). ===== */
 .overlay.sm { padding: 0; overflow: hidden; background: var(--s-ink); font: 17px/1.35 var(--s-body); color: var(--s-text); -webkit-user-select: none; user-select: none; }
+.sm-snd { position: absolute; top: 18px; right: 18px; z-index: 5; width: 52px; height: 52px; }
+.sm-snd svg { width: 29px; height: 29px; }
 .sm-bg { position: absolute; inset: 0; background: var(--sm-bg) center 40% / cover no-repeat, var(--s-bg); transition: filter .35s, transform .35s; }
 .sm-bg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 45%, rgba(18,13,11,.55) 75%, rgba(18,13,11,.92) 100%), linear-gradient(rgba(18,13,11,.35), transparent 22%, transparent 70%, rgba(18,13,11,.75)); }
 .sm:not([data-step="title"]) .sm-bg { filter: blur(6px) brightness(.32) saturate(.8); transform: scale(1.04); }
@@ -792,6 +794,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .shoplist .item b.lang { font-size: 14.5px !important; letter-spacing: 0; }   /* sehr lange Einzelwörter (Schützenkohorte, Ballonbeobachter) passen so ohne Trennung */
 .shoplist .item .cost { grid-column: 2; grid-row: 2; justify-self: start; }
 .shoplist .item small { grid-column: 2; grid-row: 3; }
+.stepper.fixed { min-height: 36px; } .stepper.fixed em { font-style: normal; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--s-brass); }
 </style>
 </head>
 <body>
@@ -845,6 +848,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 
 <div class="overlay sm" id="start" hidden data-step="title">
   <div class="sm-bg" aria-hidden="true"></div>
+  <button class="tb-btn sm-snd" id="smSound" data-tip="Ton und Musik an/aus" aria-label="Ton und Musik an/aus"></button>
   <!-- 1 Startbildschirm -->
   <section class="sm-page sm-title" data-page="title">
     <header class="sm-logo"><div class="sm-kicker">Die Schlacht am Grauwall</div><h1 class="sm-h1">Armargeddon</h1></header>

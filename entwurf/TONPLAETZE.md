@@ -3,6 +3,9 @@
 Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/tonplaetze.json` von `tools/sound_bau.mjs`). Bei mehreren Tönen je Platz wird zufällig gewählt; Töne mit Seite spielen nur, wenn eine Einheit dieser Seite handelt. „vorhanden“ = Ton war schon im Spiel.
 
 
+## Gewehrsalve (Spieltest 2026-11-17)
+Unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert („pam – pam-pam – pam“), beide Seiten gleich: so viele Schüsse wie lebende Figuren (bis 4), Abstände zufällig 0–0,25 s, in 30 % der Fälle zwei fast zugleich (unter 40 ms). Jeder Schuss außer dem letzten wird nach 0,17–0,23 s in 60 ms ausgeblendet (kein Nachhall), der letzte klingt voll aus (ui.js `playSound` mit `dur`).
+
 ## Grundklang je Fraktion (2026-11-17)
 
 Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer Fraktion, außer den Einheiten mit eigenem Ton (unten).
@@ -40,7 +43,7 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 |  |  | Aschenwacht | vorhanden (mg3) |
 |  |  | Aschenwacht | vorhanden (mg2) |
 |  |  | Aschenwacht | Infantry Guns/kave_msri-machine-gun-sfx-320986.mp3 (2 s ab 0.06 s) |
-| **huelsen** | leise Patronenhülsen nach einer MG-Salve | beide | Infantry Guns/freesound_community-shells-hitting-ground-40-39791.mp3 (1.4 s ab 0.12 s) |
+| **huelsen** | ~~leise Patronenhülsen nach einer MG-Salve~~ seit 2026-11-17 nicht mehr gespielt (klang wie herumfliegende Splitter, Spieltest) | beide | Infantry Guns/freesound_community-shells-hitting-ground-40-39791.mp3 (1.4 s ab 0.12 s) |
 | **buechse** | Panzerbüchsen-Trupp schießt | Aschenwacht | 721431__the_epic1357__new-barrett.mp3 (2.2 s ab 0.04 s) |
 | **cannon** | Kanone: Landkoloss, Feldkanone (Konkordat); Abschuss Grabengeschütz (Aschenwacht, mit cannonH gemischt) | Konkordat | vorhanden (cannon) |
 |  |  | Konkordat | 850499__vulkanbruder__little-cannon.wav (0.36 s ab 0 s) |
@@ -72,7 +75,7 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **werfer** | Abschuss Rauchwerfer | beide | Heavy firing sounds/49053354-rocket-launcher-307512.mp3 (1.29 s ab 0.13 s) |
 | **flinte** | Nahkampf Grabenräumer/Sturmbrecher (kurzer Schuss) | beide | Infantry Guns/freesound_community-shotgun-shooting-things-105837.mp3 (0.8 s ab 0.1 s) |
 | **vorbei** | Kugel pfeift vorbei (kaum Wirkung, niedergehalten) | beide | Impacts/dennish18-bullet-passing-by-fast-146492.mp3 (0.8 s ab 0.13 s) |
-| **einschlag** | Kugeleinschlag bei Treffer (Gewehr, MG) | beide | Impacts/u_68csiaifb5-bulletimpact1-442717.mp3 (0.6 s ab 0.06 s) |
+| **einschlag** | Kugeleinschlag bei Treffer (Gewehr, MG); MG-Treffer auf Fußtruppen/Reiter: dumpfer Körpertreffer = tiefer gestimmt (×0,78–0,86), leise (0,22), nach 0,26 s ausgeblendet. Geprüft 2026-11-17: bulletimpact1 hat den meisten Tiefenanteil (34 % unter 300 Hz), blood-splatter ist hell und nass (1 %) | beide | Impacts/u_68csiaifb5-bulletimpact1-442717.mp3 (0.6 s ab 0.06 s) |
 |  |  | beide | Impacts/u_68csiaifb5-bulletimpact2-442718.mp3 (0.58 s ab 0.09 s) |
 | **einsturz** | Gebäude, Bunker, Ruine zerstört | beide | Explosion/shrek_30-building-demolished-472876.mp3 (3.5 s ab 11.9 s) |
 |  |  | beide | Explosion/magiazzz-massive-building-548236.mp3 (3.5 s ab 0.01 s) |

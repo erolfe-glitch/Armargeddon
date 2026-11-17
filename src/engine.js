@@ -169,13 +169,13 @@ Object.assign(TYPES, {
     can: 'Kommandotrupp: gibt jede zweite Runde einen Befehl an alle eigenen Truppen bis 2 Felder: „Sammeln“ oder „Feuer frei“ (Fernkampf ×1,25 bis zu ihrem nächsten Zug). Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
     real: 'Ein Hauptmann führte eine Kompanie von rund 200 Mann. Die Verluste unter jungen Offizieren waren sehr hoch, weil sie beim Angriff vorangingen.' },
   generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 3, mor: 10, mv: 3, rng: 1, fs: 1,
-    can: 'Kommandotrupp: gibt jede Runde einen Befehl an alle eigenen Truppen bis 3 Felder („Sammeln“ oder „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: alle eigenen Einheiten fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25. Höchstens einer je Armee, schwach im Kampf.',
+    can: 'Kommandotrupp: gibt jede Runde einen Befehl an alle eigenen Truppen bis 3 Felder („Sammeln“ oder „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: alle eigenen Einheiten fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
     real: 'Generäle führten meist aus Hauptquartieren weit hinter der Front, verbunden über Telefon und Meldegänger. Trotzdem fielen im Ersten Weltkrieg über 70 britische Generäle.' },
   hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 3, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: gibt jede zweite Runde einen Befehl an alle eigenen Truppen bis 2 Felder: „Sammeln“ oder „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde). Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
     real: 'In der deutschen Armee führte ein Hauptmann meist eine Kompanie. Ab 1916 übernahmen oft Leutnants diese Aufgabe, weil zu viele Offiziere gefallen waren.' },
   generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 3, mor: 10, mv: 3, rng: 1, fs: 1,
-    can: 'Kommandotrupp: gibt jede Runde einen Befehl an alle eigenen Truppen bis 3 Felder („Sammeln“ oder „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: alle eigenen Einheiten erhalten sofort 1 Aktionspunkt. Höchstens einer je Armee, schwach im Kampf.',
+    can: 'Kommandotrupp: gibt jede Runde einen Befehl an alle eigenen Truppen bis 3 Felder („Sammeln“ oder „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: alle eigenen Einheiten erhalten sofort 1 Aktionspunkt. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
     real: 'Deutsche Divisionen wurden von Generalmajoren geführt. Die Stäbe arbeiteten mit Karten, Telefon und Luftbildern meist mehrere Kilometer hinter der Front.' },
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', fig: 'mech', mech: true, atk: 6, def: 6, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Sturmkanone. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
@@ -303,20 +303,20 @@ const GRAUWALL_OBJ = [
 ];
 
 const GRAUWALL_SETUP = [
-  ['kohorte', 3, 0], ['kohorte', 3, 2], ['kohorte', 3, 4, 'Prätor Hask'], ['kohorte', 3, 6], ['kohorte', 3, 8, 'Hauptfrau Morn'], ['kohorte', 3, 10],
+  ['kohorte', 3, 0], ['kohorte', 3, 2], ['kohorte', 3, 4], ['kohorte', 3, 6], ['kohorte', 3, 8], ['kohorte', 3, 10],
   ['kohorte', 1, 3], ['kohorte', 1, 5], ['kohorte', 1, 7],
   ['mahlwerk', 2, 0], ['mahlwerk', 2, 5], ['mahlwerk', 2, 10],
   ['koloss', 2, 2], ['koloss', 2, 4], ['koloss', 2, 7], ['koloss', 2, 9],
   ['haubitze', 0, 2], ['haubitze', 0, 5], ['haubitze', 0, 8],
   ['reiter', 1, 1], ['reiter', 1, 9],
-  ['grenadier', 9, 0], ['grenadier', 9, 4], ['grenadier', 9, 8, 'Hauptmann Veyl'],
+  ['grenadier', 9, 0], ['grenadier', 9, 4], ['grenadier', 9, 8],
   ['sense', 9, 2], ['sense', 9, 6], ['sense', 9, 10],
-  ['grenadier', 13, 2], ['grenadier', 13, 6, 'Kastellan Orsk'], ['grenadier', 13, 9],
+  ['grenadier', 13, 2], ['grenadier', 13, 6], ['grenadier', 13, 9],
   ['sense', 13, 4], ['sense', 13, 8],
   ['grenadier', 15, 4], ['grenadier', 17, 1], ['grenadier', 18, 9],
   ['geschuetz', 16, 5], ['geschuetz', 15, 1], ['geschuetz', 15, 8]
 ];
-const GRAUWALL_REINF = [['sturm', 19, 2], ['sturm', 19, 4, 'Sturmführer Kael'], ['sturm', 19, 6], ['brand', 19, 3], ['brand', 19, 5], ['geschuetz', 18, 5]];
+const GRAUWALL_REINF = [['sturm', 19, 2], ['sturm', 19, 4], ['sturm', 19, 6], ['brand', 19, 3], ['brand', 19, 5], ['geschuetz', 18, 5]];
 
 function mulberry32(a) {
   return function () {
@@ -398,7 +398,7 @@ const MAPS = {
       { id: 'suedgraben', name: 'Südgraben', c: 7, r: 7, pts: 2 },
       { id: 'schanze', name: 'Die Schanze', c: 10, r: 5, pts: 2 },
       { id: 'veskar', name: 'Veskar', c: 12, r: 4, pts: 1 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 8, sense: 5, geschuetz: 2 } },
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 8, sense: 5, geschuetz: 2, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     build: () => {
       const T = mapTools(16, 10, 1917);
@@ -426,7 +426,7 @@ const MAPS = {
       { id: 'kreuz', name: 'Kreuzung', c: 7, r: 5, pts: 3 },
       { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 2 },
       { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
-    army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 2, feldscher: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1 } },
+    army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 2, feldscher: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand'],
     build: () => {
       const T = mapTools(14, 11, 1871);
@@ -457,7 +457,7 @@ const MAPS = {
       { id: 'bahnhof', name: 'Bahnhof', c: 9, r: 6, pts: 3 },
       { id: 'kalkwald', name: 'Kalkwald', c: 10, r: 10, pts: 2 },
       { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 1 }],
-    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 12, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 12, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
       const T = mapTools(18, 13, 1916);
@@ -491,7 +491,7 @@ const MAPS = {
       { id: 'brand', name: 'Brandstätte', c: 10, r: 12, pts: 2 },
       { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 3 },
       { id: 'riegel', name: 'Riegel', c: 16, r: 8, pts: 1 }],
-    army: { A: { kohorte: 12, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2 } },
+    army: { A: { kohorte: 12, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
     build: () => {
       const T = mapTools(22, 16, 1918);
@@ -530,7 +530,7 @@ const MAPS = {
       { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 3 },
       { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 1 },
       { id: 'dorfrand', name: 'Dorfrand', c: 11, r: 6, pts: 1 }],
-    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 5, geschuetz: 2 } },
+    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 6, sense: 5, geschuetz: 2, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'off..==.~VU.WWWW',
@@ -554,7 +554,7 @@ const MAPS = {
       { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 3 },
       { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 1 },
       { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2 }, D: { grenadier: 6, sense: 4, geschuetz: 2 } },
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'WWWW.==.~V..WWWW',
@@ -577,7 +577,7 @@ const MAPS = {
       { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 3 },
       { id: 'vorwerk', name: 'Ziegelhof', c: 11, r: 7, pts: 2 },
       { id: 'riegelg', name: 'Riegelgraben', c: 12, r: 6, pts: 1 }],
-    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 11, sense: 4, geschuetz: 2 } },
+    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 11, sense: 4, geschuetz: 2, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'o===.f.~~.fff...',
@@ -601,7 +601,7 @@ const MAPS = {
       { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 3 },
       { id: 'kfab', name: 'Fabrik', c: 10, r: 2, pts: 2 },
       { id: 'ostviertel', name: 'Ostviertel', c: 11, r: 6, pts: 2 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2 }, D: { grenadier: 15, sense: 5, geschuetz: 2 } },
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 15, sense: 5, geschuetz: 2, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
     grid: [
       'VVVVVVV.~.VVV.VV',
@@ -625,7 +625,7 @@ const MAPS = {
       { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 3 },
       { id: 'suedfurt', name: 'Südfurt', c: 11, r: 9, pts: 2 },
       { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1 }, D: { grenadier: 17, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1 } },
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 17, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1, generalD: 1, hauptD: 1 } },
     reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
     build: () => {
       const T = mapTools(18, 14, 1915);
@@ -688,6 +688,16 @@ function angleTo(c1, r1, c2, r2) {
   return (Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI + 360) % 360;
 }
 function faceIndex(angle) { return Math.round(angle / 60) % 6; }
+// Blickrichtung zu einem Feld. Genau senkrecht (gerade hoch/runter) liegt zwischen zwei Richtungen: dann die bisherige Seite (links/rechts)
+// behalten, sonst kippt die Figur bei jedem senkrechten Schritt (Spieltest 2026-11-17: „dreht sich nach dem Einzug in den Graben zurück“).
+const faceLeft = f => f === 2 || f === 3 || f === 4;
+function faceToward(f0, c1, r1, c2, r2) {
+  if (c1 === c2 && r1 === r2) return f0;
+  const a = angleTo(c1, r1, c2, r2);
+  if (Math.abs(a - 90) < 1) return faceLeft(f0) ? 2 : 1;
+  if (Math.abs(a - 270) < 1) return faceLeft(f0) ? 4 : 5;
+  return faceIndex(a);
+}
 function angDiff(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; }
 // MG-Schussfächer (Wunsch 2026-11-16): drei Feldseiten in Blickrichtung (vorn, schräg links und rechts), also ±90°. Außerhalb weder Schuss
 // noch Reaktionsfeuer. Drehen (frei) richtet den Fächer aus. Andere Einheiten schießen rundum. Abschalter für die Sim: NOFAN.
@@ -714,7 +724,7 @@ function line(c1, r1, c2, r2) {
 function spend(u, n) { u.ap = Math.max(0, (u.ap || 0) - n); u.moved = u.ap <= 0; }
 function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgebaut (siehe newGame)
   const T = TYPES[type];
-  const u = { id: G.nextId++, type, side: T.side, c, r, officer: officer || (T.cmd === 2 ? 'General' : T.cmd ? 'Hauptmann' : null), ap: P.AP,
+  const u = { id: G.nextId++, type, side: T.side, c, r, officer: T.cmd ? officer || (T.cmd === 2 ? 'General' : 'Hauptmann') : null, ap: P.AP,
     str: 10, mor: T.mor, face: T.side === 'A' ? 0 : 3, status: 'ok',
     moved: false, attacked: false, sperr: 0, supp: 0, fireDmg: 0, turnOnly: false,
     run: 0, broken: 0, gassed: false, seenWalker: false, limbered: false, gas: T.gas || 0, mines: T.mines || 0, startC: c, startR: r };   // Minen auch für gekaufte Trupps
@@ -738,7 +748,7 @@ function armyOk(side, army, mechs) {
   const n = armyCount(army); let walkers = 0;
   for (const t in army) { if (army[t] > ARMY_CAP) return false; if (TYPES[t].cls === 'walker') walkers += army[t]; }
   if (walkers > ARMY_WALKERS) return false;
-  if ((army.generalA || 0) + (army.generalD || 0) > 1 || (army.hauptA || 0) + (army.hauptD || 0) > 3) return false;
+  if ((army.generalA || 0) + (army.generalD || 0) !== 1 || (army.hauptA || 0) + (army.hauptD || 0) > 3) return false;   // genau ein General je Armee (Pflicht, Spieltest 2026-11-17)
   return armyCost(army) <= ARMY_BUDGET[side] && n >= ARMY_MIN[side] && n <= ARMY_MAX[side];
 }
 function rowsOut() { const m = Math.floor(ROWS / 2), out = [m]; for (let k = 2; out.length < ROWS; k += 2) { for (const r of [m - k, m + k]) if (r >= 0 && r < ROWS) out.push(r); if (k > ROWS) break; } for (let r = 0; r < ROWS; r++) if (!out.includes(r)) out.push(r); return out; }
@@ -746,10 +756,8 @@ function deploy(G, side, army) {
   // Reihenfolge: Typen abwechselnd, damit sich die Truppen über die Front verteilen
   const left = Object.assign({}, army), list = [];
   for (let more = true; more;) { more = false; for (const t of ROSTER[side]) if (left[t] > 0) { left[t]--; list.push(t); more = true; } }
-  const names = side === 'A' ? ['Prätor Hask', 'Hauptfrau Morn', 'Legat Corvin'] : ['Hauptmann Veyl', 'Kastellan Orsk', 'Major Dresk'];
-  if (COLS * ROWS < 400) names.pop();
   const ROWS_OUT = rowsOut(), zA = MAP.zoneA;
-  const lead = t => { const T = TYPES[t]; return (T.cls === 'inf' || T.cls === 'storm') && !T.relay && !T.pin && names.length ? names.shift() : null; };
+  const lead = () => null;   // Offiziere nur noch als eigene Einheiten (Hauptmann/General mit Stab), keine Titel mehr für Schützen (Spieltest 2026-11-17)
   const free = (t, c, r) => inMap(c, r) && !unitAt(G, c, r) && cost(G, { type: t, side }, c, r) < 99;
   if (side === 'A') {
     const pref = t => { const T = TYPES[t], k = T.cls === 'art' && !T.mobile ? 0 : (T.mobile || T.pin || T.relay || T.cls === 'cav' || T.cls === 'medic' || T.fig === 'bike') ? 1 : (T.cls === 'walker' || T.cls === 'mg') ? 2 : 3; return Math.round(k * zA / 3); };
@@ -932,6 +940,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
   let seg = [[u.c, u.r]];
   const flush = () => { if (seg.length > 1) ev.push({ t: 'move', u: u.id, path: seg }); seg = [[u.c, u.r]]; };
   for (const [nc, nr] of opt.path) {
+    u.face = faceToward(u.face, u.c, u.r, nc, nr);   // Blick in Zugrichtung schon unterwegs, damit er auch nach einem Halt (Mine, Draht, Sperrfeuer) stimmt
     u.c = nc; u.r = nr; u.run++; u.dug = false; seg.push([nc, nr]);
     const h = hex(G, nc, nr);
     const mi = G.mines.findIndex(k => k.c === nc && k.r === nr && k.side !== u.side);
@@ -972,8 +981,6 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
     }
   }
   flush();
-  { const pl = opt.path, n = pl.length, pr = n > 1 ? pl[n - 2] : [opt.from ? opt.from[0] : null, null];   // Blick bleibt in Zugrichtung (Wunsch des Nutzers), kein selbsttätiges Umdrehen
-    if (n > 1 && (pr[0] !== u.c || pr[1] !== u.r) && dist(pr[0], pr[1], u.c, u.r) === 1) u.face = faceIndex(angleTo(pr[0], pr[1], u.c, u.r)); else if (startC != null && (startC !== u.c || startR !== u.r)) u.face = faceIndex(angleTo(startC, startR, u.c, u.r)); }
   ev.push({ t: 'face', u: u.id, face: u.face });
   if (T.cls === 'walker') {
     for (const e of G.units) if (e.side !== u.side && active(e) && !e.seenWalker && cls(e) !== 'walker' && dist(e.c, e.r, u.c, u.r) <= 2) {
@@ -1239,7 +1246,7 @@ function resolveFire(G, a, d, reaction, mul) {
   const ev = [];
   const p = preview(G, a, d, 'fire');
   const dmg = p.dmg * (0.75 + G.rng() * 0.5) * (mul || 1);
-  if (!reaction) { a.attacked = true; spend(a, 1); a.face = faceIndex(angleTo(a.c, a.r, d.c, d.r)); if (TYPES[a.type].broadside) a.bsT = (a.bsT || []).concat(d.id); }
+  if (!reaction) { a.attacked = true; spend(a, 1); a.face = faceToward(a.face, a.c, a.r, d.c, d.r); if (TYPES[a.type].broadside) a.bsT = (a.bsT || []).concat(d.id); }
   if (TYPES[a.type].hidden) a.revealed = 1;
   const flame = !!TYPES[a.type].flame;
   ev.push({ t: 'fire', a: a.id, d: d.id, kind: fireKind(a), reaction: !!reaction, face: a.face });
@@ -1272,7 +1279,7 @@ function melee(G, a, d) {
   const ev = [];
   const p = preview(G, a, d, 'melee');
   a.attacked = true; a.ap = 0; a.moved = true;
-  a.face = faceIndex(angleTo(a.c, a.r, d.c, d.r));
+  a.face = faceToward(a.face, a.c, a.r, d.c, d.r);
   ev.push({ t: 'melee', a: a.id, d: d.id, face: a.face });
   if (TYPES[a.type].blastLance && !a.lanceUsed) { a.lanceUsed = true; ev.push({ t: 'lanceblast', a: a.id, c: d.c, r: d.r }); }   // Sprenglanze (preview hat ×1,5 schon eingerechnet)
   const dmg = p.dmg * (0.75 + G.rng() * 0.5);
@@ -1344,7 +1351,7 @@ function shell(G, a, c, r, mode) {
   const ev = [];
   a.attacked = true; spend(a, TYPES[a.type].mobile ? 1 : 2);
   if (mode === 'barrage') a.cdP = P.BARRAGE_CD;
-  a.face = faceIndex(angleTo(a.c, a.r, c, r));
+  a.face = faceToward(a.face, a.c, a.r, c, r);
   const direct = isDirect(G, a, c, r);
   let tc = c, tr = r, sc = false;
   const gd = !direct && guided(G, a.side, c, r), roll = direct ? 1 : G.rng();
@@ -1390,7 +1397,7 @@ function startTurn(G) {
     G.reinfDone = true;
     const ids = [];
     const RO = rowsOut();
-    const list = REINF.map((x, i) => Array.isArray(x) ? x : [x, COLS - 1 - (i >= ROWS ? 1 : 0), RO[i % ROWS], i === 1 ? 'Sturmführer Kael' : null]);
+    const list = REINF.map((x, i) => Array.isArray(x) ? x : [x, COLS - 1 - (i >= ROWS ? 1 : 0), RO[i % ROWS], null]);
     for (const [type, c, r, off] of list) {
       let rr = r, tries = 0;
       while (unitAt(G, c, rr) && tries++ < ROWS) rr = (rr + 1) % ROWS;
@@ -1495,7 +1502,7 @@ function overwatch(G, u) { if (!canOverwatch(G, u)) return []; u.ow = true; u.ap
 function canRecover(G, m, t) { return active(m) && !!TYPES[m.type].recover && m.side === G.side && m.ap >= 1 && !(m.supp > 0) && !(m.cdB > 0) && m.task !== 'ammo' && t && t.side === m.side && alive(t) && cls(t) === 'walker' && (t.stuck > 0 || t.broken > 0) && dist(m.c, m.r, t.c, t.r) === 1; }
 function recover(G, m, t) {
   if (!canRecover(G, m, t)) return [];
-  spend(m, 1); m.cdB = P.RECOVER_CD; m.task = 'fix'; m.face = faceIndex(angleTo(m.c, m.r, t.c, t.r));
+  spend(m, 1); m.cdB = P.RECOVER_CD; m.task = 'fix'; m.face = faceToward(m.face, m.c, m.r, t.c, t.r);
   t.stuck = 0; const wasBroken = t.broken > 0; t.broken = 0;
   return [{ t: 'recovered', u: t.id, by: m.id, broken: wasBroken }];
 }
@@ -1546,7 +1553,7 @@ function useAbil(G, u, c, r) {
   if (!canAbil(G, u, c, r)) return [];
   const T = TYPES[u.type], k = T.abil, A = ABILS[k], ev = [];
   spend(u, A.ap); u.cdA = A.cd; if (A.atk) u.attacked = true; if (A.all) { u.ap = 0; u.moved = true; }
-  u.face = c === u.c && r === u.r ? u.face : faceIndex(angleTo(u.c, u.r, c, r));
+  u.face = faceToward(u.face, u.c, u.r, c, r);
   const area = [[c, r], ...neighbors(c, r)].filter(([a, b]) => inMap(a, b));
   if (k === 'smoke') { for (const [a, b] of area) if (!smokeAt(G, a, b)) G.smoke.push({ c: a, r: b, side: u.side }); ev.push({ t: 'smoke', u: u.id, c, r, cells: area }); }
   else if (k === 'tunnel') { G.tunnels.push({ c, r, side: u.side, t: 2, by: u.id }); ev.push({ t: 'tunnel', u: u.id, c, r }); }
@@ -1628,6 +1635,7 @@ function counterStrike(G, mover, ev) {
   ct.cready = false;
   ev.push({ t: 'counterstrike', u: ct.id, d: mover.id });
   if (spot[0] !== ct.c || spot[1] !== ct.r) { const from = [ct.c, ct.r]; ct.c = spot[0]; ct.r = spot[1]; ev.push({ t: 'advance', u: ct.id, path: [from, spot] }); }
+  ct.face = faceToward(ct.face, ct.c, ct.r, mover.c, mover.r);
   const keep = [ct.ap, ct.attacked, ct.moved]; ct.ap = 1; ct.attacked = false;
   ev.push(...melee(G, ct, mover));
   ct.ap = keep[0]; ct.attacked = true; ct.moved = keep[2];
@@ -1687,7 +1695,7 @@ function canHeal(G, m, t) {
 }
 function heal(G, m, t) {
   if (!canHeal(G, m, t)) return [];
-  m.attacked = true; spend(m, 1); m.cdH = P.HEAL_CD; if (TYPES[m.type].repair) m.task = 'fix'; m.face = faceIndex(angleTo(m.c, m.r, t.c, t.r));
+  m.attacked = true; spend(m, 1); m.cdH = P.HEAL_CD; if (TYPES[m.type].repair) m.task = 'fix'; m.face = faceToward(m.face, m.c, m.r, t.c, t.r);
   t.str = Math.min(10, t.str + P.HEAL); t.mor = Math.min(TYPES[t.type].mor, t.mor + P.HEAL_MOR);
   const cured = t.poison > 0; t.poison = 0;   // Sanitäter heilen auch die Vergiftung
   return [{ t: 'heal', u: t.id, by: m.id, str: t.str, morv: t.mor, cured }];

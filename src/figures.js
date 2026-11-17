@@ -292,6 +292,7 @@ function sprite(kind, side, flip, h) {
     rg.globalCompositeOperation = 'destination-out'; rg.drawImage(fig, rr, rr);
     g2.save(); g2.globalAlpha = 0.6; g2.drawImage(rim, 0, 0); g2.restore();
     s = { cv: c2, ox: pad + (mirror ? W * (1 - art.ax) : W * art.ax), oy: pad + H * art.ay, painted: true, rule: !!art.sh };
+    s.art = ARTS[kind + '_' + sk] ? kind + '_' + sk : kind + '_' + side; s.at = (u, v) => [pad + (mirror ? W * (1 - u) : W * u), pad + H * v];   // Punkt im Bild (Anteile) → Leinwand, z. B. Laufmündung
     s.top = s.oy - pad - bb[1] * H; s.cw = (bb[2] - bb[0]) * W;   // Inhalt: Höhe über den Füßen, Breite
     cache.set(k, s);
     return s;

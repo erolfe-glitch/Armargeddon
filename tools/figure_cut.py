@@ -99,6 +99,9 @@ SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_saegeschreiter', 'aschenwach
 
 
 # Leuchtende Helmlampen, die im Bild rosa geraten sind (Magenta-Schein): in warmes Gelb umfärben
+# Lange Waffe ragt unter die Nachbarpose (Spieltest 2026-11-17: Lauf des liegenden Scharfschützen fehlte im Spiel): unterhalb der
+# Höhe (Anteil der Bildhöhe) gehört der Streifen der Pose rechts daneben noch zur Pose links. Schlüssel: ganzer Bogenname.
+UNTEN_LINKS = {'konkordat_scharfschuetze': 0.7695}
 LAMPE = {'konkordat_mineur'}
 LAMPE_FARBE = np.array([255, 208, 112.])
 
@@ -306,6 +309,10 @@ def cut(name, out=OUT):
             m = np.ones((H, W), bool)
             if j > 0: m &= cols >= seams[j - 1][:, None]
             if j < len(seams): m &= cols < seams[j][:, None]
+            if name in UNTEN_LINKS:   # Waffe unter der rechten Nachbarpose: dort unten zur linken Pose
+                yb = int(H * UNTEN_LINKS[name]); rows = np.arange(H)[:, None] >= yb
+                if j == 0 and len(seams) > 1: m |= rows & (cols >= seams[0][:, None]) & (cols < seams[1][:, None])
+                if j == 1: m &= ~rows
             t = k.copy(); t[~m, 3] = 0; poses.append(keep_parts(t, True, 0.12))   # Krümel der Nachbarpose weg
         s = H_OUT * wert(SH_REIHE, name, kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)
         for j, q in enumerate(poses, 1):
