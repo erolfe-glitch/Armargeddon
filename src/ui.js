@@ -843,6 +843,9 @@ function drawMarks(u, d, x, y, own, done, acc) {
     for (let i = 0; i < bm; i++) { g.beginPath(); g.arc(cx, py, rb, 0, 7); g.fillStyle = i < bp ? '#E8DDB8' : '#2A221C'; g.fill(); g.lineWidth = Math.max(1, rb * 0.45); g.strokeStyle = '#120D0B'; g.stroke(); cx += rb * 2.3; }
     const coin = (rr, voll) => { const im = UPI[voll ? 'muenze' : 'muenzeLeer']; cx += rr; if (im) g.drawImage(im, cx - rr, py - rr, rr * 2, rr * 2); else { g.beginPath(); g.arc(cx, py, rr, 0, 7); g.fillStyle = voll ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, rr * 0.3); g.strokeStyle = '#120D0B'; g.stroke(); } cx += rr + r * 0.3; };
     cx += r * 0.4 - rb; coin(r, ap >= 1); if (zw) coin(r * 0.7, !u.zw && !aus);
+    if (!aus && ap < 1 && bp > 0 && UPI.s_stiefel && G.side === u.side) {   // Aktion verbraucht, aber noch BP: Stiefel mit Zahl (Spieltest Runde 3, Punkt 32)
+      const bx2 = x + w / 2 + r * 1.6, pz = 0.75 + 0.25 * Math.sin(now / 300); g.globalAlpha = pz; drawSym(g, UPI.s_stiefel, bx2, py, r * 1.25, '#E8DDB8'); g.globalAlpha = 1;
+      g.font = `400 ${Math.round(r * 1.7)}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`; g.textAlign = 'left'; g.textBaseline = 'middle'; g.lineWidth = Math.max(2, r * 0.45); g.strokeStyle = '#120D0B'; g.strokeText(String(bp), bx2 + r * 1.35, py); g.fillStyle = '#E8DDB8'; g.fillText(String(bp), bx2 + r * 1.35, py); }
     MARKS.push({ x0: x - w / 2 - 2, y0: py - r - 1, x1: x + w / 2 + 2, y1: py + r + 2, u, kind: 'ap' });
   }
   // Deckungsschild rechts (nur wenn die Einheit auf ihrem Feld steht, nicht während einer Bewegung)
@@ -1305,6 +1308,12 @@ function drawAir(g, s, up) {
   if (wayPt && sel && human(G.side) && !busy) { const [x, y] = center(wayPt[0], wayPt[1]); if (!up || up(x, y)) { const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
       g.save(); g.globalAlpha = pz; g.beginPath(); gEllipse(g, x, y, s * 0.42, s * 0.42); g.lineWidth = Math.max(5, s * 0.1); g.strokeStyle = '#120D0B'; g.stroke(); g.lineWidth = Math.max(2.5, s * 0.05); g.strokeStyle = '#E2B04A'; g.stroke();
       g.globalAlpha = 1; g.font = `900 ${Math.round(s * 0.3)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.07); g.strokeStyle = '#120D0B'; g.strokeText('Wegpunkt', x, y - s * 0.62 * kk); g.fillStyle = '#E2B04A'; g.fillText('Wegpunkt', x, y - s * 0.62 * kk); g.restore(); } }
+  // Sturmfelder (Spieltest Runde 3, Punkt 31): Zugfelder neben einem Gegner, von denen aus nach dem Zug noch gestürmt werden darf (höchstens halbe BP)
+  if (sel && human(G.side) && !busy && TYPES[sel.type].atk > 0 && !sel.attacked && sel.ap >= 1 && UPI.s_nahkampf) {
+    const frei = E.nahFrei({ type: sel.type, bpUsed: 99 }), halb = E.bpMax(sel) / 2;
+    for (const n of reach.values()) { if (n.march || n.retreat || (!frei && (sel.bpUsed || 0) + n.cost > halb)) continue;
+      if (!E.neighbors(n.c, n.r).some(([c, r]) => { const o = E.inMap(c, r) && E.unitAt(G, c, r); return o && o.side !== sel.side && E.alive(o); })) continue;
+      const [x, y] = center(n.c, n.r); if (up && !up(x, y)) continue; drawSym(g, UPI.s_nahkampf, x + s * 0.42, y - s * 0.22, Math.max(7, s * 0.14), '#C8402C'); } }
   // Schrittzahlen
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
@@ -2840,13 +2849,15 @@ function unitButtons(T, hints) {
     } else
     btns.push({ act: 'p-fire', sym, name, cost: 1, text: `Ziel auf der Karte anklicken (Messing, Zielsymbol). Reichweite ${T.rng} Felder.`, on: atkPref === 'fire', off: !tg.some(t => t.kind === 'fire' || t.both), why });
   }
-  if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });
+  const nahGesperrt = T.atk > 0 && !E.nahFrei(sel) && !sel.attacked && sel.ap >= 1 && !sel.supp && G.units.some(o => o.side !== sel.side && E.alive(o) && E.dist(o.c, o.r, sel.c, sel.r) === 1);
+  if (nahGesperrt) hints.push(`<i>Kein Nahkampf mehr:</i> mehr als die Hälfte der Bewegung verbraucht. Schwert am Zugfeld = von dort geht der Sturm noch.`);
+  if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', why: nahGesperrt ? `Mehr als die Hälfte der Bewegung verbraucht (${sel.bpUsed || 0} von ${E.bpMax(sel)} BP): Nahkampf nur mit höchstens ${Math.floor(E.bpMax(sel) / 2)} BP Weg. Reiter, Sturmtruppen und Kampfanzüge dürfen immer.` : atkWhy, cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both) });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
     btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: T.can, on: abilMode && feldArt === 'abil', off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
     if (abilMode && feldArt === 'abil') hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', bp: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Aktion schon verbraucht.' });
-  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', bp: 1, costTxt: '1 Bewegungspunkt, nimmt alle restlichen', text: 'MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer; aufgebaut kann es nicht ziehen. Schießen geht danach mit der Aktion.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Aktion schon verbraucht.' });
+  if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', bp: 1, costTxt: '1 Bewegungspunkt, nimmt alle restlichen', text: `MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer. Verbraucht alle restlichen Bewegungspunkte${sel.bp > 1 ? ` (noch ${sel.bp})` : ''} – danach zieht das MG in dieser Runde nicht mehr. Schießen geht danach mit der Aktion.`, pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Aktion schon verbraucht.' });
   if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
     why: sel.sperr > 0 ? 'Sperrfeuer steht.' : !sel.setup ? 'Erst aufbauen.' : sel.mvd ? 'Hat sich in dieser Runde bewegt.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : 'Aktion schon verbraucht.' });
   if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'auge', name: 'Feuerbereitschaft', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : 'Braucht die Aktion; nur ohne Bewegung in dieser Runde.' });
@@ -3192,7 +3203,7 @@ function nextUnit(back) {
   if (!G || busy || G.over || !human(G.side) || placing) return;
   playSound('klick', 0.5, null);   // deutlicher Klick, auch per Taste (Spieltest Runde 2)
   refreshSpent();
-  const list = G.units.filter(u => u.side === G.side && E.active(u) && !spent.has(u.id)).sort((a, b) => a.c - b.c || a.r - b.r);
+  const list = G.units.filter(u => u.side === G.side && E.active(u) && !spent.has(u.id)).sort((a, b) => ((b.ap >= 1) - (a.ap >= 1)) || a.c - b.c || a.r - b.r);   // erst Einheiten mit Aktion, zuletzt die mit nur noch BP
   if (!list.length) { const be = $('btnEnd'); be.classList.remove('flash'); void be.offsetWidth; be.classList.add('flash'); setTimeout(() => be.classList.remove('flash'), 1900); return; }
   const i = sel ? list.findIndex(u => u.id === sel.id) : -1;
   const u = list[((i < 0 ? (back ? 0 : -1) : i) + (back ? -1 : 1) + list.length) % list.length];
