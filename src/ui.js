@@ -1188,7 +1188,9 @@ const FIGMAP = {
   ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
+  turm: ['turmschreiter'], orden: ['ordensschreiter'], kreuz: ['kreuzschreiter'], knecht: ['eisenknecht'], saeger: ['saegeschreiter'], klaue: ['klauenschreiter'],   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
 };
+const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter'];
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
 const FIGI = {};
 function figImg(key) {
@@ -1203,7 +1205,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).

@@ -39,8 +39,9 @@ def key_any(a):
     """Hintergrund in anderer Farbe (z. B. Pink 224,0,122): Farbe vom Bildrand nehmen, nach Farbabstand ausblenden
     und die Kantenfarben entmischen (Anteil des Hintergrunds herausrechnen), damit kein farbiger Saum bleibt."""
     rgb = a[..., :3].astype(np.float64)
-    border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
-    bg = np.median(border, axis=0)
+    border = np.concatenate([rgb[3], rgb[-4], rgb[:, 3], rgb[:, -4]])   # 3 px nach innen: manche Bögen haben am Rand eine helle Schnittkante
+    bunt = border[border.max(1) - border.min(1) > 100]   # nur kräftig farbige Randpixel (Magenta/Pink), keine weißen Streifen
+    bg = np.median(bunt if len(bunt) > len(border) * 0.3 else border, axis=0)
     d = np.sqrt(((rgb - bg) ** 2).sum(axis=2))
     alpha = np.clip((d - 35) / 75, 0, 1)
     al = np.maximum(alpha, 1e-3)[..., None]
@@ -93,6 +94,10 @@ SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4,
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
 SH_REIHE = {'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+# Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
+SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
+
+
 # Leuchtende Helmlampen, die im Bild rosa geraten sind (Magenta-Schein): in warmes Gelb umfärben
 LAMPE = {'konkordat_mineur'}
 LAMPE_FARBE = np.array([255, 208, 112.])
@@ -121,7 +126,8 @@ OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
 SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5,
-             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15, 'feldkanone': 1.05}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
+             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15, 'feldkanone': 1.05,
+             'turmschreiter': 1.9, 'ordensschreiter': 1.9, 'kreuzschreiter': 1.9, 'eisenknecht': 1.9, 'saegeschreiter': 1.9, 'klauenschreiter': 1.9}   # Schreiter (2026-11-17): knapp 2 SH, größer als Kampfanzüge   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
 # Aschenwacht: Schwarz-Weiß-Rot (echte Reichsfarben) → eigene Farben Aschgrau / Schwarz / Knochenweiß. Allgemeine Regel für ALLE
 # aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
 # dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
@@ -273,6 +279,7 @@ def seam(op, x0, w):
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
     a = abzeichen_uebermalen(a, name)
+    if name in SPIEGELN: a = np.ascontiguousarray(a[:, ::-1])
     H, W = a.shape[:2]
     k = keyed(a)
     if name.startswith('aschenwacht_'):   # allgemeine Regel: Reichsfarben → Aschenwacht-Farben, danach neu freistellen

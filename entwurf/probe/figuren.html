@@ -12,7 +12,7 @@
   .karte { background: radial-gradient(ellipse at 50% 85%, #5b4a35 0%, #3d3226 55%, var(--tafel) 100%); border: 2px solid #120d0b; border-top: 4px solid var(--seite); padding: 8px 10px 6px; border-radius: 3px; }
   .karte.A { --seite: var(--A); } .karte.D { --seite: var(--D); }
   .karte b { display: block; font-size: 15px; } .karte small { color: var(--leise); display: block; margin-bottom: 4px; }
-  .posen { display: flex; align-items: flex-end; gap: 6px; height: 200px; }
+  .posen { display: flex; align-items: flex-end; gap: 6px; min-height: 200px; }   /* hohe Modelle (Schreiter 1,9 SH) machen die Karte höher */
   .posen img { height: calc(var(--h) * 120px); filter: drop-shadow(0 4px 3px rgba(0,0,0,.55)); }
 </style>
 </head>
@@ -36,6 +36,8 @@ const NEU = [
   ['aschenwacht_bohrkoloss', 'D', 'Bohrkoloss (Kampfmaschine)'], ['aschenwacht_panzer', 'D', 'Sturmpanzer'], ['aschenwacht_hauptmann', 'D', 'Hauptmann mit Stab'], ['aschenwacht_reiter', 'D', 'Sprenglanzen-Reiter'],
   ['konkordat_feldkanone', 'A', 'Feldkanone (leichte Artillerie)'], ['konkordat_fernsprech', 'A', 'Fernsprechtrupp'], ['konkordat_versorgung', 'A', 'Versorgungstrupp (Konkordat)'], ['aschenwacht_versorgung', 'D', 'Versorgungstrupp (Aschenwacht)'],
   ['aschenwacht_gasschutz', 'D', 'Gasschutz-Trupp'], ['konkordat_mineur', 'A', 'Mineure (Helmlampen gelb)'], ['aschenwacht_sturm', 'D', 'Sturmbrecher (neu, 1,1 SH)'], ['aschenwacht_eingreif', 'D', 'Eingreiftrupp'],
+  ['konkordat_turmschreiter', 'A', 'Turmschreiter'], ['konkordat_ordensschreiter', 'A', 'Ordensschreiter'], ['konkordat_kreuzschreiter', 'A', 'Kreuzschreiter'],
+  ['aschenwacht_eisenknecht', 'D', 'Eisenknecht'], ['aschenwacht_saegeschreiter', 'D', 'Sägeschreiter'], ['aschenwacht_klauenschreiter', 'D', 'Klauenschreiter'],
 ];
 const box = document.getElementById('liste');
 for (const [k, s, name] of NEU) {

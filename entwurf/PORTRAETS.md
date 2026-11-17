@@ -50,14 +50,14 @@ Stand 2026-11-17. Porträts im Einheiten-Panel, Info-Fenster, Nachschub und in d
 | Werkstatt-Trupp (Versorgung) | Konkordat | konkordat_versorgung_1 |  |
 | Gasschutz-Trupp | Aschenwacht | aschenwacht_gasschutz_1 |  |
 | Munitionsträger (Versorgung) | Aschenwacht | aschenwacht_versorgung_1 |  |
+| Turmschreiter | Konkordat | konkordat_turmschreiter | ja |
+| Ordensschreiter | Konkordat | konkordat_ordensschreiter | ja |
+| Kreuzschreiter | Konkordat | konkordat_kreuzschreiter | ja |
+| Eisenknecht | Aschenwacht | aschenwacht_eisenknecht | ja |
+| Sägeschreiter | Aschenwacht | aschenwacht_saegeschreiter | ja |
+| Klauenschreiter | Aschenwacht | aschenwacht_klauenschreiter | ja |
 
 ## Noch ohne Bild im neuen Stil (zeigen das alte Bild)
 
 | Einheit | Seite | Kampfmaschine |
 |---|---|---|
-| Sägeschreiter | Aschenwacht | ja |
-| Klauenschreiter | Aschenwacht | ja |
-| Turmschreiter | Konkordat | ja |
-| Ordensschreiter | Konkordat | ja |
-| Kreuzschreiter | Konkordat | ja |
-| Eisenknecht | Aschenwacht | ja |
