@@ -76,3 +76,13 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 - **Titanen/Railgun der Mechs:** `509015`, `510084` (Notizen des Nutzers).
 - **Namensnennung im Spiel:** CC-BY-Töne (siehe `CREDITS.md`) in einem Credits-Fenster nennen; CC-BY-NC-Töne vor einem Verkauf ersetzen.
 - **Dämonen-Stimmen** (2026-11-17, noch nicht eingebaut): `four_voices_whispering`, `schizophrenic-voices`, `sisters-voices`, `the-prowler` in `sound-quelle/`.
+
+## Spielmodi, KI und Armee-Grenzen (Enrico, 2026-11-17)
+- **Erst Skirmish, später Kampagne:** Schlachten zuerst flexibel als Einzelgefechte (Skirmish) auslegen. Eine Kampagne kommt später.
+- **KI stärker individualisieren:** weg von einem einheitlichen System – die KI soll je nach Schlacht/Gegner unterschiedlich spielen (Charakter, Vorlieben, Armeezusammenstellung). Wie genau, klären wir noch.
+- **Einheitenbegrenzung je Typ (später):** nicht nur eine Gesamtgrenze, sondern bestimmte Typen gezielt begrenzen (z. B. höchstens 1 General, wenige Kolosse, wenige MG). Ändert das Balancing stark – deshalb erst nach der Einheiten-Durchsicht.
+  - Jetzt im Code: je Typ höchstens 9 (ARMY_CAP), höchstens 4 Kolosse/Kampfmaschinen, General höchstens 1.
+
+## Artillerie später (2026-11-17)
+- **Leichte Artillerie für die Aschenwacht** (Gegenstück zur Feldkanone: direkter Schuss, beweglich, gut gegen Kolosse).
+- **Schwere Artillerie für beide Seiten** (große Reichweite, langsam, starke Einschläge). Danach entscheiden, ob das Grabengeschütz seinen direkten Schuss behält.

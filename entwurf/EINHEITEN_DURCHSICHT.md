@@ -18,7 +18,7 @@ Stand: 56 Einheiten (28 je Seite). Bild ✓ = Figurenbogen im neuen Stil vorhand
 | Scharfschützen | Scharfschütze ✓ | Pirschjäger ✓ |
 | Maschinengewehr | Mahlwerk-Trupp ✓ | Sensenwerk-Trupp ✓ |
 | Artillerie | Donnerrohr-Batterie ✓, Feldkanone ?, Grabenmörser ✓ | Grabengeschütz ✓, Minenwerfer ✓ |
-| Werfer | Flammentrupp ✓, Granatwerfer –, Rauchwerfer ✓ | Brandwerfer ✓, Panzerbüchsen-Trupp ✓ |
+| Werfer | Flammentrupp ✓, Rauchwerfer ✓ | Brandwerfer ✓, Panzerbüchsen-Trupp ✓ |
 | Pioniere / Technik | Graben-Pioniere ✓, Mineure –, Sprengtrupp –, Werkstatt-Trupp – | Drahtpioniere ✓, Minenleger –, Gasschutz-Trupp –, Munitionsträger – |
 | Sanitäter | Feldscher ✓ | Aschenpfleger ✓ |
 | Reiter | Lanzenreiter ✓ | (Bild Aschenwacht-Reiter vorhanden, keine Einheit) |
@@ -73,3 +73,17 @@ Jetzt im Code: Draht macht keinen Schaden (beendet nur die Bewegung, Abwehr ×0,
 - **Schilde vor** (Schildwall, Schwere Grabenwacht, 1 Punkt): eigene Nachbarn bis zum nächsten eigenen Zug Beschuss ×0,75; Nachbarfelder stahlgrau umrandet.
 - **Sturmlauf** (Stahlgänger, Panzerknechte, alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, Sperrfeuer/Feuerbereitschaft unterwegs wie sonst, am Ende sofort Nahkampf gegen den schwächsten Gegner daneben.
 - Neuer Ton beim Betreten von Stacheldraht: `latch-metallic` (Platz `drahtlatch`).
+
+## Entscheidungen – Gruppe 4: Artillerie und Werfer (2026-11-17)
+- **Gestrichen:** Feldkanone, Granatwerfer-Trupp.
+- **Donnerrohr-Batterie:** bekommt den direkten Schuss bis 3 Felder (×2,5 gegen Kolosse/Kampfmaschinen) wie das Grabengeschütz. Beide Seiten haben damit je ein schweres Geschütz und einen Werfer.
+- **Grabenmörser (Konkordat):** leicht, darf in derselben Runde ziehen und feuern (wie bisher).
+- **Minenwerfer (Aschenwacht):** schwere Mine ×1,5 Schaden, zerstört Draht und Barrikaden im Zielfeld, darf aber nicht in derselben Runde ziehen und feuern.
+- **Flammentrupp / Brandwerfer:** Zielfeld brennt bis zum nächsten eigenen Zug: Feuerschaden für alle, die dort stehen oder hineinziehen; Draht im Feld verbrennt.
+- **Unverändert:** Rauchwerfer-Trupp, Panzerbüchsen-Trupp, Grabengeschütz.
+
+## Gruppe 4: Artillerie und Werfer (2026-11-17, umgesetzt)
+- **Gestrichen:** Granatwerfer-Trupp (keine Karte nutzte ihn fest).
+- **Stufen im Tooltip:** Grabenmörser und Minenwerfer = Mörser, Feldkanone = leichte Artillerie (unverändert), Donnerrohr = mittlere Artillerie ohne direkten Schuss, Grabengeschütz = mittlere Artillerie mit direktem Schuss (vorerst).
+- **Minenwerfer:** Sprenggranaten ×1,5, zerstört Draht und Barrikaden im Zielfeld, ziehen oder feuern (nicht beides).
+- **Flammentrupp, Brandwerfer:** Zielfeld brennt bis zum nächsten eigenen Zug; wer dort steht (zu Beginn seines Zugs) oder hineinzieht, nimmt Feuerschaden (wie Draht, Kolosse halb); Draht verbrennt. Glut und kleine Flammen, leise Feuer-Schleife. KI meidet brennende Felder.

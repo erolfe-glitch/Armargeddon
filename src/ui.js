@@ -494,9 +494,9 @@ function renderTerrain() {
 function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
-const VIS = { clouds: [], smoke: [], lit: [], marks: [], ctrl: {} };
+const VIS = { clouds: [], smoke: [], lit: [], marks: [], fires: [], ctrl: {} };
 const vsOf = u => ({ dug: !!u.dug, shields: !!u.shields, fireFree: !!u.fireFree, hold: !!(G && G.hold && G.hold[u.side]), planted: !!u.planted, sperr: u.sperr || 0, supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
-function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what || what === 'marks') VIS.marks = cp(G.marks); if (!what) { const old = VIS.ctrl || {};
+function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what || what === 'marks') VIS.marks = cp(G.marks); if (!what || what === 'fires') { VIS.fires = cp(G.fires); fireLoop(); } if (!what) { const old = VIS.ctrl || {};
     for (const o of OBJECTIVES) { const a = old[o.id], b = (G.ctrl || {})[o.id]; if (a === b || !b) continue;
       const me = human('A') && !human('D') ? 'A' : human('D') && !human('A') ? 'D' : null;   // gegen die KI: Verlust der eigenen Seite eigens hörbar
       if (me && a === me && b !== me) playSound('verloren', 0.55); else playSound('erobert', 0.55, b); }
@@ -816,6 +816,11 @@ function drawGround(g, s) {
     if (im) { const w = dc.r * 5, hh = w * im.naturalHeight / im.naturalWidth * Math.max(0.6, kAt(dc.x, dc.y)); g.globalAlpha = 0.85; g.drawImage(im, dc.x - w / 2, dc.y - hh / 2, w, hh); g.globalAlpha = 1; }
     else { g.fillStyle = dc.col; g.beginPath(); gEllipse(g, dc.x, dc.y, dc.r, dc.r); g.fill(); }
   }
+  // Brennende Felder: Glut am Boden (Flammen zeichnet drawAir aufrecht)
+  for (const f of VIS.fires || []) { const [x, y] = center(f.c, f.r), k = kAt(x, y), fl = 0.85 + 0.15 * Math.sin(now / 160 + f.c * 3);
+    const gr = g.createRadialGradient(x, y, 0, x, y, s * 0.8); gr.addColorStop(0, `rgba(255,120,30,${0.42 * fl})`); gr.addColorStop(0.5, `rgba(160,50,10,${0.28 * fl})`); gr.addColorStop(1, 'rgba(40,10,0,0)');
+    g.save(); g.translate(x, y); g.scale(1, k); g.translate(-x, -y); g.fillStyle = gr; g.beginPath(); g.arc(x, y, s * 0.8, 0, 7); g.fill(); g.restore();
+    g.fillStyle = 'rgba(20,12,8,0.35)'; for (let i = 0; i < 6; i++) { const a = i * 1.1 + f.r; g.beginPath(); gEllipse(g, x + Math.cos(a) * s * 0.4, y + Math.sin(a) * s * 0.3 * k, s * 0.12, s * 0.07); g.fill(); } }
   // Schilde vor: Nachbarfelder stahlgrau umrandet, solange sie stehen (und als Vorschau, wenn ein Schildträger gewählt ist)
   for (const u of G.units) { const dd = DU.get(u.id); const show = (dd && dd.vs && dd.vs.shields && E.active(u)) || (sel === u && TYPES[u.type].shieldWall && E.canShields(G, u)); if (!show) continue;
     for (const [c, r] of E.neighbors(u.c, u.r)) { if (c < 0 || r < 0 || c >= COLS || r >= ROWS) continue; hexPath(g, c, r, 0.9); g.fillStyle = dd && dd.vs.shields ? 'rgba(170,180,190,0.16)' : 'rgba(170,180,190,0.08)'; g.fill(); g.lineWidth = Math.max(1.5, s * 0.03); g.strokeStyle = 'rgba(190,200,210,0.6)'; g.stroke(); } }
@@ -996,6 +1001,10 @@ function drawAir(g, s, up) {
   const mySide = human(G.side) ? G.side : ['A', 'D'].find(human);
   g.font = `900 ${Math.round(s * 0.36)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
   for (const q of G.tunnels || []) if (q.side === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.lineWidth = Math.max(2, s * 0.07); g.strokeStyle = O; g.strokeText(`⛏${q.t}`, x, y + s * 0.15); g.fillStyle = '#ffb86a'; g.fillText(`⛏${q.t}`, x, y + s * 0.15); }
+  // Brennende Felder: kleine flackernde Flammen
+  for (const f of VIS.fires || []) { const [cx, cy] = center(f.c, f.r); for (let i = 0; i < 8; i++) { const a = i * 0.785 + f.c * 0.7, rr = 0.5 + 0.12 * ((i * 37) % 3), x = cx + Math.cos(a) * s * rr, y = cy + Math.sin(a) * s * rr * 0.75 * kAt(cx, cy); if (up && !up(x, y)) continue;   // am Feldrand, die Truppe in der Mitte bleibt frei
+    const t = now / 110 + i * 2.1, h = s * (0.14 + 0.05 * Math.sin(t) + 0.03 * (i % 2)), w = s * 0.05;
+    for (const [col, kk] of [['rgba(170,50,10,0.55)', 1], ['rgba(240,130,35,0.65)', 0.66], ['rgba(255,214,110,0.7)', 0.34]]) { g.beginPath(); g.moveTo(x - w * kk, y); g.quadraticCurveTo(x - w * kk * 1.2, y - h * kk * 0.5, x + Math.sin(t) * w * 0.4, y - h * kk); g.quadraticCurveTo(x + w * kk * 1.2, y - h * kk * 0.5, x + w * kk, y); g.closePath(); g.fillStyle = col; g.fill(); } } }
   // Markierte Ziele der eigenen Seite: Messing-Zielkreuz am Boden (gilt bis zum nächsten eigenen Zug)
   for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
     g.save(); g.globalAlpha = pz; g.strokeStyle = O; g.lineWidth = Math.max(4, s * 0.1); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
@@ -1167,7 +1176,7 @@ const ANZUG = { slots: [[-0.2, -0.06], [0.2, 0.2]] };   // Kampfanzug-Trupps: br
 const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäter eng beieinander: Lauf- und Trage-Posen sind breit und ragten sonst aus dem Feld
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
-  brand: ['flammen', 1], granate: ['sturm', 1], raeumer: ['sturm', 1],
+  brand: ['flammen', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
   grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['sturm', 1],
@@ -1532,12 +1541,19 @@ const SND = {};
 for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
 // Hintergrundkulisse als leise Schleife
 let ambient = null;
-let wetter = null, musik = null;
+let wetter = null, musik = null, feuerTon = null;
+// Brennende Felder: leise Feuer-Schleife, solange irgendwo etwas brennt
+function fireLoop() {
+  const on = soundOn && G && !G.over && (VIS.fires || []).length > 0;
+  if (on && !feuerTon) { const k = sndPick('feuer'); if (!k) return; feuerTon = SND[k].cloneNode(); feuerTon.loop = true; feuerTon.volume = 0.12; }
+  if (feuerTon) try { if (on) { const p = feuerTon.play(); if (p && p.catch) p.catch(() => {}); } else feuerTon.pause(); } catch (e) {}
+}
 function setAmbient(on) {
   if (!ambient) { const k = sndPick('ambient'); if (!k) return; ambient = SND[k]; ambient.loop = true; ambient.volume = 0.22; }
   if (!wetter) { const k = sndPick('wetter'); if (k) { wetter = SND[k]; wetter.loop = true; wetter.volume = 0.12; } }
   for (const a of [ambient, wetter]) if (a) try { if (on) { const p = a.play(); if (p && p.catch) p.catch(() => {}); } else a.pause(); } catch (e) {}
   if (on) setMusik(null);
+  fireLoop();
 }
 // Musik: „musikTitel“ im Startmenü (Schleife), „musikNiederlage“ nach einer verlorenen Schlacht; null = aus
 function setMusik(name) {
@@ -1713,7 +1729,8 @@ async function playEvent(e) {
         if (TYPES[u.type].cls === 'cav' || u.limbered) playSound('neigh', 0.5);
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45);
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
-        if (blood && e.wire) {   // Stacheldraht: wenig, dunkles Rotbraun, keine Tropfspuren; wird zu einem kleinen Fleck, der nach einigen Runden vergeht
+        if (e.burn) burst(x, y, 12, ['#ff9a2a', '#ffcf5a', '#c8461a', '#3a2a1a'], { up: 0.24, spread: 0.18 });   // Feuer: Funken und Ruß statt Blut
+        else if (blood && e.wire) {   // Stacheldraht: wenig, dunkles Rotbraun, keine Tropfspuren; wird zu einem kleinen Fleck, der nach einigen Runden vergeht
           burst(x, y + s * 0.15, 7, ['#4a1810', '#3a120c', '#5c2216'], { up: 0.1, spread: 0.12 });
           decals.push({ wire: true, x: d.x + (Math.random() - 0.5) * s * 0.4, y: d.y + s * 0.12 * kAt(d.x, d.y), r: s * 0.09, born: now, turn: G.turn });
         } else if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 6 + nb * 3, ['#9a1612', '#74100c', '#b3221a'], { up: 0.16, spread: 0.2 });
@@ -1780,6 +1797,9 @@ async function playEvent(e) {
       for (const id of e.ids || []) { const dd = DU.get(id); if (!dd) continue; if (e.kind === 'hold') dd.vs.hold = true; rings.push({ x: dd.x, y: dd.y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); }
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
     case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound(e.planted ? 'bauen' : 'clank', 0.45); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
+    case 'ignite': visSync('fires'); playSound('flame', 0.4); break;
+    case 'fireout': visSync('fires'); break;
+    case 'burn': floater(...headPos(e.u), 'brennt!', '#ffb04a'); await wait(120); break;
     case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
     case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('bauen', 0.35); floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
     case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
@@ -2743,6 +2763,7 @@ function noteEvent(e, u) {
     case 'mine': logAdd('Mine detoniert', null, e.c, e.r, true); return headline('Mine!', null);
     case 'wirehurt': return logAdd(`${N(u)}: im Stacheldraht verletzt`, u && u.side, e.c, e.r);
     case 'gas': if (e.late) return logAdd(`${N(u)}: Vergiftung`, u && u.side, ...at(u)); return;
+    case 'burn': return logAdd(`${N(u)}: im Feuer`, u && u.side, e.c, e.r);
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
     case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
       if (e.reaction) { logAdd(`Sperrfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Sperrfeuer auf ${N(d)}!`, a.side); }
