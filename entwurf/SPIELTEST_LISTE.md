@@ -73,3 +73,40 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 27. Gas: Abklingzeit 3 Runden.
 28. Artillerie-Sperrfeuer: höchstens 2× pro Schlacht; weniger Schaden als ein Einzelschuss, aber spürbar.
 29. Verstärkung an eroberten Flaggen: nur auf der eigenen Seite der Flagge (zwischen eigenem Rand und Flagge), nie dahinter Richtung Gegner.
+
+# Spieltest Runde 3 (Claude, ganze Partie Grauwall, 2026-11-17)
+
+Eine Partie gegen die KI, stumm, Tempo 2×: Konkordat selbst aufgestellt (Landkoloss nach vorn in die Startzone) und mit allem Neuen geführt, Aschenwacht = neue KI. Ergebnis: **Aschenwacht siegt nach Punkten 59 : 39 in Runde 13.** Bilder je Runde: entwurf/probe/spieltest3/.
+Verlauf: Konkordat hält ab Runde 1 den Vorposten, ab Runde 3 den Nordgraben; die Aschenwacht hält Südgraben, Schanze und Veskar von Anfang an. Südgraben wechselt in Runde 8 zum Konkordat und geht in Runde 10 wieder verloren. Ab Runde 7 Gegenstoß der Aschenwacht, Landkoloss und Kohorten werden von Sturmbrechern zerrieben.
+
+## Frage 1 – Fühlt sich Ziehen und Handeln mit getrennten Punkten gut an?
+30. Grundsätzlich ja: Kohorte 3 BP → nach 1 Feld noch 2 BP, die Aktion bleibt, danach noch 9 Felder erreichbar; Rest-BP am Zielfeld und „3/3 BP“ im Panel sind gut lesbar. Landkoloss drehen kostet 1 BP, das Schussfeld zeigt sofort, was danach geht.
+31. **Nahkampf-Regel ist unsichtbar:** Wer mehr als die Hälfte der BP gezogen hat, bekommt den Nahkampf-Knopf grau mit „Kein Ziel in Reichweite“, obwohl ein Gegner danebensteht. Besser: Grund nennen („mehr als die Hälfte der Bewegung verbraucht – Reiter, Sturmtruppen, Kampfanzüge dürfen“) und in der Pfadvorschau Felder markieren, von denen aus noch gestürmt werden kann (kleines Schwert).
+32. Einheiten mit verbrauchter Aktion, aber Rest-BP bleiben hell und gewählt. Gut zum Nachziehen in Deckung, aber man vergisst sie leicht – „Nächste Einheit“ sollte sie zuletzt anbieten oder ein kleiner Hinweis „noch 2 BP“ an der Figur.
+33. MG: Aufbauen nimmt alle restlichen BP – logisch, aber im Knopf-Tooltip nur als Kosten sichtbar; ein Satz „danach nicht mehr ziehen“ hilft.
+
+## Frage 2 – Spielt die KI glaubwürdig?
+34. Glaubwürdig: Die Aschenwacht hält ihre drei Zielfelder fest (Runde 3–7 ziehen nur 1–3 von 18 Einheiten), weil sie nach Punkten vorn liegt; sie kauft aktiv nach (Sturmbrecher, Grenadiere, Minenwerfer, Panzerbüchsen) und setzt Sturmbrecher gezielt gegen den Landkoloss ein. Gegenstoß ab Runde 7 wirkt wie ein Plan.
+35. **Komisch:** Der General gibt in Runde 3, 4 und 5 „Sturmbefehl“, ohne dass danach ein Nahkampf folgt – verschenkt drei der höchstens drei Befehle.
+36. **Komisch (eigene Seite, gleiche KI-Planung):** Der Hauptmann läuft von Runde 1 an vorn mit und wird beschossen; Hauptmann und Kohorten ziehen mehrfach in brennende Felder („im Feuer“, −8 bis −11 Stärke). Feuer und Anführer-Schutz werden in der Zugbewertung zu schwach gewichtet.
+37. Das Konkordat stürmt die Schanze in dieser Partie nie; der Angriff verläuft sich am Südgraben. Passt zur Sim (Schanze 17 %), wäre für den Grauwall-Feinschliff ein Thema (z. B. Feuerunterstützung vor dem Sturm bündeln).
+38. Kriegstagebuch: Reaktionsfeuer aus Feuerbereitschaft heißt dort „Sperrfeuer: Hauptmann mit Stab auf …“ – verwechselbar mit dem MG-Sperrfeuer; besser „Feuerbereitschaft: …“.
+
+## Anzeige
+39. Das Rundenschild verdeckt für 2 s die Schlagzeile darunter (z. B. „Schützenkohorte flieht“) und die Hinweiszeile. Schild etwas tiefer setzen oder die Schlagzeile erst danach zeigen.
+40. Nach der Aufstellung („Schlacht beginnen“) erscheint kein Rundenschild für Runde 1, nur der Kartenname.
+41. Aufstellung funktioniert (Landkoloss nach vorn verschoben, Startzone klar grün).
+
+## Hilfe und Regeltexte (Regeln-Fenster, Armee-Fenster) – veraltet
+42. „Weißer Balken: Stärke“ – der Balken ist grün/gelb/rot mit Strichen.
+43. MG „schießen von selbst auf Gegner, die sich im Offenen bewegen. Ziehen baut sie ab (⤓)“ – stimmt nicht mehr: Sperrfeuer muss befohlen werden (2 Schüsse), Abbauen ist ein eigener Knopf.
+44. „Marken an jeder eigenen Einheit: grüner Pfeil = kann noch ziehen, rote Raute = kann noch angreifen“ – jetzt BP-Punkte und Aktionsmünze.
+45. „Kleine Zeichen links: ▼ ⇄ ✖ G ↩ … ◉ rechts: Aufklärer lenken die Artillerie“ – jetzt Bildsymbole; passives Lenken gibt es nicht mehr, nur „Ziel markieren“.
+46. „Das Konkordat siegt mit 5 Punkten aus den Zielfeldern am Ende, bei 4 Punkten unentschieden“ – alter Modus, widerspricht dem Siegpunkt-Absatz.
+47. Kommazahlen: „Stärke +2,5, Moral +1,5“ (Feldscher) – Anzeige ist ×10 (+25, +15).
+48. Doppelt: Befehle stehen im Feldscher-Absatz und noch einmal unter „Anführer (★)“.
+49. Fehlt: Aufstellungsphase, Schusswinkel (allgemein für Fahrzeuge/Schreiter, nicht nur Landkoloss), Zweitwaffen, Draht schneiden nur Spezialisten (steht drin), Rundenschild.
+50. Armee-Fenster: „Sie wird automatisch aufgestellt.“ – jetzt stellt man selbst auf (oder „Automatisch aufstellen“).
+
+## Stimmen und Ton
+51. Im stummen Test nicht hörbar; geprüft ist nur, dass beim Anklicken jede Einheit ihre feste Stimme bekommt und fertige Einheiten nur klicken. Bitte selbst anhören.
