@@ -97,7 +97,7 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **stand** | Sammeln (Konkordat) | Konkordat | vorhanden (stand) |
 |  |  | Konkordat | 458070__theuncertainman__form-ranks-british-warrior.wav (1.01 s ab 0.47 s) |
 | **comeon** | Befehl überbringen (Meldegänger) | beide | vorhanden (comeon) |
-| **select** | Einheit angewählt (Stimme je Seite; nur etwa jedes 3. Mal, mind. 8 s Pause, leiser) | Konkordat | 402019__theuncertainman__yes-british-male.wav (0.55 s ab 0.5 s) |
+| **select** | Einheit angewählt (Stimme je Seite; nur etwa jedes 3. Mal, mind. 8 s Pause, leiser) | Konkordat: 34 Sprüche Englisch, Aschenwacht: 35 Sprüche Deutsch | eigene Sprachaufnahmen (Suno Pro), mit Gasmasken-Effekt „leicht“, Auswahl `tools/stimmen_auswahl.json`, Dateien `Voices/eigene/sprueche/` (seit 2026-11-17; ersetzt 402019 yes-british-male und 338147 talking-to-me) |
 |  |  | Aschenwacht | 338147__artordie__talking-to-me.wav (1.1 s ab 0.01 s) |
 | **roar** | Kampfschrei (Nahkampf, Befehl der Aschenwacht) | beide | vorhanden (roar) |
 |  |  | beide | jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3 (3 s ab 0.54 s) |

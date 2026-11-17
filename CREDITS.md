@@ -56,8 +56,8 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | charge | charge_1 | Moving tanks/233068__newciv1__loud-tiger-ii-audio-test.wav | Freesound / newciv1 | CC BY-NC 3.0 | <https://freesound.org/s/233068/> |
 | forward | forward_1 | applehillstudios-combat-voice-charge-2-543675.mp3 | Pixabay / applehillstudios | Pixabay Content License | – |
 | stand | stand_1 | 458070__theuncertainman__form-ranks-british-warrior.wav | Freesound / theuncertainman | CC BY 4.0 | <https://freesound.org/s/458070/> |
-| select | select_1 | 402019__theuncertainman__yes-british-male.wav | Freesound / theuncertainman | CC BY 4.0 | <https://freesound.org/s/402019/> |
-| select | select_2 | 338147__artordie__talking-to-me.wav | Freesound / artordie | CC BY 4.0 | <https://freesound.org/s/338147/> |
+| select | select_1–34 (Konkordat, Englisch) | Voices/eigene/sprueche/konkordat_s*_leicht.wav (aus konkordat_stimme_1–5) | eigene Sprachaufnahmen, Suno Sprachausgabe (Suno Pro) | frei verwendbar | – |
+| select | select_35–69 (Aschenwacht, Deutsch) | Voices/eigene/sprueche/aschenwacht_s*_leicht.wav (aus aschenwacht_stimme_1–4) | eigene Sprachaufnahmen, Suno Sprachausgabe (Suno Pro) | frei verwendbar | – |
 | roar | roar_1 | jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3 | Pixabay / jesuschristisgod | Pixabay Content License | – |
 | roar | roar_2 | 764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav | Freesound / shangusburger | CC0 1.0 | <https://freesound.org/s/764158/> |
 | cry | cry_1 | Voices/freesound_community-middle-ages-war-crywav-14780.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
