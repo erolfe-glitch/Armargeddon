@@ -1267,7 +1267,7 @@ function drawAir(g, s, up) {
       g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
 }
 // Erwarteter Freischlag beim Rückzug (Vorschau), z. B. „ · Freischlag −6“
-function fbTxt(u) { const f = u ? E.freeBlows(G, u) : []; return f.length ? ` · Freischlag −${fmt(f.reduce((a, b) => a + b.dmg, 0))}` : ''; }
+function fbTxt(u) { const f = u ? E.freeBlows(G, u) : []; return f.length ? ` · Freischlag −${fmt(f.reduce((a, b) => a + b.lo, 0))} bis −${fmt(f.reduce((a, b) => a + b.hi, 0))}` : ''; }
 // Gefahr auf einem Wegfeld für die Pfadvorschau: 'draht' | 'gas' | 'feuer' | 'mg' oder null
 function pathHazard(u, c, r) {
   const T = TYPES[u.type], h = G.map[c] && G.map[c][r]; if (!h) return null;
@@ -1839,7 +1839,33 @@ async function playEvent(e) {
       }
       break;
     }
-    case 'shell': {
+    case 'shell': if (e.mode === 'barrage' && !e.strike) {
+      const a = DU.get(e.a), [x2, y2] = center(e.c, e.r), ua = unitById(e.a), [x1, y1] = bodyPos(e.a), mob = TYPES[ua.type].mobile;
+      if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
+      a.face = e.face;
+      const cells = (e.cells || [[e.c, e.r], ...E.neighbors(e.c, e.r)]).filter(([c, r]) => c >= 0 && r >= 0 && c < COLS && r < ROWS);
+      const n = mob ? 3 : 4, key = sndPick(mob ? 'launch' : ua.type === 'feldkanone' ? 'cannon' : ua.side === 'D' ? 'artD' : 'cannonH', ua.side), dir = x2 >= x1 ? 1 : -1, dur = 34;
+      const order = [0, ...cells.slice(1).map((_, i) => i + 1).sort(() => Math.random() - 0.5)];   // erst das Zielfeld, dann die Nachbarn in zufälliger Reihenfolge
+      const shots = []; let t = 0;
+      for (let q = 0; q < n; q++) { if (q) t += 220 + Math.random() * 140; shots.push(t); }
+      shots.forEach((t, q) => setTimeout(() => {   // je Abschuss: Ton, Mündungsfeuer, Rückstoß-Ruck, Rauch, Granate
+        if (key) playSound(key, (mob ? 0.42 : 0.75) * (0.85 + Math.random() * 0.25), ua.side, { noGap: true, rate: 0.9 + Math.random() * 0.15 });
+        const pa = fxIm('muendung') ? fxMuzzle(e.a, 0, mob ? 0.12 : 0.32) : null;
+        if (pa) { if (mob) fx('muendung', 4, pa[0], pa[1], { anchor: 'mitte', life: 7, fadeOut: 0.7, flip: x2 < x1, mul: 0.8 }); else fxFlash(3, pa, x2, y2 - s * 2, { life: 8 });
+          fx('rauch', 0, pa[0], pa[1] + s * 0.2, { life: 60, mul: 0.28, grow: 0.6, rise: 0.5, alpha: 0.55, fadeIn: 5, fadeOut: 0.7 }); }
+        a.lunge = { dx: -dir * s * 0.12, dy: -s * 0.02 }; setTimeout(() => { if (a.lunge && a.lunge.dx === -dir * s * 0.12) a.lunge = null; }, 110 / speed);
+        const [cx, cy] = center(...cells[order[q % order.length]]);
+        shells.push({ fxi: mob ? 1 : 0, x1, y1, x2: cx, y2: cy, t: 0, dur, col: '#2a2a26', img: mob ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
+      }, t / speed));
+      if (camOn() && !inView(x2, y2, 0.12)) setTimeout(() => camTo(x2, y2, dur * 16.667 * 0.8), 200 / speed);
+      await wait(shots[0] + dur * 16.667);
+      // Einschläge versetzt über alle Zielfelder (Zielfeld zuerst), jeder mit eigenem Knall
+      const imp = order.map((ci, i) => [cells[ci], i < n ? shots[i] : shots[n - 1] + (i - n + 1) * (140 + Math.random() * 120)]);
+      for (const [[c, r], tt] of imp) setTimeout(() => { const [bx, by] = center(c, r); boom(bx, by, s * (c === e.c && r === e.r ? 0.75 : 0.6), 'he'); playSound(mob ? 'boom' : 'boomH', 0.5 * (0.8 + Math.random() * 0.3), null, { noGap: true }); shake(4); }, (tt - shots[0]) / speed);
+      if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
+      if (e.guided) floater(x2, y2 - s * 1.5, '◉ markiert ×1,25', '#F0EDE1', false, true);
+      await wait(imp[imp.length - 1][1] - shots[0] + 380); break;
+    } else {
       const a = DU.get(e.a), [x2, y2] = center(e.c, e.r), ua = unitById(e.a);
       const [x1, y1] = e.strike ? [x2 - (ua.side === 'A' ? 1 : -1) * s * 7, y2 - s * 5] : bodyPos(e.a);   // Feuerschlag: Batterie hinter der eigenen Front
       if (e.strike) { floater(...headPos(e.a), 'Feuerschlag!', '#E2B04A', true); playSound('cannonH', 0.35); }
@@ -2148,7 +2174,7 @@ function markTips(m) {
     return [pv.threat.length && { name: `Warndreieck: ${pv.threat.length} ${pv.threat.length === 1 ? 'Schütze' : 'Schützen'}`, text: `So viele Gegner können auf dieses Feld schießen (rot umrandet).` },
       { name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite (Messinglinien).` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Schild: Deckung ${cn}.` : 'Keine Deckung.'}` },
       n && (n.march ? { name: 'Marsch – danach keine Aktion mehr', text: `Stiefel mit Flügeln: doppelte Zugweite für beide Aktionspunkte, Weg ${n.cost}. Danach kann die Einheit in dieser Runde nichts mehr tun.` }
-        : { name: `Stiefel: Weg ${n.cost}${n.retreat ? ' · Rückzug' : ''}`, text: n.retreat ? `Rückzug aus der Feindberührung, kostet beide Aktionspunkte.${E.freeBlows(G, sel).length ? ` Freischlag: jeder angrenzende Nahkämpfer trifft mit halbem Nahkampfschaden, zusammen etwa −${fmt(E.freeBlows(G, sel).reduce((a, b) => a + b.dmg, 0))} Stärke (keine Moral).` : ' Kein Freischlag: kein Gegner daneben kann zuschlagen.'}` : `Bewegung bis hierher für 1 Aktionspunkt.${n.via ? ' Über den Wegpunkt.' : ' Umschalt+Klick (Finger: lange drücken) setzt einen Wegpunkt.'}` })]; }
+        : { name: `Stiefel: Weg ${n.cost}${n.retreat ? ' · Rückzug' : ''}`, text: n.retreat ? `Rückzug aus der Feindberührung, kostet beide Aktionspunkte.${E.freeBlows(G, sel).length ? ` Freischlag: jeder angrenzende Nahkämpfer trifft einmal (je etwa −10 Stärke, wie Stacheldraht), zusammen ${fbTxt(sel).replace(' · Freischlag ', '')} Stärke (keine Moral).` : ' Kein Freischlag: kein Gegner daneben kann zuschlagen.'}` : `Bewegung bis hierher für 1 Aktionspunkt.${n.via ? ' Über den Wegpunkt.' : ' Umschalt+Klick (Finger: lange drücken) setzt einen Wegpunkt.'}` })]; }
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
   if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
   return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
@@ -2204,11 +2230,24 @@ let selClicks = 0, selNeed = 3, selLast = -1e9, selLastKey = null;
 function selectVoice(u) {
   if (++selClicks < selNeed) return;
   const t = performance.now(); if (t - selLast < 8000) return;
-  const pool = TYPES[u.type].gasproof ? 'selGas' : 'select'; let k = null;
+  const VEH = ['koloss', 'sturmpz', 'bohrer'], T = TYPES[u.type];
+  const pool = VEH.includes(u.type) ? 'motor_auswahl' : T.cls === 'cav' ? 'pferd_auswahl' : T.gasproof ? 'selGas' : 'select'; let k = null;
+  if (pool === 'pferd_auswahl' && !sndPick(pool, u.side)) return;   // Tonplatz „pferd_auswahl“ ist noch leer (Dateien folgen): still
   for (let i = 0; i < 8; i++) { k = sndPick(pool, u.side); if (k !== selLastKey) break; }   // anderer Spruch als zuletzt; gibt es nur einen, darf er (selten) wiederkommen
   if (!k) return;
   selClicks = 0; selNeed = 2 + Math.floor(Math.random() * 3); selLast = t; selLastKey = k;
-  playSound(k, 0.26, u.side);
+  if (pool === 'motor_auswahl') return motorRev(k);
+  playSound(k, pool === 'pferd_auswahl' ? 0.3 : 0.26, u.side);
+}
+// Motor kurz aufheulen lassen („Rumm“, ca. 1 s): einblenden, Tonhöhe 0,8× → 1,2× wie leicht Gas geben, ausblenden (Paket 4)
+function motorRev(k) {
+  if (!soundOn || !SND[k] || speed >= INSTANT) return;
+  try { const a = SND[k].cloneNode(); a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.volume = 0; a.playbackRate = 0.8;
+    const p = a.play(); if (p && p.catch) p.catch(() => {}); const t0 = performance.now();
+    const tick = () => { const t = (performance.now() - t0) / 1000; if (t > 1.1) { a.pause(); return; }
+      try { a.volume = 0.32 * Math.min(1, t / 0.08) * Math.min(1, Math.max(0, (1.1 - t) / 0.4)); a.playbackRate = 0.8 + 0.4 * Math.min(1, t / 0.45); } catch (e) {}
+      setTimeout(tick, 30); };
+    tick(); window.__sndBy = window.__sndBy || {}; window.__sndBy[k] = (window.__sndBy[k] || 0) + 1; } catch (e) {}
 }
 function select(u) {
   if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) selectVoice(u);   // Stimme beim Anwählen (selten, siehe selectVoice)

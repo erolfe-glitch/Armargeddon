@@ -6,7 +6,7 @@
 // ---------- Grundwerte (per Simulation abgestimmt) ----------
 const P = {
   DMG: 0.61,
-  FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6, FREEBLOW: 0.5,   // FLANK/REAR nur für Fahrzeuge; FREEBLOW: Freischlag beim Rückzug (Anteil des Nahkampfschadens)
+  FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6, FREEBLOW: 1.0,   // FLANK/REAR nur für Fahrzeuge; FREEBLOW: Freischlag beim Rückzug, Stärke je Schlag (≈ 10 wie Stacheldraht, ±20 % Zufall, Paket 4)
   COUNTER: { front: 0.6, flank: 0.3, rear: 0 },
   MOR_PER_DMG: 0.8, MOR_FLANK: 0.5, MOR_REAR: 1, MOR_SURR: 1,
   FALLBACK_MOR: 3, ROUT_STR: 1.5,
@@ -926,12 +926,12 @@ function reachable(G, u, opt) {
   }
   return res;
 }
-// Freischläge beim Rückzug: [{ a: Gegner, dmg }] – halber Nahkampfschaden (wie die Vorschau, ohne Zufall), nur aktive, nicht niedergehaltene Nahkämpfer
+// Freischläge beim Rückzug: [{ a: Gegner, dmg, lo, hi }] – je Schlag etwa 10 Stärke (P.FREEBLOW, ±20 %), nur aktive, nicht niedergehaltene Nahkämpfer
 function freeBlows(G, u) {
   const out = [];
   for (const [c, r] of neighbors(u.c, u.r)) { const e = unitAt(G, c, r);
     if (!e || e.side === u.side || !active(e) || e.supp > 0 || e.broken > 0 || !(TYPES[e.type].atk > 0) || cls(e) === 'art') continue;
-    out.push({ a: e, dmg: P.FREEBLOW * preview(G, e, u, 'melee').dmg }); }
+    out.push({ a: e, dmg: P.FREEBLOW, lo: P.FREEBLOW * 0.8, hi: P.FREEBLOW * 1.2 }); }   // erwartet, kleinster und größter Wert (Vorschau)
   return out;
 }
 function nearestEnemy(G, u) {
@@ -960,9 +960,9 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
   if (opt.retreat) {   // Freischlag (Paket 3): jeder angrenzende Gegner, der im Nahkampf angreifen kann, trifft mit halbem Nahkampfschaden
     for (const fb of freeBlows(G, u)) {
       if (!alive(u)) break;
-      u.str = Math.max(0, u.str - fb.dmg);
-      ev.push({ t: 'freeblow', a: fb.a.id, u: u.id, dmg: fb.dmg });
-      ev.push({ t: 'hit', u: u.id, dmg: fb.dmg, str: u.str, morv: u.mor, freeblow: true });   // kein Moralverlust, kein Moralbruch allein dadurch
+      const dmg = fb.dmg * (0.8 + G.rng() * 0.4); u.str = Math.max(0, u.str - dmg);
+      ev.push({ t: 'freeblow', a: fb.a.id, u: u.id, dmg });
+      ev.push({ t: 'hit', u: u.id, dmg, str: u.str, morv: u.mor, freeblow: true });   // kein Moralverlust, kein Moralbruch allein dadurch
       if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); ev.push(...checkEnd(G)); return ev; }
     }
   }

@@ -28,7 +28,7 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 18. Freischlag: Wer sich aus dem Nahkampf löst, bekommt vom Gegner einen leichten Treffer (etwa halber Nahkampfschaden).
 19. Wegfindung: Einheiten nehmen den kürzesten Weg und umgehen Draht/Gefahren nicht von selbst; die Pfadvorschau zeigt, wenn der Weg durch Draht führt.
 
-## Paket 4 – Effekte und Ton
+## Paket 4 – Effekte und Ton – erledigt 2026-11-17 (Bilder: entwurf/probe/paket4/, Koloss: entwurf/probe/koloss_vergleich.html)
 20. Konkordat-Artillerie Sperrfeuer: mehrere Abschüsse hörbar und mehr Schussanimation.
 21. Schuss-Effekte allgemein überarbeiten (Mündungsfeuer an der richtigen Stelle, je Waffe passend).
 

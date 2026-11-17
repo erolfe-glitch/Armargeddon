@@ -54,8 +54,8 @@ E.useMap('grauwall');
   u.c = 6; u.r = 4; e.c = 7; e.r = 4; G.map[6][4].t = 'open'; G.map[7][4].t = 'open'; G.side = 'A';
   const fb = E.freeBlows(G, u), R = E.reachable(G, u), n = [...R.values()][0], s0 = u.str, m0 = u.mor;
   if (!fb.length || !n || !n.retreat) melde('kein Rückzug mit Freischlag möglich', G);
-  else { const ev = E.moveUnit(G, u, n.c, n.r); console.log(`Freischlag: erwartet −${(fb[0].dmg * 10).toFixed(1)}, Stärke ${s0 * 10} → ${(u.str * 10).toFixed(1)}, Moral ${m0} → ${u.mor}, Ereignis ${ev.some(x => x.t === 'freeblow')}`);
-    if (Math.abs(s0 - u.str - fb.reduce((a, b) => a + b.dmg, 0)) > 1e-9 || u.mor !== m0) melde('Freischlag falsch', G); }
+  else { const ev = E.moveUnit(G, u, n.c, n.r); console.log(`Freischlag: erwartet −${(fb[0].lo * 10).toFixed(0)} bis −${(fb[0].hi * 10).toFixed(0)}, Stärke ${s0 * 10} → ${(u.str * 10).toFixed(1)}, Moral ${m0} → ${u.mor}, Ereignis ${ev.some(x => x.t === 'freeblow')}`);
+    const ab = s0 - u.str; if (ab < fb.reduce((a, b) => a + b.lo, 0) - 1e-9 || ab > fb.reduce((a, b) => a + b.hi, 0) + 1e-9 || u.mor !== m0) melde('Freischlag falsch', G); }
 }
 console.log(fehler ? `${fehler} Fehler` : 'alles in Ordnung');
 process.exit(fehler ? 1 : 0);

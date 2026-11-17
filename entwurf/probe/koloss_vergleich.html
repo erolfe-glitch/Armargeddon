@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landkoloss und Sturmpanzer</title>
+<style>
+  :root { --bg: #17120e; --panel: #241c15; --line: #4a3c2c; --text: #e9e1cf; --muted: #b3a68c; --brass: #c2a461; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 Georgia, serif; }
+  header { padding: 18px 24px 4px; } h1 { margin: 0; font-size: 26px; color: var(--brass); }
+  p, li { color: var(--muted); max-width: 1200px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 12px 24px; }
+  .col { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+  .col h2 { margin: 0 0 6px; font-size: 17px; }
+  .boden { display: flex; gap: 8px; align-items: flex-end; justify-content: center; padding: 14px 6px 10px; border-radius: 4px; background: radial-gradient(ellipse at 50% 80%, #5b5139, #3c3426 75%); }
+  .boden figure { margin: 0; text-align: center; color: var(--muted); font-size: 12px; }
+  .boden img { height: 150px; display: block; }
+  .spiel { filter: brightness(0.84) contrast(0.92) saturate(0.8) sepia(0.1); }   /* derselbe Filter wie im Spiel für Kettenfahrzeuge (ui.js drawNewFigs) */
+  table { border-collapse: collapse; margin: 6px 24px 18px; font-size: 14px; }
+  td, th { border: 1px solid var(--line); padding: 4px 10px; text-align: right; } th { color: var(--brass); font-weight: normal; } td:first-child, th:first-child { text-align: left; }
+  .schlecht { color: #e07a5f; }
+  section { padding: 0 24px 24px; }
+</style>
+</head>
+<body>
+<header><h1>Konkordat-Landkoloss gegen Sturmpanzer (neue Ansicht)</h1>
+<p>Je Spalte links das Bild, rechts dasselbe mit dem Filter, den das Spiel auf Kettenfahrzeuge legt (brightness 0,84, contrast 0,92, saturate 0,8, sepia 0,1). Noch nichts neu gemalt.</p></header>
+<div class="grid">
+  <div class="col"><h2>Koloss aus dem Bogen, ohne Farbabgleich</h2><div class="boden">
+    <figure><img src="vergleich/konkordat_koloss_ohne_angleich.png" alt="">Bild</figure><figure><img class="spiel" src="vergleich/konkordat_koloss_ohne_angleich.png" alt="">mit Spielfilter</figure></div></div>
+  <div class="col"><h2>Koloss im Spiel (angeglichen)</h2><div class="boden">
+    <figure><img src="../../ui-quelle/teile/figuren/konkordat_koloss.png" alt="">Bild</figure><figure><img class="spiel" src="../../ui-quelle/teile/figuren/konkordat_koloss.png" alt="">mit Spielfilter</figure></div></div>
+  <div class="col"><h2>Sturmpanzer im Spiel</h2><div class="boden">
+    <figure><img src="../../ui-quelle/teile/figuren/aschenwacht_panzer.png" alt="">Bild</figure><figure><img class="spiel" src="../../ui-quelle/teile/figuren/aschenwacht_panzer.png" alt="">mit Spielfilter</figure></div></div>
+</div>
+<table>
+  <tr><th>Messwert (deckende Pixel, 0–1)</th><th>Koloss ohne Abgleich</th><th>Koloss im Spiel</th><th>Sturmpanzer</th><th>Koloss im Spiel + Filter</th><th>Sturmpanzer + Filter</th></tr>
+  <tr><td>Helligkeit (Mittel)</td><td>0,209</td><td class="schlecht">0,161</td><td>0,200</td><td class="schlecht">0,127</td><td>0,159</td></tr>
+  <tr><td>Glanzlichter (95 %)</td><td>0,517</td><td class="schlecht">0,448</td><td>0,553</td><td class="schlecht">0,348</td><td>0,431</td></tr>
+  <tr><td>Kontrast (Streuung)</td><td>0,153</td><td class="schlecht">0,137</td><td>0,167</td><td class="schlecht">0,106</td><td>0,129</td></tr>
+  <tr><td>Großflächige Schattierung (Volumen)</td><td class="schlecht">0,070</td><td class="schlecht">0,061</td><td>0,099</td><td class="schlecht">0,047</td><td>0,076</td></tr>
+  <tr><td>Sättigung</td><td>0,565</td><td>0,517</td><td>0,396</td><td>0,416</td><td>0,290</td></tr>
+  <tr><td>Anteil fast schwarz (&lt; 0,08)</td><td></td><td class="schlecht">31 %</td><td>25 %</td><td></td><td></td></tr>
+</table>
+<section>
+<h2 style="color:var(--brass);font-size:18px;margin:0 0 6px">Woran es liegt</h2>
+<ol>
+  <li><b>Am Bild selbst (Hauptgrund):</b> Der Koloss ist fast genau von der Seite gemalt, eine große, gleichmäßig beleuchtete Bordwand. Die großflächige Schattierung, die Volumen erzeugt, ist nur etwa 70 % so stark wie beim Sturmpanzer (0,070 gegen 0,099). Der Panzer steht in Dreiviertelansicht mit hell beleuchteter Oberseite und dunkler Seite, das wirkt plastisch.</li>
+  <li><b>Am Farbabgleich (zweiter Grund):</b> Der Abgleich auf die Soldatenbögen hat den Koloss um etwa ein Viertel abgedunkelt (0,209 → 0,161) und die Glanzlichter gedrückt (0,517 → 0,448). Fast ein Drittel des Bildes ist jetzt nahezu schwarz.</li>
+  <li><b>Am Spielfilter (verstärkt beides):</b> Der Filter für Kettenfahrzeuge dunkelt und entsättigt beide gleich. Der Koloss startet aber dunkler und ist kräftig rot: Danach liegt er bei 0,127 Helligkeit und 0,348 Glanzlicht gegen 0,159 und 0,431 beim Panzer, und das Rot wird schlammig – das liest sich als „ausgegraut“.</li>
+</ol>
+<p>Mögliche Wege (noch nicht umgesetzt): Farbabgleich beim Koloss zurücknehmen (wie bei der alten Ansicht in Paket 1), den Spielfilter für den Koloss abschwächen oder die Bordwand neu mit mehr Licht oben/Schatten unten bzw. in Dreiviertelansicht malen lassen.</p>
+</section>
+<script>Promise.all([...document.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; }))).then(() => document.body.dataset.ready = '1');</script>
+</body>
+</html>

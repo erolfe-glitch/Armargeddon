@@ -155,6 +155,8 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **nachladen** | Nachladen (Munitionsträger) | Konkordat | Repair reload heal etc/847367__adrian_sommer__gun-reloading-walther-p99.wav (0.58 s ab 1.82 s) |
 |  |  | Aschenwacht | Repair reload heal etc/u_azd0z4ksl5-kar98_rechamber-506178.mp3 (0.58 s ab 0.35 s) |
 | **husten** | Gasschaden: 1–2 Figuren husten (Dateien folgen) | beide | (noch leer) |
+| **pferd_auswahl** | Reiter angewählt: leises Schnauben/Wiehern, selten wie die Auswahl-Stimmen (Dateien folgen, Paket 4) | beide | (noch leer – bis dahin still) |
+| **motor_auswahl** | Landkoloss, Sturmpanzer, Bohrkoloss angewählt: „Rumm“ ca. 1,1 s, selten wie die Auswahl-Stimmen; im Spiel eingeblendet, Tonhöhe 0,8× → 1,2× in 0,45 s (Gas geben), ausgeblendet (ui.js `motorRev`) | beide | Moving tanks/freesound_community-driving-tank-engine-88503.mp3 (1,4 s ab 1,0 s); Moving tanks/dennish18-tank-moving-143104.mp3 (1,4 s ab 0,5 s) |
 | **drahtwackeln** | Draht wackelt beim Betreten | beide | Repair reload heal etc/freesound_community-shaking-chain-link-fence-vibration-94438.mp3 (1.2 s ab 0.12 s) |
 | **drahtlatch** | Einheit läuft in Stacheldraht | beide | Repair reload heal etc/freesound_community-latch-metallic-43692.mp3 (0.7 s ab 0.04 s) |
 | **cut** | Draht schneiden | beide | vorhanden (cut) |
