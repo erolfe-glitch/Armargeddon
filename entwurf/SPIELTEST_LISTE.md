@@ -74,7 +74,7 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 28. Artillerie-Sperrfeuer: höchstens 2× pro Schlacht; weniger Schaden als ein Einzelschuss, aber spürbar.
 29. Verstärkung an eroberten Flaggen: nur auf der eigenen Seite der Flagge (zwischen eigenem Rand und Flagge), nie dahinter Richtung Gegner.
 
-# Spieltest Runde 3 (Claude, ganze Partie Grauwall, 2026-11-17)
+# Spieltest Runde 3 (Claude, ganze Partie Grauwall, 2026-11-17) – abgearbeitet 2026-11-17 in vier Paketen: Regeln sichtbar (f746114), KI-Fehler (0e81199), Anzeige (c87968d), Hilfe- und Regeltexte (folgender Commit); offen bleibt nur 51 (Stimmen selbst anhören)
 
 Eine Partie gegen die KI, stumm, Tempo 2×: Konkordat selbst aufgestellt (Landkoloss nach vorn in die Startzone) und mit allem Neuen geführt, Aschenwacht = neue KI. Ergebnis: **Aschenwacht siegt nach Punkten 59 : 39 in Runde 13.** Bilder je Runde: entwurf/probe/spieltest3/.
 Verlauf: Konkordat hält ab Runde 1 den Vorposten, ab Runde 3 den Nordgraben; die Aschenwacht hält Südgraben, Schanze und Veskar von Anfang an. Südgraben wechselt in Runde 8 zum Konkordat und geht in Runde 10 wieder verloren. Ab Runde 7 Gegenstoß der Aschenwacht, Landkoloss und Kohorten werden von Sturmbrechern zerrieben.
