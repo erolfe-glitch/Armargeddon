@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bedienfeld-Entwürfe</title>
+<link rel="stylesheet" href="../../src/fonts.css">
+<style>
+/* Entwurf Paket 5 (2026-11-17): unteres Bedienfeld und Nachschub-Menü. Nur Entwurf – im Spiel ist nichts geändert.
+   Grafiken aus dem Spiel: src/uipanel.js (Texturen, 9-Slice-Rahmen, Knöpfe, Symbole), src/figs.js (Porträts), src/fonts.css (Schriften).
+   Palette und Grundregel nach STYLE.md: Rahmen dreckig (Eisen, Holz), Inhalte sauber (Pergament/Tinte, klare Schrift). */
+:root {
+  --s-bg: #221B18; --s-panel: #322923; --s-rust: #66483A; --s-text: #F0EDE1; --s-parch: #BBA583; --s-brass: #C2A461; --s-life: #8E2B22; --s-ink: #120D0B;
+  --s-ok: #6E8B3D; --s-mid: #C9A23A; --A: #8E2B22;
+  --s-head: "Arm Kopf", "Palatino Linotype", Georgia, serif; --s-body: "Arm Text", "Segoe UI", system-ui, sans-serif; --s-num: "Arm Ziffer", "Arm Text", sans-serif;
+  --ink45: linear-gradient(rgba(18,13,11,.45), rgba(18,13,11,.45)); --ink25: linear-gradient(rgba(18,13,11,.25), rgba(18,13,11,.25));
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--s-ink); color: var(--s-text); font: 16px/1.35 var(--s-body); overflow: hidden; }
+button { font: inherit; color: inherit; }
+#spiel { position: fixed; inset: 0; background: var(--s-ink) top center / 100% auto no-repeat; }
+
+/* ---------- Steuerung der Entwurfsseite (nicht Teil des Entwurfs) ---------- */
+#steuer { position: fixed; z-index: 50; top: 78px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; padding: 6px 10px;
+  background: rgba(18,13,11,.82); border: 1px solid #6b5a3a; border-radius: 6px; font: 600 14px var(--s-body); }
+#steuer b { color: var(--s-brass); font: 400 15px var(--s-head); margin-right: 6px; }
+#steuer button { min-height: 40px; padding: 0 12px; border: 1px solid #5a4a32; border-radius: 4px; background: #2a211b; cursor: pointer; }
+#steuer button.an { background: #5a4520; border-color: var(--s-brass); color: #ffe9b0; }
+#steuer .sep { width: 1px; height: 28px; background: #5a4a32; margin: 0 4px; }
+body.foto #steuer { display: none; }
+
+/* ---------- gemeinsame Teile ---------- */
+.rahmen { border: 14px solid transparent; border-image: var(--up-r9) 64 round; background: var(--ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; }
+.holz { border: 12px solid transparent; border-image: var(--up-r9) 64 round; background: var(--ink25), var(--up-txHolz) 0 0 repeat; background-clip: padding-box; }
+.perg { border: 12px solid transparent; border-image: var(--up-p9) 46 / 18px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; color: #2a1f16; }
+.name { font: 400 22px/1.1 var(--s-head); letter-spacing: .04em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+.sub { font: 600 13px var(--s-body); color: #cbbfa6; } .sub .fa { color: #fff; border-bottom: 2px solid var(--A); }
+.balken { position: relative; height: 16px; border: 2px solid var(--s-ink); border-radius: 2px; background: #1a1411; box-shadow: 0 1px 0 rgba(255,255,255,.08); }
+.balken i { position: absolute; inset: 0 auto 0 0; background: var(--s-ok); }
+.balken.leben i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); }
+.balken.moral { height: 9px; } .balken.moral i { background: var(--s-brass); }
+.wert { font: 700 15px var(--s-num); white-space: nowrap; } .wert small { color: #a89a80; font-weight: 400; }
+.zeile { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; align-items: center; font: 600 13px var(--s-body); color: #d9cdb2; }
+.munz { display: inline-flex; gap: 4px; } .munz img { width: 22px; height: 22px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; } .chip { font: 700 12px var(--s-body); letter-spacing: .03em; color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
+.zust { display: inline-flex; gap: 4px; } .zust img { width: 26px; height: 26px; filter: drop-shadow(0 1px 0 var(--s-ink)); }
+.knopf { position: relative; width: var(--k, 64px); height: calc(var(--k, 64px) * 1.186); border: 0; padding: 0; cursor: pointer; background: var(--up-knopf) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 0 rgba(0,0,0,.55)); }
+.knopf.an { background-image: var(--up-knopfAn); }
+.knopf img { position: absolute; left: 50%; top: 47%; width: 70%; height: 66%; object-fit: contain; transform: translate(-50%, -50%);   /* wie im Spiel (.up-ab > img) */
+  filter: brightness(1.75) contrast(1.08) sepia(.22) saturate(1.15) drop-shadow(1px 0 0 var(--s-brass)) drop-shadow(-1px 0 0 var(--s-brass)) drop-shadow(0 1px 0 var(--s-brass)) drop-shadow(0 -1px 0 var(--s-brass)) drop-shadow(0 2px 1px rgba(0,0,0,.7)); }
+.symhell { filter: brightness(1.9) sepia(.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B); }
+.knopf.spiegel img { transform: translate(-50%, -50%) scaleX(-1); }
+.knopf .ap { position: absolute; right: -4px; top: -6px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(#e2c27a, #9b7a3a); color: #1d140d; font: 700 12px var(--s-num); border: 2px solid var(--s-ink); }
+.knopf .taste { position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%); font: 700 11px var(--s-num); color: #cbbfa6; }
+.tafel { border: 0; cursor: pointer; color: var(--s-text); background: var(--up-tafel) center / 100% 100% no-repeat; font: 400 20px var(--s-head); letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); filter: drop-shadow(0 4px 0 rgba(0,0,0,.5)); }
+.platte { border: 0; cursor: pointer; background: var(--up-platte) center / 100% 100% no-repeat; filter: drop-shadow(0 3px 0 rgba(0,0,0,.5)); }
+.portrait { background: #1d1612; border: 3px solid var(--s-ink); box-shadow: inset 0 0 0 2px #6b5236; overflow: hidden; }
+.portrait canvas { display: block; width: 100%; height: 100%; }
+
+/* Hinweiszeile: klein, dezent, oben über dem freien Bereich */
+.hinweis { position: fixed; top: 74px; left: 50%; transform: translateX(-50%); max-width: 62vw; padding: 5px 16px; border-radius: 14px; background: rgba(18,13,11,.62); color: #ddd1b6; font: 600 14px var(--s-body); text-align: center; pointer-events: none; }
+.hinweis img { height: 1.3em; vertical-align: -0.3em; filter: brightness(1.9) sepia(.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1); }
+body:not(.foto) .hinweis { top: 136px; }   /* unter der Entwurfssteuerung */
+
+/* rechts unten: Nachschub und Runde beenden, groß und gut erreichbar */
+.rechts { position: fixed; right: 18px; bottom: 18px; display: grid; gap: 10px; justify-items: end; }
+.rechts .reihe { display: flex; gap: 8px; align-items: center; }
+.rechts .nach { height: 62px; padding: 0 26px; min-width: 230px; font-size: 19px; }
+.rechts .nach .stern { font-family: var(--s-num); margin-left: 8px; color: #ffe2a0; }
+.rechts .naechste { width: 62px; height: 62px; display: grid; place-items: center; }
+.rechts .ende { height: 80px; min-width: 300px; padding: 0 34px; font-size: 24px; }
+
+/* ---------- Variante A1: Einheiteninfo als Karte links unten, Fähigkeiten darüber ---------- */
+#a1 .karte { position: fixed; left: 18px; bottom: 28px; width: 380px; padding: 6px 8px; }
+#a1 .kopf { display: grid; grid-template-columns: 104px 1fr; gap: 12px; align-items: start; }
+#a1 .portrait { width: 104px; height: 118px; }
+#a1 .werte { display: grid; gap: 6px; margin-top: 4px; }
+#a1 .unten { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+#a1 .knoepfe { position: fixed; left: 24px; display: flex; gap: 10px; --k: 62px; }
+#a1 .mehr { display: none; }
+body.lang #a1 .karte { width: 470px; }
+body.lang #a1 .mehr { display: grid; gap: 8px; margin-top: 10px; }
+.statgrid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; }
+.statgrid div { background: rgba(18,13,11,.45); border: 1px solid #4a3a2a; border-radius: 3px; padding: 3px 0; font: 600 11px var(--s-body); color: #b9ab8f; }
+.statgrid b { display: block; font: 400 20px var(--s-num); color: var(--s-text); }
+.text { font: 400 13.5px/1.4 var(--s-body); color: #e3d8c0; } .text.real { color: #b9ab8f; font-style: italic; }
+.umschalt { min-height: 40px; min-width: 44px; padding: 0 12px; font: 400 14px var(--s-head) !important; letter-spacing: .05em; text-transform: uppercase; }
+
+/* ---------- Variante A2: schmale Leiste links unten, Fähigkeiten direkt daneben ---------- */
+#a2 .leiste { position: fixed; left: 18px; bottom: 22px; display: flex; align-items: center; gap: 12px; padding: 4px 14px 4px 6px; }
+#a2 .portrait { width: 78px; height: 78px; border-radius: 50%; }
+#a2 .info { display: grid; gap: 4px; width: 250px; }
+#a2 .info .name { font-size: 18px; }
+#a2 .info .reihe { display: flex; align-items: center; gap: 8px; } #a2 .info .balken { flex: 1; }
+#a2 .knoepfe { display: flex; gap: 8px; --k: 54px; padding-left: 10px; margin-left: 4px; border-left: 2px solid rgba(194,164,97,.35); }
+#a2 .ausf { position: fixed; left: 18px; width: 560px; padding: 6px 10px; display: none; }
+body.lang #a2 .ausf { display: grid; gap: 8px; }
+
+/* ---------- B: Nachschub-Menü ---------- */
+#b .menue { position: fixed; right: 18px; bottom: 120px; width: min(1180px, calc(100vw - 36px)); height: min(640px, calc(100vh - 230px)); display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; padding: 6px 12px; }
+#b .titel { display: flex; align-items: baseline; justify-content: space-between; }
+#b .titel .name { font-size: 26px; } #b .titel .pkt { font: 400 26px var(--s-num); color: #ffe2a0; }
+#b .reiter { display: flex; gap: 6px; flex-wrap: wrap; }
+#b .reiter button { min-height: 46px; padding: 0 18px; font: 400 16px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #d8ccb0; background: var(--up-tafel) center / 100% 100% no-repeat; border: 0; cursor: pointer; filter: brightness(.75) drop-shadow(0 2px 0 rgba(0,0,0,.5)); }
+#b .reiter button.an { filter: brightness(1.1) drop-shadow(0 3px 0 rgba(0,0,0,.5)); color: #fff2cc; }
+#b .reiter button small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
+#b .liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px 4px 2px 2px; }
+#b .liste::-webkit-scrollbar { width: 10px; } #b .liste::-webkit-scrollbar-thumb { background: #6b5236; border-radius: 5px; }
+.ek { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; background: linear-gradient(rgba(18,13,11,.35), rgba(18,13,11,.55)), var(--up-txHolz) 0 0 repeat; cursor: pointer; text-align: left; }
+.ek:hover, .ek.offen { border-color: var(--s-brass); }
+.ek.zuteuer { filter: grayscale(.8) brightness(.7); cursor: default; }
+.ek .portrait { width: 92px; height: 88px; }
+.ek .nm { font: 400 17px/1.15 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+.ek .kost { position: absolute; right: 8px; top: 6px; font: 400 18px var(--s-num); color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
+.ek .chips { margin-top: 6px; }
+.ek .nm { padding-right: 52px; }
+.detail { position: fixed; z-index: 40; width: 380px; padding: 6px 10px; display: none; font: 400 14px/1.4 var(--s-body); pointer-events: none; }
+.detail.zeigen { display: block; }
+.detail h3 { margin: 0 0 4px; font: 400 19px var(--s-head); text-transform: uppercase; letter-spacing: .04em; }
+.detail .w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 6px 0; text-align: center; font: 600 11px var(--s-body); color: #5a4630; }
+.detail .w b { display: block; font: 400 18px var(--s-num); color: #2a1f16; }
+.detail .real { color: #5a4630; font-style: italic; margin-top: 6px; }
+#b .fuss { display: flex; justify-content: space-between; align-items: center; font: 600 13px var(--s-body); color: #cbbfa6; }
+
+/* ---------- 1280 px: kleiner, aber Knöpfe ≥ 40 px ---------- */
+@media (max-width: 1500px) {
+  #a1 .karte { width: 330px; } body.lang #a1 .karte { width: 420px; } #a1 .portrait { width: 88px; height: 100px; } #a1 .kopf { grid-template-columns: 88px 1fr; }
+  #a1 .knoepfe { --k: 52px; gap: 8px; }
+  #a2 .info { width: 200px; } #a2 .knoepfe { --k: 46px; gap: 6px; } #a2 .portrait { width: 64px; height: 64px; } #a2 .ausf { width: 470px; }
+  .rechts .nach { height: 54px; min-width: 190px; font-size: 16px; } .rechts .ende { height: 66px; min-width: 240px; font-size: 19px; } .rechts .naechste { width: 54px; height: 54px; }
+  .name { font-size: 19px; }
+  #b .menue { width: calc(100vw - 420px); }   /* links bleibt Platz für das Detailfenster */
+  #b .liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+  .hinweis { max-width: 56vw; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+<div id="spiel"></div>
+<div id="steuer"><b>Entwurf Bedienfeld</b>
+  <button data-v="jetzt">Jetzt</button><button data-v="a1">A1 Karte</button><button data-v="a2">A2 Leiste</button><span class="sep"></span>
+  <button data-info="kurz">kurz</button><button data-info="lang">ausführlich</button><span class="sep"></span><button data-v="b">B Nachschub</button></div>
+<div id="ebene"></div>
+<div class="detail perg" id="detail"></div>
+<script src="../../src/uipanel.js"></script>
+<script src="../../src/figs.js"></script>
+<script src="bedienfeld_daten.js"></script>
+<script>
+const UP = window.UIPANEL || {}, D = window.ENTWURF, FG = window.FIGS || {};
+for (const k in UP) document.documentElement.style.setProperty('--up-' + k, `url("${UP[k]}")`);
+const sym = k => UP['s_' + k] || '';
+const q = new URLSearchParams(location.search);
+let v = q.get('v') || 'a1', info = q.get('info') || 'kurz', kat = q.get('kat') || 'Standard';
+if (q.has('foto')) document.body.classList.add('foto');
+const breit = () => innerWidth > 1500;
+function hintergrund() { document.getElementById('spiel').style.backgroundImage = `url(bedienfeld/bg${breit() ? 1920 : 1280}_${v === 'jetzt' ? 'jetzt' : 'frei'}.webp)`; }
+
+// Porträt aus dem Figurenbogen: Trupps nur Kopf und Oberkörper, Einzelmodelle (Fahrzeuge, Geschütze) ganz
+function portrait(cv, key) {
+  const src = FG[key]; if (!src) return; const im = new Image(); im.onload = () => {
+    const r = cv.getBoundingClientRect(), W = cv.width = Math.round(r.width * 2), H = cv.height = Math.round(r.height * 2), g = cv.getContext('2d');
+    const einzel = !/_\d$/.test(key), iw = im.naturalWidth, ih = im.naturalHeight;
+    let sx = 0, sy = 0, sw = iw, sh = ih;
+    if (!einzel) { sh = Math.min(ih, iw * H / W * 1.0); sw = sh * W / H; sx = Math.max(0, (iw - sw) / 2); sh = Math.min(sh, ih * 0.66); sw = sh * W / H; sx = Math.max(0, (iw - sw) / 2); }
+    const k = Math.min(W / sw, H / sh) * (einzel ? 0.92 : 1);
+    g.fillStyle = '#2a211b'; g.fillRect(0, 0, W, H);
+    const gr = g.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.7); gr.addColorStop(0, '#4a3b2b'); gr.addColorStop(1, '#1d1612'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.drawImage(im, sx, sy, sw, sh, (W - sw * k) / 2, einzel ? (H - sh * k) / 2 : 0, sw * k, sh * k);
+  }; im.src = src;
+}
+const muenzen = n => `<span class="munz">${Array.from({ length: 2 }, (_, i) => `<img src="${UP[i < n ? 'muenze' : 'muenzeLeer']}" alt="">`).join('')}</span>`;
+const zustand = () => `<span class="zust"><img src="${UP.cov3}" alt="Deckung Gold" title="Deckung Gold (Graben)"></span>`;
+const knoepfe = (n) => D.einheit.knoepfe.slice(0, n).map(([s, name, ap, sp], i) => `<button class="knopf${i === 0 ? ' an' : ''}${sp ? ' spiegel' : ''}" title="${name}"><img src="${sym(s)}" alt="${name}">${ap ? `<span class="ap">${ap}</span>` : ''}<span class="taste">${i + 1}</span></button>`).join('');
+const statgrid = w => `<div class="statgrid">${Object.entries(w).map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div>`;
+const rechts = () => `<div class="rechts"><div class="reihe"><button class="tafel nach">Nachschub <span class="stern">★ ${D.punkte}</span></button><button class="platte naechste" title="Nächste Einheit"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#F0EDE1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h12M11 7l5 5-5 5M20 5v14"/></svg></button></div><button class="tafel ende">Runde beenden</button></div>`;
+const hinweis = `<div class="hinweis">Hell <img src="${sym('stiefel')}" alt="">: ziehen (1 ●) · Gelb gestrichelt <img src="${sym('marsch')}" alt="">: Marsch (2 ●) · Rot: Nahkampf · Messing: Beschuss</div>`;
+const U = D.einheit;
+const balken = (cls, k, val, max) => `<div class="zeile"><span>${k}</span><div class="balken ${cls}"><i style="width:${Math.round(val / max * 100)}%"></i></div><span class="wert">${val}<small> / ${max}</small></span></div>`;
+
+function zeichne() {
+  document.body.classList.toggle('lang', info === 'lang');
+  document.querySelectorAll('#steuer [data-v]').forEach(b => b.classList.toggle('an', b.dataset.v === v));
+  document.querySelectorAll('#steuer [data-info]').forEach(b => b.classList.toggle('an', b.dataset.info === info));
+  hintergrund();
+  const E = document.getElementById('ebene');
+  if (v === 'jetzt') { E.innerHTML = ''; return; }
+  const umschalt = `<button class="tafel umschalt" data-umschalt>${info === 'lang' ? 'kurz' : 'ausführlich'}</button>`;
+  const lang = `${statgrid(U.werte)}<div class="chips">${U.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div><div class="text">${U.text}</div><div class="text real"><b>Im echten Krieg:</b> ${U.real}</div>`;
+  if (v === 'a1') {
+    E.innerHTML = `<div id="a1">${hinweis}<div class="knoepfe" id="kn">${knoepfe(7)}</div>
+      <div class="karte rahmen" id="karte"><div class="kopf"><div class="portrait"><canvas id="pc"></canvas></div>
+        <div><div class="name">${U.name}</div><div class="sub"><span class="fa">${U.seite}</span> · ${U.feld}</div>
+          <div class="werte">${balken('leben', 'Leben', U.leben, 100)}${balken('moral', 'Moral', U.moral, U.moralMax)}</div></div></div>
+        <div class="unten"><span>${muenzen(U.ap)} ${zustand()}</span><span class="sub"><img class="symhell" src="${sym('stiefel')}" style="height:20px;vertical-align:-5px"> ${U.zug} Felder · <img class="symhell" src="${sym('gewehr')}" style="height:18px;vertical-align:-4px"> ${U.rng} Felder</span>${umschalt}</div>
+        <div class="mehr">${lang}</div></div>${rechts()}</div>`;
+    const k = document.getElementById('karte').getBoundingClientRect(); document.getElementById('kn').style.bottom = (innerHeight - k.top + 22) + 'px';
+  }
+  if (v === 'a2') {
+    E.innerHTML = `<div id="a2">${hinweis}
+      <div class="ausf rahmen" id="ausf">${lang}</div>
+      <div class="leiste rahmen" id="leiste"><div class="portrait"><canvas id="pc"></canvas></div>
+        <div class="info"><div class="name">${U.name}</div>
+          <div class="reihe"><div class="balken leben"><i style="width:100%"></i></div><span class="wert">${U.leben}</span></div>
+          <div class="reihe"><div class="balken moral"><i style="width:100%"></i></div>${muenzen(U.ap)}${zustand()}</div></div>
+        <div class="knoepfe">${knoepfe(7)}</div>${umschalt}</div>${rechts()}</div>`;
+    const l = document.getElementById('leiste').getBoundingClientRect(); document.getElementById('ausf').style.bottom = (innerHeight - l.top + 8) + 'px';
+  }
+  if (v === 'b') {
+    const kats = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge und Kampfmaschinen'];
+    E.innerHTML = `<div id="b">${rechts()}<div class="menue rahmen"><div class="titel"><span class="name">Nachschub anfordern</span><span class="pkt">★ ${D.punkte}</span></div>
+      <div class="reiter">${kats.map(k => `<button data-kat="${k}" class="${k === kat ? 'an' : ''}">${k}<small>${D.shop.filter(s => s.kat === k).length}</small></button>`).join('')}</div>
+      <div class="liste">${D.shop.filter(s => s.kat === kat).map(s => `<div class="ek${s.kosten > D.punkte ? ' zuteuer' : ''}" data-t="${s.t}" tabindex="0"><div class="portrait"><canvas data-bild="${s.bild}"></canvas></div>
+        <div><div class="nm">${s.name}</div><span class="kost">★ ${s.kosten}</span><div class="chips">${s.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div></div></div>`).join('')}</div>
+      <div class="fuss"><span>Antippen oder Überfahren zeigt alle Werte · Doppelt antippen: aufstellen am eigenen Rand oder an eigenen Zielfeldern</span><button class="tafel umschalt">Schließen</button></div></div></div>`;
+    document.querySelectorAll('canvas[data-bild]').forEach(c => portrait(c, c.dataset.bild));
+    document.querySelectorAll('#b .reiter button').forEach(b => b.onclick = () => { kat = b.dataset.kat; zeichne(); });
+    const det = document.getElementById('detail');
+    const zeig = el => { const s = D.shop.find(x => x.t === el.dataset.t), r = el.getBoundingClientRect();
+      det.innerHTML = `<h3>${s.name} <span style="float:right;font-family:var(--s-num)">★ ${s.kosten}</span></h3><div class="chips">${s.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div><div class="w">${Object.entries(s.werte).map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${s.text}</div><div class="real"><b>Im echten Krieg:</b> ${s.real}</div>`;
+      det.classList.add('zeigen'); const w = det.offsetWidth, h = det.offsetHeight; const m = document.querySelector('#b .menue').getBoundingClientRect(); let x = m.left - w - 8; if (x < 8) x = r.left + r.width / 2 > innerWidth / 2 ? r.left - w - 10 : r.right + 10; x = Math.max(8, Math.min(innerWidth - w - 8, x)); det.style.left = x + 'px'; det.style.top = Math.max(80, Math.min(innerHeight - h - 8, r.top - 10)) + 'px';
+      document.querySelectorAll('.ek').forEach(e => e.classList.toggle('offen', e === el)); };
+    document.querySelectorAll('.ek').forEach(el => { el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') zeig(el); }); el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') det.classList.remove('zeigen'); });
+      el.addEventListener('click', () => zeig(el)); });
+    if (q.has('detail')) { const el = document.querySelector(`.ek[data-t="${q.get('detail')}"]`) || document.querySelector('.ek'); if (el) zeig(el); }
+  } else document.getElementById('detail').classList.remove('zeigen');
+  const pc = document.getElementById('pc'); if (pc) portrait(pc, U.bild);
+  document.querySelectorAll('[data-umschalt]').forEach(b => b.onclick = () => { info = info === 'lang' ? 'kurz' : 'lang'; zeichne(); });
+}
+document.querySelectorAll('#steuer [data-v]').forEach(b => b.onclick = () => { v = b.dataset.v; zeichne(); });
+document.querySelectorAll('#steuer [data-info]').forEach(b => b.onclick = () => { info = b.dataset.info; if (v === 'jetzt' || v === 'b') v = 'a1'; zeichne(); });
+addEventListener('resize', zeichne);
+document.fonts.ready.then(() => { zeichne(); setTimeout(() => document.body.dataset.ready = '1', 600); });
+</script>
+</body>
+</html>
