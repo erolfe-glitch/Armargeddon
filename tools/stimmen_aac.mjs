@@ -35,8 +35,8 @@ for (const f of readdirSync(SRC).filter(f => f.endsWith('.wav')).sort()) {
   const buf = Buffer.from(v, 'base64'); writeFileSync(join(OUT, f.replace('.wav', '.aac')), buf); n++; kb += buf.length / 1024;
 }
 copyFileSync(join(SRC, 'stimmen_liste.json'), join(OUT, 'stimmen_liste.json'));
-writeFileSync(join(OUT, 'stimmen_liste.js'), '// Erzeugt von tools/stimmen_aac.mjs aus stimmen_liste.json (tools/stimmen_cut.py)
-window.STIMMEN = ' + readFileSync(join(SRC, 'stimmen_liste.json'), 'utf8') + ';
-');   // für die Seite auch ohne Server
+writeFileSync(join(OUT, 'stimmen_liste.js'), `// Erzeugt von tools/stimmen_aac.mjs aus stimmen_liste.json (tools/stimmen_cut.py)
+window.STIMMEN = ${readFileSync(join(SRC, 'stimmen_liste.json'), 'utf8')};
+`);   // Liste als Skript (Seite lädt sie ohne fetch)
 console.log(`${n} Dateien, ${Math.round(kb)} KB → entwurf/probe/stimmen/`);
 ws.close(); ch.kill(); process.exit(0);
