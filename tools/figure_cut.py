@@ -128,7 +128,7 @@ def lampe_gelb(k):
 OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
-SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5,
+SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.62, 'panzer': 1.5, 'bohrkoloss': 1.5,
              'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15, 'feldkanone': 1.05,
              'turmschreiter': 1.9, 'ordensschreiter': 1.9, 'kreuzschreiter': 1.9, 'eisenknecht': 1.9, 'saegeschreiter': 1.9, 'klauenschreiter': 1.9}   # Schreiter (2026-11-17): knapp 2 SH, größer als Kampfanzüge   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
 # Aschenwacht: Schwarz-Weiß-Rot (echte Reichsfarben) → eigene Farben Aschgrau / Schwarz / Knochenweiß. Allgemeine Regel für ALLE
@@ -279,6 +279,19 @@ def seam(op, x0, w):
     return xs + a
 
 
+# Leichter Farbabgleich statt angleichen (2026-11-17, neuer Landkoloss-Bogen): nicht abdunkeln, Glanzlichter lassen – nur der Kontrast
+# um die mittlere Helligkeit wird etwas angehoben (Faktor), Farbton und Sättigung bleiben. Bild mit Fahne: SH_SINGLE koloss 1,62,
+# damit der Rumpf so hoch wie beim Sturmpanzer (1,5 SH ohne Fahne) wird.
+KONTRAST = {'konkordat_koloss': 1.15}
+
+
+def kontrast(q, f):
+    rgb, al = q[..., :3], q[..., 3] > 128
+    L = rgb @ np.array([0.299, 0.587, 0.114]); Lm = L[al].mean()
+    k = np.where(L > 1, (Lm + (L - Lm) * f) / np.maximum(L, 1), 1.0)
+    q = q.copy(); q[..., :3] = np.clip(rgb * k[..., None], 0, 255); return q
+
+
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
     a = abzeichen_uebermalen(a, name)
@@ -323,6 +336,7 @@ def cut(name, out=OUT):
     if kind not in TRUPP and kind not in REIHE:   # Einzelmodell
         q, fl = k, 0   # Einzelmodelle: nur Magenta weg (Kisten, Fahnen, Messing, Flamme gehören zum Modell)
         q = keep_parts(q, True)
+        if name in KONTRAST: q = kontrast(q, KONTRAST[name])
         s = H_OUT * SH_SINGLE.get(kind, 1.0) / q.shape[0]
         out.mkdir(parents=True, exist_ok=True)
         im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
