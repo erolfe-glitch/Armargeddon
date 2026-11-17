@@ -33,7 +33,7 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - Siegpunkt-Modus statt Rundengrenze: beide punkten, Zielfelder starten neutral.
 - Kosten der Einheiten „berechnet“ aus den Werten, Rechnung im Info-Fenster sichtbar.
 - Jede Einheit hat 2 Aktionspunkte (Skirmish-Gefühl, mehr Logik).
-- Töne: Schüsse variieren; Koloss = tiefes Kettenrollen; Fußtruppen Marschtritt; Schlammschritte nur im Schlamm; Geschütz/Donnerrohr mit Kanonenschuss, Mörserton nur für Mörser; schwere Artillerie mit tiefem Bass; jeder Nahkampf-Schlag macht beim Treffer einen Ton; Kampfschrei nur bei Befehlen der Aschenwacht; Panne und Festfahren mit car-crash.
+- Töne: je Fraktion ein Grundklang (Hauptgewehr Konkordat Enfield, Aschenwacht battle-rifle; Salve aus einer Datei; Nahkampf nahA/nahD; Übersicht entwurf/TONPLAETZE.md); Schüsse variieren; Koloss = tiefes Kettenrollen; Fußtruppen Marschtritt; Schlammschritte nur im Schlamm; Geschütz/Donnerrohr mit Kanonenschuss, Mörserton nur für Mörser; schwere Artillerie mit tiefem Bass; jeder Nahkampf-Schlag macht beim Treffer einen Ton; Kampfschrei nur bei Befehlen der Aschenwacht; Panne und Festfahren mit car-crash.
 - Zuordnung England-Bogen = Konkordat, Deutschland-Bogen = Aschenwacht (Bogen mit Kanone = England); Frankreich-Bogen als wählbares Bilderset.
 
 ## Projektstruktur

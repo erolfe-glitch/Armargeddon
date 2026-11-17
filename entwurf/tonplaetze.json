@@ -2,14 +2,20 @@
  {
   "pool": "rifle",
   "key": "rifle_1",
-  "s": null,
+  "s": "A",
   "f": "Infantry Guns/410442__superphat__enfieldrifle.wav",
   "dur": 1.6,
   "src": 3.5,
   "start": 0,
   "gain": -0.7,
   "kb": 19,
-  "note": "Gewehr 1 (Korrektur 3)"
+  "note": "Hauptgewehr Konkordat: Enfield (2026-11-17)"
+ },
+ {
+  "pool": "rifle",
+  "key": "rifle2",
+  "s": "D",
+  "f": "(vorhanden) rifle2"
  },
  {
   "pool": "rifle2",
@@ -763,19 +769,19 @@
  {
   "pool": "scream",
   "key": "scream",
-  "s": null,
+  "s": "D",
   "f": "(vorhanden) scream"
  },
  {
   "pool": "cry",
   "key": "cry",
-  "s": null,
+  "s": "A",
   "f": "(vorhanden) cry"
  },
  {
   "pool": "cry",
   "key": "cry_1",
-  "s": null,
+  "s": "A",
   "f": "Voices/freesound_community-middle-ages-war-crywav-14780.mp3",
   "dur": 1.18,
   "src": 1.85,
@@ -1169,6 +1175,75 @@
   "start": 0,
   "gain": -10.2,
   "kb": 11
+ },
+ {
+  "pool": "nahA",
+  "key": "swords",
+  "s": "A",
+  "f": "(vorhanden) swords"
+ },
+ {
+  "pool": "nahA",
+  "key": "punch1",
+  "s": "A",
+  "f": "(vorhanden) punch1"
+ },
+ {
+  "pool": "nahA",
+  "key": "punch2",
+  "s": "A",
+  "f": "(vorhanden) punch2"
+ },
+ {
+  "pool": "nahA",
+  "key": "punch3",
+  "s": "A",
+  "f": "(vorhanden) punch3"
+ },
+ {
+  "pool": "nahA",
+  "key": "nahA_1",
+  "s": "A",
+  "f": "Melee hit infantry/392973__morganpurkis__trench-club-2.wav",
+  "dur": 0.92,
+  "src": 1.38,
+  "start": 0,
+  "gain": -10.2,
+  "kb": 11
+ },
+ {
+  "pool": "nahD",
+  "key": "nahD_1",
+  "s": "D",
+  "f": "Heavy Meelee Mechs large/mixkit-heavy-sword-smashes-metal-2795.wav",
+  "dur": 1.08,
+  "src": 1.52,
+  "start": 0.07,
+  "gain": -4.1,
+  "kb": 13,
+  "note": "Nahkampf-Grundklang Aschenwacht: Spaten und Metall, schwer und dumpf (2026-11-17)"
+ },
+ {
+  "pool": "nahD",
+  "key": "nahD_2",
+  "s": "D",
+  "f": "Heavy Meelee Mechs large/yodguard-a-massive-axe-impact-hitting-metal-1-450251.mp3",
+  "dur": 1,
+  "src": 3.02,
+  "start": 0.01,
+  "gain": -6.5,
+  "kb": 12
+ },
+ {
+  "pool": "nahD",
+  "key": "nahD_3",
+  "s": "D",
+  "f": "Heavy Meelee Mechs large/yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3",
+  "dur": 0.58,
+  "src": 1.03,
+  "start": 0.01,
+  "gain": -6.6,
+  "kb": 7
  },
  {
   "pool": "robot",

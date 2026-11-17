@@ -2,13 +2,30 @@
 
 Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/tonplaetze.json` von `tools/sound_bau.mjs`). Bei mehreren Tönen je Platz wird zufällig gewählt; Töne mit Seite spielen nur, wenn eine Einheit dieser Seite handelt. „vorhanden“ = Ton war schon im Spiel.
 
+
+## Grundklang je Fraktion (2026-11-17)
+
+Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer Fraktion, außer den Einheiten mit eigenem Ton (unten).
+
+| | Konkordat | Aschenwacht |
+|---|---|---|
+| Hauptgewehr (Platz `rifle`) | Enfield (Freesound 410442): hell, mit Nachhall | battle-rifle (`rifle2`): trockener (Ausklang −40 dB nach 0,76 s statt 1,1 s), dunkler (ca. 2,0 statt 2,7 kHz) |
+| Nahkampf (`nahA` / `nahD`) | Klingen/Bajonett (swords-collide), Keule (trench-club), Fausthiebe (punch 1–3) | Spaten und Metall: heavy-sword-smashes-metal, massive-axe-impact, giant-axe-strike-wood |
+| Kampfschrei (`cry` / `scream`) | cry, middle-ages war cry | scream, Crowd-Charge (763940) |
+| Befehle | `forward`, `stand` | `roar`, Generalhorn |
+
+**Eigene Töne statt Grundklang:** Scharfschütze und Pirschjäger `sniper` · Panzerbüchse `buechse` · Hauptmann und General `pistol` · Kampfanzüge `semi` (Schuss), `sword` (Nahkampf) · Grabenräumer `axe` + `flinte` · Sturmbrecher Handgranate + `flinte` · Kolosse und Schreiter `cannon`/`panzerkanone`, `heavy`/`impact` · MG `mg` je Seite.
+
+## Alle Tonplätze
+
 | Tonplatz | Wann | Seite | Datei (Ausschnitt) |
 |---|---|---|---|
-| **rifle** | Gewehrschuss der Infanterie (Gewehr 1); Gewehrinfanterie feuert eine Salve: je lebende Figur ein Schuss (1–4) aus allen Gewehr-Plätzen gemischt, innerhalb 0,4 s, eigene Tonhöhe und Lautstärke | beide | 410442__superphat__enfieldrifle.wav (1.6 s ab 0 s) |
-| **rifle2** | Gewehrschuss, Variante | beide | vorhanden (rifle2) |
-| **rifle3** | Gewehrschuss, Variante | Aschenwacht | vorhanden (rifle3) |
+| **rifle** | Hauptgewehr je Seite. Gewehrinfanterie feuert eine Salve: je lebende Figur ein Schuss (1–4), alle aus **derselben** Datei, versetzt innerhalb 0,4 s, leicht andere Tonhöhe und Lautstärke | Konkordat | Infantry Guns/410442__superphat__enfieldrifle.wav (1.6 s ab 0 s) |
+|  |  | Aschenwacht | vorhanden (rifle2 = battle-rifle) |
+| **rifle2** | (nur noch Quelle des Aschenwacht-Gewehrs) | – | vorhanden (rifle2) |
+| **rifle3** | (nicht mehr für Gewehrinfanterie: AK-47 klingt zu modern) | Aschenwacht | vorhanden (rifle3) |
 |  |  | beide | 855843__serutonin-deprivd__an-ak-47-being-shot-has-distinctive-metallic-kalashnikov-esque-report-punchy-sounding-w-distant-trailing-reverb.wav (1.8 s ab 0 s) |
-| **rifle4** | Gewehrschuss, Variante (Anfang „street battle“) | beide | 337773__lubini__street-battle-lviv-ukraine-ww1-reconstruction.wav (1.6 s ab 0.3 s) |
+| **rifle4** | (nicht mehr für Gewehrinfanterie) | beide | 337773__lubini__street-battle-lviv-ukraine-ww1-reconstruction.wav (1.6 s ab 0.3 s) |
 | **sniper** | Scharfschütze, Pirschjäger | beide | vorhanden (sniper) |
 |  |  | beide | Infantry Guns/182435__qubodup__sniper-shots-dod-56706-dod-146324.flac (1.46 s ab 1 s) |
 |  |  | Konkordat | 816114__qubodup__fps-sniper-shot.wav (1.46 s ab 0 s) |
@@ -82,9 +99,9 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 | **roar** | Kampfschrei (Nahkampf, Befehl der Aschenwacht) | beide | vorhanden (roar) |
 |  |  | beide | jesuschristisgod-army-of-soldiers-battle-cry-322709.mp3 (3 s ab 0.54 s) |
 |  |  | Konkordat | 764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav (2.6 s ab 0.51 s) |
-| **scream** | Kampfschrei (Nahkampf) | beide | vorhanden (scream) |
+| **scream** | Kampfschrei Aschenwacht (Nahkampf) | Aschenwacht | vorhanden (scream) |
 |  |  | Aschenwacht | 763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav (2.6 s ab 0.51 s) |
-| **cry** | Kampfschrei (Nahkampf, Sturmangriff) | beide | vorhanden (cry) |
+| **cry** | Kampfschrei Konkordat (Nahkampf, Sturmangriff) | Konkordat | vorhanden (cry) |
 |  |  | beide | Voices/freesound_community-middle-ages-war-crywav-14780.mp3 (1.18 s ab 0.12 s) |
 | **marschtritt** | Befehl „Marsch“ | beide | Ereignisse/naeftali-march2-137357.mp3 (3 s ab 0.02 s) |
 | **generalhorn** | Aschenwacht „Generalangriff“ | Aschenwacht | Ereignisse/trading_nation-low-horn-185556.mp3 (4 s ab 0.67 s) |
@@ -122,10 +139,10 @@ Welcher Tonplatz welche Datei spielt (Stand 2026-11-16, erzeugt aus `entwurf/ton
 |  |  | beide | daviddumaisaudio-grenade-explosion-14-190266.mp3 (1.8 s ab 0.02 s) |
 | **impact** | Koloss im Nahkampf | Konkordat | vorhanden (impact) |
 | **slash** | Klinge (Räumer, Grabenkämpfer, Reiter) | Aschenwacht | vorhanden (slash) |
-| **sword** | Schildträger, Schildwall | beide | vorhanden (sword) |
+| **sword** | Kampfanzüge im Nahkampf (Stahlgänger, Panzerknechte) | beide | vorhanden (sword) |
 |  |  | beide | yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3 (0.58 s ab 0.01 s) |
 |  |  | Konkordat | universfield-punch-with-male-scream-121575.mp3 (0.55 s ab 0.29 s) |
-| **axe** | Grabenräumer, Grabenkämpfer | beide | vorhanden (axe) |
+| **axe** | Grabenräumer (dazu Flinte) | beide | vorhanden (axe) |
 |  |  | beide | 392973__morganpurkis__trench-club-2.wav (0.92 s ab 0 s) |
 | **robot** | Kampfmaschine getroffen | Konkordat | vorhanden (robot) |
 | **heal** | Sanitäter versorgen | beide | vorhanden (heal) |

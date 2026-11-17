@@ -86,6 +86,10 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | sword | sword_1 | yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3 | Pixabay / yodguard | Pixabay Content License | – |
 | sword | sword_2 | universfield-punch-with-male-scream-121575.mp3 | Pixabay / universfield | Pixabay Content License | – |
 | axe | axe_1 | 392973__morganpurkis__trench-club-2.wav | Freesound / morganpurkis | CC0 1.0 | <https://freesound.org/s/392973/> |
+| nahA | nahA_1 | 392973__morganpurkis__trench-club-2.wav | Freesound / morganpurkis | CC0 1.0 | <https://freesound.org/s/392973/> |
+| nahD | nahD_1 | mixkit-heavy-sword-smashes-metal-2795.wav | Mixkit | Mixkit Free License | – |
+| nahD | nahD_2 | yodguard-a-massive-axe-impact-hitting-metal-1-450251.mp3 | Pixabay / yodguard | Pixabay Content License | – |
+| nahD | nahD_3 | yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3 | Pixabay / yodguard | Pixabay Content License | – |
 | heal | heal_1 | floraphonic-duct-tape-3-183995.mp3 | Pixabay / floraphonic | Pixabay Content License | – |
 | reparieren | reparieren_1 | 492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg | Freesound / firetie | CC0 1.0 | <https://freesound.org/s/492434/> |
 | reparieren | reparieren_2 | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav | Freesound / rudmer_rotteveel | CC0 1.0 | <https://freesound.org/s/591529/> |

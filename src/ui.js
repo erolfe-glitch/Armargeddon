@@ -1568,7 +1568,7 @@ function setMusik(name) {
 }
 // Abwechslung: Gruppen von Tönen, aus denen zufällig gewählt wird (Wunsch des Nutzers)
 // Seit 2026-11-16: Tonplätze (SOUND_POOLS) mit Varianten je Seite; SND_VAR fasst Plätze zusammen. Die Seite kommt aus dem gerade abgespielten Ereignis (sndSide).
-const SND_VAR = { rifle: ['rifle', 'rifle2', 'rifle3', 'rifle4'], cry: ['cry', 'scream'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'] };
+const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'] };
 const SND_POOLS = window.SOUND_POOLS || {};
 let hustenT = -1e9, hustenN = 0;
 function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
@@ -1657,7 +1657,8 @@ async function playEvent(e) {
         lastFire = { kind: e.kind, t: performance.now() }; if (mg && !mini) setTimeout(() => playSound('huelsen', 0.3), 650 / speed);   // leise Patronenhülsen nach der MG-Salve
         const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
         if (salve) { const n = Math.max(1, Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001)));   // so viele Schüsse wie lebende Figuren
-          for (let q = 0; q < n; q++) setTimeout(() => playSound('rifle', 0.3 * (0.75 + Math.random() * 0.5), au && au.side, { noGap: true, rate: 0.9 + Math.random() * 0.2 }), (q ? Math.random() * 400 : 0) / speed); }
+          const key = sndPick('rifle', au && au.side) || 'rifle';   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
+          for (let q = 0; q < n; q++) setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12 }), (q ? Math.random() * 400 : 0) / speed); }
         else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
         if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
         else if (mg && PJI.mgfire) muzzles.push({ img: 'mgfire', x: x1 + Math.cos(ang) * s * 0.25, y: y1 + Math.sin(ang) * s * 0.25, ang, sz: 0.85, off: 0.02, life: 26, max: 26 });
@@ -1699,7 +1700,10 @@ async function playEvent(e) {
         const mech = au && TYPES[au.type].mech;
         const du0 = unitById(e.d), foot = x => x && ['inf', 'mg', 'storm', 'medic', 'flame'].includes(TYPES[x.type].cls) && !TYPES[x.type].suit;
         const tank = au && TYPES[au.type].cls === 'walker' && !mech;
-        playSound(mech ? 'heavy' : tank ? 'impact' : af === 'shield' || af === 'heavy' ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : foot(au) && foot(du0) ? 'punch' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : au && TYPES[au.type].cls === 'cav' ? 'slash' : 'punch', (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
+        // Grundklang je Fraktion (2026-11-17): Konkordat Klingen/Keule/Fäuste (nahA), Aschenwacht Spaten/Metall (nahD); eigene Töne nur für
+        // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
+        const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
+        playSound(mech ? 'heavy' : tank ? 'impact' : suit ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : base, (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35);
         if (au && ['raeumer', 'sturm'].includes(au.type)) playSound('flinte', 0.5);   // kurzer Schuss im Grabenkampf
         if (au && TYPES[au.type].cls === 'storm' && e.t === 'melee') playSound('cry', 0.45);   // Kampfschrei beim Sturmangriff
