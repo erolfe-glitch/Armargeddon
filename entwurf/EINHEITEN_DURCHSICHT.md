@@ -101,3 +101,10 @@ Jetzt im Code: Draht macht keinen Schaden (beendet nur die Bewegung, Abwehr ×0,
 - **Anführer** (Hauptmann, General beider Seiten) zeigen überall ihre eigenen Bögen.
 - **Nachschub-Liste:** Name, Preis und Text überlappen nicht mehr; Porträts größer (96 px) und heller.
 - Sim (200, Grauwall, Standardarmee): vorher Konkordat 26 % / Aschenwacht 75 %, nachher 26 % / 74 %, Dauer 14,3 Runden; die neuen Einheiten kommen nur über den Nachschub ins Spiel.
+
+## Gruppe 5: Pioniere und Technik (2026-11-17, umgesetzt)
+- **Sprengtrupp gestrichen:** Graben-Pioniere haben die Haftladung (2 ●, alle 2 Runden, Nachbarfeld; schwerer Schaden, doppelt gegen Kolosse und Kampfmaschinen, Bunkerschutz zählt nicht, Bunker/Barrikaden → Trichter, Draht zerrissen). Draht schneiden und Bergen bleiben. Kosten 40 → 55.
+- **Minenleger gestrichen:** Drahtpioniere legen statt Draht eine Mine (1 ●, freies Nachbarfeld, 3 Minen je Trupp, Regeln wie beim Minenleger). Je Runde entweder Draht oder eine Mine, danach kein Angriff. Kosten 35 → 55.
+- **Versorgungstrupp** (Werkstatt-Trupp und Munitionsträger, je Seite eigenes Bild): reparieren/bergen ODER nachladen, je Runde eine der beiden Aufgaben (u.task). Werte für beide gleich (Angriff 2, Abwehr 2, Moral 6, 3 Felder), Kosten 45.
+- Mineure und Gasschutz-Trupp unverändert. Behoben: gekaufte Trupps mit Minen hatten bisher keine Minen.
+- Sim (200, Grauwall, Standardarmee): vorher Konkordat 26 % / Aschenwacht 74 %, nachher 24 % / 76 %, Dauer 14,3 Runden (Standardarmee ohne die gestrichenen Einheiten; Unterschied im Rahmen des Zufalls).

@@ -35,8 +35,8 @@ function freeNear(G, u) { return E.neighbors(u.c, u.r).find(([c, r]) => E.inMap(
   if (d) { E.hex(G, d.c, d.r).t = 'wire'; G.marks.push({ c: d.c, r: d.r, side: 'D' }); const ev = E.shell(G, a, d.c, d.r, 'he'); ok('Minenwerfer', E.hex(G, d.c, d.r).t !== 'wire' && redraws(ev, d.c, d.r), JSON.stringify(ev.map(e => e.t))); }
   else ok('Minenwerfer', false, 'kein Ziel');
 }
-{ // Sprengladung auf leeres Drahtfeld
-  const G = game(), u = G.units.find(x => x.side === 'A' && x.type === 'kohorte'); u.type = 'spreng'; u.ap = 2; u.attacked = false; u.cdA = 0;
+{ // Haftladung der Graben-Pioniere auf leeres Drahtfeld
+  const G = game(), u = G.units.find(x => x.side === 'A' && x.type === 'kohorte'); u.type = 'pionier'; u.ap = 2; u.attacked = false; u.cdA = 0;
   const [c, r] = freeNear(G, u); E.hex(G, c, r).t = 'wire'; const ev = E.useAbil(G, u, c, r);
   ok('Sprengladung', E.hex(G, c, r).t !== 'wire' && redraws(ev, c, r), JSON.stringify(ev.map(e => e.t)));
 }
