@@ -10,7 +10,7 @@ const W = {
   D: { threat: 0.45, prog: 0.45, obj: 0.45, hold: 0.45, cover: 0.6, dmg: 4, counter: 3.2, cut: 1.2 }   // Siegpunkt-Modus: auch die Aschenwacht rückt auf die Zielfelder vor
 };
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
-const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch', 'spreng'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'eingreif', 'minen', 'pirsch'] };
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch', 'spreng'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'minen', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
 function coverVal(t) { return COVER[t] || 0; }
@@ -374,6 +374,12 @@ function next(G) {
     if (steps.length) return { u: u.id, steps };
   }
   if (typeof process !== 'undefined' && process.env && process.env['NO2_' + G.side]) return null;
+  // Sturmpanzer: zweiter Schuss der Breitseite auf ein anderes Ziel bis 2 Felder (schwächstes zuerst)
+  for (const u of G.units) {
+    if (u.side !== G.side || !TYPES[u.type].broadside || !E.active(u) || !u.attacked || (u.bsT || []).length !== 1 || u.ap < 1) continue;
+    const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => x.str - y.str)[0];
+    if (t) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
+  }
   // Zweiter Durchgang: Meldehunde bringen Befehle, dann nutzen Einheiten mit übrigen Aktionspunkten sie (weiter ziehen oder angreifen)
   for (const u of G.units) if (u.side === G.side && E.active(u) && TYPES[u.type].abil === 'ammo') {
     const t = E.abilTargets(G, u)[0]; if (t) return { u: u.id, steps: [{ k: 'abil', c: t[0], r: t[1] }] };

@@ -785,6 +785,13 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .diary { background: var(--up-txPerg) 0 0 repeat; }
 .box { border-image: var(--ui-parch) 100 60 60 60 / 74px 40px 40px 40px stretch; background: var(--up-txPerg) 0 0 repeat !important; background-clip: padding-box !important; }
 @media (max-height: 520px), (max-width: 900px) { .box { border-image-width: 26px; } }
+/* Nachschub-Liste (2026-11-17): Preis in eigener Zeile unter dem Namen, nichts überlappt; Porträts größer und heller */
+.shoplist .item { grid-template-columns: 96px 1fr !important; grid-template-rows: auto auto 1fr; column-gap: 12px; }
+.shoplist .item canvas { grid-column: 1; grid-row: 1 / 4 !important; width: 96px !important; height: 96px !important; filter: brightness(1.18) contrast(1.05); }
+.shoplist .item b { grid-column: 2; grid-row: 1; white-space: normal; overflow-wrap: normal; hyphens: auto; -webkit-hyphens: auto; font-size: 17px !important; letter-spacing: .02em; line-height: 1.12; }
+.shoplist .item b.lang { font-size: 14.5px !important; letter-spacing: 0; }   /* sehr lange Einzelwörter (Schützenkohorte, Ballonbeobachter) passen so ohne Trennung */
+.shoplist .item .cost { grid-column: 2; grid-row: 2; justify-self: start; }
+.shoplist .item small { grid-column: 2; grid-row: 3; }
 </style>
 </head>
 <body>

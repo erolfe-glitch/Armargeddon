@@ -87,3 +87,17 @@ Jetzt im Code: Draht macht keinen Schaden (beendet nur die Bewegung, Abwehr ×0,
 - **Stufen im Tooltip:** Grabenmörser und Minenwerfer = Mörser, Feldkanone = leichte Artillerie (unverändert), Donnerrohr = mittlere Artillerie ohne direkten Schuss, Grabengeschütz = mittlere Artillerie mit direktem Schuss (vorerst).
 - **Minenwerfer:** Sprenggranaten ×1,5, zerstört Draht und Barrikaden im Zielfeld, ziehen oder feuern (nicht beides).
 - **Flammentrupp, Brandwerfer:** Zielfeld brennt bis zum nächsten eigenen Zug; wer dort steht (zu Beginn seines Zugs) oder hineinzieht, nimmt Feuerschaden (wie Draht, Kolosse halb); Draht verbrennt. Glut und kleine Flammen, leise Feuer-Schleife. KI meidet brennende Felder.
+
+## Entscheidungen – Gruppe 5: Pioniere und Technik (2026-11-17)
+- **Sprengtrupp → in Graben-Pioniere:** Graben-Pioniere bekommen die Haftladung (2 Punkte, alle 2 Runden; schwerer Schaden, doppelt gegen Kolosse, sprengt Bunker/Barrikaden, zerreißt Draht). Sprengtrupp entfällt.
+- **Minenleger → in Drahtpioniere:** Drahtpioniere können Draht ziehen ODER eine Mine legen (3 Minen je Trupp). Minenleger entfällt.
+- **Versorgungstrupp je Seite:** Werkstatt-Trupp (Konkordat) und Munitionsträger (Aschenwacht) werden zu Versorgungstrupps mit beiden Aufgaben: Kolosse/Kampfmaschinen reparieren und bergen sowie MG/Geschütz nachladen.
+- **Unverändert:** Mineure (Konkordat), Gasschutz-Trupp (Aschenwacht) – je Seite ein eigener Spezialist.
+
+## Gruppe 6: Fahrzeuge und Reiter der Aschenwacht (2026-11-17, umgesetzt)
+- **Sturmpanzer** (neu, Aschenwacht, Bild aschenwacht_panzer): Werte und Kosten (80) wie der Landkoloss. **Breitseite:** in einer Runde zwei Schüsse auf zwei verschiedene Ziele bis 2 Felder, jeder ×0,6. Im Nachschub und bei der KI (zweiter Schuss auf das schwächste Ziel).
+- **Sprenglanzen-Reiter** (neu, Aschenwacht, Bild aschenwacht_reiter): Werte und Kosten (30) wie der Lanzenreiter. Der erste Nahkampf der Schlacht mit der Sprenglanze ×1,5 (kleine Explosion), danach normale Lanze. Zustandsmarke im Panel: „Sprenglanze bereit“ bzw. „verbraucht“.
+- **Schreiter:** unverändert.
+- **Anführer** (Hauptmann, General beider Seiten) zeigen überall ihre eigenen Bögen.
+- **Nachschub-Liste:** Name, Preis und Text überlappen nicht mehr; Porträts größer (96 px) und heller.
+- Sim (200, Grauwall, Standardarmee): vorher Konkordat 26 % / Aschenwacht 75 %, nachher 26 % / 74 %, Dauer 14,3 Runden; die neuen Einheiten kommen nur über den Nachschub ins Spiel.
