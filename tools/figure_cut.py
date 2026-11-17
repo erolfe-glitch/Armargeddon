@@ -87,17 +87,41 @@ TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall'}
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
-SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3}
+SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
+           'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4}   # Schlüssel: Art oder ganzer Bogenname (geht vor)
 # Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+SH_REIHE = {'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+# Leuchtende Helmlampen, die im Bild rosa geraten sind (Magenta-Schein): in warmes Gelb umfärben
+LAMPE = {'konkordat_mineur'}
+LAMPE_FARBE = np.array([255, 208, 112.])
+
+
+def wert(tab, name, kind, std=None):
+    """Eintrag für den ganzen Bogennamen, sonst für die Art (konkordat_sturm 2×2, aschenwacht_sturm in einer Reihe)."""
+    return tab[name] if name in tab else tab.get(kind, std)
+
+
+def lampe_gelb(k):
+    """Rosa/magenta Leuchten (auch halbtransparenter Schein am Rand) → warmes Gelb, Helligkeit bleibt."""
+    r, g, b, al = [k[..., i].astype(float) for i in range(4)]
+    lum = 0.3 * r + 0.59 * g + 0.11 * b
+    hell = ndimage.binary_dilation((lum > 190) & (al > 200), iterations=14)   # nur um leuchtende Stellen (Lampe), nicht am roten Rock
+    rosa = (al > 8) & (r > 140) & (b > 100) & (np.minimum(r, b) - g > 25)
+    rosa |= hell & (al > 8) & (r - g > 8) & (b - g > -3) & (lum > 100)   # blasser rosa Schein (halbtransparent)
+    v = np.clip(np.maximum(r, b) / 255, 0.5, 1.0)[..., None]
+    q = k.astype(float).copy(); q[rosa, :3] = (LAMPE_FARBE * v)[rosa]
+    print(f'  Helmlampe gelb: {int(rosa.sum())} px')
+    return q
+
+
 # Gezeichnete Bodenschatten unter den Füßen entfernen (dunkles Magenta/Pink unten an den Posen)
 OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
 SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5,
-             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
+             'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15, 'feldkanone': 1.05}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
 # Aschenwacht: Schwarz-Weiß-Rot (echte Reichsfarben) → eigene Farben Aschgrau / Schwarz / Knochenweiß. Allgemeine Regel für ALLE
 # aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
 # dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
@@ -261,8 +285,9 @@ def cut(name, out=OUT):
             im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA'); im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
             im.save(out / f'{nm}.png'); print(f'{nm}: {im.width}×{im.height}')
         return
-    if kind in SPALTEN:   # Posen an festen Stellen getrennt, je Streifen alle großen Teile (Mann + Hund)
-        sp = SPALTEN[kind]
+    if name in LAMPE: k = lampe_gelb(k)
+    if wert(SPALTEN, name, kind) is not None:   # Posen an festen Stellen getrennt, je Streifen alle großen Teile (Mann + Hund)
+        sp = wert(SPALTEN, name, kind)
         if isinstance(sp, int):   # automatisch: je Trennstelle die Spalte mit der wenigsten Deckung nahe der gleichmäßigen Teilung
             prof = ndimage.uniform_filter1d((k[..., 3] > 60).sum(0).astype(float), 15); cols = np.nonzero(prof > 0)[0]; xa, xb = cols.min(), cols.max(); L = xb - xa
             sp = [(xa + int(np.argmin(prof[int(xa + L * (i / sp - 0.1)):int(xa + L * (i / sp + 0.1))])) + int(L * (i / sp - 0.1))) / W for i in range(1, sp)]
@@ -275,7 +300,7 @@ def cut(name, out=OUT):
             if j > 0: m &= cols >= seams[j - 1][:, None]
             if j < len(seams): m &= cols < seams[j][:, None]
             t = k.copy(); t[~m, 3] = 0; poses.append(keep_parts(t, True, 0.12))   # Krümel der Nachbarpose weg
-        s = H_OUT * SH_REIHE.get(kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)
+        s = H_OUT * wert(SH_REIHE, name, kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)
         for j, q in enumerate(poses, 1):
             im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
             im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)

@@ -31,7 +31,7 @@ Stand 2026-11-17. Porträts im Einheiten-Panel, Info-Fenster, Nachschub und in d
 | Panzerknechte | Aschenwacht | aschenwacht_panzerknecht_1 | ja |
 | Flammentrupp | Konkordat | konkordat_flammen_1 |  |
 | Schildwall | Konkordat | konkordat_schildwall_1 |  |
-| Feldkanone | Konkordat | konkordat_geschuetz |  |
+| Feldkanone | Konkordat | konkordat_feldkanone |  |
 | Drahtpioniere | Aschenwacht | aschenwacht_pionier_1 |  |
 | Bannerträger | Aschenwacht | aschenwacht_banner_1 |  |
 | Hauptmann mit Stab | Konkordat | konkordat_hauptmann |  |
@@ -40,12 +40,16 @@ Stand 2026-11-17. Porträts im Einheiten-Panel, Info-Fenster, Nachschub und in d
 | General mit Stab | Aschenwacht | aschenwacht_general |  |
 | Bohrkoloss | Aschenwacht | aschenwacht_bohrkoloss | ja |
 | Rauchwerfer-Trupp | Konkordat | konkordat_rauchwerfer |  |
-| Mineure (Tunnelgräber) | Konkordat | konkordat_pionier_1 |  |
+| Mineure (Tunnelgräber) | Konkordat | konkordat_mineur_1 |  |
 | Sprengtrupp | Konkordat | konkordat_pionier_1 |  |
 | Ballonbeobachter | Konkordat | konkordat_ballon |  |
 | Minenleger | Aschenwacht | aschenwacht_pionier_1 |  |
-| Eingreiftrupp | Aschenwacht | aschenwacht_sturm_1 |  |
+| Eingreiftrupp | Aschenwacht | aschenwacht_eingreif_1 |  |
 | Pirschjäger | Aschenwacht | aschenwacht_pirschjaeger_2 |  |
+| Fernsprechtrupp | Konkordat | konkordat_fernsprech_3 |  |
+| Werkstatt-Trupp (Versorgung) | Konkordat | konkordat_versorgung_1 |  |
+| Gasschutz-Trupp | Aschenwacht | aschenwacht_gasschutz_1 |  |
+| Munitionsträger (Versorgung) | Aschenwacht | aschenwacht_versorgung_1 |  |
 
 ## Noch ohne Bild im neuen Stil (zeigen das alte Bild)
 
@@ -56,8 +60,4 @@ Stand 2026-11-17. Porträts im Einheiten-Panel, Info-Fenster, Nachschub und in d
 | Turmschreiter | Konkordat | ja |
 | Ordensschreiter | Konkordat | ja |
 | Kreuzschreiter | Konkordat | ja |
-| Fernsprechtrupp | Konkordat |  |
 | Eisenknecht | Aschenwacht | ja |
-| Werkstatt-Trupp | Konkordat |  |
-| Gasschutz-Trupp | Aschenwacht |  |
-| Munitionsträger | Aschenwacht |  |

@@ -1179,13 +1179,13 @@ const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäte
 const FIGMAP = {
   kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], lanzeD: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], sturmpz: ['panzer'], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], raeumer: ['sturm', 1],
-  pionier: ['pionier', 1], mineur: ['pionier', 1], spreng: ['pionier', 1],
-  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['geschuetz'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
-  grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['sturm', 1],
+  pionier: ['pionier', 1], mineur: ['mineur', 1, 2], spreng: ['pionier', 1],
+  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['feldkanone'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
+  grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['eingreif', 1],
   pionierD: ['pionier', 1], minen: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
   stahl: ['stahl', 1, 2, ANZUG], panzerk: ['panzerknecht', 1, 2, ANZUG],   // Kampfanzüge: 2 Figuren, 1,25 SH, eng im Feld
-  ballon: ['ballon'], signal: ['signal', 1, 2],   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
+  ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
 };
@@ -1203,7 +1203,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone'].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -2207,7 +2207,7 @@ function updateUI() {
   computeOptions(); updateHud();
 }
 // Porträts aus den neuen Figurenbögen (2026-11-17): je Bogen eine gut erkennbare Pose, bei Einzelmodellen das Modell; sonst das alte Bild
-const PORTRAIT_POSE = { soldat: 1, sturm: 1, pionier: 1, sanitaeter: 4, flammen: 1, reiter: 1, scharfschuetze: 3, schildwall: 1, schwer: 1, melder: 1, banner: 1, pirschjaeger: 2, signal: 1, stahl: 1, panzerknecht: 1 };
+const PORTRAIT_POSE = { soldat: 1, sturm: 1, pionier: 1, sanitaeter: 4, flammen: 1, reiter: 1, scharfschuetze: 3, schildwall: 1, schwer: 1, melder: 1, banner: 1, pirschjaeger: 2, signal: 1, stahl: 1, panzerknecht: 1, fernsprech: 3, versorgung: 1, gasschutz: 1, mineur: 1, eingreif: 1 };
 function portraitKey(type, side, limbered) {
   const m = type && FIGMAP[type]; if (!m || !window.FIGS || fac(side) === 'F') return null;
   const pre = side === 'A' ? 'konkordat_' : 'aschenwacht_'; let sheet = m[0];
