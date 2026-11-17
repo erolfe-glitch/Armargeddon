@@ -98,22 +98,117 @@ OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
 SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.5, 'panzer': 1.5, 'bohrkoloss': 1.5,
              'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15}   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
-# Aschenwacht-Fahnen: Schwarz-Weiß-Rot (echte Flagge) → eigene Farben Aschgrau / Schwarz / Knochenweiß, nur im Fahnenbereich (Anteile x0, y0, x1, y1)
+# Aschenwacht: Schwarz-Weiß-Rot (echte Reichsfarben) → eigene Farben Aschgrau / Schwarz / Knochenweiß. Allgemeine Regel für ALLE
+# aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
+# dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
+# FAHNE: zusätzliche feste Bereiche (Anteile x0, y0, x1, y1), wo die Erkennung nicht reicht (dunkles Weinrot der Banner, Panzerstreifen).
 FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
 ASCHGRAU, KNOCHEN = np.array([108, 106, 100.]), np.array([222, 212, 186.])
 
 
-def fahne_umfaerben(a, box):
-    """Weiß → Aschgrau, Rot → Knochenweiß (Schattierung bleibt), Schwarz bleibt; weiche Masken gegen harte Kanten."""
-    a = a.astype(np.float64); H, W = a.shape[:2]; x0, y0, x1, y1 = box
-    sl = (slice(int(y0 * H), int(y1 * H)), slice(int(x0 * W), int(x1 * W))); q = a[sl]
-    r, g, b = q[..., 0], q[..., 1], q[..., 2]; mx, mn = q.max(-1), q.min(-1); lum = 0.3 * r + 0.59 * g + 0.11 * b
+def fahnen_finden(a, alpha):
+    """Maske der Schwarz-Weiß-Rot-Stellen: in einem Fenster (2,2 % der Bildgröße) kräftiges Rot, Weiß und Schwarz zugleich."""
+    H, W = a.shape[:2]; inner = ndimage.binary_erosion(alpha > 200, iterations=2)
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]; mx, mn = a.max(-1), a.min(-1); lum = 0.3 * r + 0.59 * g + 0.11 * b
+    red = (np.minimum(r - g, r - b) > 60) & (r > 90) & inner; white = (lum > 150) & ((mx - mn) < 40) & inner; dark = (lum < 55) & inner
+    R = max(8, int(min(H, W) * 0.022)); f = lambda m: ndimage.uniform_filter(m.astype(float), R)
+    cand = (f(red) > 0.08) & (f(white) > 0.08) & (f(dark) > 0.06)
+    lab, n = ndimage.label(cand); sz = ndimage.sum(cand, lab, range(1, n + 1))
+    m = np.isin(lab, [i + 1 for i, v in enumerate(sz) if v >= R * R * 0.2])
+    return ndimage.binary_dilation(m, iterations=R // 2) & (alpha > 20)
+
+
+def fahne_umfaerben(a, name, alpha):
+    """Weiß → Aschgrau, Rot → Knochenweiß (Schattierung bleibt), Schwarz bleibt; weiche Masken gegen harte Kanten.
+    In den festen FAHNE-Bereichen alles Rot/Weiß, in den gefundenen Stellen nur kräftiges Rot und Weiß direkt neben Rot."""
+    a = a.astype(np.float64); H, W = a.shape[:2]
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]; mx, mn = a.max(-1), a.min(-1); lum = 0.3 * r + 0.59 * g + 0.11 * b
     rot = np.clip((np.minimum(r - g, r - b) - 30) / 25, 0, 1)
     weiss = np.clip((lum - 135) / 30, 0, 1) * np.clip((45 - (mx - mn)) / 20, 0, 1)
+    box = np.zeros((H, W), bool)
+    if name in FAHNE:
+        x0, y0, x1, y1 = FAHNE[name]; box[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)] = True
+    auto = fahnen_finden(a, alpha) & ~box
+    # ganze rote Bahnen, die eine gefundene Stelle berühren (flächig, kein Blut/Rost), und Weiß direkt daneben
+    al = alpha > 160; rv = np.clip((np.minimum(r - g, r - b) - 45) / 20, 0, 1) * al * ~box
+    lab, n = ndimage.label(ndimage.binary_closing(rv > 0, iterations=1)); hit = ndimage.sum((rv > 0) & auto, lab, range(1, n + 1))   # rotes Stück innerhalb der gefundenen Stelle
+    rot_a = rv * np.isin(lab, [i + 1 for i in range(n) if hit[i] >= H * W * 2.5e-4])
+    nah = ndimage.binary_dilation(rot_a > 0.5, iterations=max(3, int(min(H, W) * 0.012)))
+    weiss_f = np.clip((lum - 120) / 30, 0, 1) * np.clip((70 - (mx - mn)) / 20, 0, 1)   # Fahnenweiß darf cremig sein
+    wm = (weiss_f > 0.3) & al; wl, wn = ndimage.label(wm); wt = ndimage.maximum(nah, wl, range(1, wn + 1))
+    nah = nah | np.isin(wl, [i + 1 for i in range(wn) if wt[i]]) & ndimage.binary_dilation(rot_a > 0.5, iterations=max(6, int(min(H, W) * 0.08)))
+    auto = auto | nah
+    rot = rot * box + rot_a; weiss = weiss * box + weiss_f * (auto & nah & ~box)
     v_rot = np.clip(mx / 160, 0.35, 1.05)[..., None]; v_w = np.clip(lum / 205, 0.5, 1.08)[..., None]
-    q[:] = q * (1 - rot[..., None]) + KNOCHEN * v_rot * rot[..., None]
-    q[:] = q * (1 - weiss[..., None]) + ASCHGRAU * v_w * weiss[..., None]
-    print(f'  Fahne umgefärbt: rot {int((rot > 0.5).sum())} px, weiß {int((weiss > 0.5).sum())} px')
+    a = a * (1 - rot[..., None]) + KNOCHEN * v_rot * rot[..., None]
+    a = a * (1 - weiss[..., None]) + ASCHGRAU * v_w * weiss[..., None]
+    if (rot > 0.5).sum() + (weiss > 0.5).sum():
+        print(f'  Schwarz-Weiß-Rot umgefärbt: rot {int((rot > 0.5).sum())} px, weiß {int((weiss > 0.5).sum())} px (fest {int(box.sum())}, gefunden {int(auto.sum())})')
+    return np.clip(a, 0, 255).astype(np.uint8)
+
+
+# Eiserne Kreuze als Abzeichen übermalen (2026-11-17; kreuzförmige Visiere bleiben). Koordinaten in Pixeln der Quelle:
+#   platte (cx, cy, r): Kreuz im Kreis r finden und mit der umgebenden Platte füllen (Ausgleich + Körnung von daneben)
+#   orden (cx, cy, r, sx, sy, sr): Kreuz übermalen und runde Medaille von (sx, sy) einsetzen
+#   spitze (x0, y0, x1, y1, px0, px1, sy): Kreuz an der Fahnenspitze durch Stangenstück ersetzen (Rest Hintergrund)
+ABZEICHEN = {
+    'aschenwacht_panzerknecht': [('platte', 106, 236, 50), ('platte', 619, 264, 46), ('platte', 1205, 294, 52)],
+    'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15)],
+    'aschenwacht_bohrkoloss': [('platte', 468, 579, 27)],
+}
+
+
+def _diffus(a, m, n=300, aus=None):
+    """Loch m aus dem Rand auffüllen (wiederholtes Mitteln, nur glatte Farbe); gerechnet nur im Ausschnitt um m."""
+    ys, xs = np.nonzero(m); y0, y1, x0, x1 = max(0, ys.min() - 4), ys.max() + 5, max(0, xs.min() - 4), xs.max() + 5
+    out = a.copy(); out[y0:y1, x0:x1] = _diffus_roh(a[y0:y1, x0:x1], m[y0:y1, x0:x1], n, None if aus is None else aus[y0:y1, x0:x1]); return out
+
+
+def _diffus_roh(a, m, n, aus=None):   # aus = Hintergrund: weder Quelle noch Ziel
+    q = a.copy(); q[m] = 0; w = (~m).astype(float)
+    if aus is not None: q[aus] = 0; w[aus] = 0; acc = q * w[..., None]
+    for _ in range(n):
+        acc2 = ndimage.uniform_filter(acc, (3, 3, 1)); w2 = ndimage.uniform_filter(w, 3)
+        fill = acc2 / np.maximum(w2, 1e-6)[..., None]; q[m] = fill[m]; nw = np.maximum(w, (w2 > 0).astype(float))
+        if aus is not None: nw[aus] = 0
+        w = nw; acc = q * w[..., None]
+    return q
+
+
+def abzeichen_uebermalen(a, name):
+    if name not in ABZEICHEN: return a
+    a = a.astype(np.float64); H, W = a.shape[:2]; yy, xx = np.mgrid[0:H, 0:W]
+    lum = a @ [0.3, 0.59, 0.11]; bgc = a[2, 2].copy()
+    bg = ndimage.binary_dilation(np.abs(a - bgc).sum(-1) < 160, iterations=2)   # mit Saum
+    for op in ABZEICHEN[name]:
+        if op[0] in ('platte', 'orden'):
+            cx, cy, r = op[1:4]; disk = (xx - cx) ** 2 + (yy - cy) ** 2 <= r * r
+            # Kreuz = dunkle Füllung + helle Umrandung, zusammenhängend um die Mitte
+            sm = ndimage.gaussian_filter(lum, 1.2); hf = np.abs(lum - ndimage.gaussian_filter(lum, 6))
+            k = disk & ~bg & ((sm < np.percentile(sm[disk & ~bg], 35)) | (sm > np.percentile(sm[disk & ~bg], 88)) | (hf > 28))
+            k = ndimage.binary_closing(k, iterations=3); k = ndimage.binary_fill_holes(k)
+            lab, n = ndimage.label(k); c = lab[cy, cx] or (np.bincount(lab[disk].ravel(), minlength=n + 1)[1:].argmax() + 1)
+            m = ndimage.binary_dilation(lab == c, iterations=3) & disk & ~bg
+            f = _diffus(a, m, aus=bg)
+            # Körnung: Feinstruktur von versetzten Stellen der Platte (nicht Kreuz, nicht Hintergrund)
+            det = a - ndimage.gaussian_filter(a, (3, 3, 0)); out = f.copy(); done = np.zeros_like(m)
+            for dx, dy in ((int(r * 1.1), 0), (-int(r * 1.1), 0), (0, int(r * 1.1)), (0, -int(r * 1.1)), (int(r * .8), int(r * .8)), (-int(r * .8), int(r * .8))):
+                sy_, sx_ = np.clip(yy + dy, 0, H - 1), np.clip(xx + dx, 0, W - 1)
+                ok = m & ~done & ~m[sy_, sx_] & ~bg[sy_, sx_]; out[ok] = f[ok] + det[sy_[ok], sx_[ok]] * 0.9; done |= ok
+            soft = ndimage.gaussian_filter(m.astype(float), 1.0)[..., None]; a = a * (1 - soft) + out * soft
+            if op[0] == 'orden':   # runde Medaille einsetzen
+                sx, sy, sr = op[4:7]; md = (xx - sx) ** 2 + (yy - sy) ** 2 <= sr * sr
+                ys, xs = np.nonzero(md); ty, tx = ys - sy + cy, xs - sx + cx; okk = (ty >= 0) & (ty < H) & (tx >= 0) & (tx < W)
+                a[ty[okk], tx[okk]] = a[ys[okk], xs[okk]]
+            print(f'  Abzeichen übermalt bei {cx},{cy}: {int(m.sum())} px')
+        elif op[0] == 'spitze':
+            x0, y0, x1, y1, px0, px1, sy = op[1:]
+            box = (xx >= x0) & (xx < x1) & (yy >= y0) & (yy < y1)
+            ring = (xx >= x0 - 8) & (xx < x1 + 8) & (yy >= y0 - 8) & (yy < y1 + 8) & ~box & bg
+            a[box] = np.median(a[ring], 0) if ring.any() else bgc   # Kreuz weg (Hintergrundfarbe von nebenan)
+            for y in range(y0, y1):   # Stange durchziehen
+                a[y, px0:px1] = a[sy + (y - y0) % 40, px0:px1]
+            print(f'  Fahnenspitze ohne Kreuz: {int(box.sum())} px')
     return np.clip(a, 0, 255).astype(np.uint8)
 
 
@@ -153,9 +248,11 @@ def seam(op, x0, w):
 
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
-    if name in FAHNE: a = fahne_umfaerben(a, FAHNE[name])
+    a = abzeichen_uebermalen(a, name)
     H, W = a.shape[:2]
     k = keyed(a)
+    if name.startswith('aschenwacht_'):   # allgemeine Regel: Reichsfarben → Aschenwacht-Farben, danach neu freistellen
+        a = fahne_umfaerben(a, name, k[..., 3]); k = keyed(a)
     kind = kind_of(name)
     if name in TEILUNG:   # unten Winde mit Mann, oben Ballon mit Korb; gleicher Maßstab, Seil zeichnet das Spiel
         y = int(H * TEILUNG[name]); lo = k.copy(); lo[:y, :, 3] = 0; hi = k.copy(); hi[y:, :, 3] = 0
