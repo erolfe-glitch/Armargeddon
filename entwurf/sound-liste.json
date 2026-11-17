@@ -4,7 +4,7 @@
   "anzahl": 153,
   "dateien": [
     {
-      "datei": "131710__oldedgar__male-being-impaledbeaten-ac.wav",
+      "datei": "Pain death/131710__oldedgar__male-being-impaledbeaten-ac.wav",
       "kategorie": "Schmerz/Tod",
       "vorschlag": "Schmerz/Tod",
       "einsatz": "pain",
@@ -25,7 +25,7 @@
       ]
     },
     {
-      "datei": "155973__mrpokephile__zombie-flesh-bites.mp3",
+      "datei": "Monster/155973__mrpokephile__zombie-flesh-bites.mp3",
       "kategorie": "Dämonen (später)",
       "vorschlag": "Dämonen (später)",
       "einsatz": null,
@@ -44,7 +44,7 @@
       "hinweise": []
     },
     {
-      "datei": "17548__dynamicell__fire_forest_inferno.aiff",
+      "datei": "Fire/17548__dynamicell__fire_forest_inferno.aiff",
       "kategorie": "Feuer",
       "vorschlag": "Feuer",
       "einsatz": null,
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "datei": "182435__qubodup__sniper-shots-dod-56706-dod-146324.flac",
+      "datei": "Infantry Guns/182435__qubodup__sniper-shots-dod-56706-dod-146324.flac",
       "kategorie": "Gewehr",
       "vorschlag": "Gewehr",
       "einsatz": "sniper",
@@ -90,7 +90,7 @@
       ]
     },
     {
-      "datei": "210901__originalmaja__three-cannon-shots.mp3",
+      "datei": "Heavy firing sounds/210901__originalmaja__three-cannon-shots.mp3",
       "kategorie": "Geschütz/Artillerie",
       "vorschlag": "Geschütz/Artillerie",
       "einsatz": "barrage",
@@ -109,7 +109,7 @@
       "hinweise": []
     },
     {
-      "datei": "212689__tb0y298__water-explosion-1.wav",
+      "datei": "Water/212689__tb0y298__water-explosion-1.wav",
       "kategorie": "Einschlag Wasser",
       "vorschlag": "Einschlag Wasser",
       "einsatz": "cannonH",
@@ -128,7 +128,7 @@
       "hinweise": []
     },
     {
-      "datei": "233068__newciv1__loud-tiger-ii-audio-test.wav",
+      "datei": "Moving tanks/233068__newciv1__loud-tiger-ii-audio-test.wav",
       "kategorie": "Befehle/Rufe",
       "vorschlag": "Panzerketten",
       "einsatz": "charge",
@@ -149,7 +149,7 @@
       ]
     },
     {
-      "datei": "239137__qubodup__artillery-gunfire.flac",
+      "datei": "Heavy firing sounds/239137__qubodup__artillery-gunfire.flac",
       "kategorie": "Geschütz/Artillerie",
       "vorschlag": "Geschütz/Artillerie",
       "einsatz": "cannon",
@@ -170,7 +170,7 @@
       ]
     },
     {
-      "datei": "271631__carmsie__feel-free-to-scream.wav",
+      "datei": "Voices/271631__carmsie__feel-free-to-scream.wav",
       "kategorie": "Dämonen (später)",
       "vorschlag": "Schmerz/Tod",
       "einsatz": null,
@@ -191,7 +191,7 @@
       ]
     },
     {
-      "datei": "320862__urupin__old-watch-in-a-small-antique-shop.flac",
+      "datei": "Ereignisse/320862__urupin__old-watch-in-a-small-antique-shop.flac",
       "kategorie": "Aussortiert",
       "vorschlag": "Aussortiert",
       "einsatz": null,
@@ -214,7 +214,7 @@
       ]
     },
     {
-      "datei": "338146__artordie__scream-augh.wav",
+      "datei": "Voices/338146__artordie__scream-augh.wav",
       "kategorie": "Schmerz/Tod",
       "vorschlag": "Schmerz/Tod",
       "einsatz": "pain",
@@ -235,7 +235,7 @@
       ]
     },
     {
-      "datei": "339191__shillsuqat__chewing-zombie_wav.wav",
+      "datei": "Monster/339191__shillsuqat__chewing-zombie_wav.wav",
       "kategorie": "Dämonen (später)",
       "vorschlag": "Dämonen (später)",
       "einsatz": null,
@@ -256,7 +256,7 @@
       ]
     },
     {
-      "datei": "397370__jgrzinich__forest-gun-shots-and-gunfire.wav",
+      "datei": "Infantry Guns/397370__jgrzinich__forest-gun-shots-and-gunfire.wav",
       "kategorie": "Atmosphäre/Ferne Schlacht",
       "vorschlag": "Atmosphäre/Ferne Schlacht",
       "einsatz": null,
@@ -279,7 +279,7 @@
       ]
     },
     {
-      "datei": "447809__florianreichelt__light-rain-and-thunder.wav",
+      "datei": "Ambience/447809__florianreichelt__light-rain-and-thunder.wav",
       "kategorie": "Regen/Wetter",
       "vorschlag": "Regen/Wetter",
       "einsatz": "neu:wetter",
@@ -301,7 +301,7 @@
       ]
     },
     {
-      "datei": "519008__sheyvan__water-explosion.wav",
+      "datei": "Water/519008__sheyvan__water-explosion.wav",
       "kategorie": "Einschlag Wasser",
       "vorschlag": "Einschlag Wasser",
       "einsatz": "neu:wasser",
@@ -320,7 +320,7 @@
       "hinweise": []
     },
     {
-      "datei": "563765__florianreichelt__fire-auto-car-on-fire.mp3",
+      "datei": "Fire/563765__florianreichelt__fire-auto-car-on-fire.mp3",
       "kategorie": "Feuer",
       "vorschlag": "Feuer",
       "einsatz": "neu:feuer",
@@ -339,7 +339,7 @@
       "hinweise": []
     },
     {
-      "datei": "612277__robinhood76__10835-big-fire-loop.wav",
+      "datei": "Fire/612277__robinhood76__10835-big-fire-loop.wav",
       "kategorie": "Feuer",
       "vorschlag": "Feuer",
       "einsatz": null,
@@ -358,7 +358,7 @@
       "hinweise": []
     },
     {
-      "datei": "847367__adrian_sommer__gun-reloading-walther-p99.wav",
+      "datei": "Repair reload heal etc/847367__adrian_sommer__gun-reloading-walther-p99.wav",
       "kategorie": "Nachladen",
       "vorschlag": "Nachladen",
       "einsatz": "neu:nachladen",
