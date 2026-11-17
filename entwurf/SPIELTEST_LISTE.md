@@ -22,7 +22,7 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 14. Zusätzliche, langsamere Geschwindigkeitsstufe für den Gegnerzug.
 15. Schadenszahlen kleiner und im Grimdark-Stil; Zahlen in der oberen Leiste schärfer, weniger rundlich.
 
-## Paket 3 – Regeln
+## Paket 3 – Regeln – erledigt 2026-11-17 (Bilder: entwurf/probe/paket3/; Freischlag und Nachschub an Zielfeldern dazu)
 16. Flanken: nur Fahrzeuge und Kampfmaschinen haben Flanken; Infanterie und Geschütze nicht (MG-Schussfeld bleibt).
 17. Eigene Einheiten können nicht durch eigene Einheiten ziehen; nie zwei Einheiten auf einem Feld.
 18. Freischlag: Wer sich aus dem Nahkampf löst, bekommt vom Gegner einen leichten Treffer (etwa halber Nahkampfschaden).

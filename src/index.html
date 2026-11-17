@@ -929,7 +929,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
     <ol>
       <li>Die Seiten ziehen abwechselnd, das Konkordat beginnt. Jede Einheit hat je Runde 2 Aktionspunkte (●●): Ziehen 1, Schießen 1, Nahkampf alle. Gelbe Felder = Marsch: doppelt so weit für beide Punkte, danach keine Aktion und nicht neben dem Feind. Straßen sind schneller. Wer neben dem Feind steht, braucht für den Rückzug beide Punkte.</li>
       <li>Weißer Balken: Stärke. Goldener Balken: Moral. Wenig Moral: Die Einheit weicht zurück oder flieht.</li>
-      <li>Der Punkt am Standring zeigt die Blickrichtung. Angriffe in die Flanke wirken ×1,4, in den Rücken ×1,8.</li>
+      <li>Der Punkt am Standring zeigt die Blickrichtung. Flanke und Rücken zählen nur bei Fahrzeugen (Kolosse, Schreiter, Sturmpanzer): Angriffe in die Flanke ×1,4, in den Rücken ×1,8. Infanterie, Reiter und Geschütze haben keine Flanken; Gräben schützen weiterhin nur nach vorn.</li><li>Rückzug aus der Feindberührung kostet beide Aktionspunkte, und jeder angrenzende Nahkämpfer trifft mit einem Freischlag (halber Nahkampfschaden, keine Moral). Eigene Einheiten versperren den Weg. Umschalt+Klick (Finger: lange drücken) auf ein Zugfeld setzt einen Wegpunkt, z. B. um Draht oder Gas zu umgehen. Nachschub kommt am eigenen Rand und an eigenen Zielfeldern an.</li>
       <li>Gräben schützen gegen Beschuss und gegen Angriffe von vorn. Stacheldraht stoppt jede Bewegung. Schneiden: Pioniere und Sturmtruppen 1 Punkt, übrige Fußtruppen 2, Reiter, Radler und Geschütze gar nicht. Kolosse walzen Draht nieder, können aber im Schlamm festfahren: Pioniere bergen sie (◎ gelb anklicken).</li>
       <li>Maschinengewehre müssen aufgebaut sein (1 Punkt), dann feuern sie und schießen von selbst auf Gegner, die sich im Offenen bewegen. Ziehen baut sie ab (⤓). Schützen können Feuerbereitschaft halten (◎, beide Punkte): Sie schießen auf den ersten Gegner, der sich in Reichweite bewegt. Wer zu viel Beschuss abbekommt, ist niedergehalten.</li>
       <li>Artillerie braucht eine eigene Einheit, die das Ziel sieht. Sprenggranaten machen Schaden, Sperrfeuer hält nieder, Gas treibt mit dem Wind.</li>
@@ -970,7 +970,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
   <div class="sheet">
     <div class="kicker">Nachschub anfordern</div>
     <h2 class="title" style="font-size:44px">★ <span id="shopPts">0</span> Punkte</h2>
-    <p class="lead" style="margin:0">Punkte gibt es jede Runde (10), für jede geschlagene gegnerische Einheit (20) und für eroberte Zielfelder (10 je Siegpunkt). Neue Einheiten erscheinen am eigenen Rand und handeln ab der nächsten Runde.</p>
+    <p class="lead" style="margin:0">Punkte gibt es jede Runde (10), für jede geschlagene gegnerische Einheit (20) und für eroberte Zielfelder (10 je Siegpunkt). Neue Einheiten erscheinen am eigenen Rand oder an eigenen Zielfeldern (Feld und Nachbarn, nicht in Feindberührung) und handeln ab der nächsten Runde.</p>
     <div class="shoplist" id="shopList"></div>
     <button class="tbtn" id="closeShop">Schließen</button>
   </div>

@@ -6,7 +6,7 @@
 // ---------- Grundwerte (per Simulation abgestimmt) ----------
 const P = {
   DMG: 0.61,
-  FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6,
+  FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6, FREEBLOW: 0.5,   // FLANK/REAR nur für Fahrzeuge; FREEBLOW: Freischlag beim Rückzug (Anteil des Nahkampfschadens)
   COUNTER: { front: 0.6, flank: 0.3, rear: 0 },
   MOR_PER_DMG: 0.8, MOR_FLANK: 0.5, MOR_REAR: 1, MOR_SURR: 1,
   FALLBACK_MOR: 3, ROUT_STR: 1.5,
@@ -850,6 +850,9 @@ function noFlee(G, u) { return !!(G.hold && G.hold[u.side]) || G.units.some(o =>
 function officerAt(G, side, c, r) {
   return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= cmdRange(o));
 }
+// Flanken und Rücken mit Schadens-, Moral- und Gegenschlag-Wirkung haben nur Fahrzeuge: Kolosse, Schreiter, Sturmpanzer (Klasse walker).
+// Infanterie, Reiter und Geschütze nicht (Paket 3, 2026-11-17). Die Lage (arcOf) zählt weiter für Deckung von vorn und das MG-Schussfeld.
+function hasFlanks(T) { return T.cls === 'walker'; }
 function arcOf(G, d, ac, ar) {
   const diff = angDiff(angleTo(d.c, d.r, ac, ar), d.face * 60);
   return diff <= 61 ? 'front' : diff <= 121 ? 'flank' : 'rear';
@@ -881,37 +884,55 @@ function reachable(G, u, opt) {
   let mp = u.limbered ? P.LIMBER_MV : T.mv;
   if (march) mp = T.mv * P.MARCH;
   if (u.mvd > 0) mp = Math.max(1, Math.floor(mp * P.MV2));   // zweiter Zug in derselben Runde: nur halb so weit
-  const start = key(u.c, u.r);
-  const best = new Map([[start, 0]]), prev = new Map();
-  const queue = [[0, u.c, u.r]];
-  while (queue.length) {
-    queue.sort((a, b) => a[0] - b[0]);
-    const [cst, c, r] = queue.shift();
-    if (cst > best.get(key(c, r))) continue;
-    const here = key(c, r);
-    if (here !== start && ((hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !wireProof(T)) || (!free && isZOC(G, c, r, u.side)))) continue;
-    for (const [nc, nr] of neighbors(c, r)) {
-      const occ = unitAt(G, nc, nr);
-      if (occ && (occ.side !== u.side || occ.status === 'rout')) continue;
-      const mc = cost(G, u, nc, nr);
-      if (mc >= 99) continue;
-      const nCost = cst + mc;
-      if (nCost > mp && here !== start) continue;
-      const k = key(nc, nr);
-      if (best.has(k) && best.get(k) <= nCost) continue;
-      best.set(k, nCost); prev.set(k, here); queue.push([nCost, nc, nr]);
+  // Dijkstra nach Zugkosten (kürzester Weg). Gefahren (Gas, Feuer) werden nicht umgangen; Draht und Feindberührung beenden den Zug dort.
+  // Kein Feld mit einer Einheit darauf, auch nicht im Weg (Paket 3: eigene Truppen versperren den Weg, nie zwei Einheiten auf einem Feld).
+  const run = (sc, sr, c0, first) => {
+    const s0 = key(sc, sr), best = new Map([[s0, c0]]), prev = new Map(), queue = [[c0, sc, sr]];
+    while (queue.length) {
+      queue.sort((a, b) => a[0] - b[0]);
+      const [cst, c, r] = queue.shift();
+      if (cst > best.get(key(c, r))) continue;
+      const here = key(c, r);
+      if ((here !== s0 || !first) && ((hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !wireProof(T)) || (!free && isZOC(G, c, r, u.side)))) continue;
+      for (const [nc, nr] of neighbors(c, r)) {
+        if (unitAt(G, nc, nr)) continue;
+        const mc = cost(G, u, nc, nr);
+        if (mc >= 99) continue;
+        const nCost = cst + mc;
+        if (nCost > mp && !(first && here === s0)) continue;
+        const k = key(nc, nr);
+        if (best.has(k) && best.get(k) <= nCost) continue;
+        best.set(k, nCost); prev.set(k, here); queue.push([nCost, nc, nr]);
+      }
     }
+    return { s0, best, prev };
+  };
+  const pathTo = (R, k) => { const path = []; let cur = k; while (cur !== R.s0) { path.unshift([Math.floor(cur / 100), cur % 100]); cur = R.prev.get(cur); } return path; };
+  const start = key(u.c, u.r), R1 = run(u.c, u.r, 0, true);
+  let R = R1, pre = [];
+  if (opt && opt.via) {   // Wegpunkt: erst dorthin (kürzester Weg), von dort weiter mit der restlichen Zugweite
+    const vk = key(opt.via[0], opt.via[1]);
+    if (vk === start || !R1.best.has(vk) || unitAt(G, opt.via[0], opt.via[1])) return res;
+    pre = pathTo(R1, vk); R = run(opt.via[0], opt.via[1], R1.best.get(vk), false);
   }
-  for (const [k, cst] of best) {
-    if (k === start) continue;
+  for (const [k, cst] of R.best) {
+    if (k === start || k === R.s0 && pre.length === 0) continue;
     const c = Math.floor(k / 100), r = k % 100;
     if (unitAt(G, c, r)) continue;
     if (march && (cst <= T.mv || isZOC(G, c, r, u.side))) continue;   // Marsch nur für Felder jenseits der normalen Zugweite, nicht in Feindberührung
-    const path = []; let cur = k;
-    while (cur !== start) { path.unshift([Math.floor(cur / 100), cur % 100]); cur = prev.get(cur); }
-    res.set(k, { c, r, cost: cst, path, ap: march || retreat ? 2 : 1, march, retreat });
+    const path = pre.concat(k === R.s0 ? [] : pathTo(R, k));
+    if (!path.length) continue;
+    res.set(k, { c, r, cost: cst, path, ap: march || retreat ? 2 : 1, march, retreat, via: opt && opt.via ? opt.via.slice() : null });
   }
   return res;
+}
+// Freischläge beim Rückzug: [{ a: Gegner, dmg }] – halber Nahkampfschaden (wie die Vorschau, ohne Zufall), nur aktive, nicht niedergehaltene Nahkämpfer
+function freeBlows(G, u) {
+  const out = [];
+  for (const [c, r] of neighbors(u.c, u.r)) { const e = unitAt(G, c, r);
+    if (!e || e.side === u.side || !active(e) || e.supp > 0 || e.broken > 0 || !(TYPES[e.type].atk > 0) || cls(e) === 'art') continue;
+    out.push({ a: e, dmg: P.FREEBLOW * preview(G, e, u, 'melee').dmg }); }
+  return out;
 }
 function nearestEnemy(G, u) {
   let best = null, bd = 1e9;
@@ -936,6 +957,15 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
   if (opt.march || opt.retreat) { u.attacked = true; u.ap = 0; u.moved = true; }
   if (opt.march) ev.push({ t: 'march', u: u.id });
   if (opt.retreat) ev.push({ t: 'retreatmove', u: u.id });
+  if (opt.retreat) {   // Freischlag (Paket 3): jeder angrenzende Gegner, der im Nahkampf angreifen kann, trifft mit halbem Nahkampfschaden
+    for (const fb of freeBlows(G, u)) {
+      if (!alive(u)) break;
+      u.str = Math.max(0, u.str - fb.dmg);
+      ev.push({ t: 'freeblow', a: fb.a.id, u: u.id, dmg: fb.dmg });
+      ev.push({ t: 'hit', u: u.id, dmg: fb.dmg, str: u.str, morv: u.mor, freeblow: true });   // kein Moralverlust, kein Moralbruch allein dadurch
+      if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); ev.push(...checkEnd(G)); return ev; }
+    }
+  }
   const startC = u.c, startR = u.r;
   let seg = [[u.c, u.r]];
   const flush = () => { if (seg.length > 1) ev.push({ t: 'move', u: u.id, path: seg }); seg = [[u.c, u.r]]; };
@@ -1108,7 +1138,7 @@ function preview(G, a, d, kind, o) {
   o = o || {};
   const ac = o.c != null ? o.c : a.c, ar = o.r != null ? o.r : a.r, run = o.run != null ? o.run : a.run;
   const A = TYPES[a.type], D = TYPES[d.type], tags = [], ranged = kind === 'fire';
-  const arc = arcOf(G, d, ac, ar);
+  const geo = arcOf(G, d, ac, ar), arc = hasFlanks(D) ? geo : 'front';   // Lage für die Deckung, Bonus nur bei Fahrzeugen
   const flame = ranged && A.flame;
   let m = 1;
   if (arc === 'flank') { m *= P.FLANK; tags.push('Flanke ×1,4'); }
@@ -1140,7 +1170,7 @@ function preview(G, a, d, kind, o) {
   if (a.gassed) { m *= P.GAS_ATK; tags.push('im Gas ×0,7'); }
   let dm = 1;
   if (flame) tags.push('Flammen: Deckung schützt nicht');
-  else dm = defMods(G, d, arc, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
+  else dm = defMods(G, d, geo, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
   if (ranged && litAt(G, d.c, d.r, a.side)) { m *= 1.25; tags.push('ausgeleuchtet ×1,25'); }
   const dmg = P.DMG * ((ranged ? A.fs : A.atk) / (D.def * dm)) * (0.4 + 0.6 * a.str / 10) * m;
   let counter = 0;
@@ -1702,8 +1732,10 @@ function heal(G, m, t) {
 }
 // ---------- Nachschub ----------
 function spawnHexes(G, side, type) {
-  const out = [], probe = { type, side };
-  for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) if (!unitAt(G, c, r) && cost(G, probe, c, r) < 99) out.push([c, r]); }
+  const out = [], probe = { type, side }, seen = new Set(), add = (c, r) => { const k = key(c, r); if (seen.has(k) || !inMap(c, r) || unitAt(G, c, r) || cost(G, probe, c, r) >= 99) return; seen.add(k); out.push([c, r]); };
+  for (let c = 0; c < COLS; c++) { if (side === 'A' ? c > 1 : c < COLS - 2) continue; for (let r = 0; r < ROWS; r++) add(c, r); }
+  // Paket 3: jedes eigene Zielfeld ist ein Aufstellungsort – das Feld und seine Nachbarn, wenn frei und nicht in Feindberührung
+  for (const o of OBJECTIVES) if (G.ctrl[o.id] === side) for (const [c, r] of [[o.c, o.r], ...neighbors(o.c, o.r)]) if (inMap(c, r) && !isZOC(G, c, r, side)) add(c, r);
   return out;
 }
 function canBuy(G, side, type) { return !G.over && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
@@ -1747,7 +1779,7 @@ const E = {
   newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround,
+  ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

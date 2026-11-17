@@ -22,6 +22,7 @@ let G = null, mode = 'A', blood = true, speed = 1, busy = false;
 try { const v = +localStorage.getItem('arm.tempo'); if ([0.5, 1, 2, 99].includes(v)) speed = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
 const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
 const speedTxt = () => speed >= INSTANT ? 'Tempo sofort' : 'Tempo ' + speed + '×';
+let wayPt = null;   // Wegpunkt (Paket 3): Umschalt+Klick bzw. langes Drücken auf ein Zugfeld, danach das Ziel
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
 let recSet = new Set(), abilSet = new Set(), abilMode = false;
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
@@ -1253,15 +1254,20 @@ function drawAir(g, s, up) {
       if (warnAt) { const [x, y, hz] = warnAt, ty = y - s * 0.55; if (!up || up(x, ty)) { const r = Math.max(9, s * 0.17);   // Warndreieck
           g.beginPath(); g.moveTo(x, ty - r); g.lineTo(x + r * 1.05, ty + r * 0.75); g.lineTo(x - r * 1.05, ty + r * 0.75); g.closePath(); g.fillStyle = '#C8342A'; g.fill(); g.lineWidth = Math.max(2, s * 0.04); g.strokeStyle = '#120D0B'; g.stroke();
           g.font = `900 ${Math.round(r * 1.2)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#F0EDE1'; g.fillText('!', x, ty + r * 0.12); } } } }
+  if (wayPt && sel && human(G.side) && !busy) { const [x, y] = center(wayPt[0], wayPt[1]); if (!up || up(x, y)) { const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
+      g.save(); g.globalAlpha = pz; g.beginPath(); gEllipse(g, x, y, s * 0.42, s * 0.42); g.lineWidth = Math.max(5, s * 0.1); g.strokeStyle = '#120D0B'; g.stroke(); g.lineWidth = Math.max(2.5, s * 0.05); g.strokeStyle = '#E2B04A'; g.stroke();
+      g.globalAlpha = 1; g.font = `900 ${Math.round(s * 0.3)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(3, s * 0.07); g.strokeStyle = '#120D0B'; g.strokeText('Wegpunkt', x, y - s * 0.62 * kk); g.fillStyle = '#E2B04A'; g.fillText('Wegpunkt', x, y - s * 0.62 * kk); g.restore(); } }
   // Schrittzahlen
   g.textAlign = 'center'; g.textBaseline = 'middle';
   // Bewegungskosten nur am Feld unter dem Mauszeiger, klein
   { const n = sel && human(G.side) && !busy && hoverHex && !abilSet.has(E.key(hoverHex[0], hoverHex[1])) && reach.get(E.key(hoverHex[0], hoverHex[1]));
-    if (n) { const [x, y] = center(n.c, n.r), t = n.march ? 'Marsch – danach keine Aktion mehr' : `${n.cost}${n.retreat ? ' · Rückzug' : ''}`, fs = Math.round(Math.max(14, s * 0.24)); if (up) up(x, y); const ty = y - s * kAt(x, y) * 0.45;
+    if (n) { const [x, y] = center(n.c, n.r), t = n.march ? 'Marsch – danach keine Aktion mehr' : `${n.cost}${n.retreat ? ' · Rückzug' + fbTxt(sel) : ''}`, fs = Math.round(Math.max(14, s * 0.24)); if (up) up(x, y); const ty = y - s * kAt(x, y) * 0.45;
       g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; const tw = g.measureText(t).width, im = n.march ? UPI.s_marsch : UPI.s_stiefel || UPI.s_marsch, iw = im ? fs * 1.35 : 0, x0 = x - (tw + iw) / 2;
       if (im) { g.save(); g.filter = 'brightness(1.9) sepia(0.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 2px 0 #120D0B)'; g.drawImage(im, x0, ty - iw / 2, iw, iw); g.restore(); }   // Stiefel: das ist der Weg, keine Warnzahl
       g.textAlign = 'left'; g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, x0 + iw + 2, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, x0 + iw + 2, ty); g.textAlign = 'center'; } }
 }
+// Erwarteter Freischlag beim Rückzug (Vorschau), z. B. „ · Freischlag −6“
+function fbTxt(u) { const f = u ? E.freeBlows(G, u) : []; return f.length ? ` · Freischlag −${fmt(f.reduce((a, b) => a + b.dmg, 0))}` : ''; }
 // Gefahr auf einem Wegfeld für die Pfadvorschau: 'draht' | 'gas' | 'feuer' | 'mg' oder null
 function pathHazard(u, c, r) {
   const T = TYPES[u.type], h = G.map[c] && G.map[c][r]; if (!h) return null;
@@ -2011,6 +2017,10 @@ async function playEvent(e) {
       rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); playSound('marschtritt', 0.5); break;
     case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
+    case 'freeblow': { const a = DU.get(e.a), d = DU.get(e.u); if (!a || !d) break; const fl = d.x < a.x; a.face = d.x >= a.x ? 0 : 3;   // Freischlag: kurzer Nahkampf-Effekt am Weichenden
+      a.lunge = { dx: (d.x - a.x) * 0.18, dy: (d.y - a.y) * 0.18 }; { const sd = unitById(e.a).side; playSound(sd === 'A' ? 'nahA' : 'nahD', 0.45, sd); }
+      if (!fx('nahkampf', Math.random() < 0.5 ? 0 : 3, d.x + (fl ? 1 : -1) * L.s * 0.1, d.y - L.s * 0.45, { anchor: 'mitte', life: 18, fadeOut: 0.6, grow: 0.2, flip: fl, mul: 0.7 })) boom(d.x, d.y - L.s * 0.3, L.s * 0.3, 'dust');
+      floater(d.x, d.y - L.s * 1.15, 'Freischlag', '#ffb07a'); await wait(220); a.lunge = null; await wait(80); break; }
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
     case 'limber': DU.get(e.u).vs.limbered = !!e.on; playSound('clank', 0.6); floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
@@ -2138,7 +2148,7 @@ function markTips(m) {
     return [pv.threat.length && { name: `Warndreieck: ${pv.threat.length} ${pv.threat.length === 1 ? 'Schütze' : 'Schützen'}`, text: `So viele Gegner können auf dieses Feld schießen (rot umrandet).` },
       { name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite (Messinglinien).` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Schild: Deckung ${cn}.` : 'Keine Deckung.'}` },
       n && (n.march ? { name: 'Marsch – danach keine Aktion mehr', text: `Stiefel mit Flügeln: doppelte Zugweite für beide Aktionspunkte, Weg ${n.cost}. Danach kann die Einheit in dieser Runde nichts mehr tun.` }
-        : { name: `Stiefel: Weg ${n.cost}`, text: `Bewegung bis hierher${n.retreat ? ', als Rückzug' : ' für 1 Aktionspunkt'}.` })]; }
+        : { name: `Stiefel: Weg ${n.cost}${n.retreat ? ' · Rückzug' : ''}`, text: n.retreat ? `Rückzug aus der Feindberührung, kostet beide Aktionspunkte.${E.freeBlows(G, sel).length ? ` Freischlag: jeder angrenzende Nahkämpfer trifft mit halbem Nahkampfschaden, zusammen etwa −${fmt(E.freeBlows(G, sel).reduce((a, b) => a + b.dmg, 0))} Stärke (keine Moral).` : ' Kein Freischlag: kein Gegner daneben kann zuschlagen.'}` : `Bewegung bis hierher für 1 Aktionspunkt.${n.via ? ' Über den Wegpunkt.' : ' Umschalt+Klick (Finger: lange drücken) setzt einen Wegpunkt.'}` })]; }
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
   if (m.kind === 'ap') { const ap = d.vs.broken || d.vs.supp ? 0 : (u.ap || 0); return [{ name: 'Aktionspunkte', text: `Noch ${ap} von ${P.AP}. Ziehen, Schießen und Befehle kosten je 1, Nahkampf alle.` }]; }
   return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
@@ -2153,7 +2163,9 @@ cv.addEventListener('pointermove', ev => {
   cv.addEventListener('pointerdown', ev => { long = false; clearTimeout(tm); if (ev.pointerType === 'mouse' || !G) return;
     const [x, y] = evToPx(ev), m = markAt(x, y), cx = ev.clientX, cy = ev.clientY;
     hoverHex = pixToHex(x, y);   // Finger: Feld darunter wie beim Drüberfahren hervorheben (z. B. Symbol auf Fähigkeits-Zielfeldern)
-    if (!m) return hideTip();
+    if (!m) { hideTip(); const h0 = hoverHex;   // langes Drücken auf ein Zugfeld: Wegpunkt (Paket 3)
+      if (sel && h0 && !busy && (reach.has(E.key(h0[0], h0[1])) || (wayPt && wayPt[0] === h0[0] && wayPt[1] === h0[1]))) tm = setTimeout(() => { long = true; setWayPt(h0); }, 420);
+      return; }
     showTip(markTips(m), cx, cy, markKey(m), 3000);   // Antippen: zeigt den Tooltip, der Tipp wirkt trotzdem
     tm = setTimeout(() => { long = true; showTip(markTips(m), cx, cy, markKey(m), 4000); }, 420); });   // langes Drücken: nur Tooltip
   const stop = () => clearTimeout(tm);
@@ -2172,6 +2184,7 @@ cv.addEventListener('click', ev => {
     if (TYPES[sel.type].cls === 'art' && h && shellHexes.has(E.key(h[0], h[1]))) return doShell(h[0], h[1]);
     const tu = targetOf(p);
     if (tu) { if (previewT === tu || lastPT === 'mouse') return doAttack(tu); previewT = tu; updateHud(); return; }
+    if (h && ev.shiftKey && lastPT === 'mouse' && (reach.has(E.key(h[0], h[1])) || (wayPt && wayPt[0] === h[0] && wayPt[1] === h[1]))) { setWayPt(h); return; }   // Umschalt+Klick: Wegpunkt setzen/aufheben
     if (h && reach.has(E.key(h[0], h[1]))) {   // Finger: erstes Antippen zeigt die Vorschau von dort, zweites zieht (wie beim Angriff)
       const k = E.key(h[0], h[1]); if (lastPT === 'mouse' || touchMove === k) return doMove(h[0], h[1]);
       touchMove = k; hoverHex = h; updateHud(); return; }
@@ -2199,6 +2212,7 @@ function selectVoice(u) {
 }
 function select(u) {
   if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) selectVoice(u);   // Stimme beim Anwählen (selten, siehe selectVoice)
+  if (u !== sel) wayPt = null;
   sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
 }
@@ -2224,8 +2238,9 @@ function computeOptions() {
   hideSet = new Set(); rangeEdges = []; touchMove = null; pvCache = null;
   if (!sel || !E.active(sel) || sel.side !== G.side) return;
   if (TYPES[sel.type].relay) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const dd = E.dist(sel.c, sel.r, c, r); if (dd > 0 && dd <= TYPES[sel.type].spot && E.hasLOS(G, sel.c, sel.r, c, r)) sightSet.add(E.key(c, r)); }
-  reach = E.reachable(G, sel);
-  for (const [k, n] of E.reachable(G, sel, { march: true })) if (!reach.has(k)) reach.set(k, n);   // Marsch: gelbe Felder
+  if (wayPt && !E.reachable(G, sel).has(E.key(wayPt[0], wayPt[1])) && !E.reachable(G, sel, { march: true }).has(E.key(wayPt[0], wayPt[1]))) wayPt = null;
+  reach = E.reachable(G, sel, wayPt ? { via: wayPt } : undefined);
+  for (const [k, n] of E.reachable(G, sel, { march: true, via: wayPt || undefined })) if (!reach.has(k)) reach.set(k, n);   // Marsch: gelbe Felder
   abilSet = new Set(); if (abilMode) for (const [c, r] of E.abilTargets(G, sel)) abilSet.add(E.key(c, r));
   recSet = new Set(); if (TYPES[sel.type].recover) for (const o of G.units) if (E.canRecover(G, sel, o)) recSet.add(o.id);
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
@@ -2264,7 +2279,9 @@ async function act(fn) {
   sel = (u && E.active(u) && u.ap >= 1) ? u : null;
   computeOptions(); updateUI();
 }
-const doMove = (c, r) => act(u => E.moveUnit(G, u, c, r));
+const doMove = (c, r) => { const n = reach.get(E.key(c, r)), via = wayPt; wayPt = null; return act(u => via && n && n.via ? E.moveUnit(G, u, c, r, n) : E.moveUnit(G, u, c, r)); };   // mit Wegpunkt: genau der gezeigte Weg
+function setWayPt(h) { if (!sel || !h) return false; const k = E.key(h[0], h[1]); if (wayPt && wayPt[0] === h[0] && wayPt[1] === h[1]) { wayPt = null; computeOptions(); updateHud(); return true; }
+  if (!reach.has(k)) return false; wayPt = [h[0], h[1]]; computeOptions(); if (!reach.size) { wayPt = null; computeOptions(); } updateHud(); playSound('ui', 0.3, null); return true; }
 const doAttack = d => { const t = targets.get(d.id); return act(u => t.kind === 'fire' ? E.fire(G, u, d) : E.melee(G, u, d)); };
 const doShell = (c, r) => { const m = artMode; return act(u => E.shell(G, u, c, r, m)); };
 
@@ -2612,7 +2629,7 @@ function updateHud() {
     if (placing) {
       $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
       $('hudSub').innerHTML = 'Aufstellen';
-      hints.push('Tippe ein gestricheltes Feld am eigenen Rand an. Die Einheit kann ab der nächsten Runde handeln.');
+      hints.push('Tippe ein gestricheltes Feld am eigenen Rand oder an einem eigenen Zielfeld an. Die Einheit kann ab der nächsten Runde handeln.');
     } else if (inspect && inspect.hex) {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = (h.river && h.t === 'canal' ? 'Fluss' : T.name) + (h.ridge ? ' auf der Höhe' : '');
@@ -2935,6 +2952,7 @@ document.addEventListener('keydown', e => {
   // Tasten 1–n: Fähigkeiten-Knöpfe des Panels
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
+  if (e.key === 'Escape' && wayPt) { wayPt = null; computeOptions(); updateHud(); return; }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
 // ---------- Kamera, Zoom, Wucht, Kriegstagebuch (Etappe 3) ----------
@@ -3056,6 +3074,7 @@ function noteEvent(e, u) {
     case 'wirehurt': return logAdd(`${N(u)}: im Stacheldraht verletzt`, u && u.side, e.c, e.r);
     case 'gas': if (e.late) return logAdd(`${N(u)}: Vergiftung`, u && u.side, ...at(u)); return;
     case 'burn': return logAdd(`${N(u)}: im Feuer`, u && u.side, e.c, e.r);
+    case 'freeblow': { const fa = G.units.find(x => x.id === e.a); return logAdd(`${N(u)} weicht zurück: Freischlag von ${N(fa)}`, u && u.side, ...at(u)); }
     case 'lanceblast': return logAdd(`${N(unitById(e.a))}: Sprenglanze`, unitById(e.a) && unitById(e.a).side, e.c, e.r);
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
     case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
@@ -3096,7 +3115,7 @@ window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get 
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd
