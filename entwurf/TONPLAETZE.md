@@ -154,8 +154,12 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 |  |  | Konkordat | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav (2 s ab 0 s) |
 | **nachladen** | Nachladen (Munitionsträger) | Konkordat | Repair reload heal etc/847367__adrian_sommer__gun-reloading-walther-p99.wav (0.58 s ab 1.82 s) |
 |  |  | Aschenwacht | Repair reload heal etc/u_azd0z4ksl5-kar98_rechamber-506178.mp3 (0.58 s ab 0.35 s) |
-| **husten** | Gasschaden: 1–2 Figuren husten (Dateien folgen) | beide | (noch leer) |
-| **pferd_auswahl** | Reiter angewählt: leises Schnauben/Wiehern, selten wie die Auswahl-Stimmen (Dateien folgen, Paket 4) | beide | (noch leer – bis dahin still) |
+| **husten** | Gasschaden: 1–2 Figuren husten | beide | Gas smoke/743360 strong-double-cough (ganz); Gas smoke/739416 pepper-spray-coughing (3 Ausschnitte: 1,2 s ab 18,9 s, 1,2 s ab 23,9 s, 0,9 s ab 26,3 s) |
+| **pferd_auswahl** | Reiter angewählt: bei jedem Anwählen (höchstens alle 2,5 s) Schnauben, etwa jedes 4. Mal Wiehern (Gewichte 4×3 gegen 4) | beide | Animals/32044 horse-snort-7 (1,1 s ab 2,4 s); Animals/horse-snort-95874 (3 Ausschnitte); Animals/269571 horse-neigh-shortened |
+| **pferd_unruhe** | Reiter beschossen (65 %, sonst neigh), weichen zurück, fliehen oder Moral wankt: unruhige Pferde | beide | Animals/271266 nervous-horses (3 × 1,5 s ab 0,3 / 3,7 / 12,3 s) – **CC BY-NC 3.0** |
+| **gespann** + **wagenknarren** | aufgeprotztes Geschütz/Gespann fährt: Hufe und Räder, darunter leises Knarren (statt gallop) | beide | Wagen/horse-and-chariot (2 × 3 s ab 5 / 20 s); Wagen/o0specter0o creaky-carriage (3 s ab 0,5 s) |
+| (gallop2) | Reiter ziehen: zweite Variante | beide | Animals/tanweraman-horse-running (3 s ab 0,8 s) |
+| (später) | Winterkarte: Schritte im Schnee – noch nicht eingebaut | – | Footsteps robot mud marching/freesound_community-steps-on-snow-30305.mp3 |
 | **motor_auswahl** | Landkoloss, Sturmpanzer, Bohrkoloss angewählt: „Rumm“ ca. 1,1 s, selten wie die Auswahl-Stimmen; im Spiel eingeblendet, Tonhöhe 0,8× → 1,2× in 0,45 s (Gas geben), ausgeblendet (ui.js `motorRev`) | beide | Moving tanks/freesound_community-driving-tank-engine-88503.mp3 (1,4 s ab 1,0 s); Moving tanks/dennish18-tank-moving-143104.mp3 (1,4 s ab 0,5 s) |
 | **drahtwackeln** | Draht wackelt beim Betreten | beide | Repair reload heal etc/freesound_community-shaking-chain-link-fence-vibration-94438.mp3 (1.2 s ab 0.12 s) |
 | **drahtlatch** | Einheit läuft in Stacheldraht | beide | Repair reload heal etc/freesound_community-latch-metallic-43692.mp3 (0.7 s ab 0.04 s) |

@@ -99,6 +99,17 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | drahtlatch | drahtlatch_1 | Repair reload heal etc/freesound_community-latch-metallic-43692.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | cut | cut_1 | freesound_community-cutting-clipping-wire-copper-80373.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | clank | clank_1 | freesound_community-tank-reload-47828.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| husten | husten_1 | Gas smoke/743360__qubodup__strong-double-cough.wav | Freesound / qubodup | CC0 1.0 | <https://freesound.org/s/743360/> |
+| husten | husten_2–4 | Gas smoke/739416__qubodup__pepper-spray-coughing.flac (3 Ausschnitte) | Freesound / qubodup | CC BY 4.0 | <https://freesound.org/s/739416/> |
+| pferd_auswahl | pferd_auswahl_1 | Animals/32044__erh__horse-snort-7.wav | Freesound / ERH | CC BY 4.0 | <https://freesound.org/s/32044/> |
+| pferd_auswahl | pferd_auswahl_2–4 | Animals/freesound_community-horse-snort-95874.mp3 (3 Ausschnitte) | Pixabay / freesound_community | Pixabay Content License | – |
+| pferd_auswahl | pferd_auswahl_5 | Animals/269571__shadowisp__horse-neigh-shortened.wav | Freesound / shadoWisp | CC0 1.0 | <https://freesound.org/s/269571/> |
+| pferd_unruhe | pferd_unruhe_1–3 | Animals/271266__arnaud-coutancier__nervous-horses.wav (3 Ausschnitte) | Freesound / Arnaud Coutancier | **CC BY-NC 3.0** (nicht kommerziell) | <https://freesound.org/s/271266/> |
+| gallop2 | gallop2_2 | Animals/tanweraman-horse-running-hq-247600.mp3 | Pixabay / tanweraman | Pixabay Content License | – |
+| gespann | gespann_1–2 | Wagen/freesound_community-horse-and-chariot-30-sec-73615.mp3 (2 Ausschnitte) | Pixabay / freesound_community | Pixabay Content License | – |
+| wagenknarren | wagenknarren_1 | Wagen/o0specter0o-creaky-carriage-637020.mp3 | Pixabay / o0specter0o | Pixabay Content License | – |
+| motor_auswahl | motor_auswahl_1 | Moving tanks/freesound_community-driving-tank-engine-88503.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| motor_auswahl | motor_auswahl_2 | Moving tanks/dennish18-tank-moving-143104.mp3 | Pixabay / dennish18 | Pixabay Content License | – |
 | mgsetup | mgsetup_1 | 800863__tyranttim__soldier-guns_up.wav | Freesound / tyranttim | CC0 1.0 | <https://freesound.org/s/800863/> |
 | tick | tick_1 | Ereignisse/320862__urupin__old-watch-in-a-small-antique-shop.flac | Freesound / urupin | CC BY-NC 4.0 | <https://freesound.org/s/320862/> |
 | bauen | bauen_1 | 675138__craigsmith__s17-03-hand-to-hand-battle-with-yelling-and-armor-noise-many-voices.wav | Freesound / craigsmith | CC0 1.0 | <https://freesound.org/s/675138/> |
