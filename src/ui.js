@@ -45,6 +45,7 @@ let ctx = MAINCTX;   // neue Ansicht: beim Zeichnen des flachen Weltbilds zeigt 
 
 // ---------- Layout ----------
 function layout() {
+  neuBedienfeld(VIEW.tilt()); setTimeout(neuKnopfreihe, 0);
   if (VIEW.tilt()) return layoutTilt();
   board.classList.remove('tilt');
   const wrap = board.getBoundingClientRect();
@@ -2097,6 +2098,7 @@ function pick(x, y) {
 function unitAtPixel(x, y) { const p = pick(x, y); return p.uFig || p.uHex; }
 const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targets.has(p.uFig.id) ? p.uFig : null;
 let drag = null, dragged = 0;
+document.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; }, true);   // Maus oder Finger: zuletzt benutzt, überall (z. B. Nachschub-Menü)
 cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; if (!pinch) drag = { x: ev.clientX, y: ev.clientY, sl: board.scrollLeft, st: board.scrollTop, moved: false }; });   // Maus und Finger verschieben
 window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = performance.now(); drag = null; cv.style.cursor = ''; });
 // Kleine Pfeile am Rand zeigen, wohin man noch verschieben kann (Wunsch des Nutzers); antippen verschiebt ein Stück
@@ -2330,6 +2332,7 @@ const doShell = (c, r) => { const m = artMode; return act(u => E.shell(G, u, c, 
 // ---------- Nachschub ----------
 function openShop() {
   if (busy || G.over || !human(G.side)) return;
+  if (document.body.classList.contains('neu')) return openShopNeu();
   const sd = G.side;
   $('shopPts').textContent = G.pts[sd];
   $('shopList').innerHTML = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)).map(t => { const T = TYPES[t], ok = E.canBuy(G, sd, t) && E.spawnHexes(G, sd, t).length;
@@ -2548,6 +2551,69 @@ function upBtn(b, i) {
   return `<div class="up-slot${b.on ? ' on' : ''}"><button class="${cls}" data-act="${b.act}" aria-label="${upEsc(b.name)}, Taste ${i + 1}"${b.off ? ' aria-disabled="true"' : ''}><img src="${upSym(b.sym)}" alt="">${cost}${corner}${tip}</button><span class="up-key">${i + 1}</span></div>`;
 }
 let upBtns = [];
+// ---------- Bedienfeld der neuen Ansicht nach Entwurf A1 (2026-11-17) ----------
+// Nur mit OPT.tilt (body.neu): dieselben Elemente wie im alten Panel, per CSS neu angeordnet (index.html „Bedienfeld der neuen Ansicht“).
+// Verschoben werden: Nachschub-Knopf nach oben links (#nachOben), Zustände unter die Moral, Hinweiszeile nach oben.
+let kartLang = false; try { kartLang = localStorage.getItem('arm.kartelang') === '1'; } catch (e) {}
+function neuBedienfeld(on) {
+  if (neuBedienfeld.an === on) return; neuBedienfeld.an = on;
+  document.body.classList.toggle('neu', on);
+  const shop = $('btnShop'), st = $('hudStates'), hint = $('hudHint');
+  let kk = $('neuKK'); if (!kk) { kk = document.createElement('div'); kk.id = 'neuKK'; }   // Zeile unter der Moral: Zustände links, Info und ausführlich rechts
+  if (on) { $('nachOben').appendChild(shop); $('hudStats').after(kk); kk.append(st, $('btnInfo'), $('btnMehr')); document.body.appendChild(hint); }
+  else { $('btnNext').before(shop); $('hudSub').before(st); $('hudName').after($('btnInfo')); $('btnInfo').after($('btnMehr')); kk.remove(); $('hudRow').before(hint); $('shop').hidden = true; }
+}
+// Knopfreihe unten mittig im freien Raum zwischen Einheitenkarte und rechtem Block; bei vielen Knöpfen kleiner, nie unter 40 px
+function neuKnopfreihe() {
+  if (!document.body.classList.contains('neu')) return;
+  const mid = document.querySelector('#hud .up-mid'), row = $('hudRow'), n = Math.max(1, row.children.length);
+  const card = document.querySelector('#hud .up-unit').getBoundingClientRect(), turn = document.querySelector('#hud .up-turn').getBoundingClientRect();
+  const l = card.right + 18, r = turn.left - 18, space = Math.max(160, r - l), wide = innerWidth >= 2200, mid1 = innerWidth > 1500;
+  const gap = wide ? 12 : mid1 ? 10 : 7, ab = Math.max(40, Math.min(wide ? 80 : mid1 ? 66 : 56, Math.floor((space - gap * (n - 1)) / n)));
+  mid.style.setProperty('--abneu', ab + 'px'); mid.style.setProperty('--abgap', gap + 'px'); mid.style.left = Math.round(l + space / 2) + 'px';
+}
+// Karte „ausführlich“: Werte, Schlagworte, Text; Einstellung bleibt gespeichert
+function neuKarteMehr(u) {
+  let m = $('hudMore'); if (!m) { m = document.createElement('div'); m.id = 'hudMore'; document.querySelector('#hud .up-unit').appendChild(m); }
+  if (!u) { m.innerHTML = ''; return; }
+  const T = TYPES[u.type];
+  m.innerHTML = `<div class="hm-w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', u.limbered ? P.LIMBER_MV : T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div>` +
+    (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` + (T.real ? `<p class="real"><b>Im echten Krieg:</b> ${T.real}</p>` : '');
+}
+{ const b = document.createElement('button'); b.className = 'neu-mehr'; b.id = 'btnMehr'; b.title = 'Einheitenkarte: kurz oder ausführlich'; $('btnInfo').after(b);
+  const set = () => { document.body.classList.toggle('kartelang', kartLang); b.textContent = kartLang ? 'kurz' : 'ausführlich'; }; set();
+  b.onclick = () => { kartLang = !kartLang; try { localStorage.setItem('arm.kartelang', kartLang ? '1' : '0'); } catch (e) {} set(); neuKnopfreihe(); }; }
+// Nachschub-Menü nach Entwurf B: Kategorien als Reiter, Karten im Querformat, Pergament-Details beim Überfahren/Antippen
+let shopKat = 'Standard';
+const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge und Kampfmaschinen'];
+const SHOP_STANDARD = ['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'];   // Linientruppen
+function shopKatOf(t) { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls === 'walker' || E.isMech(t) ? 'Fahrzeuge und Kampfmaschinen' : T.cls === 'art' ? 'Artillerie' : SHOP_STANDARD.includes(t) ? 'Standard' : 'Spezial'; }
+function hideShopDet() { $('shopDet').classList.remove('zeigen'); document.querySelectorAll('#shopNeu .sn-k.offen').forEach(e => e.classList.remove('offen')); }
+function openShopNeu() {
+  const sd = G.side, list = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)), inKat = k => list.filter(t => shopKatOf(t) === k);
+  if (!inKat(shopKat).length) shopKat = SHOP_KAT.find(k => inKat(k).length);
+  const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
+  $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div>
+    <div class="sn-reiter">${SHOP_KAT.filter(k => inKat(k).length).map(k => `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}">${k}<small>${inKat(k).length}</small></button>`).join('')}</div>
+    <div class="sn-liste">${inKat(shopKat).map(t => { const T = TYPES[t]; return `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${T.name}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span></button>`; }).join('')}</div>
+    <div class="sn-fuss"><span>${lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick stellt auf' : 'Antippen zeigt alle Werte, nochmal antippen stellt auf'} – am eigenen Rand oder an eigenen Zielfeldern. Neue Einheiten handeln ab der nächsten Runde.</span><button class="tbtn" id="shopZu">Schließen</button></div>`;
+  $('shop').hidden = false; hideShopDet();
+  requestAnimationFrame(() => $('shopNeu').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
+  $('shopNeu').querySelectorAll('.sn-reiter button').forEach(b => b.onclick = () => { shopKat = b.dataset.kat; openShopNeu(); });
+  $('shopZu').onclick = () => { $('shop').hidden = true; hideShopDet(); };
+  const det = $('shopDet');
+  const zeig = el => { const t = el.dataset.t, T = TYPES[t], w = warum(t), r = el.getBoundingClientRect(), sh = $('shop').querySelector('.sheet').getBoundingClientRect();
+    det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
+    det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight; let x = sh.left - dw - 8; if (x < 8) x = r.right + 10 + dw < innerWidth ? r.right + 10 : r.left - dw - 10;
+    det.style.left = Math.max(8, Math.min(innerWidth - dw - 8, x)) + 'px'; det.style.top = Math.max(80, Math.min(innerHeight - dh - 8, r.top - 10)) + 'px';
+    document.querySelectorAll('#shopNeu .sn-k').forEach(e => e.classList.toggle('offen', e === el)); };
+  const kaufen = el => { if (warum(el.dataset.t)) return zeig(el); $('shop').hidden = true; hideShopDet(); select(null); placing = el.dataset.t; spawnSet = new Set(E.spawnHexes(G, sd, placing).map(h => E.key(h[0], h[1]))); updateHud(); };
+  $('shopNeu').querySelectorAll('.sn-k').forEach(el => {
+    el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') zeig(el); });
+    el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideShopDet(); });
+    el.addEventListener('click', () => { if (lastPT === 'mouse' || el.classList.contains('offen')) kaufen(el); else zeig(el); });   // Finger: erst Details, dann aufstellen
+  });
+}
 // Wirkungsbereich (Paket 2): Befehle, großer Befehl, Banner, Schilde vor, Entgiften, Ziel markieren. Knopf überfahren (Maus) oder halten (Touch)
 let areaAct = null;
 function abilArea(act) {
@@ -2695,6 +2761,7 @@ function updateHud() {
   // Draht-Knöpfe zuerst (Wunsch des Nutzers), dann die übrigen in fester Reihenfolge
   btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
   upBtns = btns;
+  neuKarteMehr(hasU ? u : null); setTimeout(neuKnopfreihe, 0);
   $('hudRow').innerHTML = btns.map(upBtn).join('') + (placing ? '<button class="up-text" data-act="cancel">Abbrechen</button>' : '');
   $('hudRow').querySelectorAll('.up-ab[data-act]').forEach(b => {   // Wirkungsbereich zeigen: Maus beim Überfahren, Finger solange gedrückt (+1,5 s)
     b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') areaAct = b.dataset.act; });
@@ -2973,7 +3040,7 @@ $('btnSound').onclick = () => { setSound(!soundOn); if (soundOn) playSound('whis
 $('smSound').onclick = e => { e.stopPropagation(); setSound(!soundOn); };
 $('optSound').checked = soundOn; $('optSound').addEventListener('change', () => setSound($('optSound').checked));
 $('btnShop').onclick = openShop;
-$('closeShop').onclick = () => { $('shop').hidden = true; };
+$('closeShop').onclick = () => { $('shop').hidden = true; hideShopDet(); };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
 // Klick (oder Antippen) in den dunklen Bereich neben dem Fenster schließt es wie der Schließen-Knopf (Spieltest 2026-11-17)
 for (const [ov, btn] of [['army', 'armyCancel'], ['shop', 'closeShop'], ['detail', 'closeDetail'], ['rules', 'closeRules']])

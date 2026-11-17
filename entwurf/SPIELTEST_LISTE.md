@@ -32,5 +32,5 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 20. Konkordat-Artillerie Sperrfeuer: mehrere Abschüsse hörbar und mehr Schussanimation.
 21. Schuss-Effekte allgemein überarbeiten (Mündungsfeuer an der richtigen Stelle, je Waffe passend).
 
-## Paket 5 – Unteres Bedienfeld neu (größer, erst Entwurf)
+## Paket 5 – Unteres Bedienfeld neu – Entwurf entwurf/probe/bedienfeld.html, im Spiel (neue Ansicht) nach A1/B umgesetzt 2026-11-17 (Bilder: entwurf/probe/paket5/spiel/)
 22. Aufbau wie bei Total War: rechts Nachschub und Runde beenden; links in der Ecke, etwas höher, die Einheiteninfo – umschaltbar kurz/ausführlich; Mitte frei.

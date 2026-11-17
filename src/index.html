@@ -800,7 +800,123 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 #topbar { --s-head: "Arm Ziffer", "Arm Kopf", "Palatino Linotype", Georgia, serif; --s-body: "Arm Ziffer", "Arm Text", "Segoe UI", system-ui, sans-serif; }
 #topbar .tb-plate, #topbar .tb-pts b, #topbar .tb-pts small, #topbar .tb-obj, #topbar .val, #topbar .tb-v { font-family: "Arm Ziffer", "Arm Kopf", "Palatino Linotype", Georgia, serif !important; }
 #topbar .tb-meter .val, #topbar .tb-v { font-family: "Arm Ziffer", "Arm Text", system-ui, sans-serif; letter-spacing: .02em; }
-.hint-sym { height: 1.35em; width: auto; vertical-align: -0.35em; margin: 0 2px; filter: drop-shadow(0 1px 0 #120D0B); }
+.hint-sym { height: 1.35em; width: auto; vertical-align: -0.35em; margin: 0 2px; filter: brightness(1.9) sepia(.25) drop-shadow(1px 0 0 #F0EDE1) drop-shadow(-1px 0 0 #F0EDE1) drop-shadow(0 1px 0 #F0EDE1) drop-shadow(0 -1px 0 #F0EDE1) drop-shadow(0 1px 0 #120D0B); }
+
+/* ===== Bedienfeld der neuen Ansicht nach Entwurf A1 (2026-11-17, entwurf/probe/bedienfeld.html) – nur mit body.neu (OPT.tilt).
+   Logik bleibt in ui.js (updateHud, unitButtons); hier nur Lage und Aussehen. Einheitenkarte links unten, Fähigkeiten unten in der Mitte
+   (zwischen Karte und rechtem Block, ui.js neuKnopfreihe), Hinweis oben unter der Leiste, Nachschub oben links unter dem Feld Runde,
+   Runde beenden und runder goldener Knopf Nächste Einheit rechts unten. ===== */
+body.neu #hud { position: fixed; left: 0; right: 0; bottom: 0; height: 0; padding: 0; background: none; z-index: 12; }
+body.neu #hud::before { content: none; }
+body.neu #hud .up-unit { position: fixed; left: 16px; bottom: 16px; display: grid; grid-template-columns: var(--pic) var(--bar); gap: 6px 12px; align-items: start;
+  --pic: 112px; --bar: 300px; padding: 4px 6px; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
+  background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; box-shadow: 0 6px 18px rgba(0,0,0,.55); }
+body.neu #hud.nounit .up-unit { grid-template-columns: var(--bar); }
+body.neu #hud .up-pic { width: var(--pic); height: calc(var(--pic) * 1.08); }
+body.neu #hud .up-stats { width: var(--bar); min-width: 0; gap: 5px; }
+body.neu #hud .up-name { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.12; font-size: 20px; }
+body.neu #hud .up-name.two { font-size: 17px; }
+body.neu #hud .up-head { align-items: flex-start; }
+body.neu #hud .up-subrow { display: block; } body.neu #hud .up-sub { margin-top: 0; }
+body.neu #hud .up-bar { grid-template-columns: minmax(0, 1fr) auto; }
+body.neu #hud .up-bar .val { min-width: 0; font-size: 15px; }
+body.neu #hud .up-bar .tube { height: 28px; } body.neu #hud .up-bar.mor .tube { height: 22px; }
+body.neu #hud .up-states { flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+body.neu #hud .up-states .up-st { width: 34px; height: 34px; margin: 0; }
+body.neu #hud .up-states .up-st img { width: 30px; height: 30px; }
+body.neu #hud .up-tiles { gap: 14px; flex-wrap: wrap; }
+body.neu #hud .up-t { gap: 5px; font-size: 15px; }
+body.neu #hud .up-t img, body.neu #hud .up-t img.wide { width: 26px; height: 26px; margin: 0; object-fit: contain; }
+body.neu #hud .up-t img.wide { width: 34px; }
+body.neu #hud .up-pip { width: 24px; height: 24px; }
+body.neu #hud .neu-mehr { flex: none; margin-left: 4px; height: 40px; min-width: 44px; padding: 0 12px; border: 0; cursor: pointer; color: var(--s-text);
+  background: var(--up-tafel) center / 100% 100% no-repeat; font: 400 13px var(--s-head) !important; letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+body.neu #hud #btnInfo { min-height: 40px; min-width: 44px; }
+body:not(.neu) .neu-mehr, body:not(.neu) #hudMore { display: none !important; }
+#hudMore { grid-column: 1 / -1; display: none; gap: 8px; max-width: calc(var(--pic) + var(--bar) + 12px); }
+body.neu.kartelang #hud:not(.nounit) #hudMore { display: grid; }
+#hudMore .hm-w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; }
+#hudMore .hm-w div { background: rgba(18,13,11,.45); border: 1px solid #4a3a2a; border-radius: 3px; padding: 3px 0; font: 600 11px var(--s-body); color: #b9ab8f; }
+#hudMore .hm-w b { display: block; font: 400 20px var(--s-num); color: var(--s-text); }
+#hudMore .hm-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+#hudMore .hm-chips span { font: 700 12px var(--s-body); color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
+#hudMore p { margin: 0; font: 400 13.5px/1.4 var(--s-body); color: #e3d8c0; } #hudMore p.real { color: #b9ab8f; font-style: italic; }
+
+/* Fähigkeiten: Reihe unten im freien Bereich (ui.js setzt left und --abneu), Tastennummer unter jedem Knopf, Kostenmünzen oben */
+body.neu #hud .up-mid { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); container-type: normal; display: block; min-width: 0; }
+body.neu #hud .up-abils { gap: var(--abgap, 10px); flex-wrap: nowrap; align-items: flex-end; }
+body.neu #hud .up-ab { --ab: var(--abneu, 66px); }
+body.neu #hud .up-slot { gap: 6px; }
+/* Hinweiszeile: klein und dezent oben unter der Leiste */
+body.neu #hudHint { position: fixed; top: 82px; left: 50%; transform: translateX(-50%); z-index: 11; max-width: min(60vw, 980px); padding: 5px 16px; border-radius: 14px;
+  background: rgba(18,13,11,.66); color: #ddd1b6; font: 600 14px/1.35 var(--s-body); text-align: center; pointer-events: none; white-space: normal; }
+body.neu #hudHint:empty { display: none; }
+/* Rechts unten: Runde beenden, daneben runder goldener Knopf Nächste Einheit */
+body.neu #hud .up-turn { position: fixed; right: 16px; bottom: 16px; width: auto; display: flex; flex-direction: row-reverse; align-items: center; gap: 12px; }
+body.neu #hud .up-turnrow { display: contents; }
+body.neu #hud .up-end { height: 72px; min-width: 280px; padding: 0 30px; font-size: 22px !important; }
+body.neu #hud .up-next { width: 72px; height: 72px; border-radius: 50%; padding: 0; display: grid; place-items: center; border: 3px solid var(--s-ink);
+  background: radial-gradient(circle at 38% 32%, #f6dc8e, #c9a043 55%, #8a6526); box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -3px 0 rgba(0,0,0,.3), 0 4px 0 rgba(0,0,0,.55); filter: none; }
+body.neu #hud .up-next svg { width: 34px; height: 34px; filter: none; } body.neu #hud .up-next svg path { stroke: #2a1d10; }
+body.neu #hud .up-next:hover { transform: translateY(-2px); }
+/* Nachschub oben links unter dem Feld Runde */
+#nachOben { display: none; }
+body.neu #nachOben { display: block; position: fixed; top: 82px; left: 26px; z-index: 12; }
+body.neu #nachOben .up-shop { height: 48px; min-width: 190px; padding: 0 18px; font-size: 17px !important; }
+@media (max-width: 1500px) {
+  body.neu #hud .up-unit { --pic: 88px; --bar: 244px; left: 10px; bottom: 10px; }
+  body.neu #hud .up-name { font-size: 17px; } body.neu #hud .up-name.two { font-size: 15px; }
+  body.neu #hud .up-end { height: 60px; min-width: 210px; font-size: 18px !important; } body.neu #hud .up-next { width: 60px; height: 60px; }
+  body.neu #hud .up-turn { right: 10px; bottom: 10px; gap: 8px; }
+  body.neu #hudHint { font-size: 13px; max-width: 56vw; }
+  body.neu #nachOben .up-shop { height: 44px; min-width: 160px; font-size: 15px !important; }
+}
+@media (min-width: 2200px) {
+  body.neu #hud .up-unit { --pic: 140px; --bar: 380px; } body.neu #hud .up-name { font-size: 24px; }
+  body.neu #hud .up-end { height: 84px; min-width: 340px; font-size: 26px !important; } body.neu #hud .up-next { width: 84px; height: 84px; }
+  body.neu #hudHint { font-size: 16px; top: 88px; } body.neu #nachOben .up-shop { height: 56px; min-width: 230px; font-size: 20px !important; }
+}
+
+/* Nachschub-Menü nach Entwurf B (neue Ansicht): Reiter, Karten im Querformat, Pergament-Details */
+#shopNeu { display: none; }
+body.neu #shop .sheet > :not(#shopNeu) { display: none !important; }
+body.neu #shop #shopNeu { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; height: min(680px, calc(100vh - 150px)); }
+body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px)); margin: 70px 20px 0 auto; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
+  background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; padding: 6px 12px; }
+#shopNeu .sn-titel { display: flex; align-items: baseline; justify-content: space-between; }
+#shopNeu .sn-titel b { font: 400 26px var(--s-head); letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+#shopNeu .sn-titel span { font: 400 26px var(--s-num); color: #ffe2a0; }
+#shopNeu .sn-reiter { display: flex; gap: 6px; flex-wrap: wrap; }
+#shopNeu .sn-reiter button { min-height: 46px; padding: 0 18px; border: 0; cursor: pointer; font: 400 16px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #d8ccb0;
+  background: var(--up-tafel) center / 100% 100% no-repeat; filter: brightness(.75) drop-shadow(0 2px 0 rgba(0,0,0,.5)); }
+#shopNeu .sn-reiter button.an { filter: brightness(1.1) drop-shadow(0 3px 0 rgba(0,0,0,.5)); color: #fff2cc; }
+#shopNeu .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
+#shopNeu .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
+#shopNeu .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);
+  background: linear-gradient(rgba(18,13,11,.35), rgba(18,13,11,.55)), var(--up-txHolz) 0 0 repeat; font: inherit; }
+#shopNeu .sn-k:hover, #shopNeu .sn-k.offen { border-color: var(--s-brass); }
+#shopNeu .sn-k.aus { filter: grayscale(.8) brightness(.7); }
+#shopNeu .sn-k canvas { width: 92px; height: 88px; border: 3px solid var(--s-ink); box-shadow: inset 0 0 0 2px #6b5236; background: #1d1612; }
+#shopNeu .sn-k .nm { display: block; padding-right: 54px; font: 400 17px/1.15 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+#shopNeu .sn-k .ko { position: absolute; right: 8px; top: 6px; font: 400 18px var(--s-num); color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
+#shopNeu .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+#shopNeu .chips span, #shopDet .chips span { font: 700 12px var(--s-body); color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
+#shopNeu .sn-fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 600 13px var(--s-body); color: #cbbfa6; }
+#shopNeu .sn-fuss button { min-height: 44px; padding: 0 18px; }
+#shopDet { position: fixed; z-index: 30; width: 380px; display: none; pointer-events: none; padding: 6px 10px; color: #2a1f16; font: 400 14px/1.4 var(--s-body);
+  border: 12px solid transparent; border-image: var(--up-p9) 46 / 18px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; }
+#shopDet.zeigen { display: block; }
+#shopDet h3 { margin: 0 0 4px; font: 400 19px var(--s-head); text-transform: uppercase; letter-spacing: .04em; }
+#shopDet h3 span { float: right; font-family: var(--s-num); }
+#shopDet .w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 6px 0; text-align: center; font: 600 11px var(--s-body); color: #5a4630; }
+#shopDet .w b { display: block; font: 400 18px var(--s-num); color: #2a1f16; }
+#shopDet .real { color: #5a4630; font-style: italic; margin-top: 6px; } #shopDet .warum { color: #7a2a20; font-weight: 700; margin-top: 4px; }
+@media (max-width: 1500px) { body.neu #shop .sheet { width: calc(100vw - 420px); margin-right: 10px; } #shopNeu .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
+body.neu #hud.nounit .neu-mehr, body.neu #hud.nounit #btnInfo { display: none; }
+#neuKK { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+#neuKK .up-states { flex: 1; min-width: 0; }
+body.neu #hud #neuKK #btnInfo { margin-left: auto; }
+body.neu #shop { z-index: 25; }   /* Menü über Karte, Hinweis und Knöpfen */
 </style>
 </head>
 <body>
@@ -849,6 +965,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
     <div class="up-turn"><div class="up-turnrow"><button class="up-plate up-shop" id="btnShop">Nachschub</button><button class="up-plate up-next" id="btnNext" aria-label="Nächste Einheit (Tab)"><svg viewBox="0 0 24 24" fill="none" stroke="#F0EDE1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h12M11 7l5 5-5 5M20 5v14"/></svg></button></div><button class="up-plate up-end" id="btnEnd">Runde beenden</button></div>
   </footer>
 </div>
+<div id="nachOben"></div>
 <div id="toast"></div>
 <div id="banner"></div>
 
@@ -967,7 +1084,9 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 </div>
 
 <div class="overlay" id="shop" hidden>
+  <div id="shopDet" aria-hidden="true"></div>
   <div class="sheet">
+    <div id="shopNeu"></div>
     <div class="kicker">Nachschub anfordern</div>
     <h2 class="title" style="font-size:44px">★ <span id="shopPts">0</span> Punkte</h2>
     <p class="lead" style="margin:0">Punkte gibt es jede Runde (10), für jede geschlagene gegnerische Einheit (20) und für eroberte Zielfelder (10 je Siegpunkt). Neue Einheiten erscheinen am eigenen Rand oder an eigenen Zielfeldern (Feld und Nachbarn, nicht in Feindberührung) und handeln ab der nächsten Runde.</p>
