@@ -1739,16 +1739,20 @@ function musikWecken() { for (const t of musikSp) if (!t.aus && t.a.paused) { co
 const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'] };
 const SND_POOLS = window.SOUND_POOLS || {};
 let hustenT = -1e9, hustenN = 0;
-function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
+function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4, null, { v: 'gm' }), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
 let sndSide = null, lastFire = null;   // lastFire: zuletzt abgespielter Schuss (Kugeleinschlag beim folgenden Treffer); sndSide: Seite der Einheit, die gerade handelt (playEvent), für Konkordat-/Aschenwacht-Varianten
-function sndPick(name, side) {
-  const cand = [], add = (n, deep) => { if (!deep && SND_VAR[n]) { for (const m of SND_VAR[n]) add(m, true); return; } if (SND_POOLS[n]) for (const [k, sd, w] of SND_POOLS[n]) { if (SND[k]) for (let i = 0; i < (w || 1); i++) cand.push([k, sd]); } else if (SND[n]) cand.push([n, null]); };   // Gruppe (SND_VAR) vor Platz, damit z. B. „rifle“ alle Gewehr-Plätze mischt; Gewicht w: Hauptton öfter
+// Einheitlicher Stimmfilter je Sprecher (2026-11-17): Stimm-Plätze haben Varianten <platz>_gm (Gasmaske leicht), _gs (Gasmaske mittel: Kampfanzüge),
+// _bf (Bordfunk stark: Panzerbesatzung), _mr (Maschine mittel: Schreiter, Eisenknecht); Hauptmann/General ohne Filter. Erzeugt mit tools/stimmfilter.py.
+const PANZER = ['koloss', 'sturmpz', 'bohrer'];
+function stimmVar(u) { const T = u && TYPES[u.type]; if (!T) return null; return T.cmd ? null : PANZER.includes(u.type) ? 'bf' : T.cls === 'walker' ? 'mr' : T.suit ? 'gs' : 'gm'; }
+function sndPick(name, side, v) {
+  const cand = [], add = (n, deep) => { if (!deep && SND_VAR[n]) { for (const m of SND_VAR[n]) add(m, true); return; } if (v && SND_POOLS[n + '_' + v]) n += '_' + v; if (SND_POOLS[n]) for (const [k, sd, w] of SND_POOLS[n]) { if (SND[k]) for (let i = 0; i < (w || 1); i++) cand.push([k, sd]); } else if (SND[n]) cand.push([n, null]); };   // Gruppe (SND_VAR) vor Platz, damit z. B. „rifle“ alle Gewehr-Plätze mischt; Gewicht w: Hauptton öfter
   add(name); if (!cand.length) return null;
   const sd = side || sndSide, own = cand.filter(c => !c[1] || c[1] === sd), list = own.length ? own : cand.filter(c => !c[1]);
   return list.length ? list[Math.floor(Math.random() * list.length)][0] : null;   // nur Varianten der anderen Seite: lieber still
 }
-function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
-  const gapKey = name; name = sndPick(name, side) || name;
+function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
+  const gapKey = name; name = sndPick(name, side || (opt && opt.u && opt.u.side), opt && (opt.v || stimmVar(opt.u))) || name;
   if (!soundOn || !SND[name] || (speed >= INSTANT && qRunning)) return;
   const t = performance.now(); if (!(opt && opt.noGap)) { if (lastSnd[gapKey] != null && t - lastSnd[gapKey] < (SND_GAP[gapKey] || SND_GAP[name] || 100)) return; lastSnd[gapKey] = t; }   // nicht mehrfach im selben Augenblick
   window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
@@ -1935,9 +1939,9 @@ async function playEvent(e) {
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
         playSound(mech ? 'heavy' : tank ? 'impact' : suit ? 'sword' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : base, (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
-        if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35);
+        if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35, null, { u: au });
         if (au && ['raeumer', 'sturm'].includes(au.type)) playSound('flinte', 0.5);   // kurzer Schuss im Grabenkampf
-        if (au && TYPES[au.type].cls === 'storm' && e.t === 'melee') playSound('cry', 0.45);   // Kampfschrei beim Sturmangriff
+        if (au && TYPES[au.type].cls === 'storm' && e.t === 'melee') playSound('cry', 0.45, null, { u: au });   // Kampfschrei beim Sturmangriff
         if (af === 'mechB') playSound(Math.random() < 0.5 ? 'snarl' : 'tiger', 0.4);   // Klauenschreiter knurrt
       };
       let thrown = false;
@@ -1971,7 +1975,7 @@ async function playEvent(e) {
     }
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
-      if (E.isMech(u.type)) playSound('robot', 0.5);
+      if (E.isMech(u.type) && TYPES[u.type].cls === 'walker') playSound('robot', 0.5, null, { u });   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) { shake(e.dmg >= 2.5 ? 6 : 4); playSound('impact', 0.3); }
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) {
@@ -1982,7 +1986,7 @@ async function playEvent(e) {
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav') playSound(Math.random() < 0.65 ? 'pferd_unruhe' : 'neigh', 0.5); else if (u.limbered) playSound('neigh', 0.5);   // Reiter beschossen: unruhige Pferde
-        else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45);
+        else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45, null, { u });
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
         if (e.burn) burst(x, y, 12, ['#ff9a2a', '#ffcf5a', '#c8461a', '#3a2a1a'], { up: 0.24, spread: 0.18 });   // Feuer: Funken und Ruß statt Blut
         else if (blood && e.wire) {   // Stacheldraht: wenig, dunkles Rotbraun, keine Tropfspuren; wird zu einem kleinen Fleck, der nach einigen Runden vergeht
@@ -2003,7 +2007,7 @@ async function playEvent(e) {
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.55); playSound('drahtwackeln', 0.4); floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
-    case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
+    case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
       if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { if (!fxImpact(d.x, d.y, s * 1.1, { alt: true, noMark: true })) boom(d.x, d.y, s * 1.1, 'he'); gmark('bodenspuren', TYPES[u.type].cls === 'walker' ? 2 : 0, d.x, d.y + s * 0.2, { turns: 4, mul: 0.8 }); playSound('boom2', 0.75); if (TYPES[u.type].cls === 'walker') playSound('feuer', 0.35); shake(8); }
@@ -2012,9 +2016,9 @@ async function playEvent(e) {
     }
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
-    case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+1 Aktion', '#F0EDE1', true); await wait(300); break; }
+    case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45, null, { u: unitById(e.by) }); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+1 Aktion', '#F0EDE1', true); await wait(300); break; }
     case 'order': {
-      const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.75);
+      const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.75, null, { u: unitById(e.u) });   // Befehl: Offiziere ohne Filter
       if (ff) for (const id of e.ids || []) { const dd = DU.get(id); if (dd) dd.vs.fireFree = true; }   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
       toast(`${e.name}: ${rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Sturmbefehl!'}`); floater(...headPos(e.u), rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Vorwärts!', rl ? '#b8ff7c' : '#ffb04a', true);
       for (let q = 0; q < 2; q++) rings.push({ x: d0.x, y: d0.y, r: 2.6 + q * 1.4, col: rl ? '#b8ff7c' : '#ffb04a', life: 34 + q * 10, max: 34 + q * 10 });
@@ -2048,7 +2052,7 @@ async function playEvent(e) {
     case 'light': { visSync('lit'); playSound('clank', 0.4); floater(...headPos(e.u), 'Ausgeleuchtet', '#fff0a0'); await wait(260); break; }
     case 'clear': { visSync('clouds'); playSound('gasmaske', 0.5); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
     case 'ammo': { playSound('nachladen', 0.55); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
-    case 'counterstrike': { playSound('charge', 0.6); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
+    case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
@@ -2066,7 +2070,7 @@ async function playEvent(e) {
     case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
     case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('bauen', 0.35); floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
     case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
-    case 'rush': playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
+    case 'rush': playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('clank', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
     case 'mark': { const [x, y] = center(e.c, e.r);
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
@@ -2263,8 +2267,8 @@ let selClicks = 0, selNeed = 3, selLast = -1e9, selLastKey = null;
 function selectVoice(u) {
   if (++selClicks < selNeed) return;
   const t = performance.now(); if (t - selLast < 8000) return;
-  const VEH = ['koloss', 'sturmpz', 'bohrer'], T = TYPES[u.type];
-  const pool = VEH.includes(u.type) ? 'panzer_funk' : T.mech ? 'schreiter_stimme' : T.cls === 'cav' ? 'pferd_auswahl' : T.gasproof ? 'selGas' : 'select'; let k = null;   // Panzer: Besatzung über Bordfunk (dazu Motor), Schreiter/Eisenknecht: Maschinenstimme (2026-11-17)
+  const T = TYPES[u.type];
+  const pool = PANZER.includes(u.type) ? 'panzer_funk' : T.cls === 'walker' ? 'schreiter_stimme' : T.cls === 'cav' ? 'pferd_auswahl' : T.gasproof ? 'selGas' : 'select'; let k = null;   // Panzer: Besatzung über Bordfunk (dazu Motor), Schreiter/Eisenknecht: Maschinenstimme (2026-11-17)
   if (pool === 'panzer_funk') { const m = sndPick('motor_auswahl', u.side); if (m) motorRev(m); }
   if (pool === 'pferd_auswahl' && !sndPick(pool, u.side)) return;   // Tonplatz „pferd_auswahl“ ist noch leer (Dateien folgen): still
   for (let i = 0; i < 8; i++) { k = sndPick(pool, u.side); if (k !== selLastKey) break; }   // anderer Spruch als zuletzt; gibt es nur einen, darf er (selten) wiederkommen

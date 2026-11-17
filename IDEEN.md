@@ -90,5 +90,5 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 ## Fahrzeuge (2026-11-17)
 - Zweites Fahrzeug für das Konkordat, z. B. Flammenpanzer oder Mörserpanzer (Gegengewicht zu Sturmpanzer + Bohrkoloss der Aschenwacht).
 
-## Einheitlicher Stimmfilter (2026-11-17, erst nach Wahl der Stärke auf stimmen.html)
+## Einheitlicher Stimmfilter (2026-11-17) – erledigt (tools/stimmfilter.py)
 - Für ALLE Stimm-Tonplätze ein Filter je Sprecher: Infanterie, Sturmtruppen, Pioniere, Sanitäter, Reiter usw. Gasmaske; Kampfanzüge (Stahlgänger, Panzerknechte) Gasmaske etwas stärker; Hauptmann und General ohne Filter; Panzerbesatzung Bordfunk; Schreiter und Eisenknecht (auch robot-voice-damage) Roboter. Waffen, Explosionen, Motoren bleiben unverändert.

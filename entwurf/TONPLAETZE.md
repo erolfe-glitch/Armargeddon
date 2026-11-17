@@ -182,3 +182,6 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **musik_titel** | Titelthema: Startmenü, Armee-Auswahl, Regeln; Schleife mit 2 s Überblendung, Wechsel weich (ui.js `setMusik`) | beide | Musiker/the_grimdark_front.wav – eigenes Stück (Suno Pro), Stereo 128 kbit/s, 178 s (ersetzt 744062 heroic-war-march) |
 | **musik_schlacht** | Schlachtmusik: während der Schlacht, Schleife mit 2 s Überblendung, deutlich unter den Effekten; Menü → Schlacht überblendet, bei Sieg ausgeblendet, bei Niederlage → Taps | beide | Musiker/grimdark_trench.wav – eigenes Stück (Suno Pro), Stereo 128 kbit/s, 239 s |
 | **musikNiederlage** | nach einer verlorenen Schlacht | beide | 693767__composingatnight__taps-for-the-fallen.wav (62.19 s ab 0.11 s) |
+
+## Stimmfilter je Sprecher (2026-11-17)
+Zu den Stimm-Plätzen pain, medic, cry, scream, panic, forward, roar, stand, charge, comeon, husten und robot gibt es gefilterte Varianten (tools/stimmfilter.py): `_gm` Gasmaske leicht (Fußtruppen, Reiter, Pioniere, Sanitäter …), `_gs` Gasmaske mittel (Stahlgänger, Panzerknechte), `_bf` Bordfunk stark (Landkoloss, Sturmpanzer, Bohrkoloss), `_mr` Maschine mittel (Schreiter, Eisenknecht; robot jetzt für beide Seiten). Hauptmann und General rufen ohne Filter. panic_1 (Fluchtschreie einer Menge) bleibt nur ungefiltert. Waffen, Explosionen und Motoren unverändert.

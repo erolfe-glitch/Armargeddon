@@ -155,5 +155,19 @@
   "schreiter_aschenwacht_s2_03",
   "schreiter_aschenwacht_s2_04",
   "schreiter_aschenwacht_s2_05"
- ]
+ ],
+ "spiel": [
+  "spiel_s1_cry",
+  "spiel_s1_cry_1",
+  "spiel_s1_forward",
+  "spiel_s1_husten_1",
+  "spiel_s1_husten_2",
+  "spiel_s1_medic",
+  "spiel_s1_pain",
+  "spiel_s1_pain_2",
+  "spiel_s1_panic",
+  "spiel_s1_scream_1",
+  "spiel_s1_stand"
+ ],
+ "_spiel": "In der Hörprobe mit Gasmaske leicht gewählt; umgesetzt als einheitlicher Stimmfilter für alle Stimm-Plätze (tools/stimmfilter.py), panic_1 ohne Filter."
 }
