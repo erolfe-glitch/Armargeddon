@@ -409,6 +409,8 @@ body { background: #0c0908; }
 .up-bar .slot { position: absolute; inset: 27% 8.3%; overflow: hidden; border-radius: 2px; }
 .up-bar .slot i { position: absolute; inset: 0 auto 0 0; background: var(--s-life); }
 .up-bar.hp .slot i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); }
+.up-bar .slot i.nach { background: #5a1810; }   /* Schadens-Nachlauf (Spieltest Runde 2) */
+.up-bar.hp .slot i.nach::after { display: none; }
 .up-bar.mor .tube { height: 26px; } .up-bar.mor .slot { inset: 30% 8.3%; } .up-bar.mor .slot i { background: var(--s-brass); }
 .up-bar.mor.bad .slot i { background: var(--s-life); }
 .up-bar .val { font: 700 17px var(--s-body); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; white-space: nowrap; }
@@ -612,6 +614,10 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .up-st { display: grid; place-items: center; width: 42px; height: 42px; margin: -4px -3px; cursor: help; border-radius: 50%; outline: none; }
 .up-st img { width: 30px; height: 30px; object-fit: contain; pointer-events: none;
   filter: drop-shadow(.6px 0 0 #F0EDE1) drop-shadow(-.6px 0 0 #F0EDE1) drop-shadow(0 .6px 0 #F0EDE1) drop-shadow(0 -.6px 0 #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.6)); }
+/* Spieltest Runde 2: Niedergehalten groß zuerst, blockiertes Sperrfeuer grau und durchgestrichen */
+.up-st.gross { width: 52px; height: 52px; background: radial-gradient(circle, rgba(200,64,44,.45), transparent 70%); } .up-st.gross img { width: 40px; height: 40px; }
+.up-st.blockiert { position: relative; } .up-st.blockiert img { filter: grayscale(1) brightness(.65); }
+.up-st.blockiert::after { content: ""; position: absolute; left: 7px; right: 7px; top: 50%; height: 4px; margin-top: -2px; background: #C8402C; border: 1px solid #120D0B; border-radius: 2px; transform: rotate(-45deg); }
 .up-st.cov img { height: 34px; filter: drop-shadow(0 2px 0 var(--s-ink)); }
 .up-st:focus-visible { box-shadow: 0 0 0 2px var(--s-brass); }
 .mtip { position: fixed; left: 0; top: 0; z-index: 80; width: 270px; padding: 15px 19px 17px; pointer-events: none; text-align: left;
@@ -855,7 +861,7 @@ body.neu #hud .up-abils { gap: var(--abgap, 10px); flex-wrap: nowrap; align-item
 body.neu #hud .up-ab { --ab: var(--abneu, 66px); }
 body.neu #hud .up-slot { gap: 6px; }
 /* Hinweiszeile: klein und dezent oben unter der Leiste */
-body.neu #hudHint { position: fixed; top: 82px; left: 50%; transform: translateX(-50%); z-index: 11; max-width: min(60vw, 980px); padding: 5px 16px; border-radius: 14px;
+body.neu #hudHint { position: fixed; top: calc(var(--tb-unten, 70px) + 12px); left: 50%; transform: translateX(-50%); z-index: 11; max-width: min(60vw, 980px); padding: 5px 16px; border-radius: 14px;
   background: rgba(18,13,11,.66); color: #ddd1b6; font: 600 14px/1.35 var(--s-body); text-align: center; pointer-events: none; white-space: normal; }
 body.neu #hudHint:empty { display: none; }
 /* Rechts unten: Runde beenden, daneben runder goldener Knopf Nächste Einheit */
@@ -868,7 +874,7 @@ body.neu #hud .up-next svg { width: 34px; height: 34px; filter: none; } body.neu
 body.neu #hud .up-next:hover { transform: translateY(-2px); }
 /* Nachschub oben links unter dem Feld Runde */
 #nachOben { display: none; }
-body.neu #nachOben { display: block; position: fixed; top: 82px; left: 26px; z-index: 12; }
+body.neu #nachOben { display: block; position: fixed; top: calc(var(--tb-unten, 70px) + 12px); left: 26px; z-index: 12; }
 body.neu #nachOben .up-shop { height: 48px; min-width: 190px; padding: 0 18px; font-size: 17px !important; }
 @media (max-width: 1500px) {
   body.neu #hud .up-unit { --pic: 88px; --bar: 244px; left: 10px; bottom: 10px; }
@@ -881,7 +887,7 @@ body.neu #nachOben .up-shop { height: 48px; min-width: 190px; padding: 0 18px; f
 @media (min-width: 2200px) {
   body.neu #hud .up-unit { --pic: 140px; --bar: 380px; } body.neu #hud .up-name { font-size: 24px; }
   body.neu #hud .up-end { height: 84px; min-width: 340px; font-size: 26px !important; } body.neu #hud .up-next { width: 84px; height: 84px; }
-  body.neu #hudHint { font-size: 16px; top: 88px; } body.neu #nachOben .up-shop { height: 56px; min-width: 230px; font-size: 20px !important; }
+  body.neu #hudHint { font-size: 16px; } body.neu #nachOben .up-shop { height: 56px; min-width: 230px; font-size: 20px !important; }
 }
 
 /* Nachschub-Menü nach Entwurf B (neue Ansicht): Reiter, Karten im Querformat, Pergament-Details */
@@ -897,6 +903,12 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 #shopNeu .sn-reiter button { min-height: 46px; padding: 0 18px; border: 0; cursor: pointer; font: 400 16px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #d8ccb0;
   background: var(--up-tafel) center / 100% 100% no-repeat; filter: brightness(.75) drop-shadow(0 2px 0 rgba(0,0,0,.5)); }
 #shopNeu .sn-reiter button.an { filter: brightness(1.1) drop-shadow(0 3px 0 rgba(0,0,0,.5)); color: #fff2cc; }
+/* Spieltest Runde 2: Fenster an der Titelleiste verschiebbar; Reiter mit jetzt aufstellbaren Einheiten hervorgehoben */
+#shopNeu .sn-titel { cursor: move; touch-action: none; user-select: none; padding: 4px 6px; margin: -4px -6px; border-radius: 4px; }
+#shopNeu .sn-titel:hover, #shopNeu .sn-titel.zieht { background: rgba(226,176,74,.08); }
+#shopNeu .sn-reiter button.leistbar { color: #fff2cc; box-shadow: inset 0 -3px 0 #e2b04a, 0 0 10px rgba(226,176,74,.35); }
+#shopNeu .sn-reiter button.leistbar::before { content: '★'; color: #ffd76a; margin-right: 6px; text-shadow: 0 0 6px rgba(255,200,90,.7); }
+#shopNeu .sn-reiter button:not(.leistbar) { filter: saturate(.55) brightness(.82); }
 #shopNeu .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
 #shopNeu .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
 #shopNeu .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);
@@ -1275,7 +1287,7 @@ Object.assign(TYPES, {
     can: 'Schild und Streitkolben: sehr zäh und langsam, nur Nahkampf. Hält Gräben und Ruinen. Stacheldraht verletzt und hält sie nicht auf. Schilde vor (1 ●): eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.',
     real: 'Im Stellungskrieg wurden Stahlschilde und Brustpanzer erprobt, etwa der deutsche Grabenpanzer ab 1916. Sie waren schwer und schützten vor allem gegen Splitter.' },
   signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 6, relay: true, abil: 'mark', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Ziel markieren (1 ●): ein Feld in Sicht (6 Felder); bis zum nächsten eigenen Zug trifft Artillerie dort ohne Streuung und ×1,25, versteckte Gegner und Minen im Feld und daneben werden aufgedeckt. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
+    can: 'Ziel markieren (1 ●): ein Feld in Sicht (bis 6 Felder) anklicken – eine Leuchtkugel steht darüber. Bis zu deinem nächsten Zug treffen eigene Artillerie und Mörser dort genau (keine Streuung) und 25 % stärker; versteckte Gegner und Minen auf dem Feld und daneben werden sichtbar. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
     real: 'Leuchtpistolen gaben vereinbarte Zeichen an die Artillerie, zum Beispiel für Sperrfeuer. Grabenperiskope erlaubten den Blick über die Brustwehr.' },
   saeger: { side: 'D', name: 'Sägeschreiter', cls: 'walker', fig: 'mechA', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Drehlauf-Waffe und Kreissäge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
@@ -1378,7 +1390,7 @@ Object.assign(TYPES, {
     can: 'Je Runde eine Aufgabe: einen Koloss oder eine Kampfmaschine im Nachbarfeld reparieren (Stärke +25, alle 2 Runden) bzw. festgefahrene oder liegengebliebene Fahrzeuge bergen – oder Nachladen (1 ●, alle 2 Runden): ein MG oder Geschütz im Nachbarfeld darf noch einmal feuern.',
     real: 'Bei Cambrai 1917 fiel ein großer Teil der britischen Panzer durch Pannen und Festfahren aus. Bergungs- und Werkstattzüge holten sie zurück; Trägertrupps brachten Granaten und Gurte nach vorn.' },
   ballon: { side: 'A', name: 'Ballonbeobachter', cls: 'inf', fig: 'balloon', relay: true, abil: 'mark', aerial: true, spot: 8, atk: 0, def: 1, mor: 4, mv: 0, rng: 0, fs: 0,
-    can: 'Fesselballon: zieht nicht, sieht 8 Felder über Wald und Häuser hinweg. Ziel markieren (1 ●): ein Feld in Sicht; bis zum nächsten eigenen Zug trifft Artillerie dort ohne Streuung und ×1,25, versteckte Gegner und Minen im Feld und daneben werden aufgedeckt. Wehrlos.',
+    can: 'Fesselballon: zieht nicht, sieht 8 Felder über Wald und Häuser hinweg. Ziel markieren (1 ●): ein Feld in Sicht anklicken – eine Leuchtkugel steht darüber. Bis zu deinem nächsten Zug treffen eigene Artillerie und Mörser dort genau (keine Streuung) und 25 % stärker; versteckte Gegner und Minen auf dem Feld und daneben werden sichtbar. Wehrlos.',
     real: 'Gefesselte Beobachtungsballone standen hinter der Front und lenkten das Artilleriefeuer per Telefon. Als einzige Flieger trugen ihre Beobachter schon früh Fallschirme.' },
   eingreif: { side: 'D', name: 'Eingreiftrupp', cls: 'storm', fig: 'counter', counterStrike: true, atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde).',
@@ -5145,10 +5157,12 @@ const fmt = x => String(Math.max(0, Math.round(x * 10)));   // Anzeige in ganzen
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 
 // ---------- Zustand ----------
-let G = null, mode = 'A', blood = true, speed = 0.5, busy = false;   // Standard für neue Spieler ½× (Spieltest Runde 2); gespeichertes Tempo gilt weiter
-try { const v = +localStorage.getItem('arm.tempo'); if ([0.5, 1, 2, 99].includes(v)) speed = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
+let G = null, mode = 'A', blood = true, tempo = 0.5, busy = false;   // tempo = gewählte Stufe; Standard für neue Spieler ½× (Spieltest Runde 2); gespeichertes Tempo gilt weiter
+try { const v = +localStorage.getItem('arm.tempo'); if ([0.5, 1, 2, 99].includes(v)) tempo = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
+const GEGNER_TEMPO = 1.2;   // Gegnerzug (KI) etwas schneller als die gewählte Stufe: ½× → 0,6× (Spieltest Runde 2, Punkt 11)
+let speed = tempo;   // wirksames Tempo: im Gegnerzug tempo × GEGNER_TEMPO
 const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
-const speedTxt = () => speed >= INSTANT ? 'Tempo sofort' : 'Tempo ' + speed + '×';
+const speedTxt = () => tempo >= INSTANT ? 'Tempo sofort' : 'Tempo ' + tempo + '×';
 let wayPt = null;   // Wegpunkt (Paket 3): Umschalt+Klick bzw. langes Drücken auf ein Zugfeld, danach das Ziel
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
 let recSet = new Set(), abilSet = new Set(), abilMode = false;
@@ -5173,6 +5187,7 @@ let ctx = MAINCTX;   // neue Ansicht: beim Zeichnen des flachen Weltbilds zeigt 
 // ---------- Layout ----------
 function layout() {
   neuBedienfeld(VIEW.tilt()); setTimeout(neuKnopfreihe, 0);
+  { const tb = $('topbar'); if (tb) document.body.style.setProperty('--tb-unten', Math.round(tb.getBoundingClientRect().bottom) + 'px'); }   // Nachschub-Knopf und Hinweis unter der oberen Leiste, wie hoch sie auch ist (Spieltest Runde 2, Punkt 12)
   if (VIEW.tilt()) return layoutTilt();
   board.classList.remove('tilt');
   const wrap = board.getBoundingClientRect();
@@ -5255,11 +5270,12 @@ function drawFxs(g, s, up) {
     const e = fxs[i]; if (e.delay > 0) { e.delay -= FS; continue; } e.life -= FS;
     if (e.life <= 0) { fxs.splice(i, 1); continue; }
     const k = 1 - e.life / e.max, x = e.move ? e.x + (e.move[0] - e.x) * Math.min(1, k * 1.15) : e.x, y = e.move ? e.y + (e.move[1] - e.y) * Math.min(1, k * 1.15) : e.y;
-    if (up && !up(x, y)) continue;
+    if (up) { const f = e.fuss ? (e.move && e.fuss2 ? [e.fuss[0] + (e.fuss2[0] - e.fuss[0]) * Math.min(1, k * 1.15), e.fuss[1] + (e.fuss2[1] - e.fuss[1]) * Math.min(1, k * 1.15)] : e.fuss) : null;
+      if (!(f ? up(f[0], f[1]) : up(x, y))) continue; }   // fuss: Aufsteller am Fußpunkt des Schützen (wie die Figur), sonst sitzt ein hoher Punkt wie die Mündung zu tief (Spieltest Runde 2, Punkt 18)
     let [w, h] = fxDim(e.im, e.b, e.mul * (1 + e.grow * k));
     if (e.len) { const r = e.len / w; w = e.len * (e.lenIn ? Math.min(1, (e.max - e.life) / e.lenIn) : 1); h *= Math.min(1.5, Math.max(0.6, Math.sqrt(r))); }   // Strahl wächst in lenIn Bildern auf volle Länge
     const fo = Math.min(1, e.life / (e.max * e.fadeOut)), fi = e.fadeIn ? Math.min(1, (e.max - e.life) / e.fadeIn) : 1;
-    g.save(); g.globalAlpha = e.alpha * fo * fi; if (FX_GLOW.has(e.b)) g.globalCompositeOperation = 'lighter';
+    g.save(); g.globalAlpha = e.alpha * fo * fi; if (FX_GLOW.has(e.b)) g.globalCompositeOperation = 'lighter'; if (e.filter) g.filter = e.filter;
     g.translate(x, y - e.rise * s * k); if (e.ang || e.spin) g.rotate(e.ang + e.spin * k); if (e.flip) g.scale(-1, 1); if (e.flipY) g.scale(1, -1);
     const ax = e.anchor === 'links' ? 0 : e.anchor === 'rechts' ? -w : -w / 2, ay = e.anchor === 'unten' ? -h : -h / 2;
     g.drawImage(e.im, ax, ay, w, h); g.restore();
@@ -5274,18 +5290,19 @@ function drawGmarks(g) {
 }
 // Laufmündung einer Einheit: gemessen (MUZ) oder vordere Kante der q-ten Figur in Laufhöhe hf (Anteil der Figurhöhe von oben)
 function fxMuzzle(id, q = 0, hf = 0.3) {
-  const d = DU.get(id); if (!d) return null; const lf = facesLeft(d.face);
-  if (d.muz) return [d.x + (!!d.muz[2] === lf ? d.muz[0] : -d.muz[0]), d.y + d.muz[1]];
+  const d = DU.get(id); if (!d) return null; const lf = facesLeft(d.face), mitFuss = p => (p.fuss = [d.x, d.y], p);
+  if (d.muz) return mitFuss([d.x + (!!d.muz[2] === lf ? d.muz[0] : -d.muz[0]), d.y + d.muz[1]]);
   const bs = d.fbx || []; if (!bs.length) return null;
   let [x0, y0, w, h, fl] = bs[q % bs.length]; if (!!fl !== lf) x0 = -(x0 + w);
-  return [d.x + (lf ? x0 : x0 + w), d.y + y0 + h * hf];
+  return mitFuss([d.x + (lf ? x0 : x0 + w), d.y + y0 + h * hf]);
 }
 // Richtung für Bilder, die nach rechts zeigen: nach links gespiegelt statt kopfüber gedreht
 function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-lim, Math.min(lim, Math.atan2(y2 - y1, Math.abs(x2 - x1) || 1e-6))); return { flip: fl, ang: fl ? -a0 : a0 }; }
 // Mündungsfeuer (≈ 0,1 s): v 0 Gewehr, 1 MG, 2 Pistole, 3 Kanone, 4 Mörser (nach oben), 5 lang und dünn (Scharfschütze, Panzerbüchse)
-function fxFlash(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 0.5); return fx('muendung', v, p[0], p[1], Object.assign({ anchor: 'links', life: 6, fadeOut: 0.7, flip: dr.flip, ang: dr.ang, mul: 1 }, o)); }
+let fxZielFuss = null;   // Fußpunkt des aktuellen Ziels (Leuchtspur endet dort am Aufsteller)
+function fxFlash(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 0.5); return fx('muendung', v, p[0], p[1], Object.assign({ fuss: p.fuss, anchor: 'links', life: 6, fadeOut: 0.7, flip: dr.flip, ang: dr.ang, mul: 1 }, o)); }
 // Leuchtspur fliegt von p zum Ziel: v 0 Gewehr, 1 MG-Striche, 5 Panzerbüchse
-function fxTracer(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 1.2); return fx('leuchtspur', v, p[0], p[1], Object.assign({ anchor: 'rechts', move: [tx, ty], life: 14, fadeOut: 0.25, flip: dr.flip, ang: dr.ang, mul: 0.55 }, o)); }
+function fxTracer(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 1.2); return fx('leuchtspur', v, p[0], p[1], Object.assign({ fuss: p.fuss, fuss2: p.fuss && fxZielFuss, anchor: 'rechts', move: [tx, ty], life: 14, fadeOut: 0.25, flip: dr.flip, ang: dr.ang, mul: 0.55 }, o)); }
 // Artillerie-, Mörser-, Granateinschlag: Feuerkern (4 Stufen, ca. 0,5 s), dann Erdfontäne, danach steigt Rauch; Spur am Boden
 function fxImpact(x, y, r, o = {}) {
   if (!fxIm('explosion') || !fxIm('erdfontaene')) return false;
@@ -5735,10 +5752,11 @@ const DIM_T = new Set(['wald', 'waldweg', 'forest', 'village', 'fabrik', 'kirche
 // (wichtigster Zustand, „+n“ bei mehreren). Eigene Einheiten am Zug: Messingpunkte unter dem Balken = Aktionspunkte. Alles in einer Zeile unter der Figur.
 // STATES: Reihenfolge = Wichtigkeit. on(u, d) liest die Anzeige-Werte d.vs, damit Zustände erst beim Abspielen erscheinen.
 const STATES = [
+  { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
   { k: 'rout', sym: 'flucht', name: 'Flieht', on: (u, d) => d.vs.rout, text: () => 'Moral gebrochen: weicht zurück und gehorcht nicht. Gegner treffen sie ×1,6, Reiter ×2. Ein Anführer in der Nähe kann sie wieder sammeln.' },
   { k: 'broken', sym: 'zahnrad', name: 'Panne', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Liegengeblieben: fällt noch ${upRunden(d.vs.broken)} aus. Ein Versorgungstrupp oder Pioniere können sie bergen.` },
-  { k: 'sperr', sym: 'garbe', ring: '#E2B04A', name: 'Sperrfeuer', on: (u, d) => d.vs.sperr > 0 && E.alive(u), text: (u, d) => `Schießt in der gegnerischen Runde noch ${d.vs.sperr}-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.` },
-  { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
+  { k: 'sperr', sym: 'garbe', ring: '#E2B04A', name: 'Sperrfeuer', on: (u, d) => d.vs.sperr > 0 && E.alive(u), blockiert: (u, d) => d.vs.supp > 0 || (E.active(u) && E.held(G, u)),
+    textBlock: (u, d) => d.vs.supp > 0 ? 'Sperrfeuer blockiert: Das MG ist niedergehalten und schießt nicht, solange das anhält.' : 'Sperrfeuer blockiert: Ein Gegner steht daneben (gebunden), das MG schießt nicht.', text: (u, d) => `Schießt in der gegnerischen Runde noch ${d.vs.sperr}-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.` },
   { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(d.vs.stuck)} nicht ziehen.` },
   { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde. Wirkt nach dem Verlassen der Wolke noch 2 Runden nach (vergiftet).' },
   { k: 'poison', sym: 'gas', ring: '#7FA04A', name: 'Vergiftet', on: (u, d) => d.vs.poison > 0 && !d.vs.gassed, text: (u, d) => `Hat Gas abbekommen: verliert noch ${upRunden(d.vs.poison)} Stärke und Moral (erst halb so viel wie in der Wolke, dann ein Viertel). Ein Sanitäter kann die Vergiftung heilen.` },
@@ -5946,6 +5964,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
   g.globalAlpha = done ? 0.7 : 1;
   // Pinsel-Lebensbalken wie die Kampfkraft-Balken oben: dunkle Pinselform als Grund, Füllung nach Stand (LIFE_COL), Tintenrand, Segmentstriche
   drawBrushBar(g, '#221B18', bx, by, bw, bh);
+  { const qn = Math.min(1, hpNach(d, d.str) / 10); if (qn > q + 0.005) drawBrushBar(g, HP_NACH, bx, by, bw * qn, bh); }   // Nachlauf: dunkler Abschnitt
   if (q > 0.01) drawBrushBar(g, LIFE_COL[lifeTier(q)], bx, by, bw * q, bh);   // Farbe nach Stand, Fraktion zeigt der Ring
   g.fillStyle = 'rgba(18,13,11,0.7)'; for (let i = 1; i < 10 * q - 0.2; i++) g.fillRect(Math.round(bx + bw * i / 10), by + bh * 0.15, 1, bh * 0.7);
   MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: by + bh + 4, u, kind: 'hp' });
@@ -5964,10 +5983,20 @@ function drawMarks(u, d, x, y, own, done, acc) {
     else { g.font = `900 ${Math.round(s * 0.3)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(2, s * 0.06); g.strokeStyle = '#120D0B'; g.strokeText('★', ox, oy); g.fillStyle = ready ? '#C2A461' : '#7d7564'; g.fillText('★', ox, oy); }
     MARKS.push({ x0: ox - oh * 0.3, y0: oy - oh / 2, x1: ox + oh * 0.3, y1: oy + oh / 2, u, kind: 'lead' }); }
   // Ein Zustandsplatz links: wichtigster Zustand, „+n“ bei mehreren
-  const sts = statesOf(u, d).filter(st => !st.panel);   // Karte: nur echte Zustände
+  const sts = statesOf(u, d).filter(st => !st.panel && st.k !== 'supp');   // Karte: nur echte Zustände; Niedergehalten eigener großer Platz
+  let slotX = bx;
+  if (d.vs.supp > 0) {   // Niedergehalten: wichtigster Zustand, groß direkt links an der Einheit (Spieltest Runde 2, Punkt 22)
+    const R2 = Math.max(12, s * 0.23), cx = bx - R2 - 3, cy = mid - R2 * 0.55, pz = 0.5 + 0.5 * Math.sin(now / 260);
+    g.save(); g.globalAlpha = 1; g.beginPath(); g.arc(cx, cy, R2 * (1.12 + 0.08 * pz), 0, 7); g.fillStyle = `rgba(200,60,40,${0.25 + 0.2 * pz})`; g.fill(); g.restore();
+    drawSym(g, UPI['s_niedergehalten'], cx, cy, R2, '#C8402C');
+    MARKS.push({ x0: cx - R2 * 1.1, y0: cy - R2 * 1.1, x1: cx + R2 * 1.1, y1: cy + R2 * 1.1, u, kind: 'supp' });
+    slotX = cx - R2;
+  }
   if (sts.length) {
-    const R = Math.max(7, s * 0.13), cx = bx - R - 2;
-    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R, sts[0].ring);
+    const R = Math.max(7, s * 0.13), cx = slotX - R - 2, bl = sts[0].blockiert && sts[0].blockiert(u, d);
+    if (bl) g.filter = 'grayscale(1) brightness(0.7)';
+    drawSym(g, UPI['s_' + sts[0].sym], cx, mid, R, bl ? '#6d6458' : sts[0].ring); g.filter = 'none';
+    if (bl) { g.save(); g.lineCap = 'round'; g.strokeStyle = '#120D0B'; g.lineWidth = Math.max(3, R * 0.36); g.beginPath(); g.moveTo(cx - R * 0.72, mid + R * 0.72); g.lineTo(cx + R * 0.72, mid - R * 0.72); g.stroke(); g.strokeStyle = '#C8402C'; g.lineWidth = Math.max(1.6, R * 0.2); g.stroke(); g.restore(); }   // durchgestrichen
     if (sts.length > 1) { const t = '+' + (sts.length - 1), tx = cx + R * 0.85, ty = mid - R * 0.95; g.font = `700 ${Math.round(Math.max(13, s * 0.2))}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.lineWidth = Math.max(3, s * 0.07); g.lineJoin = 'round'; g.strokeStyle = '#120D0B'; g.strokeText(t, tx, ty); g.fillStyle = '#F0EDE1'; g.fillText(t, tx, ty); }
     MARKS.push({ x0: cx - R * 1.1, y0: mid - R * 1.6, x1: cx + R * 1.6, y1: mid + R * 1.1, u, kind: 'state' });
@@ -5980,6 +6009,15 @@ function drawMarks(u, d, x, y, own, done, acc) {
 let lastT = 0, STEP = 1, FS = 1;
 // Hilfsmarkierung auf einem Feld: Fläche und Rand in einem Palettenton, wahlweise gestrichelt oder schraffiert, Symbol oben im Feld
 const BONE = '240,237,225', BRASS = '194,164,97', PARCH = '187,165,131', LIFE = '142,43,34';
+// Schadens-Nachlauf (Spieltest Runde 2, Punkt 16): verlorene Stärke bleibt ca. 1 s als dunkler Abschnitt im Balken stehen, dann baut er in 0,5 s ab (wie Total War)
+const hpNachV = (h, t) => { const a = (t - h.t0) / 1000; return a < 1 ? h.from : a > 1.5 ? h.to : h.from + (h.to - h.from) * (a - 1) / 0.5; };
+function hpNach(o, cur) {   // o: beliebiges Objekt (Anzeige-Einheit, Panel-Speicher); gibt den nachlaufenden Wert zurück
+  const t = performance.now(); let h = o._hn; if (!h) h = o._hn = { from: cur, to: cur, t0: t - 2000 };
+  const v = hpNachV(h, t);
+  if (cur < h.to - 1e-6) { h.from = v; h.to = cur; h.t0 = t; } else if (cur > h.to + 1e-6) { h.from = h.to = cur; h.t0 = t - 2000; }   // Verlust: stehen lassen; Heilung: sofort
+  return hpNachV(h, t);
+}
+const HP_NACH = '#5a1810', hudHN = {};
 function hexMark(c, r, o) {
   const g = ctx, s = L.s, pz = 0.5 + 0.5 * Math.sin(now / 320);
   hexPath(g, c, r, 0.9); g.fillStyle = `rgba(${o.rgb},${(o.fill ?? 0.14) + 0.05 * pz})`; g.fill();
@@ -6065,7 +6103,7 @@ function drawGround(g, s) {
     // Hilfsmarkierungen nach STYLE.md: gedämpfte Palettentöne, unterscheidbar über Muster und Symbol (Wunsch des Nutzers)
     { const sym = sel && TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')];
       const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]);
-      for (const k of abilSet) hexMark(Math.floor(k / 100), k % 100, { rgb: BRASS, fill: 0.1, soft: true, sym: k === hk ? sym : null, inHex: true }); }   // dezent, Symbol nur unter Maus/Finger
+      for (const k of abilSet) hexMark(Math.floor(k / 100), k % 100, { rgb: BRASS, fill: k === hk ? 0.3 : 0.2, sym: abilSet.size <= 24 || k === hk ? sym : null, inHex: true }); }   // gültige Felder: Fläche und Symbol in jedem Feld, das Symbol liegt über Gräben und Figuren (Spieltest Runde 2, Punkt 21)
     for (const k of shellHexes) {
       const c = Math.floor(k / 100), r = k % 100;
       hexPath(g, c, r, 0.92); g.fillStyle = `rgba(235,40,30,${0.36 + 0.1 * Math.sin(now / 260)})`; g.fill(); g.strokeStyle = '#ff5a40'; g.lineWidth = Math.max(2, s * 0.06); g.stroke();
@@ -6096,7 +6134,7 @@ function drawGround(g, s) {
   // MG-Schussfächer: gewähltes MG oder feindliches MG unter Maus/Finger
   { const pickMG = u => u && TYPES[u.type].mg && E.active(u) && DU.get(u.id) ? u : null;
     const fu = pickMG(sel) || pickMG(hoverU && hoverU.side !== G.side ? hoverU : null) || pickMG(inspect && inspect.unit); if (fu) drawFan(g, fu); }
-  if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: PARCH, fill: 0.22, dash: true });
+  if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: '96,196,92', fill: 0.3 });   // Aufstellungsfelder für Nachschub grün (Spieltest Runde 2, Punkt 15)
   if (hoverHex) {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
     if (sel && TYPES[sel.type].cls === 'art' && shellHexes.has(E.key(hoverHex[0], hoverHex[1])) && artMode !== 'he') {
@@ -6892,8 +6930,10 @@ function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u
 // ---------- Effekte ----------
 function burst(x, y, n, cols, o = {}) {
   for (let i = 0; i < n; i++) particles.push({ x, y, vx: (Math.random() - 0.5) * L.s * (o.spread || 0.12), vy: -Math.random() * L.s * (o.up || 0.14), g: L.s * 0.008,
-    life: 16 + Math.random() * 16, col: cols[i % cols.length], s: L.s * (0.03 + Math.random() * 0.04) });
+    life: 16 + Math.random() * 16, col: cols[i % cols.length], s: L.s * (0.03 + Math.random() * 0.04) * (o.sz || 1) });
 }
+// Blut (Spieltest Runde 2, Punkt 17): dunkler, kleinere Spritzer und mehr Tropfen
+const BLUT_FILTER = 'brightness(0.55) saturate(1.15)', BLUT_DUNKEL = ['#5e0f0b', '#4a0b08', '#6e140e', '#3a0806'];
 const BOOM_IMG = { he: ['expl'], dust: ['dirt1', 'dirt2'], gas: ['gas2'], blood: ['splash'], smoke: ['smokeL1', 'smokeL2', 'smokeD'] };
 function boom(x, y, r, kind, delay = 0) {
   { const s = L.s, m = r / s, fl = Math.random() < 0.5;   // neue Effektbögen, sonst unten die alten
@@ -6901,7 +6941,7 @@ function boom(x, y, r, kind, delay = 0) {
     if (kind === 'smoke' && fx('rauch', null, x, y + s * 0.3, { delay, life: 140, mul: m * 0.8, grow: 0.3, rise: 0.8, alpha: 0.72, fadeIn: 16, fadeOut: 0.6, flip: fl })) return;
     if (kind === 'dust' && fx('truemmer', 2, x, y + s * 0.35, { delay, life: 44, mul: m * 0.75, grow: 0.3, rise: 0.15, alpha: 0.85, flip: fl })) return;
     if (kind === 'gas' && fx('gas', null, x, y + s * 0.4, { delay, life: 70, mul: m * 0.7, grow: 0.4, alpha: 0.8, fadeIn: 10, flip: fl })) return;
-    if (kind === 'blood' && fx('blut', Math.floor(Math.random() * 3), x, y - s * 0.3, { delay, life: 30, mul: m * 0.9, anchor: 'mitte', grow: 0.2, flip: fl })) return; }
+    if (kind === 'blood' && fx('blut', Math.floor(Math.random() * 3), x, y - s * 0.3, { delay, life: 26, mul: m * 0.6, anchor: 'mitte', grow: 0.25, flip: fl, filter: BLUT_FILTER })) { burst(x, y - s * 0.3, 10 + Math.round(m * 12), BLUT_DUNKEL, { up: 0.09, spread: 0.1, sz: 0.5 }); return; } }
   const cols = kind === 'gas' ? [['#a9bd3a', 1], ['#d6e670', 0.6]] : kind === 'dust' ? [['#8a7a52', 1], ['#b7a678', 0.55]] : kind === 'blood' ? [['#8a1a14', 1]] : kind === 'smoke' ? [['#77736a', 1]] : [['#e8762a', 1], ['#ffd15a', 0.62], ['#fff6c4', 0.3]];
   const opts = BOOM_IMG[kind] || [], life = kind === 'smoke' ? 70 : kind === 'he' ? 30 : 24;
   booms.push({ x, y, r, cols, kind, img: opts[Math.floor(Math.random() * opts.length)], flip: Math.random() < 0.5, life, max: life, delay });
@@ -6960,6 +7000,7 @@ async function playEvent(e) {
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
+      { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
       if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), 'Sperrfeuer!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
@@ -7089,7 +7130,7 @@ async function playEvent(e) {
         const heavy = kc === 'walker' || af === 'drill', metal = armored || (du && TYPES[du.type].suit && T0 && T0.suit);
         const nv = heavy ? 5 : metal ? 4 : k === 'mstab' ? 3 : k === 'msmash' ? 2 : k ? (Math.random() < 0.5 ? 0 : 1) : null;   // Schwung/Kreuzhieb, Aufprallstern, Stich, Funkenstern, Bodenschlag
         if (nv != null && fx('nahkampf', nv, nv === 5 ? d.x : d.x + (fl ? 1 : -1) * s * 0.12, nv === 5 ? d.y + s * 0.35 : d.y - s * 0.45, { anchor: nv === 5 ? 'unten' : 'mitte', life: 20, fadeOut: 0.6, grow: 0.25, flip: fl, mul: nv === 5 ? 1.1 : 0.85 })) {
-          if (blood && du && !['walker', 'art'].includes(TYPES[du.type].cls)) fx('blut', Math.floor(Math.random() * 3), d.x + (fl ? -1 : 1) * s * 0.15, d.y - s * 0.4, { anchor: 'mitte', life: 32, mul: 0.6, grow: 0.2, flip: fl });
+          if (blood && du && !['walker', 'art'].includes(TYPES[du.type].cls)) { fx('blut', Math.floor(Math.random() * 3), d.x + (fl ? -1 : 1) * s * 0.15, d.y - s * 0.4, { anchor: 'mitte', life: 28, mul: 0.42, grow: 0.25, flip: fl, filter: BLUT_FILTER }); burst(d.x + (fl ? -1 : 1) * s * 0.15, d.y - s * 0.4, 12, BLUT_DUNKEL, { up: 0.08, spread: 0.09, sz: 0.5 }); }
           if (af === 'drill') fx('truemmer', 3, d.x, d.y + s * 0.35, { life: 40, mul: 0.7, grow: 0.3, flip: fl });   // Bohrkoloss: Grus
         }
         else if (k === 'mstab' && PJI.mstab) muzzles.push({ img: 'mstab', x: a.x + (d.x - a.x) * 0.25, y: a.y - s * 0.45 + (d.y - a.y) * 0.25, ang, off: 0, sz: 0.4, life: 34, max: 34 });
@@ -7121,9 +7162,9 @@ async function playEvent(e) {
         else if (blood && e.wire) {   // Stacheldraht: wenig, dunkles Rotbraun, keine Tropfspuren; wird zu einem kleinen Fleck, der nach einigen Runden vergeht
           burst(x, y + s * 0.15, 7, ['#4a1810', '#3a120c', '#5c2216'], { up: 0.1, spread: 0.12 });
           decals.push({ wire: true, x: d.x + (Math.random() - 0.5) * s * 0.4, y: d.y + s * 0.12 * kAt(d.x, d.y), r: s * 0.09, born: now, turn: G.turn });
-        } else if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 6 + nb * 3, ['#9a1612', '#74100c', '#b3221a'], { up: 0.16, spread: 0.2 });
-          boom(x, y + s * 0.5, s * 0.34, 'blood');
-          for (let q = 0; q < nb; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.1, y: d.y + (Math.random() - 0.3) * s * 0.7 * kAt(d.x, d.y), r: s * (0.06 + Math.random() * 0.13), col: Math.random() < 0.5 ? 'rgba(110,16,12,0.62)' : 'rgba(78,10,8,0.6)' });
+        } else if (blood && TYPES[u.type].cls !== 'walker') { const nb = Math.min(5, 1 + Math.round(e.dmg * 2)); burst(x, y, 10 + nb * 5, BLUT_DUNKEL, { up: 0.09, spread: 0.1, sz: 0.5 });
+          boom(x, y + s * 0.5, s * 0.28, 'blood');
+          for (let q = 0; q < nb; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.1, y: d.y + (Math.random() - 0.3) * s * 0.7 * kAt(d.x, d.y), r: s * (0.06 + Math.random() * 0.13), col: Math.random() < 0.5 ? 'rgba(84,12,9,0.62)' : 'rgba(58,8,6,0.6)' });
           while (decals.length > 700) decals.shift(); }
         floater(...headPos(e.u), '−' + fmt(e.dmg), e.dmg >= 1.5 ? '#ff6a4a' : '#ff9a7a', e.dmg >= 1.5, true);
         if (human(G.side) || human(u.side)) toast(`${nm(u)}: −${fmt(e.dmg)} Stärke · ${e.dmg >= 2 ? 'schwerer Treffer' : e.dmg >= 1 ? 'guter Treffer' : e.dmg >= 0.4 ? 'leichter Treffer' : 'kaum Wirkung'} · noch ${fmt(e.str)}`);
@@ -7304,11 +7345,16 @@ const CURSOR = {
   schwert: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M3 3 L8 4.5 L22 18.5 L18.5 22 L4.5 8 Z' fill='#E8E2D0'/><path d='M8 4.5 L21 17.5' stroke='#9a917c' stroke-width='1'/><path d='M16.5 24 L24 16.5 L26 18.5 L18.5 26 Z' fill='#C2A461'/><path d='M22.5 22.5 L28 28' stroke-width='5' stroke-linecap='round'/><path d='M22.5 22.5 L28 28' stroke='#6b4a2a' stroke-width='2.6' stroke-linecap='round'/></g>", 3, 3, 'crosshair'),
   ziel: CUR("<g fill='none' stroke-linecap='round'><circle cx='16' cy='16' r='9.5' stroke='#120D0B' stroke-width='5'/><circle cx='16' cy='16' r='9.5' stroke='#C2A461' stroke-width='2.4'/><path d='M16 1.5v8M16 22.5v8M1.5 16h8M22.5 16h8' stroke='#120D0B' stroke-width='5'/><path d='M16 2.5v7M16 22.5v7M2.5 16h7M22.5 16h7' stroke='#E8E2D0' stroke-width='2.2'/></g><circle cx='16' cy='16' r='1.8' fill='#8E2B22' stroke='#120D0B'/>", 16, 16, 'crosshair'),
   nein: CUR("<g fill='none'><circle cx='16' cy='16' r='10' stroke='#120D0B' stroke-width='6'/><path d='M9 23 L23 9' stroke='#120D0B' stroke-width='6' stroke-linecap='round'/><circle cx='16' cy='16' r='10' stroke='#8E2B22' stroke-width='3'/><path d='M9 23 L23 9' stroke='#8E2B22' stroke-width='3' stroke-linecap='round'/></g>", 16, 16, 'not-allowed'),
+  // Leuchtkugel (Ziel markieren) und Feldzeiger (andere Feld-Fähigkeiten) – Spieltest Runde 2, Punkt 20
+  leucht: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M16 30 L16 15' stroke='#120D0B' stroke-width='4'/><path d='M16 30 L16 15' stroke='#C2A461' stroke-width='2'/><circle cx='16' cy='10' r='6.5' fill='#FFE08A'/><circle cx='16' cy='10' r='3' fill='#FFF7D6' stroke='none'/></g><g stroke='#FFD24A' stroke-width='1.6' stroke-linecap='round'><path d='M6 10 L3 10 M26 10 L29 10 M8.5 3.5 L6.5 1.5 M23.5 3.5 L25.5 1.5'/></g>", 16, 30, 'crosshair'),
+  feld: CUR("<g fill='none' stroke-linejoin='round'><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#120D0B' stroke-width='5'/><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#E2B04A' stroke-width='2.4'/></g><circle cx='16' cy='16' r='3.2' fill='#E2B04A' stroke='#120D0B' stroke-width='1.5'/>", 16, 16, 'pointer'),
 };
+const abilCursor = () => { const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' || a === 'charge' ? CURSOR.ziel : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
   const u = p.uFig || p.uHex;
-  if (u && u.side !== sel.side && E.alive(u)) { const t = targets.get(u.id); if (!t) return CURSOR.nein;
+  { const hk = u ? E.key(u.c, u.r) : p.h && E.key(p.h[0], p.h[1]); if (abilMode && hk != null && abilSet.has(hk)) return abilCursor(); }   // Feld-Fähigkeit gewählt: gültiges Feld (auch mit Einheit darauf)
+  if (u && u.side !== sel.side && E.alive(u)) { const t = targets.get(u.id); if (!t) return shellHexes.has(E.key(u.c, u.r)) ? CURSOR.ziel : CURSOR.nein;   // Artillerie: Ziel geht vor „nicht begehbar“
     const k = t.both ? (atkPref !== 'auto' ? atkPref : t.kind) : t.kind; return k === 'melee' ? CURSOR.schwert : CURSOR.ziel; }
   if (u && u.side === sel.side) return '';
   const k = p.h && E.key(p.h[0], p.h[1]);
@@ -7334,7 +7380,8 @@ function markAt(x, y) { for (let i = MARKS.length - 1; i >= 0; i--) { const m = 
 function markTips(m) {
   const u = m.u, d = DU.get(u.id), T = TYPES[u.type];
   if (!d || !E.alive(u)) return [];
-  if (m.kind === 'state') return statesOf(u, d).filter(st => !st.panel).map(st => ({ name: st.name, text: st.text(u, d) }));
+  if (m.kind === 'supp') { const st = STATES.find(q => q.k === 'supp'); return [{ name: st.name, text: st.text(u, d) }]; }
+  if (m.kind === 'state') return statesOf(u, d).filter(st => !st.panel && st.k !== 'supp').map(st => st.blockiert && st.blockiert(u, d) ? { name: st.name + ' (blockiert)', text: st.textBlock(u, d) } : { name: st.name, text: st.text(u, d) });
   if (m.kind === 'cover') return [coverTip(u)];
   if (m.kind === 'pv') { const pv = m.pv, cn = ['', 'Bronze', 'Silber', 'Gold'][pv.cov];
     const n = reach.get(E.key(pv.c, pv.r));
@@ -7526,7 +7573,12 @@ async function endTurn() {
   if (mode === 'hot') { camHome(); return showHandover(); }
   if (!human(G.side)) await aiTurn();
 }
+let gegnerZug = false;
 async function aiTurn() {
+  gegnerZug = true; speed = tempo >= INSTANT ? tempo : tempo * GEGNER_TEMPO;   // Gegnerzug etwas schneller
+  try { await aiTurnLauf(); } finally { gegnerZug = false; speed = tempo; }
+}
+async function aiTurnLauf() {
   busy = true; updateUI();
   await wait(300);
   { const bev = AI.buy(G); if (bev.length) await play(bev); }
@@ -7603,7 +7655,7 @@ const tbNum = n => String(n).replace('.', ',') + '×';
 function tbSync() {
   $('btnZoom').innerHTML = TB_SVG.zoom + `<b class="tb-v">${zoomFit || ZOOM <= ZFIT + 0.01 ? 'Karte' : tbNum(Math.round(ZOOM * 10) / 10)}</b>`;
   $('btnSound').innerHTML = soundOn ? TB_SVG.sndOn : TB_SVG.sndOff; $('smSound').innerHTML = $('btnSound').innerHTML;
-  $('btnSpeed').innerHTML = speed >= INSTANT ? TB_SVG.instant : TB_SVG.speed + `<b class="tb-v">${tbNum(speed)}</b>`; $('btnSpeed').dataset.tip = 'Tempo der Abläufe: ' + speedTxt().replace('Tempo ', '');
+  $('btnSpeed').innerHTML = tempo >= INSTANT ? TB_SVG.instant : TB_SVG.speed + `<b class="tb-v">${tbNum(tempo)}</b>`; $('btnSpeed').dataset.tip = 'Tempo der Abläufe: ' + speedTxt().replace('Tempo ', '');
   $('btnDiary').innerHTML = TB_SVG.diary; $('btnDiary').classList.toggle('on', !$('diary').hidden);
   $('btnMarks').innerHTML = TB_SVG.marks; $('btnMarks').classList.toggle('on', marksOn); $('btnMarks').setAttribute('aria-pressed', marksOn);
   $('btnRules2').innerHTML = TB_SVG.rules; $('btnFull').innerHTML = TB_SVG.full; $('btnMenu').innerHTML = TB_SVG.menu;
@@ -7701,10 +7753,16 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/wimpel_fraktionen.png, sonst gezeichnet
+const ABIL_KEIN = { tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 const ABIL_SYM = { rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
-const upBar = (cls, k, v, max) => `<div class="up-bar ${cls}"><div class="tube"><div class="slot"><i style="width:${Math.round(Math.max(0, Math.min(1, v / max)) * 100)}%"></i></div></div><span class="val"><span class="k">${k}</span>${fmt(v)}<small> / ${fmt(max)}</small></span></div>`;
+function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
+  const el = $('hudStats').querySelector('.up-bar.hp i.nach'), hn = hudHN[id]; if (!el || !hn || !hn._hn) return;
+  const step = () => { if (!el.isConnected) return; const v = hpNachV(hn._hn, performance.now()); el.style.width = (Math.max(0, Math.min(1, v / 10)) * 100).toFixed(1) + '%'; if (v > hn._hn.to + 1e-6) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+const upBar = (cls, k, v, max, nach) => `<div class="up-bar ${cls}"><div class="tube"><div class="slot">${nach != null ? `<i class="nach" style="width:${(Math.max(0, Math.min(1, nach / max)) * 100).toFixed(1)}%"></i>` : ''}<i style="width:${Math.round(Math.max(0, Math.min(1, v / max)) * 100)}%"></i></div></div><span class="val"><span class="k">${k}</span>${fmt(v)}<small> / ${fmt(max)}</small></span></div>`;
 function upBtn(b, i) {
   const cost = b.cost > 0 ? `<span class="ap">${b.cost}</span>` : '';
   const corner = b.cd > 0 ? `<span class="cdn"><img src="${upSym('sanduhr')}" alt="">${b.cd}</span>` : b.cnt != null ? `<span class="cdn cnt">×${b.cnt}</span>` : '';
@@ -7752,15 +7810,30 @@ const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge un
 const SHOP_STANDARD = ['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'];   // Linientruppen
 function shopKatOf(t) { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls === 'walker' || E.isMech(t) ? 'Fahrzeuge und Kampfmaschinen' : T.cls === 'art' ? 'Artillerie' : SHOP_STANDARD.includes(t) ? 'Standard' : 'Spezial'; }
 function hideShopDet() { $('shopDet').classList.remove('zeigen'); document.querySelectorAll('#shopNeu .sn-k.offen').forEach(e => e.classList.remove('offen')); }
+// Nachschub-Fenster verschiebbar (Spieltest Runde 2, Punkt 13): an der Titelleiste ziehen (Maus und Finger), Lage bleibt gespeichert (arm.shoppos)
+let shopPos = [0, 0], shopZieh = 0; try { const v = JSON.parse(localStorage.getItem('arm.shoppos') || 'null'); if (Array.isArray(v) && v.length === 2) shopPos = v.map(Number); } catch (e) {}
+function shopLage(sh) {   // Versatz anwenden, Fenster bleibt ganz im Bild (unter der oberen Leiste)
+  sh.style.transform = ''; const r = sh.getBoundingClientRect(), oben = parseInt(getComputedStyle(document.body).getPropertyValue('--tb-unten')) || 70;
+  shopPos[0] = Math.max(8 - r.left, Math.min(innerWidth - 8 - r.right, shopPos[0])); shopPos[1] = Math.max(oben + 4 - r.top, Math.min(innerHeight - 8 - r.bottom, shopPos[1]));
+  sh.style.transform = `translate(${Math.round(shopPos[0])}px, ${Math.round(shopPos[1])}px)`;
+}
+function shopZiehen() {
+  const sh = $('shop').querySelector('.sheet'), tit = $('shopNeu').querySelector('.sn-titel'); if (!sh || !tit) return; shopLage(sh);
+  tit.onpointerdown = ev => { if (ev.button > 0) return; ev.preventDefault(); try { tit.setPointerCapture(ev.pointerId); } catch (e) {} hideShopDet();
+    const x0 = ev.clientX, y0 = ev.clientY, p0 = shopPos.slice(); tit.classList.add('zieht');
+    tit.onpointermove = e => { shopPos = [p0[0] + e.clientX - x0, p0[1] + e.clientY - y0]; shopLage(sh); shopZieh = performance.now(); };
+    tit.onpointerup = tit.onpointercancel = () => { tit.onpointermove = null; tit.classList.remove('zieht'); shopZieh = performance.now(); try { localStorage.setItem('arm.shoppos', JSON.stringify(shopPos.map(Math.round))); } catch (e) {} }; };
+}
+addEventListener('resize', () => { const sh = $('shop') && $('shop').querySelector('.sheet'); if (sh && !$('shop').hidden) shopLage(sh); });
 function openShopNeu() {
   const sd = G.side, list = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)), inKat = k => list.filter(t => shopKatOf(t) === k);
   if (!inKat(shopKat).length) shopKat = SHOP_KAT.find(k => inKat(k).length);
   const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
   $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div>
-    <div class="sn-reiter">${SHOP_KAT.filter(k => inKat(k).length).map(k => `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}">${k}<small>${inKat(k).length}</small></button>`).join('')}</div>
+    <div class="sn-reiter">${SHOP_KAT.filter(k => inKat(k).length).map(k => { const n = inKat(k).filter(t => !warum(t)).length; return `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}${n ? ' leistbar' : ''}" title="${n ? n + ' davon jetzt aufstellbar' : 'Nichts davon gerade aufstellbar'}">${k}<small>${inKat(k).length}</small></button>`; }).join('')}</div>
     <div class="sn-liste">${inKat(shopKat).map(t => { const T = TYPES[t]; return `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${T.name}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span></button>`; }).join('')}</div>
     <div class="sn-fuss"><span>${lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick stellt auf' : 'Antippen zeigt alle Werte, nochmal antippen stellt auf'} – am eigenen Rand oder an eigenen Zielfeldern. Neue Einheiten handeln ab der nächsten Runde.</span><button class="tbtn" id="shopZu">Schließen</button></div>`;
-  $('shop').hidden = false; hideShopDet();
+  $('shop').hidden = false; hideShopDet(); shopZiehen();
   requestAnimationFrame(() => $('shopNeu').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   $('shopNeu').querySelectorAll('.sn-reiter button').forEach(b => b.onclick = () => { shopKat = b.dataset.kat; openShopNeu(); });
   $('shopZu').onclick = () => { $('shop').hidden = true; hideShopDet(); };
@@ -7833,8 +7906,8 @@ function unitButtons(T, hints) {
   if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: Math.max(1, sel.ap), costTxt: 'alle Aktionen', text: 'Gegner auf einem Nachbarfeld anklicken (rot).', on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
     btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: A.all ? sel.ap : A.ap, costTxt: A.all ? 'alle Aktionen' : undefined, cd: sel.cdA, text: T.can, on: abilMode, off: !at.length,
-      why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < A.ap ? `Braucht ${A.ap} Aktionspunkte.` : 'Kein Ziel.' });
-    if (abilMode) hints.push('<i>Schraffiert:</i> Zielfeld anklicken.'); }
+      why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < A.ap ? `Braucht ${A.ap} Aktionspunkte.` : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
+    if (abilMode) hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', cost: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Keine Aktionspunkte mehr.' });
   if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', cost: 1, text: 'MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer; aufgebaut kann es nicht ziehen.', pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Keine Aktionspunkte mehr.' });
   if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: sel.ap, costTxt: 'alle Aktionen', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
@@ -7881,10 +7954,11 @@ function updateHud() {
     $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ` · ${UP.orden ? `<img class="up-orden" src="${UP.orden}" alt="Anführer">` : '★ '}${u.officer}` : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}`;
     // Zeile mit ALLEN Zuständen als Symbole (Deckung zuerst), Tooltip je Symbol
     { const d = DU.get(u.id), cv = coverTip(u);
-      hudTips = [cv && { ...cv, img: UP['cov' + cv.tier], cls: 'cov' }, ...statesOf(u, d).map(st => ({ name: st.name, text: st.text(u, d), img: upSym(st.sym) }))].filter(Boolean);
+      hudTips = [cv && { ...cv, img: UP['cov' + cv.tier], cls: 'cov' }, ...statesOf(u, d).map(st => st.blockiert && st.blockiert(u, d) ? { name: st.name + ' (blockiert)', text: st.textBlock(u, d), img: upSym(st.sym), cls: 'blockiert' } : { name: st.name, text: st.text(u, d), img: upSym(st.sym), cls: st.k === 'supp' ? 'gross' : '' })].filter(Boolean);
       $('hudStates').innerHTML = hudTips.map((t, i) => `<span class="up-st${t.cls ? ' ' + t.cls : ''}" data-i="${i}" tabindex="0" aria-label="${upEsc(t.name)}"><img src="${t.img}" alt=""></span>`).join(''); }
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
-    $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
+    const hn = hudHN[u.id] = hudHN[u.id] || {}; hpNach(hn, u.str); setTimeout(() => hudNachLauf(u.id), 0);
+    $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10, hpNachV(hn._hn, performance.now())) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
       `<div class="up-tiles">${own ? `<span class="up-t" title="Aktionspunkte: ${ap} von ${P.AP}"><img src="${upSym('blitz')}" alt="Aktionen">${'<i class="up-pip"></i>'.repeat(Math.min(ap, P.AP))}${'<i class="up-pip used"></i>'.repeat(Math.max(0, P.AP - ap))}</span>` : ''}` +
       `<span class="up-t" title="Bewegung (Stiefel); Marsch doppelt so weit (Stiefel mit Flügeln)"><img src="${upSym('stiefel')}" alt="Bewegung">${u.limbered ? P.LIMBER_MV : T.mv} <small>Felder</small></span>` +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
@@ -7900,7 +7974,7 @@ function updateHud() {
     if (placing) {
       $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
       $('hudSub').innerHTML = 'Aufstellen';
-      hints.push('Tippe ein gestricheltes Feld am eigenen Rand oder an einem eigenen Zielfeld an. Die Einheit kann ab der nächsten Runde handeln.');
+      hints.push('Tippe ein grünes Feld am eigenen Rand oder an einem eigenen Zielfeld an. Die Einheit kann ab der nächsten Runde handeln.');
     } else if (inspect && inspect.hex) {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = (h.river && h.t === 'canal' ? 'Fluss' : T.name) + (h.ridge ? ' auf der Höhe' : '');
@@ -8213,8 +8287,8 @@ $('closeShop').onclick = () => { $('shop').hidden = true; hideShopDet(); };
 $('closeDetail').onclick = () => { $('detail').hidden = true; };
 // Klick (oder Antippen) in den dunklen Bereich neben dem Fenster schließt es wie der Schließen-Knopf (Spieltest 2026-11-17)
 for (const [ov, btn] of [['army', 'armyCancel'], ['shop', 'closeShop'], ['detail', 'closeDetail'], ['rules', 'closeRules']])
-  $(ov).addEventListener('click', e => { if (e.target === $(ov)) $(btn).click(); });
-$('btnSpeed').onclick = () => { speed = speed === 0.5 ? 1 : speed === 1 ? 2 : speed === 2 ? INSTANT : 0.5; try { localStorage.setItem('arm.tempo', String(speed)); } catch (e) {} tbSync(); };   // ½×, 1×, 2×, Sofort (Paket 2: langsamere Stufe, gespeichert)
+  $(ov).addEventListener('click', e => { if (e.target === $(ov) && !(ov === 'shop' && performance.now() - shopZieh < 400)) $(btn).click(); });   // nach dem Ziehen des Nachschub-Fensters nicht schließen
+$('btnSpeed').onclick = () => { tempo = tempo === 0.5 ? 1 : tempo === 1 ? 2 : tempo === 2 ? INSTANT : 0.5; speed = gegnerZug ? tempo * (tempo >= INSTANT ? 1 : GEGNER_TEMPO) : tempo; try { localStorage.setItem('arm.tempo', String(tempo)); } catch (e) {} tbSync(); };   // ½×, 1×, 2×, Sofort (Paket 2: langsamere Stufe, gespeichert)
 tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
@@ -8392,7 +8466,7 @@ showStart(true);
 window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
-  setSpeed: v => speed = v, get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
+  setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },

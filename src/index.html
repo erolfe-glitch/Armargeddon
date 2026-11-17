@@ -402,6 +402,8 @@ body { background: #0c0908; }
 .up-bar .slot { position: absolute; inset: 27% 8.3%; overflow: hidden; border-radius: 2px; }
 .up-bar .slot i { position: absolute; inset: 0 auto 0 0; background: var(--s-life); }
 .up-bar.hp .slot i::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--s-ink) calc(10% - 2px) 10%); }
+.up-bar .slot i.nach { background: #5a1810; }   /* Schadens-Nachlauf (Spieltest Runde 2) */
+.up-bar.hp .slot i.nach::after { display: none; }
 .up-bar.mor .tube { height: 26px; } .up-bar.mor .slot { inset: 30% 8.3%; } .up-bar.mor .slot i { background: var(--s-brass); }
 .up-bar.mor.bad .slot i { background: var(--s-life); }
 .up-bar .val { font: 700 17px var(--s-body); font-variant-numeric: tabular-nums; min-width: 92px; text-align: right; white-space: nowrap; }
@@ -605,6 +607,10 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .up-st { display: grid; place-items: center; width: 42px; height: 42px; margin: -4px -3px; cursor: help; border-radius: 50%; outline: none; }
 .up-st img { width: 30px; height: 30px; object-fit: contain; pointer-events: none;
   filter: drop-shadow(.6px 0 0 #F0EDE1) drop-shadow(-.6px 0 0 #F0EDE1) drop-shadow(0 .6px 0 #F0EDE1) drop-shadow(0 -.6px 0 #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.6)); }
+/* Spieltest Runde 2: Niedergehalten groß zuerst, blockiertes Sperrfeuer grau und durchgestrichen */
+.up-st.gross { width: 52px; height: 52px; background: radial-gradient(circle, rgba(200,64,44,.45), transparent 70%); } .up-st.gross img { width: 40px; height: 40px; }
+.up-st.blockiert { position: relative; } .up-st.blockiert img { filter: grayscale(1) brightness(.65); }
+.up-st.blockiert::after { content: ""; position: absolute; left: 7px; right: 7px; top: 50%; height: 4px; margin-top: -2px; background: #C8402C; border: 1px solid #120D0B; border-radius: 2px; transform: rotate(-45deg); }
 .up-st.cov img { height: 34px; filter: drop-shadow(0 2px 0 var(--s-ink)); }
 .up-st:focus-visible { box-shadow: 0 0 0 2px var(--s-brass); }
 .mtip { position: fixed; left: 0; top: 0; z-index: 80; width: 270px; padding: 15px 19px 17px; pointer-events: none; text-align: left;
@@ -848,7 +854,7 @@ body.neu #hud .up-abils { gap: var(--abgap, 10px); flex-wrap: nowrap; align-item
 body.neu #hud .up-ab { --ab: var(--abneu, 66px); }
 body.neu #hud .up-slot { gap: 6px; }
 /* Hinweiszeile: klein und dezent oben unter der Leiste */
-body.neu #hudHint { position: fixed; top: 82px; left: 50%; transform: translateX(-50%); z-index: 11; max-width: min(60vw, 980px); padding: 5px 16px; border-radius: 14px;
+body.neu #hudHint { position: fixed; top: calc(var(--tb-unten, 70px) + 12px); left: 50%; transform: translateX(-50%); z-index: 11; max-width: min(60vw, 980px); padding: 5px 16px; border-radius: 14px;
   background: rgba(18,13,11,.66); color: #ddd1b6; font: 600 14px/1.35 var(--s-body); text-align: center; pointer-events: none; white-space: normal; }
 body.neu #hudHint:empty { display: none; }
 /* Rechts unten: Runde beenden, daneben runder goldener Knopf Nächste Einheit */
@@ -861,7 +867,7 @@ body.neu #hud .up-next svg { width: 34px; height: 34px; filter: none; } body.neu
 body.neu #hud .up-next:hover { transform: translateY(-2px); }
 /* Nachschub oben links unter dem Feld Runde */
 #nachOben { display: none; }
-body.neu #nachOben { display: block; position: fixed; top: 82px; left: 26px; z-index: 12; }
+body.neu #nachOben { display: block; position: fixed; top: calc(var(--tb-unten, 70px) + 12px); left: 26px; z-index: 12; }
 body.neu #nachOben .up-shop { height: 48px; min-width: 190px; padding: 0 18px; font-size: 17px !important; }
 @media (max-width: 1500px) {
   body.neu #hud .up-unit { --pic: 88px; --bar: 244px; left: 10px; bottom: 10px; }
@@ -874,7 +880,7 @@ body.neu #nachOben .up-shop { height: 48px; min-width: 190px; padding: 0 18px; f
 @media (min-width: 2200px) {
   body.neu #hud .up-unit { --pic: 140px; --bar: 380px; } body.neu #hud .up-name { font-size: 24px; }
   body.neu #hud .up-end { height: 84px; min-width: 340px; font-size: 26px !important; } body.neu #hud .up-next { width: 84px; height: 84px; }
-  body.neu #hudHint { font-size: 16px; top: 88px; } body.neu #nachOben .up-shop { height: 56px; min-width: 230px; font-size: 20px !important; }
+  body.neu #hudHint { font-size: 16px; } body.neu #nachOben .up-shop { height: 56px; min-width: 230px; font-size: 20px !important; }
 }
 
 /* Nachschub-Menü nach Entwurf B (neue Ansicht): Reiter, Karten im Querformat, Pergament-Details */
@@ -890,6 +896,12 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 #shopNeu .sn-reiter button { min-height: 46px; padding: 0 18px; border: 0; cursor: pointer; font: 400 16px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #d8ccb0;
   background: var(--up-tafel) center / 100% 100% no-repeat; filter: brightness(.75) drop-shadow(0 2px 0 rgba(0,0,0,.5)); }
 #shopNeu .sn-reiter button.an { filter: brightness(1.1) drop-shadow(0 3px 0 rgba(0,0,0,.5)); color: #fff2cc; }
+/* Spieltest Runde 2: Fenster an der Titelleiste verschiebbar; Reiter mit jetzt aufstellbaren Einheiten hervorgehoben */
+#shopNeu .sn-titel { cursor: move; touch-action: none; user-select: none; padding: 4px 6px; margin: -4px -6px; border-radius: 4px; }
+#shopNeu .sn-titel:hover, #shopNeu .sn-titel.zieht { background: rgba(226,176,74,.08); }
+#shopNeu .sn-reiter button.leistbar { color: #fff2cc; box-shadow: inset 0 -3px 0 #e2b04a, 0 0 10px rgba(226,176,74,.35); }
+#shopNeu .sn-reiter button.leistbar::before { content: '★'; color: #ffd76a; margin-right: 6px; text-shadow: 0 0 6px rgba(255,200,90,.7); }
+#shopNeu .sn-reiter button:not(.leistbar) { filter: saturate(.55) brightness(.82); }
 #shopNeu .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
 #shopNeu .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
 #shopNeu .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);

@@ -34,3 +34,42 @@ Gesammelte Beobachtungen, sortiert in Pakete. Jedes Paket = ein Auftrag an Claud
 
 ## Paket 5 – Unteres Bedienfeld neu – Entwurf entwurf/probe/bedienfeld.html, im Spiel (neue Ansicht) nach A1/B umgesetzt 2026-11-17 (Bilder: entwurf/probe/paket5/spiel/)
 22. Aufbau wie bei Total War: rechts Nachschub und Runde beenden; links in der Ecke, etwas höher, die Einheiteninfo – umschaltbar kurz/ausführlich; Mitte frei.
+
+---
+
+# Spieltest Runde 2 (Enrico, 2026-11-17 abends)
+
+## Paket 6 – Ton – erledigt 2026-11-17 (Gegnerzug-Tempo ×1,2 dazu)
+1. Überrollen (Panzer über Draht/Barrikade) klingt wie ein brechender Ast – soll zermalmend sein („wumm – krach, krach, krach"): besseren Ausschnitt wählen, Drahtgeräusch darunterlegen. Infanterie, die in Draht läuft: Holzbrechen + Drahtgeräusch (latch/chain-link).
+2. Pfeifton beim Befehl des Hauptmanns zu schrill.
+3. Fähigkeiten der Anführer insgesamt zu laut.
+4. Eingraben: kurze Grunz-Laute der Soldaten (z. B. mask-grunt oder Laute aus den eigenen Stimmaufnahmen).
+5. Konkordat-MG etwas leiser; Pferde-Töne etwas angleichen.
+6. Kein Klick-Ton beim Knopf „Nächste Einheit" und beim Haken „Erledigt" – beides bekommt einen Klick.
+7. Schritte: Bei jeder Infanteriebewegung kommt Marschtritt, auch beim Hauptmann. Normales Ziehen = normale Schritte; Marschtritt nur bei Marsch/Sprint. Lautstärken der Schritte angleichen.
+8. Nahkampfschlag der Reiter klingt wie brechender Ast – bessere Nahkampf-Töne.
+9. Landkoloss-Kanone klingt wie ein Gewehr – kleine Kanone (little-cannon/cannon-shot). Turmschreiter: Kanone + MG mit passenden Tönen.
+10. Artillerie-Einzelschuss: Einschlag mit mehr Volumen („Bumm").
+11. Tempo: alle Stufen bleiben; Standard ist ½× (nicht umbenennen). Gegnerzug evtl. etwas schneller (≈0,6) – prüfen.
+
+## Paket 7 – Bedienung und Anzeige – erledigt 2026-11-17 (Bilder: entwurf/probe/paket7/)
+12. Nachschub-Knopf oben ist zu drei Vierteln verdeckt.
+13. Nachschub-Fenster verschiebbar.
+14. Nachschub-Menü: Reiter, in denen man sich etwas leisten kann, hervorheben.
+15. Verstärkungsfelder grün markieren.
+16. Schadens-Nachlauf: verlorene Lebenspunkte kurz (ca. 1 s) dunkler im Balken stehen lassen, dann abbauen (wie Total War).
+17. Blutspritzer dunkler und mehr wie Spritzer.
+18. Konkordat-MG: Leuchtspur/Mündungsfeuer etwas zu tief unter dem Lauf.
+19. Mauszeiger: Artillerie über angreifbarem Gegner zeigt durchgestrichenen Kreis statt Fadenkreuz (weil das Feld nicht begehbar ist) – angreifbare Ziele haben Vorrang.
+20. Ballonbeobachter „Ziel markieren": Beschreibung unverständlich; gültige Zielfelder zeigen Verbotszeichen – stattdessen kleines Leuchtkugel-Symbol als Zeiger.
+21. Mineure: Fähigkeit wählbar, aber gültige Felder sind nicht zu sehen – gültige Felder markieren, Knopf grau, wenn keins da ist.
+22. „Niedergehalten" muss als wichtigster Zustand groß neben der Einheit stehen; ein aktives Sperrfeuer, das durch Niederhalten blockiert ist, als blockiert zeigen.
+
+## Paket 8 – Regeln
+23. Pannen bei Fahrzeugen viel seltener, dafür dann 3 Runden festgefahren. Panne sieht aus wie im Schlamm festgefahren (Dreck, Spritzer), nicht wie Rauch/Brand.
+24. Schützenkohorte kann keinen Draht mehr schneiden. Je Armee mindestens zwei Einheitentypen mit Drahtschneiden; sie schneiden vom Nachbarfeld aus, ohne hineinzulaufen.
+25. Zweitwaffen: Landkoloss bekommt seine Seiten-MGs (schießen nach links und rechts), Turmschreiter Kanone + MG; bei anderen Fahrzeugen/Schreitern, wo das Modell es zeigt.
+26. Anführer-Befehle zu weitreichend: normale Befehle nur im Umkreis von 1 Feld und höchstens 3× pro Schlacht; großer Befehl einmal pro Schlacht im Umkreis von 3 Feldern (statt ganze Karte).
+27. Gas: Abklingzeit 3 Runden.
+28. Artillerie-Sperrfeuer: höchstens 2× pro Schlacht; weniger Schaden als ein Einzelschuss, aber spürbar.
+29. Verstärkung an eroberten Flaggen: nur auf der eigenen Seite der Flagge (zwischen eigenem Rand und Flagge), nie dahinter Richtung Gegner.
