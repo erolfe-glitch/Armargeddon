@@ -35,6 +35,9 @@ const P = {
   FIRE_FREE: 1.25, HOLD_DEF: 1.25, BANNER_R: 2, BANNER_R_PLANTED: 3,
   // Spieltest Runde 2, Paket 8 (2026-11-17): Pannen/Festfahren seltener (oben ≈ ⅓), dafür 3 eigene Runden; Befehle 1 Feld, 3× je Anführer; großer Befehl 3 Felder;
   // Gas 3 Runden Abklingzeit; Artillerie-Sperrfeuer höchstens 2× je Geschütz, Schaden ×0,7 eines Einzelschusses; Zweitwaffe (Seiten-MG, Turm-MG) ×0,5, Reichweite 2
+  // Fahrplan 2 (2026-11-17): Schusswinkel für Fahrzeuge und Schreiter – Hauptwaffe ±60°, Seitenwaffen (Zweitwaffe, zweiter Schuss der Breitseite) vorn und seitlich bis 135°;
+  // Drehen auf der Stelle kostet sie 1 Punkt je Runde (danach in derselben Runde frei)
+  FZ_FAN: 60, ZWEIT_FAN: 135, DREH_AP: 1,
   PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 3, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
   DIG_DEF: 1.3, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,
@@ -706,7 +709,8 @@ function angDiff(a, b) { const d = Math.abs(a - b) % 360; return d > 180 ? 360 -
 // MG-Schussfächer (Wunsch 2026-11-16): drei Feldseiten in Blickrichtung (vorn, schräg links und rechts), also ±90°. Außerhalb weder Schuss
 // noch Reaktionsfeuer. Drehen (frei) richtet den Fächer aus. Andere Einheiten schießen rundum. Abschalter für die Sim: NOFAN.
 const MG_FAN = 90;
-function inFan(G, u, c, r) { if (!TYPES[u.type].mg || TOG.NOFAN || (u.c === c && u.r === r)) return true; return angDiff(angleTo(u.c, u.r, c, r), u.face * 60) <= MG_FAN + 1; }
+function fanOf(u, zweit) { const T = TYPES[u.type]; return T.mg ? MG_FAN : T.cls === 'walker' ? (zweit ? P.ZWEIT_FAN : P.FZ_FAN) : 180; }   // halber Schusswinkel in Grad (180 = rundum)
+function inFan(G, u, c, r, zweit) { const f = fanOf(u, zweit); if (f >= 180 || TOG.NOFAN || (u.c === c && u.r === r)) return true; return angDiff(angleTo(u.c, u.r, c, r), u.face * 60) <= f + 1; }
 const key = (c, r) => c * 100 + r;
 function line(c1, r1, c2, r2) {
   const n = dist(c1, r1, c2, r2), out = [];
@@ -811,6 +815,27 @@ function deployD(G, list, lead, free) {
   }
 }
 
+// Aufstellungsphase (Fahrplan 2, 2026-11-17): Startzone je Seite (Konkordat Spalten 0–zoneA, Aschenwacht das Band am eigenen Rand wie deployD);
+// Einheiten darin frei setzen oder tauschen, „Automatisch aufstellen“ = Kartenvorgabe. G.aufstellung = Seite, solange sie aufstellt.
+function startZone(G, side) {
+  const zD = Math.max(MAP.zoneD, COLS - (+(TOG.M_band || 0) || MAP.band || P.D_BAND)), out = [];
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (side === 'A' ? c <= MAP.zoneA : c >= zD) out.push([c, r]);
+  return out;
+}
+function inStartZone(G, side, c, r) { return startZone(G, side).some(h => h[0] === c && h[1] === r); }
+function canPlaceStart(G, u, c, r) { return !!G.aufstellung && u.side === G.aufstellung && inMap(c, r) && inStartZone(G, u.side, c, r) && cost(G, u, c, r) < 99; }
+function aufstellen(G, u, c, r) {   // setzen oder mit der Einheit dort tauschen
+  if (!canPlaceStart(G, u, c, r)) return false;
+  const o = unitAt(G, c, r); if (o === u) return true;
+  if (o) { if (o.side !== u.side || !canPlaceStart(G, o, u.c, u.r)) return false; o.c = u.c; o.r = u.r; }
+  u.c = c; u.r = r; return true;
+}
+function autoAufstellen(G, side) {   // Kartenvorgabe: Seite neu aufstellen wie beim Spielstart
+  G.units = G.units.filter(u => u.side !== side);
+  const army = G.armee && G.armee[side];
+  if (army) deploy(G, side, army); else if (SETUP) { for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]); } else deploy(G, side, defaultArmy(side));
+  for (const u of G.units) if (u.side === side) { if (TYPES[u.type].mg) u.setup = true; if (TYPES[u.type].mines) u.mines = TYPES[u.type].mines; if (TYPES[u.type].counterStrike) u.cready = true; }
+}
 function newGame(opts) {
   opts = opts || {};
   useMapArmy(opts.map);
@@ -822,11 +847,12 @@ function newGame(opts) {
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
   G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
+  G.armee = {};
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
-    if (army && (opts.free || armyOk(side, army, !!opts.mechs))) deploy(G, side, army);   // free: nur für Tests ohne Budgetgrenze
+    if (army && (opts.free || armyOk(side, army, !!opts.mechs))) { deploy(G, side, army); G.armee[side] = army; }   // free: nur für Tests ohne Budgetgrenze
     else if (SETUP) { for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]); }
-    else deploy(G, side, defaultArmy(side));
+    else { G.armee[side] = defaultArmy(side); deploy(G, side, G.armee[side]); }
   }
   for (const u of G.units) { if (TYPES[u.type].mg) u.setup = true; if (TYPES[u.type].mines) u.mines = TYPES[u.type].mines; if (TYPES[u.type].counterStrike) u.cready = true; }   // MG stehen zu Spielbeginn aufgebaut
   return G;
@@ -1028,9 +1054,12 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
   if (alive(u) && u.status === 'ok') counterStrike(G, u, ev);
   return ev;
 }
+function drehKosten(u) { return cls(u) === 'walker' && !u.gedreht && !TOG.NODREH ? P.DREH_AP : 0; }
 function turnUnit(G, u, face) {
   if (!active(u) || u.ap < 1 || u.attacked || u.supp > 0 || u.broken > 0) return [];
-  u.face = ((face % 6) + 6) % 6;   // Drehen kostet keinen Punkt
+  const f = ((face % 6) + 6) % 6; if (f === u.face) return [];
+  const k = drehKosten(u); if (k) { if (u.ap < k) return []; spend(u, k); u.gedreht = true; }   // Fahrzeuge und Schreiter: 1 Punkt, danach in dieser Runde frei; übrige Einheiten drehen kostenlos
+  u.face = f;
   return [{ t: 'face', u: u.id, face: u.face }];
 }
 // Aufprotzen: Geschütz an die Pferde hängen (zieht dann 4 Felder, feuert nicht). Abprotzen: wieder feuerbereit ab der nächsten Runde.
@@ -1107,7 +1136,7 @@ function canFire(G, a, d) {
   if (immune(T, TYPES[d.type])) return false;
   const dd = dist(a.c, a.r, d.c, d.r);
   if (concealed(G, d, a.c, a.r)) return false;
-  if (!inFan(G, a, d.c, d.r)) return false;   // MG nur im Schussfächer
+  if (!inFan(G, a, d.c, d.r, bs)) return false;   // MG nur im Schussfächer; Fahrzeuge/Schreiter: Hauptwaffe nach vorn, zweiter Schuss der Breitseite auch seitlich
   return dd >= 1 && dd <= rangeOf(G, a, d.c, d.r) && hasLOS(G, a.c, a.r, d.c, d.r);
 }
 function defMods(G, d, arc, ranged, tags, noTrench, lob) {
@@ -1311,7 +1340,7 @@ function canZweit(G, a, d) {
   const T = TYPES[a.type], Z = T.zweit; if (!Z || !active(a) || a.side !== G.side || a.zw || a.ap < 1 || a.broken || a.supp > 0 || (!Z.flamme && held(G, a))) return false;   // Flammenstoß auch im Nahkampf
   if (!d || !alive(d) || d.side === a.side || (cls(d) === 'walker' && !Z.flamme && !Z.kanone) || concealed(G, d, a.c, a.r)) return false;   // MG gegen Panzerung wirkungslos
   const dd = dist(a.c, a.r, d.c, d.r); if (dd < 1 || dd > Z.rng || !hasLOS(G, a.c, a.r, d.c, d.r)) return false;
-  if (Z.seiten) { const w = angDiff(angleTo(a.c, a.r, d.c, d.r), a.face * 60); if (w < 45 || w > 135) return false; }
+  if (!inFan(G, a, d.c, d.r, true)) return false;   // Seitenwaffen: vorn und seitlich, nicht nach hinten
   return true;
 }
 function zweitTargets(G, a) { return G.units.filter(d => canZweit(G, a, d)); }
@@ -1487,7 +1516,7 @@ function startTurn(G) {
   for (const u of G.units) {
     u.fireDmg = 0;
     if (u.side === s) {
-      u.ap = P.AP; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false;
+      u.ap = P.AP; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false;
       for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG']) if (u[k] > 0) u[k]--;
       if (u.revealed > 0) u.revealed--;
       if (TYPES[u.type].counterStrike) u.cready = true;
@@ -1812,7 +1841,7 @@ function checkEnd(G) {
 
 const E = {
   P, SIDES, TYPES, TERRAIN, MAPS, costParts, barrageCells, coverOf, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
-  newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
+  newGame, startTurn, endTurn, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
   ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,

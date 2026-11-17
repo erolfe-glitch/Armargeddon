@@ -166,6 +166,13 @@ function attackValue(G, a, d, kind, o) {
   if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += 0.6;
   return v;
 }
+// Schusswinkel (Fahrplan 2): Fahrzeuge/Schreiter schießen mit der Hauptwaffe nur nach vorn (±60°). Ohne Zug darf die KI vorher drehen (1 Punkt), wenn noch 2 Punkte da sind.
+function imBogen(G, u, c, r, d, moved) {
+  if (E.cls(u) !== 'walker') return true;
+  const f = moved ? E.faceToward(u.face, u.c, u.r, c, r) : u.face;
+  if (E.angDiff(E.angleTo(c, r, d.c, d.r), f * 60) <= P.FZ_FAN + 1) return true;
+  return !moved && u.ap >= 1 + E.drehKosten(u);
+}
 function bestAttackFrom(G, u, c, r, moved, run) {
   const T = TYPES[u.type];
   let best = null;
@@ -177,7 +184,7 @@ function bestAttackFrom(G, u, c, r, moved, run) {
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
     if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.mg && (moved || (!u.setup && u.ap < 2))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
-        dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r)) {
+        dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r) && imBogen(G, u, c, r, d, moved)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
     }
@@ -455,7 +462,9 @@ function exec(G, uid, s) {
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
-  if (s.k === 'fire') return E.canFire(G, u, d) ? E.fire(G, u, d) : [];
+  if (s.k === 'fire') {   // Fahrzeug/Schreiter: Ziel außerhalb des Schussfelds – erst drehen (kostet 1 Punkt), dann schießen
+    if (!E.canFire(G, u, d) && E.cls(u) === 'walker' && !u.attacked && u.ap >= 1 + E.drehKosten(u)) { const ev = E.turnUnit(G, u, E.faceToward(u.face, u.c, u.r, d.c, d.r)); if (E.canFire(G, u, d)) return ev.concat(E.fire(G, u, d)); return ev; }
+    return E.canFire(G, u, d) ? E.fire(G, u, d) : []; }
   if (s.k === 'melee') return E.canMelee(G, u, d) ? E.melee(G, u, d) : [];
   return [];
 }

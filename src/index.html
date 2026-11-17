@@ -942,6 +942,18 @@ body.neu .overlay { z-index: 30; }   /* Startmenü, Nachschub, Regeln, Armee, In
 #rundenSchild.an { visibility: visible; animation: rsAn 2.3s ease both; }
 @keyframes rsAn { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px); } 14% { opacity: 1; transform: translateX(-50%) translateY(0); } 78% { opacity: 1; } 100% { opacity: 0; } }
 @media (min-width: 2200px) { #rundenSchild b { font-size: 42px; } #rundenSchild .rs-t { font-size: 23px; } #rundenSchild .rs-w img { height: 70px; } }
+/* Aufstellungsphase (Fahrplan 2): Leiste unten Mitte, Rundenknöpfe ausgeblendet */
+#aufstellLeiste { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 14; display: flex; align-items: center; gap: 14px; padding: 10px 18px; max-width: calc(100vw - 40px);
+  border: 14px solid transparent; border-image: var(--up-r9) 64 round; background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; }
+#aufstellLeiste[hidden] { display: none; }
+#aufstellText { display: grid; gap: 2px; max-width: 520px; } #aufstellText b { font: 400 22px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
+#aufstellText span { font: 400 14px var(--s-body); color: var(--s-text, #F0EDE1); }
+#aufstellLeiste button { min-height: 52px; padding: 0 18px; font: 400 17px var(--s-head) !important; letter-spacing: .04em; white-space: nowrap; }
+body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben, body.aufstellung .up-turn { visibility: hidden; }
+/* Rundenschild: Wappen kräftiger und größer (Nachtrag 2026-11-17) */
+#rundenSchild .rs-w { display: grid; place-items: center; width: 92px; height: 92px; border-radius: 50%; background: radial-gradient(circle, rgba(255,226,160,.45), rgba(255,226,160,.12) 55%, transparent 72%); }
+#rundenSchild .rs-w img, #rundenSchild .rs-w svg { height: 80px; filter: brightness(1.75) contrast(1.2) saturate(1.1) drop-shadow(0 2px 0 var(--s-ink)) drop-shadow(0 0 6px rgba(255,214,130,.55)); }
+@media (min-width: 2200px) { #rundenSchild .rs-w { width: 108px; height: 108px; } #rundenSchild .rs-w img { height: 96px; } }
 </style>
 </head>
 <body>
@@ -992,6 +1004,7 @@ body.neu .overlay { z-index: 30; }   /* Startmenü, Nachschub, Regeln, Armee, In
 </div>
 <div id="nachOben"></div>
 <div id="rundenSchild" class="rs" aria-live="polite"></div>
+<div id="aufstellLeiste" hidden><div id="aufstellText"></div><button class="up-plate" id="aufstellAuto">Automatisch aufstellen</button><button class="up-plate up-end" id="aufstellLos">Schlacht beginnen</button></div>
 <div id="toast"></div>
 <div id="banner"></div>
 

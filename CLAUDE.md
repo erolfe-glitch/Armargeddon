@@ -90,6 +90,8 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 
 - **Rundenschild (2026-11-17):** ui.js `rundenSchild()` nach jedem Zugwechsel (endTurn, Ende aiTurnLauf), `#rundenSchild` (index.html, Holz + Eisen-Messing-Rahmen, 2,3 s, pointer-events none, Klick blendet aus), Töne `zug_eigen` (Trommelwirbel) und `zug_gegner` (Wirbel + tiefes Horn, `mix`).
 
+- **Fahrplan 2 (2026-11-17):** Aufstellungsphase: `G.aufstellung` = Seite, die aufstellt (engine `startZone`, `canPlaceStart`, `aufstellen` setzt/tauscht, `autoAufstellen` = Kartenvorgabe aus `G.armee`); ui.js `aufstellAnzeige`/`aufstellFertig` (startTurn erst danach), Ziehen über capture-pointerdown auf cv, `#aufstellLeiste`. Schusswinkel: `fanOf(u, zweit)` – Fahrzeuge/Schreiter Hauptwaffe ±`P.FZ_FAN` 60°, Seitenwaffen und zweiter Breitseiten-Schuss ±`P.ZWEIT_FAN` 135°; Drehen kostet sie `P.DREH_AP` 1 je Runde (`drehKosten`, u.gedreht); KI `imBogen`, dreht vor dem Schuss. Beschuss-Tempo: ui.js `playEvent` hebt bei fire/shell/hit/supp das Tempo auf ×1,5 (höchstens 1×). Fertige Einheiten: `klickStimme` nur Klick. Vorschlag BP/AP: `entwurf/BP_AP_VORSCHLAG.md` (nicht gebaut).
+
 ## Karten
 - E.MAPS in engine.js, jede Karte = Daten: build() mit mapTools oder `img` + `grid` (Zeichen siehe GRID_CODE), objectives, army, reinf, zoneA, band. Neue Karte = neuer Eintrag.
 - Vorhanden: grauwall, selm, lerne, varn, front, stein, waldfl, kasem, kanal. Gemalte Karten: renderPainted (paint.js) bzw. renderImageMap (mapimg.js).

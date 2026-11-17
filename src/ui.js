@@ -1001,7 +1001,13 @@ function drawGround(g, s) {
   }
   // MG-Schussfächer: gewähltes MG oder feindliches MG unter Maus/Finger
   { const pickMG = u => u && TYPES[u.type].mg && E.active(u) && DU.get(u.id) ? u : null;
-    const fu = pickMG(sel) || pickMG(hoverU && hoverU.side !== G.side ? hoverU : null) || pickMG(inspect && inspect.unit); if (fu) drawFan(g, fu); }
+    const fu = pickMG(sel) || pickMG(hoverU && hoverU.side !== G.side ? hoverU : null) || pickMG(inspect && inspect.unit); if (fu) drawFan(g, fu);
+    const fz = q => q && TYPES[q.type].cls === 'walker' && TYPES[q.type].rng > 0 && E.active(q) && DU.get(q.id) ? q : null;   // Fahrzeuge/Schreiter: Schussfeld der Hauptwaffe (rot) und der Seitenwaffen (Messing)
+    const wu = fz(sel) || fz(inspect && inspect.unit); if (wu) { if (TYPES[wu.type].zweit || TYPES[wu.type].broadside) drawFan(g, wu, true); drawFan(g, wu); } }
+  if (G.aufstellung) {   // Startzone grün, gewählte Einheit gelb, Ziel beim Ziehen grün bzw. rot
+    for (const [c, r] of E.startZone(G, G.aufstellung)) hexMark(c, r, { rgb: '96,196,92', fill: 0.18, soft: true });
+    if (aufstellWahl) hexMark(aufstellWahl.c, aufstellWahl.r, { rgb: '226,176,74', fill: 0.35 });
+    if (aufstellZiel) hexMark(aufstellZiel.h[0], aufstellZiel.h[1], { rgb: aufstellZiel.ok ? '120,220,110' : '200,64,44', fill: 0.45 }); }
   if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: '96,196,92', fill: 0.3 });   // Aufstellungsfelder für Nachschub grün (Spieltest Runde 2, Punkt 15)
   if (hoverHex) {
     hexPath(g, hoverHex[0], hoverHex[1], 0.95); g.strokeStyle = 'rgba(255,250,225,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
@@ -1014,9 +1020,12 @@ function drawGround(g, s) {
 }
 // MG-Schussfächer (Regel E.inFan): ausgefächerte Fläche am Boden, Ochsenblut zur Mitte, nach außen in Messing auslaufend,
 // gestrichelte Fächerkanten; Felder in Reichweite innerhalb des Fächers dezent umrandet. Blickrichtung aus dem Anzeige-Zustand.
-function drawFan(g, u) {
-  const d = DU.get(u.id), [x, y] = center(u.c, u.r), s = L.s, k = kAt(x, y), T = TYPES[u.type];
-  const R = (T.rng + 0.55) * s * SQ3, mid = d.face * 60, a0 = (mid - E.MG_FAN) * Math.PI / 180, a1 = (mid + E.MG_FAN) * Math.PI / 180, pz = 0.5 + 0.5 * Math.sin(now / 600);
+function drawFan(g, u, zweit) {   // zweit: Schussfeld der Seitenwaffen (Fahrzeuge/Schreiter), heller in Messing
+  const d = DU.get(u.id), [x, y] = center(u.c, u.r), s = L.s, k = kAt(x, y), T = TYPES[u.type], F = E.fanOf(u, zweit), rg = zweit ? (T.zweit ? T.zweit.rng : 2) : T.rng;
+  if (zweit) { const R = (rg + 0.55) * s * SQ3, mid = d.face * 60, a0 = (mid - F) * Math.PI / 180, a1 = (mid + F) * Math.PI / 180;
+    g.save(); g.translate(x, y); g.scale(1, k); g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fillStyle = 'rgba(194,164,97,0.13)'; g.fill();
+    g.setLineDash([s * 0.1, s * 0.1]); g.lineWidth = Math.max(1.2, s * 0.025); g.strokeStyle = 'rgba(194,164,97,0.6)'; g.stroke(); g.setLineDash([]); g.restore(); return; }
+  const R = (T.rng + 0.55) * s * SQ3, mid = d.face * 60, a0 = (mid - F) * Math.PI / 180, a1 = (mid + F) * Math.PI / 180, pz = 0.5 + 0.5 * Math.sin(now / 600);
   g.save(); g.translate(x, y); g.scale(1, k);
   const gr = g.createRadialGradient(0, 0, s * 0.4, 0, 0, R);
   gr.addColorStop(0, `rgba(168,71,58,${0.42 + 0.06 * pz})`); gr.addColorStop(0.55, 'rgba(168,71,58,0.24)'); gr.addColorStop(0.85, 'rgba(194,164,97,0.14)'); gr.addColorStop(1, 'rgba(194,164,97,0)');
@@ -1856,12 +1865,19 @@ const unitById = id => G.units.find(u => u.id === id);
 const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 
 let marschU = null;   // Einheit im Marsch/Sturmlauf: ihr Zug klingt nach Marschtritt (Spieltest Runde 2)
+// Beschuss-Tempo (2026-11-17): Schuss, Geschoss und Einschlag laufen mit dem Bewegungstempo × 1,5, höchstens 1× (bei ½× also 0,75×); schnellere Stufen bleiben
+const BESCHUSS = new Set(['fire', 'shell', 'hit', 'supp']);
 async function playEvent(e) {
+  if (!BESCHUSS.has(e.t) || speed >= 1) return playEvent0(e);
+  const sp = speed; speed = Math.min(1, sp * 1.5);
+  try { return await playEvent0(e); } finally { if (speed === Math.min(1, sp * 1.5)) speed = sp; }
+}
+async function playEvent0(e) {
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls; if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); playSound(marschU === e.u ? 'marschtritt' : e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)) ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
+    case 'move': { const k0 = TYPES[u.type].cls; if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else playSound(marschU === e.u ? 'marschtritt' : e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)) ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); } } await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -2285,6 +2301,7 @@ cv.addEventListener('pointermove', ev => {
 }
 cv.addEventListener('click', ev => {
   if (performance.now() - dragged < 250) return;   // war ein Verschieben, kein Klick
+  if (G && G.aufstellung) { const h = pick(...evToPx(ev)).h; if (aufstellWahl && h) aufstellSetze(aufstellWahl, h[0], h[1]); return; }   // Aufstellung: gewählte Einheit auf das Feld
   if (!G || busy || G.over || !human(G.side)) return;
   const [x, y] = evToPx(ev), p = pick(x, y), h = p.h;
   if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
@@ -2306,7 +2323,7 @@ cv.addEventListener('click', ev => {
   { const hu = [p.uHex, p.uFig].find(q => q && healSet.has(q.id)); if (sel && hu) return act(m => E.heal(G, m, hu)); }
   { const ru = [p.uHex, p.uFig].find(q => q && recSet.has(q.id)); if (sel && ru) return act(m => E.recover(G, m, ru)); }
   { const su = [p.uHex, p.uFig].find(q => q && sendSet.has(q.id)); if (sel && su) return act(m => E.sendOrder(G, m, su)); }
-  if (u && u.side === G.side && E.active(u)) { if (u === sel && human(u.side)) selectVoice(u); return select(u); }   // auch erneutes Anklicken der gewählten Einheit
+  if (u && u.side === G.side && E.active(u)) { if (u === sel && human(u.side)) klickStimme(u); return select(u); }   // auch erneutes Anklicken der gewählten Einheit
   if (u) { select(null); inspect = { unit: u }; updateHud(); return; }
   select(null);
   if (h) { inspect = { hex: h }; updateHud(); }
@@ -2329,6 +2346,7 @@ function stimmZiehen(pool) {   // Beutel: alle Sprüche der Stimme gemischt, nac
   let b = stimmeBeutel[pool]; if (!b || !b.rest.length) { const neu = alle.slice().sort(() => Math.random() - 0.5); if (b && neu.length > 1 && neu[0] === b.letzt) neu.push(neu.shift()); b = stimmeBeutel[pool] = { rest: neu, letzt: b && b.letzt }; }
   const k = b.rest.shift(); b.letzt = k; return k;
 }
+function klickStimme(u) { refreshSpent(); if (spent.has(u.id)) playSound('klick', 0.2, null, { noGap: true }); else selectVoice(u); }   // ausgegraut (fertig): kein Spruch
 function selectVoice(u) {
   if (!soundOn || speed >= INSTANT) return;
   const pool = stimmPool(u); const k = pool && stimmZiehen(pool); if (!k) return;
@@ -2353,7 +2371,7 @@ function motorRev(k, o = {}) {   // o.vol (Grundlautstärke), o.dauer (s): beim 
   return { stop: () => { aus = true; } };
 }
 function select(u) {
-  if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) selectVoice(u);   // Spruch bei jedem Anwählen (Reiter: Pferd + Spruch)   // Reiter: Schnauben häufig, Wiehern etwa jedes 4. Mal (Gewicht im Tonplatz)   // Stimme beim Anwählen (selten, siehe selectVoice)
+  if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) klickStimme(u);   // Spruch bei jedem Anwählen (Reiter: Pferd + Spruch); fertige Einheiten nur ein leiser Klick   // Reiter: Schnauben häufig, Wiehern etwa jedes 4. Mal (Gewicht im Tonplatz)   // Stimme beim Anwählen (selten, siehe selectVoice)
   if (u !== sel) wayPt = null;
   sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
@@ -2450,7 +2468,7 @@ async function doBuy(c, r) {
 
 // ---------- Rundenablauf ----------
 async function endTurn() {
-  if (busy || G.over) return;
+  if (busy || G.over || G.aufstellung) return;
   placing = null; spawnSet = new Set();
   select(null); busy = true;
   const ev = E.endTurn(G);
@@ -2841,8 +2859,9 @@ function unitButtons(T, hints) {
   if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', cost: 1, text: 'Einheit mit Hundesymbol anklicken: Sie bekommt +1 Aktionspunkt.', off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
   if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', cost: 1, cd: sel.cdB, text: 'Koloss bzw. Maschine mit Schraubenschlüssel anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
   if (sel.ap >= 1 && !sel.attacked && !sel.supp && !sel.broken) {
-    btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', text: 'Blickrichtung ändern. Drehen kostet nichts.' });
-    btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', mirror: true, text: 'Blickrichtung ändern. Drehen kostet nichts.' });
+    const dk = E.drehKosten(sel), dt = T.cls === 'walker' ? (dk ? `Fahrzeuge und Schreiter: Drehen auf der Stelle kostet ${dk} Punkt, danach in dieser Runde frei. Die Hauptwaffe schießt nur nach vorn (±${P.FZ_FAN}°).` : 'In dieser Runde schon gedreht: weiteres Drehen ist frei.') : 'Blickrichtung ändern. Drehen kostet nichts.';
+    btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', cost: dk, text: dt, off: sel.ap < Math.max(1, dk), why: 'Kein Aktionspunkt mehr.' });
+    btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', cost: dk, mirror: true, text: dt, off: sel.ap < Math.max(1, dk), why: 'Kein Aktionspunkt mehr.' });
   }
   if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
   // Hinweiszeile
@@ -3088,12 +3107,49 @@ function startGame() {
   G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
-  E.startTurn(G);
+  aufstellSeiten = mode === 'ai' ? [] : ['A', 'D'].filter(human);   // Aufstellungsphase (Fahrplan 2): menschliche Seiten stellen selbst auf, die KI automatisch
+  if (aufstellSeiten.length) G.aufstellung = aufstellSeiten.shift(); else E.startTurn(G);
   sel = null; inspect = null; placing = null; spawnSet = new Set(); LOG.length = 0; lastSel.A = lastSel.D = null; stimmeVon.clear(); for (const k in stimmeNaechste) delete stimmeNaechste[k]; renderDiary(); updateUI();
   requestAnimationFrame(() => camHome(true));
-  banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
+  banner(E.MAP.name, G.aufstellung ? 'Aufstellung: Einheiten in der grünen Zone verschieben' : `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
+  if (G.aufstellung) return aufstellAnzeige();
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
+// ---------- Aufstellungsphase (Fahrplan 2, 2026-11-17) ----------
+// Vor Runde 1 stellt jede menschliche Seite ihre Einheiten in ihrer Startzone (grün) auf: ziehen (Maus/Finger), Ablegen auf eine eigene Einheit tauscht;
+// antippen und dann Zielfeld antippen geht auch. „Automatisch aufstellen“ = Kartenvorgabe, „Schlacht beginnen“ startet Runde 1.
+let aufstellSeiten = [], aufstellZiehen = null, aufstellWahl = null, aufstellZiel = null;
+function aufstellAnzeige() {
+  const on = !!(G && G.aufstellung); document.body.classList.toggle('aufstellung', on); $('aufstellLeiste').hidden = !on;
+  if (on) $('aufstellText').innerHTML = `<b>Aufstellung – ${SIDES[G.aufstellung].short}</b><span>Einheiten in der grünen Zone ziehen; auf eine eigene Einheit ablegen tauscht beide. Antippen und Zielfeld antippen geht auch.</span>`;
+}
+function aufstellFertig() {
+  if (!G || !G.aufstellung) return; aufstellWahl = null; aufstellZiel = null;
+  if (aufstellSeiten.length) { G.aufstellung = aufstellSeiten.shift(); camHome(true); aufstellAnzeige(); return; }
+  G.aufstellung = null; aufstellAnzeige(); E.startTurn(G); syncAll(); updateUI(); playSound('whistle', 0.5);
+  banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`);
+  if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
+}
+function aufstellSetze(u, c, r) { const ok = E.aufstellen(G, u, c, r); syncAll(); if (ok) { playSound('klick', 0.3, null, { noGap: true }); aufstellWahl = null; } return ok; }
+$('aufstellAuto').onclick = () => { if (!G || !G.aufstellung) return; E.autoAufstellen(G, G.aufstellung); initDU(); syncAll(); aufstellWahl = null; updateUI(); };
+$('aufstellLos').onclick = () => aufstellFertig();
+cv.addEventListener('pointerdown', ev => {   // vor dem Kamera-Ziehen: eigene Einheit greifen
+  if (!G || !G.aufstellung || busy || pinch || ev.button > 0) return;
+  const p = pick(...evToPx(ev)), u = p.uFig || p.uHex; if (!u || u.side !== G.aufstellung) return;
+  ev.stopImmediatePropagation(); aufstellZiehen = { u, x: ev.clientX, y: ev.clientY, moved: false }; try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
+}, true);
+window.addEventListener('pointermove', ev => {
+  const z = aufstellZiehen; if (!z) return;
+  if (!z.moved && Math.hypot(ev.clientX - z.x, ev.clientY - z.y) > (ev.pointerType === 'mouse' ? 6 : 12)) z.moved = true;
+  if (!z.moved) return; const [x, y] = evToPx(ev), d = DU.get(z.u.id); if (d) { d.x = x; d.y = y; }
+  const h = pick(x, y).h; aufstellZiel = h ? { h, ok: E.canPlaceStart(G, z.u, h[0], h[1]) && (!E.unitAt(G, h[0], h[1]) || E.unitAt(G, h[0], h[1]).side === z.u.side) } : null;
+});
+window.addEventListener('pointerup', ev => {
+  const z = aufstellZiehen; if (!z) return; aufstellZiehen = null; aufstellZiel = null; dragged = performance.now();   // kein Klick hinterher
+  if (z.moved) { const h = pick(...evToPx(ev)).h; if (!h || !aufstellSetze(z.u, h[0], h[1])) syncAll(); return; }
+  if (aufstellWahl && aufstellWahl !== z.u) { aufstellSetze(aufstellWahl, z.u.c, z.u.r); return; }   // antippen, dann eigene Einheit antippen: tauschen
+  aufstellWahl = aufstellWahl === z.u ? null : z.u; playSound('ui', 0.3, null);
+});
 function showHandover() {
   $('handover').hidden = false; $('handover').className = 'overlay center hand ' + G.side;
   $('handTitle').textContent = SIDES[G.side].name; $('handText').textContent = `Runde ${G.turn}. Gebt das Gerät weiter.`;
@@ -3383,7 +3439,7 @@ showStart(true);
 window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
-  setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
+  setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
