@@ -1900,7 +1900,7 @@ async function playEvent0(e) {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), 'Sperrfeuer!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
+      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'Sperrfeuer!' : 'Feuerbereit!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6);
         const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
@@ -3130,6 +3130,7 @@ function startGame() {
   requestAnimationFrame(() => camHome(true));
   banner(E.MAP.name, G.aufstellung ? 'Aufstellung: Einheiten in der grünen Zone verschieben' : `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`); playSound('march', 0.45); playSound('whistle', 0.5); setAmbient(soundOn);
   if (G.aufstellung) return aufstellAnzeige();
+  setTimeout(rundenSchild, 500);   // Rundenschild auch für Runde 1 (ohne Aufstellung)
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 // ---------- Aufstellungsphase (Fahrplan 2, 2026-11-17) ----------
@@ -3143,7 +3144,7 @@ function aufstellAnzeige() {
 function aufstellFertig() {
   if (!G || !G.aufstellung) return; aufstellWahl = null; aufstellZiel = null;
   if (aufstellSeiten.length) { G.aufstellung = aufstellSeiten.shift(); camHome(true); aufstellAnzeige(); return; }
-  G.aufstellung = null; aufstellAnzeige(); E.startTurn(G); syncAll(); updateUI(); playSound('whistle', 0.5);
+  G.aufstellung = null; aufstellAnzeige(); E.startTurn(G); syncAll(); updateUI(); playSound('whistle', 0.5); setTimeout(rundenSchild, 500);   // Rundenschild auch für Runde 1
   banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
@@ -3420,10 +3421,10 @@ function noteEvent(e, u) {
     case 'lanceblast': return logAdd(`${N(unitById(e.a))}: Sprenglanze`, unitById(e.a) && unitById(e.a).side, e.c, e.r);
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
     case 'fire': { const a = unitById(e.a), d = unitById(e.d); if (!a || !d) return;
-      if (e.reaction) { logAdd(`Sperrfeuer: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`Sperrfeuer auf ${N(d)}!`, a.side); }
+      if (e.reaction) { const mg = TYPES[a.type].mg; logAdd(`${mg ? 'MG-Sperrfeuer' : 'Feuerbereitschaft'}: ${N(a)} auf ${N(d)}`, a.side, ...at(d), true); headline(`${mg ? 'MG-Sperrfeuer' : 'Feuerbereitschaft'}: Schuss auf ${N(d)}!`, a.side); }   // Spieltest Runde 3: eindeutig benennen
       else logAdd(`Beschuss: ${N(a)} auf ${N(d)}`, a.side, ...at(d)); return; }
     case 'melee': { const a = unitById(e.a), d = unitById(e.d); if (a && d) logAdd(`Nahkampf: ${N(a)} gegen ${N(d)}`, a.side, ...at(d)); return; }
-    case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }
+    case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Artillerie-Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }
     case 'order': return logAdd(`${e.name}: ${e.kind === 'rally' ? 'Sammeln' : e.kind === 'fire' ? 'Feuer frei' : 'Sturmbefehl'}`, u && u.side, ...at(u));
     case 'bigorder': logAdd(`General: ${e.name}!`, e.side, ...at(u), true); return headline(`${e.name}!`, e.side);
     case 'dig': return logAdd(`${N(u)}: eingegraben`, u && u.side, ...at(u));
