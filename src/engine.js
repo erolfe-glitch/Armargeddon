@@ -66,7 +66,7 @@ const TYPES = {
     can: 'Gepanzert: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben. Kanone vorn; dazu Seiten-MG (1 ●, einmal je Runde, 2 Felder) nur nach links und rechts. Fährt sich selten fest und fällt dann 3 Runden aus.',
     real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
   sturmpz: { side: 'D', name: 'Sturmpanzer', cls: 'walker', broadside: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert wie der Landkoloss: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben, bleibt manchmal mit einer Panne liegen. Breitseite: in einer Runde zwei Schüsse auf zwei verschiedene Ziele bis 2 Felder, jeder ×0,6.',
+    can: 'Gepanzert wie der Landkoloss: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben, bleibt manchmal mit einer Panne liegen. Breitseite: nach dem ersten Schuss ein zweiter Schuss auf ein anderes Ziel bis 2 Felder (1 ●), beide ×0,6.',
     real: 'Der deutsche A7V hatte 18 Mann Besatzung, eine Kanone und sechs Maschinengewehre ringsum. Gebaut wurden nur 20 Stück; bei Villers-Bretonneux trafen im April 1918 erstmals Panzer auf Panzer.' },
   reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
@@ -141,8 +141,8 @@ Object.assign(TYPES, {
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
     real: 'Auch die Briten bauten keine Schreitmaschinen. Ihr erster Panzer, der Mark I von 1916, hatte acht Mann Besatzung und fuhr etwa so schnell wie ein Fußgänger.' },
-  kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', fig: 'mechC', mech: true, mgfire: true, atk: 7, def: 8, mor: 8, mv: 2, rng: 2, fs: 3,
-    can: 'Schwer gepanzerte Kampfmaschine mit Maschinengewehr und Stahlfaust. Am zähesten von allen, schießt aber schwächer. Bleibt manchmal mit einer Panne liegen.',
+  kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', zweit: { name: 'Löwenmaul-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, mgfire: true, atk: 7, def: 8, mor: 8, mv: 2, rng: 2, fs: 3,
+    can: 'Schwer gepanzerte Kampfmaschine mit Maschinengewehr und Stahlfaust. Am zähesten von allen, schießt aber schwächer. Dazu die Kanone im Löwenmaul (1 ●, einmal je Runde, 2 Felder, wirkt auch gegen Panzerung). Fährt sich selten fest und fällt dann 3 Runden aus.',
     real: 'Panzerbesatzungen trugen Lederhelme und Kettenmasken gegen Splitter, die beim Beschuss innen von der Panzerwand absprangen.' },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Sturmlauf (alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, am Ende sofort Nahkampf. Kein Koloss: Geschütze und Nahkampf treffen voll.',
@@ -183,8 +183,8 @@ Object.assign(TYPES, {
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', fig: 'mech', mech: true, atk: 6, def: 6, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Sturmkanone. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
     real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
-  bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', fig: 'drill', mech: true, atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
-    can: 'Kampfmaschine mit Bohrkopf, nur für den Nahkampf. Sehr stark gegen alles, was er erreicht. Bleibt manchmal mit einer Panne liegen.',
+  bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', zweit: { name: 'Flammenstoß', rng: 1, flamme: true }, fig: 'drill', mech: true, atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
+    can: 'Kampfmaschine mit Bohrkopf für den Nahkampf. Sehr stark gegen alles, was er erreicht. Dazu Flammenstoß (1 ●, einmal je Runde) auf ein Nachbarfeld: halb so stark wie ein Flammentrupp, das Feld brennt danach. Fährt sich selten fest und fällt dann 3 Runden aus.',
     real: 'Unter der Erde tobte ein Minenkrieg. Bei Messines zündeten die Briten am 7. Juni 1917 neunzehn Minen unter den deutschen Stellungen.' }
 });
 // Nachschub: Kosten in Punkten und Angebot je Seite
@@ -259,7 +259,7 @@ for (const t in TYPES) { const T = TYPES[t], sp = T.sp || (T.sp = []);
   if (T.recover) sp.push('Bergt Kolosse und Maschinen');
   { const i = sp.indexOf('Schneidet Draht'); if (i >= 0) sp.splice(i, 1); }   // Paket 8: nur noch die Drahtschneider (cutter) schneiden, vom Nachbarfeld aus
   if (T.cutter) sp.unshift('Draht schneiden (Nachbarfeld, 1 Punkt)');
-  if (T.zweit) sp.push(T.zweit.name + ' (2 Felder)');
+  if (T.zweit) sp.push(T.zweit.name + (T.zweit.rng > 1 ? ` (${T.zweit.rng} Felder)` : ' (Nachbarfeld)'));
   if (T.rng >= 2 && T.cls !== 'art' && T.cls !== 'walker' && !T.mg) sp.push('Feuerbereitschaft');
 }
 const SHOP = { A: ['hauptA', 'generalA', 'kohorte', 'melder', 'fernsprech', 'feldscher', 'pionier', 'scharf', 'schildwall', 'mahlwerk', 'moerser', 'reiter', 'raeumer', 'flammen', 'feldkanone', 'haubitze', 'koloss', 'stahl', 'turm', 'orden', 'kreuz', 'rauch', 'mineur', 'werkstatt', 'ballon'],
@@ -1308,8 +1308,8 @@ function burn(G, u, ev) {   // Feuerschaden beim Hineinziehen oder Stehen im bre
 }
 // Zweitwaffe (Paket 8): Landkoloss Seiten-MG nur seitlich (nicht vorn, nicht hinten), Turmschreiter Turm-MG rundum; 1 Punkt, einmal je Runde, neben dem Hauptangriff
 function canZweit(G, a, d) {
-  const T = TYPES[a.type], Z = T.zweit; if (!Z || !active(a) || a.side !== G.side || a.zw || a.ap < 1 || a.broken || a.supp > 0 || held(G, a)) return false;
-  if (!d || !alive(d) || d.side === a.side || cls(d) === 'walker' || concealed(G, d, a.c, a.r)) return false;   // MG gegen Panzerung wirkungslos
+  const T = TYPES[a.type], Z = T.zweit; if (!Z || !active(a) || a.side !== G.side || a.zw || a.ap < 1 || a.broken || a.supp > 0 || (!Z.flamme && held(G, a))) return false;   // Flammenstoß auch im Nahkampf
+  if (!d || !alive(d) || d.side === a.side || (cls(d) === 'walker' && !Z.flamme && !Z.kanone) || concealed(G, d, a.c, a.r)) return false;   // MG gegen Panzerung wirkungslos
   const dd = dist(a.c, a.r, d.c, d.r); if (dd < 1 || dd > Z.rng || !hasLOS(G, a.c, a.r, d.c, d.r)) return false;
   if (Z.seiten) { const w = angDiff(angleTo(a.c, a.r, d.c, d.r), a.face * 60); if (w < 45 || w > 135) return false; }
   return true;
@@ -1317,9 +1317,18 @@ function canZweit(G, a, d) {
 function zweitTargets(G, a) { return G.units.filter(d => canZweit(G, a, d)); }
 function zweitFire(G, a, d) {
   if (!canZweit(G, a, d)) return [];
-  const ev = [], p = preview(G, a, d, 'fire'); a.zw = true; spend(a, 1);
-  ev.push({ t: 'fire', a: a.id, d: d.id, kind: 'mg', zweit: TYPES[a.type].zweit.name, face: a.face });
-  applyDamage(G, a, d, p.dmg * (0.75 + G.rng() * 0.5) * P.ZWEIT_MUL, p.arc, ev, { ranged: true });
+  const Z = TYPES[a.type].zweit, ev = []; a.zw = true; spend(a, 1);
+  if (Z.flamme) {   // Flammenstoß: halbe Stärke eines Flammentrupps, Feld brennt danach
+    a.face = faceToward(a.face, a.c, a.r, d.c, d.r);
+    const ft = a.side === 'A' ? 'flammen' : 'brand', p = preview(G, Object.assign({}, a, { type: ft }), d, 'fire');
+    ev.push({ t: 'fire', a: a.id, d: d.id, kind: 'flame', zweit: Z.name, face: a.face });
+    applyDamage(G, a, d, p.dmg * (0.75 + G.rng() * 0.5) * 0.5, p.arc, ev, { ranged: true, flame: true, morMul: P.FLAME_MOR });
+    ignite(G, a.side, d.c, d.r, ev);
+  } else {
+    const p = preview(G, a, d, 'fire');
+    ev.push({ t: 'fire', a: a.id, d: d.id, kind: Z.kanone ? 'cannon' : 'mg', zweit: Z.name, face: a.face });
+    applyDamage(G, a, d, p.dmg * (0.75 + G.rng() * 0.5) * P.ZWEIT_MUL * (Z.kanone && cls(d) === 'walker' ? 2 : 1), p.arc, ev, { ranged: true });   // Kanone: gegen Panzerung voll
+  }
   ev.push(...checkEnd(G)); return ev;
 }
 function fire(G, a, d) {

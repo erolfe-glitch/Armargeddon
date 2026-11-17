@@ -332,6 +332,12 @@ function next(G) {
     if (weak >= 2 && E.canOrderKind(G, u, 'rally')) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
     if (close >= 2 && E.canOrderKind(G, u, 'storm')) return { u: u.id, steps: [{ k: 'order', kind: 'storm' }] };
   }
+  for (const u of G.units) {   // Flammenstoß (Bohrkoloss) vor dem Bohrer: der Nahkampf verbraucht alle Punkte
+    if (u.side !== G.side || !(TYPES[u.type].zweit && TYPES[u.type].zweit.flamme) || G._aiDone.has('z' + u.id)) continue;
+    const tg = E.zweitTargets(G, u); if (!tg.length) continue;
+    G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
+    return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
+  }
   for (const u of order(G, G.side)) {
     if (G._aiDone.has(u.id)) continue;
     G._aiDone.add(u.id);

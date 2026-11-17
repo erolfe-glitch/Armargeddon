@@ -165,6 +165,7 @@ function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
   if (u && u.type === 'turm') return fxMuzzle(id, 0, 0.3);
+  if (u && u.type === 'kreuz') { const lf = facesLeft(d.face), p = [d.x + x0 + w * (lf ? 0.38 : 0.62), d.y + y0 + h * 0.27]; p.fuss = [d.x, d.y]; return p; }   // Kanone im Löwenmaul
   const z = DU.get(zid), rechts = z ? z.x >= d.x : true, p = [d.x + x0 + w * (rechts ? 0.62 : 0.38), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
 }
 let fxZielFuss = null;   // Fußpunkt des aktuellen Ziels (Leuchtspur endet dort am Aufsteller)
@@ -1888,7 +1889,7 @@ async function playEvent(e) {
           let t = 0; for (let q = 0; q < n; q++) { if (q) t += Math.random() < 0.3 ? Math.random() * 40 : Math.random() * 250;
             const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
             const p = fxMuzzle(e.a, q); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } } }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
-        else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
+        else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && ['koloss', 'turm', 'kreuz'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
 
         // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
         const pm = e.zweit ? fxSeite(e.a, e.d) : fxMuzzle(e.a, 0, mini ? 0.45 : can ? 0.42 : 0.3), neu = !!(pm && fxIm('muendung'));
@@ -2772,7 +2773,7 @@ function unitButtons(T, hints) {
   }
   if (T.zweit) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG)
     const zt = E.zweitTargets(G, sel), Z = T.zweit;
-    btns.push({ act: 'zweit', sym: 'garbe', name: Z.name, cost: 1, text: `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
+    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'granate_artillerie' : 'garbe', name: Z.name, cost: 1, text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
       why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Kein Aktionspunkt mehr.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
     if (abilMode && feldArt === 'zweit') hints.push('<i>Messing markiert:</i> Ziel anklicken.');
   }
@@ -2781,6 +2782,12 @@ function unitButtons(T, hints) {
   if (T.rng > 0) {
     const sym = T.lob ? 'handgranate' : T.flame ? 'flamme' : 'zielen', name = T.lob ? 'Granatwurf' : T.flame ? 'Flammenstrahl' : 'Beschuss';
     const why = T.mg && !sel.setup ? 'MG erst aufbauen.' : !sel.supp && !sel.attacked && E.held(G, sel) ? 'Im Nahkampf gebunden: Schießen geht nicht.' : atkWhy;
+    if (T.broadside) {   // Sturmpanzer: Breitseite deutlich (2026-11-17) – zwei Schüsse je Runde auf zwei Ziele, Zähler am Knopf, nach dem ersten Schuss pulsiert er
+      const n = (sel.bsT || []).length, zweiter = sel.attacked && n === 1, frei = tg.some(t => t.kind === 'fire' || t.both);
+      btns.push({ act: 'p-fire', sym: 'zielen', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${T.rng} Felder, danach ein anderes bis 2 Felder (je 1 ●).`, on: atkPref === 'fire', off: !frei,
+        why: n >= 2 ? 'Beide Schüsse der Breitseite sind abgegeben.' : zweiter ? 'Kein zweites Ziel bis 2 Felder.' : why });
+      if (zweiter && frei) hints.push('<i>Breitseite:</i> zweites Ziel bis 2 Felder anklicken (×0,6).');
+    } else
     btns.push({ act: 'p-fire', sym, name, cost: 1, text: `Ziel auf der Karte anklicken (Messing, Zielsymbol). Reichweite ${T.rng} Felder.`, on: atkPref === 'fire', off: !tg.some(t => t.kind === 'fire' || t.both), why });
   }
   if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', cost: Math.max(1, sel.ap), costTxt: 'alle Aktionen', text: 'Gegner auf einem Nachbarfeld anklicken (rot).', on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both), why: atkWhy });

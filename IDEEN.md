@@ -62,8 +62,9 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - Festfahren seltener; nach aktiver Reparatur längerer Schutz, nach bloßem Ablaufen kein Schutz.
   - Beim Ziehen über Gelände sofort Vor- und Nachteil des Felds als Symbol zeigen.
   - Fähigkeiten: Radius und betroffene Felder bzw. Einheiten anzeigen.
-  - Bohrkoloss: kurzer Flammenstoß auf ein Nachbarfeld als Fähigkeit (das neue Bild zeigt einen Flammenwerfer, 2026-11-16).
+  - ~~Bohrkoloss: kurzer Flammenstoß auf ein Nachbarfeld~~ erledigt 2026-11-17 (Zweitwaffe „Flammenstoß“).
   - Fahrzeuge belegen 2 Felder (2026-11-16, prüfen): Panzer und Kolosse sind maßstäblich breiter als ein Feld.
+  - Schusswinkel für Fahrzeuge und Schreiter (Hauptwaffe vorn, Seitenwaffen seitlich, Drehen kostet Punkte) – zusammen mit der Frage „Fahrzeuge auf 2 Feldern“ entscheiden. (2026-11-17)
   - Aschenwacht braucht eine eigene Panzer-Einheit „Sturmpanzer“ (Gegenstück zum Landkoloss, ohne Kampfmaschinen-Schalter); Bild `aschenwacht_panzer.png` liegt schon vor, ist aber noch keiner Einheit zugeordnet.
 - **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle.
 - **Etappe 7 – Balance:** Kosten, Werte und Siegquoten mit `tools/sim.js` und `tools/costcheck.js` abstimmen.
@@ -96,7 +97,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 ## Einheitlicher Stimmfilter (2026-11-17) – erledigt (tools/stimmfilter.py)
 - Für ALLE Stimm-Tonplätze ein Filter je Sprecher: Infanterie, Sturmtruppen, Pioniere, Sanitäter, Reiter usw. Gasmaske; Kampfanzüge (Stahlgänger, Panzerknechte) Gasmaske etwas stärker; Hauptmann und General ohne Filter; Panzerbesatzung Bordfunk; Schreiter und Eisenknecht (auch robot-voice-damage) Roboter. Waffen, Explosionen, Motoren bleiben unverändert.
 
-## Zweitwaffen – Vorschlag (2026-11-17, erst nach Zustimmung bauen)
+## Zweitwaffen – Vorschlag (2026-11-17) – entschieden und gebaut: Bohrkoloss Flammenstoß (statt Turm-MG), Kreuzschreiter Löwenmaul-Kanone, Sturmpanzer behält nur die Breitseite
 - Sturmpanzer: Seiten-MG wie der Landkoloss (Modell zeigt mehrere Schießscharten an der Seite). Dafür die Breitseite (zweiter Kanonenschuss) streichen oder behalten – Entscheidung offen.
 - Bohrkoloss: kleines Turm-MG (Modell hat einen Lauf auf dem Aufbau), Reichweite 2; bisher nur Nahkampf mit dem Bohrer.
 - Kreuzschreiter: Kanone im Löwenmaul als Zweitwaffe (Reichweite 2–3) neben dem schweren MG in der Hand.
