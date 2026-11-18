@@ -1,0 +1,43 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "armargeddon",
+      "runtimeExecutable": "C:\\Users\\erolf\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--bind",
+        "127.0.0.1"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "armargeddon-2",
+      "runtimeExecutable": "C:\\Users\\erolf\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8771",
+        "--bind",
+        "127.0.0.1"
+      ],
+      "port": 8771,
+      "autoPort": false
+    },
+    {
+      "name": "armargeddon-3",
+      "runtimeExecutable": "C:\\Users\\erolf\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8779",
+        "--bind",
+        "127.0.0.1"
+      ],
+      "port": 8779,
+      "autoPort": false
+    }
+  ]
+}

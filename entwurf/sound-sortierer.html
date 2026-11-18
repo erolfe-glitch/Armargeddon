@@ -30,7 +30,8 @@ label.chk input { width: 22px; height: 22px; min-height: 0; }
 .stat b { color: var(--s-brass); }
 main { padding: 8px 16px 60px; }
 .grp { margin: 18px 0 6px; font: 600 18px var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-parch); border-bottom: 1px solid var(--s-rust); padding-bottom: 3px; }
-.row { display: grid; grid-template-columns: 56px minmax(260px, 1fr) 92px 230px minmax(160px, 260px); gap: 6px 12px; align-items: center; padding: 8px 10px; border-radius: 4px; background: rgba(50,41,35,.55); margin: 5px 0; border-left: 5px solid transparent; }
+.row { display: grid; grid-template-columns: 56px minmax(240px, 1fr) 84px 210px 260px 280px;
+  grid-template-areas: "pl nm len cat use side" "pl nm len cat use note" "pg pg pg pg pg pg"; gap: 6px 12px; align-items: center; padding: 8px 10px; border-radius: 4px; background: rgba(50,41,35,.55); margin: 5px 0; border-left: 5px solid transparent; }
 .row.chg { border-left-color: var(--s-brass); }
 .row.bad { border-left-color: var(--s-life); background: rgba(113,59,54,.35); }
 .row.play { outline: 2px solid var(--s-brass); }
@@ -47,10 +48,18 @@ main { padding: 8px 16px 60px; }
 .tag.gelb { background: var(--s-gas); }
 .len { text-align: right; font: 600 18px var(--s-head); }
 .len small { display: block; font: 13px var(--s-body); color: var(--dim); }
-.cat select { width: 100%; }
-.cat .vs { font-size: 13px; color: var(--dim); margin-top: 2px; }
+.pl { grid-area: pl; align-self: start; } .nm { grid-area: nm; } .len { grid-area: len; }
+.cat { grid-area: cat; } .use { grid-area: use; } .side { grid-area: side; display: flex; gap: 8px; align-items: center; } .note { grid-area: note; }
+.cat select, .use select { width: 100%; }
+.side select { flex: 1; min-width: 0; }
+.vs { font-size: 13px; color: var(--dim); margin-top: 2px; }
+.vs b { color: var(--s-brass); font-weight: 600; }
+.stars { display: inline-flex; gap: 2px; flex: none; }
+.st { width: 40px; min-height: 40px; height: 40px; padding: 0; font-size: 22px; line-height: 1; color: #6b5d4e; background: transparent; border-color: transparent; }
+.st.on { color: var(--s-brass); }
+.st:hover { border-color: var(--s-rust); }
 .note input { width: 100%; padding: 0 8px; }
-.prog { grid-column: 2 / -1; height: 4px; background: var(--s-ink); border-radius: 2px; display: none; }
+.prog { grid-area: pg; height: 4px; background: var(--s-ink); border-radius: 2px; display: none; }
 .row.play .prog { display: block; }
 .prog i { display: block; height: 100%; width: 0; background: var(--s-brass); }
 .leer { color: var(--dim); padding: 30px; text-align: center; }
@@ -65,6 +74,7 @@ main { padding: 8px 16px 60px; }
   <select id="sort" aria-label="Ordnen nach">
     <option value="ordner">nach Ordner</option>
     <option value="kat">nach Kategorie</option>
+    <option value="use">nach Einsatz im Spiel</option>
     <option value="len">nach Länge</option>
   </select>
   <label class="chk"><input type="checkbox" id="fhint"> nur mit Hinweis</label>
@@ -74,7 +84,7 @@ main { padding: 8px 16px 60px; }
   <span class="stat" id="stat"></span>
 </header>
 <main>
-  <p class="hilfe">Vorauswahl = Vorschlag aus Dateiname, Ordner, Länge und Lautstärke. Geänderte Zeilen haben links einen goldenen Rand. Alles wird im Browser gespeichert; „Liste speichern“ lädt die Liste als JSON herunter.</p>
+  <p class="hilfe">Je Datei: <b>Kategorie</b> (was für ein Geräusch), <b>Einsatz im Spiel</b> (welcher Tonplatz – passende stehen oben), <b>Seite</b> und <b>Sterne</b> (★★★ = Favorit, ★ = Ersatz/Abwechslung). Kategorie ist vorgeschlagen; Einsatz nur dort, wo der Ton vermutlich schon im Spiel steckt. Geänderte Zeilen haben links einen goldenen Rand. Alles bleibt im Browser gespeichert; „Liste speichern“ lädt die Liste als JSON herunter.</p>
   <div id="list"></div>
 </main>
 <audio id="au" preload="none"></audio>
@@ -224,6 +234,76 @@ const VS = {
   'universfield-come-on-man-323595.mp3': ['Befehle/Rufe', '„Come on, man“'],
 };
 
+// Tonplätze im Spiel (Schlüssel aus src/sound.js, Bedeutung aus dessen Kopf); „neu:…“ = Platz gibt es noch nicht
+const SLOTS = [
+  ['Schüsse', [
+    ['rifle', 'Gewehr 1 (Fußtruppen)'], ['rifle2', 'Gewehr 2 (Abwechslung)'], ['rifle3', 'Gewehr 3 (Abwechslung)'],
+    ['sniper', 'Scharfschütze'], ['pistol', 'Pistole (Stäbe/Offiziere)'], ['semi', 'Halbautomat (Kampfanzüge)'],
+    ['mg', 'MG Konkordat'], ['mg2', 'MG Aschenwacht (Sensenwerk)'], ['mg3', 'MG Aschenwacht 2'], ['minigun', 'Eisenknecht feuert'],
+    ['cannon', 'Kanone (Koloss, Geschütz, Donnerrohr)'], ['cannonH', 'schwere Artillerie Abschuss'],
+    ['launch', 'Mörser/Minenwerfer Abschuss'], ['launch2', 'Werferabschuss 2'], ['barrage', 'Sperrfeuer'], ['flame', 'Flammenwerfer'],
+    ['neu:panzerkanone', 'neu: Panzerkanone']]],
+  ['Einschläge', [
+    ['boom', 'Granateinschlag'], ['boomH', 'schwerer Einschlag'], ['boom2', 'Gerät zerstört'],
+    ['grenade', 'Handgranate'], ['grenade2', 'Handgranate 2'], ['gas', 'Gasgranate'], ['neu:wasser', 'neu: Einschlag im Wasser']]],
+  ['Nahkampf', [
+    ['punch1', 'Schlag Fußtruppen 1'], ['punch2', 'Schlag Fußtruppen 2'], ['punch3', 'Schlag Fußtruppen 3'], ['punch4', 'Schlag Fußtruppen 4'],
+    ['swords', 'Klingen prallen'], ['slash', 'Klinge (Räumer, Grabenkämpfer)'], ['axe', 'Grabenräumer'], ['sword', 'Schildträger'],
+    ['smash', 'Bohrkoloss schlägt zu'], ['heavy1', 'Kampfmaschine schlägt 1'], ['heavy2', 'Kampfmaschine schlägt 2'], ['heavy3', 'Kampfmaschine schlägt 3'],
+    ['impact', 'Koloss im Nahkampf'], ['armor', 'Treffer auf Panzerung']]],
+  ['Bewegung', [
+    ['tramp', 'Marschtritt Fußtruppen'], ['steps', 'Schlammschritte (nur Schlamm)'], ['tank', 'Kettenrollen Koloss'], ['tankmove', 'Koloss fährt'],
+    ['mech', 'Maschinenschritte (Eisenknecht, Bohrkoloss)'], ['gallop', 'Gespann (Geschütz gezogen)'], ['gallop2', 'Reiter'],
+    ['neigh', 'Pferd getroffen'], ['dog', 'Meldegänger mit Hund'], ['crash', 'Festfahren/Panne']]],
+  ['Stimmen', [
+    ['cry', 'Kampfschrei 1'], ['scream', 'Kampfschrei 2'], ['roar', 'Kampfschrei 3'],
+    ['forward', 'Sturmbefehl („Forward march“)'], ['stand', 'Sammeln („Stand your ground“)'], ['charge', 'Gegenstoß-Ruf'],
+    ['comeon', 'Befehl überbringen'], ['medic', 'Ruf nach Sanitäter'], ['pain', 'Schmerz (schwere Verluste)'], ['panic', 'Einheit flieht'],
+    ['robot', 'Kampfmaschine getroffen'], ['snarl', 'Klauenschreiter knurrt'], ['tiger', 'Klauenschreiter 2']]],
+  ['Handlungen', [
+    ['clank', 'Auf-/Abprotzen'], ['cut', 'Draht schneiden'], ['heal', 'Sanitäter versorgt'],
+    ['neu:nachladen', 'neu: Nachladen'], ['neu:reparieren', 'neu: Reparieren'], ['neu:rauch', 'neu: Rauch'], ['neu:gasmaske', 'neu: Gasmaske/Atmen']]],
+  ['Ereignisse', [
+    ['whistle', 'Pfeife (Nachschub, Angriffsbeginn)'], ['horn', 'Signalhorn (Verstärkung)'], ['march', 'Schlachtbeginn/Verstärkung'], ['win', 'Sieg'],
+    ['neu:erobert', 'neu: Zielpunkt erobert'], ['neu:verloren', 'neu: Zielpunkt verloren'], ['neu:ui', 'neu: Klick in der Oberfläche']]],
+  ['Hintergrund', [
+    ['ambient', 'Hintergrund (Schleife)'], ['neu:wetter', 'neu: Regen/Wetter'], ['neu:feuer', 'neu: Feuer'], ['neu:musik', 'neu: Musik'],
+    ['neu:daemon', 'neu: Dämonen (später)'], ['neu:sonst', 'neu: anderes (in Notiz beschreiben)']]],
+];
+const SLOT_TXT = Object.fromEntries(SLOTS.flatMap(g => g[1]));
+// Plätze, die zur Kategorie passen (stehen in der Auswahl oben)
+const CAT_SLOTS = {
+  'Gewehr': ['rifle', 'rifle2', 'rifle3', 'sniper', 'pistol', 'semi'], 'MG': ['mg', 'mg2', 'mg3', 'minigun'],
+  'Geschütz/Artillerie': ['cannon', 'cannonH', 'barrage'], 'Mörser': ['launch', 'launch2', 'barrage'], 'Flammenwerfer': ['flame'],
+  'Panzerkanone': ['cannon', 'neu:panzerkanone'], 'Einschlag klein': ['boom', 'grenade', 'grenade2'], 'Einschlag groß': ['boomH', 'boom2', 'barrage'],
+  'Einschlag Wasser': ['neu:wasser'], 'Treffer auf Metall/Fahrzeug': ['armor', 'impact', 'robot', 'boom2', 'crash'],
+  'Nahkampf': ['punch1', 'punch2', 'punch3', 'punch4', 'swords', 'slash', 'axe', 'sword', 'smash', 'heavy1', 'heavy2', 'heavy3', 'impact', 'armor'],
+  'Schritte Infanterie': ['tramp', 'steps'], 'Pferde': ['gallop', 'gallop2', 'neigh'], 'Panzerketten': ['tank', 'tankmove'], 'Mech-Schritte': ['mech'],
+  'Befehle/Rufe': ['forward', 'stand', 'charge', 'comeon', 'dog'], 'Schmerz/Tod': ['pain', 'panic', 'scream'], 'Schlachtruf': ['cry', 'scream', 'roar', 'charge'],
+  'Nachladen': ['neu:nachladen', 'clank'], 'Reparieren': ['neu:reparieren', 'clank'], 'Draht schneiden': ['cut'], 'Sanitäter': ['heal', 'medic'],
+  'Gas/Maske': ['gas', 'neu:gasmaske'], 'Rauch': ['neu:rauch'], 'UI-Klick': ['neu:ui'], 'Ereignis (Pfeife/Horn)': ['whistle', 'horn', 'march'],
+  'Zielpunkt erobert': ['neu:erobert', 'win'], 'Zielpunkt verloren': ['neu:verloren'], 'Atmosphäre/Ferne Schlacht': ['ambient'],
+  'Regen/Wetter': ['neu:wetter'], 'Feuer': ['neu:feuer', 'flame'], 'Musik': ['neu:musik', 'march', 'win'], 'Dämonen (später)': ['snarl', 'tiger', 'neu:daemon'],
+};
+// Vermutlich schon im Spiel (nach Dateinamen im Kopf von src/sound.js) – Vorauswahl für „Einsatz“
+const IM_SPIEL = {
+  'freesound_community-battle-rifle-42734.mp3': 'rifle2', 'freesound_community-m1-garand-rifle-80192.mp3': 'rifle3',
+  'gutierrreztom-walther-p38-firing-sound-effect-11651.mp3': 'pistol', 'foisal72-gun-fire-346766.mp3': 'mg3',
+  'u_w4utmqapnm-mini-gun-154177.mp3': 'minigun', 'applehillstudios-combat-voice-forward-march-543679.mp3': 'forward',
+  'applehillstudios-combat-voice-stand-your-ground-1-543681.mp3': 'stand', 'applehillstudios-combat-voice-charge-2-543675.mp3': 'charge',
+  'applehillstudios-hurt-amp-death-i-need-a-medic-543678.mp3': 'medic', 'universfield-come-on-man-323595.mp3': 'comeon',
+  'phatphrogstudio-robot-voice-damage-sustained-487076.mp3': 'robot', 'dragon-studio-car-crash-sound-effect-376874.mp3': 'crash',
+  'dennish18-tank-moving-143104.mp3': 'tankmove', 'dragon-studio-hard-heavy-impact-515256.mp3': 'impact',
+  'yodguard-a-massive-axe-impact-hitting-metal-1-450251.mp3': 'heavy1', 'yodguard-a-massive-axe-impact-hitting-metal-2-450253.mp3': 'heavy2',
+  'yodguard-a-massive-axe-impact-hitting-metal-3-450254.mp3': 'heavy3', 'ribhavagrawal-swords-collide-230574.mp3': 'swords',
+  'chromascension-slash-542396.mp3': 'slash', 'universfield-human-roar-250239.mp3': 'roar',
+  'daviddumaisaudio-robot-heavy-mechanical-footsteps-194039.mp3': 'mech', 'dragon-studio-dog-barking-406629.mp3': 'dog',
+  'freesound_community-snarlwav-14497.mp3': 'snarl', 'the-vampires-monster-weretiger-yarik-roar-with-growler-325163.mp3': 'tiger',
+  'universfield-punch-04-383965.mp3': 'punch1', 'universfield-punch-140236.mp3': 'punch2',
+  'universfield-punch-impact-hit-567196.mp3': 'punch3', 'universfield-punch-with-male-scream-121575.mp3': 'punch4',
+};
+const SEITEN = ['', 'beide', 'Konkordat', 'Aschenwacht'];
+
 // Quelle aus dem Dateinamen
 function quelle(name) {
   let m = name.match(/^(\d+)__(.+?)__/);
@@ -251,7 +331,7 @@ const FILES = Object.keys(MESS).map(p => {
   if (m.peak != null && m.peak < -15) hints.push(['leise', 'gelb']);
   if (m.peak != null && m.peak > 0.5) hints.push(['übersteuert?', 'gelb']);
   if (m.start != null && m.start >= 0.5) hints.push(['Stille am Anfang (' + m.start.toFixed(1).replace('.', ',') + ' s)', 'gelb']);
-  return { path: p, name, dir, m, vs: v[0], grund: v[1], q: quelle(name), hints };
+  return { path: p, name, dir, m, vs: v[0], grund: v[1], q: quelle(name), hints, spiel: IM_SPIEL[name] || '' };
 });
 
 // gespeicherte Auswahl
@@ -261,6 +341,19 @@ try { ST = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { ST
 function store() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
 const catOf = f => (ST[f.path] && ST[f.path].cat) || f.vs;
 const noteOf = f => (ST[f.path] && ST[f.path].note) || '';
+const useOf = f => ST[f.path] && ST[f.path].use != null ? ST[f.path].use : f.spiel;
+const sideOf = f => (ST[f.path] && ST[f.path].side) || '';
+const starsOf = f => (ST[f.path] && ST[f.path].stars) || 0;
+// Standardwerte je Feld; weicht nichts davon ab, wird der Eintrag gelöscht
+const DEF = f => ({ cat: f.vs, note: '', use: f.spiel, side: '', stars: 0 });
+const changed = f => { const e = ST[f.path]; if (!e) return false; const d = DEF(f); return Object.keys(e).some(k => e[k] !== d[k]); };
+function useOpts(f) {
+  const fit = CAT_SLOTS[catOf(f)] || [];
+  let h = `<option value="">Einsatz: noch offen</option>`;
+  if (fit.length) h += `<optgroup label="passt zu „${esc(catOf(f))}“">` + fit.map(k => `<option value="${k}">${esc(SLOT_TXT[k])}</option>`).join('') + '</optgroup>';
+  for (const [g, list] of SLOTS) h += `<optgroup label="${esc(g)}">` + list.map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('') + '</optgroup>';
+  return h;
+}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -270,17 +363,20 @@ $('fcat').insertAdjacentHTML('beforeend', KATS.map(k => `<option>${esc(k)}</opti
 
 function render() {
   const q = $('q').value.trim().toLowerCase(), fc = $('fcat').value, fh = $('fhint').checked, so = $('sort').value;
-  let list = FILES.filter(f => (!q || f.path.toLowerCase().includes(q) || noteOf(f).toLowerCase().includes(q))
+  let list = FILES.filter(f => (!q || (f.path + ' ' + noteOf(f) + ' ' + useOf(f) + ' ' + (SLOT_TXT[useOf(f)] || '') + ' ' + sideOf(f)).toLowerCase().includes(q))
     && (!fc || catOf(f) === fc) && (!fh || f.hints.length));
-  const gkey = so === 'kat' ? catOf : so === 'ordner' ? (f => f.dir) : (() => '');
+  const SLOT_ORDER = SLOTS.flatMap(g => g[1].map(s => s[0]));
+  const slotIdx = f => useOf(f) ? SLOT_ORDER.indexOf(useOf(f)) : 9999;
+  const gkey = so === 'kat' ? catOf : so === 'ordner' ? (f => f.dir) : so === 'use' ? (f => useOf(f) ? SLOT_TXT[useOf(f)] + ' · ' + useOf(f) : 'Einsatz noch offen') : (() => '');
   if (so === 'kat') list.sort((a, b) => KATS.indexOf(catOf(a)) - KATS.indexOf(catOf(b)) || a.path.localeCompare(b.path, 'de'));
+  else if (so === 'use') list.sort((a, b) => slotIdx(a) - slotIdx(b) || starsOf(b) - starsOf(a) || a.path.localeCompare(b.path, 'de'));
   else if (so === 'len') list.sort((a, b) => a.m.dur - b.m.dur);
   else list.sort((a, b) => (a.dir === '(Hauptordner)' ? -1 : 0) - (b.dir === '(Hauptordner)' ? -1 : 0) || a.dir.localeCompare(b.dir, 'de') || a.name.localeCompare(b.name, 'de'));
   let html = '', last = null;
   for (const f of list) {
     const g = gkey(f);
     if (g && g !== last) { html += `<div class="grp">${esc(g)}</div>`; last = g; }
-    const cat = catOf(f), chg = cat !== f.vs || noteOf(f);
+    const chg = changed(f);
     const bad = f.hints.some(h => h[1] === 'rot');
     const tags = f.hints.map(h => `<span class="tag ${h[1]}">${esc(h[0])}</span>`).join('');
     const src = f.q.url ? `<a href="${f.q.url}" target="_blank" rel="noopener">${esc(f.q.text)}</a>` : esc(f.q.text);
@@ -289,31 +385,42 @@ function render() {
       <button class="pl" aria-label="Abspielen">${playing === f.path ? '■' : '▶'}</button>
       <div class="nm"><div class="f">${esc(f.name)}</div><div class="d">${esc(f.dir)}</div><div class="src">${src}</div>${tags ? `<div class="tags">${tags}</div>` : ''}</div>
       <div class="len">${fmtLen(f.m.dur)}<small>${(f.m.size / 1e6).toFixed(1).replace('.', ',')} MB</small></div>
-      <div class="cat"><select aria-label="Kategorie">${optHtml}</select><div class="vs" title="${esc(lvl)}">Vorschlag: ${esc(f.vs)} – ${esc(f.grund)}</div></div>
-      <div class="note"><input type="text" placeholder="Notiz" value="${esc(noteOf(f))}" aria-label="Notiz"></div>
+      <div class="cat"><select class="s-cat" aria-label="Kategorie">${optHtml}</select><div class="vs" title="${esc(lvl)}">Vorschlag: ${esc(f.vs)} – ${esc(f.grund)}</div></div>
+      <div class="use"><select class="s-use" aria-label="Einsatz im Spiel">${useOpts(f)}</select>${f.spiel ? `<div class="vs">vermutlich schon im Spiel als <b>${f.spiel}</b></div>` : ''}</div>
+      <div class="side"><select class="s-side" aria-label="Seite">${SEITEN.map(s => `<option value="${s}">${s ? esc(s) : 'Seite: offen'}</option>`).join('')}</select>
+        <span class="stars" role="group" aria-label="Bewertung">${[1, 2, 3].map(n => `<button class="st${starsOf(f) >= n ? ' on' : ''}" data-n="${n}" aria-label="${n} Stern${n > 1 ? 'e' : ''}">★</button>`).join('')}</span></div>
+      <div class="note"><input type="text" placeholder="Notiz (z. B. nur Anfang)" value="${esc(noteOf(f))}" aria-label="Notiz"></div>
       <div class="prog"><i></i></div>
     </div>`;
   }
   $('list').innerHTML = html || '<div class="leer">Keine Treffer.</div>';
-  for (const row of $('list').querySelectorAll('.row')) row.querySelector('select').value = catOf(byPath[row.dataset.p]);
+  for (const row of $('list').querySelectorAll('.row')) {
+    const f = byPath[row.dataset.p];
+    row.querySelector('.s-cat').value = catOf(f);
+    row.querySelector('.s-use').value = useOf(f);
+    row.querySelector('.s-side').value = sideOf(f);
+  }
   stat(list.length);
 }
 const byPath = Object.fromEntries(FILES.map(f => [f.path, f]));
 
 function stat(shown) {
-  const chg = FILES.filter(f => ST[f.path] && (ST[f.path].cat && ST[f.path].cat !== f.vs || ST[f.path].note)).length;
+  const chg = FILES.filter(changed).length;
   const aus = FILES.filter(f => catOf(f) === 'Aussortiert').length;
-  $('stat').innerHTML = `<b>${shown}</b> von ${FILES.length} · geändert <b>${chg}</b> · aussortiert ${aus}`;
+  const use = FILES.filter(f => useOf(f)).length;
+  $('stat').innerHTML = `<b>${shown}</b> von ${FILES.length} · geändert <b>${chg}</b> · mit Einsatz <b>${use}</b> · aussortiert ${aus}`;
 }
 
 function set(path, k, v) {
   const f = byPath[path];
   const e = ST[path] || (ST[path] = {});
   e[k] = v;
-  if ((!e.cat || e.cat === f.vs) && !e.note) delete ST[path];
+  const d = DEF(f);
+  for (const key of Object.keys(e)) if (e[key] === d[key]) delete e[key];
+  if (!Object.keys(e).length) delete ST[path];
   store();
   const row = document.querySelector(`.row[data-p="${CSS.escape(path)}"]`);
-  if (row) row.classList.toggle('chg', !!ST[path]);
+  if (row) row.classList.toggle('chg', changed(f));
   stat(document.querySelectorAll('#list .row').length);
 }
 
@@ -352,12 +459,28 @@ au.addEventListener('ended', () => {
 au.addEventListener('error', () => { if (playing) { const p = playing; stop(); flash(p, 'Datei lässt sich im Browser nicht abspielen'); } });
 
 $('list').addEventListener('click', e => {
+  const st = e.target.closest('.st');
+  if (st) {
+    const row = st.closest('.row'), f = byPath[row.dataset.p];
+    const n = +st.dataset.n, v = starsOf(f) === n ? 0 : n;   // gleicher Stern nochmal = aus
+    set(f.path, 'stars', v);
+    row.querySelectorAll('.st').forEach(b => b.classList.toggle('on', +b.dataset.n <= v));
+    return;
+  }
   const b = e.target.closest('.pl'); if (!b) return;
   const p = b.closest('.row').dataset.p;
   if (playing === p) stop(); else play(p);
 });
 $('list').addEventListener('change', e => {
-  if (e.target.tagName === 'SELECT') set(e.target.closest('.row').dataset.p, 'cat', e.target.value);
+  const t = e.target, row = t.closest('.row'); if (!row || t.tagName !== 'SELECT') return;
+  const p = row.dataset.p;
+  if (t.classList.contains('s-cat')) {
+    set(p, 'cat', t.value);
+    const u = row.querySelector('.s-use'), keep = u.value;   // passende Einsätze nach oben
+    u.innerHTML = useOpts(byPath[p]); u.value = keep;
+  }
+  else if (t.classList.contains('s-use')) set(p, 'use', t.value);
+  else if (t.classList.contains('s-side')) set(p, 'side', t.value);
 });
 $('list').addEventListener('input', e => {
   if (e.target.tagName === 'INPUT') set(e.target.closest('.row').dataset.p, 'note', e.target.value.trim() ? e.target.value : '');
@@ -368,7 +491,9 @@ $('save').addEventListener('click', () => {
   const out = {
     erstellt: new Date().toISOString(), quelle: 'sound-quelle/', anzahl: FILES.length,
     dateien: FILES.map(f => ({
-      datei: f.path, kategorie: catOf(f), vorschlag: f.vs, notiz: noteOf(f),
+      datei: f.path, kategorie: catOf(f), vorschlag: f.vs,
+      einsatz: useOf(f) || null, einsatz_text: useOf(f) ? SLOT_TXT[useOf(f)] : null, schon_im_spiel_vermutet: f.spiel || null,
+      seite: sideOf(f) || null, sterne: starsOf(f), notiz: noteOf(f),
       quelle: f.q.text, quelle_url: f.q.url || null, anbieter: f.q.anbieter,
       laenge_s: f.m.dur, groesse_mb: Math.round(f.m.size / 1e5) / 10, spitze_db: f.m.peak, mittel_db: f.m.rms,
       hinweise: f.hints.map(h => h[0]),

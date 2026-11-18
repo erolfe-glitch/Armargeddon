@@ -10,3 +10,11 @@ sound-quelle/
 
 # Ton-Kopien aus tools/sound_bau.mjs (nur lokal, eingebettet in src/sound.js)
 ui-quelle/toene/
+
+# Konzeptbilder (nur lokal)
+ui-quelle/konzept/sammlung/
+ui-quelle/konzept/trupp_konzept.png
+
+# Prüfbilder der Werkzeuge (werden bei jedem Lauf neu erzeugt)
+ui-quelle/einheiten_neu/vorschau.png
+ui-quelle/teile/texturen/_kachel_2x2.png
