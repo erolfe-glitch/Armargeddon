@@ -84,7 +84,10 @@ def remove_flash(q):
 
 
 # Bögen mit 4 Posen im 2×2-Raster (Trupps); alle anderen sind Einzelmodelle (ein Bild, alle Teile behalten).
-TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall'}
+TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall', 'soldat_posen'}
+# Zusatzposen zu einem Trupp-Bogen (2026-11-19, Animation Stufe 1): 2×2 mit Nahtschnitt, Maßstab wie der Grundbogen:
+# Pose Nr. (Getroffen) = Anteil der Höhe der Bereit-Pose des Grundbogens (<fraktion>_<grund>_1 im Spiel). Freie Teile (Granate, Mündungsfeuer) fallen weg.
+POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97)}
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
@@ -363,13 +366,26 @@ def cut(name, out=OUT):
             im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
             im.save(out / f'{name}_{i}.png'); print(f'{name}_{i}: {im.width}×{im.height}')
         return
-    for i, (y0, x0) in enumerate([(0, 0), (0, W // 2), (H // 2, 0), (H // 2, W // 2)], 1):
-        q = k[y0:y0 + H // 2, x0:x0 + W // 2]
-        q, fl = remove_flash(q)
-        q = keep_parts(q, False)
-        poses.append((i, q, fl))
+    if kind in POSEN_MASS:   # Nahtschnitt 2×2: waagerechte Naht, dann je Hälfte eine senkrechte (durch den freien Hintergrund)
+        op = k[..., 3] > 40; hz = seam(op.T, H // 2, int(H * 0.12)); rows = np.arange(H)[:, None] < hz[None, :]
+        cols = np.arange(W)[None, :]; zellen = []
+        for oben in (True, False):
+            hm = rows if oben else ~rows; vs = seam(op & hm, W // 2, int(W * 0.12))
+            for links in (True, False): zellen.append(hm & ((cols < vs[:, None]) if links else (cols >= vs[:, None])))
+        for i, m in enumerate(zellen, 1):
+            t = k.copy(); t[~m, 3] = 0
+            q, fl = remove_flash(t); q = keep_parts(q, False); poses.append((i, q, fl))
+    else:
+        for i, (y0, x0) in enumerate([(0, 0), (0, W // 2), (H // 2, 0), (H // 2, W // 2)], 1):
+            q = k[y0:y0 + H // 2, x0:x0 + W // 2]
+            q, fl = remove_flash(q)
+            q = keep_parts(q, False)
+            poses.append((i, q, fl))
     hmax = max(p[1].shape[0] for p in poses)   # stehende Pose = höchste
     s = H_OUT / hmax
+    if kind in POSEN_MASS:   # gleicher Maßstab wie der Grundbogen
+        grund, nr, f = POSEN_MASS[kind]; ref = Image.open(GAME / f"{name.split('_', 1)[0]}_{grund}_1.png").height
+        s = ref * f / poses[nr - 1][1].shape[0]
     out.mkdir(parents=True, exist_ok=True)
     for i, q, fl in poses:
         im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')

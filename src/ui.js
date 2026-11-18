@@ -1640,6 +1640,43 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
   g.save(); g.strokeStyle = 'rgba(30,24,16,0.9)'; g.lineWidth = Math.max(1, s * 0.018); g.beginPath(); g.moveTo(ax, ay); g.quadraticCurveTo((ax + bx) / 2 + s * 0.06, (ay + by) / 2, bx, by); g.stroke();
   if (filt) g.filter = filt; g.translate(bx, by); if (flip) g.scale(-1, 1); g.drawImage(im, -bw * 0.53, -bh, bw, bh); g.restore(); g.filter = 'none';
 }
+// ---------- Posenwechsel (Animation Stufe 1, 2026-11-19): nur neue Ansicht, Testfall Schützenkohorte und Aschengrenadiere ----------
+// Ruhe = bereit; Schießen stehend anlegen (in Deckung/Graben/eingegraben kniend) mit Rückstoß, Nahkampf Kolbenschlag mit Vorstoß,
+// Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
+// Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
+// Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
+const POSE_TYPEN = new Set(['kohorte', 'grenadier']);
+const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
+const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
+const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && VIEW.tilt() && fac(u.side) !== 'F');
+function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; d.pose = { art, t0: now, dauer, ...o }; return true; }
+const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
+// Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
+function poseFigur(u, d, j, fallback) {
+  const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', ruhe = { im: figImg(pre + POSE_BILD.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
+  const P0 = d.pose; if (!P0) return ruhe;
+  const vs = P0.gleich ? 0 : j * POSE_VERSATZ + ((u.id * 37 + j * 53) % 41), el = (now - P0.t0) * speed - vs;
+  if (j === 0 && (now - P0.t0) * speed > P0.dauer + 400) { d.pose = null; return ruhe; }
+  if (el < 0 || el > P0.dauer) return ruhe;
+  let art = P0.art, dx = 0, dy = 0, rot = 0; const q = el / P0.dauer;
+  if (art === 'anlegen' || art === 'knien') {   // Rückstoß: beim eigenen Schuss kurz zurück, dann wieder ruhig
+    const st = P0.schuss ? P0.schuss[j % P0.schuss.length] + 130 : 220, z = el - st;
+    if (z >= 0 && z < 160) { const k = 1 - z / 160; dx = -0.045 * k; rot = -0.06 * k; }
+  } else if (art === 'kolben') { const k = Math.sin(Math.PI * Math.min(1, q * 1.25)); dx = 0.16 * k; rot = 0.07 * k; }   // kurzer Vorstoß
+  else if (art === 'graben') { dy = 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * el / 520)); rot = 0.03 * Math.sin(2 * Math.PI * el / 520); }   // im Takt der Schaufel
+  else if (art === 'wurf') { const h0 = P0.dauer * 0.45; art = el < h0 ? 'ausholen' : 'loslassen'; if (art === 'ausholen') { dx = -0.03 * el / h0; rot = -0.05 * el / h0; } else dx = 0.05 * Math.sin(Math.PI * Math.min(1, (el - h0) / (P0.dauer * 0.4))); }
+  else if (art === 'getroffen') { const k = Math.sin(Math.PI * q); dx = -0.07 * k; rot = -0.09 * Math.sin(Math.PI * 2.2 * q) * (1 - q); }   // taumelt zurück
+  return { im: figImg(pre + POSE_BILD[art]) || ruhe.im, dx, dy, rot };
+}
+// Granatwurf (für Einheiten mit Wurf-Fähigkeit; die Soldatenbilder haben im Spiel derzeit keine): Ausholen → Loslassen, Granate fliegt aus der Hand
+async function poseWurf(id, x2, y2) {
+  const d = DU.get(id), u = unitById(id); if (!d || !u) return;
+  d.face = x2 >= d.x ? 0 : 3; const dauer = 800; pose(id, 'wurf', dauer, { gleich: true });
+  await wait(dauer * 0.45);
+  const vor = facesLeft(d.face) ? -1 : 1, s = L.s;
+  shells.push({ fxi: u.side === 'A' ? 3 : 2, fxs: 0.75, x1: d.x + vor * s * 0.3, y1: d.y - s * 0.55, x2, y2, t: 0, dur: 18, arc: 1.0, spin: true, img: u.side === 'A' ? 'pine' : 'stick', sz: 0.3 });
+  await wait(dauer * 0.55);
+}
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
@@ -1647,8 +1684,9 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) {
-      if (pl && pl.pts) { const q = pl.pts[[1, 2, 0, 3][i]]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
-      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im: nf.ims[(u.id * 3 + i) % nf.ims.length], ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
+      const pa = posenAn(u) ? poseFigur(u, d, i, nf.ims[0]) : null, im = pa ? pa.im : nf.ims[(u.id * 3 + i) % nf.ims.length];   // Posenwechsel (Stufe 1)
+      if (pl && pl.pts) { const q = pl.pts[[1, 2, 0, 3][i]]; list.push({ im, pa, ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
+      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
     }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0);   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
@@ -1703,7 +1741,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     return top;
   }
   for (const f of list) {
-    const fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s, fy = y + f.oy * s * k + duck;
+    const pa = f.pa, vor = flip ? -1 : 1, fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s + (pa ? pa.dx * vor * s : 0), fy = y + f.oy * s * k + duck + (pa ? pa.dy * s : 0), prot = pa ? pa.rot : 0;
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
     // Bodenschatten
@@ -1720,10 +1758,10 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     if (filt) g.filter = filt;
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
-        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flip) g.scale(-1, 1); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
+        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flip) g.scale(-1, 1); if (prot) g.rotate(prot); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
       } else {
         if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
-        g.translate(fx, fy + h * 0.012 + sink); if (flip) g.scale(-1, 1); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
+        g.translate(fx, fy + h * 0.012 + sink); if (flip) g.scale(-1, 1); if (prot) g.rotate(prot); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip]);
@@ -2131,6 +2169,7 @@ async function playEvent0(e) {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
+      { const au0 = unitById(e.a); if (e.kind === 'rifle' && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6);
@@ -2147,9 +2186,10 @@ async function playEvent0(e) {
           const key = sndPick('rifle', au && au.side) || 'rifle';   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
           // unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert: „pam – pam-pam – pam“. Abstände zufällig 0–0,25 s, manchmal zwei fast zugleich;
           // jeder Schuss kurz (ohne Nachhall), nur der letzte klingt voll aus (Spieltest 2026-11-17, gilt für beide Seiten)
-          let t = 0; for (let q = 0; q < n; q++) { if (q) t += Math.random() < 0.3 ? Math.random() * 40 : Math.random() * 250;
+          let t = 0; const schuss = []; for (let q = 0; q < n; q++) { if (q) t += Math.random() < 0.3 ? Math.random() * 40 : Math.random() * 250; schuss.push(t);
             const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
-            const p = fxMuzzle(e.a, q); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } } }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
+            const p = fxMuzzle(e.a, q); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } }
+          if (a.pose && a.pose.t0 != null) { a.pose.schuss = schuss; a.pose.gleich = true; a.pose.dauer = Math.max(900, t + 650); } }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
         else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && ['koloss', 'turm', 'kreuz'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
 
         // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
@@ -2228,6 +2268,7 @@ async function playEvent0(e) {
     }
     case 'melee': case 'counter': {
       getuemmel();   // Getümmel-Schleife, solange Nahkampf läuft (2026-11-18)
+      pose(e.a, 'kolben', 650);   // Kolbenschlag mit kurzem Vorstoß
       const a = DU.get(e.a), d = DU.get(e.d);
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
@@ -2275,6 +2316,7 @@ async function playEvent0(e) {
     }
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
+      if (!e.panic && e.dmg > 0) pose(e.u, 'getroffen', 550);   // kurz taumeln
       if (E.isMech(u.type) && TYPES[u.type].cls === 'walker') playSound('robot', 0.5, null, { u });   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) shake(e.dmg >= 2.5 ? 6 : 4);
@@ -2373,7 +2415,7 @@ async function playEvent0(e) {
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': kz(e.u, 'feuer', 'puls'); await wait(120); break;
     case 'steadfast': kz(e.u, 'pfeil', 'steig'); await wait(160); break;
-    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('schaufel', 0.4); setTimeout(() => playSound('atmen', 0.3, null, { u, noGap: true }), 250 / speed);   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
+    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; pose(e.u, 'graben', 1600); playSound('schaufel', 0.4); setTimeout(() => playSound('atmen', 0.3, null, { u, noGap: true }), 250 / speed);   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
     case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); await wait(260); break; }
     case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); await wait(220); break; }
@@ -3706,7 +3748,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, feldWirkung, get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
