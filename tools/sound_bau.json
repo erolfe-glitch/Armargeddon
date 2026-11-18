@@ -540,6 +540,8 @@
     { "pool": "mgsetup", "f": "Voices/800863__tyranttim__soldier-guns_up.wav", "s": "A", "max": 1.2, "note": "MG aufbauen, Konkordat (Korrektur 5)" },
     { "pool": "mgladen", "f": "Repair reload heal etc/751180__fosdork__shotgun-cock.mp3", "s": null, "max": 1.4, "lvl": -16, "note": "MG wird aufgestellt: Verschluss (Nachtrag 2026-11-18)" },
     { "pool": "mgladen", "f": "Repair reload heal etc/628640__el_boss__bug-a-salt-reload-plastic-shotgun.wav", "s": null, "max": 1.6, "lvl": -16 },
+    { "pool": "leuchtschuss", "f": "Leuchtpistole/714360__astronaut77890__flare-pistol-gunshot.wav", "s": null, "ab": 0.15, "max": 1.45, "fo": 0.4, "lvl": -14, "note": "Ziel markieren: Abschuss der Leuchtpistole (2026-11-18)" },
+    { "pool": "leuchtbrand", "f": "Leuchtpistole/714355__astronaut77890__flare-pistol-burning-flare.wav", "s": null, "ab": 0.5, "max": 4.2, "fo": 1.8, "lvl": -22, "note": "Leuchtkugel brennt am Himmel, leise, blendet aus (2026-11-18)" },
     { "pool": "tick", "f": "Ereignisse/320862__urupin__old-watch-in-a-small-antique-shop.flac", "s": null, "st": 1.0, "max": 1.6, "lvl": -20, "note": "Sprengsatz legen (Korrektur 6)" },
     { "pool": "bauen", "f": "Repair reload heal etc/675138__craigsmith__s17-03-hand-to-hand-battle-with-yelling-and-armor-noise-many-voices.wav", "s": null, "st": 1.5, "max": 2.5, "lvl": -26, "note": "Befestigungen bauen, kurz und leise (Korrektur 8)" },
     { "pool": "schaufel", "f": "Schaufel/96216__cgeffex__combo-shovels.wav", "s": null, "ab": 0.25, "max": 2.2, "lvl": -16, "note": "Eingraben: Schaufelstiche (Nachtrag 2026-11-18)" },

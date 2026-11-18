@@ -191,7 +191,8 @@ Zu den Stimm-Plätzen pain, medic, cry, scream, panic, forward, roar, stand, cha
 |---|---|---|
 | **ueberrollen** | Fahrzeug walzt Draht/Barrikade | tank_crunch_fence (Ausschnitt ab 0,5 bzw. 0,95 s, Bass +6 dB), darunter hard-heavy-impact (Tiefpass), chain-link-fence und latch-metallic |
 | **holzknacken** | Infanterie läuft in Draht (mit drahtlatch, drahtwackeln) | soldier-walk-twigs, drei Knackser, weich begrenzt |
-| **whistle**, Pfeifen in **march** | Nachschub, Ziel markiert, Schlachtbeginn, großer Befehl Konkordat | tiefer (×0,84), Tiefpass 2,6 kHz |
+| **whistle**, Pfeifen in **march** | Nachschub, Schlachtbeginn, großer Befehl Konkordat | tiefer (×0,84), Tiefpass 2,6 kHz |
+| **leuchtschuss**, **leuchtbrand** | Ziel markieren (Leuchtpistole); Brennen leise ab 0,45 s, 4,2 s mit 1,8 s Ausblenden, unter Stimmen abgesenkt | 714360 flare-pistol-gunshot (ab 0,15 s), 714355 flare-pistol-burning-flare (ab 0,5 s) |
 | **grunzen** (+ _gm/_gs) | Eingraben, zwei kurze Laute | mask-grunt, drei Fassungen, Gasmaske je Sprecher |
 | **klick** | Nächste Einheit, Fertig (auch per Taste) | 488534 ui-click |
 | **schritte** | normales Ziehen der Fußtruppen | footsteps-mud (zwei Ausschnitte), soldier-walk-twigs; alle −20 dB |

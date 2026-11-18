@@ -1850,7 +1850,7 @@ const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 's
 // Stimmen gegenüber Fahrzeugen (Tonprobe 2026-11-18): Stimm-Plätze lauter (STIMM_VOL ≈ +3 dB); solange jemand spricht, werden laufende Fahrzeugtöne
 // (DUCK_PL, Motor beim Anklicken) auf DUCK_F abgesenkt und danach wieder angehoben.
 const STIMM_PL = new Set(['atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
-const DUCK_PL = new Set(['tank', 'mech', 'gespann', 'wagenknarren', 'ueberrollen']);
+const DUCK_PL = new Set(['tank', 'mech', 'gespann', 'wagenknarren', 'ueberrollen', 'leuchtbrand']);
 const STIMM_VOL = 1.45, DUCK_F = 0.4, STEIN = ['village', 'bunker', 'fabrik', 'kirche'];
 let duckBis = 0; const duckLauf = [];   // duckLauf: [{ a, vol }] laufende Fahrzeugtöne
 const duckF = () => performance.now() < duckBis ? DUCK_F : 1;
@@ -2225,8 +2225,9 @@ async function playEvent0(e) {
     case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
     case 'mark': { const [x, y] = center(e.c, e.r);
+      playSound('leuchtschuss', 0.5); setTimeout(() => playSound('leuchtbrand', 0.22), 450 / speed);   /* Leuchtpistole: Abschuss, dann leises Brennen der Kugel, blendet aus (2026-11-18) */
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
-      visSync('marks'); playSound('whistle', 0.25); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
+      visSync('marks'); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
       rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
     case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)

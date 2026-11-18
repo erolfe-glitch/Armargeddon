@@ -5711,6 +5711,30 @@
   "kb": 9
  },
  {
+  "pool": "leuchtschuss",
+  "key": "leuchtschuss_1",
+  "s": null,
+  "f": "Leuchtpistole/714360__astronaut77890__flare-pistol-gunshot.wav",
+  "dur": 1.45,
+  "src": 1.63,
+  "start": 0.15,
+  "gain": -1,
+  "kb": 17,
+  "note": "Ziel markieren: Abschuss der Leuchtpistole (2026-11-18)"
+ },
+ {
+  "pool": "leuchtbrand",
+  "key": "leuchtbrand_1",
+  "s": null,
+  "f": "Leuchtpistole/714355__astronaut77890__flare-pistol-burning-flare.wav",
+  "dur": 4.2,
+  "src": 6.1,
+  "start": 0.5,
+  "gain": 7,
+  "kb": 49,
+  "note": "Leuchtkugel brennt am Himmel, leise, blendet aus (2026-11-18)"
+ },
+ {
   "pool": "tick",
   "key": "tick_1",
   "s": null,
