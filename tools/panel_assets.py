@@ -51,6 +51,8 @@ SYMBOLS = {
     'bogen6_stellung': ['mg_auf', 'mg_ab', 'aufprotzen', 'abprotzen'],
     # abgeleitet (tools/sym_ableiten.py, 2026-11-17): Stiefel ohne Flügel = normales Ziehen, Garbe = MG-Sperrfeuer
     'abgeleitet': ['stiefel', 'garbe'],
+    # Einzelsymbol (ui-quelle/symbol_schaufel.png, 2026-11-18): Eingraben
+    'symbol_schaufel': ['schaufel'],
 }
 # Kartenmarken (ui-quelle/kartenmarken.png): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
 PARTS.update({

@@ -39,6 +39,8 @@ NAMES['bogen4c_symbole'] = ['s_panzerbrecher', 's_durchsickern', 's_niedergehalt
                             's_festgefahren', 's_walze']
 # Stellungswechsel (2026-11-16): MG aufbauen, MG abbauen, Aufprotzen, Abprotzen (2×2, Pfeile gehören zum Symbol)
 NAMES['bogen6_stellung'] = ['s_mg_auf', 's_mg_ab', 's_aufprotzen', 's_abprotzen']
+# Einzelsymbol Schaufel (2026-11-18): Eingraben (Knopf und Zustandsmarke), ersetzt dort die Spitzhacke
+NAMES['symbol_schaufel'] = ['s_schaufel']
 # Fraktionswappen: links Emblem vor Flagge, rechts Emblem allein
 NAMES['wappen_konkordat'] = ['w_flagge', 'w_emblem']
 NAMES['wappen_aschenwacht'] = ['w_flagge', 'w_emblem']
@@ -52,7 +54,7 @@ MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6}
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
 GRID = {'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
         'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1),
-        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2)}
+        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2), 'symbol_schaufel': (1, 1)}
 # Bögen mit Nahtschnitt (wie figure_cut): je Rasterlinie eine Naht durch den freien Hintergrund (geringste Deckung),
 # die Zellen dazwischen sind die Teile. Splitter und Funken bleiben so sicher beim eigenen Symbol.
 # bogen3c_symbole (2026-11-18): neue Fassung von bogen3b, gleiche Anordnung, ersetzt sie im Spiel.

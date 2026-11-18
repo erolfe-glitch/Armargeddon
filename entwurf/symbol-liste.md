@@ -5,6 +5,7 @@ Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über all
 - `bogen3c_symbole` (seit 2026-11-18, ersetzt bogen3b; totenkopf nur abgelegt): zielen, nahkampf, marsch, fahne, totenkopf, schild, gas, granate_artillerie, zahnrad, sanitaeter, blitz, handgranate, gewehr, pferd, fernglas, sanduhr
 - `bogen4a_symbole`: drahtschere, drahtrolle, auge, haken, drehpfeil, mg_dreibein, sperrfeuer, lafette, flamme
 - `bogen4b_symbole`: meldehund, schraubenschluessel, nebel, spitzhacke, sprengladung, tellermine, scheinwerfer, gasmaske, munitionskiste
+- `symbol_schaufel` (Einzelsymbol, 2026-11-18): schaufel
 - `bogen4c_symbole`: panzerbrecher, durchsickern, niedergehalten, flucht, gebrochen (vorläufig), festgefahren, walze
 
 „– (Text)“ heißt: reiner Textknopf, ein Symbol ist nicht nötig.
@@ -50,6 +51,7 @@ Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über all
 |---|---|---|---|
 | Nebelwand | Rauchwerfer-Trupp | s_nebel (grau; s_gas ist Giftgas) | nein |
 | Stollen graben | Mineure | s_spitzhacke | nein |
+| Eingraben (Knopf und Zustandsmarke „Eingegraben“) | Infanterie mit T.dig | s_schaufel | nein |
 | Haftladung | Sprengtrupp | s_sprengladung | nein |
 | Mine legen | Minenleger | s_tellermine | nein |
 | Ausleuchten | Scheinwerfer-Trupp (gestrichen 2026-11-16) | s_scheinwerfer | nein |
