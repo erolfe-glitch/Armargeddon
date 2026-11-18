@@ -902,7 +902,16 @@ function hexMark(c, r, o) {
   g.stroke(); g.setLineDash([]);
   if (o.sym) { const [cx, cy] = center(c, r); MARKQ.push(() => { g.globalAlpha = 0.85 + 0.15 * pz; drawSym(g, o.sym, cx, cy - s * kAt(cx, cy) * (o.inHex ? 0.1 : 0.62), s * 0.2); g.globalAlpha = 1; }); }   // Symbol über den Figuren
 }
-function frame(t) { STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t; shakeStep(); areaNow = null; draw(); requestAnimationFrame(frame); }
+// Bildschleife: der nächste Frame wird immer angemeldet, auch wenn das Zeichnen einmal scheitert (sonst friert das Bild ein
+// und bleibt nach einer Größenänderung wie dem Vollbild leer). Gleiche Fehler werden nur einmal gemeldet.
+const drawFehler = new Set();
+function frame(t) {
+  requestAnimationFrame(frame);
+  STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t;
+  try { shakeStep(); areaNow = null; draw(); }
+  catch (err) { const k = String(err && err.stack || err).slice(0, 300); if (!drawFehler.has(k)) { drawFehler.add(k); console.error('Zeichnen:', err); }
+    ctx = MAINCTX; ctx.setTransform(1, 0, 0, 1, 0, 0); VIEW.up = null; VIEW.bbK = null; MARKQ.length = 0; }
+}
 function draw() {
   if (!L || !tcv) return;
   MARKS.length = 0;
@@ -1002,7 +1011,7 @@ function drawGround(g, s) {
           g.restore();
           if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.22, pv.threat.length);
           if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.36, pv.cov);
-          drawFeldWirkung(g, hx, hy + s * kAt(hx, hy) * 0.42, pv.fx, s); });   // Geländehinweis unter dem Feld
+          try { drawFeldWirkung(g, hx, hy + s * kAt(hx, hy) * 0.42, pv.fx, s); } catch (err) { hinweisFehler(err); } });   // Geländehinweis unter dem Feld
         MARKS.push({ x0: hx - s * 0.8, y0: hy - s * kAt(hx, hy) * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * kAt(hx, hy) * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
   }
   // MG-Schussfächer: gewähltes MG oder feindliches MG unter Maus/Finger
@@ -1337,11 +1346,16 @@ function pathHazard(u, c, r) {
 }
 // Geländehinweis beim Ziehen (Fahrplan 2): Vor- und Nachteile des Zielfelds für die gewählte Einheit.
 // Liste von { gut, kurz, lang }; kurz steht in der Leiste unter dem Feld, lang im Tooltip der Vorschau.
+// Absicherung: Ein Fehler im Geländehinweis darf nie das Zeichnen der Karte abbrechen – dann fehlt nur der Hinweis (einmalige Warnung)
+let hinweisGemeldet = false;
+function hinweisFehler(err) { if (!hinweisGemeldet) { hinweisGemeldet = true; console.warn("Geländehinweis abgeschaltet:", err); } }
+function feldWirkungSicher(u, c, r) { try { return feldWirkung(u, c, r); } catch (err) { hinweisFehler(err); return []; } }
 function feldWirkung(u, c, r) {
   const h = G.map[c] && G.map[c][r]; if (!h) return [];
   const T = TYPES[u.type], wk = T.cls === 'walker', out = [], tags = [];
   const f0 = E.defMods(G, { ...u, c, r, dug: false, holdB: false }, 'front', true, tags);
-  for (const tg of tags) { const m = /×(\d+)(?:,(\d+))?/.exec(tg); if (!m || (wk && h.t === 'wire')) continue;   // Fahrzeuge walzen den Draht nieder: kein Abzug const f = parseFloat(m[1] + '.' + (m[2] || '0'));
+  for (const tg of tags) { const m = /×(\d+)(?:,(\d+))?/.exec(tg); if (!m || (wk && h.t === 'wire')) continue;   // Fahrzeuge walzen den Draht nieder: kein Abzug
+    const f = parseFloat(m[1] + '.' + (m[2] || '0'));
     out.push({ gut: f > 1, kurz: tg.replace(/^im /, ''), lang: `Abwehr ${f > 1 ? 'besser' : 'schlechter'}: ${tg} gegen Beschuss von vorn${h.t === 'crater' || h.t === 'bahn' ? '' : ' und Nahkampf'}.` }); }
   if (f0 === 1 && (h.t === 'open' || h.t === 'mud')) out.push({ gut: false, kurz: 'keine Deckung', lang: 'Offenes Gelände: keine Deckung. MG-Sperrfeuer trifft hier.' });
   if ((h.t === 'trench' || h.t === 'bunker') && !wk) out.push({ gut: true, kurz: 'halber Moralverlust', lang: 'Graben und Bunker: nur halber Moralverlust bei Treffern (nicht gegen Flammen).' });
@@ -1360,8 +1374,9 @@ function feldWirkung(u, c, r) {
 }
 // Leiste unter dem Zielfeld: ▲ Vorteil (Messing), ▼ Nachteil (Ochsenblut hell); Pergament-freie Tintentafel mit Rostrand (STYLE.md)
 function drawFeldWirkung(g, x, y, list, s) {
-  if (!list.length) return; if (VIEW.up) VIEW.up(x, y);
+  if (!list || !list.length) return; if (VIEW.up) VIEW.up(x, y);
   const fs = Math.round(Math.max(14, s * 0.2)), lh = fs * 1.3, pad = fs * 0.45, tri = fs * 0.42; g.save();
+  try {   // Zeichenzustand immer zurücksetzen, auch wenn etwas schiefgeht
   g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; g.textBaseline = 'middle'; g.textAlign = 'left';
   const w = Math.max(...list.map(it => g.measureText(it.kurz).width)) + tri * 2 + fs * 0.4 + pad * 2, hh = list.length * lh + pad * 0.8, x0 = x - w / 2;
   g.beginPath(); g.roundRect ? g.roundRect(x0, y, w, hh, fs * 0.25) : g.rect(x0, y, w, hh); g.fillStyle = 'rgba(18,13,11,0.86)'; g.fill(); g.lineWidth = Math.max(1.5, fs * 0.12); g.strokeStyle = '#66483A'; g.stroke();
@@ -1369,7 +1384,7 @@ function drawFeldWirkung(g, x, y, list, s) {
     g.beginPath(); if (it.gut) { g.moveTo(tx, cy - tri); g.lineTo(tx + tri, cy + tri * 0.75); g.lineTo(tx - tri, cy + tri * 0.75); } else { g.moveTo(tx, cy + tri); g.lineTo(tx + tri, cy - tri * 0.75); g.lineTo(tx - tri, cy - tri * 0.75); }
     g.closePath(); g.fillStyle = it.gut ? '#C2A461' : '#A8473A'; g.fill(); g.lineWidth = 1; g.strokeStyle = '#120D0B'; g.stroke();
     g.fillStyle = '#F0EDE1'; g.fillText(it.kurz, tx + tri + fs * 0.4, cy + fs * 0.04); });
-  g.restore();
+  } finally { g.restore(); }
 }
 // Schwebende Texte (Schadenszahlen, Meldungen). bb: neue Ansicht, stellt je Text den Aufsteller am Fußpunkt ein
 function drawFloaters(g, s, bb) {
@@ -2444,7 +2459,7 @@ function previewFrom(c, r) {
     if (F.cls === 'art') return d >= 1 && d <= F.rng && (E.isDirect(G, f, c, r) || (d >= P.ART_MIN && E.spotted(G, f.side, c, r)));
     if (!(F.rng > 1) || E.immune(F, T0) || (T0.hidden && !(sel.revealed > 0) && d > 1)) return false;
     return d <= E.rangeOf(G, f, c, r) && E.hasLOS(G, f.c, f.r, c, r); });
-  pvCache = { id, c, r, hit, threat, cov: E.coverOf(G, ghost).tier, fx: feldWirkung(sel, c, r) }; return pvCache;
+  pvCache = { id, c, r, hit, threat, cov: E.coverOf(G, ghost).tier, fx: feldWirkungSicher(sel, c, r) }; return pvCache;
 }
 function computeOptions() {
   reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sightSet = new Set(); scoutSet = new Set();
@@ -2485,17 +2500,22 @@ function computeOptions() {
   }
 }
 async function act(fn) {
+  if (busy || !sel || !G || G.over) return;   // nur mit gewählter Einheit und nie während einer laufenden Handlung (sonst zwei Handlungen gleichzeitig)
   busy = true; const u = sel;
-  previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
-  await play(fn(u));
-  busy = false;
-  sel = (u && E.active(u) && (u.ap >= 1 || u.bp > 0)) ? u : null;   // bleibt gewählt, solange Aktion oder BP übrig sind
-  computeOptions(); updateUI();
+  try {
+    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
+    await play(fn(u) || []);
+  } catch (err) { console.error('Handlung:', err); }
+  finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
+    busy = false;
+    sel = (u && E.active(u) && (u.ap >= 1 || u.bp > 0)) ? u : null;   // bleibt gewählt, solange Aktion oder BP übrig sind
+    computeOptions(); updateUI();
+  }
 }
 const doMove = (c, r) => { const n = reach.get(E.key(c, r)), via = wayPt; wayPt = null; return act(u => via && n && n.via ? E.moveUnit(G, u, c, r, n) : E.moveUnit(G, u, c, r)); };   // mit Wegpunkt: genau der gezeigte Weg
 function setWayPt(h) { if (!sel || !h) return false; const k = E.key(h[0], h[1]); if (wayPt && wayPt[0] === h[0] && wayPt[1] === h[1]) { wayPt = null; computeOptions(); updateHud(); return true; }
   if (!reach.has(k)) return false; wayPt = [h[0], h[1]]; computeOptions(); if (!reach.size) { wayPt = null; computeOptions(); } updateHud(); playSound('ui', 0.3, null); return true; }
-const doAttack = d => { const t = targets.get(d.id); return act(u => t.kind === 'fire' ? E.fire(G, u, d) : E.melee(G, u, d)); };
+const doAttack = d => { const t = d && targets.get(d.id); if (!t) return; return act(u => t.kind === 'fire' ? E.fire(G, u, d) : E.melee(G, u, d)); };   // nur gültige Ziele
 const doShell = (c, r) => { const m = artMode; return act(u => E.shell(G, u, c, r, m)); };
 
 // ---------- Nachschub ----------
@@ -2951,6 +2971,7 @@ function updateHud() {
       (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
     $('btnInfo').hidden = false;
+    if (previewT && sel && !targets.has(previewT.id)) previewT = null;   // Vorschau-Ziel ist keins mehr (z. B. nach Eingraben): Vorschau weg statt Absturz
     if (previewT && sel) {
       const t = targets.get(previewT.id), p = E.preview(G, sel, previewT, t.kind);
       hints.push(`<b>${t.kind === 'fire' ? 'Beschuss' : 'Nahkampf'} → ${TYPES[previewT.type].name}</b> Schaden ≈ <i>${fmt(p.dmg)}</i>${t.kind === 'fire' ? '' : ` · Gegenschlag ≈ <i>${fmt(p.counter)}</i>`} · ${p.tags.join(' · ') || 'keine Zu- oder Abschläge'} · <em>${lastPT === 'mouse' ? 'Klicken' : 'Nochmal tippen'} zum Angreifen</em>`);
@@ -3012,13 +3033,13 @@ async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
   if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); return; }
   if (a === 'pass') { playSound('klick', 0.5, null); E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
-  if (a === 'o-rally' || a === 'o-storm' || a === 'o-fire') return act(() => E.order(G, sel, a.slice(2)));
+  if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
+  if (!sel || busy) return;   // Handlungen nur mit gewählter Einheit und nicht während einer laufenden Animation
+  if (a === 'o-rally' || a === 'o-storm' || a === 'o-fire') return act(u => E.order(G, u, a.slice(2)));
   if (a === 'big') return act(u => E.bigOrder(G, u));
   if (a === 'plant') return act(u => E.plantBanner(G, u));
   if (a === 'dig') return act(u => E.dig(G, u));
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
-  if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
-  if (!sel || busy) return;
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
   if (a === 'cut' || a === 'zweit') { const t = a === 'cut' ? E.cutTargets(G, sel) : E.zweitTargets(G, sel);
@@ -3492,7 +3513,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, feldWirkung, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
