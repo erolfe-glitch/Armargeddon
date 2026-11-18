@@ -11,12 +11,12 @@ Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hi
 
 - Optional: feine helle Umrandung um Figuren als Schalter in den Optionen (2026-11-16, noch nicht bauen).
 
-## Gesamtplan (Stand 2026-11-16)
+## Gesamtplan (Stand 2026-11-18)
 
-Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Kamera und Spielgefühl, Etappe 4a UI-Flächen gekachelt.
+Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Kamera und Spielgefühl, Etappe 4a UI-Flächen gekachelt, Darstellung geklärt (neue gekippte Ansicht, seit 2026-11-17 fest), Etappe 4b Einheitenbilder (alle 50 Einheiten mit neuem Bogen, außer Blaue Legion), Etappe 4c Ton und Musik, die Grundregeln aus Etappe 5 und Etappe 7 für den Grauwall. Der aktuelle Arbeitsplan steht unten unter „Fahrplan bis zum Content-Ausbau“; als Nächstes kommt Content (Karten, Missionstypen, KI-Charaktere, Blaue Legion, Feldzug).
 
 - ~~**Etappe 4a – UI-Flächen scharf:**~~ erledigt (Commit 0250727): kachelbare Texturen, Rahmen und Ecken per 9-Slice.
-- **Vor Etappe 4b – Darstellung klären (als Nächstes, 2026-11-16).** Etappe 4b ist angehalten, bis das geklärt ist:
+- ~~**Vor Etappe 4b – Darstellung klären.**~~ erledigt: neue Ansicht seit 2026-11-17 die einzige (CLAUDE.md „Feste Regeln“). Ursprüngliche Punkte:
   - Kamerawinkel kippen: mehr Tiefe, nicht senkrecht von oben; Karte deutlich größer.
   - Einheiten aus mehreren kleinen Einzelfiguren statt einem Gruppenbild (z. B. 4–6 Figuren je Trupp, Verluste lassen Figuren wegfallen).
   - Panzer eher seitlich nach rechts ausgerichtet statt stark schräg.
@@ -33,7 +33,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - **Maßstab verbindlich (2026-11-16, auch in STYLE.md):** stehender Soldat **0,8 Feldradien** (Trupps, Hauptmann); MG und Geschütz 1,2× im Verhältnis; Panzer und Kolosse 1,5 Soldatenhöhen, höchstens 2,4 Feldradien breit, Ketten etwas Richtung Betrachter auf dem Feldboden, belegen ein Feld. Gegen das Schweben: Kontaktschatten unter den Füßen, Ringe kleiner und dezenter.
   - Trupps: 4 Figuren je Trupp in lockerer Formation, Füße alle im eigenen Feld; Verluste lassen Figuren wegfallen.
   - Figurenbögen: Blickwinkel genau wie bei `konkordat_soldat.png` / `aschenwacht_soldat.png`, nicht steiler (Einheitlichkeit geht vor). Prompts für die erste Lieferung: `entwurf/GEMINI_PROMPTS.md`.
-  - Umbau im Spiel hinter dem Schalter „Neue Ansicht (Test)“: Schritt 0 (Schalter, Ansichts-Abschnitt in ui.js) und Schritt 1 (Kamera und Boden: Weltbild flach, perspektivisch projiziert, Einheiten als Aufsteller, Klicks/Ziehen/Zoom/Kamera-Folgen) erledigt 2026-11-16; Schritt 3 (Figuren: Trupps zu viert, Einzelmodelle, Zuordnung FIGMAP in ui.js) erledigt 2026-11-16, vor Schritt 2; Schritt 2 (Zielfahnen, Symbole, Klammern, Vorschau, Rauch, Gas, Effekte aufrecht) erledigt 2026-11-16; weiter mit 4 Aufsteller (Gelände in zwei Ebenen, Höhenfelder mit Böschung), 5 Feinschliff.
+  - Umbau im Spiel (damals hinter dem Schalter „Neue Ansicht (Test)“, seit 2026-11-17 fest und ohne Schalter): Schritt 0 (Schalter, Ansichts-Abschnitt in ui.js) und Schritt 1 (Kamera und Boden: Weltbild flach, perspektivisch projiziert, Einheiten als Aufsteller, Klicks/Ziehen/Zoom/Kamera-Folgen) erledigt 2026-11-16; Schritt 3 (Figuren: Trupps zu viert, Einzelmodelle, Zuordnung FIGMAP in ui.js) erledigt 2026-11-16, vor Schritt 2; Schritt 2 (Zielfahnen, Symbole, Klammern, Vorschau, Rauch, Gas, Effekte aufrecht) erledigt 2026-11-16; weiter mit 4 Aufsteller (Gelände in zwei Ebenen, Höhenfelder mit Böschung), 5 Feinschliff. Stand 2026-11-18: Gelände in zwei Ebenen über die Gelände-Bausteine auf dem Grauwall umgesetzt; Höhenfelder mit Böschung noch offen.
   - Gelände muss für diesen Winkel neu gemalt werden: plastisch, Draht, Trichter und Gräben mit Tiefe (Seitenwände, Schatten, Pfähle stehen hoch). Das heutige Gelände ist für die Draufsicht gemalt und wirkt gekippt flach.
   - **Baustein-System festgelegt (2026-11-16):**
     - Probe mit Platzhaltern: `entwurf/probe/gelaende.html`.
@@ -45,28 +45,28 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
   - **Festung abgelehnt (2026-11-16):** Zinnen wirken mittelalterlich, Teile zu hoch. Bleibt nur auf der Testseite (`karte.html?festung=1`), nie im Spiel.
   - **Schanze (2026-11-16, im Spiel):** Zielfelder mit „schanze“ in der id bekommen einen Bunker hinter dem Graben (eigene Seite) und einen Sandsack-Haken (barrikade.png) davor (`cfg.schanzen` in GBau).
   - **Zielflagge (Standard seit 2026-11-16):** Stofffahne am Holzpfahl statt weißer Tafel, 55 % (alte Ansicht 90 %), hinterer rechter Feldrand hinter den Einheiten, in Ruinenfeldern vorn links (`fahneOrt`). Obere Leiste: keine Wimpel mehr, erobert = Münzrand in Fraktionsfarbe.
-  - **Neue Figurenbögen (2026-11-16):** Sanitäter (beide), Mörser, Minenwerfer, Scharfschütze, Schildwall, Schwere Grabenwacht, Melder, Banner, Rauchwerfer, Panzerbüchse, General, Bohrkoloss neu – alle Einheiten gibt es schon, im Spiel zugeordnet (FIGMAP). Übersicht: `entwurf/probe/figuren.html`. Dazu Pirschjäger und Aschenwacht-General (generalD). Sturmpanzer der Aschenwacht hat weiter keine Einheit.
-  - **Aschenwacht-Reiter (2026-11-16):** Bogen `aschenwacht_reiter` (Sprenglanze, 3 Posen) ist freigestellt, aber die Aschenwacht hat noch keine Reitereinheit. Offen: Einheit anlegen (Werte, Kosten, Sim) oder Bogen liegen lassen.
+  - **Neue Figurenbögen (2026-11-16):** Sanitäter (beide), Mörser, Minenwerfer, Scharfschütze, Schildwall, Schwere Grabenwacht, Melder, Banner, Rauchwerfer, Panzerbüchse, General, Bohrkoloss neu – alle Einheiten gibt es schon, im Spiel zugeordnet (FIGMAP). Übersicht: `entwurf/probe/figuren.html`. Dazu Pirschjäger und Aschenwacht-General (generalD). ~~Sturmpanzer der Aschenwacht hat weiter keine Einheit.~~ Einheit Sturmpanzer seit 2026-11-17 (Gruppe 6). Seit 2026-11-17 haben alle 50 Einheiten einen Bogen (Schreiter, Signal-, Fernsprech-, Versorgungs-, Gasschutz-Trupp, Ballon, Mineure, Kampfanzüge, Eingreiftrupp).
+  - ~~**Aschenwacht-Reiter (2026-11-16):** Bogen `aschenwacht_reiter` ist freigestellt, aber die Aschenwacht hat noch keine Reitereinheit.~~ erledigt 2026-11-17: Sprenglanzen-Reiter (Gruppe 6).
   - **Später: große Gebäude über mehrere Felder (2026-11-16).** Kirche, Fabrik, Bahnhof, Gutshof über 2–4 Felder. Idee:
     - jedes Feld bekommt seine eigenen Wandstücke (hinten hoch, vorn niedrig);
     - ein Turm bzw. Schornstein steht als einzelner hoher Aufsteller auf einem Randfeld des Gebäudes und wird durchsichtig, wenn er Einheiten verdeckt;
     - innen keine Wände zwischen den Feldern, nur Trümmer.
     
     Offen: Regeln (gemeinsame Deckung, Sicht durch das Gebäude), Prompts A2/A3 dafür umschreiben.
-- **Etappe 4b – Einheitenbilder (angehalten):** alle Einheiten nach den Bildregeln in STYLE.md neu bzw. nachgemalt, einheitliche Größen, Farben je Fraktion. Wartet auf das Ergebnis des Probebilds.
-- **Etappe 4c – Sound und Musik:** UI-Klicks, Waffen, Einschläge, Gas, Ketten, Atmosphäre; Musik mit Suno: Titelthema und 1–2 Schlachtmusiken.
-- **Etappe 5 – Gameplay:** Missionstypen (nicht nur Siegpunkte), stärkere und nachvollziehbare KI, Blaue Legion als vollwertige Seite. Dazu (2026-11-16):
-  - Aufstellung zu Beginn: automatisch oder selbst platzieren.
-  - Bewegungs- und Aktionspunkte sauber trennen (UI und Logik); Bewegungskosten nach Klasse und Gelände logisch staffeln (Infanterie, Reiter, Panzer).
-  - Draht schneiden nur für Spezialisten, nicht für Standard-Infanterie.
-  - Festfahren seltener; nach aktiver Reparatur längerer Schutz, nach bloßem Ablaufen kein Schutz.
-  - Beim Ziehen über Gelände sofort Vor- und Nachteil des Felds als Symbol zeigen.
-  - Fähigkeiten: Radius und betroffene Felder bzw. Einheiten anzeigen.
-  - Bohrkoloss: kurzer Flammenstoß auf ein Nachbarfeld als Fähigkeit (das neue Bild zeigt einen Flammenwerfer, 2026-11-16).
-  - Fahrzeuge belegen 2 Felder (2026-11-16, prüfen): Panzer und Kolosse sind maßstäblich breiter als ein Feld.
-  - Aschenwacht braucht eine eigene Panzer-Einheit „Sturmpanzer“ (Gegenstück zum Landkoloss, ohne Kampfmaschinen-Schalter); Bild `aschenwacht_panzer.png` liegt schon vor, ist aber noch keiner Einheit zugeordnet.
-- **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder, Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle.
-- **Etappe 7 – Balance:** Kosten, Werte und Siegquoten mit `tools/sim.js` und `tools/costcheck.js` abstimmen.
+- ~~**Etappe 4b – Einheitenbilder:**~~ erledigt 2026-11-17: alle 50 Einheiten als Figurenbögen im neuen Stil (`FIGMAP`). Offen: Blaue Legion (zeigt noch die alten `art.js`-Bilder), Russland, später die dämonische Seite.
+- ~~**Etappe 4c – Sound und Musik:**~~ erledigt 2026-11-17: Tonplätze neu gebaut (sound_bau), eigene Musik (Titelthema, Schlachtmusik), Sprüche und Stimmfilter. Offen: Credits-Fenster für CC-BY-Töne (siehe „Töne“).
+- **Etappe 5 – Gameplay:** offen sind noch Missionstypen (nicht nur Siegpunkte), KI mit Charakter (siehe „Spielmodi, KI und Armee-Grenzen“) und die Blaue Legion als vollwertige Seite. Erledigt (2026-11-17/18):
+  - ~~Aufstellung zu Beginn: automatisch oder selbst platzieren.~~ (fb74781)
+  - ~~Bewegungs- und Aktionspunkte sauber trennen; Bewegungskosten nach Klasse und Gelände staffeln.~~ (16fa417)
+  - ~~Draht schneiden nur für Spezialisten.~~ (Paket 8)
+  - ~~Festfahren seltener.~~ (Paket 8; „nach Reparatur längerer Schutz“ nicht gebaut)
+  - ~~Beim Ziehen über Gelände sofort Vor- und Nachteil des Felds als Symbol zeigen.~~ (2026-11-18, `feldWirkung`)
+  - ~~Fähigkeiten: Radius und betroffene Felder bzw. Einheiten anzeigen.~~ (Paket 2, `areaAct`)
+  - ~~Bohrkoloss: Flammenstoß.~~ (52b5db5)
+  - ~~Fahrzeuge belegen 2 Felder?~~ entschieden: bleiben auf 1 Feld.
+  - ~~Aschenwacht-Panzer „Sturmpanzer“.~~ (Gruppe 6)
+- **Etappe 6 – Karten neu:** alle Karten im Stil der gemalten Ganzbilder bzw. aus Gelände-Bausteinen (Grauwall fertig), Kamera 30–35°, logisch zusammenhängend, mehrere Größen. Prüfen: AI-Map-Generator mit Hexfeldern als mögliche Quelle. **Als Nächstes** (Fahrplan Punkt 6).
+- ~~**Etappe 7 – Balance:**~~ für den Grauwall erledigt (entwurf/BALANCE.md); jede neue Karte wird beim Neubau eigens abgestimmt.
 - **Etappe 8 – Feldzug:** Weltkarte mit aufeinanderfolgenden Schlachten, Land- und Seeschlachten.
 
 ## Töne (2026-11-16)
@@ -104,9 +104,9 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 
 ## Fahrplan bis zum Content-Ausbau (Enrico + Claude, 2026-11-17)
 Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr Karten, Modi, Seiten.
-1. Oberfläche fertig: Paket 5 (unteres Bedienfeld im Total-War-Stil, Rekrutierung nach Kategorien) + neues Titelbild (ui-quelle/titelbild_neu.png, noch nicht eingebaut).
-2. Restliche Grundregeln aus Etappe 5: ~~Aufstellungsphase zu Beginn~~ erledigt (fb74781); ~~Schusswinkel für Fahrzeuge und Schreiter~~ erledigt (fb74781); ~~Bewegungs- und Aktionspunkte sauber trennen~~ erledigt (Schritt 1 16fa417, Schritt 2 KI mit der KI-Durchsicht); ~~Draht schneiden nur Spezialisten~~ erledigt; ~~Festfahren seltener~~ erledigt; Geländehinweis beim Ziehen; ~~Bohrkoloss-Flammenstoß~~ erledigt; ~~Entscheidung „Fahrzeuge auf 2 Feldern"~~ entschieden: bleiben auf 1 Feld.
+1. ~~Oberfläche fertig: Paket 5 (unteres Bedienfeld im Total-War-Stil, Rekrutierung nach Kategorien) + neues Titelbild.~~ erledigt 2026-11-17 (6b357f6 Bedienfeld A1 und Nachschub B, 708f955 Titelbild).
+2. ~~Restliche Grundregeln aus Etappe 5~~ erledigt: Aufstellungsphase und Schusswinkel (fb74781); Bewegungs- und Aktionspunkte getrennt (16fa417, KI f5735db); Draht schneiden nur Spezialisten; Festfahren seltener; Bohrkoloss-Flammenstoß; „Fahrzeuge auf 2 Feldern“ entschieden: bleiben auf 1 Feld; Geländehinweis beim Ziehen erledigt 2026-11-18 (Leiste unter dem Zielfeld mit ▲ Vor- und ▼ Nachteilen für die gewählte Einheit, ui.js `feldWirkung`).
 3. ~~KI-Durchsicht: nutzt sie alle neuen Befehle sinnvoll, ist sie nicht zu defensiv, spielt sie den Grauwall gut.~~ erledigt 2026-11-17, Bericht entwurf/KI_DURCHSICHT.md (Grauwall 60 %; offen: Gas selten, Kasematten/Front einseitig → Punkt 5).
-4. Grauwall komplett: Gelände, Effekte, Ton, Musik (Suno: Titelthema + Schlachtmusik), Hilfe/Regeltexte auf neuem Stand.
-5. Balance (Etappe 7): Anführer-Befehle, Kolosse (84 % Verluste), Kosten, Siegquote um 50 %. Notizen aus der KI-Durchsicht (2026-11-17): Kasematten (0 %) und Grauwall-Front (6 %) für das Konkordat kaum zu gewinnen – liegt an den Karten, nicht an der KI; Lerne (90 %) fast zu leicht; Gas setzt die KI nur selten ein.
-6. Danach Content: weitere Karten, Missionstypen, KI-Charaktere, Einheitengrenzen je Typ, Blaue Legion, Feldzug.
+4. ~~Grauwall komplett: Gelände, Effekte, Ton, Musik, Hilfe/Regeltexte auf neuem Stand.~~ erledigt 2026-11-17: Gelände-Bausteine, Effektbögen, Ton-Pakete 4/6, eigene Musik (7edff61), Sprüche und Stimmfilter, Hilfe- und Regeltexte (ba527e5). Kleinkram offen: Baumkronen am Kartenrand noch Platzhalter; Stimmen selbst anhören (Spieltest-Liste Punkt 51).
+5. ~~Balance (Etappe 7): Anführer-Befehle, Kolosse, Kosten, Siegquote um 50 %.~~ erledigt 2026-11-17/18 (f00352b, 6e54782, d033826; Bericht entwurf/BALANCE.md): Grauwall 48 % über 800 Schlachten, Landkoloss-Verluste 88 → 46 %, Gas für die KI, Nebelwand neu, zwei Kostenrunden. Bewusst offen: Konkordat-Spezialisten messen für die KI schwächer als ihr Preis; alte Karten (Kasematten 1 %, Front 15 %, Lerne 94 %) erst beim Neubau.
+6. **Als Nächstes:** Content – weitere Karten (zuerst die nächste Karte auf Gelände-Bausteine umstellen; fehlende Geländearten Kirche, Fabrik, Bahn, Furt), Missionstypen, KI-Charaktere, Einheitengrenzen je Typ, Blaue Legion, Feldzug.

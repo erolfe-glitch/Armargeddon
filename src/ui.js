@@ -993,15 +993,16 @@ function drawGround(g, s) {
     for (const [, t] of targets) if (t.kind === 'fire' || t.both) { const u = unitById(t.id), [x, y] = center(u.c, u.r); MARKQ.push(() => brackets(x, y - s * 0.38, s * 0.6, '#C2A461')); }
     // Vorschau vom erreichbaren Feld unter Maus/Finger
     { const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]), pv = hk != null && !abilMode && reach.has(hk) && !(hoverHex[0] === sel.c && hoverHex[1] === sel.r) && previewFrom(hoverHex[0], hoverHex[1]);
-      if (pv) { const [hx, hy] = center(pv.c, pv.r);
-        MARKQ.push(() => { for (const f of pv.threat) { const [x, y] = center(f.c, f.r); if (VIEW.up && !VIEW.up(x, y)) continue; g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
+      if (pv) { const [hx, hy] = center(pv.c, pv.r);   // Zeichnen auf ctx (beim Abarbeiten von MARKQ die Hauptfläche), nicht auf das Weltbild g – sonst unsichtbar in der neuen Ansicht
+        MARKQ.push(() => { const g = ctx; for (const f of pv.threat) { const [x, y] = center(f.c, f.r); if (VIEW.up && !VIEW.up(x, y)) continue; g.beginPath(); gEllipse(g, x, y, s * 0.76, s * 0.76); g.lineWidth = Math.max(4, s * 0.075); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.stroke();
           g.setLineDash([s * 0.09, s * 0.07]); g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = RANGE_COL; g.stroke(); g.setLineDash([]); } });   // Gegner mit Schussfeld auf das Feld: gestrichelt umrandet (obenauf, sonst verdeckt der Bodenschatten)
-        MARKQ.push(() => { g.save(); g.lineCap = 'round';
+        MARKQ.push(() => { const g = ctx; g.save(); g.lineCap = 'round';
           for (const f of pv.hit) { const [x, y] = center(f.c, f.r); g.setLineDash([s * 0.06, s * 0.09]); g.strokeStyle = 'rgba(18,13,11,0.6)'; g.lineWidth = Math.max(3.5, s * 0.05); g.beginPath(); pathLine(g, hx, hy - s * 0.3, x, y - s * 0.3); g.stroke();
             g.strokeStyle = 'rgba(194,164,97,0.95)'; g.lineWidth = Math.max(1.6, s * 0.025); g.stroke(); g.setLineDash([]); drawSym(g, UPI.s_zielen, x + s * 0.42, y - s * 0.95, s * 0.19); }
           g.restore();
           if (pv.threat.length) warnMark(hx - s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.22, pv.threat.length);
-          if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.36, pv.cov); });
+          if (pv.cov) drawShield(g, hx + s * 0.5, hy - s * kAt(hx, hy) * 0.92, s * 0.36, pv.cov);
+          drawFeldWirkung(g, hx, hy + s * kAt(hx, hy) * 0.42, pv.fx, s); });   // Geländehinweis unter dem Feld
         MARKS.push({ x0: hx - s * 0.8, y0: hy - s * kAt(hx, hy) * 0.92 - s * 0.3, x1: hx + s * 0.8, y1: hy - s * kAt(hx, hy) * 0.92 + s * 0.3, u: sel, kind: 'pv', pv }); } }
   }
   // MG-Schussfächer: gewähltes MG oder feindliches MG unter Maus/Finger
@@ -1333,6 +1334,42 @@ function pathHazard(u, c, r) {
   if ((VIS.fires || []).some(k => k.c === c && k.r === r)) return 'feuer';
   if (T.cls !== 'walker' && E.openGround(G, c, r) && G.units.some(m => m.side !== u.side && E.active(m) && TYPES[m.type].mg && m.sperr > 0 && m.setup && !m.supp && E.dist(m.c, m.r, c, r) <= E.rangeOf(G, m, c, r) && E.hasLOS(G, m.c, m.r, c, r) && E.inFan(G, m, c, r))) return 'mg';
   return null;
+}
+// Geländehinweis beim Ziehen (Fahrplan 2): Vor- und Nachteile des Zielfelds für die gewählte Einheit.
+// Liste von { gut, kurz, lang }; kurz steht in der Leiste unter dem Feld, lang im Tooltip der Vorschau.
+function feldWirkung(u, c, r) {
+  const h = G.map[c] && G.map[c][r]; if (!h) return [];
+  const T = TYPES[u.type], wk = T.cls === 'walker', out = [], tags = [];
+  const f0 = E.defMods(G, { ...u, c, r, dug: false, holdB: false }, 'front', true, tags);
+  for (const tg of tags) { const m = /×(\d+)(?:,(\d+))?/.exec(tg); if (!m || (wk && h.t === 'wire')) continue;   // Fahrzeuge walzen den Draht nieder: kein Abzug const f = parseFloat(m[1] + '.' + (m[2] || '0'));
+    out.push({ gut: f > 1, kurz: tg.replace(/^im /, ''), lang: `Abwehr ${f > 1 ? 'besser' : 'schlechter'}: ${tg} gegen Beschuss von vorn${h.t === 'crater' || h.t === 'bahn' ? '' : ' und Nahkampf'}.` }); }
+  if (f0 === 1 && (h.t === 'open' || h.t === 'mud')) out.push({ gut: false, kurz: 'keine Deckung', lang: 'Offenes Gelände: keine Deckung. MG-Sperrfeuer trifft hier.' });
+  if ((h.t === 'trench' || h.t === 'bunker') && !wk) out.push({ gut: true, kurz: 'halber Moralverlust', lang: 'Graben und Bunker: nur halber Moralverlust bei Treffern (nicht gegen Flammen).' });
+  if (h.t === 'wire') {
+    if (wk) out.push({ gut: true, kurz: 'walzt Draht nieder', lang: 'Fahrzeuge und Schreiter walzen den Draht nieder, das Feld wird frei.' });
+    else if (E.wireProof(T)) out.push({ gut: true, kurz: 'Draht: unverletzt', lang: 'Gepanzerte Infanterie geht unverletzt und ohne Halt durch den Draht.' });
+    else out.push({ gut: false, kurz: `Draht −${fmt(P.WIRE_DMG)}, Halt`, lang: `Stacheldraht: etwa −${fmt(P.WIRE_DMG)} Stärke, die Bewegung endet. Wer drinsteht, nimmt doppeltes MG-Feuer.` }); }
+  if (wk && (h.t === 'mud' || h.t === 'sumpf')) { const q = Math.round(P.STUCK * (h.t === 'sumpf' ? 2 : 1) * 100);
+    out.push({ gut: false, kurz: `Festfahren ${q} %`, lang: `${E.TERRAIN[h.t].name}: ${q} % Gefahr, sich festzufahren (${P.PANNE_RUNDEN} Runden aus).` }); }
+  if ((VIS.fires || []).some(k => k.c === c && k.r === r)) { const d = P.FIRE_DMG * (wk ? P.FIRE_WALKER : 1);
+    out.push({ gut: false, kurz: `Feuer −${fmt(d)}`, lang: `Brennendes Feld: etwa −${fmt(d)} Stärke beim Betreten und zu Beginn des eigenen Zugs.` }); }
+  if ((VIS.clouds || []).some(k => k.c === c && k.r === r)) out.push(E.gasSafe(G, u) ? { gut: true, kurz: 'gasfest', lang: 'Gaswolke: diese Einheit ist geschützt.' }
+    : { gut: false, kurz: 'Gas', lang: 'Gaswolke: Giftschaden, der nach dem Verlassen noch zwei Runden nachwirkt.' });
+  if (h.obj && T.cls !== 'art' && (G.ctrl || {})[h.obj] !== u.side) out.push({ gut: true, kurz: 'Zielfeld erobern', lang: 'Zielfeld: wer es betritt, hält es und bekommt dafür Siegpunkte.' });
+  return out;
+}
+// Leiste unter dem Zielfeld: ▲ Vorteil (Messing), ▼ Nachteil (Ochsenblut hell); Pergament-freie Tintentafel mit Rostrand (STYLE.md)
+function drawFeldWirkung(g, x, y, list, s) {
+  if (!list.length) return; if (VIEW.up) VIEW.up(x, y);
+  const fs = Math.round(Math.max(14, s * 0.2)), lh = fs * 1.3, pad = fs * 0.45, tri = fs * 0.42; g.save();
+  g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; g.textBaseline = 'middle'; g.textAlign = 'left';
+  const w = Math.max(...list.map(it => g.measureText(it.kurz).width)) + tri * 2 + fs * 0.4 + pad * 2, hh = list.length * lh + pad * 0.8, x0 = x - w / 2;
+  g.beginPath(); g.roundRect ? g.roundRect(x0, y, w, hh, fs * 0.25) : g.rect(x0, y, w, hh); g.fillStyle = 'rgba(18,13,11,0.86)'; g.fill(); g.lineWidth = Math.max(1.5, fs * 0.12); g.strokeStyle = '#66483A'; g.stroke();
+  list.forEach((it, i) => { const cy = y + pad * 0.4 + lh * (i + 0.5), tx = x0 + pad + tri;
+    g.beginPath(); if (it.gut) { g.moveTo(tx, cy - tri); g.lineTo(tx + tri, cy + tri * 0.75); g.lineTo(tx - tri, cy + tri * 0.75); } else { g.moveTo(tx, cy + tri); g.lineTo(tx + tri, cy - tri * 0.75); g.lineTo(tx - tri, cy - tri * 0.75); }
+    g.closePath(); g.fillStyle = it.gut ? '#C2A461' : '#A8473A'; g.fill(); g.lineWidth = 1; g.strokeStyle = '#120D0B'; g.stroke();
+    g.fillStyle = '#F0EDE1'; g.fillText(it.kurz, tx + tri + fs * 0.4, cy + fs * 0.04); });
+  g.restore();
 }
 // Schwebende Texte (Schadenszahlen, Meldungen). bb: neue Ansicht, stellt je Text den Aufsteller am Fußpunkt ein
 function drawFloaters(g, s, bb) {
@@ -2286,6 +2323,7 @@ function markTips(m) {
   if (m.kind === 'pv') { const pv = m.pv, cn = ['', 'Bronze', 'Silber', 'Gold'][pv.cov];
     const n = reach.get(E.key(pv.c, pv.r));
     return [pv.threat.length && { name: `Warndreieck: ${pv.threat.length} ${pv.threat.length === 1 ? 'Schütze' : 'Schützen'}`, text: `So viele Gegner können auf dieses Feld schießen (rot umrandet).` },
+      pv.fx.length && { name: E.TERRAIN[G.map[pv.c][pv.r].t].name + ' – ' + pv.fx.map(it => (it.gut ? '▲ ' : '▼ ') + it.kurz).join(', '), text: pv.fx.map(it => it.lang).join(' ') },
       { name: 'Von diesem Feld', text: `${pv.hit.length ? `${pv.hit.length} ${pv.hit.length === 1 ? 'Ziel' : 'Ziele'} in Reichweite (Messinglinien).` : 'Kein Ziel in Reichweite.'} ${pv.cov ? `Schild: Deckung ${cn}.` : 'Keine Deckung.'}` },
       n && (n.march ? { name: `Marsch – noch ${n.rest} BP, keine Aktion mehr`, text: `Stiefel mit Flügeln: die Aktion wird zu +50 % Bewegung, Weg ${n.cost}. Danach kann die Einheit in dieser Runde nicht mehr schießen oder handeln.` }
         : { name: `Stiefel: Weg ${n.cost} · noch ${n.rest} BP${n.retreat ? ' · Rückzug' : ''}`, text: n.retreat ? `Rückzug aus der Feindberührung, kostet die Aktion und alle Bewegungspunkte.${E.freeBlows(G, sel).length ? ` Freischlag: jeder angrenzende Nahkämpfer trifft einmal (je etwa −10 Stärke, wie Stacheldraht), zusammen ${fbTxt(sel).replace(' · Freischlag ', '')} Stärke (keine Moral).` : ' Kein Freischlag: kein Gegner daneben kann zuschlagen.'}` : `Bewegung bis hierher für 1 Aktionspunkt.${n.via ? ' Über den Wegpunkt.' : ' Umschalt+Klick (Finger: lange drücken) setzt einen Wegpunkt.'}` })]; }
@@ -2406,7 +2444,7 @@ function previewFrom(c, r) {
     if (F.cls === 'art') return d >= 1 && d <= F.rng && (E.isDirect(G, f, c, r) || (d >= P.ART_MIN && E.spotted(G, f.side, c, r)));
     if (!(F.rng > 1) || E.immune(F, T0) || (T0.hidden && !(sel.revealed > 0) && d > 1)) return false;
     return d <= E.rangeOf(G, f, c, r) && E.hasLOS(G, f.c, f.r, c, r); });
-  pvCache = { id, c, r, hit, threat, cov: E.coverOf(G, ghost).tier }; return pvCache;
+  pvCache = { id, c, r, hit, threat, cov: E.coverOf(G, ghost).tier, fx: feldWirkung(sel, c, r) }; return pvCache;
 }
 function computeOptions() {
   reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sightSet = new Set(); scoutSet = new Set();
@@ -3454,7 +3492,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

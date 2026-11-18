@@ -3,33 +3,39 @@
 Ziel: Jeder Trupp bekommt eine klare Aufgabe. Doppelte Rollen werden zusammengelegt oder gestrichen.
 Bilder werden nur noch für Einheiten gemalt, die bleiben.
 
-Stand: 56 Einheiten (28 je Seite). Bild ✓ = Figurenbogen im neuen Stil vorhanden, – = fehlt.
+**Stand 2026-11-18:** 50 Einheiten (25 je Seite, `E.ROSTER`). Alle haben einen Figurenbogen im neuen Stil (`FIGMAP` in ui.js, Bögen in `src/figs.js`). Die Blaue Legion (zweites Bilderset des Konkordats, gleiche Werte) zeigt weiter die alten Bilder aus `art.js`.
+(KM) = nur mit dem Startmenü-Schalter „Kampfmaschinen“. Kosten in Klammern (aus `costParts`, Stand nach der zweiten Kostenrunde).
 
 ## Einheiten nach Rolle
 
 | Rolle | Konkordat (A) | Aschenwacht (D) |
 |---|---|---|
-| Führung | Hauptmann ✓, General ✓ | Hauptmann ✓, General ✓, Bannerträger ✓ |
-| Aufklärung / Befehle | Meldegänger mit Hund ✓, Fernsprechtrupp –, Ballonbeobachter –, Radfahrer-Trupp – | Signaltrupp –, Scheinwerfer-Trupp – |
-| Linieninfanterie | Schützenkohorte ✓ | Aschengrenadiere ✓ |
-| Sturm / Nahkampf | Grabenräumer ✓ | Sturmbrecher ✓, Eingreiftrupp – |
-| Gepanzerte Infanterie | Stahlgänger-Trupp – | Panzerknechte – |
-| Schild / schwer | Schildwall ✓ | Schwere Grabenwacht ✓ |
-| Scharfschützen | Scharfschütze ✓ | Pirschjäger ✓ |
-| Maschinengewehr | Mahlwerk-Trupp ✓ | Sensenwerk-Trupp ✓ |
-| Artillerie | Donnerrohr-Batterie ✓, Feldkanone ?, Grabenmörser ✓ | Grabengeschütz ✓, Minenwerfer ✓ |
-| Werfer | Flammentrupp ✓, Rauchwerfer ✓ | Brandwerfer ✓, Panzerbüchsen-Trupp ✓ |
-| Pioniere / Technik | Graben-Pioniere ✓, Mineure –, Sprengtrupp –, Werkstatt-Trupp – | Drahtpioniere ✓, Minenleger –, Gasschutz-Trupp –, Munitionsträger – |
-| Sanitäter | Feldscher ✓ | Aschenpfleger ✓ |
-| Reiter | Lanzenreiter ✓ | (Bild Aschenwacht-Reiter vorhanden, keine Einheit) |
-| Kampfmaschinen | Landkoloss ✓, Turmschreiter –, Ordensschreiter –, Kreuzschreiter – | Bohrkoloss ✓, Eisenknecht –, Sägeschreiter –, Klauenschreiter – (Bild Sturmpanzer vorhanden, keine Einheit) |
+| Führung | Hauptmann (45), General (70, Pflicht) | Hauptmann (45), General (70, Pflicht), Bannerträger (40) |
+| Befehle / Beobachter | Meldegänger mit Hund (20), Fernsprechtrupp (20, Feuerschlag), Ballonbeobachter (20, Ziel markieren) | Signaltrupp (15, Ziel markieren) |
+| Linieninfanterie | Schützenkohorte (40) | Aschengrenadiere (30) |
+| Sturm / Nahkampf | Grabenräumer (50, Draht schneiden) | Sturmbrecher (100, Draht schneiden), Eingreiftrupp (100) |
+| Gepanzerte Infanterie | Stahlgänger-Trupp (65, KM, Sturmlauf) | Panzerknechte (65, KM, Sturmlauf) |
+| Schild / schwer | Schildwall (35, Schilde vor) | Schwere Grabenwacht (35, Schilde vor) |
+| Scharfschützen | Scharfschütze (45) | Pirschjäger (60) |
+| Maschinengewehr | Mahlwerk-Trupp (35) | Sensenwerk-Trupp (40) |
+| Artillerie | Donnerrohr-Batterie (50, mittel), **Feldkanone (40, leichte Artillerie, direkter Schuss)**, Grabenmörser (25) | Grabengeschütz (60, mittel, direkter Schuss), Minenwerfer (25) |
+| Werfer / Panzerabwehr | Flammentrupp (40), Rauchwerfer-Trupp (25, Nebelwand) | Brandwerfer (45), Panzerbüchsen-Trupp (50) |
+| Pioniere / Technik | Graben-Pioniere (45, Haftladung, Draht schneiden), Mineure (30, Stollen), Versorgungstrupp (40) | Drahtpioniere (35, Draht oder Minen, Draht schneiden), Gasschutz-Trupp (30), Versorgungstrupp (40) |
+| Sanitäter | Feldscher (20) | Aschenpfleger (20) |
+| Reiter | Lanzenreiter (30) | Sprenglanzen-Reiter (25) |
+| Fahrzeuge | Landkoloss (70, Seiten-MG) | Sturmpanzer (90, Breitseite) |
+| Kampfmaschinen (KM) | Turmschreiter (70, Turm-MG), Ordensschreiter (75), Kreuzschreiter (80, Löwenmaul-Kanone) | Bohrkoloss (160, Flammenstoß), Eisenknecht (150), Sägeschreiter (105), Klauenschreiter (105) |
+
+Gestrichen seit der Durchsicht: Radfahrer-Trupp, Scheinwerfer-Trupp (Gruppe 1), Grabenkämpfer, Kettenritter, Schildträger (Gruppe 3), Granatwerfer-Trupp (Gruppe 4), Sprengtrupp, Minenleger (Gruppe 5). Werkstatt-Trupp und Munitionsträger heißen jetzt beide „Versorgungstrupp“.
+
+Offen für später (IDEEN.md): leichte Artillerie für die Aschenwacht als Gegenstück zur Feldkanone, schwere Artillerie für beide Seiten, zweites Fahrzeug für das Konkordat.
 
 ## Wünsche und Beobachtungen (Enrico)
 
 - **Aufklärer doppeln sich** (z. B. Ballon und Fernsprechtrupp: beide sehen weit und lenken Artillerie) und haben im Spiel oft nichts zu tun.
 - **MG-Sperrfeuer aktiv befehlen:** Das MG soll nicht mehr von selbst feuern. Man gibt ihm den Befehl „Sperrfeuer", wenn es das darf. Hat es sich zu viel bewegt, beendet man es mit dem Häkchen „Erledigt".
 
-## Wie es jetzt im Code ist
+## Wie es im Code war (Stand vor Gruppe 1, 2026-11-16 – überholt, nur zur Nachvollziehbarkeit)
 
 - MG (aufgebaut) schießt einmal pro gegnerischer Runde **von selbst** auf den ersten Gegner, der sich in seinem Schussfeld über offenes Gelände bewegt.
 - Andere Fernkämpfer (Reichweite ≥ 2) haben den Befehl **„Feuerbereitschaft"**: kostet alle Punkte, nur ohne Bewegung und ohne Angriff, schießt einmal mit Schaden ×0,8. MG sind davon ausgenommen.
@@ -75,7 +81,7 @@ Jetzt im Code: Draht macht keinen Schaden (beendet nur die Bewegung, Abwehr ×0,
 - Neuer Ton beim Betreten von Stacheldraht: `latch-metallic` (Platz `drahtlatch`).
 
 ## Entscheidungen – Gruppe 4: Artillerie und Werfer (2026-11-17)
-- **Gestrichen:** Feldkanone, Granatwerfer-Trupp.
+- **Gestrichen:** Feldkanone, Granatwerfer-Trupp. *(Nachtrag: Die Feldkanone wurde doch nicht gestrichen, sie bleibt als leichte Artillerie des Konkordats; siehe „umgesetzt“ unten.)*
 - **Donnerrohr-Batterie:** bekommt den direkten Schuss bis 3 Felder (×2,5 gegen Kolosse/Kampfmaschinen) wie das Grabengeschütz. Beide Seiten haben damit je ein schweres Geschütz und einen Werfer.
 - **Grabenmörser (Konkordat):** leicht, darf in derselben Runde ziehen und feuern (wie bisher).
 - **Minenwerfer (Aschenwacht):** schwere Mine ×1,5 Schaden, zerstört Draht und Barrikaden im Zielfeld, darf aber nicht in derselben Runde ziehen und feuern.
