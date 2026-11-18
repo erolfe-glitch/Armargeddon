@@ -39,6 +39,9 @@ NAMES['bogen4c_symbole'] = ['s_panzerbrecher', 's_durchsickern', 's_niedergehalt
                             's_festgefahren', 's_walze']
 # Stellungswechsel (2026-11-16): MG aufbauen, MG abbauen, Aufprotzen, Abprotzen (2×2, Pfeile gehören zum Symbol)
 NAMES['bogen6_stellung'] = ['s_mg_auf', 's_mg_ab', 's_aufprotzen', 's_abprotzen']
+# Zustandszeichen über den Köpfen (2026-11-19, 4×4, Nahtschnitt): ersetzen die Code-Platzhalter in ui.js (kzMalen); k_reserve nur abgelegt
+NAMES['bogen7_zustandszeichen'] = ['k_blitze', 'k_tropfen', 'k_schweiss', 'k_angst', 'k_gas', 'k_gift', 'k_feuer', 'k_panne',
+                                   'k_klingen', 'k_wut', 'k_auge', 'k_pfeil', 'k_garbe', 'k_funkeln', 'k_kreuz', 'k_reserve']
 # Einzelsymbol Schaufel (2026-11-18): Eingraben (Knopf und Zustandsmarke), ersetzt dort die Spitzhacke
 NAMES['symbol_schaufel'] = ['s_schaufel']
 # Fraktionswappen: links Emblem vor Flagge, rechts Emblem allein
@@ -58,7 +61,7 @@ GRID = {'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole':
 # Bögen mit Nahtschnitt (wie figure_cut): je Rasterlinie eine Naht durch den freien Hintergrund (geringste Deckung),
 # die Zellen dazwischen sind die Teile. Splitter und Funken bleiben so sicher beim eigenen Symbol.
 # bogen3c_symbole (2026-11-18): neue Fassung von bogen3b, gleiche Anordnung, ersetzt sie im Spiel.
-SEAM = {'bogen3c_symbole': (4, 4)}
+SEAM = {'bogen3c_symbole': (4, 4), 'bogen7_zustandszeichen': (4, 4)}
 
 
 def naht(cost, pos, band):

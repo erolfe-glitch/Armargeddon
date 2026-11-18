@@ -6,6 +6,7 @@ Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über all
 - `bogen4a_symbole`: drahtschere, drahtrolle, auge, haken, drehpfeil, mg_dreibein, sperrfeuer, lafette, flamme
 - `bogen4b_symbole`: meldehund, schraubenschluessel, nebel, spitzhacke, sprengladung, tellermine, scheinwerfer, gasmaske, munitionskiste
 - `symbol_schaufel` (Einzelsymbol, 2026-11-18): schaufel
+- `bogen7_zustandszeichen` (2026-11-19, Kopfzeichen über den Figuren, Schlüssel k_*): blitze, tropfen, schweiss (Staubwolke), angst, gas, gift, feuer, panne, klingen, wut, auge, pfeil, garbe, funkeln (Stern), kreuz, reserve (nur abgelegt)
 - `bogen4c_symbole`: panzerbrecher, durchsickern, niedergehalten, flucht, gebrochen (vorläufig), festgefahren, walze
 
 „– (Text)“ heißt: reiner Textknopf, ein Symbol ist nicht nötig.

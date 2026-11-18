@@ -12,7 +12,7 @@ const UIM = {};
 { const A = window.UIART || {}; for (const k in A) { document.documentElement.style.setProperty('--ui-' + k, `url("${A[k]}")`); const im = new Image(); im.onload = () => UIM[k] = im; im.src = A[k]; } }
 // Panel-Grafiken (Symbole, Deckungsschilde) auch fürs Zeichnen auf der Karte
 const UPI = {};
-{ const A = window.UIPANEL || {}; for (const k in A) if (/^(s_|cov|orden|muenze)/.test(k)) { const im = new Image(); im.onload = () => UPI[k] = im; im.src = A[k]; } }
+{ const A = window.UIPANEL || {}; for (const k in A) if (/^(s_|k_|cov|orden|muenze)/.test(k)) { const im = new Image(); im.onload = () => UPI[k] = im; im.src = A[k]; } }
 const $ = id => document.getElementById(id);
 const fmt = x => String(Math.max(0, Math.round(x * 10)));   // Anzeige in ganzen Zahlen: Stärke 10,0 → 100, Schaden 0,7 → 7 (Wunsch des Nutzers)
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
@@ -1435,6 +1435,28 @@ function kzAbzeichen(g, R, sym, ring, f) {   // rundes Abzeichen wie die Ringmar
 }
 function kzBlitz(g, x, y, k, rot) { const P0 = [[-0.22, -0.62], [0.24, -0.62], [0.04, -0.12], [0.3, -0.12], [-0.2, 0.72], [-0.02, 0.12], [-0.3, 0.12]];
   g.save(); g.translate(x, y); g.rotate(rot); g.beginPath(); P0.forEach(([a, b], i) => i ? g.lineTo(a * k, b * k) : g.moveTo(a * k, b * k)); g.closePath(); kzFlaeche(g, k * 1.2, '#FFD24A'); g.restore(); }
+// Gemalte Kopfzeichen (bogen7_zustandszeichen, 2026-11-19): Bild UPI['k_<art>'] mit kleiner Eigenbewegung je Zeichen (KZ_BEW);
+// Ablauf (Aufspringen, Pulsieren, Steigen) wie gehabt. Die Code-Zeichnungen in KZ_ART bleiben nur als Ersatz, falls ein Bild fehlt.
+const KZ_BEW = {
+  blitze: (g, T) => { if (Math.floor(T / 85) % 6 === 0) { g.translate(1.5, -1.5); g.rotate(0.12); } },   // zuckt ab und zu
+  tropfen: (g, T) => g.translate(0, ((T / 1300) % 1) * 4 - 2),   // rinnt leicht herab
+  schweiss: (g, T) => g.rotate(Math.sin(T / 160) * 0.06),   // Staubwolke wackelt
+  angst: (g, T) => g.translate(Math.sin(T / 22) * 1.6, 0),   // zittert schnell
+  gas: (g, T) => g.translate(0, -Math.abs(Math.sin(T / 420)) * 3),   // Bläschen steigen
+  gift: (g, T) => g.rotate(Math.sin(T / 480) * 0.12),   // pendelt
+  feuer: (g, T) => g.scale(1 + 0.03 * Math.sin(T / 70), 1 + 0.07 * Math.sin(T / 85) + 0.03 * Math.sin(T / 37)),   // flackert
+  panne: (g, T) => g.rotate(Math.floor(T / 420) * 0.12 + (T % 420 < 90 ? 0.05 : 0)),   // Zahnrad ruckelt
+  klingen: (g, T) => g.rotate(Math.floor(T / 300) % 2 ? 0.08 : -0.08),   // klirren
+  wut: (g, T) => { const k = 1 + 0.1 * Math.max(0, Math.sin(T / 120)); g.scale(k, k); },   // pocht
+  auge: (g, T) => { const b = T % 1700; if (b < 130) g.scale(1, Math.max(0.1, Math.abs(1 - b / 65))); },   // blinzelt
+  pfeil: (g, T) => g.translate(0, -Math.abs(Math.sin(T / 260)) * 3),   // wippt nach oben
+  garbe: (g, T) => g.translate(Math.sin(T / 45) * 1.2, 0),   // rattert
+  funkeln: (g, T) => { const k = 0.9 + 0.12 * Math.sin(T / 160); g.rotate(T / 2400); g.scale(k, k); },   // dreht und funkelt
+  kreuz: () => {},
+};
+function kzMalen(g, art, R, T) { const im = UPI['k_' + art];
+  if (im) { const k = Math.min(R * 1.7 / im.naturalHeight, R * 2.1 / im.naturalWidth), h = im.naturalHeight * k, w = im.naturalWidth * k;   /* höchstens 0,34 × 0,42 Feldradien */ g.save(); (KZ_BEW[art] || (() => {}))(g, T); g.drawImage(im, -w / 2, -h / 2, w, h); g.restore(); return; }
+  KZ_ART[art].draw(g, R, T); }
 const KZ_ART = {
   blitze: { name: 'Blitze', draw(g, R, T) {   // kreisen über dem Kopf, zucken ab und zu
     const o = [0, 1, 2].map(i => { const a = T / 520 + i * 2.094; return { i, a, x: Math.cos(a) * R * 1.05, y: Math.sin(a) * R * 0.32 }; }).sort((p, q) => p.y - q.y);
@@ -1492,7 +1514,7 @@ function drawKZ(g, s, bb) {
     const top = d.fbx && d.fbx.length ? Math.min(...d.fbx.map(q => q[1])) : -s * 1.4, p = kzPose(k.mode, k.t);
     if (bb && !bb(d.x, d.y)) continue;
     g.save(); g.translate(d.x, d.y + top - s * 0.25 + p.dy * s); g.scale(p.sc, p.sc); g.globalAlpha = Math.max(0, p.a);
-    try { KZ_ART[k.art].draw(g, s * 0.2, now + k.id * 137); } finally { g.restore(); }
+    try { kzMalen(g, k.art, s * 0.2, now + k.id * 137); } finally { g.restore(); }
   }
   g.globalAlpha = 1;
 }
@@ -1511,8 +1533,8 @@ function kzRunde(sd) { let n = 0; for (const u of G.units) if (u.side === sd) { 
 // Legende im Regeln-Fenster (Hilfe ?): echte Zeichen mit ihrer Bewegung, laufen in einer Schleife, solange das Fenster offen ist
 const KZ_LEG = [
   ['blitze', 'puls', 'Niedergehalten', 'Liegt unter Beschuss flach. Steigt auf bei Schreck oder Panik.'],
-  ['schweiss', 'puls', 'Flieht', 'Moral gebrochen. Steigt auf, wenn die Einheit zurückweicht.'],
-  ['tropfen', 'puls', 'Moral wankt', 'Beim nächsten Treffer weicht sie zurück (nur beim Anwählen).'],
+  ['schweiss', 'puls', 'Flieht', 'Moral gebrochen: Staubwolke, die Einheit läuft davon.'],
+  ['tropfen', 'puls', 'Moral wankt', 'Beim nächsten Treffer weicht sie zurück (beim Anwählen). Steigt auf beim Zurückweichen und Rückzug.'],
   ['angst', 'puls', 'Verängstigt', 'Durch das Löwengebrüll (noch ohne Wirkung, Test).'],
   ['gas', 'puls', 'Im Gas', 'Steht in der Gaswolke.'],
   ['gift', 'puls', 'Vergiftet', 'Verliert noch einige Runden Stärke und Moral.'],
@@ -1534,7 +1556,7 @@ function kzLegende() {
   const lauf = () => { if ($('rules').hidden) return; const T = performance.now();
     cvs.forEach((c, i) => { const q = c.getContext('2d'), m = c.dataset.m, D = KZ_DUR[m] + 250, t = (T - t0 + i * 170) % D, p = kzPose(m, Math.min(t, KZ_DUR[m] - 1));
       q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, c.width, c.height); if (t >= KZ_DUR[m]) return;
-      q.translate(80, 104 + p.dy * 70); q.scale(p.sc, p.sc); q.globalAlpha = Math.max(0, p.a); try { KZ_ART[c.dataset.kz].draw(q, 54, T + i * 137); } catch (e) {} q.globalAlpha = 1; });
+      q.translate(80, 104 + p.dy * 70); q.scale(p.sc, p.sc); q.globalAlpha = Math.max(0, p.a); try { kzMalen(q, c.dataset.kz, 54, T + i * 137); } catch (e) {} q.globalAlpha = 1; });
     kzLegLauf = requestAnimationFrame(lauf); };
   lauf();
 }
@@ -2102,7 +2124,7 @@ async function playEvent0(e) {
   switch (e.t) {
     case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else playSound(marschU === e.u ? 'marschtritt' : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } }   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht) await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
-    case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'schweiss', 'steig'); break;
+    case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'tropfen', 'steig'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
@@ -2362,7 +2384,7 @@ async function playEvent0(e) {
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
       rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
     case 'march': marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)
-    case 'retreatmove': kz(e.u, 'schweiss', 'steig'); break;
+    case 'retreatmove': kz(e.u, 'tropfen', 'steig'); break;
     case 'freeblow': { const a = DU.get(e.a), d = DU.get(e.u); if (!a || !d) break; const fl = d.x < a.x; a.face = d.x >= a.x ? 0 : 3;   // Freischlag: kurzer Nahkampf-Effekt am Weichenden
       a.lunge = { dx: (d.x - a.x) * 0.18, dy: (d.y - a.y) * 0.18 }; { const sd = unitById(e.a).side; playSound(sd === 'A' ? 'nahA' : 'nahD', 0.45, sd); }
       if (!fx('nahkampf', Math.random() < 0.5 ? 0 : 3, d.x + (fl ? 1 : -1) * L.s * 0.1, d.y - L.s * 0.45, { anchor: 'mitte', life: 18, fadeOut: 0.6, grow: 0.2, flip: fl, mul: 0.7 })) boom(d.x, d.y - L.s * 0.3, L.s * 0.3, 'dust');
@@ -3688,7 +3710,7 @@ window.__dbg = { PT, portraitKey, feldWirkung, get MARKS() { return MARKS.map(m 
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

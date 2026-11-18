@@ -65,6 +65,9 @@ PARTS.update({
     'txBronze': ('texturen/bronze', 496), 'txEisen': ('texturen/eisen', 496), 'txHolz': ('texturen/holz', 496), 'txPerg': ('texturen/pergament', 496),
     'r9': ('texturen/rahmen9', 524), 't9': ('texturen/tafel9', 542), 'l9': ('texturen/leiste9', 1951), 'p9': ('texturen/perg9', 507),
 })
+# Zustandszeichen über den Köpfen (bogen7, 2026-11-19): Schlüssel k_<art> (ohne Reserve)
+for n in ['blitze', 'tropfen', 'schweiss', 'angst', 'gas', 'gift', 'feuer', 'panne', 'klingen', 'wut', 'auge', 'pfeil', 'garbe', 'funkeln', 'kreuz']:
+    PARTS['k_' + n] = (f'bogen7_zustandszeichen/k_{n}', SYM)
 for sheet, names in SYMBOLS.items():
     for n in names:
         PARTS['s_' + n] = (f'{sheet}/s_{n}', SYM)

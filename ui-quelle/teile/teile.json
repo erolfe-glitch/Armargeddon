@@ -378,5 +378,69 @@
  "symbol_schaufel/s_schaufel": [
   942,
   952
+ ],
+ "bogen7_zustandszeichen/k_blitze": [
+  166,
+  179
+ ],
+ "bogen7_zustandszeichen/k_tropfen": [
+  145,
+  172
+ ],
+ "bogen7_zustandszeichen/k_schweiss": [
+  181,
+  173
+ ],
+ "bogen7_zustandszeichen/k_angst": [
+  164,
+  166
+ ],
+ "bogen7_zustandszeichen/k_gas": [
+  177,
+  174
+ ],
+ "bogen7_zustandszeichen/k_gift": [
+  130,
+  198
+ ],
+ "bogen7_zustandszeichen/k_feuer": [
+  155,
+  184
+ ],
+ "bogen7_zustandszeichen/k_panne": [
+  190,
+  190
+ ],
+ "bogen7_zustandszeichen/k_klingen": [
+  186,
+  187
+ ],
+ "bogen7_zustandszeichen/k_wut": [
+  176,
+  174
+ ],
+ "bogen7_zustandszeichen/k_auge": [
+  191,
+  129
+ ],
+ "bogen7_zustandszeichen/k_pfeil": [
+  145,
+  168
+ ],
+ "bogen7_zustandszeichen/k_garbe": [
+  220,
+  169
+ ],
+ "bogen7_zustandszeichen/k_funkeln": [
+  182,
+  188
+ ],
+ "bogen7_zustandszeichen/k_kreuz": [
+  172,
+  172
+ ],
+ "bogen7_zustandszeichen/k_reserve": [
+  182,
+  155
  ]
 }
