@@ -26,30 +26,33 @@ const VOL = { rifle: 0.3, rifle2: 0.3, rifle3: 0.3, rifle4: 0.3, sniper: 0.6, pi
   cannonH: 0.8, launch: 0.42, flame: 0.6, werfer: 0.55, flinte: 0.5, grenade: 0.6, grenade2: 0.6, nahA: 0.45, nahD: 0.45, saebel: 0.55, sword: 0.55, axe: 0.55, slash: 0.55, smash: 0.55, heavy: 0.7,
   boomH: 0.5, einschlagH: 0.8, barrage: 0.7, gas: 0.7, boom: 0.45, boom2: 0.75, blast: 0.8, wasser: 0.6, rauch: 0.5, vorbei: 0.35, einschlag: 0.35, einsturz: 0.7, impact: 0.7, armor: 0.6, feuer: 0.35,
   tank: 0.3, mech: 0.5, crash: 0.65, ueberrollen: 0.5, holzknacken: 0.5, drahtlatch: 0.5, drahtwackeln: 0.4, motor_auswahl: 0.13, snarl: 0.4, tiger: 0.4, gespann: 0.5, wagenknarren: 0.3,
-  schritte: 0.5, steps: 0.5, stepsWald: 0.5, marschtritt: 0.38, dog: 0.5, gallop2: 0.55, pferd_auswahl: 0.26, pferd_unruhe: 0.5, neigh: 0.35, cut: 0.7, clank: 0.4, mgsetup: 0.5, bauen: 0.35,
+  schritte: 0.5, steps: 0.5, stepsWald: 0.5, marschtritt: 0.38, dog: 0.5, gallop2: 0.55, pferd_auswahl: 0.26, pferd_unruhe: 0.5, neigh: 0.35, cut: 0.7, clank: 0.6, mgsetup: 0.5, bauen: 0.35,
   heal: 0.5, reparieren: 0.6, nachladen: 0.55, gasmaske: 0.5, klick: 0.3, ui: 0.3, tick: 0.45, zug_eigen: 0.35, zug_gegner: 0.35, erobert: 0.55, verloren: 0.55, whistle: 0.4, march: 0.45,
   generalhorn: 0.5, horn: 0.5, win: 0.6, pain: 0.45, medic: 0.45, forward: 0.45, stand: 0.45, roar: 0.45, cry: 0.4, scream: 0.4, panic: 0.4, charge: 0.6, comeon: 0.45, husten: 0.4, grunzen: 0.4,
-  robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32 };
+  robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32, abprotzen: 0.6 };
+// Stimmen lauter wie im Spiel (ui.js STIMM_PL/STIMM_VOL, Tonprobe 2026-11-18); Fahrzeuge werden unter einer Stimme auf DUCK_F abgesenkt
+const STIMM_VOL = 1.45, DUCK_F = 0.4, SPRUCH = +(0.34 * STIMM_VOL).toFixed(2), zahlN = v => String(v).replace(".", ",");
+for (const k of ['pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen']) VOL[k] = Math.min(1, +(VOL[k] * STIMM_VOL).toFixed(2));
 const MUSIK = ['musik_titel', 'musik_schlacht', 'musikNiederlage'], SCHLEIFE = ['ambient', 'wetter', ...MUSIK];
 const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4', sniper: 'Scharfschütze', pistol: 'Pistole (Anführer)', semi: 'Halbautomat (Kampfanzüge)', mg: 'Maschinengewehr',
   minigun: 'Drehlauf (Eisenknecht)', buechse: 'Panzerbüchse', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Abschuss schwere Artillerie',
   launch: 'Abschuss Mörser/Minenwerfer', flame: 'Flammenwerfer', werfer: 'Werfer', flinte: 'Flinte', grenade: 'Handgranate', grenade2: 'Handgranate 2', nahA: 'Nahkampf Konkordat', nahD: 'Nahkampf Aschenwacht',
-  saebel: 'Säbel (Reiter)', sword: 'Klinge (Kampfanzüge)', axe: 'Axt (Räumer)', slash: 'Klinge', smash: 'Bohrkoloss schlägt', heavy: 'Schwerer Treffer (Kampfmaschinen)', boomH: 'Einschlag schwere Artillerie',
-  einschlagH: 'Einschlag Einzelschuss Artillerie', barrage: 'Sperrfeuer', gas: 'Gasgranate', boom: 'Granateinschlag', boom2: 'Gerät zerstört', blast: 'Sprengung', wasser: 'Einschlag im Wasser', rauch: 'Nebelwand',
-  vorbei: 'Kugel vorbei', einschlag: 'Kugeleinschlag', einsturz: 'Einsturz', impact: 'Treffer auf Fahrzeug', armor: 'Treffer auf Panzerung', feuer: 'Brennendes Feld (Schleife)', tank: 'Kettenrollen',
-  mech: 'Maschinenschritte (Schreiter)', crash: 'Panne/Festfahren', ueberrollen: 'Überrollen', holzknacken: 'Holzknacken (Draht)', drahtlatch: 'Draht klirrt', drahtwackeln: 'Draht wackelt',
-  motor_auswahl: 'Motor beim Anklicken', snarl: 'Knurren (Klauenschreiter)', tiger: 'Brüllen (Klauenschreiter)', gespann: 'Gespann', wagenknarren: 'Wagen knarrt', schritte: 'Schritte', steps: 'Schlammschritte',
+  saebel: 'Säbel (Reiter)', sword: 'Klinge (Kampfanzüge)', axe: 'Axt (Räumer)', slash: 'Klinge', smash: 'Bohrkoloss schlägt', heavy: 'Schwerer Treffer (Kampfmaschinen)', boomH: 'Einschlag schwere Artillerie (boomH_1 auch Granateinschlag)',
+  einschlagH: 'Einschlag Einzelschuss Artillerie', barrage: 'Sperrfeuer', gas: 'Gas- und Rauchgeschoss', boom: 'Granateinschlag', boom2: 'Gerät zerstört', blast: 'Sprengung', wasser: 'Einschlag im Wasser', rauch: 'Gas-/Nebelhandgranate (noch nicht im Spiel)',
+  vorbei: 'Kugel vorbei', einschlag: 'Kugeleinschlag', einsturz: 'Einsturz', impact: 'Treffer auf Gebäude/Stein', armor: 'Treffer auf Panzerung', feuer: 'Brennendes Feld (Schleife)', tank: 'Kettenrollen',
+  mech: 'Maschinenschritte (Schreiter)', crash: 'Panne/Festfahren', ueberrollen: 'Überrollen', holzknacken: 'Holzknacken (Wald)', drahtlatch: 'Draht klirrt', drahtwackeln: 'Draht wackelt',
+  motor_auswahl: 'Motor beim Anklicken', tiger: 'Brüllen (Klauenschreiter)', gespann: 'Gespann', wagenknarren: 'Wagen knarrt', schritte: 'Schritte', steps: 'Schlammschritte',
   stepsWald: 'Schritte im Wald', marschtritt: 'Marschtritt', dog: 'Hund (Meldegänger)', gallop2: 'Galopp', pferd_auswahl: 'Pferd beim Anklicken', pferd_unruhe: 'Pferd unruhig', neigh: 'Wiehern',
-  cut: 'Draht schneiden', clank: 'Auf-/Abprotzen', mgsetup: 'MG aufbauen', bauen: 'Bauen/Eingraben', heal: 'Sanitäter', reparieren: 'Reparieren', nachladen: 'Nachladen', gasmaske: 'Gasmaske aufsetzen',
+  cut: 'Draht schneiden', clank: 'Aufprotzen', abprotzen: 'Abprotzen (Platzhalter)', mgsetup: 'MG aufbauen', bauen: 'Bauen/Eingraben', heal: 'Sanitäter', reparieren: 'Reparieren', nachladen: 'Nachladen', gasmaske: 'Gasmaske (_1 Atmen beim Entgiften, _2 Laut bei Treffer)',
   klick: 'Klick (Nächste Einheit, Erledigt)', ui: 'Knopf', tick: 'Tick', zug_eigen: 'Rundenschild: eigener Zug', zug_gegner: 'Rundenschild: Gegnerzug', erobert: 'Zielfeld erobert', verloren: 'Zielfeld verloren',
   whistle: 'Pfeife', march: 'Marsch/Verstärkung', generalhorn: 'Horn Generalangriff', horn: 'Signalhorn', win: 'Sieg', pain: 'Schmerz', medic: '„Sanitäter!“', forward: 'Befehl „Vorwärts“', stand: 'Befehl „Haltet stand“',
-  roar: 'Kampfschrei/Befehl Aschenwacht', cry: 'Schrei', scream: 'Kampfschrei', panic: 'Panik/Flucht', charge: 'Gegenstoß', comeon: 'Befehl überbringen', husten: 'Husten (Gas)', grunzen: 'Grunzen (Eingraben)',
+  roar: 'Kampfschrei/Befehl Aschenwacht', cry: 'Schrei', scream: 'Kampfschrei', panic: 'Panik/Flucht', charge: 'Gegenstoß', comeon: 'Befehl überbringen', husten: 'Husten (Gas)', grunzen: 'Grunzen (leichte Verletzung)',
   robot: 'Maschine getroffen', ambient: 'Gefechtslärm (Schleife)', wetter: 'Wetter (Schleife)', musik_titel: 'Titelmusik', musik_schlacht: 'Schlachtmusik', musikNiederlage: 'Niederlage' };
 const GRUPPEN = [
   ['waffen', 'Waffen', ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'mg', 'minigun', 'buechse', 'flinte', 'cannon', 'kolosskanone', 'panzerkanone', 'cannonH', 'launch', 'flame', 'werfer', 'grenade', 'grenade2', 'nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy']],
   ['einschlaege', 'Einschläge', ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'wasser', 'einsturz', 'impact', 'armor', 'feuer']],
-  ['fahrzeuge', 'Fahrzeuge und Schreiter', ['tank', 'motor_auswahl', 'mech', 'crash', 'ueberrollen', 'holzknacken', 'drahtlatch', 'drahtwackeln', 'snarl', 'tiger']],
-  ['truppen', 'Truppen, Pferde, Handgriffe', ['schritte', 'steps', 'stepsWald', 'marschtritt', 'dog', 'gallop2', 'pferd_auswahl', 'pferd_unruhe', 'neigh', 'gespann', 'wagenknarren', 'cut', 'clank', 'mgsetup', 'bauen', 'heal', 'reparieren', 'nachladen', 'gasmaske']],
+  ['fahrzeuge', 'Fahrzeuge und Schreiter', ['tank', 'motor_auswahl', 'mech', 'crash', 'ueberrollen', 'drahtlatch', 'drahtwackeln', 'tiger']],
+  ['truppen', 'Truppen, Pferde, Handgriffe', ['schritte', 'steps', 'stepsWald', 'holzknacken', 'marschtritt', 'dog', 'gallop2', 'pferd_auswahl', 'pferd_unruhe', 'neigh', 'gespann', 'wagenknarren', 'cut', 'clank', 'abprotzen', 'mgsetup', 'bauen', 'heal', 'reparieren', 'nachladen', 'gasmaske']],
   ['oberflaeche', 'Oberfläche und Knöpfe', ['klick', 'ui', 'tick', 'zug_eigen', 'zug_gegner', 'erobert', 'verloren', 'whistle', 'march', 'generalhorn', 'horn', 'win']],
   ['musik', 'Musik und Kulisse', ['musik_titel', 'musik_schlacht', 'musikNiederlage', 'ambient', 'wetter']]];
 // Platz → Schlüssel mit Seite; ältere Einzeltöne ohne Platz als eigener Platz
@@ -59,7 +62,7 @@ const gruppen = GRUPPEN.map(([id, titel, ps]) => ({ id, titel, plaetze: ps.map(p
 // Stimmen: Sprüche beim Anklicken je Sprecher-Gruppe und Seite (feste Stimme je Einheit), Rufe je Stimmfilter
 const PANZER = ['koloss', 'sturmpz', 'bohrer'];
 const satzVon = t => { const T = E.TYPES[t]; return PANZER.includes(t) ? 'panzer' : T.cls === 'walker' ? 'schreiter' : T.suit ? 'anzug' : T.cmd ? 'fuehrer' : 'inf'; };
-const SATZ = { inf: 'Fußtruppen, Reiter, Geschütze – Gasmaske leicht', anzug: 'Kampfanzüge – Gasmaske mittel', fuehrer: 'Hauptmann und General – ohne Filter', panzer: 'Panzerbesatzung – Bordfunk stark', schreiter: 'Schreiter und Eisenknecht – Maschine mittel' };
+const SATZ = { inf: 'Fußtruppen, Reiter, Geschütze – Gasmaske leicht', anzug: 'Kampfanzüge – Gasmaske mittel', fuehrer: 'Hauptmann und General – ohne Filter', panzer: 'Panzerbesatzung – Bordfunk stark', schreiter: 'Schreiter und Eisenknecht – Maschine mittel (Aschenwacht: kurzer Nachhall)' };
 const stimmen = ['A', 'D'].map(sd => ({ sd, seite: sd === 'A' ? 'Konkordat' : 'Aschenwacht', saetze: Object.keys(SATZ).map(satz => {
   const einheiten = E.ROSTER[sd].filter(t => satzVon(t) === satz).map(t => E.TYPES[t].name + (E.isMech && E.isMech(t) ? ' (Kampfmaschine)' : ''));
   const st = []; for (let n = 1; POOLS[`sv_${satz}_${sd}${n}`]; n++) st.push({ n, p: `sv_${satz}_${sd}${n}`, t: eintraege(`sv_${satz}_${sd}${n}`) });
@@ -126,7 +129,9 @@ const D = ${JSON.stringify(DATA)};
 // ---- Abspielen wie im Spiel (src/ui.js: playSound, sndPick, motorRev, setMusik) ----
 let SND = null, musikVol = 0.8, effektVol = 1, streuen = true; const laufend = new Set();
 try { const m = localStorage.getItem('arm.musikvol'), f = localStorage.getItem('arm.effektvol'); if (m != null && m !== '') musikVol = +m; if (f != null && f !== '') effektVol = +f; } catch (e) {}
-const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade', 'grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'] };
+const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'], boom: ['boomH_1'] };
+const DUCK_F = ${DUCK_F}, SPRUCH = ${SPRUCH};
+function duck(fz, a) { if (!fz || !a) return; const ein = () => { const d = isFinite(a.duration) && a.duration > 0 ? a.duration * 1000 : 1800; fz.volume = Math.min(1, fz._vol * effektVol * DUCK_F); nach(d + 150, () => { try { fz.volume = Math.min(1, fz._vol * effektVol); } catch (e) {} }); }; if (a.readyState >= 1) ein(); else a.addEventListener('loadedmetadata', ein, { once: true }); }
 function pick(name, side, v) {   // wie sndPick im Spiel: Gruppe, Stimmfilter-Variante, Seite
   const cand = [], add = (n, deep) => { if (!deep && SND_VAR[n]) { for (const m of SND_VAR[n]) add(m, true); return; } if (v && D.pools[n + '_' + v]) n += '_' + v;
     if (D.pools[n]) for (const [k, sd, w] of D.pools[n]) { if (SND[k]) for (let i = 0; i < (w || 1); i++) cand.push([k, sd]); } else if (SND[n]) cand.push([n, null]); };
@@ -156,18 +161,18 @@ const sperrfeuer = (sd, mob) => { const k = pick(mob ? 'launch' : sd === 'D' ? '
   const flug = 34 * 16.667, felder = 7; for (let i = 0; i < felder; i++) { const tt = i < n ? shots[i] : shots[n - 1] + (i - n + 1) * (140 + Math.random() * 120); nach(flug + tt, () => platzSpiel(mob ? 'boom' : 'boomH', 0.5 * (0.8 + Math.random() * 0.3))); } };
 let gefecht = null;
 const MISCH = [
-  ['Panzerkommandant beim Anklicken – Konkordat', 'motor_auswahl 0,13 (kurz aufheulen) + Spruch sv_panzer 0,34', () => { motorRev(pick('motor_auswahl', 'A'), 0.13, 0.7); spiel(stimme('panzer', 'A'), 0.34, { rate: 1 }); }],
-  ['Panzerkommandant beim Anklicken – Aschenwacht', 'wie oben, Aschenwacht-Motor und -Stimme', () => { motorRev(pick('motor_auswahl', 'D'), 0.13, 0.7); spiel(stimme('panzer', 'D'), 0.34, { rate: 1 }); }],
-  ['Panzerkommandant über fahrendem Panzer', 'Kettenrollen tank 0,3 + Spruch sv_panzer 0,34 nach 0,6 s', () => { platzSpiel('tank', 0.3, 'A'); nach(600, () => spiel(stimme('panzer', 'A'), 0.34, { rate: 1 })); }],
-  ['Schreiter-Stimme über Schritten – Konkordat', 'mech 0,5 + Spruch sv_schreiter 0,34 nach 0,4 s', () => { platzSpiel('mech', 0.5, 'A'); nach(400, () => spiel(stimme('schreiter', 'A'), 0.34, { rate: 1 })); }],
-  ['Schreiter-Stimme über Schritten – Aschenwacht', 'wie oben, Aschenwacht', () => { platzSpiel('mech', 0.5, 'D'); nach(400, () => spiel(stimme('schreiter', 'D'), 0.34, { rate: 1 })); }],
+  ['Panzerkommandant beim Anklicken – Konkordat', 'motor_auswahl 0,13 (kurz aufheulen) + Spruch sv_panzer ${zahlN(SPRUCH)}, Motor unter der Stimme leiser', () => { motorRev(pick("motor_auswahl", "A"), 0.13 * DUCK_F, 0.7); spiel(stimme('panzer', 'A'), SPRUCH, { rate: 1 }); }],
+  ['Panzerkommandant beim Anklicken – Aschenwacht', 'wie oben, Aschenwacht-Motor und -Stimme', () => { motorRev(pick("motor_auswahl", "D"), 0.13 * DUCK_F, 0.7); spiel(stimme('panzer', 'D'), SPRUCH, { rate: 1 }); }],
+  ['Panzerkommandant über fahrendem Panzer', 'Kettenrollen tank 0,3 + Spruch sv_panzer ${zahlN(SPRUCH)} nach 0,6 s, Kettenrollen unter der Stimme auf ${zahlN(DUCK_F)}', () => { const fz = platzSpiel('tank', 0.3, 'A'); nach(600, () => duck(fz, spiel(stimme('panzer', 'A'), SPRUCH, { rate: 1 }))); }],
+  ['Schreiter-Stimme über Schritten – Konkordat', 'mech 0,5 + Spruch sv_schreiter ${zahlN(SPRUCH)} nach 0,4 s, Schritte unter der Stimme leiser', () => { const fz = platzSpiel('mech', 0.5, 'A'); nach(400, () => duck(fz, spiel(stimme('schreiter', 'A'), SPRUCH, { rate: 1 }))); }],
+  ['Schreiter-Stimme über Schritten – Aschenwacht', 'wie oben, Aschenwacht', () => { const fz = platzSpiel('mech', 0.5, 'D'); nach(400, () => duck(fz, spiel(stimme('schreiter', 'D'), SPRUCH, { rate: 1 }))); }],
   ['MG-Salve + Einschläge – Konkordat', 'mg 0,55, Treffer nach 0,45 s: einschlag 0,35', () => { platzSpiel('mg', 0.55, 'A'); nach(450, () => platzSpiel('einschlag', 0.35)); nach(650, () => platzSpiel('vorbei', 0.35)); }],
   ['MG-Salve + Einschläge – Aschenwacht', 'mg 0,55 (Aschenwacht), Treffer 0,35', () => { platzSpiel('mg', 0.55, 'D'); nach(450, () => platzSpiel('einschlag', 0.35)); nach(650, () => platzSpiel('vorbei', 0.35)); }],
   ['Gewehrsalve + Treffer – Konkordat', '4 Schüsse 0,3, unregelmäßig wie im Spiel, Treffer 0,35', () => { const t = salve('A'); nach(t + 250, () => platzSpiel('einschlag', 0.35)); }],
   ['Gewehrsalve + Treffer – Aschenwacht', 'wie oben, Aschenwacht-Gewehr', () => { const t = salve('D'); nach(t + 250, () => platzSpiel('einschlag', 0.35)); }],
   ['Artillerie-Sperrfeuer – Konkordat', '4 Abschüsse cannonH 0,75, Einschläge boomH 0,5 über 7 Felder', () => sperrfeuer('A')],
   ['Artillerie-Sperrfeuer – Aschenwacht', '4 Abschüsse (cannonH/cannon) 0,75, Einschläge boomH 0,5', () => sperrfeuer('D')],
-  ['Mörser-Sperrfeuer', '3 Abschüsse launch 0,42, Einschläge boom 0,5', () => sperrfeuer('A', true)],
+  ['Mörser-Sperrfeuer', '3 Abschüsse launch 0,42, Einschläge boom (= boomH_1) 0,5', () => sperrfeuer('A', true)],
   ['Artillerie-Einzelschuss', 'Abschuss cannonH 0,8, Einschlag einschlagH 0,8 nach Flugzeit', () => { platzSpiel('cannonH', 0.8, 'A'); nach(34 * 16.667, () => platzSpiel('einschlagH', 0.8)); }],
 ];
 function gefechtAn(btn) {   // Schlachtmusik + Kulisse wie in der Schlacht, dazu ab und zu Gefechtslärm in Spiel-Lautstärke
@@ -199,7 +204,7 @@ main.append(h('details', { open: '' }, h('summary', {}, 'Mischproben wie im Spie
   const inh = h('div', { class: 'inhalt' }, h('p', { class: 'hinweis' }, 'Sprüche beim Anklicken: jede Einheit hat im Spiel eine feste Stimme (reihum vergeben), Lautstärke 0,34. Die Dateien sind schon gefiltert (Gasmaske, Bordfunk, Maschine).'));
   for (const s of D.stimmen) for (const g of s.saetze) { const d = h('details', {}, h('summary', {}, s.seite + ': ' + g.titel));
     const i2 = h('div', { class: 'inhalt' }, h('p', { class: 'hinweis' }, 'Einheiten: ' + g.einheiten.join(', ')));
-    for (const v of g.stimmen) i2.append(platzBlock({ p: v.p, name: 'Stimme ' + v.n, vol: 0.34, t: v.t }));
+    for (const v of g.stimmen) i2.append(platzBlock({ p: v.p, name: 'Stimme ' + v.n, vol: SPRUCH, t: v.t }));
     d.append(i2); inh.append(d); }
   const r = h('details', {}, h('summary', {}, 'Rufe: Schmerz, Schreie, Befehle, Husten …')); const ri = h('div', { class: 'inhalt' }, h('p', { class: 'hinweis' }, 'Je Sprecher mit dem passenden Filter, wie im Spiel gewählt (Hauptmann/General ohne Filter).'));
   for (const g of D.rufe) { const d = h('details', {}, h('summary', {}, g.titel)); d.append(h('div', { class: 'inhalt' }, ...g.plaetze.map(platzBlock))); ri.append(d); }

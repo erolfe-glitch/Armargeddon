@@ -141,50 +141,44 @@
  {
   "pool": "mg",
   "key": "mg_1",
-  "s": "A",
+  "s": "D",
   "f": "Infantry Guns/freesound_community-1866-ww1-machine-gun-free-sound-fx-cinematic-sound-effects-94651.mp3",
   "dur": 2.4,
   "src": 10.61,
   "start": 2.6,
-  "gain": -3.2,
+  "gain": -5.7,
   "kb": 28,
-  "note": "Hauptton Mahlwerk (2026-11-17)"
+  "note": "Hauptton Mahlwerk (2026-11-17); Tonprobe 2026-11-18: lauter, mehr Bass, getauscht → Aschenwacht"
  },
  {
   "pool": "mg",
   "key": "mg_2",
-  "s": "A",
+  "s": "D",
   "f": "Infantry Guns/417688__superphat__lightmachinegun1.wav",
   "dur": 2.12,
   "src": 30,
   "start": 1.99,
   "gain": -4.7,
   "kb": 25,
-  "note": "Ausschnitt (Korrektur 7)"
+  "note": "Ausschnitt (Korrektur 7); Tonprobe 2026-11-18: getauscht → Aschenwacht"
  },
  {
   "pool": "mg",
   "key": "mg3",
-  "s": "D",
+  "s": "A",
   "f": "(vorhanden) mg3"
  },
  {
   "pool": "mg",
-  "key": "mg2",
-  "s": "D",
-  "f": "(vorhanden) mg2"
- },
- {
-  "pool": "mg",
   "key": "mg_3",
-  "s": "D",
+  "s": "A",
   "f": "Infantry Guns/kave_msri-machine-gun-sfx-320986.mp3",
   "dur": 2,
   "src": 5.67,
   "start": 0.06,
   "gain": -6.6,
   "kb": 24,
-  "note": "Sensenwerk"
+  "note": "Sensenwerk; Tonprobe 2026-11-18: getauscht → Konkordat"
  },
  {
   "pool": "huelsen",
@@ -212,21 +206,10 @@
  },
  {
   "pool": "cannon",
-  "key": "cannon",
-  "s": "A",
-  "f": "(vorhanden) cannon"
- },
- {
-  "pool": "cannon",
   "key": "cannon_1",
   "s": "A",
-  "f": "Heavy firing sounds/850499__vulkanbruder__little-cannon.wav",
-  "dur": 0.36,
-  "src": 0.4,
-  "start": 0,
-  "gain": -9.2,
-  "kb": 4,
-  "note": "Feldkanone / Landkoloss (Korrektur 2)"
+  "f": "(entfernt) Heavy firing sounds/850499__vulkanbruder__little-cannon.wav",
+  "note": "Tonprobe 2026-11-18: klingt wie eine Autotür"
  },
  {
   "pool": "cannon",
@@ -446,9 +429,15 @@
  },
  {
   "pool": "minigun",
-  "key": "minigun",
+  "key": "minigun_1",
   "s": null,
-  "f": "(vorhanden) minigun"
+  "f": "Hevay Mech guns/u_w4utmqapnm-mini-gun-154177.mp3",
+  "dur": 3.2,
+  "src": 6.55,
+  "start": 0.05,
+  "gain": -4.8,
+  "kb": 38,
+  "note": "Eisenknecht feuert: ganze Garbe mit Auslaufen statt der ersten 1,7 s (Tonprobe 2026-11-18)"
  },
  {
   "pool": "flame",
@@ -480,12 +469,6 @@
  },
  {
   "pool": "gas",
-  "key": "gas",
-  "s": null,
-  "f": "(vorhanden) gas"
- },
- {
-  "pool": "gas",
   "key": "gas_1",
   "s": null,
   "f": "Gas smoke/808013__artninja__tmnt_2012_inspired_smokebomb_sounds_05202025.wav",
@@ -493,7 +476,8 @@
   "src": 25.55,
   "start": 0.12,
   "gain": 0.9,
-  "kb": 24
+  "kb": 24,
+  "note": "Tonprobe 2026-11-18: Rauch- und Nebelgeschosse (Rauchwerfer) und Gasgranaten der Artillerie"
  },
  {
   "pool": "rauch",
@@ -504,7 +488,8 @@
   "src": 7.16,
   "start": 0,
   "gain": 1.5,
-  "kb": 35
+  "kb": 35,
+  "note": "Tonprobe 2026-11-18: für geworfene Gas- und Nebelhandgranaten (gibt es im Spiel noch nicht)"
  },
  {
   "pool": "werfer",
@@ -523,12 +508,12 @@
   "key": "flinte_1",
   "s": null,
   "f": "Infantry Guns/freesound_community-shotgun-shooting-things-105837.mp3",
-  "dur": 0.8,
+  "dur": 1.1,
   "src": 9.82,
-  "start": 0.1,
-  "gain": 1.4,
-  "kb": 10,
-  "note": "kurzer Schuss im Grabennahkampf (Räumer, Sturmbrecher)"
+  "start": 0.74,
+  "gain": -1.9,
+  "kb": 13,
+  "note": "kurzer Schuss im Grabennahkampf (Räumer, Sturmbrecher); Tonprobe 2026-11-18: ab dem Schuss statt ab dem Repetieren, Ausklang ganz"
  },
  {
   "pool": "vorbei",
@@ -608,7 +593,8 @@
   "src": 0.67,
   "start": 0.05,
   "gain": 0.2,
-  "kb": 7
+  "kb": 7,
+  "note": "Tonprobe 2026-11-18: nur bei Treffern (Fußtruppen), nicht beim Entgiften"
  },
  {
   "pool": "grunzen",
@@ -747,12 +733,12 @@
   "key": "charge_1",
   "s": "D",
   "f": "Moving tanks/233068__newciv1__loud-tiger-ii-audio-test.wav",
-  "dur": 2.4,
+  "dur": 2.68,
   "src": 24.48,
   "start": 0.04,
   "gain": -3.6,
-  "kb": 28,
-  "note": "nur Anfang: Ruf, Gegenstoß der Aschenwacht (Korrektur 1)"
+  "kb": 32,
+  "note": "Ruf beim Gegenstoß der Aschenwacht; Tonprobe 2026-11-18: bis zum Ende von „frei“, kurz ausgeblendet"
  },
  {
   "pool": "forward",
@@ -3280,7 +3266,7 @@
   "dur": 1.1,
   "src": 1.1,
   "start": 0,
-  "gain": -5.6,
+  "gain": -7.4,
   "kb": 13,
   "note": "Spruch beim Anklicken (bei jedem Klick, feste Stimme je Einheit, 2026-11-17): Landkoloss, Sturmpanzer, Bohrkoloss – Bordfunk stark"
  },
@@ -3292,7 +3278,7 @@
   "dur": 1.1,
   "src": 1.1,
   "start": 0,
-  "gain": -7,
+  "gain": -7.4,
   "kb": 13
  },
  {
@@ -3314,7 +3300,7 @@
   "dur": 1.32,
   "src": 1.32,
   "start": 0,
-  "gain": -7.6,
+  "gain": -7.1,
   "kb": 16
  },
  {
@@ -3325,7 +3311,7 @@
   "dur": 0.8,
   "src": 0.8,
   "start": 0,
-  "gain": -5.1,
+  "gain": -7.5,
   "kb": 10
  },
  {
@@ -3336,7 +3322,7 @@
   "dur": 1,
   "src": 1,
   "start": 0,
-  "gain": -4.1,
+  "gain": -9,
   "kb": 12
  },
  {
@@ -3347,7 +3333,7 @@
   "dur": 0.74,
   "src": 0.74,
   "start": 0,
-  "gain": -9.3,
+  "gain": -9.2,
   "kb": 9
  },
  {
@@ -3358,7 +3344,7 @@
   "dur": 1.18,
   "src": 1.18,
   "start": 0,
-  "gain": -5.5,
+  "gain": -5.7,
   "kb": 14
  },
  {
@@ -3369,7 +3355,7 @@
   "dur": 1.26,
   "src": 1.26,
   "start": 0,
-  "gain": -6.2,
+  "gain": -5.9,
   "kb": 15
  },
  {
@@ -3380,7 +3366,7 @@
   "dur": 1.26,
   "src": 1.26,
   "start": 0,
-  "gain": -6.7,
+  "gain": -5.7,
   "kb": 15
  },
  {
@@ -3391,7 +3377,7 @@
   "dur": 1.26,
   "src": 1.26,
   "start": 0,
-  "gain": -6.2,
+  "gain": -6.9,
   "kb": 15
  },
  {
@@ -3402,7 +3388,7 @@
   "dur": 1.04,
   "src": 1.04,
   "start": 0,
-  "gain": -5.8,
+  "gain": -6.8,
   "kb": 12
  },
  {
@@ -3413,7 +3399,7 @@
   "dur": 1.6,
   "src": 1.6,
   "start": 0,
-  "gain": -6.9,
+  "gain": -8.2,
   "kb": 19
  },
  {
@@ -3424,7 +3410,7 @@
   "dur": 1.14,
   "src": 1.14,
   "start": 0,
-  "gain": -4.3,
+  "gain": -8.1,
   "kb": 14
  },
  {
@@ -3435,7 +3421,7 @@
   "dur": 1.14,
   "src": 1.14,
   "start": 0,
-  "gain": -5.4,
+  "gain": -6.1,
   "kb": 14
  },
  {
@@ -3446,7 +3432,7 @@
   "dur": 1.26,
   "src": 1.26,
   "start": 0,
-  "gain": -7.3,
+  "gain": -9.3,
   "kb": 15
  },
  {
@@ -3457,7 +3443,7 @@
   "dur": 1.24,
   "src": 1.24,
   "start": 0,
-  "gain": -5.6,
+  "gain": -8.5,
   "kb": 15
  },
  {
@@ -3468,7 +3454,7 @@
   "dur": 0.76,
   "src": 0.76,
   "start": 0,
-  "gain": -7.2,
+  "gain": -9,
   "kb": 9
  },
  {
@@ -3479,7 +3465,7 @@
   "dur": 0.62,
   "src": 0.62,
   "start": 0,
-  "gain": -4.2,
+  "gain": -6.3,
   "kb": 7
  },
  {
@@ -3490,7 +3476,7 @@
   "dur": 1.32,
   "src": 1.32,
   "start": 0,
-  "gain": -4.2,
+  "gain": -7,
   "kb": 16
  },
  {
@@ -3501,7 +3487,7 @@
   "dur": 1.44,
   "src": 1.44,
   "start": 0,
-  "gain": -5.7,
+  "gain": -8.4,
   "kb": 17
  },
  {
@@ -3512,7 +3498,7 @@
   "dur": 1.08,
   "src": 1.08,
   "start": 0,
-  "gain": -5.3,
+  "gain": -9,
   "kb": 13
  },
  {
@@ -3523,7 +3509,7 @@
   "dur": 1.32,
   "src": 1.32,
   "start": 0,
-  "gain": -3.7,
+  "gain": -8.8,
   "kb": 16
  },
  {
@@ -3534,7 +3520,7 @@
   "dur": 0.76,
   "src": 0.76,
   "start": 0,
-  "gain": -7.6,
+  "gain": -9.2,
   "kb": 9
  },
  {
@@ -3545,7 +3531,7 @@
   "dur": 0.9,
   "src": 0.9,
   "start": 0,
-  "gain": -5.3,
+  "gain": -9.3,
   "kb": 11
  },
  {
@@ -3556,7 +3542,7 @@
   "dur": 1.3,
   "src": 1.3,
   "start": 0,
-  "gain": -6.1,
+  "gain": -7.5,
   "kb": 15
  },
  {
@@ -3567,7 +3553,7 @@
   "dur": 0.84,
   "src": 0.84,
   "start": 0,
-  "gain": -7.4,
+  "gain": -9.1,
   "kb": 10
  },
  {
@@ -3578,7 +3564,7 @@
   "dur": 1.36,
   "src": 1.36,
   "start": 0,
-  "gain": -6.7,
+  "gain": -9.6,
   "kb": 16
  },
  {
@@ -3589,7 +3575,7 @@
   "dur": 1.04,
   "src": 1.04,
   "start": 0,
-  "gain": -4.4,
+  "gain": -8.9,
   "kb": 12
  },
  {
@@ -3807,117 +3793,117 @@
   "key": "sv_schreiter_D1_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_01_mittel.wav",
-  "dur": 1.1,
+  "dur": 0.98,
   "src": 1.18,
-  "start": 0.08,
-  "gain": -0.9,
-  "kb": 13
+  "start": 0.1,
+  "gain": -0.4,
+  "kb": 12
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_02_mittel.wav",
-  "dur": 0.84,
+  "dur": 0.74,
   "src": 0.94,
   "start": 0.1,
-  "gain": -1.5,
-  "kb": 10
+  "gain": -0.2,
+  "kb": 9
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_03_mittel.wav",
-  "dur": 1.17,
+  "dur": 1.01,
   "src": 1.25,
   "start": 0.08,
-  "gain": -2.7,
-  "kb": 14
+  "gain": -2.9,
+  "kb": 12
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_04_mittel.wav",
-  "dur": 1.07,
+  "dur": 0.9,
   "src": 1.18,
-  "start": 0.1,
-  "gain": -2.6,
-  "kb": 13
+  "start": 0.11,
+  "gain": -2.4,
+  "kb": 11
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_05_mittel.wav",
-  "dur": 0.61,
+  "dur": 0.51,
   "src": 0.71,
   "start": 0.07,
-  "gain": -1.9,
-  "kb": 7
+  "gain": -2.8,
+  "kb": 6
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_6",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_06_mittel.wav",
-  "dur": 0.89,
+  "dur": 0.79,
   "src": 0.99,
   "start": 0.09,
-  "gain": -1.7,
-  "kb": 11
+  "gain": -0.9,
+  "kb": 10
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_7",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_07_mittel.wav",
-  "dur": 1.17,
+  "dur": 0.91,
   "src": 1.25,
   "start": 0.07,
-  "gain": -2,
-  "kb": 14
+  "gain": -1.9,
+  "kb": 11
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_8",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_08_mittel.wav",
-  "dur": 0.56,
+  "dur": 0.42,
   "src": 0.64,
   "start": 0.08,
-  "gain": -4.3,
-  "kb": 7
+  "gain": -3.5,
+  "kb": 5
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_9",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_09_mittel.wav",
-  "dur": 0.84,
+  "dur": 0.78,
   "src": 0.94,
   "start": 0.1,
-  "gain": -6,
-  "kb": 10
+  "gain": -3.1,
+  "kb": 9
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_10",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_13_mittel.wav",
-  "dur": 0.9,
+  "dur": 0.75,
   "src": 0.99,
-  "start": 0.08,
-  "gain": -5.2,
-  "kb": 11
+  "start": 0.1,
+  "gain": -3.3,
+  "kb": 9
  },
  {
   "pool": "sv_schreiter_D1",
   "key": "sv_schreiter_D1_11",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s1_17_mittel.wav",
-  "dur": 0.94,
+  "dur": 0.88,
   "src": 1.06,
   "start": 0.09,
   "gain": 0,
@@ -3928,55 +3914,55 @@
   "key": "sv_schreiter_D2_1",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_01_mittel.wav",
-  "dur": 2.01,
+  "dur": 1.15,
   "src": 2.21,
   "start": 0.2,
-  "gain": -2.2,
-  "kb": 24
+  "gain": -1.5,
+  "kb": 14
  },
  {
   "pool": "sv_schreiter_D2",
   "key": "sv_schreiter_D2_2",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_02_mittel.wav",
-  "dur": 1.42,
+  "dur": 0.8,
   "src": 1.51,
-  "start": 0.08,
-  "gain": -3.6,
-  "kb": 17
+  "start": 0.09,
+  "gain": -2.2,
+  "kb": 10
  },
  {
   "pool": "sv_schreiter_D2",
   "key": "sv_schreiter_D2_3",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_03_mittel.wav",
-  "dur": 1.66,
+  "dur": 0.8,
   "src": 1.74,
   "start": 0.08,
-  "gain": 0,
-  "kb": 20
+  "gain": -1.6,
+  "kb": 10
  },
  {
   "pool": "sv_schreiter_D2",
   "key": "sv_schreiter_D2_4",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_04_mittel.wav",
-  "dur": 0.99,
+  "dur": 0.69,
   "src": 1.11,
   "start": 0.11,
-  "gain": -1.2,
-  "kb": 12
+  "gain": 0,
+  "kb": 8
  },
  {
   "pool": "sv_schreiter_D2",
   "key": "sv_schreiter_D2_5",
   "s": "D",
   "f": "Voices/eigene/sprueche/schreiter_aschenwacht_s2_05_mittel.wav",
-  "dur": 0.75,
+  "dur": 0.56,
   "src": 0.82,
-  "start": 0.08,
-  "gain": -1.4,
-  "kb": 9
+  "start": 0.1,
+  "gain": 0,
+  "kb": 7
  },
  {
   "pool": "roar",
@@ -4000,12 +3986,12 @@
   "key": "roar_2",
   "s": "A",
   "f": "Voices/764158__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_msdec-mkh435-spirit.wav",
-  "dur": 2.6,
+  "dur": 1.6,
   "src": 11.03,
   "start": 0.51,
   "gain": 1.4,
-  "kb": 31,
-  "note": "nur erste 2–3 s"
+  "kb": 19,
+  "note": "nur Anfang; Tonprobe 2026-11-18: kürzer, am Ende Frauenstimmen"
  },
  {
   "pool": "scream",
@@ -4041,7 +4027,7 @@
   "start": 0.02,
   "gain": -12.9,
   "kb": 35,
-  "note": "Befehl „Marsch“"
+  "note": "Befehl „Marsch“; Tonprobe 2026-11-18: Schritte aus einem späteren Teil von march2 darunter"
  },
  {
   "pool": "marschtritt",
@@ -4072,12 +4058,12 @@
   "key": "scream_1",
   "s": "D",
   "f": "Voices/763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav",
-  "dur": 2.6,
+  "dur": 1.6,
   "src": 11.03,
   "start": 0.51,
-  "gain": 11.7,
-  "kb": 31,
-  "note": "nur erste 2–3 s"
+  "gain": 11.4,
+  "kb": 19,
+  "note": "nur Anfang; Tonprobe 2026-11-18: kürzer, am Ende Frauenstimmen"
  },
  {
   "pool": "whistle",
@@ -4317,12 +4303,6 @@
  },
  {
   "pool": "tank",
-  "key": "tankmove",
-  "s": null,
-  "f": "(vorhanden) tankmove"
- },
- {
-  "pool": "tank",
   "key": "tank_1",
   "s": null,
   "f": "Moving tanks/freesound_community-driving-tank-engine-88503.mp3",
@@ -4360,12 +4340,6 @@
   "start": 0.15,
   "gain": -3.5,
   "kb": 29
- },
- {
-  "pool": "smash",
-  "key": "smash",
-  "s": null,
-  "f": "(vorhanden) smash"
  },
  {
   "pool": "smash",
@@ -4450,7 +4424,7 @@
  {
   "pool": "impact",
   "key": "impact",
-  "s": "A",
+  "s": null,
   "f": "(vorhanden) impact"
  },
  {
@@ -4458,12 +4432,6 @@
   "key": "slash",
   "s": "D",
   "f": "(vorhanden) slash"
- },
- {
-  "pool": "sword",
-  "key": "sword",
-  "s": null,
-  "f": "(vorhanden) sword"
  },
  {
   "pool": "sword",
@@ -4601,12 +4569,8 @@
   "pool": "saebel",
   "key": "saebel_3",
   "s": null,
-  "f": "Defelcting/mixkit-metallic-sword-strike-2160.wav",
-  "dur": 0.66,
-  "src": 1.33,
-  "start": 0.01,
-  "gain": -5.8,
-  "kb": 8
+  "f": "(entfernt) Defelcting/mixkit-metallic-sword-strike-2160.wav",
+  "note": "Tonprobe 2026-11-18"
  },
  {
   "pool": "saebel",
@@ -4722,12 +4686,8 @@
   "pool": "husten",
   "key": "husten_4",
   "s": null,
-  "f": "Gas smoke/739416__qubodup__pepper-spray-coughing.flac",
-  "dur": 0.9,
-  "src": 34.95,
-  "start": 26.3,
-  "gain": -9.3,
-  "kb": 11
+  "f": "(entfernt) Gas smoke/739416__qubodup__pepper-spray-coughing.flac",
+  "note": "Tonprobe 2026-11-18: klingt einzeln wie Niesen"
  },
  {
   "pool": "pain_gm",
@@ -4950,11 +4910,11 @@
   "key": "scream_gm_2",
   "s": "D",
   "f": "Voices/eigene/filter/scream_1_gm.wav",
-  "dur": 2.6,
-  "src": 2.6,
+  "dur": 1.6,
+  "src": 1.6,
   "start": 0,
-  "gain": -5.1,
-  "kb": 31
+  "gain": -5.3,
+  "kb": 19
  },
  {
   "pool": "scream_gs",
@@ -4973,11 +4933,11 @@
   "key": "scream_gs_2",
   "s": "D",
   "f": "Voices/eigene/filter/scream_1_gs.wav",
-  "dur": 2.6,
-  "src": 2.6,
+  "dur": 1.6,
+  "src": 1.6,
   "start": 0,
-  "gain": -7.7,
-  "kb": 31
+  "gain": -7.6,
+  "kb": 19
  },
  {
   "pool": "panic_gm",
@@ -5011,7 +4971,7 @@
   "dur": 2.36,
   "src": 2.36,
   "start": 0,
-  "gain": -1,
+  "gain": -5.4,
   "kb": 28,
   "note": "Bordfunk stark (Panzer): panic gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5047,7 +5007,7 @@
   "dur": 0.65,
   "src": 0.67,
   "start": 0,
-  "gain": -4.1,
+  "gain": -4.2,
   "kb": 8
  },
  {
@@ -5070,7 +5030,7 @@
   "dur": 0.67,
   "src": 0.67,
   "start": 0,
-  "gain": -7.6,
+  "gain": -7.5,
   "kb": 8
  },
  {
@@ -5081,7 +5041,7 @@
   "dur": 0.74,
   "src": 0.8,
   "start": 0.06,
-  "gain": -7.4,
+  "gain": -7.3,
   "kb": 9,
   "note": "Gasmaske leicht: roar gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5101,11 +5061,11 @@
   "key": "roar_gm_3",
   "s": "A",
   "f": "Voices/eigene/filter/roar_2_gm.wav",
-  "dur": 2.6,
-  "src": 2.6,
+  "dur": 1.6,
+  "src": 1.6,
   "start": 0,
-  "gain": -5.5,
-  "kb": 31
+  "gain": -5.7,
+  "kb": 19
  },
  {
   "pool": "roar_gs",
@@ -5115,7 +5075,7 @@
   "dur": 0.74,
   "src": 0.8,
   "start": 0.06,
-  "gain": -9.2,
+  "gain": -9.3,
   "kb": 9,
   "note": "Gasmaske mittel (Kampfanzug): roar gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5127,7 +5087,7 @@
   "dur": 3.02,
   "src": 3.02,
   "start": 0,
-  "gain": -7.3,
+  "gain": -7.5,
   "kb": 35
  },
  {
@@ -5135,11 +5095,11 @@
   "key": "roar_gs_3",
   "s": "A",
   "f": "Voices/eigene/filter/roar_2_gs.wav",
-  "dur": 2.6,
-  "src": 2.6,
+  "dur": 1.6,
+  "src": 1.6,
   "start": 0,
-  "gain": -7.5,
-  "kb": 31
+  "gain": -7.8,
+  "kb": 19
  },
  {
   "pool": "stand_gm",
@@ -5149,7 +5109,7 @@
   "dur": 1.65,
   "src": 1.87,
   "start": 0.08,
-  "gain": -6.2,
+  "gain": -6.3,
   "kb": 20,
   "note": "Gasmaske leicht: stand gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5161,7 +5121,7 @@
   "dur": 1,
   "src": 1.02,
   "start": 0,
-  "gain": -6.7,
+  "gain": -6.6,
   "kb": 12
  },
  {
@@ -5169,11 +5129,11 @@
   "key": "charge_gm_1",
   "s": "D",
   "f": "Voices/eigene/filter/charge_1_gm.wav",
-  "dur": 2.41,
-  "src": 2.41,
+  "dur": 2.69,
+  "src": 2.69,
   "start": 0.01,
   "gain": -7.3,
-  "kb": 28,
+  "kb": 32,
   "note": "Gasmaske leicht: charge gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
  {
@@ -5181,11 +5141,11 @@
   "key": "charge_gs_1",
   "s": "D",
   "f": "Voices/eigene/filter/charge_1_gs.wav",
-  "dur": 2.41,
-  "src": 2.41,
+  "dur": 2.69,
+  "src": 2.69,
   "start": 0,
-  "gain": -9.1,
-  "kb": 28,
+  "gain": -8.9,
+  "kb": 32,
   "note": "Gasmaske mittel (Kampfanzug): charge gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
  {
@@ -5196,7 +5156,7 @@
   "dur": 0.87,
   "src": 1,
   "start": 0.01,
-  "gain": -5,
+  "gain": -4.9,
   "kb": 10,
   "note": "Gasmaske leicht: comeon gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5220,7 +5180,7 @@
   "dur": 1.21,
   "src": 1.21,
   "start": 0,
-  "gain": -3.5,
+  "gain": -3.6,
   "kb": 14
  },
  {
@@ -5231,29 +5191,18 @@
   "dur": 1.21,
   "src": 1.21,
   "start": 0,
-  "gain": -9.1,
+  "gain": -9,
   "kb": 14
- },
- {
-  "pool": "husten_gm",
-  "key": "husten_gm_4",
-  "s": null,
-  "f": "Voices/eigene/filter/husten_4_gm.wav",
-  "dur": 0.77,
-  "src": 0.91,
-  "start": 0.13,
-  "gain": -10.1,
-  "kb": 9
  },
  {
   "pool": "robot_mr",
   "key": "robot_mr_1",
   "s": null,
   "f": "Voices/eigene/filter/robot_mr.wav",
-  "dur": 1.48,
+  "dur": 1.5,
   "src": 1.81,
   "start": 0.18,
-  "gain": -4.4,
+  "gain": -2.9,
   "kb": 18,
   "note": "Maschine mittel (Schreiter/Eisenknecht): robot gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5265,7 +5214,7 @@
   "dur": 0.56,
   "src": 0.58,
   "start": 0,
-  "gain": -8.1,
+  "gain": -8.3,
   "kb": 7,
   "note": "Gasmaske leicht: grunzen gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5288,7 +5237,7 @@
   "dur": 0.32,
   "src": 0.33,
   "start": 0,
-  "gain": -9.1,
+  "gain": -9.4,
   "kb": 4
  },
  {
@@ -5299,7 +5248,7 @@
   "dur": 0.56,
   "src": 0.58,
   "start": 0,
-  "gain": -8.8,
+  "gain": -9,
   "kb": 7,
   "note": "Gasmaske mittel (Kampfanzug): grunzen gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5311,7 +5260,7 @@
   "dur": 0.61,
   "src": 0.65,
   "start": 0,
-  "gain": -8.4,
+  "gain": -8.8,
   "kb": 7
  },
  {
@@ -5322,7 +5271,7 @@
   "dur": 0.32,
   "src": 0.33,
   "start": 0,
-  "gain": -10.7,
+  "gain": -10.8,
   "kb": 4
  },
  {
@@ -5588,6 +5537,18 @@
   "start": 0.09,
   "gain": 2.3,
   "kb": 6
+ },
+ {
+  "pool": "abprotzen",
+  "key": "abprotzen_1",
+  "s": null,
+  "f": "Repair reload heal etc/654374__njjjjjjjjjjjjjjjjjjjjjjjj__loading-gun.wav",
+  "dur": 0.63,
+  "src": 0.67,
+  "start": 0.05,
+  "gain": -3,
+  "kb": 7,
+  "note": "Abprotzen: Platzhalter, bis die eigenen Töne da sind (Tonprobe 2026-11-18); clank nur noch beim Aufprotzen"
  },
  {
   "pool": "mgsetup",

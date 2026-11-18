@@ -168,7 +168,7 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **drahtlatch** | Einheit läuft in Stacheldraht | beide | Repair reload heal etc/freesound_community-latch-metallic-43692.mp3 (0.7 s ab 0.04 s) |
 | **cut** | Draht schneiden | beide | vorhanden (cut) |
 |  |  | beide | freesound_community-cutting-clipping-wire-copper-80373.mp3 (0.18 s ab 1.45 s) |
-| **clank** | Aufprotzen, MG aufbauen/abbauen | beide | vorhanden (clank) |
+| **clank** | nur Aufprotzen (seit 2026-11-18; MG auf-/abbauen jetzt mgsetup/nachladen, Abprotzen eigener Platz abprotzen) | beide | vorhanden (clank) |
 |  |  | beide | freesound_community-tank-reload-47828.mp3 (0.47 s ab 0.09 s) |
 | **mgsetup** | MG aufbauen (Ruf, Konkordat) | Konkordat | 800863__tyranttim__soldier-guns_up.wav (0.71 s ab 0.11 s) |
 | **tick** | Sprengsatz/Stollen/Mine legen (Ticken) | beide | Ereignisse/320862__urupin__old-watch-in-a-small-antique-shop.flac (1.6 s ab 1.17 s) |

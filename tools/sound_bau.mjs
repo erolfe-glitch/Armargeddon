@@ -24,6 +24,7 @@ const cmd = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] 
 await cmd('Page.navigate', { url: BASE + '/tools/sound_bau.json' }); await sleep(800);
 
 // Verarbeitung im Browser (eine Datei je Aufruf)
+// fo = Ausblendlänge am Ende (s), sonst automatisch; raus = Eintrag entfällt, Schlüssel der übrigen bleiben gleich (2026-11-18).
 // Klangbearbeitung (2026-11-17, Spieltest Runde 2): rate = tiefer und langsamer abspielen (0,8 = 80 %), lp/hp = Tief-/Hochpass (Hz),
 // bass = Bassanhebung (dB, Kuhschwanz bei 150 Hz), komp = weiches Begrenzen (Stärke, z. B. 4), mix = weitere Töne darunterlegen [{ f, at (s ab Beginn des Ausschnitts), db (Spitze relativ), ab, max, rate, lp, hp, bass }]
 const PROC = `async (url, o) => {
@@ -54,7 +55,7 @@ const PROC = `async (url, o) => {
     for (let i = 0; i < z.length; i++) y[off + i] += z[i] * gz;
   }
   if (o.komp) { let p = 0; for (const v of y) p = Math.max(p, Math.abs(v)); const k = o.komp, t = Math.tanh(k); for (let i = 0; i < y.length; i++) y[i] = Math.tanh(y[i] / (p || 1) * k) / t; }   // komp = weiches Begrenzen (Spitzen einzelner Knackser), damit leise Schritte lauter werden können
-  const L = y.length, fo = Math.min(L, Math.round(SR * (cut ? Math.min(0.35, o.max * 0.15) : 0.04))), fi = Math.min(L, Math.round(SR * 0.004));
+  const L = y.length, fo = Math.min(L, Math.round(SR * (o.fo != null ? o.fo : cut ? Math.min(0.35, o.max * 0.15) : 0.04))), fi = Math.min(L, Math.round(SR * 0.004));
   const kan = o.stereo && ab.numberOfChannels > 1 ? [0, 1].map(c => ab.getChannelData(c).slice(a, b)) : [y];
   for (const z of kan) { for (let i = 0; i < fi; i++) z[i] *= i / fi; for (let i = 0; i < fo; i++) z[L - 1 - i] *= i / fo; }
   if (kan.length > 1) for (let i = 0; i < fi; i++) y[i] *= i / fi;
@@ -88,8 +89,9 @@ for (const e of SPEC.eintraege) {
   if (e.leer) { rows.push({ pool: e.pool, key: '–', s: null, f: '(noch leer)', note: e.note }); continue; }   // Platz angelegt, Dateien folgen
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);
+  if (e.raus) { rows.push({ pool: e.pool, key, s: e.s, f: '(entfernt) ' + e.f, note: e.raus }); continue; }   // raus = Ton entfällt, die Nummern der übrigen bleiben (2026-11-18)
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');
-  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo, rate: e.rate, lp: e.lp, hp: e.hp, bass: e.bass, komp: e.komp, mix: (e.mix || []).map(m => ({ ...m, url: BASE + '/sound-quelle/' + m.f.split('/').map(encodeURIComponent).join('/') })) })})`, awaitPromise: true, returnByValue: true });
+  const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, fo: e.fo, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo, rate: e.rate, lp: e.lp, hp: e.hp, bass: e.bass, komp: e.komp, mix: (e.mix || []).map(m => ({ ...m, url: BASE + '/sound-quelle/' + m.f.split('/').map(encodeURIComponent).join('/') })) })})`, awaitPromise: true, returnByValue: true });
   const v = r.result?.result?.value; if (v && !v.b64) console.log("Antwort ohne Daten:", JSON.stringify(v).slice(0, 300), JSON.stringify(r).slice(0, 300));
   if (!v) { console.log('FEHLER', e.f, JSON.stringify(r.result?.exceptionDetails?.exception?.description || r.result).slice(0, 300)); continue; }
   NEW[key] = 'data:audio/aac;base64,' + v.b64; POOLS[e.pool].push(e.w ? [key, e.s || null, e.w] : [key, e.s || null]);   // w = Gewicht (Hauptton öfter)

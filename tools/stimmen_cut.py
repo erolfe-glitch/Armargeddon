@@ -40,13 +40,15 @@ ZUSATZ = [
 FUNK = {
     'leicht': dict(bp=(400, 3000), rausch=-38, knister=3, drive=1.6, motor=-27, klick=False),
     'mittel': dict(bp=(500, 2500), rausch=-31, knister=8, drive=2.6, motor=-22, klick=True),
-    'stark':  dict(bp=(650, 2100), rausch=-25, knister=16, drive=4.2, motor=-18, klick=True),
+    'stark':  dict(bp=(600, 2300), rausch=-34, knister=4, drive=3.0, motor=-18, klick=True, kn_lp=2500),   # Tonprobe 2026-11-18: Knistern kratzte (vorher rausch −25, knister 16, drive 4,2, bp 650–2100)
 }
 # Maschine: Tonhöhe tiefer (durch langsameres Abspielen auch langsamer und schwerer), Ringmodulation, Kammfilter, kurzer metallischer Hall
 ROBOTER = {
     'leicht': dict(tief=0.92, ring=(32, 0.25), kamm=(0.004, 0.45), hall=(0.10, 0.12)),
     'mittel': dict(tief=0.85, ring=(48, 0.45), kamm=(0.006, 0.62), hall=(0.14, 0.20)),
     'stark':  dict(tief=0.78, ring=(70, 0.65), kamm=(0.008, 0.75), hall=(0.18, 0.28)),
+    # wie mittel, aber kurzer Nachhall (Tonprobe 2026-11-18, Schreiter Aschenwacht): kurzer Hall, schwächere Rückkopplung, Ausklang über ein Abwärts-Expander gekürzt
+    'kurz':   dict(tief=0.85, ring=(48, 0.45), kamm=(0.006, 0.45), hall=(0.05, 0.08), gate=-22),
 }
 
 STUFEN = {   # Bandpass (Hz), Verzerrung, Hall (Länge s, Anteil), Ausgangspegel
@@ -129,6 +131,7 @@ def funk(x, st, rng):
     rausch = signal.lfilter(b, a, rng.standard_normal(n)); rausch *= rms * 10 ** (st['rausch'] / 20) / (np.sqrt((rausch ** 2).mean()) or 1)
     kn = np.zeros(n); k = rng.poisson(st['knister'] * n / SR)
     for p in rng.integers(0, n, k): L = int(rng.integers(20, 160)); kn[p:p + L] += rng.standard_normal(min(L, n - p)) * rms * rng.uniform(0.3, 1.2)
+    if st.get('kn_lp'): bl, al = signal.butter(2, st['kn_lp'] / (SR / 2)); kn = signal.lfilter(bl, al, kn)   # Knistern ohne scharfe Höhen
     y = y + rausch + kn + motor(n, rng) * rms * 10 ** (st['motor'] / 20) * 3
     if st['klick']:   # Sprechtaste: kurzer Rausch-Klick davor und danach
         kl = lambda: signal.lfilter(b, a, rng.standard_normal(int(SR * 0.045))) * rms * 1.2 * np.linspace(1, 0, int(SR * 0.045))
@@ -145,7 +148,17 @@ def roboter(x, st, rng):
     for p in rng.integers(1, n, 40): ir[p] += rng.uniform(-1, 1) * np.exp(-p / (n / 3))
     nass = np.convolve(z, ir)[:len(z)]; nass /= np.abs(nass).max() or 1
     b, a = signal.butter(2, [90 / (SR / 2), 5000 / (SR / 2)], 'band')
-    return signal.lfilter(b, a, (1 - mix) * z + mix * nass)
+    y = signal.lfilter(b, a, (1 - mix) * z + mix * nass)
+    return nachhall_kuerzen(y, st['gate']) if st.get('gate') else y
+
+
+def nachhall_kuerzen(y, thr_db):   # Abwärts-Expander: unter thr_db (relativ zur Spitze der 10-ms-Hüllkurve) steil leiser – kürzt Hallfahnen und Ausklang, Sprache bleibt
+    w = int(SR * 0.01); n = len(y) // w + 1; yp = np.pad(y, (0, n * w - len(y)))
+    e = np.sqrt((yp.reshape(n, w) ** 2).mean(1)); e /= e.max() or 1; thr = 10 ** (thr_db / 20)
+    g = np.minimum(1, (e / thr) ** 3)
+    for i in range(1, n): g[i] = max(g[i], g[i - 1] * 0.7)   # Rückgang über ca. 30 ms, kein Flattern
+    for i in range(n - 2, -1, -1): g[i] = max(g[i], g[i + 1] * 0.5)   # Einsatz vorgezogen, nichts abgeschnitten
+    return y * np.repeat(g, w)[:len(y)]
 
 
 EFFEKT = {'funk': (FUNK, funk), 'roboter': (ROBOTER, roboter)}
