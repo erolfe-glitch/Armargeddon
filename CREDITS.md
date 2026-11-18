@@ -20,7 +20,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | mg | mg_3 | Infantry Guns/kave_msri-machine-gun-sfx-320986.mp3 | Pixabay / kave_msri | Pixabay Content License | – |
 | huelsen | huelsen_1 | Infantry Guns/freesound_community-shells-hitting-ground-40-39791.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | buechse | buechse_1 | 721431__the_epic1357__new-barrett.mp3 | Freesound / the_epic1357 | CC0 1.0 | <https://freesound.org/s/721431/> |
-| cannon | cannon_1 | 850499__vulkanbruder__little-cannon.wav | Freesound / vulkanbruder | CC0 1.0 | <https://freesound.org/s/850499/> |
+| kolosskanone | kolosskanone_1 | 850499__vulkanbruder__little-cannon.wav | Freesound / vulkanbruder | CC0 1.0 | <https://freesound.org/s/850499/> |
 | cannon | cannon_2 | Heavy firing sounds/239137__qubodup__artillery-gunfire.flac | Freesound / qubodup | CC0 1.0 | <https://freesound.org/s/239137/> |
 | cannon | cannon_3 | Heavy firing sounds/freesound_community-cannon-shot-14799.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | panzerkanone | panzerkanone_1 | 457044__gerainsan__slow-motion-gun-shot.wav | Freesound / gerainsan | CC0 1.0 | <https://freesound.org/s/457044/> |
@@ -46,6 +46,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | vorbei | vorbei_1 | Impacts/dennish18-bullet-passing-by-fast-146492.mp3 | Pixabay / dennish18 | Pixabay Content License | – |
 | einschlag | einschlag_1 | Impacts/u_68csiaifb5-bulletimpact1-442717.mp3 | Pixabay / u_68csiaifb5 | Pixabay Content License | – |
 | einschlag | einschlag_2 | Impacts/u_68csiaifb5-bulletimpact2-442718.mp3 | Pixabay / u_68csiaifb5 | Pixabay Content License | – |
+| einschlag | einschlag_3 … _6 | Impacts/116645__woodingp__bullets-hit-edit.aiff (verlustfrei nach WAV) | Freesound / Woodingp | CC0 1.0 | <https://freesound.org/s/116645/> |
 | einsturz | einsturz_1 | Explosion/shrek_30-building-demolished-472876.mp3 | Pixabay / shrek_30 | Pixabay Content License | – |
 | einsturz | einsturz_2 | Explosion/magiazzz-massive-building-548236.mp3 | Pixabay / magiazzz | Pixabay Content License | – |
 | gasmaske | gasmaske_1 | 256519__kodack__mask-breathing-sound.wav | Freesound / kodack | CC0 1.0 | <https://freesound.org/s/256519/> |
@@ -94,6 +95,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | nahD | nahD_1 | mixkit-heavy-sword-smashes-metal-2795.wav | Mixkit | Mixkit Free License | – |
 | nahD | nahD_2 | yodguard-a-massive-axe-impact-hitting-metal-1-450251.mp3 | Pixabay / yodguard | Pixabay Content License | – |
 | nahD | nahD_3 | yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3 | Pixabay / yodguard | Pixabay Content License | – |
+| getuemmel | getuemmel_1 | Melee hit infantry/218522__yap_audio_production__medievalcombatloop.mp3 | Freesound / Yap_Audio_Production | CC BY 4.0 | <https://freesound.org/s/218522/> |
 | heal | heal_1 | floraphonic-duct-tape-3-183995.mp3 | Pixabay / floraphonic | Pixabay Content License | – |
 | reparieren | reparieren_1 | 492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg | Freesound / firetie | CC0 1.0 | <https://freesound.org/s/492434/> |
 | reparieren | reparieren_2 | 591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav | Freesound / rudmer_rotteveel | CC0 1.0 | <https://freesound.org/s/591529/> |
@@ -116,8 +118,12 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | motor_auswahl | motor_auswahl_1 | Moving tanks/freesound_community-driving-tank-engine-88503.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | motor_auswahl | motor_auswahl_2 | Moving tanks/dennish18-tank-moving-143104.mp3 | Pixabay / dennish18 | Pixabay Content License | – |
 | mgsetup | mgsetup_1 | 800863__tyranttim__soldier-guns_up.wav | Freesound / tyranttim | CC0 1.0 | <https://freesound.org/s/800863/> |
+| mgladen | mgladen_1 | Repair reload heal etc/751180__fosdork__shotgun-cock.mp3 | Freesound / Fosdork | CC0 1.0 | <https://freesound.org/s/751180/> |
+| mgladen | mgladen_2 | Repair reload heal etc/628640__el_boss__bug-a-salt-reload-plastic-shotgun.wav | Freesound / el_boss | CC0 1.0 | <https://freesound.org/s/628640/> |
 | tick | tick_1 | Ereignisse/320862__urupin__old-watch-in-a-small-antique-shop.flac | Freesound / urupin | CC BY-NC 4.0 | <https://freesound.org/s/320862/> |
 | bauen | bauen_1 | 675138__craigsmith__s17-03-hand-to-hand-battle-with-yelling-and-armor-noise-many-voices.wav | Freesound / craigsmith | CC0 1.0 | <https://freesound.org/s/675138/> |
+| schaufel | schaufel_1 … _4 | Schaufel/96216__cgeffex__combo-shovels.wav | Freesound / CGEffex | CC BY 4.0 | <https://freesound.org/s/96216/> |
+| atmen (+ _gm, _gs) | atmen_1 … _3 | Schaufel/72199__shall555__sh_digging_labored_breathing.wav | Freesound / shall555 | CC BY 4.0 | <https://freesound.org/s/72199/> |
 | ui | ui_1 | 488534__ranner__ui-click.wav | Freesound / ranner | CC0 1.0 | <https://freesound.org/s/488534/> |
 | ui | ui_2 | 677861__el_boss__ui-button-click.wav | Freesound / el_boss | CC0 1.0 | <https://freesound.org/s/677861/> |
 | ui | ui_3 | 117651__jppi_stu__sw_switchoffon.wav | Freesound / jppi_stu | CC BY 4.0 | <https://freesound.org/s/117651/> |
@@ -133,4 +139,4 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 
 **Ältere Töne** (Schlüssel ohne `_n`, schon vor 2026-11-16 eingebettet): Herkunft im Kopf von `src/sound.js` beschrieben; Lizenzen dort nicht erfasst.
 
-**Aufgehoben, nicht eingebaut:** ganze Datei `street-battle-lviv` (für „Kugelhagel“), Frauenstimmen (`woman-fighting`, `communication-voicelines-woman`), `Win Point` (gleich wie `Win Point 2`), Dämonen-Töne, „Seven Nation Army“ (geschütztes Lied, wird nicht eingebaut).
+**Aufgehoben, nicht eingebaut:** ganze Datei `street-battle-lviv` (für „Kugelhagel“), Frauenstimmen (`woman-fighting`, `communication-voicelines-woman`), `Win Point` (gleich wie `Win Point 2`), Dämonen-Töne, „Seven Nation Army“ (geschütztes Lied, wird nicht eingebaut). Löwengebrüll für den Kreuzschreiter (Fähigkeit „verängstigt“, später): `Monster/613685__czghost__roar05.wav`, Freesound / CZghost, CC BY 4.0, <https://freesound.org/s/613685/>.

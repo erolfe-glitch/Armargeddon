@@ -76,8 +76,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 - **Titanen/Railgun der Mechs:** `509015`, `510084` (Notizen des Nutzers).
 - **Namensnennung im Spiel:** CC-BY-Töne (siehe `CREDITS.md`) in einem Credits-Fenster nennen; CC-BY-NC-Töne vor einem Verkauf ersetzen.
 - **Dämonen-Stimmen** (2026-11-17, noch nicht eingebaut): `four_voices_whispering`, `schizophrenic-voices`, `sisters-voices`, `the-prowler` in `sound-quelle/`.
-- **Löwengebrüll des Kreuzschreiters** (2026-11-18): Tigerbrüllen (`tiger`) mit Roboterfilter als Löwengebrüll; dazu Fähigkeit „verängstigt“, einmal je Spiel, wirkt auf Gegner im Umkreis von 1 Feld.
-- **Schaufelgeräusche fürs Eingraben** (2026-11-18): kommen vom Nutzer nach `sound-quelle/Schaufel/`, dann Tonplatz `schaufel` (ui.js spielt ihn beim Eingraben, sobald es ihn gibt, sonst `bauen`).
+- **Löwengebrüll des Kreuzschreiters** (2026-11-18): Ton liegt in `sound-quelle/Monster/613685__czghost__roar05.wav` (CC BY 4.0, CZghost), mit Roboterfilter (stimmen_cut.py `roboter`) als Löwengebrüll; dazu Fähigkeit „verängstigt“, einmal je Spiel, wirkt auf Gegner im Umkreis von 1 Feld.
 - **Abprotzen** (2026-11-18): zwei eigene Töne des Nutzers fehlen noch in `sound-quelle/`; bis dahin Platzhalter `abprotzen_1` (loading-gun).
 
 ## Spielmodi, KI und Armee-Grenzen (Enrico, 2026-11-17)

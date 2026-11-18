@@ -551,6 +551,51 @@
   "kb": 7
  },
  {
+  "pool": "einschlag",
+  "key": "einschlag_3",
+  "s": null,
+  "f": "Impacts/116645__woodingp__bullets-hit-edit.wav",
+  "dur": 0.5,
+  "src": 14,
+  "start": 0.53,
+  "gain": -5,
+  "kb": 6,
+  "note": "Kugeleinschläge, weitere Varianten (Nachtrag 2026-11-18, CC0, aus AIFF verlustfrei nach WAV)"
+ },
+ {
+  "pool": "einschlag",
+  "key": "einschlag_4",
+  "s": null,
+  "f": "Impacts/116645__woodingp__bullets-hit-edit.wav",
+  "dur": 0.5,
+  "src": 14,
+  "start": 1.15,
+  "gain": -5.3,
+  "kb": 6
+ },
+ {
+  "pool": "einschlag",
+  "key": "einschlag_5",
+  "s": null,
+  "f": "Impacts/116645__woodingp__bullets-hit-edit.wav",
+  "dur": 0.5,
+  "src": 14,
+  "start": 4.03,
+  "gain": -4.8,
+  "kb": 6
+ },
+ {
+  "pool": "einschlag",
+  "key": "einschlag_6",
+  "s": null,
+  "f": "Impacts/116645__woodingp__bullets-hit-edit.wav",
+  "dur": 0.5,
+  "src": 14,
+  "start": 6.69,
+  "gain": -4.7,
+  "kb": 6
+ },
+ {
   "pool": "einsturz",
   "key": "einsturz_1",
   "s": null,
@@ -4543,6 +4588,18 @@
   "kb": 7
  },
  {
+  "pool": "getuemmel",
+  "key": "getuemmel_1",
+  "s": null,
+  "f": "Melee hit infantry/218522__yap_audio_production__medievalcombatloop.mp3",
+  "dur": 17.48,
+  "src": 17.5,
+  "start": 0.02,
+  "gain": 2.9,
+  "kb": 205,
+  "note": "Nahkampf-Getümmel als Schleife, solange Nahkampf läuft (Nachtrag 2026-11-18)"
+ },
+ {
   "pool": "saebel",
   "key": "saebel_1",
   "s": null,
@@ -5275,6 +5332,74 @@
   "kb": 4
  },
  {
+  "pool": "atmen_gm",
+  "key": "atmen_gm_1",
+  "s": null,
+  "f": "Voices/eigene/filter/atmen_1_gm.wav",
+  "dur": 1.58,
+  "src": 1.81,
+  "start": 0.21,
+  "gain": -3,
+  "kb": 19,
+  "note": "Gasmaske leicht: atmen gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
+  "pool": "atmen_gm",
+  "key": "atmen_gm_2",
+  "s": null,
+  "f": "Voices/eigene/filter/atmen_2_gm.wav",
+  "dur": 1.02,
+  "src": 1.02,
+  "start": 0,
+  "gain": -8.5,
+  "kb": 12
+ },
+ {
+  "pool": "atmen_gm",
+  "key": "atmen_gm_3",
+  "s": null,
+  "f": "Voices/eigene/filter/atmen_3_gm.wav",
+  "dur": 0.94,
+  "src": 1.21,
+  "start": 0.27,
+  "gain": 0,
+  "kb": 11
+ },
+ {
+  "pool": "atmen_gs",
+  "key": "atmen_gs_1",
+  "s": null,
+  "f": "Voices/eigene/filter/atmen_1_gs.wav",
+  "dur": 1.63,
+  "src": 1.81,
+  "start": 0.16,
+  "gain": -6.7,
+  "kb": 19,
+  "note": "Gasmaske mittel (Kampfanzug): atmen gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
+  "pool": "atmen_gs",
+  "key": "atmen_gs_2",
+  "s": null,
+  "f": "Voices/eigene/filter/atmen_2_gs.wav",
+  "dur": 1.02,
+  "src": 1.02,
+  "start": 0,
+  "gain": -11.6,
+  "kb": 12
+ },
+ {
+  "pool": "atmen_gs",
+  "key": "atmen_gs_3",
+  "s": null,
+  "f": "Voices/eigene/filter/atmen_3_gs.wav",
+  "dur": 0.94,
+  "src": 1.21,
+  "start": 0.27,
+  "gain": 0,
+  "kb": 11
+ },
+ {
   "pool": "pferd_auswahl",
   "key": "pferd_auswahl_1",
   "s": null,
@@ -5563,6 +5688,29 @@
   "note": "MG aufbauen, Konkordat (Korrektur 5)"
  },
  {
+  "pool": "mgladen",
+  "key": "mgladen_1",
+  "s": null,
+  "f": "Repair reload heal etc/751180__fosdork__shotgun-cock.mp3",
+  "dur": 1.07,
+  "src": 1.42,
+  "start": 0.33,
+  "gain": -8.3,
+  "kb": 13,
+  "note": "MG wird aufgestellt: Verschluss (Nachtrag 2026-11-18)"
+ },
+ {
+  "pool": "mgladen",
+  "key": "mgladen_2",
+  "s": null,
+  "f": "Repair reload heal etc/628640__el_boss__bug-a-salt-reload-plastic-shotgun.wav",
+  "dur": 0.73,
+  "src": 1.65,
+  "start": 0.44,
+  "gain": -0.5,
+  "kb": 9
+ },
+ {
   "pool": "tick",
   "key": "tick_1",
   "s": null,
@@ -5585,6 +5733,85 @@
   "gain": -5.9,
   "kb": 29,
   "note": "Befestigungen bauen, kurz und leise (Korrektur 8)"
+ },
+ {
+  "pool": "schaufel",
+  "key": "schaufel_1",
+  "s": null,
+  "f": "Schaufel/96216__cgeffex__combo-shovels.wav",
+  "dur": 1.98,
+  "src": 20.98,
+  "start": 0.25,
+  "gain": -6.2,
+  "kb": 23,
+  "note": "Eingraben: Schaufelstiche (Nachtrag 2026-11-18)"
+ },
+ {
+  "pool": "schaufel",
+  "key": "schaufel_2",
+  "s": null,
+  "f": "Schaufel/96216__cgeffex__combo-shovels.wav",
+  "dur": 1.1,
+  "src": 20.98,
+  "start": 3.85,
+  "gain": -4.5,
+  "kb": 13
+ },
+ {
+  "pool": "schaufel",
+  "key": "schaufel_3",
+  "s": null,
+  "f": "Schaufel/96216__cgeffex__combo-shovels.wav",
+  "dur": 1.28,
+  "src": 20.98,
+  "start": 6.35,
+  "gain": -2.6,
+  "kb": 15
+ },
+ {
+  "pool": "schaufel",
+  "key": "schaufel_4",
+  "s": null,
+  "f": "Schaufel/96216__cgeffex__combo-shovels.wav",
+  "dur": 2.22,
+  "src": 20.98,
+  "start": 10.3,
+  "gain": -4.9,
+  "kb": 26
+ },
+ {
+  "pool": "atmen",
+  "key": "atmen_1",
+  "s": null,
+  "f": "Schaufel/72199__shall555__sh_digging_labored_breathing.wav",
+  "dur": 1.8,
+  "src": 23.76,
+  "start": 1.9,
+  "gain": 1.4,
+  "kb": 21,
+  "note": "Eingraben: schweres Atmen unter der Schaufel (Nachtrag 2026-11-18); Stimmfilter wie die Sprecher (tools/stimmfilter.py)"
+ },
+ {
+  "pool": "atmen",
+  "key": "atmen_2",
+  "s": null,
+  "f": "Schaufel/72199__shall555__sh_digging_labored_breathing.wav",
+  "dur": 1,
+  "src": 23.76,
+  "start": 4.3,
+  "gain": 20.2,
+  "kb": 12
+ },
+ {
+  "pool": "atmen",
+  "key": "atmen_3",
+  "s": null,
+  "f": "Schaufel/72199__shall555__sh_digging_labored_breathing.wav",
+  "dur": 1.2,
+  "src": 23.76,
+  "start": 18.4,
+  "gain": 1.7,
+  "kb": 14
  },
  {
   "pool": "ui",

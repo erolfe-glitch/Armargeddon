@@ -1849,7 +1849,7 @@ const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 's
   boom: ['boomH_1'] };   // Tonprobe 2026-11-18: Granateinschlag = boomH_1 (alter boom und grenade entfernt)
 // Stimmen gegenüber Fahrzeugen (Tonprobe 2026-11-18): Stimm-Plätze lauter (STIMM_VOL ≈ +3 dB); solange jemand spricht, werden laufende Fahrzeugtöne
 // (DUCK_PL, Motor beim Anklicken) auf DUCK_F abgesenkt und danach wieder angehoben.
-const STIMM_PL = new Set(['pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
+const STIMM_PL = new Set(['atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
 const DUCK_PL = new Set(['tank', 'mech', 'gespann', 'wagenknarren', 'ueberrollen']);
 const STIMM_VOL = 1.45, DUCK_F = 0.4, STEIN = ['village', 'bunker', 'fabrik', 'kirche'];
 let duckBis = 0; const duckLauf = [];   // duckLauf: [{ a, vol }] laufende Fahrzeugtöne
@@ -1857,6 +1857,17 @@ const duckF = () => performance.now() < duckBis ? DUCK_F : 1;
 function duckStimme(a, ms) { const d = ms || (a && isFinite(a.duration) && a.duration > 0 ? a.duration * 1000 : 1800); duckBis = Math.max(duckBis, performance.now() + d + 150); duckTick(); }
 function duckTick() { for (let i = duckLauf.length - 1; i >= 0; i--) { const t = duckLauf[i]; if (t.a.ended || t.a.paused) { duckLauf.splice(i, 1); continue; } try { t.a.volume = t.vol * duckF(); } catch (e) {} } }
 setInterval(() => { if (duckLauf.length) duckTick(); }, 60);
+// Nahkampf-Getümmel (2026-11-18): Schleife, die mit dem ersten Nahkampf-Ereignis einblendet und GETUEMMEL_NACH ms nach dem letzten wieder ausblendet
+const GETUEMMEL_VOL = 0.3, GETUEMMEL_NACH = 2500; let gtA = null, gtBis = 0;
+function getuemmel() {
+  if (!soundOn || speed >= INSTANT) return; gtBis = performance.now() + GETUEMMEL_NACH; if (gtA) return;
+  const k = sndPick('getuemmel'); if (!k || !SND[k]) return;
+  try { const a = SND[k].cloneNode(); a.loop = true; a.volume = 0; try { a.currentTime = Math.random() * 12; } catch (e) {} const p = a.play(); if (p && p.catch) p.catch(() => {}); gtA = a; } catch (e) { return; }
+  const tick = () => { const a = gtA; if (!a) return; const jetzt = performance.now(), ziel = soundOn && jetzt < gtBis ? Math.min(1, GETUEMMEL_VOL * effektVol * duckF()) : 0;
+    try { a.volume = Math.max(0, Math.min(1, a.volume + (ziel - a.volume) * 0.18)); } catch (e) {}
+    if (ziel === 0 && a.volume < 0.01) { a.pause(); gtA = null; return; } setTimeout(tick, 50); };
+  tick();
+}
 const SND_POOLS = window.SOUND_POOLS || {};
 let hustenT = -1e9, hustenN = 0;
 function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4, null, { v: 'gm' }), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
@@ -2063,6 +2074,7 @@ async function playEvent0(e) {
       await wait(e.mode === 'barrage' ? 420 : 260); break;
     }
     case 'melee': case 'counter': {
+      getuemmel();   // Getümmel-Schleife, solange Nahkampf läuft (2026-11-18)
       const a = DU.get(e.a), d = DU.get(e.d);
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
@@ -2196,7 +2208,7 @@ async function playEvent0(e) {
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
-    case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('nachladen', 0.4); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
+    case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('mgladen', 0.45); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('nachladen', 0.4); floater(...headPos(e.u), 'abgebaut', '#ffe7a0'); await wait(200); break; }
     case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
@@ -2208,7 +2220,7 @@ async function playEvent0(e) {
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': floater(...headPos(e.u), 'brennt!', '#ffb04a'); await wait(120); break;
     case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
-    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound(SND_POOLS.schaufel ? 'schaufel' : 'bauen', 0.35);   /* Grunzen seit Tonprobe 2026-11-18 nur bei leichten Verletzungen; Platz „schaufel“ folgt */ floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
+    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('schaufel', 0.4); setTimeout(() => playSound('atmen', 0.3, null, { u, noGap: true }), 250 / speed);   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
     case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
     case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
@@ -3530,7 +3542,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, feldWirkung, pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

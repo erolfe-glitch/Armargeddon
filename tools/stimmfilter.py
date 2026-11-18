@@ -20,7 +20,8 @@ PLAN = {
     'pain': ['gm', 'gs'], 'medic': ['gm', 'gs'], 'cry': ['gm', 'gs'], 'scream': ['gm', 'gs'],   # Treffer/Nahkampf: nur Fußtruppen
     'panic': ['gm', 'gs', 'bf', 'mr'],                                                          # Flucht: jede Einheit
     'forward': ['gm', 'gs'], 'roar': ['gm', 'gs'], 'stand': ['gm'], 'charge': ['gm', 'gs'],     # Sturmlauf, Gegenstoß; Befehle der Offiziere bleiben ohne Filter
-    'comeon': ['gm'], 'husten': ['gm'], 'robot': ['mr'], 'grunzen': ['gm', 'gs'],   # Eingraben (Spieltest Runde 2)
+    'comeon': ['gm'], 'husten': ['gm'], 'robot': ['mr'], 'grunzen': ['gm', 'gs'],   # leichte Verletzung (seit 2026-11-18)
+    'atmen': ['gm', 'gs'],   # schweres Atmen beim Eingraben (2026-11-18)
 }
 OHNE = {'panic_1'}   # Fluchtschreie einer Menge: in der Hörprobe nicht gewählt, bleibt nur ungefiltert
 BEIDE = {'robot'}    # bisher nur Konkordat: gefiltert für beide Seiten (Eisenknecht der Aschenwacht)
