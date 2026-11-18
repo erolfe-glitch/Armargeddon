@@ -2,7 +2,7 @@
 
 Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über alle Bögen eindeutig):
 
-- `bogen3b_symbole`: zielen, nahkampf, marsch, fahne, totenkopf, schild, gas, granate_artillerie, zahnrad, sanitaeter, blitz, handgranate, gewehr, pferd, fernglas, sanduhr
+- `bogen3c_symbole` (seit 2026-11-18, ersetzt bogen3b; totenkopf nur abgelegt): zielen, nahkampf, marsch, fahne, totenkopf, schild, gas, granate_artillerie, zahnrad, sanitaeter, blitz, handgranate, gewehr, pferd, fernglas, sanduhr
 - `bogen4a_symbole`: drahtschere, drahtrolle, auge, haken, drehpfeil, mg_dreibein, sperrfeuer, lafette, flamme
 - `bogen4b_symbole`: meldehund, schraubenschluessel, nebel, spitzhacke, sprengladung, tellermine, scheinwerfer, gasmaske, munitionskiste
 - `bogen4c_symbole`: panzerbrecher, durchsickern, niedergehalten, flucht, gebrochen (vorläufig), festgefahren, walze

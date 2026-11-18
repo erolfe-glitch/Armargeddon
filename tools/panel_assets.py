@@ -39,7 +39,7 @@ PARTS = {
     'pF': ('wimpel_fraktionen/wimpel_legion', 160, 0.62),
 }
 SYMBOLS = {
-    'bogen3b_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',
+    'bogen3c_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',
                         'blitz', 'handgranate', 'gewehr', 'pferd', 'sanduhr', 'zahnrad', 'fernglas', 'schild'],
     'bogen4a_symbole': ['drahtschere', 'drahtrolle', 'auge', 'haken', 'drehpfeil', 'mg_dreibein', 'sperrfeuer',
                         'lafette', 'flamme'],

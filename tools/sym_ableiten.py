@@ -18,7 +18,7 @@ OUT = T / 'abgeleitet'
 
 
 def stiefel():
-    im = Image.open(T / 'bogen3b_symbole' / 's_marsch.png').convert('RGBA'); a = np.asarray(im).astype(np.float64)
+    im = Image.open(T / 'bogen3c_symbole' / 's_marsch.png').convert('RGBA'); a = np.asarray(im).astype(np.float64)
     rgb, al = a[..., :3], a[..., 3]; H, W = al.shape
     mx, mn = rgb.max(2), rgb.min(2); lum = rgb @ [0.299, 0.587, 0.114]
     feder = (al > 30) & (lum > 95) & ((mx - mn) < 40)
@@ -31,6 +31,11 @@ def stiefel():
         # Flügelfläche ganz: auch die dunklen Federkonturen dazwischen (alles links vom Schaft innerhalb der Flügelhülle)
         hull = ndimage.binary_closing(wing, iterations=6) & ndimage.binary_fill_holes(ndimage.binary_closing(wing, iterations=6))
         boot = (al > 30) & ~hull
+        # schmale Federreste, die noch am Schaft hängen (bogen3c: Flügel unten dunkel gemalt): Kern des Stiefels durch Erosion,
+        # danach nur so weit zurückwachsen lassen, wie der Stiefel selbst reicht
+        core = ndimage.binary_erosion(boot, iterations=14)
+        lc, nc = ndimage.label(core); core = lc == (1 + int(np.argmax(ndimage.sum(core, lc, range(1, nc + 1)))))
+        boot &= ndimage.binary_dilation(core, iterations=16)
         lab2, n2 = ndimage.label(boot); sz2 = ndimage.sum(boot, lab2, range(1, n2 + 1)); keep = lab2 == (1 + int(np.argmax(sz2)))
         al = np.where(keep, al, 0)
     out = np.dstack([rgb, al]).astype(np.uint8); ys, xs = np.nonzero(out[..., 3] > 20)

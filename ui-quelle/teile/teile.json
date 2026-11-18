@@ -199,70 +199,6 @@
   202,
   315
  ],
- "bogen3b_symbole/s_zielen": [
-  430,
-  428
- ],
- "bogen3b_symbole/s_nahkampf": [
-  412,
-  419
- ],
- "bogen3b_symbole/s_marsch": [
-  493,
-  416
- ],
- "bogen3b_symbole/s_fahne": [
-  427,
-  424
- ],
- "bogen3b_symbole/s_totenkopf": [
-  359,
-  396
- ],
- "bogen3b_symbole/s_schild": [
-  332,
-  414
- ],
- "bogen3b_symbole/s_gas": [
-  430,
-  400
- ],
- "bogen3b_symbole/s_granate_artillerie": [
-  397,
-  415
- ],
- "bogen3b_symbole/s_zahnrad": [
-  411,
-  411
- ],
- "bogen3b_symbole/s_sanitaeter": [
-  300,
-  414
- ],
- "bogen3b_symbole/s_blitz": [
-  379,
-  405
- ],
- "bogen3b_symbole/s_handgranate": [
-  264,
-  407
- ],
- "bogen3b_symbole/s_gewehr": [
-  653,
-  396
- ],
- "bogen3b_symbole/s_pferd": [
-  488,
-  409
- ],
- "bogen3b_symbole/s_fernglas": [
-  433,
-  346
- ],
- "bogen3b_symbole/s_sanduhr": [
-  254,
-  411
- ],
  "bogen4a_symbole/s_drahtschere": [
   456,
   442
@@ -438,5 +374,69 @@
  "bogen6_stellung/s_abprotzen": [
   466,
   353
+ ],
+ "bogen3c_symbole/s_zielen": [
+  264,
+  262
+ ],
+ "bogen3c_symbole/s_nahkampf": [
+  250,
+  257
+ ],
+ "bogen3c_symbole/s_marsch": [
+  302,
+  257
+ ],
+ "bogen3c_symbole/s_fahne": [
+  264,
+  270
+ ],
+ "bogen3c_symbole/s_totenkopf": [
+  220,
+  246
+ ],
+ "bogen3c_symbole/s_schild": [
+  205,
+  258
+ ],
+ "bogen3c_symbole/s_gas": [
+  263,
+  252
+ ],
+ "bogen3c_symbole/s_granate_artillerie": [
+  248,
+  272
+ ],
+ "bogen3c_symbole/s_zahnrad": [
+  256,
+  251
+ ],
+ "bogen3c_symbole/s_sanitaeter": [
+  188,
+  257
+ ],
+ "bogen3c_symbole/s_blitz": [
+  233,
+  252
+ ],
+ "bogen3c_symbole/s_handgranate": [
+  158,
+  253
+ ],
+ "bogen3c_symbole/s_gewehr": [
+  396,
+  243
+ ],
+ "bogen3c_symbole/s_pferd": [
+  307,
+  253
+ ],
+ "bogen3c_symbole/s_fernglas": [
+  262,
+  214
+ ],
+ "bogen3c_symbole/s_sanduhr": [
+  152,
+  256
  ]
 }

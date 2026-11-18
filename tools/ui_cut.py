@@ -25,12 +25,12 @@ NAMES = {
                        'platte_1', 'platte_2', 'platte_3', 'platte_4',
                        'balken_1', 'balken_2', 'balken_3',
                        'punkt_voll', 'punkt_leer_1', 'punkt_leer_2', 'punkt_leer_3', 'punkt_leer_4'],
-    'bogen3_symbole': ['s_zielen', 's_nahkampf', 's_marsch', 's_fahne',
+    'bogen3c_symbole': [   # Symbolbogen (2026-11-18, ersetzt bogen3/bogen3b mit gleicher Anordnung)
+                       's_zielen', 's_nahkampf', 's_marsch', 's_fahne',
                        's_totenkopf', 's_schild', 's_gas', 's_granate_artillerie',
                        's_zahnrad', 's_sanitaeter', 's_blitz', 's_handgranate',
                        's_gewehr', 's_pferd', 's_fernglas', 's_sanduhr'],
 }
-NAMES['bogen3b_symbole'] = NAMES['bogen3_symbole']   # gleiche Anordnung, neuer Stil (wird im Entwurf benutzt)
 NAMES['bogen4a_symbole'] = ['s_drahtschere', 's_drahtrolle', 's_auge', 's_haken', 's_drehpfeil', 's_mg_dreibein',
                             's_sperrfeuer', 's_lafette', 's_flamme']
 NAMES['bogen4b_symbole'] = ['s_meldehund', 's_schraubenschluessel', 's_nebel', 's_spitzhacke', 's_sprengladung',
@@ -47,12 +47,58 @@ NAMES['wappen_legion'] = ['w_flagge', 'w_emblem']
 NAMES['wimpel_fraktionen'] = ['wimpel_konkordat', 'wimpel_aschenwacht', 'wimpel_legion']
 # Kartenmarken (Einheiten auf der Karte): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
 NAMES['kartenmarken'] = ['schild_bronze', 'schild_silber', 'schild_gold', 'orden', 'muenze_voll', 'muenze_leer']
-MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6, 'bogen3_symbole': 30, 'bogen3b_symbole': 30}
+MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6}
 # Bögen mit festem Raster (Spalten, Zeilen): Stücke werden nach ihrer Mitte der Rasterzelle zugeordnet,
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
-GRID = {'bogen3b_symbole': (4, 4), 'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
+GRID = {'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
         'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1),
         'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2)}
+# Bögen mit Nahtschnitt (wie figure_cut): je Rasterlinie eine Naht durch den freien Hintergrund (geringste Deckung),
+# die Zellen dazwischen sind die Teile. Splitter und Funken bleiben so sicher beim eigenen Symbol.
+# bogen3c_symbole (2026-11-18): neue Fassung von bogen3b, gleiche Anordnung, ersetzt sie im Spiel.
+SEAM = {'bogen3c_symbole': (4, 4)}
+
+
+def naht(cost, pos, band):
+    """Senkrechte Naht von oben nach unten (je Zeile höchstens 1 px seitlich) im Streifen pos±band; liefert x je Zeile."""
+    h, w = cost.shape
+    x0, x1 = max(0, pos - band), min(w, pos + band)
+    c = cost[:, x0:x1] + np.abs(np.arange(x0, x1) - pos)[None, :] * 1e-3   # bei Gleichstand nahe der Rasterlinie
+    acc = c.copy(); back = np.zeros(c.shape, dtype=np.int8)
+    for y in range(1, h):
+        prev = acc[y - 1]
+        cand = np.stack([np.r_[np.inf, prev[:-1]], prev, np.r_[prev[1:], np.inf]])
+        k = cand.argmin(0); acc[y] += cand[k, np.arange(len(prev))]; back[y] = k - 1
+    xs = np.zeros(h, dtype=int); xs[-1] = int(acc[-1].argmin())
+    for y in range(h - 1, 0, -1):
+        xs[y - 1] = xs[y] + back[y, xs[y]]
+    return xs + x0
+
+
+def seam_parts(rgba, cols, rows):
+    a = rgba[..., 3].astype(np.float64) / 255
+    cost = a * 1000 + 1
+    h, w = a.shape
+    vs = [naht(cost, round(i * w / cols), round(w / cols * 0.3)) for i in range(1, cols)]        # x je Zeile
+    hs = [naht(cost.T, round(i * h / rows), round(h / rows * 0.3)) for i in range(1, rows)]      # y je Spalte
+    for v in vs:   # Prüfung: eine Naht soll nur durch Hintergrund laufen
+        if a[np.arange(h), v].max() > 0.1: print(f'  senkrechte Naht schneidet Deckung {a[np.arange(h), v].max():.2f}', file=sys.stderr)
+    for hh in hs:
+        if a[hh, np.arange(w)].max() > 0.1: print(f'  waagerechte Naht schneidet Deckung {a[hh, np.arange(w)].max():.2f}', file=sys.stderr)
+    yy, xx = np.mgrid[0:h, 0:w]
+    col = sum((xx >= v[:, None]).astype(int) for v in vs)
+    row = sum((yy >= hh[None, :]).astype(int) for hh in hs)
+    out = []
+    for r in range(rows):
+        for c in range(cols):
+            mask = (row == r) & (col == c) & (a > 0.03)
+            lab, n = ndimage.label(mask)
+            if n:   # Einzelpixel-Rauschen weg, Splitter (ab 20 px) bleiben
+                size = ndimage.sum(mask, lab, range(1, n + 1))
+                mask = np.isin(lab, 1 + np.nonzero(size >= 20)[0])
+            ys, xs = np.nonzero(mask)
+            out.append([xs.min(), ys.min(), xs.max() + 1, ys.max() + 1, mask])
+    return out
 
 
 def grid_parts(rgba, cols, rows):
@@ -140,7 +186,7 @@ def main():
             continue
         src = next(SRC.glob(sheet + '*'))
         rgba = key(Image.open(src))
-        ps = grid_parts(rgba, *GRID[sheet]) if sheet in GRID else parts(rgba, MERGE[sheet])
+        ps = seam_parts(rgba, *SEAM[sheet]) if sheet in SEAM else grid_parts(rgba, *GRID[sheet]) if sheet in GRID else parts(rgba, MERGE[sheet])
         if len(ps) != len(names):
             print(f'{sheet}: {len(ps)} Teile gefunden, {len(names)} Namen erwartet', file=sys.stderr)
         d = OUT / sheet
