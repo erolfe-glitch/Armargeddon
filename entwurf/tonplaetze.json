@@ -5400,6 +5400,18 @@
   "kb": 11
  },
  {
+  "pool": "loewe_mr",
+  "key": "loewe_mr_1",
+  "s": "A",
+  "f": "Voices/eigene/filter/loewe_1_mr.wav",
+  "dur": 1.13,
+  "src": 1.17,
+  "start": 0,
+  "gain": -1.8,
+  "kb": 13,
+  "note": "Maschine mittel (Schreiter/Eisenknecht): loewe gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
   "pool": "pferd_auswahl",
   "key": "pferd_auswahl_1",
   "s": null,
@@ -5733,6 +5745,18 @@
   "gain": 7,
   "kb": 49,
   "note": "Leuchtkugel brennt am Himmel, leise, blendet aus (2026-11-18)"
+ },
+ {
+  "pool": "loewe",
+  "key": "loewe_1",
+  "s": "A",
+  "f": "Monster/613685__czghost__roar05.wav",
+  "dur": 0.98,
+  "src": 1.03,
+  "start": 0.01,
+  "gain": -3.7,
+  "kb": 12,
+  "note": "Löwengebrüll Kreuzschreiter (Test, im Spiel nur loewe_mr mit Roboterfilter, 2026-11-18)"
  },
  {
   "pool": "tick",

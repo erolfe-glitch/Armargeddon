@@ -121,6 +121,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | mgladen | mgladen_1 | Repair reload heal etc/751180__fosdork__shotgun-cock.mp3 | Freesound / Fosdork | CC0 1.0 | <https://freesound.org/s/751180/> |
 | mgladen | mgladen_2 | Repair reload heal etc/628640__el_boss__bug-a-salt-reload-plastic-shotgun.wav | Freesound / el_boss | CC0 1.0 | <https://freesound.org/s/628640/> |
 | leuchtschuss | leuchtschuss_1 | Leuchtpistole/714360__astronaut77890__flare-pistol-gunshot.wav | Freesound / Astronaut77890 | CC BY 4.0 | <https://freesound.org/s/714360/> |
+| loewe | loewe_1, loewe_mr_1 (Roboterfilter) | Monster/613685__czghost__roar05.wav | Freesound / CZghost | CC BY 4.0 | <https://freesound.org/s/613685/> |
 | leuchtbrand | leuchtbrand_1 | Leuchtpistole/714355__astronaut77890__flare-pistol-burning-flare.wav | Freesound / Astronaut77890 | CC BY 4.0 | <https://freesound.org/s/714355/> |
 | tick | tick_1 | Ereignisse/320862__urupin__old-watch-in-a-small-antique-shop.flac | Freesound / urupin | CC BY-NC 4.0 | <https://freesound.org/s/320862/> |
 | bauen | bauen_1 | 675138__craigsmith__s17-03-hand-to-hand-battle-with-yelling-and-armor-noise-many-voices.wav | Freesound / craigsmith | CC0 1.0 | <https://freesound.org/s/675138/> |
@@ -141,4 +142,4 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 
 **Ältere Töne** (Schlüssel ohne `_n`, schon vor 2026-11-16 eingebettet): Herkunft im Kopf von `src/sound.js` beschrieben; Lizenzen dort nicht erfasst.
 
-**Aufgehoben, nicht eingebaut:** ganze Datei `street-battle-lviv` (für „Kugelhagel“), Frauenstimmen (`woman-fighting`, `communication-voicelines-woman`), `Win Point` (gleich wie `Win Point 2`), Dämonen-Töne, „Seven Nation Army“ (geschütztes Lied, wird nicht eingebaut). Löwengebrüll für den Kreuzschreiter (Fähigkeit „verängstigt“, später): `Monster/613685__czghost__roar05.wav`, Freesound / CZghost, CC BY 4.0, <https://freesound.org/s/613685/>.
+**Aufgehoben, nicht eingebaut:** ganze Datei `street-battle-lviv` (für „Kugelhagel“), Frauenstimmen (`woman-fighting`, `communication-voicelines-woman`), `Win Point` (gleich wie `Win Point 2`), Dämonen-Töne, „Seven Nation Army“ (geschütztes Lied, wird nicht eingebaut).

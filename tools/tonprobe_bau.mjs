@@ -29,10 +29,10 @@ const VOL = { rifle: 0.3, rifle2: 0.3, rifle3: 0.3, rifle4: 0.3, sniper: 0.6, pi
   schritte: 0.5, steps: 0.5, stepsWald: 0.5, marschtritt: 0.38, dog: 0.5, gallop2: 0.55, pferd_auswahl: 0.26, pferd_unruhe: 0.5, neigh: 0.35, cut: 0.7, clank: 0.6, mgsetup: 0.5, bauen: 0.35,
   heal: 0.5, reparieren: 0.6, nachladen: 0.55, gasmaske: 0.5, klick: 0.3, ui: 0.3, tick: 0.45, zug_eigen: 0.35, zug_gegner: 0.35, erobert: 0.55, verloren: 0.55, whistle: 0.4, march: 0.45,
   generalhorn: 0.5, horn: 0.5, win: 0.6, pain: 0.45, medic: 0.45, forward: 0.45, stand: 0.45, roar: 0.45, cry: 0.4, scream: 0.4, panic: 0.4, charge: 0.6, comeon: 0.45, husten: 0.4, grunzen: 0.4,
-  robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32, abprotzen: 0.6, schaufel: 0.4, atmen: 0.3, getuemmel: 0.3, mgladen: 0.45, leuchtschuss: 0.5, leuchtbrand: 0.22 };
+  robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32, abprotzen: 0.6, schaufel: 0.4, atmen: 0.3, getuemmel: 0.3, mgladen: 0.45, leuchtschuss: 0.5, leuchtbrand: 0.22, loewe: 0.6 };
 // Stimmen lauter wie im Spiel (ui.js STIMM_PL/STIMM_VOL, Tonprobe 2026-11-18); Fahrzeuge werden unter einer Stimme auf DUCK_F abgesenkt
 const STIMM_VOL = 1.45, DUCK_F = 0.4, SPRUCH = +(0.34 * STIMM_VOL).toFixed(2), zahlN = v => String(v).replace(".", ",");
-for (const k of ['atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen']) VOL[k] = Math.min(1, +(VOL[k] * STIMM_VOL).toFixed(2));
+for (const k of ['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen']) VOL[k] = Math.min(1, +(VOL[k] * STIMM_VOL).toFixed(2));
 const MUSIK = ['musik_titel', 'musik_schlacht', 'musikNiederlage'], SCHLEIFE = ['ambient', 'wetter', ...MUSIK];
 const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4', sniper: 'Scharfschütze', pistol: 'Pistole (Anführer)', semi: 'Halbautomat (Kampfanzüge)', mg: 'Maschinengewehr',
   minigun: 'Drehlauf (Eisenknecht)', buechse: 'Panzerbüchse', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Abschuss schwere Artillerie',
@@ -43,7 +43,7 @@ const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr
   mech: 'Maschinenschritte (Schreiter)', crash: 'Panne/Festfahren', ueberrollen: 'Überrollen', holzknacken: 'Holzknacken (Wald)', drahtlatch: 'Draht klirrt', drahtwackeln: 'Draht wackelt',
   motor_auswahl: 'Motor beim Anklicken', tiger: 'Brüllen (Klauenschreiter)', gespann: 'Gespann', wagenknarren: 'Wagen knarrt', schritte: 'Schritte', steps: 'Schlammschritte',
   stepsWald: 'Schritte im Wald', marschtritt: 'Marschtritt', dog: 'Hund (Meldegänger)', gallop2: 'Galopp', pferd_auswahl: 'Pferd beim Anklicken', pferd_unruhe: 'Pferd unruhig', neigh: 'Wiehern',
-  cut: 'Draht schneiden', clank: 'Aufprotzen', schaufel: 'Schaufel (Eingraben)', atmen: 'Schweres Atmen (Eingraben)', getuemmel: 'Nahkampf-Getümmel (Schleife)', mgladen: 'MG aufstellen (Verschluss)', leuchtschuss: 'Leuchtpistole (Ziel markieren)', leuchtbrand: 'Leuchtkugel brennt (leise, blendet aus)', abprotzen: 'Abprotzen (Platzhalter)', mgsetup: 'MG aufbauen', bauen: 'Bauen/Eingraben', heal: 'Sanitäter', reparieren: 'Reparieren', nachladen: 'Nachladen', gasmaske: 'Gasmaske (_1 Atmen beim Entgiften, _2 Laut bei Treffer)',
+  cut: 'Draht schneiden', clank: 'Aufprotzen', schaufel: 'Schaufel (Eingraben)', atmen: 'Schweres Atmen (Eingraben)', getuemmel: 'Nahkampf-Getümmel (Schleife)', mgladen: 'MG aufstellen (Verschluss)', leuchtschuss: 'Leuchtpistole (Ziel markieren)', leuchtbrand: 'Leuchtkugel brennt (leise, blendet aus)', loewe: 'Löwengebrüll Kreuzschreiter (Test)', abprotzen: 'Abprotzen (Platzhalter)', mgsetup: 'MG aufbauen', bauen: 'Bauen/Eingraben', heal: 'Sanitäter', reparieren: 'Reparieren', nachladen: 'Nachladen', gasmaske: 'Gasmaske (_1 Atmen beim Entgiften, _2 Laut bei Treffer)',
   klick: 'Klick (Nächste Einheit, Erledigt)', ui: 'Knopf', tick: 'Tick', zug_eigen: 'Rundenschild: eigener Zug', zug_gegner: 'Rundenschild: Gegnerzug', erobert: 'Zielfeld erobert', verloren: 'Zielfeld verloren',
   whistle: 'Pfeife', march: 'Marsch/Verstärkung', generalhorn: 'Horn Generalangriff', horn: 'Signalhorn', win: 'Sieg', pain: 'Schmerz', medic: '„Sanitäter!“', forward: 'Befehl „Vorwärts“', stand: 'Befehl „Haltet stand“',
   roar: 'Kampfschrei/Befehl Aschenwacht', cry: 'Schrei', scream: 'Kampfschrei', panic: 'Panik/Flucht', charge: 'Gegenstoß', comeon: 'Befehl überbringen', husten: 'Husten (Gas)', grunzen: 'Grunzen (leichte Verletzung)',
@@ -67,9 +67,9 @@ const stimmen = ['A', 'D'].map(sd => ({ sd, seite: sd === 'A' ? 'Konkordat' : 'A
   const einheiten = E.ROSTER[sd].filter(t => satzVon(t) === satz).map(t => E.TYPES[t].name + (E.isMech && E.isMech(t) ? ' (Kampfmaschine)' : ''));
   const st = []; for (let n = 1; POOLS[`sv_${satz}_${sd}${n}`]; n++) st.push({ n, p: `sv_${satz}_${sd}${n}`, t: eintraege(`sv_${satz}_${sd}${n}`) });
   return { satz, titel: SATZ[satz], einheiten, stimmen: st }; }).filter(x => x.stimmen.length) }));
-const RUFE = ['atmen', 'pain', 'medic', 'cry', 'scream', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon', 'husten', 'grunzen', 'robot'];
+const RUFE = ['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon', 'husten', 'grunzen', 'robot'];
 const rufe = [['', 'Anführer – ohne Filter'], ['gm', 'Fußtruppen – Gasmaske leicht'], ['gs', 'Kampfanzüge – Gasmaske mittel'], ['bf', 'Panzerbesatzung – Bordfunk stark'], ['mr', 'Schreiter, Eisenknecht – Maschine mittel']]
-  .map(([v, titel]) => ({ v, titel, plaetze: RUFE.map(r => v ? (POOLS[r + '_' + v] ? platz(r + '_' + v) : null) : (r !== 'robot' && r !== 'grunzen' && r !== 'husten' && r !== 'atmen' ? platz(r) : null)).filter(x => x && x.t.length) })).filter(x => x.plaetze.length);
+  .map(([v, titel]) => ({ v, titel, plaetze: RUFE.map(r => v ? (POOLS[r + '_' + v] ? platz(r + '_' + v) : null) : (r !== 'robot' && r !== 'loewe' && r !== 'grunzen' && r !== 'husten' && r !== 'atmen' ? platz(r) : null)).filter(x => x && x.t.length) })).filter(x => x.plaetze.length);
 const DATA = { gruppen, stimmen, rufe, pools: POOLS, stand: new Date().toISOString().slice(0, 10) };
 
 const html = `<!doctype html>

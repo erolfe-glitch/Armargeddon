@@ -1849,7 +1849,7 @@ const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 's
   boom: ['boomH_1'] };   // Tonprobe 2026-11-18: Granateinschlag = boomH_1 (alter boom und grenade entfernt)
 // Stimmen gegenüber Fahrzeugen (Tonprobe 2026-11-18): Stimm-Plätze lauter (STIMM_VOL ≈ +3 dB); solange jemand spricht, werden laufende Fahrzeugtöne
 // (DUCK_PL, Motor beim Anklicken) auf DUCK_F abgesenkt und danach wieder angehoben.
-const STIMM_PL = new Set(['atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
+const STIMM_PL = new Set(['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
 const DUCK_PL = new Set(['tank', 'mech', 'gespann', 'wagenknarren', 'ueberrollen', 'leuchtbrand']);
 const STIMM_VOL = 1.45, DUCK_F = 0.4, STEIN = ['village', 'bunker', 'fabrik', 'kirche'];
 let duckBis = 0; const duckLauf = [];   // duckLauf: [{ a, vol }] laufende Fahrzeugtöne
@@ -2968,6 +2968,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', bp: dk, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
+  if (sel.type === 'kreuz') btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', text: 'Noch ohne Wirkung (Test). Brüllt und zeigt das Zeichen über den Gegnern im Umkreis von 1 Feld; kostet nichts.' });   // Test 2026-11-18, Wirkung „verängstigt“ siehe IDEEN.md
   if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
   // Hinweiszeile
   if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
@@ -3059,6 +3060,14 @@ let hudTips = [];
   box.addEventListener('pointerdown', e => { const el = at(e); if (el && e.pointerType !== 'mouse') show(el, 3500); });
   box.addEventListener('focusin', e => { const el = at(e); if (el) show(el); }); box.addEventListener('focusout', hideTip);
   box.addEventListener('contextmenu', e => e.preventDefault()); }
+// Löwengebrüll des Kreuzschreiters (Test 2026-11-18): nur Ton (roar05 mit Roboterfilter) und Zeichen über den Gegnern im Umkreis 1, keine Regelwirkung
+function loewenGebruell(u) {
+  const d = DU.get(u.id); if (!d) return;
+  playSound('loewe', 0.6, null, { u });
+  rings.push({ x: d.x, y: d.y, r: 1.6, col: '#E2B04A', life: 40, max: 40 }); rings.push({ x: d.x, y: d.y, r: 2.6, col: '#E2B04A', life: 52, max: 52 });
+  const im = UPI.s_flucht, ziele = G.units.filter(f => f.side !== u.side && E.alive(f) && E.dist(u.c, u.r, f.c, f.r) <= 1);
+  for (const f of ziele) { if (!DU.get(f.id)) continue; const [x, y] = headPos(f.id); floaters.push({ x, y, text: '', col: '#E2B04A', life: 150, max: 150, hold: true, icon: im }); }
+}
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
   if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); return; }
@@ -3069,6 +3078,7 @@ async function panelAct(a) {
   if (a === 'big') return act(u => E.bigOrder(G, u));
   if (a === 'plant') return act(u => E.plantBanner(G, u));
   if (a === 'dig') return act(u => E.dig(G, u));
+  if (a === 'loewe') return loewenGebruell(sel);
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
@@ -3543,7 +3553,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, feldWirkung, pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
