@@ -40,7 +40,8 @@ PARTS = {
 }
 SYMBOLS = {
     'bogen3c_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',
-                        'blitz', 'handgranate', 'gewehr', 'pferd', 'sanduhr', 'zahnrad', 'fernglas', 'schild'],
+                        'blitz', 'handgranate', 'gewehr', 'pferd', 'sanduhr', 'zahnrad', 'fernglas', 'schild',
+                        'totenkopf'],   # Totenkopf: Kopfzeichen „vergiftet“ (grün getönt, 2026-11-18)
     'bogen4a_symbole': ['drahtschere', 'drahtrolle', 'auge', 'haken', 'drehpfeil', 'mg_dreibein', 'sperrfeuer',
                         'lafette', 'flamme'],
     'bogen4b_symbole': ['meldehund', 'schraubenschluessel', 'nebel', 'spitzhacke', 'sprengladung', 'tellermine',

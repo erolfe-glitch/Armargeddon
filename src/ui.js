@@ -620,29 +620,30 @@ const DIM_T = new Set(['wald', 'waldweg', 'forest', 'village', 'fabrik', 'kirche
 // Kartenmarken nach STYLE.md (Wunsch des Nutzers): an der Figur nur ein schmaler Lebensbalken in Fraktionsfarbe, das Deckungsschild und EIN Zustandsplatz
 // (wichtigster Zustand, „+n“ bei mehreren). Eigene Einheiten am Zug: Messingpunkte unter dem Balken = Aktionspunkte. Alles in einer Zeile unter der Figur.
 // STATES: Reihenfolge = Wichtigkeit. on(u, d) liest die Anzeige-Werte d.vs, damit Zustände erst beim Abspielen erscheinen.
+const xf = v => '×' + String(+v.toFixed(2)).replace('.', ',');   // Faktor aus den Regeln für Tooltips (×1,25)
 const STATES = [
-  { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => 'Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ×0,5. Hält eine eigene Runde an; „Sammeln“ hebt es auf.' },
-  { k: 'rout', sym: 'flucht', name: 'Flieht', on: (u, d) => d.vs.rout, text: () => 'Moral gebrochen: weicht zurück und gehorcht nicht. Gegner treffen sie ×1,6, Reiter ×2. Ein Anführer in der Nähe kann sie wieder sammeln.' },
+  { k: 'supp', sym: 'niedergehalten', name: 'Niedergehalten', on: (u, d) => d.vs.supp > 0, text: () => `Liegt unter Beschuss flach: kann weder ziehen, schießen noch stürmen, Nahkampf ${xf(P.SUPP_ATK)}. Hält bis zum Ende des nächsten eigenen Zugs an; „Sammeln“ hebt es auf.` },
+  { k: 'rout', sym: 'flucht', name: 'Flieht', on: (u, d) => d.vs.rout, text: () => `Moral gebrochen: weicht zurück und gehorcht nicht. Gegner treffen sie ${xf(P.VS_ROUT)}, Reiter ${xf(P.CAV_VS_ROUT)}. Ein Anführer in der Nähe kann sie wieder sammeln.` },
   { k: 'broken', sym: 'festgefahren', name: 'Panne – festgefahren', on: (u, d) => d.vs.broken > 0, text: (u, d) => `Im Schlamm festgefahren: fällt noch ${upRunden(Math.max(1, (u.broken || 1) - 1))} aus. Ein Versorgungstrupp oder Pioniere können sie bergen.` },
   { k: 'sperr', sym: 'garbe', ring: '#E2B04A', name: 'Sperrfeuer', on: (u, d) => d.vs.sperr > 0 && E.alive(u), blockiert: (u, d) => d.vs.supp > 0 || (E.active(u) && E.held(G, u)),
     textBlock: (u, d) => d.vs.supp > 0 ? 'Sperrfeuer blockiert: Das MG ist niedergehalten und schießt nicht, solange das anhält.' : 'Sperrfeuer blockiert: Ein Gegner steht daneben (gebunden), das MG schießt nicht.', text: (u, d) => `Schießt in der gegnerischen Runde noch ${d.vs.sperr}-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.` },
   { k: 'stuck', sym: 'festgefahren', name: 'Festgefahren', on: (u, d) => d.vs.stuck > 0, text: (u, d) => `Im Schlamm stecken geblieben: kann noch ${upRunden(Math.max(1, (u.stuck || 1) - 1))} nicht ziehen.` },
-  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => 'Vom Gas getroffen: Stärke und Moral sinken, Angriffe ×0,7 in dieser Runde. Wirkt nach dem Verlassen der Wolke noch 2 Runden nach (vergiftet).' },
-  { k: 'poison', sym: 'gas', ring: '#7FA04A', name: 'Vergiftet', on: (u, d) => d.vs.poison > 0 && !d.vs.gassed, text: (u, d) => `Hat Gas abbekommen: verliert noch ${upRunden(d.vs.poison)} Stärke und Moral (erst halb so viel wie in der Wolke, dann ein Viertel). Ein Sanitäter kann die Vergiftung heilen.` },
-  { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => 'Moral fast am Ende: Beim nächsten Treffer weicht die Einheit zurück.' },
+  { k: 'gas', sym: 'gas', name: 'Im Gas', on: (u, d) => d.vs.gassed, text: () => `Vom Gas getroffen: je Runde in der Wolke Stärke −${fmt(P.GAS_STR)} und Moral −${fmt(P.GAS_MOR)}, Angriffe ${xf(P.GAS_ATK)}. Wirkt nach dem Verlassen der Wolke noch ${P.POISON_TURNS} Runden nach (vergiftet).` },
+  { k: 'poison', sym: 'gas', ring: '#7FA04A', name: 'Vergiftet', on: (u, d) => d.vs.poison > 0 && !d.vs.gassed, text: (u, d) => `Hat Gas abbekommen: verliert noch ${upRunden(d.vs.poison)} Stärke und Moral, als Nächstes Stärke −${fmt(P.GAS_STR * P.POISON_K[Math.min(d.vs.poison, P.POISON_K.length) - 1])} und Moral −${fmt(P.GAS_MOR * P.POISON_K[Math.min(d.vs.poison, P.POISON_K.length) - 1])}. Ein Sanitäter kann die Vergiftung heilen.` },
+  { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => `Moral unter ${fmt(P.FALLBACK_MOR)}: Beim nächsten Treffer weicht die Einheit zurück.` },
   { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
   { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
   { k: 'mgdown', sym: 'mg_ab', name: 'MG abgebaut', on: (u, d) => TYPES[u.type].mg && !d.vs.setup && E.active(u), text: () => 'Marschbereit: kann ziehen, aber nicht schießen. Aufbauen kostet 1 Aktion, dann feuert es und kann Sperrfeuer geben.' },
   { k: 'mgup', sym: 'mg_auf', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt oder gibt Sperrfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
-  { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).' },
-  { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => 'Befehl des Anführers: Nahkampf ×1,25 in dieser Runde.' },
-  { k: 'lance', sym: 'sprengladung', name: 'Sprenglanze bereit', panel: true, on: (u, d) => d.vs.lance && E.active(u), text: () => 'Der erste Nahkampfangriff der Schlacht trifft mit der Sprenglanze ×1,5. Danach normale Lanze.' },
+  { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => `Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ${xf(P.OW_DMG)}).` },
+  { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => `Befehl des Anführers: Nahkampf ${xf(P.ORDER_ATK)} in dieser Runde.` },
+  { k: 'lance', sym: 'sprengladung', name: 'Sprenglanze bereit', panel: true, on: (u, d) => d.vs.lance && E.active(u), text: () => `Der erste Nahkampfangriff der Schlacht trifft mit der Sprenglanze ${xf(P.BLAST_LANCE)}. Danach normale Lanze.` },
   { k: 'lanceGone', sym: 'pferd', name: 'Sprenglanze verbraucht', panel: true, on: (u, d) => TYPES[u.type].blastLance && !d.vs.lance && E.active(u), text: () => 'Die Sprenglanze ist verbraucht: weiter mit der normalen Lanze.' },
-  { k: 'dug', sym: 'schaufel', ring: '#8a6a44', name: 'Eingegraben', on: (u, d) => d.vs.dug && E.active(u), text: () => 'Hat sich eingegraben: Abwehr ×1,3, bis die Einheit wieder zieht.' },
-  { k: 'shields', sym: 'schild', ring: '#9aa3ab', name: 'Schilde vor', on: (u, d) => d.vs.shields && E.active(u), text: () => 'Schilde vor: eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.' },
-  { k: 'fireFree', sym: 'zielen', ring: '#E2B04A', name: 'Feuer frei', on: (u, d) => d.vs.fireFree && E.alive(u), text: () => 'Befehl des Hauptmanns: Fernkampf ×1,25 bis zum nächsten eigenen Zug.' },
-  { k: 'hold', sym: 'schild', ring: '#C2A461', name: 'Halten um jeden Preis', on: (u, d) => d.vs.hold && E.active(u), text: () => 'Befehl des Generals: flieht bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.' },
-  { k: 'planted', sym: 'fahne', ring: '#C2A461', name: 'Banner steht', on: (u, d) => d.vs.planted && E.active(u), text: () => 'Aufgepflanzt: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, bis er das Banner aufnimmt.' },
+  { k: 'dug', sym: 'schaufel', ring: '#8a6a44', name: 'Eingegraben', on: (u, d) => d.vs.dug && E.active(u), text: () => `Hat sich eingegraben: Abwehr ${xf(P.DIG_DEF)}, bis die Einheit wieder zieht.` },
+  { k: 'shields', sym: 'schild', ring: '#9aa3ab', name: 'Schilde vor', on: (u, d) => d.vs.shields && E.active(u), text: () => `Schilde vor: eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ${xf(P.SHIELDS)}.` },
+  { k: 'fireFree', sym: 'zielen', ring: '#E2B04A', name: 'Feuer frei', on: (u, d) => d.vs.fireFree && E.alive(u), text: () => `Befehl des Hauptmanns: Fernkampf ${xf(P.FIRE_FREE)} bis zum nächsten eigenen Zug.` },
+  { k: 'hold', sym: 'schild', ring: '#C2A461', name: 'Halten um jeden Preis', on: (u, d) => d.vs.hold && E.active(u), text: () => `Befehl des Generals: flieht bis zum nächsten eigenen Zug nicht, Abwehr ${xf(P.HOLD_DEF)}.` },
+  { k: 'planted', sym: 'fahne', ring: '#C2A461', name: 'Banner steht', on: (u, d) => d.vs.planted && E.active(u), text: () => `Aufgepflanzt: wirkt ${P.BANNER_R_PLANTED} Felder weit, dort flieht niemand. Der Träger zieht nicht, bis er das Banner aufnimmt.` },
   { k: 'hidden', sym: 'durchsickern', name: 'Getarnt', on: u => TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u), text: () => 'Der Gegner sieht die Einheit erst vom Nachbarfeld aus. Nach einem Schuss ist sie eine Runde lang enttarnt.' },
   { k: 'relay', sym: 'fernglas', name: 'Beobachter', panel: true, on: u => TYPES[u.type].relay && E.active(u), text: u => TYPES[u.type].abil === 'strike' ? 'Fordert Feuerschläge auf Felder in Sicht an.' : 'Markiert Ziele für die eigene Artillerie: ohne Streuung, ×1,25, deckt Verstecktes auf.' },
 ];
@@ -922,7 +923,7 @@ function draw() {
   for (const f of MARKQ) f(); MARKQ.length = 0;
   drawDiaryMark(g);
   drawAir(g, s);
-  drawFloaters(g, s);
+  drawFloaters(g, s); drawKZ(g, s);
 }
 // Boden: Gelände, Flecken, Hilfsmarkierungen, Zielfahnen
 function drawGround(g, s) {
@@ -1409,6 +1410,135 @@ function drawFloaters(g, s, bb) {
   g.globalAlpha = 1;
 }
 
+// ---------- Kopfzeichen (2026-11-18, Wunsch des Nutzers): Zustände als kleine Comic-Zeichen über dem Kopf statt Textmeldungen ----------
+// Jedes Zeichen ploppt kurz auf und pulsiert dann einige Male (Zustand hält an) oder steigt auf und blendet aus (ist gerade passiert).
+// Nichts bleibt stehen: dauerhaft sichtbar ist nur die Ringmarke am Standring (Tooltip mit den Regelwerten).
+// Erscheint: wenn der Zustand eintritt (Ereignis in playEvent), beim Anwählen (kzAnwahl) und zu Beginn des eigenen Zugs (kzRunde).
+// Gezeichnet im Code (sauber, STYLE.md „Inhalte sauber“); Abzeichen mit Symbolen aus den Bögen: Totenkopf, Zahnrad, Klingen, Auge, Garbe.
+const KZ = [], KZ_POP = 200, KZ_DUR = { puls: 2000, steig: 1500 }, KZ_O = '#120D0B';
+const kzBack = x => { const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };   // Aufspringen mit kleinem Überschwingen
+// Haltung eines Zeichens zur Zeit t (ms): Größe, Deckkraft, Steigen (in Feldradien)
+function kzPose(mode, t) {
+  const D = KZ_DUR[mode], pop = t < KZ_POP ? Math.max(0.05, kzBack(t / KZ_POP)) : 1;
+  if (mode === 'puls') { const p = Math.min(1, Math.max(0, (t - KZ_POP) / (D - KZ_POP - 350))); return { sc: pop * (1 + 0.14 * Math.abs(Math.sin(p * Math.PI * 3))), a: Math.min(1, (D - t) / 350), dy: 0 }; }
+  const q = Math.max(0, (t - KZ_POP) / (D - KZ_POP)); return { sc: pop, a: 1 - Math.max(0, (q - 0.35) / 0.65), dy: -0.75 * q };
+}
+function kzLinie(g, R, w, col) { g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = KZ_O; g.lineWidth = w + R * 0.12; g.stroke(); g.strokeStyle = col; g.lineWidth = w; g.stroke(); }
+function kzFlaeche(g, R, col) { g.fillStyle = col; g.fill(); g.lineJoin = 'round'; g.strokeStyle = KZ_O; g.lineWidth = Math.max(1, R * 0.1); g.stroke(); }
+function kzTropfen(g, x, y, r, ang, col) { g.save(); g.translate(x, y); g.rotate(ang + Math.PI * 1.5); g.beginPath(); g.moveTo(0, -r * 2.1); g.quadraticCurveTo(r * 1.1, -r * 0.4, r, 0); g.arc(0, 0, r, 0, Math.PI); g.quadraticCurveTo(-r * 1.1, -r * 0.4, 0, -r * 2.1); kzFlaeche(g, r * 2.5, col); g.restore(); }
+function kzStern(g, x, y, r, col) { g.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, rr = i % 2 ? r * 0.32 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); kzFlaeche(g, r * 2, col); }
+function kzWolke(g, x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = col; g.fill(); }
+function kzAbzeichen(g, R, sym, ring, f) {   // rundes Abzeichen wie die Ringmarken, Symbol aus dem Bogen
+  g.beginPath(); g.arc(0, 0, R * 0.62, 0, 7); g.fillStyle = 'rgba(18,13,11,0.86)'; g.fill(); g.lineWidth = Math.max(1.5, R * 0.12); g.strokeStyle = ring; g.stroke();
+  const im = UPI['s_' + sym]; if (!im) return; const ww = Math.min(R * 0.9 * im.naturalWidth / im.naturalHeight, R * 1.0), hh = ww * im.naturalHeight / im.naturalWidth;
+  g.save(); if (f) f(g); g.drawImage(im, -ww / 2, -hh / 2, ww, hh); g.restore();
+}
+function kzBlitz(g, x, y, k, rot) { const P0 = [[-0.22, -0.62], [0.24, -0.62], [0.04, -0.12], [0.3, -0.12], [-0.2, 0.72], [-0.02, 0.12], [-0.3, 0.12]];
+  g.save(); g.translate(x, y); g.rotate(rot); g.beginPath(); P0.forEach(([a, b], i) => i ? g.lineTo(a * k, b * k) : g.moveTo(a * k, b * k)); g.closePath(); kzFlaeche(g, k * 1.2, '#FFD24A'); g.restore(); }
+const KZ_ART = {
+  blitze: { name: 'Blitze', draw(g, R, T) {   // kreisen über dem Kopf, zucken ab und zu
+    const o = [0, 1, 2].map(i => { const a = T / 520 + i * 2.094; return { i, a, x: Math.cos(a) * R * 1.05, y: Math.sin(a) * R * 0.32 }; }).sort((p, q) => p.y - q.y);
+    for (const p of o) { const zuck = Math.floor(T / 85 + p.i * 5) % 6 === 0, k = R * (0.62 + 0.18 * (p.y / (R * 0.32))); kzBlitz(g, p.x + (zuck ? R * 0.1 : 0), p.y + (zuck ? -R * 0.08 : 0), k, zuck ? 0.35 : 0.12); } } },
+  schweiss: { name: 'Schweißtropfen und Staub', draw(g, R, T) {   // Tropfen spritzen weg, Staubwolke puffert
+    for (let i = 0; i < 2; i++) { const ph = (T / 520 + i * 0.5) % 1; kzWolke(g, (i ? 1 : -1) * R * (0.35 + 0.5 * ph), R * 0.85, R * 0.26 * (0.6 + ph), `rgba(150,138,118,${(0.6 * (1 - ph)).toFixed(3)})`); }
+    [-2.5, -1.95, -0.7].forEach((ang, i) => { const ph = (T / 640 + i / 3) % 1, r = R * (0.45 + 0.85 * ph); const a0 = g.globalAlpha; g.globalAlpha = a0 * Math.min(1, (1 - ph) * 2.2); kzTropfen(g, Math.cos(ang) * r, Math.sin(ang) * r * 0.9, R * 0.17, ang, '#BFE3FF'); g.globalAlpha = a0; }); } },
+  tropfen: { name: 'Schweißtropfen', draw(g, R, T) {   // rinnt seitlich am Kopf herab
+    const ph = (T / 1300) % 1, a0 = g.globalAlpha; g.globalAlpha = a0 * Math.min(1, (1 - ph) * 3, ph * 8); kzTropfen(g, R * 0.7, -R * 0.45 + ph * R * 1.1, R * 0.2, Math.PI / 2, '#BFE3FF'); g.globalAlpha = a0; } },
+  angst: { name: 'Schreckstriche', draw(g, R, T) {   // zittern schnell, Comic-Angst
+    for (let i = 0; i < 6; i++) { const a = -Math.PI * (0.92 - i * 0.168), j = Math.sin(T / 28 + i * 1.7) * R * 0.06, r0 = R * 0.62, r1 = R * (1.0 + (i % 2) * 0.14);
+      g.beginPath(); g.moveTo(Math.cos(a) * r0 + j, Math.sin(a) * r0); g.lineTo(Math.cos(a) * (r0 + r1) / 2 - j, Math.sin(a) * (r0 + r1) / 2); g.lineTo(Math.cos(a) * r1 + j, Math.sin(a) * r1); kzLinie(g, R, R * 0.11, '#F0EDE1'); }
+    const j = Math.sin(T / 22) * R * 0.05; g.font = `900 ${Math.round(R * 0.95)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.lineJoin = 'round'; g.lineWidth = R * 0.2; g.strokeStyle = KZ_O; g.strokeText('!!', j, -R * 0.05); g.fillStyle = '#E2B04A'; g.fillText('!!', j, -R * 0.05); } },
+  gas: { name: 'Grüne Bläschen', draw(g, R, T) {   // steigen auf und platzen
+    for (let i = 0; i < 5; i++) { const ph = (T / 1500 + i / 5) % 1, x = Math.sin(i * 2.1 + ph * 5) * R * 0.55, y = R * 0.55 - ph * R * 1.5, r = R * (0.12 + 0.1 * ph);
+      if (ph > 0.86) { const q = (ph - 0.86) / 0.14; g.beginPath(); g.arc(x, y, r * (1 + q), 0, 7); g.strokeStyle = `rgba(190,226,110,${(1 - q).toFixed(3)})`; g.lineWidth = Math.max(1, R * 0.06); g.stroke(); continue; }
+      g.beginPath(); g.arc(x, y, r, 0, 7); kzFlaeche(g, R * 0.7, 'rgba(156,203,74,0.9)'); g.beginPath(); g.arc(x - r * 0.35, y - r * 0.35, r * 0.28, 0, 7); g.fillStyle = 'rgba(240,255,210,0.8)'; g.fill(); } } },
+  gift: { name: 'Grüner Totenkopf', draw(g, R, T) { g.rotate(Math.sin(T / 480) * 0.16); kzAbzeichen(g, R, 'totenkopf', '#7FA04A', q => { q.filter = 'sepia(1) hue-rotate(45deg) saturate(2.4) brightness(0.95)'; }); } },
+  feuer: { name: 'Flämmchen', draw(g, R, T) {   // flackern, dazu ein Rauchfaden
+    for (let i = 0; i < 2; i++) { const ph = (T / 1500 + i * 0.5) % 1; kzWolke(g, Math.sin(ph * 4 + i) * R * 0.2, -R * 0.75 - ph * R * 0.9, R * 0.22 * (0.6 + ph), `rgba(70,64,58,${(0.55 * (1 - ph)).toFixed(3)})`); }
+    [-0.45, 0, 0.45].forEach((xo, i) => { const t = T / 85 + i * 2.1, h = R * ((i === 1 ? 0.95 : 0.7) + 0.16 * Math.sin(t) + 0.08 * Math.sin(t * 2.6)), w = R * 0.24, x = xo * R, y = R * 0.45;
+      for (const [col, kk] of [['#B8360E', 1], ['#F08A23', 0.68], ['#FFE07A', 0.36]]) { g.beginPath(); g.moveTo(x - w * kk, y); g.quadraticCurveTo(x - w * kk * 1.25, y - h * kk * 0.55, x + Math.sin(t) * w * 0.35, y - h * kk); g.quadraticCurveTo(x + w * kk * 1.25, y - h * kk * 0.55, x + w * kk, y); g.closePath();
+        if (kk === 1) kzFlaeche(g, R * 0.6, col); else { g.fillStyle = col; g.fill(); } } }); } },
+  panne: { name: 'Zahnrad und Rauch', draw(g, R, T) {   // Zahnrad ruckelt, schwarzer Rauch steigt
+    for (let i = 0; i < 2; i++) { const ph = (T / 1200 + i * 0.5) % 1; kzWolke(g, R * (0.6 + 0.25 * ph), -R * 0.5 - ph * R * 1.0, R * 0.24 * (0.6 + ph), `rgba(34,30,27,${(0.7 * (1 - ph)).toFixed(3)})`); }
+    const st = Math.floor(T / 420), rot = st * 0.35 + (T % 420 < 90 ? Math.sin((T % 420) / 90 * Math.PI) * 0.08 : 0); kzAbzeichen(g, R, 'zahnrad', '#9aa3ab', q => q.rotate(rot)); } },
+  klingen: { name: 'Gekreuzte Klingen', draw(g, R, T) {   // klirren leicht aneinander
+    const st = Math.floor(T / 300) % 2; g.rotate(st ? 0.1 : -0.1); kzAbzeichen(g, R, 'nahkampf', '#C8402C'); if (T % 300 < 110) { g.globalAlpha *= 1 - (T % 300) / 110; kzStern(g, 0, -R * 0.85, R * 0.32, '#FFE8A0'); } } },
+  wut: { name: 'Wutader und Dampf', draw(g, R, T) {   // Ader pocht, Dampf zischt
+    for (let i = 0; i < 2; i++) { const ph = (T / 760 + i * 0.5) % 1, sx = i ? 1 : -1; kzWolke(g, sx * R * (0.75 + 0.35 * ph), R * 0.15 - ph * R * 0.6, R * 0.2 * (0.6 + ph), `rgba(240,237,225,${(0.75 * (1 - ph)).toFixed(3)})`); }
+    const k = 1 + 0.1 * Math.max(0, Math.sin(T / 120)); g.save(); g.scale(k, k);
+    for (let q = 0; q < 4; q++) { g.save(); g.rotate(q * Math.PI / 2); g.beginPath(); g.moveTo(R * 0.12, -R * 0.55); g.quadraticCurveTo(R * 0.17, -R * 0.17, R * 0.55, -R * 0.12); kzLinie(g, R, R * 0.2, '#D2402C'); g.restore(); }
+    g.restore(); } },
+  auge: { name: 'Auge', draw(g, R, T) {   // blinzelt ab und zu
+    const b = T % 1700, zu = b < 130 ? Math.max(0.08, Math.abs(1 - b / 65)) : 1; kzAbzeichen(g, R, 'auge', '#E2B04A', q => q.scale(1, zu)); } },
+  garbe: { name: 'Garbe', draw(g, R, T) {   // blitzt kurz auf
+    const f = 0.5 + 0.5 * Math.sin(T / 70); g.beginPath(); g.arc(0, 0, R * (0.95 + 0.1 * f), 0, 7); g.fillStyle = `rgba(255,210,90,${(0.25 + 0.25 * f).toFixed(3)})`; g.fill(); kzAbzeichen(g, R, 'garbe', '#E2B04A'); } },
+  pfeil: { name: 'Grüner Pfeil', draw(g, R, T) {   // Moral steigt: Pfeil wippt, Funkeln
+    const y = -Math.abs(Math.sin(T / 260)) * R * 0.15; g.beginPath(); g.moveTo(0, y - R * 0.85); g.lineTo(R * 0.6, y - R * 0.15); g.lineTo(R * 0.24, y - R * 0.15); g.lineTo(R * 0.24, y + R * 0.6); g.lineTo(-R * 0.24, y + R * 0.6); g.lineTo(-R * 0.24, y - R * 0.15); g.lineTo(-R * 0.6, y - R * 0.15); g.closePath(); kzFlaeche(g, R * 1.6, '#8FD45A');
+    [[-0.8, -0.5, 0], [0.85, -0.3, 1.3], [0.6, 0.55, 2.4]].forEach(([x, yy, o]) => { const s = Math.max(0, Math.sin(T / 180 + o)); if (s > 0.05) kzStern(g, x * R, yy * R, R * 0.26 * s, '#FFE08A'); }); } },
+  funkeln: { name: 'Goldenes Funkeln', draw(g, R, T) {   // wieder bereit, instand gesetzt, nachgeladen
+    [[0, -0.2, 0, 0.5], [-0.7, 0.25, 1.6, 0.32], [0.7, 0.2, 3.1, 0.34], [0.35, -0.8, 4.4, 0.26]].forEach(([x, y, o, r]) => { const s = 0.35 + 0.65 * Math.max(0, Math.sin(T / 160 + o)); kzStern(g, x * R, y * R, R * r * 1.4 * s, '#FFE08A'); }); } },
+  kreuz: { name: 'Grünes Kreuz', draw(g, R, T) {   // versorgt, entgiftet
+    const k = R * 0.26, L0 = R * 0.72; g.beginPath(); g.moveTo(-k, -L0); g.lineTo(k, -L0); g.lineTo(k, -k); g.lineTo(L0, -k); g.lineTo(L0, k); g.lineTo(k, k); g.lineTo(k, L0); g.lineTo(-k, L0); g.lineTo(-k, k); g.lineTo(-L0, k); g.lineTo(-L0, -k); g.lineTo(-k, -k); g.closePath(); kzFlaeche(g, R * 1.4, '#6FBF5A');
+    [[0.85, -0.7, 0], [-0.85, -0.55, 2]].forEach(([x, y, o]) => { const s = Math.max(0, Math.sin(T / 170 + o)); if (s > 0.05) kzStern(g, x * R, y * R, R * 0.24 * s, '#E8FFD0'); }); } },
+};
+// Zeichen zeigen: ersetzt ein laufendes gleiches Zeichen der Einheit; delay in ms (Spielzeit)
+function kz(id, art, mode = 'puls', delay = 0) { if (!DU.get(id) || !KZ_ART[art]) return; const i = KZ.findIndex(k => k.id === id && k.art === art); if (i >= 0) KZ.splice(i, 1); KZ.push({ id, art, mode, t: -delay }); }
+function drawKZ(g, s, bb) {
+  for (let i = KZ.length - 1; i >= 0; i--) {
+    const k = KZ[i]; k.t += FS * 16.667; if (k.t >= KZ_DUR[k.mode]) { KZ.splice(i, 1); continue; } if (k.t < 0) continue;
+    const d = DU.get(k.id); if (!d) { KZ.splice(i, 1); continue; }
+    // über der höchsten gezeichneten Figur (Kästen d.fbx, relativ zum Fußpunkt); Aufsteller am Fußpunkt, damit es mit der Figur steht
+    const top = d.fbx && d.fbx.length ? Math.min(...d.fbx.map(q => q[1])) : -s * 1.4, p = kzPose(k.mode, k.t);
+    if (bb && !bb(d.x, d.y)) continue;
+    g.save(); g.translate(d.x, d.y + top - s * 0.25 + p.dy * s); g.scale(p.sc, p.sc); g.globalAlpha = Math.max(0, p.a);
+    try { KZ_ART[k.art].draw(g, s * 0.2, now + k.id * 137); } finally { g.restore(); }
+  }
+  g.globalAlpha = 1;
+}
+// Andauernde Zustände einer Einheit (Reihenfolge = Wichtigkeit); runde = nur die wichtigen für den Rundenbeginn
+function kzZustaende(u, runde) {
+  const d = DU.get(u.id); if (!d || !d.vs || !E.alive(u)) return []; const v = d.vs, T = TYPES[u.type], o = [];
+  if (v.supp > 0) o.push('blitze'); if (v.rout) o.push('schweiss'); if (v.angst) o.push('angst');
+  if (v.gassed) o.push('gas'); else if (v.poison > 0) o.push('gift');
+  if ((VIS.fires || []).some(f => f.c === u.c && f.r === u.r)) o.push('feuer');
+  if (v.broken > 0 || v.stuck > 0) o.push('panne');
+  if (!runde) { if (!v.rout && d.mor < P.FALLBACK_MOR && T.cls !== 'art') o.push('tropfen'); if (T.rng > 0 && !T.flame && E.active(u) && E.held(G, u)) o.push('klingen'); if (u.zeal) o.push('wut'); if (u.ow) o.push('auge'); }
+  return o;
+}
+function kzAnwahl(u) { kzZustaende(u).forEach((a, i) => kz(u.id, a, 'puls', i * 700)); }
+function kzRunde(sd) { let n = 0; for (const u of G.units) if (u.side === sd) { const z = kzZustaende(u, true); z.forEach((a, i) => kz(u.id, a, 'puls', 700 + n * 250 + i * 700)); if (z.length) n++; } }
+// Legende im Regeln-Fenster (Hilfe ?): echte Zeichen mit ihrer Bewegung, laufen in einer Schleife, solange das Fenster offen ist
+const KZ_LEG = [
+  ['blitze', 'puls', 'Niedergehalten', 'Liegt unter Beschuss flach. Steigt auf bei Schreck oder Panik.'],
+  ['schweiss', 'puls', 'Flieht', 'Moral gebrochen. Steigt auf, wenn die Einheit zurückweicht.'],
+  ['tropfen', 'puls', 'Moral wankt', 'Beim nächsten Treffer weicht sie zurück (nur beim Anwählen).'],
+  ['angst', 'puls', 'Verängstigt', 'Durch das Löwengebrüll (noch ohne Wirkung, Test).'],
+  ['gas', 'puls', 'Im Gas', 'Steht in der Gaswolke.'],
+  ['gift', 'puls', 'Vergiftet', 'Verliert noch einige Runden Stärke und Moral.'],
+  ['feuer', 'puls', 'Im Feuer', 'Steht auf einem brennenden Feld.'],
+  ['panne', 'puls', 'Panne / festgefahren', 'Fahrzeug fällt aus oder steckt fest.'],
+  ['klingen', 'puls', 'Gebunden', 'Gegner daneben: kein Schuss, nur Nahkampf (beim Anwählen).'],
+  ['wut', 'steig', 'Sturm', 'Sturmbefehl, Vorwärts, Sturmlauf, Gegenstoß.'],
+  ['auge', 'puls', 'Feuerbereit', 'Schießt im gegnerischen Zug auf den ersten Gegner.'],
+  ['garbe', 'steig', 'Sperrfeuer', 'Das MG feuert im gegnerischen Zug.'],
+  ['pfeil', 'steig', 'Moral steigt', 'Gesammelt, Sammeln-Befehl, hält stand.'],
+  ['funkeln', 'steig', 'Wieder bereit', 'Wieder flott, frei, instand gesetzt, nachgeladen.'],
+  ['kreuz', 'steig', 'Versorgt', 'Vom Sanitäter versorgt oder entgiftet.'],
+];
+let kzLegLauf = 0;
+function kzLegende() {
+  const box = $('kzLeg'); if (!box) return;
+  if (!box.childElementCount) box.innerHTML = KZ_LEG.map(([a, m, n, t]) => `<div class="kz-e"><canvas data-kz="${a}" data-m="${m}" width="160" height="160"></canvas><div><b>${n}</b><small>${m === 'puls' ? 'ploppt auf und pulsiert' : 'ploppt auf und steigt'}</small><span>${t}</span></div></div>`).join('');
+  const cvs = [...box.querySelectorAll('canvas')], t0 = performance.now(); cancelAnimationFrame(kzLegLauf);
+  const lauf = () => { if ($('rules').hidden) return; const T = performance.now();
+    cvs.forEach((c, i) => { const q = c.getContext('2d'), m = c.dataset.m, D = KZ_DUR[m] + 250, t = (T - t0 + i * 170) % D, p = kzPose(m, Math.min(t, KZ_DUR[m] - 1));
+      q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, c.width, c.height); if (t >= KZ_DUR[m]) return;
+      q.translate(80, 104 + p.dy * 70); q.scale(p.sc, p.sc); q.globalAlpha = Math.max(0, p.a); try { KZ_ART[c.dataset.kz].draw(q, 54, T + i * 137); } catch (e) {} q.globalAlpha = 1; });
+    kzLegLauf = requestAnimationFrame(lauf); };
+  lauf();
+}
+
 // ---------- Figuren der neuen Ansicht (Umbauplan Schritt 3) ----------
 // Bilder aus src/figs.js (tools/figure_cut.py --game): 320 px Bildhöhe = 1 Soldatenhöhe (SH), Füße am unteren Rand, Blick nach rechts.
 // Maßstab: 1 SH = FIG_SH Feldradien (Wunsch 2026-11-16: 1,1 – Felder groß genug, nichts überdimensioniert). Trupps: bis zu 4 Einzelfiguren in
@@ -1711,6 +1841,7 @@ function drawTilt() {
   finally { VIEW.up = null; g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; }
   // Schwebende Texte aufrecht am jeweiligen Punkt
   drawFloaters(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });
+  drawKZ(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });   // Kopfzeichen (2026-11-18)
   g.setTransform(1, 0, 0, 1, 0, 0);
   drawStratMarks(g); SMARK.length = 0;
 }
@@ -1971,14 +2102,14 @@ async function playEvent0(e) {
   switch (e.t) {
     case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else playSound(marschU === e.u ? 'marschtritt' : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } }   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht) await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
-    case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); floater(...headPos(e.u), 'weicht zurück', '#f0d27a'); break;
+    case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'schweiss', 'steig'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); floater(...headPos(e.a), TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'Sperrfeuer!' : 'Feuerbereit!', '#ffd860'); await wait(220); }   // erst kurz zum Schützen
+      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6);
         const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
@@ -2147,17 +2278,17 @@ async function playEvent0(e) {
           while (decals.length > 700) decals.shift(); }
         floater(...headPos(e.u), '−' + fmt(e.dmg), e.dmg >= 1.5 ? '#ff6a4a' : '#ff9a7a', e.dmg >= 1.5, true);
         if (human(G.side) || human(u.side)) toast(`${nm(u)}: −${fmt(e.dmg)} Stärke · ${e.dmg >= 2 ? 'schwerer Treffer' : e.dmg >= 1 ? 'guter Treffer' : e.dmg >= 0.4 ? 'leichter Treffer' : 'kaum Wirkung'} · noch ${fmt(e.str)}`);
-      } else { floater(...headPos(e.u), 'Panik', '#f0d27a'); if (TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.45); }   // Moral wankt: unruhige Pferde
+      } else { kz(e.u, 'blitze', 'steig'); if (TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.45); }   // Moral wankt: unruhige Pferde
       await wait(e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern
     }
     case 'gas': { husten();   // Husten: 1–2 Figuren, je nachdem wie viele Einheiten getroffen werden
       const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
-      floater(...headPos(e.u), e.late ? 'Vergiftet' : 'Gas!', e.late ? '#a8c870' : '#d6e670'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
+      kz(e.u, e.late ? 'gift' : 'gas', 'puls'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.5); playSound('drahtwackeln', 0.4);   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
-    case 'fear': { DU.get(e.u).mor = e.morv; floater(...headPos(e.u), 'Schreck: Moral −10', '#f0d27a'); await wait(200); break; }
-    case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); floater(...headPos(e.u), 'niedergehalten', '#e9cf5a'); await wait(170); break;
-    case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); floater(...headPos(e.u), 'flieht!', '#ffffff', true); toast(`${nm(u)} flieht.`); await wait(360); break;
+    case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
+    case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); kz(e.u, 'blitze', 'puls'); await wait(170); break;
+    case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); kz(e.u, 'schweiss', 'puls'); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
       if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { if (!fxImpact(d.x, d.y, s * 1.1, { alt: true, noMark: true })) boom(d.x, d.y, s * 1.1, 'he'); gmark('bodenspuren', TYPES[u.type].cls === 'walker' ? 2 : 0, d.x, d.y + s * 0.2, { turns: 4, mul: 0.8 }); playSound('boom2', 0.75); if (TYPES[u.type].cls === 'walker') playSound('feuer', 0.35); shake(8); }
@@ -2166,18 +2297,18 @@ async function playEvent0(e) {
     }
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
-    case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45, null, { u: unitById(e.by) }); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; floater(...headPos(e.u), '+2 Bewegung', '#F0EDE1', true); await wait(300); break; }
+    case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45, null, { u: unitById(e.by) }); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; await wait(300); break; }
     case 'order': {
       const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.45, null, { u: unitById(e.u) });   // Befehl: Offiziere ohne Filter
       if (ff) for (const id of e.ids || []) { const dd = DU.get(id); if (dd) dd.vs.fireFree = true; }   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
-      toast(`${e.name}: ${rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Sturmbefehl!'}`); floater(...headPos(e.u), rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Vorwärts!', rl ? '#b8ff7c' : '#ffb04a', true);
+      toast(`${e.name}: ${rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Sturmbefehl!'}`); if (!ff) kz(e.u, rl ? 'pfeil' : 'wut', 'steig');
       for (let q = 0; q < 2; q++) rings.push({ x: d0.x, y: d0.y, r: 2.6 + q * 1.4, col: rl ? '#b8ff7c' : '#ffb04a', life: 34 + q * 10, max: 34 + q * 10 });
       if (rl) for (const id of e.ids || []) { const dd = DU.get(id); if (dd) dd.vs.supp = 0; }
       await wait(260);
-      e.ids.forEach((id, i) => { const dd = DU.get(id); if (!dd) return; if (rl) dd.mor = e.mors[i]; if (id !== e.u) floater(...headPos(id), rl ? 'Moral +' : 'Sturm!', rl ? '#b8ff7c' : '#ffb04a'); });
+      e.ids.forEach((id, i) => { const dd = DU.get(id); if (!dd) return; if (rl) dd.mor = e.mors[i]; if (id !== e.u && !ff) kz(id, rl ? 'pfeil' : 'wut', 'steig'); });
       await wait(260); break;
     }
-    case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; floater(...headPos(e.u), 'gesammelt!', '#b8ff7c', true); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
+    case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; kz(e.u, 'pfeil', 'steig'); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
     case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
     case 'crush': { const [x, y] = center(e.c, e.r); playSound('ueberrollen', 0.55); /* Fahrzeug walzt Draht nieder */ gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain();
@@ -2185,13 +2316,13 @@ async function playEvent0(e) {
         if (w === 'gesprengt') fx('truemmer', [0, 1, 4][Math.floor(Math.random() * 3)], x, y + s * 0.4, { life: 80, grow: 0.25, rise: 0.15, fadeOut: 0.5 });   // Bunker/Barrikade: Ziegel, Holz, Sandsäcke
         if (w === 'Stollen gesprengt') { fx('truemmer', 4, x, y + s * 0.4, { life: 90, mul: 1.2, grow: 0.3, rise: 0.3, fadeOut: 0.5 }); fx('truemmer', 0, x + s * 0.3, y + s * 0.3, { delay: 6, life: 80, mul: 0.8, grow: 0.25 }); }
         if (/^Draht (verbrannt|zerschossen|zerrissen|niedergewalzt)/.test(w)) gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); } if (e.what === 'Draht gezogen') playSound('bauen', 0.3); if (e.what === 'Stollen gesprengt') playSound('blast', 0.8); if (e.what === 'gesprengt' || e.what === 'Stollen gesprengt') playSound('einsturz', 0.7); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
-    case 'stuck': { DU.get(e.u).vs.stuck = 1; playSound('crash', 0.65); const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); floater(...headPos(e.u), 'steckt im Schlamm', '#d9c9a0'); await wait(250); break;
+    case 'stuck': { DU.get(e.u).vs.stuck = 1; playSound('crash', 0.65); const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); kz(e.u, 'panne', 'puls'); await wait(250); break;
     case 'breakdown': { const d0 = DU.get(e.u); d0.vs.broken = 1;   // Paket 8: im Schlamm festgefahren – Ketten sinken ein, Dreck und Schlamm spritzen, kein Rauch
       for (let q = 0; q < 3; q++) { const fl = Math.random() < 0.5; fx('erdfontaene', null, d0.x + (q - 1) * s * 0.5, d0.y + s * 0.32, { delay: q * 6, life: 40, mul: 0.2, grow: 0.15, flip: fl, fadeOut: 0.45, filter: 'brightness(0.62) sepia(0.35)' }); }
       gmark('bodenspuren', 4, d0.x, d0.y + s * 0.1, { mul: 0.85 }); if (PJI.mudsplash) muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.42, center: true, up: 0.85, sz: 1.1, life: 50, max: 50 }); }
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
-      playSound('crash', 0.7); playSound('steps', 0.6); floater(...headPos(e.u), 'Panne – festgefahren!', '#ffb04a', true); toast(`${nm(u)} hat sich festgefahren und fällt ${P.PANNE_RUNDEN} Runden aus.`); await wait(350); break;
-    case 'repaired': DU.get(e.u).vs.broken = 0; floater(...headPos(e.u), 'wieder flott', '#b8ff7c'); await wait(200); break;
+      playSound('crash', 0.7); playSound('steps', 0.6); kz(e.u, 'panne', 'puls'); toast(`${nm(u)} hat sich festgefahren und fällt ${P.PANNE_RUNDEN} Runden aus.`); await wait(350); break;
+    case 'repaired': DU.get(e.u).vs.broken = 0; kz(e.u, 'funkeln', 'steig'); await wait(200); break;
     case 'smoke': { if (u && u.type === 'rauch') playSound('werfer', 0.55); playSound(u && u.type === 'rauch' ? 'gas' : 'rauch', 0.5);   // Rauchgeschoss: gas_1, geworfen: rauch_1 (Tonprobe 2026-11-18)
       if (u && fxIm('geschosse', 4)) { const du = DU.get(u.id); for (const [c, r] of e.cells) { const [x, y] = center(c, r); shells.push({ fxi: 4, fxs: 0.8, x1: du.x, y1: du.y - s * 0.6, x2: x, y2: y, t: 0, dur: 18, arc: 1.4, spin: true, sz: 0.3 }); } await wait(18 * 16.667); }
       for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
@@ -2201,47 +2332,47 @@ async function playEvent0(e) {
     case 'blast': { const [x, y] = center(e.c, e.r); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#ffd27a', '#5a4632'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
     case 'mineLaid': { const [x, y] = center(e.c, e.r); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
-    case 'light': { visSync('lit'); playSound('ui', 0.5); floater(...headPos(e.u), 'Ausgeleuchtet', '#fff0a0'); await wait(260); break; }
-    case 'clear': { visSync('clouds'); playSound('gasmaske_1', 0.5); floater(...headPos(e.u), e.n ? 'Gas entgiftet' : 'kein Gas', '#c4e6a0'); await wait(260); break; }
-    case 'ammo': { playSound('nachladen', 0.55); floater(...headPos(e.u), 'nachgeladen', '#ffe7a0', true); await wait(260); break; }
-    case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Gegenstoß!', '#ff8a6a', true); await wait(250); break; }
+    case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
+    case 'clear': { visSync('clouds'); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
+    case 'ammo': { playSound('nachladen', 0.55); kz(e.u, 'funkeln', 'steig'); await wait(260); break; }
+    case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
-    case 'unstuck': DU.get(e.u).vs.stuck = 0; floater(...headPos(e.u), 'wieder frei', '#b8ff7c'); await wait(150); break;
-    case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); floater(...headPos(e.u), e.broken ? 'instand gesetzt' : 'geborgen', '#b8ff7c', true); await wait(320); break; }
-    case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('mgladen', 0.45); floater(...headPos(e.u), 'aufgebaut', '#ffe7a0'); await wait(200); break; }
-    case 'teardown': { DU.get(e.u).vs.setup = false; playSound('nachladen', 0.4); floater(...headPos(e.u), 'abgebaut', '#ffe7a0'); await wait(200); break; }
-    case 'ow': floater(...headPos(e.u), 'Feuerbereit', '#F0EDE1', true); await wait(220); break;
+    case 'unstuck': DU.get(e.u).vs.stuck = 0; kz(e.u, 'funkeln', 'steig'); await wait(150); break;
+    case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); kz(e.u, 'funkeln', 'steig'); await wait(320); break; }
+    case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('mgladen', 0.45); await wait(200); break; }
+    case 'teardown': { DU.get(e.u).vs.setup = false; playSound('nachladen', 0.4); await wait(200); break; }
+    case 'ow': kz(e.u, 'auge', 'puls'); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
       playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   /* Anführer-Fähigkeiten leiser (Spieltest Runde 2) */ banner(e.name + '!', e.kind === 'hold' ? `Einheiten bis ${P.BIG_R} Felder: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug` : `Einheiten bis ${P.BIG_R} Felder: +2 Bewegungspunkte und +1 Aktion`);
       for (const id of e.ids || []) { const dd = DU.get(id); if (!dd) continue; if (e.kind === 'hold') dd.vs.hold = true; rings.push({ x: dd.x, y: dd.y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); }
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
-    case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound('bauen', e.planted ? 0.32 : 0.22); floater(...headPos(e.u), e.planted ? 'Banner aufgepflanzt' : 'Banner aufgenommen', '#E2B04A', true); await wait(260); break; }
+    case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound('bauen', e.planted ? 0.32 : 0.22); await wait(260); break; }
     case 'ignite': visSync('fires'); playSound('flame', 0.4); break;
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
-    case 'burn': floater(...headPos(e.u), 'brennt!', '#ffb04a'); await wait(120); break;
-    case 'steadfast': floater(...headPos(e.u), 'hält stand!', '#E2B04A', true); await wait(160); break;
-    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('schaufel', 0.4); setTimeout(() => playSound('atmen', 0.3, null, { u, noGap: true }), 250 / speed);   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ floater(...headPos(e.u), 'eingegraben', '#d9b48a', true); await wait(240); break; }
-    case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); floater(...headPos(e.u), 'Schilde vor!', '#c9d0d6', true); await wait(260); break; }
-    case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); floater(...headPos(e.u), 'Sturmlauf!', '#ffb04a', true); await wait(200); break;
-    case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); floater(...headPos(e.u), 'Sperrfeuer', '#E2B04A', true); await wait(220); break; }
+    case 'burn': kz(e.u, 'feuer', 'puls'); await wait(120); break;
+    case 'steadfast': kz(e.u, 'pfeil', 'steig'); await wait(160); break;
+    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; playSound('schaufel', 0.4); setTimeout(() => playSound('atmen', 0.3, null, { u, noGap: true }), 250 / speed);   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
+    case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); await wait(260); break; }
+    case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(200); break;
+    case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); await wait(220); break; }
     case 'mark': { const [x, y] = center(e.c, e.r);
       playSound('leuchtschuss', 0.5); setTimeout(() => playSound('leuchtbrand', 0.22), 450 / speed);   /* Leuchtpistole: Abschuss, dann leises Brennen der Kugel, blendet aus (2026-11-18) */
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
       visSync('marks'); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
       rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
-    case 'march': floater(...headPos(e.u), 'Marsch', '#ffd27a'); marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)
-    case 'retreatmove': floater(...headPos(e.u), 'Rückzug', '#ffd27a'); break;
+    case 'march': marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)
+    case 'retreatmove': kz(e.u, 'schweiss', 'steig'); break;
     case 'freeblow': { const a = DU.get(e.a), d = DU.get(e.u); if (!a || !d) break; const fl = d.x < a.x; a.face = d.x >= a.x ? 0 : 3;   // Freischlag: kurzer Nahkampf-Effekt am Weichenden
       a.lunge = { dx: (d.x - a.x) * 0.18, dy: (d.y - a.y) * 0.18 }; { const sd = unitById(e.a).side; playSound(sd === 'A' ? 'nahA' : 'nahD', 0.45, sd); }
       if (!fx('nahkampf', Math.random() < 0.5 ? 0 : 3, d.x + (fl ? 1 : -1) * L.s * 0.1, d.y - L.s * 0.45, { anchor: 'mitte', life: 18, fadeOut: 0.6, grow: 0.2, flip: fl, mul: 0.7 })) boom(d.x, d.y - L.s * 0.3, L.s * 0.3, 'dust');
-      floater(d.x, d.y - L.s * 1.15, 'Freischlag', '#ffb07a'); await wait(220); a.lunge = null; await wait(80); break; }
+      await wait(220); a.lunge = null; await wait(80); break; }
     case 'wind': toast('Der Wind dreht.'); updateTop(); break;
     case 'limber': DU.get(e.u).vs.limbered = !!e.on; playSound(e.on ? 'clank' : 'abprotzen', 0.6);   // clank nur beim Aufprotzen (Tonprobe 2026-11-18) floater(...headPos(e.u), e.on ? 'aufgeprotzt' : 'abgeprotzt', '#e9d9a8'); await wait(220); break;
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
-      for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } floater(...headPos(e.u), 'Nachschub', '#b8ff7c'); await wait(200); break; }
-    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.cured) { d.vs.poison = 0; floater(...headPos(e.u), 'Entgiftet', '#a8c870'); } if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
-      rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); floater(...headPos(e.u), 'versorgt', '#8fe0c8', true); await wait(350); break; }
+      for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } await wait(200); break; }
+    case 'heal': { playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.cured) { d.vs.poison = 0; kz(e.u, 'kreuz', 'steig'); } if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
+      rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); kz(e.u, 'kreuz', 'steig'); await wait(350); break; }
     case 'gascloud': visSync('clouds'); break;
     case 'reinf': {
       for (const id of e.ids) { const nu = unitById(id); addDU(nu); const d = DU.get(id); d.x += s * 2; }
@@ -2470,7 +2601,7 @@ function motorRev(k, o = {}) {   // o.vol (Grundlautstärke), o.dauer (s): beim 
 }
 function select(u) {
   if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) klickStimme(u);   // Spruch bei jedem Anwählen (Reiter: Pferd + Spruch); fertige Einheiten nur ein leiser Klick   // Reiter: Schnauben häufig, Wiehern etwa jedes 4. Mal (Gewicht im Tonplatz)   // Stimme beim Anwählen (selten, siehe selectVoice)
-  if (u !== sel) wayPt = null;
+  if (u !== sel) { wayPt = null; if (u && G && E.alive(u)) kzAnwahl(u); }   // Kopfzeichen der andauernden Zustände
   sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
 }
@@ -2620,6 +2751,7 @@ function rundenSchild() {
   el.innerHTML = `<b>Runde ${G.turn}</b><span class="rs-w">${crest(sd)}</span><span class="rs-t">${sd === 'A' ? SIDES.A.name : SIDES[sd].short} ist am Zug</span>`;
   el.className = 'rs ' + sd; void el.offsetWidth; el.classList.add('an'); clearTimeout(rundenT); rundenT = setTimeout(() => el.classList.remove('an'), 2300);
   playSound(eigen ? 'zug_eigen' : 'zug_gegner', 0.35, null, { noGap: true });
+  if (eigen) kzRunde(sd);   // Kopfzeichen der wichtigen Zustände zu Beginn des eigenen Zugs
 }
 document.addEventListener('pointerdown', () => { const el = $('rundenSchild'); if (el && el.classList.contains('an')) { clearTimeout(rundenT); el.classList.remove('an'); } }, true);
 function banner(title, sub) {
@@ -2968,7 +3100,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', bp: dk, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
-  if (sel.type === 'kreuz') btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', text: 'Noch ohne Wirkung (Test). Brüllt und zeigt das Zeichen über den Gegnern im Umkreis von 1 Feld; kostet nichts.' });   // Test 2026-11-18, Wirkung „verängstigt“ siehe IDEEN.md
+  if (sel.type === 'kreuz') btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', text: 'Noch ohne Wirkung (Test). Brüllt und zeigt die Schreckstriche über den Gegnern im Umkreis von 1 Feld; kostet nichts.' });   // Test 2026-11-18, Wirkung „verängstigt“ siehe IDEEN.md
   if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
   // Hinweiszeile
   if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
@@ -3065,8 +3197,7 @@ function loewenGebruell(u) {
   const d = DU.get(u.id); if (!d) return;
   playSound('loewe', 0.6, null, { u });
   rings.push({ x: d.x, y: d.y, r: 1.6, col: '#E2B04A', life: 40, max: 40 }); rings.push({ x: d.x, y: d.y, r: 2.6, col: '#E2B04A', life: 52, max: 52 });
-  const im = UPI.s_flucht, ziele = G.units.filter(f => f.side !== u.side && E.alive(f) && E.dist(u.c, u.r, f.c, f.r) <= 1);
-  for (const f of ziele) { if (!DU.get(f.id)) continue; const [x, y] = headPos(f.id); floaters.push({ x, y, text: '', col: '#E2B04A', life: 150, max: 150, hold: true, icon: im }); }
+  for (const f of G.units) if (f.side !== u.side && E.alive(f) && E.dist(u.c, u.r, f.c, f.r) <= 1) kz(f.id, 'angst', 'puls');   // Kopfzeichen „verängstigt“
 }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
@@ -3340,7 +3471,7 @@ $('setZoom').onclick = () => { $('btnZoom').onclick(); $('setZoom').textContent 
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
 $('closeStart').onclick = () => { $('start').hidden = true; };
-$('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; };
+$('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; kzLegende(); };
 $('closeRules').onclick = () => { $('rules').hidden = true; };
 $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
@@ -3553,7 +3684,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, feldWirkung, get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
