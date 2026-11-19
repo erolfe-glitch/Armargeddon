@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const URL = process.env.URL || 'http://127.0.0.1:8765/index.html', BILDER = process.env.BILDER || '';
+const URL = process.env.URL || 'http://127.0.0.1:8765/index.html', BILDER = process.env.BILDER || '', KARTE = process.env.KARTE || '';   // KARTE=sanktruss: Karte im Startmenü wählen
 if (BILDER) mkdirSync(BILDER, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armpartie-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', 'about:blank'], { stdio: 'ignore' });
@@ -38,9 +38,11 @@ await groesse(1920, 1080);
 await cmd('Page.navigate', { url: URL }); await sleep(5000);
 await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms));
   const click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
-  for (const t of ['neue schlacht', 'weiter', 'weiter', 'die schlacht']) { click(t); await W(700); }
+  click('neue schlacht'); await W(700);
+  const rb = ${JSON.stringify(KARTE)} && document.querySelector('input[name=map][value=' + ${JSON.stringify(KARTE)} + ']'); if (rb) { rb.click(); rb.dispatchEvent(new Event('change', { bubbles: true })); await W(400); }
+  for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); }
   await W(2500); click('schlacht beginnen'); await W(3500); })()`);
-console.log('Partie gestartet, Seite', await ev(`__dbg.G.side`));
+console.log('Partie gestartet, Karte', await ev(`__dbg.E.MAP.id`), 'Seite', await ev(`__dbg.G.side`));
 await karteOk('Start');
 
 // Ein eigener Zug: alle Fußtruppen nacheinander wählen (Klick, sonst Tab), über verschiedene Felder fahren, zum Feind vorrücken,
