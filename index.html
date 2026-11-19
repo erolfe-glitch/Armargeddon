@@ -4090,6 +4090,11 @@ window.GELAENDE = {
 //   zickzack, grabenSeite(c, r) → 'A'|'D'   Gräben im Zickzack, Brustwehr zur Feindseite
 //   R, rand {mx, top, mb}   Feldradius im Weltbild und Ränder um die Karte (Spiel: R = L.s, mx 0, top L.top)
 //   raster (Standard an), seed, edgeCrowns, edgeCrownsX
+//   bauten                  große Gebäude über mehrere Felder (Sankt Ruß, 2026-11-19): [{ art: 'kirche', felder: [[c, r], …], turm: [c, r], kaputt }]
+//                           Wandstücke je Feld (Außenkanten: hinten hoch, vorn niedrig), innen keine Wände, nur Bänke/Altar/Säulen;
+//                           Turm als hoher Aufsteller (durchsichtig, wenn er Einheiten verdeckt); kaputt = eingestürzt (Mauerreste, Turmstumpf, Glocke)
+//   flags(c, r).deko        Schmuck je Feld: 'platz' (Kopfstein), 'brunnen' (Platz mit Brunnen), 'wegkreuz', 'karren', 'figur' (Friedhof);
+//                           Feldarten 'friedhof', 'garten' (niedrige Bruchsteinmauern)
 // → { ground, pieces, platz(c, r), setView({ g, proj, F, U, units }), hexC, R, SH, WW, WH, TR }
 //   pieces: [{ y, f }] nach Tiefe sortiert; f() zeichnet mit den zuletzt per setView gesetzten Werten (proj(x, y) → [sx, sy, Tiefe], F = Brennweite).
 //   platz(c, r): wie Trupps im Feld stehen (Graben: Weltpunkte auf der Grabenlinie + Absenkung; Ruine: Tiefe gestaucht) oder null.
@@ -4193,9 +4198,12 @@ function aufbauen(cfg, IM) {
   // Gras: offene Felder nach großflächigem Rauschen (nicht feldweise), Feldart 'grass' immer
   const noise = (x, y) => Math.sin(x * 0.011 * 120 / R + 1.3) * Math.sin(y * 0.013 * 120 / R + 0.4) + 0.6 * Math.sin((x * 0.023 + y * 0.017) * 120 / R);
   schicht('boden_gras', ctx => { for (const [c, r] of felder((t, c, r) => t === 'grass' || ((t === 'open' || t === 'out') && noise(...hexC(c, r)) > 0.15))) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.22, 0.95, 37);
+  if (felder(t => t === 'garten' || t === 'friedhof').length) schicht('boden_gras', ctx => { for (const [c, r] of felder(t => t === 'garten' || t === 'friedhof')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 41);   // Gärten, Friedhof: Gras
   schicht('boden_waldboden', ctx => { for (const [c, r] of felder(t => t === 'forest' || t === 'wald')) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.16, 1, 91);
   schicht('boden_truemmer', ctx => {   // Trümmerboden leicht gedämpft (unruhiger als die übrigen)
-    for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 0.92, 13, 0.86);
+    for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche' || t === 'schiff' || t === 'turm')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 0.92, 13, 0.86);
+  const PLATZ = felder((t, c, r) => inMap(c, r) && /platz|brunnen/.test(flags(c, r).deko || ''));
+  if (PLATZ.length) schicht('boden_kopfstein', ctx => { for (const [c, r] of PLATZ) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.1, 1, 7, (cfg.hell || 1.2) * 1.05);   // Dorfplatz: Kopfstein
   schicht('boden_sumpf', ctx => { for (const [c, r] of felder(t => t === 'sumpf' || t === 'mud')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 53);
   // Großflächige Helligkeitsflecken gegen Kachelwiederholung
   for (let i = 0; i < WW * WH / (R * R) * 0.35; i++) { const x = rnd() * WW, y = rnd() * WH, rr = R * (0.8 + rnd() * 1.8), d = rnd() < 0.55;
@@ -4415,8 +4423,25 @@ function aufbauen(cfg, IM) {
 
   // Felder mit aufrechten Teilen
   const DRAHTFELD = new Set();
+  const BAUFELD = new Map(); for (const b of cfg.bauten || []) for (const f of [...b.felder, ...(b.turm ? [b.turm] : [])]) BAUFELD.set(f[0] + ',' + f[1], b);
+  const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
+  const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
     const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k);
+    if (BAUFELD.has(c + ',' + r)) continue;   // große Gebäude: eigener Aufbau weiter unten
+    const deko = flags(c, r).deko || '';
+    if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx + R * 0.05, hy - R * 0.5, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });
+    if (deko === 'wegkreuz') stand(IM.dorf_aufsteller_2, hx + R * 0.55, hy - R * 0.45, px(IM.dorf_aufsteller_2), { shadeK: 0.3, flip: q(201) < 0.5 });
+    if (deko === 'karren' || (deko === 'platz' && q(202) < 0.5)) stand(IM.dorf_aufsteller_3, hx - R * 0.55, hy - R * 0.5, px(IM.dorf_aufsteller_3), { flip: q(203) < 0.5 });
+    if (deko === 'platz' && q(204) < 0.4) stand(IM.dorf_aufsteller_4, ...corner(c, r, q(205) < 0.5 ? 1 : 2, 0.72), px(IM.dorf_aufsteller_4), { flip: q(206) < 0.5, shadeK: 0.2 });   // Laterne selten, vorn im Feld
+    if (t === 'friedhof') {   // Grabkreuze, Grabsteine, Grabplatte an den Rändern; Heiligenfigur nur mit Schmuck 'figur'
+      const plaetze = [[4, 0.62], [5, 0.62], [3, 0.6], [1, 0.62], [0, 0.6]].sort((a, b) => q(a[0] + 210) - q(b[0] + 210)).slice(0, deko === 'figur' ? 2 : 3);
+      plaetze.forEach(([e, kk], i) => { const im = IM['friedhof_' + [1, 2, 3, 1, 2][(Math.floor(q(e + 220) * 5) + i) % 5]]; stand(im, ...corner(c, r, e, kk), px(im), { flip: q(e + 230) < 0.5 }); });
+      if (deko === 'figur') stand(IM.friedhof_4, hx - R * 0.05, hy - R * 0.55, px(IM.friedhof_4), { shadeK: 0.3 });
+    } else if (t === 'garten' && q(240) < 0.55) {   // Garten: ein zerschossener Obstbaum oder ein umgekippter Karren
+      if (q(241) < 0.7) stand(STUEMPFE[Math.floor(q(242) * STUEMPFE.length)], ...corner(c, r, q(243) < 0.5 ? 4 : 5, 0.55), 0.8 * SH * (0.8 + q(244) * 0.3), { flip: q(245) < 0.5 });
+      else stand(IM.dorf_aufsteller_3, ...corner(c, r, 3, 0.5), px(IM.dorf_aufsteller_3), { flip: q(246) < 0.5 });
+    }
     if (t === 'village') {   // Ruine zweiteilig: Mauern hinten, Mauerrest vorn (weiter innen), Ecken auf den Stößen
       const k = 0.86, kv = 0.66; let u = q(1) * 3;
       for (const e of [3, 4, 5]) u = wall(IM.ruine_hinten, corner(c, r, e, k), corner(c, r, (e + 1) % 6, k), 1.2 * SH, { u0: u });
@@ -4466,6 +4491,63 @@ function aufbauen(cfg, IM) {
       if (im) SHADOW.push(() => { w.save(); w.translate(hx, hy); w.rotate(ang + Math.PI / 2); w.fillStyle = 'rgba(8,6,4,0.55)'; w.fillRect(-L / 2, -Wd / 2 + R * 0.06, L, Wd); w.drawImage(im, -L / 2, -Wd / 2, L, Wd); w.restore(); });
     }
   }
+  // ---------- Mauerzüge entlang von Feldkanten (Gebäude, Friedhof, Gärten) ----------
+  // kanten: [{ c, r, e }]; zusammenhängende Kanten werden zu Zügen verbunden und von links nach rechts gezogen (das Bild läuft durch).
+  // passend: Zug auf ganze bzw. halbe Kacheln dehnen und bei u = 0 beginnen (Kirchenmauer: Anfang und Ende mitten im Strebepfeiler).
+  function mauerzug(kanten, im, hW, o = {}) {
+    if (!im || !kanten.length) return;
+    const key = p => Math.round(p[0] * 10) + ',' + Math.round(p[1] * 10), k = o.k || 1;
+    const segs = kanten.map(({ c, r, e }) => { let A = corner(c, r, e, k), B = corner(c, r, (e + 1) % 6, k); if (A[0] > B[0] + 1e-6) [A, B] = [B, A]; return { A, B }; });
+    const vonA = new Map(); segs.forEach(s => { if (!vonA.has(key(s.A))) vonA.set(key(s.A), s); });
+    const endeB = new Set(segs.map(s => key(s.B)));
+    const used = new Set(), zuege = [];
+    const zug = s0 => { const z = [s0]; used.add(s0); let cur = s0; while (vonA.has(key(cur.B)) && !used.has(vonA.get(key(cur.B)))) { cur = vonA.get(key(cur.B)); used.add(cur); z.push(cur); } zuege.push(z); };
+    for (const s of segs) if (!endeB.has(key(s.A))) zug(s);   // Anfänge zuerst
+    for (const s of segs) if (!used.has(s)) zug(s);
+    zuege.forEach((z, zi) => {
+      const L = z.reduce((n, s) => n + Math.hypot(s.B[0] - s.A[0], s.B[1] - s.A[1]), 0), T = hW * im.width / im.height;
+      let stretch = 1, u = o.passend ? 0 : hrnd(zi, z.length, o.seed || 7) * 3;
+      if (o.passend) { const n = Math.max(0.5, Math.round(L / T * 2) / 2); stretch = L / (n * T); }
+      for (const s of z) u = wall(im, s.A, s.B, hW, { ...(o.wall || {}), u0: u, stretch });
+    });
+  }
+  const aussenKanten = (fs, istInnen, nur) => { const out = []; for (const [c, r] of fs) for (let e = 0; e < 6; e++) { if (nur && !nur.includes(e)) continue; const [nc, nr] = nbE(c, r, e); if (!istInnen(nc, nr)) out.push({ c, r, e }); } return out; };
+
+  // ---------- Große Gebäude über mehrere Felder (IDEEN.md „große Gebäude“, Sankt Ruß 2026-11-19) ----------
+  for (const b of cfg.bauten || []) {
+    const alle = [...b.felder, ...(b.turm ? [b.turm] : [])], drin = (c, r) => alle.some(f => f[0] === c && f[1] === r);
+    const ostFeld = b.felder.reduce((a, f) => f[0] > a[0] ? f : a, b.felder[0]);
+    if (!b.kaputt) {
+      // Schiff: Außenkanten hinten hohe Kirchenmauer (Fenster, Strebepfeiler), vorn niedriger Mauerrest; zum Turm hin offen
+      mauerzug(aussenKanten(b.felder, drin, [3, 4, 5]), IM.kirche_hinten, 1.6 * SH, { passend: true, k: 0.98, wall: { shade: 0.5, shadeW: 0.16 } });
+      mauerzug(aussenKanten(b.felder, drin, [0, 1, 2]), IM.kirche_vorn, 0.5 * SH, { k: 0.96, seed: 11, wall: { shade: 0.45 } });
+      for (const [c, r] of b.felder) { const [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k + 300);
+        stand(IM.kirche_innen_4, ...corner(c, r, q(1) < 0.5 ? 4 : 5, 0.62), px(IM.kirche_innen_4, 0.85), { flip: q(2) < 0.5 });   // Säulenstumpf hinten
+        stand(IM.kirche_innen_1, hx + (q(3) - 0.5) * R * 0.15, hy + R * 0.02, px(IM.kirche_innen_1, 0.8), { flip: q(4) < 0.5 });   // umgestürzte Bänke in der Mitte
+        if (c === ostFeld[0] && r === ostFeld[1]) stand(IM.kirche_innen_2, hx + R * 0.48, hy - R * 0.42, px(IM.kirche_innen_2, 0.85), { flip: true });   // Altar im Osten
+      }
+      if (b.turm) { const [tx, ty] = hexC(...b.turm);
+        stand(IM.kirchturm_1, tx, ty - R * 0.42, px(IM.kirchturm_1), { shadeK: 0.32 });   // Turm hinten im Feld, Einheiten stehen davor
+        stand(TRUEMMER[0], tx - R * 0.6, ty + R * 0.12, 0.45 * SH, { flip: true }); }
+    } else {
+      // eingestürzt: ringsum nur noch niedrige Mauerreste, Trümmerhaufen, Säulenstümpfe; Turmstumpf mit Schutt, die Glocke liegt davor
+      mauerzug(aussenKanten(alle, drin), IM.kirche_vorn, 0.5 * SH, { k: 0.97, seed: 13, wall: { shade: 0.45, filter: 'brightness(0.85)' } });
+      for (const [c, r] of b.felder) { const [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k + 320);
+        stand(TRUEMMER[Math.floor(q(1) * TRUEMMER.length)], hx + (q(2) - 0.5) * R * 0.3, hy - R * 0.05, 0.6 * SH * (0.85 + q(3) * 0.3), { flip: q(4) < 0.5 });
+        stand(IM.kirche_innen_4, ...corner(c, r, q(5) < 0.5 ? 4 : 5, 0.62), px(IM.kirche_innen_4, 0.7), { flip: q(6) < 0.5 });
+        stand(TRUEMMER[Math.floor(q(7) * TRUEMMER.length)], ...corner(c, r, q(8) < 0.5 ? 3 : 0, 0.6), 0.5 * SH, { flip: q(9) < 0.5 });
+        if (c === ostFeld[0] && r === ostFeld[1]) stand(IM.kirche_innen_2, hx + R * 0.48, hy - R * 0.42, px(IM.kirche_innen_2, 0.8), { flip: true });
+      }
+      if (b.turm) { const [tx, ty] = hexC(...b.turm);
+        stand(IM.kirchturm_2, tx, ty - R * 0.4, px(IM.kirchturm_2), { shadeK: 0.32 });
+        stand(IM.kirche_innen_3, tx + R * 0.5, ty + R * 0.12, px(IM.kirche_innen_3, 0.85), { flip: true }); }
+    }
+  }
+  // Friedhofsmauer (außen um alle Friedhofsfelder, nicht an Gebäuden) und Gartenmauern (hinten, oft eine Seite dazu)
+  mauerzug(aussenKanten(felder((t, c, r) => inMap(c, r) && t === 'friedhof'), (c, r) => terr(c, r) === 'friedhof' || BAUFELD.has(c + ',' + r)), IM.mauer_niedrig, 0.5 * SH, { k: 0.97, seed: 17, wall: { shade: 0.45 } });
+  { const gk = []; for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) for (const e of [4, hrnd(c, r, 250) < 0.5 ? 3 : 5, ...(hrnd(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (terr(nc, nr) !== 'garten' && !BAUFELD.has(nc + ',' + nr) && terr(nc, nr) !== 'friedhof') gk.push({ c, r, e }); }
+    mauerzug(gk, IM.mauer_niedrig, 0.45 * SH, { k: 0.9, seed: 19, wall: { shade: 0.45 } }); }
+
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
   // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).
   for (const [c, r] of cfg.schanzen || []) {
@@ -4510,7 +4592,7 @@ function aufbauen(cfg, IM) {
         return [p[i - 1][0] + dx * t, p[i - 1][1] + dy * t, dx / l, dy / l]; };
       return { pts: [-0.6, -0.2, 0.2, 0.6].map((o, i) => { const [x, y, dx, dy] = at(arc[best.i] + o * R), q = (i % 2 ? 0.07 : -0.07) * R; return [x - dy * q, y + dx * q]; }), sink: 0.32, cut: EINSINK };
     }
-    if (t === 'village') return { sy: 0.85 };
+    if (t === 'village' || BAUFELD.has(c + ',' + r)) return { sy: 0.85 };
     return null;
   }
   return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD,

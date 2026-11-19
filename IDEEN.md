@@ -54,6 +54,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
     - innen keine Wände zwischen den Feldern, nur Trümmer.
     
     Offen: Regeln (gemeinsame Deckung, Sicht durch das Gebäude), Prompts A2/A3 dafür umschreiben.
+    - Stand 2026-11-19: technisch gebaut (GBau `cfg.bauten`, Mauerzüge je Außenkante, Turm als Aufsteller, eingestürzter Zustand), zuerst die Kirche von Sankt Ruß. Offen: Fabrik, Bahnhof, Gutshof als eigene Gebäude.
 - ~~**Etappe 4b – Einheitenbilder:**~~ erledigt 2026-11-17: alle 50 Einheiten als Figurenbögen im neuen Stil (`FIGMAP`). Offen: Blaue Legion (zeigt noch die alten `art.js`-Bilder), Russland, später die dämonische Seite.
 - ~~**Etappe 4c – Sound und Musik:**~~ erledigt 2026-11-17: Tonplätze neu gebaut (sound_bau), eigene Musik (Titelthema, Schlachtmusik), Sprüche und Stimmfilter. Offen: Credits-Fenster für CC-BY-Töne (siehe „Töne“).
 - **Etappe 5 – Gameplay:** offen sind noch Missionstypen (nicht nur Siegpunkte), KI mit Charakter (siehe „Spielmodi, KI und Armee-Grenzen“) und die Blaue Legion als vollwertige Seite. Erledigt (2026-11-17/18):

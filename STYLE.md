@@ -207,7 +207,13 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
 - **Barrikade:** Wandstück 0,55 SH.
 - **Bunker:** Aufsteller 1,15 SH, höchstens 1,8 R breit, Fußpunkt 0,25 R vor der Feldmitte.
 - **Stumpf:** Aufsteller 0,6–0,9 SH.
-- **Große Gebäude über mehrere Felder** (Kirche, Fabrik): noch offen, siehe IDEEN.md.
+- **Große Gebäude über mehrere Felder** (seit 2026-11-19, zuerst die Kirche von Sankt Ruß; GBau `cfg.bauten`):
+  - Wandstücke je Feld nur an den Außenkanten des Gebäudes, innen keine Wände. Hinten (Kanten 3–5) die hohe Kirchenmauer (1,6 SH, Ausnahme von der 1,2-SH-Grenze; durchsichtig beim Verdecken), vorn (Kanten 0–2) der Mauerrest (0,5 SH).
+  - Hohe Mauerzüge werden auf ganze oder halbe Kacheln gedehnt und beginnen bei u = 0: Anfang und Ende liegen mitten in einem Strebepfeiler.
+  - Turm als einzelner hoher Aufsteller (3,5 SH) hinten im Turmfeld (0,42 R hinter der Mitte), Einheiten stehen davor; verdeckt er Einheiten dahinter, wird er zu 45 % durchsichtig.
+  - Innen: Säulenstumpf hinten, umgestürzte Bänke in der Mitte, Altar im östlichen Feld.
+  - Eingestürzt: ringsum nur Mauerreste (0,5 SH), Trümmerhaufen, Turmstumpf mit Schutt, die Glocke liegt davor.
+  - Friedhof und Gärten: niedrige Bruchsteinmauer (0,5 SH) an den Außenkanten (Friedhof ganz herum, Garten hinten und oft eine Seite); Friedhof mit Kreuzen, Grabsteinen, Grabplatte, einmal die Heiligenfigur; Dorfplatz Kopfstein mit Brunnen, Karren, selten Laterne.
 - **Zusammensetzen je Geländeart** (umgesetzt in `entwurf/probe/gelaende_bau.js`, gilt für Probe und Karten-Testseite `entwurf/probe/karte.html`):
   - Boden: Schlamm als Grund. Darüber weiche Schichten: Gras auf offenen Feldern nach großflächigem Rauschen (nicht feldweise), Waldboden (Totholz, Wald), Trümmer (Dorf, Trümmerfeld, Barrikade), Sumpf (Sumpf, Schlamm). Straßen als Kopfstein-Band, Kanal als Wasser-Band mit dunkler Uferkante.
   - Die gelieferten Texturen sind sehr dunkel (Helligkeit 0,08–0,17); der Boden wird im Ganzen aufgehellt (siehe Helligkeit unten), Straßen etwas mehr.
