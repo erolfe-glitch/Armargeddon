@@ -172,6 +172,8 @@ Verbindlich seit 2026-11-16. Ziel: das ganze Gelände für die gekippte Ansicht 
 
 Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Farbe nach „Bildregeln“, **kein Schlagschatten im Bild**, kein Rauch, kein Licht. Die unteren 15–25 % eines Aufstellers bzw. Wandstücks blendet der Code weich in den Boden aus.
 
+**Schräge Wandstücke kippen (2026-11-19):** Wandstücke an Kanten, die in die Tiefe laufen (Feldkanten 3 und 5, schräge Grabenabschnitte), wären in der gekippten Ansicht nur schmale Platten. Der Code versetzt ihre Oberkante nach außen, weg vom Betrachter, und senkt sie etwas ab, stufenlos nach Richtung (quer laufende Stücke bleiben gerade); höchstens 0,26 R, damit hohe Mauern nicht umzufallen scheinen. Vordere Kanten bleiben stehen (nach innen gekippt verdecken sie Fahne und Trupps). Gilt für Ruinen, Kirche, Friedhofs- und Gartenmauern, Zaun und den Sandsackhaken der Schanze; Bilder brauchen dafür nichts Eigenes.
+
 **Anschlusspunkte im Feld.** Ecken 0–5 (0 rechts, 1 rechts vorn, 2 links vorn, 3 links, 4 links hinten, 5 rechts hinten), Kanten 0–5 zwischen Ecke i und i+1 (1 = vordere, 4 = hintere Kante). „Einzug k“: Punkt auf k × Radius (k = 1 genau auf der Hexkante).
 - **Hinten** (hinter der Einheit): Kanten 3, 4, 5 bzw. Ecken 4, 5 mit Einzug 0,85–0,9.
 - **Vorn** (vor der Einheit): Kanten 0, 1, 2 bzw. Ecken 1, 2; vorn nur niedrige Teile.

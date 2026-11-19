@@ -76,6 +76,7 @@ function teileGefiltert(IM, flt) {
 }
 function aufbauen(cfg, IM) {
   IM = teileGefiltert(IM, cfg.teilFilter);
+  const KIPP = cfg.kipp ?? 1;   // schräge Wandstücke kippen (Stärke, 0 = aus)
   const AO = cfg.ao || 0;   // Kantenverdeckung: dunkler, weicher Saum, wo Graben, Wälle und Befestigungen auf den flachen Boden treffen
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
   const DRAHT = pool('draht_stuecke'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
@@ -214,6 +215,7 @@ function aufbauen(cfg, IM) {
     if (!im) return o.u0 || 0;
     const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height * (o.stretch || 1), n = Math.max(1, Math.ceil(len / (R * 0.25)));
     let u = o.u0 || 0;
+    if (!o.lean && o.mitte && KIPP > 0) o = { ...o, lean: kippen(A, B, o.mitte, hW) };
     for (let i = 0; i < n; i++) {
       const a = [A[0] + (B[0] - A[0]) * i / n, A[1] + (B[1] - A[1]) * i / n], b = [A[0] + (B[0] - A[0]) * (i + 1) / n, A[1] + (B[1] - A[1]) * (i + 1) / n], du = len / n / iwW, u0 = u;
       u += du; const my = (a[1] + b[1]) / 2;
@@ -225,6 +227,19 @@ function aufbauen(cfg, IM) {
         w.filter = `blur(${R * 0.025}px)`; w.strokeStyle = `rgba(4,3,2,${0.2 * AO})`; w.lineWidth = R * 0.07; w.stroke(); }   // und eine schmale dunkle Fuge direkt an der Kante
       w.restore(); });
     return u;
+  }
+  // Wandstücke, die in die Tiefe laufen (schräge Feldkanten), wirken in der gekippten Ansicht als schmale Platte: wie bei den Grabenwänden
+  // die Oberkante versetzen (Wand kippt) und etwas absenken, damit die Wand als Fläche sichtbar wird; stufenlos nach Richtung, quer laufende
+  // Stücke bleiben unverändert. Nur hintere Kanten, nach außen (weg von mitte = Feld- bzw. Bunkermitte, also weg vom Betrachter); vordere Kanten
+  // bleiben stehen (nach vorn gekippt würden sie schmaler, nach innen verdecken sie Fahne und Trupps im Feld). Versatz höchstens KIPP_MAX
+  // Feldradien, damit hohe Mauern nicht umzufallen scheinen. cfg.kipp: Stärke, 0 = aus.
+  const KIPP_MAX = 0.26;
+  function kippen(A, B, M, hW) {
+    const dx = B[0] - A[0], dy = B[1] - A[1], l = Math.hypot(dx, dy) || 1; let nx = -dy / l, ny = dx / l;
+    if (nx * ((A[0] + B[0]) / 2 - M[0]) + ny * ((A[1] + B[1]) / 2 - M[1]) < 0) { nx = -nx; ny = -ny; }
+    if (ny >= 0) return null;
+    const sd = Math.max(0, 1 - Math.abs(ny) / 0.85) * KIPP; if (sd < 0.05) return null;
+    return { nx, ny, L: Math.min(0.9 * sd, R * KIPP_MAX * KIPP / hW), U: 1 - 0.2 * sd };
   }
   function strip(im, a, b, hW, u0, du, o) {
     const pa = proj(a[0], a[1]), pb = proj(b[0], b[1]); if (pa[2] <= 1 || pb[2] <= 1 || offscreen(pa, pb)) return;
@@ -366,9 +381,9 @@ function aufbauen(cfg, IM) {
     }
     if (t === 'village') {   // Ruine zweiteilig: Mauern hinten, Mauerrest vorn (weiter innen), Ecken auf den Stößen
       const k = 0.86, kv = 0.66; let u = q(1) * 3;
-      for (const e of [3, 4, 5]) u = wall(IM.ruine_hinten, corner(c, r, e, k), corner(c, r, (e + 1) % 6, k), 1.2 * SH, { u0: u });
-      wall(IM.ruine_vorn, corner(c, r, 2, kv), corner(c, r, 1, kv), 0.45 * SH, { u0: q(2) * 3, shade: 0.45, filter: 'brightness(0.85)' });
-      const A = corner(c, r, 3, kv), B = corner(c, r, 2, kv); wall(IM.ruine_vorn, A, [A[0] + (B[0] - A[0]) * 0.55, A[1] + (B[1] - A[1]) * 0.55], 0.45 * SH, { u0: q(3) * 3, shade: 0.45, filter: 'brightness(0.85)' });
+      for (const e of [3, 4, 5]) u = wall(IM.ruine_hinten, corner(c, r, e, k), corner(c, r, (e + 1) % 6, k), 1.2 * SH, { u0: u, mitte: [hx, hy] });
+      wall(IM.ruine_vorn, corner(c, r, 2, kv), corner(c, r, 1, kv), 0.45 * SH, { u0: q(2) * 3, shade: 0.45, filter: 'brightness(0.85)', mitte: [hx, hy] });
+      const A = corner(c, r, 3, kv), B = corner(c, r, 2, kv); wall(IM.ruine_vorn, A, [A[0] + (B[0] - A[0]) * 0.55, A[1] + (B[1] - A[1]) * 0.55], 0.45 * SH, { u0: q(3) * 3, shade: 0.45, filter: 'brightness(0.85)', mitte: [hx, hy] });
       const hoch = q(4) < 0.5 ? [IM.ruine_ecken_1, 1.2] : [IM.ruine_ecken_4, 1.4];
       stand(IM.ruine_ecken_2, ...corner(c, r, 3, k), 0.8 * SH, { bias: R * 0.01, flip: flipR(c, r, 5) });
       stand(hoch[0], ...corner(c, r, q(6) < 0.5 ? 4 : 5, k), hoch[1] * SH, { bias: R * 0.01, flip: flipR(c, r, 7), shadeK: 0.3 });
@@ -377,7 +392,7 @@ function aufbauen(cfg, IM) {
     } else if (t === 'rubble') {   // Trümmerfeld: zwei Haufen und ein niedriger Mauerrest
       stand(TRUEMMER[Math.floor(q(1) * TRUEMMER.length)], ...corner(c, r, 4, 0.55), 0.6 * SH * (0.8 + q(2) * 0.3), { flip: flipR(c, r, 3) });
       stand(TRUEMMER[Math.floor(q(4) * TRUEMMER.length)], ...corner(c, r, 1, 0.6), 0.5 * SH * (0.8 + q(5) * 0.3), { flip: flipR(c, r, 6) });
-      wall(IM.ruine_vorn, corner(c, r, 4, 0.8), corner(c, r, 5, 0.8), 0.4 * SH, { u0: q(7) * 3 });   // quer zur Blickrichtung (schräge Kanten wirken als schmale Platte)
+      wall(IM.ruine_vorn, corner(c, r, 4, 0.8), corner(c, r, 5, 0.8), 0.4 * SH, { u0: q(7) * 3, mitte: [hx, hy] });   // quer zur Blickrichtung
     } else if (t === 'forest') {   // Totholz: Stümpfe verteilt, ein schlanker Stamm hinten
       const slots = [[4, 0.6], [5, 0.62], [3, 0.55], [0, 0.58], [2, 0.5]].sort((a, b) => q(a[0] + 10) - q(b[0] + 10)).slice(0, 3);
       for (const [e, kk] of slots) { const [x, y] = corner(c, r, e, kk); stand(STUEMPFE[Math.floor(q(e + 20) * STUEMPFE.length)], x, y, 0.9 * SH * (0.7 + q(e + 30) * 0.35), { flip: flipR(c, r, e + 40) }); }
@@ -419,7 +434,7 @@ function aufbauen(cfg, IM) {
   function mauerzug(kanten, im, hW, o = {}) {
     if (!im || !kanten.length) return;
     const key = p => Math.round(p[0] * 10) + ',' + Math.round(p[1] * 10), k = o.k || 1;
-    const segs = kanten.map(({ c, r, e }) => { let A = corner(c, r, e, k), B = corner(c, r, (e + 1) % 6, k); if (A[0] > B[0] + 1e-6) [A, B] = [B, A]; return { A, B }; });
+    const segs = kanten.map(({ c, r, e }) => { let A = corner(c, r, e, k), B = corner(c, r, (e + 1) % 6, k); if (A[0] > B[0] + 1e-6) [A, B] = [B, A]; return { A, B, M: hexC(c, r) }; });
     const vonA = new Map(); segs.forEach(s => { if (!vonA.has(key(s.A))) vonA.set(key(s.A), s); });
     const endeB = new Set(segs.map(s => key(s.B)));
     const used = new Set(), zuege = [];
@@ -430,7 +445,7 @@ function aufbauen(cfg, IM) {
       const L = z.reduce((n, s) => n + Math.hypot(s.B[0] - s.A[0], s.B[1] - s.A[1]), 0), T = hW * im.width / im.height;
       let stretch = 1, u = o.passend ? 0 : hrnd(zi, z.length, o.seed || 7) * 3;
       if (o.passend) { const n = Math.max(0.5, Math.round(L / T * 2) / 2); stretch = L / (n * T); }
-      for (const s of z) u = wall(im, s.A, s.B, hW, { ...(o.wall || {}), u0: u, stretch });
+      for (const s of z) u = wall(im, s.A, s.B, hW, { ...(o.wall || {}), u0: u, stretch, mitte: s.M });
     });
   }
   const aussenKanten = (fs, istInnen, nur) => { const out = []; for (const [c, r] of fs) for (let e = 0; e < 6; e++) { if (nur && !nur.includes(e)) continue; const [nc, nr] = nbE(c, r, e); if (!istInnen(nc, nr)) out.push({ c, r, e }); } return out; };
@@ -483,8 +498,8 @@ function aufbauen(cfg, IM) {
     stand(BUNKER[0], bx, by, 0.95 * SH, { flip: ex < 0, shadeK: 0.45 });
     // Sandsackwall als Haken um den Bunker: vorn quer, an der Außenseite schräg nach hinten (kurze Stücke, keine frei stehenden Blöcke)
     const P0 = [bx + ex * R * 0.02, by + R * 0.34], P1 = [bx + ex * R * 0.5, by + R * 0.3], P2 = [bx + ex * R * 0.92, by + R * 0.02];
-    const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45 });
-    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45 });
+    const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45, mitte: [bx, by] });
+    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45, mitte: [bx, by] });
   }
   // Festung (Vorschlag, cfg.festung, nur Testseite): Teile an Feldkoordinaten { k: 1–9, c, r, dx, dy (in R), h (SH), flip }
   // 1 Mauer mit Zinnen, 2 Ecke, 3 Mauer glatt, 4 Tor klein, 5 Tor groß, 6 Tor zerstört, 7 Bunker heil, 8 Bunker zerstört, 9 Turm
