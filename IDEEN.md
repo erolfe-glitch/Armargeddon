@@ -10,6 +10,7 @@ Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hi
 - Kartenbeschreibungen (`desc`) an den Siegpunkt-Modus anpassen (aus CLAUDE.md übernommen).
 
 - Optional: feine helle Umrandung um Figuren als Schalter in den Optionen (2026-11-16, noch nicht bauen).
+- **Wurfposen für Sturmtruppen und Räumer** (2026-11-19): eigene Wurfposen als Gemini-Bogen (Ausholen, Loslassen), dann den fertigen Wurfablauf `poseWurf` (ui.js, Animation Stufe 1) für ihre Granaten nutzen. Einheiten mit Soldatenbild (Schützenkohorte, Aschengrenadiere) bekommen vorerst keine Handgranaten.
 
 ## Gesamtplan (Stand 2026-11-18)
 

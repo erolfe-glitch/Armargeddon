@@ -53,7 +53,23 @@ function eingesunken(im, cut = EINSINK) {
   const r = { cv: c, frac: 1 - cut }; SUNK.set(key, r); return r;
 }
 
+// Bildwirkung (ui.js, 2026-11-19): aufrechte Teile mit demselben Filter wie der Boden (einmal je Filter vorberechnet)
+const TEILF = new Map();
+function teileGefiltert(IM, flt) {
+  if (!flt) return IM;
+  if (!TEILF.has(flt)) TEILF.set(flt, new Map());
+  const C = TEILF.get(flt), out = { ...IM };
+  for (const n of [...LISTE.wand, ...LISTE.stand]) {
+    const im = IM[n]; if (!im || n === 'graben_sohle') continue;   // Sohle liegt flach im Weltbild und wird dort mit dem Boden gefiltert
+    if (!C.has(im)) { const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height;
+      const x = c.getContext('2d'); x.filter = flt; x.drawImage(im, 0, 0); C.set(im, c); }
+    out[n] = C.get(im);
+  }
+  return out;
+}
 function aufbauen(cfg, IM) {
+  IM = teileGefiltert(IM, cfg.teilFilter);
+  const AO = cfg.ao || 0;   // Kantenverdeckung: dunkler, weicher Saum, wo Graben, Wälle und Befestigungen auf den flachen Boden treffen
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
   const DRAHT = pool('draht_stuecke'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
   // Ansicht (setView): wird erst beim Zeichnen gebraucht
@@ -194,7 +210,10 @@ function aufbauen(cfg, IM) {
       if (o.skip && o.skip((a[0] + b[0]) / 2, my)) continue;
       DRAW.push({ y: my + (o.bias || 0), f: () => strip(im, a, b, hW, u0, du, o) });
     }
-    if (o.shade !== 0) SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = `rgba(8,6,4,${o.shade ?? 0.5})`; w.lineWidth = R * (o.shadeW || 0.14); w.lineCap = 'round'; w.beginPath(); w.moveTo(A[0], A[1] + R * 0.03); w.lineTo(B[0], B[1] + R * 0.03); w.stroke(); w.restore(); });
+    if (o.shade !== 0) SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = `rgba(8,6,4,${o.shade ?? 0.5})`; w.lineWidth = R * (o.shadeW || 0.14); w.lineCap = 'round'; w.beginPath(); w.moveTo(A[0], A[1] + R * 0.03); w.lineTo(B[0], B[1] + R * 0.03); w.stroke();
+      if (AO) { w.filter = `blur(${R * 0.1}px)`; w.strokeStyle = `rgba(6,4,3,${0.17 * AO})`; w.lineWidth = R * 0.34; w.stroke();   // Kantenverdeckung: breiter weicher Saum
+        w.filter = `blur(${R * 0.025}px)`; w.strokeStyle = `rgba(4,3,2,${0.2 * AO})`; w.lineWidth = R * 0.07; w.stroke(); }   // und eine schmale dunkle Fuge direkt an der Kante
+      w.restore(); });
     return u;
   }
   function strip(im, a, b, hW, u0, du, o) {
@@ -223,7 +242,7 @@ function aufbauen(cfg, IM) {
       g.drawImage(im, -wd * 0.5, -h, wd, h); g.restore();
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
     } });
-    if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.42); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, 'rgba(8,6,4,0.55)'); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
+    if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.42) * (1 + 0.08 * AO); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, `rgba(8,6,4,${0.55 + 0.12 * AO})`); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
   }
   const flipR = (c, r, k) => hrnd(c, r, k) < 0.5;
 

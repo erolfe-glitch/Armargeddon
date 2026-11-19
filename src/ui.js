@@ -428,13 +428,13 @@ const gbAn = () => VIEW.tilt() && GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = GBau.bilder(n => window.GELAENDE[n]).then(im => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
-  const key = E.MAP.id + ':' + L.W + 'x' + L.H + ':' + G.map.map(col => col.map(h => h.t[0] + h.t.length).join('')).join('|');
+  const key = E.MAP.id + ':' + BW + ':' + L.W + 'x' + L.H + ':' + G.map.map(col => col.map(h => h.t[0] + h.t.length).join('')).join('|');
   if (GBW && gbKey === key) return true;
   const t0 = performance.now();
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
     terr: (c, r) => G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river }),
     zickzack: true, grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
-    schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]) }, GBIM);   // Schanze = Bunker + Sandsäcke
+    schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, GBIM);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
   gbKey = key; window.__gbMs = Math.round(performance.now() - t0);
   return true;
 }
@@ -444,7 +444,13 @@ function gbPlatz(u, d) {
   const [cx, cy] = center(u.c, u.r); if (Math.hypot(d.x - cx, d.y - cy) > L.s * 0.05) return null;
   return GBW.platz(u.c, u.r);
 }
-function renderTerrain() {
+function renderTerrain() {   // Bildwirkung (2026-11-19): Boden in der neuen Ansicht danach einmal abdunkeln und entsättigen
+  renderTerrain0();
+  if (!VIEW.tilt() || !BW || !tcv) return;
+  const t = document.createElement('canvas'); t.width = tcv.width; t.height = tcv.height; const x = t.getContext('2d'); x.drawImage(tcv, 0, 0);
+  const g = tcv.getContext('2d'); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, tcv.width, tcv.height); g.filter = BW_BODEN[BW]; g.drawImage(t, 0, 0); g.restore();
+}
+function renderTerrain0() {
   const { s, W, H, dpr } = L;
   tcv = tcv || document.createElement('canvas'); tcv.width = W; tcv.height = H;
   const g = tcv.getContext('2d');
@@ -1552,11 +1558,11 @@ let kzLegLauf = 0;
 function kzLegende() {
   const box = $('kzLeg'); if (!box) return;
   if (!box.childElementCount) box.innerHTML = KZ_LEG.map(([a, m, n, t]) => `<div class="kz-e"><canvas data-kz="${a}" data-m="${m}" width="160" height="160"></canvas><div><b>${n}</b><small>${m === 'puls' ? 'ploppt auf und pulsiert' : 'ploppt auf und steigt'}</small><span>${t}</span></div></div>`).join('');
-  const cvs = [...box.querySelectorAll('canvas')], t0 = performance.now(); cancelAnimationFrame(kzLegLauf);
-  const lauf = () => { if ($('rules').hidden) return; const T = performance.now();
-    cvs.forEach((c, i) => { const q = c.getContext('2d'), m = c.dataset.m, D = KZ_DUR[m] + 250, t = (T - t0 + i * 170) % D, p = kzPose(m, Math.min(t, KZ_DUR[m] - 1));
-      q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, c.width, c.height); if (t >= KZ_DUR[m]) return;
-      q.translate(80, 104 + p.dy * 70); q.scale(p.sc, p.sc); q.globalAlpha = Math.max(0, p.a); try { kzMalen(q, c.dataset.kz, 54, T + i * 137); } catch (e) {} q.globalAlpha = 1; });
+  const cvs = [...box.querySelectorAll('canvas')]; cancelAnimationFrame(kzLegLauf);
+  const lauf = () => { if ($('rules').hidden) return; const T = performance.now();   // Legende: Zeichen bleiben stehen, nur mit ihrer Eigenbewegung (2026-11-19)
+    cvs.forEach((c, i) => { const q = c.getContext('2d');
+      q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, c.width, c.height);
+      q.translate(80, 100); try { kzMalen(q, c.dataset.kz, 54, T + i * 137); } catch (e) {} });
     kzLegLauf = requestAnimationFrame(lauf); };
   lauf();
 }
@@ -1588,9 +1594,49 @@ const FIGMAP = {
 const KETTE_FILTER = { konkordat_koloss: 'brightness(0.95) contrast(1.03) saturate(0.97)' };
 const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter'];
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
+// ---------- Bildwirkung (2026-11-19): aus / leicht / stark, Einstellung bzw. Taste B, gespeichert arm.bildwirkung ----------
+// Figuren: Plastik-Karte aus tools/figur_plastik.py (window.FIGSP, einmal beim Bauen vorberechnet: Klarheit und Metallglanz) wird
+// einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
+// Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
+const BW_NAME = ['aus', 'leicht', 'stark'];
+let BW = 1; try { const v = localStorage.getItem('arm.bildwirkung'); if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
+const BW_KARTE = [0, 0.7, 1.3];                                   // Anteil der Plastik-Karte
+const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
+const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)'];
+const BW_SCH = [1, 1.25, 1.5];                                  // Kontaktschatten unter den Figuren
+const bwA = a => Math.min(0.95, a * BW_SCH[BW]);
+const BWI = new Map(), BWK = {};
+function bwBild(key, im) {
+  if (!BW) return im;
+  const ck = key + ':' + BW; if (BWI.has(ck)) return BWI.get(ck);
+  const src = window.FIGSP && window.FIGSP[key]; let km = BWK[key];
+  if (src && !km) { km = BWK[key] = new Image(); km.src = src; }
+  if (km && !(km.complete && km.naturalWidth)) return im;   // Karte lädt noch: so lange das unveränderte Bild
+  const W = im.naturalWidth, H = im.naturalHeight, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
+  const id = x.getImageData(0, 0, W, H), p = id.data;
+  let kd = null; if (km) { x.clearRect(0, 0, W, H); x.imageSmoothingQuality = 'high'; x.drawImage(km, 0, 0, W, H); kd = x.getImageData(0, 0, W, H).data; }
+  const f = BW_KARTE[BW] / 510 * 255, { sat, kon } = BW_FIG[BW], piv = 0.38 * 255;
+  for (let i = 0; i < p.length; i += 4) {
+    if (!p[i + 3]) continue;
+    const dl = kd ? (kd[i] - 128) * f : 0;
+    let r = p[i] + dl, gg = p[i + 1] + dl, b = p[i + 2] + dl; const gr = 0.299 * r + 0.587 * gg + 0.114 * b;
+    r = gr + (r - gr) * sat; gg = gr + (gg - gr) * sat; b = gr + (b - gr) * sat;
+    p[i] = piv + (r - piv) * kon; p[i + 1] = piv + (gg - piv) * kon; p[i + 2] = piv + (b - piv) * kon;   // Uint8ClampedArray begrenzt selbst
+  }
+  x.putImageData(id, 0, 0);
+  c.naturalWidth = W; c.naturalHeight = H; c.complete = true;   // verhält sich wie ein geladenes Bild (naturalWidth/-Height)
+  BWI.set(ck, c); return c;
+}
+function setBildwirkung(v, still) {
+  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung', String(BW)); } catch (e) {}
+  if ($('optBild')) $('optBild').value = String(BW);
+  gbKey = ''; if (L && G) renderTerrain();
+  if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);
+}
 const FIGI = {};
 function figImg(key) {
-  if (key in FIGI) return FIGI[key] && FIGI[key].complete && FIGI[key].naturalWidth ? FIGI[key] : null;
+  if (key in FIGI) return FIGI[key] && FIGI[key].complete && FIGI[key].naturalWidth ? bwBild(key, FIGI[key]) : null;
   const src = window.FIGS && window.FIGS[key]; if (!src) { FIGI[key] = null; return null; }
   const im = new Image(); im.src = src; FIGI[key] = im; return null;
 }
@@ -1709,7 +1755,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       if (nf.kette) {   // Kettenfahrzeuge: Schatten direkt unter den Ketten – dunkles Band entlang der gemessenen Unterkante, kaum darunter hinaus (2026-11-16)
         const ym = top + lows.reduce((n, q) => n + q[1], 0) / lows.length * h;
         g.save(); g.translate(cx, ym - s * 0.03); g.scale(1, Math.max(0.2, (yB - yA) / 2 + s * 0.03) / (Math.abs(x1 - x0) / 2 + s * 0.04));
-        const gr = g.createRadialGradient(0, 0, 0, 0, 0, Math.abs(x1 - x0) / 2 + s * 0.04); gr.addColorStop(0, 'rgba(6,4,3,0.6)'); gr.addColorStop(0.7, 'rgba(6,4,3,0.4)'); gr.addColorStop(1, 'rgba(6,4,3,0)');
+        const gr = g.createRadialGradient(0, 0, 0, 0, 0, Math.abs(x1 - x0) / 2 + s * 0.04); gr.addColorStop(0, `rgba(6,4,3,${bwA(0.6)})`); gr.addColorStop(0.7, `rgba(6,4,3,${bwA(0.4)})`); gr.addColorStop(1, 'rgba(6,4,3,0)');
         g.fillStyle = gr; g.beginPath(); g.arc(0, 0, Math.abs(x1 - x0) / 2 + s * 0.04, 0, 7); g.fill(); g.restore();
         const lp = [...lows].sort((p, q) => p[0] - q[0]);
         g.save(); g.filter = `blur(${Math.max(1, s * 0.022)}px)`; g.fillStyle = 'rgba(4,3,2,0.85)'; g.beginPath();
@@ -1719,16 +1765,16 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       } else {
       // breite flache Ellipse von vorn bis hinten, weich auslaufend
       g.save(); g.translate(cx, cy); g.scale(1, ry / rx);
-      const ka = nf.kette ? 1.45 : 1, gr = g.createRadialGradient(0, 0, 0, 0, 0, rx * (nf.kette ? 1.12 : 1)); gr.addColorStop(0, `rgba(6,4,3,${0.55 * ka})`); gr.addColorStop(0.65, `rgba(6,4,3,${0.32 * ka})`); gr.addColorStop(1, 'rgba(6,4,3,0)');
+      const ka = nf.kette ? 1.45 : 1, gr = g.createRadialGradient(0, 0, 0, 0, 0, rx * (nf.kette ? 1.12 : 1)); gr.addColorStop(0, `rgba(6,4,3,${bwA(0.55 * ka)})`); gr.addColorStop(0.65, `rgba(6,4,3,${bwA(0.32 * ka)})`); gr.addColorStop(1, 'rgba(6,4,3,0)');
       g.fillStyle = gr; g.beginPath(); g.arc(0, 0, rx * (nf.kette ? 1.12 : 1), 0, 7); g.fill(); g.restore();
       // kleine Kontaktflecken unter jedem Aufstandspunkt (Füße, Räder, Ketten), auch weiter hinten
-      g.fillStyle = nf.kette ? 'rgba(4,3,2,0.78)' : 'rgba(4,3,2,0.5)';
+      g.fillStyle = `rgba(4,3,2,${bwA(nf.kette ? 0.78 : 0.5)})`;
       for (let n = 0; n < lows.length; n++) { const q = lows[n], a = lows[n - 2], b = lows[n + 2];
         if ((a && a[1] > q[1]) || (b && b[1] > q[1])) continue;   // nur örtlich tiefste Punkte
         const ry2 = s * 0.045 * Math.max(0.6, k); g.beginPath(); g.ellipse(sx(q[0]), top + q[1] * h - ry2 * 0.4, s * 0.13, ry2, 0, 0, 7); g.fill(); }   // Mitte leicht über dem Aufstandspunkt: nichts ragt nach unten heraus
       }
     } else {
-      g.fillStyle = 'rgba(6,4,3,0.45)'; g.beginPath(); g.ellipse(x, fy, w * 0.45, s * 0.15 * k, 0, 0, 7); g.fill();
+      g.fillStyle = `rgba(6,4,3,${bwA(0.45)})`; g.beginPath(); g.ellipse(x, fy, w * 0.45, s * 0.15 * k, 0, 0, 7); g.fill();
     }
     const filt = [nf.kette ? (KETTE_FILTER[nf.key] || 'brightness(0.84) contrast(0.92) saturate(0.8) sepia(0.1)') : '', done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');   // Panzer: Farbstimmung der Umgebung
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
@@ -1748,16 +1794,18 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
     const sw = Math.min(w * (nf.vehicle ? 0.5 : 0.36), s * (nf.vehicle ? 1.35 : 0.34)), sk = sw * 0.34 * Math.max(0.55, k);
-    if (!sink) { g.save(); g.translate(fx, fy); g.scale(1, sk / sw);
-    const sg = g.createRadialGradient(0, 0, 0, 0, 0, sw); sg.addColorStop(0, 'rgba(6,4,3,0.72)'); sg.addColorStop(0.5, 'rgba(6,4,3,0.42)'); sg.addColorStop(1, 'rgba(6,4,3,0)');
-    g.fillStyle = sg; g.beginPath(); g.arc(0, 0, sw, 0, 7); g.fill(); g.restore();
-    g.fillStyle = 'rgba(4,3,2,0.55)'; g.beginPath(); g.ellipse(fx, fy, sw * 0.45, sk * 0.42, 0, 0, 7); g.fill(); }
+    const kontakt = (k2 = 1) => { const ww = sw * (BW ? 1 + 0.12 * BW : 1) * k2; g.save(); g.translate(fx, fy); g.scale(1, sk / sw);
+      const sg = g.createRadialGradient(0, 0, 0, 0, 0, ww); sg.addColorStop(0, `rgba(6,4,3,${bwA(0.72)})`); sg.addColorStop(0.5, `rgba(6,4,3,${bwA(0.42)})`); sg.addColorStop(1, 'rgba(6,4,3,0)');
+      g.fillStyle = sg; g.beginPath(); g.arc(0, 0, ww, 0, 7); g.fill(); g.restore();
+      g.fillStyle = `rgba(4,3,2,${bwA(0.55)})`; g.beginPath(); g.ellipse(fx, fy, sw * 0.45 * k2, sk * 0.42, 0, 0, 7); g.fill(); };
+    if (!sink && !(BW && f.abs && pl && pl.cut)) kontakt();   // Bildwirkung: Grabenfiguren bekommen ihren Schatten erst beim Zeichnen nach Tiefe (auf der Sohle)
     const back = nf.trupp && f.oy < -0.1;
     const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : '', back ? 'brightness(0.86)' : ''].filter(Boolean).join(' ');
     if (done) g.globalAlpha = A0 * 0.85;
     if (filt) g.filter = filt;
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
+        if (BW) { const gl = g.globalAlpha; g.globalAlpha = gl * 0.75; kontakt(1.1); g.globalAlpha = gl; }   // Bildwirkung: Schatten auf der Grabensohle
         const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flip) g.scale(-1, 1); if (prot) g.rotate(prot); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
       } else {
         if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
@@ -3551,6 +3599,7 @@ const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam']
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+if ($('optBild')) { $('optBild').value = String(BW); $('optBild').addEventListener('change', () => setBildwirkung(+$('optBild').value, true)); }   // Bildwirkung (2026-11-19)
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
 // Lautstärke-Regler (Optionen): Musik und Effekte getrennt, gespeichert
 { const set = () => { $('volMusik').value = Math.round(musikVol * 100); $('volEffekte').value = Math.round(effektVol * 100); $('volMusikW').textContent = $('volMusik').value; $('volEffekteW').textContent = $('volEffekte').value; }; set();
@@ -3589,6 +3638,7 @@ document.addEventListener('keydown', e => {
   // Tasten 1–n: Fähigkeiten-Knöpfe des Panels
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
+  if ((e.key === 'b' || e.key === 'B') && G && $('start').hidden && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { setBildwirkung(BW + 1); e.preventDefault(); return; }   // Bildwirkung umschalten: aus → leicht → stark
   if (e.key === 'Escape' && wayPt) { wayPt = null; computeOptions(); updateHud(); return; }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
@@ -3748,7 +3798,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, portraitKey, feldWirkung, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
