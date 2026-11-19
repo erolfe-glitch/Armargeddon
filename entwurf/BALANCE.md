@@ -395,3 +395,33 @@ Die Streuung zwischen Startwerten ist hier größer als die ±4 je Messung. Für
 2. **(Kosten-Runde) Rauchwerfer, Mineure, Melder, Mörser bringen der KI kaum etwas.** Inzwischen verbessert, siehe KI-Runde; offen bleibt nur Rauch (Punkt 0). Teils ist die Siegquote mit ihnen sogar niedriger als ohne. Das ist eine Frage der KI-Nutzung, nicht der Kosten: Rauch 3,8× je Schlacht, steht aber oft vor den eigenen Schützen. Kosten nur leicht gesenkt. **Vorschlag:** Rauch nur vor eigene Angreifer legen, die in MG-Reichweite ziehen.
 3. **Anführer-Befehle:** Kein Regelproblem mehr. Der starke Ausschlag kam von früh fallenden Generälen und ist mit der höheren Abwehr behoben (General-Verluste 51 → 7 %).
 4. **Alte Karten** (siehe Tabelle): Kasematten (1 %), Grauwall-Front (15 %) und Lerne (94 %) sind grundsätzlich einseitig. Wie beauftragt nicht korrigiert, gehört zum Neubau.
+
+## Sankt Ruß (2026-11-19)
+
+Ziel um 50 %. Gemessen mit `MAP=sanktruss MISCHEN=1 node tools/sim.js 200 <Startwert>`, Startwerte 1–4.
+
+| Stand | Konkordat |
+|---|---|
+| Grauwall-Armeen, Turm im Westen | 97–100 % |
+| Aschenwacht gleich viel wert (910), ohne Reserve | 97 % |
+| dazu Turm nach Osten, Startzone bis in den Graben (band 4), Angriffsgewichte (`ki`) | 53 / 64 / 63 / 68 % (Ø 62 %) |
+| dazu 1 Grenadier-Trupp mehr (940 zu 910) | **54 / 52 / 55 / 51 % (Ø 53 %)** |
+| derselbe Stand ohne Mischen (feste Aufstellung) | 45 % |
+
+Begründung:
+- **Neutrale Fahnen, gleiche Wege:** Das Konkordat zieht zuerst und erreicht Kirche, Friedhof und Dorfplatz eine Runde früher. Wer drin sitzt (Abwehr ×1,8, halber Moralverlust), bleibt drin.
+- **Die Grauwall-Armee der Aschenwacht taugt nicht zum Angriff:** 5 MG-Trupps stehen aufgebaut im Graben. Dazu kommt die Verteidiger-KI.
+- Ausgleich durch:
+  - eine Angriffsarmee (Grenadiere, Sturmpanzer, Lanzenreiter, Minenwerfer) mit einem Trupp mehr;
+  - Aufstellung bis in den eigenen Graben;
+  - den Turm auf der Ostseite.
+
+Werte der Kirche:
+- Deckung 1,5 / 1,8 / 2,0 und Bauzustand 3 / 6 / 8 / 10 verschieben die Quote kaum (±5, im Rauschen).
+- **Startwerte bleiben:** Deckung ×1,8, Bauzustand 6 (Einsturz in gut 40 % der Schlachten, im Mittel Runde 9).
+- Bauzustand 8 bis 10 ließe die Kirche nur noch in 10–25 % der Schlachten einstürzen; das wäre zu selten für die gewünschte Wendung.
+
+Sonst:
+- Den Turm hält die Aschenwacht in rund zwei Drittel der Züge.
+- Eingestürzt wird die Kirche meist vom Konkordat: Landkolosse schießen auf die Aschenwacht im Turm.
+- Dauer im Mittel 14 Runden, Verluste beider Seiten rund 30 %.

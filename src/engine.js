@@ -449,31 +449,35 @@ const MAPS = {
       return T.M;
     } },
   // Sankt Ruß (2026-11-19, Plan entwurf/KARTE_SANKT_RUSS.md): Dorf in der Mitte, beide Seiten aus ihren Gräben am Dorfrand (Konkordat West, Aschenwacht Ost).
-  // Raster punktsymmetrisch (c, r) ↔ (15 − c, 9 − r), nur Kirche, Friedhof, Dorfplatz und Straße nicht gespiegelt. Kirche: Schiff (7,5)+(8,5), Turm (7,4).
-  sanktruss: { id: 'sanktruss', name: 'Sankt Ruß', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 13, band: 3,
+  // Raster punktsymmetrisch (c, r) ↔ (15 − c, 9 − r), nur Kirche, Friedhof, Dorfplatz und Straße nicht gespiegelt. Kirche: Schiff (8,5)+(9,5), Turm (9,4).
+  // Balance (Simulation 2026-11-19, entwurf/BALANCE.md): das Konkordat zieht zuerst und gewinnt sonst den Lauf zu den neutralen Fahnen –
+  // deshalb steht der Turm auf der Ostseite, die Aschenwacht stellt bis in ihren Graben auf (band 4) und rückt wie ein Angreifer vor (ki).
+  sanktruss: { id: 'sanktruss', name: 'Sankt Ruß', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 9, band: 4,
     desc: 'Ein zerschossenes Dorf um eine ausgebrannte Kirche. Beide Seiten stürmen aus ihren Gräben am Dorfrand; dazwischen Häuserkampf um Friedhof, Dorfplatz und die Kirche, die doppelt zählt. Vom Turm sieht und schießt man weiter, schwere Granaten bringen die Kirche zum Einsturz.',
-    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
+    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 23 },
     objectives: [
       { id: 'gutshof', name: 'Gutshof', c: 5, r: 2, pts: 1 },
       { id: 'friedhof', name: 'Friedhof', c: 8, r: 3, pts: 2 },
       { id: 'kirche', name: 'Kirche von Sankt Ruß', c: 8, r: 5, pts: 4 },
-      { id: 'dorfplatz', name: 'Dorfplatz', c: 7, r: 7, pts: 2 },
+      { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 7, pts: 2 },
       { id: 'wegkreuz', name: 'Wegkreuz', c: 10, r: 7, pts: 1 }],
-    bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[7, 5], [8, 5]], turm: [7, 4] }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 8, sense: 5, geschuetz: 2, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
+    bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[8, 5], [9, 5]], turm: [9, 4] }],
+    ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },
+    // Beide Seiten greifen an: Aschenwacht etwa gleich viel wert wie das Konkordat (940 zu 910 – ein Grenadier-Trupp mehr gleicht den ersten Zug aus), ohne Reserve zur Mitte der Schlacht
+    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 11, sense: 3, geschuetz: 2, sturmpz: 2, lanzeD: 2, minenwerfer: 1, generalD: 1, hauptD: 1 } },
+    reinf: [],
     grid: [
       '...=xg.gVg.x=f..',
       '.f.=.VV.gVgx=..,',
       '...=.g.V..V.=...',
-      'o..=xVghhV.o=.o.',
-      '..o=xoVthgg.=...',
-      '...=.ggSSVox=o..',
-      '.o.=o.V..gVx=..o',
+      'o..=xVgghh.o=.o.',
+      '..o=xoVghtg.=...',
+      '...=.gggSSox=o..',
+      '.o.=o.V...Vx=..o',
       '...=.V....g.=...',
       ',..=xgVgVVV.=.f.',
       '..f=x.gVg.gx=...'],
-    deko: { '7,6': 'brunnen', '8,6': 'platz', '7,7': 'platzleer', '5,2': 'karren', '10,7': 'wegkreuz', '7,3': 'figur' },
+    deko: { '8,6': 'brunnen', '9,6': 'platz', '8,7': 'platzleer', '5,2': 'karren', '10,7': 'wegkreuz', '9,3': 'figur' },
     strasse: [[0, 6], [5, 6], [7, 7], [8, 7], [9, 7], [10, 7], [11, 7], [12, 7], [13, 7], [14, 7], [15, 7]],
     build() {
       const T = mapTools(16, 10, 1);
