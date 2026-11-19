@@ -427,16 +427,23 @@ let GBW = null, GBIM = null, gbLaden = null, gbKey = '';
 const gbAn = () => VIEW.tilt() && GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE && !window.NOGB;
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
-  if (!GBIM) { if (!gbLaden) gbLaden = GBau.bilder(n => window.GELAENDE[n]).then(im => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
+  if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
   const key = E.MAP.id + ':' + BW + ':' + L.W + 'x' + L.H + ':' + G.map.map(col => col.map(h => h.t[0] + h.t.length).join('')).join('|');
   if (GBW && gbKey === key) return true;
   const t0 = performance.now();
+  const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
     terr: (c, r) => G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river }),
     zickzack: true, grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
-    schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, GBIM);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
+    schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, IMB);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
   gbKey = key; window.__gbMs = Math.round(performance.now() - t0);
   return true;
+}
+// Plastik-Karten der neuen Gelände-Bausteine (Sankt Ruß, „gel_<name>“ in figsplastik.js) vor dem ersten Aufbau laden; nur die Karte, ohne Farbänderung
+function gbPlastikLaden() {
+  const ks = Object.keys(window.FIGSP || {}).filter(k => k.startsWith('gel_'));
+  return Promise.all(ks.map(k => new Promise(res => { let i = BWK[k]; if (!i) { i = BWK[k] = new Image(); i.src = window.FIGSP[k]; }
+    if (i.complete && i.naturalWidth) res(); else { i.onload = i.onerror = () => res(); } })));
 }
 // Wie stehen die Figuren eines Trupps im Feld (Graben: auf der Grabenlinie, abgesenkt; Ruine: Tiefe gestaucht)? Nur in Ruhe auf der Feldmitte.
 function gbPlatz(u, d) {
@@ -1606,7 +1613,7 @@ const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturat
 const BW_SCH = [1, 1.25, 1.5];                                  // Kontaktschatten unter den Figuren
 const bwA = a => Math.min(0.95, a * BW_SCH[BW]);
 const BWI = new Map(), BWK = {};
-function bwBild(key, im) {
+function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plastik-Karte ja, Kontrast/Sättigung der Figuren nein
   if (!BW) return im;
   const ck = key + ':' + BW; if (BWI.has(ck)) return BWI.get(ck);
   const src = window.FIGSP && window.FIGSP[key]; let km = BWK[key];
@@ -1616,7 +1623,7 @@ function bwBild(key, im) {
   const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
   const id = x.getImageData(0, 0, W, H), p = id.data;
   let kd = null; if (km) { x.clearRect(0, 0, W, H); x.imageSmoothingQuality = 'high'; x.drawImage(km, 0, 0, W, H); kd = x.getImageData(0, 0, W, H).data; }
-  const f = BW_KARTE[BW] / 510 * 255, { sat, kon } = BW_FIG[BW], piv = 0.38 * 255;
+  const f = BW_KARTE[BW] / 510 * 255, { sat, kon } = nurKarte ? { sat: 1, kon: 1 } : BW_FIG[BW], piv = 0.38 * 255;
   for (let i = 0; i < p.length; i += 4) {
     if (!p[i + 3]) continue;
     const dl = kd ? (kd[i] - 128) * f : 0;

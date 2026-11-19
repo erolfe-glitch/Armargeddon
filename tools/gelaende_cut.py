@@ -78,11 +78,38 @@ TEILE = {
     'boden_truemmer_ruhig':  ('textur', 'boden_truemmer'),
     'boden_sumpf_ruhig':     ('textur', 'boden_sumpf'),
     'boden_kopfstein_ruhig': ('textur', 'boden_kopfstein'),
+    # Sankt Ruß (2026-11-19, G15–G21, alle aus JPG mit Magenta). Optionen: schnitt = Kachel genau zwischen zwei Quellspalten (dort beginnt und
+    # endet sie, kurz überblendet), breite = Faktor auf die Kachellänge (gestaucht: niedriger als gemalt, Steine bleiben lang)
+    'kirche_hinten':       ('wand', 1.6, {'schnitt': (84, 2471)}),   # beide Enden mitten durch den Strebepfeiler: gekachelt ein Pfeiler statt zwei; höher als 1,2 SH gewollt (durchsichtig beim Verdecken)
+    'kirche_vorn':         ('wand', 0.5, {'breite': 1.25}),
+    'mauer_niedrig':       ('wand', 0.5, {'breite': 1.4}),
+    'kirchturm':           ('bogen', ('gemeinsam', 3.5)),            # 1 heil, 2 eingestürzt (gleicher Maßstab)
+    'kirche_innen':        ('bogen', ('gemeinsam', 0.8)),            # Bänke, Altar, Glocke, Säulenstumpf
+    'friedhof':            ('bogen', [0.6, 0.5, 0.45, 1.0]),         # Kreuze, Grabsteine, Grabplatte, Heiligenfigur
+    'dorf_aufsteller':     ('bogen', [1.15, 1.25, 0.65, 1.6]),       # Brunnen, Wegkreuz, Karren, Laterne
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
 
+# Bögen aus JPG (Sankt Ruß): rosa Reste in Glasscherben und Säumen (Magenta schimmert durch) → neutrales Grau
+ENTROSA = {'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller'}
+
+
+def entrosa(q):
+    r, g, b = q[..., 0], q[..., 1], q[..., 2]
+    m = np.clip((np.minimum(r - g, b - g) - 4) / 14, 0, 1) * (q[..., 3] > 0)
+    lum = 0.3 * r + 0.59 * g + 0.11 * b
+    for i, k in enumerate((0.97, 1.0, 1.04)): q[..., i] = q[..., i] * (1 - m) + lum * k * m
+    print(f'  rosa entfärbt: {(m > 0.5).sum()} px')
+    return q
+
+
 def freistellen(path):
+    if path.stem in ENTROSA: return entrosa(freistellen0(path))
+    return freistellen0(path)
+
+
+def freistellen0(path):
     a = np.asarray(Image.open(path).convert('RGB'))
     rand_px = np.concatenate([a[0], a[-1], a[:, 0], a[:, -1]]).astype(float)
     if np.median(rand_px, axis=0).max() < 30:   # schwarzer Hintergrund: Deckung nach Helligkeit, Farben nicht entmischen (dunkler Saum = Schatten)
@@ -155,8 +182,19 @@ def speichern(q, name, h_px, w_px=None):
     print(f'  → {name}: {im.width}×{im.height}')
 
 
-def streifen(name, art, sh):
-    q = zeilen(freistellen(SRC / f'{name}.png'))
+def streifen(name, art, sh, opt=None):
+    opt = opt or {}
+    q = freistellen(SRC / f'{name}.png')
+    if 'schnitt' in opt:   # Kachel von Hand: genau von x0 bis x1, die nächsten ow Spalten hinter x1 werden in den Anfang überblendet
+        x0, x1 = opt['schnitt']; ow = 30
+        q = zeilen(q[:, x0:x1 + ow])
+        if art == 'wand':
+            cov = (q[..., 3] > 128).mean(axis=1); q = q[:np.where(cov > 0.6)[0].max() + 1]
+        q = nahtlos(q, ow)
+        print(f'  Kachel von Hand {x0}–{x1}, Naht {naht(q):.1f}×')
+        h = PX_SH * sh; speichern(q, name, h, q.shape[1] * h / q.shape[0] * opt.get('breite', 1))
+        return
+    q = zeilen(q)
     cc = (q[..., 3] > 128).mean(axis=0); xs = np.where(cc > cc.max() * 0.3)[0]   # schmalen Magenta-Rand links/rechts abschneiden
     q = q[:, xs.min():xs.max() + 1]
     rand = (q[:, :4, 3] > 128).mean(), (q[:, -4:, 3] > 128).mean()
@@ -175,7 +213,8 @@ def streifen(name, art, sh):
         print(f'  Kachel bei Spalte {x} geschnitten')
     else: ow = 0
     print(f'  Naht vorher {vor:.1f}×, nachher {naht(q):.1f}× des üblichen Spaltenunterschieds (Überblendung {ow} px)')
-    speichern(q, name, PX_SH * sh if art == 'wand' else PX_R)
+    h = PX_SH * sh if art == 'wand' else PX_R
+    speichern(q, name, h, q.shape[1] * h / q.shape[0] * opt.get('breite', 1))
 
 
 def pfaehle_ausduennen(name, jede=2):
@@ -320,7 +359,7 @@ if __name__ == '__main__':
     if '--schwarz' in sys.argv:
         for name in args: TEILE[name] = ('flach', [0.9] * 8)
     for name in args or TEILE:
-        art, h = TEILE[name]
+        art, h, *opt = TEILE[name]
         print(name)
         if art == 'bogen':
             bogen(name, h)
@@ -331,5 +370,5 @@ if __name__ == '__main__':
         elif art == 'textur':
             textur(name, h)
         else:
-            streifen(name, art, h)
+            streifen(name, art, h, opt[0] if opt else None)
             if name == 'draht': pfaehle_ausduennen(name)
