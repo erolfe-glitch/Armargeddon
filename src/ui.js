@@ -165,6 +165,7 @@ function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
   if (u && u.type === 'turm') return fxMuzzle(id, 0, 0.3);
+  if (d.muz2) { const lf = facesLeft(d.face), m = d.muz2, p = [d.x + (!!m[2] === lf ? m[0] : -m[0]), d.y + m[1]]; p.fuss = [d.x, d.y]; return p; }   // Mündung aus dem Bild (MUZ2)
   if (u && u.type === 'kreuz') { const lf = facesLeft(d.face), p = [d.x + x0 + w * (lf ? 0.38 : 0.62), d.y + y0 + h * 0.27]; p.fuss = [d.x, d.y]; return p; }   // Kanone im Löwenmaul
   const z = DU.get(zid), rechts = z ? z.x >= d.x : true, p = [d.x + x0 + w * (rechts ? 0.62 : 0.38), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
 }
@@ -752,7 +753,9 @@ function drawSym(g, im, cx, cy, R, ring) {
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
-const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472] };
+const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
+  konkordat_kreuzschreiter_neu: [0.632, 0.513], aschenwacht_eisenknecht_neu: [0.88, 0.61] };   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
+const MUZ2 = { konkordat_kreuzschreiter_neu: [0.02, 0.835] };   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -1601,11 +1604,13 @@ const FIGMAP = {
   ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
-  turm: ['turmschreiter'], orden: ['ordensschreiter'], kreuz: ['kreuzschreiter'], knecht: ['eisenknecht'], saeger: ['saegeschreiter'], klaue: ['klauenschreiter'],   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
+  turm: ['turmschreiter'], orden: ['ordensschreiter'], kreuz: ['kreuzschreiter_neu'], knecht: ['eisenknecht_neu'], saeger: ['saegeschreiter'], klaue: ['klauenschreiter'],   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
 };
 // Farbstimmung der Kettenfahrzeuge an die Umgebung; der neue Landkoloss (Dreiviertelansicht, 2026-11-17) nur leicht gedämpft, damit das Rot kräftig bleibt
 const KETTE_FILTER = { konkordat_koloss: 'brightness(0.95) contrast(1.03) saturate(0.97)' };
-const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter'];
+const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter', 'kreuzschreiter_neu', 'eisenknecht_neu'];
+// Stufe-3-Schreiter (2026-11-19, neue Modelle im Stil Retro-Zukunft): 2,3 SH, beide gleich groß, dürfen so breit werden wie Fahrzeuge (FIGW_VEH)
+const STUFE3 = ['kreuzschreiter_neu', 'eisenknecht_neu'];
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
 // ---------- Bildwirkung (2026-11-19): aus / leicht / stark, Einstellung bzw. Taste B, gespeichert arm.bildwirkung ----------
 // Figuren: Plastik-Karte aus tools/figur_plastik.py (window.FIGSP, einmal beim Bauen vorberechnet: Klarheit und Metallglanz) wird
@@ -1660,7 +1665,7 @@ function newFigs(u, d) {
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { key: keys[0], ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { key: keys[0], ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, gross: STUFE3.includes(sheet), vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -1755,7 +1760,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (nf.deep) {   // Einzelmodelle mit Tiefe (MG, Geschütz, Gespann, Panzer): mittlere Unterkante auf den Feldboden, Schatten über die ganze Grundfläche
     const im = list[0].im, env = vehEnv(im);
     let h = im.naturalHeight / 320 * FIG_SH * s, w = h * im.naturalWidth / im.naturalHeight;
-    const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s; if (w > wmax) { h *= wmax / w; w = wmax; }
+    const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s; if (w > wmax) { h *= wmax / w; w = wmax; }
     const fy = y + (nf.vehicle ? 0.3 : 0.17) * s * k + s * 0.03, top = fy - (env ? env.mid : 1) * h,   // etwas Richtung Betrachter und minimal tiefer: nichts hängt in der Luft
       sx = v => flip ? x + w / 2 - v * w : x - w / 2 + v * w;
     g.filter = 'none'; g.globalAlpha = A0;
@@ -1795,6 +1800,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore();
     d.fbx = [[x - w / 2 - d.x, top + sink * 0.8 - d.y, w, h, flip]];
     { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip]; }   // Laufmündung (neue Ansicht)
+    { const mz = MUZ2[nf.key]; d.muz2 = mz ? [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip] : null; }   // Mündung der Zweitwaffe
     g.filter = 'none';
     if (u.type === 'ballon') drawBallon(g, s, u, x, top, w, h, flip, filt);
     return top;
@@ -1802,7 +1808,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   for (const f of list) {
     const pa = f.pa, vor = flip ? -1 : 1, fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s + (pa ? pa.dx * vor * s : 0), fy = y + f.oy * s * k + duck + (pa ? pa.dy * s : 0), prot = pa ? pa.rot : 0;
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
-    const wmax = (nf.vehicle ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
+    const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern

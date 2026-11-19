@@ -98,7 +98,7 @@ TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen aut
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
 SH_REIHE = {'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
 # Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
-SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
+SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_eisenknecht_neu', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
 
 
 # Leuchtende Helmlampen, die im Bild rosa geraten sind (Magenta-Schein): in warmes Gelb umfärben
@@ -133,7 +133,7 @@ OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
 SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.62, 'panzer': 1.5, 'bohrkoloss': 1.5,
              'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15, 'feldkanone': 1.05,
-             'turmschreiter': 1.9, 'ordensschreiter': 1.9, 'kreuzschreiter': 1.9, 'eisenknecht': 1.9, 'saegeschreiter': 1.9, 'klauenschreiter': 1.9}   # Schreiter (2026-11-17): knapp 2 SH, größer als Kampfanzüge   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
+             'turmschreiter': 1.9, 'ordensschreiter': 1.9, 'kreuzschreiter': 1.9, 'eisenknecht': 1.9, 'kreuzschreiter_neu': 2.3, 'eisenknecht_neu': 2.45, 'saegeschreiter': 1.9, 'klauenschreiter': 1.9}   # Schreiter (2026-11-17): knapp 2 SH, größer als Kampfanzüge   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
 # Aschenwacht: Schwarz-Weiß-Rot (echte Reichsfarben) → eigene Farben Aschgrau / Schwarz / Knochenweiß. Allgemeine Regel für ALLE
 # aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
 # dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
@@ -295,8 +295,40 @@ def kontrast(q, f):
     q = q.copy(); q[..., :3] = np.clip(rgb * k[..., None], 0, 255); return q
 
 
+# Gemalter Rauch über Auspuffrohren (Stufe-3-Schreiter, 2026-11-19): den Rauch macht im Spiel der Effekt. Kästen in Quellkoordinaten (vor dem Spiegeln)
+# über den Rohröffnungen; darin werden helle, ungesättigte Flächen (Rauch) samt ihrer dunklen Kontur zur Hintergrundfarbe – die dunkelgraue
+# Fahne und die Rohre bleiben (zu dunkel bzw. unterhalb der Kästen).
+RAUCH = {'aschenwacht_eisenknecht_neu': [(1370, 195, 1512, 326), (1480, 185, 1615, 306), (1830, 160, 2045, 268), (1950, 222, 2100, 323)]}
+
+
+def rauch_weg(a, name):
+    if name not in RAUCH: return a
+    a = a.copy(); bg = np.median(np.concatenate([a[3], a[-4]]), axis=0)
+    for x0, y0, x1, y1 in RAUCH[name]:
+        q = a[y0:y1, x0:x1].astype(np.float64); L = q.mean(2); S = q.max(2) - q.min(2)
+        mag = (q[..., 0] - q[..., 1] > 110) & (q[..., 2] - q[..., 1] > 110)
+        rauch = (L > 125) & (S < 70) & ~mag
+        rauch = ndimage.binary_closing(rauch, iterations=2)
+        kontur = ndimage.binary_dilation(rauch, iterations=7) & ndimage.binary_dilation(mag, iterations=5) & ~mag
+        weg = ndimage.binary_fill_holes(rauch | kontur)
+        frei = ~mag & ~weg; linie = frei & ~ndimage.binary_opening(frei, iterations=3)   # übrige dünne Konturlinien (Fahne, Rohre sind dicker)
+        weg |= linie & ndimage.binary_dilation(weg, iterations=12)
+        weg |= np.minimum(q[..., 0], q[..., 2]) - q[..., 1] > 45   # dunkelrosa Kantenpixel (Kontur mit Magenta gemischt) würden sonst deckend
+        a[y0:y1, x0:x1][weg] = bg
+    return a
+
+
+# Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
+ENTROSA = {'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu'}
+
+
+def entrosa(q):
+    q = q.copy(); ex = np.clip(np.minimum(q[..., 0], q[..., 2]) - q[..., 1], 0, None); q[..., 0] -= ex; q[..., 2] -= ex; return q
+
+
 def cut(name, out=OUT):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
+    a = rauch_weg(a, name)
     a = abzeichen_uebermalen(a, name)
     if name in SPIEGELN: a = np.ascontiguousarray(a[:, ::-1])
     H, W = a.shape[:2]
@@ -339,6 +371,7 @@ def cut(name, out=OUT):
     if kind not in TRUPP and kind not in REIHE:   # Einzelmodell
         q, fl = k, 0   # Einzelmodelle: nur Magenta weg (Kisten, Fahnen, Messing, Flamme gehören zum Modell)
         q = keep_parts(q, True)
+        if name in ENTROSA: q = entrosa(q)
         if name in KONTRAST: q = kontrast(q, KONTRAST[name])
         s = H_OUT * SH_SINGLE.get(kind, 1.0) / q.shape[0]
         out.mkdir(parents=True, exist_ok=True)
