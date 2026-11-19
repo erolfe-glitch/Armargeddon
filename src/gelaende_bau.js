@@ -29,7 +29,7 @@ const LISTE = {
   tex: ['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n),
   flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
-    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
+    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
@@ -467,8 +467,13 @@ function aufbauen(cfg, IM) {
   }
   // Friedhofsmauer (außen um alle Friedhofsfelder, nicht an Gebäuden) und Gartenmauern (hinten, oft eine Seite dazu)
   mauerzug(aussenKanten(felder((t, c, r) => inMap(c, r) && t === 'friedhof'), (c, r) => terr(c, r) === 'friedhof' || BAUFELD.has(c + ',' + r)), IM.mauer_niedrig, 0.5 * SH, { k: 0.97, seed: 17, wall: { shade: 0.45 } });
-  { const gk = []; for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) for (const e of [4, hrnd(c, r, 250) < 0.5 ? 3 : 5, ...(hrnd(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (terr(nc, nr) !== 'garten' && !BAUFELD.has(nc + ',' + nr) && terr(nc, nr) !== 'friedhof') gk.push({ c, r, e }); }
-    mauerzug(gk, IM.mauer_niedrig, 0.45 * SH, { k: 0.9, seed: 19, wall: { shade: 0.45 } }); }
+  // Gärten: hinten (Kanten 3–5) je Garten entweder zerschossener Zaun (1 SH, Latten durchsichtig, nur hinten erlaubt) oder Bruchsteinmauer, vorn nur die Mauer
+  { const mauer = [], zaun = []; for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
+      const mitZaun = !!IM.zaun && hrnd(c, r, 252) < 0.55;
+      for (const e of [4, hrnd(c, r, 250) < 0.5 ? 3 : 5, ...(hrnd(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (terr(nc, nr) === 'garten' || BAUFELD.has(nc + ',' + nr) || terr(nc, nr) === 'friedhof') continue;
+        (e >= 3 && mitZaun ? zaun : mauer).push({ c, r, e }); } }
+    mauerzug(mauer, IM.mauer_niedrig, 0.45 * SH, { k: 0.9, seed: 19, wall: { shade: 0.45 } });
+    mauerzug(zaun, IM.zaun, 1.0 * SH, { k: 0.9, seed: 23, wall: { shade: 0.35, shadeW: 0.1 } }); }
 
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
   // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).

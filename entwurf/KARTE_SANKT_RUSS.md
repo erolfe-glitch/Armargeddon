@@ -41,6 +41,7 @@ Stand 2026-11-19, entschieden mit Enrico. Nächste Karte nach Grauwall, ganz aus
 | G19 | `friedhof.png` | Aufsteller (4) | Grabkreuze, Grabsteine, kopflose Heiligenfigur |
 | G20 | `mauer_niedrig.png` | Wandstück | niedrige Bruchsteinmauer (Friedhof, Gärten) |
 | G21 | `dorf_aufsteller.png` | Aufsteller (4) | Brunnen, Wegkreuz, Karren, Laternenpfahl |
+| G22 | `zaun.png` | Wandstück | zerschossener Gartenzaun, ca. 1 SH hoch, Lücken zwischen den Latten durchsichtig. Nur an den **hinteren** Feldkanten der Gärten (Kanten 3–5), je Garten Zaun oder Bruchsteinmauer gemischt; vorn bleibt die niedrige Mauer. Deckung wie Garten (×1,2). Eingebaut 2026-11-19. |
 
 Vorhanden und weiter genutzt: Ruinen (G6–G8), Trümmer (G14), Kopfstein- und Trümmerboden, Gräben, Draht, Barrikade, Stümpfe. Noch offen von Grauwall: Bäume mit Kronen am Kartenrand (A7).
 

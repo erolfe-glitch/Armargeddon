@@ -87,12 +87,13 @@ TEILE = {
     'kirche_innen':        ('bogen', ('gemeinsam', 0.8)),            # Bänke, Altar, Glocke, Säulenstumpf
     'friedhof':            ('bogen', [0.6, 0.5, 0.45, 1.0]),         # Kreuze, Grabsteine, Grabplatte, Heiligenfigur
     'dorf_aufsteller':     ('bogen', [1.15, 1.25, 0.65, 1.6]),       # Brunnen, Wegkreuz, Karren, Laterne
+    'zaun':                ('wand', 1.0, {'fuss': 0.2}),            # G22 zerschossener Gartenzaun, nur hinten (Lücken zwischen den Latten durchsichtig; Fußlinie bei 20 % Deckung)
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
 
 # Bögen aus JPG (Sankt Ruß): rosa Reste in Glasscherben und Säumen (Magenta schimmert durch) → neutrales Grau
-ENTROSA = {'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller'}
+ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller'}
 
 
 def entrosa(q):
@@ -202,7 +203,7 @@ def streifen(name, art, sh, opt=None):
         print(f'  WARNUNG: Streifen reicht nicht bis an den Bildrand (Deckung links {rand[0]:.2f}, rechts {rand[1]:.2f})')
     if art == 'wand':   # Fußlinie: unterste Zeile, die über die Breite zu 60 % gedeckt ist; darunter abschneiden
         cov = (q[..., 3] > 128).mean(axis=1)
-        foot = np.where(cov > 0.6)[0].max()
+        foot = np.where(cov > opt.get('fuss', 0.6))[0].max()
         q = q[:foot + 1]
     vor = naht(q)
     ow = max(24, q.shape[1] // 14)
