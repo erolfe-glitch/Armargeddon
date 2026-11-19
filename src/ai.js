@@ -9,10 +9,32 @@ const W = {
   A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
   D: { threat: 0.45, prog: 0.45, obj: 0.45, hold: 0.45, cover: 0.6, dmg: 4, counter: 3.2, cut: 1.2 }   // Siegpunkt-Modus: auch die Aschenwacht rückt auf die Zielfelder vor
 };
+// Gewichte je Karte (MAP.ki, 2026-11-19): z. B. Sankt Ruß – beide Seiten kommen von außen, die Aschenwacht rückt wie ein Angreifer vor.
+// Umgebungsvariablen W_x_y gelten weiter vorrangig (Tests).
+const WK = { id: null, A: null, D: null };
+function wOf(side) {
+  const m = E.MAP; if (WK.id !== (m && m.id)) { WK.id = m && m.id; for (const sd of ['A', 'D']) { WK[sd] = Object.assign({}, W[sd], (m && m.ki && m.ki[sd]) || {});
+    if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const x = k.match(/^W_([AD])_(\w+)$/); if (x && x[1] === sd) WK[sd][x[2]] = +process.env[k]; } } }
+  return WK[side];
+}
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
-const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4 };
+const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
+  schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3 };
+// Kirche von Sankt Ruß (KI 2026-11-19): Turm besetzen (Schützen, W_TURM), Kirche als Ziel (Deckung oben), Einsturz nutzen (Artillerie/Kanonen auf
+// Gegner in der Kirche, W_EINSTURZ je Gegner, der beim Einsturz drin wäre), eigene Truppen aus einer fast eingestürzten Kirche heraus (W_KRISS)
+const W_TURM = envZahl('W_TURM', 1.4), W_EINSTURZ = envZahl('W_EINSTURZ', 2.2), W_KRISS = envZahl('W_KRISS', 1.2);
+function envZahl(k, d) { const e = typeof process !== 'undefined' && process.env || {}; return e[k] != null ? +e[k] : d; }
+// Wert eines Treffers auf ein Kirchenfeld (zusätzlich zum Schaden): je näher der Einsturz, desto mehr; Gegner drin zählen, eigene kosten
+function kirchenWert(G, u, c, r) {
+  const b = E.bauAt(G, c, r); if (!b || !E.schwereWaffe(u)) return 0;
+  const minus = (TYPES[u.type].heMul || 1) > 1 ? 2 : 1, rest = b.hp - minus;
+  let feind = 0, eigen = 0;
+  for (const [fc, fr] of [...b.felder, ...(b.turm ? [b.turm] : [])]) { const x = E.unitAt(G, fc, fr); if (x && E.alive(x)) { if (x.side === u.side) eigen++; else feind++; } }
+  if (rest <= 0) return feind * W_EINSTURZ - eigen * W_EINSTURZ * 1.5 + (feind ? 1 : 0);   // dieser Treffer bringt sie zum Einsturz
+  return (feind - eigen * 1.5) * W_EINSTURZ * 0.6 / rest;   // Bauzustand herunterziehen, solange der Gegner drin sitzt
+}
 function coverVal(t) { return COVER[t] || 0; }
 
 if (typeof process !== 'undefined' && process.env) for (const k in process.env) { const m = k.match(/^W_([AD])_(\w+)$/); if (m) W[m[1]][m[2]] = +process.env[k]; }
@@ -49,7 +71,7 @@ function fzBegleitung(G, u, c, r) {
 const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
-  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8 };
+  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, friedhof: 1.1 };
   const defm = (t === 'village' || t === 'kirche' || t === 'fabrik') && D.cls === 'walker' ? 0.7 : DM[t] || 1;
   let th = 0;
   for (const o of G.units) {
@@ -189,7 +211,7 @@ function hazard(G, u, c, r) {
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
 function posValue0(G, u, c, r) {
-  const w = W[u.side], h = E.hex(G, c, r), k = TYPES[u.type].relay || TYPES[u.type].abil === 'smoke' ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
+  const w = wOf(u.side), h = E.hex(G, c, r), k = TYPES[u.type].relay || TYPES[u.type].abil === 'smoke' ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
   const th = threatAt(G, u, c, r);
   let v;
   if (k === 'medic') {
@@ -220,6 +242,7 @@ function posValue0(G, u, c, r) {
       if (nd <= 5 && (vor || nd <= 3)) { const b = fzBegleitung(G, u, c, r); if (b === 0) v -= W_FZ_BEGL; else if (b === 1) v -= W_FZ_BEGL * 0.4; }
     }
     if (h.obj && k !== 'art') v += 1 + 0.4 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
+    v += kirchenPlatz(G, u, c, r);
     // Sturmstellung (BP/AP Schritt 2): Nahkämpfer, die angreifen müssen, enden 2 Felder vor einem Gegner auf einem Zielfeld bzw. im Graben –
     // nächste Runde reicht ein halber Zug bis daneben und der Sturm
     if (W_STURM && TYPES[u.type].atk >= 3 && !E.nahFrei({ type: u.type, bpUsed: 99, bp: 0 }) && mussAngreifen(G, u))
@@ -231,6 +254,7 @@ function posValue0(G, u, c, r) {
     v = coverVal(h.t) * w.cover - th * w.threat * 6 * (u.officer ? 1.6 : 1);
     v -= openObjDist(G, u, c, r) * w.hold;
     if (h.obj) v += 2 + 0.5 * (E.OBJECTIVES.find(o => o.id === h.obj) || { pts: 1 }).pts;
+    v += kirchenPlatz(G, u, c, r);
   }
   if (TYPES[u.type].abil === 'tunnel' && !(u.cdA > 0))   // Mineure: auf 1–2 Felder an einen Gegner in Graben/Bunker heran
     for (const o of G.units) if (o.side !== u.side && E.active(o) && ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village'].includes(E.hex(G, o.c, o.r).t) && E.dist(o.c, o.r, c, r) <= 2 && E.dist(o.c, o.r, c, r) >= 1) { v += 1.2 + (E.hex(G, o.c, o.r).obj ? 0.8 : 0); break; }
@@ -243,8 +267,18 @@ function posValue0(G, u, c, r) {
   return v;
 }
 
+// Kirchenfeld als Standort: Turm für Schützen (mehr Gegner in der verlängerten Reichweite = mehr wert), fast eingestürzte Kirche meiden,
+// solange der Gegner schwere Waffen hat, die sie erreichen
+function kirchenPlatz(G, u, c, r) {
+  const t = E.hex(G, c, r).t; if (!E.KIRCHE.has(t)) return 0;
+  const T = TYPES[u.type]; let v = 0;
+  if (t === 'turm' && T.rng >= 2 && !T.mg) { let n = 0; for (const o of G.units) if (o.side !== u.side && E.active(o) && E.dist(o.c, o.r, c, r) <= T.rng + P.TURM_RNG + 1) n++; v += W_TURM * (0.5 + Math.min(n, 4) * 0.15); }
+  const b = E.bauAt(G, c, r);
+  if (b && b.hp <= 2) { let s = 0; for (const o of G.units) if (o.side !== u.side && E.active(o) && E.schwereWaffe(o) && E.dist(o.c, o.r, c, r) <= (TYPES[o.type].rng || 0)) s++; v -= W_KRISS * Math.min(s, 2) * (3 - b.hp) / 2; }
+  return v;
+}
 function attackValue(G, a, d, kind, o) {
-  const p = E.preview(G, a, d, kind, o), w = W[a.side];
+  const p = E.preview(G, a, d, kind, o), w = wOf(a.side);
   if (p.dmg <= 0.01) return -1;
   let v = p.dmg * w.dmg - p.counter * w.counter;
   const flame = kind === 'fire' && TYPES[a.type].flame;
@@ -255,6 +289,7 @@ function attackValue(G, a, d, kind, o) {
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
   if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
   if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += mussAngreifen(G, a) ? W_OBJSTURM : 0.6;   // Zielfeld stürmen, wenn die Seite angreifen muss
+  if (kind === 'fire' && E.cls(a) === 'walker') v += kirchenWert(G, a, d.c, d.r);   // Kanone auf die Kirche: Einsturz nutzen
   return v;
 }
 // Schusswinkel (Fahrplan 2): Fahrzeuge/Schreiter schießen mit der Hauptwaffe nur nach vorn (±60°). Ohne Zug darf die KI vorher drehen (1 Punkt), wenn noch 2 Punkte da sind.
@@ -276,7 +311,7 @@ function bestAttackFrom(G, u, c, r, moved, run, kosten) {
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
     if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
-        dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) && E.hasLOS(G, c, r, d.c, d.r) && imBogen(G, u, c, r, d, moved)) {
+        dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) + (E.hex(G, c, r).t === 'turm' ? P.TURM_RNG : 0) && E.hasLOS(G, c, r, d.c, d.r) && imBogen(G, u, c, r, d, moved)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
     }
@@ -304,6 +339,7 @@ function planArt(G, u) {
         if (fest && angr) v += 1.5 + (gd ? 1 : 0);
       }
       for (const [nc, nr] of E.neighbors(d.c, d.r)) { const f = E.unitAt(G, nc, nr); if (f && f.side === u.side) v -= 0.4; }
+      v += kirchenWert(G, u, d.c, d.r);   // Einsturz nutzen
       consider(v, d.c, d.r, 'he');
     }
     if (E.canShell(G, u, d.c, d.r, 'barrage')) {
@@ -325,6 +361,10 @@ function planArt(G, u) {
       for (const o of G.units) if (o.side === u.side && E.active(o) && !E.gasSafe(G, o) && !zellen.some(([gc, gr]) => gc === o.c && gr === o.r) && zellen.some(([gc, gr]) => E.dist(gc, gr, o.c, o.r) === 1)) v -= 0.8;
       if (ne >= 1 && v >= 3) consider(v, d.c, d.r, 'gas');
     }
+  }
+  for (const b of G.bauten || []) {   // leeres Kirchenfeld beschießen, wenn Gegner in einem anderen Feld der Kirche sitzen (Einsturz)
+    if (b.kaputt) continue;
+    for (const [c, r] of [...b.felder, ...(b.turm ? [b.turm] : [])]) { if (E.unitAt(G, c, r) || !E.canShell(G, u, c, r, 'he')) continue; const v = kirchenWert(G, u, c, r); if (v > 0) consider(v, c, r, 'he'); }
   }
   if (u.side === 'A') {
     for (let c = 0; c < E.COLS; c++) for (let r = 0; r < E.ROWS; r++) {
@@ -357,10 +397,10 @@ function planUnit(G, u) {
   const here = posValue(G, u, u.c, u.r);
   const atkHere = u.attacked ? null : bestAttackFrom(G, u, u.c, u.r, false, 0);
   opts.push({ v: here + (atkHere ? Math.max(0, atkHere.v) : 0), move: null, atk: atkHere && atkHere.v > 0 ? atkHere : null });
-  if (W[u.side].cut > 0) {   // Paket 8: Drahtschneider schneiden vom Nachbarfeld aus – den Draht, der Richtung Gegner liegt
+  if (wOf(u.side).cut > 0) {   // Paket 8: Drahtschneider schneiden vom Nachbarfeld aus – den Draht, der Richtung Gegner liegt
     const nd0 = nearestEnemyDist(G, u.side, u.c, u.r); let best = null;
     for (const [c, r] of E.cutTargets(G, u)) { const nd = nearestEnemyDist(G, u.side, c, r); if (nd <= nd0 && (!best || nd < best[2])) best = [c, r, nd]; }
-    if (best) opts.push({ v: here + W[u.side].cut + 1.2, move: null, cut: [best[0], best[1]] });
+    if (best) opts.push({ v: here + wOf(u.side).cut + 1.2, move: null, cut: [best[0], best[1]] });
   }
   for (const [, n] of E.reachable(G, u)) {
     const pv = posValue(G, u, n.c, n.r);

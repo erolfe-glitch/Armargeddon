@@ -5,6 +5,7 @@ const E = require('../src/engine.js');
 const AI = require('../src/ai.js');
 
 const N = +(process.argv[2] || 200), seed0 = +(process.argv[3] || 1);
+const KI = { einsturz: 0, runde: [], durch: { A: 0, D: 0 }, typ: {}, turm: { A: 0, D: 0 }, schiff: { A: 0, D: 0 }, zuege: 0 };   // Kirche (Karten mit großen Gebäuden): Einsturz, Besetzung von Turm und Schiff
 let noA = [], drop = {};
 // Kartenwerte testen: M_winA=6 M_maxT=16, Armeen: MA_kohorte=10 MD_grenadier=9 (Anzahl in der Standardarmee der Karte)
 const MP = E.MAPS[process.env.MAP || 'grauwall'];
@@ -59,9 +60,11 @@ for (let g = 0; g < N; g++) {
     while (!G.over && guard++ < 8000) {
       if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; const bev = AI.buy(G) || []; for (const e of bev) if (e.t === 'spawn') { const u = G.units.find(x => x.id === e.u); zaehl(u.side, 'Nachschub' + (E.OBJECTIVES.some(o => E.dist(o.c, o.r, u.c, u.r) <= 1) ? ' an Zielfeld' : ' am Rand')); } }
       const act = AI.next(G);
-      if (!act) { E.endTurn(G); continue; }
+      if (!act) { if (G.bauten && G.bauten.length) { const b = G.bauten[0], tu = b.turm && !b.kaputt && E.unitAt(G, b.turm[0], b.turm[1]); KI.zuege++; if (tu) KI.turm[tu.side]++;
+          for (const [c, r] of b.felder) { const x = !b.kaputt && E.unitAt(G, c, r); if (x) KI.schiff[x.side]++; } }
+        E.endTurn(G); continue; }
       for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || [];
-        if (u && ev.length) { zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); } }
+        if (u && ev.length) { for (const e of ev) if (e.t === 'einsturz') { KI.einsturz++; KI.runde.push(G.turn); KI.durch[sd]++; KI.typ[u.type] = (KI.typ[u.type] || 0) + 1; } zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); } }
         if (G.over) break; }
     }
   } catch (e) { errors++; if (errors < 3) console.error(e); continue; }
@@ -78,6 +81,7 @@ for (let g = 0; g < N; g++) {
 }
 const avg = a => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
 const pc = x => (100 * x / N).toFixed(0) + ' %';
+if (MP.bauten) console.log(`Kirche: Einsturz in ${pc(KI.einsturz)} der Schlachten (Runde Ø ${avg(KI.runde).toFixed(1)}, durch Konkordat ${KI.durch.A} / Aschenwacht ${KI.durch.D}, ${JSON.stringify(KI.typ)}); Turm besetzt ${(100 * KI.turm.A / Math.max(1, KI.zuege)).toFixed(0)} % / ${(100 * KI.turm.D / Math.max(1, KI.zuege)).toFixed(0)} % der Züge, Schiff ${(50 * KI.schiff.A / Math.max(1, KI.zuege)).toFixed(0)} % / ${(50 * KI.schiff.D / Math.max(1, KI.zuege)).toFixed(0)} %`);
 console.log(`${N} Schlachten  Konkordat ${pc(res.A)}  Aschenwacht ${pc(res.D)}  unentschieden ${pc(res.draw)}  Fehler ${errors}`);
 console.log('Ausgang:', JSON.stringify(why));
 console.log(`Runden Ø ${avg(turns).toFixed(1)}  Punkte Ø ${avg(pts).toFixed(1)}  Ausfälle Ø Konkordat ${(100 * avg(loss.A)).toFixed(0)} %  Aschenwacht ${(100 * avg(loss.D)).toFixed(0)} %`);
