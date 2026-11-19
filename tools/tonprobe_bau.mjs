@@ -29,11 +29,12 @@ const VOL = { rifle: 0.3, rifle2: 0.3, rifle3: 0.3, rifle4: 0.3, sniper: 0.6, pi
   schritte: 0.5, steps: 0.5, stepsWald: 0.5, marschtritt: 0.38, dog: 0.5, gallop2: 0.55, pferd_auswahl: 0.26, pferd_unruhe: 0.5, neigh: 0.35, cut: 0.7, clank: 0.6, mgsetup: 0.5, bauen: 0.35,
   heal: 0.5, reparieren: 0.6, nachladen: 0.55, gasmaske: 0.5, klick: 0.3, ui: 0.3, tick: 0.45, zug_eigen: 0.35, zug_gegner: 0.35, erobert: 0.55, verloren: 0.55, whistle: 0.4, march: 0.45,
   generalhorn: 0.5, horn: 0.5, win: 0.6, pain: 0.45, medic: 0.45, forward: 0.45, stand: 0.45, roar: 0.45, cry: 0.4, scream: 0.4, panic: 0.4, charge: 0.6, comeon: 0.45, husten: 0.4, grunzen: 0.4,
-  robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32, abprotzen: 0.6, schaufel: 0.4, atmen: 0.3, getuemmel: 0.3, mgladen: 0.45, leuchtschuss: 0.5, leuchtbrand: 0.22, loewe: 0.6 };
+  robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32, abprotzen: 0.6, schaufel: 0.4, atmen: 0.3, getuemmel: 0.3, mgladen: 0.45, leuchtschuss: 0.5, leuchtbrand: 0.22, loewe: 0.6,
+  glocke: 0.42, glocke_fern: 0.1, glocke_fall: 0.6, kraehe: 0.14, wind: 0.1 };   // Sankt Ruß (2026-11-19, ui.js ORT_KULISSE/ORT_GLOCKE)
 // Stimmen lauter wie im Spiel (ui.js STIMM_PL/STIMM_VOL, Tonprobe 2026-11-18); Fahrzeuge werden unter einer Stimme auf DUCK_F abgesenkt
 const STIMM_VOL = 1.45, DUCK_F = 0.4, SPRUCH = +(0.34 * STIMM_VOL).toFixed(2), zahlN = v => String(v).replace(".", ",");
 for (const k of ['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen']) VOL[k] = Math.min(1, +(VOL[k] * STIMM_VOL).toFixed(2));
-const MUSIK = ['musik_titel', 'musik_schlacht', 'musikNiederlage'], SCHLEIFE = ['ambient', 'wetter', ...MUSIK];
+const MUSIK = ['musik_titel', 'musik_schlacht', 'musikNiederlage'], SCHLEIFE = ['ambient', 'wetter', 'wind', ...MUSIK];
 const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4', sniper: 'Scharfschütze', pistol: 'Pistole (Anführer)', semi: 'Halbautomat (Kampfanzüge)', mg: 'Maschinengewehr',
   minigun: 'Drehlauf (Eisenknecht)', buechse: 'Panzerbüchse', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Abschuss schwere Artillerie',
   launch: 'Abschuss Mörser/Minenwerfer', flame: 'Flammenwerfer', werfer: 'Werfer', flinte: 'Flinte', grenade: 'Handgranate', grenade2: 'Handgranate 2', nahA: 'Nahkampf Konkordat', nahD: 'Nahkampf Aschenwacht',
@@ -47,14 +48,16 @@ const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr
   klick: 'Klick (Nächste Einheit, Erledigt)', ui: 'Knopf', tick: 'Tick', zug_eigen: 'Rundenschild: eigener Zug', zug_gegner: 'Rundenschild: Gegnerzug', erobert: 'Zielfeld erobert', verloren: 'Zielfeld verloren',
   whistle: 'Pfeife', march: 'Marsch/Verstärkung', generalhorn: 'Horn Generalangriff', horn: 'Signalhorn', win: 'Sieg', pain: 'Schmerz', medic: '„Sanitäter!“', forward: 'Befehl „Vorwärts“', stand: 'Befehl „Haltet stand“',
   roar: 'Kampfschrei/Befehl Aschenwacht', cry: 'Schrei', scream: 'Kampfschrei', panic: 'Panik/Flucht', charge: 'Gegenstoß', comeon: 'Befehl überbringen', husten: 'Husten (Gas)', grunzen: 'Grunzen (leichte Verletzung)',
-  robot: 'Maschine getroffen', ambient: 'Gefechtslärm (Schleife)', wetter: 'Wetter (Schleife)', musik_titel: 'Titelmusik', musik_schlacht: 'Schlachtmusik', musikNiederlage: 'Niederlage' };
+  robot: 'Maschine getroffen', ambient: 'Gefechtslärm (Schleife)', wetter: 'Wetter (Schleife)', musik_titel: 'Titelmusik', musik_schlacht: 'Schlachtmusik', musikNiederlage: 'Niederlage',
+  glocke: 'Kirchenglocke zum Rundenbeginn (Sankt Ruß)', glocke_fern: 'Ferne Glocke (Kulisse Sankt Ruß, ganz selten)', glocke_fall: 'Glocke schlägt beim Einsturz auf', kraehe: 'Krähen (Kulisse Sankt Ruß)', wind: 'Wind in den Ruinen (Schleife, Sankt Ruß)' };
 const GRUPPEN = [
   ['waffen', 'Waffen', ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'mg', 'minigun', 'buechse', 'flinte', 'cannon', 'kolosskanone', 'panzerkanone', 'cannonH', 'launch', 'flame', 'werfer', 'grenade', 'grenade2', 'nahA', 'nahD', 'getuemmel', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy']],
-  ['einschlaege', 'Einschläge', ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'wasser', 'einsturz', 'impact', 'armor', 'feuer']],
+  ['einschlaege', 'Einschläge', ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'wasser', 'einsturz', 'glocke_fall', 'impact', 'armor', 'feuer']],
   ['fahrzeuge', 'Fahrzeuge und Schreiter', ['tank', 'motor_auswahl', 'mech', 'crash', 'ueberrollen', 'drahtlatch', 'drahtwackeln', 'tiger']],
   ['truppen', 'Truppen, Pferde, Handgriffe', ['schritte', 'steps', 'stepsWald', 'holzknacken', 'marschtritt', 'dog', 'gallop2', 'pferd_auswahl', 'pferd_unruhe', 'neigh', 'gespann', 'wagenknarren', 'cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'schaufel', 'bauen', 'heal', 'reparieren', 'nachladen', 'gasmaske']],
   ['oberflaeche', 'Oberfläche und Knöpfe', ['klick', 'ui', 'leuchtschuss', 'leuchtbrand', 'tick', 'zug_eigen', 'zug_gegner', 'erobert', 'verloren', 'whistle', 'march', 'generalhorn', 'horn', 'win']],
-  ['musik', 'Musik und Kulisse', ['musik_titel', 'musik_schlacht', 'musikNiederlage', 'ambient', 'wetter']]];
+  ['musik', 'Musik und Kulisse', ['musik_titel', 'musik_schlacht', 'musikNiederlage', 'ambient', 'wetter']],
+  ['sanktruss', 'Sankt Ruß', ['glocke', 'glocke_fern', 'kraehe', 'wind']]];
 // Platz → Schlüssel mit Seite; ältere Einzeltöne ohne Platz als eigener Platz
 const eintraege = p => POOLS[p] ? POOLS[p].map(([k, s, w]) => ({ k, s: s || '', w: w || 1, f: datei(k) })) : KEYS.has(p) ? [{ k: p, s: '', w: 1, f: datei(p) }] : [];
 const platz = p => ({ p, name: NAME[p.replace(/_(gm|gs|bf|mr)$/, '')] || p, vol: VOL[p.replace(/_(gm|gs|bf|mr)$/, '')] ?? 0.6, loop: SCHLEIFE.includes(p), musik: MUSIK.includes(p), t: eintraege(p) });
@@ -177,7 +180,17 @@ const MISCH = [
   ['Nahkampf mit Getümmel', 'Getümmel-Schleife 0,3, darüber Schläge nahA/nahD 0,55 und ein Schrei', () => { const g = platzSpiel('getuemmel', 0.3, null, { loop: true }); [0, 500, 1100, 1600, 2300].forEach((t, i) => nach(t, () => platzSpiel(i % 2 ? 'nahD' : 'nahA', 0.55, i % 2 ? 'D' : 'A'))); nach(800, () => platzSpiel('cry', VOL_CRY, 'A', { v: 'gm' })); nach(4500, () => { if (g) { g.pause(); laufend.delete(g); } }); }],
   ['Leuchtkugel', 'Leuchtpistole leuchtschuss 0,5, nach 0,45 s Brennen leuchtbrand 0,22 (blendet aus), nach 1,4 s ein Spruch sv_inf ${zahlN(SPRUCH)}, Brennen darunter auf ${zahlN(DUCK_F)}', () => { platzSpiel('leuchtschuss', 0.5); nach(450, () => { const b = platzSpiel('leuchtbrand', 0.22); nach(950, () => duck(b, spiel(stimme('inf', 'A'), SPRUCH, { rate: 1 }))); }); }],
   ['Artillerie-Einzelschuss', 'Abschuss cannonH 0,8, Einschlag einschlagH 0,8 nach Flugzeit', () => { platzSpiel('cannonH', 0.8, 'A'); nach(34 * 16.667, () => platzSpiel('einschlagH', 0.8)); }],
+  ['Kirche stürzt ein', 'einsturz 0,95 (rollt 1,2 s an, dann Krachen und Schutt), boomH 0,45 beim Krachen, nach 2,7 s Glocke schlägt auf glocke_fall 0,6', () => { platzSpiel('einsturz', 0.95, null, { rate: 1 }); nach(1270, () => platzSpiel('boomH', 0.45)); nach(2650, () => platzSpiel('glocke_fall', 0.6, null, { rate: 1 })); }],
 ];
+// Sankt Ruß Kulisse (2026-11-19): wie in der Schlacht auf Sankt Ruß – Schlachtmusik, Gefechtslärm, Wind, Rundenglocke; Krähen hier öfter als im Spiel (alle 6–14 s statt 22–60 s), dazu ein Spruch und eine Salve zum Vergleich
+function kulisseSR(btn) {
+  if (gefecht) { stoppAlles(); return; }
+  stoppAlles(); btn.classList.add('an');
+  platzSpiel('musik_schlacht', 0.13, null, { musik: true, loop: true }); platzSpiel('ambient', 0.22, null, { loop: true }); platzSpiel('wetter', 0.12, null, { loop: true }); platzSpiel('wind', 0.1, null, { loop: true });
+  nach(600, () => platzSpiel('glocke', 0.42, null, { rate: 1 }));
+  nach(7000, () => spiel(stimme('inf', 'A'), SPRUCH, { rate: 1 })); nach(11000, () => salve('D', 3)); nach(16000, () => spiel(stimme('inf', 'D'), SPRUCH, { rate: 1 }));
+  const kr = () => { platzSpiel('kraehe', 0.14, null, { rate: 0.9 + Math.random() * 0.15 }); }; nach(3000, kr);
+  gefecht = setInterval(kr, 6000 + Math.random() * 8000); }
 function gefechtAn(btn) {   // Schlachtmusik + Kulisse wie in der Schlacht, dazu ab und zu Gefechtslärm in Spiel-Lautstärke
   if (gefecht) { stoppAlles(); return; }
   stoppAlles(); btn.classList.add('an');
@@ -201,7 +214,8 @@ const main = document.getElementById('main');
 main.append(h('details', { open: '' }, h('summary', {}, 'Mischproben wie im Spiel'), h('div', { class: 'inhalt' },
   h('p', { class: 'hinweis' }, 'Gleiche Abläufe, Abstände und Lautstärken wie im Spiel. Zufällige Auswahl je Tonplatz wie im Spiel – mehrmals antippen.'),
   h('div', { class: 'misch' }, ...MISCH.map(([n, s, f]) => h('button', { on: () => f() }, n, h('small', {}, s))),
-    h('button', { on: e => gefechtAn(e.currentTarget) }, 'Schlachtmusik + Gefechtslärm (an/aus)', h('small', {}, 'musik_schlacht 0,13 × Musik, ambient 0,22 und wetter 0,12 × Effekte, dazu Schüsse und Einschläge'))))));
+    h('button', { on: e => gefechtAn(e.currentTarget) }, 'Schlachtmusik + Gefechtslärm (an/aus)', h('small', {}, 'musik_schlacht 0,13 × Musik, ambient 0,22 und wetter 0,12 × Effekte, dazu Schüsse und Einschläge')),
+    h('button', { on: e => kulisseSR(e.currentTarget) }, 'Sankt Ruß Kulisse (an/aus)', h('small', {}, 'wie oben ohne Gefechtslärm, dazu Wind 0,1, Rundenglocke 0,42, Krähen 0,14 (hier öfter als im Spiel), Sprüche und eine Salve zum Vergleich'))))));
 // Stimmen
 { const st = h('details', {}, h('summary', {}, 'Stimmen (mit Filter wie im Spiel)'));
   const inh = h('div', { class: 'inhalt' }, h('p', { class: 'hinweis' }, 'Sprüche beim Anklicken: jede Einheit hat im Spiel eine feste Stimme (reihum vergeben), Lautstärke 0,34. Die Dateien sind schon gefiltert (Gasmaske, Bordfunk, Maschine).'));

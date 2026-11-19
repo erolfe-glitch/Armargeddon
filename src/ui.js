@@ -2064,7 +2064,7 @@ function setAmbient(on) {
   kulisseVol();
   for (const a of [ambient, wetter]) if (a) try { if (on) { const p = a.play(); if (p && p.catch) p.catch(() => {}); } else a.pause(); } catch (e) {}
   if (on) setMusik('musik_schlacht', 3); else if (musikName === 'musik_schlacht') setMusik(null, 2.5);   // Schlacht: Menümusik weich in die Schlachtmusik überblenden; Ende: ausblenden
-  fireLoop();
+  fireLoop(); ortKulisse(on);
 }
 // Musik (2026-11-17, eigene Stücke, Suno Pro): „musik_titel“ im Startmenü (auch Armee-Auswahl, Regeln), „musik_schlacht“ in der Schlacht,
 // „musikNiederlage“ (Taps) nach einer verlorenen Schlacht. Mehrere Spuren gleichzeitig: Wechsel blenden weich über (fade s),
@@ -2103,7 +2103,7 @@ const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 's
 // (DUCK_PL, Motor beim Anklicken) auf DUCK_F abgesenkt und danach wieder angehoben.
 const STIMM_PL = new Set(['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
 const DUCK_PL = new Set(['tank', 'mech', 'gespann', 'wagenknarren', 'ueberrollen', 'leuchtbrand']);
-const STIMM_VOL = 1.45, DUCK_F = 0.4, STEIN = ['village', 'bunker', 'fabrik', 'kirche', 'schiff', 'turm'];
+const STIMM_VOL = 1.45, DUCK_F = 0.4, STEIN = ['village', 'bunker', 'fabrik', 'kirche', 'schiff', 'turm', 'friedhof', 'garten'];   // Treffer auf Mauern/Ruinen/Kirche: Platz impact (Steinbrocken als Variante, 2026-11-19)
 let duckBis = 0; const duckLauf = [];   // duckLauf: [{ a, vol }] laufende Fahrzeugtöne
 const duckF = () => performance.now() < duckBis ? DUCK_F : 1;
 function duckStimme(a, ms) { const d = ms || (a && isFinite(a.duration) && a.duration > 0 ? a.duration * 1000 : 1800); duckBis = Math.max(duckBis, performance.now() + d + 150); duckTick(); }
@@ -2121,6 +2121,34 @@ function getuemmel() {
   tick();
 }
 const SND_POOLS = window.SOUND_POOLS || {};
+// Kulisse je Karte (2026-11-19, Sankt Ruß): Wind in den Ruinen als nahtlose Schleife (zwei Spuren, WIND_X s mit gleicher Leistung übergeblendet –
+// eine Audio-Schleife hätte an der Nahtstelle eine Lücke), dazu vereinzelt Krähen (lange, unregelmäßige Pausen) und ganz selten eine ferne Glocke.
+// Leise, unter einer Stimme weiter abgesenkt, damit Musik und Stimmen vorn bleiben. Rundenbeginn mit Kirchenglocke: ORT_GLOCKE (rundenSchild).
+const ORT_KULISSE = { sanktruss: { wind: 0.1, kraehe: 0.14, kraeheMs: [22000, 60000], glocke_fern: 0.1, glockeMs: [200000, 420000] } };
+const ORT_GLOCKE = { sanktruss: 0.42 };
+const WIND_X = 4; let windSp = [], ortAn = false, ortLvl = 0, kraeheT = 0, glockeT = 0;
+const ortK = () => ORT_KULISSE[E.MAP && E.MAP.id];
+const zwischen = ([a, b]) => a + Math.random() * (b - a);
+function windSpur() { const k = sndPick('wind'); if (!k || !SND[k]) return; try { const a = SND[k].cloneNode(); a.loop = false; a.volume = 0; const p = a.play(); if (p && p.catch) p.catch(() => {}); windSp.push({ a, weiter: false }); } catch (e) {} }
+function ortKulisse(on) {
+  const k = ortK(); ortAn = !!(on && soundOn && k);
+  if (ortAn) { const t = performance.now(); if (!windSp.length) windSpur(); else for (const w of windSp) { const p = w.a.play(); if (p && p.catch) p.catch(() => {}); }
+    if (t > kraeheT) kraeheT = t + zwischen([6000, 16000]); if (t > glockeT) glockeT = t + zwischen(k.glockeMs); }
+}
+setInterval(() => {
+  const k = ortK(), jetzt = performance.now(); ortLvl = Math.max(0, Math.min(1, ortLvl + (ortAn && k ? 0.05 / 2 : -0.05 / 1.2)));
+  const V = (k ? k.wind : 0) * effektVol * ortLvl * (duckF() < 1 ? 0.6 : 1);
+  for (let i = windSp.length - 1; i >= 0; i--) { const w = windSp[i], a = w.a, d = a.duration, c = a.currentTime;
+    if (a.ended || (!ortAn && ortLvl <= 0)) { try { a.pause(); } catch (e) {} windSp.splice(i, 1); continue; }
+    if (!isFinite(d) || !d) continue;
+    const g = Math.sin(Math.PI / 2 * Math.min(1, c / WIND_X, Math.max(0, (d - c) / WIND_X)));   // ein-/ausblenden mit gleicher Leistung
+    try { a.volume = Math.min(1, V * g); } catch (e) {}
+    if (!w.weiter && d - c < WIND_X && ortAn) { w.weiter = true; windSpur(); }
+  }
+  if (!ortAn || !k || speed >= INSTANT) return;
+  if (jetzt > kraeheT) { kraeheT = jetzt + zwischen(k.kraeheMs); playSound('kraehe', k.kraehe * (duckF() < 1 ? 0.5 : 1), null, { noGap: true, rate: 0.9 + Math.random() * 0.15 }); }
+  if (jetzt > glockeT) { glockeT = jetzt + zwischen(k.glockeMs); if (!bauSicht().some(x => x)) playSound('glocke_fern', k.glocke_fern, null, { noGap: true, rate: 1 }); }   // nach dem Einsturz schweigt sie
+}, 50);
 let hustenT = -1e9, hustenN = 0;
 function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4, null, { v: 'gm' }), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
 let sndSide = null, lastFire = null;   // lastFire: zuletzt abgespielter Schuss (Kugeleinschlag beim folgenden Treffer); sndSide: Seite der Einheit, die gerade handelt (playEvent), für Konkordat-/Aschenwacht-Varianten
@@ -2504,8 +2532,12 @@ async function playEvent0(e) {
       playSound('impact', 0.6); floater(x, y - s * 0.9, `Kirche ${Math.round(e.hp / e.max * 100)} %`, e.hp <= 2 ? '#e8a060' : '#e6e9ec'); await wait(200); break; }
     case 'einsturz': {   // Kirche stürzt ein: Staub und Trümmer über alle Felder, dumpfer Einsturz, dann steht nur noch die Ruine
       const pts = (e.felder || [[e.c, e.r]]).map(([c, r]) => center(c, r));
+      // Ton (2026-11-19): rollt ca. 1,2 s an (Knirschen, Ächzen), dann das Krachen, rieselnder Schutt; zuletzt schlägt die Glocke auf. Bild folgt dem Ton.
+      playSound('einsturz', 0.95, null, { rate: 1 }); shake(3);
+      pts.forEach(([x, y], i) => fx('truemmer', 2, x, y + s * 0.4, { delay: i * 4, life: 70, mul: 0.7, grow: 0.2, rise: 0.1, alpha: 0.6 }));   // erster Staub aus den Fugen
+      await new Promise(r => setTimeout(r, speed >= INSTANT ? 0 : 1150)); shake(10);   // feste Zeit, nicht nach Tempo: der Ton läuft auch nicht schneller
       pts.forEach(([x, y], i) => { fx('truemmer', 4, x, y + s * 0.4, { delay: i * 5, life: 100, mul: 1.4, grow: 0.35, rise: 0.35, fadeOut: 0.5 }); fx('truemmer', [0, 1][i % 2], x + s * 0.3, y + s * 0.2, { delay: 8 + i * 5, life: 90, mul: 1, grow: 0.3 }); fxImpact(x, y - s * 0.2, s * 0.9, { delay: i * 6, alt: true }); });
-      playSound('einsturz', 0.95); setTimeout(() => playSound('boomH', 0.6, null, { noGap: true }), 180); shake(10);
+      setTimeout(() => playSound('boomH', 0.45, null, { noGap: true }), 120); setTimeout(() => playSound('glocke_fall', 0.6, null, { noGap: true, rate: 1 }), 1500);
       await wait(380); bauSicht()[e.bau] = true; renderTerrain();
       { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, 'Die Kirche stürzt ein!', '#f0c070', true); }
       await wait(700); break; }
@@ -2880,12 +2912,14 @@ let toastT = 0;
 function toast(text) { const el = $('toast'); el.textContent = text; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 3800); }
 // Rundenschild beim Zugwechsel (2026-11-17): ca. 2 s mittig unter der Siegpunkt-Anzeige, Holz mit Eisen-Messing-Rahmen, „Runde n“, Wappen, „… ist am Zug“;
 // Klick oder Tippen blendet sofort aus, blockiert keine Eingaben. Ton: eigener Zug Trommelwirbel, Gegnerzug Wirbel mit tiefem Horn (leiser als Befehle)
-let rundenT = 0;
+let rundenT = 0, glockeRunde = -1;
 function rundenSchild() {
   if (!G || G.over) return; const el = $('rundenSchild'), sd = G.side, eigen = human(sd) || mode === 'hot';
   el.innerHTML = `<b>Runde ${G.turn}</b><span class="rs-w">${crest(sd)}</span><span class="rs-t">${sd === 'A' ? SIDES.A.name : SIDES[sd].short} ist am Zug</span>`;
   el.className = 'rs ' + sd; void el.offsetWidth; el.classList.add('an'); clearTimeout(rundenT); rundenT = setTimeout(() => el.classList.remove('an'), 2300);
   playSound(eigen ? 'zug_eigen' : 'zug_gegner', 0.35, null, { noGap: true });
+  { const gv = ORT_GLOCKE[E.MAP.id];   // Sankt Ruß: Kirchenglocke zum Beginn jeder Runde (nicht bei jedem Zugwechsel), solange die Kirche steht
+    if (gv && G.turn !== glockeRunde && (G.bauten || []).length && !bauSicht().some(x => x)) { glockeRunde = G.turn; setTimeout(() => playSound('glocke', gv, null, { noGap: true, rate: 0.97 + Math.random() * 0.05 }), 450); } }
   if (eigen) kzRunde(sd);   // Kopfzeichen der wichtigen Zustände zu Beginn des eigenen Zugs
 }
 document.addEventListener('pointerdown', () => { const el = $('rundenSchild'); if (el && el.classList.contains('an')) { clearTimeout(rundenT); el.classList.remove('an'); } }, true);
@@ -3822,7 +3856,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { PT, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

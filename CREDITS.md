@@ -47,8 +47,15 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | einschlag | einschlag_1 | Impacts/u_68csiaifb5-bulletimpact1-442717.mp3 | Pixabay / u_68csiaifb5 | Pixabay Content License | – |
 | einschlag | einschlag_2 | Impacts/u_68csiaifb5-bulletimpact2-442718.mp3 | Pixabay / u_68csiaifb5 | Pixabay Content License | – |
 | einschlag | einschlag_3 … _6 | Impacts/116645__woodingp__bullets-hit-edit.aiff (verlustfrei nach WAV) | Freesound / Woodingp | CC0 1.0 | <https://freesound.org/s/116645/> |
-| einsturz | einsturz_1 | Explosion/shrek_30-building-demolished-472876.mp3 | Pixabay / shrek_30 | Pixabay Content License | – |
-| einsturz | einsturz_2 | Explosion/magiazzz-massive-building-548236.mp3 | Pixabay / magiazzz | Pixabay Content License | – |
+| einsturz | einsturz_3 (Anrollen, seit 2026-11-19; einsturz_1/_2 entfernt) | Sankt Russ/86322__roccapl__bologna_asinelli_tower_collapse.aiff (verlustfrei nach WAV) | Freesound / roccapl | CC BY 4.0 | <https://freesound.org/s/86322/> |
+| einsturz | einsturz_3 (Krachen, darunter) | Sankt Russ/floraphonic-exploding-building-2-190092.mp3 | Pixabay / floraphonic | Pixabay Content License | – |
+| einsturz | einsturz_3 (Steinpoltern, darunter) | Sankt Russ/saturn-3-music-structure-crumbling-traveling-echo-in-deep-ruins-523648.mp3 | Pixabay / saturn-3-music | Pixabay Content License | – |
+| einsturz, glocke_fall, impact | einsturz_3 (Schutt), glocke_fall_1 (Aufprall), impact_1 (Steinbrocken) | Sankt Russ/lordsonny_two-debris-break-3-457508.mp3 | Pixabay / lordsonny | Pixabay Content License | – |
+| glocke | glocke_1 | Sankt Russ/freesound_community-creepy-church-bell-33827.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| glocke_fall | glocke_fall_1 (darunter) | Sankt Russ/freesound_community-old-church-bell-6298.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| glocke_fall, glocke_fern | glocke_fall_1, glocke_fern_1 | Sankt Russ/universfield-single-church-bell-156463.mp3 | Pixabay / universfield | Pixabay Content License | – |
+| kraehe | kraehe_1 … _5 | Sankt Russ/u_a4gfvwagf1-crow-sound-effect-hd-336784.mp3 | Pixabay / u_a4gfvwagf1 | Pixabay Content License | – |
+| wind | wind_1 | Sankt Russ/soundreality-wind-blowing-457954.mp3 | Pixabay / soundreality | Pixabay Content License | – |
 | gasmaske | gasmaske_1 | 256519__kodack__mask-breathing-sound.wav | Freesound / kodack | CC0 1.0 | <https://freesound.org/s/256519/> |
 | gasmaske | gasmaske_2 | 536372__hoggington__mask-grunt-sound.ogg | Freesound / hoggington | CC0 1.0 | <https://freesound.org/s/536372/> |
 | selGas | selGas_1 | 543010__awesometrainmaster1__mask-breathing-for-killer-or-other.ogg | Freesound / awesometrainmaster1 | CC0 1.0 | <https://freesound.org/s/543010/> |

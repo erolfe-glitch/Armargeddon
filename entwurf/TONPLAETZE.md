@@ -77,7 +77,12 @@ Jede Seite ist am Klang zu erkennen. Alle Einheiten nutzen den Grundklang ihrer 
 | **vorbei** | Kugel pfeift vorbei (kaum Wirkung, niedergehalten) | beide | Impacts/dennish18-bullet-passing-by-fast-146492.mp3 (0.8 s ab 0.13 s) |
 | **einschlag** | Kugeleinschlag bei Treffer (Gewehr, MG); MG-Treffer auf Fußtruppen/Reiter: dumpfer Körpertreffer = tiefer gestimmt (×0,78–0,86), leise (0,22), nach 0,26 s ausgeblendet. Geprüft 2026-11-17: bulletimpact1 hat den meisten Tiefenanteil (34 % unter 300 Hz), blood-splatter ist hell und nass (1 %) | beide | Impacts/u_68csiaifb5-bulletimpact1-442717.mp3 (0.6 s ab 0.06 s) |
 |  |  | beide | Impacts/u_68csiaifb5-bulletimpact2-442718.mp3 (0.58 s ab 0.09 s) |
-| **einsturz** | Gebäude, Bunker, Ruine zerstört | beide | Explosion/shrek_30-building-demolished-472876.mp3 (3.5 s ab 11.9 s) |
+| **einsturz** | Kirche stürzt ein, Gebäude/Bunker/Ruine gesprengt (2026-11-19) | beide | Mischung 4,7 s: Turmeinsturz Bologna (Anrollen, eingeblendet), floraphonic exploding-building (Krachen, tiefer, ohne Höhen), saturn-3 (Steinpoltern), lordsonny debris (Schutt) |
+| **glocke_fall** | Glocke schlägt beim Einsturz der Kirche auf (2,7 s nach Beginn) | beide | universfield + old-church-bell verstimmt, dumpfer Aufprall |
+| **glocke** | Kirchenglocke zum Beginn jeder Runde auf Sankt Ruß (nicht nach dem Einsturz) | beide | creepy-church-bell, letzter Schlag, 5,8 s |
+| **glocke_fern** | Kulisse Sankt Ruß: ferne Glocke, alle 3–7 min | beide | universfield, tiefer, Tiefpass |
+| **kraehe** | Kulisse Sankt Ruß: Krähen, ein bis zwei Rufe, alle 22–60 s | beide | crow-sound-effect-hd, 5 Ausschnitte |
+| **wind** | Kulisse Sankt Ruß: Wind in den Ruinen, Schleife mit 4 s Überblendung | beide | soundreality wind-blowing, 26 s ab 15 s, Tiefpass 1600 Hz |
 |  |  | beide | Explosion/magiazzz-massive-building-548236.mp3 (3.5 s ab 0.01 s) |
 | **gasmaske** | Entgiften (Gasschutz-Trupp) | beide | 256519__kodack__mask-breathing-sound.wav (2.5 s ab 0.05 s) |
 |  |  | beide | 536372__hoggington__mask-grunt-sound.ogg (0.58 s ab 0.05 s) |
