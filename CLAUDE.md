@@ -4,6 +4,7 @@
 Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltkrieg, aber in einer eigenen Welt. **Reiner Spielspaß, kein Lernspiel.** Die Texte „Im echten Krieg“ sind Beiwerk, keine Lehrinhalte.
 
 ## Feste Regeln
+- **Postfach (seit 2026-11-20):** Enrico tippt Kürzel. **pa** = `entwurf/postfach/AUFTRAG.md` frisch lesen und abarbeiten, **pw** = mit dem nächsten offenen Schritt daraus weitermachen. Teilschritte einzeln committen und pushen; Bericht oben in `entwurf/postfach/BERICHT.md` (mit Commits, Screenshot-Pfaden, „Fragen an Enrico“), im Chat nur „Bericht im Postfach – pb“. AUFTRAG.md nur abhaken, nicht ändern. Einzelheiten: `entwurf/postfach/LIESMICH.md`.
 - **Diese Dateien NIE komplett lesen** (eingebettete Bilder/Töne, mehrere MB): `src/art.js`, `src/mapimg.js`, `src/fx.js`, `src/sound.js`, `src/paint.js`, `src/uiart.js`, `src/uipanel.js`, `src/titlebg.js`, `src/gelaende.js`, `src/fxneu.js`, `src/figsplastik.js`, `src/fonts.css`. Nur gezielt mit Grep nach Schlüsseln suchen oder mit offset/limit kleine Stücke lesen.
 - Sprache in Spiel und Texten: Deutsch. Sachlicher Ton, Krieg nicht verherrlichen. Blut darf deutlich sein, bleibt aber abschaltbar.
 - Eigene Welt, keine fremden Marken oder Figuren (kein Warhammer o. ä.). Jede Einheit hat einen Text „Im echten Krieg“ mit belegbaren Fakten zum Ersten Weltkrieg.
