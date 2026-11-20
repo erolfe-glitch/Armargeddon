@@ -2096,13 +2096,13 @@ async function kampfSzene(x, y) {
   if (KS === 'aus' || speed >= INSTANT || !VIEW.tilt() || szene) return null;
   const st = { z0: CAM.z, x0: CAM.x, y0: CAM.y, vig: 0, skip: false }; szene = st;
   if (KS === 'an') { const z1 = Math.min(Z_MAX, Math.max(CAM.z * 1.45, 1.5)), tx = x, ty = y + L.s * 0.5; camAnim = null;
-    await szeneTween(420, e => { CAM.z = st.z0 + (z1 - st.z0) * e; CAM.x = st.x0 + (tx - st.x0) * e; CAM.y = st.y0 + (ty - st.y0) * e; st.vig = 0.6 * e; camClamp(); camSetup(); }); }
+    await szeneTween(320, e => { CAM.z = st.z0 + (z1 - st.z0) * e; CAM.x = st.x0 + (tx - st.x0) * e; CAM.y = st.y0 + (ty - st.y0) * e; st.vig = 0.6 * e; camClamp(); camSetup(); }); }
   else st.vig = 0.25;
   return st;
 }
 async function kampfSzeneEnde(st) {
   if (!st) return; const z1 = CAM.z, x1 = CAM.x, y1 = CAM.y, v1 = st.vig;
-  if (KS === 'an') await szeneTween(380, e => { CAM.z = z1 + (st.z0 - z1) * e; CAM.x = x1 + (st.x0 - x1) * e; CAM.y = y1 + (st.y0 - y1) * e; st.vig = v1 * (1 - e); camClamp(); camSetup(); });
+  if (KS === 'an') await szeneTween(300, e => { CAM.z = z1 + (st.z0 - z1) * e; CAM.x = x1 + (st.x0 - x1) * e; CAM.y = y1 + (st.y0 - y1) * e; st.vig = v1 * (1 - e); camClamp(); camSetup(); });
   ZOOM = CAM.z; if (szene === st) szene = null;
 }
 async function szeneWucht(st, aid, did) { if (!st) return; const a = DU.get(aid), d = DU.get(did); if (d && a) { pose(did, 'getroffen', 700); d.lunge = { dx: (d.x - a.x) * 0.14, dy: (d.y - a.y) * 0.14 }; setTimeout(() => { if (d.lunge) d.lunge = null; }, 260 / speed); }
@@ -2419,17 +2419,21 @@ let marschU = null;   // Einheit im Marsch/Sturmlauf: ihr Zug klingt nach Marsch
 const BESCHUSS = new Set(['fire', 'shell', 'hit', 'supp']);
 let nkGleich = null;   // laufender gemeinsamer Nahkampf (F51)
 async function nahkampfGleich(e, grp) {
-  const gegen = grp.some(n => n.t === 'counter'), hits = grp.filter(n => n.t === 'hit');
+  const gegen = grp.some(n => n.t === 'counter'), hits = [];
+  for (const n of grp) if (n.t === 'hit' && !n.panic && (n.u === e.a || n.u === e.d) && !hits.some(h => h.u === n.u)) hits.push(n);   // je Seite der Hiebtreffer
+  const i0 = hits.length ? grp.indexOf(hits[0]) : grp.length, vor = grp.slice(0, i0).filter(n => n.t !== 'counter'), nach = grp.filter((n, i) => i >= i0 && n.t !== 'counter' && !hits.includes(n));
   nkGleich = { gegen, ksz: null };
-  try { await playEvent(e); } finally { }
+  try { await playEvent(e); for (const n of vor) await playEvent(n).catch(err => console.error(err)); } finally { }
   const st = nkGleich; nkGleich = null;
   const a = DU.get(e.a), d = DU.get(e.d);
   // gemeinsamer Wucht-Moment: Stillstand, Rütteln, Getroffen-Posen und Spritzer an beiden, beide Schadenszahlen zugleich
   if (a && d) { for (const h of hits) { const z = DU.get(h.u), q = h.u === e.d ? a : d; if (!z || !q) continue; pose(h.u, 'getroffen', 700); z.lunge = { dx: (z.x - q.x) * 0.12, dy: (z.y - q.y) * 0.12 };
       trefferSpritzer(q.x, q.y, z, h.dmg >= 3 ? 3 : h.dmg >= 1.5 ? 2 : 1, istMaschine(unitById(h.u))); if (st.ksz && blood && !istMaschine(unitById(h.u)) && h.dmg >= 1.5) fx('blut', Math.floor(Math.random() * 3), z.x, z.y - L.s * 0.5, { anchor: 'mitte', life: 30, mul: 0.6 + 0.12 * Math.min(3, h.dmg), grow: 0.35, flip: z.x < q.x, filter: BLUT_FILTER }); }
     shake(6); if (!(st.ksz && st.ksz.skip)) await wait(120); }
+  for (const h of hits) h.nkKurz = true;
   await Promise.all(hits.map(h => playEvent(h).catch(err => console.error(err))));
   for (const id of [e.a, e.d]) { const z = DU.get(id); if (z) z.lunge = null; }
+  for (const n of nach) { try { await playEvent(n); } catch (err) { console.error(err); } }   // F63: Ergebnis (Zurückweichen, Flucht, Vernichtung, Nachrücken) noch in der Szene
   await kampfSzeneEnde(st.ksz);
 }
 async function playEvent(e) {
@@ -2584,14 +2588,14 @@ async function playEvent0(e) {
       // der letzte, härteste Hieb kommt danach vom Angreifer mit der Wucht aus F48. Der Gegenschlag-Ereignis selbst ist dann nur noch kurz.
       if (e.t === 'melee' && !thrown) { const T0 = au && TYPES[au.type], du1 = unitById(e.d), Td = du1 && TYPES[du1.type], fl = d.x < a.x;
         const hiebTon = (x, T) => x && T ? (T.cls === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : T.cls === 'cav' ? 'saebel' : x.side === 'D' ? 'nahD' : 'nahA') : 'nahA';
-        const zug = nkGleich ? (nkGleich.gegen ? 3 : 2) : Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;
+        const zug = nkGleich ? 2 : Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;   // F63: kürzer
         for (let i = 0; i < zug; i++) {
           if (nkGleich && nkGleich.gegen) {   // F51: beide schlagen gleichzeitig (Getümmel)
             pose(e.a, 'kolben', 380); pose(e.d, 'kolben', 380); a.lunge = { dx: (d.x - a.x) * 0.22, dy: (d.y - a.y) * 0.22 }; d.lunge = { dx: (a.x - d.x) * 0.22, dy: (a.y - d.y) * 0.22 };
             playSound(hiebTon(au, T0), 0.4, au && au.side, { noGap: true, rate: 0.9 + Math.random() * 0.2 }); setTimeout(() => playSound(hiebTon(du1, Td), 0.4, du1 && du1.side, { noGap: true, rate: 0.9 + Math.random() * 0.2 }), (40 + Math.random() * 80) / speed);
             fx('nahkampf', Math.floor(Math.random() * 4), (a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * (0.35 + Math.random() * 0.2), { anchor: 'mitte', life: 12, fadeOut: 0.6, grow: 0.2, flip: Math.random() < 0.5, mul: 0.6 });
             trefferSpritzer(a.x, a.y, d, 1, istMaschine(du1)); trefferSpritzer(d.x, d.y, a, 1, istMaschine(au));
-            await wait(170 + Math.random() * 90); a.lunge = null; d.lunge = null; continue; }
+            await wait(150 + Math.random() * 60); a.lunge = null; d.lunge = null; continue; }
           const angr = i % 2 === 0, S = angr ? a : d, Z = angr ? d : a, sid = angr ? e.a : e.d, zid = angr ? e.d : e.a, su = angr ? au : du1;
           if (!S || !Z) break; pose(sid, 'kolben', 380); pose(zid, 'getroffen', 300);
           S.lunge = { dx: (Z.x - S.x) * 0.3, dy: (Z.y - S.y) * 0.3 }; Z.lunge = { dx: (Z.x - S.x) * -0.06, dy: (Z.y - S.y) * -0.06 };
@@ -2625,7 +2629,7 @@ async function playEvent0(e) {
       if (fxN('nahkampf')) {} else if (au && TYPES[au.type].mech && TYPES[au.type].cls === 'walker' && PJI.hammer) muzzles.push({ img: 'hammer', x: d.x, y: d.y + s * 0.35, center: true, up: 0.75, sz: 1.7, life: 34, max: 34 });
       if (af === 'drill' && !fxN('truemmer')) muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
       if (armored || af === 'drill' || af === 'mechA' || af === 'mechK' || af === 'mechC') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); if (!fx('funken', null, d.x, d.y - s * 0.45, { anchor: 'mitte', life: 16, fadeOut: 0.6, mul: 0.8, flip: Math.random() < 0.5 })) muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
-      await wait(170); a.lunge = null; await wait(70);
+      if (nkGleich) { await wait(100); a.lunge = null; } else { await wait(170); a.lunge = null; await wait(70); }   // F63: im gemeinsamen Nahkampf kürzer
       // F28-Hiebfolge nach dem Hauptschlag ersetzt durch den Schlagabtausch davor (F51)
       if (!nkGleich) await kampfSzeneEnde(ksz);
       break;
@@ -2662,7 +2666,7 @@ async function playEvent0(e) {
         { const st = schadenStufe(e.dmg); floater(...headPos(e.u), '−' + fmt(e.dmg), st.col, st.big, true); }
         if (human(G.side) || human(u.side)) toast(`${nm(u)}: −${fmt(e.dmg)} Stärke · ${e.dmg >= 2 ? 'schwerer Treffer' : e.dmg >= 1 ? 'guter Treffer' : e.dmg >= 0.4 ? 'leichter Treffer' : 'kaum Wirkung'} · noch ${fmt(e.str)}`);
       } else { kz(e.u, 'blitze', 'steig'); if (TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.45); }   // Moral wankt: unruhige Pferde
-      await wait(e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern
+      await wait(e.nkKurz ? 240 : e.panic ? 180 : 300 + (e.dmg >= 1 ? 120 : 0)); break;   // kurzer Halt bei Treffern (Nahkampf-Szene F63: kürzer)
     }
     case 'gas': { husten();   // Husten: 1–2 Figuren, je nachdem wie viele Einheiten getroffen werden
       const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
@@ -2811,7 +2815,8 @@ async function runQueue() {
   qRunning = true;
   while (queue.length) { const e = queue.shift();
     if (e.t === 'melee' && speed < INSTANT) {   // F51 (geändert 2026-11-20): beide schlagen gleichzeitig, danach ein gemeinsamer Wucht-Moment mit beiden Schadenszahlen
-      const grp = []; while (queue.length && grp.length < 6) { const n = queue[0]; if ((n.t === 'hit' && (n.u === e.a || n.u === e.d)) || (n.t === 'counter' && n.a === e.d && n.d === e.a)) grp.push(queue.shift()); else break; }
+      const grp = []; if (e.nk != null) { while (queue.length && queue[0].nk === e.nk) grp.push(queue.shift()); }   // F63: alles, was zu diesem Nahkampf gehört (Gegenschlag, Moral, Zurückweichen, Flucht, Tod, Nachrücken)
+      else while (queue.length && grp.length < 6) { const n = queue[0]; if ((n.t === 'hit' && (n.u === e.a || n.u === e.d)) || (n.t === 'counter' && n.a === e.d && n.d === e.a)) grp.push(queue.shift()); else break; }
       try { await nahkampfGleich(e, grp); } catch (err) { console.error(err); } continue; }
     if (e.t === 'fire' && e.reaction && speed < INSTANT && KS !== 'aus') {   // F56 (2026-11-20): Lauerschuss wie bei XCOM – Kamera auf Schütze und Ziel, Schuss, Treffer, kurzer Halt, zurück
       const grp = []; while (queue.length && queue[0].t === 'hit' && queue[0].u === e.d) grp.push(queue.shift());

@@ -1481,9 +1481,10 @@ function fire(G, a, d) {
   ev.push(...checkEnd(G));
   return ev;
 }
+let nkZahl = 0;   // F63 (2026-11-20): alle Ereignisse eines Nahkampfs tragen dieselbe Nummer nk – die Anzeige spielt sie zusammen in einer Szene ab
 function melee(G, a, d) {
   if (!canMelee(G, a, d)) return [];
-  const ev = [];
+  const ev = [], nk = ++nkZahl;
   const p = preview(G, a, d, 'melee');
   a.attacked = true; a.ap = 0; a.bp = 0; a.moved = true;
   a.face = faceToward(a.face, a.c, a.r, d.c, d.r);
@@ -1504,6 +1505,7 @@ function melee(G, a, d) {
     claimObjective(G, a);
     ev.push({ t: 'advance', u: a.id, path: [[fc, fr], [dc, dr]] });
   }
+  for (const x of ev) x.nk = nk;
   ev.push(...checkEnd(G));
   return ev;
 }
