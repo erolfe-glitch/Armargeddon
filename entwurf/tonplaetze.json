@@ -4,12 +4,12 @@
   "key": "rifle_1",
   "s": "A",
   "f": "Infantry Guns/410442__superphat__enfieldrifle.wav",
-  "dur": 1.6,
+  "dur": 1.58,
   "src": 3.5,
-  "start": 0,
+  "start": 0.03,
   "gain": -0.7,
   "kb": 19,
-  "note": "Hauptgewehr Konkordat: Enfield (2026-11-17)"
+  "note": "Hauptgewehr Konkordat: Enfield (2026-11-17); ab 0,026: Klicken vor dem Knall weg (F29, 2026-11-20)"
  },
  {
   "pool": "rifle",
@@ -4799,6 +4799,18 @@
  {
   "pool": "reparieren",
   "key": "reparieren_1",
+  "s": null,
+  "f": "Repair reload heal etc/701620__robinhood76__11588-plumber-using-wrench.wav",
+  "dur": 2.08,
+  "src": 7.94,
+  "start": 0.04,
+  "gain": 3.8,
+  "kb": 25,
+  "note": "Reparieren: Schraubenschlüssel (F39, 2026-11-20)"
+ },
+ {
+  "pool": "reparieren",
+  "key": "reparieren_2",
   "s": "D",
   "f": "Repair reload heal etc/492434__firetie__ppsh-weapon-bolt-carrier-loading-4.ogg",
   "dur": 0.73,
@@ -4809,7 +4821,7 @@
  },
  {
   "pool": "reparieren",
-  "key": "reparieren_2",
+  "key": "reparieren_3",
   "s": "A",
   "f": "Repair reload heal etc/591529__rudmer_rotteveel__ratchet-wrench-fast-multiple.wav",
   "dur": 2,
@@ -5799,13 +5811,13 @@
  {
   "pool": "clank",
   "key": "clank",
-  "s": null,
+  "s": "A",
   "f": "(vorhanden) clank"
  },
  {
   "pool": "clank",
   "key": "clank_1",
-  "s": null,
+  "s": "A",
   "f": "Repair reload heal etc/freesound_community-tank-reload-47828.mp3",
   "dur": 0.47,
   "src": 0.62,
@@ -5814,9 +5826,21 @@
   "kb": 6
  },
  {
+  "pool": "clank",
+  "key": "clank_2",
+  "s": "D",
+  "f": "Repair reload heal etc/freesound_community-tank-reload-47828.mp3",
+  "dur": 0.58,
+  "src": 0.78,
+  "start": 0.12,
+  "gain": -9.9,
+  "kb": 7,
+  "note": "Aufprotzen Aschenwacht: sattes, schweres Tschak (F14, 2026-11-20)"
+ },
+ {
   "pool": "abprotzen",
   "key": "abprotzen_1",
-  "s": null,
+  "s": "A",
   "f": "Repair reload heal etc/654374__njjjjjjjjjjjjjjjjjjjjjjjj__loading-gun.wav",
   "dur": 0.63,
   "src": 0.67,
@@ -5824,6 +5848,18 @@
   "gain": -3,
   "kb": 7,
   "note": "Abprotzen: Platzhalter, bis die eigenen Töne da sind (Tonprobe 2026-11-18); clank nur noch beim Aufprotzen"
+ },
+ {
+  "pool": "abprotzen",
+  "key": "abprotzen_2",
+  "s": "D",
+  "f": "Repair reload heal etc/654374__njjjjjjjjjjjjjjjjjjjjjjjj__loading-gun.wav",
+  "dur": 0.8,
+  "src": 0.86,
+  "start": 0.06,
+  "gain": -3.8,
+  "kb": 10,
+  "note": "Abprotzen Aschenwacht: schwer statt blechern (F14, 2026-11-20)"
  },
  {
   "pool": "mgsetup",

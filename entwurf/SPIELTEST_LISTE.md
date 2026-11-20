@@ -163,18 +163,18 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [x] F19 Beschreibung Haftladung (Graben-Pioniere) stimmt nicht mit der Regel → abgleichen; alle Fähigkeitstexte gegen die Regeln im Code prüfen.
 
 ## Paket B – Ton
-- [ ] F4 Musik zu laut im Verhältnis zu den Tönen.
-- [ ] F5 Stimmen und Marschieren beim Anklicken präsenter: Musik kurz leiser (nicht weg).
-- [ ] F8 Aufprotzen mit Pferd: Pfeifton (klingt wie Zug) raus; Pferdewiehern + Klopfen („Pock-Pock“) bleiben.
-- [ ] F9 Marsch Konkordat: beim schnellen Marsch nur Trommeln hörbar → Trommel deutlich leiser, Schritte tragen.
-- [ ] F14 Auf-/Abprotzen Aschenwacht: klingt hohl/blechern → sattes, schweres „Tschak-Tschak“.
-- [ ] F29 Gewehrtöne scheppern am Anfang (Übersteuerung? Laden?) → prüfen, beheben.
-- [ ] F30 Feste Waffentöne je Seite und Einheitentyp (alle Gewehrschützen einer Seite gleich usw.); nur Stimmen unterscheiden sich je Trupp. Ton-Pult entsprechend (Waffenton pro Seite+Typ).
-- [ ] F32 Schaufeltöne: Eingraben (beide Seiten) nur 72199 digging_labored_breathing; 96216 combo-shovels in den Nahkampf der Infanterie (Spatenhiebe im Grabenkampf). Im Ton-Pult gegenprüfen, notfalls tauschen.
-- [ ] F35 Schmerz-/Todesschreie bei MG-Treffern (und allgemein bei schwerem Beschuss), mit Filter der getroffenen Einheit, nicht bei jedem Treffer.
-- [ ] F39 Versorgungstrupp: Reparieren mit Werkstatt-Tönen (Ratsche, Schlüssel, Hämmern; sound-quelle/Repair reload heal etc), Nachladen mit Ladegeräusch – nicht mehr Sanitäter-Ton.
+- [x] F4 Musik zu laut im Verhältnis zu den Tönen.
+- [x] F5 Stimmen und Marschieren beim Anklicken präsenter: Musik kurz leiser (nicht weg).
+- [x] F8 Aufprotzen mit Pferd: Pfeifton (klingt wie Zug) raus; Pferdewiehern + Klopfen („Pock-Pock“) bleiben.
+- [x] F9 Marsch Konkordat: beim schnellen Marsch nur Trommeln hörbar → Trommel deutlich leiser, Schritte tragen.
+- [x] F14 Auf-/Abprotzen Aschenwacht: klingt hohl/blechern → sattes, schweres „Tschak-Tschak“.
+- [x] F29 Gewehrtöne scheppern am Anfang (Übersteuerung? Laden?) → prüfen, beheben.
+- [x] F30 Feste Waffentöne je Seite und Einheitentyp (alle Gewehrschützen einer Seite gleich usw.); nur Stimmen unterscheiden sich je Trupp. Ton-Pult entsprechend (Waffenton pro Seite+Typ).
+- [x] F32 Schaufeltöne: Eingraben (beide Seiten) nur 72199 digging_labored_breathing; 96216 combo-shovels in den Nahkampf der Infanterie (Spatenhiebe im Grabenkampf). Im Ton-Pult gegenprüfen, notfalls tauschen.
+- [x] F35 Schmerz-/Todesschreie bei MG-Treffern (und allgemein bei schwerem Beschuss), mit Filter der getroffenen Einheit, nicht bei jedem Treffer.
+- [x] F39 Versorgungstrupp: Reparieren mit Werkstatt-Tönen (Ratsche, Schlüssel, Hämmern; sound-quelle/Repair reload heal etc), Nachladen mit Ladegeräusch – nicht mehr Sanitäter-Ton.
 
-- [ ] F45 Klick-Töne: leises Klicken für alles, was man oft klickt (kleine Knöpfe, Reiter, Karten, +/−, Optionen); lautes Klicken nur für große Knöpfe (Starten, Übernehmen, Runde beenden/weiter, Schlacht beginnen).
+- [x] F45 Klick-Töne: leises Klicken für alles, was man oft klickt (kleine Knöpfe, Reiter, Karten, +/−, Optionen); lautes Klicken nur für große Knöpfe (Starten, Übernehmen, Runde beenden/weiter, Schlacht beginnen).
 
 ## Paket C – Effekte, Animation, Kamera
 - [ ] F16 Landkoloss-Schuss: statt drei Geschossen nur Qualmwolke an der Mündung + Explosion am Ziel; Mündung ans Ende des Kanonenrohrs (nicht am Ausguck).
