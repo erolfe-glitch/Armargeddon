@@ -26,4 +26,5 @@ In `ui-quelle/figuren/` liegen neue 2×2-Posenbögen (aus JPG, Magenta), Aufbau 
 Mit Nahtmethode freistellen, Plastizität, gleicher Maßstab wie die Grundbögen. Weitere Posenbögen folgen nach `entwurf/POSEN_PROMPTS.md`.
 
 ## Erledigt
-(noch nichts)
+- [x] 1. Postfach-Regel in CLAUDE.md (eb75779)
+- [x] 2. Paket A (678cd04)
