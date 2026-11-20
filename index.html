@@ -651,6 +651,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .tb-btn.on svg { stroke: var(--s-brass); } .tb-btn.on svg * { stroke: var(--s-brass); }
 .tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
 .up-end.flash { animation: endflash .6s ease-in-out 3; }
+.up-end.fertig:not(.flash) { animation: endfertig 2.4s ease-in-out infinite; }   /* F13: alle Einheiten fertig */
+@keyframes endfertig { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 16px rgba(226,176,74,.9)) brightness(1.22); } }
 @keyframes endflash { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(194,164,97,.95)) brightness(1.35); } }
 /* ===== Feinschliff Panel (STYLE.md): Lebensbalken nach Stand, helle Fähigkeiten-Symbole mit Messingkante, 1280 px ohne Überlauf ===== */
 /* Leben: Füllung flach, Farbe nach Stand (über 60 % Moos, 30–60 % Ocker, darunter Ochsenblut), dünner dunkler Rand. Fraktion zeigen Wappen und Ring. */
@@ -724,6 +726,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .sm-btn.small { min-width: 210px; height: 60px; font-size: 22px; }
 .sm-btn.go { min-width: 420px; height: 88px; font-size: 34px; color: var(--s-brass); filter: drop-shadow(0 4px 0 rgba(18,13,11,.8)) drop-shadow(0 0 14px rgba(194,164,97,.45)); }
 .sm-btn:disabled { opacity: .5; cursor: default; }
+.sm-btn.scharf { color: #E9A08C; }   /* F2: „Wirklich beenden?“ */
 /* Unterseiten: Kopf, Inhalt, Fuß mit Zurück/Weiter */
 .sm-head { text-align: center; margin-bottom: 18px; }
 .sm-h2 { margin: 2px 0 0; font: 400 58px/1.05 var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 4px 0 var(--s-ink), 0 0 24px rgba(18,13,11,.9); }
@@ -1014,6 +1017,35 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
 .up-ab .ap.bp { background: #E8DDB8; color: #120D0B; border-radius: 6px; border: 2px solid #120D0B; font-weight: 700; }
 .up-ab .ap.bp::before { content: "BP "; font-size: 8px; letter-spacing: .02em; }
 .up-pip.klein { width: 18px; height: 18px; align-self: center; margin-left: 2px; }
+/* F42 (2026-11-20): Auswertung lesbar – Werte hell auf den dunklen Kacheln, Namen in Messing und größer; Fragen dunkel auf dem Pergament */
+#end .endstats dt { font-size: 16px; color: #C2A461; font-family: var(--serif); letter-spacing: .02em; }
+#end .endstats dd { font-size: 22px; color: #F0EDE1; }
+#end .endstats div.A dd { color: #E39A86; } #end .endstats div.D dd { color: #C9CFBD; }
+#end #endWhy { font-size: 19px; color: #1d140d; font-weight: 600; }
+#end .history { font-size: 17px; color: #1d140d; } #end .history p, #end .history li { color: #1d140d; } #end .history li { font-weight: 600; }
+#end .history h3 { color: #5c2a1c; font-size: 17px; }
+/* F3 + F7 (2026-11-20): Schrift überall größer, kräftiger, dunkler – Tooltips, Pergament-Details, Armee-Auswahl, Nachschub, Fähigkeiten */
+.up-tip { width: 300px; } .mtip { width: 310px; }
+.up-tip b, .mtip b { font-size: 19px; color: #120D0B; }
+.up-tip .cost { font-size: 15px; color: #6e2018; }
+.up-tip span, .mtip span { font: 500 16px/1.4 var(--s-body); color: #120D0B; }
+.up-tip .why { color: #6e2018; }
+.tbar [data-tip]::after { font-size: 16px; max-width: 280px; color: #120D0B; }
+:is(#shopDet, #armyDet) { width: 420px; font: 500 16px/1.42 var(--s-body); color: #120D0B; }
+#armyDet { width: clamp(300px, 24vw, 420px); }
+:is(#shopDet, #armyDet) h3 { font-size: 21px; color: #120D0B; }
+:is(#shopDet, #armyDet) .w { font: 700 13px var(--s-body); color: #3a2a1a; } :is(#shopDet, #armyDet) .w b { font-size: 21px; color: #120D0B; }
+:is(#shopDet, #armyDet) .real { color: #3a2a1a; font-size: 15px; } :is(#shopDet, #armyDet) .warum { color: #6e2018; }
+:is(#shopNeu, #armyNeu) .chips span, :is(#shopDet, #armyDet) .chips span { font-size: 14px; color: #120D0B; padding: 2px 8px; }
+:is(#shopNeu, #armyNeu) .sn-k .nm { font-size: 19px; color: #F6EFD9; }
+:is(#shopNeu, #armyNeu) .sn-reiter button { font-size: 17px; }
+:is(#shopNeu, #armyNeu) .sn-fuss { font-size: 16px; color: #E6DCC2; }
+#armyNeu .an-punkte { font-size: 16px; } #armyNeu .an-zeile { color: #EDE3C8; }
+#armyNeu .an-wahl button { font-size: 17px; color: #F6EFD9; } #armyNeu .an-wahl .kat { font-size: 15px; }
+#armyNeu .an-seite h3 { font-size: 21px; }
+@media (max-width: 1500px) { :is(#shopNeu, #armyNeu) .sn-k .nm { font-size: 16px; padding-right: 50px; } }
+:is(#shopNeu, #armyNeu) .sn-liste { overflow-x: hidden; }
+:is(#shopDet, #armyDet) .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; } :is(#shopDet, #armyDet) .chips span { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -1075,10 +1107,11 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
   <section class="sm-page sm-title" data-page="title">
     <header class="sm-logo"><div class="sm-kicker">Die Schlacht am Grauwall</div><h1 class="sm-h1">Armargeddon</h1></header>
     <nav class="sm-menu">
-      <button class="sm-btn main" data-go="side">Neue Schlacht</button>
+      <button class="sm-btn main" id="closeStart" hidden>Zurück zum Spiel</button>
+      <button class="sm-btn main" id="smNeu" data-go="side">Neue Schlacht</button>
       <button class="sm-btn" id="btnRules">Regeln</button>
       <button class="sm-btn" data-go="opts">Optionen</button>
-      <button class="sm-btn" id="closeStart" hidden>Zurück zum Spiel</button>
+      <button class="sm-btn" id="smBeenden" hidden data-tip="Schlacht beenden und zum Startbildschirm">Beenden</button>
     </nav>
     <p class="sm-note">Eine erfundene Welt. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918.</p>
   </section>
@@ -1092,7 +1125,7 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
       <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>
-      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label></div>
+      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
@@ -1329,10 +1362,10 @@ const TYPES = {
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', zweit: { name: 'Seiten-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben. Kanone vorn; dazu Seiten-MG (einmal je Runde zusätzlich, 2 Felder) nur nach links und rechts. Fährt sich selten fest und fällt dann 3 Runden aus.',
+    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben. Kanone vorn, Seiten-MG (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Selten Panne: 3 Runden aus.',
     real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
   sturmpz: { side: 'D', name: 'Sturmpanzer', cls: 'walker', broadside: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert wie der Landkoloss: Gewehre und MG prallen ab, Gas schadet nicht. Walzt Stacheldraht nieder, überquert Gräben, bleibt manchmal mit einer Panne liegen. Breitseite: nach dem ersten Schuss ein zweiter Schuss auf ein anderes Ziel bis 2 Felder (gehört zur Aktion), beide ×0,6.',
+    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben, selten Panne. Breitseite: nach dem ersten Schuss ein zweiter auf ein anderes Ziel bis 2 Felder, beide ×0,6 (eine Aktion).',
     real: 'Der deutsche A7V hatte 18 Mann Besatzung, eine Kanone und sechs Maschinengewehre ringsum. Gebaut wurden nur 20 Stück; bei Villers-Bretonneux trafen im April 1918 erstmals Panzer auf Panzer.' },
   reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
@@ -1381,7 +1414,7 @@ Object.assign(TYPES, {
     can: 'Schnell (5 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +2 Bewegungspunkte, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
     real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
   pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', cutter: true, fig: 'sapper', sapper: true, recover: true, abil: 'charge', atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
-    can: 'Schneidet Draht vom Nachbarfeld aus (Aktion), ohne hineinzulaufen, und kann danach noch angreifen. Haftladung (Aktion, alle 2 Runden) an einem Nachbarfeld: schwerer Schaden, doppelt gegen Kolosse und Kampfmaschinen, Bunkerschutz zählt nicht; Bunker und Barrikaden werden zu Trichtern, Draht wird zerrissen. Im Nahkampf ×1,5 gegen Kolosse und Kampfmaschinen. Bergt festgefahrene Fahrzeuge.',
+    can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Haftladung an ein Nachbarfeld (Aktion, 2 Runden Pause): schwerer Schaden, doppelt gegen Kolosse (dazu 50 % Panne); Bunker und Barrikaden werden Trichter, Draht wird zerrissen. Nahkampf ×1,5 gegen Kolosse. Bergt festgefahrene Fahrzeuge.',
     real: 'Pioniere schnitten nachts Gassen in den Draht, legten Sprengladungen und gruben Stollen unter die gegnerischen Linien.' },
   raeumer: { side: 'A', name: 'Grabenräumer', cls: 'storm', cutter: true, fig: 'raider', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Nahkämpfer ohne Gewehr. Schneidet Draht vom Nachbarfeld aus (Aktion). Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Gegen Kampfmaschinen im Nahkampf ×1,5.',
@@ -1390,10 +1423,10 @@ Object.assign(TYPES, {
     can: 'Schießt 3 Felder weit. Durchschlägt Panzerung: Beschuss trifft Landkolosse ×2.',
     real: 'Das deutsche Tankgewehr M1918 war die erste Panzerbüchse der Welt. Es verschoss 13-mm-Geschosse und hatte einen sehr starken Rückstoß.' },
   schwer: { side: 'D', name: 'Schwere Grabenwacht', cls: 'inf', fig: 'heavy', wireProof: true, shieldWall: true, atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
-    can: 'Schild und Streitkolben: sehr zäh und langsam, nur Nahkampf. Hält Gräben und Ruinen. Stacheldraht verletzt und hält sie nicht auf. Schilde vor (Aktion): eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.',
+    can: 'Schild und Streitkolben: sehr zäh, langsam, nur Nahkampf. Draht verletzt und hält nicht auf. Schilde vor (Aktion): eigene Nachbarn nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.',
     real: 'Im Stellungskrieg wurden Stahlschilde und Brustpanzer erprobt, etwa der deutsche Grabenpanzer ab 1916. Sie waren schwer und schützten vor allem gegen Splitter.' },
   signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 6, relay: true, abil: 'mark', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Ziel markieren (Aktion): ein Feld in Sicht (bis 6 Felder) anklicken – eine Leuchtkugel steht darüber. Bis zu deinem nächsten Zug treffen eigene Artillerie und Mörser dort genau (keine Streuung) und 25 % stärker; versteckte Gegner und Minen auf dem Feld und daneben werden sichtbar. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben. Kaum Kampfkraft.',
+    can: 'Ziel markieren (Aktion): ein Feld in Sicht (bis 6 Felder) bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar. Anführer bis 3 Felder geben jede Runde einen Befehl. Kaum Kampfkraft.',
     real: 'Leuchtpistolen gaben vereinbarte Zeichen an die Artillerie, zum Beispiel für Sperrfeuer. Grabenperiskope erlaubten den Blick über die Brustwehr.' },
   saeger: { side: 'D', name: 'Sägeschreiter', cls: 'walker', fig: 'mechA', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Drehlauf-Waffe und Kreissäge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
@@ -1402,27 +1435,27 @@ Object.assign(TYPES, {
     can: 'Schreitende Kampfmaschine mit Maschinenwaffe und Greifklaue. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
     real: 'Der deutsche A7V trug sechs Maschinengewehre und eine 5,7-cm-Kanone. Am 24. April 1918 traf er bei Villers-Bretonneux auf britische Panzer, das erste Panzergefecht.' },
   turm: { side: 'A', name: 'Turmschreiter', cls: 'walker', zweit: { name: 'Turm-MG', rng: 2 }, fig: 'mechT', mech: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
-    can: 'Schreitende Kampfmaschine mit Geschützturm und Maschinengewehr: Kanone wie bisher, dazu Turm-MG (einmal je Runde zusätzlich, 2 Felder). Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Fährt sich selten fest und fällt dann 3 Runden aus.',
+    can: 'Schreitende Kampfmaschine: Kanone, dazu Turm-MG (2 Felder, einmal je Runde zusätzlich). Gepanzert: Gewehre und MG prallen ab. Selten Panne: 3 Runden aus.',
     real: 'Britische Panzer gab es als „Male“ mit 6-Pfünder-Kanonen und als „Female“ nur mit Maschinengewehren. Ab 1917 kamen „Hermaphrodites“ mit beidem.' },
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
     real: 'Auch die Briten bauten keine Schreitmaschinen. Ihr erster Panzer, der Mark I von 1916, hatte acht Mann Besatzung und fuhr etwa so schnell wie ein Fußgänger.' },
   kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, roar: true, at: P_STUFE3_AT, zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 3, rng: 2, fs: 5,
-    can: 'Stufe 3, höchstens einer je Schlacht. Schwer gepanzerte Kampfmaschine mit schwerer Kanone im Löwenmaul (stark gegen Fahrzeuge und Schreiter, beschädigt die Kirche) und Kriegshammer. Am zähesten von allen und für einen Schreiter schnell (3 Felder). Dazu die Kanone am linken Unterarm (einmal je Runde zusätzlich, 2 Felder, wirkt auch gegen Panzerung). Löwengebrüll (einmal je Schlacht, kostet nichts): Gegner ohne Panzerung bis 2 Felder verlieren Moral und werden niedergehalten. Fährt sich selten fest und fällt dann 3 Runden aus.',
+    can: 'Stufe 3, höchstens einer je Schlacht. Löwenmaul-Kanone (stark gegen Fahrzeuge und Schreiter, trifft die Kirche) und Kriegshammer; am zähesten von allen, Bewegung 3. Unterarm-Kanone (2 Felder, einmal je Runde zusätzlich, auch gegen Panzerung). Löwengebrüll (einmal je Schlacht, kostenlos): Gegner ohne Panzerung bis 2 Felder Moral −20 und niedergehalten. Selten Panne.',
     real: 'Panzerbesatzungen trugen Lederhelme und Kettenmasken gegen Splitter, die beim Beschuss innen von der Panzerwand absprangen.' },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
-    can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Sturmlauf (alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, am Ende sofort Nahkampf. Kein Koloss: Geschütze und Nahkampf treffen voll.',
+    can: 'Motorisierte Kampfanzüge: Gewehr- und MG-Feuer ×0,5, Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Geschütze und Nahkampf treffen voll.',
     real: 'Motorisierte Kampfanzüge gab es nie. Käuflich war aber Körperpanzer wie der britische „Dayfield Body Shield“, der gegen Splitter half, gegen Gewehrkugeln kaum.' },
   // Neue Einheiten im Stil Retro-Zukunft (2026-11-20, Bögen ui-quelle/figuren/konkordat_loewenoger.png, aschenwacht_eiserne_huenen.png);
   // fig = alte Ersatzzeichnung (Grabenräumer bzw. Panzerknecht), nur solange die neuen Bilder laden (ui.js FIGMAP)
   oger: { side: 'A', name: 'Löwenoger', cls: 'storm', fig: 'raider', abil: 'sprung', atk: 8, def: 5, mor: 9, mv: 4, rng: 1, fs: 6,
-    can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark, nur leicht gepanzert. Schrotflinte nur auf 1 Feld, dort aber hart. Sickert durch: Gegner halten ihn nicht auf. Sprungangriff (Aktion, alle 2 Runden, nur aus dem Stand): springt bis 2 Felder weit neben einen Gegner, auch über Draht und Gräben, und greift sofort im Nahkampf an.',
+    can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark, leicht gepanzert. Schrotflinte nur auf 1 Feld. Gegner halten ihn nicht auf. Sprungangriff (Aktion und alle BP, 2 Runden Pause, nur aus dem Stand): bis 2 Felder neben einen Gegner, auch über Draht und Gräben, sofort Nahkampf.',
     real: 'Amerikanische Soldaten nahmen 1918 Vorderschaftrepetierflinten (Winchester M1897, „Grabenflinte“) mit in den Grabenkampf. Deutschland protestierte im September 1918 offiziell gegen diese Waffe.' },
   huenen: { side: 'D', name: 'Eiserne Hünen', cls: 'inf', fig: 'suitD', suit: true, mgfire: true, pin: true, dauerfeuer: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 3, fs: 7,
-    can: 'Riesen in schwerer Ritterrüstung mit schwerem Maschinengewehr aus der Hüfte (3 Felder): langsam, Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht hält sie nicht auf. Jeder Treffer hält das Ziel nieder; das MG muss nicht aufgebaut werden. Dauerfeuer: nach dem Schuss in derselben Runde eine zweite Salve (gleiches oder anderes Ziel) – danach kann das MG eine eigene Runde lang nicht feuern (Abkühlen).',
+    can: 'Riesen in Rüstung mit schwerem MG aus der Hüfte (3 Felder, kein Aufbauen, jeder Treffer hält nieder). Langsam, Gewehr- und MG-Feuer ×0,5, Draht hält nicht auf. Dauerfeuer: eine zweite Salve in derselben Runde, danach eine eigene Runde kein Schuss.',
     real: 'Das deutsche MG 08 wog mit Schlitten und Kühlwasser rund 60 Kilogramm und brauchte eine Bedienung. MG-Schützen trugen ab 1916 teils Stahlbrustpanzer von etwa zehn Kilogramm. Das leichtere MG 08/15 kam 1917.' },
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
-    can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Sturmlauf (alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, am Ende sofort Nahkampf. Kein Koloss: Geschütze und Nahkampf treffen voll.',
+    can: 'Motorisierte Kampfanzüge: Gewehr- und MG-Feuer ×0,5, Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Geschütze und Nahkampf treffen voll.',
     real: 'Motorisierte Kampfanzüge gab es nie. Der deutsche Grabenpanzer aus Stahlplatten wog rund zehn Kilogramm und wurde vor allem von Posten und MG-Schützen getragen.' },
   flammen: { side: 'A', name: 'Flammentrupp', cls: 'flame', fig: 'flamer', atk: 2, def: 3, mor: 7, mv: 2, rng: 1, fs: 7, flame: true,
     can: 'Flammenstrahl auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Das Feld brennt bis zum nächsten eigenen Zug: wer dort steht oder hineinzieht, nimmt Feuerschaden, Draht verbrennt. Wird er beschossen, trifft es ihn ×1,5.',
@@ -1434,31 +1467,31 @@ Object.assign(TYPES, {
     can: 'Leichte Artillerie: 5 Felder Reichweite, kein Gas. Direkter Schuss bis 3 Felder trifft Kolosse und Kampfmaschinen ×2,5. Aufgeprotzt zieht sie 3 Felder. Im Nahkampf wehrlos.',
     real: 'Die britische 18-Pfünder-Feldkanone war das wichtigste Geschütz der britischen Armee. Bis 1918 verschoss sie rund 100 Millionen Granaten.' },
   fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 6, relay: true, abil: 'strike', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Feuerschlag anfordern (alle Punkte, alle 3 Runden): eine Batterie hinter der Front schießt auf ein Feld in Sicht (6 Felder), wie eine Haubitze; 25 % Streuung auf ein Nachbarfeld. Anführer bis 3 Felder Entfernung dürfen jede Runde einen Befehl geben.',
+    can: 'Feuerschlag (Aktion und alle BP, 3 Runden Pause): wie ein Haubitzenschuss auf ein Feld in Sicht (bis 6 Felder), 25 % Streuung. Anführer bis 3 Felder geben jede Runde einen Befehl.',
     real: 'Feldtelefone verbanden die Gräben mit den Batterien. Die Leitungen wurden tief eingegraben, rissen im Trommelfeuer aber trotzdem ständig.' },
   pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', cutter: true, fig: 'sapperD', sapper: true, recover: true, wirelayer: true, abil: 'mine', mines: 3, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
-    can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Zieht Stacheldraht: legt einen Drahtgürtel auf das freie Feld, in das er blickt. Oder legt stattdessen eine Mine (Aktion) auf ein freies Nachbarfeld, drei Stück je Trupp: der Gegner sieht sie nicht, wer hineinzieht, nimmt Schaden und bleibt stehen, Kolosse bleiben liegen. Danach kein Angriff mehr in der Runde.',
+    can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Je Runde Draht ziehen (aufs Feld, in das er blickt) oder eine Mine auf ein freies Nachbarfeld (3 Stück): unsichtbar, wer hineinzieht, nimmt Schaden und bleibt stehen. Danach kein Angriff mehr.',
     real: 'Drahtverhaue wurden meist nachts gebaut. Arbeitstrupps schraubten Eisenpfähle in den Boden und spannten Rollen Stacheldraht dazwischen.' },
   banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
     can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr. Banner aufpflanzen (Aktion): wirkt 3 Felder weit, dort flieht niemand; der Träger zieht nicht, bis er es wieder aufnimmt (Aktion).',
     real: 'Im Ersten Weltkrieg trugen Regimenter ihre Fahnen kaum noch ins Gefecht. Sie waren zu auffällig und wurden ab 1914 meist hinter der Front verwahrt.' },
   hauptA: { side: 'A', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
-    can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ (Fernkampf ×1,25 bis zu ihrem nächsten Zug). Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
+    can: 'Kommandotrupp: bis zu 3 Befehle je Schlacht an Nachbarn: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ (Fernkampf ×1,25 bis zu ihrem nächsten Zug). Truppen in der Nähe verlieren weniger Moral.',
     real: 'Ein Hauptmann führte eine Kompanie von rund 200 Mann. Die Verluste unter jungen Offizieren waren sehr hoch, weil sie beim Angriff vorangingen.' },
   generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
-    can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht („Sammeln“ oder „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: eigene Einheiten bis 3 Felder fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
+    can: 'Pflicht, genau einer je Armee; schwach im Kampf. Bis zu 3 Befehle je Schlacht an Nachbarn („Sammeln“, „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: Einheiten bis 3 Felder fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.',
     real: 'Generäle führten meist aus Hauptquartieren weit hinter der Front, verbunden über Telefon und Meldegänger. Trotzdem fielen im Ersten Weltkrieg über 70 britische Generäle.' },
   hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
-    can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht: „Sammeln“ (Moral +15, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde). Eigene Truppen in der Nähe verlieren weniger Moral und sammeln sich eher.',
+    can: 'Kommandotrupp: bis zu 3 Befehle je Schlacht an Nachbarn: „Sammeln“ (Moral +15, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde). Truppen in der Nähe verlieren weniger Moral.',
     real: 'In der deutschen Armee führte ein Hauptmann meist eine Kompanie. Ab 1916 übernahmen oft Leutnants diese Aufgabe, weil zu viele Offiziere gefallen waren.' },
   generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
-    can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht („Sammeln“ oder „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: eigene Einheiten bis 3 Felder erhalten sofort +2 Bewegungspunkte und +1 Aktion. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
+    can: 'Pflicht, genau einer je Armee; schwach im Kampf. Bis zu 3 Befehle je Schlacht an Nachbarn („Sammeln“, „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: Einheiten bis 3 Felder sofort +2 BP und +1 Aktion.',
     real: 'Deutsche Divisionen wurden von Generalmajoren geführt. Die Stäbe arbeiteten mit Karten, Telefon und Luftbildern meist mehrere Kilometer hinter der Front.' },
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', stufe3: true, faust: true, fig: 'mech', mech: true, atk: 8, def: 10, mor: 9, mv: 3, rng: 2, fs: 7,
-    can: 'Stufe 3, höchstens einer je Schlacht. Schreitende Kampfmaschine mit doppelläufigen Sturmkanonen an beiden Unterarmen und Hackklinge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Faustsalve (einmal je Schlacht, statt des Schusses): beide Kanonen zugleich auf zwei verschiedene Ziele, je ×2. Bleibt manchmal mit einer Panne liegen.',
+    can: 'Stufe 3, höchstens einer je Schlacht. Doppelte Sturmkanonen an beiden Unterarmen und Hackklinge; gepanzert, Gewehre und MG prallen ab. Faustsalve (einmal je Schlacht, statt des Schusses): zwei Schüsse auf zwei verschiedene Ziele, je ×2. Selten Panne.',
     real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
   bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', zweit: { name: 'Flammenstoß', rng: 1, flamme: true }, fig: 'drill', mech: true, atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
-    can: 'Kampfmaschine mit Bohrkopf für den Nahkampf. Sehr stark gegen alles, was er erreicht. Dazu Flammenstoß (einmal je Runde zusätzlich) auf ein Nachbarfeld: halb so stark wie ein Flammentrupp, das Feld brennt danach. Fährt sich selten fest und fällt dann 3 Runden aus.',
+    can: 'Kampfmaschine mit Bohrkopf: sehr stark im Nahkampf. Flammenstoß (einmal je Runde zusätzlich) auf ein Nachbarfeld: halb so stark wie ein Flammentrupp, das Feld brennt. Selten Panne: 3 Runden aus.',
     real: 'Unter der Erde tobte ein Minenkrieg. Bei Messines zündeten die Briten am 7. Juni 1917 neunzehn Minen unter den deutschen Stellungen.' }
 });
 // Nachschub: Kosten in Punkten und Angebot je Seite
@@ -1506,16 +1539,16 @@ const COST = {}; for (const k in TYPES) COST[k] = costParts(k).total;
 // Paket 2: Skirmish-Trupps (Bögen des Nutzers)
 Object.assign(TYPES, {
   rauch: { side: 'A', name: 'Rauchwerfer-Trupp', cls: 'inf', fig: 'smoke', abil: 'smoke', atk: 2, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Nebelwand (Aktion, alle 3 Runden): Zielfeld bis 3 Felder und alle Nachbarn liegen bis zur nächsten eigenen Runde im Nebel. Wer im Nebel steht, wird kaum getroffen (Beschuss ×0,5) und schießt nur schwach heraus (×0,75); durch die Wand hindurch sieht niemand, und kein Beobachter lenkt Artillerie in den Nebel. Am besten vor dem Vorrücken legen, dann in den Nebel ziehen.',
+    can: 'Nebelwand (Aktion, 3 Runden Pause): Feld bis 3 Felder und seine Nachbarn bis zur nächsten eigenen Runde im Nebel. Ziel im Nebel: Beschuss ×0,5; Schütze im Nebel ×0,75; keine Sicht hindurch. Vor dem Vorrücken legen.',
     real: 'Bei Loos legten die Briten im September 1915 neben Gas auch künstlichen Nebel aus Rauchkerzen, um den Angriff zu verschleiern. Später verschossen Stokes-Mörser Nebelgranaten.' },
   mineur: { side: 'A', name: 'Mineure (Tunnelgräber)', cls: 'inf', fig: 'miner', abil: 'tunnel', sapper: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Stollen graben (Aktion, alle 4 Runden): unter einen Graben, Bunker oder ein Gebäude bis 2 Felder. Zwei eigene Runden später fliegt das Feld in die Luft (schwerer Schaden, wird zum Trichter).',
     real: 'Bei Messines zündeten britische Tunnelbauer am 7. Juni 1917 19 Minen unter den deutschen Stellungen. Die Explosionen waren bis nach London zu hören.' },
   werkstatt: { side: 'A', name: 'Versorgungstrupp', cls: 'medic', fig: 'wrench', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Je Runde eine Aufgabe: einen Koloss oder eine Kampfmaschine im Nachbarfeld reparieren (Stärke +25, alle 2 Runden) bzw. festgefahrene oder liegengebliebene Fahrzeuge bergen – oder Nachladen (Aktion, alle 2 Runden): ein MG oder Geschütz im Nachbarfeld darf noch einmal feuern.',
+    can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, 2 Runden Pause), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, 2 Runden Pause): ein MG oder Geschütz daneben schießt noch einmal.',
     real: 'Bei Cambrai 1917 fiel ein großer Teil der britischen Panzer durch Pannen und Festfahren aus. Bergungs- und Werkstattzüge holten sie zurück; Trägertrupps brachten Granaten und Gurte nach vorn.' },
   ballon: { side: 'A', name: 'Ballonbeobachter', cls: 'inf', fig: 'balloon', relay: true, abil: 'mark', aerial: true, spot: 8, atk: 0, def: 1, mor: 4, mv: 0, rng: 0, fs: 0,
-    can: 'Fesselballon: zieht nicht, sieht 8 Felder über Wald und Häuser hinweg. Ziel markieren (Aktion): ein Feld in Sicht anklicken – eine Leuchtkugel steht darüber. Bis zu deinem nächsten Zug treffen eigene Artillerie und Mörser dort genau (keine Streuung) und 25 % stärker; versteckte Gegner und Minen auf dem Feld und daneben werden sichtbar. Wehrlos.',
+    can: 'Fesselballon: zieht nicht, wehrlos, sieht 8 Felder über Wald und Häuser. Ziel markieren (Aktion): ein Feld in Sicht bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar.',
     real: 'Gefesselte Beobachtungsballone standen hinter der Front und lenkten das Artilleriefeuer per Telefon. Als einzige Flieger trugen ihre Beobachter schon früh Fallschirme.' },
   eingreif: { side: 'D', name: 'Eingreiftrupp', cls: 'storm', fig: 'counter', counterStrike: true, atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde).',
@@ -1524,7 +1557,7 @@ Object.assign(TYPES, {
     can: 'Gas schadet ihm und seinen Nachbarn nicht, auch keine Vergiftung. Entgiften (Aktion, alle 2 Runden): löst Gaswolken bis 1 Feld auf.',
     real: 'Gasschutzoffiziere schulten die Truppe im schnellen Aufsetzen der Masken und prüften die Filter. Nach einem Angriff wurden Unterstände mit Feuer und Chlorkalk entgiftet.' },
   munition: { side: 'D', name: 'Versorgungstrupp', cls: 'medic', fig: 'ammo', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Je Runde eine Aufgabe: einen Koloss oder eine Kampfmaschine im Nachbarfeld reparieren (Stärke +25, alle 2 Runden) bzw. festgefahrene oder liegengebliebene Fahrzeuge bergen – oder Nachladen (Aktion, alle 2 Runden): ein MG oder Geschütz im Nachbarfeld darf noch einmal feuern.',
+    can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, 2 Runden Pause), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, 2 Runden Pause): ein MG oder Geschütz daneben schießt noch einmal.',
     real: 'Ein MG 08 verschoss rund 500 Schuss in der Minute. Munitionsträger schleppten die schweren Gurtkästen unter Feuer nach vorn; Instandsetzungstrupps flickten liegengebliebene Panzer.' },
   pirsch: { side: 'D', name: 'Pirschjäger', cls: 'inf', fig: 'stalker', pin: true, hidden: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 4, fs: 3,
     can: 'Getarnt: nur aus dem Nachbarfeld angreifbar, bis er schießt (dann eine gegnerische Runde sichtbar). Jeder Treffer hält nieder.',
@@ -2418,7 +2451,7 @@ function limber(G, u) {
   return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
 // Draht schneiden (Spieltest Runde 2, Paket 8): nur die Drahtschneider (cutter: Graben-Pioniere, Grabenräumer, Drahtpioniere, Sturmbrecher), 1 Punkt,
-// vom Nachbarfeld (oder dem eigenen Feld) aus, ohne hineinzulaufen und ohne Drahtschaden; danach darf die Einheit noch angreifen. Kolosse walzen Draht nieder.
+// vom Nachbarfeld (oder dem eigenen Feld) aus, ohne hineinzulaufen und ohne Drahtschaden; kostet die Aktion, danach darf die Einheit noch ziehen. Kolosse walzen Draht nieder.
 function cutTargets(G, u) { const T = TYPES[u.type]; if (!active(u) || !T.cutter || u.side !== G.side || u.supp > 0 || u.ap < 1) return [];
   return [[u.c, u.r], ...neighbors(u.c, u.r)].filter(([c, r]) => inMap(c, r) && hex(G, c, r).t === 'wire' && !(unitAt(G, c, r) && unitAt(G, c, r).side !== u.side)); }
 function canCut(G, u, c, r) { const t = cutTargets(G, u); return c == null ? t.length > 0 : t.some(h => h[0] === c && h[1] === r); }
@@ -4525,7 +4558,7 @@ function aufbauen(cfg, IM) {
   }
 
   // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
-  const DRAW = [], SHADOW = [];
+  const DRAW = [], SHADOW = []; let FELD = null;   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
   // Durchsichtig nur, wenn eine Einheit wirklich dahinter steht: seitlich innerhalb der Teilbreite, nicht bloß daneben (2026-11-16)
   const hides = (x, y, hb = R * 0.45, hW = SH) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < hW * 1.3 + R * 0.3 && Math.abs(hx - x) < hb * 0.75);
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
@@ -4538,7 +4571,7 @@ function aufbauen(cfg, IM) {
       const a = [A[0] + (B[0] - A[0]) * i / n, A[1] + (B[1] - A[1]) * i / n], b = [A[0] + (B[0] - A[0]) * (i + 1) / n, A[1] + (B[1] - A[1]) * (i + 1) / n], du = len / n / iwW, u0 = u;
       u += du; const my = (a[1] + b[1]) / 2;
       if (o.skip && o.skip((a[0] + b[0]) / 2, my)) continue;
-      DRAW.push({ y: my + (o.bias || 0), f: () => strip(im, a, b, hW, u0, du, o) });
+      DRAW.push({ feld: FELD, y: my + (o.bias || 0), f: () => strip(im, a, b, hW, u0, du, o) });
     }
     if (o.shade !== 0) SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = `rgba(8,6,4,${o.shade ?? 0.5})`; w.lineWidth = R * (o.shadeW || 0.14); w.lineCap = 'round'; w.beginPath(); w.moveTo(A[0], A[1] + R * 0.03); w.lineTo(B[0], B[1] + R * 0.03); w.stroke();
       if (AO) { w.filter = `blur(${R * 0.1}px)`; w.strokeStyle = `rgba(6,4,3,${0.17 * AO})`; w.lineWidth = R * 0.34; w.stroke();   // Kantenverdeckung: breiter weicher Saum
@@ -4577,7 +4610,7 @@ function aufbauen(cfg, IM) {
   }
   function stand(im, x, y, hW, o = {}) {   // Aufsteller am Fußpunkt (x, y), Höhe hW
     if (!im) return;
-    DRAW.push({ y: y + (o.bias || 0), f: () => {
+    DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
       g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45;
@@ -4682,7 +4715,7 @@ function aufbauen(cfg, IM) {
   const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
   const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k);
+    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = t === 'wire' ? c + ',' + r : null;
     if (BAUFELD.has(c + ',' + r)) continue;   // große Gebäude: eigener Aufbau weiter unten
     const deko = flags(c, r).deko || '';
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
@@ -4855,7 +4888,11 @@ function aufbauen(cfg, IM) {
     if (t === 'village' || BAUFELD.has(c + ',' + r)) return { sy: 0.85 };
     return null;
   }
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD,
+  FELD = null;
+  // Draht eines Felds entfernen, ohne die Welt neu aufzubauen (Drahtschneiden, Niederwalzen, Zerschießen): nur die aufrechten Drahtstücke fallen weg,
+  // der weiche Schatten am Boden bleibt als zertretene Stelle. Der volle Neuaufbau dauert 0,4–0,6 s und ließ das Spiel stocken (F12, 2026-11-20).
+  function drahtWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 
@@ -6639,15 +6676,19 @@ const GB_KARTEN = new Set(['grauwall', 'sanktruss']);
 let BAUV = { g: null, k: [] };
 function bauSicht() { if (BAUV.g !== G) BAUV = { g: G, k: ((G && G.bauten) || []).map(b => !!b.kaputt) }; return BAUV.k; }
 let FIGQ = null;   // drawTilt: Sammelliste für Grabenfiguren, die einzeln nach Tiefe gezeichnet werden ({ y, f })
-let GBW = null, GBIM = null, gbLaden = null, gbKey = '';
+let GBW = null, GBIM = null, gbLaden = null, gbKey = '', gbFeld = null;   // gbFeld: Geländeart je Feld beim letzten Aufbau (Draht weg ohne Neuaufbau, F12)
 // Schräge Wandstücke kippen (Kirche, Zaun, Mauern, Ruinen; 2026-11-19): Stärke, zum Vergleich window.NOKIPP = true bzw. __dbg.kipp(0)
 const gbKipp = () => window.NOKIPP ? 0 : (window.KIPP ?? 1);
 const gbAn = () => VIEW.tilt() && GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE && !window.NOGB;
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
-  const key = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + bauSicht().join() + ':' + G.map.map(col => col.map(h => h.t[0] + h.t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + bauSicht().join(), feld = G.map.map(col => col.map(h => h.t)), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return true;
+  // Nur Draht verschwunden (geschnitten, niedergewalzt, zerschossen): Drahtstücke herausnehmen statt alles neu aufzubauen (0,4–0,6 s Stocken, F12 2026-11-20)
+  if (GBW && GBW.drahtWeg && gbFeld && gbKey.startsWith(basis + ':')) { const weg = [];
+    const nurDraht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true; if (a === 'wire') { weg.push([c, r]); return true; } return false; }));
+    if (nurDraht) { for (const [c, r] of weg) GBW.drahtWeg(c, r); gbKey = key; gbFeld = feld; return true; } }
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
@@ -6655,7 +6696,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })),
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, IMB);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
-  gbKey = key; window.__gbMs = Math.round(performance.now() - t0);
+  gbKey = key; gbFeld = feld; window.__gbMs = Math.round(performance.now() - t0);
   return true;
 }
 // Plastik-Karten der neuen Gelände-Bausteine (Sankt Ruß, „gel_<name>“ in figsplastik.js) vor dem ersten Aufbau laden; nur die Karte, ohne Farbänderung
@@ -7097,9 +7138,8 @@ function drawMarks(u, d, x, y, own, done, acc) {
   const sts = statesOf(u, d).filter(st => !st.panel && st.k !== 'supp');   // Karte: nur echte Zustände; Niedergehalten eigener großer Platz
   let slotX = bx;
   if (d.vs.supp > 0) {   // Niedergehalten: wichtigster Zustand, groß direkt links an der Einheit (Spieltest Runde 2, Punkt 22)
-    const R2 = Math.max(12, s * 0.23), cx = bx - R2 - 3, cy = mid - R2 * 0.55, pz = 0.5 + 0.5 * Math.sin(now / 260);
-    g.save(); g.globalAlpha = 1; g.beginPath(); g.arc(cx, cy, R2 * (1.12 + 0.08 * pz), 0, 7); g.fillStyle = `rgba(200,60,40,${0.25 + 0.2 * pz})`; g.fill(); g.restore();
-    drawSym(g, UPI['s_niedergehalten'], cx, cy, R2, '#C8402C');
+    const R2 = Math.max(9, s * 0.15), cx = bx - R2 - 3, cy = mid - R2 * 0.3, pz = 0.5 + 0.5 * Math.sin(now / 260);   // F22 (2026-11-20): kein großer Leuchtkreis mehr, kleine dunkle Plakette
+    drawSym(g, UPI['s_niedergehalten'], cx, cy, R2, `rgba(${Math.round(170 + 50 * pz)},${Math.round(56 + 20 * pz)},40,1)`);
     MARKS.push({ x0: cx - R2 * 1.1, y0: cy - R2 * 1.1, x1: cx + R2 * 1.1, y1: cy + R2 * 1.1, u, kind: 'supp' });
     slotX = cx - R2;
   }
@@ -7622,7 +7662,7 @@ function feldWirkung(u, c, r) {
 // Leiste unter dem Zielfeld: ▲ Vorteil (Messing), ▼ Nachteil (Ochsenblut hell); Pergament-freie Tintentafel mit Rostrand (STYLE.md)
 function drawFeldWirkung(g, x, y, list, s) {
   if (!list || !list.length) return; if (VIEW.up) VIEW.up(x, y);
-  const fs = Math.round(Math.max(14, s * 0.2)), lh = fs * 1.3, pad = fs * 0.45, tri = fs * 0.42; g.save();
+  const fs = Math.round(Math.max(11, s * 0.16)), lh = fs * 1.25, pad = fs * 0.45, tri = fs * 0.42; g.save();   // F10 (2026-11-20): kleiner, passend zu Stiefel und Zahl
   try {   // Zeichenzustand immer zurücksetzen, auch wenn etwas schiefgeht
   g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; g.textBaseline = 'middle'; g.textAlign = 'left';
   const w = Math.max(...list.map(it => g.measureText(it.kurz).width)) + tri * 2 + fs * 0.4 + pad * 2, hh = list.length * lh + pad * 0.8, x0 = x - w / 2;
@@ -7640,6 +7680,12 @@ function drawFloaters(g, s, bb) {
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
     if (bb && !bb(f.x, f.y)) continue;
     g.globalAlpha = Math.min(1, f.life / 18);
+    if (f.sym) {   // F15: Symbol aus dem Bogen auf dunkler Plakette, kurz aufpoppen, dann steigen
+      const k = Math.min(1, (f.max - f.life) / 6), R = s * 0.17 * (0.7 + 0.3 * k), ring = /^#?[0-9a-f]{3,6}$/i.test(f.col) ? f.col : '#C2A461'; drawSym(g, f.sym, f.x, f.y - R, R, ring);
+      if (f.sub) { g.font = `400 ${Math.round(s * 0.2)}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`; g.textAlign = 'left'; g.lineWidth = Math.max(2.5, s * 0.06); g.strokeStyle = O; g.lineJoin = 'round';
+        g.strokeText(f.sub, f.x + R * 1.1, f.y - R); g.fillStyle = '#F0EDE1'; g.fillText(f.sub, f.x + R * 1.1, f.y - R); g.textAlign = 'center'; }
+      continue;
+    }
     if (f.icon) {   // Symbol statt Text: kurz aufpoppen, dann langsam steigen
       const k = Math.min(1, (f.max - f.life) / 6), hh = s * (f.big ? 0.95 : 0.8) * (0.7 + 0.3 * k), ww = hh * f.icon.naturalWidth / f.icon.naturalHeight;
       g.save(); g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = s * 0.18; g.drawImage(f.icon, f.x - ww / 2, f.y - hh * 0.8, ww, hh); g.restore();
@@ -7700,7 +7746,17 @@ const KZ_BEW = {
   funkeln: (g, T) => { const k = 0.9 + 0.12 * Math.sin(T / 160); g.rotate(T / 2400); g.scale(k, k); },   // dreht und funkelt
   kreuz: () => {},
 };
-function kzMalen(g, art, R, T) { const im = UPI['k_' + art];
+// F23 (2026-11-20): einzelne gemalte Zeichen sind auf dem dunklen Boden zu blass (Zahnrad rostbraun, Rauch halbdurchsichtig):
+// einmal aufhellen, Deckkraft anheben und eine dunkle Kontur geben
+const KZ_KRAEFTIG = { panne: { filter: 'brightness(1.5) saturate(1.35) contrast(1.35)', alpha: 2.2, rand: 3 } }, KZB = {};
+function kzBild(art) { const im = UPI['k_' + art], o = KZ_KRAEFTIG[art]; if (!im || !o) return im; if (KZB[art] && KZB[art].src === im) return KZB[art].c;
+  const p = o.rand + 2, w = im.naturalWidth, h = im.naturalHeight, c = document.createElement('canvas'); c.width = w + 2 * p; c.height = h + 2 * p; const x = c.getContext('2d');
+  const t = document.createElement('canvas'); t.width = c.width; t.height = c.height; const y = t.getContext('2d'); y.filter = o.filter; y.drawImage(im, p, p); y.filter = 'none';
+  const id = y.getImageData(0, 0, t.width, t.height), dd = id.data; for (let i = 3; i < dd.length; i += 4) dd[i] = Math.min(255, dd[i] * o.alpha); y.putImageData(id, 0, 0);
+  const sil = document.createElement('canvas'); sil.width = t.width; sil.height = t.height; const z = sil.getContext('2d'); z.drawImage(t, 0, 0); z.globalCompositeOperation = 'source-in'; z.fillStyle = '#120D0B'; z.fillRect(0, 0, sil.width, sil.height);
+  for (let a = 0; a < 8; a++) x.drawImage(sil, Math.round(Math.cos(a * Math.PI / 4) * o.rand), Math.round(Math.sin(a * Math.PI / 4) * o.rand)); x.drawImage(t, 0, 0);
+  c.naturalWidth = c.width; c.naturalHeight = c.height; KZB[art] = { src: im, c }; return c; }
+function kzMalen(g, art, R, T) { const im = kzBild(art);
   if (im) { const k = Math.min(R * 1.7 / im.naturalHeight, R * 2.1 / im.naturalWidth), h = im.naturalHeight * k, w = im.naturalWidth * k;   /* höchstens 0,34 × 0,42 Feldradien */ g.save(); (KZ_BEW[art] || (() => {}))(g, T); g.drawImage(im, -w / 2, -h / 2, w, h); g.restore(); return; }
   KZ_ART[art].draw(g, R, T); }
 const KZ_ART = {
@@ -7842,7 +7898,8 @@ const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];  
 // einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
 // Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
 const BW_NAME = ['aus', 'leicht', 'stark'];
-let BW = 1; try { const v = localStorage.getItem('arm.bildwirkung'); if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
+let BW = 2; try { const v = localStorage.getItem('arm.bildwirkung2');   // F1 (2026-11-20): Standard stark; neuer Schlüssel, damit alte Einstellungen „leicht“ nicht stehen bleiben
+  if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
 const BW_KARTE = [0, 0.7, 1.3];                                   // Anteil der Plastik-Karte
 const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
 const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)'];
@@ -7872,7 +7929,7 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   BWI.set(ck, c); return c;
 }
 function setBildwirkung(v, still) {
-  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung', String(BW)); } catch (e) {}
+  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung2', String(BW)); } catch (e) {}
   if ($('optBild')) $('optBild').value = String(BW);
   gbKey = ''; if (L && G) renderTerrain();
   if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);
@@ -8437,11 +8494,19 @@ const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktio
   ['wieder flott', 'repair'], ['wieder frei', 'repair'], ['instand gesetzt', 'repair'], ['geborgen', 'repair'], ['Nebelwand', 'smoke'], ['Stollen', 'tunnel', /\d+/],
   ['Mine gelegt', 'mine', /\d+/], ['Mine!', 'mine'], ['Ausgeleuchtet', 'light'], ['Gas entgiftet', 'gasok'], ['kein Gas', 'gasok'], ['nachgeladen', 'ammo'],
   ['Gegenstoß', 'counter'], ['aufgebaut', 'setup'], ['Feuerbereit', 'aim'], ['Marsch', 'march'], ['aufgeprotzt', 'limber'], ['abgeprotzt', 'limber'], ['Nachschub', 'supply'], ['versorgt', 'heal', /\+[\d,]+/]];
+// Meldungen auf dem Feld (F15, 2026-11-20): Einstellung „Text / Symbole / aus“ (arm.meldungen). Schadenszahlen, Punkte, „fällt“, „aufgerieben“,
+// Kircheneinsturz und große Befehle (hold/big) bleiben immer; „Symbole“ zeigt Feld-Meldungen als Symbol aus dem Bogen (ISYM), sonst gar nicht.
+const ISYM = { retreat: 'flucht', rout: 'flucht', react: 'garbe', scatter: 'granate_artillerie', gas: 'gas', fear: 'totenkopf', supp: 'niedergehalten', worn: 'gebrochen', rally: 'fahne', morup: 'fahne',
+  whistle: 'fahne', cut: 'drahtschere', crush: 'drahtrolle', stuck: 'festgefahren', broken: 'festgefahren', repair: 'schraubenschluessel', smoke: 'nebel', tunnel: 'spitzhacke', mine: 'tellermine',
+  light: 'scheinwerfer', gasok: 'gasmaske', ammo: 'munitionskiste', counter: 'nahkampf', setup: 'mg_auf', aim: 'zielen', march: 'marsch', limber: 'aufprotzen', supply: 'munitionskiste', heal: 'sanitaeter' };
+let meldArt = 'text'; try { const v = localStorage.getItem('arm.meldungen'); if (['text', 'symbol', 'aus'].includes(v)) meldArt = v; } catch (e) {}
+const meldWichtig = (text, big, hold) => hold || big || /^\+\d|fällt|aufgerieben|stürzt ein/.test(String(text));
 function floater(x, y, text, col, big, hold) {
   const life = hold ? 210 : 60 / speed + 22, f = { x, y, text, col, life, max: life, big, hold };
-  const m = FICON.find(([p]) => String(text).startsWith(p));
-  if (false && m && PJI['i_' + m[1]]) {   // abgeschaltet: Symbole nur noch als Zustandsmarken (Wunsch des Nutzers)
- f.icon = PJI['i_' + m[1]]; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
+  if (meldArt !== 'text' && !meldWichtig(text, big, hold)) {
+    if (meldArt === 'aus') return;
+    const m = FICON.find(([p]) => String(text).startsWith(p)), im = m && UPI['s_' + ISYM[m[1]]]; if (!im) return;
+    f.sym = im; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
   floaters.push(f);
 }
 function bodyPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 1.0 : 0.55)]; }
@@ -8721,7 +8786,7 @@ async function playEvent0(e) {
       await wait(260); break;
     }
     case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; kz(e.u, 'pfeil', 'steig'); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
-    case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
+    case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln
     case 'crush': { const [x, y] = center(e.c, e.r); playSound('ueberrollen', 0.55); /* Fahrzeug walzt Draht nieder */ gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain();
       { const [x, y] = center(e.c, e.r), w = e.what || '';
@@ -8741,7 +8806,7 @@ async function playEvent0(e) {
     case 'tunnel': { playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
-    case 'blast': { const [x, y] = center(e.c, e.r); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#ffd27a', '#5a4632'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
+    case 'blast': { const [x, y] = center(e.c, e.r); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
     case 'mineLaid': { const [x, y] = center(e.c, e.r); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
@@ -9228,7 +9293,7 @@ const TB_ICON = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? '#F0EDE1' 
 const TB_SVG = {
   zoom: TB_ICON('<circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20.5 20.5M7.5 10h5M10 7.5v5"/>'),
   sndOn: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9a4.5 4.5 0 0 1 0 6M18.5 6a8.5 8.5 0 0 1 0 12"/>'),
-  sndOff: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>'),
+  sndOff: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1" opacity=".55"/><path d="M16 9a4.5 4.5 0 0 1 0 6" opacity=".55"/><path d="M3 3 21 21" stroke="#120D0B" stroke-width="5.5"/><path d="M3 3 21 21" stroke="#D2483A" stroke-width="3"/>'),   // F18: deutlich durchgestrichen
   speed: TB_ICON('<path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/>', true),
   instant: TB_ICON('<path d="M2.5 6l7 6-7 6zM10 6l7 6-7 6z" fill="#F0EDE1"/><path d="M20.5 5.5v13"/>'),
   diary: TB_ICON('<path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h10.5M8.5 8.5h6M8.5 11.5h4"/>'),
@@ -9275,6 +9340,7 @@ function updateUI() {
   const be = $('btnEnd');
   be.disabled = busy || !!G.over || !human(G.side);
   be.textContent = !human(G.side) && !G.over ? 'KI zieht …' : 'Runde beenden';
+  be.classList.toggle('fertig', !be.disabled && !G.aufstellung && !G.units.some(u => u.side === G.side && E.active(u) && !spent.has(u.id)));   // F13: alle fertig oder abgehakt: langsam pulsieren
   const bs = $('btnShop'), hs = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
   bs.disabled = busy || !!G.over || !human(G.side); bs.innerHTML = `Nachschub <b>★ ${G.pts[hs]}</b>`;
   if (sel && (!E.active(sel) || sel.side !== G.side)) sel = null;
@@ -9340,6 +9406,23 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
 const ABIL_KEIN = { sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+// F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
+// Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
+const ABIL_KURZ = {
+  smoke: () => `Nebel auf ein Feld bis 3 Felder und seine Nachbarn, bis zum nächsten eigenen Zug. Ziel im Nebel: Beschuss ${xf(P.NEBEL_IN)}; Schütze im Nebel ${xf(P.NEBEL_AUS)}; keine Sicht hindurch.`,
+  tunnel: () => `Stollen unter Graben, Bunker oder Gebäude bis 2 Felder. Nach 2 eigenen Runden fliegt das Feld hoch: etwa ${fmt(P.TUNNEL_DMG)} Schaden, starker Moralverlust, danach Trichter.`,
+  charge: () => `Sprengladung an ein Nachbarfeld. Gegner dort: etwa ${fmt(P.CHARGE_DMG)} Schaden (weniger bei schwacher eigener Stärke oder hoher Abwehr des Ziels), gegen Kolosse und Kampfmaschinen doppelt und zu 50 % Panne. Bunker und Barrikaden werden Trichter, Draht wird zerrissen.`,
+  mine: u => `Mine auf ein freies Nachbarfeld (nicht auf Zielfelder). Ein Gegner, der hineinzieht, bleibt stehen und nimmt etwa ${fmt(P.MINE_DMG)} Schaden. Noch ${u.mines || 0} Minen.${TYPES[u.type].wirelayer ? ' Je Runde Mine oder Draht.' : ''}`,
+  light: () => 'Feld bis 4 Felder in Sicht und seine Nachbarn ausleuchten, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ×1,25, Nebel verschwindet.',
+  clear: () => 'Gaswolken auf dem eigenen Feld und den Nachbarfeldern auflösen.',
+  ammo: () => 'Ein MG oder Geschütz daneben, das in dieser Runde schon geschossen hat, schießt noch einmal (einmal je Runde und Ziel). Zählt als Aufgabe des Versorgungstrupps.',
+  mark: u => `Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder) markieren, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ${xf(P.GUIDED)} und ohne Streuung; deckt getarnte Gegner und Minen im Feld und daneben auf.`,
+  strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
+  rush: () => `Aus dem Stand bis ${P.RUSH} Felder geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
+  sprung: () => `Aus dem Stand bis ${P.SPRUNG} Felder neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
+};
+function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
+  return f(u) + (A.cd ? ` Danach ${A.cd} Runden Pause.` : ''); }
 const ABIL_SYM = { sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
@@ -9493,7 +9576,7 @@ function unitButtons(T, hints) {
   }
   if (T.cutter) {   // Paket 8: nur Drahtschneider, vom Nachbarfeld aus
     const ct = E.cutTargets(G, sel);
-    btns.push({ act: 'cut', sym: 'drahtschere', name: 'Draht schneiden', cost: 1, text: 'Stacheldraht auf diesem oder einem Nachbarfeld entfernen, ohne hineinzulaufen (kein Drahtschaden). Danach darf die Einheit noch angreifen.', pulse: ct.length > 0, on: abilMode && feldArt === 'cut', off: !ct.length,
+    btns.push({ act: 'cut', sym: 'drahtschere', name: 'Draht schneiden', cost: 1, text: 'Stacheldraht auf diesem oder einem Nachbarfeld entfernen, ohne hineinzulaufen (kein Drahtschaden). Kostet die Aktion; ziehen geht danach noch.', pulse: ct.length > 0, on: abilMode && feldArt === 'cut', off: !ct.length,
       why: sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : 'Kein Draht auf diesem Feld oder daneben.' });
     if (abilMode && feldArt === 'cut') hints.push('<i>Messing markiert:</i> Drahtfeld anklicken.');
   }
@@ -9526,7 +9609,7 @@ function unitButtons(T, hints) {
   if (nahGesperrt) hints.push(`<i>Kein Nahkampf mehr:</i> mehr als die Hälfte der Bewegung verbraucht. Schwert am Zugfeld = von dort geht der Sturm noch.`);
   if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', why: nahGesperrt ? `Mehr als die Hälfte der Bewegung verbraucht (${sel.bpUsed || 0} von ${E.bpMax(sel)} BP): Nahkampf nur mit höchstens ${Math.floor(E.bpMax(sel) / 2)} BP Weg. Reiter, Sturmtruppen und Kampfanzüge dürfen immer.` : atkWhy, cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both) });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
-    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: T.can, on: abilMode && feldArt === 'abil', off: !at.length,
+    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: abilKurz(sel), on: abilMode && feldArt === 'abil', off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
     if (abilMode && feldArt === 'abil') hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', bp: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Aktion schon verbraucht.' });
@@ -9722,6 +9805,7 @@ function setupSync() {
 function showStart(first) {
   setMusik('musik_titel', 2);   // Titelmusik im Startmenü (Schleife, aus der Schlacht weich übergeblendet)
   $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = speedTxt(); $('setZoom').textContent = zoomTxt(); $('closeStart').hidden = first;
+  $('smNeu').hidden = !first; $('smBeenden').hidden = first; beendenScharf(false);   // F2 (2026-11-20): im Spiel oben „Zurück zum Spiel“, unten „Beenden“
   startStep('title');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
@@ -9891,6 +9975,7 @@ function showHandover() {
   $('handTitle').textContent = SIDES[G.side].name; $('handText').textContent = `Runde ${G.turn}. Gebt das Gerät weiter.`;
 }
 function showEnd() {
+  if (!G.over || G.over.why === 'quit') return;   // F2: verlassene Schlacht zeigt kein Siegbild
   const r = G.over, me = mode === 'hot' ? null : mode, win = r.winner;
   let title = win ? SIDES[win].short + ' siegt' : 'Unentschieden';
   if (me) title = win === me ? 'Sieg' : win ? 'Niederlage' : 'Unentschieden';
@@ -9959,7 +10044,10 @@ $('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textConte
 $('setZoom').onclick = () => { $('btnZoom').onclick(); $('setZoom').textContent = zoomTxt(); };
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
-$('closeStart').onclick = () => { $('start').hidden = true; };
+$('closeStart').onclick = () => { $('start').hidden = true; if (G && !G.over && musikName !== 'musik_schlacht') setMusik('musik_schlacht', 2); };
+// Beenden (F2): erster Klick fragt nach („Wirklich beenden?“, 4 s), zweiter Klick verlässt die Schlacht zum Startbildschirm
+let beendenT = 0; function beendenScharf(an) { clearTimeout(beendenT); const b = $('smBeenden'); b.classList.toggle('scharf', an); b.textContent = an ? 'Wirklich beenden?' : 'Beenden'; if (an) beendenT = setTimeout(() => beendenScharf(false), 4000); }
+$('smBeenden').onclick = () => { if (!$('smBeenden').classList.contains('scharf')) return beendenScharf(true); beendenScharf(false); if (G) G.over = G.over || { winner: null, why: 'quit' }; setAmbient(false); showStart(true); };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; kzLegende(); };
 $('closeRules').onclick = () => { $('rules').hidden = true; };
 $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
@@ -9976,6 +10064,7 @@ const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam']
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+if ($('optMeld')) { $('optMeld').value = meldArt; $('optMeld').addEventListener('change', () => { meldArt = $('optMeld').value; try { localStorage.setItem('arm.meldungen', meldArt); } catch (e) {} }); }   // F15
 if ($('optBild')) { $('optBild').value = String(BW); $('optBild').addEventListener('change', () => setBildwirkung(+$('optBild').value, true)); }   // Bildwirkung (2026-11-19)
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
 // Lautstärke-Regler (Optionen): Musik und Effekte getrennt, gespeichert
@@ -9990,7 +10079,8 @@ function setSound(on) {
   if (!$('start').hidden) setMusik(soundOn ? 'musik_titel' : null); else setAmbient(soundOn && !!G && !G.over);
   if (!soundOn) { setMusik(null); if (feuerTon) try { feuerTon.pause(); } catch (e) {} }
 }
-$('btnSound').onclick = () => { setSound(!soundOn); if (soundOn) playSound('whistle', 0.4); };
+function tonUmschalten() { setSound(!soundOn); if (soundOn) playSound('whistle', 0.4); toast(soundOn ? 'Ton an' : 'Ton aus – Taste M oder Lautsprecher oben schaltet ihn wieder an'); }   // F18: kurzer Hinweis
+$('btnSound').onclick = tonUmschalten;
 $('smSound').onclick = e => { e.stopPropagation(); setSound(!soundOn); };
 $('optSound').checked = soundOn; $('optSound').addEventListener('change', () => setSound($('optSound').checked));
 $('btnShop').onclick = openShop;
@@ -10016,6 +10106,7 @@ document.addEventListener('keydown', e => {
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
   if ((e.key === 'b' || e.key === 'B') && G && $('start').hidden && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { setBildwirkung(BW + 1); e.preventDefault(); return; }   // Bildwirkung umschalten: aus → leicht → stark
+  if ((e.key === 'm' || e.key === 'M') && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { tonUmschalten(); e.preventDefault(); return; }   // F18: Ton an/aus per Taste
   if (e.key === 'Escape' && wayPt) { wayPt = null; computeOptions(); updateHud(); return; }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 

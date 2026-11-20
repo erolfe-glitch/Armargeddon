@@ -143,3 +143,72 @@ Alles hier wurde nur im unsichtbaren, stummen Test-Chrome geprüft. Bitte selbst
 74. Sankt Ruß Kulisse: Kirchenglocke zu Rundenbeginn, ferne Glocke, Krähen, Wind. Zu laut, zu leise, nervt etwas? Einsturz-Ton mit fallender Glocke.
 75. Sankt Ruß Siegpunkte: Kirche zählt jetzt 3 (Friedhof, Dorfplatz je 2). Fühlt sich das richtig an?
 76. Neue Banner im Menü (falls schon eingebaut): Konkordat rot mit Goldlöwe, Aschenwacht schwarz/knochenweiß mit Helm, Blaue Legion blau mit Hahn.
+
+# Funde Spieltest Runde 4 (Enrico, 2026-11-20 abends) – in Paketen abarbeiten
+
+Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einzeln committen; danach Häkchen setzen.
+
+## Paket A – Fehler, Lesbarkeit, Menüs
+- [x] F12 Fehler: Drahtschneiden (Grabenräumer) – Spiel stockt kurz, danach fliegen kleine bunte/gelbe Kugeln durchs Bild. Ursache finden (Effekt-Ersatzbild?), beheben.
+- [x] F1 Bildwirkung: Standard beim Start „stark“ (umschaltbar bleibt).
+- [x] F2 Spielmenü: oben „Zurück zum Spiel“ statt „Neue Schlacht beginnen“; unten „Beenden“ → zurück zum Startbildschirm.
+- [x] F3 + F7 Texte und Schrift überall (Armee-Auswahl, Pergament, Tooltips, Fähigkeiten): Schrift größer, kräftiger, dunkler/kontrastreicher; Texte auf den Kern kürzen (was es tut, Zahlen, Abklingzeit) – knapp, aber vollständig.
+- [x] F42 Auswertung nach der Schlacht: Text unter den Ausfällen schlecht lesbar → Kontrast/Größe.
+- [x] F10 Geländehinweis beim Ziehen: Schriftzug („Keine Deckung“ usw.) kleiner, passend zu Stiefel-Symbol und Zahl.
+- [x] F15 Meldungen auf dem Feld einstellbar: Optionen „Text / Symbole / Aus“ (Schadenszahlen und wichtige Meldungen bleiben bzw. getrennt einstellbar).
+- [x] F18 Ton per Taste aus: kurzer deutlicher Hinweis, Lautsprecher oben sichtbar durchgestrichen.
+- [x] F22 Zustandsmarken am Standring: großer oranger Kreis weg, Symbol kleiner mit kleiner dunkler Plakette.
+- [x] F23 Zahnrad bei Panne/Festfahren: kräftig und deckend statt blass.
+- [x] F13 „Runde beenden“ pulsiert langsam, wenn alle Einheiten fertig oder abgehakt sind.
+- [x] F19 Beschreibung Haftladung (Graben-Pioniere) stimmt nicht mit der Regel → abgleichen; alle Fähigkeitstexte gegen die Regeln im Code prüfen.
+
+## Paket B – Ton
+- [ ] F4 Musik zu laut im Verhältnis zu den Tönen.
+- [ ] F5 Stimmen und Marschieren beim Anklicken präsenter: Musik kurz leiser (nicht weg).
+- [ ] F8 Aufprotzen mit Pferd: Pfeifton (klingt wie Zug) raus; Pferdewiehern + Klopfen („Pock-Pock“) bleiben.
+- [ ] F9 Marsch Konkordat: beim schnellen Marsch nur Trommeln hörbar → Trommel deutlich leiser, Schritte tragen.
+- [ ] F14 Auf-/Abprotzen Aschenwacht: klingt hohl/blechern → sattes, schweres „Tschak-Tschak“.
+- [ ] F29 Gewehrtöne scheppern am Anfang (Übersteuerung? Laden?) → prüfen, beheben.
+- [ ] F30 Feste Waffentöne je Seite und Einheitentyp (alle Gewehrschützen einer Seite gleich usw.); nur Stimmen unterscheiden sich je Trupp. Ton-Pult entsprechend (Waffenton pro Seite+Typ).
+- [ ] F32 Schaufeltöne: Eingraben (beide Seiten) nur 72199 digging_labored_breathing; 96216 combo-shovels in den Nahkampf der Infanterie (Spatenhiebe im Grabenkampf). Im Ton-Pult gegenprüfen, notfalls tauschen.
+- [ ] F35 Schmerz-/Todesschreie bei MG-Treffern (und allgemein bei schwerem Beschuss), mit Filter der getroffenen Einheit, nicht bei jedem Treffer.
+- [ ] F39 Versorgungstrupp: Reparieren mit Werkstatt-Tönen (Ratsche, Schlüssel, Hämmern; sound-quelle/Repair reload heal etc), Nachladen mit Ladegeräusch – nicht mehr Sanitäter-Ton.
+
+- [ ] F45 Klick-Töne: leises Klicken für alles, was man oft klickt (kleine Knöpfe, Reiter, Karten, +/−, Optionen); lautes Klicken nur für große Knöpfe (Starten, Übernehmen, Runde beenden/weiter, Schlacht beginnen).
+
+## Paket C – Effekte, Animation, Kamera
+- [ ] F16 Landkoloss-Schuss: statt drei Geschossen nur Qualmwolke an der Mündung + Explosion am Ziel; Mündung ans Ende des Kanonenrohrs (nicht am Ausguck).
+- [ ] F20 Zweitwaffen der Schreiter: Geschosse/Mündung prüfen wie F16.
+- [ ] F24 Minigun-Salve etwa 1 s länger.
+- [ ] F28 Schüsse und Nahkampf allgemein länger: Salven über 2–3 s, mehrere Einzelschüsse, unregelmäßig; Nahkampf als Folge von 4–6 Hieben mit Klirren und Treffern; Tempo-Einstellung beschleunigt weiter.
+- [ ] F27 Blut: statt runder Punkte richtige Spritzer (fx_blut prüfen, ob benutzt); Blut am Boden bleibt; im Nahkampf Spritzer bei Treffern.
+- [ ] F21 Treffer auf Einheit hinter Deckung: Lebensbalken scheint im Moment des Treffers durch.
+- [ ] F34 Kamera folgt weich zu Nahkampf und Artillerie-Einschlägen (vor allem im Gegnerzug), nicht hektisch, abschaltbar.
+- [ ] F39 Zeichen: Reparieren/Bergen goldenes Zahnrad oder Schlüssel, Nachladen eigenes Zeichen; grünes Kreuz nur Heilen/Entgiften.
+- [ ] F40 Rückzug/Zurückweichen: Schweißtropfen wirken wie Wassertropfen → deutlicheres Zeichen (z. B. Pfeil nach hinten oder weiße Fahne); ggf. neues Bild (Enrico/Gemini).
+
+- [ ] F46 Panzerbüchsen-Trupp (Aschenwacht) versinkt im Graben zu tief (Figuren kaum noch sichtbar). Grabentiefe je Einheit prüfen – Figuren, die schon niedrig/kniend gemalt sind, weniger tief absenken; alle Einheitentypen im Graben kurz durchsehen.
+
+## Paket D – Bedienung
+- [ ] F11 Abhaken-Knopf („Erledigt“) für ALLE Einheiten.
+- [ ] F25 Wenden-Knopf für alle Einheiten, bei denen die Blickrichtung zählt.
+- [ ] F17 Einheiten erst grau, wenn wirklich nichts mehr geht (Hauptwaffe, Zweitwaffe, Bewegung, Fähigkeiten); Hinweis, wenn noch eine Zweitwaffe frei ist (Landkoloss, Turm-, Kreuzschreiter, Bohrkoloss).
+- [ ] F33 Maus-Zeiger passend zur Fähigkeit über gültigem Ziel (Heilen Herz, Reparieren Zahnrad, Nachladen Munition, Draht Zange, Haftladung Granate, Befehl Fahne, Sprung Löwenoger …), ungültig = durchgestrichen.
+- [ ] F6 Aufstellungsphase wie bei Total War: Einheitenkarte und Fähigkeiten sichtbar, Startzustand wählbar (auf-/abgeprotzt, MG auf-/abgebaut).
+- [ ] F41 Warnung bei nahem Sieg oder drohender Niederlage: Text-Einblendung + akustisches Signal (z. B. Horn/Trommel), Punkteleiste hebt das hervor – Sieg soll nicht plötzlich kommen.
+
+## Paket E – Regeln und Balance (danach Simulation Grauwall + Sankt Ruß)
+- [ ] F26 Panzer ohne normalen Nahkampf; dafür aufladbare Fähigkeit „Überrollen“ (angrenzendes Feld mit Infanterie, Schaden + Moral, mehrere Runden Abklingzeit).
+- [ ] F31 Nahkampf-Schreiter (Ordens-, Säge-, Klauenschreiter, Eisenknecht, Kreuzschreiter): nach mehr als halber Bewegung noch Nahkampf, aber kein Schuss; Turmschreiter bleibt bei alter Regel.
+- [ ] F36 Eingraben: Figuren tiefer hinter halbrundem Sandsackwall; aktives „Ausgraben“ nötig (wie Auf-/Abprotzen), Kosten per Simulation. Sandsack-Bild prüfen, sonst Prompt.
+- [ ] F37 Mindestreichweite Steilfeuer: kleine (Grabenmörser, Minenwerfer) nicht ins Nachbarfeld, große (Donnerrohr, Grabengeschütz) nicht bis 2 Felder; direkter Schuss unberührt; Vorschau „zu nah“, KI, Hilfe.
+- [ ] F38 Draht nicht mehr gezielt wegsprengen: kein Beschuss leerer Drahtfelder; Draht geht nur nebenbei kaputt (Ziel steht im Drahtfeld, mit Wahrscheinlichkeit, Minenwerfer am stärksten).
+
+## Paket F – KI und Gegnerarmee (danach Simulation)
+- [ ] F43 KI zu passiv: In Enricos Partie hat sich die KI immer weiter nach hinten fallen lassen und nie selbst angegriffen. Ursache finden (Verteidigungs-Gewichte, Rückzugsregel, Kartengewichte?) und die KI aktiver machen: Fahnen angreifen, vorrücken, wenn sie vorn liegt oder gleichauf ist; Rückzug nur bei echter Not.
+- [ ] F44 Gegnerarmee: Statt einer großen Verstärkungsarmee in der Mitte der Schlacht soll der Gegner von Anfang an mehr Einheiten haben und breiter verteilt stehen – oder genauso wie der Spieler Nachschub über eroberte Fahnen bekommen. Vorschlag machen, welche Variante zur Balance passt, dann per Simulation abstimmen.
+  Ergänzung Enrico: Spielt er selbst die Aschenwacht auf Grauwall, bekommt ER diese Verstärkungsarmee mitten in der Schlacht – das fühlt sich komisch an. Die feste Verstärkung zur Mitte der Schlacht soll für beide Seiten wegfallen bzw. durch dieselbe Lösung ersetzt werden (größere Startarmee oder Nachschub über Fahnen, für Spieler und KI gleich).
+
+## Für später (IDEEN.md)
+- Eigene Namen für die Fraktionen überlegen.
+- Löwenoger: KI springt sie oft mitten in die Gegner (84–91 % Verluste) – nach weiterem Spielen entscheiden, ob vorsichtiger.

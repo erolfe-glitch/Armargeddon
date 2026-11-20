@@ -207,7 +207,7 @@ function aufbauen(cfg, IM) {
   }
 
   // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
-  const DRAW = [], SHADOW = [];
+  const DRAW = [], SHADOW = []; let FELD = null;   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
   // Durchsichtig nur, wenn eine Einheit wirklich dahinter steht: seitlich innerhalb der Teilbreite, nicht bloß daneben (2026-11-16)
   const hides = (x, y, hb = R * 0.45, hW = SH) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < hW * 1.3 + R * 0.3 && Math.abs(hx - x) < hb * 0.75);
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
@@ -220,7 +220,7 @@ function aufbauen(cfg, IM) {
       const a = [A[0] + (B[0] - A[0]) * i / n, A[1] + (B[1] - A[1]) * i / n], b = [A[0] + (B[0] - A[0]) * (i + 1) / n, A[1] + (B[1] - A[1]) * (i + 1) / n], du = len / n / iwW, u0 = u;
       u += du; const my = (a[1] + b[1]) / 2;
       if (o.skip && o.skip((a[0] + b[0]) / 2, my)) continue;
-      DRAW.push({ y: my + (o.bias || 0), f: () => strip(im, a, b, hW, u0, du, o) });
+      DRAW.push({ feld: FELD, y: my + (o.bias || 0), f: () => strip(im, a, b, hW, u0, du, o) });
     }
     if (o.shade !== 0) SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = `rgba(8,6,4,${o.shade ?? 0.5})`; w.lineWidth = R * (o.shadeW || 0.14); w.lineCap = 'round'; w.beginPath(); w.moveTo(A[0], A[1] + R * 0.03); w.lineTo(B[0], B[1] + R * 0.03); w.stroke();
       if (AO) { w.filter = `blur(${R * 0.1}px)`; w.strokeStyle = `rgba(6,4,3,${0.17 * AO})`; w.lineWidth = R * 0.34; w.stroke();   // Kantenverdeckung: breiter weicher Saum
@@ -259,7 +259,7 @@ function aufbauen(cfg, IM) {
   }
   function stand(im, x, y, hW, o = {}) {   // Aufsteller am Fußpunkt (x, y), Höhe hW
     if (!im) return;
-    DRAW.push({ y: y + (o.bias || 0), f: () => {
+    DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
       g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45;
@@ -364,7 +364,7 @@ function aufbauen(cfg, IM) {
   const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
   const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k);
+    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = t === 'wire' ? c + ',' + r : null;
     if (BAUFELD.has(c + ',' + r)) continue;   // große Gebäude: eigener Aufbau weiter unten
     const deko = flags(c, r).deko || '';
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
@@ -537,7 +537,11 @@ function aufbauen(cfg, IM) {
     if (t === 'village' || BAUFELD.has(c + ',' + r)) return { sy: 0.85 };
     return null;
   }
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD,
+  FELD = null;
+  // Draht eines Felds entfernen, ohne die Welt neu aufzubauen (Drahtschneiden, Niederwalzen, Zerschießen): nur die aufrechten Drahtstücke fallen weg,
+  // der weiche Schatten am Boden bleibt als zertretene Stelle. Der volle Neuaufbau dauert 0,4–0,6 s und ließ das Spiel stocken (F12, 2026-11-20).
+  function drahtWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 

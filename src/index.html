@@ -644,6 +644,8 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .tb-btn.on svg { stroke: var(--s-brass); } .tb-btn.on svg * { stroke: var(--s-brass); }
 .tb-btn.on::before { box-shadow: 0 0 0 2px var(--s-brass); }
 .up-end.flash { animation: endflash .6s ease-in-out 3; }
+.up-end.fertig:not(.flash) { animation: endfertig 2.4s ease-in-out infinite; }   /* F13: alle Einheiten fertig */
+@keyframes endfertig { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 16px rgba(226,176,74,.9)) brightness(1.22); } }
 @keyframes endflash { 50% { filter: drop-shadow(0 4px 0 rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(194,164,97,.95)) brightness(1.35); } }
 /* ===== Feinschliff Panel (STYLE.md): Lebensbalken nach Stand, helle Fähigkeiten-Symbole mit Messingkante, 1280 px ohne Überlauf ===== */
 /* Leben: Füllung flach, Farbe nach Stand (über 60 % Moos, 30–60 % Ocker, darunter Ochsenblut), dünner dunkler Rand. Fraktion zeigen Wappen und Ring. */
@@ -717,6 +719,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .sm-btn.small { min-width: 210px; height: 60px; font-size: 22px; }
 .sm-btn.go { min-width: 420px; height: 88px; font-size: 34px; color: var(--s-brass); filter: drop-shadow(0 4px 0 rgba(18,13,11,.8)) drop-shadow(0 0 14px rgba(194,164,97,.45)); }
 .sm-btn:disabled { opacity: .5; cursor: default; }
+.sm-btn.scharf { color: #E9A08C; }   /* F2: „Wirklich beenden?“ */
 /* Unterseiten: Kopf, Inhalt, Fuß mit Zurück/Weiter */
 .sm-head { text-align: center; margin-bottom: 18px; }
 .sm-h2 { margin: 2px 0 0; font: 400 58px/1.05 var(--s-head); letter-spacing: .08em; text-transform: uppercase; color: var(--s-text); text-shadow: 0 4px 0 var(--s-ink), 0 0 24px rgba(18,13,11,.9); }
@@ -1007,6 +1010,35 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
 .up-ab .ap.bp { background: #E8DDB8; color: #120D0B; border-radius: 6px; border: 2px solid #120D0B; font-weight: 700; }
 .up-ab .ap.bp::before { content: "BP "; font-size: 8px; letter-spacing: .02em; }
 .up-pip.klein { width: 18px; height: 18px; align-self: center; margin-left: 2px; }
+/* F42 (2026-11-20): Auswertung lesbar – Werte hell auf den dunklen Kacheln, Namen in Messing und größer; Fragen dunkel auf dem Pergament */
+#end .endstats dt { font-size: 16px; color: #C2A461; font-family: var(--serif); letter-spacing: .02em; }
+#end .endstats dd { font-size: 22px; color: #F0EDE1; }
+#end .endstats div.A dd { color: #E39A86; } #end .endstats div.D dd { color: #C9CFBD; }
+#end #endWhy { font-size: 19px; color: #1d140d; font-weight: 600; }
+#end .history { font-size: 17px; color: #1d140d; } #end .history p, #end .history li { color: #1d140d; } #end .history li { font-weight: 600; }
+#end .history h3 { color: #5c2a1c; font-size: 17px; }
+/* F3 + F7 (2026-11-20): Schrift überall größer, kräftiger, dunkler – Tooltips, Pergament-Details, Armee-Auswahl, Nachschub, Fähigkeiten */
+.up-tip { width: 300px; } .mtip { width: 310px; }
+.up-tip b, .mtip b { font-size: 19px; color: #120D0B; }
+.up-tip .cost { font-size: 15px; color: #6e2018; }
+.up-tip span, .mtip span { font: 500 16px/1.4 var(--s-body); color: #120D0B; }
+.up-tip .why { color: #6e2018; }
+.tbar [data-tip]::after { font-size: 16px; max-width: 280px; color: #120D0B; }
+:is(#shopDet, #armyDet) { width: 420px; font: 500 16px/1.42 var(--s-body); color: #120D0B; }
+#armyDet { width: clamp(300px, 24vw, 420px); }
+:is(#shopDet, #armyDet) h3 { font-size: 21px; color: #120D0B; }
+:is(#shopDet, #armyDet) .w { font: 700 13px var(--s-body); color: #3a2a1a; } :is(#shopDet, #armyDet) .w b { font-size: 21px; color: #120D0B; }
+:is(#shopDet, #armyDet) .real { color: #3a2a1a; font-size: 15px; } :is(#shopDet, #armyDet) .warum { color: #6e2018; }
+:is(#shopNeu, #armyNeu) .chips span, :is(#shopDet, #armyDet) .chips span { font-size: 14px; color: #120D0B; padding: 2px 8px; }
+:is(#shopNeu, #armyNeu) .sn-k .nm { font-size: 19px; color: #F6EFD9; }
+:is(#shopNeu, #armyNeu) .sn-reiter button { font-size: 17px; }
+:is(#shopNeu, #armyNeu) .sn-fuss { font-size: 16px; color: #E6DCC2; }
+#armyNeu .an-punkte { font-size: 16px; } #armyNeu .an-zeile { color: #EDE3C8; }
+#armyNeu .an-wahl button { font-size: 17px; color: #F6EFD9; } #armyNeu .an-wahl .kat { font-size: 15px; }
+#armyNeu .an-seite h3 { font-size: 21px; }
+@media (max-width: 1500px) { :is(#shopNeu, #armyNeu) .sn-k .nm { font-size: 16px; padding-right: 50px; } }
+:is(#shopNeu, #armyNeu) .sn-liste { overflow-x: hidden; }
+:is(#shopDet, #armyDet) .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; } :is(#shopDet, #armyDet) .chips span { white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -1068,10 +1100,11 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
   <section class="sm-page sm-title" data-page="title">
     <header class="sm-logo"><div class="sm-kicker">Die Schlacht am Grauwall</div><h1 class="sm-h1">Armargeddon</h1></header>
     <nav class="sm-menu">
-      <button class="sm-btn main" data-go="side">Neue Schlacht</button>
+      <button class="sm-btn main" id="closeStart" hidden>Zurück zum Spiel</button>
+      <button class="sm-btn main" id="smNeu" data-go="side">Neue Schlacht</button>
       <button class="sm-btn" id="btnRules">Regeln</button>
       <button class="sm-btn" data-go="opts">Optionen</button>
-      <button class="sm-btn" id="closeStart" hidden>Zurück zum Spiel</button>
+      <button class="sm-btn" id="smBeenden" hidden data-tip="Schlacht beenden und zum Startbildschirm">Beenden</button>
     </nav>
     <p class="sm-note">Eine erfundene Welt. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918.</p>
   </section>
@@ -1085,7 +1118,7 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
       <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>
-      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label></div>
+      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>

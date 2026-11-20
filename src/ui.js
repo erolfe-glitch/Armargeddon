@@ -433,15 +433,19 @@ const GB_KARTEN = new Set(['grauwall', 'sanktruss']);
 let BAUV = { g: null, k: [] };
 function bauSicht() { if (BAUV.g !== G) BAUV = { g: G, k: ((G && G.bauten) || []).map(b => !!b.kaputt) }; return BAUV.k; }
 let FIGQ = null;   // drawTilt: Sammelliste für Grabenfiguren, die einzeln nach Tiefe gezeichnet werden ({ y, f })
-let GBW = null, GBIM = null, gbLaden = null, gbKey = '';
+let GBW = null, GBIM = null, gbLaden = null, gbKey = '', gbFeld = null;   // gbFeld: Geländeart je Feld beim letzten Aufbau (Draht weg ohne Neuaufbau, F12)
 // Schräge Wandstücke kippen (Kirche, Zaun, Mauern, Ruinen; 2026-11-19): Stärke, zum Vergleich window.NOKIPP = true bzw. __dbg.kipp(0)
 const gbKipp = () => window.NOKIPP ? 0 : (window.KIPP ?? 1);
 const gbAn = () => VIEW.tilt() && GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE && !window.NOGB;
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
-  const key = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + bauSicht().join() + ':' + G.map.map(col => col.map(h => h.t[0] + h.t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + bauSicht().join(), feld = G.map.map(col => col.map(h => h.t)), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return true;
+  // Nur Draht verschwunden (geschnitten, niedergewalzt, zerschossen): Drahtstücke herausnehmen statt alles neu aufzubauen (0,4–0,6 s Stocken, F12 2026-11-20)
+  if (GBW && GBW.drahtWeg && gbFeld && gbKey.startsWith(basis + ':')) { const weg = [];
+    const nurDraht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true; if (a === 'wire') { weg.push([c, r]); return true; } return false; }));
+    if (nurDraht) { for (const [c, r] of weg) GBW.drahtWeg(c, r); gbKey = key; gbFeld = feld; return true; } }
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
@@ -449,7 +453,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })),
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, IMB);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
-  gbKey = key; window.__gbMs = Math.round(performance.now() - t0);
+  gbKey = key; gbFeld = feld; window.__gbMs = Math.round(performance.now() - t0);
   return true;
 }
 // Plastik-Karten der neuen Gelände-Bausteine (Sankt Ruß, „gel_<name>“ in figsplastik.js) vor dem ersten Aufbau laden; nur die Karte, ohne Farbänderung
@@ -891,9 +895,8 @@ function drawMarks(u, d, x, y, own, done, acc) {
   const sts = statesOf(u, d).filter(st => !st.panel && st.k !== 'supp');   // Karte: nur echte Zustände; Niedergehalten eigener großer Platz
   let slotX = bx;
   if (d.vs.supp > 0) {   // Niedergehalten: wichtigster Zustand, groß direkt links an der Einheit (Spieltest Runde 2, Punkt 22)
-    const R2 = Math.max(12, s * 0.23), cx = bx - R2 - 3, cy = mid - R2 * 0.55, pz = 0.5 + 0.5 * Math.sin(now / 260);
-    g.save(); g.globalAlpha = 1; g.beginPath(); g.arc(cx, cy, R2 * (1.12 + 0.08 * pz), 0, 7); g.fillStyle = `rgba(200,60,40,${0.25 + 0.2 * pz})`; g.fill(); g.restore();
-    drawSym(g, UPI['s_niedergehalten'], cx, cy, R2, '#C8402C');
+    const R2 = Math.max(9, s * 0.15), cx = bx - R2 - 3, cy = mid - R2 * 0.3, pz = 0.5 + 0.5 * Math.sin(now / 260);   // F22 (2026-11-20): kein großer Leuchtkreis mehr, kleine dunkle Plakette
+    drawSym(g, UPI['s_niedergehalten'], cx, cy, R2, `rgba(${Math.round(170 + 50 * pz)},${Math.round(56 + 20 * pz)},40,1)`);
     MARKS.push({ x0: cx - R2 * 1.1, y0: cy - R2 * 1.1, x1: cx + R2 * 1.1, y1: cy + R2 * 1.1, u, kind: 'supp' });
     slotX = cx - R2;
   }
@@ -1416,7 +1419,7 @@ function feldWirkung(u, c, r) {
 // Leiste unter dem Zielfeld: ▲ Vorteil (Messing), ▼ Nachteil (Ochsenblut hell); Pergament-freie Tintentafel mit Rostrand (STYLE.md)
 function drawFeldWirkung(g, x, y, list, s) {
   if (!list || !list.length) return; if (VIEW.up) VIEW.up(x, y);
-  const fs = Math.round(Math.max(14, s * 0.2)), lh = fs * 1.3, pad = fs * 0.45, tri = fs * 0.42; g.save();
+  const fs = Math.round(Math.max(11, s * 0.16)), lh = fs * 1.25, pad = fs * 0.45, tri = fs * 0.42; g.save();   // F10 (2026-11-20): kleiner, passend zu Stiefel und Zahl
   try {   // Zeichenzustand immer zurücksetzen, auch wenn etwas schiefgeht
   g.font = `700 ${fs}px "Arm Text", system-ui, sans-serif`; g.textBaseline = 'middle'; g.textAlign = 'left';
   const w = Math.max(...list.map(it => g.measureText(it.kurz).width)) + tri * 2 + fs * 0.4 + pad * 2, hh = list.length * lh + pad * 0.8, x0 = x - w / 2;
@@ -1434,6 +1437,12 @@ function drawFloaters(g, s, bb) {
     if (f.life <= 0) { floaters.splice(i, 1); continue; }
     if (bb && !bb(f.x, f.y)) continue;
     g.globalAlpha = Math.min(1, f.life / 18);
+    if (f.sym) {   // F15: Symbol aus dem Bogen auf dunkler Plakette, kurz aufpoppen, dann steigen
+      const k = Math.min(1, (f.max - f.life) / 6), R = s * 0.17 * (0.7 + 0.3 * k), ring = /^#?[0-9a-f]{3,6}$/i.test(f.col) ? f.col : '#C2A461'; drawSym(g, f.sym, f.x, f.y - R, R, ring);
+      if (f.sub) { g.font = `400 ${Math.round(s * 0.2)}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`; g.textAlign = 'left'; g.lineWidth = Math.max(2.5, s * 0.06); g.strokeStyle = O; g.lineJoin = 'round';
+        g.strokeText(f.sub, f.x + R * 1.1, f.y - R); g.fillStyle = '#F0EDE1'; g.fillText(f.sub, f.x + R * 1.1, f.y - R); g.textAlign = 'center'; }
+      continue;
+    }
     if (f.icon) {   // Symbol statt Text: kurz aufpoppen, dann langsam steigen
       const k = Math.min(1, (f.max - f.life) / 6), hh = s * (f.big ? 0.95 : 0.8) * (0.7 + 0.3 * k), ww = hh * f.icon.naturalWidth / f.icon.naturalHeight;
       g.save(); g.shadowColor = 'rgba(0,0,0,0.85)'; g.shadowBlur = s * 0.18; g.drawImage(f.icon, f.x - ww / 2, f.y - hh * 0.8, ww, hh); g.restore();
@@ -1494,7 +1503,17 @@ const KZ_BEW = {
   funkeln: (g, T) => { const k = 0.9 + 0.12 * Math.sin(T / 160); g.rotate(T / 2400); g.scale(k, k); },   // dreht und funkelt
   kreuz: () => {},
 };
-function kzMalen(g, art, R, T) { const im = UPI['k_' + art];
+// F23 (2026-11-20): einzelne gemalte Zeichen sind auf dem dunklen Boden zu blass (Zahnrad rostbraun, Rauch halbdurchsichtig):
+// einmal aufhellen, Deckkraft anheben und eine dunkle Kontur geben
+const KZ_KRAEFTIG = { panne: { filter: 'brightness(1.5) saturate(1.35) contrast(1.35)', alpha: 2.2, rand: 3 } }, KZB = {};
+function kzBild(art) { const im = UPI['k_' + art], o = KZ_KRAEFTIG[art]; if (!im || !o) return im; if (KZB[art] && KZB[art].src === im) return KZB[art].c;
+  const p = o.rand + 2, w = im.naturalWidth, h = im.naturalHeight, c = document.createElement('canvas'); c.width = w + 2 * p; c.height = h + 2 * p; const x = c.getContext('2d');
+  const t = document.createElement('canvas'); t.width = c.width; t.height = c.height; const y = t.getContext('2d'); y.filter = o.filter; y.drawImage(im, p, p); y.filter = 'none';
+  const id = y.getImageData(0, 0, t.width, t.height), dd = id.data; for (let i = 3; i < dd.length; i += 4) dd[i] = Math.min(255, dd[i] * o.alpha); y.putImageData(id, 0, 0);
+  const sil = document.createElement('canvas'); sil.width = t.width; sil.height = t.height; const z = sil.getContext('2d'); z.drawImage(t, 0, 0); z.globalCompositeOperation = 'source-in'; z.fillStyle = '#120D0B'; z.fillRect(0, 0, sil.width, sil.height);
+  for (let a = 0; a < 8; a++) x.drawImage(sil, Math.round(Math.cos(a * Math.PI / 4) * o.rand), Math.round(Math.sin(a * Math.PI / 4) * o.rand)); x.drawImage(t, 0, 0);
+  c.naturalWidth = c.width; c.naturalHeight = c.height; KZB[art] = { src: im, c }; return c; }
+function kzMalen(g, art, R, T) { const im = kzBild(art);
   if (im) { const k = Math.min(R * 1.7 / im.naturalHeight, R * 2.1 / im.naturalWidth), h = im.naturalHeight * k, w = im.naturalWidth * k;   /* höchstens 0,34 × 0,42 Feldradien */ g.save(); (KZ_BEW[art] || (() => {}))(g, T); g.drawImage(im, -w / 2, -h / 2, w, h); g.restore(); return; }
   KZ_ART[art].draw(g, R, T); }
 const KZ_ART = {
@@ -1636,7 +1655,8 @@ const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];  
 // einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
 // Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
 const BW_NAME = ['aus', 'leicht', 'stark'];
-let BW = 1; try { const v = localStorage.getItem('arm.bildwirkung'); if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
+let BW = 2; try { const v = localStorage.getItem('arm.bildwirkung2');   // F1 (2026-11-20): Standard stark; neuer Schlüssel, damit alte Einstellungen „leicht“ nicht stehen bleiben
+  if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
 const BW_KARTE = [0, 0.7, 1.3];                                   // Anteil der Plastik-Karte
 const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
 const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)'];
@@ -1666,7 +1686,7 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   BWI.set(ck, c); return c;
 }
 function setBildwirkung(v, still) {
-  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung', String(BW)); } catch (e) {}
+  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung2', String(BW)); } catch (e) {}
   if ($('optBild')) $('optBild').value = String(BW);
   gbKey = ''; if (L && G) renderTerrain();
   if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);
@@ -2231,11 +2251,19 @@ const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktio
   ['wieder flott', 'repair'], ['wieder frei', 'repair'], ['instand gesetzt', 'repair'], ['geborgen', 'repair'], ['Nebelwand', 'smoke'], ['Stollen', 'tunnel', /\d+/],
   ['Mine gelegt', 'mine', /\d+/], ['Mine!', 'mine'], ['Ausgeleuchtet', 'light'], ['Gas entgiftet', 'gasok'], ['kein Gas', 'gasok'], ['nachgeladen', 'ammo'],
   ['Gegenstoß', 'counter'], ['aufgebaut', 'setup'], ['Feuerbereit', 'aim'], ['Marsch', 'march'], ['aufgeprotzt', 'limber'], ['abgeprotzt', 'limber'], ['Nachschub', 'supply'], ['versorgt', 'heal', /\+[\d,]+/]];
+// Meldungen auf dem Feld (F15, 2026-11-20): Einstellung „Text / Symbole / aus“ (arm.meldungen). Schadenszahlen, Punkte, „fällt“, „aufgerieben“,
+// Kircheneinsturz und große Befehle (hold/big) bleiben immer; „Symbole“ zeigt Feld-Meldungen als Symbol aus dem Bogen (ISYM), sonst gar nicht.
+const ISYM = { retreat: 'flucht', rout: 'flucht', react: 'garbe', scatter: 'granate_artillerie', gas: 'gas', fear: 'totenkopf', supp: 'niedergehalten', worn: 'gebrochen', rally: 'fahne', morup: 'fahne',
+  whistle: 'fahne', cut: 'drahtschere', crush: 'drahtrolle', stuck: 'festgefahren', broken: 'festgefahren', repair: 'schraubenschluessel', smoke: 'nebel', tunnel: 'spitzhacke', mine: 'tellermine',
+  light: 'scheinwerfer', gasok: 'gasmaske', ammo: 'munitionskiste', counter: 'nahkampf', setup: 'mg_auf', aim: 'zielen', march: 'marsch', limber: 'aufprotzen', supply: 'munitionskiste', heal: 'sanitaeter' };
+let meldArt = 'text'; try { const v = localStorage.getItem('arm.meldungen'); if (['text', 'symbol', 'aus'].includes(v)) meldArt = v; } catch (e) {}
+const meldWichtig = (text, big, hold) => hold || big || /^\+\d|fällt|aufgerieben|stürzt ein/.test(String(text));
 function floater(x, y, text, col, big, hold) {
   const life = hold ? 210 : 60 / speed + 22, f = { x, y, text, col, life, max: life, big, hold };
-  const m = FICON.find(([p]) => String(text).startsWith(p));
-  if (false && m && PJI['i_' + m[1]]) {   // abgeschaltet: Symbole nur noch als Zustandsmarken (Wunsch des Nutzers)
- f.icon = PJI['i_' + m[1]]; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
+  if (meldArt !== 'text' && !meldWichtig(text, big, hold)) {
+    if (meldArt === 'aus') return;
+    const m = FICON.find(([p]) => String(text).startsWith(p)), im = m && UPI['s_' + ISYM[m[1]]]; if (!im) return;
+    f.sym = im; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
   floaters.push(f);
 }
 function bodyPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 1.0 : 0.55)]; }
@@ -2515,7 +2543,7 @@ async function playEvent0(e) {
       await wait(260); break;
     }
     case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; kz(e.u, 'pfeil', 'steig'); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
-    case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); burst(x, y - s * 0.2, 10, ['#c8ccd0', '#ffe090'], { spread: 0.2 }); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }
+    case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln
     case 'crush': { const [x, y] = center(e.c, e.r); playSound('ueberrollen', 0.55); /* Fahrzeug walzt Draht nieder */ gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain();
       { const [x, y] = center(e.c, e.r), w = e.what || '';
@@ -2535,7 +2563,7 @@ async function playEvent0(e) {
     case 'tunnel': { playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
-    case 'blast': { const [x, y] = center(e.c, e.r); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#ffd27a', '#5a4632'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
+    case 'blast': { const [x, y] = center(e.c, e.r); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
     case 'mineLaid': { const [x, y] = center(e.c, e.r); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
@@ -3022,7 +3050,7 @@ const TB_ICON = (d, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? '#F0EDE1' 
 const TB_SVG = {
   zoom: TB_ICON('<circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20.5 20.5M7.5 10h5M10 7.5v5"/>'),
   sndOn: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9a4.5 4.5 0 0 1 0 6M18.5 6a8.5 8.5 0 0 1 0 12"/>'),
-  sndOff: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>'),
+  sndOff: TB_ICON('<path d="M3.5 9h4l5-4.5v15l-5-4.5h-4z" fill="#F0EDE1" opacity=".55"/><path d="M16 9a4.5 4.5 0 0 1 0 6" opacity=".55"/><path d="M3 3 21 21" stroke="#120D0B" stroke-width="5.5"/><path d="M3 3 21 21" stroke="#D2483A" stroke-width="3"/>'),   // F18: deutlich durchgestrichen
   speed: TB_ICON('<path d="M3 6l8 6-8 6zM12 6l8 6-8 6z"/>', true),
   instant: TB_ICON('<path d="M2.5 6l7 6-7 6zM10 6l7 6-7 6z" fill="#F0EDE1"/><path d="M20.5 5.5v13"/>'),
   diary: TB_ICON('<path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h10.5M8.5 8.5h6M8.5 11.5h4"/>'),
@@ -3069,6 +3097,7 @@ function updateUI() {
   const be = $('btnEnd');
   be.disabled = busy || !!G.over || !human(G.side);
   be.textContent = !human(G.side) && !G.over ? 'KI zieht …' : 'Runde beenden';
+  be.classList.toggle('fertig', !be.disabled && !G.aufstellung && !G.units.some(u => u.side === G.side && E.active(u) && !spent.has(u.id)));   // F13: alle fertig oder abgehakt: langsam pulsieren
   const bs = $('btnShop'), hs = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
   bs.disabled = busy || !!G.over || !human(G.side); bs.innerHTML = `Nachschub <b>★ ${G.pts[hs]}</b>`;
   if (sel && (!E.active(sel) || sel.side !== G.side)) sel = null;
@@ -3134,6 +3163,23 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
 const ABIL_KEIN = { sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+// F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
+// Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
+const ABIL_KURZ = {
+  smoke: () => `Nebel auf ein Feld bis 3 Felder und seine Nachbarn, bis zum nächsten eigenen Zug. Ziel im Nebel: Beschuss ${xf(P.NEBEL_IN)}; Schütze im Nebel ${xf(P.NEBEL_AUS)}; keine Sicht hindurch.`,
+  tunnel: () => `Stollen unter Graben, Bunker oder Gebäude bis 2 Felder. Nach 2 eigenen Runden fliegt das Feld hoch: etwa ${fmt(P.TUNNEL_DMG)} Schaden, starker Moralverlust, danach Trichter.`,
+  charge: () => `Sprengladung an ein Nachbarfeld. Gegner dort: etwa ${fmt(P.CHARGE_DMG)} Schaden (weniger bei schwacher eigener Stärke oder hoher Abwehr des Ziels), gegen Kolosse und Kampfmaschinen doppelt und zu 50 % Panne. Bunker und Barrikaden werden Trichter, Draht wird zerrissen.`,
+  mine: u => `Mine auf ein freies Nachbarfeld (nicht auf Zielfelder). Ein Gegner, der hineinzieht, bleibt stehen und nimmt etwa ${fmt(P.MINE_DMG)} Schaden. Noch ${u.mines || 0} Minen.${TYPES[u.type].wirelayer ? ' Je Runde Mine oder Draht.' : ''}`,
+  light: () => 'Feld bis 4 Felder in Sicht und seine Nachbarn ausleuchten, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ×1,25, Nebel verschwindet.',
+  clear: () => 'Gaswolken auf dem eigenen Feld und den Nachbarfeldern auflösen.',
+  ammo: () => 'Ein MG oder Geschütz daneben, das in dieser Runde schon geschossen hat, schießt noch einmal (einmal je Runde und Ziel). Zählt als Aufgabe des Versorgungstrupps.',
+  mark: u => `Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder) markieren, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ${xf(P.GUIDED)} und ohne Streuung; deckt getarnte Gegner und Minen im Feld und daneben auf.`,
+  strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
+  rush: () => `Aus dem Stand bis ${P.RUSH} Felder geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
+  sprung: () => `Aus dem Stand bis ${P.SPRUNG} Felder neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
+};
+function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
+  return f(u) + (A.cd ? ` Danach ${A.cd} Runden Pause.` : ''); }
 const ABIL_SYM = { sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
@@ -3287,7 +3333,7 @@ function unitButtons(T, hints) {
   }
   if (T.cutter) {   // Paket 8: nur Drahtschneider, vom Nachbarfeld aus
     const ct = E.cutTargets(G, sel);
-    btns.push({ act: 'cut', sym: 'drahtschere', name: 'Draht schneiden', cost: 1, text: 'Stacheldraht auf diesem oder einem Nachbarfeld entfernen, ohne hineinzulaufen (kein Drahtschaden). Danach darf die Einheit noch angreifen.', pulse: ct.length > 0, on: abilMode && feldArt === 'cut', off: !ct.length,
+    btns.push({ act: 'cut', sym: 'drahtschere', name: 'Draht schneiden', cost: 1, text: 'Stacheldraht auf diesem oder einem Nachbarfeld entfernen, ohne hineinzulaufen (kein Drahtschaden). Kostet die Aktion; ziehen geht danach noch.', pulse: ct.length > 0, on: abilMode && feldArt === 'cut', off: !ct.length,
       why: sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : 'Kein Draht auf diesem Feld oder daneben.' });
     if (abilMode && feldArt === 'cut') hints.push('<i>Messing markiert:</i> Drahtfeld anklicken.');
   }
@@ -3320,7 +3366,7 @@ function unitButtons(T, hints) {
   if (nahGesperrt) hints.push(`<i>Kein Nahkampf mehr:</i> mehr als die Hälfte der Bewegung verbraucht. Schwert am Zugfeld = von dort geht der Sturm noch.`);
   if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', why: nahGesperrt ? `Mehr als die Hälfte der Bewegung verbraucht (${sel.bpUsed || 0} von ${E.bpMax(sel)} BP): Nahkampf nur mit höchstens ${Math.floor(E.bpMax(sel) / 2)} BP Weg. Reiter, Sturmtruppen und Kampfanzüge dürfen immer.` : atkWhy, cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both) });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
-    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: T.can, on: abilMode && feldArt === 'abil', off: !at.length,
+    btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name, cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: abilKurz(sel), on: abilMode && feldArt === 'abil', off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
     if (abilMode && feldArt === 'abil') hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', bp: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Aktion schon verbraucht.' });
@@ -3516,6 +3562,7 @@ function setupSync() {
 function showStart(first) {
   setMusik('musik_titel', 2);   // Titelmusik im Startmenü (Schleife, aus der Schlacht weich übergeblendet)
   $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = speedTxt(); $('setZoom').textContent = zoomTxt(); $('closeStart').hidden = first;
+  $('smNeu').hidden = !first; $('smBeenden').hidden = first; beendenScharf(false);   // F2 (2026-11-20): im Spiel oben „Zurück zum Spiel“, unten „Beenden“
   startStep('title');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
@@ -3685,6 +3732,7 @@ function showHandover() {
   $('handTitle').textContent = SIDES[G.side].name; $('handText').textContent = `Runde ${G.turn}. Gebt das Gerät weiter.`;
 }
 function showEnd() {
+  if (!G.over || G.over.why === 'quit') return;   // F2: verlassene Schlacht zeigt kein Siegbild
   const r = G.over, me = mode === 'hot' ? null : mode, win = r.winner;
   let title = win ? SIDES[win].short + ' siegt' : 'Unentschieden';
   if (me) title = win === me ? 'Sieg' : win ? 'Niederlage' : 'Unentschieden';
@@ -3753,7 +3801,10 @@ $('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textConte
 $('setZoom').onclick = () => { $('btnZoom').onclick(); $('setZoom').textContent = zoomTxt(); };
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
-$('closeStart').onclick = () => { $('start').hidden = true; };
+$('closeStart').onclick = () => { $('start').hidden = true; if (G && !G.over && musikName !== 'musik_schlacht') setMusik('musik_schlacht', 2); };
+// Beenden (F2): erster Klick fragt nach („Wirklich beenden?“, 4 s), zweiter Klick verlässt die Schlacht zum Startbildschirm
+let beendenT = 0; function beendenScharf(an) { clearTimeout(beendenT); const b = $('smBeenden'); b.classList.toggle('scharf', an); b.textContent = an ? 'Wirklich beenden?' : 'Beenden'; if (an) beendenT = setTimeout(() => beendenScharf(false), 4000); }
+$('smBeenden').onclick = () => { if (!$('smBeenden').classList.contains('scharf')) return beendenScharf(true); beendenScharf(false); if (G) G.over = G.over || { winner: null, why: 'quit' }; setAmbient(false); showStart(true); };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; kzLegende(); };
 $('closeRules').onclick = () => { $('rules').hidden = true; };
 $('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
@@ -3770,6 +3821,7 @@ const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam']
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+if ($('optMeld')) { $('optMeld').value = meldArt; $('optMeld').addEventListener('change', () => { meldArt = $('optMeld').value; try { localStorage.setItem('arm.meldungen', meldArt); } catch (e) {} }); }   // F15
 if ($('optBild')) { $('optBild').value = String(BW); $('optBild').addEventListener('change', () => setBildwirkung(+$('optBild').value, true)); }   // Bildwirkung (2026-11-19)
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
 // Lautstärke-Regler (Optionen): Musik und Effekte getrennt, gespeichert
@@ -3784,7 +3836,8 @@ function setSound(on) {
   if (!$('start').hidden) setMusik(soundOn ? 'musik_titel' : null); else setAmbient(soundOn && !!G && !G.over);
   if (!soundOn) { setMusik(null); if (feuerTon) try { feuerTon.pause(); } catch (e) {} }
 }
-$('btnSound').onclick = () => { setSound(!soundOn); if (soundOn) playSound('whistle', 0.4); };
+function tonUmschalten() { setSound(!soundOn); if (soundOn) playSound('whistle', 0.4); toast(soundOn ? 'Ton an' : 'Ton aus – Taste M oder Lautsprecher oben schaltet ihn wieder an'); }   // F18: kurzer Hinweis
+$('btnSound').onclick = tonUmschalten;
 $('smSound').onclick = e => { e.stopPropagation(); setSound(!soundOn); };
 $('optSound').checked = soundOn; $('optSound').addEventListener('change', () => setSound($('optSound').checked));
 $('btnShop').onclick = openShop;
@@ -3810,6 +3863,7 @@ document.addEventListener('keydown', e => {
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
   if ((e.key === 'b' || e.key === 'B') && G && $('start').hidden && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { setBildwirkung(BW + 1); e.preventDefault(); return; }   // Bildwirkung umschalten: aus → leicht → stark
+  if ((e.key === 'm' || e.key === 'M') && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { tonUmschalten(); e.preventDefault(); return; }   // F18: Ton an/aus per Taste
   if (e.key === 'Escape' && wayPt) { wayPt = null; computeOptions(); updateHud(); return; }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
