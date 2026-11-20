@@ -3137,6 +3137,15 @@ let shopKat = 'Standard';
 const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge und Kampfmaschinen'];
 const SHOP_STANDARD = ['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'];   // Linientruppen
 function shopKatOf(t) { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls === 'walker' || E.isMech(t) ? 'Fahrzeuge und Kampfmaschinen' : T.cls === 'art' ? 'Artillerie' : SHOP_STANDARD.includes(t) ? 'Standard' : 'Spezial'; }
+// Karte und Pergament-Details einer Einheit (Nachschub und Armee-Auswahl gleich, 2026-11-20)
+function snKarte(t) { const T = TYPES[t]; return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${T.name}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+function snZeig(det, el, sheet, w) {
+  const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
+  det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
+  det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight; let x = sh.left - dw - 8; if (x < 8) x = r.right + 10 + dw < innerWidth ? r.right + 10 : r.left - dw - 10;
+  det.style.left = Math.max(8, Math.min(innerWidth - dw - 8, x)) + 'px'; det.style.top = Math.max(80, Math.min(innerHeight - dh - 8, r.top - 10)) + 'px';
+  el.parentElement.querySelectorAll('.sn-k').forEach(e => e.classList.toggle('offen', e === el));
+}
 function hideShopDet() { $('shopDet').classList.remove('zeigen'); document.querySelectorAll('#shopNeu .sn-k.offen').forEach(e => e.classList.remove('offen')); }
 // Nachschub-Fenster verschiebbar (Spieltest Runde 2, Punkt 13): an der Titelleiste ziehen (Maus und Finger), Lage bleibt gespeichert (arm.shoppos)
 let shopPos = [0, 0], shopZieh = 0; try { const v = JSON.parse(localStorage.getItem('arm.shoppos') || 'null'); if (Array.isArray(v) && v.length === 2) shopPos = v.map(Number); } catch (e) {}
@@ -3159,18 +3168,14 @@ function openShopNeu() {
   const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
   $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div>
     <div class="sn-reiter">${SHOP_KAT.filter(k => inKat(k).length).map(k => { const n = inKat(k).filter(t => !warum(t)).length; return `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}${n ? ' leistbar' : ''}" title="${n ? n + ' davon jetzt aufstellbar' : 'Nichts davon gerade aufstellbar'}">${k}<small>${inKat(k).length}</small></button>`; }).join('')}</div>
-    <div class="sn-liste">${inKat(shopKat).map(t => { const T = TYPES[t]; return `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${T.name}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span></button>`; }).join('')}</div>
+    <div class="sn-liste">${inKat(shopKat).map(t => `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}">${snKarte(t)}</button>`).join('')}</div>
     <div class="sn-fuss"><span>${lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick stellt auf' : 'Antippen zeigt alle Werte, nochmal antippen stellt auf'} – am eigenen Rand oder an eigenen Zielfeldern. Neue Einheiten handeln ab der nächsten Runde.</span><button class="tbtn" id="shopZu">Schließen</button></div>`;
   $('shop').hidden = false; hideShopDet(); shopZiehen();
   requestAnimationFrame(() => $('shopNeu').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   $('shopNeu').querySelectorAll('.sn-reiter button').forEach(b => b.onclick = () => { shopKat = b.dataset.kat; openShopNeu(); });
   $('shopZu').onclick = () => { $('shop').hidden = true; hideShopDet(); };
   const det = $('shopDet');
-  const zeig = el => { const t = el.dataset.t, T = TYPES[t], w = warum(t), r = el.getBoundingClientRect(), sh = $('shop').querySelector('.sheet').getBoundingClientRect();
-    det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
-    det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight; let x = sh.left - dw - 8; if (x < 8) x = r.right + 10 + dw < innerWidth ? r.right + 10 : r.left - dw - 10;
-    det.style.left = Math.max(8, Math.min(innerWidth - dw - 8, x)) + 'px'; det.style.top = Math.max(80, Math.min(innerHeight - dh - 8, r.top - 10)) + 'px';
-    document.querySelectorAll('#shopNeu .sn-k').forEach(e => e.classList.toggle('offen', e === el)); };
+  const zeig = el => snZeig(det, el, $('shop').querySelector('.sheet'), warum(el.dataset.t));
   const kaufen = el => { if (warum(el.dataset.t)) return zeig(el); $('shop').hidden = true; hideShopDet(); select(null); placing = el.dataset.t; spawnSet = new Set(E.spawnHexes(G, sd, placing).map(h => E.key(h[0], h[1]))); updateHud(); };
   $('shopNeu').querySelectorAll('.sn-k').forEach(el => {
     el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') zeig(el); });
@@ -3463,30 +3468,58 @@ function armyInfo() {
   const sides = curMode() === 'hot' ? ['A', 'D'] : [curMode()];
   $('armyInfo').textContent = sides.map(sd => SIDES[sd].short + ': ' + (customArmy[sd] ? `eigene Armee (${E.armyCost(customArmy[sd])}/${E.ARMY_BUDGET[sd]} Punkte, ${E.armyCount(customArmy[sd])} Einheiten)` : 'Standardarmee')).join(' · ');
 }
+// Armee-Auswahl (2026-11-20) im selben Aufbau wie das Nachschub-Menü: Kategorien als Reiter (SHOP_KAT, gleiche Reihenfolge), Karten im Querformat,
+// Pergament-Details beim Überfahren bzw. ersten Antippen; Klick bzw. zweites Antippen nimmt eine Einheit dazu, −/+ auf jeder Karte.
+let armyKat = 'Standard';
+function armyWarum(t) {   // warum diese Einheit nicht noch einmal dazukommen kann ('' = geht)
+  const sd = armySide, n = armyDraft[t] || 0, T = TYPES[t], bud = E.ARMY_BUDGET[sd];
+  if (isGeneral(t)) return 'Pflicht: Jede Armee hat genau einen General.';
+  if (n >= E.ARMY_CAP) return `Höchstens ${E.ARMY_CAP} je Typ.`;
+  if (E.armyCost(armyDraft) + E.COST[t] > bud) return `Zu wenig Punkte: ★ ${E.COST[t]} nötig, noch ★ ${Math.max(0, bud - E.armyCost(armyDraft))} frei.`;
+  if (E.armyCount(armyDraft) >= E.ARMY_MAX[sd]) return `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`;
+  if (T.cls === 'walker' && Object.keys(armyDraft).reduce((k, x) => k + (TYPES[x].cls === 'walker' ? armyDraft[x] : 0), 0) >= E.ARMY_WALKERS) return `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.`;
+  if (T.stufe3 && Object.keys(armyDraft).some(x => TYPES[x].stufe3 && armyDraft[x] > 0)) return 'Stufe 3: höchstens einer je Schlacht.';
+  return '';
+}
 function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
   applySkin(curSkin());
-  $('armyName').textContent = SIDES[sd].name; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
+  $('armyName').textContent = SIDES[sd].short; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
   for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
   armyFixGeneral(sd);
-  $('armyList').innerHTML = roster(sd).map(t => { const T = TYPES[t];
-    return `<div class="item pick ${sd}" data-t="${t}"><canvas data-k="${figOf(T)}" data-t="${t}"></canvas><b>${T.name}</b><span class="cost">★ ${E.COST[t]}</span><small>${T.can}</small>${isGeneral(t) ? '<span class="stepper fixed" data-tip="Pflicht: Jede Armee hat genau einen General."><i>1</i><em>Pflicht</em></span>' : '<span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span>'}</div>`; }).join('');
-  $('army').hidden = false;
+  $('army').hidden = false; armyListe();
+}
+function armyListe() {   // Reiter und Karten der gewählten Kategorie neu aufbauen
+  const sd = armySide, list = roster(sd), inKat = k => list.filter(t => shopKatOf(t) === k);
+  if (!inKat(armyKat).length) armyKat = SHOP_KAT.find(k => inKat(k).length);
+  $('armyList').innerHTML = inKat(armyKat).map(t => `<div class="sn-k ${sd}" data-t="${t}">${snKarte(t)}${isGeneral(t) ? '<span class="stepper fixed" data-tip="Pflicht: Jede Armee hat genau einen General."><i>1</i><em>Pflicht</em></span>' : '<span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span>'}</div>`).join('');
   requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
-  $('armyList').querySelectorAll('.stepper button').forEach(b => b.onclick = () => {
-    const t = b.closest('.item').dataset.t; armyDraft[t] = Math.max(0, Math.min(E.ARMY_CAP, (armyDraft[t] || 0) + +b.dataset.d)); armyRefresh();
+  hideArmyDet();
+  const det = $('armyDet'), sheet = $('army').querySelector('.sheet'), zeig = el => snZeig(det, el, sheet, armyWarum(el.dataset.t));
+  const dazu = (el, d) => { const t = el.dataset.t; if (isGeneral(t)) return; if (d > 0 && armyWarum(t)) { zeig(el); return; }
+    armyDraft[t] = Math.max(0, Math.min(E.ARMY_CAP, (armyDraft[t] || 0) + d)); armyRefresh(); if (det.classList.contains('zeigen')) zeig(el); };
+  $('armyList').querySelectorAll('.sn-k').forEach(el => {
+    el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') zeig(el); });
+    el.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideArmyDet(); });
+    el.addEventListener('click', e => { const b = e.target.closest('.stepper button'); if (b) { dazu(el, +b.dataset.d); return; }
+      if (lastPT === 'mouse' || el.classList.contains('offen')) dazu(el, 1); else zeig(el); });   // wie im Nachschub: Finger erst Details, dann dazunehmen
   });
   armyRefresh();
 }
+function hideArmyDet() { $('armyDet').classList.remove('zeigen'); document.querySelectorAll('#armyNeu .sn-k.offen').forEach(e => e.classList.remove('offen')); }
 function armyRefresh() {
-  const sd = armySide, cost = E.armyCost(armyDraft), n = E.armyCount(armyDraft), bud = E.ARMY_BUDGET[sd];
+  const sd = armySide, cost = E.armyCost(armyDraft), n = E.armyCount(armyDraft), bud = E.ARMY_BUDGET[sd], list = roster(sd), inKat = k => list.filter(t => shopKatOf(t) === k);
   let walkers = 0; for (const t in armyDraft) if (TYPES[t].cls === 'walker') walkers += armyDraft[t];
-  $('armyList').querySelectorAll('.item').forEach(it => { const v = armyDraft[it.dataset.t] || 0; it.querySelector('i').textContent = v; it.classList.toggle('has', v > 0); });
+  $('armyReiter').innerHTML = SHOP_KAT.filter(k => inKat(k).length).map(k => { const frei = inKat(k).filter(t => !armyWarum(t)).length, gew = inKat(k).reduce((x, t) => x + (armyDraft[t] || 0), 0);
+    return `<button data-kat="${k}" class="${k === armyKat ? 'an' : ''}${frei ? ' leistbar' : ''}" title="${gew ? gew + ' gewählt' : 'Noch nichts gewählt'}${frei ? ', ' + frei + ' Typen noch möglich' : ', nichts mehr möglich'}">${k}<small>${inKat(k).length}${gew ? ` · <b>${gew}</b>` : ''}</small></button>`; }).join('');
+  $('armyReiter').querySelectorAll('button').forEach(b => b.onclick = () => { armyKat = b.dataset.kat; armyListe(); });
+  $('armyList').querySelectorAll('.sn-k').forEach(it => { const t = it.dataset.t, v = armyDraft[t] || 0; it.querySelector('i').textContent = v; it.classList.toggle('has', v > 0); it.classList.toggle('aus', !v && !!armyWarum(t) && !isGeneral(t)); });
   $('armyPts').textContent = `${cost} / ${bud}`; $('armyPts').classList.toggle('over', cost > bud);
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
     : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
   $('armyMsg').textContent = msg; $('armyOk').disabled = !E.armyOk(sd, armyDraft, mechsOn());
+  $('armyFussText').textContent = (lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick nimmt eine dazu' : 'Antippen zeigt alle Werte, nochmal antippen nimmt eine dazu') + ', −/+ ändert die Anzahl. Ein General ist immer dabei.';
 }
 function armyKeep() { if (!E.armyOk(armySide, armyDraft, mechsOn())) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
 
@@ -3633,8 +3666,8 @@ $('startBtn').onclick = startGame;
 $('btnArmy').onclick = () => openArmy(curMode() === 'D' ? 'D' : 'A');
 $('armyStd').onclick = () => { armyDraft = Object.assign({}, E.defaultArmy(armySide)); armyRefresh(); };
 $('armyClear').onclick = () => { armyDraft = {}; armyFixGeneral(armySide); armyRefresh(); };
-$('armyOk').onclick = () => { if (armyKeep()) { $('army').hidden = true; armyInfo(); } };
-$('armyCancel').onclick = () => { $('army').hidden = true; armyInfo(); };
+$('armyOk').onclick = () => { if (armyKeep()) { $('army').hidden = true; hideArmyDet(); armyInfo(); } };
+$('armyCancel').onclick = () => { $('army').hidden = true; hideArmyDet(); armyInfo(); };
 $('armySwap').onclick = () => { if (E.armyOk(armySide, armyDraft, mechsOn())) armyKeep(); openArmy(armySide === 'A' ? 'D' : 'A'); };
 document.querySelectorAll('input[name=opp], input[name=side], input[name=att]').forEach(i => i.addEventListener('change', () => { applySkin(curSkin()); if (G) updateUI(); setupSync(); }));
 document.querySelectorAll('#start [data-go]').forEach(b => b.addEventListener('click', () => startStep(b.dataset.go)));

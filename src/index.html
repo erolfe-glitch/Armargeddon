@@ -896,41 +896,58 @@ body.neu #shop .sheet > :not(#shopNeu) { display: none !important; }
 body.neu #shop #shopNeu { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; height: min(680px, calc(100vh - 150px)); }
 body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px)); margin: 70px 20px 0 auto; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
   background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; padding: 6px 12px; }
-#shopNeu .sn-titel { display: flex; align-items: baseline; justify-content: space-between; }
-#shopNeu .sn-titel b { font: 400 26px var(--s-head); letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
-#shopNeu .sn-titel span { font: 400 26px var(--s-num); color: #ffe2a0; }
-#shopNeu .sn-reiter { display: flex; gap: 6px; flex-wrap: wrap; }
-#shopNeu .sn-reiter button { min-height: 46px; padding: 0 18px; border: 0; cursor: pointer; font: 400 16px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #d8ccb0;
+:is(#shopNeu, #armyNeu) .sn-titel { display: flex; align-items: baseline; justify-content: space-between; }
+:is(#shopNeu, #armyNeu) .sn-titel b { font: 400 26px var(--s-head); letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+:is(#shopNeu, #armyNeu) .sn-titel span { font: 400 26px var(--s-num); color: #ffe2a0; }
+:is(#shopNeu, #armyNeu) .sn-reiter { display: flex; gap: 6px; flex-wrap: wrap; }
+:is(#shopNeu, #armyNeu) .sn-reiter button { min-height: 46px; padding: 0 18px; border: 0; cursor: pointer; font: 400 16px var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: #d8ccb0;
   background: var(--up-tafel) center / 100% 100% no-repeat; filter: brightness(.75) drop-shadow(0 2px 0 rgba(0,0,0,.5)); }
-#shopNeu .sn-reiter button.an { filter: brightness(1.1) drop-shadow(0 3px 0 rgba(0,0,0,.5)); color: #fff2cc; }
+:is(#shopNeu, #armyNeu) .sn-reiter button.an { filter: brightness(1.1) drop-shadow(0 3px 0 rgba(0,0,0,.5)); color: #fff2cc; }
 /* Spieltest Runde 2: Fenster an der Titelleiste verschiebbar; Reiter mit jetzt aufstellbaren Einheiten hervorgehoben */
 #shopNeu .sn-titel { cursor: move; touch-action: none; user-select: none; padding: 4px 6px; margin: -4px -6px; border-radius: 4px; }
 #shopNeu .sn-titel:hover, #shopNeu .sn-titel.zieht { background: rgba(226,176,74,.08); }
-#shopNeu .sn-reiter button.leistbar { color: #fff2cc; box-shadow: inset 0 -3px 0 #e2b04a, 0 0 10px rgba(226,176,74,.35); }
-#shopNeu .sn-reiter button.leistbar::before { content: '★'; color: #ffd76a; margin-right: 6px; text-shadow: 0 0 6px rgba(255,200,90,.7); }
-#shopNeu .sn-reiter button:not(.leistbar) { filter: saturate(.55) brightness(.82); }
-#shopNeu .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
-#shopNeu .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
-#shopNeu .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);
+:is(#shopNeu, #armyNeu) .sn-reiter button.leistbar { color: #fff2cc; box-shadow: inset 0 -3px 0 #e2b04a, 0 0 10px rgba(226,176,74,.35); }
+:is(#shopNeu, #armyNeu) .sn-reiter button.leistbar::before { content: '★'; color: #ffd76a; margin-right: 6px; text-shadow: 0 0 6px rgba(255,200,90,.7); }
+:is(#shopNeu, #armyNeu) .sn-reiter button:not(.leistbar) { filter: saturate(.55) brightness(.82); }
+:is(#shopNeu, #armyNeu) .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
+:is(#shopNeu, #armyNeu) .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
+:is(#shopNeu, #armyNeu) .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);
   background: linear-gradient(rgba(18,13,11,.35), rgba(18,13,11,.55)), var(--up-txHolz) 0 0 repeat; font: inherit; }
-#shopNeu .sn-k:hover, #shopNeu .sn-k.offen { border-color: var(--s-brass); }
-#shopNeu .sn-k.aus { filter: grayscale(.8) brightness(.7); }
-#shopNeu .sn-k canvas { width: 92px; height: 88px; border: 3px solid var(--s-ink); box-shadow: inset 0 0 0 2px #6b5236; background: #1d1612; }
-#shopNeu .sn-k .nm { display: block; padding-right: 54px; font: 400 17px/1.15 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
-#shopNeu .sn-k .ko { position: absolute; right: 8px; top: 6px; font: 400 18px var(--s-num); color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
-#shopNeu .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
-#shopNeu .chips span, #shopDet .chips span { font: 700 12px var(--s-body); color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
-#shopNeu .sn-fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 600 13px var(--s-body); color: #cbbfa6; }
-#shopNeu .sn-fuss button { min-height: 44px; padding: 0 18px; }
-#shopDet { position: fixed; z-index: 30; width: 380px; display: none; pointer-events: none; padding: 6px 10px; color: #2a1f16; font: 400 14px/1.4 var(--s-body);
+:is(#shopNeu, #armyNeu) .sn-k:hover, :is(#shopNeu, #armyNeu) .sn-k.offen { border-color: var(--s-brass); }
+:is(#shopNeu, #armyNeu) .sn-k.aus { filter: grayscale(.8) brightness(.7); }
+:is(#shopNeu, #armyNeu) .sn-k canvas { width: 92px; height: 88px; border: 3px solid var(--s-ink); box-shadow: inset 0 0 0 2px #6b5236; background: #1d1612; }
+:is(#shopNeu, #armyNeu) .sn-k .nm { display: block; padding-right: 54px; font: 400 17px/1.15 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+:is(#shopNeu, #armyNeu) .sn-k .ko { position: absolute; right: 8px; top: 6px; font: 400 18px var(--s-num); color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
+:is(#shopNeu, #armyNeu) .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+:is(#shopNeu, #armyNeu) .chips span, :is(#shopDet, #armyDet) .chips span { font: 700 12px var(--s-body); color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
+:is(#shopNeu, #armyNeu) .sn-fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 600 13px var(--s-body); color: #cbbfa6; }
+:is(#shopNeu, #armyNeu) .sn-fuss button { min-height: 44px; padding: 0 18px; }
+:is(#shopDet, #armyDet) { position: fixed; z-index: 30; width: 380px; display: none; pointer-events: none; padding: 6px 10px; color: #2a1f16; font: 400 14px/1.4 var(--s-body);
   border: 12px solid transparent; border-image: var(--up-p9) 46 / 18px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; }
-#shopDet.zeigen { display: block; }
-#shopDet h3 { margin: 0 0 4px; font: 400 19px var(--s-head); text-transform: uppercase; letter-spacing: .04em; }
-#shopDet h3 span { float: right; font-family: var(--s-num); }
-#shopDet .w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 6px 0; text-align: center; font: 600 11px var(--s-body); color: #5a4630; }
-#shopDet .w b { display: block; font: 400 18px var(--s-num); color: #2a1f16; }
-#shopDet .real { color: #5a4630; font-style: italic; margin-top: 6px; } #shopDet .warum { color: #7a2a20; font-weight: 700; margin-top: 4px; }
-@media (max-width: 1500px) { body.neu #shop .sheet { width: calc(100vw - 420px); margin-right: 10px; } #shopNeu .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
+:is(#shopDet, #armyDet).zeigen { display: block; }
+:is(#shopDet, #armyDet) h3 { margin: 0 0 4px; font: 400 19px var(--s-head); text-transform: uppercase; letter-spacing: .04em; }
+:is(#shopDet, #armyDet) h3 span { float: right; font-family: var(--s-num); }
+:is(#shopDet, #armyDet) .w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 6px 0; text-align: center; font: 600 11px var(--s-body); color: #5a4630; }
+:is(#shopDet, #armyDet) .w b { display: block; font: 400 18px var(--s-num); color: #2a1f16; }
+:is(#shopDet, #armyDet) .real { color: #5a4630; font-style: italic; margin-top: 6px; } :is(#shopDet, #armyDet) .warum { color: #7a2a20; font-weight: 700; margin-top: 4px; }
+@media (max-width: 1500px) { body.neu #shop .sheet, #army .sheet { width: calc(100vw - 420px); margin-right: 10px; } :is(#shopNeu, #armyNeu) .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
+/* Armee-Auswahl (2026-11-20) im selben Aufbau wie das Nachschub-Menü: gleiche Reiter, Reihenfolge, Karten und Details; dazu Zähler −/+ auf jeder Karte */
+#army .sheet { max-width: none; width: min(1180px, calc(100vw - 460px)); margin: 70px 20px 0 auto; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
+  background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; padding: 6px 12px; }
+#armyNeu { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 10px; height: min(760px, calc(100vh - 110px)); }
+#armyNeu .sn-titel b span { font: inherit; color: inherit; text-shadow: inherit; }
+#armyNeu .sn-titel span.over, #armyPts.over { color: #ff8a6a; }
+#armyNeu .sn-info { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; font: 600 14px var(--s-body); color: #d8ccb0; min-height: 26px; }
+#armyNeu .sn-info em { font-style: normal; color: #ffe2a0; }
+#armyNeu .sn-info .tbtn { min-height: 40px; padding: 0 14px; }
+#armyNeu .sn-k { cursor: pointer; }
+#armyNeu .sn-k.has { border-color: var(--s-brass); box-shadow: 0 0 0 2px rgba(226,176,74,.55), 0 0 14px rgba(226,176,74,.3); }
+#armyNeu .sn-k { padding-bottom: 54px; align-content: start; }
+#armyNeu .sn-k .stepper { position: absolute; right: 8px; bottom: 6px; margin: 0; grid-column: auto; }
+#armyNeu .sn-reiter button small b { font: inherit; color: #fff2cc; }
+#armyNeu .sn-fuss .sn-knoepfe { display: flex; gap: 8px; flex: none; justify-content: flex-end; }
+#armyNeu .sn-fuss > span:first-child { flex: 1 1 260px; }
+#armyNeu .sn-fuss .endbtn { min-height: 44px; min-width: 150px; font-size: 16px; }
 body.neu #hud.nounit .neu-mehr, body.neu #hud.nounit #btnInfo { display: none; }
 #neuKK { display: flex; align-items: center; gap: 8px; min-height: 40px; }
 #neuKK .up-states { flex: 1; min-width: 0; }
@@ -1121,14 +1138,15 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
 </div>
 
 <div class="overlay" id="army" hidden>
+  <div id="armyDet" aria-hidden="true"></div>
   <div class="sheet">
-    <div class="kicker">Armee zusammenstellen</div>
-    <h2 class="title" style="font-size:38px" id="armyName">Armee</h2>
-    <p class="lead" style="margin:0 0 8px">Du hast so viele Punkte, wie die Standardarmee wert ist. Stelle damit deine eigene Truppe zusammen; ein General ist immer dabei. Vor der Schlacht stellst du sie in der Startzone selbst auf (oder mit „Automatisch aufstellen“).</p>
-    <div class="armybar"><span>★ <b id="armyPts">0 / 0</b> Punkte</span><span id="armyCnt"></span><em id="armyMsg"></em></div>
-    <div class="startrow" style="margin:8px 0"><button class="endbtn" id="armyOk">Übernehmen</button><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button></div>
-    <div class="armybar" id="armyMechRow" style="position:static;margin-bottom:10px"><span>Kampfmaschinen sind ausgeschaltet.</span><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
-    <div class="shoplist" id="armyList"></div>
+    <div id="armyNeu">
+      <div class="sn-titel"><b>Armee: <span id="armyName">Armee</span></b><span>★ <span id="armyPts">0 / 0</span></span></div>
+      <div class="sn-info"><span id="armyCnt"></span><em id="armyMsg"></em><span id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></span></div>
+      <div class="sn-reiter" id="armyReiter"></div>
+      <div class="sn-liste" id="armyList"></div>
+      <div class="sn-fuss"><span id="armyFussText"></span><span class="sn-knoepfe"><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button><button class="endbtn" id="armyOk">Übernehmen</button></span></div>
+    </div>
   </div>
 </div>
 
