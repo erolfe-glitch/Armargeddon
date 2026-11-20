@@ -88,7 +88,7 @@ for (const e of SPEC.eintraege) {
   POOLS[e.pool] = POOLS[e.pool] || [];
   if (e.leer) { rows.push({ pool: e.pool, key: '–', s: null, f: '(noch leer)', note: e.note }); continue; }   // Platz angelegt, Dateien folgen
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
-  const key = e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);
+  const key = e.key || e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);   // key = fester Schlüssel (alten Ton aus der Quelle neu bauen, Name bleibt; 2026-11-21) – zählt nicht mit
   if (e.raus) { rows.push({ pool: e.pool, key, s: e.s, f: '(entfernt) ' + e.f, note: e.raus }); continue; }   // raus = Ton entfällt, die Nummern der übrigen bleiben (2026-11-18)
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');
   const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, fo: e.fo, fi: e.fi, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo, rate: e.rate, lp: e.lp, hp: e.hp, bass: e.bass, komp: e.komp, mix: (e.mix || []).map(m => ({ ...m, url: BASE + '/sound-quelle/' + m.f.split('/').map(encodeURIComponent).join('/') })) })})`, awaitPromise: true, returnByValue: true });

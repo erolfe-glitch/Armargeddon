@@ -1,3 +1,103 @@
+# >>> ZUERST (Enrico 2026-11-21 00:15, vor allem anderen): F67 – fehlende Töne ins Ton-Pult <<<
+Enrico sitzt gerade am **Ton-Pult** und vermisst Töne, die er früher in `sound-quelle/` gelegt hat. Abgleich des Beraters: **88 Tondateien in `sound-quelle/` stehen nirgends in `tools/sound_bau.json`** (ohne `aus_spiel/`, `_neu_doppelt/` und die rohen eigenen Aufnahmen `Voices/eigene/*.wav`, die über `sprueche/` drin sind). Bitte:
+1. Alle unten gelisteten Dateien prüfen (gegenhören/Pegel), brauchbare Ausschnitte (lange Dateien schneiden, Mehrfach-Dateien in Einzeltöne teilen) in `sound_bau.json` aufnehmen – als **„Einzelne Töne“ wählbar im Ton-Pult**, in passenden Gruppen. Bestehende Zuordnungen im Spiel **nicht** ändern. Monster-Töne als eigene Gruppe „Monster (später Dämonen)“.
+2. Wichtig: **Gewehre** aus `Infantry Guns` (u. a. `battle-rifle`, `m1-garand`, `Rifle Fire Sound Effect`) – vermutlich Enricos „früher bessere Gewehrtöne“; mit sauberem Anschnitt und **vollem Nachhall** (siehe 2c).
+3. Wirklich Unbrauchbares nicht einbauen, aber im Bericht mit Grund nennen. Nichts löschen.
+4. `sound_bau.mjs`, `tonpult_bau.mjs`, Tonprobe, Spiel neu bauen, committen, pushen; Sicherung sound-quelle (robocopy).
+5. Im Chat **sofort** melden „Ton-Pult neu – pb“ (Enrico wartet darauf, um weiterzumachen), dann mit dem Rest weiter. Enricos bisherige Ton-Pult-Auswahl liegt in seinem Browser (localStorage) und darf durch den Neubau nicht verloren gehen – Schlüssel/Namen der vorhandenen Töne nicht umbenennen.
+
+6. **Ton-Pult freier machen (Enrico 00:34, gehört zu F67, gleich mit erledigen):** Heute bietet „Einzelne Töne“ nur Töne **derselben Gruppe** an – zu starr. Beispiel: Der **Eisenknecht** hat keine riesige Kanone, eher eine **Autokanone**, aber im Pult stehen für seinen Schuss nur Kanonen. Neu: In jeder Zeile zusätzlich **„Alle Töne“** wählbar – nach Gruppen geordnet (Gewehre, MG/Autokanonen, Kanonen, Einschläge, Nahkampf, Stimmen, Motoren, Monster …) und mit **Suchfeld** (Name/Datei). Wählt Enrico einen Ton aus einer fremden Gruppe, bekommt die Einheit beim Einbau des Exports einen **eigenen Platz** (wie im Hinweis „klingt auch bei“ beschrieben) – andere Einheiten ändern sich nicht. Gleich mit: für den Eisenknecht passende Autokanonen-Kandidaten (schnelle schwere Schüsse, z. B. aus `Hevay Mech guns`, `Heavy firing sounds`, `freesound_community-066496_heavy-machine-gun-50-caliber`) im Pult bereitstellen. Enricos bisherige Auswahl (localStorage) muss erhalten bleiben.
+
+Dateien:
+  - `Airplanes/568974__trp__201111-ww1-bi-plane-flying-around-close-distant-helicopter-roof-11am.flac`
+  - `Airplanes/cryptowista-airplane-jet-take-off-121957.mp3`
+  - `Airplanes/u_lbl9t264ov-jet-sound-militar-185708.mp3`
+  - `Animals/dragon-studio-dog-barking-406629.mp3`
+  - `Buttons/677861__el_boss__ui-button-click.wav`
+  - `Crash vehicle damage/509015__audiopapkin__mechanical-sfx_m019.wav`
+  - `Crash vehicle damage/510084__audiopapkin__impact-sfx-011.wav`
+  - `Crash vehicle damage/511911__audiopapkin__impact-sfx-022.wav`
+  - `Crash vehicle damage/511914__audiopapkin__impact-sfx-025.wav`
+  - `Crash vehicle damage/712881__audiopapkin__factory-machine-011.wav`
+  - `Crash vehicle damage/dragon-studio-car-crash-sound-effect-376874.mp3`
+  - `Eroberungspunkte/Win Point.wav`
+  - `Explosion/tanweraman-cracker-sound-261119.mp3`
+  - `Fire/17548__dynamicell__fire_forest_inferno.aiff`
+  - `Fire/612277__robinhood76__10835-big-fire-loop.wav`
+  - `Footsteps robot mud marching/daviddumaisaudio-robot-heavy-mechanical-footsteps-194039.mp3`
+  - `Footsteps robot mud marching/freesound_community-steps-on-snow-30305.mp3`
+  - `Gas smoke/536603__hoggington__pain-sound-in-mask.wav`
+  - `Heavy Meelee Mechs large/yodguard-a-massive-axe-impact-hitting-metal-3-450254.mp3`
+  - `Impacts/116645__woodingp__bullets-hit-edit.aiff`
+  - `Impacts/dragon-studio-elemental-spell-impact-earth-478382.mp3`
+  - `Impacts/freesound_community-metal-impact-39652.mp3`
+  - `Impacts/lordsonny-small-rock-break-194553.mp3`
+  - `Infantry Guns/397370__jgrzinich__forest-gun-shots-and-gunfire.wav`
+  - `Infantry Guns/foisal72-gun-fire-346766.mp3`
+  - `Infantry Guns/freesound_community-battle-rifle-42734.mp3`
+  - `Infantry Guns/freesound_community-m1-garand-rifle-80192.mp3`
+  - `Infantry Guns/gutierrreztom-walther-p38-firing-sound-effect-11651.mp3`
+  - `Infantry Guns/Rifle Fire Sound Effect.mp3`
+  - `Kanone schwer/Heavy_Gun_shells.mp3`
+  - `Kanone schwer/Tank_SiteGuns_.mp3`
+  - `Melee hit infantry/freesound_community-shield-guard-6963.mp3`
+  - `Melee hit infantry/ragecore29-axe-hit-head-beheaded-548103.mp3`
+  - `Melee hit infantry/universfield-human-roar-250239.mp3`
+  - `Melee hit infantry/universfield-punch-04-383965.mp3`
+  - `Melee hit infantry/universfield-punch-140236.mp3`
+  - `Melee hit infantry/universfield-punch-impact-hit-567196.mp3`
+  - `Monster/155973__mrpokephile__zombie-flesh-bites.mp3`
+  - `Monster/185649__headphaze__demon-monster-voice.wav`
+  - `Monster/260777__deleted_user_3424813__angry-dog-bark-snarl-with-reverb.wav`
+  - `Monster/316393__littlerobotsoundfactory__demon_18.wav`
+  - `Monster/320109__smokevhstapes__horror-sfx-3.wav`
+  - `Monster/339191__shillsuqat__chewing-zombie_wav.wav`
+  - `Monster/423010__ogsoundfx__monster-bite-on-armor-wav.wav`
+  - `Monster/467701__lucasduff__monster-bite.wav`
+  - `Monster/479380__breviceps__dragon-several-roars-growls-and-snarls.wav`
+  - `Monster/547129__szegvari__parrot-bird-creature.wav`
+  - `Monster/556701__nachtmahrtv__ghost-monster-scream.wav`
+  - `Monster/60992__ifartinurgeneraldirection__pooh-bear-attacks-me-for-a-treat.mp3`
+  - `Monster/614068__stormwaveaudio__demon-pain-1.wav`
+  - `Monster/617543__teomat23__witch-attack.mp3`
+  - `Monster/674223__silverillusionist__acid-breath-attack.wav`
+  - `Monster/753850__evanboyerman__monster-growl-1.wav`
+  - `Monster/797717__colinleblancsound__warhorn-c3.wav`
+  - `Monster/808363__grayepic__pig-zombies.mp3`
+  - `Monster/871255__audiomirage__when-the-rain-remembers.wav`
+  - `Monster/871498__csstudios__melee_secondary_attack.wav`
+  - `Monster/871814__oddlakepro__large-theropod-dinosaur-noise-human-noises-edited.mp3`
+  - `Monster/875026__mickrvfy__creature-sounds.wav`
+  - `Monster/875757__tommasomotteran__giant-tree-creature-movement-fantasy-monster-sfx.wav`
+  - `Monster/878576__artninja__creature_or_zombie_footstep_11032026.wav`
+  - `Monster/freesound_community-four_voices_whispering_2_wecho-6755.mp3`
+  - `Monster/freesound_community-schizophrenic-voices-62486.mp3`
+  - `Monster/freesound_community-sisters-voices-103432.mp3`
+  - `Monster/freesound_community-snarlwav-14497.mp3`
+  - `Monster/freesound_community-tripod-106078.mp3`
+  - `Monster/the-vampires-monster-weretiger-yarik-roar-with-growler-325163.mp3`
+  - `Monster/u_20gsgfof6e-the-prowler-332986.mp3`
+  - `Musiker/370271__ignacioasmp__nicol-singing-seven-nation-army.wav`
+  - `Musiker/704440__roemergruft__viking-horn-in-d.wav`
+  - `Musiker/744062__xloenp__heroic-war-march-symphony-loop-2.flac`
+  - `Pain death/universfield-blood-splatter-122253.mp3`
+  - `Repair reload heal etc/yodguard-locked-door-4-540180.mp3`
+  - `Sankt Russ/86322__roccapl__bologna_asinelli_tower_collapse.aiff`
+  - `Voices/271631__carmsie__feel-free-to-scream.wav`
+  - `Voices/338147__artordie__talking-to-me.wav`
+  - `Voices/402019__theuncertainman__yes-british-male.wav`
+  - `Voices/405328__drotzruhn__woman-fighting.wav`
+  - `Voices/439287__dreamstobecome__battle-laugh.wav`
+  - `Voices/529837__airborne80__aint-nothin-like-a-war.mp3`
+  - `Voices/639447__laurenponder__communication-voicelines-woman.wav`
+  - `Voices/764267__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_spacedomni-mk012.wav`
+  - `Voices/applehillstudios-combat-voice-forward-march-543679.mp3`
+  - `Voices/applehillstudios-combat-voice-stand-your-ground-1-543681.mp3`
+  - `Voices/applehillstudios-hurt-amp-death-i-need-a-medic-543678.mp3`
+  - `Voices/phatphrogstudio-robot-voice-damage-sustained-487076.mp3`
+  - `Voices/universfield-come-on-man-323595.mp3`
+  - `Water/freesound_community-swim-44183.mp3`
+
 # Aktueller Auftrag (von Claude/Berater, 2026-11-20 abends)
 
 **Modell: Opus.** Grundlage: `entwurf/SPIELTEST_LISTE.md`, Abschnitt „Funde Spieltest Runde 4“ (F1–F44, Pakete A–F). Datei frisch lesen.
@@ -189,4 +289,4 @@ Nur in `IDEEN.md` übernehmen (Abschnitt „Helden“), bauen erst nach Paket E 
 - [x] 6. Paket D (8a58a6b)
 - [x] F44 nur Grauwall: Welle weg, Aschenwacht 10 statt 8 Grenadiere (995b8ad); andere Karten unverändert, Abstimmung abgebrochen
 - [x] 5b. Neue Töne (10b9b3a)
-- [ ] 5c. Nachträge: erledigt F49 (10b9b3a), F50/F52 (13b2a89), F51 (f3d9c26), F56/F57 (8b580b2), F53/F55 (995b8ad), F60/F62 (d521862), F61 (19c8ff6), F58 (cfc7083), F59/F65 (f90ae96), F63 (dieser Commit); offen F54 (Vorschlag), F64, F66
+- [ ] 5c. Nachträge: erledigt F49 (10b9b3a), F50/F52 (13b2a89), F51 (f3d9c26), F56/F57 (8b580b2), F53/F55 (995b8ad), F60/F62 (d521862), F61 (19c8ff6), F58 (cfc7083), F59/F65 (f90ae96), F63 (1153d41), F67 (dieser Commit); offen F54 (Vorschlag), F64 (2c Nachhall erledigt), F66

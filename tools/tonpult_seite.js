@@ -136,7 +136,8 @@ function zeile(u, s) {
   const info = h('div', {}, h('div', { cls: 'ti' }, s.titel, tag), h('div', { cls: 'ton', html: tonText(u, s) }), h('div', { cls: 'ton zul' }));
   const sel_ = h('select', { 'aria-label': 'Ton für ' + s.titel });
   for (const [titel, list] of optionen(u, s)) { const g = h('optgroup', { label: titel }); for (const [v, l] of list) g.append(h('option', { value: v }, l)); sel_.append(g); }
-  sel_.value = w.w; if (sel_.value !== w.w) { sel_.append(h('option', { value: w.w }, w.w.slice(2) + ' (aus Import)')); sel_.value = w.w; }
+  sel_.value = w.w; if (sel_.value !== w.w) { sel_.append(h('option', { value: w.w }, w.w.startsWith('k:') ? `${w.w.slice(2)} · ${kurz(datei(w.w.slice(2)))} (aus „Alle Töne“)` : w.w.slice(2) + ' (aus Import)')); sel_.value = w.w; }
+  const alleB = h('button', { cls: 'alle', title: 'Alle Töne des Spiels durchsuchen (auch aus anderen Gruppen)', 'aria-label': 'Alle Töne für ' + s.titel, disabled: !SND, on: () => alleToene(u, s, row) }, 'Alle Töne …');
   sel_.onchange = () => { setze(u, s, 'w', sel_.value); auffrischen(u, s, row); spielPlatz(u, s); };
   const vol = h('input', { type: 'range', min: 0, max: 100, step: 1, value: Math.round(w.vol * 100) }), volB = h('b', {}, Math.round(w.vol * 100));
   vol.oninput = () => { setze(u, s, 'vol', vol.value / 100); volB.textContent = vol.value; auffrischen(u, s, row, true); };
@@ -146,9 +147,43 @@ function zeile(u, s) {
   ton.onchange = () => spielPlatz(u, s);
   const zur = h('button', { cls: 'x', title: 'Diesen Platz zurücksetzen', 'aria-label': 'Zurücksetzen: ' + s.titel, on: () => { delete (AEND[u.t] || {})[s.id]; if (AEND[u.t] && !Object.keys(AEND[u.t]).length) delete AEND[u.t]; speichern(); const neu = zeile(u, s); row.replaceWith(neu); liste(); } }, '↺');
   const hin = [s.hin, s.auch.length ? `Dieser Platz klingt im Spiel auch bei: ${s.auch.slice(0, 6).join(', ')}${s.auch.length > 6 ? ` und ${s.auch.length - 6} weiteren` : ''}.` : ''].filter(Boolean).join(' ');
-  row.append(play, info, sel_, h('label', { cls: 'r' }, 'Lautstärke ', volB, vol), h('label', { cls: 'r' }, 'Tonhöhe ', tonB, ton), zur);
+  row.append(play, info, h('div', { cls: 'wahl' }, sel_, alleB), h('label', { cls: 'r' }, 'Lautstärke ', volB, vol), h('label', { cls: 'r' }, 'Tonhöhe ', tonB, ton), zur);
   if (hin) row.append(h('p', { cls: 'hin' }, hin));
   return row;
+}
+// ---- „Alle Töne“ (F67, 2026-11-21): jeder Ton des Spiels wählbar, nach Gruppen geordnet, mit Suchfeld ----
+// Wird ein Ton aus einer fremden Gruppe gewählt, bekommt die Einheit beim Einbau des Exports einen eigenen Platz; andere Einheiten ändern sich nicht.
+const GR_TITEL = { gewehr: 'Gewehre und Pistolen', mg: 'MG und Autokanonen', kanone: 'Kanonen und Artillerie', flamme: 'Flammen und Feuer', einschlag: 'Einschläge', nahkampf: 'Nahkampf', ruf: 'Stimmen und Rufe',
+  fahrzeug: 'Motoren, Fahrzeuge, Schreiter', bewegung: 'Bewegung und Schritte', pferd: 'Pferde', handgriff: 'Handgriffe', signal: 'Signale und Musik' };
+let ALLE = null;
+function alleListe() {
+  if (ALLE) return ALLE; const gesehen = new Set(), sek = [];
+  const nimm = (titel, pools) => { const e = []; for (const p of pools) for (const [k, sd] of (D.pools[p] || [[p, null]])) { if (gesehen.has(k) || (SND && !SND[k])) continue; gesehen.add(k); e.push({ k, p, sd, name: D.name[p] || p, f: datei(k) }); } if (e.length) sek.push({ titel, e }); };
+  nimm('Monster (später Dämonen)', ['neu2_monster']);
+  for (const g of Object.keys(GR_TITEL)) if (D.gruppen[g]) nimm(GR_TITEL[g], D.gruppen[g]);
+  nimm('Übrige Töne', Object.keys(D.pools).filter(p => !/^sv_/.test(p)));
+  nimm('Sprüche beim Anklicken', Object.keys(D.pools).filter(p => /^sv_/.test(p)));
+  if (SND) nimm('Ältere Einzeltöne', Object.keys(SND));
+  return ALLE = sek;
+}
+function alleToene(u, s, row) {
+  const alt = document.getElementById('alleDlg'); if (alt) alt.remove();
+  const such = h('input', { type: 'search', placeholder: 'Suchen: Name, Schlüssel oder Datei …', 'aria-label': 'Töne suchen' }), liste_ = h('div', { cls: 'al' });
+  const zu = () => { dlg.remove(); document.removeEventListener('keydown', esc_); }, esc_ = e => { if (e.key === 'Escape') zu(); };
+  const dlg = h('div', { id: 'alleDlg', role: 'dialog', 'aria-label': 'Alle Töne' }, h('div', { cls: 'ak' },
+    h('div', { cls: 'akopf' }, h('b', {}, 'Alle Töne für: ' + s.titel), h('button', { cls: 'x', 'aria-label': 'Schließen', on: zu }, '✕')),
+    h('p', { cls: 'hin' }, 'Ton aus einer anderen Gruppe wählen: Beim Einbau des Exports bekommt nur diese Einheit einen eigenen Platz – andere Einheiten klingen weiter wie bisher.'), such, liste_));
+  dlg.onclick = e => { if (e.target === dlg) zu(); }; document.addEventListener('keydown', esc_);
+  const zeige = () => { const q = such.value.trim().toLowerCase(); liste_.innerHTML = ''; let n = 0;
+    for (const sk of alleListe()) { const e = sk.e.filter(x => !q || (x.k + ' ' + x.name + ' ' + x.f + ' ' + sk.titel).toLowerCase().includes(q)); if (!e.length) continue;
+      const box = h('details', { open: !!q || sk.e.length < 12 }, h('summary', {}, `${sk.titel} (${e.length})`));
+      for (const x of e.slice(0, 400)) { n++; box.append(h('div', { cls: 'ai' + (wert(u, s).w === 'k:' + x.k ? ' an' : '') },
+        h('button', { cls: 'play', 'aria-label': 'Abspielen: ' + x.k, on: () => { for (const a of laufend) a.pause(); laufend.clear(); spiel(x.k, wert(u, s).vol, wert(u, s).ton); } }, '▶'),
+        h('span', {}, h('b', {}, x.k), x.sd ? (x.sd === 'A' ? ' (Konkordat)' : ' (Aschenwacht)') : '', h('small', {}, ` · ${x.name} · ${kurz(x.f)}`)),
+        h('button', { cls: 'gold', on: () => { setze(u, s, 'w', 'k:' + x.k); zu(); const neu = zeile(u, s); row.replaceWith(neu); liste(); spielPlatz(u, s); } }, 'Wählen'))); }
+      liste_.append(box); }
+    if (!n) liste_.append(h('p', { cls: 'hin' }, 'Nichts gefunden.')); };
+  such.oninput = zeige; zeige(); document.body.append(dlg); such.focus();
 }
 function auffrischen(u, s, row) { row.classList.toggle('geaendert', geaendert(u, s)); row.querySelector('.ton').innerHTML = tonText(u, s); liste(); }
 function pult() {

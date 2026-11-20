@@ -1,5 +1,39 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – F67 Ton-Pult neu (fehlende Töne, „Alle Töne“), Gewehre mit Nachhall (2c)
+
+**Ton-Pult neu – bitte neu laden (Strg+F5).** Deine bisherige Auswahl bleibt erhalten: kein vorhandener Schlüssel wurde umbenannt.
+
+- **87 der 88 Dateien eingebaut**, als 124 Einzeltöne in neuen Plätzen `neu2_*`, die unter „Einzelne Töne“ in den passenden Gruppen stehen: Gewehr, Pistole, Autokanone, Kanone, Einschlag, Metalltreffer, Knall, Einsturz, Nahkampf, Blut, Stimmen, Brüllen, Gasmaske, **Monster (später Dämonen)**, Horn, Musik, Punkt, Knopf, Tür, Aufprall/Maschine, Flugzeug, Schritte, Hund, Feuer, Wasser.
+  - Lange Dateien sind geschnitten. Dateien mit mehreren Lauten sind in Einzeltöne geteilt: bis 4 je Datei, bei Monster und Stimmen bis 2 (wegen der Dateigröße).
+  - In der Ton-Probe stehen sie in der Gruppe „Weitere Töne aus sound-quelle“.
+- **Nicht eingebaut:** `Musiker/…nicol-singing-seven-nation-army.wav`. Grund: gesungenes, bekanntes Lied, Rechte unklar, passt nicht ins Spiel. Die Datei bleibt liegen.
+- **Drei AIFF-Dateien** (Waldbrand, Kugeltreffer, Turmeinsturz Bologna) kann der Browser nicht lesen. Daneben liegen jetzt WAV-Kopien mit gleichem Namen. Die Originale sind unverändert.
+- **Neu: Knopf „Alle Töne …“ in jeder Zeile.**
+  - Er zeigt jeden Ton des Spiels, nach Gruppen geordnet (Gewehre, MG und Autokanonen, Kanonen, Einschläge, Nahkampf, Stimmen, Motoren, Monster …).
+  - Mit Suchfeld (Name, Schlüssel, Datei), ▶ zum Probehören und „Wählen“.
+  - Ein Ton aus einer fremden Gruppe bekommt beim Einbau deines Exports einen eigenen Platz nur für diese Einheit.
+- **Eisenknecht:** vier Autokanonen-Kandidaten `neu2_autokanone_1–4` stehen in den Gruppen Kanone und MG:
+  - 50er-MG tiefer gestimmt, in zwei Stufen,
+  - schweres MG tiefer,
+  - drei schnelle Kanonenschüsse.
+- **2c, Gewehre mit vollem Nachhall:**
+  - „Gewehr 3“ (`rifle3`, Aschenwacht) war die M1-Garand-Aufnahme, bei 0,8 s abgeschnitten. Jetzt kommt sie aus der Quelle mit Ausklang bis 1,7 s.
+  - `rifle2` (battle-rifle, Hauptgewehr der Aschenwacht) war bei 0,6 s gekappt, jetzt 0,9 s mit Ausklang.
+  - Alle übrigen Schusstöne geprüft: Gefechtslärm, Halbautomat, MG, Drehlauf, Sturmpanzer-Kanone und Schrot klingen jetzt weich aus.
+  - Die kleine Kolosskanone ist schon in der Quelle nur 0,4 s lang.
+  - Die Zuordnung im Spiel habe ich nicht geändert. Deine Wahl „Gewehr 3“ für die Aschengrenadiere baue ich mit deinem Export ein.
+- **Größe:** `index.html` ist jetzt 61 MB. GitHub warnt ab 50 MB, die harte Grenze liegt bei 100 MB.
+
+**Seit dem letzten Bericht ebenfalls erledigt (Bericht folgt ausführlich):**
+- F58 drei Reiter (`cfc7083`)
+- F59 Bord-MG Sturmpanzer und F65 Schüsse auf große Ziele (`f90ae96`)
+- F63 Nahkampf ganz in der Szene, 1× ca. 1,6 s (`1153d41`)
+
+Bilder: `entwurf/probe/spieltest4_paketD/f58_*`, `entwurf/probe/spieltest4_nachtraege/`.
+
+**Fragen an Enrico:** keine, erst dein Ton-Pult-Export.
+
 ## 2026-11-21 – Paket C abgeschlossen (Posen, F48), Paket D erledigt; F44 Feinabstimmung läuft
 
 **Commits:** `8dc70ec` weitere Posenbögen · `84c62a7` F48 Kampfszene · `f383ac0` Hauptmann-Posen · `8a58a6b` Paket D – gepusht.

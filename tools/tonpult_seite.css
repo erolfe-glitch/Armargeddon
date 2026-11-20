@@ -58,3 +58,15 @@ dialog textarea { width: 100%; height: 46vh; background: #1a1411; color: var(--t
   .kopf img { width: 64px; height: 64px; } .kopf h2 { font-size: 20px; } .kopf .hk { margin-left: 0; width: 100%; } .kopf .hk button { flex: 1; }
   .p { grid-template-columns: 48px minmax(0, 1fr) 44px; padding: 8px; } .p select, .p .r, .p .hin { grid-column: 1 / -1; }
 }
+
+/* „Alle Töne“ (F67, 2026-11-21) */
+.p .wahl { display: flex; gap: 6px; min-width: 0; } .p .wahl select { flex: 1; min-width: 0; } .p .wahl .alle { white-space: nowrap; padding: 6px 10px; }
+@media (max-width: 1100px) { .p .wahl { grid-column: 2 / 3; } }
+#alleDlg { position: fixed; inset: 0; background: rgba(10, 8, 6, .72); z-index: 50; display: flex; align-items: flex-start; justify-content: center; padding: 4vh 16px; }
+#alleDlg .ak { background: var(--panel); border: 2px solid var(--rust); border-radius: 8px; width: min(980px, 100%); max-height: 92vh; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; box-shadow: 0 8px 30px #000; }
+#alleDlg .akopf { display: flex; align-items: center; gap: 10px; } #alleDlg .akopf b { flex: 1; font-size: 18px; }
+#alleDlg input[type=search] { font: inherit; color: var(--text); background: #2a221c; border: 2px solid var(--rust); border-radius: 6px; min-height: 44px; padding: 6px 12px; }
+#alleDlg .al { overflow-y: auto; min-height: 120px; }
+#alleDlg details { border-top: 1px solid var(--rust); padding: 4px 0; } #alleDlg summary { cursor: pointer; font-weight: 700; padding: 8px 2px; min-height: 40px; }
+#alleDlg .ai { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 3px 0; }
+#alleDlg .ai.an { background: rgba(194, 164, 97, .16); } #alleDlg .ai span { overflow-wrap: anywhere; } #alleDlg .ai small { color: var(--dim); }

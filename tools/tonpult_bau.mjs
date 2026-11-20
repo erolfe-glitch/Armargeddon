@@ -37,23 +37,24 @@ const fireKind = T => T.mg ? 'mg' : T.flame ? 'flame' : T.gat ? 'minigun' : T.mg
 
 // Gruppen für die Auswahlliste (passende Alternativen); Stimm-Gruppen nehmen den Filter des Sprechers mit
 const GRUPPEN = {
-  gewehr: ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'buechse', 'flinte', 'neu_schrot', 'grenade2'],
-  mg: ['mg', 'minigun', 'neu_mg_schwer', 'rifle4'],
-  kanone: ['cannon', 'neu_kanone', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'artD', 'launch', 'werfer'],
-  flamme: ['flame', 'werfer', 'feuer'],
-  einschlag: ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'grenade2', 'wasser', 'impact', 'armor', 'feuer'],
-  nahkampf: ['nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy', 'neu_wucht', 'armor', 'grenade2', 'flinte', 'punch'],
-  bewegung: ['schritte', 'steps', 'stepsWald', 'marschtritt', 'holzknacken', 'gallop2', 'dog', 'gespann', 'wagenknarren', 'tank', 'mech', 'neu_schritte_schwer', 'ueberrollen', 'drahtlatch', 'drahtwackeln'],
-  fahrzeug: ['motor_auswahl', 'tank', 'mech', 'ueberrollen', 'crash', 'tiger', 'oger_bruell', 'neu_tiger_mech', 'neu_roboter', 'robot'],
+  gewehr: ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'buechse', 'flinte', 'neu_schrot', 'grenade2', 'neu2_gewehr', 'neu2_pistole'],
+  mg: ['mg', 'minigun', 'neu_mg_schwer', 'rifle4', 'neu2_gewehr', 'neu2_autokanone'],
+  kanone: ['cannon', 'neu_kanone', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'artD', 'launch', 'werfer', 'neu2_kanone', 'neu2_knall', 'neu2_autokanone'],
+  flamme: ['flame', 'werfer', 'feuer', 'neu2_feuer'],
+  einschlag: ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'grenade2', 'wasser', 'impact', 'armor', 'feuer', 'neu2_einschlag', 'neu2_metall', 'neu2_knall', 'neu2_einsturz', 'neu2_blut', 'neu2_wasser', 'neu2_crash'],
+  nahkampf: ['nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy', 'neu_wucht', 'armor', 'grenade2', 'flinte', 'punch', 'neu2_nahkampf', 'neu2_metall', 'neu2_blut', 'neu2_monster'],
+  bewegung: ['schritte', 'steps', 'stepsWald', 'marschtritt', 'holzknacken', 'gallop2', 'dog', 'gespann', 'wagenknarren', 'tank', 'mech', 'neu_schritte_schwer', 'ueberrollen', 'drahtlatch', 'drahtwackeln', 'neu2_schritte', 'neu2_hund', 'neu2_flug', 'neu2_wasser'],
+  fahrzeug: ['motor_auswahl', 'tank', 'mech', 'ueberrollen', 'crash', 'tiger', 'oger_bruell', 'neu_tiger_mech', 'neu_roboter', 'robot', 'neu2_crash', 'neu2_flug', 'neu2_monster'],
   pferd: ['pferd_auswahl', 'pferd_unruhe', 'neigh', 'gallop2'],
-  handgriff: ['cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'nachladen', 'neu_nachladen', 'neu_versorgung', 'schaufel', 'bauen', 'heal', 'reparieren', 'gasmaske_1', 'tick', 'ui', 'leuchtschuss', 'leuchtbrand', 'crash', 'steps', 'drahtlatch', 'drahtwackeln'],
-  signal: ['whistle', 'march', 'generalhorn', 'horn', 'leuchtschuss', 'zug_eigen', 'zug_gegner'],
-  ruf: ['pain', 'medic', 'cry', 'scream', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon', 'husten', 'grunzen', 'gasmaske_2', 'atmen', 'robot', 'loewe', 'oger_bruell', 'neu_roboter', 'neu_tiger_mech'],
+  handgriff: ['cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'nachladen', 'neu_nachladen', 'neu_versorgung', 'schaufel', 'bauen', 'heal', 'reparieren', 'gasmaske_1', 'tick', 'ui', 'leuchtschuss', 'leuchtbrand', 'crash', 'steps', 'drahtlatch', 'drahtwackeln', 'neu2_knopf', 'neu2_tuer', 'neu2_crash'],
+  signal: ['whistle', 'march', 'generalhorn', 'horn', 'leuchtschuss', 'zug_eigen', 'zug_gegner', 'neu2_horn', 'neu2_punkt', 'neu2_musik'],
+  ruf: ['pain', 'medic', 'cry', 'scream', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon', 'husten', 'grunzen', 'gasmaske_2', 'atmen', 'robot', 'loewe', 'oger_bruell', 'neu_roboter', 'neu_tiger_mech', 'neu2_stimme', 'neu2_schrei', 'neu2_maske', 'neu2_monster'],
   spruch: [] };
 const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'], boom: ['boomH_1'] };
 const gibt = p => POOLS[p] || KEYS.includes(p) || SND_VAR[p];
 for (const g in GRUPPEN) GRUPPEN[g] = GRUPPEN[g].filter(gibt);
-const NAME = { oger_bruell: 'Löwengebrüll (Löwenoger, neu)', neu_tiger_mech: 'Mechanischer Löwe (neu)', neu_roboter: 'Roboter-Brüllen/Stimme (neu)', neu_schritte_schwer: 'Schwere Schritte (neu)',
+const NAME = { neu2_autokanone: 'Autokanone (neu 21.11.)', neu2_gewehr: 'Gewehr (Quelle, neu 21.11.)', neu2_pistole: 'Pistole Walther (neu 21.11.)', neu2_kanone: 'Schwere Bordkanone (neu 21.11.)', neu2_einschlag: 'Einschlag/Kugeltreffer (neu 21.11.)', neu2_metall: 'Metalltreffer (neu 21.11.)', neu2_knall: 'Knallkörper (neu 21.11.)', neu2_einsturz: 'Turm stürzt ein (neu 21.11.)', neu2_nahkampf: 'Faust/Axt/Schild (neu 21.11.)', neu2_blut: 'Blutspritzer (neu 21.11.)', neu2_schrei: 'Brüllen (neu 21.11.)', neu2_stimme: 'Stimmen englisch/Gefechtsrufe (neu 21.11.)', neu2_maske: 'Schmerz in Gasmaske (neu 21.11.)', neu2_monster: 'Monster (später Dämonen, neu 21.11.)', neu2_horn: 'Kriegshorn (neu 21.11.)', neu2_musik: 'Heldenmarsch, Schleife (neu 21.11.)', neu2_punkt: 'Punkt gewonnen (neu 21.11.)', neu2_knopf: 'Knopfklick (neu 21.11.)', neu2_tuer: 'Tür/Riegel (neu 21.11.)', neu2_crash: 'Aufprall/Maschine (neu 21.11.)', neu2_flug: 'Flugzeug (neu 21.11.)', neu2_schritte: 'Maschinen-/Schneeschritte (neu 21.11.)', neu2_hund: 'Hund bellt (neu 21.11.)', neu2_feuer: 'Großes Feuer (neu 21.11.)', neu2_wasser: 'Wasser/Schwimmen (neu 21.11.)',
+  oger_bruell: 'Löwengebrüll (Löwenoger, neu)', neu_tiger_mech: 'Mechanischer Löwe (neu)', neu_roboter: 'Roboter-Brüllen/Stimme (neu)', neu_schritte_schwer: 'Schwere Schritte (neu)',
   neu_mg_schwer: 'Schweres MG (neu)', neu_schrot: 'Schrot (neu)', neu_kanone: 'Kanone (neu)', neu_wucht: 'Schwerer Treffer (neu)', neu_nachladen: 'Nachladen (neu)', neu_versorgung: 'Versorgung/Kulisse (neu)',
   rifle: 'Hauptgewehr der Seite', rifle2: 'Gewehr 2 (battle-rifle)', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4 (Gefechtslärm)', sniper: 'Scharfschütze', pistol: 'Pistole', semi: 'Halbautomat', buechse: 'Panzerbüchse', flinte: 'Flinte',
   grenade2: 'Handgranate', mg: 'Maschinengewehr', minigun: 'Drehlauf', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', loewenkanone: 'Löwenmaul-Kanone', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Schwere Artillerie',
