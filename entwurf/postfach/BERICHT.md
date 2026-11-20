@@ -1,5 +1,46 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Paket C abgeschlossen (Posen, F48), Paket D erledigt; F44 Feinabstimmung läuft
+
+**Commits:** `8dc70ec` weitere Posenbögen · `84c62a7` F48 Kampfszene · `f383ac0` Hauptmann-Posen · `8a58a6b` Paket D – gepusht.
+**Bilder:** `entwurf/probe/spieltest4_paketC/` (posen_weitere_freigestellt.jpg, posen_weitere_im_spiel.jpg, f48_kampfszene_folge.jpg), `entwurf/probe/spieltest4_paketD/f6_aufstellung.jpg`
+
+### Paket C – Rest
+- **Alle Posenbögen eingebaut** (Sanitäter, Flammentrupps, Kampfanzüge, Versorgung, Schildwall, Schwere Grabenwacht, Scharfschütze, Pirschjäger, Melder → Fernsprech-/Signaltrupp, Mineur, Hauptmann). Posen kommen beim Ziehen (Laufen), Schießen/Flammenstoß, Nahkampf, Heilen, Reparieren, Nachladen, Schilde vor, Ziel markieren/Feuerschlag, Stollen, Sturmlauf, Befehl (Hauptmann) und Getroffen.
+- Pflichtpunkte: Adler auf allen Sanitäter- und Melder-Pickelhauben übermalt, Helmplakette Flammentrupp übermalt, Konkordat-Flagge auf Ochsenblut, Aschenwacht-Läufer gespiegelt, loser Stiefel weg, Geisterfigur und Rauchwolken der Kampfanzüge weg, Lampenschein Mineur, Pistole Konkordat-Hauptmann gespiegelt, unbrauchbare Versorgungs-Posen (Hämmern, Kette) ausgelassen, kleine kniende Aschenwacht-Versorgung vergrößert. Sich berührende Figuren (Sanitäter Konkordat, Scharfschütze) per Naht getrennt.
+- Melder-Bögen: Der Meldegänger hat einen Hund im Grundbogen; die Melder-Posen nutze ich deshalb für den **Fernsprechtrupp** (Konkordat, Feldtelefon) und den **Signaltrupp** (Aschenwacht, Signalflagge). Der Meldegänger mit Hund bleibt wie er war.
+- **F48 Kampfszene**: Nahkampf, Löwengebrüll, Haftladung: Kamera fährt heran, Rand dunkel, Ziel in Getroffen-Pose mit Rückstoß, kurzer Stillstand und Rütteln, dann zurück. Optionen „Kampfszenen: an / kurz / aus“, Klick überspringt. Nicht umgesetzt: Szene beim Vernichten eines Trupps durch Beschuss (ich wollte Schießen schnell lassen) – sag, ob du das trotzdem willst.
+- Hinweis Dateigröße: `index.html` ist durch die vielen Posenbilder jetzt **52,5 MB** (GitHub warnt ab 50 MB, die harte Grenze ist 100 MB). Noch kein Problem, aber Platz ist endlich.
+
+### Paket D – erledigt
+| Punkt | Ergebnis |
+|---|---|
+| F11 | „Fertig“ für alle Einheiten; abgehakt = grau, auch wenn noch die Zweitwaffe ginge |
+| F17 | grau erst, wenn wirklich nichts mehr geht (zählt jetzt auch Zweitwaffe, Löwengebrüll, Eingraben, Schilde, Banner, Sperrfeuer, Draht); Hinweis „Zweitwaffe noch frei“ |
+| F25 | Drehen-Knöpfe für alle Einheiten (außer niedergehalten/Panne) |
+| F33 | Zeiger aus den Bogen-Symbolen je Fähigkeit über gültigem Ziel; ungültig = Verbotszeichen |
+| F6 | Aufstellung: Einheitenkarte sichtbar, Startzustand per Knopf (Geschütz auf-/abgeprotzt, MG auf-/abgebaut) |
+| F41 | Warnung 2 bzw. 1 Runde vor einem möglichen Sieg (Einblendung + Horn/Trommel, Punkte oben pulsieren) |
+| KI-Einstellung | Optionen „KI: angriffslustig / ruhig“, Standard angriffslustig |
+
+### F44 – Zwischenstand (gemischte Aufstellung, ohne Welle, Konkordat-Siegquote)
+| Karte | heute (mit Welle) | ohne Welle | bisher beste Startarmee |
+|---|---|---|---|
+| Grauwall | 35 % | 63 % | +2 Grenadiere → 48 % |
+| Selm | 47 % | 75 % | +1 Sturmtrupp → 53 % |
+| Lerne | 89 % | 91 % | +3 Sturm +1 Brand → 41 % (Feinabstimmung läuft) |
+| Front | 13 % | 21 % | Aschenwacht zu stark – Feinabstimmung läuft (weniger Grenadiere / mehr Kohorten) |
+| Stein | 79 % | 81 % | +1 Sturmtrupp → 56 % |
+| Waldflanke | 69 % | 82 % | +1 Sturmtrupp → 45 % (läuft) |
+| Kasem | 53 % | 79 % | +1 Sturmtrupp → 63 % (läuft) |
+| Kanal | 38 % | 63 % | ein Sturmtrupp schon zu viel (28 %) – läuft |
+| Varn | 37 % | 49 % | ohne Zusatz 49 % |
+Ein Sturmtrupp verschiebt bis zu 35 Punkte, deshalb stimme ich mit Grenadieren/Brandwerfern fein ab. Danach baue ich die Armeen ein (Welle weg) und melde die Endwerte.
+
+### Fragen an Enrico
+- F48: Soll auch das **Vernichten eines Trupps durch Beschuss** eine Kampfszene auslösen, oder bleibt Schießen schnell?
+
+
 ## 2026-11-20 21:55 – Paket B (Ton) erledigt, Paket C zum größten Teil, F44 läuft
 
 **Commits:** `33038ac` Paket B · `ffdf027` Paket C Teil 1 · `5d5b382` Posen Sturmtrupps/Pioniere – gepusht.
