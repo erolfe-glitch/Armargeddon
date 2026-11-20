@@ -168,8 +168,8 @@ Object.assign(TYPES, {
   oger: { side: 'A', name: 'Löwenoger', cls: 'storm', fig: 'raider', abil: 'sprung', atk: 8, def: 5, mor: 9, mv: 4, rng: 1, fs: 6,
     can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark, nur leicht gepanzert. Schrotflinte nur auf 1 Feld, dort aber hart. Sickert durch: Gegner halten ihn nicht auf. Sprungangriff (Aktion, alle 2 Runden, nur aus dem Stand): springt bis 2 Felder weit neben einen Gegner, auch über Draht und Gräben, und greift sofort im Nahkampf an.',
     real: 'Amerikanische Soldaten nahmen 1918 Vorderschaftrepetierflinten (Winchester M1897, „Grabenflinte“) mit in den Grabenkampf. Deutschland protestierte im September 1918 offiziell gegen diese Waffe.' },
-  huenen: { side: 'D', name: 'Eiserne Hünen', cls: 'inf', fig: 'suitD', suit: true, mgfire: true, pin: true, dauerfeuer: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 2, fs: 5,
-    can: 'Riesen in schwerer Ritterrüstung mit Maschinengewehr aus der Hüfte: langsam, Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht hält sie nicht auf. Jeder Treffer hält das Ziel nieder; das MG muss nicht aufgebaut werden. Dauerfeuer: nach dem Schuss in derselben Runde eine zweite Salve (gleiches oder anderes Ziel) – danach kann das MG eine eigene Runde lang nicht feuern (Abkühlen).',
+  huenen: { side: 'D', name: 'Eiserne Hünen', cls: 'inf', fig: 'suitD', suit: true, mgfire: true, pin: true, dauerfeuer: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 3, fs: 7,
+    can: 'Riesen in schwerer Ritterrüstung mit schwerem Maschinengewehr aus der Hüfte (3 Felder): langsam, Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht hält sie nicht auf. Jeder Treffer hält das Ziel nieder; das MG muss nicht aufgebaut werden. Dauerfeuer: nach dem Schuss in derselben Runde eine zweite Salve (gleiches oder anderes Ziel) – danach kann das MG eine eigene Runde lang nicht feuern (Abkühlen).',
     real: 'Das deutsche MG 08 wog mit Schlitten und Kühlwasser rund 60 Kilogramm und brauchte eine Bedienung. MG-Schützen trugen ab 1916 teils Stahlbrustpanzer von etwa zehn Kilogramm. Das leichtere MG 08/15 kam 1917.' },
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Sturmlauf (alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, am Ende sofort Nahkampf. Kein Koloss: Geschütze und Nahkampf treffen voll.',
@@ -232,8 +232,11 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // Aschenwacht-Spezialisten −13 bis −29, Aschenwacht-Maschinen weiter +10 bis +16.
 // Eisenknecht 2026-11-20: Preis 150 (ADJ −10). Budget-Tausch (MISCHEN=1, MECHS=1, Grauwall, je 2×800 Schlachten): Aschenwacht ohne Tausch 61,5 %,
 // Knecht statt 4 Grenadiere 62 %, statt 5 (150 Punkte) 59,5 %, statt 6 nur 46 %: der Knecht ist etwa 4–5 Grenadiere wert.
+// Löwenoger und Eiserne Hünen 2026-11-20: Budget-Tausch MISCHEN=1, Grauwall, je 600 Schlachten. Oger statt Kohorten (Konkordat ohne Tausch 36 % / Startwert 5: 41 %):
+// statt 2 → 40 %, statt 3 → 38 % / 35 %, statt 4 → 26 %, 2 Oger statt 6 → 25 %: neutral bei etwa 2,6 Kohorten = 105. Hünen (Feuer 7, Reichweite 3) statt Grenadiere
+// (Aschenwacht ohne Tausch 65 %): statt 3 → 66 %, statt 4 → 57 %; neutral bei 3 Grenadieren = 90 (ADJ −15). Mit Feuer 5/Reichweite 2 waren sie keine 2 Grenadiere wert.
 const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
-  sturm: 40, knecht: -10, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
+  sturm: 40, knecht: -10, huenen: -15, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
   feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5 };
 function costParts(k) {

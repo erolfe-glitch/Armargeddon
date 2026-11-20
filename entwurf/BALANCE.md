@@ -439,3 +439,18 @@ Stufe-3-Schreiter der Aschenwacht mit Faustsalve. Gemessen als Tausch im Budget:
 | statt 6 (180) | 46 % | – | 46 % |
 
 Neutral liegt bei 4–5 Grenadieren; mit 6 Grenadieren weniger wird die Verteidigung zu dünn. Preis daher **150** (ADJ −10, vorher 185).
+
+## Löwenoger und Eiserne Hünen (2026-11-20)
+Budget-Tausch `MISCHEN=1`, Grauwall, je 600 Schlachten (Startwert 1, beim Oger auch 5).
+
+| Tausch | Seite ohne Tausch | mit Tausch |
+|---|---|---|
+| 1 Löwenoger (105) statt 2 Kohorten | Konkordat 36 % | 40 % |
+| statt 3 Kohorten | 36 % / 41 % | 38 % / 35 % |
+| statt 4 Kohorten | 36 % | 26 % |
+| 2 Löwenoger statt 6 Kohorten | 36 % | 25 % |
+| 1 Hünen-Trupp alt (Feuer 5, Reichweite 2) statt 2 / 3 / 4 Grenadiere | Aschenwacht 65 % | 57 / 52 / 44 % |
+| 1 Hünen-Trupp neu (Feuer 7, Reichweite 3) statt 3 Grenadiere | 65 % | 66 % |
+| … statt 4 Grenadiere | 65 % | 57 % (Abwehr 7: 60 %, Bewegung 3: 65 %) |
+
+Löwenoger: Werte wie geplant, Preis **105** (neutral bei etwa 2,6 Kohorten). Eiserne Hünen: schweres MG mit Reichweite 3 und Feuer 7, Bewegung bleibt 2, Preis **90** (ADJ −15). Sprungangriffe in der KI: gut 2–3 je Oger und Schlacht, Dauerfeuer etwa 1 je Hünen-Trupp und Schlacht.
