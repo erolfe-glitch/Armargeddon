@@ -493,6 +493,11 @@ function next(G) {
     G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
     return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
   }
+  for (const u of G.units) {   // Löwengebrüll (Kreuzschreiter, 2026-11-20): kostet nichts, vor dem eigenen Angriff, wenn es mindestens 2 Gegner trifft oder einen auf einem Zielfeld bzw. ein MG
+    if (u.side !== G.side || !E.canRoar(G, u)) continue;
+    const ts = E.roarTargets(G, u);
+    if (ts.length >= 2 || ts.some(o => E.hex(G, o.c, o.r).obj || TYPES[o.type].mg)) return { u: u.id, steps: [{ k: 'roar' }] };
+  }
   for (const u of order(G, G.side)) {
     if (G._aiDone.has(u.id)) continue;
     G._aiDone.add(u.id);
@@ -606,6 +611,7 @@ function exec(G, uid, s) {
   if (s.k === 'setup') return E.setupMG(G, u);
   if (s.k === 'teardown') return E.teardownMG(G, u);
   if (s.k === 'abil') return E.useAbil(G, u, s.c, s.r);
+  if (s.k === 'roar') return E.roar(G, u);
   if (s.k === 'ow') return E.overwatch(G, u);
   if (s.k === 'sperr') return E.canSperr(G, u) ? E.sperr(G, u) : [];
   if (s.k === 'recover') { const t = G.units.find(x => x.id === s.t); return t ? E.recover(G, u, t) : []; }

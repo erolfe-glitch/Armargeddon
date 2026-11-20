@@ -6,6 +6,7 @@
 // ---------- Grundwerte (per Simulation abgestimmt) ----------
 const P = {
   DMG: 0.61,
+  ROAR_R: 2, ROAR_MOR: 2,   // Löwengebrüll des Kreuzschreiters (2026-11-20): einmal je Schlacht, kostet nichts; Gegner ohne Panzerung bis ROAR_R Felder: Moral −ROAR_MOR, niedergehalten bis zum Ende ihrer nächsten Runde
   FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6, FREEBLOW: 1.0,   // FLANK/REAR nur für Fahrzeuge; FREEBLOW: Freischlag beim Rückzug, Stärke je Schlag (≈ 10 wie Stacheldraht, ±20 % Zufall, Paket 4)
   COUNTER: { front: 0.6, flank: 0.3, rear: 0 },
   MOR_PER_DMG: 0.8, MOR_FLANK: 0.5, MOR_REAR: 1, MOR_SURR: 1,
@@ -154,8 +155,8 @@ Object.assign(TYPES, {
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
     real: 'Auch die Briten bauten keine Schreitmaschinen. Ihr erster Panzer, der Mark I von 1916, hatte acht Mann Besatzung und fuhr etwa so schnell wie ein Fußgänger.' },
-  kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, at: P_STUFE3_AT, zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 2, rng: 2, fs: 5,
-    can: 'Stufe 3, höchstens einer je Schlacht. Schwer gepanzerte Kampfmaschine mit schwerer Kanone im Löwenmaul (stark gegen Fahrzeuge und Schreiter, beschädigt die Kirche) und Kriegshammer. Am zähesten von allen. Dazu die Kanone am linken Unterarm (einmal je Runde zusätzlich, 2 Felder, wirkt auch gegen Panzerung). Fährt sich selten fest und fällt dann 3 Runden aus.',
+  kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, roar: true, at: P_STUFE3_AT, zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 3, rng: 2, fs: 5,
+    can: 'Stufe 3, höchstens einer je Schlacht. Schwer gepanzerte Kampfmaschine mit schwerer Kanone im Löwenmaul (stark gegen Fahrzeuge und Schreiter, beschädigt die Kirche) und Kriegshammer. Am zähesten von allen und für einen Schreiter schnell (3 Felder). Dazu die Kanone am linken Unterarm (einmal je Runde zusätzlich, 2 Felder, wirkt auch gegen Panzerung). Löwengebrüll (einmal je Schlacht, kostet nichts): Gegner ohne Panzerung bis 2 Felder verlieren Moral und werden niedergehalten. Fährt sich selten fest und fällt dann 3 Runden aus.',
     real: 'Panzerbesatzungen trugen Lederhelme und Kettenmasken gegen Splitter, die beim Beschuss innen von der Panzerwand absprangen.' },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Kleiner Trupp in motorisierten Kampfanzügen. Gewehr- und MG-Feuer wirkt nur halb, Stacheldraht verletzt und hält ihn nicht auf. Sturmlauf (alle Punkte): bis 4 Felder geradeaus, Draht hält nicht auf, am Ende sofort Nahkampf. Kein Koloss: Geschütze und Nahkampf treffen voll.',
@@ -209,7 +210,7 @@ Object.assign(TYPES, {
 const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
   signal: ['Ziel markieren', 5], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
   hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
-  pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen', 20], kreuz: ['Löwenmaul-Kanone gegen Panzerung, Unterarm-Kanone', 20],
+  pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen', 20], kreuz: ['Löwenmaul-Kanone gegen Panzerung, Unterarm-Kanone, Löwengebrüll', 30],
   rauch: ['Nebelwand', 15], mineur: ['Stollen', 10], werkstatt: ['Reparieren, Bergen, Nachladen', 40], ballon: ['Ziel markieren, Sicht von oben', 50],
   eingreif: ['Gegenstoß', 40], gasschutz: ['Gasschutz', 15], munition: ['Reparieren, Bergen, Nachladen', 40], pirsch: ['Getarnt, Niederhalten', 35] };
 // Abgleich nach tools/costcheck.js (Grauwall, 140 Spiele je Typ): Angreifer-Infanterie nimmt Zielfelder und ist für den Angreifer mehr wert,
@@ -221,7 +222,7 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // Aschenwacht-Spezialisten −13 bis −29, Aschenwacht-Maschinen weiter +10 bis +16.
 const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
   sturm: 40, knecht: 60, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
-  feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -10, orden: -10,
+  feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5 };
 function costParts(k) {
   const t = TYPES[k], c = t.cls;
@@ -267,7 +268,7 @@ Object.assign(TYPES, {
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
 const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "schildwall": ["Sehr zäh", "Keine Schusswaffe", "Schilde vor"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["Befehl alle 2 Runden, 2 Felder", "Sammeln, Feuer frei"], "hauptD": ["Befehl alle 2 Runden, 2 Felder", "Sammeln, Sturmbefehl"], "generalA": ["Befehl jede Runde, 3 Felder", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Einmal: Generalangriff", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
-Object.assign(SPECIALS, { turm: ["Gepanzert", "Geschützturm", "Schuss 3 Felder", "Panne möglich"], orden: ["Gepanzert", "Drehlauf", "Kettensäge", "Panne möglich"], kreuz: ["Stufe 3: einmal je Schlacht", "Schwer gepanzert", "Löwenmaul-Kanone: stark gegen Panzerung", "Kriegshammer", "Panne möglich"] });
+Object.assign(SPECIALS, { turm: ["Gepanzert", "Geschützturm", "Schuss 3 Felder", "Panne möglich"], orden: ["Gepanzert", "Drehlauf", "Kettensäge", "Panne möglich"], kreuz: ["Stufe 3: einmal je Schlacht", "Schwer gepanzert", "Löwenmaul-Kanone: stark gegen Panzerung", "Kriegshammer", "Löwengebrüll: einmal je Schlacht", "Panne möglich"] });
 // Paket 1: Schlagworte für neue Regeln
 Object.assign(SPECIALS, { rauch: ['Nebelwand'], mineur: ['Stollen sprengen'],
   werkstatt: ['Repariert Kolosse', 'Nachladen'], ballon: ['Sicht von oben 8 Felder', 'Ziel markieren', 'Zieht nicht'],
@@ -1922,9 +1923,23 @@ function buy(G, side, type, c, r) {
   u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; u.sperr = 0;
   return [{ t: 'spawn', u: u.id }];
 }
+// Löwengebrüll (Kreuzschreiter): einmal je Schlacht, ohne Aktion; Gegner ohne Panzerung im Umkreis verlieren Moral und werden niedergehalten (u.angst bis zu ihrer nächsten Runde)
+function roarTargets(G, u) { return G.units.filter(o => o.side !== u.side && o.status === 'ok' && cls(o) !== 'walker' && dist(u.c, u.r, o.c, o.r) <= P.ROAR_R); }
+function canRoar(G, u) { return !!TYPES[u.type].roar && active(u) && u.side === G.side && !u.roared && !(u.broken > 0) && roarTargets(G, u).length > 0; }
+function roar(G, u) {
+  if (!canRoar(G, u)) return [];
+  const ts = roarTargets(G, u), ev = [{ t: 'roar', u: u.id, d: ts.map(o => o.id) }]; u.roared = true;
+  for (const o of ts) {
+    let ml = P.ROAR_MOR; if (officerAt(G, o.side, o.c, o.r)) ml *= P.OFFICER_MOR; if (bannerAt(G, o.side, o.c, o.r)) ml *= 0.75;
+    o.mor = Math.max(0, o.mor - ml); o.angst = 1;
+    if (o.mor <= 0 && !noFlee(G, o)) { routUnit(G, o, u, ev); continue; }
+    if (!(o.supp > 0)) { o.supp = 1; ev.push({ t: 'supp', u: o.id }); }
+  }
+  ev.push(...checkEnd(G)); return ev;
+}
 function endTurn(G) {
   if (G.over) return [];
-  for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; }
+  for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; u.angst = 0; }
   if (G.side === 'A') G.side = 'D';
   else {
     if (G.turn >= P.MAX_ROUNDS) { G.over = finalResult(G); return [{ t: 'over', result: G.over }]; }
@@ -1955,7 +1970,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  roar, canRoar, roarTargets, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

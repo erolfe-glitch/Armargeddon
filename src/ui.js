@@ -595,7 +595,7 @@ function initDU() { DU.clear(); for (const u of G.units) addDU(u); }
 // Anzeige-Zustand (Wunsch des Nutzers): Zustände und Wolken erscheinen erst, wenn ihr Ereignis abgespielt wird, nicht schon beim Rechnen.
 // Die Regeln ändern G sofort; gezeichnet wird VIS bzw. d.vs, das syncAll() nach jedem abgespielten Stapel nachzieht.
 const VIS = { clouds: [], smoke: [], lit: [], marks: [], fires: [], ctrl: {} };
-const vsOf = u => ({ lance: !!(TYPES[u.type] && TYPES[u.type].blastLance && !u.lanceUsed), dug: !!u.dug, shields: !!u.shields, fireFree: !!u.fireFree, hold: !!u.holdB, planted: !!u.planted, sperr: u.sperr || 0, supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered });
+const vsOf = u => ({ lance: !!(TYPES[u.type] && TYPES[u.type].blastLance && !u.lanceUsed), dug: !!u.dug, shields: !!u.shields, fireFree: !!u.fireFree, hold: !!u.holdB, planted: !!u.planted, sperr: u.sperr || 0, supp: u.supp || 0, gassed: !!u.gassed, poison: u.poison || 0, rout: u.status === 'rout', broken: u.broken || 0, stuck: u.stuck || 0, setup: !!u.setup, limbered: !!u.limbered, angst: !!u.angst });
 function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ ...k })); if (!what || what === 'clouds') VIS.clouds = cp(G.clouds); if (!what || what === 'smoke') VIS.smoke = cp(G.smoke); if (!what || what === 'lit') VIS.lit = cp(G.lit); if (!what || what === 'marks') VIS.marks = cp(G.marks); if (!what || what === 'fires') { VIS.fires = cp(G.fires); fireLoop(); } if (!what) { const old = VIS.ctrl || {};
     for (const o of OBJECTIVES) { const a = old[o.id], b = (G.ctrl || {})[o.id]; if (a === b || !b) continue;
       const me = human('A') && !human('D') ? 'A' : human('D') && !human('A') ? 'D' : null;   // gegen die KI: Verlust der eigenen Seite eigens hörbar
@@ -1557,7 +1557,7 @@ const KZ_LEG = [
   ['blitze', 'puls', 'Niedergehalten', 'Liegt unter Beschuss flach. Steigt auf bei Schreck oder Panik.'],
   ['schweiss', 'puls', 'Flieht', 'Moral gebrochen: Staubwolke, die Einheit läuft davon.'],
   ['tropfen', 'puls', 'Moral wankt', 'Beim nächsten Treffer weicht sie zurück (beim Anwählen). Steigt auf beim Zurückweichen und Rückzug.'],
-  ['angst', 'puls', 'Verängstigt', 'Durch das Löwengebrüll (noch ohne Wirkung, Test).'],
+  ['angst', 'puls', 'Verängstigt', 'Vom Löwengebrüll des Kreuzschreiters: Moral gesunken, niedergehalten bis zum Ende der nächsten eigenen Runde.'],
   ['gas', 'puls', 'Im Gas', 'Steht in der Gaswolke.'],
   ['gift', 'puls', 'Vergiftet', 'Verliert noch einige Runden Stärke und Moral.'],
   ['feuer', 'puls', 'Im Feuer', 'Steht auf einem brennenden Feld.'],
@@ -2446,6 +2446,7 @@ async function playEvent0(e) {
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.5); playSound('drahtwackeln', 0.4);   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
+    case 'roar': { const ru = unitById(e.u); if (ru) loewenGebruell(ru, e.d); await wait(700); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); kz(e.u, 'blitze', 'puls'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); kz(e.u, 'schweiss', 'puls'); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
@@ -3275,7 +3276,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', bp: dk, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
-  if (sel.type === 'kreuz') btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', text: 'Noch ohne Wirkung (Test). Brüllt und zeigt die Schreckstriche über den Gegnern im Umkreis von 1 Feld; kostet nichts.' });   // Test 2026-11-18, Wirkung „verängstigt“ siehe IDEEN.md
+  if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
   if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
   // Hinweiszeile
   if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
@@ -3367,12 +3368,12 @@ let hudTips = [];
   box.addEventListener('pointerdown', e => { const el = at(e); if (el && e.pointerType !== 'mouse') show(el, 3500); });
   box.addEventListener('focusin', e => { const el = at(e); if (el) show(el); }); box.addEventListener('focusout', hideTip);
   box.addEventListener('contextmenu', e => e.preventDefault()); }
-// Löwengebrüll des Kreuzschreiters (Test 2026-11-18): nur Ton (roar05 mit Roboterfilter) und Zeichen über den Gegnern im Umkreis 1, keine Regelwirkung
-function loewenGebruell(u) {
+// Löwengebrüll des Kreuzschreiters (Ereignis 'roar', 2026-11-20): Ton (roar05 mit Roboterfilter), Ringe, Schreckstriche über den getroffenen Gegnern
+function loewenGebruell(u, ids) {
   const d = DU.get(u.id); if (!d) return;
   playSound('loewe', 0.6, null, { u });
   rings.push({ x: d.x, y: d.y, r: 1.6, col: '#E2B04A', life: 40, max: 40 }); rings.push({ x: d.x, y: d.y, r: 2.6, col: '#E2B04A', life: 52, max: 52 });
-  for (const f of G.units) if (f.side !== u.side && E.alive(f) && E.dist(u.c, u.r, f.c, f.r) <= 1) kz(f.id, 'angst', 'puls');   // Kopfzeichen „verängstigt“
+  for (const id of ids || []) { const f = DU.get(id); if (f) { f.vs.angst = true; kz(id, 'angst', 'puls'); } }   // Kopfzeichen „verängstigt“
 }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
@@ -3384,7 +3385,7 @@ async function panelAct(a) {
   if (a === 'big') return act(u => E.bigOrder(G, u));
   if (a === 'plant') return act(u => E.plantBanner(G, u));
   if (a === 'dig') return act(u => E.dig(G, u));
-  if (a === 'loewe') return loewenGebruell(sel);
+  if (a === 'loewe') return act(u => E.roar(G, u));
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
@@ -3815,6 +3816,7 @@ function noteEvent(e, u) {
     case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
+    case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length} Gegner verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);
     case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);
     case 'rout': logAdd(`${N(u)} flieht`, u.side, ...at(u), true); return headline(`${N(u)} flieht!`, u.side);
     case 'destroyed': logAdd(`${N(u)} aufgerieben`, u.side, ...at(u), true); return headline(`${N(u)} aufgerieben!`, u.side);
