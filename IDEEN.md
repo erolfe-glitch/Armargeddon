@@ -78,7 +78,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 - **Titanen/Railgun der Mechs:** `509015`, `510084` (Notizen des Nutzers).
 - **Namensnennung im Spiel:** CC-BY-Töne (siehe `CREDITS.md`) in einem Credits-Fenster nennen; CC-BY-NC-Töne vor einem Verkauf ersetzen.
 - **Dämonen-Stimmen** (2026-11-17, noch nicht eingebaut): `four_voices_whispering`, `schizophrenic-voices`, `sisters-voices`, `the-prowler` in `sound-quelle/`.
-- **Löwengebrüll des Kreuzschreiters** (2026-11-18; Testknopf ohne Wirkung seit 2026-11-18: ui.js `loewenGebruell`, Ton `loewe_mr`, Zeichen vorläufig `s_flucht`): Ton liegt in `sound-quelle/Monster/613685__czghost__roar05.wav` (CC BY 4.0, CZghost), mit Roboterfilter (stimmen_cut.py `roboter`) als Löwengebrüll; dazu Fähigkeit „verängstigt“, einmal je Spiel, wirkt auf Gegner im Umkreis von 1 Feld.
+- ~~**Löwengebrüll des Kreuzschreiters**~~ umgesetzt 2026-11-20 (einmal je Schlacht, Umkreis 2, Moral −2 und niedergehalten). Ursprünglich (2026-11-18; Testknopf ohne Wirkung seit 2026-11-18: ui.js `loewenGebruell`, Ton `loewe_mr`, Zeichen vorläufig `s_flucht`): Ton liegt in `sound-quelle/Monster/613685__czghost__roar05.wav` (CC BY 4.0, CZghost), mit Roboterfilter (stimmen_cut.py `roboter`) als Löwengebrüll; dazu Fähigkeit „verängstigt“, einmal je Spiel, wirkt auf Gegner im Umkreis von 1 Feld.
 - **Abprotzen** (2026-11-18): zwei eigene Töne des Nutzers fehlen noch in `sound-quelle/`; bis dahin Platzhalter `abprotzen_1` (loading-gun).
 
 ## Spielmodi, KI und Armee-Grenzen (Enrico, 2026-11-17)
