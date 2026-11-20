@@ -153,3 +153,7 @@ Camera: exactly the same viewing angle, perspective and scale as the attached so
 
 Style: dark gothic trench-warfare comic illustration, exactly like the attached style reference (einzel_konzept.png): thick black ink outlines, hand-inked hatching, gritty painted textures, muted desaturated colours (grey-green-brown), rust, mud and soot, a world inspired by the First World War but our own fictional setting – no real places, no real insignia, no existing franchise, no readable inscriptions. No people, no text, no frame.
 ```
+
+## Abgleich 2026-11-20
+- Kirche zählt **3** statt 4 Siegpunkte (Ziel 63 statt 70). Grund: Die Kirche liegt näher an der Aschenwacht (Turm 3 Felder vor ihrem Graben, 7 vor dem Startbereich des Konkordats); mit 4 Punkten gewann das Konkordat nur 40 %.
+- Gemessen (800 Schlachten): Standardaufstellung 45 %, gemischte Aufstellung (MISCHEN=1) 53 % fürs Konkordat. Verworfen: Konkordat stellt im eigenen Graben auf (74 % / 66 %), Turm ohne Bonus (keine Wirkung).

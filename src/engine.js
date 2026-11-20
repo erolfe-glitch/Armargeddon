@@ -458,12 +458,12 @@ const MAPS = {
   // Balance (Simulation 2026-11-19, entwurf/BALANCE.md): das Konkordat zieht zuerst und gewinnt sonst den Lauf zu den neutralen Fahnen –
   // deshalb steht der Turm auf der Ostseite, die Aschenwacht stellt bis in ihren Graben auf (band 4) und rückt wie ein Angreifer vor (ki).
   sanktruss: { id: 'sanktruss', name: 'Sankt Ruß', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 9, band: 4,
-    desc: 'Ein zerschossenes Dorf um eine ausgebrannte Kirche. Beide Seiten stürmen aus ihren Gräben am Dorfrand; dazwischen Häuserkampf um Friedhof, Dorfplatz und die Kirche, die doppelt zählt. Vom Turm sieht und schießt man weiter, schwere Granaten bringen die Kirche zum Einsturz.',
+    desc: 'Ein zerschossenes Dorf um eine ausgebrannte Kirche. Beide Seiten stürmen aus ihren Gräben am Dorfrand; dazwischen Häuserkampf um Friedhof, Dorfplatz und die Kirche, die am meisten zählt. Vom Turm sieht und schießt man weiter, schwere Granaten bringen die Kirche zum Einsturz.',
     maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 23 },
     objectives: [
       { id: 'gutshof', name: 'Gutshof', c: 5, r: 2, pts: 1 },
       { id: 'friedhof', name: 'Friedhof', c: 8, r: 3, pts: 2 },
-      { id: 'kirche', name: 'Kirche von Sankt Ruß', c: 8, r: 5, pts: 4 },
+      { id: 'kirche', name: 'Kirche von Sankt Ruß', c: 8, r: 5, pts: 3 },   // 3 statt 4 (2026-11-20): die Kirche liegt näher an der Aschenwacht (Turm 3 Felder vor ihrem Graben, 7 vor dem des Konkordats); mit 4 nur 40 % fürs Konkordat
       { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 7, pts: 2 },
       { id: 'wegkreuz', name: 'Wegkreuz', c: 10, r: 7, pts: 1 }],
     bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[8, 5], [9, 5]], turm: [9, 4] }],
