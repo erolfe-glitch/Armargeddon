@@ -425,3 +425,17 @@ Sonst:
 - Den Turm hält die Aschenwacht in rund zwei Drittel der Züge.
 - Eingestürzt wird die Kirche meist vom Konkordat: Landkolosse schießen auf die Aschenwacht im Turm.
 - Dauer im Mittel 14 Runden, Verluste beider Seiten rund 30 %.
+
+## Eisenknecht-Preis (2026-11-20)
+Stufe-3-Schreiter der Aschenwacht mit Faustsalve. Gemessen als Tausch im Budget: Knecht statt n Grenadiere (je 30 Punkte),
+`MISCHEN=1 MECHS=1`, Grauwall, je 800 Schlachten mit zwei Startwerten (1 und 5), Siegquote Aschenwacht:
+
+| Tausch | Startwert 1 | Startwert 5 | Mittel |
+|---|---|---|---|
+| ohne | 63 % | 60 % | 61,5 % |
+| statt 3 (90) | – | 69 % | 69 % |
+| statt 4 (120) | 60 % | 64 % | 62 % |
+| statt 5 (150) | 60 % | 59 % | 59,5 % |
+| statt 6 (180) | 46 % | – | 46 % |
+
+Neutral liegt bei 4–5 Grenadieren; mit 6 Grenadieren weniger wird die Verteidigung zu dünn. Preis daher **150** (ADJ −10, vorher 185).

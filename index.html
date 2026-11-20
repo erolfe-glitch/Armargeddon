@@ -1465,8 +1465,10 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // -Fahrzeuge zu billig (+15 bis +27 Punkte Siegquote gegenüber gleich viel Grundinfanterie), Konkordat-Spezialisten zu teuer (−16 bis −37).
 // Zweite Runde 2026-11-18 (costcheck mit der neuen KI: Fahrzeuge vorsichtiger, Spezialisten gezielter): Konkordat-Kolosse/Schreiter −19 bis −24,
 // Aschenwacht-Spezialisten −13 bis −29, Aschenwacht-Maschinen weiter +10 bis +16.
+// Eisenknecht 2026-11-20: Preis 150 (ADJ −10). Budget-Tausch (MISCHEN=1, MECHS=1, Grauwall, je 2×800 Schlachten): Aschenwacht ohne Tausch 61,5 %,
+// Knecht statt 4 Grenadiere 62 %, statt 5 (150 Punkte) 59,5 %, statt 6 nur 46 %: der Knecht ist etwa 4–5 Grenadiere wert.
 const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
-  sturm: 40, knecht: 25, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
+  sturm: 40, knecht: -10, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
   feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5 };
 function costParts(k) {
