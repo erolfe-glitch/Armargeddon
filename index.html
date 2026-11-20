@@ -937,16 +937,36 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 :is(#shopDet, #armyDet) .w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 6px 0; text-align: center; font: 600 11px var(--s-body); color: #5a4630; }
 :is(#shopDet, #armyDet) .w b { display: block; font: 400 18px var(--s-num); color: #2a1f16; }
 :is(#shopDet, #armyDet) .real { color: #5a4630; font-style: italic; margin-top: 6px; } :is(#shopDet, #armyDet) .warum { color: #7a2a20; font-weight: 700; margin-top: 4px; }
-@media (max-width: 1500px) { body.neu #shop .sheet, #army .sheet { width: calc(100vw - 420px); margin-right: 10px; } :is(#shopNeu, #armyNeu) .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
+@media (max-width: 1500px) { body.neu #shop .sheet { width: calc(100vw - 420px); margin-right: 10px; } :is(#shopNeu, #armyNeu) .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
 /* Armee-Auswahl (2026-11-20) im selben Aufbau wie das Nachschub-Menü: gleiche Reiter, Reihenfolge, Karten und Details; dazu Zähler −/+ auf jeder Karte */
-#army .sheet { max-width: none; width: min(1180px, calc(100vw - 460px)); margin: 70px 20px 0 auto; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
+#army.overlay { padding: 8px; overflow: hidden; }
+#army .sheet { max-width: none; width: auto; box-sizing: border-box; margin: 0; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
   background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; padding: 6px 12px; }
-#armyNeu { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 10px; height: min(760px, calc(100vh - 110px)); }
+#armyNeu { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; height: calc(100vh - 56px); }
+/* Waagerecht (2026-11-20): links Reiter und Karten in Reihen, rechts die gewählte Armee */
+#armyNeu .an-body { display: grid; grid-template-columns: minmax(0, 1fr) clamp(260px, 22vw, 380px); gap: 14px; min-height: 0; }
+#armyNeu .an-haupt { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 10px; min-height: 0; }
+#armyNeu .an-seite { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; min-height: 0; padding: 10px 12px; border: 2px solid #4d3b28; border-radius: 4px;
+  background: linear-gradient(rgba(18,13,11,.45), rgba(18,13,11,.65)), var(--up-txHolz) 0 0 repeat; color: var(--s-text); }
+#armyNeu .an-seite h3 { margin: 0; font: 400 19px var(--s-head); letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+#armyNeu .an-punkte { display: grid; gap: 4px; font: 600 14px var(--s-body); }
+#armyNeu .an-balken { height: 12px; border: 2px solid var(--s-ink); border-radius: 3px; background: #1d1612; overflow: hidden; }
+#armyNeu .an-balken i { display: block; height: 100%; width: 0; background: linear-gradient(#e6c97a, #b98d3a); transition: width .2s; }
+#armyNeu .an-balken i.over { background: linear-gradient(#ff9a7a, #b8452e); }
+#armyNeu .an-zeile { display: flex; justify-content: space-between; align-items: baseline; color: #d8ccb0; }
+#armyNeu .an-zeile b { font: 400 22px var(--s-num); color: #ffe2a0; } #armyNeu .an-zeile b.over { color: #ff8a6a; }
+#armyNeu .an-punkte em { font-style: normal; color: #ffe2a0; }
+#armyNeu .an-wahl { overflow: auto; display: grid; align-content: start; gap: 2px; }
+#armyNeu .an-wahl .kat { margin: 6px 0 2px; font: 400 13px var(--s-head); letter-spacing: .06em; text-transform: uppercase; color: var(--s-brass); }
+#armyNeu .an-wahl button { display: grid; grid-template-columns: 34px 1fr auto; align-items: baseline; gap: 6px; min-height: 40px; padding: 4px 8px; border: 1px solid transparent; border-radius: 3px; background: rgba(0,0,0,.25);
+  text-align: left; cursor: pointer; color: var(--s-text); font: 600 15px var(--s-body); }
+#armyNeu .an-wahl button:hover { border-color: var(--s-brass); }
+#armyNeu .an-wahl button b { font: 400 18px var(--s-num); color: #fff2cc; } #armyNeu .an-wahl button span:last-child { font: 400 15px var(--s-num); color: #e6c97a; }
+#armyNeu #armyMechRow .tbtn { width: 100%; min-height: 44px; }
+#armyDet { width: clamp(260px, 22vw, 380px); box-sizing: border-box; }
+:is(#shopNeu, #armyNeu) .sn-k .nm { hyphens: manual; -webkit-hyphens: manual; }
 #armyNeu .sn-titel b span { font: inherit; color: inherit; text-shadow: inherit; }
 #armyNeu .sn-titel span.over, #armyPts.over { color: #ff8a6a; }
-#armyNeu .sn-info { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; font: 600 14px var(--s-body); color: #d8ccb0; min-height: 26px; }
-#armyNeu .sn-info em { font-style: normal; color: #ffe2a0; }
-#armyNeu .sn-info .tbtn { min-height: 40px; padding: 0 14px; }
 #armyNeu .sn-k { cursor: pointer; }
 #armyNeu .sn-k.has { border-color: var(--s-brass); box-shadow: 0 0 0 2px rgba(226,176,74,.55), 0 0 14px rgba(226,176,74,.3); }
 #armyNeu .sn-k { padding-bottom: 54px; align-content: start; }
@@ -1149,9 +1169,18 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
   <div class="sheet">
     <div id="armyNeu">
       <div class="sn-titel"><b>Armee: <span id="armyName">Armee</span></b><span>★ <span id="armyPts">0 / 0</span></span></div>
-      <div class="sn-info"><span id="armyCnt"></span><em id="armyMsg"></em><span id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></span></div>
-      <div class="sn-reiter" id="armyReiter"></div>
-      <div class="sn-liste" id="armyList"></div>
+      <div class="an-body">
+        <div class="an-haupt">
+          <div class="sn-reiter" id="armyReiter"></div>
+          <div class="sn-liste" id="armyList"></div>
+        </div>
+        <aside class="an-seite">
+          <h3>Gewählte Armee</h3>
+          <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em></div>
+          <div class="an-wahl" id="armyWahl"></div>
+          <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
+        </aside>
+      </div>
       <div class="sn-fuss"><span id="armyFussText"></span><span class="sn-knoepfe"><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button><button class="endbtn" id="armyOk">Übernehmen</button></span></div>
     </div>
   </div>
@@ -9212,11 +9241,16 @@ const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge un
 const SHOP_STANDARD = ['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'];   // Linientruppen
 function shopKatOf(t) { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls === 'walker' || E.isMech(t) ? 'Fahrzeuge und Kampfmaschinen' : T.cls === 'art' ? 'Artillerie' : SHOP_STANDARD.includes(t) ? 'Standard' : 'Spezial'; }
 // Karte und Pergament-Details einer Einheit (Nachschub und Armee-Auswahl gleich, 2026-11-20)
-function snKarte(t) { const T = TYPES[t]; return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${T.name}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
-function snZeig(det, el, sheet, w) {
+// weiche Trennstellen an Wortfugen langer Namen (Karten werden bei 1280 px schmal; automatische Silbentrennung greift nicht überall)
+const SN_FUGE = /(Schützen|Melde|Fernsprech|Scharf|Graben|Lanzen|Flammen|Stahl|Turm|Ordens|Kreuz|Rauch|Tunnel|Versorgungs|Ballon|Aschen|Spreng|Signal|Draht|Banner|Panzer|Minen|Brand|Sturm|Eisen|Säge|Klauen|Eingreif|Pirsch)(?=\p{Ll}{4})/gu;
+const snName = n => n.replace(SN_FUGE, '$1­');
+function snKarte(t) { const T = TYPES[t]; return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+function snZeig(det, el, sheet, w, platz) {   // platz: Element, über das die Details gelegt werden (Armee-Auswahl: Seitenleiste), sonst neben das Fenster
   const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
   det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
-  det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight; let x = sh.left - dw - 8; if (x < 8) x = r.right + 10 + dw < innerWidth ? r.right + 10 : r.left - dw - 10;
+  det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight;
+  if (platz) { const p = platz.getBoundingClientRect(); det.style.left = Math.max(8, p.left + (p.width - dw) / 2) + 'px'; det.style.top = Math.max(8, Math.min(innerHeight - dh - 8, p.top)) + 'px'; el.parentElement.querySelectorAll('.sn-k').forEach(e => e.classList.toggle('offen', e === el)); return; }
+  let x = sh.left - dw - 8; if (x < 8) x = r.right + 10 + dw < innerWidth ? r.right + 10 : r.left - dw - 10;
   det.style.left = Math.max(8, Math.min(innerWidth - dw - 8, x)) + 'px'; det.style.top = Math.max(80, Math.min(innerHeight - dh - 8, r.top - 10)) + 'px';
   el.parentElement.querySelectorAll('.sn-k').forEach(e => e.classList.toggle('offen', e === el));
 }
@@ -9569,7 +9603,7 @@ function armyListe() {   // Reiter und Karten der gewählten Kategorie neu aufba
   $('armyList').innerHTML = inKat(armyKat).map(t => `<div class="sn-k ${sd}" data-t="${t}">${snKarte(t)}${isGeneral(t) ? '<span class="stepper fixed" data-tip="Pflicht: Jede Armee hat genau einen General."><i>1</i><em>Pflicht</em></span>' : '<span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span>'}</div>`).join('');
   requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   hideArmyDet();
-  const det = $('armyDet'), sheet = $('army').querySelector('.sheet'), zeig = el => snZeig(det, el, sheet, armyWarum(el.dataset.t));
+  const det = $('armyDet'), sheet = $('army').querySelector('.sheet'), zeig = el => snZeig(det, el, sheet, armyWarum(el.dataset.t), document.querySelector('#armyNeu .an-seite'));
   const dazu = (el, d) => { const t = el.dataset.t; if (isGeneral(t)) return; if (d > 0 && armyWarum(t)) { zeig(el); return; }
     armyDraft[t] = Math.max(0, Math.min(E.ARMY_CAP, (armyDraft[t] || 0) + d)); armyRefresh(); if (det.classList.contains('zeigen')) zeig(el); };
   $('armyList').querySelectorAll('.sn-k').forEach(el => {
@@ -9589,6 +9623,11 @@ function armyRefresh() {
   $('armyReiter').querySelectorAll('button').forEach(b => b.onclick = () => { armyKat = b.dataset.kat; armyListe(); });
   $('armyList').querySelectorAll('.sn-k').forEach(it => { const t = it.dataset.t, v = armyDraft[t] || 0; it.querySelector('i').textContent = v; it.classList.toggle('has', v > 0); it.classList.toggle('aus', !v && !!armyWarum(t) && !isGeneral(t)); });
   $('armyPts').textContent = `${cost} / ${bud}`; $('armyPts').classList.toggle('over', cost > bud);
+  $('armyPtsSeite').textContent = `${cost} / ${bud}`; $('armyRest').textContent = bud - cost; $('armyRest').classList.toggle('over', cost > bud);
+  $('armyBalken').style.width = Math.min(100, 100 * cost / bud) + '%'; $('armyBalken').classList.toggle('over', cost > bud);
+  // Seitenleiste: gewählte Einheiten nach Kategorie (gleiche Reihenfolge wie die Reiter); Klick springt zum Reiter und zeigt die Karte
+  $('armyWahl').innerHTML = SHOP_KAT.map(k => { const ts = inKat(k).filter(t => armyDraft[t] > 0); return ts.length ? `<div class="kat">${k}</div>` + ts.map(t => `<button data-t="${t}" title="Zum Reiter ${k}"><b>${armyDraft[t]}×</b><span>${TYPES[t].name}</span><span>★ ${armyDraft[t] * E.COST[t]}</span></button>`).join('') : ''; }).join('') || '<em>Noch keine Einheiten gewählt.</em>';
+  $('armyWahl').querySelectorAll('button').forEach(b => b.onclick = () => { const t = b.dataset.t; armyKat = shopKatOf(t); armyListe(); const el = $('armyList').querySelector(`.sn-k[data-t="${t}"]`); if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.add('offen'); setTimeout(() => el.classList.remove('offen'), 900); } });
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
     : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';

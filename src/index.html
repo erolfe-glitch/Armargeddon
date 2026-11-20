@@ -930,16 +930,36 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 :is(#shopDet, #armyDet) .w { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 6px 0; text-align: center; font: 600 11px var(--s-body); color: #5a4630; }
 :is(#shopDet, #armyDet) .w b { display: block; font: 400 18px var(--s-num); color: #2a1f16; }
 :is(#shopDet, #armyDet) .real { color: #5a4630; font-style: italic; margin-top: 6px; } :is(#shopDet, #armyDet) .warum { color: #7a2a20; font-weight: 700; margin-top: 4px; }
-@media (max-width: 1500px) { body.neu #shop .sheet, #army .sheet { width: calc(100vw - 420px); margin-right: 10px; } :is(#shopNeu, #armyNeu) .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
+@media (max-width: 1500px) { body.neu #shop .sheet { width: calc(100vw - 420px); margin-right: 10px; } :is(#shopNeu, #armyNeu) .sn-liste { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
 /* Armee-Auswahl (2026-11-20) im selben Aufbau wie das Nachschub-Menü: gleiche Reiter, Reihenfolge, Karten und Details; dazu Zähler −/+ auf jeder Karte */
-#army .sheet { max-width: none; width: min(1180px, calc(100vw - 460px)); margin: 70px 20px 0 auto; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
+#army.overlay { padding: 8px; overflow: hidden; }
+#army .sheet { max-width: none; width: auto; box-sizing: border-box; margin: 0; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
   background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; padding: 6px 12px; }
-#armyNeu { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; gap: 10px; height: min(760px, calc(100vh - 110px)); }
+#armyNeu { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; height: calc(100vh - 56px); }
+/* Waagerecht (2026-11-20): links Reiter und Karten in Reihen, rechts die gewählte Armee */
+#armyNeu .an-body { display: grid; grid-template-columns: minmax(0, 1fr) clamp(260px, 22vw, 380px); gap: 14px; min-height: 0; }
+#armyNeu .an-haupt { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 10px; min-height: 0; }
+#armyNeu .an-seite { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; min-height: 0; padding: 10px 12px; border: 2px solid #4d3b28; border-radius: 4px;
+  background: linear-gradient(rgba(18,13,11,.45), rgba(18,13,11,.65)), var(--up-txHolz) 0 0 repeat; color: var(--s-text); }
+#armyNeu .an-seite h3 { margin: 0; font: 400 19px var(--s-head); letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
+#armyNeu .an-punkte { display: grid; gap: 4px; font: 600 14px var(--s-body); }
+#armyNeu .an-balken { height: 12px; border: 2px solid var(--s-ink); border-radius: 3px; background: #1d1612; overflow: hidden; }
+#armyNeu .an-balken i { display: block; height: 100%; width: 0; background: linear-gradient(#e6c97a, #b98d3a); transition: width .2s; }
+#armyNeu .an-balken i.over { background: linear-gradient(#ff9a7a, #b8452e); }
+#armyNeu .an-zeile { display: flex; justify-content: space-between; align-items: baseline; color: #d8ccb0; }
+#armyNeu .an-zeile b { font: 400 22px var(--s-num); color: #ffe2a0; } #armyNeu .an-zeile b.over { color: #ff8a6a; }
+#armyNeu .an-punkte em { font-style: normal; color: #ffe2a0; }
+#armyNeu .an-wahl { overflow: auto; display: grid; align-content: start; gap: 2px; }
+#armyNeu .an-wahl .kat { margin: 6px 0 2px; font: 400 13px var(--s-head); letter-spacing: .06em; text-transform: uppercase; color: var(--s-brass); }
+#armyNeu .an-wahl button { display: grid; grid-template-columns: 34px 1fr auto; align-items: baseline; gap: 6px; min-height: 40px; padding: 4px 8px; border: 1px solid transparent; border-radius: 3px; background: rgba(0,0,0,.25);
+  text-align: left; cursor: pointer; color: var(--s-text); font: 600 15px var(--s-body); }
+#armyNeu .an-wahl button:hover { border-color: var(--s-brass); }
+#armyNeu .an-wahl button b { font: 400 18px var(--s-num); color: #fff2cc; } #armyNeu .an-wahl button span:last-child { font: 400 15px var(--s-num); color: #e6c97a; }
+#armyNeu #armyMechRow .tbtn { width: 100%; min-height: 44px; }
+#armyDet { width: clamp(260px, 22vw, 380px); box-sizing: border-box; }
+:is(#shopNeu, #armyNeu) .sn-k .nm { hyphens: manual; -webkit-hyphens: manual; }
 #armyNeu .sn-titel b span { font: inherit; color: inherit; text-shadow: inherit; }
 #armyNeu .sn-titel span.over, #armyPts.over { color: #ff8a6a; }
-#armyNeu .sn-info { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; font: 600 14px var(--s-body); color: #d8ccb0; min-height: 26px; }
-#armyNeu .sn-info em { font-style: normal; color: #ffe2a0; }
-#armyNeu .sn-info .tbtn { min-height: 40px; padding: 0 14px; }
 #armyNeu .sn-k { cursor: pointer; }
 #armyNeu .sn-k.has { border-color: var(--s-brass); box-shadow: 0 0 0 2px rgba(226,176,74,.55), 0 0 14px rgba(226,176,74,.3); }
 #armyNeu .sn-k { padding-bottom: 54px; align-content: start; }
@@ -1142,9 +1162,18 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
   <div class="sheet">
     <div id="armyNeu">
       <div class="sn-titel"><b>Armee: <span id="armyName">Armee</span></b><span>★ <span id="armyPts">0 / 0</span></span></div>
-      <div class="sn-info"><span id="armyCnt"></span><em id="armyMsg"></em><span id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></span></div>
-      <div class="sn-reiter" id="armyReiter"></div>
-      <div class="sn-liste" id="armyList"></div>
+      <div class="an-body">
+        <div class="an-haupt">
+          <div class="sn-reiter" id="armyReiter"></div>
+          <div class="sn-liste" id="armyList"></div>
+        </div>
+        <aside class="an-seite">
+          <h3>Gewählte Armee</h3>
+          <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em></div>
+          <div class="an-wahl" id="armyWahl"></div>
+          <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
+        </aside>
+      </div>
       <div class="sn-fuss"><span id="armyFussText"></span><span class="sn-knoepfe"><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button><button class="endbtn" id="armyOk">Übernehmen</button></span></div>
     </div>
   </div>
