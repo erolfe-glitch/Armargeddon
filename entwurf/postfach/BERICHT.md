@@ -1,5 +1,213 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Nachträge F49–F65 erledigt, F44 Grauwall, Paket-E-Regeln; Vorschläge F54, F59-Preis und F66 zur Entscheidung
+
+**Commits (alle gepusht):**
+- `10b9b3a` neue Töne 5b und F49
+- `13b2a89` F50, F52
+- `f3d9c26` F51
+- `8b580b2` F56, F57
+- `bb273c0` F36 Bild
+- `995b8ad` F44 und Regeln F53, F55, F31, F37, F38
+- `d521862` F60, F62
+- `19c8ff6` F61
+- `cfc7083` F58
+- `f90ae96` F59, F65
+- `1153d41` F63
+- `d379432` F67 und 2c
+- `d8a24f1` + `f606e55` F64
+
+**Bilder:**
+- `entwurf/probe/spieltest4_paketD/f58_reiter_vorher.jpg` und `f58_reiter_nachher.jpg` (beide Seiten)
+- `entwurf/probe/spieltest4_nachtraege/`:
+  - `f59_bordmg.jpg`
+  - `f63_nahkampf_folge.jpg`, `f63_nahkampf_flucht_folge.jpg`
+  - `f64_blut_kanone.jpg`, `f64_blut_gewehr.jpg`
+  - `f65_saeger_auf_panzer.jpg`
+  - `f67_tonpult_alle_toene.jpg`
+
+### Erledigt
+- **5b neue Töne:** 25 Pixabay-Dateien sind einsortiert, im Ton-Pult unter „(neu)“. Fünf bitgleiche Doppelte liegen in `sound-quelle/_neu_doppelt`.
+- **F49:** Beim Marsch nur Schritte, keine Trommel.
+- **F50:** mehr Blut im Nahkampf.
+- **F51:** Beide Seiten schlagen gleichzeitig zu, danach ein gemeinsamer Wucht-Moment mit beiden Schadenszahlen.
+- **F52:** dünner Moralbalken unter dem Lebensbalken.
+- **F53 Generalangriff:** ist jetzt ein echter zweiter Angriff.
+  - Wirkung: +1 Aktion, +2 BP, auch für Einheiten, die schon angegriffen haben; Nahkampf auch nach weitem Zug; Niederhalten endet.
+  - Nicht für Fliehende, Panne oder Festgefahrene.
+  - Die KI nutzt ihn, wenn mindestens 40 % ihrer Einheiten in Reichweite schon angegriffen haben oder niedergehalten sind.
+  - **Großer Befehl beider Seiten jetzt 2 statt 3 Felder:** Mit 3 Feldern kam das Konkordat auf Sankt Ruß nur auf 35 %.
+  - „Halten um jeden Preis“ bleibt unverändert: keine Flucht, Abwehr ×1,25, 2 Felder.
+- **F55:** Feuerbereitschaft und Sperrfeuer gehen nicht in Feindberührung (Knopf grau mit Grund).
+- **F56:** Lauerschuss mit Kamera.
+- **F57:** Ausgegraute Einheiten bleiben grau, während eine andere Einheit handelt.
+- **F58:** Reiter zu dritt: zwei vorn, einer hinten in der Mitte, Maßstab 0,8, bleiben im eigenen Feld.
+- **F59:** Sturmpanzer mit Bord-MG (Zweitwaffe wie beim Landkoloss), Mündung an der mittleren Bordschützen-Luke. Preis siehe unten.
+- **F60:** Vorschau beim Ziehen: Gewehr, Schwert oder durchgestrichen. Ein echter Regelfehler lag nicht vor: In 548 von 566 Fällen konnte die Infanterie nach dem Zug schießen, die übrigen waren unterwegs niedergehalten worden.
+- **F61:** Bewegungspunkte und Aktionsmünze groß unter der eigenen Figur, im Panel „Bewegung 2/3 · Aktion frei“.
+- **F62:** Feuerknöpfe passen zur Regel.
+- **F63:** Der ganze Nahkampf läuft in der Zoom-Szene (Gegenschlag, Ergebnis, Flucht, Nachrücken). Dauer bei 1× etwa 1,6 s, mit Flucht 2,4 s; bei ½× 3,2 s statt 4,4 s.
+- **F64:**
+  - Einschlag-Ton nach dem Ziel (Prüfliste unten).
+  - Gewehrtreffer mit kleinem Blutnebel, Kanone und Granate auf Fußtruppen mit Erd- und Blutfontäne, Erdklumpen und Fleck.
+  - Gewehrtöne siehe 2c im F67-Bericht.
+  - Nebenbei gefunden: Der Einschlag-Ton nach Gewehrsalven fehlte seit der längeren Salve (F24) ganz. Behoben.
+- **F65:** Schüsse auf große Ziele zielen jetzt auf die Mitte der Figur. Vorher lag der Zielpunkt über dem Panzer. Die Leuchtspuren fliegen flach.
+- **F31, F37, F38:** Nahkampf-Schreiter nach weitem Zug nur Nahkampf; Steilfeuer ab 2 bzw. 3 Feldern; leere Drahtfelder nicht beschießbar.
+- **F44 (nur Grauwall):** keine Welle mehr.
+  - Die Aschenwacht startet mit **10 statt 8 Grenadieren**. Die alte Welle in Runde 7 waren 3 Sturmbrecher, 2 Brandwerfer und 1 Geschütz.
+  - Ergebnis: Grauwall Konkordat **51 %**, mit gemischter Aufstellung 44 %; Sankt Ruß 47 % (je 200 Schlachten).
+  - Andere Karten unverändert, die Abstimmung dort ist abgebrochen.
+
+### F59 – Preis des Sturmpanzers (Vorschlag)
+- Grauwall: unverändert 51 %, dort fährt kein Sturmpanzer.
+- Sankt Ruß: Konkordat **44 %** statt 47 % (200 Schlachten, gleicher Startwert). Das Bord-MG wird etwa 8,5-mal je Schlacht benutzt.
+- Die Kosten rechnen die Zweitwaffe nicht ein: Sturmpanzer 90, Landkoloss (mit Seiten-MG) 70.
+- **Vorschlag:** Sturmpanzer +10 auf **100**.
+  - Das wirkt nur beim Nachkauf, denn die Kartenarmeen sind fest.
+  - Wenn Sankt Ruß wieder näher an 50 % soll, eher dort die Aschenwacht-Armee leicht schwächen.
+
+### F64 – Prüfliste Einschlag-Ton (jede Waffe × Ziel)
+
+Ziel weich = Fußtruppen, Reiter, Bedienungen. Gepanzert = Fahrzeuge, Schreiter, Kampfanzüge.
+
+| Waffe | weiches Ziel | gepanzert, Waffe wirkt | gepanzert, prallt ab |
+|---|---|---|---|
+| Gewehr (Salve, Scharfschütze, Pistole, Halbautomat) | `einschlag` dumpf bzw. `vorbei` | – | `einschlag_abpraller` (gegen Kampfanzüge; auf Fahrzeuge dürfen Gewehre nicht schießen) |
+| MG, Drehlauf, Seiten- und Bord-MG | `einschlag` tief und kurz, mit Spritzer | – | `einschlag_abpraller` |
+| Panzerbüchse, Kanone gegen Panzerung (`at`), Unterarm-Kanone | `einschlag` | `einschlag_panzer` | – |
+| Kanone (Koloss, Sturmpanzer, Turm, Feldkanone direkt) | Granateinschlag + `einschlag` tief | `einschlag_panzer` | – |
+| Artillerie, Mörser, Minenwerfer, Feuerschlag | Einschlag schwer + `einschlag` tief | `einschlag_panzer` | – |
+| Flamme, Gas | kein Kugeleinschlag (Feuer bzw. Gaswolke) | – | – |
+| Nahkampf gegen Panzer | – | wie bisher `armor` bzw. `heavy` (im Nahkampf-Ablauf) | – |
+| Sturmrollen (F54), Lauerschüsse (F56) | wie die Waffe | wie die Waffe | wie die Waffe |
+
+- Im Ton-Pult hat jede schießende Einheit unter „Einschlag beim Ziel“ jetzt die Zeile „Treffer auf Panzerung (Waffe wirkt)“ bzw. „(Abpraller)“. Die Plätze gelten für alle Einheiten.
+- **Abpraller:** In `sound-quelle` gibt es keinen echten Querschläger-Ton. Die drei Pings sind hochgestimmte Metalltöne. Wenn du 2–3 echte „ricochet“-Töne findest, tausche ich sie ein.
+- Bis F66 gebaut ist, gilt vereinfacht: wirkt = Kanone, Granate, Panzerbüchse, panzerbrechend; alles andere prallt ab.
+
+### F54 – Vorschlag „Sturmrollen“ (noch nicht gebaut, Entscheidung nötig; F26 ist derselbe Punkt)
+- **Betroffen:** Landkoloss und Sturmpanzer verlieren den normalen Nahkampf, sie schießen.
+  - **Frage:** Der Bohrkoloss ist ein Kettenfahrzeug, sein Bohrkopf ist aber eine Nahkampfwaffe. Soll er Nahkampf behalten (mein Vorschlag) oder auch Sturmrollen bekommen?
+  - Schreiter bleiben im Nahkampf.
+- **Sturmrollen** ist eine Fähigkeit. Sie kostet die Aktion und alle Bewegungspunkte, danach 2 Runden Pause.
+  - **Ziel:** eine Fußtruppe oder ein Geschütz im Nachbarfeld, oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf).
+  - **Wirkung:** ein einziger Aufprall mit etwa 24 Schaden (rund doppelt so viel wie heute ein Nahkampf-Hieb des Kolosses gegen Grenadiere), dazu niedergehalten und Moral −15. Kein Gegenschlag.
+  - **Rückstoß:** Das Ziel rutscht ein Feld zurück, wenn dort frei und begehbar ist. Sonst +50 % Schaden (gegen Wand, Draht oder eigene Truppen gedrückt). Der Panzer bleibt auf seinem Feld; beim Anlauf bleibt er im Zwischenfeld.
+  - Draht im Weg wird niedergewalzt. Kampfanzüge nehmen nur die Hälfte. Gegen Panzer und Schreiter geht es nicht.
+- **Animation:** Anlauf, ein Aufprall mit Kampfszene, Ziel rutscht zurück. Ton: tiefes Kettenrollen und schwerer Aufprall.
+- **KI:** nutzt es, wenn der erwartete Schaden größer ist als der eines Schusses, zum Beispiel gegen ein Ziel in Deckung.
+- Die Werte stimme ich nach deiner Zustimmung per Simulation ab (Grauwall und Sankt Ruß).
+
+### F66 – Vorschlag „Schere-Stein-Papier“ (noch nicht gebaut, Entscheidung nötig)
+
+**Faktortabelle (Waffe gegen Panzerklasse):**
+
+| Waffenart | ungepanzert | leicht gepanzert | schwer gepanzert | heute |
+|---|---|---|---|---|
+| Gewehr, MG, Drehlauf | ×1 | ×0,5 | wirkungslos | gleich (Kampfanzug ×0,5, Panzer immun) |
+| Schrot (Löwenoger) | **×1,5** | ×1 | wirkungslos | neu: ×1,5 gegen Fußtruppen |
+| panzerbrechend (Panzerbüchse, Löwenmaul, Unterarm-Kanone) | **×0,5** | **×1,5** | **×1,5** | Panzerbüchse ×2 → ×1,5; gegen Infanterie neu ×0,5 |
+| Kanone direkt (Koloss, Sturmpanzer, Turm, Faust, Feldkanone) | ×1 | ×1 | ×1 | gleich |
+| Explosiv indirekt (Artillerie, Mörser, Minenwerfer, Granaten) und Flamme | ×1 (Deckung zählt weniger, wie heute) | ×1 | **×0,5** | neu: ×0,5 gegen Panzer |
+| Nahkampf Klinge/Kolben | ×1 | **×0,5** | ×0,5 | Panzer ×0,4 → ×0,5; Kampfanzug neu ×0,5 |
+| Nahkampf schwer (Säge, Klaue, Bohrkopf, Pranken) | **×1,5** | ×1 | ×1 | neu ×1,5 gegen Fußtruppen |
+| geballte Ladung (Sturm- und Pioniertrupps gegen Panzer) | – | – | **×1,5** | gleich (bleibt als Ausnahme, macht die Sturmtrupps aus) |
+
+**Rollen:**
+- **Schwach im Nahkampf:** MG, Geschütze, Mörser/Minenwerfer, Scharfschütze/Pirschjäger, Sanitäter/Versorgung, Melder, Signal, Fernsprech, Ballon, Rauchwerfer. Wirkung: Angreifer ×1,5 gegen sie, ihr Gegenschlag ×0,5.
+- **Stark im Nahkampf:** Sturmtrupps, Schildwall, Schwere Grabenwacht, Löwenoger, Kampfanzüge. Wirkung: Gegenschlag ×1,25.
+- Bleibt als Ausnahme: MG gegen Reiter ×2 (macht das MG aus), Flankenangriff auf Fahrzeuge.
+
+**Anzeige:**
+- Unter dem Bild im Einheiten-Panel drei Medaillen, alle aus denselben Werten erzeugt:
+  - **gegen Infanterie** (Schuss gegen ungepanzert),
+  - **gegen Panzer** (Schuss gegen schwer),
+  - **Nahkampf**.
+- Bronze = ×0,5 oder wirkungslos, Silber = ×1, Gold = ×1,5.
+- Im Info-Fenster stehen dieselben Punkte in Worten mit Faktor.
+- Beim Zielen kurz „×1,5 panzerbrechend“.
+
+**Jede Einheit (K = Konkordat, A = Aschenwacht):**
+- Landkoloss und Sturmpanzer verlieren mit F54 den Nahkampf.
+- Feldkanone zählt als „Kanone direkt“, nicht als Explosiv.
+
+| Einheit | Seite | Panzerklasse | Fernwaffe | Nahkampf | Rolle |
+|---|---|---|---|---|---|
+| Schützenkohorte | K | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| Mahlwerk-Trupp | K | ungepanzert | Gewehr/MG | Klinge/Kolben | schwach im Nahkampf |
+| Donnerrohr-Batterie | K | ungepanzert | Explosiv (Steilfeuer/Granate) | Klinge/Kolben | schwach im Nahkampf |
+| Landkoloss | K | schwer | Kanone + Seiten-MG | schwer (Säge/Klaue/Rammen) |  |
+| Lanzenreiter | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben |  |
+| Feldscher | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Grabenmörser | K | ungepanzert | Explosiv (Steilfeuer/Granate) | Klinge/Kolben | schwach im Nahkampf |
+| Scharfschütze | K | ungepanzert | Gewehr/MG | Klinge/Kolben | schwach im Nahkampf |
+| Meldegänger mit Hund | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Graben-Pioniere | K | ungepanzert | Gewehr/MG | Klinge + geballte Ladung |  |
+| Grabenräumer | K | ungepanzert | – (kein Fernkampf) | Klinge + geballte Ladung | stark im Nahkampf |
+| Turmschreiter | K | schwer | Kanone + Turm-MG | schwer (Säge/Klaue/Rammen) |  |
+| Ordensschreiter | K | schwer | Gewehr/MG (Drehlauf) | schwer (Säge/Klaue/Rammen) |  |
+| Kreuzschreiter | K | schwer | panzerbrechend (Löwenmaul) + Unterarm-Kanone | schwer (Säge/Klaue/Rammen) |  |
+| Stahlgänger-Trupp | K | leicht | Gewehr/MG | Klinge/Kolben | stark im Nahkampf |
+| Löwenoger | K | leicht | Schrot | schwer (Pranken) | stark im Nahkampf |
+| Flammentrupp | K | ungepanzert | Flamme | Klinge/Kolben |  |
+| Schildwall | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | stark im Nahkampf |
+| Feldkanone | K | ungepanzert | Kanone direkt | Klinge/Kolben | schwach im Nahkampf |
+| Fernsprechtrupp | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Hauptmann mit Stab | K | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| General mit Stab | K | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| Rauchwerfer-Trupp | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Mineure (Tunnelgräber) | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben |  |
+| Versorgungstrupp | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Ballonbeobachter | K | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Sturmpanzer | A | schwer | Kanone + Bord-MG | schwer (Säge/Klaue/Rammen) |  |
+| Aschengrenadiere | A | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| Sensenwerk-Trupp | A | ungepanzert | Gewehr/MG | Klinge/Kolben | schwach im Nahkampf |
+| Grabengeschütz | A | ungepanzert | Explosiv (Steilfeuer/Granate) | Klinge/Kolben | schwach im Nahkampf |
+| Sturmbrecher | A | ungepanzert | – (kein Fernkampf) | Klinge + geballte Ladung | stark im Nahkampf |
+| Brandwerfer | A | ungepanzert | Flamme | Klinge/Kolben |  |
+| Aschenpfleger | A | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Minenwerfer | A | ungepanzert | Explosiv (Steilfeuer/Granate) | Klinge/Kolben | schwach im Nahkampf |
+| Sprenglanzen-Reiter | A | ungepanzert | – (kein Fernkampf) | Klinge/Kolben |  |
+| Panzerbüchsen-Trupp | A | ungepanzert | panzerbrechend | Klinge/Kolben |  |
+| Schwere Grabenwacht | A | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | stark im Nahkampf |
+| Signaltrupp | A | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Sägeschreiter | A | schwer | Gewehr/MG (Drehlauf) | schwer (Säge/Klaue/Rammen) |  |
+| Klauenschreiter | A | schwer | Gewehr/MG (Drehlauf) | schwer (Säge/Klaue/Rammen) |  |
+| Eiserne Hünen | A | leicht | Gewehr/MG | Klinge/Kolben | stark im Nahkampf |
+| Panzerknechte | A | leicht | Gewehr/MG | Klinge/Kolben | stark im Nahkampf |
+| Drahtpioniere | A | ungepanzert | Gewehr/MG | Klinge + geballte Ladung |  |
+| Bannerträger | A | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| Hauptmann mit Stab | A | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| General mit Stab | A | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| Eisenknecht | A | schwer | Kanone (Faust) | schwer (Säge/Klaue/Rammen) |  |
+| Bohrkoloss | A | schwer | – (nur Nahkampf, Bohrkopf) + Flammenstoß | schwer (Säge/Klaue/Rammen) |  |
+| Eingreiftrupp | A | ungepanzert | – (kein Fernkampf) | Klinge + geballte Ladung | stark im Nahkampf |
+| Gasschutz-Trupp | A | ungepanzert | Gewehr/MG | Klinge/Kolben |  |
+| Versorgungstrupp | A | ungepanzert | – (kein Fernkampf) | Klinge/Kolben | schwach im Nahkampf |
+| Pirschjäger | A | ungepanzert | Gewehr/MG | Klinge/Kolben | schwach im Nahkampf |
+
+**Was sich spürbar ändert:**
+- Panzerbüchse und Löwenmaul gegen Infanterie schwächer.
+- Artillerie gegen Panzer schwächer.
+- Löwenoger und Schreiter im Nahkampf gegen Fußtruppen stärker.
+- MG-Trupps und Geschütze im Nahkampf deutlich schwächer.
+
+Nach deiner Zustimmung baue ich das, stimme es auf Grauwall und Sankt Ruß ab, und die KI-Zielwahl nutzt die Faktoren.
+
+### Offen
+- **F36 Regelteil:** Ausgraben vor dem Ziehen. Baue ich als Nächstes.
+- F54 und F66 warten auf deine Entscheidung.
+- Helden stehen in IDEEN.md.
+
+### Fragen an Enrico
+1. **F54:** Sturmrollen wie oben? Behält der Bohrkoloss den Nahkampf?
+2. **F66:** Tabelle so? Besonders zu entscheiden:
+   - Gewehr gegen Panzer bleibt wirkungslos, oder ×0,5?
+   - Panzerbüchse gegen Infanterie ×0,5?
+   - Artillerie gegen Panzer ×0,5?
+3. **F59:** Sturmpanzer auf 100?
+
 ## 2026-11-21 – F67 Ton-Pult neu (fehlende Töne, „Alle Töne“), Gewehre mit Nachhall (2c)
 
 **Ton-Pult neu – bitte neu laden (Strg+F5).** Deine bisherige Auswahl bleibt erhalten: kein vorhandener Schlüssel wurde umbenannt.
