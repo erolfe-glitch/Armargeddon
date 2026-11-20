@@ -205,7 +205,7 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [ ] F38 Draht nicht mehr gezielt wegsprengen: kein Beschuss leerer Drahtfelder; Draht geht nur nebenbei kaputt (Ziel steht im Drahtfeld, mit Wahrscheinlichkeit, Minenwerfer am stärksten).
 
 ## Paket F – KI und Gegnerarmee (danach Simulation)
-- [ ] F43 KI zu passiv: In Enricos Partie hat sich die KI immer weiter nach hinten fallen lassen und nie selbst angegriffen. Ursache finden (Verteidigungs-Gewichte, Rückzugsregel, Kartengewichte?) und die KI aktiver machen: Fahnen angreifen, vorrücken, wenn sie vorn liegt oder gleichauf ist; Rückzug nur bei echter Not.
+- [x] F43 KI zu passiv: In Enricos Partie hat sich die KI immer weiter nach hinten fallen lassen und nie selbst angegriffen. Ursache finden (Verteidigungs-Gewichte, Rückzugsregel, Kartengewichte?) und die KI aktiver machen: Fahnen angreifen, vorrücken, wenn sie vorn liegt oder gleichauf ist; Rückzug nur bei echter Not.
 - [ ] F44 Gegnerarmee: Statt einer großen Verstärkungsarmee in der Mitte der Schlacht soll der Gegner von Anfang an mehr Einheiten haben und breiter verteilt stehen – oder genauso wie der Spieler Nachschub über eroberte Fahnen bekommen. Vorschlag machen, welche Variante zur Balance passt, dann per Simulation abstimmen.
   Ergänzung Enrico: Spielt er selbst die Aschenwacht auf Grauwall, bekommt ER diese Verstärkungsarmee mitten in der Schlacht – das fühlt sich komisch an. Die feste Verstärkung zur Mitte der Schlacht soll für beide Seiten wegfallen bzw. durch dieselbe Lösung ersetzt werden (größere Startarmee oder Nachschub über Fahnen, für Spieler und KI gleich).
 
