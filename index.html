@@ -1046,6 +1046,11 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
 @media (max-width: 1500px) { :is(#shopNeu, #armyNeu) .sn-k .nm { font-size: 16px; padding-right: 50px; } }
 :is(#shopNeu, #armyNeu) .sn-liste { overflow-x: hidden; }
 :is(#shopDet, #armyDet) .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; } :is(#shopDet, #armyDet) .chips span { white-space: nowrap; }
+/* F41: Siegpunkte kurz vor dem Ziel pulsieren (1 = zwei Runden, 2 = eine Runde) */
+.tb-pts b.nah1 { animation: siegnah 1.6s ease-in-out infinite; } .tb-pts b.nah2 { animation: siegnah 0.8s ease-in-out infinite; }
+@keyframes siegnah { 50% { color: #FFE08A; text-shadow: 0 0 10px rgba(255,200,90,.95), 0 2px 0 #120D0B; } }
+/* F6: in der Aufstellung liegt die Knopfreihe (Startzustand) über der Aufstellungsleiste */
+body.aufstellung #hudRow { transform: translateY(-165px); }
 </style>
 </head>
 <body>
@@ -1125,7 +1130,7 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
       <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>
-      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label><label class="sm-chip" title="Nahkampf und große Fähigkeiten: Kamera fährt heran, Wucht beim Treffer. „kurz“ = ohne Heranfahren. Ein Klick überspringt.">Kampfszenen <select id="optSzene"><option value="an">an</option><option value="kurz">kurz</option><option value="aus">aus</option></select></label></div>
+      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label><label class="sm-chip" title="Nahkampf und große Fähigkeiten: Kamera fährt heran, Wucht beim Treffer. „kurz“ = ohne Heranfahren. Ein Klick überspringt.">KI <select id="optKI" title="Wie die Computerseite spielt: angriffslustig rückt vor und greift Fahnen an, ruhig verteidigt eher."><option value="angriff">angriffslustig</option><option value="ruhig">ruhig</option></select></label><label class="sm-chip" title="Nahkampf und große Fähigkeiten: Kamera fährt heran, Wucht beim Treffer. „kurz“ = ohne Heranfahren. Ein Klick überspringt.">Kampfszenen <select id="optSzene"><option value="an">an</option><option value="kurz">kurz</option><option value="aus">aus</option></select></label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
@@ -9253,15 +9258,26 @@ const CURSOR = {
   leucht: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M16 30 L16 15' stroke='#120D0B' stroke-width='4'/><path d='M16 30 L16 15' stroke='#C2A461' stroke-width='2'/><circle cx='16' cy='10' r='6.5' fill='#FFE08A'/><circle cx='16' cy='10' r='3' fill='#FFF7D6' stroke='none'/></g><g stroke='#FFD24A' stroke-width='1.6' stroke-linecap='round'><path d='M6 10 L3 10 M26 10 L29 10 M8.5 3.5 L6.5 1.5 M23.5 3.5 L25.5 1.5'/></g>", 16, 30, 'crosshair'),
   feld: CUR("<g fill='none' stroke-linejoin='round'><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#120D0B' stroke-width='5'/><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#E2B04A' stroke-width='2.4'/></g><circle cx='16' cy='16' r='3.2' fill='#E2B04A' stroke='#120D0B' stroke-width='1.5'/>", 16, 16, 'pointer'),
 };
-const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return CURSOR.feld; const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' || a === 'charge' ? CURSOR.ziel : CURSOR.feld; };
+// F33 (2026-11-20): Zeiger passend zur Fähigkeit über gültigem Ziel – Symbol aus dem Bogen auf dunkler Plakette; ungültig bleibt das Verbotszeichen
+const SYMCUR = {};
+function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym] || fb; const im = UPI['s_' + sym]; if (!im || !im.complete || !im.naturalWidth) return fb;
+  try { const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'); g.beginPath(); g.arc(16, 16, 14, 0, 7); g.fillStyle = 'rgba(18,13,11,0.88)'; g.fill(); g.lineWidth = 2.4; g.strokeStyle = '#C2A461'; g.stroke();
+    const w = Math.min(22, 22 * im.naturalWidth / im.naturalHeight), h = w * im.naturalHeight / im.naturalWidth; g.drawImage(im, 16 - w / 2, 16 - h / 2, w, h);
+    SYMCUR[sym] = `url("${c.toDataURL('image/png')}") 16 16, pointer`; } catch (e) { SYMCUR[sym] = null; }
+  return SYMCUR[sym] || fb; }
+const ABIL_CUR = { charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf' };
+const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
   const u = p.uFig || p.uHex;
   { const hk = u ? E.key(u.c, u.r) : p.h && E.key(p.h[0], p.h[1]); if (abilMode && hk != null && abilSet.has(hk)) return abilCursor(); }   // Feld-Fähigkeit gewählt: gültiges Feld (auch mit Einheit darauf)
   if (u && u.side !== sel.side && E.alive(u)) { const t = targets.get(u.id); if (!t) return shellHexes.has(E.key(u.c, u.r)) ? CURSOR.ziel : CURSOR.nein;   // Artillerie: Ziel geht vor „nicht begehbar“
     const k = t.both ? (atkPref !== 'auto' ? atkPref : t.kind) : t.kind; return k === 'melee' ? CURSOR.schwert : CURSOR.ziel; }
-  if (u && u.side === sel.side) return '';
   const k = p.h && E.key(p.h[0], p.h[1]);
+  if (k && healSet.has(k)) return symCursor(TYPES[sel.type].repair ? 'zahnrad' : 'sanitaeter');   // F33: Heilen bzw. Reparieren
+  if (k && recSet.has(k)) return symCursor('schraubenschluessel');   // Bergen
+  if (k && sendSet.has(k)) return symCursor('meldehund');   // Befehl überbringen
+  if (u && u.side === sel.side) return '';
   if (!k || reach.has(k) || abilSet.has(k) || shellHexes.has(k) || healSet.has(k) || sendSet.has(k) || recSet.has(k) || spawnSet.has(k)) return '';
   return CURSOR.nein;
 }
@@ -9543,6 +9559,19 @@ function toast(text) { const el = $('toast'); el.textContent = text; el.classLis
 // Rundenschild beim Zugwechsel (2026-11-17): ca. 2 s mittig unter der Siegpunkt-Anzeige, Holz mit Eisen-Messing-Rahmen, „Runde n“, Wappen, „… ist am Zug“;
 // Klick oder Tippen blendet sofort aus, blockiert keine Eingaben. Ton: eigener Zug Trommelwirbel, Gegnerzug Wirbel mit tiefem Horn (leiser als Befehle)
 let rundenT = 0, glockeRunde = -1;
+// F41 (2026-11-20): Warnung, bevor eine Seite gewinnt – Rest bis zum Ziel höchstens zwei Runden Einnahmen aus den gehaltenen Zielfeldern (Stufe 1)
+// bzw. eine Runde (Stufe 2). Einblendung mit Horn bzw. Trommel, die Punktezahl oben pulsiert. Jede Stufe wird je Seite nur einmal angesagt.
+const siegEinnahme = sd => OBJECTIVES.filter(o => G.ctrl[o.id] === sd).reduce((a, o) => a + o.pts, 0);
+const siegNah = sd => { const e = siegEinnahme(sd), rest = G.goal - G.vp[sd]; return e <= 0 ? 0 : rest <= e ? 2 : rest <= e * 2 ? 1 : 0; };
+let siegGemeldet = { A: 0, D: 0 };
+function siegWarnung() {
+  if (!G || G.over || G.aufstellung) return;
+  for (const sd of ['A', 'D']) { const n = siegNah(sd); if (n > siegGemeldet[sd]) { siegGemeldet[sd] = n;
+    const ich = mode === 'hot' ? null : mode, wir = ich === sd, name = sd === 'A' ? SIDES.A.short : SIDES[sd].short;
+    const titel = wir ? (n === 2 ? 'Der Sieg ist zum Greifen nah!' : 'Der Sieg rückt näher') : ich ? (n === 2 ? 'Niederlage droht!' : 'Der Gegner rückt dem Sieg näher') : `${name}: ${n === 2 ? 'Sieg zum Greifen nah' : 'Sieg rückt näher'}`;
+    const sub = `${name} hat ${G.vp[sd]} von ${G.goal} Siegpunkten und bekommt ${siegEinnahme(sd)} je Runde` + (wir || !ich ? '' : ' – nehmt ihm Zielfelder ab!');
+    setTimeout(() => { banner(titel, sub); playSound(wir ? 'zug_eigen' : 'horn', 0.5, null, { noGap: true }); }, 900); } }
+}
 function rundenSchild() {
   if (!G || G.over) return; const el = $('rundenSchild'), sd = G.side, eigen = human(sd) || mode === 'hot';
   el.innerHTML = `<b>Runde ${G.turn}</b><span class="rs-w">${crest(sd)}</span><span class="rs-t">${sd === 'A' ? SIDES.A.name : SIDES[sd].short} ist am Zug</span>`;
@@ -9551,6 +9580,7 @@ function rundenSchild() {
   { const gv = ORT_GLOCKE[E.MAP.id];   // Sankt Ruß: Kirchenglocke zum Beginn jeder Runde (nicht bei jedem Zugwechsel), solange die Kirche steht
     if (gv && G.turn !== glockeRunde && (G.bauten || []).length && !bauSicht().some(x => x)) { glockeRunde = G.turn; setTimeout(() => playSound('glocke', gv, null, { noGap: true, rate: 0.97 + Math.random() * 0.05 }), 450); } }
   if (eigen) kzRunde(sd);   // Kopfzeichen der wichtigen Zustände zu Beginn des eigenen Zugs
+  siegWarnung();   // F41
 }
 document.addEventListener('pointerdown', () => { const el = $('rundenSchild'); if (el && el.classList.contains('an')) { clearTimeout(rundenT); el.classList.remove('an'); } }, true);
 function banner(title, sub) {
@@ -9574,7 +9604,7 @@ function updateTop() {   // obere Leiste nach STYLE.md: Freund = Schild/Feldgrau
   }
   const own = c => c === 'A' || c === 'D' ? c : '';
   const foe = mine === 'A' ? 'D' : 'A';
-  $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
+  $('objs').innerHTML = `<span class="tb-plate tb-pts" data-tip="Siegpunkte (eigene : Gegner). Wer ${G.goal} erreicht, gewinnt. Kreise: Zielfelder mit ihren Punkten je Runde."><b class="${mine}${siegNah(mine) ? ' nah' + siegNah(mine) : ''}">${G.vp[mine]}</b><i class="sep">:</i><b class="${foe}${siegNah(foe) ? ' nah' + siegNah(foe) : ''}">${G.vp[foe]}</b><small>/ ${G.goal}</small>`
     + `<span class="tb-dots${OBJECTIVES.length >= 6 ? ' many' : ''}">${OBJECTIVES.map(o => { const c = own(G.ctrl[o.id]); return `<span class="tb-obj ${c ? 'f' + fac(c) : ''}">${o.pts}</span>`; }).join('')}</span></span>`;   // erobert: Rand in Fraktionsfarbe (Wimpel überdeckten die Zahlen, 2026-11-16)
 }
 // Tooltips der oberen Leiste per Touch (Digitalboards): Knöpfe lang drücken, Anzeigen kurz antippen. Klick nach langem Druck entfällt.
@@ -9614,8 +9644,11 @@ function tbSync() {
 }
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
+const ABGEHAKT = new Set();   // F11: per „Fertig“ abgehakt (je Runde und Seite), dann grau, auch wenn noch die Zweitwaffe ginge
 function hasAction(u) {
-  if (u.broken > 0) return false;
+  if (u.broken > 0 || ABGEHAKT.has(G.turn + G.side + ':' + u.id)) return false;
+  if (TYPES[u.type].zweit && !u.zw && E.zweitTargets(G, u).length) return true;   // F17: Zweitwaffe noch frei
+  if (TYPES[u.type].roar && E.canRoar(G, u)) return true;
   if (!u.supp && E.reachable(G, u).size) return true;   // noch Bewegungspunkte
   if (u.ap < 1) return E.canSetup(G, u) || E.canTeardown(G, u);
   if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o) || E.canRecover(G, u, o))) return true;
@@ -9623,6 +9656,7 @@ function hasAction(u) {
   // Bereit heißt: irgendeine Aktion ist noch möglich (Wunsch 2026-11-16), nicht nur Ziehen. Aufgebautes MG kann abbauen,
   // Geschütz in Stellung aufprotzen, Schützen Feuerbereitschaft nehmen. (Bloßes Drehen zählt allein nicht, es ist frei.)
   if (E.canTeardown(G, u) || E.canLimber(G, u) || E.canOverwatch(G, u)) return true;
+  if (E.canDig(G, u) || E.canShields(G, u) || E.canPlant(G, u) || E.canSperr(G, u) || E.canLay(G, u)) return true;   // F17
   if (TYPES[u.type].abil && E.abilTargets(G, u).length) return true;
   if (u.attacked) return false;
   const T = TYPES[u.type];
@@ -9937,7 +9971,8 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
   if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
-  if (!spent.has(sel.id)) btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', text: 'Diese Einheit ist für diese Runde fertig.' });
+  btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', on: spent.has(sel.id), text: spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (wird grau), auch wenn sie noch etwas könnte.' });   // F11: für alle Einheiten
+  if (!spent.has(sel.id) && TYPES[sel.type].zweit && !sel.zw && E.zweitTargets(G, sel).length) hints.push('<i>Zweitwaffe noch frei:</i> ' + (TYPES[sel.type].zweit.name || 'Zweitwaffe') + ' kann diese Runde noch feuern.');   // F17
   // Hinweiszeile
   if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
   else if (T.rng > 0 && E.held(G, sel)) hints.push('⚔ Im Nahkampf gebunden: Schießen geht nicht.');
@@ -10004,6 +10039,12 @@ function updateHud() {
   if (touchMove != null && sel && lastPT !== 'mouse') hints.unshift('<em>Nochmal tippen zum Ziehen</em>');
   const hn = $('hudHint'); hn.innerHTML = hints.filter(Boolean).join(' · '); hn.title = hn.textContent;
   // Draht-Knöpfe zuerst (Wunsch des Nutzers), dann die übrigen in fester Reihenfolge
+  if (G.aufstellung && hasU) {   // F6 (2026-11-20): in der Aufstellung nur der Startzustand – Geschütz auf-/abgeprotzt, MG auf-/abgebaut
+    const T = TYPES[u.type]; btns = []; hints.length = 0;
+    if (T.cls === 'art' && T.limber) btns.push({ act: 'st-limber', sym: u.limbered ? 'aufprotzen' : 'abprotzen', name: u.limbered ? 'Start: aufgeprotzt' : 'Start: abgeprotzt', on: !!u.limbered, costTxt: 'kostet nichts', text: u.limbered ? 'Beginnt angespannt: kann sofort ziehen, schießt aber erst nach dem Abprotzen. Antippen: abgeprotzt beginnen.' : 'Beginnt in Stellung: schießt sofort, zieht erst nach dem Aufprotzen. Antippen: aufgeprotzt beginnen.' });
+    if (T.mg) btns.push({ act: 'st-mg', sym: u.setup ? 'mg_auf' : 'mg_ab', name: u.setup ? 'Start: aufgebaut' : 'Start: abgebaut', on: !!u.setup, costTxt: 'kostet nichts', text: u.setup ? 'Beginnt in Stellung: schießt und gibt Sperrfeuer, zieht erst nach dem Abbauen. Antippen: abgebaut beginnen.' : 'Beginnt marschbereit: kann sofort ziehen, schießt erst nach dem Aufbauen. Antippen: aufgebaut beginnen.' });
+    hints.push(btns.length ? '<i>Aufstellung:</i> Startzustand mit dem Knopf wählen.' : '<i>Aufstellung:</i> in der grünen Zone verschieben.');
+  }
   btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
   upBtns = btns;
   neuKarteMehr(hasU ? u : null); setTimeout(neuKnopfreihe, 0);
@@ -10038,7 +10079,9 @@ function loewenGebruell(u, ids) {
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
   if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); return; }
-  if (a === 'pass') { playSound('klick', 0.5, null); E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
+  if (a === 'st-limber' || a === 'st-mg') { const u = inspect && inspect.unit; if (!u || !G.aufstellung) return; if (a === 'st-limber') u.limbered = !u.limbered; else u.setup = !u.setup;   // F6
+    playSound(a === 'st-limber' ? (u.limbered ? 'clank' : 'abprotzen') : 'mgsetup', 0.4, u.side); syncAll(); updateHud(); return; }
+  if (a === 'pass') { playSound('klick', 0.5, null); ABGEHAKT.add(G.turn + G.side + ':' + sel.id); E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
   if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
   if (!sel || busy) return;   // Handlungen nur mit gewählter Einheit und nicht während einer laufenden Animation
   if (a === 'o-rally' || a === 'o-storm' || a === 'o-fire') return act(u => E.order(G, u, a.slice(2)));
@@ -10224,7 +10267,7 @@ function startGame() {
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
   G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
-  if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(['A', 'D'].filter(sd => !human(sd)));   // F43: die KI greift gegen Menschen aktiver an (ai.js AKTIV)
+  if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(kiArt === 'ruhig' ? [] : ['A', 'D'].filter(sd => !human(sd)));   // F43: Einstellung KI ruhig / angriffslustig siegGemeldet = { A: 0, D: 0 };   // F43: die KI greift gegen Menschen aktiver an (ai.js AKTIV)
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   aufstellSeiten = mode === 'ai' ? [] : ['A', 'D'].filter(human);   // Aufstellungsphase (Fahrplan 2): menschliche Seiten stellen selbst auf, die KI automatisch
@@ -10270,6 +10313,7 @@ window.addEventListener('pointerup', ev => {
   if (z.moved) { const h = pick(...evToPx(ev)).h; if (!h || !aufstellSetze(z.u, h[0], h[1])) syncAll(); return; }
   if (aufstellWahl && aufstellWahl !== z.u) { aufstellSetze(aufstellWahl, z.u.c, z.u.r); return; }   // antippen, dann eigene Einheit antippen: tauschen
   aufstellWahl = aufstellWahl === z.u ? null : z.u; playSound('ui', 0.3, null);
+  inspect = aufstellWahl ? { unit: aufstellWahl } : null; updateHud();   // F6: Einheitenkarte auch in der Aufstellung
 });
 function showHandover() {
   $('handover').hidden = false; $('handover').className = 'overlay center hand ' + G.side;
@@ -10365,6 +10409,8 @@ const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam']
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+let kiArt = 'angriff'; try { const v = localStorage.getItem('arm.ki'); if (['angriff', 'ruhig'].includes(v)) kiArt = v; } catch (e) {}
+if ($('optKI')) { $('optKI').value = kiArt; $('optKI').addEventListener('change', () => { kiArt = $('optKI').value; try { localStorage.setItem('arm.ki', kiArt); } catch (e) {} if (G && !G.over && typeof AI !== 'undefined') AI.setAktiv(kiArt === 'ruhig' ? [] : ['A', 'D'].filter(sd => !human(sd))); }); }   // F43
 if ($('optSzene')) { $('optSzene').value = KS; $('optSzene').addEventListener('change', () => { KS = $('optSzene').value; try { localStorage.setItem('arm.kampfszene', KS); } catch (e) {} }); }   // F48
 cv.addEventListener('pointerdown', () => { if (szene) szene.skip = true; }, true);   // F48: Klick überspringt die Kampfszene
 if ($('optMeld')) { $('optMeld').value = meldArt; $('optMeld').addEventListener('change', () => { meldArt = $('optMeld').value; try { localStorage.setItem('arm.meldungen', meldArt); } catch (e) {} }); }   // F15

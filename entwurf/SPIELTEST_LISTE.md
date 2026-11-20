@@ -182,7 +182,7 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [x] F24 Minigun-Salve etwa 1 s länger.
 - [x] F28 Schüsse und Nahkampf allgemein länger: Salven über 2–3 s, mehrere Einzelschüsse, unregelmäßig; Nahkampf als Folge von 4–6 Hieben mit Klirren und Treffern; Tempo-Einstellung beschleunigt weiter.
 - [x] F27 Blut: statt runder Punkte richtige Spritzer (fx_blut prüfen, ob benutzt); Blut am Boden bleibt; im Nahkampf Spritzer bei Treffern.
-- [ ] F21 Treffer auf Einheit hinter Deckung: Lebensbalken scheint im Moment des Treffers durch.
+- [x] F21 Treffer auf Einheit hinter Deckung: Lebensbalken scheint im Moment des Treffers durch.
 - [x] F34 Kamera folgt weich zu Nahkampf und Artillerie-Einschlägen (vor allem im Gegnerzug), nicht hektisch, abschaltbar.
 - [x] F39 Zeichen: Reparieren/Bergen goldenes Zahnrad oder Schlüssel, Nachladen eigenes Zeichen; grünes Kreuz nur Heilen/Entgiften.
 - [x] F40 Rückzug/Zurückweichen: Schweißtropfen wirken wie Wassertropfen → deutlicheres Zeichen (z. B. Pfeil nach hinten oder weiße Fahne); ggf. neues Bild (Enrico/Gemini).
@@ -190,12 +190,12 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [ ] F46 Panzerbüchsen-Trupp (Aschenwacht) versinkt im Graben zu tief (Figuren kaum noch sichtbar). Grabentiefe je Einheit prüfen – Figuren, die schon niedrig/kniend gemalt sind, weniger tief absenken; alle Einheitentypen im Graben kurz durchsehen.
 
 ## Paket D – Bedienung
-- [ ] F11 Abhaken-Knopf („Erledigt“) für ALLE Einheiten.
-- [ ] F25 Wenden-Knopf für alle Einheiten, bei denen die Blickrichtung zählt.
-- [ ] F17 Einheiten erst grau, wenn wirklich nichts mehr geht (Hauptwaffe, Zweitwaffe, Bewegung, Fähigkeiten); Hinweis, wenn noch eine Zweitwaffe frei ist (Landkoloss, Turm-, Kreuzschreiter, Bohrkoloss).
-- [ ] F33 Maus-Zeiger passend zur Fähigkeit über gültigem Ziel (Heilen Herz, Reparieren Zahnrad, Nachladen Munition, Draht Zange, Haftladung Granate, Befehl Fahne, Sprung Löwenoger …), ungültig = durchgestrichen.
-- [ ] F6 Aufstellungsphase wie bei Total War: Einheitenkarte und Fähigkeiten sichtbar, Startzustand wählbar (auf-/abgeprotzt, MG auf-/abgebaut).
-- [ ] F41 Warnung bei nahem Sieg oder drohender Niederlage: Text-Einblendung + akustisches Signal (z. B. Horn/Trommel), Punkteleiste hebt das hervor – Sieg soll nicht plötzlich kommen.
+- [x] F11 Abhaken-Knopf („Erledigt“) für ALLE Einheiten.
+- [x] F25 Wenden-Knopf für alle Einheiten, bei denen die Blickrichtung zählt.
+- [x] F17 Einheiten erst grau, wenn wirklich nichts mehr geht (Hauptwaffe, Zweitwaffe, Bewegung, Fähigkeiten); Hinweis, wenn noch eine Zweitwaffe frei ist (Landkoloss, Turm-, Kreuzschreiter, Bohrkoloss).
+- [x] F33 Maus-Zeiger passend zur Fähigkeit über gültigem Ziel (Heilen Herz, Reparieren Zahnrad, Nachladen Munition, Draht Zange, Haftladung Granate, Befehl Fahne, Sprung Löwenoger …), ungültig = durchgestrichen.
+- [x] F6 Aufstellungsphase wie bei Total War: Einheitenkarte und Fähigkeiten sichtbar, Startzustand wählbar (auf-/abgeprotzt, MG auf-/abgebaut).
+- [x] F41 Warnung bei nahem Sieg oder drohender Niederlage: Text-Einblendung + akustisches Signal (z. B. Horn/Trommel), Punkteleiste hebt das hervor – Sieg soll nicht plötzlich kommen.
 
 ## Paket E – Regeln und Balance (danach Simulation Grauwall + Sankt Ruß)
 - [ ] F26 Panzer ohne normalen Nahkampf; dafür aufladbare Fähigkeit „Überrollen“ (angrenzendes Feld mit Infanterie, Schaden + Moral, mehrere Runden Abklingzeit).
