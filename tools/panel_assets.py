@@ -36,10 +36,11 @@ PARTS = {
     'fA': ('banner_konkordat/b_banner', 400),
     'fD': ('banner_aschenwacht/b_banner', 400),
     'fF': ('banner_blaue_legion/b_banner', 400),
-    # Wimpel an eroberten Zielmarken: Stange unten gekürzt (dritter Wert = behaltener Anteil der Höhe)
-    'pA': ('wimpel_fraktionen/wimpel_konkordat', 160, 0.62),
-    'pD': ('wimpel_fraktionen/wimpel_aschenwacht', 160, 0.62),
-    'pF': ('wimpel_fraktionen/wimpel_legion', 160, 0.62),
+    # Wimpel an eroberten Zielmarken (seit 2026-11-20 neuer Bogen ui-quelle/banner/wimpel.png ohne Farben echter Flaggen;
+    # alte Teile in teile/wimpel_fraktionen/): Stange unten gekürzt (dritter Wert = behaltener Anteil der Höhe)
+    'pA': ('wimpel/wimpel_konkordat', 192, 0.8),
+    'pD': ('wimpel/wimpel_aschenwacht', 192, 0.8),
+    'pF': ('wimpel/wimpel_legion', 192, 0.8),
 }
 SYMBOLS = {
     'bogen3c_symbole': ['zielen', 'nahkampf', 'marsch', 'fahne', 'gas', 'granate_artillerie', 'sanitaeter',

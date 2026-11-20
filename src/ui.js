@@ -12,7 +12,7 @@ const UIM = {};
 { const A = window.UIART || {}; for (const k in A) { document.documentElement.style.setProperty('--ui-' + k, `url("${A[k]}")`); const im = new Image(); im.onload = () => UIM[k] = im; im.src = A[k]; } }
 // Panel-Grafiken (Symbole, Deckungsschilde) auch fürs Zeichnen auf der Karte
 const UPI = {};
-{ const A = window.UIPANEL || {}; for (const k in A) if (/^(s_|k_|cov|orden|muenze)/.test(k)) { const im = new Image(); im.onload = () => UPI[k] = im; im.src = A[k]; } }
+{ const A = window.UIPANEL || {}; for (const k in A) if (/^(s_|k_|cov|orden|muenze|p[ADF]$)/.test(k)) { const im = new Image(); im.onload = () => UPI[k] = im; im.src = A[k]; } }
 const $ = id => document.getElementById(id);
 const fmt = x => String(Math.max(0, Math.round(x * 10)));   // Anzeige in ganzen Zahlen: Stärke 10,0 → 100, Schaden 0,7 → 7 (Wunsch des Nutzers)
 const WIND_DEG = [-30, 30, 90, 150, 210, 270];
@@ -1085,6 +1085,7 @@ function drawFan(g, u, zweit) {   // zweit: Schussfeld der Seitenwaffen (Fahrzeu
 // Zielfahnen
 // Zielflagge (2026-11-16): verwitterte Stofffahne an krummem Holzpfahl, neutral grau-beige,
 // Nummer auf einem kleinen Holzschild am Pfahl; erobert in Fraktionsfarbe (Konkordat Ochsenblut, Aschenwacht Stahlgrau, Blaue Legion Horizontblau).
+const WIMPEL_TUCH = [0.105, 0.075, 0.895, 0.855];   // Tuch im Wimpel-Bild UP.pA/pD/pF (nach dem Kürzen der Stange auf 80 %): x, y, Breite, Höhe als Anteil
 const FAHNE_VOR = new Set(['village', 'rubble', 'fabrik', 'kirche', 'schiff', 'turm']), FAHNE_K = 0.55, FAHNE_FARBE = { A: [142, 43, 34], D: [98, 104, 98], F: [111, 143, 181] }, FAHNE_NEUTRAL = [158, 150, 128];
 // Ort der Fahne im Feld (Feldradien): sonst hinterer rechter Rand (hinter den Einheiten); in Ruinenfeldern vorn links (Stoff weht über das Feld, Einheiten davor),
 // weil hohe Mauern (eigene und die des rechten Nachbarfelds) sie hinten verdecken würden. [dx, dy, Tiefe für die Sortierung]
@@ -1103,12 +1104,20 @@ function drawFahne(g, s, x, y, o) {
   g.strokeStyle = '#5a4630'; g.lineWidth = Math.max(1.2, s * 0.055); g.beginPath(); g.moveTo(px, base); g.lineTo(top[0], top[1]); g.stroke();
   g.strokeStyle = 'rgba(150,120,80,0.55)'; g.lineWidth = Math.max(0.6, s * 0.014); g.beginPath(); g.moveTo(px - s * 0.01, base - s * 0.05); g.lineTo(top[0] - s * 0.012, top[1] + s * 0.1); g.stroke();
   // Stoff: weht nach rechts, Wellen nach Zeit, ausgefranstes Ende, zwei Risse
-  const fw = s * 0.82, fh = s * 0.5, t = now / 700, N = 14, ay = top[1] + s * 0.04;
+  // Erobert (2026-11-20): Wimpel der Fraktion aus ui-quelle/banner/wimpel.png (UP.pA/pD/pF) statt des getönten Tuchs; nur das Tuch des Bildes
+  // (ohne die gemalte Stange, WIMPEL_TUCH als Anteil des Bildes), in senkrechten Streifen mit derselben Welle wie das Stofftuch
+  const wim = sd && UPI['p' + fac(sd)], wimOk = wim && wim.complete && wim.naturalWidth, [wx, wy, ww, wh] = WIMPEL_TUCH;
+  const fw = s * 0.82, fh = wimOk ? fw * (wh * wim.naturalHeight) / (ww * wim.naturalWidth) : s * 0.5, t = now / 700, N = 14, ay = top[1] + s * 0.04;
   const at = (u, v) => { const lx = top[0] - lean * (v * fh / H); const wv = Math.sin(u * 4.2 - t + seed) * s * 0.05 * u + u * u * s * 0.06; return [lx + u * fw, ay + v * fh + wv]; };
   const fray = u => (u > 0.82 ? Math.sin(u * 61 + seed) * 0.5 + 0.5 : 0) * s * 0.07;
   const shape = () => { g.beginPath(); for (let i = 0; i <= N; i++) { const u = i / N, [qx, qy] = at(u, 0); g[i ? 'lineTo' : 'moveTo'](qx, qy); }
     for (let j = 0; j <= 8; j++) { const v = j / 8, [qx, qy] = at(1, v); g.lineTo(qx - (Math.sin(v * 23 + seed) * 0.5 + 0.5) * s * 0.11, qy); }   // Fransen
     for (let i = N; i >= 0; i--) { const u = i / N, [qx, qy] = at(u, 1); g.lineTo(qx, qy - fray(u)); } g.closePath(); };
+  if (wimOk) {   // Wimpel-Bild in 24 Streifen, jeder Streifen mit der Wellenhöhe seiner Stelle
+    const iw = wim.naturalWidth, ih = wim.naturalHeight, M = 24;
+    for (let i = 0; i < M; i++) { const u0 = i / M, u1 = (i + 1) / M, [x0, y0] = at(u0, 0), [x1] = at(u1, 0);
+      g.drawImage(wim, (wx + ww * u0) * iw, wy * ih, ww * iw / M, wh * ih, x0, y0, x1 - x0 + 0.7, fh); }
+  } else {
   shape(); g.fillStyle = col(1); g.fill();
   g.save(); shape(); g.clip();
   for (let i = 0; i < N; i++) { const u = i / N, d = Math.cos(u * 4.2 - t + seed); const [q0x, q0y] = at(u, 0), [q1x] = at(u + 1 / N, 0);   // Falten: hell/dunkel nach Wellenneigung
@@ -1120,6 +1129,7 @@ function drawFahne(g, s, x, y, o) {
   g.restore();
   for (const [u, v] of [[0.55, 0.35], [0.74, 0.7]]) { const [qx, qy] = at(u, v); g.fillStyle = 'rgba(20,16,10,0.85)'; g.beginPath(); g.ellipse(qx, qy, s * 0.03, s * 0.02, 0.6, 0, 7); g.fill(); }   // Löcher
   shape(); g.strokeStyle = 'rgba(22,21,15,0.85)'; g.lineWidth = Math.max(1, s * 0.022); g.stroke();
+  }
   // Holzschild mit der Nummer, am Pfahl angenagelt
   const bw = s * 0.34, bh = s * 0.26, bx = px + lean * 0.35 - bw * 0.5, by = base - s * fahneOrt(o)[3];
   g.save(); g.translate(bx + bw / 2, by + bh / 2); g.rotate(((seed % 5) - 2) * 0.03);
@@ -3104,7 +3114,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <g filter="url(#r)"><path id="p" d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" fill="${FCOL[f]}" stroke="#120D0B" stroke-width="2.2" stroke-linejoin="round"/>
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
-const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/wimpel_fraktionen.png, sonst gezeichnet
+const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
 const ABIL_KEIN = { tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 const ABIL_SYM = { rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');

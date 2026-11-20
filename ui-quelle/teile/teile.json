@@ -466,5 +466,17 @@
  "banner_blaue_legion/b_wappen": [
   621,
   668
+ ],
+ "wimpel/wimpel_konkordat": [
+  723,
+  794
+ ],
+ "wimpel/wimpel_aschenwacht": [
+  719,
+  794
+ ],
+ "wimpel/wimpel_legion": [
+  721,
+  794
  ]
 }
