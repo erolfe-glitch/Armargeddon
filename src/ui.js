@@ -177,9 +177,14 @@ function fxSeite(id, zid) {
   const z = DU.get(zid), rechts = z ? z.x >= d.x : true, p = [d.x + x0 + w * (rechts ? 0.62 : 0.38), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
 }
 let fxZielFuss = null;   // Fußpunkt des aktuellen Ziels (Leuchtspur endet dort am Aufsteller)
-function fxFlash(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 0.5); return fx('muendung', v, p[0], p[1], Object.assign({ fuss: p.fuss, anchor: 'links', life: 6, fadeOut: 0.7, flip: dr.flip, ang: dr.ang, mul: 1 }, o)); }
+// F65: Richtung auf dem Bildschirm – Mündung und Ziel stehen als Aufsteller an ihren Fußpunkten; in Weltkoordinaten stimmt der Winkel in der gekippten Ansicht nicht
+function fxScr(x, y, f) { const b = f && bbAt(f[0], f[1]); return b ? [b.px + b.sc * (x - f[0]), b.py + b.sc * (y - f[1])] : [x, y]; }
+function fxDirS(p, tx, ty, lim) { if (!p.fuss || !fxZielFuss) return fxDir(p[0], p[1], tx, ty, lim); const a = fxScr(p[0], p[1], p.fuss), z = fxScr(tx, ty, fxZielFuss); return fxDir(a[0], a[1], z[0], z[1], lim); }
+function fxFlash(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDirS(p, tx, ty, 0.5); return fx('muendung', v, p[0], p[1], Object.assign({ fuss: p.fuss, anchor: 'links', life: 6, fadeOut: 0.7, flip: dr.flip, ang: dr.ang, mul: 1 }, o)); }
 // Leuchtspur fliegt von p zum Ziel: v 0 Gewehr, 1 MG-Striche, 5 Panzerbüchse
-function fxTracer(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDir(p[0], p[1], tx, ty, 1.2); return fx('leuchtspur', v, p[0], p[1], Object.assign({ fuss: p.fuss, fuss2: p.fuss && fxZielFuss, anchor: 'rechts', move: [tx, ty], life: 14, fadeOut: 0.25, flip: dr.flip, ang: dr.ang, mul: 0.55 }, o)); }
+function fxTracer(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDirS(p, tx, ty, 1.2), oo = Object.assign({ fuss: p.fuss, fuss2: p.fuss && fxZielFuss, anchor: 'rechts', move: [tx, ty], life: 14, fadeOut: 0.25, flip: dr.flip, ang: dr.ang, mul: 0.55 }, o);
+  { const im = fxIm('leuchtspur', v), b = p.fuss && bbAt(p.fuss[0], p.fuss[1]); if (im && b && fxZielFuss) { const a0 = fxScr(p[0], p[1], p.fuss), z = fxScr(tx, ty, fxZielFuss), D = Math.hypot(z[0] - a0[0], z[1] - a0[1]), w = fxDim(im, 'leuchtspur', oo.mul)[0]; if (w * b.sc > D * 0.5) oo.len = Math.max(8, D * 0.5 / b.sc); } }   // F65: Spur höchstens halb so lang wie die Flugstrecke, sonst ragt ihr Schweif bei kurzen, steilen Schüssen über den Schützen hinaus
+  return fx('leuchtspur', v, p[0], p[1], oo); }
 // Artillerie-, Mörser-, Granateinschlag: Feuerkern (4 Stufen, ca. 0,5 s), dann Erdfontäne, danach steigt Rauch; Spur am Boden
 function fxImpact(x, y, r, o = {}) {
   if (!fxIm('explosion') || !fxIm('erdfontaene')) return false;
@@ -772,7 +777,7 @@ const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], kon
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
 // Mündung je Figurenbild eines Trupps (Posen): F47 Eiserne Hünen (schweres MG auf Hüfthöhe, nicht Brust), Löwenoger-Flinte
 const MUZ_FIG = { aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475], konkordat_loewenoger_2: [0.905, 0.305] };   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
-const MUZ2 = { konkordat_kreuzschreiter_neu: [0.02, 0.835] };   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
+const MUZ2 = { konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -2381,7 +2386,9 @@ function floater(x, y, text, col, big, hold) {
     f.sym = im; const n = m[2] && String(text).match(m[2]); f.sub = n ? n[0] : ''; f.life = f.max = life + 14; }
   floaters.push(f);
 }
-function bodyPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 1.0 : 0.55)]; }
+function bodyPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf';
+  const bs = d.fbx || []; if (bs.length) { let t = Infinity, b = -Infinity; for (const q of bs) { t = Math.min(t, q[1]); b = Math.max(b, q[1] + q[3]); } return [d.x, d.y + t + (b - t) * (k === 'walker' ? 0.5 : 0.45)]; }   // F65 (2026-11-20): Mitte der gezeichneten Figuren (Rumpf), nicht feste Höhe – sonst zielen Schüsse über Panzer hinweg
+  return [d.x, d.y - L.s * (k === 'walker' ? 0.6 : 0.55)]; }
 function headPos(id) { const d = DU.get(id), u = unitById(id), k = u ? TYPES[u.type].cls : 'inf'; return [d.x, d.y - L.s * (k === 'walker' ? 2.0 : k === 'cav' ? 1.7 : 1.45)]; }
 
 // ---------- Ereignis-Animation ----------
@@ -4262,7 +4269,7 @@ window.__dbg = { PT, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, du
   hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

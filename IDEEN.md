@@ -100,7 +100,7 @@ Erledigt: Etappe 1 UI-Feinschliff, Etappe 2 Übersicht auf dem Feld, Etappe 3 Ka
 ## Einheitlicher Stimmfilter (2026-11-17) – erledigt (tools/stimmfilter.py)
 - Für ALLE Stimm-Tonplätze ein Filter je Sprecher: Infanterie, Sturmtruppen, Pioniere, Sanitäter, Reiter usw. Gasmaske; Kampfanzüge (Stahlgänger, Panzerknechte) Gasmaske etwas stärker; Hauptmann und General ohne Filter; Panzerbesatzung Bordfunk; Schreiter und Eisenknecht (auch robot-voice-damage) Roboter. Waffen, Explosionen, Motoren bleiben unverändert.
 
-## Zweitwaffen – Vorschlag (2026-11-17) – entschieden und gebaut: Bohrkoloss Flammenstoß (statt Turm-MG), Kreuzschreiter Löwenmaul-Kanone, Sturmpanzer behält nur die Breitseite
+## Zweitwaffen – Vorschlag (2026-11-17) – entschieden und gebaut: Bohrkoloss Flammenstoß (statt Turm-MG), Kreuzschreiter Löwenmaul-Kanone, Sturmpanzer behält nur die Breitseite (seit 2026-11-20, F59: dazu Bord-MG)
 - Sturmpanzer: Seiten-MG wie der Landkoloss (Modell zeigt mehrere Schießscharten an der Seite). Dafür die Breitseite (zweiter Kanonenschuss) streichen oder behalten – Entscheidung offen.
 - Bohrkoloss: kleines Turm-MG (Modell hat einen Lauf auf dem Aufbau), Reichweite 2; bisher nur Nahkampf mit dem Bohrer.
 - Kreuzschreiter: Kanone im Löwenmaul als Zweitwaffe (Reichweite 2–3) neben dem schweren MG in der Hand.
@@ -123,3 +123,8 @@ Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr 
   - Konkordat: **Löwenoger** – riesige Krieger mit Löwenköpfen in schwerer Rüstung mit Sturmgewehren.
   - Aschenwacht: **Eiserne Hünen** – Riesen in Ritterrüstung mit Topfhelm und Sehschlitz, schwere Maschinengewehre.
   - Werte, Kosten und Rolle noch offen.
+## Helden (Enrico, 2026-11-21) – erst nach Paket E und F66 bauen
+- Je Fraktion **ein Held**: Einzelmodell, höchstens einer je Armee, teuer (unter Stufe-3-Schreiter), kein Panzer. Drei Merkmale: **Aura**, **Spezialschlag** mit Abklingzeit, **klare Schwäche**. Fällt er, verliert die eigene Seite Moral. Spielt die F48-Kampfszene. Soll einen Unterschied machen, aber keine Schlacht allein drehen.
+- **Konkordat – „Die Rote Faust“:** Oberst im Kampfanzug mit dampfgetriebener Schlagfaust. Spezial „Durchbruch“: stürmt bis 2 Felder in eine Einheit und schleudert sie ein Feld zurück. Aura: Nachbarn verlieren unter Beschuss weniger Moral. Schwäche: kaum Fernkampf (nur Pistole).
+- **Aschenwacht – „Der Eiserne Kürassier“:** riesiger gepanzerter Ritter mit Kettenklinge (Spitzhelm schlicht, keine Abzeichen). Spezial „Hinrichtung“: angeschlagene Einheit (unter 30 %) im Nahkampf sofort vernichtet. Aura: Furcht (Gegner in der Nähe verlieren Moral). Schwäche: langsam, bleibt in Schlamm und Graben stecken.
+- Werte und Einordnung ins Dreieck (F66) später vorschlagen; Bilder macht Enrico mit Gemini.
