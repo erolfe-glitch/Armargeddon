@@ -84,10 +84,12 @@ def remove_flash(q):
 
 
 # Bögen mit 4 Posen im 2×2-Raster (Trupps); alle anderen sind Einzelmodelle (ein Bild, alle Teile behalten).
-TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall', 'soldat_posen'}
+TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall', 'soldat_posen', 'sturm_posen', 'pionier_posen'}
 # Zusatzposen zu einem Trupp-Bogen (2026-11-19, Animation Stufe 1): 2×2 mit Nahtschnitt, Maßstab wie der Grundbogen:
 # Pose Nr. (Getroffen) = Anteil der Höhe der Bereit-Pose des Grundbogens (<fraktion>_<grund>_1 im Spiel). Freie Teile (Granate, Mündungsfeuer) fallen weg.
-POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97)}
+# Ohne Mündungsfeuer-Entfernung: die Bögen haben keins, sie würde die gelb leuchtenden Gasmasken-Augen durchsichtig machen (2026-11-20)
+OHNE_BLITZ = {'sturm_posen', 'pionier_posen'}
+POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97), 'sturm_posen': ('sturm', 4, 0.97), 'pionier_posen': ('pionier', 4, 0.97)}   # 2026-11-20: Sturmtrupps (Ausholen, Loslassen, Graben, Getroffen), Pioniere (Draht schneiden, Haftladung/Mine, Graben, Getroffen)
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
@@ -408,7 +410,7 @@ def cut(name, out=OUT):
             for links in (True, False): zellen.append(hm & ((cols < vs[:, None]) if links else (cols >= vs[:, None])))
         for i, m in enumerate(zellen, 1):
             t = k.copy(); t[~m, 3] = 0
-            q, fl = remove_flash(t); q = keep_parts(q, False); poses.append((i, q, fl))
+            q, fl = (t, 0) if kind in OHNE_BLITZ else remove_flash(t); q = keep_parts(q, False); poses.append((i, q, fl))
     else:
         for i, (y0, x0) in enumerate([(0, 0), (0, W // 2), (H // 2, 0), (H // 2, W // 2)], 1):
             q = k[y0:y0 + H // 2, x0:x0 + W // 2]

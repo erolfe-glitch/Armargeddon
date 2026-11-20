@@ -1762,11 +1762,17 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen']);
+const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD']);   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
 const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', knien: 'loewenoger_2', kolben: 'loewenoger_3' },
-  huenen: { bereit: 'eiserne_huenen_1', anlegen: 'eiserne_huenen_2', knien: 'eiserne_huenen_2', kolben: 'eiserne_huenen_3' } };
+  huenen: { bereit: 'eiserne_huenen_1', anlegen: 'eiserne_huenen_2', knien: 'eiserne_huenen_2', kolben: 'eiserne_huenen_3' },
+  // Posenbögen 2026-11-20 (Grundbogen + <bogen>_posen: Ausholen, Loslassen, Graben, Getroffen bzw. Draht schneiden, Haftladung, Graben, Getroffen).
+  // Grundbögen sind unterschiedlich geordnet: Konkordat-Sturm 1 Ruhe, 3 kniend zielen, 4 Keule; Aschenwacht-Sturm 1 Spaten, 2 Keule, 4 Ruhe; Pioniere 1 Ruhe, 2 Schaufel, 3 kniend (Ladung/Mine)
+  raeumer: { bereit: 'sturm_1', anlegen: 'sturm_3', knien: 'sturm_3', kolben: 'sturm_4', ausholen: 'sturm_posen_1', loslassen: 'sturm_posen_2', graben: 'sturm_posen_3', getroffen: 'sturm_posen_4' },
+  sturm: { bereit: 'sturm_4', kolben: 'sturm_2', ausholen: 'sturm_posen_1', loslassen: 'sturm_posen_2', graben: 'sturm_posen_3', getroffen: 'sturm_posen_4' },
+  pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' },
+  pionierD: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' } };
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && VIEW.tilt() && fac(u.side) !== 'F');
 function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; d.pose = { art, t0: now, dauer, ...o }; return true; }
@@ -2465,7 +2471,7 @@ async function playEvent0(e) {
         if (af === 'mechB') playSound('tiger', 0.4);   // Klauenschreiter brüllt (snarl entfernt, Tonprobe 2026-11-18)
       };
       let thrown = false;
-      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
+      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, pose(e.a, 'wurf', 800), shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
       strikeSnd();
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
@@ -2585,7 +2591,7 @@ async function playEvent0(e) {
       await wait(260); break;
     }
     case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; kz(e.u, 'pfeil', 'steig'); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
-    case 'cut': { playSound('cut', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln
+    case 'cut': { if (e.u != null) { pose(e.u, 'schneiden', 1300); await wait(350); } playSound('cut', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln
     case 'crush': { const [x, y] = center(e.c, e.r); playSound('ueberrollen', 0.55); /* Fahrzeug walzt Draht nieder */ gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain();
       { const [x, y] = center(e.c, e.r), w = e.what || '';
@@ -2605,8 +2611,8 @@ async function playEvent0(e) {
     case 'tunnel': { playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
-    case 'blast': { const [x, y] = center(e.c, e.r); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
-    case 'mineLaid': { const [x, y] = center(e.c, e.r); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
+    case 'blast': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'ladung', 1500); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
+    case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
     case 'clear': { visSync('clouds'); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
