@@ -917,7 +917,7 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 :is(#shopNeu, #armyNeu) .sn-reiter button.leistbar::before { content: '★'; color: #ffd76a; margin-right: 6px; text-shadow: 0 0 6px rgba(255,200,90,.7); }
 :is(#shopNeu, #armyNeu) .sn-reiter button:not(.leistbar) { filter: saturate(.55) brightness(.82); }
 :is(#shopNeu, #armyNeu) .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
-:is(#shopNeu, #armyNeu) .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
+:is(#shopNeu, #armyNeu) .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; grid-auto-rows: max-content; padding: 2px; }
 :is(#shopNeu, #armyNeu) .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);
   background: linear-gradient(rgba(18,13,11,.35), rgba(18,13,11,.55)), var(--up-txHolz) 0 0 repeat; font: inherit; }
 :is(#shopNeu, #armyNeu) .sn-k:hover, :is(#shopNeu, #armyNeu) .sn-k.offen { border-color: var(--s-brass); }
@@ -9236,9 +9236,12 @@ function neuKarteMehr(u) {
   const set = () => { document.body.classList.toggle('kartelang', kartLang); b.textContent = kartLang ? 'kurz' : 'ausführlich'; }; set();
   b.onclick = () => { kartLang = !kartLang; try { localStorage.setItem('arm.kartelang', kartLang ? '1' : '0'); } catch (e) {} set(); neuKnopfreihe(); }; }
 // Nachschub-Menü nach Entwurf B: Kategorien als Reiter, Karten im Querformat, Pergament-Details beim Überfahren/Antippen
-let shopKat = 'Standard';
+let shopKat = 'Alle';
 const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge und Kampfmaschinen'];
 const SHOP_STANDARD = ['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'];   // Linientruppen
+// Reiter beider Menüs: zuerst „Alle“ (2026-11-20, alle Einheiten in Kategorie-Reihenfolge), dann die Kategorien
+const SN_REITER = ['Alle', ...SHOP_KAT];
+const snInKat = (list, k) => k === 'Alle' ? SHOP_KAT.flatMap(c => list.filter(t => shopKatOf(t) === c)) : list.filter(t => shopKatOf(t) === k);
 function shopKatOf(t) { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls === 'walker' || E.isMech(t) ? 'Fahrzeuge und Kampfmaschinen' : T.cls === 'art' ? 'Artillerie' : SHOP_STANDARD.includes(t) ? 'Standard' : 'Spezial'; }
 // Karte und Pergament-Details einer Einheit (Nachschub und Armee-Auswahl gleich, 2026-11-20)
 // weiche Trennstellen an Wortfugen langer Namen (Karten werden bei 1280 px schmal; automatische Silbentrennung greift nicht überall)
@@ -9271,11 +9274,11 @@ function shopZiehen() {
 }
 addEventListener('resize', () => { const sh = $('shop') && $('shop').querySelector('.sheet'); if (sh && !$('shop').hidden) shopLage(sh); });
 function openShopNeu() {
-  const sd = G.side, list = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)), inKat = k => list.filter(t => shopKatOf(t) === k);
-  if (!inKat(shopKat).length) shopKat = SHOP_KAT.find(k => inKat(k).length);
+  const sd = G.side, list = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)), inKat = k => snInKat(list, k);
+  if (!inKat(shopKat).length) shopKat = SN_REITER.find(k => inKat(k).length);
   const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
   $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div>
-    <div class="sn-reiter">${SHOP_KAT.filter(k => inKat(k).length).map(k => { const n = inKat(k).filter(t => !warum(t)).length; return `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}${n ? ' leistbar' : ''}" title="${n ? n + ' davon jetzt aufstellbar' : 'Nichts davon gerade aufstellbar'}">${k}<small>${inKat(k).length}</small></button>`; }).join('')}</div>
+    <div class="sn-reiter">${SN_REITER.filter(k => inKat(k).length).map(k => { const n = inKat(k).filter(t => !warum(t)).length; return `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}${n ? ' leistbar' : ''}" title="${n ? n + ' davon jetzt aufstellbar' : 'Nichts davon gerade aufstellbar'}">${k}<small>${inKat(k).length}</small></button>`; }).join('')}</div>
     <div class="sn-liste">${inKat(shopKat).map(t => `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}">${snKarte(t)}</button>`).join('')}</div>
     <div class="sn-fuss"><span>${lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick stellt auf' : 'Antippen zeigt alle Werte, nochmal antippen stellt auf'} – am eigenen Rand oder an eigenen Zielfeldern. Neue Einheiten handeln ab der nächsten Runde.</span><button class="tbtn" id="shopZu">Schließen</button></div>`;
   $('shop').hidden = false; hideShopDet(); shopZiehen();
@@ -9578,7 +9581,7 @@ function armyInfo() {
 }
 // Armee-Auswahl (2026-11-20) im selben Aufbau wie das Nachschub-Menü: Kategorien als Reiter (SHOP_KAT, gleiche Reihenfolge), Karten im Querformat,
 // Pergament-Details beim Überfahren bzw. ersten Antippen; Klick bzw. zweites Antippen nimmt eine Einheit dazu, −/+ auf jeder Karte.
-let armyKat = 'Standard';
+let armyKat = 'Alle';
 function armyWarum(t) {   // warum diese Einheit nicht noch einmal dazukommen kann ('' = geht)
   const sd = armySide, n = armyDraft[t] || 0, T = TYPES[t], bud = E.ARMY_BUDGET[sd];
   if (isGeneral(t)) return 'Pflicht: Jede Armee hat genau einen General.';
@@ -9598,8 +9601,8 @@ function openArmy(sd) {
   $('army').hidden = false; armyListe();
 }
 function armyListe() {   // Reiter und Karten der gewählten Kategorie neu aufbauen
-  const sd = armySide, list = roster(sd), inKat = k => list.filter(t => shopKatOf(t) === k);
-  if (!inKat(armyKat).length) armyKat = SHOP_KAT.find(k => inKat(k).length);
+  const sd = armySide, list = roster(sd), inKat = k => snInKat(list, k);
+  if (!inKat(armyKat).length) armyKat = SN_REITER.find(k => inKat(k).length);
   $('armyList').innerHTML = inKat(armyKat).map(t => `<div class="sn-k ${sd}" data-t="${t}">${snKarte(t)}${isGeneral(t) ? '<span class="stepper fixed" data-tip="Pflicht: Jede Armee hat genau einen General."><i>1</i><em>Pflicht</em></span>' : '<span class="stepper"><button class="tbtn" data-d="-1" aria-label="weniger">−</button><i>0</i><button class="tbtn" data-d="1" aria-label="mehr">+</button></span>'}</div>`).join('');
   requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   hideArmyDet();
@@ -9616,9 +9619,9 @@ function armyListe() {   // Reiter und Karten der gewählten Kategorie neu aufba
 }
 function hideArmyDet() { $('armyDet').classList.remove('zeigen'); document.querySelectorAll('#armyNeu .sn-k.offen').forEach(e => e.classList.remove('offen')); }
 function armyRefresh() {
-  const sd = armySide, cost = E.armyCost(armyDraft), n = E.armyCount(armyDraft), bud = E.ARMY_BUDGET[sd], list = roster(sd), inKat = k => list.filter(t => shopKatOf(t) === k);
+  const sd = armySide, cost = E.armyCost(armyDraft), n = E.armyCount(armyDraft), bud = E.ARMY_BUDGET[sd], list = roster(sd), inKat = k => snInKat(list, k);
   let walkers = 0; for (const t in armyDraft) if (TYPES[t].cls === 'walker') walkers += armyDraft[t];
-  $('armyReiter').innerHTML = SHOP_KAT.filter(k => inKat(k).length).map(k => { const frei = inKat(k).filter(t => !armyWarum(t)).length, gew = inKat(k).reduce((x, t) => x + (armyDraft[t] || 0), 0);
+  $('armyReiter').innerHTML = SN_REITER.filter(k => inKat(k).length).map(k => { const frei = inKat(k).filter(t => !armyWarum(t)).length, gew = inKat(k).reduce((x, t) => x + (armyDraft[t] || 0), 0);
     return `<button data-kat="${k}" class="${k === armyKat ? 'an' : ''}${frei ? ' leistbar' : ''}" title="${gew ? gew + ' gewählt' : 'Noch nichts gewählt'}${frei ? ', ' + frei + ' Typen noch möglich' : ', nichts mehr möglich'}">${k}<small>${inKat(k).length}${gew ? ` · <b>${gew}</b>` : ''}</small></button>`; }).join('');
   $('armyReiter').querySelectorAll('button').forEach(b => b.onclick = () => { armyKat = b.dataset.kat; armyListe(); });
   $('armyList').querySelectorAll('.sn-k').forEach(it => { const t = it.dataset.t, v = armyDraft[t] || 0; it.querySelector('i').textContent = v; it.classList.toggle('has', v > 0); it.classList.toggle('aus', !v && !!armyWarum(t) && !isGeneral(t)); });
@@ -9627,7 +9630,7 @@ function armyRefresh() {
   $('armyBalken').style.width = Math.min(100, 100 * cost / bud) + '%'; $('armyBalken').classList.toggle('over', cost > bud);
   // Seitenleiste: gewählte Einheiten nach Kategorie (gleiche Reihenfolge wie die Reiter); Klick springt zum Reiter und zeigt die Karte
   $('armyWahl').innerHTML = SHOP_KAT.map(k => { const ts = inKat(k).filter(t => armyDraft[t] > 0); return ts.length ? `<div class="kat">${k}</div>` + ts.map(t => `<button data-t="${t}" title="Zum Reiter ${k}"><b>${armyDraft[t]}×</b><span>${TYPES[t].name}</span><span>★ ${armyDraft[t] * E.COST[t]}</span></button>`).join('') : ''; }).join('') || '<em>Noch keine Einheiten gewählt.</em>';
-  $('armyWahl').querySelectorAll('button').forEach(b => b.onclick = () => { const t = b.dataset.t; armyKat = shopKatOf(t); armyListe(); const el = $('armyList').querySelector(`.sn-k[data-t="${t}"]`); if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.add('offen'); setTimeout(() => el.classList.remove('offen'), 900); } });
+  $('armyWahl').querySelectorAll('button').forEach(b => b.onclick = () => { const t = b.dataset.t; if (armyKat !== 'Alle') armyKat = shopKatOf(t); armyListe(); const el = $('armyList').querySelector(`.sn-k[data-t="${t}"]`); if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.add('offen'); setTimeout(() => el.classList.remove('offen'), 900); } });
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
     : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';

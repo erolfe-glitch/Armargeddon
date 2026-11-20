@@ -910,7 +910,7 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 :is(#shopNeu, #armyNeu) .sn-reiter button.leistbar::before { content: '★'; color: #ffd76a; margin-right: 6px; text-shadow: 0 0 6px rgba(255,200,90,.7); }
 :is(#shopNeu, #armyNeu) .sn-reiter button:not(.leistbar) { filter: saturate(.55) brightness(.82); }
 :is(#shopNeu, #armyNeu) .sn-reiter small { font: 400 13px var(--s-num); color: #e6c97a; margin-left: 6px; }
-:is(#shopNeu, #armyNeu) .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; padding: 2px; }
+:is(#shopNeu, #armyNeu) .sn-liste { overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; align-content: start; grid-auto-rows: max-content; padding: 2px; }
 :is(#shopNeu, #armyNeu) .sn-k { position: relative; display: grid; grid-template-columns: 92px 1fr; gap: 10px; min-height: 104px; padding: 7px; border: 2px solid #4d3b28; border-radius: 4px; text-align: left; cursor: pointer; color: var(--s-text);
   background: linear-gradient(rgba(18,13,11,.35), rgba(18,13,11,.55)), var(--up-txHolz) 0 0 repeat; font: inherit; }
 :is(#shopNeu, #armyNeu) .sn-k:hover, :is(#shopNeu, #armyNeu) .sn-k.offen { border-color: var(--s-brass); }
