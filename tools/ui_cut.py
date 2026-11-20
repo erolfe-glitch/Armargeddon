@@ -48,6 +48,10 @@ NAMES['symbol_schaufel'] = ['s_schaufel']
 NAMES['wappen_konkordat'] = ['w_flagge', 'w_emblem']
 NAMES['wappen_aschenwacht'] = ['w_flagge', 'w_emblem']
 NAMES['wappen_legion'] = ['w_flagge', 'w_emblem']
+# Neue Fraktionsbanner (2026-11-20, ui-quelle/banner/): links Banner an der Querstange, rechts Wappen allein.
+# Ersetzen die alten Flaggen-Fassungen (w_flagge mit Union-Jack-, Trikolore- und Schwarz-Weiß-Rot-Tuch) im Startmenü.
+for _b in ['banner_konkordat', 'banner_aschenwacht', 'banner_blaue_legion']:
+    NAMES[_b] = ['b_banner', 'b_wappen']
 # Wimpel der Zielmarken (obere Leiste), mit Stange und Messingknauf: Konkordat, Aschenwacht, Blaue Legion
 NAMES['wimpel_fraktionen'] = ['wimpel_konkordat', 'wimpel_aschenwacht', 'wimpel_legion']
 # Kartenmarken (Einheiten auf der Karte): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
@@ -57,7 +61,8 @@ MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6}
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
 GRID = {'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
         'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1),
-        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2), 'symbol_schaufel': (1, 1)}
+        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2), 'symbol_schaufel': (1, 1),
+        'banner_konkordat': (2, 1), 'banner_aschenwacht': (2, 1), 'banner_blaue_legion': (2, 1)}
 # Bögen mit Nahtschnitt (wie figure_cut): je Rasterlinie eine Naht durch den freien Hintergrund (geringste Deckung),
 # die Zellen dazwischen sind die Teile. Splitter und Funken bleiben so sicher beim eigenen Symbol.
 # bogen3c_symbole (2026-11-18): neue Fassung von bogen3b, gleiche Anordnung, ersetzt sie im Spiel.
@@ -189,7 +194,7 @@ def main():
     for sheet, names in NAMES.items():
         if only and sheet not in only:
             continue
-        src = next(SRC.glob(sheet + '*'))
+        src = next(SRC.glob(sheet + '*'), None) or next((SRC / 'banner').glob(sheet + '*'))   # Banner liegen im Unterordner banner/
         rgba = key(Image.open(src))
         ps = seam_parts(rgba, *SEAM[sheet]) if sheet in SEAM else grid_parts(rgba, *GRID[sheet]) if sheet in GRID else parts(rgba, MERGE[sheet])
         if len(ps) != len(names):

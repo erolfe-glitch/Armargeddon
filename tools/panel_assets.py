@@ -26,13 +26,15 @@ PARTS = {
     'punkt': ('bogen2_buttons/punkt_voll', 56),
     'punktLeer': ('bogen2_buttons/punkt_leer_1', 56),
     'platte': ('bogen2_buttons/platte_1', 200),
-    # Fraktionswappen: Emblem allein (Marken) und Emblem vor Flagge (Zielfelder, Startmenü)
+    # Fraktionswappen: Emblem allein (Marken)
     'wA': ('wappen_konkordat/w_emblem', 128),
     'wD': ('wappen_aschenwacht/w_emblem', 128),
-    'fA': ('wappen_konkordat/w_flagge', 300),
-    'fD': ('wappen_aschenwacht/w_flagge', 300),
     'wF': ('wappen_legion/w_emblem', 128),      # Blaue Legion (zweites Bilderset des Konkordats)
-    'fF': ('wappen_legion/w_flagge', 300),
+    # Fraktionsbanner im Startmenü (2026-11-20, ui-quelle/banner/): ersetzen die alten Flaggen-Fassungen w_flagge
+    # (Union-Jack-, Schwarz-Weiß-Rot- und Trikolore-Tuch); die alten Teile liegen noch in teile/wappen_*/w_flagge.png
+    'fA': ('banner_konkordat/b_banner', 400),
+    'fD': ('banner_aschenwacht/b_banner', 400),
+    'fF': ('banner_blaue_legion/b_banner', 400),
     # Wimpel an eroberten Zielmarken: Stange unten gekürzt (dritter Wert = behaltener Anteil der Höhe)
     'pA': ('wimpel_fraktionen/wimpel_konkordat', 160, 0.62),
     'pD': ('wimpel_fraktionen/wimpel_aschenwacht', 160, 0.62),

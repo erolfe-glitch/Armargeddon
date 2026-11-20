@@ -48,7 +48,7 @@ Das **ganze Emblem** (`w_emblem`, immer mit Strahlenkranz, nie beschnitten) ist 
 - Am Einheitenbild im Panel (50 px).
 - Bei Siegpunkten und anderen kleinen Stellen **kein** Emblem, dort zeigt die Farbe die Seite.
 
-Die **Fassung mit Flagge** (`w_flagge`) steht auf eroberten Zielfeldern und im Startmenü. Die Flaggen dahinter (Union-Jack-artig beim Konkordat, Schwarz-Weiß-Rot bei der Aschenwacht) sind **gewollt** und bleiben so; die alten echten Nationalflaggen-Bilder sind entfernt.
+**Fraktionsbanner (seit 2026-11-20):** Im Startmenü (Fraktionswahl) steht je Seite ein eigenes Banner an der Querstange, ohne Anklang an echte Nationalflaggen: Konkordat blutrot mit goldenem Löwen, Aschenwacht schwarz/knochenweiß mit eisernem Helm, Blaue Legion dunkelblau mit Bronze-Hahn (Quelle `ui-quelle/banner/banner_*.png`, links Banner, rechts Wappen allein; Teile `ui-quelle/teile/banner_*/b_banner|b_wappen.png`, geschnitten mit `tools/ui_cut.py`, im Spiel `UP.fA/fD/fF`). Die alte **Fassung mit Flagge** (`w_flagge`: Union-Jack-, Schwarz-Weiß-Rot- und Trikolore-Tuch) wird nicht mehr benutzt; Quellen und Teile liegen noch da. Die neuen Wappen allein (`b_wappen`, Konkordat jetzt goldener Löwe) sind abgelegt, aber noch nicht im Spiel.
 
 ## Fraktionsfarben
 Fest je Fraktion, nicht nach Freund/Feind. Alle drei klar verschieden:

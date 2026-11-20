@@ -442,5 +442,29 @@
  "bogen7_zustandszeichen/k_reserve": [
   182,
   155
+ ],
+ "banner_konkordat/b_banner": [
+  1325,
+  1399
+ ],
+ "banner_konkordat/b_wappen": [
+  1155,
+  1243
+ ],
+ "banner_aschenwacht/b_banner": [
+  1120,
+  1428
+ ],
+ "banner_aschenwacht/b_wappen": [
+  1156,
+  1244
+ ],
+ "banner_blaue_legion/b_banner": [
+  716,
+  766
+ ],
+ "banner_blaue_legion/b_wappen": [
+  621,
+  668
  ]
 }
