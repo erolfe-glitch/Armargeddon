@@ -1125,7 +1125,7 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
       <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>
-      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label></div>
+      <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label><label class="sm-chip" title="Nahkampf und große Fähigkeiten: Kamera fährt heran, Wucht beim Treffer. „kurz“ = ohne Heranfahren. Ein Klick überspringt.">Kampfszenen <select id="optSzene"><option value="an">an</option><option value="kurz">kurz</option><option value="aus">aus</option></select></label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
@@ -8493,7 +8493,32 @@ function drawTilt() {
   drawKZ(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });   // Kopfzeichen (2026-11-18)
   g.setTransform(1, 0, 0, 1, 0, 0);
   drawStratMarks(g); SMARK.length = 0;
+  drawVignette(g);   // F48: Kampfszene
 }
+// ---------- Kampfszene (F48, 2026-11-20, nach Darkest Dungeon) ----------
+// Nahkampf, große Fähigkeiten: Kamera fährt weich heran (an) und dunkelt den Rand ab; Angreifer in Angriffspose, Ziel in Getroffen-Pose mit Rückstoß,
+// beim ersten Treffer kurzer Stillstand und Rütteln; danach zurück. „kurz“ = ohne Zoom, nur Posen und Wucht. Klick überspringt (Kamera sofort zurück).
+let KS = 'an'; try { const v = localStorage.getItem('arm.kampfszene'); if (['an', 'kurz', 'aus'].includes(v)) KS = v; } catch (e) {}
+let szene = null;
+function szeneTween(ms, f) { return new Promise(res => { const t0 = performance.now(), dur = ms / Math.min(speed, 2);
+  const st = () => { const k = szene && szene.skip ? 1 : Math.min(1, (performance.now() - t0) / dur), e = 0.5 - 0.5 * Math.cos(Math.PI * k); f(e); if (k < 1) requestAnimationFrame(st); else res(); }; requestAnimationFrame(st); }); }
+async function kampfSzene(x, y) {
+  if (KS === 'aus' || speed >= INSTANT || !VIEW.tilt() || szene) return null;
+  const st = { z0: CAM.z, x0: CAM.x, y0: CAM.y, vig: 0, skip: false }; szene = st;
+  if (KS === 'an') { const z1 = Math.min(Z_MAX, Math.max(CAM.z * 1.45, 1.5)), tx = x, ty = y + L.s * 0.5; camAnim = null;
+    await szeneTween(420, e => { CAM.z = st.z0 + (z1 - st.z0) * e; CAM.x = st.x0 + (tx - st.x0) * e; CAM.y = st.y0 + (ty - st.y0) * e; st.vig = 0.6 * e; camClamp(); camSetup(); }); }
+  else st.vig = 0.25;
+  return st;
+}
+async function kampfSzeneEnde(st) {
+  if (!st) return; const z1 = CAM.z, x1 = CAM.x, y1 = CAM.y, v1 = st.vig;
+  if (KS === 'an') await szeneTween(380, e => { CAM.z = z1 + (st.z0 - z1) * e; CAM.x = x1 + (st.x0 - x1) * e; CAM.y = y1 + (st.y0 - y1) * e; st.vig = v1 * (1 - e); camClamp(); camSetup(); });
+  ZOOM = CAM.z; if (szene === st) szene = null;
+}
+async function szeneWucht(st, aid, did) { if (!st) return; const a = DU.get(aid), d = DU.get(did); if (d && a) { pose(did, 'getroffen', 700); d.lunge = { dx: (d.x - a.x) * 0.14, dy: (d.y - a.y) * 0.14 }; setTimeout(() => { if (d.lunge) d.lunge = null; }, 260 / speed); }
+  shake(5); if (!st.skip) await wait(110); }   // Treffer: kurzer Stillstand
+function drawVignette(g) { const st = szene; if (!st || st.vig <= 0.01) return; const W = g.canvas.width, H = g.canvas.height, gr = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.max(W, H) * 0.62);
+  gr.addColorStop(0, 'rgba(8,6,4,0)'); gr.addColorStop(1, `rgba(8,6,4,${st.vig.toFixed(3)})`); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = gr; g.fillRect(0, 0, W, H); g.restore(); }
 // ---------- Strategie-Marken (neue Ansicht, herausgezoomt) ----------
 // Wird ein Soldat kleiner als ca. 40 px, erscheint über jeder Einheit ein Schild in Fraktionsfarbe mit dem Symbol der Einheitenart
 // und einem schmalen Lebensbalken, in fester Bildschirmgröße, weich eingeblendet. Eigene Einheiten, die noch handeln können: Messingrand.
@@ -8913,7 +8938,8 @@ async function playEvent0(e) {
       getuemmel();   // Getümmel-Schleife, solange Nahkampf läuft (2026-11-18)
       pose(e.a, 'kolben', 650);   // Kolbenschlag mit kurzem Vorstoß
       const a = DU.get(e.a), d = DU.get(e.d);
-      if (camOn() && e.t === 'melee' && !inView((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 0.15)) await camTo((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 520);   // F34: Kamera weich zum Nahkampf
+      const ksz = e.t === 'melee' ? await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4) : null;   // F48: Kampfszene
+      if (!ksz && camOn() && e.t === 'melee' && !inView((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 0.15)) await camTo((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 520);   // F34: Kamera weich zum Nahkampf
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
       const strikeSnd = () => {   // Ton für jeden, der zuschlägt: Angreifer (melee) und Verteidiger beim Gegenschlag (counter) – Wunsch des Nutzers; erklingt beim Treffer
@@ -8934,7 +8960,7 @@ async function playEvent0(e) {
       let thrown = false;
       { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, pose(e.a, 'wurf', 800), shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
-      strikeSnd();
+      strikeSnd(); await szeneWucht(ksz, e.a, e.d);
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.3, 'dust');
       { // Nahkampf-Bilder aus dem Effektbogen des Nutzers: Hieb, Kolbenstoß, Krallen, Bajonettstich, Aufprall, Blut
@@ -8968,6 +8994,7 @@ async function playEvent0(e) {
           fx('nahkampf', armored ? 4 : Math.floor(Math.random() * 4), hx, hy, { anchor: 'mitte', life: 14, fadeOut: 0.6, grow: 0.2, flip: fl, mul: 0.6 });
           if (blood && du && !['walker', 'art'].includes(TYPES[du.type].cls) && Math.random() < 0.5) fx('blut', Math.floor(Math.random() * 3), hx + (fl ? -1 : 1) * s * 0.08, hy + s * 0.05, { anchor: 'mitte', life: 22, mul: 0.3, grow: 0.2, flip: fl, filter: BLUT_FILTER });
           await wait(110); a.lunge = null; } }
+      await kampfSzeneEnde(ksz);
       break;
     }
     case 'hit': {
@@ -9009,7 +9036,7 @@ async function playEvent0(e) {
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.5); playSound('drahtwackeln', 0.4);   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
-    case 'roar': { const ru = unitById(e.u); if (ru) loewenGebruell(ru, e.d); await wait(700); break; }
+    case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig');
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
@@ -9072,7 +9099,7 @@ async function playEvent0(e) {
     case 'tunnel': { if (e.u != null) pose(e.u, 'hacke', 1500); playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
-    case 'blast': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'ladung', 1500); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
+    case 'blast': { const [x, y] = center(e.c, e.r); const ksz = await kampfSzene(x, y - L.s * 0.3); if (e.u != null) pose(e.u, 'ladung', 1500); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); await kampfSzeneEnde(ksz); break; }
     case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
@@ -10333,6 +10360,8 @@ const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam']
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+if ($('optSzene')) { $('optSzene').value = KS; $('optSzene').addEventListener('change', () => { KS = $('optSzene').value; try { localStorage.setItem('arm.kampfszene', KS); } catch (e) {} }); }   // F48
+cv.addEventListener('pointerdown', () => { if (szene) szene.skip = true; }, true);   // F48: Klick überspringt die Kampfszene
 if ($('optMeld')) { $('optMeld').value = meldArt; $('optMeld').addEventListener('change', () => { meldArt = $('optMeld').value; try { localStorage.setItem('arm.meldungen', meldArt); } catch (e) {} }); }   // F15
 if ($('optBild')) { $('optBild').value = String(BW); $('optBild').addEventListener('change', () => setBildwirkung(+$('optBild').value, true)); }   // Bildwirkung (2026-11-19)
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
