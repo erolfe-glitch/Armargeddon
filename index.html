@@ -5586,8 +5586,8 @@ const E = (typeof module !== 'undefined' && module.exports) ? require('./engine.
 const P = E.P, TYPES = E.TYPES;
 
 const W = {
-  A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6 },
-  D: { threat: 0.45, prog: 0.45, obj: 0.45, hold: 0.45, cover: 0.6, dmg: 4, counter: 3.2, cut: 1.2 }   // Siegpunkt-Modus: auch die Aschenwacht rückt auf die Zielfelder vor
+  A: { threat: 0.35, prog: 0.6, obj: 0.35, cover: 0.5, dmg: 4, counter: 3, cut: 1.6, druck: 1, rueck: 0, thVoll: 99 },
+  D: { threat: 0.45, prog: 0.45, obj: 0.45, hold: 0.45, cover: 0.6, dmg: 4, counter: 3.2, cut: 1.2, druck: 1, rueck: 0, thVoll: 99 }   // Siegpunkt-Modus: auch die Aschenwacht rückt auf die Zielfelder vor
 };
 // Gewichte je Karte (MAP.ki, 2026-11-19): z. B. Sankt Ruß – beide Seiten kommen von außen, die Aschenwacht rückt wie ein Angreifer vor.
 // Umgebungsvariablen W_x_y gelten weiter vorrangig (Tests).
@@ -5648,6 +5648,20 @@ function fzBegleitung(G, u, c, r) {
   }
   return n;
 }
+// F43 (Spieltest Runde 4, 2026-11-20): KI war zu passiv – sie blieb vor dem eigenen Graben stehen und wich bei Beschuss zurück.
+// w.druck: muss die Seite angreifen (Gegner hält mindestens so viele Zielfelder oder liegt bei Siegpunkten vorn), zählt Bedrohung weniger und
+// Vorrücken/Zielfelder mehr. w.rueck: gesunde Trupps (Stärke ab 5, nicht auf der Flucht) verlieren je Spalte Rückzug an Wert – zurück nur bei echter Not.
+// Aktive KI nur für die Seite, die gegen einen Menschen spielt (AI.setAktiv, ui.js startGame): Für beide KI-Seiten zugleich verschob es die
+// KI-gegen-KI-Balance stark (Grauwall Konkordat 51 % → 16 %: der Angreifer lief in die MG-Linie), nur für die Aschenwacht gewann sie 96 %.
+// Die Balance-Simulation (sim.js) misst daher weiter mit gleich spielenden Seiten; KI_AKTIV=D bzw. A schaltet sie dort zum Test ein.
+const AKTIV = { druck: 1.5, rueck: 0.5, thVoll: 1.5 };
+function setAktiv(seiten) { for (const sd of ['A', 'D']) Object.assign(W[sd], (seiten || []).includes(sd) ? AKTIV : { druck: 1, rueck: 0, thVoll: 99 }); WK.id = null; }
+if (ENVW.KI_AKTIV) setAktiv(ENVW.KI_AKTIV.split(''));
+
+// threatAt zählt alle Gegner, die das Feld erreichen, als schössen sie zugleich auf diesen einen Trupp (vor einer Linie 4–7, also −12 bis −19 gegen
+// +0,8 je Spalte Vorrücken). Wirklich trifft nur ein Teil: bis w.thVoll zählt die Bedrohung voll, darüber nur zu W_TH_REST.
+const W_TH_REST = ENVW.W_TH_REST != null ? +ENVW.W_TH_REST : 0.35;
+const thKapp = (th, voll) => th <= voll ? th : voll + (th - voll) * W_TH_REST;
 const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
@@ -5809,11 +5823,13 @@ function posValue0(G, u, c, r) {
     return v - (fd === 99 ? 0 : fd * 0.5);
   }
   if (!(u.side === 'D' && (k === 'storm' || k === 'flame'))) {   // beide Seiten rücken vor und halten Zielfelder
-    const tw = k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1);
-    v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - th * tw * 6;
+    const dr = mussAngreifen(G, u) ? w.druck : 1;   // F43: Druck nach vorn, wenn die Seite angreifen muss
+    const tw = (k === 'walker' ? 0.2 : k === 'cav' ? 1.3 : w.threat * (u.officer ? 1.6 : 1)) / dr;
+    v = coverVal(h.t) * (k === 'walker' || k === 'cav' ? 0 : w.cover) - thKapp(th, w.thVoll) * tw * 6;
     const far = E.OBJECTIVES.reduce((m, o) => Math.max(m, u.side === 'A' ? o.c : E.COLS - 1 - o.c), 0);   // nicht weiter vor als das fernste Zielfeld
-    v += Math.min(u.side === 'A' ? c : E.COLS - 1 - c, far) * w.prog * (1 + Math.min(G.turn, 8) / 6) * (k === 'cav' ? 0.7 : 1);
-    v -= nearestObjDist(G, c, r, u.side) * w.obj;
+    v += Math.min(u.side === 'A' ? c : E.COLS - 1 - c, far) * w.prog * dr * (1 + Math.min(G.turn, 8) / 6) * (k === 'cav' ? 0.7 : 1);
+    v -= nearestObjDist(G, c, r, u.side) * w.obj * dr;
+    if (w.rueck && u.str >= 5 && u.status === 'ok' && !TYPES[u.type].cmd && k !== 'art') { const zur = u.side === 'A' ? u.c - c : c - u.c; if (zur > 0) v -= zur * w.rueck; }   // F43: nicht grundlos zurück
     let friends = 0;
     for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && E.dist(o.c, o.r, c, r) <= 2) friends++;
     v += Math.min(friends, 3) * 0.12;
@@ -6235,7 +6251,7 @@ function exec(G, uid, s) {
   return [];
 }
 
-const AI = { next, exec, buy, W, planUnit };
+const AI = { next, exec, buy, W, setAktiv, planUnit, posValue, threatAt, mussAngreifen };   // posValue/threatAt/mussAngreifen: Messungen (tools/ki_aktiv.js)
 if (typeof module !== 'undefined' && module.exports) module.exports = AI; else root.AI = AI;
 })(this);
 
@@ -9924,6 +9940,7 @@ function startGame() {
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
   G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
+  if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(['A', 'D'].filter(sd => !human(sd)));   // F43: die KI greift gegen Menschen aktiver an (ai.js AKTIV)
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   aufstellSeiten = mode === 'ai' ? [] : ['A', 'D'].filter(human);   // Aufstellungsphase (Fahrplan 2): menschliche Seiten stellen selbst auf, die KI automatisch

@@ -3681,6 +3681,7 @@ function startGame() {
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
   G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
+  if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(['A', 'D'].filter(sd => !human(sd)));   // F43: die KI greift gegen Menschen aktiver an (ai.js AKTIV)
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
   aufstellSeiten = mode === 'ai' ? [] : ['A', 'D'].filter(human);   // Aufstellungsphase (Fahrplan 2): menschliche Seiten stellen selbst auf, die KI automatisch
