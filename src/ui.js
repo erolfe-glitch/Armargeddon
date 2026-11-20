@@ -876,9 +876,14 @@ function drawMarks(u, d, x, y, own, done, acc) {
   { const qn = Math.min(1, hpNach(d, d.str) / 10); if (qn > q + 0.005) drawBrushBar(g, HP_NACH, bx, by, bw * qn, bh); }   // Nachlauf: dunkler Abschnitt
   if (q > 0.01) drawBrushBar(g, LIFE_COL[lifeTier(q)], bx, by, bw * q, bh);   // Farbe nach Stand, Fraktion zeigt der Ring
   g.fillStyle = 'rgba(18,13,11,0.7)'; for (let i = 1; i < 10 * q - 0.2; i++) g.fillRect(Math.round(bx + bw * i / 10), by + bh * 0.15, 1, bh * 0.7);
-  MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: by + bh + 4, u, kind: 'hp' });
+  // F52 (2026-11-20): Moral als dünner knochenweißer Balken direkt unter dem Leben; wankend flackert er, auf der Flucht schmutzig grau
+  const mh = Math.max(2, bh * 0.42), my0 = by + bh + Math.max(1, bh * 0.18), mq = Math.max(0, Math.min(1, d.mor / Math.max(1, TYPES[u.type].mor))), flieht = d.vs && d.vs.rout, wankt = !flieht && d.mor < P.FALLBACK_MOR;
+  { g.save(); g.fillStyle = 'rgba(18,13,11,0.85)'; g.fillRect(bx - 1, my0 - 1, bw + 2, mh + 2);
+    if (mq > 0.01) { g.globalAlpha *= wankt ? 0.55 + 0.45 * Math.abs(Math.sin(now / 160)) : 1; g.fillStyle = flieht ? '#7d776a' : '#E6DCC0'; g.fillRect(bx, my0, bw * mq, mh); }
+    g.restore(); }
+  MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: my0 + mh + 2, u, kind: 'hp' });
   if (own) {   // Fahrplan 2: Bewegungspunkte als kleine Punkte (hell = übrig), daneben die Aktionsmünze (+ kleine Münze der Zweitwaffe)
-    const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), bm = Math.max(E.bpMax(u), bp), r = Math.max(2.8, s * 0.046), rb = Math.max(1.8, s * 0.026), py = by + bh + r + 1.5;
+    const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), bm = Math.max(E.bpMax(u), bp), r = Math.max(2.8, s * 0.046), rb = Math.max(1.8, s * 0.026), py = my0 + mh + r + 1.5;   // F52: unter dem Moralbalken
     const zw = TYPES[u.type].zweit, wB = bm * rb * 2.3, w = wB + r * 2.6 + (zw ? r * 2 : 0); let cx = x - w / 2 + rb;
     for (let i = 0; i < bm; i++) { g.beginPath(); g.arc(cx, py, rb, 0, 7); g.fillStyle = i < bp ? '#E8DDB8' : '#2A221C'; g.fill(); g.lineWidth = Math.max(1, rb * 0.45); g.strokeStyle = '#120D0B'; g.stroke(); cx += rb * 2.3; }
     const coin = (rr, voll) => { const im = UPI[voll ? 'muenze' : 'muenzeLeer']; cx += rr; if (im) g.drawImage(im, cx - rr, py - rr, rr * 2, rr * 2); else { g.beginPath(); g.arc(cx, py, rr, 0, 7); g.fillStyle = voll ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, rr * 0.3); g.strokeStyle = '#120D0B'; g.stroke(); } cx += rr + r * 0.3; };
@@ -2306,6 +2311,20 @@ function burst(x, y, n, cols, o = {}) {
 // Blut (Spieltest Runde 2, Punkt 17): dunkler, kleinere Spritzer und mehr Tropfen
 const BLUT_FILTER = 'brightness(0.55) saturate(1.15)', BLUT_DUNKEL = ['#5e0f0b', '#4a0b08', '#6e140e', '#3a0806'];
 // F27 (2026-11-20): Blut am Boden als gemalter Fleck (fx_blut 3–5) statt runder Kreise, bleibt bis zum Ende der Schlacht; ohne Bild die alten Kreise
+// F50 (2026-11-20): Treffer am Ziel – Fußtruppen: mehrere gemalte Spritzer in Schlagrichtung (Stufe 1–3 = gelb/hellrot/rot); Maschinen und Fahrzeuge:
+// Funken, Ölspritzer (Blutbild, schwarz gefiltert) und Metallsplitter. Comic-Tinte, kein realistischer Gore.
+const OEL_FILTER = 'grayscale(1) brightness(0.22) contrast(1.4)';
+function trefferSpritzer(dx0, dy0, d, stufe = 1, maschine = false) {
+  const s = L.s, fl = d.x < dx0, n = stufe + (Math.random() < 0.5 ? 1 : 0);
+  if (maschine) { fx('funken', null, d.x, d.y - s * 0.45, { anchor: 'mitte', life: 16, fadeOut: 0.6, mul: 0.6 + 0.2 * stufe, flip: Math.random() < 0.5 });
+    if (stufe >= 2) fx('blut', Math.floor(Math.random() * 3), d.x + (fl ? -1 : 1) * s * 0.2, d.y - s * 0.35, { anchor: 'mitte', life: 24, mul: 0.3, grow: 0.2, flip: fl, filter: OEL_FILTER });
+    if (stufe >= 3) fx('truemmer', 3, d.x, d.y + s * 0.2, { life: 30, mul: 0.45, grow: 0.25, flip: fl }); return; }
+  if (!blood) return;
+  for (let i = 0; i < n; i++) { const k = (i + 1) / (n + 1), ox = (fl ? -1 : 1) * s * (0.1 + 0.25 * k + Math.random() * 0.08), oy = -s * (0.25 + Math.random() * 0.3);
+    fx('blut', Math.floor(Math.random() * 3), d.x + ox, d.y + oy, { anchor: 'mitte', life: 20 + stufe * 4, mul: 0.22 + 0.1 * stufe + Math.random() * 0.08, grow: 0.25, flip: fl, filter: BLUT_FILTER, delay: i * 2 }); }
+  if (stufe >= 2 && Math.random() < 0.6) blutFleck(d.x + (fl ? -1 : 1) * s * (0.2 + Math.random() * 0.3), d.y + s * (0.1 + Math.random() * 0.2) * kAt(d.x, d.y), 0.2 + 0.08 * stufe);
+}
+const istMaschine = u => !!(u && ['walker', 'art'].includes(TYPES[u.type].cls));
 function blutFleck(x, y, mul) { if (!blood) return false; if (!fxIm('blut', 3)) return false; gmark('blut', 3 + Math.floor(Math.random() * 3), x, y, { mul, turns: 9999, alpha: 0.85, filter: BLUT_FILTER, ang: (Math.random() - 0.5) * 0.6 }); return true; }
 const BOOM_IMG = { he: ['expl'], dust: ['dirt1', 'dirt2'], gas: ['gas2'], blood: ['splash'], smoke: ['smokeL1', 'smokeL2', 'smokeD'] };
 function boom(x, y, r, kind, delay = 0) {
@@ -2522,8 +2541,21 @@ async function playEvent0(e) {
       };
       let thrown = false;
       { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, pose(e.a, 'wurf', 800), shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
-      a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : 140);   // Handgranate: Knall erst beim Aufschlag
-      strikeSnd(); await szeneWucht(ksz, e.a, e.d);
+      // F51 (2026-11-20): Schlagabtausch – Hieb und Gegenhieb abwechselnd ohne Pause (A–V–A–V), je mit Posenwechsel, Ruck des Getroffenen und Spritzern;
+      // der letzte, härteste Hieb kommt danach vom Angreifer mit der Wucht aus F48. Der Gegenschlag-Ereignis selbst ist dann nur noch kurz.
+      if (e.t === 'melee' && !thrown) { const T0 = au && TYPES[au.type], du1 = unitById(e.d), Td = du1 && TYPES[du1.type], fl = d.x < a.x;
+        const hiebTon = (x, T) => x && T ? (T.cls === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : T.cls === 'cav' ? 'saebel' : x.side === 'D' ? 'nahD' : 'nahA') : 'nahA';
+        const zug = Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;
+        for (let i = 0; i < zug; i++) { const angr = i % 2 === 0, S = angr ? a : d, Z = angr ? d : a, sid = angr ? e.a : e.d, zid = angr ? e.d : e.a, su = angr ? au : du1;
+          if (!S || !Z) break; pose(sid, 'kolben', 380); pose(zid, 'getroffen', 300);
+          S.lunge = { dx: (Z.x - S.x) * 0.3, dy: (Z.y - S.y) * 0.3 }; Z.lunge = { dx: (Z.x - S.x) * -0.06, dy: (Z.y - S.y) * -0.06 };
+          playSound(hiebTon(su, su && TYPES[su.type]), 0.4 + Math.random() * 0.12, su && su.side, { noGap: true, rate: 0.9 + Math.random() * 0.2 });
+          if (Math.random() < 0.4 && su && TYPES[su.type].cls === 'inf' && !TYPES[su.type].suit) playSound('schaufel', 0.28, null, { noGap: true });
+          fx('nahkampf', istMaschine(angr ? du1 : au) ? 4 : Math.floor(Math.random() * 4), Z.x + (Z.x < S.x ? 1 : -1) * L.s * 0.08, Z.y - L.s * (0.35 + Math.random() * 0.2), { anchor: 'mitte', life: 12, fadeOut: 0.6, grow: 0.2, flip: Z.x < S.x, mul: 0.55 });
+          trefferSpritzer(S.x, S.y, Z, 1, istMaschine(angr ? du1 : au));
+          await wait(150 + Math.random() * 100); S.lunge = null; Z.lunge = null; } }
+      a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : e.t === 'counter' ? 90 : 140);   // Handgranate: Knall erst beim Aufschlag
+      strikeSnd(); await szeneWucht(ksz, e.a, e.d); if (e.t === 'melee') { trefferSpritzer(a.x, a.y, d, 3, armored); if (ksz && blood && !armored) fx('blut', Math.floor(Math.random() * 3), d.x + (d.x < a.x ? -1 : 1) * L.s * 0.1, d.y - L.s * 0.5, { anchor: 'mitte', life: 30, mul: 0.95, grow: 0.35, flip: d.x < a.x, filter: BLUT_FILTER }); }   // F50: Schwall beim Wucht-Moment
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
       boom(mx, my + s * 0.25, s * 0.3, 'dust');
       { // Nahkampf-Bilder aus dem Effektbogen des Nutzers: Hieb, Kolbenstoß, Krallen, Bajonettstich, Aufprall, Blut
@@ -2548,15 +2580,7 @@ async function playEvent0(e) {
       if (af === 'drill' && !fxN('truemmer')) muzzles.push({ img: 'crash', x: d.x, y: d.y + s * 0.3, center: true, up: 0.9, sz: 1.3, life: 30, max: 30 });
       if (armored || af === 'drill' || af === 'mechA' || af === 'mechK' || af === 'mechC') { if (armored) playSound(du && TYPES[du.type].mech ? 'heavy' : 'armor', 0.6); if (!fx('funken', null, d.x, d.y - s * 0.45, { anchor: 'mitte', life: 16, fadeOut: 0.6, mul: 0.8, flip: Math.random() < 0.5 })) muzzles.push({ img: 'sparks', x: d.x, y: d.y - s * 0.45, center: true, sz: 0.95, life: 22, max: 22 }); }
       await wait(170); a.lunge = null; await wait(70);
-      { const T0 = au && TYPES[au.type], kc = T0 && T0.cls, n = e.t === 'melee' ? 2 + Math.floor(Math.random() * 3) : 1 + Math.floor(Math.random() * 2), fl = d.x < a.x;   // F28 (2026-11-20): Folge von Hieben
-        const hieb = kc === 'walker' ? (T0.mech ? 'heavy' : 'armor') : T0 && T0.suit ? 'sword' : kc === 'cav' ? 'saebel' : au && au.side === 'D' ? 'nahD' : 'nahA';
-        for (let i = 0; i < n; i++) { await wait(170 + Math.random() * 190); if (!DU.get(e.a) || !DU.get(e.d)) break; pose(e.a, 'kolben', 420);
-          a.lunge = { dx: (d.x - a.x) * 0.22, dy: (d.y - a.y) * 0.22 }; playSound(hieb, 0.38 + Math.random() * 0.12, au && au.side, { noGap: true, rate: 0.9 + Math.random() * 0.2 });
-          if (Math.random() < 0.45 && au && TYPES[au.type].cls === 'inf' && !TYPES[au.type].suit) playSound('schaufel', 0.3, null, { noGap: true });
-          const hx = d.x + (fl ? 1 : -1) * s * (0.05 + Math.random() * 0.15), hy = d.y - s * (0.3 + Math.random() * 0.25);
-          fx('nahkampf', armored ? 4 : Math.floor(Math.random() * 4), hx, hy, { anchor: 'mitte', life: 14, fadeOut: 0.6, grow: 0.2, flip: fl, mul: 0.6 });
-          if (blood && du && !['walker', 'art'].includes(TYPES[du.type].cls) && Math.random() < 0.5) fx('blut', Math.floor(Math.random() * 3), hx + (fl ? -1 : 1) * s * 0.08, hy + s * 0.05, { anchor: 'mitte', life: 22, mul: 0.3, grow: 0.2, flip: fl, filter: BLUT_FILTER });
-          await wait(110); a.lunge = null; } }
+      // F28-Hiebfolge nach dem Hauptschlag ersetzt durch den Schlagabtausch davor (F51)
       await kampfSzeneEnde(ksz);
       break;
     }
@@ -2569,7 +2593,8 @@ async function playEvent0(e) {
       if (!e.panic && !e.wire && !e.burn && STEIN.includes(G.map[u.c][u.r].t)) playSound('impact', 0.35);   // Treffer auf Gebäude/Stein (Tonprobe 2026-11-18; vorher Fahrzeug)
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) {
         const soft = !['walker', 'art'].includes(TYPES[u.type].cls);
-        if (lastFire.kind !== 'rifle' && soft) playSound('einschlag', 0.22, null, { rate: 0.78 + Math.random() * 0.08, dur: 260 });   // MG-Treffer: dumpfer Einschlag in den Körper, tiefer gestimmt, kurz und leise (Spieltest 2026-11-17)
+        if (lastFire.kind !== 'rifle' && soft) playSound('einschlag', 0.22, null, { rate: 0.78 + Math.random() * 0.08, dur: 260 });
+        if (lastFire.kind !== 'rifle' && e.dmg >= 0.6) trefferSpritzer(x - L.s, y, d, e.dmg >= 1.5 ? 2 : 1, !soft);   // F50: schwere Treffer (MG) spritzen mehr; Maschinen Funken/Öl   // MG-Treffer: dumpfer Einschlag in den Körper, tiefer gestimmt, kurz und leise (Spieltest 2026-11-17)
         else playSound(e.dmg >= 0.3 ? 'einschlag' : 'vorbei', 0.35);
       }
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
