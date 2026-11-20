@@ -26,10 +26,11 @@ PARTS = {
     'punkt': ('bogen2_buttons/punkt_voll', 56),
     'punktLeer': ('bogen2_buttons/punkt_leer_1', 56),
     'platte': ('bogen2_buttons/platte_1', 200),
-    # Fraktionswappen: Emblem allein (Marken)
-    'wA': ('wappen_konkordat/w_emblem', 128),
-    'wD': ('wappen_aschenwacht/w_emblem', 128),
-    'wF': ('wappen_legion/w_emblem', 128),      # Blaue Legion (zweites Bilderset des Konkordats)
+    # Fraktionswappen allein (Marken, Rundenschild, Siegbild): seit 2026-11-20 aus den Banner-Bögen (Konkordat goldener Löwe);
+    # die alten Embleme liegen noch in teile/wappen_*/w_emblem.png
+    'wA': ('banner_konkordat/b_wappen', 192),
+    'wD': ('banner_aschenwacht/b_wappen', 192),
+    'wF': ('banner_blaue_legion/b_wappen', 192),      # Blaue Legion (zweites Bilderset des Konkordats)
     # Fraktionsbanner im Startmenü (2026-11-20, ui-quelle/banner/): ersetzen die alten Flaggen-Fassungen w_flagge
     # (Union-Jack-, Schwarz-Weiß-Rot- und Trikolore-Tuch); die alten Teile liegen noch in teile/wappen_*/w_flagge.png
     'fA': ('banner_konkordat/b_banner', 400),
