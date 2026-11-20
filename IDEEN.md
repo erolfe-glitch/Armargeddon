@@ -114,3 +114,12 @@ Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr 
 4. ~~Grauwall komplett: Gelände, Effekte, Ton, Musik, Hilfe/Regeltexte auf neuem Stand.~~ erledigt 2026-11-17: Gelände-Bausteine, Effektbögen, Ton-Pakete 4/6, eigene Musik (7edff61), Sprüche und Stimmfilter, Hilfe- und Regeltexte (ba527e5). Kleinkram offen: Baumkronen am Kartenrand noch Platzhalter; Stimmen selbst anhören (Spieltest-Liste Punkt 51).
 5. ~~Balance (Etappe 7): Anführer-Befehle, Kolosse, Kosten, Siegquote um 50 %.~~ erledigt 2026-11-17/18 (f00352b, 6e54782, d033826; Bericht entwurf/BALANCE.md): Grauwall 48 % über 800 Schlachten, Landkoloss-Verluste 88 → 46 %, Gas für die KI, Nebelwand neu, zwei Kostenrunden. Bewusst offen: Konkordat-Spezialisten messen für die KI schwächer als ihr Preis; alte Karten (Kasematten 1 %, Front 15 %, Lerne 94 %) erst beim Neubau.
 6. **Als Nächstes:** Content – weitere Karten (zuerst die nächste Karte auf Gelände-Bausteine umstellen; fehlende Geländearten Kirche, Fabrik, Bahn, Furt), Missionstypen, KI-Charaktere, Einheitengrenzen je Typ, Blaue Legion, Feldzug.
+
+## Stufe-3-Schreiter und neue Einheiten (Enrico, 2026-11-19)
+- **Stufe-3-Schreiter als Höhepunkt:** Kreuzschreiter (Konkordat, Löwe) und Eisenknecht (Aschenwacht, Ritter) bekommen ein **neues Modell** (Bilder nach Enricos Vorlagen, Stil siehe STYLE.md „Stil-Erweiterung: Retro-Zukunft“). Höchstens einer pro Seite und Schlacht, teurer und stärker, eigene Ankunft (Ton, Beben), Kamerafahrt bei Hauptangriff und Fähigkeit, scheppernder Nahkampf.
+- **Kamerafahrt** (wie in Darkest Dungeon): auch bei großen Momenten (Kircheneinsturz, Volltreffer, ein Koloss oder Schreiter fällt), abschaltbar.
+- **Minigun:** Wahl pro Schuss zwischen „Streuen“ (mehrere Ziele, wenig Schaden) und „Bündeln“ (ein Ziel, hoher Schaden), Salve etwas länger.
+- **Neue Einheiten im neuen Stil:**
+  - Konkordat: **Löwenoger** – riesige Krieger mit Löwenköpfen in schwerer Rüstung mit Sturmgewehren.
+  - Aschenwacht: **Eiserne Hünen** – Riesen in Ritterrüstung mit Topfhelm und Sehschlitz, schwere Maschinengewehre.
+  - Werte, Kosten und Rolle noch offen.

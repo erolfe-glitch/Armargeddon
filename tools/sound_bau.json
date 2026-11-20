@@ -33,6 +33,7 @@
     { "pool": "cannon", "f": "Heavy firing sounds/239137__qubodup__artillery-gunfire.flac", "s": "D", "max": 3.0 },
     { "pool": "cannon", "f": "Heavy firing sounds/freesound_community-cannon-shot-14799.mp3", "s": "A", "max": 1.7, "note": "Donnerrohr/Feldkanone, Abwechslung zu little-cannon" },
     { "pool": "kolosskanone", "f": "Heavy firing sounds/850499__vulkanbruder__little-cannon.wav", "s": null, "max": 0.6, "bass": 3, "lvl": -13, "note": "Landkoloss und Turmschreiter (dazu MG): kleine Kanone statt Gewehrklang – Spieltest Runde 2, Paket 6 (2026-11-17)" },
+    {"pool": "loewenkanone", "f": "Kanone schwer/soundtaker-heavy-shot-sound-477215.mp3", "s": null, "max": 3.6, "fo": 1.4, "bass": 3, "lvl": -13, "note": "Löwenmaul-Kanone des Kreuzschreiters (Stufe 3, 2026-11-19): ein schwerer Schuss, tiefer Kanonendonner mit Nachhall"},
     { "pool": "kolosskanone", "f": "Heavy firing sounds/freesound_community-cannon-shot-14799.mp3", "s": null, "max": 1.5, "bass": 3, "lvl": -13 },
     { "pool": "panzerkanone", "f": "Heavy firing sounds/457044__gerainsan__slow-motion-gun-shot.wav", "s": "D", "max": 3.0 },
     { "pool": "cannonH", "alt": "cannonH", "s": null },

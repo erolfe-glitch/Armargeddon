@@ -247,6 +247,18 @@
   "note": "Landkoloss und Turmschreiter (dazu MG): kleine Kanone statt Gewehrklang – Spieltest Runde 2, Paket 6 (2026-11-17)"
  },
  {
+  "pool": "loewenkanone",
+  "key": "loewenkanone_1",
+  "s": null,
+  "f": "Kanone schwer/soundtaker-heavy-shot-sound-477215.mp3",
+  "dur": 3.6,
+  "src": 10.21,
+  "start": 0.08,
+  "gain": -8,
+  "kb": 42,
+  "note": "Löwenmaul-Kanone des Kreuzschreiters (Stufe 3, 2026-11-19): ein schwerer Schuss, tiefer Kanonendonner mit Nachhall"
+ },
+ {
   "pool": "kolosskanone",
   "key": "kolosskanone_2",
   "s": null,

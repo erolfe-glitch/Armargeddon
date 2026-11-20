@@ -110,3 +110,26 @@ Verlauf: Konkordat hält ab Runde 1 den Vorposten, ab Runde 3 den Nordgraben; di
 
 ## Stimmen und Ton
 51. Im stummen Test nicht hörbar; geprüft ist nur, dass beim Anklicken jede Einheit ihre feste Stimme bekommt und fertige Einheiten nur klicken. Bitte selbst anhören.
+
+# Spieltest Runde 4 (Enrico, Samstag 2026-11-21) – Prüfliste, angelegt 2026-11-19
+
+Alles hier wurde nur im unsichtbaren, stummen Test-Chrome geprüft. Bitte selbst anschauen und Funde mit Nummer notieren.
+
+## Grauwall
+52. Bildwirkung: mit Taste B zwischen aus / leicht / stark wechseln. Welche Stufe bleibt Standard?
+53. Posen (Schützenkohorte, Aschengrenadiere): Schießen stehend/kniend, Kolbenschlag, Eingraben, Getroffen. Wirkt es flüssig, passt der Versatz im Trupp?
+54. Zustandszeichen über den Köpfen: helfen sie oder stören sie? Zeichen vor einer Figur weiter vorn (z. B. auf der Brust des Hauptmanns) im Spiel störend?
+55. Legende im Hilfe-Menü: Zeichen stehen dauerhaft, verständlich?
+56. Töne: Eingraben (Schaufel, Atmen), Nahkampf-Getümmel, Kugeleinschläge, MG auf- und abbauen, schwere Kanonen, Leuchtpistole, Löwengebrüll (Kreuzschreiter, Testknopf ohne Wirkung), Stimmen gegenüber Fahrzeugen.
+57. Echtes Vollbild mehrmals aus- und einschalten: bleibt die Karte sichtbar?
+58. Eingraben und danach schießen: geht das noch irgendwie? Wenn ja, Klickreihenfolge notieren.
+59. Gekippte Wandstücke (Ruinen): besser als vorher oder zu unruhig? Vergleich in der Konsole mit __dbg.kipp(0) / __dbg.kipp(1).
+60. Offline: index.html in einen anderen Ordner kopieren, WLAN aus, Doppelklick. Kommen Bilder und Ton?
+
+## Sankt Ruß (neue Karte)
+61. Erster Eindruck der Karte: Dorf, Kirche, Friedhof, Dorfplatz, Gärten mit Zäunen und Mauern.
+62. Kirche: betreten, Deckung, Turm besetzen (+1 Reichweite/Sicht), Einsturz (wann, wie sieht er aus).
+63. Fühlt sich die Partie fair an? Die Aschenwacht hat hier eine eigene Angriffsarmee und rückt vor.
+64. Artillerie erreicht die Kirche kaum, Einsturz kommt meist von Kolossen. Stört das?
+65. Schräge Kirchen- und Gartenwände: als Fläche erkennbar?
+66. Breiten 1280 und 2560 px kurz ansehen.

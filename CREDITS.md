@@ -21,6 +21,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | huelsen | huelsen_1 | Infantry Guns/freesound_community-shells-hitting-ground-40-39791.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | buechse | buechse_1 | 721431__the_epic1357__new-barrett.mp3 | Freesound / the_epic1357 | CC0 1.0 | <https://freesound.org/s/721431/> |
 | kolosskanone | kolosskanone_1 | 850499__vulkanbruder__little-cannon.wav | Freesound / vulkanbruder | CC0 1.0 | <https://freesound.org/s/850499/> |
+| loewenkanone | loewenkanone_1 | Kanone schwer/soundtaker-heavy-shot-sound-477215.mp3 | Pixabay / soundtaker | Pixabay Content License | – |
 | cannon | cannon_2 | Heavy firing sounds/239137__qubodup__artillery-gunfire.flac | Freesound / qubodup | CC0 1.0 | <https://freesound.org/s/239137/> |
 | cannon | cannon_3 | Heavy firing sounds/freesound_community-cannon-shot-14799.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | panzerkanone | panzerkanone_1 | 457044__gerainsan__slow-motion-gun-shot.wav | Freesound / gerainsan | CC0 1.0 | <https://freesound.org/s/457044/> |

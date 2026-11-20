@@ -235,3 +235,12 @@ Für alle Bilder: reiner Magenta-Hintergrund (#FF00FF), PNG, Tuschkontur und Far
   - **Helligkeit:** seit den ruhigen Bodentexturen (2026-11-16, `boden_*_ruhig`, ersetzen die ersten; Wasser bleibt) Boden ×1,2, Kontrast ×1,12; eine Texturkachel deckt 3,2 R (große, flache Formen). Trümmerboden gedämpft (×0,86). Pfützen und Fußspuren nur noch als einzelne flache Details, sparsam (Spuren mit weich ausgeblendetem Rand).
   - **Bilder mit schwarzem Hintergrund** lassen sich nicht sauber freistellen (dunkle Trichter und Wasser werden löchrig). Für Gelände immer Magenta verwenden.
   - **Abwechslung:** Jedes Feld wählt Variante, Spiegelung, Größe (±15 %) und Streifen-Anfang aus seinem eigenen Zufallswert; dieselbe Karte sieht immer gleich aus, `seed` ändert die Mischung.
+
+## Stil-Erweiterung: Retro-Zukunft (Enrico, 2026-11-19)
+Gilt für **neue** Bilder: neue Einheiten, die beiden Stufe-3-Schreiter (Kreuzschreiter, Eisenknecht), Blaue Legion. Die 50 fertigen Einheiten bleiben; einzelne werden nur bei Gelegenheit nachgebessert.
+- **Basis bleibt Erster Weltkrieg:** Gräben, lange Mäntel, Stahlhelme, Gasmasken, Schlamm, Rost.
+- **Einschlag Retro-Zukunft (Zweiter Weltkrieg):** schwere vernietete Panzerplatten, Diesel- und Röhrentechnik, Auspuffrohre, Kabel und Druckschläuche, Sturmgewehre mit Trommel- oder Kastenmagazinen, Drehläufe, Panzerglas-Sehschlitze, leuchtende Linsen (sparsam, gelblich wie die Gasmaskenaugen).
+- **Düsterer Glaubenskrieg:** gotische Verzierungen, Wappenschilde, Wachssiegel mit Pergamentstreifen, Gebetsketten, Ketten, Schädel- und Engelsmotive, zerrissene Banner.
+- **Hauch Sci-Fi-Fantasy:** übergroße Krieger und Maschinen, Mischwesen (Löwenoger), Rüstungen, die halb Ritter, halb Maschine sind.
+- **Nicht übernehmen:** Namen, Wappen, Symbole oder erkennbare Entwürfe bestehender Spiele und Reihen; nur die Stimmung. In Prompts nur Merkmale beschreiben, nie Vorbilder nennen.
+- Weiter gelten die Bildregeln (Magenta, Dreiviertelansicht nach rechts, kein Text, keine echten Hoheitszeichen) und die Farben der Seiten (Konkordat Blutrot/Stahl/Messing mit Löwe, Aschenwacht Aschgrau/Schwarz/Knochenweiß mit Helm-Emblem).

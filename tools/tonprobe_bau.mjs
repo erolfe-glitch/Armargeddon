@@ -30,13 +30,13 @@ const VOL = { rifle: 0.3, rifle2: 0.3, rifle3: 0.3, rifle4: 0.3, sniper: 0.6, pi
   heal: 0.5, reparieren: 0.6, nachladen: 0.55, gasmaske: 0.5, klick: 0.3, ui: 0.3, tick: 0.45, zug_eigen: 0.35, zug_gegner: 0.35, erobert: 0.55, verloren: 0.55, whistle: 0.4, march: 0.45,
   generalhorn: 0.5, horn: 0.5, win: 0.6, pain: 0.45, medic: 0.45, forward: 0.45, stand: 0.45, roar: 0.45, cry: 0.4, scream: 0.4, panic: 0.4, charge: 0.6, comeon: 0.45, husten: 0.4, grunzen: 0.4,
   robot: 0.5, ambient: 0.22, wetter: 0.12, musik_titel: 0.34, musik_schlacht: 0.13, musikNiederlage: 0.32, abprotzen: 0.6, schaufel: 0.4, atmen: 0.3, getuemmel: 0.3, mgladen: 0.45, leuchtschuss: 0.5, leuchtbrand: 0.22, loewe: 0.6,
-  glocke: 0.42, glocke_fern: 0.1, glocke_fall: 0.6, kraehe: 0.14, wind: 0.1 };   // Sankt Ruß (2026-11-19, ui.js ORT_KULISSE/ORT_GLOCKE)
+  loewenkanone: 0.6, glocke: 0.42, glocke_fern: 0.1, glocke_fall: 0.6, kraehe: 0.14, wind: 0.1 };   // Sankt Ruß (2026-11-19, ui.js ORT_KULISSE/ORT_GLOCKE)
 // Stimmen lauter wie im Spiel (ui.js STIMM_PL/STIMM_VOL, Tonprobe 2026-11-18); Fahrzeuge werden unter einer Stimme auf DUCK_F abgesenkt
 const STIMM_VOL = 1.45, DUCK_F = 0.4, SPRUCH = +(0.34 * STIMM_VOL).toFixed(2), zahlN = v => String(v).replace(".", ",");
 for (const k of ['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen']) VOL[k] = Math.min(1, +(VOL[k] * STIMM_VOL).toFixed(2));
 const MUSIK = ['musik_titel', 'musik_schlacht', 'musikNiederlage'], SCHLEIFE = ['ambient', 'wetter', 'wind', ...MUSIK];
 const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4', sniper: 'Scharfschütze', pistol: 'Pistole (Anführer)', semi: 'Halbautomat (Kampfanzüge)', mg: 'Maschinengewehr',
-  minigun: 'Drehlauf (Eisenknecht)', buechse: 'Panzerbüchse', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Abschuss schwere Artillerie',
+  minigun: 'Drehlauf (Eisenknecht)', buechse: 'Panzerbüchse', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', loewenkanone: 'Löwenmaul-Kanone (Kreuzschreiter)', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Abschuss schwere Artillerie',
   launch: 'Abschuss Mörser/Minenwerfer', flame: 'Flammenwerfer', werfer: 'Werfer', flinte: 'Flinte', grenade: 'Handgranate', grenade2: 'Handgranate 2', nahA: 'Nahkampf Konkordat', nahD: 'Nahkampf Aschenwacht',
   saebel: 'Säbel (Reiter)', sword: 'Klinge (Kampfanzüge)', axe: 'Axt (Räumer)', slash: 'Klinge', smash: 'Bohrkoloss schlägt', heavy: 'Schwerer Treffer (Kampfmaschinen)', boomH: 'Einschlag schwere Artillerie (boomH_1 auch Granateinschlag)',
   einschlagH: 'Einschlag Einzelschuss Artillerie', barrage: 'Sperrfeuer', gas: 'Gas- und Rauchgeschoss', boom: 'Granateinschlag', boom2: 'Gerät zerstört', blast: 'Sprengung', wasser: 'Einschlag im Wasser', rauch: 'Gas-/Nebelhandgranate (noch nicht im Spiel)',
@@ -51,7 +51,7 @@ const NAME = { rifle: 'Hauptgewehr (Salve)', rifle2: 'Gewehr 2', rifle3: 'Gewehr
   robot: 'Maschine getroffen', ambient: 'Gefechtslärm (Schleife)', wetter: 'Wetter (Schleife)', musik_titel: 'Titelmusik', musik_schlacht: 'Schlachtmusik', musikNiederlage: 'Niederlage',
   glocke: 'Kirchenglocke zum Rundenbeginn (Sankt Ruß)', glocke_fern: 'Ferne Glocke (Kulisse Sankt Ruß, ganz selten)', glocke_fall: 'Glocke schlägt beim Einsturz auf', kraehe: 'Krähen (Kulisse Sankt Ruß)', wind: 'Wind in den Ruinen (Schleife, Sankt Ruß)' };
 const GRUPPEN = [
-  ['waffen', 'Waffen', ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'mg', 'minigun', 'buechse', 'flinte', 'cannon', 'kolosskanone', 'panzerkanone', 'cannonH', 'launch', 'flame', 'werfer', 'grenade', 'grenade2', 'nahA', 'nahD', 'getuemmel', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy']],
+  ['waffen', 'Waffen', ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'mg', 'minigun', 'buechse', 'flinte', 'cannon', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'launch', 'flame', 'werfer', 'grenade', 'grenade2', 'nahA', 'nahD', 'getuemmel', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy']],
   ['einschlaege', 'Einschläge', ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'wasser', 'einsturz', 'glocke_fall', 'impact', 'armor', 'feuer']],
   ['fahrzeuge', 'Fahrzeuge und Schreiter', ['tank', 'motor_auswahl', 'mech', 'crash', 'ueberrollen', 'drahtlatch', 'drahtwackeln', 'tiger']],
   ['truppen', 'Truppen, Pferde, Handgriffe', ['schritte', 'steps', 'stepsWald', 'holzknacken', 'marschtritt', 'dog', 'gallop2', 'pferd_auswahl', 'pferd_unruhe', 'neigh', 'gespann', 'wagenknarren', 'cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'schaufel', 'bauen', 'heal', 'reparieren', 'nachladen', 'gasmaske']],
