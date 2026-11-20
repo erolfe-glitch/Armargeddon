@@ -8176,7 +8176,7 @@ const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Sold
 const ANZUG = { slots: [[-0.2, -0.06], [0.2, 0.2]] };   // Kampfanzug-Trupps: breit und groß, eng gestellt, damit nichts über den Feldrand ragt
 const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäter eng beieinander: Lauf- und Trage-Posen sind breit und ragten sonst aus dem Feld
 const FIGMAP = {
-  kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], lanzeD: ['reiter', 1, 2, { sc: 0.85, slots: [[-0.22, 0.04], [0.2, 0.3]] }], sturmpz: ['panzer'], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
+  kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 3, { sc: 0.8, slots: [[-0.3, 0.14], [0.28, 0.28], [-0.02, -0.16]] }], lanzeD: ['reiter', 1, 3, { sc: 0.8, slots: [[-0.3, 0.14], [0.28, 0.28], [-0.02, -0.16]] }],   /* F58 (2026-11-20): drei Reiter, der dritte hinten in der Mitte */ sturmpz: ['panzer'], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['mineur', 1, 2],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['feldkanone'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
