@@ -15,6 +15,10 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltk
 - **Nur noch die neue Ansicht (seit 2026-11-17):** Das Spiel startet immer in der neuen, gekippten Ansicht (`VIEW.tilt()` liefert immer true, Schalter „Neue Ansicht (Test)“ entfernt). Die alte, flache Ansicht ist nicht mehr erreichbar und wird nicht weitergepflegt; ihr Code darf vorerst bleiben. **Alle Änderungen nur noch für die neue Ansicht** (Figuren aus `figs.js`/FIGMAP, Bedienfeld `body.neu`); `art.js`-Bilder nur noch als Ersatz, wo es keinen neuen Bogen gibt (z. B. Blaue Legion).
 - **Jede UI-Änderung hält sich an `STYLE.md`** (Palette, Schrift, Freund/Feind-Formen, Grundregel „Rahmen dreckig, Inhalte sauber“).
 - Git: Repo ist mit github.com/erolfe-glitch/Armargeddon verbunden (Branch main). Commits als „Claude <noreply@anthropic.com>“.
+- **Sicherung außerhalb von git (seit 2026-11-20):** `sound-quelle\` und `ui-quelle\konzept\sammlung\` sind nicht in git (.gitignore). Nach jeder Änderung daran per robocopy nach `C:\Users\erolf\OneDrive\Armargeddon-Sicherung\` sichern – nur kopieren, nie löschen (kein `/MIR`, kein `/PURGE`):
+  `robocopy C:\Projekte\Armargeddon\sound-quelle C:\Users\erolf\OneDrive\Armargeddon-Sicherung\sound-quelle /E /R:1 /W:1 /NP`
+  `robocopy C:\Projekte\Armargeddon\ui-quelle\konzept\sammlung C:\Users\erolf\OneDrive\Armargeddon-Sicherung\ui-quelle\konzept\sammlung /E /R:1 /W:1 /NP`
+  Robocopy-Rückgabewerte 0–7 sind Erfolg, ab 8 Fehler.
 
 ## Designvorgaben (Wünsche des Nutzers)
 - Oberfläche klar halten, „nicht zu doll“; wenig Text; PC und Digitalboards ab 1280 px, kein Handy.
