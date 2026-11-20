@@ -173,6 +173,11 @@ function abilPlan(G, u) {
       const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
+    else if (k === 'sprung') {   // Sprungangriff (2026-11-20): Nahkampf-Vorschau vom Landefeld; schwache Gegner, MG, Geschütze und Zielfelder zuerst
+      const x = foe(c, r), land = x && E.sprungLand(G, u, x);
+      if (land) { const p = E.preview(G, Object.assign({}, u, { c: land[0], r: land[1] }), x, 'melee'), dm = Math.min(p.dmg, x.str);
+        v = 1 + dm * 0.6 + (p.dmg >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) - (E.cls(x) === 'walker' ? 1.5 : 0) - threatAt(G, u, land[0], land[1]) * W_SPRUNG_GEF; }
+    }
     else if (k === 'mark') {   // Ziel markieren: Gegner, auf den eigene Artillerie in dieser Runde noch schießen kann
       const x = foe(c, r);
       if (x && E.active(x)) {
@@ -208,6 +213,7 @@ function hazard(G, u, c, r) {
   if (E.fireAt(G, c, r)) h += W_HAZ.fire * (T.cls === 'walker' ? 0.5 : 1);   // brennende Felder meiden
   return h;
 }
+const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
 function posValue0(G, u, c, r) {
@@ -549,6 +555,14 @@ function next(G) {
     if (u.side !== G.side || !TYPES[u.type].broadside || !E.active(u) || !u.attacked || (u.bsT || []).length !== 1) continue;
     const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => x.str - y.str)[0];
     if (t) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
+  }
+  // Eiserne Hünen (2026-11-20): Dauerfeuer – zweite Salve, wenn das Ziel lohnt (danach kühlt das MG eine Runde ab)
+  for (const u of G.units) {
+    if (u.side !== G.side || !TYPES[u.type].dauerfeuer || !E.active(u) || !E.dauerOk(u)) continue;
+    const ts = G.units.filter(d => E.canFire(G, u, d)); if (!ts.length) continue;
+    const wert = d => { const p = E.preview(G, u, d, 'fire'); return Math.min(p.dmg, d.str) + (p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0); };
+    const t = ts.sort((a, b) => wert(b) - wert(a))[0];
+    if (wert(t) >= W_DAUER) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
   }
   // Zweiter Durchgang: Meldehunde bringen Befehle, dann nutzen Einheiten mit übrigen Aktionspunkten sie (weiter ziehen oder angreifen)
   for (const u of G.units) if (u.side === G.side && E.active(u) && TYPES[u.type].abil === 'ammo') {

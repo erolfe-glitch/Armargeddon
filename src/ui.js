@@ -661,6 +661,8 @@ const STATES = [
   { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
   { k: 'mgdown', sym: 'mg_ab', name: 'MG abgebaut', on: (u, d) => TYPES[u.type].mg && !d.vs.setup && E.active(u), text: () => 'Marschbereit: kann ziehen, aber nicht schießen. Aufbauen kostet 1 Aktion, dann feuert es und kann Sperrfeuer geben.' },
   { k: 'mgup', sym: 'mg_auf', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt oder gibt Sperrfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
+  { k: 'kuehl', sym: 'sanduhr', ring: '#9aa3ab', name: 'MG kühlt ab', on: u => TYPES[u.type].dauerfeuer && u.kuehl > 0 && E.alive(u), text: u => u.kuehl > 1 || u.side !== G.side ? 'Nach dem Dauerfeuer: Das MG schießt in der nächsten eigenen Runde nicht. Ziehen und Nahkampf gehen.' : 'Nach dem Dauerfeuer: Das MG schießt in dieser Runde nicht. Ziehen und Nahkampf gehen.' },
+  { k: 'dfBereit', sym: 'garbe', ring: '#E2B04A', name: 'Dauerfeuer bereit', panel: true, on: u => E.dauerOk(u) && u.side === G.side && E.active(u), text: () => 'Dauerfeuer: noch eine Salve in dieser Runde (gleiches oder anderes Ziel). Danach kühlt das MG eine eigene Runde lang ab.' },
   { k: 'ow', sym: 'auge', name: 'Feuerbereit', on: u => u.ow, text: () => `Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ${xf(P.OW_DMG)}).` },
   { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => `Befehl des Anführers: Nahkampf ${xf(P.ORDER_ATK)} in dieser Runde.` },
   { k: 'lance', sym: 'sprengladung', name: 'Sprenglanze bereit', panel: true, on: (u, d) => d.vs.lance && E.active(u), text: () => `Der erste Nahkampfangriff der Schlacht trifft mit der Sprenglanze ${xf(P.BLAST_LANCE)}. Danach normale Lanze.` },
@@ -798,7 +800,7 @@ function drawUnit(u, d) {
   const nf = VIEW.tilt() ? newFigs(u, d) : null;
   if (nf) topY = drawNewFigs(g, u, d, nf, x, y, flip, A0, done);
   else {
-  const slots = SLOTS[k];
+  const slots = SLOTS[k] || SLOTS[T.cls] || SLOTS.inf;   // neue Typen ohne alte Zeichnung (z. B. Löwenoger), solange ihr Bild lädt
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
   const oyMin = Math.min(...slots.slice(0, 2).map(q => q[1]));
   const big = T.cls === 'walker';
@@ -1576,10 +1578,10 @@ const KZ_LEG = [
   ['angst', 'puls', 'Verängstigt', 'Vom Löwengebrüll des Kreuzschreiters: Moral gesunken, niedergehalten bis zum Ende der nächsten eigenen Runde.'],
   ['gas', 'puls', 'Im Gas', 'Steht in der Gaswolke.'],
   ['gift', 'puls', 'Vergiftet', 'Verliert noch einige Runden Stärke und Moral.'],
-  ['feuer', 'puls', 'Im Feuer', 'Steht auf einem brennenden Feld.'],
+  ['feuer', 'puls', 'Im Feuer', 'Steht auf einem brennenden Feld (steigt auf: Dauerfeuer der Eisernen Hünen).'],
   ['panne', 'puls', 'Panne / festgefahren', 'Fahrzeug fällt aus oder steckt fest.'],
   ['klingen', 'puls', 'Gebunden', 'Gegner daneben: kein Schuss, nur Nahkampf (beim Anwählen).'],
-  ['wut', 'steig', 'Sturm', 'Sturmbefehl, Vorwärts, Sturmlauf, Gegenstoß.'],
+  ['wut', 'steig', 'Sturm', 'Sturmbefehl, Vorwärts, Sturmlauf, Gegenstoß, Sprungangriff.'],
   ['auge', 'puls', 'Feuerbereit', 'Schießt im gegnerischen Zug auf den ersten Gegner.'],
   ['garbe', 'steig', 'Sperrfeuer', 'Das MG feuert im gegnerischen Zug.'],
   ['pfeil', 'steig', 'Moral steigt', 'Gesammelt, Sammeln-Befehl, hält stand.'],
@@ -1616,7 +1618,8 @@ const FIGMAP = {
   grenadier: ['soldat', 1], sturm: ['sturm', 1], eingreif: ['eingreif', 1],
   pionierD: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
-  stahl: ['stahl', 1, 2, ANZUG], panzerk: ['panzerknecht', 1, 2, ANZUG],   // Kampfanzüge: 2 Figuren, 1,25 SH, eng im Feld
+  stahl: ['stahl', 1, 2, ANZUG], panzerk: ['panzerknecht', 1, 2, ANZUG],
+  oger: ['loewenoger', 1, 2, ANZUG], huenen: ['eiserne_huenen', 1, 2, ANZUG],   // 2026-11-20: Löwenoger, Eiserne Hünen – 2 große Figuren je Trupp, Posen über POSE_SETS   // Kampfanzüge: 2 Figuren, 1,25 SH, eng im Feld
   ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
@@ -1725,15 +1728,18 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier']);
+const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen']);
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
+// Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
+const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', knien: 'loewenoger_2', kolben: 'loewenoger_3' },
+  huenen: { bereit: 'eiserne_huenen_1', anlegen: 'eiserne_huenen_2', knien: 'eiserne_huenen_2', kolben: 'eiserne_huenen_3' } };
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && VIEW.tilt() && fac(u.side) !== 'F');
 function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
 function poseFigur(u, d, j, fallback) {
-  const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', ruhe = { im: figImg(pre + POSE_BILD.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
+  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', ruhe = { im: figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
   const P0 = d.pose; if (!P0) return ruhe;
   const vs = P0.gleich ? 0 : j * POSE_VERSATZ + ((u.id * 37 + j * 53) % 41), el = (now - P0.t0) * speed - vs;
   if (j === 0 && (now - P0.t0) * speed > P0.dauer + 400) { d.pose = null; return ruhe; }
@@ -1746,7 +1752,7 @@ function poseFigur(u, d, j, fallback) {
   else if (art === 'graben') { dy = 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * el / 520)); rot = 0.03 * Math.sin(2 * Math.PI * el / 520); }   // im Takt der Schaufel
   else if (art === 'wurf') { const h0 = P0.dauer * 0.45; art = el < h0 ? 'ausholen' : 'loslassen'; if (art === 'ausholen') { dx = -0.03 * el / h0; rot = -0.05 * el / h0; } else dx = 0.05 * Math.sin(Math.PI * Math.min(1, (el - h0) / (P0.dauer * 0.4))); }
   else if (art === 'getroffen') { const k = Math.sin(Math.PI * q); dx = -0.07 * k; rot = -0.09 * Math.sin(Math.PI * 2.2 * q) * (1 - q); }   // taumelt zurück
-  return { im: figImg(pre + POSE_BILD[art]) || ruhe.im, dx, dy, rot };
+  return { im: (PB[art] && figImg(pre + PB[art])) || ruhe.im, dx, dy, rot };
 }
 // Granatwurf (für Einheiten mit Wurf-Fähigkeit; die Soldatenbilder haben im Spiel derzeit keine): Ausholen → Loslassen, Granate fliegt aus der Hand
 async function poseWurf(id, x2, y2) {
@@ -2177,7 +2183,7 @@ let sndSide = null, lastFire = null;   // lastFire: zuletzt abgespielter Schuss 
 // Einheitlicher Stimmfilter je Sprecher (2026-11-17): Stimm-Plätze haben Varianten <platz>_gm (Gasmaske leicht), _gs (Gasmaske mittel: Kampfanzüge),
 // _bf (Bordfunk stark: Panzerbesatzung), _mr (Maschine mittel: Schreiter, Eisenknecht); Hauptmann/General ohne Filter. Erzeugt mit tools/stimmfilter.py.
 const PANZER = ['koloss', 'sturmpz', 'bohrer'];
-function stimmVar(u) { const T = u && TYPES[u.type]; if (!T) return null; return T.cmd ? null : PANZER.includes(u.type) ? 'bf' : T.cls === 'walker' ? 'mr' : T.suit ? 'gs' : 'gm'; }
+function stimmVar(u) { const T = u && TYPES[u.type]; if (!T) return null; return T.cmd ? null : T.dauerfeuer ? 'mr' : PANZER.includes(u.type) ? 'bf' : T.cls === 'walker' ? 'mr' : T.suit ? 'gs' : 'gm'; }
 function sndPick(name, side, v) {
   const cand = [], add = (n, deep) => { if (!deep && SND_VAR[n]) { for (const m of SND_VAR[n]) add(m, true); return; } if (v && SND_POOLS[n + '_' + v]) n += '_' + v; if (SND_POOLS[n]) for (const [k, sd, w] of SND_POOLS[n]) { if (SND[k]) for (let i = 0; i < (w || 1); i++) cand.push([k, sd]); } else if (SND[n]) cand.push([n, null]); };   // Gruppe (SND_VAR) vor Platz, damit z. B. „rifle“ alle Gewehr-Plätze mischt; Gewicht w: Hauptton öfter
   add(name); if (!cand.length) return null;
@@ -2271,7 +2277,7 @@ async function playEvent0(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else playSound(marschU === e.u ? 'marschtritt' : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } }   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht) await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
+    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) { playSound('gespann', 0.5); playSound('wagenknarren', 0.3); } else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else playSound(marschU === e.u ? 'marschtritt' : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } }   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht) await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'tropfen', 'steig'); break;
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -2281,7 +2287,7 @@ async function playEvent0(e) {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      { const au0 = unitById(e.a); if (e.kind === 'rifle' && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
+      { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer)) && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6);
@@ -2291,7 +2297,7 @@ async function playEvent0(e) {
         else { flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); } }
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
-        const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
+        const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : au.type === 'oger' ? 'flinte' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
         lastFire = { kind: e.kind, t: performance.now() };   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
         const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
         if (salve) { const n = Math.max(1, Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001)));   // so viele Schüsse wie lebende Figuren
@@ -2302,6 +2308,7 @@ async function playEvent0(e) {
             const last = q === n - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
             const p = fxMuzzle(e.a, q); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } }
           if (a.pose && a.pose.t0 != null) { a.pose.schuss = schuss; a.pose.gleich = true; a.pose.dauer = Math.max(900, t + 650); } }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
+        else if (AT && AT.dauerfeuer) playSound('mg', 0.62, au.side, { rate: 0.8 + Math.random() * 0.06 });   // Eiserne Hünen: schweres MG, tiefer gestimmt
         else playSound(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', mg ? 0.55 : 0.6);
 
         // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
@@ -2392,9 +2399,10 @@ async function playEvent0(e) {
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
         playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : base, (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
-        if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35, null, { u: au });
+        if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('tiger', 0.45); }   // Löwenoger brüllt statt zu schreien
+        else if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35, null, { u: au });
         if (au && ['raeumer', 'sturm'].includes(au.type)) playSound('flinte', 0.5);   // kurzer Schuss im Grabenkampf
-        if (au && TYPES[au.type].cls === 'storm' && e.t === 'melee') playSound('cry', 0.45, null, { u: au });   // Kampfschrei beim Sturmangriff
+        if (au && TYPES[au.type].cls === 'storm' && e.t === 'melee' && au.type !== 'oger') playSound('cry', 0.45, null, { u: au });   // Kampfschrei beim Sturmangriff
         if (af === 'mechB') playSound('tiger', 0.4);   // Klauenschreiter brüllt (snarl entfernt, Tonprobe 2026-11-18)
       };
       let thrown = false;
@@ -2429,7 +2437,7 @@ async function playEvent0(e) {
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
       if (!e.panic && e.dmg > 0) pose(e.u, 'getroffen', 550);   // kurz taumeln
-      if (E.isMech(u.type) && TYPES[u.type].cls === 'walker') playSound('robot', 0.5, null, { u });   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
+      if ((E.isMech(u.type) && TYPES[u.type].cls === 'walker') || TYPES[u.type].dauerfeuer) playSound('robot', 0.5, null, { u, v: 'mr' });   // Hünen (2026-11-20): Maschinenstimme   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) shake(e.dmg >= 2.5 ? 6 : 4);
       if (!e.panic && !e.wire && !e.burn && STEIN.includes(G.map[u.c][u.r].t)) playSound('impact', 0.35);   // Treffer auf Gebäude/Stein (Tonprobe 2026-11-18; vorher Fahrzeug)
@@ -2441,6 +2449,7 @@ async function playEvent0(e) {
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav') playSound(Math.random() < 0.65 ? 'pferd_unruhe' : 'neigh', Math.random() < 0.65 ? 0.5 : 0.35); else if (u.limbered) playSound('neigh', 0.35);   // Pferde gleich laut (Spieltest Runde 2)   // Reiter beschossen: unruhige Pferde
+        else if (TYPES[u.type].dauerfeuer) {}   // Hünen: nur die Maschinenstimme oben
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 1) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45, null, { u });
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 0.3 && !e.wire) playSound(Math.random() < 0.6 ? 'grunzen' : 'gasmaske_2', 0.4, null, { u });   // leichte Verletzung: Grunzen bzw. Maskenlaut (Tonprobe 2026-11-18)
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
@@ -2464,6 +2473,14 @@ async function playEvent0(e) {
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u); if (ru) loewenGebruell(ru, e.d); await wait(700); break; }
+    case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
+      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig');
+      const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
+      d0.face = x1 >= x0 ? 0 : 3; d0.moving = true;
+      if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
+      try { for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); d0.x = x0 + (x1 - x0) * k; d0.y = y0 + (y1 - y0) * k - Math.sin(Math.PI * k) * L.s * 0.9; } } finally { d0.moving = false; d0.x = x1; d0.y = y1; }
+      fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('steps', 0.4); shake(2); VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
+    case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
       const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]);
       if (camOn() || OPT.cam) { await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
@@ -2771,7 +2788,7 @@ cv.addEventListener('click', ev => {
 // Wer sehr schnell nacheinander klickt (< 1 s), bricht den laufenden Spruch ab statt ihn zu überlagern. Tonplätze sv_<satz>_<Seite><Stimme>.
 const stimmeVon = new Map(), stimmeNaechste = {}, stimmeBeutel = {};
 let stimmeLauf = null;
-function stimmSatz(u) { const T = TYPES[u.type]; return PANZER.includes(u.type) ? 'panzer' : T.cls === 'walker' ? 'schreiter' : T.suit ? 'anzug' : T.cmd ? 'fuehrer' : 'inf'; }
+function stimmSatz(u) { const T = TYPES[u.type]; return PANZER.includes(u.type) ? 'panzer' : T.cls === 'walker' || T.dauerfeuer ? 'schreiter' : T.suit ? 'anzug' : T.cmd ? 'fuehrer' : 'inf'; }
 function stimmPool(u) {
   const satz = stimmSatz(u), basis = `sv_${satz}_${u.side}`; let n = 0; while (SND_POOLS[basis + (n + 1)]) n++; if (!n) return null;
   if (!stimmeVon.has(u.id)) { const z = stimmeNaechste[basis] || 0; stimmeVon.set(u.id, (z % n) + 1); stimmeNaechste[basis] = z + 1; }   // feste Stimme, reihum
@@ -2785,6 +2802,7 @@ function stimmZiehen(pool) {   // Beutel: alle Sprüche der Stimme gemischt, nac
 function klickStimme(u) { refreshSpent(); if (spent.has(u.id)) playSound('klick', 0.2, null, { noGap: true }); else selectVoice(u); }   // ausgegraut (fertig): kein Spruch
 function selectVoice(u) {
   if (!soundOn || speed >= INSTANT) return;
+  if (u.type === 'oger') { playSound('tiger', 0.4, null, { noGap: true }); return; }   // Löwenoger: Brüllen statt Spruch (2026-11-20)
   const pool = stimmPool(u); const k = pool && stimmZiehen(pool); if (!k) return;
   const t = performance.now();
   if (stimmeLauf && t - stimmeLauf.t < 1000) { try { stimmeLauf.a.pause(); } catch (e) {} if (stimmeLauf.m) stimmeLauf.m.stop(); }   // sehr schnell geklickt: abbrechen statt überlagern
@@ -3115,8 +3133,8 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
-const ABIL_SYM = { rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_KEIN = { sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_SYM = { sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
@@ -3904,6 +3922,8 @@ function noteEvent(e, u) {
     case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
+    case 'sprung': return logAdd(`${N(u)}: Sprungangriff`, u && u.side, ...at(u), true);
+    case 'dauerfeuer': return logAdd(`${N(u)}: Dauerfeuer – das MG kühlt eine Runde ab`, u && u.side, ...at(u), true);
     case 'faust': logAdd(`${N(u)}: Faustsalve auf ${(e.d || []).map(id => N(unitById(id))).join(' und ')}`, u && u.side, ...at(u), true); return headline('Faustsalve!', u && u.side);
     case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length} Gegner verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);
     case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);

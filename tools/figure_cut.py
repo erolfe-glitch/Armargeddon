@@ -92,11 +92,12 @@ POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97)}
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
 SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
-           'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4}   # Schlüssel: Art oder ganzer Bogenname (geht vor)
+           'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4,
+           'loewenoger': 3, 'eiserne_huenen': 3}   # 2026-11-20: Löwenoger, Eiserne Hünen (Ruhe/vorrücken, Schießen, Nahkampf)   # Schlüssel: Art oder ganzer Bogenname (geht vor)
 # Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+SH_REIHE = {'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.5, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
 # Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
 SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_eisenknecht_neu', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
 
@@ -319,7 +320,7 @@ def rauch_weg(a, name):
 
 
 # Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
-ENTROSA = {'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu'}
+ENTROSA = {'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
 
 
 def entrosa(q):

@@ -64,7 +64,7 @@ for (let g = 0; g < N; g++) {
           for (const [c, r] of b.felder) { const x = !b.kaputt && E.unitAt(G, c, r); if (x) KI.schiff[x.side]++; } }
         E.endTurn(G); continue; }
       for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || [];
-        if (u && ev.length) { for (const e of ev) if (e.t === 'einsturz') { KI.einsturz++; KI.runde.push(G.turn); KI.durch[sd]++; KI.typ[u.type] = (KI.typ[u.type] || 0) + 1; } zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); } }
+        if (u && ev.length) { for (const e of ev) if (e.t === 'einsturz') { KI.einsturz++; KI.runde.push(G.turn); KI.durch[sd]++; KI.typ[u.type] = (KI.typ[u.type] || 0) + 1; } zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); if (e.t === 'sprung') zaehl(sd, 'Sprungangriff (Löwenoger)'); if (e.t === 'dauerfeuer') zaehl(sd, 'Dauerfeuer (Hünen, 2. Salve)'); } }
         if (G.over) break; }
     }
   } catch (e) { errors++; if (errors < 3) console.error(e); continue; }

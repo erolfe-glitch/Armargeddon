@@ -25,8 +25,8 @@ const BILDER = existsSync(join(ROOT, 'tools', 'tonpult_bilder.json')) ? JSON.par
 // ---- wie in src/ui.js ----
 const STIMM_VOL = 1.45, SPRUCH = +(0.34 * STIMM_VOL).toFixed(3);
 const PANZER = ['koloss', 'sturmpz', 'bohrer'];
-const stimmVar = t => { const T = TYPES[t]; return T.cmd ? null : PANZER.includes(t) ? 'bf' : T.cls === 'walker' ? 'mr' : T.suit ? 'gs' : 'gm'; };
-const stimmSatz = t => { const T = TYPES[t]; return PANZER.includes(t) ? 'panzer' : T.cls === 'walker' ? 'schreiter' : T.suit ? 'anzug' : T.cmd ? 'fuehrer' : 'inf'; };
+const stimmVar = t => { const T = TYPES[t]; return T.cmd ? null : T.dauerfeuer ? 'mr' : PANZER.includes(t) ? 'bf' : T.cls === 'walker' ? 'mr' : T.suit ? 'gs' : 'gm'; };
+const stimmSatz = t => { const T = TYPES[t]; return PANZER.includes(t) ? 'panzer' : T.cls === 'walker' || T.dauerfeuer ? 'schreiter' : T.suit ? 'anzug' : T.cmd ? 'fuehrer' : 'inf'; };
 const SATZ_NAME = { inf: 'Fußtruppen (Gasmaske leicht)', anzug: 'Kampfanzüge (Gasmaske mittel)', fuehrer: 'Anführer (ohne Filter)', panzer: 'Panzerbesatzung (Bordfunk stark)', schreiter: 'Schreiter (Maschine mittel)' };
 const VAR_NAME = { gm: 'Gasmaske leicht', gs: 'Gasmaske mittel', bf: 'Bordfunk stark', mr: 'Maschine mittel' };
 const STIMM_PL = new Set(['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
@@ -73,6 +73,7 @@ function slotsVon(t) {
   const S = (ab, id, titel, platz, vol, o = {}) => out.push({ ab, id, titel, platz, vol: +vol.toFixed(3), v: STIMM_PL.has(platz) ? (o.v === undefined ? v : o.v) : null, gruppe: o.gruppe, mode: o.mode || 'eins', rate: o.rate || null, dur: o.dur || 0, hin: o.hin || '', kette: o.kette || null, sd: o.sd || sd });
   const fuss = ['inf', 'mg', 'storm', 'medic', 'flame'].includes(k), stimme = vol => vol * STIMM_VOL;
   // Anwählen (selectVoice)
+  if (t === 'oger') S('anw', 'spruch', 'Brüllen beim Anklicken', 'tiger', 0.4, { gruppe: 'fahrzeug', kette: 'anw', hin: 'Löwenoger: Brüllen statt Spruch.' }); else
   S('anw', 'spruch', 'Spruch beim Anklicken', `sv_${stimmSatz(t)}_${sd}`, SPRUCH, { gruppe: 'spruch', mode: 'stimme', rate: 1, hin: `Feste Stimme je Einheit, reihum vergeben; Beutel ohne Wiederholung. Sprecher: ${SATZ_NAME[stimmSatz(t)]}.`, kette: 'anw' });
   if (PANZER.includes(t)) S('anw', 'motor', 'Motor beim Anklicken', 'motor_auswahl', 0.13, { gruppe: 'fahrzeug', mode: 'motor', hin: 'Kurz aufheulen (0,7 s, Tonhöhe 0,8 → 1,2), unter der Stimme auf 40 % abgesenkt.', kette: 'anw' });
   if (k === 'cav') S('anw', 'pferd', 'Pferd beim Anklicken', 'pferd_auswahl', 0.26, { gruppe: 'pferd', kette: 'anw' });
@@ -81,7 +82,7 @@ function slotsVon(t) {
   else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); S('zug', 'knarren', 'Ziehen aufgeprotzt: Wagen knarrt', 'wagenknarren', 0.3, { gruppe: 'bewegung', kette: 'zug' }); }
   else if (k === 'walker') { S('zug', 'ziehen', fig ? 'Ziehen (Maschinenschritte)' : 'Ziehen (Kettenrollen)', fig ? 'mech' : 'tank', fig ? 0.5 : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
     S('zug', 'walzen', 'Draht niederwalzen', 'ueberrollen', 0.55, { gruppe: 'fahrzeug', hin: 'Über eine Barrikade: dasselbe mit 0,5.' }); }
-  else if (T.mech) S('zug', 'ziehen', 'Ziehen (Kampfanzug)', 'mech', 0.45, { gruppe: 'bewegung', kette: 'zug' });
+  else if (T.mech || T.dauerfeuer) S('zug', 'ziehen', 'Ziehen (Kampfanzug)', 'mech', 0.45, { gruppe: 'bewegung', kette: 'zug' });
   else {
     if (fig === 'dog') S('zug', 'hund', 'Hund beim Ziehen', 'dog', 0.5, { gruppe: 'bewegung', kette: 'zug' });
     S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.5, { gruppe: 'bewegung', kette: 'zug' });
@@ -104,13 +105,14 @@ function slotsVon(t) {
     const fk = fireKind(T);
     if (fk === 'flame') { S('schuss', 'schuss', 'Flammenstrahl', 'flame', 0.6, { gruppe: 'flamme', kette: 'schuss' }); S('ziel', 'feuer', 'Feld fängt Feuer', 'flame', 0.4, { gruppe: 'flamme', kette: 'ziel' }); }
     else if (fk === 'rifle') {
-      const rs = T.lob ? 'grenade' : T.pin || T.hidden ? 'sniper' : T.cmd ? 'pistol' : T.suit ? 'semi' : 'rifle', p = t === 'buechse' ? 'buechse' : rs;
+      const rs = t === 'oger' ? 'flinte' : T.lob ? 'grenade' : T.pin || T.hidden ? 'sniper' : T.cmd ? 'pistol' : T.suit ? 'semi' : 'rifle', p = t === 'buechse' ? 'buechse' : rs;
       if (p === 'rifle') S('schuss', 'schuss', 'Gewehrsalve (je Figur ein Schuss)', 'rifle', 0.3, { gruppe: 'gewehr', mode: 'salve', kette: 'schuss', hin: 'Bis 4 Schüsse aus derselben Datei, unregelmäßig versetzt, nur der letzte klingt voll aus.' });
       else S('schuss', 'schuss', 'Schuss', p, 0.6, { gruppe: 'gewehr', kette: 'schuss' });
       S('ziel', 'ziel', 'Treffer am Ziel', 'einschlag', 0.35, { gruppe: 'einschlag', kette: 'ziel' });
       S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
     } else if (fk === 'mg' || fk === 'minigun') {
-      S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
+      if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'mg', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.83, hin: 'Tiefer gestimmt (0,80–0,86). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
+      else S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
       S('ziel', 'ziel', 'Einschlag in den Körper (dumpf)', 'einschlag', 0.22, { gruppe: 'einschlag', rate: 0.82, dur: 260, kette: 'ziel', hin: 'Tiefer gestimmt (0,78–0,86) und nach 0,26 s ausgeblendet.' });
       S('ziel', 'vorbei', 'Daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
     } else if (fk === 'cannon') {
@@ -127,7 +129,8 @@ function slotsVon(t) {
     const p = T.mech ? 'heavy' : tank ? 'armor' : T.suit ? 'sword' : k === 'cav' ? 'saebel' : fig === 'raider' || fig === 'brawler' ? 'axe' : k === 'storm' ? 'grenade' : base;
     S('nah', 'schlag', k === 'storm' ? 'Angriff: Handgranate' : 'Schlag', p, T.mech || tank ? 0.7 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' + (k === 'storm' ? ' Beim Gegenschlag: ' + NAME[base] + '.' : '') });
     if (['raeumer', 'sturm'].includes(t)) S('nah', 'flinte', 'Kurzer Schuss im Grabenkampf', 'flinte', 0.5, { gruppe: 'gewehr' });
-    if (k === 'storm') S('nah', 'schrei', 'Kampfschrei beim Sturm', 'cry', 0.45, { gruppe: 'ruf' });
+    if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'tiger', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
+    else if (k === 'storm') S('nah', 'schrei', 'Kampfschrei beim Sturm', 'cry', 0.45, { gruppe: 'ruf' });
     else if (fuss && !T.suit) S('nah', 'schrei', 'Kampfschrei (manchmal)', 'cry', 0.35, { gruppe: 'ruf', hin: 'In 35 % der Schläge, wenn beide Seiten Fußtruppen sind.' });
     if (fig === 'mechB') S('nah', 'tiger', 'Brüllen', 'tiger', 0.4, { gruppe: 'fahrzeug' }); }
   // Getroffen (hit, melee auf Panzerung, gas, rout)
@@ -135,7 +138,8 @@ function slotsVon(t) {
     S('treffer', 'panzer', 'Schlag auf die Panzerung', T.mech ? 'heavy' : 'armor', 0.6, { gruppe: 'einschlag', kette: E.isMech(t) ? null : 'treffer' }); }
   else if (k === 'cav') { S('treffer', 'unruhe', 'Pferd unruhig', 'pferd_unruhe', 0.5, { gruppe: 'pferd', kette: 'treffer', hin: 'In 65 % der Treffer, sonst Wiehern.' }); S('treffer', 'wiehern', 'Wiehern', 'neigh', 0.35, { gruppe: 'pferd' }); }
   else if (T.limber) S('treffer', 'wiehern', 'Getroffen aufgeprotzt: Wiehern', 'neigh', 0.35, { gruppe: 'pferd', kette: 'treffer' });
-  if (['inf', 'mg', 'storm', 'medic'].includes(k)) {
+  if (T.dauerfeuer) S('treffer', 'robot', 'Getroffen (Maschinenstimme)', 'robot', 0.5, { gruppe: 'ruf', v: 'mr', kette: 'treffer' });
+  else if (['inf', 'mg', 'storm', 'medic'].includes(k)) {
     S('treffer', 'schmerz', 'Schwer getroffen', 'pain', 0.45, { gruppe: 'ruf', kette: 'treffer' });
     S('treffer', 'sani', 'Schwer getroffen, schwach: „Sanitäter!“', 'medic', 0.45, { gruppe: 'ruf', hin: 'Bei Stärke unter 35 in 60 % der Treffer.' });
     S('treffer', 'grunzen', 'Leicht getroffen: Grunzen', 'grunzen', 0.4, { gruppe: 'ruf', hin: '60 % Grunzen, sonst Maskenlaut.' });
@@ -148,6 +152,7 @@ function slotsVon(t) {
   if (k === 'walker') { S('tod', 'brand', 'Wrack brennt', 'feuer', 0.35, { gruppe: 'flamme' }); S('tod', 'panne', 'Panne / festgefahren', 'crash', 0.7, { gruppe: 'fahrzeug' }); S('tod', 'schlamm', 'Ketten im Schlamm', 'steps', 0.6, { gruppe: 'bewegung' }); }
   // Fähigkeiten und Handgriffe
   const A = T.abil;
+  if (A === 'sprung') { S('abil', 'sprung', 'Sprungangriff: Brüllen', 'loewe', 0.55, { gruppe: 'ruf' }); S('abil', 'landung', 'Sprungangriff: Landung', 'steps', 0.4, { gruppe: 'bewegung' }); }
   if (T.dig) { S('abil', 'graben', 'Eingraben: Schaufel', 'schaufel', 0.4, { gruppe: 'handgriff' }); S('abil', 'atmen', 'Eingraben: Atmen', 'atmen', 0.3, { gruppe: 'ruf' }); }
   if (T.shieldWall) S('abil', 'schilde', 'Schilde vor', 'armor', 0.5, { gruppe: 'handgriff' });
   if (A === 'rush') S('abil', 'rush', 'Sturmlauf: Ruf', sd === 'D' ? 'roar' : 'forward', 0.7, { gruppe: 'ruf' });
