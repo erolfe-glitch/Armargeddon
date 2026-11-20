@@ -8,6 +8,10 @@ Enrico sitzt gerade am **Ton-Pult** und vermisst Töne, die er früher in `sound
 
 6. **Ton-Pult freier machen (Enrico 00:34, gehört zu F67, gleich mit erledigen):** Heute bietet „Einzelne Töne“ nur Töne **derselben Gruppe** an – zu starr. Beispiel: Der **Eisenknecht** hat keine riesige Kanone, eher eine **Autokanone**, aber im Pult stehen für seinen Schuss nur Kanonen. Neu: In jeder Zeile zusätzlich **„Alle Töne“** wählbar – nach Gruppen geordnet (Gewehre, MG/Autokanonen, Kanonen, Einschläge, Nahkampf, Stimmen, Motoren, Monster …) und mit **Suchfeld** (Name/Datei). Wählt Enrico einen Ton aus einer fremden Gruppe, bekommt die Einheit beim Einbau des Exports einen **eigenen Platz** (wie im Hinweis „klingt auch bei“ beschrieben) – andere Einheiten ändern sich nicht. Gleich mit: für den Eisenknecht passende Autokanonen-Kandidaten (schnelle schwere Schüsse, z. B. aus `Hevay Mech guns`, `Heavy firing sounds`, `freesound_community-066496_heavy-machine-gun-50-caliber`) im Pult bereitstellen. Enricos bisherige Auswahl (localStorage) muss erhalten bleiben.
 
+7. **Standard-Optionen (Enrico 00:41, klein, gleich mit):** **Bildwirkung „stark“** und **Tempo 0,5×** als feste Standardeinstellung. Einmalig auch bei Enrico setzen (alte gespeicherte Werte überschreiben, wie bei F1), danach bleibt seine eigene Wahl erhalten.
+
+8. **Armee-Auswahl: Tooltip verdeckt die Auswahl (Enrico 00:43, klein, gleich mit):** Beim Überfahren einer Einheit in der Armee-Zusammenstellung erscheint das Info-Feld oben und **verdeckt genau die Anzeige, was schon ausgewählt ist**. Neu: Info-Feld **direkt neben der überfahrenen Einheit** (rechts daneben, bei zu wenig Platz links oder darüber), nie über der Auswahl-Übersicht. Grundsatz: Infos dort zeigen, wo man gerade hinschaut – nicht quer über den Bildschirm. Gleich prüfen, ob andere Tooltips (Aufstellung, Nachschub, Panel) dasselbe Problem haben. Screenshot in den Bericht.
+
 Dateien:
   - `Airplanes/568974__trp__201111-ww1-bi-plane-flying-around-close-distant-helicopter-roof-11am.flac`
   - `Airplanes/cryptowista-airplane-jet-take-off-121957.mp3`
@@ -270,6 +274,13 @@ Nur in `IDEEN.md` übernehmen (Abschnitt „Helden“), bauen erst nach Paket E 
 - **Aschenwacht – „Der Eiserne Kürassier“:** riesiger gepanzerter Ritter mit Kettenklinge (Spitzhelm schlicht, keine Abzeichen). Spezial „Hinrichtung“: angeschlagene Einheit (unter 30 %) im Nahkampf sofort vernichtet. Aura: Furcht (Gegner in der Nähe verlieren Moral). Schwäche: langsam, bleibt in Schlamm/Graben stecken.
 - Werte und Einordnung ins Dreieck (F66) später vorschlagen; Bilder macht Enrico mit Gemini.
 
+### Für später – Wer darf Siegpunkte erobern? (Enrico 2026-11-21 00:44)
+Nur in `IDEEN.md` übernehmen, umsetzen später zusammen mit F66/Paket E nach Rücksprache. Idee: Nicht jede Einheit soll Punkte einnehmen können – ein Feldscher/Sanitäter, der eine Stellung erobert, ergibt keinen Sinn; Schreiter/Mechs sind schlagkräftig, können eine Stellung aber nicht „besetzen“. Vorschlag des Beraters (noch nicht entschieden):
+- **Erobern:** Linieninfanterie, Sturmtrupps, Pioniere, Kampfanzüge, Schildwall, ggf. Reiter.
+- **Nur umkämpft machen** (verhindern gegnerische Einnahme, nehmen selbst nicht ein): Panzer, Kolosse, Schreiter, Hünen, Löwenoger.
+- **Gar nicht:** Sanitäter, Melder/Signal/Fernsprech, Geschütze, Mörser/Minenwerfer, MG-Trupps(?), Anführer(?).
+Als Symbol in der Einheitenanzeige („kann erobern“). Balance-Auswirkung per Simulation prüfen.
+
 ## Antworten von Enrico (2026-11-20 23:13) – F44 nur für die neuen Karten
 - **Neu gemacht sind bisher nur zwei Karten: Grauwall und Sankt Ruß.** Die übrigen Karten sind alt und werden später ohnehin neu gebaut.
 - **F44 deshalb nur auf dem Grauwall** umsetzen und abstimmen (Welle weg, Startarmeen beider Seiten anpassen bis ~50 %). Sankt Ruß hat keine Welle – nur zur Kontrolle mitmessen.
@@ -289,4 +300,4 @@ Nur in `IDEEN.md` übernehmen (Abschnitt „Helden“), bauen erst nach Paket E 
 - [x] 6. Paket D (8a58a6b)
 - [x] F44 nur Grauwall: Welle weg, Aschenwacht 10 statt 8 Grenadiere (995b8ad); andere Karten unverändert, Abstimmung abgebrochen
 - [x] 5b. Neue Töne (10b9b3a)
-- [ ] 5c. Nachträge: erledigt F49 (10b9b3a), F50/F52 (13b2a89), F51 (f3d9c26), F56/F57 (8b580b2), F53/F55 (995b8ad), F60/F62 (d521862), F61 (19c8ff6), F58 (cfc7083), F59/F65 (f90ae96), F63 (1153d41), F67 (dieser Commit); offen F54 (Vorschlag), F64 (2c Nachhall erledigt), F66
+- [ ] 5c. Nachträge: erledigt F49 (10b9b3a), F50/F52 (13b2a89), F51 (f3d9c26), F56/F57 (8b580b2), F53/F55 (995b8ad), F60/F62 (d521862), F61 (19c8ff6), F58 (cfc7083), F59/F65 (f90ae96), F63 (1153d41), F67 (d379432), F64 2/2b Einschlag nach dem Ziel (dieser Commit); offen F54 (Vorschlag), F64 3 (Blut bei Beschuss), F66

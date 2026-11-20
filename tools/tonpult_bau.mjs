@@ -41,7 +41,7 @@ const GRUPPEN = {
   mg: ['mg', 'minigun', 'neu_mg_schwer', 'rifle4', 'neu2_gewehr', 'neu2_autokanone'],
   kanone: ['cannon', 'neu_kanone', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'artD', 'launch', 'werfer', 'neu2_kanone', 'neu2_knall', 'neu2_autokanone'],
   flamme: ['flame', 'werfer', 'feuer', 'neu2_feuer'],
-  einschlag: ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'grenade2', 'wasser', 'impact', 'armor', 'feuer', 'neu2_einschlag', 'neu2_metall', 'neu2_knall', 'neu2_einsturz', 'neu2_blut', 'neu2_wasser', 'neu2_crash'],
+  einschlag: ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'grenade2', 'wasser', 'impact', 'armor', 'feuer', 'neu2_einschlag', 'neu2_metall', 'neu2_knall', 'neu2_einsturz', 'neu2_blut', 'neu2_wasser', 'neu2_crash', 'einschlag_panzer', 'einschlag_abpraller'],
   nahkampf: ['nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy', 'neu_wucht', 'armor', 'grenade2', 'flinte', 'punch', 'neu2_nahkampf', 'neu2_metall', 'neu2_blut', 'neu2_monster'],
   bewegung: ['schritte', 'steps', 'stepsWald', 'marschtritt', 'holzknacken', 'gallop2', 'dog', 'gespann', 'wagenknarren', 'tank', 'mech', 'neu_schritte_schwer', 'ueberrollen', 'drahtlatch', 'drahtwackeln', 'neu2_schritte', 'neu2_hund', 'neu2_flug', 'neu2_wasser'],
   fahrzeug: ['motor_auswahl', 'tank', 'mech', 'ueberrollen', 'crash', 'tiger', 'oger_bruell', 'neu_tiger_mech', 'neu_roboter', 'robot', 'neu2_crash', 'neu2_flug', 'neu2_monster'],
@@ -53,7 +53,7 @@ const GRUPPEN = {
 const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'], boom: ['boomH_1'] };
 const gibt = p => POOLS[p] || KEYS.includes(p) || SND_VAR[p];
 for (const g in GRUPPEN) GRUPPEN[g] = GRUPPEN[g].filter(gibt);
-const NAME = { neu2_autokanone: 'Autokanone (neu 21.11.)', neu2_gewehr: 'Gewehr (Quelle, neu 21.11.)', neu2_pistole: 'Pistole Walther (neu 21.11.)', neu2_kanone: 'Schwere Bordkanone (neu 21.11.)', neu2_einschlag: 'Einschlag/Kugeltreffer (neu 21.11.)', neu2_metall: 'Metalltreffer (neu 21.11.)', neu2_knall: 'Knallkörper (neu 21.11.)', neu2_einsturz: 'Turm stürzt ein (neu 21.11.)', neu2_nahkampf: 'Faust/Axt/Schild (neu 21.11.)', neu2_blut: 'Blutspritzer (neu 21.11.)', neu2_schrei: 'Brüllen (neu 21.11.)', neu2_stimme: 'Stimmen englisch/Gefechtsrufe (neu 21.11.)', neu2_maske: 'Schmerz in Gasmaske (neu 21.11.)', neu2_monster: 'Monster (später Dämonen, neu 21.11.)', neu2_horn: 'Kriegshorn (neu 21.11.)', neu2_musik: 'Heldenmarsch, Schleife (neu 21.11.)', neu2_punkt: 'Punkt gewonnen (neu 21.11.)', neu2_knopf: 'Knopfklick (neu 21.11.)', neu2_tuer: 'Tür/Riegel (neu 21.11.)', neu2_crash: 'Aufprall/Maschine (neu 21.11.)', neu2_flug: 'Flugzeug (neu 21.11.)', neu2_schritte: 'Maschinen-/Schneeschritte (neu 21.11.)', neu2_hund: 'Hund bellt (neu 21.11.)', neu2_feuer: 'Großes Feuer (neu 21.11.)', neu2_wasser: 'Wasser/Schwimmen (neu 21.11.)',
+const NAME = { einschlag_panzer: 'Treffer Panzer – Waffe wirkt', einschlag_abpraller: 'Treffer Panzer – Abpraller', neu2_autokanone: 'Autokanone (neu 21.11.)', neu2_gewehr: 'Gewehr (Quelle, neu 21.11.)', neu2_pistole: 'Pistole Walther (neu 21.11.)', neu2_kanone: 'Schwere Bordkanone (neu 21.11.)', neu2_einschlag: 'Einschlag/Kugeltreffer (neu 21.11.)', neu2_metall: 'Metalltreffer (neu 21.11.)', neu2_knall: 'Knallkörper (neu 21.11.)', neu2_einsturz: 'Turm stürzt ein (neu 21.11.)', neu2_nahkampf: 'Faust/Axt/Schild (neu 21.11.)', neu2_blut: 'Blutspritzer (neu 21.11.)', neu2_schrei: 'Brüllen (neu 21.11.)', neu2_stimme: 'Stimmen englisch/Gefechtsrufe (neu 21.11.)', neu2_maske: 'Schmerz in Gasmaske (neu 21.11.)', neu2_monster: 'Monster (später Dämonen, neu 21.11.)', neu2_horn: 'Kriegshorn (neu 21.11.)', neu2_musik: 'Heldenmarsch, Schleife (neu 21.11.)', neu2_punkt: 'Punkt gewonnen (neu 21.11.)', neu2_knopf: 'Knopfklick (neu 21.11.)', neu2_tuer: 'Tür/Riegel (neu 21.11.)', neu2_crash: 'Aufprall/Maschine (neu 21.11.)', neu2_flug: 'Flugzeug (neu 21.11.)', neu2_schritte: 'Maschinen-/Schneeschritte (neu 21.11.)', neu2_hund: 'Hund bellt (neu 21.11.)', neu2_feuer: 'Großes Feuer (neu 21.11.)', neu2_wasser: 'Wasser/Schwimmen (neu 21.11.)',
   oger_bruell: 'Löwengebrüll (Löwenoger, neu)', neu_tiger_mech: 'Mechanischer Löwe (neu)', neu_roboter: 'Roboter-Brüllen/Stimme (neu)', neu_schritte_schwer: 'Schwere Schritte (neu)',
   neu_mg_schwer: 'Schweres MG (neu)', neu_schrot: 'Schrot (neu)', neu_kanone: 'Kanone (neu)', neu_wucht: 'Schwerer Treffer (neu)', neu_nachladen: 'Nachladen (neu)', neu_versorgung: 'Versorgung/Kulisse (neu)',
   rifle: 'Hauptgewehr der Seite', rifle2: 'Gewehr 2 (battle-rifle)', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4 (Gefechtslärm)', sniper: 'Scharfschütze', pistol: 'Pistole', semi: 'Halbautomat', buechse: 'Panzerbüchse', flinte: 'Flinte',
@@ -104,6 +104,7 @@ function slotsVon(t) {
     S('ziel', 'sperr', 'Einschläge Sperrfeuer', mob ? 'boom' : 'boomH', 0.5, { gruppe: 'einschlag', hin: 'Je Feld ein Einschlag, versetzt.' });
     if (T.gas) S('ziel', 'gas', 'Gasgranate', 'gas', 0.7, { gruppe: 'einschlag' });
     S('ziel', 'wasser', 'Einschlag im Wasser (zusätzlich)', 'wasser', 0.6, { gruppe: 'einschlag' });
+    S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' });
   } else {
     const fk = fireKind(T);
     if (fk === 'flame') { S('schuss', 'schuss', 'Flammenstrahl', 'flame', 0.6, { gruppe: 'flamme', kette: 'schuss' }); S('ziel', 'feuer', 'Feld fängt Feuer', 'flame', 0.4, { gruppe: 'flamme', kette: 'ziel' }); }
@@ -113,14 +114,17 @@ function slotsVon(t) {
       else S('schuss', 'schuss', 'Schuss', p, 0.6, { gruppe: 'gewehr', kette: 'schuss' });
       S('ziel', 'ziel', 'Treffer am Ziel', 'einschlag', 0.35, { gruppe: 'einschlag', kette: 'ziel' });
       S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
+      if (T.at || t === 'buechse') S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' }); else S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' });
     } else if (fk === 'mg' || fk === 'minigun') {
       if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'mg', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.83, hin: 'Tiefer gestimmt (0,80–0,86). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
       else S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
       S('ziel', 'ziel', 'Einschlag in den Körper (dumpf)', 'einschlag', 0.22, { gruppe: 'einschlag', rate: 0.82, dur: 260, kette: 'ziel', hin: 'Tiefer gestimmt (0,78–0,86) und nach 0,26 s ausgeblendet.' });
       S('ziel', 'vorbei', 'Daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
+      S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' });
     } else if (fk === 'cannon') {
       S('schuss', 'schuss', 'Kanone', kanone(t, T), 0.6, { gruppe: 'kanone', kette: 'schuss' });
       S('ziel', 'ziel', 'Granateinschlag', 'boom', 0.45, { gruppe: 'einschlag', kette: 'ziel' });
+      S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' });
     }
   }
   if (T.zweit) { const Z = T.zweit; if (Z.flamme) S('schuss', 'zweit', 'Zweitwaffe: ' + Z.name, 'flame', 0.6, { gruppe: 'flamme' });

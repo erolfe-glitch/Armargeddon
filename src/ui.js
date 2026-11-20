@@ -2412,6 +2412,11 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
   } finally { d.moving = false; }
 }
 const unitById = id => G.units.find(u => u.id === id);
+// F64: wirkt die Waffe gegen Panzerung? (bis F66 vereinfacht) – Kanone, Granate/Artillerie, Panzerbüchse, panzerbrechende Schützen (T.at), Kanonen-Zweitwaffe; Gewehr, MG, Drehlauf, Pistole prallen ab
+function einschlagArt(ziel, lf) { const a = lf && lf.a != null ? unitById(lf.a) : null, T = a && TYPES[a.type];
+  if (lf.kind === 'shell' || lf.kind === 'cannon') return 'panzer';
+  if (T && (T.at || a.type === 'buechse' || (lf.zweit && T.zweit && T.zweit.kanone))) return 'panzer';
+  return 'abpraller'; }
 const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 
 let marschU = null;   // Einheit im Marsch/Sturmlauf: ihr Zug klingt nach Marschtritt (Spieltest Runde 2)
@@ -2467,7 +2472,7 @@ async function playEvent0(e) {
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
         const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : au.type === 'oger' ? 'flinte' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
-        lastFire = { kind: e.kind, t: performance.now() };   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
+        lastFire = { kind: e.kind, t: performance.now(), a: e.a, zweit: e.zweit };   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
         const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
         let salveT = 0;   // F28: Dauer der Salve – der Schaden erscheint erst danach
         if (salve) { const n = Math.max(1, Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001))), m = n + Math.round(n * (0.5 + Math.random() * 0.5));   // F28 (2026-11-20): je Figur 1–2 Schüsse, zusammen 2–3 s
@@ -2549,6 +2554,7 @@ async function playEvent0(e) {
       shells.push({ fxi: e.mode === 'gas' ? 5 : TYPES[ua.type].mobile && !e.strike ? 1 : 0, x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       if (camOn() && !inView(x2, y2, 0.12)) camTo(x2, y2, dur * 16.667 * 0.8);
       await wait(dur * 16.667);
+      lastFire = { kind: e.mode === 'gas' ? 'gas' : 'shell', t: performance.now(), a: e.a };   // F64: Einschlag-Ton beim folgenden Treffer
       shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
       if (e.scatter) floater(x2, y2 - s, 'Streuung!', '#f0d27a');
       if (e.guided) floater(x2, y2 - s * 1.5, '◉ markiert ×1,25', '#F0EDE1', false, true);
@@ -2641,17 +2647,23 @@ async function playEvent0(e) {
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) shake(e.dmg >= 2.5 ? 6 : 4);
       if (!e.panic && !e.wire && !e.burn && STEIN.includes(G.map[u.c][u.r].t)) playSound('impact', 0.35);   // Treffer auf Gebäude/Stein (Tonprobe 2026-11-18; vorher Fahrzeug)
-      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) {
-        const soft = !['walker', 'art'].includes(TYPES[u.type].cls);
-        if (lastFire.kind !== 'rifle' && soft) playSound('einschlag', 0.22, null, { rate: 0.78 + Math.random() * 0.08, dur: 260 });
+      // F64 (2026-11-21): Einschlag-Ton nach dem ZIEL – weich (Fußtruppen, Reiter, Bedienungen): dumpfer Treffer („einschlag“), nie metallisch;
+      // gepanzert (Fahrzeuge, Schreiter, Kampfanzüge): wirkt die Waffe dagegen (Kanone, Panzerbüchse, Granate, Kanone gegen Panzerung), schwerer Metallkrach („einschlag_panzer“), sonst heller Abpraller („einschlag_abpraller“)
+      if (!e.panic && !e.wire && !e.burn && lastFire && performance.now() - lastFire.t < 6000 && lastFire.kind !== 'gas' && lastFire.kind !== 'flame' && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) {
+        const art = einschlagArt(u, lastFire); setTimeout(() => playSound(art === 'panzer' ? 'einschlag_panzer' : 'einschlag_abpraller', art === 'panzer' ? 0.5 : 0.3, null, { rate: 0.92 + Math.random() * 0.16 }), (60 + Math.random() * 90) / speed); }
+      else if (!e.panic && !e.wire && !e.burn && lastFire && performance.now() - lastFire.t < 6000 && (lastFire.kind === 'cannon' || lastFire.kind === 'shell') && e.dmg >= 0.3) playSound('einschlag', 0.3, null, { rate: 0.72 + Math.random() * 0.08, dur: 320 });   // Granatsplitter/Kanone in weiches Ziel: dumpf, tief
+      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 6000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) {
+        const soft = !(TYPES[u.type].cls === 'walker' || TYPES[u.type].suit);   // F64: Geschützbedienungen sind weich (Körpertreffer)
+        if (!soft) {}   // gepanzert: Ton oben (Abpraller bzw. Metallkrach)
+        else if (lastFire.kind !== 'rifle') playSound('einschlag', 0.22, null, { rate: 0.78 + Math.random() * 0.08, dur: 260 });
         if (lastFire.kind !== 'rifle' && e.dmg >= 0.6) trefferSpritzer(x - L.s, y, d, e.dmg >= 1.5 ? 2 : 1, !soft);   // F50: schwere Treffer (MG) spritzen mehr; Maschinen Funken/Öl   // MG-Treffer: dumpfer Einschlag in den Körper, tiefer gestimmt, kurz und leise (Spieltest 2026-11-17)
-        else playSound(e.dmg >= 0.3 ? 'einschlag' : 'vorbei', 0.35);
+        if (soft && lastFire.kind === 'rifle') playSound(e.dmg >= 0.3 ? 'einschlag' : 'vorbei', 0.35);
       }
-      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 3000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
+      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 6000 && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) fx('funken', null, x + (Math.random() - 0.5) * s * 0.4, y, { anchor: 'mitte', life: 12, fadeOut: 0.6, mul: 0.6, flip: Math.random() < 0.5 });   // Treffer auf Panzerung
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav') playSound(Math.random() < 0.65 ? 'pferd_unruhe' : 'neigh', Math.random() < 0.65 ? 0.5 : 0.35); else if (u.limbered) playSound('neigh', 0.35);   // Pferde gleich laut (Spieltest Runde 2)   // Reiter beschossen: unruhige Pferde
         else if (TYPES[u.type].dauerfeuer) {}   // Hünen: nur die Maschinenstimme oben
-        else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && (e.dmg >= 1 || (!e.wire && e.dmg >= 0.4 && lastFire && performance.now() - lastFire.t < 3000 && ['mg', 'minigun'].includes(lastFire.kind) && Math.random() < 0.55))) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45, null, { u });
+        else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && (e.dmg >= 1 || (!e.wire && e.dmg >= 0.4 && lastFire && performance.now() - lastFire.t < 6000 && ['mg', 'minigun'].includes(lastFire.kind) && Math.random() < 0.55))) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45, null, { u });
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 0.3 && !e.wire) playSound(Math.random() < 0.6 ? 'grunzen' : 'gasmaske_2', 0.4, null, { u });   // leichte Verletzung: Grunzen bzw. Maskenlaut (Tonprobe 2026-11-18)
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
         if (e.burn) burst(x, y, 12, ['#ff9a2a', '#ffcf5a', '#c8461a', '#3a2a1a'], { up: 0.24, spread: 0.18 });   // Feuer: Funken und Ruß statt Blut
