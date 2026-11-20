@@ -1051,6 +1051,9 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
 @keyframes siegnah { 50% { color: #FFE08A; text-shadow: 0 0 10px rgba(255,200,90,.95), 0 2px 0 #120D0B; } }
 /* F6: in der Aufstellung liegt die Knopfreihe (Startzustand) über der Aufstellungsleiste */
 body.aufstellung #hudRow { transform: translateY(-165px); }
+/* F61: Bewegung und Aktion im Panel mit Wort und groß */
+#hud .up-t .up-wort { font: 600 13px var(--s-body); color: #d8ccb0; letter-spacing: .02em; }
+#hud .up-akt { font: 700 15px var(--s-body); color: #ffe2a0; } #hud .up-akt.used { color: #8a8070; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -1361,7 +1364,7 @@ const TYPES = {
     can: 'Schießt 2 Felder weit, stürmt Gräben im Nahkampf, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3, bis die Einheit wieder zieht.',
     real: 'Im Ersten Weltkrieg trugen Infanteristen oft rund 30 kg Ausrüstung in den Angriff, quer durch Schlamm und Trichter.' },
   mahlwerk: { side: 'A', name: 'Mahlwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
-    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (alle Punkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
+    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (Aktion und alle Bewegungspunkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
     real: 'Maschinengewehre wie das britische Vickers oder das deutsche MG 08 schossen rund 450 bis 500 Schuss pro Minute.' },
   haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 2,
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
@@ -1379,7 +1382,7 @@ const TYPES = {
     can: 'Schießt 2 Felder weit, hält Gräben und Ruinen, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3, bis die Einheit wieder zieht.',
     real: 'Gräben verliefen im Zickzack. So konnte ein eingedrungener Gegner nicht den ganzen Graben entlang schießen.' },
   sense: { side: 'D', name: 'Sensenwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
-    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (alle Punkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
+    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (Aktion und alle Bewegungspunkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
     real: 'Am ersten Tag der Somme-Schlacht, dem 1. Juli 1916, hatte die britische Armee rund 57.000 Tote und Verwundete, sehr viele durch MG-Feuer.' },
   geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 1,
     can: 'Mittlere Artillerie. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Aufgeprotzt zieht es 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
@@ -1581,7 +1584,7 @@ for (const t in TYPES) { const T = TYPES[t], sp = T.sp || (T.sp = []);
   if (T.mg) { const i = sp.indexOf('Zieht oder schießt'); if (i >= 0) sp[i] = 'Erst aufbauen, dann feuern'; }
   if (T.recover) sp.push('Bergt Kolosse und Maschinen');
   { const i = sp.indexOf('Schneidet Draht'); if (i >= 0) sp.splice(i, 1); }   // Paket 8: nur noch die Drahtschneider (cutter) schneiden, vom Nachbarfeld aus
-  if (T.cutter) sp.unshift('Draht schneiden (Nachbarfeld, 1 Punkt)');
+  if (T.cutter) sp.unshift('Draht schneiden (Nachbarfeld, Aktion)');
   if (T.zweit) sp.push(T.zweit.name + (T.zweit.rng > 1 ? ` (${T.zweit.rng} Felder)` : ' (Nachbarfeld)'));
   if (T.rng >= 2 && T.cls !== 'art' && T.cls !== 'walker' && !T.mg) sp.push('Feuerbereitschaft');
 }
@@ -7402,7 +7405,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
     g.restore(); }
   MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: my0 + mh + 2, u, kind: 'hp' });
   if (own) {   // Fahrplan 2: Bewegungspunkte als kleine Punkte (hell = übrig), daneben die Aktionsmünze (+ kleine Münze der Zweitwaffe)
-    const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), bm = Math.max(E.bpMax(u), bp), r = Math.max(2.8, s * 0.046), rb = Math.max(1.8, s * 0.026), py = my0 + mh + r + 1.5;   // F52: unter dem Moralbalken
+    const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), bm = Math.max(E.bpMax(u), bp), r = Math.max(4, s * 0.068), rb = Math.max(2.6, s * 0.036), py = my0 + mh + r + 2;   // F61 (2026-11-20): größer – Bewegungspunkte als Punkte, Aktion als Münze   // F52: unter dem Moralbalken
     const zw = TYPES[u.type].zweit, wB = bm * rb * 2.3, w = wB + r * 2.6 + (zw ? r * 2 : 0); let cx = x - w / 2 + rb;
     for (let i = 0; i < bm; i++) { g.beginPath(); g.arc(cx, py, rb, 0, 7); g.fillStyle = i < bp ? '#E8DDB8' : '#2A221C'; g.fill(); g.lineWidth = Math.max(1, rb * 0.45); g.strokeStyle = '#120D0B'; g.stroke(); cx += rb * 2.3; }
     const coin = (rr, voll) => { const im = UPI[voll ? 'muenze' : 'muenzeLeer']; cx += rr; if (im) g.drawImage(im, cx - rr, py - rr, rr * 2, rr * 2); else { g.beginPath(); g.arc(cx, py, rr, 0, 7); g.fillStyle = voll ? '#C2A461' : '#221B18'; g.fill(); g.lineWidth = Math.max(1, rr * 0.3); g.strokeStyle = '#120D0B'; g.stroke(); } cx += rr + r * 0.3; };
@@ -10147,8 +10150,8 @@ function updateHud() {
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
     const hn = hudHN[u.id] = hudHN[u.id] || {}; hpNach(hn, u.str); setTimeout(() => hudNachLauf(u.id), 0);
     $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10, hpNachV(hn._hn, performance.now())) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
-      `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung">${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''} BP</small></span>` +
-      (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
+      `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung"><small class="up-wort">Bewegung</small> ${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''}</small></span>` +
+      (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><small class="up-wort">Aktion</small> <b class="up-akt${ap ? '' : ' used'}">${ap ? 'frei' : 'verbraucht'}</b><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
     $('btnInfo').hidden = false;
     if (previewT && sel && !targets.has(previewT.id)) previewT = null;   // Vorschau-Ziel ist keins mehr (z. B. nach Eingraben): Vorschau weg statt Absturz

@@ -73,7 +73,7 @@ const TYPES = {
     can: 'Schießt 2 Felder weit, stürmt Gräben im Nahkampf, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3, bis die Einheit wieder zieht.',
     real: 'Im Ersten Weltkrieg trugen Infanteristen oft rund 30 kg Ausrüstung in den Angriff, quer durch Schlamm und Trichter.' },
   mahlwerk: { side: 'A', name: 'Mahlwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
-    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (alle Punkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
+    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (Aktion und alle Bewegungspunkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
     real: 'Maschinengewehre wie das britische Vickers oder das deutsche MG 08 schossen rund 450 bis 500 Schuss pro Minute.' },
   haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 2,
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
@@ -91,7 +91,7 @@ const TYPES = {
     can: 'Schießt 2 Felder weit, hält Gräben und Ruinen, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3, bis die Einheit wieder zieht.',
     real: 'Gräben verliefen im Zickzack. So konnte ein eingedrungener Gegner nicht den ganzen Graben entlang schießen.' },
   sense: { side: 'D', name: 'Sensenwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
-    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (alle Punkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
+    can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (Aktion und alle Bewegungspunkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
     real: 'Am ersten Tag der Somme-Schlacht, dem 1. Juli 1916, hatte die britische Armee rund 57.000 Tote und Verwundete, sehr viele durch MG-Feuer.' },
   geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 1,
     can: 'Mittlere Artillerie. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Direkter Schuss bis 3 Felder trifft Landkolosse ×2,5. Aufgeprotzt zieht es 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
@@ -293,7 +293,7 @@ for (const t in TYPES) { const T = TYPES[t], sp = T.sp || (T.sp = []);
   if (T.mg) { const i = sp.indexOf('Zieht oder schießt'); if (i >= 0) sp[i] = 'Erst aufbauen, dann feuern'; }
   if (T.recover) sp.push('Bergt Kolosse und Maschinen');
   { const i = sp.indexOf('Schneidet Draht'); if (i >= 0) sp.splice(i, 1); }   // Paket 8: nur noch die Drahtschneider (cutter) schneiden, vom Nachbarfeld aus
-  if (T.cutter) sp.unshift('Draht schneiden (Nachbarfeld, 1 Punkt)');
+  if (T.cutter) sp.unshift('Draht schneiden (Nachbarfeld, Aktion)');
   if (T.zweit) sp.push(T.zweit.name + (T.zweit.rng > 1 ? ` (${T.zweit.rng} Felder)` : ' (Nachbarfeld)'));
   if (T.rng >= 2 && T.cls !== 'art' && T.cls !== 'walker' && !T.mg) sp.push('Feuerbereitschaft');
 }
