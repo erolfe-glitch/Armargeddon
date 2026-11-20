@@ -143,6 +143,31 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | musik_titel | musik_titel_1 | Musiker/the_grimdark_front.wav („The Grimdark Front“, Titelthema, Stereo 128 kbit/s) | eigenes Stück, erstellt mit Suno Pro | frei verwendbar | – |
 | musik_schlacht | musik_schlacht_1 | Musiker/grimdark_trench.wav („Grimdark Trench“, Schlachtmusik, Stereo 128 kbit/s) | eigenes Stück, erstellt mit Suno Pro | frei verwendbar | – |
 | musikNiederlage | musikNiederlage_1 | 693767__composingatnight__taps-for-the-fallen.wav | Freesound / composingatnight | CC0 1.0 | <https://freesound.org/s/693767/> |
+| oger_bruell | oger_bruell_* | Monster/dffdv-lion-roars-with-growls-and-inhales-195839.mp3 | Pixabay / dffdv | Pixabay Content License | – |
+| oger_bruell | oger_bruell_* | Monster/soundzee-lion-snarl-growl-354324.mp3 | Pixabay / soundzee | Pixabay Content License | – |
+| oger_bruell | oger_bruell_* | Monster/freesound_community-angry-growl-89740.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_tiger_mech | neu_tiger_mech_* | Monster/freesound_community-robot-tiger-roar-96261.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_roboter | neu_roboter_* | Monster/daviddumaisaudio-robotic-monster-roars-x5-194041.mp3 | Pixabay / daviddumaisaudio | Pixabay Content License | – |
+| neu_roboter | neu_roboter_* | Monster/freesound_community-robotic-monster-roar-96249.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_roboter | neu_roboter_* | Monster/freesound_community-robotic_voice-82227.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_schritte_schwer | neu_schritte_schwer_* | Footsteps robot mud marching/bannythecoolio-large-mech-robot-steps-432560.mp3 | Pixabay / bannythecoolio | Pixabay Content License | – |
+| neu_schritte_schwer | neu_schritte_schwer_* | Footsteps robot mud marching/kalsstockmedia-dinosaur-monster-heavy-foot-steps-earth-shattering-246899.mp3 | Pixabay / kalsstockmedia | Pixabay Content License | – |
+| neu_schritte_schwer | neu_schritte_schwer_* | Footsteps robot mud marching/universfield-heavy-walking-footsteps-352771.mp3 | Pixabay / universfield | Pixabay Content License | – |
+| neu_mg_schwer | neu_mg_schwer_* | Hevay Mech guns/dragon-studio-machine-gun-sfx-631486.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| neu_mg_schwer | neu_mg_schwer_* | Hevay Mech guns/freesound_community-066496_heavy-machine-gun-50-caliber-28243.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_mg_schwer | neu_mg_schwer_* | Hevay Mech guns/yodguard-machine-gun-5-402761.mp3 | Pixabay / yodguard | Pixabay Content License | – |
+| neu_schrot | neu_schrot_* | Infantry Guns/freesound_community-shotgun-03-38220.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_schrot | neu_schrot_* | Infantry Guns/freesound_community-shotgun-firing-3-14483.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_kanone | neu_kanone_* | Kanone schwer/freesound_community-cannon-shot-6153.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_kanone | neu_kanone_* | Kanone schwer/soundtaker-heavy-shot-sound-477215_neu.mp3 | Pixabay / soundtaker | Pixabay Content License | – |
+| neu_wucht | neu_wucht_* | Heavy Meelee Mechs large/yodguard-a-massive-axe-impact-hitting-metal-1-450251.mp3 | Pixabay / yodguard | Pixabay Content License | – |
+| neu_wucht | neu_wucht_* | Heavy Meelee Mechs large/yodguard-a-massive-axe-impact-hitting-metal-2-450253.mp3 | Pixabay / yodguard | Pixabay Content License | – |
+| neu_wucht | neu_wucht_* | Heavy Meelee Mechs large/dragon-studio-heavy-impact-loud-515259.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| neu_wucht | neu_wucht_* | Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3 | Pixabay / lordsonny | Pixabay Content License | – |
+| neu_wucht | neu_wucht_* | Heavy Meelee Mechs large/cyberwave-orchestra-fantasy-game-sword-cut-sound-effect-get-more-on-my-patreon-339824.mp3 | Pixabay / cyberwave-orchestra | Pixabay Content License | – |
+| neu_nachladen | neu_nachladen_* | Repair reload heal etc/daviddumaisaudio-gun-mechanical-reload-05-316414.mp3 | Pixabay / daviddumaisaudio | Pixabay Content License | – |
+| neu_nachladen | neu_nachladen_* | Repair reload heal etc/freesound_community-pistol-cock-6014.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu_versorgung | neu_versorgung_* | Repair reload heal etc/spinopel-military-logistics-336353.mp3 | Pixabay / spinopel | Pixabay Content License | – |
 
 **Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1 (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)
 

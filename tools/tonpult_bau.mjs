@@ -37,23 +37,25 @@ const fireKind = T => T.mg ? 'mg' : T.flame ? 'flame' : T.gat ? 'minigun' : T.mg
 
 // Gruppen für die Auswahlliste (passende Alternativen); Stimm-Gruppen nehmen den Filter des Sprechers mit
 const GRUPPEN = {
-  gewehr: ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'buechse', 'flinte', 'grenade2'],
-  mg: ['mg', 'minigun', 'rifle4'],
-  kanone: ['cannon', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'artD', 'launch', 'werfer'],
+  gewehr: ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'buechse', 'flinte', 'neu_schrot', 'grenade2'],
+  mg: ['mg', 'minigun', 'neu_mg_schwer', 'rifle4'],
+  kanone: ['cannon', 'neu_kanone', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'artD', 'launch', 'werfer'],
   flamme: ['flame', 'werfer', 'feuer'],
   einschlag: ['einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'grenade2', 'wasser', 'impact', 'armor', 'feuer'],
-  nahkampf: ['nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy', 'armor', 'grenade2', 'flinte', 'punch'],
-  bewegung: ['schritte', 'steps', 'stepsWald', 'marschtritt', 'holzknacken', 'gallop2', 'dog', 'gespann', 'wagenknarren', 'tank', 'mech', 'ueberrollen', 'drahtlatch', 'drahtwackeln'],
-  fahrzeug: ['motor_auswahl', 'tank', 'mech', 'ueberrollen', 'crash', 'tiger', 'robot'],
+  nahkampf: ['nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy', 'neu_wucht', 'armor', 'grenade2', 'flinte', 'punch'],
+  bewegung: ['schritte', 'steps', 'stepsWald', 'marschtritt', 'holzknacken', 'gallop2', 'dog', 'gespann', 'wagenknarren', 'tank', 'mech', 'neu_schritte_schwer', 'ueberrollen', 'drahtlatch', 'drahtwackeln'],
+  fahrzeug: ['motor_auswahl', 'tank', 'mech', 'ueberrollen', 'crash', 'tiger', 'oger_bruell', 'neu_tiger_mech', 'neu_roboter', 'robot'],
   pferd: ['pferd_auswahl', 'pferd_unruhe', 'neigh', 'gallop2'],
-  handgriff: ['cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'nachladen', 'schaufel', 'bauen', 'heal', 'reparieren', 'gasmaske_1', 'tick', 'ui', 'leuchtschuss', 'leuchtbrand', 'crash', 'steps', 'drahtlatch', 'drahtwackeln'],
+  handgriff: ['cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'nachladen', 'neu_nachladen', 'neu_versorgung', 'schaufel', 'bauen', 'heal', 'reparieren', 'gasmaske_1', 'tick', 'ui', 'leuchtschuss', 'leuchtbrand', 'crash', 'steps', 'drahtlatch', 'drahtwackeln'],
   signal: ['whistle', 'march', 'generalhorn', 'horn', 'leuchtschuss', 'zug_eigen', 'zug_gegner'],
-  ruf: ['pain', 'medic', 'cry', 'scream', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon', 'husten', 'grunzen', 'gasmaske_2', 'atmen', 'robot', 'loewe'],
+  ruf: ['pain', 'medic', 'cry', 'scream', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon', 'husten', 'grunzen', 'gasmaske_2', 'atmen', 'robot', 'loewe', 'oger_bruell', 'neu_roboter', 'neu_tiger_mech'],
   spruch: [] };
 const SND_VAR = { cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'], boom: ['boomH_1'] };
 const gibt = p => POOLS[p] || KEYS.includes(p) || SND_VAR[p];
 for (const g in GRUPPEN) GRUPPEN[g] = GRUPPEN[g].filter(gibt);
-const NAME = { rifle: 'Hauptgewehr der Seite', rifle2: 'Gewehr 2 (battle-rifle)', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4 (Gefechtslärm)', sniper: 'Scharfschütze', pistol: 'Pistole', semi: 'Halbautomat', buechse: 'Panzerbüchse', flinte: 'Flinte',
+const NAME = { oger_bruell: 'Löwengebrüll (Löwenoger, neu)', neu_tiger_mech: 'Mechanischer Löwe (neu)', neu_roboter: 'Roboter-Brüllen/Stimme (neu)', neu_schritte_schwer: 'Schwere Schritte (neu)',
+  neu_mg_schwer: 'Schweres MG (neu)', neu_schrot: 'Schrot (neu)', neu_kanone: 'Kanone (neu)', neu_wucht: 'Schwerer Treffer (neu)', neu_nachladen: 'Nachladen (neu)', neu_versorgung: 'Versorgung/Kulisse (neu)',
+  rifle: 'Hauptgewehr der Seite', rifle2: 'Gewehr 2 (battle-rifle)', rifle3: 'Gewehr 3', rifle4: 'Gewehr 4 (Gefechtslärm)', sniper: 'Scharfschütze', pistol: 'Pistole', semi: 'Halbautomat', buechse: 'Panzerbüchse', flinte: 'Flinte',
   grenade2: 'Handgranate', mg: 'Maschinengewehr', minigun: 'Drehlauf', cannon: 'Kanone', kolosskanone: 'Koloss-/Schreiterkanone', loewenkanone: 'Löwenmaul-Kanone', panzerkanone: 'Sturmpanzer-Kanone', cannonH: 'Schwere Artillerie',
   artD: 'Artillerie Aschenwacht (schwer + Kanone)', launch: 'Mörser/Minenwerfer', werfer: 'Werfer', flame: 'Flammenwerfer', feuer: 'Brennendes Feld', einschlag: 'Kugeleinschlag', vorbei: 'Kugel vorbei', boom: 'Granateinschlag',
   boomH: 'Einschlag schwer', einschlagH: 'Einschlag Einzelschuss', barrage: 'Sperrfeuer', gas: 'Gas-/Rauchgeschoss', rauch: 'Gas-/Nebelhandgranate', boom2: 'Gerät zerstört', blast: 'Sprengung', wasser: 'Einschlag im Wasser',
@@ -73,7 +75,7 @@ function slotsVon(t) {
   const S = (ab, id, titel, platz, vol, o = {}) => out.push({ ab, id, titel, platz, vol: +vol.toFixed(3), v: STIMM_PL.has(platz) ? (o.v === undefined ? v : o.v) : null, gruppe: o.gruppe, mode: o.mode || 'eins', rate: o.rate || null, dur: o.dur || 0, hin: o.hin || '', kette: o.kette || null, sd: o.sd || sd });
   const fuss = ['inf', 'mg', 'storm', 'medic', 'flame'].includes(k), stimme = vol => vol * STIMM_VOL;
   // Anwählen (selectVoice)
-  if (t === 'oger') S('anw', 'spruch', 'Brüllen beim Anklicken', 'tiger', 0.4, { gruppe: 'fahrzeug', kette: 'anw', hin: 'Löwenoger: Brüllen statt Spruch.' }); else
+  if (t === 'oger') S('anw', 'spruch', 'Brüllen beim Anklicken', 'oger_bruell', 0.4, { gruppe: 'fahrzeug', kette: 'anw', hin: 'Löwenoger: Brüllen statt Spruch.' }); else
   S('anw', 'spruch', 'Spruch beim Anklicken', `sv_${stimmSatz(t)}_${sd}`, SPRUCH, { gruppe: 'spruch', mode: 'stimme', rate: 1, hin: `Feste Stimme je Einheit, reihum vergeben; Beutel ohne Wiederholung. Sprecher: ${SATZ_NAME[stimmSatz(t)]}.`, kette: 'anw' });
   if (PANZER.includes(t)) S('anw', 'motor', 'Motor beim Anklicken', 'motor_auswahl', 0.13, { gruppe: 'fahrzeug', mode: 'motor', hin: 'Kurz aufheulen (0,7 s, Tonhöhe 0,8 → 1,2), unter der Stimme auf 40 % abgesenkt.', kette: 'anw' });
   if (k === 'cav') S('anw', 'pferd', 'Pferd beim Anklicken', 'pferd_auswahl', 0.26, { gruppe: 'pferd', kette: 'anw' });
@@ -86,7 +88,7 @@ function slotsVon(t) {
   else {
     if (fig === 'dog') S('zug', 'hund', 'Hund beim Ziehen', 'dog', 0.5, { gruppe: 'bewegung', kette: 'zug' });
     S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.5, { gruppe: 'bewegung', kette: 'zug' });
-    S('zug', 'marsch', 'Marsch und Sturmlauf', 'marschtritt', sd === 'D' ? 0.38 : 0.2, { gruppe: 'bewegung', hin: sd === 'D' ? 'Aschenwacht: Schritte, dazu in 35 % der Züge Marschtritt.' : 'Konkordat: Schritte (0,55) tragen, Trommel leise darunter (F9).' });
+    S('zug', 'marsch', 'Marsch und Sturmlauf', 'schritte', 0.6, { gruppe: 'bewegung', hin: 'Nur Schritte, keine Trommel mehr (F49).' });
     S('zug', 'schlamm', 'Ziehen durch Schlamm', 'steps', 0.5, { gruppe: 'bewegung' });
     S('zug', 'wald', 'Ziehen durch Wald', 'stepsWald', 0.5, { gruppe: 'bewegung' });
     S('zug', 'holz', 'Äste knacken (Wald, 2×)', 'holzknacken', 0.45, { gruppe: 'bewegung' });
@@ -130,7 +132,7 @@ function slotsVon(t) {
     S('nah', 'schlag', k === 'storm' ? 'Angriff: Handgranate' : 'Schlag', p, T.mech || tank ? 0.7 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' + (k === 'storm' ? ' Beim Gegenschlag: ' + NAME[base] + '.' : '') });
     if (k === 'inf' && !T.suit && !T.cmd) S('nah', 'spaten', 'Spatenhiebe im Grabenkampf', 'schaufel', 0.4, { gruppe: 'handgriff', hin: 'In 60 % der Schläge (F32).' });
     if (['raeumer', 'sturm'].includes(t)) S('nah', 'flinte', 'Kurzer Schuss im Grabenkampf', 'flinte', 0.5, { gruppe: 'gewehr' });
-    if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'tiger', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
+    if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'oger_bruell', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
     else if (k === 'storm') S('nah', 'schrei', 'Kampfschrei beim Sturm', 'cry', 0.45, { gruppe: 'ruf' });
     else if (fuss && !T.suit) S('nah', 'schrei', 'Kampfschrei (manchmal)', 'cry', 0.35, { gruppe: 'ruf', hin: 'In 35 % der Schläge, wenn beide Seiten Fußtruppen sind.' });
     if (fig === 'mechB') S('nah', 'tiger', 'Brüllen', 'tiger', 0.4, { gruppe: 'fahrzeug' }); }

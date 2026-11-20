@@ -57,7 +57,8 @@ const GRUPPEN = [
   ['truppen', 'Truppen, Pferde, Handgriffe', ['schritte', 'steps', 'stepsWald', 'holzknacken', 'marschtritt', 'dog', 'gallop2', 'pferd_auswahl', 'pferd_unruhe', 'neigh', 'gespann', 'wagenknarren', 'cut', 'clank', 'abprotzen', 'mgsetup', 'mgladen', 'schaufel', 'bauen', 'heal', 'reparieren', 'nachladen', 'gasmaske']],
   ['oberflaeche', 'Oberfläche und Knöpfe', ['klick', 'ui', 'leuchtschuss', 'leuchtbrand', 'tick', 'zug_eigen', 'zug_gegner', 'erobert', 'verloren', 'whistle', 'march', 'generalhorn', 'horn', 'win']],
   ['musik', 'Musik und Kulisse', ['musik_titel', 'musik_schlacht', 'musikNiederlage', 'ambient', 'wetter']],
-  ['sanktruss', 'Sankt Ruß', ['glocke', 'glocke_fern', 'kraehe', 'wind']]];
+  ['sanktruss', 'Sankt Ruß', ['glocke', 'glocke_fern', 'kraehe', 'wind']],
+  ['neu', 'Neue Töne (2026-11-20, zur Auswahl im Ton-Pult)', ['oger_bruell', 'neu_tiger_mech', 'neu_roboter', 'neu_schritte_schwer', 'neu_mg_schwer', 'neu_schrot', 'neu_kanone', 'neu_wucht', 'neu_nachladen', 'neu_versorgung']]];
 // Platz → Schlüssel mit Seite; ältere Einzeltöne ohne Platz als eigener Platz
 const eintraege = p => POOLS[p] ? POOLS[p].map(([k, s, w]) => ({ k, s: s || '', w: w || 1, f: datei(k) })) : KEYS.has(p) ? [{ k: p, s: '', w: 1, f: datei(p) }] : [];
 const platz = p => ({ p, name: NAME[p.replace(/_(gm|gs|bf|mr)$/, '')] || p, vol: VOL[p.replace(/_(gm|gs|bf|mr)$/, '')] ?? 0.6, loop: SCHLEIFE.includes(p), musik: MUSIK.includes(p), t: eintraege(p) });
