@@ -357,7 +357,7 @@ FIGUREN_POSEN = {
     'konkordat_melder_posen': dict(n=4, reihen=1, grund='fernsprech', tuch=(3, (142, 43, 34))),
     'aschenwacht_melder_posen': dict(n=4, reihen=2, grund='signal', spiegeln=[1]),   # Adler über ABZEICHEN
     'konkordat_mineur_posen': dict(n=4, reihen=2, grund='mineur', lampe=True),
-    'konkordat_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann'),
+    'konkordat_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann', spiegeln=[2]),   # Pistole zielt im Bogen nach links
     'aschenwacht_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann'),
 }
 

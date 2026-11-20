@@ -1716,7 +1716,9 @@ function newFigs(u, d) {
   const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
   let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
-  const keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
+  let keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
+  if (!m[1] && d.pose && POSE_SETS[u.type]) { const el = (now - d.pose.t0) * speed, k = POSE_SETS[u.type][d.pose.art];   // Einzelmodell mit Posen (Hauptmann, 2026-11-20)
+    if (el > d.pose.dauer + 400) d.pose = null; else if (el >= 0 && el <= d.pose.dauer && k && window.FIGS && window.FIGS[pre + k]) keys = [pre + k]; }
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
   return { key: keys[0], ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, gross: STUFE3.includes(sheet), vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
@@ -1763,7 +1765,7 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
 const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD',
-  'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
+  'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
 const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', knien: 'loewenoger_2', kolben: 'loewenoger_3' },
@@ -1789,6 +1791,9 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', kni
   pirsch: { bereit: 'pirschjaeger_1', lauf: 'pirschjaeger_posen_3', anlegen: 'pirschjaeger_posen_1', knien: 'pirschjaeger_posen_2', getroffen: 'pirschjaeger_posen_4' },
   fernsprech: { bereit: 'fernsprech_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', getroffen: 'melder_posen_4' },
   signal: { bereit: 'signal_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', getroffen: 'melder_posen_4' },
+  // Hauptmann: Einzelmodell – solange eine Pose läuft, wird das ganze Bild getauscht (newFigs)
+  hauptA: { befehl: 'hauptmann_posen_1', anlegen: 'hauptmann_posen_2', knien: 'hauptmann_posen_2', fernglas: 'hauptmann_posen_3', getroffen: 'hauptmann_posen_4' },
+  hauptD: { befehl: 'hauptmann_posen_1', anlegen: 'hauptmann_posen_2', knien: 'hauptmann_posen_2', fernglas: 'hauptmann_posen_3', getroffen: 'hauptmann_posen_4' },
   mineur: { bereit: 'mineur_1', hacke: 'mineur_posen_1', ladung: 'mineur_posen_2', kolben: 'mineur_posen_3', getroffen: 'mineur_posen_4' } };
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
@@ -2627,7 +2632,7 @@ async function playEvent0(e) {
     case 'officer': toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
     case 'sent': { playSound('dog', 0.55); playSound('comeon', 0.45, null, { u: unitById(e.by) }); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; await wait(300); break; }
     case 'order': {
-      const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.45, null, { u: unitById(e.u) });   // Befehl: Offiziere ohne Filter
+      const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; pose(e.u, 'befehl', 1500);   // Hauptmann zeigt mit dem Säbel playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : rl ? 'stand' : 'forward', 0.45, null, { u: unitById(e.u) });   // Befehl: Offiziere ohne Filter
       if (ff) for (const id of e.ids || []) { const dd = DU.get(id); if (dd) dd.vs.fireFree = true; }   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
       toast(`${e.name}: ${rl ? 'Sammeln!' : ff ? 'Feuer frei!' : 'Sturmbefehl!'}`); if (!ff) kz(e.u, rl ? 'pfeil' : 'wut', 'steig');
       for (let q = 0; q < 2; q++) rings.push({ x: d0.x, y: d0.y, r: 2.6 + q * 1.4, col: rl ? '#b8ff7c' : '#ffb04a', life: 34 + q * 10, max: 34 + q * 10 });
