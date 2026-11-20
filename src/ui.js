@@ -1762,7 +1762,8 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD']);   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
+const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD',
+  'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
 const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', knien: 'loewenoger_2', kolben: 'loewenoger_3' },
@@ -1772,7 +1773,24 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', kni
   raeumer: { bereit: 'sturm_1', anlegen: 'sturm_3', knien: 'sturm_3', kolben: 'sturm_4', ausholen: 'sturm_posen_1', loslassen: 'sturm_posen_2', graben: 'sturm_posen_3', getroffen: 'sturm_posen_4' },
   sturm: { bereit: 'sturm_4', kolben: 'sturm_2', ausholen: 'sturm_posen_1', loslassen: 'sturm_posen_2', graben: 'sturm_posen_3', getroffen: 'sturm_posen_4' },
   pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' },
-  pionierD: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' } };
+  pionierD: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' },
+  // weitere Posenbögen (2026-11-20, frei verteilte Figuren, figure_cut.py FIGUREN_POSEN); lauf = beim Ziehen
+  feldscher: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
+  heiler: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
+  flammen: { bereit: 'flammen_1', lauf: 'flammen_posen_1', anlegen: 'flammen_posen_2', knien: 'flammen_posen_2', getroffen: 'flammen_posen_4' },
+  brand: { bereit: 'flammen_1', lauf: 'flammen_posen_3', anlegen: 'flammen_posen_2', knien: 'flammen_posen_2', getroffen: 'flammen_posen_4' },
+  stahl: { bereit: 'stahl_1', lauf: 'kampfanzug_posen_1', kolben: 'kampfanzug_posen_2', anlegen: 'kampfanzug_posen_3', knien: 'kampfanzug_posen_3', getroffen: 'kampfanzug_posen_4' },
+  panzerk: { bereit: 'panzerknecht_1', lauf: 'kampfanzug_posen_1', kolben: 'kampfanzug_posen_2', anlegen: 'kampfanzug_posen_3', knien: 'kampfanzug_posen_3', getroffen: 'kampfanzug_posen_4' },
+  werkstatt: { bereit: 'versorgung_1', lauf: 'versorgung_posen_3', reparieren: 'versorgung_posen_1', nachladen: 'versorgung_posen2_1', getroffen: 'versorgung_posen_4' },
+  munition: { bereit: 'versorgung_1', lauf: 'versorgung_posen_1', reparieren: 'versorgung_posen_2', nachladen: 'versorgung_posen_3', getroffen: 'versorgung_posen_4' },
+  schildwall: { bereit: 'schildwall_1', kolben: 'schildwall_posen_1', anlegen: 'schildwall_posen_2', knien: 'schildwall_posen_2', halten: 'schildwall_posen2_3', getroffen: 'schildwall_posen_4' },
+  schwer: { bereit: 'schwer_1', kolben: 'schwer_posen_1', halten: 'schwer_posen_3', getroffen: 'schwer_posen_4' },
+  scharf: { bereit: 'scharfschuetze_1', lauf: 'scharfschuetze_posen_2', anlegen: 'scharfschuetze_posen_1', knien: 'scharfschuetze_posen_3', getroffen: 'scharfschuetze_posen_4' },
+  pirsch: { bereit: 'pirschjaeger_1', lauf: 'pirschjaeger_posen_3', anlegen: 'pirschjaeger_posen_1', knien: 'pirschjaeger_posen_2', getroffen: 'pirschjaeger_posen_4' },
+  fernsprech: { bereit: 'fernsprech_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', getroffen: 'melder_posen_4' },
+  signal: { bereit: 'signal_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', getroffen: 'melder_posen_4' },
+  mineur: { bereit: 'mineur_1', hacke: 'mineur_posen_1', ladung: 'mineur_posen_2', kolben: 'mineur_posen_3', getroffen: 'mineur_posen_4' } };
+const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && VIEW.tilt() && fac(u.side) !== 'F');
 function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; d.pose = { art, t0: now, dauer, ...o }; return true; }
@@ -2336,7 +2354,7 @@ async function playEvent0(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) musikDucken(2600); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else if (marschU === e.u) { playSound('schritte', 0.55); playSound('marschtritt', 0.2); } /* F9: Schritte tragen, Trommel leise */ else playSound(marschU === e.u ? 'marschtritt' : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } }   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht) await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
+    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) musikDucken(2600); if (marschU === e.u && u.side === 'D') { playSound('schritte', 0.5); if (Math.random() < 0.35) playSound('marschtritt', 0.38); } else if (marschU === e.u) { playSound('schritte', 0.55); playSound('marschtritt', 0.2); } /* F9: Schritte tragen, Trommel leise */ else playSound(marschU === e.u ? 'marschtritt' : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } }   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht) if (poseHat(u, 'lauf')) pose(e.u, 'lauf', e.path.length * 170 + 250); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'zurueck', 'steig'); break;   // F40
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -2346,7 +2364,7 @@ async function playEvent0(e) {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer)) && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
+      { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
       if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6);
@@ -2396,7 +2414,8 @@ async function playEvent0(e) {
       }
       break;
     }
-    case 'shell': if (e.mode === 'barrage' && !e.strike) {
+    case 'shell': if (e.strike && e.a != null) pose(e.a, 'funk', 1500);   // Feuerschlag: Fernsprechtrupp am Feldtelefon
+      if (e.mode === 'barrage' && !e.strike) {
       const a = DU.get(e.a), [x2, y2] = center(e.c, e.r), ua = unitById(e.a), [x1, y1] = bodyPos(e.a), mob = TYPES[ua.type].mobile;
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
       a.face = e.face;
@@ -2608,7 +2627,7 @@ async function playEvent0(e) {
     case 'smoke': { if (u && u.type === 'rauch') playSound('werfer', 0.55); playSound(u && u.type === 'rauch' ? 'gas' : 'rauch', 0.5);   // Rauchgeschoss: gas_1, geworfen: rauch_1 (Tonprobe 2026-11-18)
       if (u && fxIm('geschosse', 4)) { const du = DU.get(u.id); for (const [c, r] of e.cells) { const [x, y] = center(c, r); shells.push({ fxi: 4, fxs: 0.8, x1: du.x, y1: du.y - s * 0.6, x2: x, y2: y, t: 0, dur: 18, arc: 1.4, spin: true, sz: 0.3 }); } await wait(18 * 16.667); }
       for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
-    case 'tunnel': { playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
+    case 'tunnel': { if (e.u != null) pose(e.u, 'hacke', 1500); playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
     case 'blast': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'ladung', 1500); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); break; }
@@ -2616,7 +2635,7 @@ async function playEvent0(e) {
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
     case 'clear': { visSync('clouds'); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
-    case 'ammo': { playSound('nachladen', 0.55); kz(e.u, 'munition', 'steig'); await wait(260); break; }
+    case 'ammo': { if (e.by != null) pose(e.by, 'nachladen', 1400); playSound('nachladen', 0.55); kz(e.u, 'munition', 'steig'); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; kz(e.u, 'funkeln', 'steig'); await wait(150); break;
@@ -2634,10 +2653,10 @@ async function playEvent0(e) {
     case 'burn': kz(e.u, 'feuer', 'puls'); await wait(120); break;
     case 'steadfast': kz(e.u, 'pfeil', 'steig'); await wait(160); break;
     case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; pose(e.u, 'graben', 1600); playSound('atmen', 0.42, null, { u, noGap: true });   /* F32: nur 72199 (Graben mit schwerem Atmen) */   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
-    case 'shields': { const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); await wait(260); break; }
-    case 'rush': marschU = e.u; playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(200); break;
+    case 'shields': { pose(e.u, 'halten', 1800); const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); await wait(260); break; }
+    case 'rush': marschU = e.u; if (poseHat(unitById(e.u), 'lauf')) pose(e.u, 'lauf', 1500); playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); await wait(220); break; }
-    case 'mark': { const [x, y] = center(e.c, e.r);
+    case 'mark': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'funk', 1500);
       playSound('leuchtschuss', 0.5); setTimeout(() => playSound('leuchtbrand', 0.22), 450 / speed);   /* Leuchtpistole: Abschuss, dann leises Brennen der Kugel, blendet aus (2026-11-18) */
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
       visSync('marks'); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
@@ -2654,8 +2673,8 @@ async function playEvent0(e) {
     case 'spawn': { playSound('whistle', 0.5); addDU(u); const d = DU.get(e.u), [x] = center(u.c, u.r), dir = u.side === 'A' ? -1 : 1; toast(`Nachschub: ${nm(u)} trifft ein.`);
       for (let k = 0; k < 16; k++) { d.x = x + dir * s * 2 * (1 - (k + 1) / 16); await raf(); } await wait(200); break; }
     case 'heal': { const rep = e.by != null && unitById(e.by) && TYPES[unitById(e.by).type].repair;   // F39: Reparieren klingt nach Werkstatt
-      if (rep) { playSound('reparieren', 0.6); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; const m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; kz(e.u, 'werkzeug', 'steig'); await wait(420); break; }
-      playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.cured) { d.vs.poison = 0; kz(e.u, 'kreuz', 'steig'); } if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
+      if (rep) { pose(e.by, 'reparieren', 1600); playSound('reparieren', 0.6); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; const m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; kz(e.u, 'werkzeug', 'steig'); await wait(420); break; }
+      if (e.by != null) pose(e.by, 'heilen', 1400); playSound('heal', 0.5); const d = DU.get(e.u); d.str = e.str; d.mor = e.morv; if (e.cured) { d.vs.poison = 0; kz(e.u, 'kreuz', 'steig'); } if (e.by != null) { const m = DU.get(e.by); m.face = d.x >= m.x ? 0 : 3; shells.push({ x1: m.x, y1: m.y - s * 0.5, x2: d.x, y2: d.y - s * 0.4, t: 0, dur: 14, arc: 0.5, img: 'bandage', sz: 0.34 }); await wait(240); }
       rings.push({ x: d.x, y: d.y - s * 0.55, r: 0.8, img: ['crossF1', 'crossF2', 'crossF3', 'crossG'][Math.floor(Math.random() * 4)], life: 50, max: 50 }); kz(e.u, 'kreuz', 'steig'); await wait(350); break; }
     case 'gascloud': visSync('clouds'); break;
     case 'bauschaden': {   // Treffer auf die Kirche: Steinsplitter, Staub, Meldung mit Bauzustand

@@ -194,6 +194,10 @@ ABZEICHEN = {
     'aschenwacht_panzerknecht': [('platte', 106, 236, 50), ('platte', 619, 264, 46), ('platte', 1205, 294, 52)],
     'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15)],
     'aschenwacht_bohrkoloss': [('platte', 468, 579, 27)],
+    # Posenbögen 2026-11-20: Adler auf den Pickelhauben (Pflicht: keine Adler im Spiel)
+    'aschenwacht_sanitaeter_posen': [('platte', 496, 137, 34), ('platte', 2424, 160, 32), ('platte', 1895, 261, 32), ('platte', 1169, 604, 32)],
+    'aschenwacht_melder_posen': [('platte', 669, 934, 30), ('platte', 2335, 745, 34), ('platte', 301, 81, 26)],
+    'aschenwacht_flammen_posen': [('platte', 1845, 150, 26), ('platte', 1738, 935, 26), ('platte', 705, 150, 26), ('platte', 785, 960, 26)],
 }
 
 
@@ -329,7 +333,89 @@ def entrosa(q):
     q = q.copy(); ex = np.clip(np.minimum(q[..., 0], q[..., 2]) - q[..., 1], 0, None); q[..., 0] -= ex; q[..., 2] -= ex; return q
 
 
+# Posenbögen mit frei verteilten Figuren (2026-11-20, Spieltest Runde 4): die n größten Figuren des Bogens in Lesereihenfolge (reihen = Anzahl
+# Bildzeilen), Maßstab wie der Grundbogen (höchste Pose = höchste Pose des Grundbogens × f). Ausgabe <name>_<i>. Optionen:
+#   nimm: nur diese Nummern speichern (andere unbrauchbar, z. B. abgeschnittene Beine); spiegeln: Nummern, die nach links blicken
+#   helm: goldene Abzeichen/Adler auf dem Helm übermalen (oberster Kopfbereich, Gold ohne die hellen Gasmasken-Augen)
+#   tuch: (Nummer, Farbe) helles Fahnentuch umfärben (Konkordat: weiße Flagge sah nach Kapitulation aus)
+#   rauch: halbdurchsichtige, wenig farbige Schlieren (Rauch, Bewegungsunschärfe) entfernen
+FIGUREN_POSEN = {
+    'konkordat_sanitaeter_posen': dict(n=3, reihen=1, grund='sanitaeter', trenne=[3]),   # Laufen und Getroffen berühren sich
+    'aschenwacht_sanitaeter_posen': dict(n=4, reihen=1, grund='sanitaeter'),   # Adler über ABZEICHEN
+    'konkordat_flammen_posen': dict(n=4, reihen=1, grund='flammen', schatten=True),
+    'aschenwacht_flammen_posen': dict(n=4, reihen=2, grund='flammen'),   # Helmplakette über ABZEICHEN
+    'konkordat_kampfanzug_posen': dict(n=4, reihen=2, grund='stahl', rauch=True, eins=True),
+    'aschenwacht_kampfanzug_posen': dict(n=4, reihen=2, grund='panzerknecht', rauch=True, eins=True),   # eins: nur das größte Teil (deckend gemalte Rauchwolke neben Pose 3)
+    'konkordat_versorgung_posen': dict(n=4, reihen=2, grund='versorgung', nimm=[1, 3, 4]),   # 2 (Hämmern) unten abgeschnitten
+    'konkordat_versorgung_posen2': dict(n=4, reihen=2, grund='versorgung', nimm=[1, 3, 4]),   # 2 (Kette) Beine abgeschnitten
+    'aschenwacht_versorgung_posen': dict(n=4, reihen=2, grund='versorgung', gross={3: 1.6}),   # 3 (kniend mit Schlüssel) kleiner gezeichnet
+    'konkordat_schildwall_posen': dict(n=4, reihen=2, grund='schildwall'),
+    'konkordat_schildwall_posen2': dict(n=4, reihen=2, grund='schildwall'),
+    'aschenwacht_schwer_posen': dict(n=4, reihen=2, grund='schwer'),
+    'konkordat_scharfschuetze_posen': dict(n=3, reihen=2, grund='scharfschuetze', trenne=[3]),   # Kniend und Fallend berühren sich
+    'aschenwacht_pirschjaeger_posen': dict(n=4, reihen=2, grund='pirschjaeger'),
+    'konkordat_melder_posen': dict(n=4, reihen=1, grund='fernsprech', tuch=(3, (142, 43, 34))),
+    'aschenwacht_melder_posen': dict(n=4, reihen=2, grund='signal', spiegeln=[1]),   # Adler über ABZEICHEN
+    'konkordat_mineur_posen': dict(n=4, reihen=2, grund='mineur', lampe=True),
+    'konkordat_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann'),
+    'aschenwacht_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann'),
+}
+
+
+def helm_gold_weg(q, hmax):
+    """Goldenes Helmabzeichen (Adler) übermalen: im obersten Bereich der Figur Gold/Messing, ohne helle Augenlinsen."""
+    a = q[..., :3].astype(np.float64); al = q[..., 3] > 128
+    ys = np.nonzero(al.any(1))[0];
+    if not len(ys): return q
+    top = ys.min(); band = np.zeros(al.shape, bool); band[top:top + int(hmax * 0.11)] = True
+    r, g, b = a[..., 0], a[..., 1], a[..., 2]; lum = a @ [0.3, 0.59, 0.11]
+    gold = band & al & (r - b > 45) & (g - b > 20) & (r > 100) & (lum < 205)
+    gold = ndimage.binary_opening(gold, iterations=1); gold = ndimage.binary_dilation(gold, iterations=3) & band & al
+    if gold.sum() < 20: return q
+    f = _diffus(a, gold, n=200, aus=~al); q = q.copy(); q[..., :3] = np.where(gold[..., None], f, a)
+    print(f'  Helmabzeichen übermalt: {int(gold.sum())} px'); return q
+
+
+def figuren_posen(name, out):
+    o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')); H, W = a.shape[:2]
+    a = abzeichen_uebermalen(a, name)
+    k = keyed(a)
+    if name.startswith('aschenwacht_'): a = fahne_umfaerben(a, name, k[..., 3]); k = keyed(a)
+    if o.get('lampe'): k = lampe_gelb(k)
+    if o.get('schatten'):   # gemalter Schatten = abgedunkelte Hintergrundfarbe
+        r_, g_, b_ = [a[..., i].astype(int) for i in range(3)]; sch = (np.minimum(r_, b_) - g_ > 28) & ((r_ + g_ + b_) < 560); k = k.copy(); k[ndimage.binary_dilation(sch, iterations=1), 3] = 0
+    if o.get('rauch'):   # Schlieren: halbdurchsichtig nach dem Freistellen oder blass-grau-lila
+        a_ = a.astype(int); sat = a_.max(2) - a_.min(2); k = k.copy(); k[(k[..., 3] < 200) | ((sat < 40) & (a_.mean(2) > 120) & (np.minimum(a_[..., 0], a_[..., 2]) - a_[..., 1] > 10)) | (np.minimum(a_[..., 0], a_[..., 2]) - a_[..., 1] > 12), 3] = 0   # auch deckend gemalte rosa Rauchwolken
+    al = ndimage.binary_closing(k[..., 3] > 60, iterations=4); lab, n = ndimage.label(al)
+    sizes = ndimage.sum(al, lab, range(1, n + 1)); big = sorted(range(1, n + 1), key=lambda i: -sizes[i - 1])[:o['n']]
+    fo = ndimage.find_objects(lab); zh = H / o['reihen']
+    big.sort(key=lambda i: (int(((fo[i - 1][0].start + fo[i - 1][0].stop) / 2) // zh), fo[i - 1][1].start))
+    figs = []
+    for i in big:
+        sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0; figs.append(keep_parts(t, not o.get('eins'), 0.15))
+    for j in sorted(o.get('trenne', []), reverse=True):   # zwei sich berührende Figuren: Naht durch die dünnste Stelle
+        f = figs[j - 1]; op = f[..., 3] > 40; xs = seam(op, f.shape[1] // 2, int(f.shape[1] * 0.25)); cols = np.arange(f.shape[1])[None, :]
+        l = f.copy(); l[cols >= xs[:, None], 3] = 0; rr = f.copy(); rr[cols < xs[:, None], 3] = 0; figs[j - 1:j] = [keep_parts(l, True, 0.15), keep_parts(rr, True, 0.15)]
+    hmax = max(f.shape[0] for f in figs)
+    grund = sorted(GAME.glob(f"{name.split('_', 1)[0]}_{o['grund']}*.png")); grund = [g for g in grund if '_posen' not in g.stem]
+    ref = max(Image.open(g).height for g in grund) if grund else H_OUT
+    s = ref * o.get('f', 1.0) / hmax; out.mkdir(parents=True, exist_ok=True)
+    for j, q in enumerate(figs, 1):
+        if o.get('nimm') and j not in o['nimm']: print(f'{name}_{j}: ausgelassen'); continue
+        q = entrosa(q.astype(np.float64))
+        if o.get('helm'): q = helm_gold_weg(q, hmax)
+        if o.get('tuch') and o['tuch'][0] == j:
+            rgb = q[..., :3]; lum = rgb @ [0.3, 0.59, 0.11]; sat = rgb.max(2) - rgb.min(2); m = (q[..., 3] > 100) & (lum > 120) & (sat < 60)
+            m[int(q.shape[0] * 0.55):] = False; col = np.array(o['tuch'][1], float)
+            q = q.copy(); q[m, :3] = col * np.clip(lum[m] / 170, 0.35, 1.25)[:, None]; print(f'  Fahnentuch umgefärbt: {int(m.sum())} px')
+        if o.get('spiegeln') and j in o['spiegeln']: q = q[:, ::-1]
+        sj = s * o.get('gross', {}).get(j, 1.0)
+        im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA'); im = im.resize((max(1, round(im.width * sj)), max(1, round(im.height * sj))), Image.LANCZOS)
+        im.save(out / f'{name}_{j}.png'); print(f'{name}_{j}: {im.width}×{im.height}')
+
+
 def cut(name, out=OUT):
+    if name in FIGUREN_POSEN: return figuren_posen(name, out)
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
     a = rauch_weg(a, name)
     a = abzeichen_uebermalen(a, name)
