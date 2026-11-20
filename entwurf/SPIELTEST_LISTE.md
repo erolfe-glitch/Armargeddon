@@ -177,15 +177,15 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [x] F45 Klick-Töne: leises Klicken für alles, was man oft klickt (kleine Knöpfe, Reiter, Karten, +/−, Optionen); lautes Klicken nur für große Knöpfe (Starten, Übernehmen, Runde beenden/weiter, Schlacht beginnen).
 
 ## Paket C – Effekte, Animation, Kamera
-- [ ] F16 Landkoloss-Schuss: statt drei Geschossen nur Qualmwolke an der Mündung + Explosion am Ziel; Mündung ans Ende des Kanonenrohrs (nicht am Ausguck).
-- [ ] F20 Zweitwaffen der Schreiter: Geschosse/Mündung prüfen wie F16.
-- [ ] F24 Minigun-Salve etwa 1 s länger.
-- [ ] F28 Schüsse und Nahkampf allgemein länger: Salven über 2–3 s, mehrere Einzelschüsse, unregelmäßig; Nahkampf als Folge von 4–6 Hieben mit Klirren und Treffern; Tempo-Einstellung beschleunigt weiter.
-- [ ] F27 Blut: statt runder Punkte richtige Spritzer (fx_blut prüfen, ob benutzt); Blut am Boden bleibt; im Nahkampf Spritzer bei Treffern.
+- [x] F16 Landkoloss-Schuss: statt drei Geschossen nur Qualmwolke an der Mündung + Explosion am Ziel; Mündung ans Ende des Kanonenrohrs (nicht am Ausguck).
+- [x] F20 Zweitwaffen der Schreiter: Geschosse/Mündung prüfen wie F16.
+- [x] F24 Minigun-Salve etwa 1 s länger.
+- [x] F28 Schüsse und Nahkampf allgemein länger: Salven über 2–3 s, mehrere Einzelschüsse, unregelmäßig; Nahkampf als Folge von 4–6 Hieben mit Klirren und Treffern; Tempo-Einstellung beschleunigt weiter.
+- [x] F27 Blut: statt runder Punkte richtige Spritzer (fx_blut prüfen, ob benutzt); Blut am Boden bleibt; im Nahkampf Spritzer bei Treffern.
 - [ ] F21 Treffer auf Einheit hinter Deckung: Lebensbalken scheint im Moment des Treffers durch.
-- [ ] F34 Kamera folgt weich zu Nahkampf und Artillerie-Einschlägen (vor allem im Gegnerzug), nicht hektisch, abschaltbar.
-- [ ] F39 Zeichen: Reparieren/Bergen goldenes Zahnrad oder Schlüssel, Nachladen eigenes Zeichen; grünes Kreuz nur Heilen/Entgiften.
-- [ ] F40 Rückzug/Zurückweichen: Schweißtropfen wirken wie Wassertropfen → deutlicheres Zeichen (z. B. Pfeil nach hinten oder weiße Fahne); ggf. neues Bild (Enrico/Gemini).
+- [x] F34 Kamera folgt weich zu Nahkampf und Artillerie-Einschlägen (vor allem im Gegnerzug), nicht hektisch, abschaltbar.
+- [x] F39 Zeichen: Reparieren/Bergen goldenes Zahnrad oder Schlüssel, Nachladen eigenes Zeichen; grünes Kreuz nur Heilen/Entgiften.
+- [x] F40 Rückzug/Zurückweichen: Schweißtropfen wirken wie Wassertropfen → deutlicheres Zeichen (z. B. Pfeil nach hinten oder weiße Fahne); ggf. neues Bild (Enrico/Gemini).
 
 - [ ] F46 Panzerbüchsen-Trupp (Aschenwacht) versinkt im Graben zu tief (Figuren kaum noch sichtbar). Grabentiefe je Einheit prüfen – Figuren, die schon niedrig/kniend gemalt sind, weniger tief absenken; alle Einheitentypen im Graben kurz durchsehen.
 
