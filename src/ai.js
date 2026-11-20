@@ -332,7 +332,7 @@ function bestAttackFrom(G, u, c, r, moved, run, kosten) {
       const v = attackValue(G, u, d, 'melee', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
-    if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
+    if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.nahSchreiter && moved && ((u.bpUsed || 0) + (kosten || 0)) > E.bpMax(u) / 2) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
         dd <= T.rng + (T.rng > 1 && E.hex(G, c, r).ridge && !E.hex(G, d.c, d.r).ridge ? 1 : 0) + (E.hex(G, c, r).t === 'turm' ? P.TURM_RNG : 0) && E.hasLOS(G, c, r, d.c, d.r) && imBogen(G, u, c, r, d, moved)) {
       const v = attackValue(G, u, d, 'fire', { c, r, run });
       if (!best || v > best.v) best = { v, d, kind: 'fire' };
@@ -474,12 +474,15 @@ function next(G) {
   // Großer Befehl des Generals (einmal je Schlacht): nicht in den ersten Runden verschwenden, erst wenn es wirklich zählt
   for (const u of G.units) {
     if (!E.canBig(G, u) || G._aiDone.has('b' + u.id) || G.turn < 3 || ENVX['NOBIG_' + u.side]) continue;
-    G._aiDone.add('b' + u.id);
+    if (u.side === 'A') G._aiDone.add('b' + u.id);   // Generalangriff wird während des Zugs mehrmals geprüft (F53)
     const own = G.units.filter(o => o.side === u.side && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= P.BIG_R);   // Paket 8: wirkt nur 3 Felder um den General
     if (u.side === 'A') {   // Halten um jeden Preis: viele eigene Einheiten in Feindberührung oder mit wankender Moral
       const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
       if (shaky >= Math.max(3, Math.round(own.length * 0.35))) return { u: u.id, steps: [{ k: 'big' }] };
     } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
+      // F53 (2026-11-20): Generalangriff ist ein zweiter Angriff – am besten, wenn viele Einheiten in Reichweite schon angegriffen haben oder niedergehalten sind und Gegner nah stehen
+      const nachgeladen = own.filter(o => o.status === 'ok' && !(o.broken > 0) && (o.attacked || o.supp > 0) && TYPES[o.type].atk >= 3 && nearestEnemyDist(G, o.side, o.c, o.r) <= Math.max(2, TYPES[o.type].rng || 1)).length;
+      if (nachgeladen >= Math.max(3, Math.round(own.length * 0.4))) { G._aiDone.add('b' + u.id); return { u: u.id, steps: [{ k: 'big' }] }; }
       const ready = own.filter(o => !o.attacked && o.ap >= 1 && nearestEnemyDist(G, o.side, o.c, o.r) <= TYPES[o.type].mv + 2 && TYPES[o.type].atk >= 3).length;
       const half = o => u.side === 'D' ? o.c >= E.COLS / 2 : o.c < E.COLS / 2;   // Zielfelder auf der eigenen Hälfte
       const threat = E.OBJECTIVES.some(o => half(o) && (G.ctrl[o.id] && G.ctrl[o.id] !== u.side || G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, o.c, o.r) <= 1)));   // Gegner steht an oder auf einem eigenen Zielfeld
