@@ -136,3 +136,10 @@ Alles hier wurde nur im unsichtbaren, stummen Test-Chrome geprüft. Bitte selbst
 67. Kreuzschreiter (nur mit Kampfmaschinen-Schalter): Löwengebrüll jetzt mit Wirkung (einmal je Schlacht, Umkreis 2, Gegner verängstigt und niedergehalten). Zu stark? Fühlt sich Bewegung 3 für den schwersten Schreiter richtig an?
 68. Eisenknecht (Kampfmaschinen an): Faustsalve – zwei Ziele nacheinander anklicken. Verständlich? Kamerafahrt und Mündungsfeuer an beiden Fäusten gut sichtbar?
 69. Armee-Auswahl und Nachschub: Reiter „Alle“ als Start – lieber so oder mit „Standard“ beginnen?
+70. Neue Modelle der Stufe-3-Schreiter (Löwe, Ritter): wirken sie im Spiel groß und besonders genug? Verdeckt die Hackklinge des Eisenknechts etwas?
+71. Löwenmaul-Kanone: Kanonendonner statt MG, Mündungsfeuer am Maul. Passt der Klang?
+72. Kamerafahrt bei großen Momenten (Stufe-3-Angriff und -Fähigkeit, Kircheneinsturz, Volltreffer, Koloss/Schreiter fällt): angenehm oder zu oft? Ausschalten in den Optionen funktioniert?
+73. Armee-Auswahl waagerecht mit Seitenleiste „Gewählte Armee“: übersichtlich? Bei 1280 px noch bedienbar?
+74. Sankt Ruß Kulisse: Kirchenglocke zu Rundenbeginn, ferne Glocke, Krähen, Wind. Zu laut, zu leise, nervt etwas? Einsturz-Ton mit fallender Glocke.
+75. Sankt Ruß Siegpunkte: Kirche zählt jetzt 3 (Friedhof, Dorfplatz je 2). Fühlt sich das richtig an?
+76. Neue Banner im Menü (falls schon eingebaut): Konkordat rot mit Goldlöwe, Aschenwacht schwarz/knochenweiß mit Helm, Blaue Legion blau mit Hahn.
