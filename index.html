@@ -1251,6 +1251,7 @@ body.aufstellung #btnEnd, body.aufstellung #btnNext, body.aufstellung #nachOben,
 const P = {
   DMG: 0.61,
   ROAR_R: 2, ROAR_MOR: 2,   // Löwengebrüll des Kreuzschreiters (2026-11-20): einmal je Schlacht, kostet nichts; Gegner ohne Panzerung bis ROAR_R Felder: Moral −ROAR_MOR, niedergehalten bis zum Ende ihrer nächsten Runde
+  FAUST_MUL: 2,   // Faustsalve des Eisenknechts (2026-11-20): einmal je Schlacht statt des Schusses zwei Schüsse auf zwei verschiedene Ziele, je ×FAUST_MUL
   FLANK: 1.4, REAR: 1.8, VS_ROUT: 1.6, FREEBLOW: 1.0,   // FLANK/REAR nur für Fahrzeuge; FREEBLOW: Freischlag beim Rückzug, Stärke je Schlag (≈ 10 wie Stacheldraht, ±20 % Zufall, Paket 4)
   COUNTER: { front: 0.6, flank: 0.3, rear: 0 },
   MOR_PER_DMG: 0.8, MOR_FLANK: 0.5, MOR_REAR: 1, MOR_SURR: 1,
@@ -1438,8 +1439,8 @@ Object.assign(TYPES, {
   generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
     can: 'Kommandotrupp: Befehle an eigene Truppen direkt daneben (1 Feld), höchstens 3 je Schlacht („Sammeln“ oder „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: eigene Einheiten bis 3 Felder erhalten sofort +2 Bewegungspunkte und +1 Aktion. Jede Armee hat genau einen (Pflicht), schwach im Kampf.',
     real: 'Deutsche Divisionen wurden von Generalmajoren geführt. Die Stäbe arbeiteten mit Karten, Telefon und Luftbildern meist mehrere Kilometer hinter der Front.' },
-  knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', stufe3: true, fig: 'mech', mech: true, atk: 8, def: 8, mor: 9, mv: 2, rng: 2, fs: 5,
-    can: 'Stufe 3, höchstens einer je Schlacht. Schreitende Kampfmaschine mit doppelläufigen Sturmkanonen an beiden Unterarmen und Hackklinge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
+  knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', stufe3: true, faust: true, fig: 'mech', mech: true, atk: 8, def: 10, mor: 9, mv: 3, rng: 2, fs: 7,
+    can: 'Stufe 3, höchstens einer je Schlacht. Schreitende Kampfmaschine mit doppelläufigen Sturmkanonen an beiden Unterarmen und Hackklinge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Faustsalve (einmal je Schlacht, statt des Schusses): beide Kanonen zugleich auf zwei verschiedene Ziele, je ×2. Bleibt manchmal mit einer Panne liegen.',
     real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
   bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', zweit: { name: 'Flammenstoß', rng: 1, flamme: true }, fig: 'drill', mech: true, atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
     can: 'Kampfmaschine mit Bohrkopf für den Nahkampf. Sehr stark gegen alles, was er erreicht. Dazu Flammenstoß (einmal je Runde zusätzlich) auf ein Nachbarfeld: halb so stark wie ein Flammentrupp, das Feld brennt danach. Fährt sich selten fest und fällt dann 3 Runden aus.',
@@ -1454,7 +1455,7 @@ Object.assign(TYPES, {
 const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
   signal: ['Ziel markieren', 5], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
   hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
-  pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen', 20], kreuz: ['Löwenmaul-Kanone gegen Panzerung, Unterarm-Kanone, Löwengebrüll', 30],
+  pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen, Faustsalve', 30], kreuz: ['Löwenmaul-Kanone gegen Panzerung, Unterarm-Kanone, Löwengebrüll', 30],
   rauch: ['Nebelwand', 15], mineur: ['Stollen', 10], werkstatt: ['Reparieren, Bergen, Nachladen', 40], ballon: ['Ziel markieren, Sicht von oben', 50],
   eingreif: ['Gegenstoß', 40], gasschutz: ['Gasschutz', 15], munition: ['Reparieren, Bergen, Nachladen', 40], pirsch: ['Getarnt, Niederhalten', 35] };
 // Abgleich nach tools/costcheck.js (Grauwall, 140 Spiele je Typ): Angreifer-Infanterie nimmt Zielfelder und ist für den Angreifer mehr wert,
@@ -1465,7 +1466,7 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // Zweite Runde 2026-11-18 (costcheck mit der neuen KI: Fahrzeuge vorsichtiger, Spezialisten gezielter): Konkordat-Kolosse/Schreiter −19 bis −24,
 // Aschenwacht-Spezialisten −13 bis −29, Aschenwacht-Maschinen weiter +10 bis +16.
 const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
-  sturm: 40, knecht: 60, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
+  sturm: 40, knecht: 25, bohrer: 80, brand: 0, sturmpz: 10, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
   feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5 };
 function costParts(k) {
@@ -1510,7 +1511,7 @@ Object.assign(TYPES, {
     real: 'Deutsche Scharfschützen mit Zielfernrohr beherrschten 1915 das Niemandsland. Die Briten richteten daraufhin eigene Scharfschützenschulen ein.' }
 });
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "schildwall": ["Sehr zäh", "Keine Schusswaffe", "Schilde vor"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["Befehl alle 2 Runden, 2 Felder", "Sammeln, Feuer frei"], "hauptD": ["Befehl alle 2 Runden, 2 Felder", "Sammeln, Sturmbefehl"], "generalA": ["Befehl jede Runde, 3 Felder", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Einmal: Generalangriff", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionier": ["Draht schneiden und angreifen", "×1,5 gegen Kolosse"], "raeumer": ["Sickert durch", "Handgranaten", "×1,5 gegen Kolosse"], "buechse": ["Schuss 3 Felder", "×2 gegen Kolosse"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "schildwall": ["Sehr zäh", "Keine Schusswaffe", "Schilde vor"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Anführer befehlen jede Runde"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["Befehl alle 2 Runden, 2 Felder", "Sammeln, Feuer frei"], "hauptD": ["Befehl alle 2 Runden, 2 Felder", "Sammeln, Sturmbefehl"], "generalA": ["Befehl jede Runde, 3 Felder", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["Befehl jede Runde, 3 Felder", "Einmal: Generalangriff", "Höchstens einer"], "panzerk": ["Kampfanzug: Beschuss ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
 Object.assign(SPECIALS, { turm: ["Gepanzert", "Geschützturm", "Schuss 3 Felder", "Panne möglich"], orden: ["Gepanzert", "Drehlauf", "Kettensäge", "Panne möglich"], kreuz: ["Stufe 3: einmal je Schlacht", "Schwer gepanzert", "Löwenmaul-Kanone: stark gegen Panzerung", "Kriegshammer", "Löwengebrüll: einmal je Schlacht", "Panne möglich"] });
 // Paket 1: Schlagworte für neue Regeln
@@ -3181,6 +3182,27 @@ function roar(G, u) {
   }
   ev.push(...checkEnd(G)); return ev;
 }
+// Faustsalve (Eisenknecht): einmal je Schlacht, statt des Schusses (kostet die Aktion): beide Unterarm-Kanonen zugleich auf zwei verschiedene Ziele, die er beschießen könnte
+function faustTargets(G, u) { return TYPES[u.type].faust ? G.units.filter(d => canFire(G, u, d)) : []; }
+function canFaust(G, u, d1, d2) {
+  if (!TYPES[u.type].faust || u.faustUsed || u.side !== G.side) return false;
+  const ts = faustTargets(G, u); if (ts.length < 2) return false;
+  return d1 == null || (d1 !== d2 && ts.includes(d1) && (d2 == null || ts.includes(d2)));
+}
+function faust(G, u, d1, d2) {
+  if (!d1 || !d2 || !canFaust(G, u, d1, d2)) return [];
+  const ev = [{ t: 'faust', u: u.id, d: [d1.id, d2.id] }]; u.faustUsed = true;
+  u.face = faceToward(u.face, u.c, u.r, (d1.c + d2.c) / 2, (d1.r + d2.r) / 2);
+  const plan = [d1, d2].map(d => ({ d, p: preview(G, u, d, 'fire'), c: d.c, r: d.r }));   // beide Schüsse zugleich: Schaden vor dem ersten Treffer berechnen
+  for (const [i, q] of plan.entries()) {
+    if (!alive(q.d)) continue;
+    ev.push({ t: 'fire', a: u.id, d: q.d.id, kind: 'cannon', faust: i + 1, face: u.face });
+    applyDamage(G, u, q.d, q.p.dmg * (0.75 + G.rng() * 0.5) * P.FAUST_MUL, q.p.arc, ev, { ranged: true });
+    kircheTreffer(G, u, q.c, q.r, ev);
+  }
+  u.attacked = true; spend(u, 1);
+  ev.push(...checkEnd(G)); return ev;
+}
 function endTurn(G) {
   if (G.over) return [];
   for (const u of G.units) if (u.side === G.side) { if (u.supp > 0) u.supp--; u.zeal = false; u.angst = 0; }
@@ -3214,7 +3236,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  roar, canRoar, roarTargets, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  roar, canRoar, roarTargets, faust, canFaust, faustTargets, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
@@ -6088,6 +6110,11 @@ function exec(G, uid, s) {
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
+  if (s.k === 'fire' && TYPES[u.type].faust && E.canFaust(G, u, d)) {   // Faustsalve (2026-11-20): statt des Schusses, wenn ein zweites Ziel lohnt
+    const wert = x => { const p = E.preview(G, u, x, 'fire'), dm = p.dmg * E.P.FAUST_MUL; return Math.min(dm, x.str) + (dm >= x.str - 0.3 ? 3 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (E.hex(G, x.c, x.r).obj ? 0.8 : 0); };
+    const zw = E.faustTargets(G, u).filter(x => x !== d).sort((a, b) => wert(b) - wert(a))[0];
+    if (zw) { const v = wert(d) + wert(zw); if (v >= 4 || wert(d) >= 3 || wert(zw) >= 3 || G.turn >= 10) return E.faust(G, u, d, zw); }
+  }
   if (s.k === 'fire') {   // Fahrzeug/Schreiter: Ziel außerhalb des Schussfelds – erst drehen (kostet 1 Punkt), dann schießen
     if (!E.canFire(G, u, d) && E.cls(u) === 'walker' && !u.attacked && u.ap >= 1 && (u.bp || 0) >= E.drehKosten(u, E.faceToward(u.face, u.c, u.r, d.c, d.r))) { const ev = E.turnUnit(G, u, E.faceToward(u.face, u.c, u.r, d.c, d.r)); if (E.canFire(G, u, d)) return ev.concat(E.fire(G, u, d)); return ev; }
     return E.canFire(G, u, d) ? E.fire(G, u, d) : []; }
@@ -6129,7 +6156,7 @@ const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, 
 const speedTxt = () => tempo >= INSTANT ? 'Tempo sofort' : 'Tempo ' + tempo + '×';
 let wayPt = null;   // Wegpunkt (Paket 3): Umschalt+Klick bzw. langes Drücken auf ein Zugfeld, danach das Ziel
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
-let recSet = new Set(), abilSet = new Set(), abilMode = false, feldArt = 'abil';   // feldArt: 'abil' | 'cut' | 'zweit' (Paket 8)
+let recSet = new Set(), abilSet = new Set(), abilMode = false, feldArt = 'abil', faustErst = null;   // faustErst: erstes Ziel der Faustsalve (2026-11-20)   // feldArt: 'abil' | 'cut' | 'zweit' (Paket 8)
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
@@ -6264,6 +6291,12 @@ function fxMuzzle(id, q = 0, hf = 0.3) {
 function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-lim, Math.min(lim, Math.atan2(y2 - y1, Math.abs(x2 - x1) || 1e-6))); return { flip: fl, ang: fl ? -a0 : a0 }; }
 // Mündungsfeuer (≈ 0,1 s): v 0 Gewehr, 1 MG, 2 Pistole, 3 Kanone, 4 Mörser (nach oben), 5 lang und dünn (Scharfschütze, Panzerbüchse)
 // Zweitwaffe (Paket 8): Mündung am Seitenerker (Landkoloss, zur Zielseite hin) bzw. vorn am Turm (Turmschreiter)
+// Faustsalve: Mündung an der linken (n 0) bzw. rechten Faust (n 1) des Eisenknechts
+function fxFaust(id, n) {
+  const d = DU.get(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
+  let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
+  const p = [d.x + x0 + w * (n ? 0.66 : 0.34), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
+}
 function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
@@ -7109,7 +7142,7 @@ function drawGround(g, s) {
       g.strokeStyle = 'rgba(18,13,11,0.7)'; g.lineWidth = Math.max(3, s * 0.065); edges();
       g.strokeStyle = RANGE_COL; g.lineWidth = Math.max(1.6, s * 0.028); g.setLineDash([s * 0.12, s * 0.08]); edges(); g.restore(); }
     // Hilfsmarkierungen nach STYLE.md: gedämpfte Palettentöne, unterscheidbar über Muster und Symbol (Wunsch des Nutzers)
-    { const sym = sel && (feldArt === 'cut' ? UPI.s_drahtschere : feldArt === 'zweit' ? UPI.s_garbe : TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')]);
+    { const sym = sel && (feldArt === 'cut' ? UPI.s_drahtschere : feldArt === 'zweit' ? UPI.s_garbe : feldArt === 'faust' ? UPI.s_granate_artillerie : TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')]);
       const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]);
       for (const k of abilSet) hexMark(Math.floor(k / 100), k % 100, { rgb: BRASS, fill: k === hk ? 0.3 : 0.2, sym: abilSet.size <= 24 || k === hk ? sym : null, inHex: true }); }   // gültige Felder: Fläche und Symbol in jedem Feld, das Symbol liegt über Gräben und Figuren (Spieltest Runde 2, Punkt 21)
     for (const k of shellHexes) {
@@ -8364,6 +8397,7 @@ async function playEvent0(e) {
     case 'flee': await animPath(e.u, e.path, 120); break;
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
+      if (e.faust) { const fa = DU.get(e.a); if (fa && e.face != null) fa.face = e.face; break; }   // Faustsalve: Bild kam schon mit dem Ereignis 'faust'
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
@@ -8550,6 +8584,18 @@ async function playEvent0(e) {
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u); if (ru) loewenGebruell(ru, e.d); await wait(700); break; }
+    case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
+      const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]);
+      if (camOn() || OPT.cam) { await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
+      floater(a.x, a.y - L.s * 1.3, 'Faustsalve!', '#ffb04a', true); await wait(180);
+      const mx = zs.reduce((n, z) => n + z[1], 0) / Math.max(1, zs.length); a.face = mx >= a.x ? 0 : 3;
+      zs.forEach(([id, x2, y2], i) => { const p = fxFaust(e.u, i) || [a.x, a.y - L.s * 0.5]; fxZielFuss = (DU.get(id) ? [DU.get(id).x, DU.get(id).y] : null);
+        setTimeout(() => playSound('panzerkanone', 0.6, 'D', { noGap: true, rate: 0.96 + i * 0.06 }), i * 60 / speed);
+        fxFlash(3, p, x2, y2, { life: 9, mul: 1.05, delay: i * 3 }); tracers.push({ x1: p[0], y1: p[1], x2, y2, life: 15, max: 15, n: 1, stream: false, col: '#ff9a3a', img: 'shard', sz: 0.36 }); });
+      if (camOn() || OPT.cam) { const cx = (a.x + mx) / 2, cy = (a.y + zs.reduce((n, z) => n + z[2], 0) / Math.max(1, zs.length)) / 2; camTo(cx, cy, 420, true); }
+      await wait(15 * 16.667 * 0.9);
+      for (const [, x2, y2] of zs) boom(x2, y2 + L.s * 0.4, L.s * 0.6, 'he'); playSound('boom', 0.5);
+      await wait(260); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); kz(e.u, 'blitze', 'puls'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); kz(e.u, 'schweiss', 'puls'); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
@@ -8739,7 +8785,7 @@ const CURSOR = {
   leucht: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M16 30 L16 15' stroke='#120D0B' stroke-width='4'/><path d='M16 30 L16 15' stroke='#C2A461' stroke-width='2'/><circle cx='16' cy='10' r='6.5' fill='#FFE08A'/><circle cx='16' cy='10' r='3' fill='#FFF7D6' stroke='none'/></g><g stroke='#FFD24A' stroke-width='1.6' stroke-linecap='round'><path d='M6 10 L3 10 M26 10 L29 10 M8.5 3.5 L6.5 1.5 M23.5 3.5 L25.5 1.5'/></g>", 16, 30, 'crosshair'),
   feld: CUR("<g fill='none' stroke-linejoin='round'><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#120D0B' stroke-width='5'/><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#E2B04A' stroke-width='2.4'/></g><circle cx='16' cy='16' r='3.2' fill='#E2B04A' stroke='#120D0B' stroke-width='1.5'/>", 16, 16, 'pointer'),
 };
-const abilCursor = () => { if (feldArt === 'zweit') return CURSOR.ziel; if (feldArt === 'cut') return CURSOR.feld; const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' || a === 'charge' ? CURSOR.ziel : CURSOR.feld; };
+const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return CURSOR.feld; const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' || a === 'charge' ? CURSOR.ziel : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
   const u = p.uFig || p.uHex;
@@ -8813,6 +8859,10 @@ cv.addEventListener('click', ev => {
   if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
   if (sel) {
     // Mit gewählter Einheit zählt zuerst das Feld: Ziel, Zugfeld oder Beschussfeld, egal welche Figur davorsteht
+    if (abilMode && feldArt === 'faust' && h && abilSet.has(E.key(h[0], h[1]))) {   // Faustsalve: erst ein Ziel, dann ein zweites anderes
+      const d = G.units.find(x => x.c === h[0] && x.r === h[1] && E.alive(x) && x.side !== sel.side); if (!d) return;
+      if (faustErst == null) { faustErst = d.id; playSound('ui', 0.3, null); computeOptions(); updateHud(); return; }
+      const d1 = unitById(faustErst); abilMode = false; feldArt = 'abil'; faustErst = null; return act(m => E.faust(G, m, d1, d)); }
     if (abilMode && h && abilSet.has(E.key(h[0], h[1]))) { abilMode = false; const art = feldArt; feldArt = 'abil';
       if (art === 'cut') return act(m => E.cutWire(G, m, h[0], h[1]));
       if (art === 'zweit') { const d = G.units.find(x => x.c === h[0] && x.r === h[1] && E.alive(x) && x.side !== sel.side); return d ? act(m => E.zweitFire(G, m, d)) : undefined; }
@@ -8907,7 +8957,8 @@ function computeOptions() {
   if (wayPt && !E.reachable(G, sel).has(E.key(wayPt[0], wayPt[1])) && !E.reachable(G, sel, { march: true }).has(E.key(wayPt[0], wayPt[1]))) wayPt = null;
   reach = E.reachable(G, sel, wayPt ? { via: wayPt } : undefined);
   for (const [k, n] of E.reachable(G, sel, { march: true, via: wayPt || undefined })) if (!reach.has(k)) reach.set(k, n);   // Marsch: gelbe Felder
-  abilSet = new Set(); if (abilMode) for (const [c, r] of feldArt === 'cut' ? E.cutTargets(G, sel) : feldArt === 'zweit' ? E.zweitTargets(G, sel).map(d => [d.c, d.r]) : E.abilTargets(G, sel)) abilSet.add(E.key(c, r));
+  abilSet = new Set(); if (abilMode) for (const [c, r] of feldArt === 'cut' ? E.cutTargets(G, sel) : feldArt === 'zweit' ? E.zweitTargets(G, sel).map(d => [d.c, d.r]) : feldArt === 'faust' ? E.faustTargets(G, sel).filter(d => d.id !== faustErst).map(d => [d.c, d.r]) : E.abilTargets(G, sel)) abilSet.add(E.key(c, r));
+  if (faustErst != null) { const f = unitById(faustErst); if (f) abilSet.delete(E.key(f.c, f.r)); }
   recSet = new Set(); if (TYPES[sel.type].recover) for (const o of G.units) if (E.canRecover(G, sel, o)) recSet.add(o.id);
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
@@ -8941,7 +8992,7 @@ async function act(fn) {
   if (busy || !sel || !G || G.over) return;   // nur mit gewählter Einheit und nie während einer laufenden Handlung (sonst zwei Handlungen gleichzeitig)
   busy = true; const u = sel;
   try {
-    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
+    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
     await play(fn(u) || []);
   } catch (err) { console.error('Handlung:', err); }
   finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
@@ -9348,6 +9399,12 @@ function unitButtons(T, hints) {
       why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
     if (abilMode && feldArt === 'zweit') hints.push('<i>Messing markiert:</i> Ziel anklicken.');
   }
+  if (T.faust) {   // Faustsalve (Eisenknecht, 2026-11-20): einmal je Schlacht, zwei Ziele nacheinander anklicken
+    const ft = E.faustTargets(G, sel);
+    btns.push({ act: 'faust', sym: 'granate_artillerie', name: 'Faustsalve', cost: 1, costTxt: 'die Aktion, einmal je Schlacht', text: `Beide Unterarm-Kanonen feuern zugleich auf zwei verschiedene Ziele, jeder Schuss ×${String(P.FAUST_MUL).replace('.', ',')}. Statt des normalen Schusses, nur einmal je Schlacht.`,
+      on: abilMode && feldArt === 'faust', off: !E.canFaust(G, sel), why: sel.faustUsed ? 'Schon abgefeuert (einmal je Schlacht).' : sel.supp > 0 ? 'Niedergehalten.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : `Braucht zwei Ziele in Reichweite und Schussfeld (jetzt ${ft.length}).` });
+    if (abilMode && feldArt === 'faust') hints.push(faustErst == null ? '<i>Messing markiert:</i> erstes Ziel anklicken.' : '<i>Messing markiert:</i> zweites Ziel anklicken.');
+  }
   if (T.wirelayer && !sel.attacked) btns.push({ act: 'lay', sym: 'drahtrolle', name: 'Draht ziehen', cost: 1, text: 'Stacheldraht auf das Feld legen, in das die Einheit blickt.', pulse: true, off: !E.canLay(G, sel), why: 'Zu einem freien Feld drehen (Drehen-Knöpfe).' });
   const atkWhy = sel.supp > 0 ? 'Niedergehalten: kann nicht schießen oder stürmen.' : sel.attacked ? 'Hat diese Runde schon angegriffen.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : 'Kein Ziel in Reichweite.';
   if (T.rng > 0) {
@@ -9505,6 +9562,7 @@ async function panelAct(a) {
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
+  if (a === 'faust') { faustErst = null; if (abilMode && feldArt === 'faust') { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = 'faust'; } previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'cut' || a === 'zweit') { const t = a === 'cut' ? E.cutTargets(G, sel) : E.zweitTargets(G, sel);
     if (a === 'cut' && t.length === 1) return act(u => E.cutWire(G, u, t[0][0], t[0][1]));   // nur ein Drahtfeld: gleich schneiden
     if (abilMode && feldArt === a) { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = a; }
@@ -9965,6 +10023,7 @@ function noteEvent(e, u) {
     case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
+    case 'faust': logAdd(`${N(u)}: Faustsalve auf ${(e.d || []).map(id => N(unitById(id))).join(' und ')}`, u && u.side, ...at(u), true); return headline('Faustsalve!', u && u.side);
     case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length} Gegner verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);
     case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);
     case 'rout': logAdd(`${N(u)} flieht`, u.side, ...at(u), true); return headline(`${N(u)} flieht!`, u.side);

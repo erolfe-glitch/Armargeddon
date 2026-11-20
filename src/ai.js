@@ -629,6 +629,11 @@ function exec(G, uid, s) {
   if (s.k === 'shell') return E.shell(G, u, s.c, s.r, s.mode);
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
+  if (s.k === 'fire' && TYPES[u.type].faust && E.canFaust(G, u, d)) {   // Faustsalve (2026-11-20): statt des Schusses, wenn ein zweites Ziel lohnt
+    const wert = x => { const p = E.preview(G, u, x, 'fire'), dm = p.dmg * E.P.FAUST_MUL; return Math.min(dm, x.str) + (dm >= x.str - 0.3 ? 3 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (E.hex(G, x.c, x.r).obj ? 0.8 : 0); };
+    const zw = E.faustTargets(G, u).filter(x => x !== d).sort((a, b) => wert(b) - wert(a))[0];
+    if (zw) { const v = wert(d) + wert(zw); if (v >= 4 || wert(d) >= 3 || wert(zw) >= 3 || G.turn >= 10) return E.faust(G, u, d, zw); }
+  }
   if (s.k === 'fire') {   // Fahrzeug/Schreiter: Ziel außerhalb des Schussfelds – erst drehen (kostet 1 Punkt), dann schießen
     if (!E.canFire(G, u, d) && E.cls(u) === 'walker' && !u.attacked && u.ap >= 1 && (u.bp || 0) >= E.drehKosten(u, E.faceToward(u.face, u.c, u.r, d.c, d.r))) { const ev = E.turnUnit(G, u, E.faceToward(u.face, u.c, u.r, d.c, d.r)); if (E.canFire(G, u, d)) return ev.concat(E.fire(G, u, d)); return ev; }
     return E.canFire(G, u, d) ? E.fire(G, u, d) : []; }

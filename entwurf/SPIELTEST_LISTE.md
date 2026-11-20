@@ -134,3 +134,5 @@ Alles hier wurde nur im unsichtbaren, stummen Test-Chrome geprüft. Bitte selbst
 65. Schräge Kirchen- und Gartenwände: als Fläche erkennbar?
 66. Breiten 1280 und 2560 px kurz ansehen.
 67. Kreuzschreiter (nur mit Kampfmaschinen-Schalter): Löwengebrüll jetzt mit Wirkung (einmal je Schlacht, Umkreis 2, Gegner verängstigt und niedergehalten). Zu stark? Fühlt sich Bewegung 3 für den schwersten Schreiter richtig an?
+68. Eisenknecht (Kampfmaschinen an): Faustsalve – zwei Ziele nacheinander anklicken. Verständlich? Kamerafahrt und Mündungsfeuer an beiden Fäusten gut sichtbar?
+69. Armee-Auswahl und Nachschub: Reiter „Alle“ als Start – lieber so oder mit „Standard“ beginnen?

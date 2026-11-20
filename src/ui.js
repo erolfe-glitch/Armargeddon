@@ -26,7 +26,7 @@ const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, 
 const speedTxt = () => tempo >= INSTANT ? 'Tempo sofort' : 'Tempo ' + tempo + '×';
 let wayPt = null;   // Wegpunkt (Paket 3): Umschalt+Klick bzw. langes Drücken auf ein Zugfeld, danach das Ziel
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
-let recSet = new Set(), abilSet = new Set(), abilMode = false, feldArt = 'abil';   // feldArt: 'abil' | 'cut' | 'zweit' (Paket 8)
+let recSet = new Set(), abilSet = new Set(), abilMode = false, feldArt = 'abil', faustErst = null;   // faustErst: erstes Ziel der Faustsalve (2026-11-20)   // feldArt: 'abil' | 'cut' | 'zweit' (Paket 8)
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
@@ -161,6 +161,12 @@ function fxMuzzle(id, q = 0, hf = 0.3) {
 function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-lim, Math.min(lim, Math.atan2(y2 - y1, Math.abs(x2 - x1) || 1e-6))); return { flip: fl, ang: fl ? -a0 : a0 }; }
 // Mündungsfeuer (≈ 0,1 s): v 0 Gewehr, 1 MG, 2 Pistole, 3 Kanone, 4 Mörser (nach oben), 5 lang und dünn (Scharfschütze, Panzerbüchse)
 // Zweitwaffe (Paket 8): Mündung am Seitenerker (Landkoloss, zur Zielseite hin) bzw. vorn am Turm (Turmschreiter)
+// Faustsalve: Mündung an der linken (n 0) bzw. rechten Faust (n 1) des Eisenknechts
+function fxFaust(id, n) {
+  const d = DU.get(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
+  let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
+  const p = [d.x + x0 + w * (n ? 0.66 : 0.34), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
+}
 function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
@@ -1006,7 +1012,7 @@ function drawGround(g, s) {
       g.strokeStyle = 'rgba(18,13,11,0.7)'; g.lineWidth = Math.max(3, s * 0.065); edges();
       g.strokeStyle = RANGE_COL; g.lineWidth = Math.max(1.6, s * 0.028); g.setLineDash([s * 0.12, s * 0.08]); edges(); g.restore(); }
     // Hilfsmarkierungen nach STYLE.md: gedämpfte Palettentöne, unterscheidbar über Muster und Symbol (Wunsch des Nutzers)
-    { const sym = sel && (feldArt === 'cut' ? UPI.s_drahtschere : feldArt === 'zweit' ? UPI.s_garbe : TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')]);
+    { const sym = sel && (feldArt === 'cut' ? UPI.s_drahtschere : feldArt === 'zweit' ? UPI.s_garbe : feldArt === 'faust' ? UPI.s_granate_artillerie : TYPES[sel.type].abil && UPI['s_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz')]);
       const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]);
       for (const k of abilSet) hexMark(Math.floor(k / 100), k % 100, { rgb: BRASS, fill: k === hk ? 0.3 : 0.2, sym: abilSet.size <= 24 || k === hk ? sym : null, inHex: true }); }   // gültige Felder: Fläche und Symbol in jedem Feld, das Symbol liegt über Gräben und Figuren (Spieltest Runde 2, Punkt 21)
     for (const k of shellHexes) {
@@ -2261,6 +2267,7 @@ async function playEvent0(e) {
     case 'flee': await animPath(e.u, e.path, 120); break;
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
+      if (e.faust) { const fa = DU.get(e.a); if (fa && e.face != null) fa.face = e.face; break; }   // Faustsalve: Bild kam schon mit dem Ereignis 'faust'
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
@@ -2447,6 +2454,18 @@ async function playEvent0(e) {
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u); if (ru) loewenGebruell(ru, e.d); await wait(700); break; }
+    case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
+      const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]);
+      if (camOn() || OPT.cam) { await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
+      floater(a.x, a.y - L.s * 1.3, 'Faustsalve!', '#ffb04a', true); await wait(180);
+      const mx = zs.reduce((n, z) => n + z[1], 0) / Math.max(1, zs.length); a.face = mx >= a.x ? 0 : 3;
+      zs.forEach(([id, x2, y2], i) => { const p = fxFaust(e.u, i) || [a.x, a.y - L.s * 0.5]; fxZielFuss = (DU.get(id) ? [DU.get(id).x, DU.get(id).y] : null);
+        setTimeout(() => playSound('panzerkanone', 0.6, 'D', { noGap: true, rate: 0.96 + i * 0.06 }), i * 60 / speed);
+        fxFlash(3, p, x2, y2, { life: 9, mul: 1.05, delay: i * 3 }); tracers.push({ x1: p[0], y1: p[1], x2, y2, life: 15, max: 15, n: 1, stream: false, col: '#ff9a3a', img: 'shard', sz: 0.36 }); });
+      if (camOn() || OPT.cam) { const cx = (a.x + mx) / 2, cy = (a.y + zs.reduce((n, z) => n + z[2], 0) / Math.max(1, zs.length)) / 2; camTo(cx, cy, 420, true); }
+      await wait(15 * 16.667 * 0.9);
+      for (const [, x2, y2] of zs) boom(x2, y2 + L.s * 0.4, L.s * 0.6, 'he'); playSound('boom', 0.5);
+      await wait(260); break; }
     case 'supp': DU.get(e.u).vs.supp = 1; playSound('vorbei', 0.4); kz(e.u, 'blitze', 'puls'); await wait(170); break;
     case 'rout': DU.get(e.u).vs.rout = true; playSound('panic', 0.4, null, { u }); if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); kz(e.u, 'schweiss', 'puls'); toast(`${nm(u)} flieht.`); await wait(360); break;
     case 'destroyed': {
@@ -2636,7 +2655,7 @@ const CURSOR = {
   leucht: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M16 30 L16 15' stroke='#120D0B' stroke-width='4'/><path d='M16 30 L16 15' stroke='#C2A461' stroke-width='2'/><circle cx='16' cy='10' r='6.5' fill='#FFE08A'/><circle cx='16' cy='10' r='3' fill='#FFF7D6' stroke='none'/></g><g stroke='#FFD24A' stroke-width='1.6' stroke-linecap='round'><path d='M6 10 L3 10 M26 10 L29 10 M8.5 3.5 L6.5 1.5 M23.5 3.5 L25.5 1.5'/></g>", 16, 30, 'crosshair'),
   feld: CUR("<g fill='none' stroke-linejoin='round'><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#120D0B' stroke-width='5'/><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#E2B04A' stroke-width='2.4'/></g><circle cx='16' cy='16' r='3.2' fill='#E2B04A' stroke='#120D0B' stroke-width='1.5'/>", 16, 16, 'pointer'),
 };
-const abilCursor = () => { if (feldArt === 'zweit') return CURSOR.ziel; if (feldArt === 'cut') return CURSOR.feld; const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' || a === 'charge' ? CURSOR.ziel : CURSOR.feld; };
+const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return CURSOR.feld; const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' || a === 'charge' ? CURSOR.ziel : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
   const u = p.uFig || p.uHex;
@@ -2710,6 +2729,10 @@ cv.addEventListener('click', ev => {
   if (placing) { if (h && spawnSet.has(E.key(h[0], h[1]))) return doBuy(h[0], h[1]); return; }
   if (sel) {
     // Mit gewählter Einheit zählt zuerst das Feld: Ziel, Zugfeld oder Beschussfeld, egal welche Figur davorsteht
+    if (abilMode && feldArt === 'faust' && h && abilSet.has(E.key(h[0], h[1]))) {   // Faustsalve: erst ein Ziel, dann ein zweites anderes
+      const d = G.units.find(x => x.c === h[0] && x.r === h[1] && E.alive(x) && x.side !== sel.side); if (!d) return;
+      if (faustErst == null) { faustErst = d.id; playSound('ui', 0.3, null); computeOptions(); updateHud(); return; }
+      const d1 = unitById(faustErst); abilMode = false; feldArt = 'abil'; faustErst = null; return act(m => E.faust(G, m, d1, d)); }
     if (abilMode && h && abilSet.has(E.key(h[0], h[1]))) { abilMode = false; const art = feldArt; feldArt = 'abil';
       if (art === 'cut') return act(m => E.cutWire(G, m, h[0], h[1]));
       if (art === 'zweit') { const d = G.units.find(x => x.c === h[0] && x.r === h[1] && E.alive(x) && x.side !== sel.side); return d ? act(m => E.zweitFire(G, m, d)) : undefined; }
@@ -2804,7 +2827,8 @@ function computeOptions() {
   if (wayPt && !E.reachable(G, sel).has(E.key(wayPt[0], wayPt[1])) && !E.reachable(G, sel, { march: true }).has(E.key(wayPt[0], wayPt[1]))) wayPt = null;
   reach = E.reachable(G, sel, wayPt ? { via: wayPt } : undefined);
   for (const [k, n] of E.reachable(G, sel, { march: true, via: wayPt || undefined })) if (!reach.has(k)) reach.set(k, n);   // Marsch: gelbe Felder
-  abilSet = new Set(); if (abilMode) for (const [c, r] of feldArt === 'cut' ? E.cutTargets(G, sel) : feldArt === 'zweit' ? E.zweitTargets(G, sel).map(d => [d.c, d.r]) : E.abilTargets(G, sel)) abilSet.add(E.key(c, r));
+  abilSet = new Set(); if (abilMode) for (const [c, r] of feldArt === 'cut' ? E.cutTargets(G, sel) : feldArt === 'zweit' ? E.zweitTargets(G, sel).map(d => [d.c, d.r]) : feldArt === 'faust' ? E.faustTargets(G, sel).filter(d => d.id !== faustErst).map(d => [d.c, d.r]) : E.abilTargets(G, sel)) abilSet.add(E.key(c, r));
+  if (faustErst != null) { const f = unitById(faustErst); if (f) abilSet.delete(E.key(f.c, f.r)); }
   recSet = new Set(); if (TYPES[sel.type].recover) for (const o of G.units) if (E.canRecover(G, sel, o)) recSet.add(o.id);
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
@@ -2838,7 +2862,7 @@ async function act(fn) {
   if (busy || !sel || !G || G.over) return;   // nur mit gewählter Einheit und nie während einer laufenden Handlung (sonst zwei Handlungen gleichzeitig)
   busy = true; const u = sel;
   try {
-    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
+    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
     await play(fn(u) || []);
   } catch (err) { console.error('Handlung:', err); }
   finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
@@ -3245,6 +3269,12 @@ function unitButtons(T, hints) {
       why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
     if (abilMode && feldArt === 'zweit') hints.push('<i>Messing markiert:</i> Ziel anklicken.');
   }
+  if (T.faust) {   // Faustsalve (Eisenknecht, 2026-11-20): einmal je Schlacht, zwei Ziele nacheinander anklicken
+    const ft = E.faustTargets(G, sel);
+    btns.push({ act: 'faust', sym: 'granate_artillerie', name: 'Faustsalve', cost: 1, costTxt: 'die Aktion, einmal je Schlacht', text: `Beide Unterarm-Kanonen feuern zugleich auf zwei verschiedene Ziele, jeder Schuss ×${String(P.FAUST_MUL).replace('.', ',')}. Statt des normalen Schusses, nur einmal je Schlacht.`,
+      on: abilMode && feldArt === 'faust', off: !E.canFaust(G, sel), why: sel.faustUsed ? 'Schon abgefeuert (einmal je Schlacht).' : sel.supp > 0 ? 'Niedergehalten.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : `Braucht zwei Ziele in Reichweite und Schussfeld (jetzt ${ft.length}).` });
+    if (abilMode && feldArt === 'faust') hints.push(faustErst == null ? '<i>Messing markiert:</i> erstes Ziel anklicken.' : '<i>Messing markiert:</i> zweites Ziel anklicken.');
+  }
   if (T.wirelayer && !sel.attacked) btns.push({ act: 'lay', sym: 'drahtrolle', name: 'Draht ziehen', cost: 1, text: 'Stacheldraht auf das Feld legen, in das die Einheit blickt.', pulse: true, off: !E.canLay(G, sel), why: 'Zu einem freien Feld drehen (Drehen-Knöpfe).' });
   const atkWhy = sel.supp > 0 ? 'Niedergehalten: kann nicht schießen oder stürmen.' : sel.attacked ? 'Hat diese Runde schon angegriffen.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : 'Kein Ziel in Reichweite.';
   if (T.rng > 0) {
@@ -3402,6 +3432,7 @@ async function panelAct(a) {
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
+  if (a === 'faust') { faustErst = null; if (abilMode && feldArt === 'faust') { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = 'faust'; } previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'cut' || a === 'zweit') { const t = a === 'cut' ? E.cutTargets(G, sel) : E.zweitTargets(G, sel);
     if (a === 'cut' && t.length === 1) return act(u => E.cutWire(G, u, t[0][0], t[0][1]));   // nur ein Drahtfeld: gleich schneiden
     if (abilMode && feldArt === a) { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = a; }
@@ -3862,6 +3893,7 @@ function noteEvent(e, u) {
     case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
+    case 'faust': logAdd(`${N(u)}: Faustsalve auf ${(e.d || []).map(id => N(unitById(id))).join(' und ')}`, u && u.side, ...at(u), true); return headline('Faustsalve!', u && u.side);
     case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length} Gegner verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);
     case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);
     case 'rout': logAdd(`${N(u)} flieht`, u.side, ...at(u), true); return headline(`${N(u)} flieht!`, u.side);
