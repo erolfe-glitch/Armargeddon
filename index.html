@@ -7272,7 +7272,7 @@ function drawUnit(u, d) {
   const g = ctx, A0 = d.alpha * (d.vs.rout ? 0.75 : 1) * (areaNow && areaNow.ok && !areaNow.ok(u) ? 0.4 : 1);   // Wirkungsbereich: nicht Betroffene abgedunkelt
   const isSel = sel && sel.id === u.id;
   const own = human(u.side) && G.side === u.side && E.active(u);
-  const done = own && !busy && !shells.length && !tracers.length && !muzzles.length && spent.has(u.id);
+  const done = own && spent.has(u.id) && (u.id !== handelnd || (!busy && !shells.length && !tracers.length && !muzzles.length));   // F57 (2026-11-20): schon fertige Einheiten bleiben grau, während eine andere handelt; nur die handelnde wird erst nach ihren Effekten grau
   const ready = own && !busy && !G.over && !spent.has(u.id) && !placing;   // kann in dieser Runde noch handeln
   // Standplatz: dunkler Bodenschatten und dünner Ring in gedämpfter Fraktionsfarbe (keine knalligen Flächen)
   const RS = VIEW.tilt() ? 0.72 : 1, RA = VIEW.tilt() ? 0.55 : 1;   // neue Ansicht: Ringe kleiner und dezenter, Figuren stehen auf dem Boden statt auf einer Scheibe
@@ -8919,8 +8919,8 @@ async function playEvent0(e) {
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
       { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
-      if (e.reaction) { if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
-      if (camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
+      if (e.reaction) { if (!szene && camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
+      if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') { playSound('flame', 0.6);
         const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
         const dr = fxDir(p[0], p[1], x2, y2, 1.2), len = Math.hypot(x2 - p[0], y2 - p[1]) * 1.08, v = deck ? 3 : [0, 1, 2, 4, 5][Math.floor(Math.random() * 5)];
@@ -9279,6 +9279,11 @@ async function runQueue() {
     if (e.t === 'melee' && speed < INSTANT) {   // F51 (geändert 2026-11-20): beide schlagen gleichzeitig, danach ein gemeinsamer Wucht-Moment mit beiden Schadenszahlen
       const grp = []; while (queue.length && grp.length < 6) { const n = queue[0]; if ((n.t === 'hit' && (n.u === e.a || n.u === e.d)) || (n.t === 'counter' && n.a === e.d && n.d === e.a)) grp.push(queue.shift()); else break; }
       try { await nahkampfGleich(e, grp); } catch (err) { console.error(err); } continue; }
+    if (e.t === 'fire' && e.reaction && speed < INSTANT && KS !== 'aus') {   // F56 (2026-11-20): Lauerschuss wie bei XCOM – Kamera auf Schütze und Ziel, Schuss, Treffer, kurzer Halt, zurück
+      const grp = []; while (queue.length && queue[0].t === 'hit' && queue[0].u === e.d) grp.push(queue.shift());
+      const a = DU.get(e.a), d = DU.get(e.d); let st = null;
+      try { if (a && d) st = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4); await playEvent(e); for (const h of grp) await playEvent(h); if (st && !st.skip) await wait(260); } catch (err) { console.error(err); }
+      await kampfSzeneEnde(st); continue; }
     try { await playEvent(e); } catch (err) { console.error(err); } }
   syncAll(); qRunning = false; updateUI();
   if (G.over) setTimeout(showEnd, 500);
@@ -9567,9 +9572,10 @@ function computeOptions() {
     else if (f) targets.set(d.id, { id: d.id, kind: 'fire' });
   }
 }
+let handelnd = null;   // F57: Einheit der laufenden Handlung
 async function act(fn) {
   if (busy || !sel || !G || G.over) return;   // nur mit gewählter Einheit und nie während einer laufenden Handlung (sonst zwei Handlungen gleichzeitig)
-  busy = true; const u = sel;
+  busy = true; const u = sel; handelnd = u.id;
   try {
     previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
     await play(fn(u) || []);
