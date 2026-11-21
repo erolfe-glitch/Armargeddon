@@ -2252,7 +2252,7 @@ async function playEvent0(e) {
         const hiebTon = (x, T) => x && T ? (x.type === 'oger' ? 'neu3_fleisch' : T.cls === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : T.cls === 'cav' ? 'saebel' : x.side === 'D' ? 'nahD' : 'nahA') : 'nahA';
         const zug = af === 'drill' ? 0 : nkGleich ? 2 : Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;   // F63: kürzer; Bohrkoloss: ein langer Bohrstoß (unten)
         if (af === 'drill') {   // F54 (Enrico 2026-11-21): Bohrkoloss – ein einziger Stoß, der sich hineinbohrt: Vorstoß, dann ~0,9 s Rütteln, Funken bzw. Blut, Bohrton hält an
-          a.lunge = { dx: (d.x - a.x) * 0.3, dy: (d.y - a.y) * 0.3 }; playSound('smash', 0.65, au && au.side); playSound('neu_wucht', 0.45);
+          a.lunge = { dx: (d.x - a.x) * 0.3, dy: (d.y - a.y) * 0.3 }; playSound('smash', 0.65, au && au.side); playSound('neu3_fzaufprall', 0.45);
           for (let q = 0; q < 8; q++) { a.lunge = { dx: (d.x - a.x) * (0.3 + (q % 2) * 0.03) + (Math.random() - 0.5) * L.s * 0.03, dy: (d.y - a.y) * 0.3 + (Math.random() - 0.5) * L.s * 0.03 };
             if (q % 2 === 0) { shake(3); pose(e.d, 'getroffen', 200); trefferSpritzer(a.x, a.y, d, q >= 4 ? 2 : 1, istMaschine(du1)); fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 26, mul: 0.4, grow: 0.3, alpha: 0.7, fadeOut: 0.6 }); }
             await wait(110); } }
@@ -2336,6 +2336,7 @@ async function playEvent0(e) {
       if (!e.panic) {
         if (TYPES[u.type].cls === 'cav') playSound(Math.random() < 0.65 ? 'pferd_unruhe' : 'neigh', Math.random() < 0.65 ? 0.5 : 0.35); else if (u.limbered) playSound('neigh', 0.35);   // Pferde gleich laut (Spieltest Runde 2)   // Reiter beschossen: unruhige Pferde
         else if (TYPES[u.type].dauerfeuer) {}   // Hünen: nur die Maschinenstimme oben
+        else if (u.type === 'oger' && e.dmg >= 0.3 && e.dmg < 2 && !e.wire) playSound('neu3_loewe', 0.45);   // Paket G (Enrico 2026-11-21): Löwenoger leicht bis mittel getroffen = Löwe; schwere Treffer (ab 20 Stärke) wie bisher
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && (e.dmg >= 1 || (!e.wire && e.dmg >= 0.4 && lastFire && performance.now() - lastFire.t < 6000 && ['mg', 'minigun'].includes(lastFire.kind) && Math.random() < 0.55))) playSound(e.str < 3.5 && Math.random() < 0.6 ? 'medic' : 'pain', 0.45, null, { u });
         else if (['inf', 'mg', 'storm', 'medic'].includes(TYPES[u.type].cls) && e.dmg >= 0.3 && !e.wire) playSound(Math.random() < 0.6 ? 'grunzen' : 'gasmaske_2', 0.4, null, { u });   // leichte Verletzung: Grunzen bzw. Maskenlaut (Tonprobe 2026-11-18)
         burst(x, y + s * 0.3, 8, ['#5a4632', '#3d3024', '#7a6448'], { up: 0.16 });
@@ -2365,7 +2366,7 @@ async function playEvent0(e) {
       playSound('tank', 0.5); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 260); }
       a.face = d.x >= a.x ? 0 : 3; const x0 = a.x, y0 = a.y, dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 220 / speed;
       for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.32 * k * k, dy: dy * 0.32 * k * k }; }   // Anlauf: beschleunigt in den Gegner
-      playSound('neu_wucht', 0.7); playSound('ueberrollen', 0.45); shake(9); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };
+      playSound('neu3_fzaufprall', 0.7); playSound('ueberrollen', 0.45); shake(9);   // Paket G: Fahrzeug-Aufprall ohne Klingen-„Sching“ (neu_wucht hat Axt-/Schwerttöne) pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };
       fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 40, mul: 0.8, grow: 0.4, alpha: 0.85, fadeOut: 0.6 }); boom(d.x, d.y + L.s * 0.2, L.s * 0.5, 'dust');
       trefferSpritzer(x0, y0, d, 3, istMaschine(unitById(e.d))); if (e.wand) floater(...headPos(e.d), 'Eingeklemmt!', '#ffb04a', true);
       if (!(ksz && ksz.skip)) await wait(260); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
@@ -2418,7 +2419,7 @@ async function playEvent0(e) {
     case 'rally': DU.get(e.u).vs.supp = 0; DU.get(e.u).vs.rout = false; kz(e.u, 'pfeil', 'steig'); toast(`${e.by} sammelt ${TYPES[u.type].name}.`); DU.get(e.u).face = u.face; await wait(300); break;
     case 'rammen': {   // F79: Anlauf in die Mauer, Rütteln, Staub und Mauerbrocken
       const a = DU.get(e.u); if (!a) break; const [bx, by] = center(e.c, e.r); a.face = bx >= a.x ? 0 : 3; const ksz = await kampfSzene((a.x + bx) / 2, (a.y + by) / 2 - L.s * 0.4); playSound('tank', 0.5);
-      a.lunge = { dx: (bx - a.x) * 0.3, dy: (by - a.y) * 0.3 }; await wait(220); playSound('impact', 0.7); playSound('neu_wucht', 0.6); shake(9);
+      a.lunge = { dx: (bx - a.x) * 0.3, dy: (by - a.y) * 0.3 }; await wait(220); playSound('impact', 0.7); playSound('neu3_fzaufprall', 0.6); shake(9);
       for (let q = 0; q < 3; q++) fx('truemmer', q === 1 ? 0 : 1, bx + (q - 1) * s * 0.3, by + s * 0.2, { delay: q * 3, life: 50, mul: 0.7, grow: 0.4, alpha: 0.85, fadeOut: 0.6 }); boom(bx, by, s * 0.6, 'dust');
       await wait(260); a.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
     case 'cut': { if (e.u != null) { pose(e.u, 'schneiden', 1300); await wait(350); } playSound('cut', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln

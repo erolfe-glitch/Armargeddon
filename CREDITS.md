@@ -175,6 +175,11 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | neu3_gore | neu3_gore_* | Schaufel/freesound_community-spade-hacking-sound-with-gore-effects-96909.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | neu3_aufprall | neu3_aufprall_1–3 | Impacts/826230__artninja__bassy_rock_impact_sounds_09112025.wav | Freesound / Artninja | CC BY 4.0 (Remix; enthält laut Beschreibung 593315 von vitru20, CC BY-NC 3.0 – vor einem Verkauf klären) | <https://freesound.org/s/826230/> |
 | neu3_aufprall | neu3_aufprall_4 | Impacts/185244__deleted_user_3277771__big-crash.wav | Freesound / deleted_user_3277771 (Urheber laut Beschreibung Josh Mclelland) | CC BY-NC 3.0 | <https://freesound.org/s/185244/> |
+| neu3_loewe | neu3_loewe_1–3 | Monster/magiaz-lion2-327520.mp3 | Pixabay / magiaz | Pixabay Content License | – |
+| neu3_loewe2 | neu3_loewe2_1–3 | Monster/magiazzz-lion-552065.mp3 | Pixabay / magiazzz | Pixabay Content License | – |
+| neu3_fzaufprall | neu3_fzaufprall_1 | Heavy Meelee Mechs large/dragon-studio-heavy-impact-loud-515259.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| neu3_fzaufprall | neu3_fzaufprall_2 | Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3 | Pixabay / lordsonny | Pixabay Content License | – |
+| neu3_fzaufprall | neu3_fzaufprall_3 | Heavy Meelee Mechs large/dragon-studio-hard-heavy-impact-515256.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
 | ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
 **Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)

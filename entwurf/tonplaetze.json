@@ -565,6 +565,108 @@
   "note": "Paket G 4b (2026-11-21): neuer Ton aus _neu, Auswahl im Ton-Pult"
  },
  {
+  "pool": "neu3_loewe",
+  "key": "neu3_loewe_1",
+  "s": null,
+  "f": "Monster/magiaz-lion2-327520.mp3",
+  "dur": 1.25,
+  "src": 5.04,
+  "start": 0.04,
+  "gain": 7.2,
+  "kb": 15,
+  "note": "Paket G (Enrico 2026-11-21 10:26): Löwenoger getroffen, leichter bis mittlerer Treffer (Standard); schwere Treffer weiter mit pain"
+ },
+ {
+  "pool": "neu3_loewe",
+  "key": "neu3_loewe_2",
+  "s": null,
+  "f": "Monster/magiaz-lion2-327520.mp3",
+  "dur": 1.2,
+  "src": 5.04,
+  "start": 2.28,
+  "gain": 8,
+  "kb": 14
+ },
+ {
+  "pool": "neu3_loewe",
+  "key": "neu3_loewe_3",
+  "s": null,
+  "f": "Monster/magiaz-lion2-327520.mp3",
+  "dur": 0.9,
+  "src": 5.04,
+  "start": 4.14,
+  "gain": 7.8,
+  "kb": 11
+ },
+ {
+  "pool": "neu3_loewe2",
+  "key": "neu3_loewe2_1",
+  "s": null,
+  "f": "Monster/magiazzz-lion-552065.mp3",
+  "dur": 1.25,
+  "src": 5.09,
+  "start": 0.08,
+  "gain": 7.6,
+  "kb": 15,
+  "note": "Paket G (2026-11-21 10:52): zweiter Löwe, nur Auswahl im Ton-Pult"
+ },
+ {
+  "pool": "neu3_loewe2",
+  "key": "neu3_loewe2_2",
+  "s": null,
+  "f": "Monster/magiazzz-lion-552065.mp3",
+  "dur": 1.2,
+  "src": 5.09,
+  "start": 2.32,
+  "gain": 8.7,
+  "kb": 14
+ },
+ {
+  "pool": "neu3_loewe2",
+  "key": "neu3_loewe2_3",
+  "s": null,
+  "f": "Monster/magiazzz-lion-552065.mp3",
+  "dur": 0.89,
+  "src": 5.09,
+  "start": 4.2,
+  "gain": 8.2,
+  "kb": 11
+ },
+ {
+  "pool": "neu3_fzaufprall",
+  "key": "neu3_fzaufprall_1",
+  "s": null,
+  "f": "Heavy Meelee Mechs large/dragon-studio-heavy-impact-loud-515259.mp3",
+  "dur": 1.8,
+  "src": 3.24,
+  "start": 0,
+  "gain": -11,
+  "kb": 21,
+  "note": "Paket G (Enrico 2026-11-21 10:39): Fahrzeug-Aufprall ohne Klingen-Schicht (Sturmrollen, Gebäude rammen, Bohrstoß) – statt neu_wucht, das Axt-/Schwerttöne enthält"
+ },
+ {
+  "pool": "neu3_fzaufprall",
+  "key": "neu3_fzaufprall_2",
+  "s": null,
+  "f": "Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3",
+  "dur": 2.3,
+  "src": 5.12,
+  "start": 0.2,
+  "gain": -8.9,
+  "kb": 27
+ },
+ {
+  "pool": "neu3_fzaufprall",
+  "key": "neu3_fzaufprall_3",
+  "s": null,
+  "f": "Heavy Meelee Mechs large/dragon-studio-hard-heavy-impact-515256.mp3",
+  "dur": 1.4,
+  "src": 2.9,
+  "start": 0,
+  "gain": -11.9,
+  "kb": 17
+ },
+ {
   "pool": "launch",
   "key": "launch",
   "s": null,
