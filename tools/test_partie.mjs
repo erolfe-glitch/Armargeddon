@@ -44,6 +44,18 @@ await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms));
   for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); }
   await W(2500); click('schlacht beginnen'); await W(3500); })()`);
 console.log('Partie gestartet, Karte', await ev(`__dbg.E.MAP.id`), 'Seite', await ev(`__dbg.G.side`));
+// F83/F85 (2026-11-21): gezeigte Blickrichtung beim Start (Konkordat nach rechts, Aschenwacht nach links – im Graben, in Ruinen, im Freien) und Drehen über das Bedienfeld
+await sleep(1500);
+{ const r = JSON.parse(await ev(`JSON.stringify(__dbg.G.units.filter(u => __dbg.E.alive(u)).map(u => { const d = __dbg.du(u.id); return [u.id, u.type, u.side, __dbg.G.map[u.c][u.r].t, u.face, d ? d.bildLinks : null]; }))`));
+  const gez = r.filter(x => x[5] != null), falsch = gez.filter(([, , side, , , bl]) => bl !== (side === 'D'));
+  if (gez.length < r.length * 0.8) fehler.push(`F83: nur ${gez.length} von ${r.length} Einheiten gezeichnet`);
+  if (falsch.length) fehler.push(`F83: ${falsch.length} Einheiten blicken beim Start in die falsche Richtung: ` + falsch.slice(0, 6).map(x => x.slice(1, 4).join('/')).join(', '));
+  console.log(`  Startausrichtung im Bild: ${gez.length - falsch.length}/${gez.length} richtig (Felder: ${[...new Set(gez.map(x => x[3]))].join(', ')})`); }
+{ const r = JSON.parse(await ev(`(async () => { const G = __dbg.G, u = G.units.find(x => x.side === G.side && __dbg.E.alive(x) && ['kohorte', 'grenadier'].includes(x.type)); if (!u) return 'null'; __dbg.select(u.id); await new Promise(r => setTimeout(r, 300)); const vor = [u.face, __dbg.du(u.id).bildLinks];
+    for (let i = 0; i < 3; i++) { await __dbg.panelAct('tr'); await new Promise(r => setTimeout(r, 150)); } await new Promise(r => setTimeout(r, 400)); const nach = [u.face, __dbg.du(u.id).bildLinks];
+    for (let i = 0; i < 3; i++) { await __dbg.panelAct('tl'); await new Promise(r => setTimeout(r, 150)); } await new Promise(r => setTimeout(r, 400)); return JSON.stringify({ id: u.id, vor, nach, zurueck: [u.face, __dbg.du(u.id).bildLinks] }); })()`));
+  if (r) { const ok = r.nach[0] === (r.vor[0] + 3) % 6 && r.nach[1] === !r.vor[1] && r.zurueck[0] === r.vor[0] && r.zurueck[1] === r.vor[1];
+    if (!ok) fehler.push(`F85: Drehen wirkt nicht: ${JSON.stringify(r)}`); console.log(`  Drehen (3× rechts, 3× links): ${ok ? 'ok' : 'FEHLER'} ${JSON.stringify(r)}`); } }
 await karteOk('Start');
 
 // Ein eigener Zug: alle Fußtruppen nacheinander wählen (Klick, sonst Tab), über verschiedene Felder fahren, zum Feind vorrücken,

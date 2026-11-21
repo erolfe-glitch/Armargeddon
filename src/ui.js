@@ -1565,7 +1565,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const filt = [nf.kette ? (KETTE_FILTER[nf.key] || 'brightness(0.84) contrast(0.92) saturate(0.8) sepia(0.1)') : '', done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');   // Panzer: Farbstimmung der Umgebung
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
-    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore();
+    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore(); d.bildLinks = !!flip;   // F83: gezeigte Blickrichtung (Test)
     d.fbx = [[x - w / 2 - d.x, top + sink * 0.8 - d.y, w, h, flip]];
     { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip]; }   // Laufmündung (neue Ansicht)
     { const mz = MUZ2[nf.key]; d.muz2 = mz ? [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip] : null; }   // Mündung der Zweitwaffe
@@ -1593,13 +1593,14 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
         if (BW) { const gl = g.globalAlpha; g.globalAlpha = gl * 0.75; kontakt(1.1); g.globalAlpha = gl; }   // Bildwirkung: Schatten auf der Grabensohle
-        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
+        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (!!flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
       } else {
         if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
-        g.translate(fx, fy + h * 0.012 + sink); if (flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
+        g.translate(fx, fy + h * 0.012 + sink); if (!!flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip, MUZ_FIG[f.im && f.im._key] || null]);   // 6.: Mündung aus dem Bild (MUZ_FIG)
+    if (!(pa && pa.spiegel)) d.bildLinks = !!flip;   // F83: gezeigte Blickrichtung (Test; Getroffen-Spiegelung zählt nicht)
     if (FIGQ && f.abs) { const tf = g.getTransform(), al = g.globalAlpha, fl = filt; FIGQ.push({ y: y + f.oy * s, f: () => zeichne(tf, al, fl) }); }   // Graben: später nach Tiefe
     else zeichne();
     topY = Math.min(topY, fy - h);
@@ -2074,12 +2075,13 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
     if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
     const uu = unitById(id), TT = uu && TYPES[uu.type], fm = uu && FIGMAP[uu.type] && FIGMAP[uu.type][0], beine = TT && TT.cls === 'walker' && fm && SCHREITER.includes(fm), kette = TT && TT.cls === 'walker' && !beine;
-    const gross = TT && (TT.stufe3 || TT.def >= 9) ? 1.4 : 1; let schritt = 0;
+    const gross = TT && (TT.stufe3 || TT.def >= 9) ? 1.4 : 1, ritter = TT && TT.stecken; let schritt = 0;   // ritter: Kürassier stampft mit eigenem Schritt-Ton
     for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k;
       if (beine) { const ph = k * 2, n = Math.floor(ph);   // F73 (2026-11-21): zwei Schritte je Feld – heben, stampfen, leicht zur Seite neigen
         d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.05 * gross, dx: Math.sin(ph * Math.PI) * L.s * 0.012 * (n % 2 ? 1 : -1) };
         if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
-      else if (kette) d.wipp = { dy: Math.sin(k * Math.PI * 10) * L.s * 0.006, dx: 0 }; }   // Kettenfahrzeug: leichtes Rattern
+      else if (kette) d.wipp = { dy: Math.sin(k * Math.PI * 10) * L.s * 0.006, dx: 0 };
+      else if (ritter) { const ph = k * 2, n = Math.floor(ph); d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.035, dx: 0 }; if (n > schritt || (k >= 1 && schritt < 2)) { schritt = Math.max(n, schritt + (k >= 1 ? 1 : 0)); playSound('held_schritt_ritter', 0.55, null, { noGap: true }); } } }   // Kettenfahrzeug: leichtes Rattern
     d.wipp = null;
   }
   } finally { d.moving = false; d.wipp = null; }
@@ -2124,7 +2126,7 @@ async function playEvent0(e) {
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) { musikDucken(2600); playSound('schritte', 0.6); } /* F49 (2026-11-20): Marsch/Sturmlauf ohne Trommel (marschtritt enthielt ein Marschstück), beide Seiten nur Schritte */ else playSound( wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } } if (poseHat(u, 'lauf')) pose(e.u, 'lauf', e.path.length * 170 + 250); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht); Paket G: Kommentar stand vor dem Code und verschluckte lauf-Pose, animPath und break
+    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (u.type === 'kuerass') {} else if (u.type === 'faust') { playSound('schritte', 0.4); if (Math.random() < 0.5) setTimeout(() => playSound('held_dampfstoss', 0.22), 400 / speed); } else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) { musikDucken(2600); playSound('schritte', 0.6); } /* F49 (2026-11-20): Marsch/Sturmlauf ohne Trommel (marschtritt enthielt ein Marschstück), beide Seiten nur Schritte */ else playSound( wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } } if (poseHat(u, 'lauf')) pose(e.u, 'lauf', e.path.length * 170 + 250); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht); Paket G: Kommentar stand vor dem Code und verschluckte lauf-Pose, animPath und break
     case 'advance': await animPath(e.u, e.path, 200); break;
     case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'zurueck', 'steig'); break;   // F40
     case 'flee': await animPath(e.u, e.path, 120); break;
@@ -2251,6 +2253,7 @@ async function playEvent0(e) {
     }
     case 'melee': case 'counter': {
       getuemmel();   // Getümmel-Schleife, solange Nahkampf läuft (2026-11-18)
+      { const ha = unitById(e.a); if (ha && ha.type === 'faust') playSound('held_aufladen', 0.5); else if (ha && ha.type === 'kuerass') { playSound('held_saege_start', 0.55); if (e.t === 'melee') playSound('held_ritter_schrei', 0.45); } }   // Helden: Ausholen
       pose(e.a, 'kolben', 650);   // Kolbenschlag mit kurzem Vorstoß
       const a = DU.get(e.a), d = DU.get(e.d);
       const ksz = e.t === 'melee' ? await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4) : null;   // F48: Kampfszene
@@ -2266,6 +2269,8 @@ async function playEvent0(e) {
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
         const gep0 = du0 && (TYPES[du0.type].cls === 'walker' || TYPES[du0.type].suit);   // Paket G 4b (Enrico 2026-11-21): Löwenoger = Tiger-Attacke + Fleisch-Treffer, gegen Gepanzerte Biss auf Panzerung
+        if (au && au.type === 'faust') { playSound('held_faustboom', 0.65); setTimeout(() => playSound('held_dampfstoss', 0.35), 240 / speed); } else   // Helden (Enrico 2026-11-21)
+        if (au && au.type === 'kuerass') playSound('held_saege_schnitt', 0.65); else
         if (au && au.type === 'oger') { playSound('neu3_bestie', 0.5 * (e.t === 'counter' ? 0.85 : 1)); playSound(gep0 ? 'neu3_biss' : 'neu3_fleisch', 0.5); } else
         playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : base,   /* F80: normaler Hiebton statt Granate */ (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('oger_bruell', 0.45); }   // Löwenoger brüllt statt zu schreien
@@ -2335,6 +2340,7 @@ async function playEvent0(e) {
     }
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
+      if (!e.panic && e.dmg > 0 && u && TYPES[u.type].held) playSound('held_ruestung', 0.5);   // Helden getroffen
       if (!e.panic && e.dmg > 0) { const ab = poseHat(u, 'aufbaeumen') && Math.random() < 0.4; pose(e.u, ab ? 'aufbaeumen' : 'getroffen', ab ? 800 : 550); }   // kurz taumeln; Reiter: Pferd bäumt sich manchmal auf (Runde 2)
       if ((E.isMech(u.type) && TYPES[u.type].cls === 'walker') || TYPES[u.type].dauerfeuer) playSound('robot', 0.5, null, { u, v: 'mr' });   // Hünen (2026-11-20): Maschinenstimme   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
@@ -2408,18 +2414,18 @@ async function playEvent0(e) {
     case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
     case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
-      pose(e.u, 'hieb', 900); playSound('gas', 0.35); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 220); }
+      pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 220); }
       a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed;
       for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.3 * k * k, dy: dy * 0.3 * k * k }; }
-      playSound('neu3_fzaufprall', 0.7); playSound('heavy', 0.5); shake(8); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };
+      playSound('held_faustboom', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); }, 260 / speed); shake(8); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
       trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d))); fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });
       if (!(ksz && ksz.skip)) await wait(300); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
     case 'hinrichtung': {   // Held Kürassier: Ausholen über die Schulter, Hieb nach unten, kaltes Aufblitzen, Rütteln; die Vernichtung folgt als eigenes Ereignis
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
-      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); await wait(440); playSound('sword', 0.7); playSound('neu_wucht', 0.7);
+      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt', 0.75);
       shake(9); heldBlitz(e.u, 'kalt'); pose(e.d, 'getroffen', 700); trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d)));
       if (!(ksz && ksz.skip)) await wait(420); await kampfSzeneEnde(ksz); break; }
-    case 'heldfall': { const hu = unitById(e.u); playSound('horn', 0.45); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
+    case 'heldfall': { const hu = unitById(e.u); playSound('held_fall_horn', 0.6); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
     case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, 'angst', 'steig'); } await wait(120); break; }
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0);   // Runde 2: Sprung mit Krallen
@@ -3129,7 +3135,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen – oder schon bewegt, oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 30 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_KEIN = { durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen – oder schon bewegt, oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 40 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 // F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
 // Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
 const ABIL_KURZ = {
@@ -4106,7 +4112,7 @@ window.__dbg = { ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: 
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx, bildLinks: d.bildLinks }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

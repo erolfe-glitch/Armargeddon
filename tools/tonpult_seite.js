@@ -157,7 +157,7 @@ function zeile(u, s) {
 }
 // ---- „Alle Töne“ (F67, 2026-11-21): jeder Ton des Spiels wählbar, nach Gruppen geordnet, mit Suchfeld ----
 // Wird ein Ton aus einer fremden Gruppe gewählt, bekommt die Einheit beim Einbau des Exports einen eigenen Platz; andere Einheiten ändern sich nicht.
-const GR_TITEL = { gewehr: 'Gewehre und Pistolen', mg: 'MG und Autokanonen', kanone: 'Kanonen und Artillerie', flamme: 'Flammen und Feuer', einschlag: 'Einschläge', nahkampf: 'Nahkampf', ruf: 'Stimmen und Rufe',
+const GR_TITEL = { held: 'Helden', gewehr: 'Gewehre und Pistolen', mg: 'MG und Autokanonen', kanone: 'Kanonen und Artillerie', flamme: 'Flammen und Feuer', einschlag: 'Einschläge', nahkampf: 'Nahkampf', ruf: 'Stimmen und Rufe',
   fahrzeug: 'Motoren, Fahrzeuge, Schreiter', bewegung: 'Bewegung und Schritte', pferd: 'Pferde', handgriff: 'Handgriffe', signal: 'Signale und Musik' };
 let ALLE = null;
 function alleListe() {

@@ -180,9 +180,21 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | neu3_fzaufprall | neu3_fzaufprall_1 | Heavy Meelee Mechs large/dragon-studio-heavy-impact-loud-515259.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
 | neu3_fzaufprall | neu3_fzaufprall_2 | Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3 | Pixabay / lordsonny | Pixabay Content License | – |
 | neu3_fzaufprall | neu3_fzaufprall_3 | Heavy Meelee Mechs large/dragon-studio-hard-heavy-impact-515256.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| held_aufladen | held_aufladen_1 | Helden/soundreality-whoosh-vortex-243128.mp3 | Pixabay / soundreality | Pixabay Content License | – |
+| held_faustschlag, held_faustboom | _1 | Helden/audiopapkin-big-robot-footstep-006-423600.mp3 | Pixabay / audiopapkin | Pixabay Content License | – |
+| held_dampfstoss | held_dampfstoss_1 | Helden/31474__dkristian__air_blast_002.wav | Freesound / dkristian | Sampling+ 1.0 (Verwenden in eigenem Werk auch kommerziell erlaubt; Weitergabe der Rohdatei nur nicht kommerziell; Namensnennung) | <https://freesound.org/s/31474/> |
+| held_dampf | held_dampf_1 | Helden/dragon-studio-steam-hissing-386157.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| held_kolben | held_kolben_1 | Helden/725109__debsound__pneumatic-airlock-door-short-019.wav | Freesound / Debsound | CC BY-NC 4.0 | <https://freesound.org/s/725109/> |
+| held_kolben | held_kolben_2 | Helden/46487__phreaksaccount__compactor2.ogg | Freesound / PhreaKsAccount | CC BY 3.0 | <https://freesound.org/s/46487/> |
+| held_schritt_ritter | held_schritt_ritter_1–4 | Helden/844867__artninja__starwars_bad_batch_clonewars_inspired_blast_door_open_and_close_sound_02102026.wav | Freesound / Artninja | CC BY 4.0 (Remix; enthält laut Beschreibung u. a. 460590 alexbandar und 6899 hanstimm, beide CC BY-NC 4.0 – vor einem Verkauf klären) | <https://freesound.org/s/844867/> |
+| held_saege_start | held_saege_start_1 | Helden/bubba4827-chainsaw-start-218438.mp3 | Pixabay / bubba4827 | Pixabay Content License | – |
+| held_saege_schnitt | held_saege_schnitt_1–3 | Helden/freesound_community-chainsaw-92374.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| held_ruestung | held_ruestung_1 | Helden/dragon-studio-armor-impact-from-sword-393843.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
+| held_ritter_schrei | held_ritter_schrei_1 | Helden/phatphrogstudio-rpg-m-knight-voice-attack-grunt-490291.mp3 | Pixabay / phatphrogstudio | Pixabay Content License | – |
+| held_fall_horn | held_fall_horn_1 | Helden/392618__poligonstudio__movie-horn.wav | Freesound / Poligonstudio | CC0 | <https://freesound.org/s/392618/> |
 | ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
-**Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)
+**Nicht kommerziell (CC BY-NC):** held_kolben_1 (Pneumatic Airlock), held_schritt_ritter_1–4 (vermutlich, Remix mit NC-Teilen), held_dampfstoss_1 (Sampling+: Rohdatei nicht kommerziell weitergeben), barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)
 
 **Quelle unbekannt (vom Nutzer geliefert, bitte klären):** boom2_1 (Crash vehicle damage/Canon explode.wav); blast_1 (Explosion/Explosionssound.mp3); erobert_2 (Eroberungspunkte/Win Point 2.wav); verloren_1 (Eroberungspunkte/Lost Point.wav); gallop2_1 (Animals/Pferdegalopp.mp3)
 
