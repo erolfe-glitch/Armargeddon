@@ -133,8 +133,8 @@ function slotsVon(t) {
   if (T.broadside) S('schuss', 'breit', 'Breitseite (zweiter Schuss)', kanone(t, T), 0.6, { gruppe: 'kanone', hin: 'Zwei Schüsse auf zwei Ziele, je derselbe Ton.' });
   // Nahkampf (melee/counter: strikeSnd)
   { const tank = k === 'walker' && !T.mech, base = sd === 'D' ? 'nahD' : 'nahA';
-    const p = T.mech ? 'heavy' : tank ? 'armor' : T.suit ? 'sword' : k === 'cav' ? 'saebel' : fig === 'raider' || fig === 'brawler' ? 'axe' : k === 'storm' ? 'grenade' : base;
-    S('nah', 'schlag', k === 'storm' ? 'Angriff: Handgranate' : 'Schlag', p, T.mech || tank ? 0.7 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' + (k === 'storm' ? ' Beim Gegenschlag: ' + NAME[base] + '.' : '') });
+    const p = T.mech ? 'heavy' : tank ? 'armor' : T.suit ? 'sword' : k === 'cav' ? 'saebel' : fig === 'raider' || fig === 'brawler' ? 'axe' : base;   // F80: Sturmtrupps schlagen normal zu
+    if (!T.keinNah) S('nah', 'schlag', T.cls === 'walker' && fig === 'drill' ? 'Bohrstoß (ein langer Stoß)' : 'Schlag', p, T.mech || tank ? 0.7 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' });
     if (k === 'inf' && !T.suit && !T.cmd) S('nah', 'spaten', 'Spatenhiebe im Grabenkampf', 'schaufel', 0.4, { gruppe: 'handgriff', hin: 'In 60 % der Schläge (F32).' });
     if (['raeumer', 'sturm'].includes(t)) S('nah', 'flinte', 'Kurzer Schuss im Grabenkampf', 'flinte', 0.5, { gruppe: 'gewehr' });
     if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'oger_bruell', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
@@ -161,6 +161,13 @@ function slotsVon(t) {
   // Fähigkeiten und Handgriffe
   const A = T.abil;
   if (A === 'sprung') { S('abil', 'sprung', 'Sprungangriff: Brüllen', 'loewe', 0.55, { gruppe: 'ruf' }); S('abil', 'landung', 'Sprungangriff: Landung', 'steps', 0.4, { gruppe: 'bewegung' }); }
+  // Prüfliste 2.17 (2026-11-21): neue Abläufe – Enrico wählt die Töne selbst
+  if (A === 'rollen') { S('abil', 'rollen_anlauf', 'Sturmrollen: Anlauf (Kettenrollen)', 'tank', 0.5, { gruppe: 'fahrzeug' }); S('abil', 'rollen_aufprall', 'Sturmrollen: Aufprall', 'neu_wucht', 0.7, { gruppe: 'nahkampf' }); S('abil', 'rollen_krach', 'Sturmrollen: Krachen beim Aufprall', 'ueberrollen', 0.45, { gruppe: 'fahrzeug' }); }
+  if (k === 'walker') { S('abil', 'rammen', 'Gebäude rammen: Aufprall', 'impact', 0.7, { gruppe: 'einschlag' }); S('abil', 'rammen_wucht', 'Gebäude rammen: Wucht', 'neu_wucht', 0.6, { gruppe: 'nahkampf' }); S('abil', 'einsturz', 'Gebäude stürzt ein', 'einsturz', 0.8, { gruppe: 'einschlag' }); }
+  if (A === 'pzgranate') { S('abil', 'pzg_wurf', 'Panzergranate: Explosion', 'boom', 0.6, { gruppe: 'einschlag' }); S('abil', 'pzg_metall', 'Panzergranate: Treffer am Panzer', 'einschlag_panzer', 0.55, { gruppe: 'einschlag' }); }
+  if (fig === 'drill') S('abil', 'bohr_wucht', 'Bohrstoß: Wucht', 'neu_wucht', 0.45, { gruppe: 'nahkampf', hin: 'Zusammen mit dem Bohrton (Nahkampf-Zeile), Bohrkopf dreht etwa 0,9 s.' });
+  if (T.fessel) { S('abil', 'winde', 'Ballon einholen/aufsteigen: Winde', 'drahtwackeln', 0.45, { gruppe: 'handgriff' }); S('abil', 'ratsche', 'Ballon: Ratsche', 'mgladen', 0.35, { gruppe: 'handgriff' }); }
+  if (T.flame || (T.zweit && T.zweit.flamme)) S('abil', 'nachbrennen', 'Flammenstoß: Nachbrennen (nach der Schleife)', 'feuer', 0.3, { gruppe: 'flamme', hin: 'Der Strahl selbst ist die Zeile „Flammenstrahl“; er läuft als Schleife genau so lange wie der Strahl (1,5 s, Bohrkoloss 1,1 s).' });
   if (T.dig) S('abil', 'atmen', 'Eingraben: Graben mit schwerem Atmen', 'atmen', 0.42, { gruppe: 'ruf', hin: 'Nur noch 72199 (F32).' });
   if (T.shieldWall) S('abil', 'schilde', 'Schilde vor', 'armor', 0.5, { gruppe: 'handgriff' });
   if (A === 'rush') S('abil', 'rush', 'Sturmlauf: Ruf', sd === 'D' ? 'roar' : 'forward', 0.7, { gruppe: 'ruf' });
