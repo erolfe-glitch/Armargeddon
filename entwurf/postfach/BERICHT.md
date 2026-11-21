@@ -1,5 +1,71 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Helden: Die Rote Faust und Der Eiserne Kürassier (`c932f69`)
+
+Beide sind im Spiel: kaufbar im Startmenü und im Nachschub, die KI kauft je einen. Sie spielen die Kampfszene, haben Posen, ein eigenes Porträt, eine Aura und Effekte beim Spezialschlag.
+
+### Vorschlag Werte (Enrico entscheidet)
+
+| | Rote Faust (Konkordat) | Eiserner Kürassier (Aschenwacht) |
+|---|---|---|
+| Preis | **110** (rechnerisch 125, Abgleich −15) | **110** (rechnerisch 135, Abgleich −25) |
+| Angriff / Abwehr / Moral | 9 / 6 / 10 | 10 / 8 / 10 |
+| Bewegung | 3 | **2** (langsam) |
+| Fernkampf | Revolver, 1 Feld, schwach | keiner |
+| F66-Dreieck | leicht gepanzert; Nahkampf „schwer“ (wie Löwenoger) | leicht gepanzert; Nahkampf „schwer“ |
+| Medaillen | Fern Silber, Nah Gold | Nah Gold |
+| Spezialschlag | **Durchbruch:** bis 2 Felder geradeaus in eine Einheit (keine Panzer oder Schreiter), 26 Schaden, Moral −15, niedergehalten, ein Feld zurückgeschleudert (an einer Wand ×1,5). Aktion und alle BP, nur aus dem Stand, **2 Runden Pause** | **Hinrichtung:** eine angeschlagene Einheit daneben (**unter 30 Stärke**, keine Panzer oder Schreiter) fällt sofort. Aktion, **3 Runden Pause** |
+| Aura | **Standhaft:** eigene Einheiten neben ihm verlieren unter Beschuss nur halb so viel Moral | **Furcht:** Gegner neben ihm verlieren zu Beginn ihrer Runde 4 Moral |
+| Schwäche | kaum Fernkampf | langsam, kein Fernkampf, bleibt in Schlamm, Sumpf und Gräben zu 30 % stecken (eine Runde fest) |
+
+- **Fällt ein Held:** Seine ganze Seite verliert 10 Moral. Es erscheint ein Schild „… ist gefallen“, dazu Horn.
+- **Grenze:** Höchstens ein Held je Armee und Schlacht; auch nach seinem Fall kann man keinen zweiten kaufen.
+
+### Simulation (je 200 Schlachten, Konkordat-Siegquote)
+
+| Karte | Startwert | mit Helden | ohne Helden |
+|---|---|---|---|
+| Grauwall | 1 | 53 % | 48 % |
+| Grauwall | 2 | 50 % | 54 % |
+| Sankt Ruß | 1 | 53 % | 54 % |
+| Sankt Ruß | 2 | 50 % | 53 % |
+
+- **Mittel:** Grauwall 51,5 % mit zu 51 % ohne, Sankt Ruß 51,5 % zu 53,5 %. Die Helden machen also keinen großen Unterschied für eine Seite.
+- **Nutzung je Schlacht:**
+
+| | Grauwall | Sankt Ruß |
+|---|---|---|
+| Rote Faust gekauft | 0,91 | 0,93 |
+| Durchbruch | 0,46 | 0,83 |
+| Rote Faust verloren | 2 % | 6 % |
+| Kürassier gekauft | 0,24 | 0,82 |
+| Hinrichtung | 0,01 | 0,07 |
+| Kürassier verloren | 1 % | 5 % |
+
+  Die Aschenwacht kauft auf dem Grauwall wenig nach. Hinrichtung braucht einen angeschlagenen Gegner direkt daneben und kommt deshalb selten vor.
+- **Messfehler unterwegs, behoben:** Mein erster Abschalter hieß `NOHELD`. Den Namen gab es schon für „gebunden im Nahkampf“; er schaltete also eine andere Regel ab. Er heißt jetzt `OHNEHELD`, die Zahlen oben sind damit gemessen.
+
+### Bilder und Effekte
+- **Bilder:**
+  - **Rote Faust:** nur die linke Figur als Grundbild; Schnipsel und Fleck sind weg. Die Getroffen-Pose ist gespiegelt.
+  - **Kürassier:** Das verblassende zweite Schwert ist weg. Am Schwertschein bleiben keine rosa Säume.
+  - **Größe:** 1,5 Soldatenhöhen. Weil die Bögen verschieden aufgelöst sind, habe ich den Maßstab angeglichen: über die stehende Pose bzw. den Grundbogen gleicher Auflösung.
+- **Posen:**
+  - Rote Faust: Faustschlag mit Ausholen (Faust vor der Brust), Revolverschuss (Mündung gemessen), Getroffen.
+  - Kürassier: Schwert über der Schulter beim Ziehen, Querhieb oder Hieb über die Schulter (mit Ausholen), Getroffen kniend.
+  - Hinrichtung: Ausholen, dann Schlag nach unten.
+- **Aura** (dezent, Bildwirkung „leicht“ schwächer, „aus“ keine):
+  - Rote Faust: dunkelrote Glut am Boden, aufsteigende Funken; beim Durchbruch flammt sie auf.
+  - Kürassier: kalter, bleicher Bodennebel und fallende Ascheflocken; Gegner neben ihm bekommen einen dünnen kalten Schimmer. Bei der Hinrichtung blitzt es kalt auf, dazu Rütteln. Im ersten Versuch war das zu grell; jetzt ist es gedämpft.
+- **Geprüft** im Headless-Chrome mit echten Regeln: Durchbruch mit Rückstoß und Hinrichtung mit Vernichtung. Regeltest und Partietest laufen ohne Fehler.
+
+### Töne (vorläufig aus dem Bestand) – bitte suchen
+- **Rote Faust:** Durchbruch = schwerer Aufprall + Metallschlag + Gas-Zischen als Dampf-Ersatz.
+  - **Gesucht:** ein kurzes **Dampfventil-Zischen** („steam release“, „pneumatic hiss“) und ein **schwerer Kolbenstoß** („hydraulic punch“, „piston slam“).
+- **Kürassier:** Hinrichtung = Schwert + schwerer Axttreffer auf Metall.
+  - **Gesucht:** eine **Kettensäge mit kurzem Anlauf und Schnitt** („chainsaw rev“, „chainsaw cut“), möglichst ohne Motorgeräusch-Teppich, und ein **tiefes Kettenklingen-Surren** für den Hieb.
+- Die Plätze stehen schon im Ton-Pult (Zeilen „Durchbruch …“ und „Hinrichtung …“) und lassen sich dort umstellen.
+
 ## 2026-11-21 – R9 Panzerbüchse, Bannerträger-Pistole, schweres Blut (`2d86333`)
 
 - **Panzerbüchse:** Das Spielbild ist ein Zwei-Mann-Trupp, die Posen zeigen einzelne Männer. Deshalb wird der jeweils andere Mann aus dem Grundbild danebengesetzt.
