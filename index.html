@@ -1067,6 +1067,21 @@ body.neu #hud .up-unit > .up-med { grid-column: 1; grid-row: 2; flex-wrap: wrap;
 body.neu #hud .up-unit > .up-stats { grid-column: 2; grid-row: 1 / span 2; }
 body.neu #hud .up-med .med { width: 35px; height: 35px; } body.neu #hud .up-med .med img { width: 22px; height: 22px; }
 .det-med { margin: 8px 0; } .det-med .dm { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+
+/* F86 (2026-11-21): Auftritt der Heldenfähigkeiten – große Titelschrift mit Tintenkontur, schräg, knallt herein, auf gerissenem dunklem Streifen; Farbe je Held */
+#heldTitel { position: fixed; left: 50%; top: 31%; z-index: 8; pointer-events: none; display: grid; justify-items: center; padding: 16px 84px 22px; opacity: 0; transform: translate(-50%, -50%) rotate(-4deg); }
+#heldTitel::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(14,9,6,.55), rgba(16,10,7,.93) 22%, rgba(16,10,7,.93) 78%, rgba(14,9,6,.55));
+  clip-path: polygon(0 20%, 5% 9%, 12% 16%, 20% 5%, 31% 13%, 42% 3%, 54% 11%, 65% 4%, 76% 12%, 87% 3%, 95% 11%, 100% 7%, 97% 50%, 100% 92%, 91% 98%, 80% 88%, 68% 97%, 57% 89%, 45% 98%, 33% 90%, 22% 97%, 12% 88%, 3% 95%, 2% 55%); }
+#heldTitel::after { content: ""; position: absolute; left: 6%; right: 6%; top: 50%; height: 56%; transform: translateY(-40%); z-index: -1; background: radial-gradient(ellipse at center, var(--hg) 0%, transparent 70%); filter: blur(8px); }
+#heldTitel b { font: 400 clamp(58px, 5.2vw, 104px)/1 var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: var(--hc); -webkit-text-stroke: 5px #140d08; paint-order: stroke fill; text-shadow: 0 5px 0 #140d08, 0 0 30px var(--hg); }
+#heldTitel span { font: 400 clamp(17px, 1.3vw, 24px) var(--s-head); letter-spacing: .2em; text-transform: uppercase; color: #d9c7a2; -webkit-text-stroke: 2px #140d08; paint-order: stroke fill; margin-bottom: 2px; }
+#heldTitel.faust { --hc: #ffae52; --hg: rgba(255,84,20,.7); }
+#heldTitel.kalt { --hc: #eaf3fa; --hg: rgba(140,196,240,.62); }
+#heldTitel.klein { top: 24%; padding: 10px 56px 14px; } #heldTitel.klein b { font-size: clamp(38px, 3.3vw, 64px); -webkit-text-stroke-width: 4px; }
+#heldTitel.an { animation: heldTitel 1.9s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes heldTitel { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-4deg) scale(2.3); filter: blur(5px); } 9% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(.93); filter: none; }
+  14% { transform: translate(-50%, -50%) rotate(-4deg) scale(1.04); } 19% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); } 78% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(1.02); }
+  100% { opacity: 0; transform: translate(-50%, -60%) rotate(-4deg) scale(1.05); } }
 </style>
 </head>
 <body>
@@ -1120,6 +1135,7 @@ body.neu #hud .up-med .med { width: 35px; height: 35px; } body.neu #hud .up-med 
 <div id="aufstellLeiste" hidden><div id="aufstellText"></div><button class="up-plate" id="aufstellAuto">Automatisch aufstellen</button><button class="up-plate up-end" id="aufstellLos">Schlacht beginnen</button></div>
 <div id="toast"></div>
 <div id="banner"></div>
+<div id="heldTitel"></div>
 
 <div class="overlay sm" id="start" hidden data-step="title">
   <div class="sm-bg" aria-hidden="true"></div>
@@ -2400,9 +2416,9 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if ((t === 'trench' || t === 'bunker' || KIRCHE.has(t)) && !o.flame) ml *= 0.5;
   if (officerAt(G, d.side, d.c, d.r)) ml *= P.OFFICER_MOR;
   if (bannerAt(G, d.side, d.c, d.r)) ml *= 0.75;
-  if (o.ranged && G.units.some(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1)) ml *= P.FAUST_AURA;   // Held Rote Faust
+  const standH = o.ranged && G.units.find(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1); if (standH) ml *= P.FAUST_AURA;   // Held Rote Faust
   d.mor = Math.max(0, d.mor - ml);
-  ev.push({ t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });
+  ev.push(standH ? { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, stand: standH.id } : { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });   // stand: Aura hat gewirkt (F86, nur Anzeige)
   if (d.str < 0.3) { killUnit(G, d, ev, 'destroyed'); return; }
   if (d.status === 'rout') return;
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
@@ -7246,7 +7262,7 @@ function drawMarks(u, d, x, y, own, done, acc) {
 
 // ---------- Zeichnen ----------
 // STEP = vergangene Zeit in 60-Hz-Bildern (gleich schnell bei 30, 60 oder 144 Hz); FS = dazu das Spieltempo, passend zu wait()
-let lastT = 0, STEP = 1, FS = 1;
+let lastT = 0, STEP = 1, FS = 1, stopBis = 0;   // stopBis: kurzer Stillstand im Treffer (F86), Effekte frieren ein
 // Hilfsmarkierung auf einem Feld: Fläche und Rand in einem Palettenton, wahlweise gestrichelt oder schraffiert, Symbol oben im Feld
 const BONE = '240,237,225', BRASS = '194,164,97', PARCH = '187,165,131', LIFE = '142,43,34';
 // Schadens-Nachlauf (Spieltest Runde 2, Punkt 16): verlorene Stärke bleibt ca. 1 s als dunkler Abschnitt im Balken stehen, dann baut er in 0,5 s ab (wie Total War)
@@ -7273,7 +7289,7 @@ function hexMark(c, r, o) {
 const drawFehler = new Set();
 function frame(t) {
   requestAnimationFrame(frame);
-  STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = STEP * speed; now = t;
+  STEP = lastT ? Math.min(4, Math.max(0.1, (t - lastT) / 16.667)) : 1; lastT = t; FS = t < stopBis ? 0 : STEP * speed; now = t;
   try { shakeStep(); areaNow = null; draw(); }
   catch (err) { const k = String(err && err.stack || err).slice(0, 300); if (!drawFehler.has(k)) { drawFehler.add(k); console.error('Zeichnen:', err); }
     ctx = MAINCTX; ctx.setTransform(1, 0, 0, 1, 0, 0); VIEW.up = null; VIEW.bbK = null; MARKQ.length = 0; }
@@ -7648,7 +7664,7 @@ function drawAir(g, s, up) {
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
     else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
-  drawSchall(g, s, up); drawNimbus(g, s, up); drawHeldAura(g, s, up); drawGlut(g, s, up);   // F82, Helden, F84
+  drawSchall(g, s, up); drawNimbus(g, s, up); drawHeldAura(g, s, up); drawGlut(g, s, up); drawHeldRinge(g, s, up);   // F82, Helden, F84, F86
   drawFxs(g, s, up);
   for (let i = booms.length - 1; i >= 0; i--) {
     const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
@@ -9008,6 +9024,7 @@ async function playEvent0(e) {
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
       if (!e.panic && e.dmg > 0 && u && TYPES[u.type].held) playSound('held_ruestung', 0.5);   // Helden getroffen
+      if (e.stand) auraPuls(e.stand, 'faust');   // F86: Standhaft hat gewirkt
       if (!e.panic && e.dmg > 0) { const ab = poseHat(u, 'aufbaeumen') && Math.random() < 0.4; pose(e.u, ab ? 'aufbaeumen' : 'getroffen', ab ? 800 : 550); }   // kurz taumeln; Reiter: Pferd bäumt sich manchmal auf (Runde 2)
       if ((E.isMech(u.type) && TYPES[u.type].cls === 'walker') || TYPES[u.type].dauerfeuer) playSound('robot', 0.5, null, { u, v: 'mr' });   // Hünen (2026-11-20): Maschinenstimme   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
@@ -9078,22 +9095,34 @@ async function playEvent0(e) {
       const d = DU.get(e.d); if (!d) break; const [x2, y2] = [d.x, d.y - L.s * 0.4]; const ksz = await kampfSzene((DU.get(e.u).x + d.x) / 2, (DU.get(e.u).y + d.y) / 2 - L.s * 0.4);
       await poseWurf(e.u, x2, y2); await wait(280); if (!fxImpact(x2, y2 + L.s * 0.3, L.s * 0.7)) boom(x2, y2, L.s * 0.7, 'he'); playSound('boom', 0.6); playSound('einschlag_panzer', 0.55); shake(6);
       fx('funken', null, x2, y2, { anchor: 'mitte', life: 18, fadeOut: 0.6, mul: 0.9 }); lastFire = { kind: 'cannon', t: performance.now(), a: e.u }; await wait(220); await kampfSzeneEnde(ksz); break; }
-    case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
+    case 'rollstoss': { const d = DU.get(e.u); if (d && FLUG.delete(e.u)) { await flugZurueck(e.u, e.path); break; } if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück; F86: nach dem Durchbruch fliegt es
     case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
-      pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 220); }
-      a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed;
-      for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.3 * k * k, dy: dy * 0.3 * k * k }; }
-      playSound('held_faustboom', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); }, 260 / speed); shake(8); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
-      trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d))); fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });
+      heldTitel('Durchbruch', 'faust', heldName(e.u));   // F86: großer Auftritt
+      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); faustDampf(e.u, 1); playSound('held_dampf', 0.25);   // Dampfstoß aus der Faust beim Ausholen
+      if (e.path) { const sch = staubSchleppe(e.u); await animPath(e.u, e.path, 200); sch(); }
+      a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed; let ls = 0;
+      for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.3 * k * k, dy: dy * 0.3 * k * k };
+        if (performance.now() - ls > 60 / speed) { ls = performance.now(); boom(a.x + a.lunge.dx, a.y + a.lunge.dy + L.s * 0.12, L.s * 0.26, 'dust'); } }   // Staubschleppe beim Sturm
+      playSound('held_faustboom', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); faustDampf(e.u, 0.8); }, 260 / speed); shake(14); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
+      stopBis = performance.now() + 70; heldRing(d.x, d.y, 'faust', true);   // Druckwelle am Boden
+      for (let q = 0; q < (BW === 2 ? 7 : 5); q++) { const w = q / (BW === 2 ? 7 : 5) * Math.PI * 2 + Math.random() * 0.4; boom(d.x + Math.cos(w) * L.s * 0.75, d.y + Math.sin(w) * L.s * 0.75 * kAt(d.x, d.y), L.s * 0.32, 'dust', 3 + q); }
+      fx('erdfontaene', null, d.x, d.y + L.s * 0.3, { life: 52, mul: 0.55, grow: 0.25, flip: dx < 0, fadeOut: 0.45, filter: 'brightness(0.75) sepia(0.3)' });
+      fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 44, mul: 0.95, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); fx('truemmer', 5, d.x + (dx < 0 ? -1 : 1) * L.s * 0.4, d.y + L.s * 0.25, { delay: 4, life: 40, mul: 0.6, grow: 0.4, alpha: 0.85, fadeOut: 0.6 });
+      trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d))); FLUG.add(e.d);   // das Ziel fliegt im folgenden 'rollstoss' sichtbar zurück
       if (!(ksz && ksz.skip)) await wait(300); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
     case 'hinrichtung': {   // Held Kürassier: Ausholen über die Schulter, Hieb nach unten, kaltes Aufblitzen, Rütteln; die Vernichtung folgt als eigenes Ereignis
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
+      heldTitel('Hinrichtung', 'kalt', heldName(e.u));   // F86: großer Auftritt
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt', 0.75);
-      shake(9); heldBlitz(e.u, 'kalt'); pose(e.d, 'getroffen', 700); trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d)));
+      const mx = d.x + (a.x - d.x) * 0.35, my = d.y - L.s * 0.55, masch = istMaschine(unitById(e.d));   // Treffpunkt der Säge
+      heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11);
+      for (let q = 0; q < (BW === 2 ? 4 : 3); q++) fx('funken', null, mx + (Math.random() - 0.5) * L.s * 0.25, my + (Math.random() - 0.5) * L.s * 0.2, { anchor: 'mitte', delay: q * 3, life: 18 + q * 3, mul: 0.65 + q * 0.12, fadeOut: 0.6, flip: Math.random() < 0.5 });   // Funken von der Kettensäge
+      stopBis = performance.now() + (BW ? 230 : 140); if (!(ksz && ksz.skip)) await wait(220);   // kurzer Stillstand im Treffer
+      trefferSpritzer(a.x, a.y, d, 3, masch); if (!masch) { schwerBlut(a.x, a.y, d, 3); schwerBlut(a.x, a.y, d, 3); bodenBlut(d.x + (Math.random() - 0.5) * L.s * 0.3, d.y + L.s * 0.12 * kAt(d.x, d.y), 0.7); }   // schwerer Blutstoß, dann Lache
       if (!(ksz && ksz.skip)) await wait(420); await kampfSzeneEnde(ksz); break; }
     case 'heldfall': { const hu = unitById(e.u); playSound('held_fall_horn', 0.6); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
-    case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, 'angst', 'steig'); } await wait(120); break; }
+    case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, 'angst', 'steig'); } if (e.by) auraPuls(e.by, 'kalt'); await wait(120); break; }
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0);   // Runde 2: Sprung mit Krallen
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
@@ -10231,6 +10260,46 @@ function drawGlut(g, s, up) {
     gr.addColorStop(0, `rgba(255,236,170,${a})`); gr.addColorStop(0.25, `rgba(255,170,60,${0.85 * a})`); gr.addColorStop(0.6, `rgba(220,80,20,${0.3 * a})`); gr.addColorStop(1, 'rgba(160,40,10,0)');
     g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr * 2.6, 0, 7); g.fill(); g.restore(); }
 }
+// F86 (2026-11-21): Auftritt der Heldenfähigkeiten – große Einblendung (heldTitel, #heldTitel), Druckwelle/Ring am Boden (heldRing),
+// Dampf aus der Faust, Staubschleppe, Ziel fliegt zurück (flugZurueck), Auren pulsieren beim ersten Auslösen je Runde (auraPuls)
+function heldName(id) { const u = unitById(id); return u ? TYPES[u.type].name : ''; }
+function heldTitel(text, art, wer) {
+  const el = $('heldTitel'); if (!el) return; const dur = speed >= INSTANT ? 900 : Math.round(1900 / Math.sqrt(speed));
+  el.innerHTML = `${wer ? `<span>${upEsc(wer)}</span>` : ''}<b>${upEsc(text)}</b>`; el.className = art; void el.offsetWidth;
+  el.style.animationDuration = dur + 'ms'; el.className = art + ' an'; clearTimeout(el._t); el._t = setTimeout(() => { el.className = art; }, dur + 50);
+}
+const HRING = [];   // { x, y, t0, dauer, art, gross }
+function heldRing(x, y, art, gross) { HRING.push({ x, y, t0: now, dauer: gross ? 720 : 950, art, gross }); }
+function drawHeldRinge(g, s, up) {
+  const amp = BW === 0 ? 0.55 : BW === 1 ? 0.8 : 1;
+  for (let i = HRING.length - 1; i >= 0; i--) { const w = HRING[i], el = (now - w.t0) * speed; if (el > w.dauer) { HRING.splice(i, 1); continue; } if (up && !up(w.x, w.y)) continue;
+    for (let q = 0; q < (w.gross ? 2 : 1); q++) { const k = (el - q * 120) / (w.dauer - q * 120); if (k <= 0 || k >= 1) continue;
+      const e = 1 - Math.pow(1 - k, 2.2), rad = s * (0.3 + (w.gross ? 1.9 : 1.15) * e), al = (1 - k) * amp * (q ? 0.6 : 1), warm = w.art === 'faust';
+      g.save(); g.lineCap = 'round';
+      if (w.gross && q === 0) { const gr = g.createRadialGradient(w.x, w.y, rad * 0.45, w.x, w.y, rad * 1.05); gr.addColorStop(0, 'rgba(140,112,84,0)'); gr.addColorStop(0.8, `rgba(150,120,90,${0.42 * al})`); gr.addColorStop(1, 'rgba(150,120,90,0)');
+        g.fillStyle = gr; g.beginPath(); gEllipse(g, w.x, w.y, rad * 1.05, rad * 1.05); g.fill(); }   // Staubschleier der Druckwelle
+      g.beginPath(); gEllipse(g, w.x, w.y, rad, rad); g.strokeStyle = `rgba(20,14,10,${0.72 * al})`; g.lineWidth = Math.max(3, s * (w.gross ? 0.13 : 0.08) * (1 - 0.6 * k)); g.stroke();   // Tintenkontur
+      g.beginPath(); gEllipse(g, w.x, w.y, rad, rad); g.strokeStyle = warm ? `rgba(255,${w.gross ? 196 : 150},${w.gross ? 120 : 60},${al})` : `rgba(206,228,246,${al})`; g.lineWidth = Math.max(2, s * (w.gross ? 0.065 : 0.042) * (1 - 0.6 * k)); g.stroke();
+      g.restore(); } }
+}
+const AURA_PULS = new Set();
+function auraPuls(id, art) {   // Aura hat gewirkt: einmal je Held und Runde Ring, Aufblitzen und kleine Einblendung
+  if (!G) return; const k = id + ':' + G.turn + ':' + G.side; if (AURA_PULS.has(k)) return; AURA_PULS.add(k); const d = DU.get(id); if (!d) return;
+  heldRing(d.x, d.y, art, false); heldBlitz(id, art === 'faust' ? 'glut' : 'kalt'); heldTitel(art === 'faust' ? 'Standhaft' : 'Furcht', art + ' klein', heldName(id));
+}
+function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
+  const d = DU.get(id); if (!d) return; const b = d.fbx && d.fbx[0], lf = facesLeft(d.face), s = L.s;
+  const x = b ? d.x + b[0] + b[2] * (lf ? 0.15 : 0.85) : d.x + (lf ? -1 : 1) * s * 0.4, y = b ? d.y + b[1] + b[3] * 0.5 : d.y - s * 0.6;
+  for (let q = 0; q < (BW === 2 ? 3 : 2); q++) { const e = fx('rauch', null, x + (lf ? -1 : 1) * q * s * 0.12, y, { delay: q * 4, move: [x + (lf ? -1 : 1) * s * (0.3 + q * 0.15), y - s * 0.25], life: 60 + q * 10, mul: 0.22 * st + q * 0.04, grow: 1.1, rise: 0.5, alpha: 0.55, fadeIn: 3, fadeOut: 0.7, flip: lf, filter: 'brightness(2.1) saturate(0.2)' }); if (e) e.dampf = true; }
+  burst(x, y, BW === 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });
+}
+function staubSchleppe(id) { let an = true; (async () => { while (an) { const d = DU.get(id); if (d) boom(d.x, d.y + L.s * 0.12, L.s * 0.24, 'dust'); await wait(70); } })(); return () => { an = false; }; }
+const FLUG = new Set();
+async function flugZurueck(id, path) {   // Ziel des Durchbruchs fliegt im Bogen ein Feld zurück und schlägt auf
+  const d = DU.get(id), [x0, y0] = center(path[0][0], path[0][1]), [x1, y1] = center(path[1][0], path[1][1]), dur = 380 / speed, t0 = performance.now(); pose(id, 'getroffen', 900);
+  for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; d.lunge = { dx: 0, dy: -Math.sin(Math.PI * k) * L.s * 0.55 }; }
+  d.lunge = null; d.x = x1; d.y = y1; playSound('impact', 0.4); shake(5); boom(x1, y1 + L.s * 0.1, L.s * 0.45, 'dust'); fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 34, mul: 0.5, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });
+}
 function drawHeldAura(g, s, up) {
   if (!BW || !G) return; const amp = BW === 1 ? 0.55 : 1;
   for (const u of G.units) { const T = TYPES[u.type]; if (!T.held || !E.alive(u)) continue; const d = DU.get(u.id); if (!d || (up && !up(d.x, d.y))) continue;
@@ -10732,8 +10801,8 @@ function noteEvent(e, u) {
     case 'pzgranate': return logAdd(`${N(u)}: Panzergranate`, u && u.side, ...at(u), true);
     case 'rammen': return logAdd(`${N(u)}: rammt das Gebäude`, u && u.side, ...at(u), true);
     case 'sprung': return logAdd(`${N(u)}: Sprungangriff`, u && u.side, ...at(u), true);
-    case 'durchbruch': logAdd(`${N(u)}: Durchbruch`, u && u.side, ...at(u), true); return headline('Durchbruch!', u && u.side);
-    case 'hinrichtung': logAdd(`${N(u)}: Hinrichtung`, u && u.side, ...at(u), true); return headline('Hinrichtung!', u && u.side);
+    case 'durchbruch': return logAdd(`${N(u)}: Durchbruch`, u && u.side, ...at(u), true);   // Einblendung: heldTitel (F86)
+    case 'hinrichtung': return logAdd(`${N(u)}: Hinrichtung`, u && u.side, ...at(u), true);
     case 'heldfall': logAdd(`${N(u)} ist gefallen – die Seite verliert Moral`, u && u.side, ...at(u), true); return headline(`${N(u)} fällt!`, u && u.side);
     case 'furcht': return logAdd(`${N(u)}: Furcht vor dem Kürassier`, u && u.side, ...at(u));
     case 'dauerfeuer': return logAdd(`${N(u)}: Dauerfeuer – das MG kühlt eine Runde ab`, u && u.side, ...at(u), true);

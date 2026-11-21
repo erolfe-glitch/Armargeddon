@@ -1093,9 +1093,9 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if ((t === 'trench' || t === 'bunker' || KIRCHE.has(t)) && !o.flame) ml *= 0.5;
   if (officerAt(G, d.side, d.c, d.r)) ml *= P.OFFICER_MOR;
   if (bannerAt(G, d.side, d.c, d.r)) ml *= 0.75;
-  if (o.ranged && G.units.some(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1)) ml *= P.FAUST_AURA;   // Held Rote Faust
+  const standH = o.ranged && G.units.find(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1); if (standH) ml *= P.FAUST_AURA;   // Held Rote Faust
   d.mor = Math.max(0, d.mor - ml);
-  ev.push({ t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });
+  ev.push(standH ? { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, stand: standH.id } : { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });   // stand: Aura hat gewirkt (F86, nur Anzeige)
   if (d.str < 0.3) { killUnit(G, d, ev, 'destroyed'); return; }
   if (d.status === 'rout') return;
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand

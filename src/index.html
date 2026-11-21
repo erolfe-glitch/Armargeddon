@@ -1060,6 +1060,21 @@ body.neu #hud .up-unit > .up-med { grid-column: 1; grid-row: 2; flex-wrap: wrap;
 body.neu #hud .up-unit > .up-stats { grid-column: 2; grid-row: 1 / span 2; }
 body.neu #hud .up-med .med { width: 35px; height: 35px; } body.neu #hud .up-med .med img { width: 22px; height: 22px; }
 .det-med { margin: 8px 0; } .det-med .dm { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+
+/* F86 (2026-11-21): Auftritt der Heldenfähigkeiten – große Titelschrift mit Tintenkontur, schräg, knallt herein, auf gerissenem dunklem Streifen; Farbe je Held */
+#heldTitel { position: fixed; left: 50%; top: 31%; z-index: 8; pointer-events: none; display: grid; justify-items: center; padding: 16px 84px 22px; opacity: 0; transform: translate(-50%, -50%) rotate(-4deg); }
+#heldTitel::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(14,9,6,.55), rgba(16,10,7,.93) 22%, rgba(16,10,7,.93) 78%, rgba(14,9,6,.55));
+  clip-path: polygon(0 20%, 5% 9%, 12% 16%, 20% 5%, 31% 13%, 42% 3%, 54% 11%, 65% 4%, 76% 12%, 87% 3%, 95% 11%, 100% 7%, 97% 50%, 100% 92%, 91% 98%, 80% 88%, 68% 97%, 57% 89%, 45% 98%, 33% 90%, 22% 97%, 12% 88%, 3% 95%, 2% 55%); }
+#heldTitel::after { content: ""; position: absolute; left: 6%; right: 6%; top: 50%; height: 56%; transform: translateY(-40%); z-index: -1; background: radial-gradient(ellipse at center, var(--hg) 0%, transparent 70%); filter: blur(8px); }
+#heldTitel b { font: 400 clamp(58px, 5.2vw, 104px)/1 var(--s-head); letter-spacing: .05em; text-transform: uppercase; color: var(--hc); -webkit-text-stroke: 5px #140d08; paint-order: stroke fill; text-shadow: 0 5px 0 #140d08, 0 0 30px var(--hg); }
+#heldTitel span { font: 400 clamp(17px, 1.3vw, 24px) var(--s-head); letter-spacing: .2em; text-transform: uppercase; color: #d9c7a2; -webkit-text-stroke: 2px #140d08; paint-order: stroke fill; margin-bottom: 2px; }
+#heldTitel.faust { --hc: #ffae52; --hg: rgba(255,84,20,.7); }
+#heldTitel.kalt { --hc: #eaf3fa; --hg: rgba(140,196,240,.62); }
+#heldTitel.klein { top: 24%; padding: 10px 56px 14px; } #heldTitel.klein b { font-size: clamp(38px, 3.3vw, 64px); -webkit-text-stroke-width: 4px; }
+#heldTitel.an { animation: heldTitel 1.9s cubic-bezier(.2,.9,.3,1) both; }
+@keyframes heldTitel { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-4deg) scale(2.3); filter: blur(5px); } 9% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(.93); filter: none; }
+  14% { transform: translate(-50%, -50%) rotate(-4deg) scale(1.04); } 19% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); } 78% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(1.02); }
+  100% { opacity: 0; transform: translate(-50%, -60%) rotate(-4deg) scale(1.05); } }
 </style>
 </head>
 <body>
@@ -1113,6 +1128,7 @@ body.neu #hud .up-med .med { width: 35px; height: 35px; } body.neu #hud .up-med 
 <div id="aufstellLeiste" hidden><div id="aufstellText"></div><button class="up-plate" id="aufstellAuto">Automatisch aufstellen</button><button class="up-plate up-end" id="aufstellLos">Schlacht beginnen</button></div>
 <div id="toast"></div>
 <div id="banner"></div>
+<div id="heldTitel"></div>
 
 <div class="overlay sm" id="start" hidden data-step="title">
   <div class="sm-bg" aria-hidden="true"></div>
