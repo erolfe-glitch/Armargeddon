@@ -1794,7 +1794,8 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
   const k = 0.7, bh = im.naturalHeight / 320 * FIG_SH * s * k, bw = bh * im.naturalWidth / im.naturalHeight, sw = Math.sin(now / 1100 + u.id) * s * 0.04;
   const sx = v => flip ? x + w / 2 - v * w : x - w / 2 + v * w;
   const ax = sx(0.3), ay = top + h * 0.22;   // Seiltrommel der Winde
-  const bx = ax + (flip ? 1 : -1) * s * 0.15 + sw, by = top - s * 1.1 + Math.sin(now / 900 + u.id) * s * 0.03;   // Korbunterkante über dem Feld
+  const dh = DU.get(u.id), hk = dh && dh.ballonH != null ? dh.ballonH : (u.eingeholt ? 0 : 1);   // F70: Höhe am Seil (0 = eingeholt, 1 = oben)
+  const bx = ax + (flip ? 1 : -1) * s * 0.15 + sw * hk, by = top - s * (0.1 + 1.0 * hk) + Math.sin(now / 900 + u.id) * s * 0.03 * hk;   // Korbunterkante über dem Feld
   g.save(); g.strokeStyle = 'rgba(30,24,16,0.9)'; g.lineWidth = Math.max(1, s * 0.018); g.beginPath(); g.moveTo(ax, ay); g.quadraticCurveTo((ax + bx) / 2 + s * 0.06, (ay + by) / 2, bx, by); g.stroke();
   if (filt) g.filter = filt; g.translate(bx, by); if (flip) g.scale(-1, 1); g.drawImage(im, -bw * 0.53, -bh, bw, bh); g.restore(); g.filter = 'none';
 }
@@ -1867,6 +1868,8 @@ async function poseWurf(id, x2, y2) {
   shells.push({ fxi: u.side === 'A' ? 3 : 2, fxs: 0.75, x1: d.x + vor * s * 0.3, y1: d.y - s * 0.55, x2, y2, t: 0, dur: 18, arc: 1.0, spin: true, img: u.side === 'A' ? 'pine' : 'stick', sz: 0.3 });
   await wait(dauer * 0.55);
 }
+// F46 (2026-11-21): liegend bzw. niedrig gemalte Trupps sinken im Graben weniger tief ein (sonst sieht man sie kaum)
+const GRABEN_TIEFE = { buechse: 0.35, pirsch: 0.5, scharf: 0.5 };
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
@@ -1879,7 +1882,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
     }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
-  const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
+  const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s * (GRABEN_TIEFE[u.type] || 1) : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
@@ -2827,6 +2830,11 @@ async function playEvent0(e) {
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); kz(e.u, 'werkzeug', 'steig'); await wait(320); break; }
     case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('mgladen', 0.45); await wait(200); break; }
     case 'undig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = false; playSound('schaufel', 0.4, null, { noGap: true }); await wait(250); break; }   // F36: aus der Stellung
+    case 'einholen': case 'aufsteigen': {   // F70: Ballon sinkt bzw. steigt am Seil, Winde rattert
+      const d = DU.get(e.u); if (!d) break; const auf = e.t === 'aufsteigen', h0 = d.ballonH == null ? (auf ? 0 : 1) : d.ballonH, t0 = performance.now(), dauer = 900 / Math.min(speed, 2);
+      playSound('drahtwackeln', 0.45, null, { noGap: true }); setTimeout(() => playSound('mgladen', 0.35, null, { noGap: true }), 500 / speed);
+      for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); d.ballonH = h0 + ((auf ? 1 : 0) - h0) * (0.5 - 0.5 * Math.cos(Math.PI * k)); }
+      d.vs.eingeholt = !auf; break; }
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('nachladen', 0.4); await wait(200); break; }
     case 'ow': kz(e.u, 'auge', 'puls'); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
@@ -3681,6 +3689,8 @@ function unitButtons(T, hints) {
     btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name + (T.ladungen ? ` (Ladungen ${T.ladungen - (sel.ladUsed || 0)}/${T.ladungen})` : ''), ...(T.ladungen ? { cnt: T.ladungen - (sel.ladUsed || 0) } : {}), cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: abilKurz(sel), on: abilMode && feldArt === 'abil', off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
     if (abilMode && feldArt === 'abil') hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
+  if (T.fessel) btns.push(sel.eingeholt ? { act: 'ball-auf', sym: 'fernglas', name: 'Aufsteigen', bp: 'alle', text: 'Ballon steigen lassen: Sicht 6 Felder über Wald und Häuser, Ziel markieren möglich; zieht danach nicht. Kostet alle Bewegungspunkte, nicht die Aktion.', off: !E.canAufsteigen(G, sel), why: 'Niedergehalten.' }
+    : { act: 'ball-ein', sym: 'stiefel', name: 'Einholen', bp: 1, text: 'Ballon einholen: danach zieht der Trupp 2 Felder, sieht aber nur 2 Felder und kann nicht markieren.', off: !E.canEinholen(G, sel), why: 'Keine Bewegungspunkte mehr.' });   // F70
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', bp: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Aktion schon verbraucht.' });
   if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', bp: 1, costTxt: '1 Bewegungspunkt, nimmt alle restlichen', text: `MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer. Verbraucht alle restlichen Bewegungspunkte${sel.bp > 1 ? ` (noch ${sel.bp})` : ''} – danach zieht das MG in dieser Runde nicht mehr. Schießen geht danach mit der Aktion.`, pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Aktion schon verbraucht.' });
   if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
@@ -3864,6 +3874,8 @@ async function panelAct(a) {
   if (a === 'limber') return act(u => E.limber(G, u));
   if (a === 'setup') return act(u => E.setupMG(G, u));
   if (a === 'teardown') return act(u => E.teardownMG(G, u));
+  if (a === 'ball-ein') return act(u => E.einholen(G, u));
+  if (a === 'ball-auf') return act(u => E.aufsteigen(G, u));   // F70
   if (a === 'abil') { abilMode = !(abilMode && feldArt === 'abil'); feldArt = 'abil'; previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'ow') return act(u => E.overwatch(G, u));
   if (a === 'sperr') return act(u => E.sperr(G, u));

@@ -557,6 +557,10 @@ function next(G) {
     // F79: Rammen – Gebäude mit Gegnern darin (oder fast eingestürzt) im Nachbarfeld, wenn kein lohnender Angriff da ist
     if (!o.atk && !o.move) { const rz = E.rammZiele(G, u).find(([c, r]) => { const b = E.bauAt(G, c, r), x = E.unitAt(G, c, r); return (x && x.side !== u.side) || (b && b.hp <= 2 && G.units.some(y => y.side !== u.side && E.alive(y) && [...b.felder, ...(b.turm ? [b.turm] : [])].some(([a, q]) => y.c === a && y.r === q))); });
       if (rz && u.str > 4) return { u: u.id, steps: [{ k: 'ramm', c: rz[0], r: rz[1] }] }; }
+    // F70: Fesselballon – oben, wenn Gegner in 4–6 Feldern; einholen und nachrücken, wenn in 6 Feldern niemand mehr ist; unten aufsteigen, sobald Gegner in 6 Feldern
+    if (TYPES[u.type].fessel) { const nd = nearestEnemyDist(G, u.side, u.c, u.r);
+      if (!u.eingeholt && nd > 6 && E.canEinholen(G, u)) { const bp0 = u.bp; u.eingeholt = true; u.bp -= 1; const o2 = planUnit(G, u); u.eingeholt = false; u.bp = bp0; if (o2.move) return { u: u.id, steps: [{ k: 'einholen' }, { k: 'move', c: o2.move[0], r: o2.move[1] }] }; }
+      if (u.eingeholt && nd <= 6 && E.canAufsteigen(G, u) && !o.move) return { u: u.id, steps: [{ k: 'aufsteigen' }] }; }
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
     if (o.cut) steps.push({ k: 'cut', c: o.cut[0], r: o.cut[1] });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
@@ -664,6 +668,8 @@ function exec(G, uid, s) {
   if (s.k === 'plant') return E.plantBanner(G, u);
   if (s.k === 'dig') return E.canDig(G, u) ? E.dig(G, u) : [];
   if (s.k === 'undig') return E.undig(G, u);
+  if (s.k === 'einholen') return E.einholen(G, u);
+  if (s.k === 'aufsteigen') return E.aufsteigen(G, u);
   if (s.k === 'ramm') return E.rammen(G, u, s.c, s.r);
   if (s.k === 'shields') return E.canShields(G, u) ? E.shieldsUp(G, u) : [];
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }

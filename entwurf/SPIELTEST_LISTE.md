@@ -187,7 +187,7 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [x] F39 Zeichen: Reparieren/Bergen goldenes Zahnrad oder Schlüssel, Nachladen eigenes Zeichen; grünes Kreuz nur Heilen/Entgiften.
 - [x] F40 Rückzug/Zurückweichen: Schweißtropfen wirken wie Wassertropfen → deutlicheres Zeichen (z. B. Pfeil nach hinten oder weiße Fahne); ggf. neues Bild (Enrico/Gemini).
 
-- [ ] F46 Panzerbüchsen-Trupp (Aschenwacht) versinkt im Graben zu tief (Figuren kaum noch sichtbar). Grabentiefe je Einheit prüfen – Figuren, die schon niedrig/kniend gemalt sind, weniger tief absenken; alle Einheitentypen im Graben kurz durchsehen.
+- [x] F46 Panzerbüchsen-Trupp (Aschenwacht) versinkt im Graben zu tief (Figuren kaum noch sichtbar). Grabentiefe je Einheit prüfen – Figuren, die schon niedrig/kniend gemalt sind, weniger tief absenken; alle Einheitentypen im Graben kurz durchsehen.
 
 ## Paket D – Bedienung
 - [x] F11 Abhaken-Knopf („Erledigt“) für ALLE Einheiten.
@@ -198,9 +198,9 @@ Nummern F1–F42 sind Enricos Funde. Paket für Paket umsetzen, jedes Paket einz
 - [x] F41 Warnung bei nahem Sieg oder drohender Niederlage: Text-Einblendung + akustisches Signal (z. B. Horn/Trommel), Punkteleiste hebt das hervor – Sieg soll nicht plötzlich kommen.
 
 ## Paket E – Regeln und Balance (danach Simulation Grauwall + Sankt Ruß)
-- [ ] F26 Panzer ohne normalen Nahkampf; dafür aufladbare Fähigkeit „Überrollen“ (angrenzendes Feld mit Infanterie, Schaden + Moral, mehrere Runden Abklingzeit).
+- [x] F26 Panzer ohne normalen Nahkampf; dafür aufladbare Fähigkeit „Überrollen“ (angrenzendes Feld mit Infanterie, Schaden + Moral, mehrere Runden Abklingzeit).
 - [x] F31 Nahkampf-Schreiter (Ordens-, Säge-, Klauenschreiter, Eisenknecht, Kreuzschreiter): nach mehr als halber Bewegung noch Nahkampf, aber kein Schuss; Turmschreiter bleibt bei alter Regel.
-- [ ] F36 Eingraben: Figuren tiefer hinter halbrundem Sandsackwall; aktives „Ausgraben“ nötig (wie Auf-/Abprotzen), Kosten per Simulation. Sandsack-Bild prüfen, sonst Prompt.
+- [x] F36 Eingraben: Figuren tiefer hinter halbrundem Sandsackwall; aktives „Ausgraben“ nötig (wie Auf-/Abprotzen), Kosten per Simulation. Sandsack-Bild prüfen, sonst Prompt.
 - [x] F37 Mindestreichweite Steilfeuer: kleine (Grabenmörser, Minenwerfer) nicht ins Nachbarfeld, große (Donnerrohr, Grabengeschütz) nicht bis 2 Felder; direkter Schuss unberührt; Vorschau „zu nah“, KI, Hilfe.
 - [x] F38 Draht nicht mehr gezielt wegsprengen: kein Beschuss leerer Drahtfelder; Draht geht nur nebenbei kaputt (Ziel steht im Drahtfeld, mit Wahrscheinlichkeit, Minenwerfer am stärksten).
 

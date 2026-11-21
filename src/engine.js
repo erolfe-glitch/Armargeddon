@@ -50,6 +50,7 @@ const P = {
   MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2,
   PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 2, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
+  BALLON_SICHT_UNTEN: 2,   // F70: eingeholter Ballon sieht nur 2 Felder
   RAMM_BAU: 1, RAMM_SELBST: 0.6, RAMM_PANNE: 0.15, RUINE_FEST: 0.12,   // F79 Rammen (Bauschaden, eigener Schaden, Pannengefahr) und Trümmer (Festfahr-Gefahr)
   ROLLEN_DMG: 2.4, ROLLEN_MOR: 1.5, ROLLEN_WAND: 1.5,   // F54 Sturmrollen (×10 in der Anzeige: 24 Schaden, Moral −15)
   DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
@@ -238,7 +239,7 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // statt 2 → 40 %, statt 3 → 38 % / 35 %, statt 4 → 26 %, 2 Oger statt 6 → 25 %: neutral bei etwa 2,6 Kohorten = 105. Hünen (Feuer 7, Reichweite 3) statt Grenadiere
 // (Aschenwacht ohne Tausch 65 %): statt 3 → 66 %, statt 4 → 57 %; neutral bei 3 Grenadieren = 90 (ADJ −15). Mit Feuer 5/Reichweite 2 waren sie keine 2 Grenadiere wert.
 const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
-  sturm: 40, knecht: -10, huenen: -15, bohrer: 80, brand: 0, sturmpz: 20, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, rauch: -5, melder: -5,
+  sturm: 40, knecht: -10, huenen: -15, bohrer: 80, brand: 0, sturmpz: 20, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, ballon: -5, rauch: -5, melder: -5,
   feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5 };
 function costParts(k) {
@@ -266,8 +267,8 @@ Object.assign(TYPES, {
   werkstatt: { side: 'A', name: 'Versorgungstrupp', cls: 'medic', fig: 'wrench', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
     can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, 2 Runden Pause), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, 2 Runden Pause): ein MG oder Geschütz daneben schießt noch einmal.',
     real: 'Bei Cambrai 1917 fiel ein großer Teil der britischen Panzer durch Pannen und Festfahren aus. Bergungs- und Werkstattzüge holten sie zurück; Trägertrupps brachten Granaten und Gurte nach vorn.' },
-  ballon: { side: 'A', name: 'Ballonbeobachter', cls: 'inf', fig: 'balloon', relay: true, abil: 'mark', aerial: true, spot: 8, atk: 0, def: 1, mor: 4, mv: 0, rng: 0, fs: 0,
-    can: 'Fesselballon: zieht nicht, wehrlos, sieht 8 Felder über Wald und Häuser. Ziel markieren (Aktion): ein Feld in Sicht bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar.',
+  ballon: { side: 'A', name: 'Ballonbeobachter', cls: 'inf', fig: 'balloon', relay: true, abil: 'mark', aerial: true, fessel: true, spot: 6, atk: 0, def: 1, mor: 4, mv: 2, rng: 0, fs: 0,
+    can: 'Fesselballon, wehrlos. Aufgestiegen: sieht 6 Felder über Wald und Häuser, zieht nicht. Einholen (1 Bewegungspunkt): zieht 2 Felder, sieht nur 2 Felder, kein Markieren. Aufsteigen kostet alle Bewegung, nicht die Aktion. Ziel markieren (Aktion): ein Feld in Sicht bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar.',
     real: 'Gefesselte Beobachtungsballone standen hinter der Front und lenkten das Artilleriefeuer per Telefon. Als einzige Flieger trugen ihre Beobachter schon früh Fallschirme.' },
   eingreif: { side: 'D', name: 'Eingreiftrupp', cls: 'storm', fig: 'counter', counterStrike: true, atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde).',
@@ -1001,7 +1002,8 @@ function reachable(G, u, opt) {
   if (!active(u) || u.supp > 0 || u.broken > 0 || u.stuck > 0 || u.zocStop) return res;
   if (TYPES[u.type].mg && u.setup && !TOG.NOSETUP) return res;   // aufgebautes MG zieht nicht (erst abbauen)
   if (u.planted) return res;   // aufgepflanztes Banner: erst aufnehmen
-  if (u.dug && !TOG.NOAUSGRABEN) return res;   // F36 (2026-11-21): eingegraben – erst ausgraben (wie MG abbauen)
+  if (u.dug && !TOG.NOAUSGRABEN) return res;
+  if (TYPES[u.type].fessel && !u.eingeholt) return res;   // F70 (2026-11-21): aufgestiegener Ballon zieht nicht (erst einholen)   // F36 (2026-11-21): eingegraben – erst ausgraben (wie MG abbauen)
   if (TYPES[u.type].noMoveFire && u.attacked) return res;   // Minenwerfer: nach dem Feuern kein Zug
   const T = TYPES[u.type], free = T.cls === 'storm' || T.cls === 'walker';
   const retreat = !free && !TOG.NORETREAT && isZOC(G, u.c, u.r, u.side);   // Rückzug aus der Feindberührung: kostet die Aktion und alle restlichen BP
@@ -1552,9 +1554,9 @@ function claimObjective(G, u) {
 function spotted(G, side, c, r) {
   if (litAt(G, c, r, side)) return true;
   if (smokeAt(G, c, r)) return false;   // in den Nebel hinein sieht kein Beobachter (Artillerie, Feuerschlag, Markieren)
-  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= sichtOf(G, u) && hasLOS(G, u.c, u.r, c, r, TYPES[u.type].aerial));
+  return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= sichtOf(G, u) && hasLOS(G, u.c, u.r, c, r, luft(u)));
 }
-function sichtOf(G, u) { const t = hex(G, u.c, u.r).t; return Math.max(TYPES[u.type].spot || P.SPOT, t === 'kirche' ? 6 : 0) + (t === 'turm' ? P.TURM_SPOT : 0); }   // alter Kirchturm 6 Felder, Sankt Ruß +1
+function sichtOf(G, u) { if (TYPES[u.type].fessel && u.eingeholt) return P.BALLON_SICHT_UNTEN; const t = hex(G, u.c, u.r).t; return Math.max(TYPES[u.type].spot || P.SPOT, t === 'kirche' ? 6 : 0) + (t === 'turm' ? P.TURM_SPOT : 0); }   // alter Kirchturm 6 Felder, Sankt Ruß +1
 // ---------- Große Gebäude (Kirche von Sankt Ruß) ----------
 function bauAt(G, c, r) { const i = inMap(c, r) ? hex(G, c, r).bau : null; return i != null && G.bauten && G.bauten[i] && !G.bauten[i].kaputt ? G.bauten[i] : null; }
 const schwereWaffe = a => { const T = a && TYPES[a.type]; return !!T && (T.cls === 'art' || (T.cls === 'walker' && !T.gat && !T.mgfire && T.rng >= 2)); };
@@ -1777,6 +1779,12 @@ function canSetup(G, u) { return active(u) && !!TYPES[u.type].mg && u.side === G
 function setupMG(G, u) { if (!canSetup(G, u)) return []; u.setup = true; u.bp = 0; u.moved = u.ap <= 0; return [{ t: 'setup', u: u.id }]; }
 // MG abbauen (Wunsch 2026-11-16): eigene Aktion für 1 Aktionspunkt. Aufgebaut kann das MG schießen, aber nicht ziehen; abgebaut umgekehrt.
 function canTeardown(G, u) { return active(u) && !!TYPES[u.type].mg && u.side === G.side && !!u.setup && (u.bp || 0) >= 1 && !u.broken && !TOG.NOSETUP; }   // 1 BP
+// F70 (2026-11-21): Fesselballon einholen (1 BP; danach zieht er 2 Felder, Sicht 2, kein Markieren) bzw. aufsteigen (alle BP, nicht die Aktion – markieren geht danach noch)
+const luft = u => !!TYPES[u.type].aerial && !u.eingeholt;
+function canEinholen(G, u) { return active(u) && !!TYPES[u.type].fessel && u.side === G.side && !u.eingeholt && (u.bp || 0) >= 1; }
+function einholen(G, u) { if (!canEinholen(G, u)) return []; u.eingeholt = true; u.bp -= 1; u.bpUsed = (u.bpUsed || 0) + 1; return [{ t: 'einholen', u: u.id }]; }
+function canAufsteigen(G, u) { return active(u) && !!TYPES[u.type].fessel && u.side === G.side && !!u.eingeholt && !(u.supp > 0); }
+function aufsteigen(G, u) { if (!canAufsteigen(G, u)) return []; u.eingeholt = false; u.bpUsed = (u.bpUsed || 0) + (u.bp || 0); u.bp = 0; return [{ t: 'aufsteigen', u: u.id }]; }
 function teardownMG(G, u) { if (!canTeardown(G, u)) return []; u.setup = false; u.ow = false; u.bp -= 1; u.moved = u.ap <= 0 && !(u.bp > 0); return [{ t: 'teardown', u: u.id }]; }
 // MG-Sperrfeuer (Gruppe 1, 2026-11-16): ersetzt das automatische Reaktionsfeuer. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen;
 // kostet die restlichen Punkte. In der gegnerischen Runde bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen.
@@ -1861,7 +1869,7 @@ function abilTargets(G, u) {
     else if (k === 'rush' && rushPath(G, u, c, r)) out.push([c, r]);
     else if (k === 'sprung' && x && x.side !== u.side && alive(x) && d <= P.SPRUNG + 1 && sprungLand(G, u, x)) out.push([c, r]);
     else if (k === 'rollen' && x && d <= 2 && rollenWeg(G, u, x)) out.push([c, r]);
-    else if ((k === 'mark' || k === 'strike') && d >= 1 && d <= (T.spot || P.SPOT) && !smokeAt(G, c, r) && hasLOS(G, u.c, u.r, c, r, T.aerial) && !(k === 'mark' && guided(G, u.side, c, r))) out.push([c, r]);
+    else if ((k === 'mark' || k === 'strike') && !(T.fessel && u.eingeholt) && d >= 1 && d <= (T.spot || P.SPOT) && !smokeAt(G, c, r) && hasLOS(G, u.c, u.r, c, r, luft(u)) && !(k === 'mark' && guided(G, u.side, c, r))) out.push([c, r]);
     else if (k === 'ammo' && !u.task && d === 1 && x && x.side === u.side && active(x) && (TYPES[x.type].mg || TYPES[x.type].cls === 'art') && x.attacked && !x.ammoed) out.push([c, r]);
   }
   return out;
@@ -2128,7 +2136,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, rammZiele, rammen, RUINE, rollenWeg, rollenDmg, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, rollenWeg, rollenDmg, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

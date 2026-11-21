@@ -298,6 +298,12 @@ Nur in `IDEEN.md` übernehmen, umsetzen später zusammen mit F66/Paket E nach R�
 - **Gar nicht:** Sanitäter, Melder/Signal/Fernsprech, Geschütze, Mörser/Minenwerfer, MG-Trupps(?), Anführer(?).
 Als Symbol in der Einheitenanzeige („kann erobern“). Balance-Auswirkung per Simulation prüfen.
 
+## Antworten von Enrico (2026-11-21 08:30, zum Bericht „F54, F66, Punkte 7–14, F70“)
+- **F70 Ballon:** **Ja, so bauen** wie vorgeschlagen (oben Sicht 6 + Markieren, eingeholt 2 Felder Zug/Sicht 2, Einholen 1 BP, Aufsteigen alle BP ohne Aktion, Preis 25, KI wie beschrieben, Seil-Animation, Winden-/Ratschenton).
+- **F68:** gibt es nicht – Tippfehler des Beraters, entfällt.
+- **Punkt 9 Musik:** Enrico hatte sich vertan, Musik war in Ordnung. Deine Korrektur mit dem Ton-Schalter (M) bleibt drin.
+- **Reihenfolge jetzt:** F76–F79 → F70 → restliches Paket E → Bericht.
+
 ## Antworten von Enrico (2026-11-21 01:15, zum Bericht „Nachträge F49–F65“)
 - **F54 Sturmrollen:** **Vorschlag wie beschrieben** (Enrico 01:16), **Bohrkoloss behält seinen Nahkampf** (Bohrkopf) – Enrico 01:16: aber **nur ein einziger Stoß**, der sich einen Moment länger **hineinbohrt** (Bohrkopf dreht, Rütteln, Funken/Blut, Bohr-Ton hält an), statt mehrerer Hiebe. Bauen, per Simulation abstimmen (Grauwall, Sankt Ruß), Endwerte im Bericht. Falls Enrico es anders will, meldet er sich.
 - **F66 Bonussystem:** **Tabelle so übernehmen** (Gewehr/MG gegen schwer wirkungslos, Panzerbüchse/Löwenmaul gegen ungepanzert ×0,5, Explosiv/Flamme gegen schwer ×0,5, Schrot und schwerer Nahkampf ×1,5 gegen ungepanzert, Rollen „schwach/stark im Nahkampf“ wie vorgeschlagen, Ausnahmen MG gegen Reiter ×2, geballte Ladung, Flanke). Medaillen Bronze/Silber/Gold, Info-Texte, Faktor beim Zielen, KI-Zielwahl. Danach Simulation Grauwall + Sankt Ruß.
