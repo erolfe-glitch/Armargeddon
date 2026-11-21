@@ -2415,7 +2415,7 @@ async function playEvent0(e) {
     case 'rollstoss': { const d = DU.get(e.u); if (d && FLUG.delete(e.u)) { await flugZurueck(e.u, e.path); break; } if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück; F86: nach dem Durchbruch fliegt es
     case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
-      heldTitel('Durchbruch', 'faust', heldName(e.u));   // F86: großer Auftritt
+      await heldTitelErst(ksz, 'Durchbruch', 'faust', heldName(e.u));   // F86: großer Auftritt; F87: erst Schrift, dann Schlag
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); faustDampf(e.u, 1); playSound('held_dampf', 0.25);   // Dampfstoß aus der Faust beim Ausholen
       if (e.path) { const sch = staubSchleppe(e.u); await animPath(e.u, e.path, 200); sch(); }
       a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed; let ls = 0;
@@ -2430,7 +2430,7 @@ async function playEvent0(e) {
       if (!(ksz && ksz.skip)) await wait(300); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
     case 'hinrichtung': {   // Held Kürassier: Ausholen über die Schulter, Hieb nach unten, kaltes Aufblitzen, Rütteln; die Vernichtung folgt als eigenes Ereignis
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
-      heldTitel('Hinrichtung', 'kalt', heldName(e.u));   // F86: großer Auftritt
+      await heldTitelErst(ksz, 'Hinrichtung', 'kalt', heldName(e.u));   // F86: großer Auftritt; F87: erst Schrift, dann Schlag
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt', 0.75);
       const mx = d.x + (a.x - d.x) * 0.35, my = d.y - L.s * 0.55, masch = istMaschine(unitById(e.d));   // Treffpunkt der Säge
       heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11);
@@ -3580,11 +3580,16 @@ function drawGlut(g, s, up) {
 // F86 (2026-11-21): Auftritt der Heldenfähigkeiten – große Einblendung (heldTitel, #heldTitel), Druckwelle/Ring am Boden (heldRing),
 // Dampf aus der Faust, Staubschleppe, Ziel fliegt zurück (flugZurueck), Auren pulsieren beim ersten Auslösen je Runde (auraPuls)
 function heldName(id) { const u = unitById(id); return u ? TYPES[u.type].name : ''; }
+// F87 (2026-11-21): erst Schrift, dann Schlag – der große Titel steht ca. 1 s und ist ausgeblendet, bevor Ausholen und Schlag beginnen
+// (Rückgabe = Dauer in ms, der Ablauf wartet sie ab); die kleinen Aura-Titel stehen oben unter der Leiste, nicht über den Figuren
 function heldTitel(text, art, wer) {
-  const el = $('heldTitel'); if (!el) return; const dur = speed >= INSTANT ? 900 : Math.round(1900 / Math.sqrt(speed));
+  const el = $('heldTitel'); if (!el) return 0; const klein = art.includes('klein');
+  if (klein && /\ban\b/.test(el.className) && !el.className.includes('klein')) return 0;   // großer Titel läuft: Aura-Titel auslassen
+  const dur = speed >= INSTANT ? 500 : Math.round((klein ? 1600 : 1000) / Math.sqrt(speed));
   el.innerHTML = `${wer ? `<span>${upEsc(wer)}</span>` : ''}<b>${upEsc(text)}</b>`; el.className = art; void el.offsetWidth;
-  el.style.animationDuration = dur + 'ms'; el.className = art + ' an'; clearTimeout(el._t); el._t = setTimeout(() => { el.className = art; }, dur + 50);
+  el.style.animationDuration = dur + 'ms'; el.className = art + ' an'; clearTimeout(el._t); el._t = setTimeout(() => { el.className = art; }, dur + 50); return dur;
 }
+async function heldTitelErst(ksz, text, art, wer) { const ms = heldTitel(text, art, wer); if (ms && !(ksz && ksz.skip) && speed < INSTANT) await new Promise(r => setTimeout(r, ms)); }
 const HRING = [];   // { x, y, t0, dauer, art, gross }
 function heldRing(x, y, art, gross) { HRING.push({ x, y, t0: now, dauer: gross ? 720 : 950, art, gross }); }
 function drawHeldRinge(g, s, up) {

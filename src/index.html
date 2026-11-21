@@ -1070,10 +1070,10 @@ body.neu #hud .up-med .med { width: 35px; height: 35px; } body.neu #hud .up-med 
 #heldTitel span { font: 400 clamp(17px, 1.3vw, 24px) var(--s-head); letter-spacing: .2em; text-transform: uppercase; color: #d9c7a2; -webkit-text-stroke: 2px #140d08; paint-order: stroke fill; margin-bottom: 2px; }
 #heldTitel.faust { --hc: #ffae52; --hg: rgba(255,84,20,.7); }
 #heldTitel.kalt { --hc: #eaf3fa; --hg: rgba(140,196,240,.62); }
-#heldTitel.klein { top: 24%; padding: 10px 56px 14px; } #heldTitel.klein b { font-size: clamp(38px, 3.3vw, 64px); -webkit-text-stroke-width: 4px; }
+#heldTitel.klein { top: calc(var(--tb-unten, 70px) + 150px); padding: 10px 56px 14px; }   /* F87: Aura-Titel oben, nicht über den Figuren */ #heldTitel.klein b { font-size: clamp(38px, 3.3vw, 64px); -webkit-text-stroke-width: 4px; }
 #heldTitel.an { animation: heldTitel 1.9s cubic-bezier(.2,.9,.3,1) both; }
 @keyframes heldTitel { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-4deg) scale(2.3); filter: blur(5px); } 9% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(.93); filter: none; }
-  14% { transform: translate(-50%, -50%) rotate(-4deg) scale(1.04); } 19% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); } 78% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(1.02); }
+  14% { transform: translate(-50%, -50%) rotate(-4deg) scale(1.04); } 19% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); } 70% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(1.02); }
   100% { opacity: 0; transform: translate(-50%, -60%) rotate(-4deg) scale(1.05); } }
 </style>
 </head>
