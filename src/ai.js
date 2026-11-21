@@ -50,7 +50,7 @@ function fzNahGefahr(G, u, c, r) {
     if (o.side === u.side || !E.active(o) || o.broken > 0) continue;
     const T = TYPES[o.type]; if (!nahKaempfer(T) || T.atk < 3) continue;
     if (E.dist(o.c, o.r, c, r) > E.bpMax(o) + 1) continue;
-    const mm = T.cls === 'storm' || T.sapper ? P.STORM_VS_WALKER : P.MELEE_VS_WALKER;
+    const mm = (T.abil === 'pzgranate' || T.abil === 'charge') && !(o.cdA > 0) ? 1.5 : E.FAK.klinge.S;   // F80: Gefahr durch Panzergranate/Haftladung, sonst Hiebe ×0,5
     th += P.DMG * T.atk * mm / D.def * (o.str / 10) * (o.supp > 0 ? 0.35 : 1);
   }
   if (!th) return 0;
@@ -187,6 +187,7 @@ function abilPlan(G, u) {
       const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
+    else if (k === 'pzgranate') { const x = foe(c, r); if (x) { const dm = Math.min(E.pzgDmg(u, x), x.str); v = 1.5 + dm * 0.9 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1 : 0); } }   // F80
     else if (k === 'rollen') {   // F54 Sturmrollen: erwarteter Schaden gegen den des besten Schusses; Ziele in Deckung, MG, Geschütze, Zielfelder bevorzugt
       const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
       if (rw) { const dm = Math.min(E.rollenDmg(G, u, x, false), x.str), sch = G.units.filter(z => z.side !== u.side && E.canFire(G, u, z)).reduce((m, z) => Math.max(m, Math.min(E.preview(G, u, z, 'fire').dmg, z.str)), 0);

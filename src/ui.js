@@ -2608,7 +2608,7 @@ async function playEvent0(e) {
       const ksz = e.t === 'melee' ? await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4) : null;   // F48: Kampfszene
       if (!ksz && camOn() && e.t === 'melee' && !inView((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 0.15)) await camTo((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 520);   // F34: Kamera weich zum Nahkampf
       if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
-      { const du0 = unitById(e.d); if (e.t === 'melee' && du0 && !E.hasFlanks(TYPES[du0.type])) d.face = a.x >= d.x ? 0 : 3; }   // F76: Verteidiger dreht sich in der Szene zum Angreifer
+      { const du0 = unitById(e.d); if (e.t === 'melee' && du0) d.face = a.x >= d.x ? 0 : 3; }   // F76: Verteidiger dreht sich in der Szene zum Angreifer (Panzer nur sichtbar – nach der Szene stellt syncAll ihre Blickrichtung aus den Regeln wieder her)
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
       const strikeSnd = () => {   // Ton für jeden, der zuschlägt: Angreifer (melee) und Verteidiger beim Gegenschlag (counter) – Wunsch des Nutzers; erklingt beim Treffer
         const mech = au && TYPES[au.type].mech;
@@ -2617,7 +2617,7 @@ async function playEvent0(e) {
         // Grundklang je Fraktion (2026-11-17): Konkordat Klingen/Keule/Fäuste (nahA), Aschenwacht Spaten/Metall (nahD); eigene Töne nur für
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
-        playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : au && TYPES[au.type].cls === 'storm' && e.t === 'melee' ? 'grenade' : base, (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
+        playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : base,   /* F80: normaler Hiebton statt Granate */ (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('oger_bruell', 0.45); }   // Löwenoger brüllt statt zu schreien
         else if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35, null, { u: au });
         if (au && ['raeumer', 'sturm'].includes(au.type)) playSound('flinte', 0.5);   // kurzer Schuss im Grabenkampf
@@ -2626,7 +2626,7 @@ async function playEvent0(e) {
         if (af === 'mechB') playSound('tiger', 0.4);   // Klauenschreiter brüllt (snarl entfernt, Tonprobe 2026-11-18)
       };
       let thrown = false;
-      { const kc = au && TYPES[au.type].cls; if (e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true, pose(e.a, 'wurf', 800), shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
+      { const kc = au && TYPES[au.type].cls; if (false && e.t === 'melee' && kc === 'storm' && af !== 'shield' && af !== 'raider' && af !== 'brawler') (thrown = true,   /* F80: Sturmtrupps schlagen im Nahkampf normal zu, keine geworfene Ladung mehr */ pose(e.a, 'wurf', 800), shells.push({ fxi: au.side === 'A' ? 3 : 2, fxs: 0.75, x1: a.x, y1: a.y - s * 0.5, x2: d.x, y2: d.y - s * 0.2, t: 0, dur: 16, arc: 0.9, spin: true, img: au.side === 'A' ? 'pine' : 'stick', sz: 0.3 })); }
       // F51 (2026-11-20): Schlagabtausch – Hieb und Gegenhieb abwechselnd ohne Pause (A–V–A–V), je mit Posenwechsel, Ruck des Getroffenen und Spritzern;
       // der letzte, härteste Hieb kommt danach vom Angreifer mit der Wucht aus F48. Der Gegenschlag-Ereignis selbst ist dann nur noch kurz.
       if (e.t === 'melee' && !thrown) { const T0 = au && TYPES[au.type], du1 = unitById(e.d), Td = du1 && TYPES[du1.type], fl = d.x < a.x;
@@ -2750,6 +2750,10 @@ async function playEvent0(e) {
       fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 40, mul: 0.8, grow: 0.4, alpha: 0.85, fadeOut: 0.6 }); boom(d.x, d.y + L.s * 0.2, L.s * 0.5, 'dust');
       trefferSpritzer(x0, y0, d, 3, istMaschine(unitById(e.d))); if (e.wand) floater(...headPos(e.d), 'Eingeklemmt!', '#ffb04a', true);
       if (!(ksz && ksz.skip)) await wait(260); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
+    case 'pzgranate': {   // F80: Wurf (Ausholen → Loslassen), Granate fliegt, Explosion am Panzer mit Metallkrach
+      const d = DU.get(e.d); if (!d) break; const [x2, y2] = [d.x, d.y - L.s * 0.4]; const ksz = await kampfSzene((DU.get(e.u).x + d.x) / 2, (DU.get(e.u).y + d.y) / 2 - L.s * 0.4);
+      await poseWurf(e.u, x2, y2); await wait(280); if (!fxImpact(x2, y2 + L.s * 0.3, L.s * 0.7)) boom(x2, y2, L.s * 0.7, 'he'); playSound('boom', 0.6); playSound('einschlag_panzer', 0.55); shake(6);
+      fx('funken', null, x2, y2, { anchor: 'mitte', life: 18, fadeOut: 0.6, mul: 0.9 }); lastFire = { kind: 'cannon', t: performance.now(), a: e.u }; await wait(220); await kampfSzeneEnde(ksz); break; }
     case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig');
@@ -2990,7 +2994,7 @@ function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym
     const w = Math.min(22, 22 * im.naturalWidth / im.naturalHeight), h = w * im.naturalHeight / im.naturalWidth; g.drawImage(im, 16 - w / 2, 16 - h / 2, w, h);
     SYMCUR[sym] = `url("${c.toDataURL('image/png')}") 16 16, pointer`; } catch (e) { SYMCUR[sym] = null; }
   return SYMCUR[sym] || fb; }
-const ABIL_CUR = { charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf', rollen: 'nahkampf' };
+const ABIL_CUR = { charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf', rollen: 'nahkampf', pzgranate: 'handgranate' };
 const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
@@ -3478,7 +3482,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_KEIN = { pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 // F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
 // Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
 const ABIL_KURZ = {
@@ -3492,12 +3496,13 @@ const ABIL_KURZ = {
   mark: u => `Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder) markieren, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ${xf(P.GUIDED)} und ohne Streuung; deckt getarnte Gegner und Minen im Feld und daneben auf.`,
   strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
   rush: () => `Aus dem Stand bis ${P.RUSH} Felder geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
+  pzgranate: () => `Geballte Ladung auf ein Fahrzeug oder einen Schreiter 1–${P.PZG_RNG} Felder entfernt werfen: etwa ${fmt(P.PZG_DMG * 2)} Schaden (weniger bei starker Panzerung), ${Math.round(P.PZG_PANNE * 100)} % Pannengefahr. Nicht gegen Fußtruppen. Kostet die Aktion.`,
   rollen: () => `Ein schwerer Aufprall auf Fußtruppen oder ein Geschütz daneben oder 2 Felder geradeaus (Anlauf aus dem Stand, Draht wird niedergewalzt): etwa ${fmt(P.ROLLEN_DMG)} Schaden, niedergehalten, Moral −${fmt(P.ROLLEN_MOR)}, kein Gegenschlag. Das Ziel rutscht ein Feld zurück; ist dort kein Platz, ${xf(P.ROLLEN_WAND)} Schaden. Kostet die Aktion und alle Bewegung, danach 2 Runden Pause.`,
   sprung: () => `Aus dem Stand bis ${P.SPRUNG} Felder neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Danach ${A.cd} Runden Pause.` : ''); }
-const ABIL_SYM = { rollen: 'marsch', sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { pzgranate: 'handgranate', rollen: 'marsch', sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
@@ -3690,7 +3695,7 @@ function unitButtons(T, hints) {
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });
     if (abilMode && feldArt === 'abil') hints.push('<i>Messing markiert:</i> Zielfeld anklicken.'); }
   if (T.fessel) btns.push(sel.eingeholt ? { act: 'ball-auf', sym: 'fernglas', name: 'Aufsteigen', bp: 'alle', text: 'Ballon steigen lassen: Sicht 6 Felder über Wald und Häuser, Ziel markieren möglich; zieht danach nicht. Kostet alle Bewegungspunkte, nicht die Aktion.', off: !E.canAufsteigen(G, sel), why: 'Niedergehalten.' }
-    : { act: 'ball-ein', sym: 'stiefel', name: 'Einholen', bp: 1, text: 'Ballon einholen: danach zieht der Trupp 2 Felder, sieht aber nur 2 Felder und kann nicht markieren.', off: !E.canEinholen(G, sel), why: 'Keine Bewegungspunkte mehr.' });   // F70
+    : { act: 'ball-ein', sym: 'stiefel', name: 'Einholen', bp: 1, text: 'Ballon einholen: danach zieht der Trupp 2 Felder, sieht aber nur 4 Felder (wie Fußtruppen) und kann nicht markieren.', off: !E.canEinholen(G, sel), why: 'Keine Bewegungspunkte mehr.' });   // F70
   if (T.mg && sel.setup) btns.push({ act: 'teardown', sym: 'mg_ab', name: 'Abbauen', bp: 1, text: 'MG abbauen: danach kann es ziehen, aber nicht mehr schießen, bis es wieder aufgebaut ist.', off: !E.canTeardown(G, sel), why: 'Aktion schon verbraucht.' });
   if (T.mg && !sel.setup) btns.push({ act: 'setup', sym: 'mg_auf', name: 'Aufbauen', bp: 1, costTxt: '1 Bewegungspunkt, nimmt alle restlichen', text: `MG in Stellung bringen: erst dann feuert es oder gibt Sperrfeuer. Verbraucht alle restlichen Bewegungspunkte${sel.bp > 1 ? ` (noch ${sel.bp})` : ''} – danach zieht das MG in dieser Runde nicht mehr. Schießen geht danach mit der Aktion.`, pulse: E.canSetup(G, sel), off: !E.canSetup(G, sel), why: sel.supp > 0 ? 'Niedergehalten.' : 'Aktion schon verbraucht.' });
   if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
@@ -3817,7 +3822,7 @@ function medaillenTexte(t) {
   const m = E.medaillen(t), T = TYPES[t], W = E.WAFFE_NAME, wa = m.waffe;
   return [
     { k: 'inf', sym: 'gewehr', name: 'Gegen Infanterie: ' + MED_STUFE[m.inf], text: m.inf === 'keine' ? 'Kein Fernkampf.' : `${W[wa]} gegen ungepanzerte Ziele ${fx10(m.fInf)}.` },
-    { k: 'panzer', sym: 'sprengladung', name: 'Gegen Panzer: ' + MED_STUFE[m.panzer], text: m.panzer === 'keine' ? (wa ? `${W[wa]} ist gegen schwere Panzerung wirkungslos.` : 'Kann Panzern nichts anhaben.') : (m.fPz > (wa ? E.FAK[wa].S : 0) ? `Geballte Ladung im Nahkampf gegen Fahrzeuge und Schreiter ${fx10(m.fPz)}.` : `${W[wa]} gegen schwere Panzerung ${fx10(m.fPz)}.`) },
+    { k: 'panzer', sym: 'sprengladung', name: 'Gegen Panzer: ' + MED_STUFE[m.panzer], text: m.panzer === 'keine' ? (wa ? `${W[wa]} ist gegen schwere Panzerung wirkungslos.` : 'Kann Panzern nichts anhaben.') : (m.fPz > (wa ? E.FAK[wa].S : 0) ? (T.abil === 'pzgranate' ? `Panzergranate (Fähigkeit, 1–2 Felder) gegen Fahrzeuge und Schreiter ${fx10(m.fPz)}.` : T.abil === 'charge' ? `Haftladung (Fähigkeit) gegen Fahrzeuge und Schreiter ${fx10(m.fPz)}.` : `Nahkampf gegen Fahrzeuge und Schreiter ${fx10(m.fPz)}.`) : `${W[wa]} gegen schwere Panzerung ${fx10(m.fPz)}.`) },
     { k: 'nah', sym: 'nahkampf', name: 'Nahkampf: ' + MED_STUFE[m.nah], text: m.nah === 'keine' ? 'Kämpft nicht im Nahkampf.' : m.rolle === 'schwach' ? 'Schwach im Nahkampf: Angreifer ×1,5 gegen sie, Gegenschlag ×0,5.' : m.rolle === 'stark' ? 'Stark im Nahkampf: Gegenschlag ×1,25.' + (m.fNah >= 1.5 && E.waffeArt(t, false) === 'schwer' ? ' Schwerer Nahkampf gegen Fußtruppen ×1,5.' : '') : `${W[E.waffeArt(t, false)]} gegen Fußtruppen ${fx10(FAKN(t))}.` },
     { k: 'klasse', name: 'Panzerung: ' + E.KLASSE_NAME[m.klasse], text: m.klasse === 'S' ? 'Gewehre und MG prallen ab; Panzerbüchsen und Kanonen wirken voll, Granaten halb.' : m.klasse === 'L' ? 'Gewehr, MG und Klingen nur halb; panzerbrechende Waffen ×1,5.' : 'Volle Wirkung aller Waffen.' } ];
 }
@@ -4346,6 +4351,7 @@ function noteEvent(e, u) {
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
     case 'rollen': return logAdd(`${N(u)}: Sturmrollen`, u && u.side, ...at(u), true);
+    case 'pzgranate': return logAdd(`${N(u)}: Panzergranate`, u && u.side, ...at(u), true);
     case 'rammen': return logAdd(`${N(u)}: rammt das Gebäude`, u && u.side, ...at(u), true);
     case 'sprung': return logAdd(`${N(u)}: Sprungangriff`, u && u.side, ...at(u), true);
     case 'dauerfeuer': return logAdd(`${N(u)}: Dauerfeuer – das MG kühlt eine Runde ab`, u && u.side, ...at(u), true);

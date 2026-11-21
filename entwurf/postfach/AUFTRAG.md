@@ -298,6 +298,27 @@ Nur in `IDEEN.md` übernehmen, umsetzen später zusammen mit F66/Paket E nach R�
 - **Gar nicht:** Sanitäter, Melder/Signal/Fernsprech, Geschütze, Mörser/Minenwerfer, MG-Trupps(?), Anführer(?).
 Als Symbol in der Einheitenanzeige („kann erobern“). Balance-Auswirkung per Simulation prüfen.
 
+## Antworten von Enrico (2026-11-21 08:45, zum Bericht „F76–F79, F70, F46; Paket E abgeschlossen“)
+- **F76 (geändert 08:50):** Wer im Nahkampf von Flanke/hinten angegriffen wird, **dreht sich zum Angreifer und bleibt ihm danach zugewandt** – Flankenbonus zählt nur für diesen ersten Angriff; ein zweiter Trupp kann danach den neuen Rücken angreifen (Einkesseln lohnt sich).
+  - **Fußtruppen und Reiter:** wie schon gebaut.
+  - **Schreiter** (Säge-, Klauen-, Turm-, Kreuz-, Ordensschreiter, Eisenknecht): ebenso, **wenn sie im Nahkampf gebunden sind** – drehen sich und bleiben so (keine Drehkosten dafür).
+  - **Panzer und Kettenfahrzeuge** (Landkoloss, Sturmpanzer, Bohrkoloss): drehen sich **nicht** – nur in der Kampfszene kurz sichtbar zum Angreifer, danach zurück. „Panzer von hinten knacken“ bleibt ein Spielzug.
+  - Texte/Hilfe und KI (nutzt Einkesseln) anpassen.
+- **F78:** Mineure behalten die geballte Ladung, kosten aber **40** statt 30. Sankt Ruß danach kurz nachmessen.
+- **F70:** Eingeholter Ballon sieht **4 Felder** (wie Fußtruppen), nicht 2.
+- **F80 (neu 08:47) Granaten-Trupps: Nahkampf normal + Panzergranate als Fähigkeit:** Einheiten mit „geballter Ladung“ im Nahkampf (Sturmbrecher, Grabenräumer, Eingreiftrupp; Pioniere/Drahtpioniere und Mineure mitprüfen) sollen **im Nahkampf ganz normal zuschlagen** (Klinge/Kolben – auch **Ton und Animation** normale Hiebe, keine Explosion). Die Panzerabwehr kommt stattdessen als **eigene Fähigkeit „Panzergranate werfen“** mit Abklingzeit: **nur gegen Panzer/schwer Gepanzerte** (nicht gegen Infanterie), Reichweite 1–2 Felder, kostet die Aktion, Abklingzeit z. B. 2 Runden, kräftiger Schaden (Wert per Simulation, etwa wie heute die geballte Ladung). Ausnahme „geballte Ladung ×1,5 im Nahkampf“ in F66 entfällt dann. Wurf-Pose (Sturmtrupp-Posen vorhanden), Explosion am Panzer, `einschlag_panzer`. Pioniere: Haftladung bleibt, wie sie ist; Mineure: konsistent mit dieser Regel vorschlagen (Preis 40 ggf. neu bewerten). **Achtung Balance:** Grauwall hängt an +2 Sturmbrechern als Panzerabwehr der Aschenwacht – neu abstimmen (Grauwall + Sankt Ruß). KI nutzt die Fähigkeit. Texte/Medaillen anpassen.
+- **F81 (neu 08:53) Flammenwerfer-Reichweite:** 1 Feld ist zu kurz – der Flammentrupp steht dann immer in Feindberührung und es wird „komisch mit dem Nahkampf“. Neu: **Reichweite 2 Felder** (Konkordat-Flammentrupp, Aschenwacht-Brandwerfer; Bohrkoloss-Flammenstoß mitprüfen) **und** Flammen dürfen **auch auf ein benachbartes Ziel** gesprüht werden, obwohl die Einheit dann gebunden ist (Ausnahme vom „kein Schuss in Feindberührung“). Strahl-Länge im Bild an 2 Felder anpassen. Simulation Grauwall + Sankt Ruß; falls zu stark, Schaden auf 2 Felder etwas geringer als auf 1 (Vorschlag im Bericht).
+- Danach kurzer Bericht „bereit für die Prüfrunde – pb“.
+
+## Danach: Prüfrunde (mit Fable) – NUR prüfen, NICHTS umbauen
+Enrico stellt dafür in Claude Code auf das Modell **Fable** um. Ergebnis ist **nur eine Liste** in `entwurf/postfach/PRUEFLISTE.md` (Fund, Ort/Datei, Schwere hoch/mittel/klein, Vorschlag), kein Code ändern, nichts committen außer der Liste. Prüfen:
+1. **Leistung:** Bildrate in großen Schlachten (Grauwall, Sankt Ruß, viele Effekte: Pulverdampf, Blut, Kampfszene), Speicher, Ladezeit; `index.html` ~53 MB – was ließe sich verkleinern (Bilder, Töne), ohne Qualität zu verlieren.
+2. **Widersprüche Regeln ↔ Texte ↔ KI ↔ Anzeige:** Faktortabelle F66, Medaillen, SPECIALS, Fähigkeitstexte, Zug-Vorschau F60, Knopf-Gründe, Bewegung/Aktion F61; KI nutzt alle neuen Regeln (Generalangriff, Sturmrollen, Ausgraben, Ballon, Gebäude rammen, Ladungen).
+3. **Tonmischung:** Pegel der Gruppen zueinander (Gewehr/MG/Kanone/Stimmen/Musik), abgehackte Töne, Dopplungen, Einschlag nach Ziel.
+4. **Figuren:** Maßstab der Einheiten zueinander, Mündungspunkte aller Waffen, Getroffen-Richtung, Posen-Lücken.
+5. **Sonstiges:** tote Codepfade, alte Draufsicht-Reste, Speicherschlüssel, Konsolenfehler in einer kompletten KI-gegen-KI-Partie auf beiden Karten.
+Am Ende im Chat: „Prüfliste fertig – pb“.
+
 ## Antworten von Enrico (2026-11-21 08:30, zum Bericht „F54, F66, Punkte 7–14, F70“)
 - **F70 Ballon:** **Ja, so bauen** wie vorgeschlagen (oben Sicht 6 + Markieren, eingeholt 2 Felder Zug/Sicht 2, Einholen 1 BP, Aufsteigen alle BP ohne Aktion, Preis 25, KI wie beschrieben, Seil-Animation, Winden-/Ratschenton).
 - **F68:** gibt es nicht – Tippfehler des Beraters, entfällt.
@@ -334,3 +355,4 @@ Als Symbol in der Einheitenanzeige („kann erobern“). Balance-Auswirkung per 
 - [x] Punkte 7–14: Standard-Optionen, Armee-Tooltip, Musik/Ton aus, F71 Pulverdampf, F72 Beschuss-Wucht, F73 Schreiter-Animation, F74 Scharfschützen, F75 Flammenstoß (dieser Commit)
 - [x] F76–F79 (d2cd205), Simulation Grauwall 52 % / Sankt Ruß 50 %, Mineur-Test im Bericht
 - [x] F70 Ballon, F46 Graben (10ded8e); Paket E abgeschlossen
+- [x] F76 geändert, F78 Preis 40, F70 Sicht 4, F80 Panzergranate, F81 Flammen 2 Felder; Grauwall 52 % / Sankt Ruß 49 % (dieser Commit) – bereit für die Prüfrunde

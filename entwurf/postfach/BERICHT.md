@@ -1,5 +1,50 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – F76 (geändert), F78, F70, F80, F81 – bereit für die Prüfrunde
+
+**Commit:** siehe unten (gepusht).
+
+**Bild:** `entwurf/probe/spieltest4_e/f80_panzergranate.jpg`
+
+- **F76 (wie geändert):**
+  - Fußtruppen, Reiter und Schreiter drehen sich im Nahkampf zum Angreifer und bleiben so, ohne Drehkosten.
+  - Panzer und Kettenfahrzeuge (Landkoloss, Sturmpanzer, Bohrkoloss) drehen sich nur in der Kampfszene sichtbar und stehen danach wieder wie vorher.
+  - Die Regeln-Hilfe nennt das Einkesseln.
+  - Die KI nutzt es über die Schadensvorschau: Ein zweiter Angriff von hinten zeigt den höheren Schaden.
+- **F78:** Mineure kosten 40.
+  - Sankt Ruß nachgemessen mit 2 zusätzlichen Mineur-Trupps: Konkordat 77 % (vorher 84 %).
+  - Wegen F80 haben die Mineure keine geballte Ladung mehr. Ihr Vorteil auf dieser Karte ist vor allem der Wert zweier zusätzlicher Trupps; Sankt Ruß reagiert darauf sehr empfindlich.
+  - **Vorschlag:** 40 lassen; die Stollen bleiben mit 3 Ladungen stark.
+- **F70:** Eingeholter Ballon sieht 4 Felder.
+- **F80 Panzergranate:**
+  - Sturmbrecher, Grabenräumer und Eingreiftrupp schlagen im Nahkampf normal zu: Klinge/Kolben ×0,5 gegen Panzer, normale Hiebtöne, keine geworfene Ladung mehr.
+  - Neue Fähigkeit „Panzergranate werfen“:
+    - 1–2 Felder, nur gegen Fahrzeuge und Schreiter;
+    - kostet die Aktion, danach 2 Runden Pause;
+    - Schaden etwa 21 gegen Landkoloss und Sturmpanzer, 14 gegen den Eisenknecht;
+    - 15 % Pannengefahr.
+  - Animation: Wurf-Pose, Explosion mit Funken am Panzer, Metallkrach.
+  - Pioniere behalten die Haftladung. Drahtpioniere und Mineure haben keine Panzerwaffe mehr.
+  - Die Medaillen zeigen „Panzergranate“ bzw. „Haftladung“.
+  - Die KI wirft etwa 5 Granaten je Schlacht.
+  - **Nebenbei gefunden:** Durch denselben Kommentarfehler wie bei den Konstanten war die geballte Ladung seit dem F66-Abgleich schon abgeschaltet. Die Werte im letzten Bericht galten also bereits ohne sie. Ich habe jetzt alle drei Regel-Dateien nach solchen verschluckten Codezeilen abgesucht; es gab keine weitere.
+- **F81 Flammenwerfer:** Reichweite 2 für Flammentrupp, Brandwerfer und den Flammenstoß des Bohrkolosses.
+  - Ins Nachbarfeld durften Flammen schon immer, auch gebunden.
+  - Die Strahllänge richtet sich nach der Entfernung.
+  - Preise aus den Werten: Flammentrupp 45, Brandwerfer 50.
+  - Ein geringerer Schaden auf 2 Felder war nach der Simulation nicht nötig.
+- **Abstimmung** (je 200 Schlachten, alles zusammen):
+
+| Karte | Armee | Konkordat |
+|---|---|---|
+| Grauwall | Aschenwacht 8 statt 10 Grenadiere, die 2 Sturmbrecher bleiben | **52 %** |
+| Sankt Ruß | unverändert | **49 %** |
+
+  - Mit nur 1 Sturmbrecher wären es 75 %, mit 2 Sturmbrechern und 10 Grenadieren 37 %.
+- Partietest im Browser ohne Fehler.
+
+**Bereit für die Prüfrunde.**
+
 ## 2026-11-21 – F76–F79, F70 Ballon, F46; Paket E abgeschlossen
 
 **Commits:**
