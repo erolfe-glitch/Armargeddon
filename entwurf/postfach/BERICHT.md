@@ -1,5 +1,79 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Paket G, Schritte 6 und 7 (Leistung, KI) – Abschluss Paket G
+
+**Commits:**
+- `93d0bfd` Schritt 6 (Leistung)
+- `c7c5132` KI 2.21
+- `b2cff21` KI 2.23
+- `549d5f2` IDEEN.md
+
+### Schritt 6 – Leistung
+- **1.7 Audio-Objekte:** Sie werden erst beim ersten Abspielen angelegt. Vorher waren es beim Start rund 750 Objekte, alle mit `preload 'auto'`.
+
+  | | vorher | nachher |
+  |---|---|---|
+  | Startmenü bedienbar (Headless-Chrome, lokal) | 1,4–1,6 s | 0,8 s |
+  | Heap | 111 MB | 108 MB |
+
+  Geprüft im Headless-Chrome: Titelmusik und Probetöne laden und spielen. Partietest und KI-Partie laufen ohne Fehler.
+- **1.3 Schlachtmusik:** 96 kbit/s statt 128, also 3,7 → 2,8 MB. `sound.js` 29,3 → 28,0 MB, `index.html` jetzt **53,5 MB**. Die Titelmusik ist unverändert.
+- **1.2 Auswahl-Töne in `sound_pult.js`:** wartet weiter auf deinen vollständigen Ton-Pult-Export.
+
+### Schritt 7 – KI
+- **2.21 „Halten um jeden Preis“:** Neu greift der Befehl auch, wenn
+  - 2 Einheiten in Reichweite wanken (Moral knapp über der Fluchtgrenze oder angeschlagen in Feindberührung), oder
+  - ein gehaltenes Zielfeld bedroht ist (Gegner bis auf 2 Felder heran).
+  - Den alten Auslöser gibt es weiter mit `HOLD_ALT=1`.
+
+  | | vorher | nachher |
+  |---|---|---|
+  | Halten genutzt, Grauwall | 32 % der Schlachten | 98 % |
+  | Halten genutzt, Sankt Ruß | 34 % | 99 % |
+  | Simulation Grauwall (Konkordat) | 48 % | 50 % |
+  | Simulation Sankt Ruß (Konkordat) | 53 % | 50 % |
+
+- **2.23 Kauf nach Lage:**
+  - **Wunschliste:** Die bewährte Liste bleibt das Rückgrat, die neuen Einheiten stehen jetzt darin.
+    - Konkordat: Mineure, Schildwall, Löwenoger, Versorgung.
+    - Aschenwacht: Hünen, Gasschutz, Versorgung.
+  - **Lage-Käufe:** Sie gehen bei klarem Bedarf vor:
+    - **Beobachter:** Ballon bzw. Signaltrupp, wenn die eigene Artillerie keinen hat.
+    - **Panzerabwehr:** Pioniere bzw. Panzerbüchsen, wenn der Gegner 3 Fahrzeuge oder Schreiter mehr hat als man selbst Panzerabwehr.
+  - **Abschalter:** alte Liste mit `KAUF_ALT=1`; die Lage-Käufe einzeln mit `NOLAGE_aufkl` bzw. `NOLAGE_abwehr`.
+  - **Verworfene Fassungen (je 200 Schlachten):**
+
+    | Fassung | Grauwall | Sankt Ruß |
+    |---|---|---|
+    | Kauf nur nach Punktwerten | 6 % | 46 % |
+    | Punktwerte mit Kerntruppen ohne Abzug | 13 % | 63 % |
+    | Beobachter erst ab Runde 4 | 35–39 % | 61–65 % |
+    | Mit Lage-Käufen für Sanitäter und Gasschutz | ~45 % | ~54 % |
+
+    Bei der zweiten Fassung kaufte die KI kaum noch Landkolosse und Sturmbrecher. Die Runde-4-Fassung zeigt: Der frühe Beobachter ist für beide Seiten viel wert. Die Lage-Käufe für Sanitäter und Gasschutz habe ich deshalb wieder herausgenommen.
+  - **Ergebnis** (Konkordat, Mittel aus zwei Startwerten): Grauwall **51 %**, Sankt Ruß **53,5 %**. Mit der alten Liste waren es je etwa 49 %. Sankt Ruß liegt damit wieder beim früher festgehaltenen Ø 53 %.
+- **Ballon und Mineure gezielt gezählt** (je 200 Schlachten, je Schlacht):
+
+  | | Grauwall | Sankt Ruß |
+  |---|---|---|
+  | Ballon gekauft | 1,06 | 1,47 |
+  | Ballon markiert | 5,4-mal | 5,5-mal |
+  | Ballon eingeholt / aufgestiegen | 0,29 / 0,18 | 1,03 / 1,01 |
+  | Signaltrupp der Aschenwacht gekauft | 1,09 | 1,00 |
+  | Signaltrupp markiert | 6,6-mal | 8,0-mal |
+  | Mineure gekauft | 0,13 | 0,30 |
+  | Stollen gegraben | 0,01 | 0,03 |
+
+  Die Mineure graben also kaum Stollen. Der Auslöser in `ai.js` muss sich das noch ansehen; er steht als offener Punkt in IDEEN.md.
+- **Selten gekauft:** Löwenoger, Hünen und Schildwall kauft die KI noch kaum (0–0,17 je Schlacht). Sie stehen weit hinten in der Liste, und die KI macht nur 5–8 Käufe je Schlacht.
+- **`sim.js`:** zählt jetzt Käufe je Einheit und Markieren je Einheit (Ballon bzw. Signaltrupp getrennt).
+
+### Erledigt nach deinen Antworten von 13:25
+- **CREDITS `neu2_*`:** als offener Punkt in IDEEN.md, zusammen mit „Mineure graben kaum Stollen“ und dem Fehlalarm in `test_draht.js`.
+- **Löschen von `src/paint.js`, `src/mapimg.js`, `tools/welle_abgleich.js`, `tools/welle_fein.js`:** Die automatische Sicherheitsprüfung von Claude Code hat das Löschen blockiert, weil die Freigabe nur in AUFTRAG.md steht und nicht direkt im Chat. Bitte einmal im Chat bestätigen, dann lösche ich sie.
+
+**Paket G ist damit abgeschlossen.** Weiter mit den Posenbögen Runde 2 (samt F82-Effekten und Pflicht-Übermalungen).
+
 ## 2026-11-21 – Paket G, Schritt 5 (alte Karten raus) und Ton-Nachträge
 
 **Commits:**
