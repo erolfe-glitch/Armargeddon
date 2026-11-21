@@ -6239,7 +6239,11 @@ function next(G) {
     const own = G.units.filter(o => o.side === u.side && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= P.BIG_R);   // Paket 8: wirkt nur 3 Felder um den General
     if (u.side === 'A') {   // Halten um jeden Preis: viele eigene Einheiten in Feindberührung oder mit wankender Moral
       const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
-      if (shaky >= Math.max(3, Math.round(own.length * 0.35))) return { u: u.id, steps: [{ k: 'big' }] };
+      // Prüfliste 2.21 (2026-11-21): vorher nur in gut einem Drittel der Schlachten. Zusätzlich: 2 Einheiten in Reichweite wanken (Moral knapp über der Fluchtgrenze
+      // oder angeschlagen in Feindberührung), oder ein gehaltenes Zielfeld in Reichweite ist bedroht (Gegner bis 2 Felder heran) – Halten wirkt bis zum nächsten eigenen Zug
+      const wank = own.filter(o => o.mor < P.FALLBACK_MOR + 1.5 || (E.adjEnemies(G, o).length && o.str < 6)).length;
+      const zielBedroht = E.OBJECTIVES.some(ob => G.ctrl[ob.id] === u.side && own.some(o => E.dist(o.c, o.r, ob.c, ob.r) <= 1) && G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, ob.c, ob.r) <= 2));
+      if (ENVX.HOLD_ALT ? shaky >= Math.max(3, Math.round(own.length * 0.35)) : (shaky >= Math.max(3, Math.round(own.length * 0.35)) || (wank >= 2 && own.length >= 3) || (zielBedroht && own.length >= 2 && G.turn >= 4))) return { u: u.id, steps: [{ k: 'big' }] };
     } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
       // F53 (2026-11-20): Generalangriff ist ein zweiter Angriff – am besten, wenn viele Einheiten in Reichweite schon angegriffen haben oder niedergehalten sind und Gegner nah stehen
       const nachgeladen = own.filter(o => o.status === 'ok' && !(o.broken > 0) && (o.attacked || o.supp > 0) && TYPES[o.type].atk >= 3 && nearestEnemyDist(G, o.side, o.c, o.r) <= Math.max(2, TYPES[o.type].rng || 1)).length;
