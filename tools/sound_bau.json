@@ -601,7 +601,7 @@
     { "pool": "ambient", "f": "Ambience/armed_unit-distant-war-377958.mp3", "s": null, "st": 5, "max": 45, "lvl": -24, "kbps": 48 },
     { "pool": "wetter", "f": "Ambience/447809__florianreichelt__light-rain-and-thunder.wav", "s": null, "max": 30, "lvl": -26, "kbps": 48 },
     { "pool": "musik_titel", "f": "Musiker/the_grimdark_front.wav", "s": null, "max": 400, "lvl": -20, "stereo": true, "kbps": 128, "note": "Titelthema (eigenes Stück, erstellt mit Suno Pro): Startmenü, Armee-Auswahl, Regeln – Schleife mit Überblendung" },
-    { "pool": "musik_schlacht", "f": "Musiker/grimdark_trench.wav", "s": null, "max": 400, "lvl": -20, "stereo": true, "kbps": 128, "note": "Schlachtmusik (eigenes Stück, erstellt mit Suno Pro): Schleife mit 2 s Überblendung, leise unter den Effekten" },
+    { "pool": "musik_schlacht", "f": "Musiker/grimdark_trench.wav", "s": null, "max": 400, "lvl": -20, "stereo": true, "kbps": 96, "note": "Schlachtmusik (eigenes Stück, erstellt mit Suno Pro): Schleife mit 2 s Überblendung, leise unter den Effekten; 96 kbit/s seit Prüfliste 1.3 (2026-11-21), im Spiel bei etwa −42 dB nicht hörbar schlechter" },
     { "pool": "musikNiederlage", "f": "Musiker/693767__composingatnight__taps-for-the-fallen.wav", "s": null, "max": 64, "lvl": -20, "kbps": 48 },
     {"pool": "oger_bruell", "f": "Monster/dffdv-lion-roars-with-growls-and-inhales-195839.mp3", "s": null, "ab": 0.05, "max": 3, "lvl": -16, "note": "Löwenoger: Löwengebrüll (2026-11-20, statt Tiger)"},
     {"pool": "oger_bruell", "f": "Monster/dffdv-lion-roars-with-growls-and-inhales-195839.mp3", "s": null, "ab": 12.95, "max": 3, "lvl": -16},

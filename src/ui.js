@@ -1819,8 +1819,8 @@ let soundOn = true;
 try { soundOn = localStorage.getItem('arm.ton') !== '0'; } catch (e) {}   // Ton-Einstellung bleibt gespeichert (Spieltest 2026-11-17)
 let verlorenT = -1e9;   // Punktverlust: danach kurz keine Pfeife (Tonprobe 2026-11-18)
 const lastSnd = {}, SND_GAP = { ueberrollen: 600, pferd_auswahl: 2500, pferd_unruhe: 2500, gespann: 1400, wagenknarren: 1400, husten: 300, select: 500, selGas: 900, ui: 50, erobert: 900, verloren: 900, tick: 600, bauen: 1500, wasser: 300, feuer: 2000, blast: 300, cannonH: 200, boomH: 250, mg3: 250, tankmove: 900, impact: 200, punch1: 120, punch2: 120, punch3: 120, punch4: 600, swords: 200, medic: 5000, pain: 1500, horn: 3000, snarl: 1500, tiger: 1500, rifle: 70, mg: 250, cannon: 150, flame: 500, boom: 250, boom2: 400, barrage: 800, gas: 800, tank: 1500, glitch: 500, gallop: 1400, gallop2: 1400, neigh: 2500, march: 2000, win: 3000, launch: 200, grenade: 300, cry: 1200, steps: 1100, tramp: 1100, cut: 300, robot: 2500, armor: 200, smash: 300, sword: 300, axe: 300, minigun: 400, mg2: 250, clank: 300, heal: 900, panic: 3000, whistle: 1500 };
-const SND = {};
-for (const k in (window.SOUNDS || {})) { SND[k] = new Audio(window.SOUNDS[k]); SND[k].preload = 'auto'; }
+// Prüfliste 1.7 (2026-11-21): Audio-Objekte erst beim ersten Zugriff anlegen (vorher ~750 beim Start, alle mit preload 'auto')
+const SND = new Proxy({}, { get(t, k) { if (k in t) return t[k]; const src = typeof k === 'string' && window.SOUNDS && window.SOUNDS[k]; if (!src) return undefined; const a = new Audio(src); a.preload = 'auto'; return (t[k] = a); } });
 // Hintergrundkulisse als leise Schleife
 let ambient = null;
 let wetter = null, musik = null, feuerTon = null;
