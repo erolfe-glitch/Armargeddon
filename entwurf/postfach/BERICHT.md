@@ -1,5 +1,76 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Paket G, Schritt 5 (alte Karten raus) und Ton-Nachträge
+
+**Commits:**
+- `9940139` Schritt 5
+- `f6eaa7b` Ton-Nachträge
+- Rückweg: Git-Tag **`vor-alte-karten-raus`** (gepusht)
+
+### Was raus ist
+- **Karten:** Nur noch **Grauwall** und **Sankt Ruß**. Entfernt sind die acht alten Karten (Selm, Lerne, Front, Steinbrücke, Waldfluss, Kasematten, Kanalstadt, Varntal), die alten Grauwall-Daten (`GRAUWALL_*`, `buildGrauwall`) und `gridMap`.
+- **Verstärkungswelle:** ganz entfernt (`reinf`, `reinfTurn`, Ereignis und Anzeige „Gegenstoß der Aschenwacht“), weil keine der zwei Karten sie nutzt. Der Nachschub über das Kaufmenü bleibt.
+- **Alte flache Ansicht in `ui.js`:**
+  - alle 27 Abfragen `VIEW.tilt()` und `OPT.tilt`;
+  - `renderPainted`, `renderImageMap` und der Kachelboden;
+  - die alten Zeichen-, Zeiger-, Scroll- und Zoompfade (das Brett wird nicht mehr gescrollt, nur noch die Kamera bewegt);
+  - tote Hilfsfunktionen (`unitAtPixel`, `drawUnits`, `toBoard`).
+  - Der Boden kommt nur noch aus den Gelände-Bausteinen; solange sie laden (ca. 0,4 s), ist er dunkel.
+- **Prüfliste 5.3:** Diese P-Konstanten liest nichts mehr, sie sind gestrichen: `MV2`, `ORDER_CD`, `MELEE_VS_WALKER`, `STORM_VS_WALKER`, `MARCH`, `STUCK_TURNS`, `STRIKE_CD`, dazu `MAXT`/`WIN_A`/`DRAW_A`/`REINF_TURN`. `P_STUFE3_AT` ist jetzt `at: true`. Die Liste in `tools/p_schluessel.json` habe ich bewusst erneuert, jetzt 128 Schlüssel.
+- **Prüfliste 5.4:** `unitAtPixel`, `buildGrauwall` und `autoFace` sind gestrichen.
+- **Prüfliste 5.6:** Die verwaisten Schlüssel `arm.tempo`, `arm.bildwirkung` und `arm.bildwirkung2` werden beim Start einmal gelöscht.
+- **Prüfliste 1.6:** Die alten Bögen `konkordat_kreuzschreiter` und `aschenwacht_eisenknecht` sind nicht mehr eingebettet; `figure_cut.py` und `figur_plastik.py` lassen sie aus. Die zehn noch keiner Einheit zugeordneten Posenbilder bleiben eingebettet, sie gehören zu 4.4 (später).
+- **Prüfliste 2.11:** Die Reserve stand noch im Text der Aschenwacht im Startmenü. Jetzt heißt es dort: „Verteidigt. Zäh in Gräben und Ruinen, mit MG-Nestern und Sturmbrechern gegen die Kolosse.“
+
+### Ersatzbilder, die bleiben
+- **`art.js`:** nur noch, was die **Blaue Legion** braucht. Alle 52 Einheiten haben einen neuen Bogen; die Blaue Legion hat aber noch keine neuen Bögen.
+  - `_F`-Bilder: `inf_F`, `mg_F`, `art_F`, `limber_F`, `walker_F`, `cav_F`, `medic_F`, `mortar_F`
+  - `_A`-Bilder ohne `_F`-Gegenstück: `sniper_A`, `dog_A`, `sapper_A`, `raider_A`, `mechT_A`, `mechK_A`, `mechC_A`, `suitA_A`, `flamer_A`, `shieldA_A`, `fgun_A`, `phone_A`, `leader1_A`, `leader4_A`, `smoke_A`, `miner_A`, `wrench_A`, `balloon_A`
+  - Entfernt sind 47 Bilder: alle `_D`, die übrigen `_A` und die nicht genutzten Anführerbilder.
+  - Im Browser geprüft: Die Blaue Legion steht mit allen Bildern auf dem Grauwall.
+- **`fx.js`:** alte Effekte als Ersatz, wo ein neuer Effektbogen fehlt.
+  - `fx` (15): `blood1–4`, `splash`, `dirt1/2`, `smokeD`, `expl`, `smokeL1/2`, `gas1/2`, `flame1/2`
+  - `proj` (27): Nahkampf-Bilder `mswing`, `msmash`, `mclaw`, `mstab`, `mimpact`, `msplat`, `hammer`; dazu `mgfire`, `muzzle`, `jet`, `sparks`, `dust`, `crash`, `mudsplash`, Geschosse `rocket`, `bolt`, `bullet`, `shellA/B`, `shard`, und `bandage`, `crossG`, `crossF1–3`, `stick`, `pine`
+  - Entfernt sind 61 Bilder: die 27 Bodenkacheln, die 29 alten Textsymbole `i_*` (seit F15 kommen die Symbole aus den Bögen), `engine`, `burst`, `cross`, `smokeC` und `flameS`.
+- **`paint.js` und `mapimg.js`:** nicht mehr im Bau. Die Dateien liegen noch in `src/`.
+
+### Größe vorher → nachher
+
+| Datei | vorher | nachher |
+|---|---|---|
+| **index.html** | **62,1 MB** | **54,6 MB**; mit den neuen Tönen 54,8 MB (`f6eaa7b`) |
+| mapimg.js + paint.js | 3,6 MB | 0 (nicht mehr eingebettet) |
+| art.js | 2,41 MB | 0,92 MB |
+| fx.js | 1,64 MB | 0,89 MB |
+| figs.js + figsplastik.js | 11,57 MB | 11,27 MB |
+| ui.js | 493 KB | 458 KB |
+| engine.js | 184 KB | 164 KB |
+
+GitHub warnt weiter, weil die Datei über 50 MB liegt. Die Töne (29 MB) folgen in Schritt 6.
+
+### Tests
+- **test_regeln:** in Ordnung.
+- **test_partie:** 4 Runden, Konsole ohne Fehler.
+- **test_ki_partie:** ohne Fehler bis zum Ende, auf dem Grauwall (Runde 13, Bildzeit Ø 6 ms, höchstens 26 ms) und in Sankt Ruß (Runde 14).
+- **test_belegung:** in Ordnung.
+- **Im Browser (1280 px):** Startmenü, Kartenwahl (nur zwei Karten, Vorschau richtig) und eine Schlacht mit der Blauen Legion, Konsole ohne Fehler.
+- **`test_draht.js`:** meldet 1 Fehler („keine stillen Geländeänderungen“, Straßenzeile von Sankt Ruß). Den gab es schon vor Schritt 5; vermutlich schlägt der Test fälschlich an, weil die Straße beim Kartenbau gesetzt wird. Noch nicht angefasst.
+- **Simulation (je 200):** Grauwall **48 %**, Sankt Ruß **53 %** – unverändert, die Regeln sind gleich geblieben.
+
+### Ton-Nachträge
+- **Löwenoger getroffen** (`magiaz-lion2`): Bei leichten bis mittleren Treffern (unter 20 Stärke) brüllt jetzt der Löwe; das ist Standard, im Pult heißt die Zeile „Leicht bis mittel getroffen: Löwe“. Schwere Treffer klingen wie bisher.
+- **Zweiter Löwe** (`magiazzz-lion`, kam um 10:52): nur als Auswahl im Pult (`neu3_loewe2`).
+- **Klingen-„Sching“ beim Sturmrollen:** Der Platz `neu_wucht` enthielt zwei Axt-Treffer und einen Schwerthieb. Sturmrollen, Gebäude rammen und Bohrstoß nehmen jetzt den neuen Platz `neu3_fzaufprall`: zwei dumpfe schwere Schläge und ein filmischer Treffer, ohne Klinge. Das gilt im Spiel und als Standard der Pult-Zeilen. `neu_wucht` bleibt für die Nahkampf-Schreiter.
+- Ton-Pult, Tonprobe und Spiel sind neu gebaut, CREDITS ergänzt, `sound-quelle` gesichert.
+
+### Offen / Frage an Enrico
+- **CREDITS für die `neu2_*`-Töne:** 85 Quelldateien stehen noch nicht einzeln drin, davon etwa 45 von Freesound mit Lizenzen, die ich einzeln nachschlagen muss. Das ist ein eigener Arbeitsgang; im Moment wird nichts verkauft.
+- **Darf ich löschen?**
+  - `src/paint.js` und `src/mapimg.js` – nicht mehr im Bau, Rückweg über den Tag.
+  - `tools/welle_abgleich.js` und `tools/welle_fein.js` – haben ohne Welle keinen Zweck mehr.
+
+**Weiter mit Schritt 6 (Leistung: 1.7, 1.3).**
+
 ## 2026-11-21 – Paket G, Schritte 4 und 4b (Tests, Ton-Nachträge) – „Ton-Pult neu“
 
 **Commits:**
