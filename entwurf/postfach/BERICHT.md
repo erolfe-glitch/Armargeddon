@@ -1,6 +1,6 @@
 # Berichte von Claude Code (neuester oben)
 
-## 2026-11-21 – R9 Panzerbüchse, Bannerträger-Pistole, schweres Blut ()
+## 2026-11-21 – R9 Panzerbüchse, Bannerträger-Pistole, schweres Blut (`2d86333`)
 
 - **Panzerbüchse:** Das Spielbild ist ein Zwei-Mann-Trupp, die Posen zeigen einzelne Männer. Deshalb wird der jeweils andere Mann aus dem Grundbild danebengesetzt.
   - **Schuss:** Schütze kniend angelegt, daneben der Ladeschütze. Mündung neu gemessen; auch das Grundbild hat jetzt eine gemessene Mündung.
@@ -10,7 +10,7 @@
     - Ladeschütze, die Patrone fällt (Patrone gehört zur Figur), daneben der liegende Schütze.
   - Die schwebende rosa Geisterhand ist entfernt. Die Helme zeigen keine Adler, auch das Grundbild nicht (geprüft).
 - **Bannerträger mit Pistole:** Schuss-Pose aus der linken Figur, Mündung gemessen. Die Fahne ist auf aschgrau, schwarz und knochenweiß umgefärbt.
-- **Schweres Blut ():**
+- **Schweres Blut (`fx_blut2`):**
   - **In der Luft:** Bei jedem Nahkampftreffer und bei schweren Treffern gegen Weiche gibt es einen großen Blutstoß, in Schlagrichtung gedreht. Das alte Blut bleibt für leichte Treffer und Schüsse.
   - **Am Boden:** Bei schweren Treffern ein Fleck, bei Vernichtung eine Lache. Beide verblassen nach 2 Runden.
   - Die rosa Pinselränder sind beim Freistellen blutrot und laufen durchsichtig aus, es bleiben keine rosa Säume.
