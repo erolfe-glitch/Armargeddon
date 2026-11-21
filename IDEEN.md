@@ -128,3 +128,8 @@ Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr 
 - **Konkordat – „Die Rote Faust“:** Oberst im Kampfanzug mit dampfgetriebener Schlagfaust. Spezial „Durchbruch“: stürmt bis 2 Felder in eine Einheit und schleudert sie ein Feld zurück. Aura: Nachbarn verlieren unter Beschuss weniger Moral. Schwäche: kaum Fernkampf (nur Pistole).
 - **Aschenwacht – „Der Eiserne Kürassier“:** riesiger gepanzerter Ritter mit Kettenklinge (Spitzhelm schlicht, keine Abzeichen). Spezial „Hinrichtung“: angeschlagene Einheit (unter 30 %) im Nahkampf sofort vernichtet. Aura: Furcht (Gegner in der Nähe verlieren Moral). Schwäche: langsam, bleibt in Schlamm und Graben stecken.
 - Werte und Einordnung ins Dreieck (F66) später vorschlagen; Bilder macht Enrico mit Gemini.
+
+## Offene Punkte aus Paket G (2026-11-21)
+- **CREDITS für die neu2_*-Töne (F67):** 85 Quelldateien stehen noch nicht einzeln in CREDITS.md (etwa 45 von Freesound, Lizenz je Datei nachschlagen). Erst nötig, wenn etwas veröffentlicht oder verkauft wird (Enrico 13:25).
+- **Mineure graben kaum Stollen:** die KI kauft sie jetzt (Grauwall 0,13, Sankt Ruß 0,30 je Schlacht), gräbt aber nur 0,01 bzw. 0,03 Stollen je Schlacht – Auslöser in ai.js (abilPlan tunnel, posValue Mineure) prüfen.
+- **test_draht.js** meldet „keine stillen Geländeänderungen“ bei der Straßenzeile von Sankt Ruß (schon vor Paket G Schritt 5) – vermutlich Fehlalarm, Test anpassen.
