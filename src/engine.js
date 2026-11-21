@@ -50,6 +50,7 @@ const P = {
   MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2,
   PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 2, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
+  RAMM_BAU: 1, RAMM_SELBST: 0.6, RAMM_PANNE: 0.15, RUINE_FEST: 0.12,   // F79 Rammen (Bauschaden, eigener Schaden, Pannengefahr) und Trümmer (Festfahr-Gefahr)
   ROLLEN_DMG: 2.4, ROLLEN_MOR: 1.5, ROLLEN_WAND: 1.5,   // F54 Sturmrollen (×10 in der Anzeige: 24 Schaden, Moral −15)
   DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
@@ -259,8 +260,8 @@ Object.assign(TYPES, {
   rauch: { side: 'A', name: 'Rauchwerfer-Trupp', cls: 'inf', fig: 'smoke', abil: 'smoke', atk: 2, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Nebelwand (Aktion, 3 Runden Pause): Feld bis 3 Felder und seine Nachbarn bis zur nächsten eigenen Runde im Nebel. Ziel im Nebel: Beschuss ×0,5; Schütze im Nebel ×0,75; keine Sicht hindurch. Vor dem Vorrücken legen.',
     real: 'Bei Loos legten die Briten im September 1915 neben Gas auch künstlichen Nebel aus Rauchkerzen, um den Angriff zu verschleiern. Später verschossen Stokes-Mörser Nebelgranaten.' },
-  mineur: { side: 'A', name: 'Mineure (Tunnelgräber)', cls: 'inf', fig: 'miner', abil: 'tunnel', sapper: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Stollen graben (Aktion, alle 4 Runden): unter einen Graben, Bunker oder ein Gebäude bis 2 Felder. Zwei eigene Runden später fliegt das Feld in die Luft (schwerer Schaden, wird zum Trichter).',
+  mineur: { side: 'A', name: 'Mineure (Tunnelgräber)', cls: 'inf', fig: 'miner', abil: 'tunnel', ladungen: 3, sapper: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
+    can: 'Stollen graben (Aktion, alle 4 Runden): unter einen Graben, Bunker oder ein Gebäude bis 2 Felder. Zwei eigene Runden später fliegt das Feld in die Luft (schwerer Schaden, wird zum Trichter). Höchstens 3 Ladungen je Schlacht.',
     real: 'Bei Messines zündeten britische Tunnelbauer am 7. Juni 1917 19 Minen unter den deutschen Stellungen. Die Explosionen waren bis nach London zu hören.' },
   werkstatt: { side: 'A', name: 'Versorgungstrupp', cls: 'medic', fig: 'wrench', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
     can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, 2 Runden Pause), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, 2 Runden Pause): ein MG oder Geschütz daneben schießt noch einmal.',
@@ -344,6 +345,7 @@ const TERRAIN = {
              real: 'In den Dörfern an der Westfront wurde um jede Mauer gekämpft; Gärten und Hecken waren oft die einzige Deckung zwischen den Häusern.' }
 };
 const KIRCHE = new Set(['schiff', 'turm']);
+const RUINE = new Set(['village', 'fabrik', 'kirche']);   // F79 (2026-11-21): Trümmer – Fahrzeuge/Schreiter: Bewegung endet dort, Gefahr festzufahren
 
 const GRAUWALL_OBJ = [
   { id: 'veskar', name: 'Ruinen von Veskar', c: 15, r: 4, pts: 2 },
@@ -1016,7 +1018,7 @@ function reachable(G, u, opt) {
       const [cst, c, r] = queue.shift();
       if (cst > best.get(key(c, r))) continue;
       const here = key(c, r);
-      if ((here !== s0 || !first) && ((hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !wireProof(T)) || (!free && isZOC(G, c, r, u.side)))) continue;
+      if ((here !== s0 || !first) && ((hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !wireProof(T)) || (!free && isZOC(G, c, r, u.side)) || (T.cls === 'walker' && RUINE.has(hex(G, c, r).t) && !TOG.NORUINE))) continue;   // F79: in Trümmern endet der Zug
       for (const [nc, nr] of neighbors(c, r)) {
         if (unitAt(G, nc, nr)) continue;
         const mc = cost(G, u, nc, nr);
@@ -1108,6 +1110,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
     if (T.cls === 'walker' && h.t === 'wire') { h.t = 'open'; flush(); ev.push({ t: 'crush', u: u.id, c: nc, r: nr }); }
     if (fireAt(G, nc, nr)) { flush(); burn(G, u, ev); if (!alive(u) || u.status !== 'ok') { claimObjective(G, u); ev.push(...checkEnd(G)); return ev; } }   // durch Feuer
     if (h.t === 'wire' && T.cls !== 'walker' && !wireProof(T)) u.bp = 0;   // Draht: Halt, restliche BP verfallen
+    if (T.cls === 'walker' && RUINE.has(h.t) && !TOG.NORUINE) { u.bp = 0; if (G.rng() < P.RUINE_FEST) { flush(); u.stuck = P.PANNE_RUNDEN + 1; ev.push({ t: 'stuck', u: u.id, truemmer: true }); break; } }   // F79: Trümmer kosten alle restliche Bewegung, Festfahr-Gefahr
     if (h.t === 'wire' && T.cls !== 'walker' && !wireProof(T) && !TOG.NOWIREDMG) {   // Stacheldraht: Schnitte und Hängenbleiben kosten Stärke
       flush(); ev.push({ t: 'wirehurt', u: u.id, c: nc, r: nr });
       const n0 = ev.length; applyDamage(G, null, u, P.WIRE_DMG * (0.8 + G.rng() * 0.4), 'front', ev, { morMul: 0.5 });
@@ -1522,6 +1525,7 @@ function melee(G, a, d) {
   const dmg = p.dmg * (0.75 + G.rng() * 0.5);
   const dc = d.c, dr = d.r;
   applyDamage(G, a, d, dmg, p.arc, ev);
+  if (alive(d) && !hasFlanks(TYPES[d.type])) d.face = faceToward(d.face, d.c, d.r, a.c, a.r);   // F76 (2026-11-21): Verteidiger wendet sich zum Angreifer (Flankenbonus galt für diesen Angriff schon); Fahrzeuge/Schreiter nicht (Drehkosten)
   if (d.status === 'ok' && d.c === dc && d.r === dr && p.arc !== 'rear' && TYPES[d.type].atk > 0) {
     const cd = counterDmg(G, d, a, a.c, a.r, p.arc, d.str) * (0.75 + G.rng() * 0.5);
     if (cd > 0) { ev.push({ t: 'counter', a: d.id, d: a.id }); applyDamage(G, d, a, cd, 'front', ev); }
@@ -1559,6 +1563,20 @@ function kircheTreffer(G, a, c, r, ev, n = 1) {
   const b = bauAt(G, c, r); if (!b || !schwereWaffe(a) || TOG.NOEINSTURZ) return;
   b.hp = Math.max(0, b.hp - n); ev.push({ t: 'bauschaden', bau: G.bauten.indexOf(b), hp: b.hp, max: b.max, c, r });
   if (b.hp <= 0) einsturz(G, b, ev);
+}
+// F79 (2026-11-21): Rammen – Fahrzeug/Schreiter gegen ein intaktes großes Gebäude im Nachbarfeld (Aktion): Bauschaden bis zum Einsturz, eigener Schaden, Pannengefahr; Truppen im Gebäude werden niedergehalten
+function rammZiele(G, u) { if (!u || !active(u) || cls(u) !== 'walker' || u.side !== G.side || u.ap < 1 || u.attacked || u.broken > 0 || u.supp > 0 || TOG.NORAMMEN) return [];
+  return neighbors(u.c, u.r).filter(([c, r]) => inMap(c, r) && bauAt(G, c, r)); }
+function rammen(G, u, c, r) {
+  if (!rammZiele(G, u).some(([a, b]) => a === c && b === r)) return [];
+  const b = bauAt(G, c, r), ev = []; spend(u, 1); u.attacked = true; u.bp = 0; u.moved = true; u.face = faceToward(u.face, u.c, u.r, c, r);
+  ev.push({ t: 'rammen', u: u.id, c, r });
+  b.hp = Math.max(0, b.hp - P.RAMM_BAU); ev.push({ t: 'bauschaden', bau: G.bauten.indexOf(b), hp: b.hp, max: b.max, c, r });
+  for (const [a, q] of [...b.felder, ...(b.turm ? [b.turm] : [])]) { const x = unitAt(G, a, q); if (x && active(x) && !x.supp) { x.supp = 1; ev.push({ t: 'supp', u: x.id }); } }
+  if (b.hp <= 0) einsturz(G, b, ev);
+  applyDamage(G, null, u, P.RAMM_SELBST * (0.8 + G.rng() * 0.4), 'front', ev, { morMul: 0.3 });
+  if (alive(u) && G.rng() < P.RAMM_PANNE) { u.broken = Math.max(u.broken || 0, P.PANNE_RUNDEN + 1); ev.push({ t: 'breakdown', u: u.id }); }
+  ev.push(...checkEnd(G)); return ev;
 }
 function einsturz(G, b, ev) {
   b.kaputt = true; const i = G.bauten.indexOf(b), felder = [...b.felder, ...(b.turm ? [b.turm] : [])];
@@ -1829,6 +1847,7 @@ function rollenWeg(G, u, d) {
 function rollenDmg(G, u, d, wand) { return P.ROLLEN_DMG * (0.4 + 0.6 * u.str / 10) * (TYPES[d.type].suit ? 0.5 : 1) * (wand ? P.ROLLEN_WAND : 1) / Math.max(1, TYPES[d.type].def / 4); }
 function abilTargets(G, u) {
   const T = TYPES[u.type], k = T.abil, A = ABILS[k];
+  if (T.ladungen && (u.ladUsed || 0) >= T.ladungen) return [];   // F78 (2026-11-21): Sprengladungen der Mineure, höchstens T.ladungen je Trupp und Schlacht
   if (!A || !active(u) || u.side !== G.side || u.ap < 1 || u.cdA > 0 || u.supp > 0 || u.broken > 0 || (A.atk && u.attacked)) return [];
   const out = [], foe = (c, r) => { const x = unitAt(G, c, r); return x && x.side !== u.side ? x : null; };
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
@@ -1852,7 +1871,7 @@ function useAbil(G, u, c, r) {
   if (!canAbil(G, u, c, r)) return [];
   const T = TYPES[u.type], k = T.abil, A = ABILS[k], ev = [];
   const rw = k === 'rollen' ? rollenWeg(G, u, unitAt(G, c, r)) : null;   // vor dem Verbuchen prüfen (aus dem Stand)
-  spend(u, 1); u.cdA = A.cd; if (A.atk) u.attacked = true; if (A.all) { u.ap = 0; u.bp = 0; u.moved = true; }
+  spend(u, 1); u.cdA = A.cd; if (T.ladungen) u.ladUsed = (u.ladUsed || 0) + 1; if (A.atk) u.attacked = true; if (A.all) { u.ap = 0; u.bp = 0; u.moved = true; }
   u.face = faceToward(u.face, u.c, u.r, c, r);
   const area = [[c, r], ...neighbors(c, r)].filter(([a, b]) => inMap(a, b));
   if (k === 'smoke') { for (const [a, b] of area) if (!smokeAt(G, a, b)) G.smoke.push({ c: a, r: b, side: u.side }); ev.push({ t: 'smoke', u: u.id, c, r, cells: area }); }
@@ -2109,7 +2128,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, rollenWeg, rollenDmg, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, rammZiele, rammen, RUINE, rollenWeg, rollenDmg, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

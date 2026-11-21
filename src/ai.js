@@ -554,6 +554,9 @@ function next(G) {
     // F36 (2026-11-21): eingegraben – lohnt das Ausgraben (BP bzw. Aktion), um woanders hinzuziehen?
     if (u.dug && E.canUndig(G, u) && !o.atk) { const bp0 = u.bp, ap0 = u.ap; u.dug = false; if (P.AUSGRABEN_AP) u.ap = 0; else u.bp -= P.AUSGRABEN_BP; const o2 = planUnit(G, u); u.dug = true; u.bp = bp0; u.ap = ap0;
       if (o2.move && (o2.v || 0) > (o.v || 0) + 0.2) return { u: u.id, steps: [{ k: 'undig' }, { k: 'move', c: o2.move[0], r: o2.move[1] }] }; }
+    // F79: Rammen – Gebäude mit Gegnern darin (oder fast eingestürzt) im Nachbarfeld, wenn kein lohnender Angriff da ist
+    if (!o.atk && !o.move) { const rz = E.rammZiele(G, u).find(([c, r]) => { const b = E.bauAt(G, c, r), x = E.unitAt(G, c, r); return (x && x.side !== u.side) || (b && b.hp <= 2 && G.units.some(y => y.side !== u.side && E.alive(y) && [...b.felder, ...(b.turm ? [b.turm] : [])].some(([a, q]) => y.c === a && y.r === q))); });
+      if (rz && u.str > 4) return { u: u.id, steps: [{ k: 'ramm', c: rz[0], r: rz[1] }] }; }
     if (o.shell) steps.push({ k: 'shell', c: o.shell.c, r: o.shell.r, mode: o.shell.mode });
     if (o.cut) steps.push({ k: 'cut', c: o.cut[0], r: o.cut[1] });
     if (o.move) steps.push({ k: 'move', c: o.move[0], r: o.move[1] });
@@ -661,6 +664,7 @@ function exec(G, uid, s) {
   if (s.k === 'plant') return E.plantBanner(G, u);
   if (s.k === 'dig') return E.canDig(G, u) ? E.dig(G, u) : [];
   if (s.k === 'undig') return E.undig(G, u);
+  if (s.k === 'ramm') return E.rammen(G, u, s.c, s.r);
   if (s.k === 'shields') return E.canShields(G, u) ? E.shieldsUp(G, u) : [];
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
