@@ -412,7 +412,8 @@ const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], kon
   // F16/F47 (2026-11-20): Rohrende statt Sehschlitz/Brust – Landkoloss-Kanone, Sturmpanzer, Turmschreiter-Turm-MG, Säge-/Klauenschreiter-Drehlauf
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
 // Mündung je Figurenbild eines Trupps (Posen): F47 Eiserne Hünen (schweres MG auf Hüfthöhe, nicht Brust), Löwenoger-Flinte
-const MUZ_FIG = { aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475], konkordat_loewenoger_2: [0.905, 0.305] };   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
+const MUZ_FIG = { aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475], konkordat_loewenoger_2: [0.905, 0.305],
+  aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
 const MUZ2 = { konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
@@ -1421,18 +1422,19 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD',
+const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD',   /* Posenbögen Runde 2 (2026-11-21) */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
-const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', knien: 'loewenoger_2', kolben: 'loewenoger_3' },
-  huenen: { bereit: 'eiserne_huenen_1', anlegen: 'eiserne_huenen_2', knien: 'eiserne_huenen_2', kolben: 'eiserne_huenen_3' },
+// Runde 2 (2026-11-21): Oger mit Sprung, Prankenhieb, Schrot angelegt, Getroffen; Hünen mit Hüftfeuer, Sturmlauf, halb kniend, Getroffen
+const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3', knien: 'loewenoger_posen_3', kolben: 'loewenoger_posen_2', sprung: 'loewenoger_posen_1', getroffen: 'loewenoger_posen_4' },
+  huenen: { bereit: 'eiserne_huenen_1', anlegen: 'eiserne_huenen_posen_1', knien: 'eiserne_huenen_posen_3', kolben: 'eiserne_huenen_3', lauf: 'eiserne_huenen_posen_2', getroffen: 'eiserne_huenen_posen_4' },
   // Posenbögen 2026-11-20 (Grundbogen + <bogen>_posen: Ausholen, Loslassen, Graben, Getroffen bzw. Draht schneiden, Haftladung, Graben, Getroffen).
   // Grundbögen sind unterschiedlich geordnet: Konkordat-Sturm 1 Ruhe, 3 kniend zielen, 4 Keule; Aschenwacht-Sturm 1 Spaten, 2 Keule, 4 Ruhe; Pioniere 1 Ruhe, 2 Schaufel, 3 kniend (Ladung/Mine)
   raeumer: { bereit: 'sturm_1', anlegen: 'sturm_3', knien: 'sturm_3', kolben: 'sturm_4', ausholen: 'sturm_posen_1', loslassen: 'sturm_posen_2', graben: 'sturm_posen_3', getroffen: 'sturm_posen_4' },
   sturm: { bereit: 'sturm_4', kolben: 'sturm_2', ausholen: 'sturm_posen_1', loslassen: 'sturm_posen_2', graben: 'sturm_posen_3', getroffen: 'sturm_posen_4' },
-  pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' },
-  pionierD: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4' },
+  pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen; Nahkampf weiter mit der Schaufel
+  pionierD: { bereit: 'pionier_1', kolben: 'pionier_posen2_4', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen, Nahkampf-Vorstoß mit Gewehr
   // weitere Posenbögen (2026-11-20, frei verteilte Figuren, figure_cut.py FIGUREN_POSEN); lauf = beim Ziehen
   feldscher: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
   heiler: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
@@ -1451,11 +1453,21 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', kni
   // Hauptmann: Einzelmodell – solange eine Pose läuft, wird das ganze Bild getauscht (newFigs)
   hauptA: { befehl: 'hauptmann_posen_1', anlegen: 'hauptmann_posen_2', knien: 'hauptmann_posen_2', fernglas: 'hauptmann_posen_3', getroffen: 'hauptmann_posen_4' },
   hauptD: { befehl: 'hauptmann_posen_1', anlegen: 'hauptmann_posen_2', knien: 'hauptmann_posen_2', fernglas: 'hauptmann_posen_3', getroffen: 'hauptmann_posen_4' },
-  mineur: { bereit: 'mineur_1', hacke: 'mineur_posen_1', ladung: 'mineur_posen_2', kolben: 'mineur_posen_3', getroffen: 'mineur_posen_4' } };
+  mineur: { bereit: 'mineur_1', hacke: 'mineur_posen_1', ladung: 'mineur_posen_2', kolben: 'mineur_posen_3', getroffen: 'mineur_posen_4' },
+  // Posenbögen Runde 2 (2026-11-21, entwurf/POSEN_PROMPTS.md R1–R8). Reiter: Galopp beim Ziehen, Hieb bzw. Lanzenstoß, Aufbäumen (bei Treffern), Getroffen
+  reiter: { lauf: 'reiter_posen_1', kolben: 'reiter_posen_2', aufbaeumen: 'reiter_posen_3', getroffen: 'reiter_posen_4' },
+  lanzeD: { lauf: 'reiter_posen_1', kolben: 'reiter_posen_1', aufbaeumen: 'reiter_posen_3', getroffen: 'reiter_posen_4' },
+  // Eingreiftrupp: Bajonett-Angriff oder Keulenhieb (Ausholen mit „Keule erhoben“ aus dem Grundbogen, dann Durchzug), Panzergranaten-Bündel werfen
+  eingreif: { kolben: 'eingreif_posen_1', hieb: 'eingreif_posen_2', hiebAus: 'eingreif_3', ausholen: 'eingreif_posen_3', loslassen: 'eingreif_posen_3', getroffen: 'eingreif_posen_4' },
+  gasschutz: { anlegen: 'gasschutz_posen_1', knien: 'gasschutz_posen_3', spruehen: 'gasschutz_posen_2', getroffen: 'gasschutz_posen_4' },
+  banner: { lauf: 'banner_posen_1', rammen: 'banner_posen_2', getroffen: 'banner_posen2_2' },
+  // Generäle (Einzelmodell mit Fahnenträger): Befehl zeigend, großer Befehl mit erhobenem Säbel, Pistolenschuss, Getroffen
+  generalA: { befehl: 'general_posen2_2', grossbefehl: 'general_posen2_1', anlegen: 'general_posen_3', knien: 'general_posen_3', getroffen: 'general_posen_4' },
+  generalD: { befehl: 'general_posen_2', grossbefehl: 'general_posen_1', anlegen: 'general_posen2_1', knien: 'general_posen2_1', getroffen: 'general_posen2_2' } };
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
-function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; d.pose = { art, t0: now, dauer, ...o }; return true; }
+function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
 function poseFigur(u, d, j, fallback) {
@@ -1469,13 +1481,16 @@ function poseFigur(u, d, j, fallback) {
     const st = P0.schuss ? P0.schuss[j % P0.schuss.length] + 130 : 220, z = el - st;
     if (z >= 0 && z < 160) { const k = 1 - z / 160; dx = -0.045 * k; rot = -0.06 * k; }
   } else if (art === 'kolben') { const k = Math.sin(Math.PI * Math.min(1, q * 1.25)); dx = 0.16 * k; rot = 0.07 * k; }   // kurzer Vorstoß
+  else if (art === 'hieb') { const h0 = P0.dauer * 0.4; if (el < h0) { art = 'hiebAus'; dx = -0.03 * el / h0; rot = -0.05 * el / h0; } else { const k = Math.sin(Math.PI * Math.min(1, (el - h0) / (P0.dauer - h0) * 1.2)); dx = 0.16 * k; rot = 0.08 * k; } }   // Runde 2: Keule erhoben → Durchzug
+  else if (art === 'aufbaeumen') { const k = Math.sin(Math.PI * q); dy = -0.06 * k; rot = -0.05 * k; }
+  else if (art === 'sprung') { const k = Math.sin(Math.PI * q); dy = -0.12 * k; rot = 0.06 * k; }
   else if (art === 'graben') { dy = 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * el / 520)); rot = 0.03 * Math.sin(2 * Math.PI * el / 520); }   // im Takt der Schaufel
   else if (art === 'wurf') { const h0 = P0.dauer * 0.45; art = el < h0 ? 'ausholen' : 'loslassen'; if (art === 'ausholen') { dx = -0.03 * el / h0; rot = -0.05 * el / h0; } else dx = 0.05 * Math.sin(Math.PI * Math.min(1, (el - h0) / (P0.dauer * 0.4))); }
   else if (art === 'getroffen') { const k = Math.sin(Math.PI * q); dx = -0.07 * k; rot = -0.09 * Math.sin(Math.PI * 2.2 * q) * (1 - q); }   // taumelt zurück
   return { im: (PB[art] && figImg(pre + PB[art])) || ruhe.im, dx, dy, rot, spiegel: art === 'getroffen' && !!PB[art] && GETROFFEN_SPIEGEL.has(pre + PB[art]) };
 }
 // F77 (2026-11-21): Getroffen-Bilder, deren Figur zum Feind hin kippt (Kopf deutlich vor den Füßen in Blickrichtung, gemessen: Neigung ab +0,12), werden gespiegelt – sie fallen dann vom Angreifer weg
-const GETROFFEN_SPIEGEL = new Set(['konkordat_kampfanzug_posen_4', 'konkordat_scharfschuetze_posen_4', 'konkordat_mineur_posen_4', 'konkordat_schildwall_posen_4', 'konkordat_schildwall_posen2_4', 'konkordat_versorgung_posen_4', 'konkordat_melder_posen_4', 'aschenwacht_melder_posen_4', 'konkordat_soldat_posen_4', 'konkordat_sturm_posen_4', 'konkordat_flammen_posen_4', 'aschenwacht_sanitaeter_posen_4']);
+const GETROFFEN_SPIEGEL = new Set(['aschenwacht_eingreif_posen_4', 'aschenwacht_eiserne_huenen_posen_4', 'konkordat_loewenoger_posen_4', 'aschenwacht_gasschutz_posen_4',   /* Runde 2, gemessen +0,14 bis +0,34 */ 'konkordat_kampfanzug_posen_4', 'konkordat_scharfschuetze_posen_4', 'konkordat_mineur_posen_4', 'konkordat_schildwall_posen_4', 'konkordat_schildwall_posen2_4', 'konkordat_versorgung_posen_4', 'konkordat_melder_posen_4', 'aschenwacht_melder_posen_4', 'konkordat_soldat_posen_4', 'konkordat_sturm_posen_4', 'konkordat_flammen_posen_4', 'aschenwacht_sanitaeter_posen_4']);
 // Granatwurf (für Einheiten mit Wurf-Fähigkeit; die Soldatenbilder haben im Spiel derzeit keine): Ausholen → Loslassen, Granate fliegt aus der Hand
 async function poseWurf(id, x2, y2) {
   const d = DU.get(id), u = unitById(id); if (!d || !u) return;
@@ -2304,7 +2319,7 @@ async function playEvent0(e) {
     }
     case 'hit': {
       const d = DU.get(e.u), [x, y] = bodyPos(e.u);
-      if (!e.panic && e.dmg > 0) pose(e.u, 'getroffen', 550);   // kurz taumeln
+      if (!e.panic && e.dmg > 0) { const ab = poseHat(u, 'aufbaeumen') && Math.random() < 0.4; pose(e.u, ab ? 'aufbaeumen' : 'getroffen', ab ? 800 : 550); }   // kurz taumeln; Reiter: Pferd bäumt sich manchmal auf (Runde 2)
       if ((E.isMech(u.type) && TYPES[u.type].cls === 'walker') || TYPES[u.type].dauerfeuer) playSound('robot', 0.5, null, { u, v: 'mr' });   // Hünen (2026-11-20): Maschinenstimme   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) shake(e.dmg >= 2.5 ? 6 : 4);
@@ -2376,7 +2391,7 @@ async function playEvent0(e) {
       fx('funken', null, x2, y2, { anchor: 'mitte', life: 18, fadeOut: 0.6, mul: 0.9 }); lastFire = { kind: 'cannon', t: performance.now(), a: e.u }; await wait(220); await kampfSzeneEnde(ksz); break; }
     case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
-      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig');
+      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900);   // Runde 2: Sprung mit Krallen
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
       d0.face = x1 >= x0 ? 0 : 3; d0.moving = true;
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
@@ -2446,7 +2461,7 @@ async function playEvent0(e) {
     case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
-    case 'clear': { visSync('clouds'); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
+    case 'clear': { visSync('clouds'); pose(e.u, 'spruehen', 1500); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
     case 'ammo': { if (e.by != null) pose(e.by, 'nachladen', 1400); playSound('nachladen', 0.55); kz(e.u, 'munition', 'steig'); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
@@ -2462,10 +2477,11 @@ async function playEvent0(e) {
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('nachladen', 0.4); await wait(200); break; }
     case 'ow': kz(e.u, 'auge', 'puls'); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
+      if (e.u != null) pose(e.u, 'grossbefehl', 2200);   // Runde 2: General mit erhobenem Säbel
       playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   /* Anführer-Fähigkeiten leiser (Spieltest Runde 2) */ banner(e.name + '!', e.kind === 'hold' ? `Einheiten bis ${P.BIG_R} Felder: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug` : `Einheiten bis ${P.BIG_R} Felder: +2 Bewegungspunkte und +1 Aktion`);
       for (const id of e.ids || []) { const dd = DU.get(id); if (!dd) continue; if (e.kind === 'hold') dd.vs.hold = true; rings.push({ x: dd.x, y: dd.y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); }
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
-    case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; playSound('bauen', e.planted ? 0.32 : 0.22); await wait(260); break; }
+    case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; if (e.planted) pose(e.u, 'rammen', 1400); playSound('bauen', e.planted ? 0.32 : 0.22); await wait(260); break; }
     case 'ignite': visSync('fires'); playSound('flame', 0.4); break;
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': kz(e.u, 'feuer', 'puls'); await wait(120); break;
