@@ -677,7 +677,7 @@ const STATES = [
   { k: 'zeal', sym: 'blitz', name: 'Sturmbefehl', on: u => u.zeal, text: () => `Befehl des Anführers: Nahkampf ${xf(P.ORDER_ATK)} in dieser Runde.` },
   { k: 'lance', sym: 'sprengladung', name: 'Sprenglanze bereit', panel: true, on: (u, d) => d.vs.lance && E.active(u), text: () => `Der erste Nahkampfangriff der Schlacht trifft mit der Sprenglanze ${xf(P.BLAST_LANCE)}. Danach normale Lanze.` },
   { k: 'lanceGone', sym: 'pferd', name: 'Sprenglanze verbraucht', panel: true, on: (u, d) => TYPES[u.type].blastLance && !d.vs.lance && E.active(u), text: () => 'Die Sprenglanze ist verbraucht: weiter mit der normalen Lanze.' },
-  { k: 'dug', sym: 'schaufel', ring: '#8a6a44', name: 'Eingegraben', on: (u, d) => d.vs.dug && E.active(u), text: () => `Hat sich eingegraben: Abwehr ${xf(P.DIG_DEF)}, bis die Einheit wieder zieht.` },
+  { k: 'dug', sym: 'schaufel', ring: '#8a6a44', name: 'Eingegraben', on: (u, d) => d.vs.dug && E.active(u), text: () => `Hat sich eingegraben: Abwehr ${xf(P.DIG_DEF)}. Zum Ziehen erst ausgraben.` },
   { k: 'shields', sym: 'schild', ring: '#9aa3ab', name: 'Schilde vor', on: (u, d) => d.vs.shields && E.active(u), text: () => `Schilde vor: eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ${xf(P.SHIELDS)}.` },
   { k: 'fireFree', sym: 'zielen', ring: '#E2B04A', name: 'Feuer frei', on: (u, d) => d.vs.fireFree && E.alive(u), text: () => `Befehl des Hauptmanns: Fernkampf ${xf(P.FIRE_FREE)} bis zum nächsten eigenen Zug.` },
   { k: 'hold', sym: 'schild', ring: '#C2A461', name: 'Halten um jeden Preis', on: (u, d) => d.vs.hold && E.active(u), text: () => `Befehl des Generals: flieht bis zum nächsten eigenen Zug nicht, Abwehr ${xf(P.HOLD_DEF)}.` },
@@ -2771,6 +2771,7 @@ async function playEvent0(e) {
     case 'unstuck': DU.get(e.u).vs.stuck = 0; kz(e.u, 'funkeln', 'steig'); await wait(150); break;
     case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); kz(e.u, 'werkzeug', 'steig'); await wait(320); break; }
     case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('mgladen', 0.45); await wait(200); break; }
+    case 'undig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = false; playSound('schaufel', 0.4, null, { noGap: true }); await wait(250); break; }   // F36: aus der Stellung
     case 'teardown': { DU.get(e.u).vs.setup = false; playSound('nachladen', 0.4); await wait(200); break; }
     case 'ow': kz(e.u, 'auge', 'puls'); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
@@ -3633,7 +3634,8 @@ function unitButtons(T, hints) {
   }
   if (T.cmd === 2) { const B = E.BIG[sel.side], used = G.bigUsed && G.bigUsed[sel.side];   // großer Befehl des Generals: einmal je Schlacht
     btns.push({ act: 'big', sym: B.k === 'hold' ? 'schild' : 'blitz', name: B.name, cost: 1, pulse: E.canBig(G, sel), cnt: used ? 0 : 1, text: B.k === 'hold' ? `Einmal je Schlacht: eigene Einheiten im Umkreis von ${P.BIG_R} Feldern fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.` : `Einmal je Schlacht: eigene Einheiten im Umkreis von ${P.BIG_R} Feldern greifen sofort noch einmal an – +1 Aktion und +${P.GENERAL_BP} Bewegungspunkte, auch wer schon geschossen oder gekämpft hat, Nahkampf auch nach weitem Zug; Niederhalten endet. Nicht für fliehende, liegengebliebene oder festgefahrene Einheiten.`, off: !E.canBig(G, sel), why: used ? 'Verbraucht: nur einmal je Schlacht.' : 'Braucht 1 Aktionspunkt.' }); }
-  if (T.dig) btns.push({ act: 'dig', sym: 'schaufel', name: 'Eingraben', cost: 1, on: !!sel.dug, text: 'Im offenen Gelände oder Trichter: Abwehr ×1,3, bis die Einheit wieder zieht.', off: !E.canDig(G, sel), why: sel.dug ? 'Ist schon eingegraben.' : !['open', 'crater'].includes(G.map[sel.c][sel.r].t) ? 'Nur im offenen Gelände oder Trichter.' : 'Braucht 1 Aktionspunkt.' });
+  if (sel.dug) btns.push({ act: 'undig', sym: 'schaufel', name: 'Ausgraben', ...(P.AUSGRABEN_AP ? { cost: 1 } : { bp: P.AUSGRABEN_BP }), text: `Aus der Stellung heraus: danach kann die Einheit ziehen, die Deckung ${xf(P.DIG_DEF)} endet. Kostet ${P.AUSGRABEN_AP ? 'die Aktion' : P.AUSGRABEN_BP + ' Bewegungspunkt'}.`, off: !E.canUndig(G, sel), why: P.AUSGRABEN_AP ? 'Aktion schon verbraucht.' : 'Keine Bewegungspunkte mehr.' });   // F36
+  if (T.dig && !sel.dug) btns.push({ act: 'dig', sym: 'schaufel', name: 'Eingraben', cost: 1, on: !!sel.dug, text: 'Im offenen Gelände oder Trichter: Abwehr ×1,3, bis die Einheit wieder zieht.', off: !E.canDig(G, sel), why: sel.dug ? 'Ist schon eingegraben.' : !['open', 'crater'].includes(G.map[sel.c][sel.r].t) ? 'Nur im offenen Gelände oder Trichter.' : 'Braucht 1 Aktionspunkt.' });
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
@@ -3762,6 +3764,7 @@ async function panelAct(a) {
   if (a === 'big') return act(u => E.bigOrder(G, u));
   if (a === 'plant') return act(u => E.plantBanner(G, u));
   if (a === 'dig') return act(u => E.dig(G, u));
+  if (a === 'undig') return act(u => E.undig(G, u));   // F36
   if (a === 'loewe') return act(u => E.roar(G, u));
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
   if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
@@ -4266,6 +4269,7 @@ function noteEvent(e, u) {
     case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Artillerie-Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }
     case 'order': return logAdd(`${e.name}: ${e.kind === 'rally' ? 'Sammeln' : e.kind === 'fire' ? 'Feuer frei' : 'Sturmbefehl'}`, u && u.side, ...at(u));
     case 'bigorder': logAdd(`General: ${e.name}!`, e.side, ...at(u), true); return headline(`${e.name}!`, e.side);
+    case 'undig': return logAdd(`${N(u)}: ausgegraben`, u && u.side, ...at(u));
     case 'dig': return logAdd(`${N(u)}: eingegraben`, u && u.side, ...at(u));
     case 'shields': return logAdd(`${N(u)}: Schilde vor`, u && u.side, ...at(u));
     case 'rush': return logAdd(`${N(u)}: Sturmlauf`, u && u.side, e.c, e.r, true);

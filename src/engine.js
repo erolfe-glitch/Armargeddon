@@ -50,7 +50,7 @@ const P = {
   MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2,
   PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 2, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
-  DIG_DEF: 1.3, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,
+  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1,   // F36: Ausgraben kostet die Aktion (Sim 2026-11-21: Grauwall 48 %, Sankt Ruß 46 %; mit 1 BP 42 % / 48 %) SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
 };
@@ -998,6 +998,7 @@ function reachable(G, u, opt) {
   if (!active(u) || u.supp > 0 || u.broken > 0 || u.stuck > 0 || u.zocStop) return res;
   if (TYPES[u.type].mg && u.setup && !TOG.NOSETUP) return res;   // aufgebautes MG zieht nicht (erst abbauen)
   if (u.planted) return res;   // aufgepflanztes Banner: erst aufnehmen
+  if (u.dug && !TOG.NOAUSGRABEN) return res;   // F36 (2026-11-21): eingegraben – erst ausgraben (wie MG abbauen)
   if (TYPES[u.type].noMoveFire && u.attacked) return res;   // Minenwerfer: nach dem Feuern kein Zug
   const T = TYPES[u.type], free = T.cls === 'storm' || T.cls === 'walker';
   const retreat = !free && !TOG.NORETREAT && isZOC(G, u.c, u.r, u.side);   // Rückzug aus der Feindberührung: kostet die Aktion und alle restlichen BP
@@ -1949,6 +1950,9 @@ function bigOrder(G, u) {
 // Eingraben (Schützenkohorte, Aschengrenadiere, 1 Punkt): nur im offenen Gelände oder Trichter; Abwehr ×1,3, bis die Einheit zieht
 function canDig(G, u) { return active(u) && !!TYPES[u.type].dig && u.side === G.side && u.ap >= 1 && !u.dug && !(u.supp > 0) && ['open', 'crater'].includes(hex(G, u.c, u.r).t); }
 function dig(G, u) { if (!canDig(G, u)) return []; u.dug = true; spend(u, 1); return [{ t: 'dig', u: u.id }]; }
+// F36 (2026-11-21): Ausgraben vor dem Ziehen – kostet P.AUSGRABEN_BP Bewegungspunkte (bzw. die Aktion, wenn P.AUSGRABEN_AP); die Deckung ×1,3 endet
+function canUndig(G, u) { return active(u) && u.side === G.side && !!u.dug && !(u.broken > 0) && !TOG.NOAUSGRABEN && (P.AUSGRABEN_AP ? u.ap >= 1 : (u.bp || 0) >= P.AUSGRABEN_BP); }
+function undig(G, u) { if (!canUndig(G, u)) return []; u.dug = false; if (P.AUSGRABEN_AP) spend(u, 1); else { u.bp -= P.AUSGRABEN_BP; u.bpUsed = (u.bpUsed || 0) + P.AUSGRABEN_BP; u.moved = u.ap <= 0 && !(u.bp > 0); } return [{ t: 'undig', u: u.id }]; }
 // Schilde vor (Schildwall, Schwere Grabenwacht, 1 Punkt): eigene Nachbarn nehmen bis zum nächsten eigenen Zug Beschuss ×0,75
 function canShields(G, u) { return active(u) && !!TYPES[u.type].shieldWall && u.side === G.side && u.ap >= 1 && !u.shields && !(u.supp > 0); }
 function shieldsUp(G, u) { if (!canShields(G, u)) return []; u.shields = true; spend(u, 1); const ids = neighbors(u.c, u.r).map(([c, r]) => unitAt(G, c, r)).filter(o => o && o.side === u.side && active(o)).map(o => o.id); return [{ t: 'shields', u: u.id, ids }]; }
@@ -2052,7 +2056,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

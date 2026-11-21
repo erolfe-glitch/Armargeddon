@@ -196,7 +196,7 @@ Ziel weich = Fußtruppen, Reiter, Bedienungen. Gepanzert = Fahrzeuge, Schreiter,
 Nach deiner Zustimmung baue ich das, stimme es auf Grauwall und Sankt Ruß ab, und die KI-Zielwahl nutzt die Faktoren.
 
 ### Offen
-- **F36 Regelteil:** Ausgraben vor dem Ziehen. Baue ich als Nächstes.
+- **F36 Regelteil – erledigt:** Eingegrabene Trupps müssen erst „Ausgraben“ (Knopf mit Schaufel), dann können sie ziehen; die Deckung ×1,3 endet. Kosten per Simulation (je 200 Schlachten): mit 1 BP Grauwall 42 % / Sankt Ruß 48 %, **mit der Aktion 48 % / 46 % → gewählt: kostet die Aktion** (wie das Eingraben). Die KI gräbt sich aus, wenn sich ein Stellungswechsel lohnt (Grauwall ca. 5–6-mal je Schlacht und Seite).
 - F54 und F66 warten auf deine Entscheidung.
 - Helden stehen in IDEEN.md.
 
