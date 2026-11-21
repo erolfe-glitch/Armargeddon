@@ -1,3 +1,15 @@
+## 2026-11-21 – F87 Erst Schrift, dann Schlag (`0fa7ebc`)
+
+- **Ablauf jetzt:** Der Fähigkeitsname knallt herein, steht etwa 1 s allein und ist ausgeblendet, **bevor** Ausholen, Anlauf, Druckwelle und Treffer beginnen. Der Schlag läuft danach frei sichtbar.
+- **Einfrieren beim Treffer** bleibt (Durchbruch kurz, Hinrichtung etwa 0,2 s).
+- **Auren (Standhaft, Furcht):** Die kleine Einblendung steht jetzt oben unter der Leiste, nicht mehr über den Figuren. Während ein großer Titel läuft, entfällt sie. Ring und Aufblitzen am Helden laufen weiter gleichzeitig.
+- **Tempo:** Die Wartezeit für den Titel richtet sich nach dem Tempo. Bei „Sofort“ und beim Überspringen der Kampfszene wird nicht gewartet.
+- **Bilder** (je 8 Augenblicke, oben Titel → ausgeblendet, unten Schlag):
+  - `entwurf/probe/f87_durchbruch.jpg`
+  - `entwurf/probe/f87_hinrichtung.jpg`
+- **Tests:** test_partie fehlerfrei, test_kommentare in Ordnung. Nur Anzeige, keine Regeländerung, deshalb keine Sim.
+- Wie gewünscht jetzt **keine weiteren Umbauten**, bis Prüfliste 2 und Spieltest da sind. `PRUEFLISTE2.md` nicht angefasst.
+
 # Berichte von Claude Code (neuester oben)
 
 ## 2026-11-21 – Helden-Töne, Hinrichtung 40, F83–F86 (`df0f6d4`, `0f2593f`, `a67d515`)
