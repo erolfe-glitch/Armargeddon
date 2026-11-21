@@ -168,8 +168,16 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | neu_nachladen | neu_nachladen_* | Repair reload heal etc/daviddumaisaudio-gun-mechanical-reload-05-316414.mp3 | Pixabay / daviddumaisaudio | Pixabay Content License | – |
 | neu_nachladen | neu_nachladen_* | Repair reload heal etc/freesound_community-pistol-cock-6014.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | neu_versorgung | neu_versorgung_* | Repair reload heal etc/spinopel-military-logistics-336353.mp3 | Pixabay / spinopel | Pixabay Content License | – |
+| neu3_bestie | neu3_bestie_* | Monster/dffdv-tiger-attack-195840.mp3 | Pixabay / dffdv | Pixabay Content License | – |
+| neu3_fleisch | neu3_fleisch_* | Melee hit infantry/ragecore29-sword-stabbing-flesh-with-splatter-1-3x-588319.mp3 | Pixabay / ragecore29 | Pixabay Content License | – |
+| neu3_biss | neu3_biss_1 | Monster/423010__ogsoundfx__monster-bite-on-armor-wav.wav | Freesound / OGsoundFX | CC BY 4.0 | <https://freesound.org/s/423010/> |
+| neu3_gore | neu3_gore_* | Melee hit infantry/ragecore29-htf-blood-splatter-explode-478992.mp3 | Pixabay / ragecore29 | Pixabay Content License | – |
+| neu3_gore | neu3_gore_* | Schaufel/freesound_community-spade-hacking-sound-with-gore-effects-96909.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| neu3_aufprall | neu3_aufprall_1–3 | Impacts/826230__artninja__bassy_rock_impact_sounds_09112025.wav | Freesound / Artninja | CC BY 4.0 (Remix; enthält laut Beschreibung 593315 von vitru20, CC BY-NC 3.0 – vor einem Verkauf klären) | <https://freesound.org/s/826230/> |
+| neu3_aufprall | neu3_aufprall_4 | Impacts/185244__deleted_user_3277771__big-crash.wav | Freesound / deleted_user_3277771 (Urheber laut Beschreibung Josh Mclelland) | CC BY-NC 3.0 | <https://freesound.org/s/185244/> |
+| ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
-**Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1 (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)
+**Nicht kommerziell (CC BY-NC):** barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)
 
 **Quelle unbekannt (vom Nutzer geliefert, bitte klären):** boom2_1 (Crash vehicle damage/Canon explode.wav); blast_1 (Explosion/Explosionssound.mp3); erobert_2 (Eroberungspunkte/Win Point 2.wav); verloren_1 (Eroberungspunkte/Lost Point.wav); gallop2_1 (Animals/Pferdegalopp.mp3)
 

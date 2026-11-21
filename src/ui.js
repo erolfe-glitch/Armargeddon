@@ -2617,6 +2617,8 @@ async function playEvent0(e) {
         // Grundklang je Fraktion (2026-11-17): Konkordat Klingen/Keule/Fäuste (nahA), Aschenwacht Spaten/Metall (nahD); eigene Töne nur für
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
+        const gep0 = du0 && (TYPES[du0.type].cls === 'walker' || TYPES[du0.type].suit);   // Paket G 4b (Enrico 2026-11-21): Löwenoger = Tiger-Attacke + Fleisch-Treffer, gegen Gepanzerte Biss auf Panzerung
+        if (au && au.type === 'oger') { playSound('neu3_bestie', 0.5 * (e.t === 'counter' ? 0.85 : 1)); playSound(gep0 ? 'neu3_biss' : 'neu3_fleisch', 0.5); } else
         playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : base,   /* F80: normaler Hiebton statt Granate */ (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('oger_bruell', 0.45); }   // Löwenoger brüllt statt zu schreien
         else if (foot(au) && foot(du0) && Math.random() < 0.35) playSound('cry', 0.35, null, { u: au });
@@ -2630,7 +2632,7 @@ async function playEvent0(e) {
       // F51 (2026-11-20): Schlagabtausch – Hieb und Gegenhieb abwechselnd ohne Pause (A–V–A–V), je mit Posenwechsel, Ruck des Getroffenen und Spritzern;
       // der letzte, härteste Hieb kommt danach vom Angreifer mit der Wucht aus F48. Der Gegenschlag-Ereignis selbst ist dann nur noch kurz.
       if (e.t === 'melee' && !thrown) { const T0 = au && TYPES[au.type], du1 = unitById(e.d), Td = du1 && TYPES[du1.type], fl = d.x < a.x;
-        const hiebTon = (x, T) => x && T ? (T.cls === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : T.cls === 'cav' ? 'saebel' : x.side === 'D' ? 'nahD' : 'nahA') : 'nahA';
+        const hiebTon = (x, T) => x && T ? (x.type === 'oger' ? 'neu3_fleisch' : T.cls === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : T.cls === 'cav' ? 'saebel' : x.side === 'D' ? 'nahD' : 'nahA') : 'nahA';
         const zug = af === 'drill' ? 0 : nkGleich ? 2 : Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;   // F63: kürzer; Bohrkoloss: ein langer Bohrstoß (unten)
         if (af === 'drill') {   // F54 (Enrico 2026-11-21): Bohrkoloss – ein einziger Stoß, der sich hineinbohrt: Vorstoß, dann ~0,9 s Rütteln, Funken bzw. Blut, Bohrton hält an
           a.lunge = { dx: (d.x - a.x) * 0.3, dy: (d.y - a.y) * 0.3 }; playSound('smash', 0.65, au && au.side); playSound('neu_wucht', 0.45);
