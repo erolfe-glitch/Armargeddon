@@ -533,6 +533,10 @@ def angleichen(names):
             print(f"  {f.stem}: hell {vor['hell']:.2f}→{ziel['hell']:.2f}, sätt {vor['sätt']:.2f}→{ziel['sätt']:.2f}, wärme {vor['wärme']:.3f}→{ziel['wärme']:.3f}")
 
 
+# Prüfliste 1.6 (2026-11-21): alte Schreiter-Bögen bleiben in ui-quelle liegen, werden aber nicht mehr eingebettet (FIGMAP zeigt auf die _neu-Bögen)
+NICHT_EINBETTEN = {'aschenwacht_eisenknecht', 'konkordat_kreuzschreiter'}
+
+
 def embed():
     """Alle Spielbilder als WebP in src/figs.js (window.FIGS: Schlüssel → Daten-URL). 320 px Bildhöhe = 1 Soldatenhöhe."""
     import base64, io
@@ -542,6 +546,7 @@ def embed():
              'window.FIGS = {']
     total = 0
     for f in sorted(GAME.glob('*.png')):
+        if f.stem in NICHT_EINBETTEN: continue
         buf = io.BytesIO(); Image.open(f).save(buf, 'WEBP', quality=86, method=6)
         u = 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode(); total += len(u)
         lines.append(f'"{f.stem}": "{u}",')

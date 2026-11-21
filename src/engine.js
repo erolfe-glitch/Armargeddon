@@ -16,16 +16,15 @@ const P = {
   BREAK: { A: 0.55, D: 0.64 },   // D höher seit Aktionspunkten und Marsch (Angreifer kommt schneller heran)
   TRENCH_DEF: 1.6, CRATER_FIRE: 1.2, VILLAGE_DEF: 1.5, FOREST_DEF: 1.4, WIRE_DEF: 0.6,
   MG_VS_WIRE: 2, MG_VS_CAV: 2,
-  AP: 1, MV2: 0.5, ZOC_STOP: 1, GUIDED: 1.25, ORDER_CD: 2, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
+  AP: 1, ZOC_STOP: 1, GUIDED: 1.25, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
-  MAXT: 16, WIN_A: 5, DRAW_A: 4,
   SUPP: 0.6, SUPP_ATK: 0.5,
   ART_MIN: 2, ART_MIN_GROSS: 3, BREAKER_WIRE: 0.8, SPOT: 4, SCATTER: 0.25, HE_WIRE: 0.5, HE_CRATER: 0.3, ART_DIRECT: 3, ART_VS_WALKER: 2.5,
   GAS_TTL: 3, GAS_STR: 0.5, GAS_MOR: 1.5, GAS_ATK: 0.7, WIND_SHIFT: 0.15,
-  BREAKDOWN: 0.05, STUCK: 0.08, WALKER_FEAR: 1, MELEE_VS_WALKER: 0.4, STORM_VS_WALKER: 1.5,
+  BREAKDOWN: 0.05, STUCK: 0.08, WALKER_FEAR: 1,
   CHARGE: 1.5, CHARGE_MIN: 3, CAV_VS_ROUT: 2, FLAME_HIT: 1.5, FLAME_MOR: 2,
-  REINF_TURN: 8, LIMBER_MV: 3,
+  LIMBER_MV: 3,
   PTS_TURN: { A: 10, D: 10 }, PTS_KILL: 20, PTS_OBJ: 10, HEAL: 2.5, HEAL_MOR: 1.5,
   // Bewegung und Aktionen (Paket 1, seit Fahrplan 2 mit BP/AP): Marsch = Aktion für +50 % BP, Feuerbereitschaft, Aufbauen der MG, Abklingzeiten
   GOAL_K: 7, MAX_ROUNDS: 40, D_BAND: 6,
@@ -33,11 +32,11 @@ const P = {
   // Turm +1 Reichweite und +1 Sicht; Bauzustand KIRCHE_HP, jeder Treffer schwerer Waffen (Artillerie, Mörser, Kanonen der Kolosse) −1 (Minenwerfer −2);
   // bei 0 Einsturz: Kirche und Turm werden Ruine, wer drin ist, nimmt EINSTURZ_DMG Schaden und wird niedergehalten. GARTEN_DEF: Garten-/Friedhofsmauer gegen Beschuss
   KIRCHE_DEF: 1.8, KIRCHE_HP: 6, EINSTURZ_DMG: 2.5, TURM_RNG: 1, TURM_SPOT: 1, GARTEN_DEF: 1.2,
-  MARCH: 2, OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2, STUCK_TURNS: 2,
+  OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2,
   // Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke beim Betreten, Gas wirkt nach (vergiftet: ½, dann ¼ des Gasschadens), Sperrfeuer mit Abklingzeit
   WIRE_DMG: 1.0, POISON_TURNS: 2, POISON_K: [0.25, 0.5], BARRAGE_CD: 2,
   // Gruppe 1 (2026-11-16): MG-Sperrfeuer 2 Schüsse, Ziel markieren (bis zum nächsten eigenen Zug), Feuerschlag des Fernsprechtrupps
-  SPERR_SHOTS: 2, STRIKE_CD: 3, STRIKE_SCATTER: 0.25,
+  SPERR_SHOTS: 2, STRIKE_SCATTER: 0.25,
   // Gruppe 2 Führung (2026-11-16): Feuer frei (Konkordat) ×1,25 Fernkampf, „Halten um jeden Preis“ Abwehr ×1,25, Banner aufgepflanzt 3 Felder
   FIRE_FREE: 1.25, NEBEL_IN: 0.5, NEBEL_AUS: 0.75, HOLD_DEF: 1.25,   // Nebelwand (2026-11-18): Beschuss auf Ziele im Nebel ×0,5, aus dem Nebel heraus ×0,75
   BANNER_R: 2, BANNER_R_PLANTED: 3,
@@ -70,8 +69,6 @@ const SIDES = {
 };
 
 // Stufe-3-Schreiter (2026-11-19): Kreuzschreiter und Eisenknecht, höchstens einer je Seite und Schlacht (armyOk, canBuy: auch nicht nachkaufen, wenn er gefallen ist).
-// Löwenmaul-Kanone des Kreuzschreiters: Schaden gegen Fahrzeuge und Schreiter ×P_STUFE3_AT (wie die Panzerbüchse über T.at).
-const P_STUFE3_AT = 1.5;
 const TYPES = {
   kohorte: { side: 'A', name: 'Schützenkohorte', cls: 'inf', dig: true, atk: 4, def: 4, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schießt 2 Felder weit, stürmt Gräben im Nahkampf, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).',
@@ -161,7 +158,7 @@ Object.assign(TYPES, {
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
     real: 'Auch die Briten bauten keine Schreitmaschinen. Ihr erster Panzer, der Mark I von 1916, hatte acht Mann Besatzung und fuhr etwa so schnell wie ein Fußgänger.' },
-  kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, roar: true, at: P_STUFE3_AT, zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 3, rng: 2, fs: 5,
+  kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, roar: true, at: true,   /* Löwenmaul-Kanone panzerbrechend wie die Panzerbüchse (Faktortabelle FAK.at) */ zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 3, rng: 2, fs: 5,
     can: 'Stufe 3, höchstens einer je Schlacht. Panzerjäger: Löwenmaul-Kanone panzerbrechend (Fahrzeuge und Schreiter ×1,5, Fußtruppen nur ×0,5, trifft die Kirche) und Kriegshammer (gegen Fußtruppen im Nahkampf ×1,5); am zähesten von allen, Bewegung 3. Unterarm-Kanone (2 Felder, einmal je Runde zusätzlich, ebenfalls panzerbrechend). Löwengebrüll (einmal je Schlacht, kostenlos): Gegner ohne Panzerung bis 2 Felder Moral −20 und niedergehalten. Selten Panne.',
     real: 'Panzerbesatzungen trugen Lederhelme und Kettenmasken gegen Splitter, die beim Beschuss innen von der Panzerwand absprangen.' },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
@@ -349,29 +346,6 @@ const TERRAIN = {
 const KIRCHE = new Set(['schiff', 'turm']);
 const RUINE = new Set(['village', 'fabrik', 'kirche']);   // F79 (2026-11-21): Trümmer – Fahrzeuge/Schreiter: Bewegung endet dort, Gefahr festzufahren
 
-const GRAUWALL_OBJ = [
-  { id: 'veskar', name: 'Ruinen von Veskar', c: 15, r: 4, pts: 2 },
-  { id: 'schanze', name: 'Grauwall-Schanze', c: 13, r: 6, pts: 2 },
-  { id: 'totholz', name: 'Totholz von Ilm', c: 17, r: 1, pts: 3 },
-  { id: 'marn', name: 'Brücke von Marn', c: 18, r: 9, pts: 2 }
-];
-
-const GRAUWALL_SETUP = [
-  ['kohorte', 3, 0], ['kohorte', 3, 2], ['kohorte', 3, 4], ['kohorte', 3, 6], ['kohorte', 3, 8], ['kohorte', 3, 10],
-  ['kohorte', 1, 3], ['kohorte', 1, 5], ['kohorte', 1, 7],
-  ['mahlwerk', 2, 0], ['mahlwerk', 2, 5], ['mahlwerk', 2, 10],
-  ['koloss', 2, 2], ['koloss', 2, 4], ['koloss', 2, 7], ['koloss', 2, 9],
-  ['haubitze', 0, 2], ['haubitze', 0, 5], ['haubitze', 0, 8],
-  ['reiter', 1, 1], ['reiter', 1, 9],
-  ['grenadier', 9, 0], ['grenadier', 9, 4], ['grenadier', 9, 8],
-  ['sense', 9, 2], ['sense', 9, 6], ['sense', 9, 10],
-  ['grenadier', 13, 2], ['grenadier', 13, 6], ['grenadier', 13, 9],
-  ['sense', 13, 4], ['sense', 13, 8],
-  ['grenadier', 15, 4], ['grenadier', 17, 1], ['grenadier', 18, 9],
-  ['geschuetz', 16, 5], ['geschuetz', 15, 1], ['geschuetz', 15, 8]
-];
-const GRAUWALL_REINF = [['sturm', 19, 2], ['sturm', 19, 4], ['sturm', 19, 6], ['brand', 19, 3], ['brand', 19, 5], ['geschuetz', 18, 5]];
-
 function mulberry32(a) {
   return function () {
     a |= 0; a = a + 0x6D2B79F5 | 0;
@@ -379,32 +353,6 @@ function mulberry32(a) {
     t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
-}
-
-// ---------- Karte ----------
-function buildGrauwall(seed) {
-  const rnd = mulberry32(seed || 1917);
-  const M = [];
-  for (let c = 0; c < COLS; c++) { M.push([]); for (let r = 0; r < ROWS; r++) M[c].push({ t: 'open', ridge: false, obj: null }); }
-  const set = (c, r, t) => { if (c >= 0 && c < COLS && r >= 0 && r < ROWS) M[c][r].t = t; };
-  for (let c = 4; c <= 6; c++) for (let r = 0; r < ROWS; r++) { const x = rnd(); if (x < 0.3) set(c, r, 'crater'); else if (x < 0.44) set(c, r, 'mud'); }
-  for (let c = 10; c <= 11; c++) for (let r = 0; r < ROWS; r++) if (rnd() < 0.2) set(c, r, 'crater');
-  for (let r = 0; r < ROWS; r++) set(3, r, 'trench');
-  for (let r = 0; r < ROWS; r++) {
-    if (![2, 8].includes(r)) set(7, r, 'wire');
-    if (![5, 9].includes(r)) set(8, r, 'wire');
-    set(9, r, 'trench');
-    if (![1, 5, 9].includes(r)) set(12, r, 'wire');
-    set(13, r, 'trench');
-  }
-  for (let c = 14; c <= 16; c++) for (let r = 3; r <= 6; r++) M[c][r].ridge = true;
-  set(15, 4, 'village'); set(15, 5, 'village'); set(16, 4, 'village');
-  for (const [c, r] of [[16,0],[17,0],[18,0],[16,1],[17,1],[18,1],[17,2]]) set(c, r, 'forest');
-  for (let r = 7; r < ROWS; r++) set(17, r, 'canal');
-  set(17, 9, 'bridge');
-  set(18, 8, 'village'); set(18, 9, 'village'); set(19, 9, 'village');
-  for (const o of GRAUWALL_OBJ) M[o.c][o.r].obj = o.id;
-  return M;
 }
 
 // ---------- Feste Karten (Wunsch des Nutzers: wählbar, drei Größen, quadratischer) ----------
@@ -435,18 +383,13 @@ function mapTools(cols, rows, seed) {
   };
   return T;
 }
-// Karte aus Zeichenraster (für Karten nach gemaltem Bild): eine Zeile je Reihe, ein Zeichen je Spalte
+// Zeichenraster (Sankt Ruß): ein Zeichen je Feld
 const GRID_CODE = { '.': 'open', ',': 'mud', o: 'crater', f: 'forest', W: 'wald', '=': 'trench', x: 'wire', U: 'bunker', '~': 'canal', B: 'bridge', F: 'furt', s: 'sumpf', V: 'village', K: 'fabrik', '+': 'kirche', '#': 'barrikade', '-': 'bahn',
   S: 'schiff', t: 'turm', h: 'friedhof', g: 'garten' };
-function gridMap(grid) {
-  const T = mapTools(grid[0].length, grid.length, 1);
-  grid.forEach((row, r) => [...row].forEach((ch, c) => { T.set(c, r, GRID_CODE[ch] || 'open'); if ('~BF'.includes(ch)) T.M[c][r].river = true; }));
-  return T.M;
-}
 const MAPS = {
   grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 7,
     desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke.',
-    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
+    armyMax: { A: 22, D: 18 },
     objectives: [
       { id: 'vorposten', name: 'Vorposten', c: 3, r: 4, pts: 1 },
       { id: 'nordgraben', name: 'Nordgraben', c: 7, r: 2, pts: 2 },
@@ -454,7 +397,6 @@ const MAPS = {
       { id: 'schanze', name: 'Die Schanze', c: 10, r: 5, pts: 2 },
       { id: 'veskar', name: 'Veskar', c: 12, r: 4, pts: 1 }],
     army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 8, sense: 5, geschuetz: 2, sturm: 2, generalD: 1, hauptD: 1 } },   // F66/F54/F80 (2026-11-21): +2 Sturmbrecher (Panzergranate gegen die Kolosse), 8 statt 10 Grenadiere (Sim 52 %)
-    reinf: [],   // F44 (2026-11-20): keine Verstärkungswelle mehr; dafür 2 Grenadiere mehr von Anfang an (vorher 8 + Welle in Runde 7: 3 Sturm, 2 Brand, 1 Geschütz)
     build: () => {
       const T = mapTools(16, 10, 1917);
       T.line(2, 0, 9, 'trench');
@@ -478,7 +420,7 @@ const MAPS = {
   // deshalb steht der Turm auf der Ostseite, die Aschenwacht stellt bis in ihren Graben auf (band 4) und rückt wie ein Angreifer vor (ki).
   sanktruss: { id: 'sanktruss', name: 'Sankt Ruß', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 9, band: 4,
     desc: 'Ein zerschossenes Dorf um eine ausgebrannte Kirche. Beide Seiten stürmen aus ihren Gräben am Dorfrand; dazwischen Häuserkampf um Friedhof, Dorfplatz und die Kirche, die am meisten zählt. Vom Turm sieht und schießt man weiter, schwere Granaten bringen die Kirche zum Einsturz.',
-    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 23 },
+    armyMax: { A: 22, D: 23 },
     objectives: [
       { id: 'gutshof', name: 'Gutshof', c: 5, r: 2, pts: 1 },
       { id: 'friedhof', name: 'Friedhof', c: 8, r: 3, pts: 2 },
@@ -489,7 +431,6 @@ const MAPS = {
     ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },
     // Beide Seiten greifen an: Aschenwacht etwa gleich viel wert wie das Konkordat (940 zu 910 – ein Grenadier-Trupp mehr gleicht den ersten Zug aus), ohne Reserve zur Mitte der Schlacht
     army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, pionier: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 11, sense: 3, geschuetz: 2, sturmpz: 2,   /* Paket G (2026-11-21): nach gedämpftem Sturmrollen 2 Pioniere (Haftladung gegen die Sturmpanzer), 8 Kohorten – Sim 53 % */ lanzeD: 2, minenwerfer: 1, generalD: 1, hauptD: 1 } },
-    reinf: [],
     grid: [
       '...=xg.gVg.x=f..',
       '.f.=.VV.gVgx=..,',
@@ -510,250 +451,12 @@ const MAPS = {
       for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
       this.bauten.forEach((b, i) => { for (const [c, r] of [...b.felder, b.turm]) T.M[c][r].bau = i; });
       return T.M;
-    } },
-  selm: { id: 'selm', name: 'Die Ruinen von Selm', size: 'Klein', cols: 14, rows: 11, zoneA: 2, zoneD: 5,
-    desc: 'Kurz und hart: ein Graben, ein Drahtgürtel, drei kleine Ziele dicht hinter der Front. Siegen kann nur, wer den Kirchhügel nimmt.',
-    maxT: 12, reinfTurn: 6, winA: 5, drawA: 3, armyMax: { A: 20, D: 16 },
-    objectives: [
-      { id: 'vorfeld', name: 'Vorfeld', c: 3, r: 5, pts: 1 },
-      { id: 'nordhof', name: 'Nordhof', c: 7, r: 1, pts: 2 },
-      { id: 'kreuz', name: 'Kreuzung', c: 7, r: 5, pts: 3 },
-      { id: 'suedwald', name: 'Südwald', c: 8, r: 9, pts: 2 },
-      { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
-    army: { A: { kohorte: 6, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 2, feldscher: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, heiler: 1, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand'],
-    build: () => {
-      const T = mapTools(14, 11, 1871);
-      T.line(1, 0, 10, 'trench');
-      T.field(2, 3, 0, 10, [['crater', 0.3], ['mud', 0.16]]);
-      T.many([[3, 7], [3, 8], [2, 8]], 'sumpf');
-      T.line(4, 0, 10, 'wire', [2, 5, 8]);
-      T.line(5, 0, 10, 'trench');
-      T.field(6, 8, 0, 10, [['crater', 0.14]]);
-      T.many([[7, 1], [8, 1], [7, 2]], 'village');
-      T.set(7, 5, 'village'); T.set(8, 5, 'fabrik'); T.set(7, 6, 'barrikade');
-      T.blob(8, 9, 1, 'forest');
-      T.line(9, 0, 10, 'wire', [1, 4, 7, 10]);
-      T.line(10, 0, 10, 'trench'); T.set(10, 3, 'bunker'); T.set(10, 7, 'bunker');
-      T.ridge(11, 13, 4, 6);
-      T.set(12, 5, 'kirche'); T.many([[12, 6], [13, 5]], 'village');
-      T.blob(13, 1, 1, 'forest');
-      T.line(13, 8, 10, 'bahn');
-      T.path([[0, 5], [13, 5]], 'road'); T.path([[7, 0], [7, 10]], 'road');   // die Kreuzung von Selm
-      return T.M;
-    } },
-  lerne: { id: 'lerne', name: 'Das Tal der Lerne', size: 'Mittel', cols: 18, rows: 13, zoneA: 2, zoneD: 7,
-    desc: 'Mühle, Bahnhof und Kalkwald vorn, die Nordbrücke über den Kanal und die Höhe 304 im Rücken. Mehrere Wege, mehrere Schwerpunkte.',
-    maxT: 16, reinfTurn: 8, winA: 6, drawA: 5, armyMax: { A: 26, D: 24 },
-    objectives: [
-      { id: 'vorfeld', name: 'Vorfeld', c: 4, r: 6, pts: 1 },
-      { id: 'muehle', name: 'Mühle', c: 8, r: 2, pts: 2 },
-      { id: 'bahnhof', name: 'Bahnhof', c: 9, r: 6, pts: 3 },
-      { id: 'kalkwald', name: 'Kalkwald', c: 10, r: 10, pts: 2 },
-      { id: 'nordbruecke', name: 'Nordbrücke', c: 13, r: 3, pts: 1 }],
-    army: { A: { kohorte: 10, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 12, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
-    build: () => {
-      const T = mapTools(18, 13, 1916);
-      T.line(2, 0, 12, 'trench');
-      T.field(3, 5, 0, 12, [['crater', 0.32], ['mud', 0.2]]);
-      T.line(6, 0, 12, 'wire', [2, 6, 10]);
-      T.line(7, 0, 12, 'trench');
-      T.field(8, 9, 0, 12, [['crater', 0.16]]);
-      T.set(8, 2, 'fabrik'); T.many([[8, 1], [9, 2]], 'village');
-      T.many([[9, 5], [10, 6]], 'village'); T.set(9, 6, 'village'); T.line(9, 7, 12, 'bahn');
-      T.blob(10, 10, 1, 'wald'); T.many([[10, 9], [10, 10], [10, 11]], 'waldweg');
-      T.line(11, 5, 12, 'wire', [7, 10]);
-      T.line(12, 4, 12, 'trench');
-      T.many([[11, 1], [12, 1], [12, 2]], 'sumpf');
-      T.line(13, 0, 5, 'canal'); T.set(13, 3, 'bridge'); T.set(13, 4, 'furt');   // Kanal endet am Becken (13,5)
-      T.line(14, 0, 4, 'trench', [3]);
-      T.line(15, 5, 10, 'trench');
-      T.ridge(15, 16, 6, 9);
-      T.set(16, 7, 'kirche'); T.set(15, 6, 'bunker'); T.set(15, 9, 'bunker'); T.many([[16, 8], [17, 7]], 'village');
-      T.blob(17, 1, 1, 'forest'); T.blob(17, 11, 1, 'forest');
-      T.path([[9, 0], [9, 6]], 'rail');   // Bahnlinie läuft durch den Bahnhof weiter nach Norden
-      T.path([[0, 2], [8, 2], [13, 3], [16, 7], [17, 7]], 'road'); T.path([[9, 6], [10, 9]], 'road'); T.path([[10, 11], [10, 12]], 'road');
-      return T.M;
-    } },
-  front: { id: 'front', name: 'Die Grauwall-Front', size: 'Groß', cols: 22, rows: 16, zoneA: 2, zoneD: 9,
-    desc: 'Die ganze Front: mehrere Grabensysteme, zwei Vorposten, der Kreuzhof, Wald und Kanalschleuse, dahinter die Feste Grauwall. Lange Schlacht.',
-    maxT: 18, reinfTurn: 9, winA: 8, drawA: 6, armyMax: { A: 34, D: 32 },
-    objectives: [
-      { id: 'vorwerk', name: 'Vorwerk', c: 5, r: 8, pts: 1 },
-      { id: 'kessel', name: 'Kessel', c: 10, r: 3, pts: 2 },
-      { id: 'brand', name: 'Brandstätte', c: 10, r: 12, pts: 2 },
-      { id: 'kreuzhof', name: 'Kreuzhof', c: 13, r: 8, pts: 3 },
-      { id: 'riegel', name: 'Riegel', c: 16, r: 8, pts: 1 }],
-    army: { A: { kohorte: 12, mahlwerk: 4, koloss: 4, haubitze: 4, reiter: 3, feldscher: 2, moerser: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 15, sense: 8, geschuetz: 4, heiler: 1, minenwerfer: 2, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'sturm', 'brand', 'brand', 'geschuetz', 'geschuetz'],
-    build: () => {
-      const T = mapTools(22, 16, 1918);
-      T.line(2, 0, 15, 'trench');
-      T.field(3, 6, 0, 15, [['crater', 0.32], ['mud', 0.2]]);
-      T.many([[4, 11], [5, 12], [4, 12], [4, 3], [5, 3]], 'sumpf');
-      T.line(7, 0, 15, 'wire', [2, 6, 10, 13]);
-      T.line(8, 0, 15, 'wire', [4, 8, 12]);
-      T.line(9, 0, 15, 'trench');
-      T.field(10, 12, 0, 15, [['crater', 0.15], ['mud', 0.05]]);
-      T.set(10, 3, 'barrikade'); T.many([[11, 3], [10, 2]], 'village');
-      T.set(10, 12, 'fabrik'); T.set(11, 12, 'village');
-      T.line(12, 0, 6, 'bahn');
-      T.many([[13, 8], [14, 8], [13, 9]], 'village'); T.set(13, 7, 'kirche'); T.set(12, 8, 'barrikade');
-      T.line(14, 4, 15, 'wire', [6, 10, 13]);
-      T.line(15, 4, 15, 'trench');
-      T.blob(15, 2, 1, 'wald'); T.many([[16, 1], [14, 1], [16, 2]], 'wald'); T.line(15, 0, 3, 'waldweg');
-      T.line(17, 10, 15, 'canal'); T.set(17, 13, 'bridge'); T.set(17, 15, 'furt');
-      T.line(18, 10, 15, 'trench', [13]); T.line(18, 3, 9, 'trench');
-      T.ridge(18, 20, 6, 9);
-      T.many([[19, 7], [19, 8], [20, 7], [20, 8]], 'village'); T.set(18, 6, 'bunker'); T.set(18, 9, 'bunker');
-      T.blob(20, 1, 1, 'forest'); T.blob(21, 14, 1, 'forest');
-      T.path([[12, 7], [12, 15]], 'rail');
-      T.path([[15, 3], [13, 7], [13, 8]], 'road'); T.path([[0, 8], [13, 8], [19, 7]], 'road');
-      T.path([[0, 3], [12, 3]], 'road'); T.path([[0, 12], [10, 12], [17, 13], [21, 13]], 'road');
-      return T.M;
-    } },
-  // Karte nach einem gemalten Bild: Gelände je Feld so, wie es auf dem Bild zu sehen ist (Zeilen = Reihen, Zeichen = Spalten)
-  stein: { id: 'stein', name: 'Die Steinbrücke', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'stein',
-    desc: 'Gemalte Karte: Vor dem Fluss die Grabenlinie mit zwei Bunkern, darüber nur die alte Steinbrücke und die Furt am Steg. Dahinter Bunker, Dorf, Fabrik und die Kirche.',
-    maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
-    objectives: [
-      { id: 'sbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
-      { id: 'sbunkerw', name: 'Westbunker', c: 6, r: 3, pts: 1 },
-      { id: 'steg', name: 'Furt am Steg', c: 7, r: 2, pts: 2 },
-      { id: 'steinbr', name: 'Steinbrücke', c: 8, r: 7, pts: 3 },
-      { id: 'sbunkero', name: 'Ostbunker', c: 10, r: 3, pts: 1 },
-      { id: 'dorfrand', name: 'Dorfrand', c: 11, r: 6, pts: 1 }],
-    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 6, sense: 5, geschuetz: 2, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
-    grid: [
-      'off..==.~VU.WWWW',
-      'ffffx=.~~V..WWWW',
-      'fffox=.FF...WWWW',
-      'fof.x=U~~=U.WWW.',
-      '..f.x==~~===....',
-      '....x=.~~==..K.V',
-      '=....=.B~..VVV+V',
-      '=.oo.=.~B=.VVVVV',
-      'o..xxU.~~=VVVVVK',
-      'oxx..=.~~.VVVVVV'],
-    build() { return gridMap(this.grid); } },
-  waldfl: { id: 'waldfl', name: 'Der Waldfluss', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'waldfl',
-    desc: 'Gemalte Karte: Dichter Wald auf beiden Seiten, dazwischen ein Fluss mit Holzbrücke und Steg. Bunker im Unterholz, wenig freie Sicht.',
-    maxT: 14, reinfTurn: 7, winA: 4, drawA: 3, armyMax: { A: 22, D: 18 },
-    objectives: [
-      { id: 'wbunkers', name: 'Südbunker', c: 5, r: 8, pts: 1 },
-      { id: 'wbunkerw', name: 'Bunker am Hang', c: 6, r: 3, pts: 1 },
-      { id: 'wsteg', name: 'Steg', c: 8, r: 2, pts: 2 },
-      { id: 'holzbr', name: 'Holzbrücke', c: 8, r: 7, pts: 3 },
-      { id: 'wbunkerm', name: 'Waldbunker', c: 10, r: 3, pts: 1 },
-      { id: 'ostgraben', name: 'Ostgraben', c: 10, r: 5, pts: 1 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 6, sense: 4, geschuetz: 2, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
-    grid: [
-      'WWWW.==.~V..WWWW',
-      'WWWW.=..~.U.WWWW',
-      'WWWWo=..F=..WWWW',
-      'WWW..=U.~=U.WWWW',
-      '...WW==~~===....',
-      '.....=.~~==..U.W',
-      '=....=.B~=.....W',
-      '=.o..=.~B=....WW',
-      'o..xxU.~~=...WWW',
-      '.xx..=.~~...WWWW'],
-    build() { return gridMap(this.grid); } },
-  kasem: { id: 'kasem', name: 'Die Kasematten', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'kasem',
-    desc: 'Gemalte Karte: Aus dem eigenen Grabengewirr über offenes Feld gegen eine Zickzack-Linie, dahinter zwei Geschützkasematten und ein zerschossener Ort.',
-    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
-    objectives: [
-      { id: 'eigenb', name: 'Vorderer Bunker', c: 2, r: 7, pts: 1 },
-      { id: 'kgraben', name: 'Zickzack-Graben', c: 5, r: 4, pts: 2 },
-      { id: 'kbunker', name: 'Grabenbunker', c: 8, r: 3, pts: 3 },
-      { id: 'vorwerk', name: 'Ziegelhof', c: 11, r: 7, pts: 2 },
-      { id: 'riegelg', name: 'Riegelgraben', c: 12, r: 6, pts: 1 }],
-    army: { A: { kohorte: 6, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 11, sense: 4, geschuetz: 2, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
-    grid: [
-      'o===.f.~~.fff...',
-      '.===fff.~~ff..U.',
-      'o==.oof==.f.....',
-      '==....==U.......',
-      '=x.=====......U.',
-      'x.=.=..x........',
-      '===..ox.....==..',
-      '=.U.o....ooV===V',
-      'o.xxx...o.VVVVVK',
-      'oxx...........VV'],
-    build() { return gridMap(this.grid); } },
-  kanal: { id: 'kanal', name: 'Die Kanalstadt', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 5, img: 'kanal',
-    desc: 'Gemalte Karte: Häuserkampf. Ein Kanal teilt die Stadt; hinüber führen die Steinbrücke, die Bahnbrücke und eine Furt. Dahinter Fabrik und Kathedrale.',
-    maxT: 14, reinfTurn: 7, winA: 5, drawA: 4, armyMax: { A: 22, D: 18 },
-    objectives: [
-      { id: 'eigenb', name: 'Vorderer Bunker', c: 2, r: 7, pts: 1 },
-      { id: 'kfront', name: 'Vorderer Graben', c: 5, r: 4, pts: 2 },
-      { id: 'ksteinbr', name: 'Steinbrücke', c: 8, r: 3, pts: 3 },
-      { id: 'kbahnbr', name: 'Bahnbrücke', c: 8, r: 7, pts: 3 },
-      { id: 'kfab', name: 'Fabrik', c: 10, r: 2, pts: 2 },
-      { id: 'ostviertel', name: 'Ostviertel', c: 11, r: 6, pts: 2 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 15, sense: 5, geschuetz: 2, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'brand', 'geschuetz'],
-    grid: [
-      'VVVVVVV.~.VVV.VV',
-      'V.VVVVV~~..KoVVV',
-      'V..VV..~..KV.V+V',
-      '.VV.o.=.B.......',
-      'o.V=====~~......',
-      'o.===.=x.~...K.V',
-      '===.oox.~..V.VVV',
-      '=.U.oo..BVVVVVVV',
-      'o.xxx..~~VVVVVVK',
-      'oxx....F..VVVVVV'],
-    build() { return gridMap(this.grid); } },
-  varn: { id: 'varn', name: 'Das Varntal', size: 'Mittel', cols: 18, rows: 14, zoneA: 2, zoneD: 7,
-    desc: 'Ein zusammenhängendes Tal: Die Varn fließt von Nord nach Süd mitten durch Varnheim. Zwei Brücken, zwei Furten, eine Bunkerlinie davor, Bahn und Höhe 212 dahinter.',
-    maxT: 16, reinfTurn: 8, winA: 5, drawA: 4, armyMax: { A: 26, D: 24 },
-    objectives: [
-      { id: 'vorfeld', name: 'Vorfeld', c: 4, r: 6, pts: 1 },
-      { id: 'westbunker', name: 'Westbunker', c: 7, r: 3, pts: 1 },
-      { id: 'varnwald', name: 'Varnwald', c: 9, r: 2, pts: 2 },
-      { id: 'vkirche', name: 'Kirche von Varnheim', c: 10, r: 6, pts: 3 },
-      { id: 'suedfurt', name: 'Südfurt', c: 11, r: 9, pts: 2 },
-      { id: 'vbruecke', name: 'Nordbrücke', c: 12, r: 3, pts: 1 }],
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 3, reiter: 2, feldscher: 1, moerser: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 17, sense: 6, geschuetz: 3, heiler: 1, minenwerfer: 1, generalD: 1, hauptD: 1 } },
-    reinf: ['sturm', 'sturm', 'brand', 'sturm', 'geschuetz'],
-    build: () => {
-      const T = mapTools(18, 14, 1915);
-      // Straßen und Bahn zuerst (nur Zeichen-Merkmale), dann das Gelände
-      T.path([[0, 6], [9, 6], [11, 6], [13, 6], [17, 6]], 'road'); T.path([[0, 3], [12, 3], [17, 3]], 'road'); T.path([[13, 6], [16, 10], [17, 11]], 'road');
-      T.path([[14, 0], [14, 13]], 'rail');
-      // Ausgangsgraben, Niemandsland, Draht, vordere Linie mit zwei Bunkern
-      T.line(2, 0, 13, 'trench');
-      T.field(3, 5, 0, 13, [['crater', 0.3], ['mud', 0.2]]);
-      T.many([[4, 10], [4, 11], [5, 11]], 'sumpf');
-      T.line(6, 0, 13, 'wire', [3, 7, 11]);
-      T.line(7, 0, 13, 'trench'); T.set(7, 3, 'bunker'); T.set(7, 10, 'bunker');
-      T.field(8, 9, 8, 13, [['crater', 0.14]]);
-      // Varnwald mit Waldweg
-      T.many([[8, 0], [8, 1], [10, 0], [10, 1], [10, 2], [8, 2], [11, 1]], 'wald'); T.path([[9, 0], [9, 3]], 'waldweg');
-      // die Varn: von Nord nach Süd, Brücken und Furten
-      T.path([[12, 0], [12, 4], [11, 5], [11, 9], [10, 10], [10, 13]], 'canal'); T.path([[12, 0], [12, 4], [11, 5], [11, 9], [10, 10], [10, 13]], 'river');
-      T.set(12, 3, 'bridge'); T.set(11, 6, 'bridge'); T.set(11, 9, 'furt'); T.set(10, 12, 'furt');
-      T.many([[9, 11], [9, 12]], 'sumpf');
-      // Varnheim an beiden Ufern
-      T.many([[9, 5], [10, 5], [10, 7], [9, 6]], 'village'); T.set(10, 6, 'kirche'); T.set(9, 7, 'barrikade');
-      T.set(12, 6, 'fabrik'); T.many([[13, 5], [12, 7], [13, 6]], 'village');
-      T.many([[14, 6], [14, 7], [14, 8]], 'bahn');
-      // zweite Linie und Höhe 212
-      T.path([[15, 1], [15, 12]], 'trench'); T.set(15, 4, 'bunker'); T.set(15, 9, 'bunker');
-      T.ridge(15, 17, 8, 11); T.set(16, 10, 'bunker');
-      T.many([[17, 1], [17, 2], [16, 1]], 'forest'); T.many([[17, 12], [17, 13], [16, 13]], 'forest');
-      return T.M;
     } }
 };
-let MAP = MAPS.grauwall, OBJECTIVES = MAPS.grauwall.objectives, SETUP = null, REINF = MAPS.grauwall.reinf;
+let MAP = MAPS.grauwall, OBJECTIVES = MAPS.grauwall.objectives;
 function useMap(id) {
   MAP = MAPS[id] || MAPS.grauwall;
-  COLS = MAP.cols; ROWS = MAP.rows; OBJECTIVES = MAP.objectives; SETUP = MAP.setup || null; REINF = MAP.reinf;
+  COLS = MAP.cols; ROWS = MAP.rows; OBJECTIVES = MAP.objectives;
   SIDES.D.edge = COLS - 1;
   return MAP;
 }
@@ -831,7 +534,7 @@ function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgeba
 }
 // ---------- Armee-Auswahl ----------
 // Jede Seite darf vor der Schlacht für den Wert der Standardarmee selbst Truppen wählen.
-function defaultArmy(side) { if (MAP.army) return Object.assign({}, MAP.army[side]); const a = {}; for (const s of SETUP) if (TYPES[s[0]].side === side) a[s[0]] = (a[s[0]] || 0) + 1; return a; }
+function defaultArmy(side) { return Object.assign({}, MAP.army[side]); }
 function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
 function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
 const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
@@ -925,17 +628,17 @@ function aufstellen(G, u, c, r) {   // setzen oder mit der Einheit dort tauschen
 function autoAufstellen(G, side) {   // Kartenvorgabe: Seite neu aufstellen wie beim Spielstart
   G.units = G.units.filter(u => u.side !== side);
   const army = G.armee && G.armee[side];
-  if (army) deploy(G, side, army); else if (SETUP) { for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]); } else deploy(G, side, defaultArmy(side));
+  deploy(G, side, army || defaultArmy(side));
   for (const u of G.units) if (u.side === side) { if (TYPES[u.type].mg) u.setup = true; if (TYPES[u.type].mines) u.mines = TYPES[u.type].mines; if (TYPES[u.type].counterStrike) u.cready = true; }
 }
 function newGame(opts) {
   opts = opts || {};
   useMapArmy(opts.map);
   const G = {
-    mapId: MAP.id, maxT: MAP.maxT || P.MAXT, winA: MAP.winA || P.WIN_A, drawA: MAP.drawA || P.DRAW_A, reinfTurn: MAP.reinfTurn || P.REINF_TURN,
+    mapId: MAP.id,
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
-    mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, reinfDone: false, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
+    mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
     bauten: (MAP.bauten || []).map(b => ({ ...b, hp: +(TOG.M_kirche || 0) || P.KIRCHE_HP, max: +(TOG.M_kirche || 0) || P.KIRCHE_HP, kaputt: false }))   // große Gebäude mit Bauzustand (Kirche)
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
@@ -944,7 +647,6 @@ function newGame(opts) {
   for (const side of ['A', 'D']) {
     const army = opts.army && opts.army[side];
     if (army && (opts.free || armyOk(side, army, !!opts.mechs))) { deploy(G, side, army); G.armee[side] = army; }   // free: nur für Tests ohne Budgetgrenze
-    else if (SETUP) { for (const s of SETUP) if (TYPES[s[0]].side === side) addUnit(G, s[0], s[1], s[2], s[3]); }
     else { G.armee[side] = defaultArmy(side); deploy(G, side, G.armee[side]); }
   }
   for (const u of G.units) { if (TYPES[u.type].mg) u.setup = true; if (TYPES[u.type].mines) u.mines = TYPES[u.type].mines; if (TYPES[u.type].counterStrike) u.cready = true; }   // MG stehen zu Spielbeginn aufgebaut
@@ -1066,11 +768,6 @@ function nearestEnemy(G, u) {
   let best = null, bd = 1e9;
   for (const o of G.units) if (o.side !== u.side && active(o)) { const d = dist(u.c, u.r, o.c, o.r); if (d < bd) { bd = d; best = o; } }
   return best;
-}
-function autoFace(G, u) {
-  const e = nearestEnemy(G, u);
-  if (e && dist(u.c, u.r, e.c, e.r) <= 4) u.face = faceIndex(angleTo(u.c, u.r, e.c, e.r));
-  else u.face = u.side === 'A' ? 0 : 3;
 }
 // Gepanzerte Infanterie (Kampfanzug, Rüstung, Brustpanzer): Draht verletzt sie nicht und hält sie nicht auf
 function wireProof(T) { return T.cls !== 'walker' && !!(T.suit || T.wireProof); }
@@ -1683,21 +1380,6 @@ function startTurn(G) {
       ev.push({ t: 'gascloud' });
     }
   }
-  if (s === 'D' && G.turn === G.reinfTurn && !G.reinfDone && REINF.length) {   // F44: Karten ohne Welle (Grauwall) melden nichts
-    G.reinfDone = true;
-    const ids = [];
-    const RO = rowsOut();
-    const list = REINF.map((x, i) => Array.isArray(x) ? x : [x, COLS - 1 - (i >= ROWS ? 1 : 0), RO[i % ROWS], null]);
-    for (const [type, c, r, off] of list) {
-      let rr = r, tries = 0;
-      while (unitAt(G, c, rr) && tries++ < ROWS) rr = (rr + 1) % ROWS;
-      if (unitAt(G, c, rr)) continue;
-      const u = addUnit(G, type, c, rr, off);
-      if (type === 'geschuetz') u.gas = 3;
-      ids.push(u.id);
-    }
-    ev.push({ t: 'reinf', ids });
-  }
   G.pts[s] += P.PTS_TURN[s];
   { // Siegpunkte: jedes Zielfeld, das die Seite über die gegnerische Runde gehalten hat, zählt
     let add = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === s) add += o.pts;
@@ -2151,7 +1833,7 @@ const E = {
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
 };
-for (const [k, f] of Object.entries({ COLS: () => COLS, ROWS: () => ROWS, OBJECTIVES: () => OBJECTIVES, SETUP: () => SETUP, REINF: () => REINF, MAP: () => MAP, ARMY_CAP: () => ARMY_CAP, ARMY_WALKERS: () => ARMY_WALKERS }))
+for (const [k, f] of Object.entries({ COLS: () => COLS, ROWS: () => ROWS, OBJECTIVES: () => OBJECTIVES, MAP: () => MAP, ARMY_CAP: () => ARMY_CAP, ARMY_WALKERS: () => ARMY_WALKERS }))
   Object.defineProperty(E, k, { get: f, enumerable: true });
 if (typeof module !== 'undefined' && module.exports) module.exports = E; else root.E = E;
 })(this);

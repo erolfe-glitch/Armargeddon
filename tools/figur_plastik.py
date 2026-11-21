@@ -60,7 +60,7 @@ def main():
     args = [x for x in sys.argv[1:] if not x.startswith('--')]
     probe = sys.argv[sys.argv.index('--probe') + 1] if '--probe' in sys.argv else None
     if probe: args = [x for x in args if x != probe]
-    files = sorted(GAME.glob('*.png')) + sorted(f for f in GELAENDE.glob('*.png') if f.stem.startswith(GEL_TEILE))
+    files = [f for f in sorted(GAME.glob('*.png')) if f.stem not in ('aschenwacht_eisenknecht', 'konkordat_kreuzschreiter')] + sorted(f for f in GELAENDE.glob('*.png') if f.stem.startswith(GEL_TEILE))
     if args and not probe: sys.exit('Mit Namen nur zusammen mit --probe (die Datendatei enthält immer alle Bilder).')
     if args: files = [f for f in files if f.stem in args]
     lines = ['// ===== ARMARGEDDON BILDWIRKUNG DER FIGUREN =====',

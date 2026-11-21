@@ -21,6 +21,7 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 let G = null, mode = 'A', blood = true, tempo = 0.5, busy = false;   // tempo = gewählte Stufe; Standard für neue Spieler ½× (Spieltest Runde 2); gespeichertes Tempo gilt weiter
 try { const v = +localStorage.getItem('arm.tempo2');   // Punkt 7 (2026-11-21): neuer Schlüssel – einmalig Standard ½×, danach eigene Wahl
  if ([0.5, 1, 2, 99].includes(v)) tempo = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
+try { for (const k of ['arm.tempo', 'arm.bildwirkung', 'arm.bildwirkung2']) localStorage.removeItem(k); } catch (e) {}   // Prüfliste 5.6: verwaiste alte Schlüssel (ersetzt durch arm.tempo2, arm.bildwirkung3) einmal wegräumen
 const GEGNER_TEMPO = 1.2;   // Gegnerzug (KI) etwas schneller als die gewählte Stufe: ½× → 0,6× (Spieltest Runde 2, Punkt 11)
 let speed = tempo;   // wirksames Tempo: im Gegnerzug tempo × GEGNER_TEMPO
 const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
@@ -31,7 +32,7 @@ let recSet = new Set(), abilSet = new Set(), abilMode = false, feldArt = 'abil',
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
-const OPT = { ready: true, strag: true, cam: true, shake: true, tilt: false, base: 0 };   // base: „Base“ unter Einheiten in der neuen Ansicht (0 aus … 3 deutlich)   // tilt: „Neue Ansicht (Test)“, Standard aus   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
+const OPT = { ready: true, strag: true, cam: true, shake: true, base: 0 };   // base: „Base“ unter Einheiten (0 aus … 3 deutlich)   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
 try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === typeof OPT[k]) OPT[k] = o[k]; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
@@ -48,41 +49,16 @@ let ctx = MAINCTX;   // neue Ansicht: beim Zeichnen des flachen Weltbilds zeigt 
 
 // ---------- Layout ----------
 function layout() {
-  neuBedienfeld(VIEW.tilt()); setTimeout(neuKnopfreihe, 0);
+  neuBedienfeld(true); setTimeout(neuKnopfreihe, 0);
   { const tb = $('topbar'); if (tb) document.body.style.setProperty('--tb-unten', Math.round(tb.getBoundingClientRect().bottom) + 'px'); }   // Nachschub-Knopf und Hinweis unter der oberen Leiste, wie hoch sie auch ist (Spieltest Runde 2, Punkt 12)
-  if (VIEW.tilt()) return layoutTilt();
-  board.classList.remove('tilt');
-  const wrap = board.getBoundingClientRect();
-  const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-  const portrait = matchMedia('(orientation: portrait)').matches;
-  const MIN_S = 46;   // kleinste Feldgröße in CSS-Pixeln; größere Karten werden dann verschoben (ziehen, Mausrad, Pfeiltasten)
-  const base = Math.max(wrap.width, portrait ? 760 : 560, MIN_S * (1.5 * COLS + 0.5));
-  // Stauchung K hängt nicht vom Zoom ab (alles skaliert mit s): einmal bei Zoom 1 bestimmen
-  const s1 = base * dpr / (1.5 * COLS + 0.5), mi = mapImg();
-  K = Math.max(0.42, Math.min(0.86, (wrap.height * dpr - s1 * ((mi ? 0.9 : 1.55) + 0.45)) / (s1 * SQ3 * (ROWS + 0.5))));
-  if (mi) { const mk = imgK(mi); K = Math.min(mk, Math.max(K, mk * 0.8)); }   // gemaltes Kartenbild: höchstens 20 % gestaucht, sonst verschieben
-  // „Ganze Karte“: größter Zoom, bei dem Breite und Höhe ganz ins Bild passen (höchstens 1)
-  const h1 = (s1 * ((mi ? 0.9 : 1.55) + 0.45) + s1 * K * SQ3 * (ROWS + 0.5)) / dpr;
-  ZFIT = Math.min(1, wrap.width / base, wrap.height / h1);
-  if (zoomFit) ZOOM = ZFIT; ZOOM = Math.max(ZFIT, Math.min(Z_MAX, ZOOM));
-  const cssW = base * ZOOM, s = cssW * dpr / (1.5 * COLS + 0.5);
-  const top = s * (mi ? 0.9 : 1.55), bot = s * 0.45;
-  const H = Math.ceil(top + s * K * SQ3 * (ROWS + 0.5) + bot);
-  L = { dpr, s, top, W: Math.round(cssW * dpr), H };
-  cv.width = L.W; cv.height = H;
-  cv.style.width = cssW + 'px'; cv.style.height = (H / dpr) + 'px';
-  // kleiner als das Bild (ganze Karte): mittig
-  cv.style.marginLeft = Math.max(0, Math.floor((wrap.width - cssW) / 2)) + 'px'; cv.style.marginTop = Math.max(0, Math.floor((wrap.height - H / dpr) / 2)) + 'px';
-  renderTerrain();
-  for (const u of G.units) { const d = DU.get(u.id); if (d) { const [x, y] = center(u.c, u.r); d.x = x; d.y = y; } }
+  layoutTilt();
 }
 // ---------- Ansicht ----------
 // Alle Geometrie, die vom Blick auf die Karte abhängt, läuft über diesen Abschnitt: Feldmitte (center), Feld unter dem Zeiger (pixToHex),
 // Feldecken (hexCorner/hexPath), Verkürzung des Bodens (kAt), Feldgröße an einer Stelle (sAt), Kreise auf dem Boden (gEllipse).
-// Flache Ansicht: Karte senkrecht gestaucht um K, überall gleich groß. Neue Ansicht (Schalter OPT.tilt, „Neue Ansicht (Test)“):
-// perspektivisch gekippt – wird hier eingehängt (Umbauplan Schritt 1 ff.); bis dahin zeichnen beide Schalterstellungen gleich.
-// Das Gelände (renderTerrain) zeichnet weiter flach in tcv; die neue Ansicht projiziert diesen Puffer später ungestaucht.
-const VIEW = { tilt: () => true, bbK: null, up: null };   // seit 2026-11-17 fester Standard: immer die neue Ansicht (Schalter entfernt). Die alte, flache Ansicht ist nicht mehr erreichbar und wird nicht weitergepflegt.   // up(x, y): neue Ansicht, Phase „aufrecht“ – Aufsteller für ein Element am Punkt (x, y) einstellen   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
+// Gerechnet wird in einem flachen Weltbild (K = 1); drawTilt projiziert es perspektivisch gekippt (Abschnitt „Gekippte Ansicht“).
+// Die alte, flache Ansicht ist seit Paket G (2026-11-21) ausgebaut (Rückweg: Git-Tag vor-alte-karten-raus).
+const VIEW = { bbK: null, up: null };   // up(x, y): neue Ansicht, Phase „aufrecht“ – Aufsteller für ein Element am Punkt (x, y) einstellen   // bbK: Bodenverkürzung am Fußpunkt, solange eine Einheit als Aufsteller gezeichnet wird
 function center(c, r) { return [L.s * (1 + 1.5 * c), L.top + L.s * K * SQ3 * (r + 0.5 * (c & 1) + 0.5)]; }
 function kAt(x, y) { return VIEW.bbK != null ? VIEW.bbK : K; }   // senkrechte Verkürzung des Bodens am Bildpunkt (x, y); neue Ansicht: im Weltbild 1, am Aufsteller die Verkürzung am Fußpunkt
 function sAt(x, y) { return L.s; }   // Feldradius in Bildpunkten am Bildpunkt (x, y)
@@ -104,11 +80,11 @@ function hexPath(g, c, r, k = 1) {
   g.closePath();
 }
 
-// ---------- Bilder für Kacheln und Effekte ----------
-const TIMG = {}, FXI = {}, PJI = {};
-{ const D = window.FXDATA || { tiles: {}, fx: {} };
-  const load = (store, map) => { for (const k in map) { const im = new Image(); im.onload = () => { store[k] = im; if (store === TIMG && L && G) renderTerrain(); }; im.src = map[k]; } };
-  load(TIMG, D.tiles); load(FXI, D.fx); load(PJI, D.proj || {}); }
+// ---------- Bilder für Effekte ----------
+const FXI = {}, PJI = {};   // alte Effektbilder (fx.js) als Ersatz, wo ein neuer Effektbogen fehlt
+{ const D = window.FXDATA || { fx: {} };
+  const load = (store, map) => { for (const k in map) { const im = new Image(); im.onload = () => { store[k] = im; }; im.src = map[k]; } };
+  load(FXI, D.fx || {}); load(PJI, D.proj || {}); }
 const fxw = (im, h) => h * im.naturalWidth / im.naturalHeight;
 
 // ---------- Neue Effektbögen (2026-11-17): tools/fx_cut.py → src/fxneu.js (FXNEU) ----------
@@ -208,239 +184,7 @@ function fxImpact(x, y, r, o = {}) {
 }
 
 // ---------- Gelände ----------
-const hash = (a, b) => { const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return n - Math.floor(n); };
-const TC = { open: ['#5a5a3a', '#545436', '#5f5e3d'], mud: ['#4c4030', '#473b2c', '#514433'], crater: ['#575638', '#515034', '#5b5a3b'],
-  trench: ['#5c593b', '#565337', '#605d3e'], wire: ['#585639', '#525035', '#5c5a3c'], village: ['#66624f', '#605c4a', '#6b6753'],
-  forest: ['#42452f', '#3d402b', '#474a32'], canal: ['#34474f', '#30424a', '#384c54'], bridge: ['#34474f', '#30424a', '#384c54'],
-  furt: ['#3e5058', '#3a4b52', '#42545c'], sumpf: ['#45482f', '#40432c', '#4a4d33'], wald: ['#2f3a24', '#2b3521', '#334027'], waldweg: ['#4a4a30', '#45452d', '#4f4f34'],
-  bunker: ['#5d5c55', '#57564f', '#63625a'], fabrik: ['#5a4a3e', '#55463a', '#5f4e42'], kirche: ['#5e5c55', '#59574f', '#64625a'], schiff: ['#5e5c55', '#59574f', '#64625a'], turm: ['#5e5c55', '#59574f', '#64625a'], friedhof: ['#4d5038', '#484b34', '#52553c'], garten: ['#4d5038', '#484b34', '#52553c'], barrikade: ['#5a4f3c', '#554a38', '#5f5440'], bahn: ['#55524a', '#504d45', '#5a574f'] };
-// Welche gemalte Kachel ein Feld bekommt: Varianten je nach Nachbarschaft und Zufall (fest je Feld)
-function tileKey(c, r, h) {
-  const t = h.t, n = hash(c * 1.7, r * 9.1), nb = E.neighbors(c, r).map(([a, b]) => G.map[a][b].t);
-  const has = k => TIMG[k] ? k : null, wood = nb.some(x => x === 'wald' || x === 'waldweg' || x === 'forest'), wet = nb.some(x => x === 'canal' || x === 'furt' || x === 'sumpf');
-  if (t === 'village') { const v = ['village', 'debris', 'village2', 'village3', 'debris2'].filter(k => TIMG[k]); return v[Math.floor(n * v.length)] || 'village'; }
-  if (t === 'forest') return n < 0.5 && has('forest2') || 'forest';
-  if (t === 'trench') return (wood && has('trenchF')) || (wet && has('trenchW')) || 'trench';
-  if (t === 'canal') return (wood && has('canal1')) || has('canal0') || 'canal';
-  if (t === 'waldweg') return n < 0.35 && has('lichtung') || 'waldweg';
-  return t;
-}
 const O = '#16150f';
-// ---------- Gemalte Karte (Bögen des Nutzers im Ordner Map) ----------
-// Statt einer Kachel je Feld: ein durchgehender Boden, weiche Flächen für Wald, Ort und Sumpf,
-// Fluss, Gräben, Wege und Bahn als durchgehende Linien von Feld zu Feld, Gebäude und Bäume als Bilder darauf.
-const MIMG = {}, BASE = {};
-{ const D = (window.FXDATA || {}).mapimg || {};
-  for (const k in D) { const im = new Image(); im.onload = () => { MIMG[k] = im; if (L && G && E.MAPS[G.mapId] && E.MAPS[G.mapId].img === k) layout(); }; im.src = D[k]; } }
-function mapImg() { const m = G && E.MAPS[G.mapId]; return m && m.img && MIMG[m.img] || null; }
-const imgK = im => (1.5 * COLS + 0.5) / (im.naturalWidth / im.naturalHeight * SQ3 * (ROWS + 0.5));
-// Gemaltes Kartenbild: Bild unter das Raster, Änderungen im Spiel (Draht gelegt oder geschnitten) darüber zeichnen
-function renderImageMap(g, im) {
-  const { s } = L, w = s * (1.5 * COLS + 0.5), h = s * K * SQ3 * (ROWS + 0.5);
-  g.drawImage(im, 0, L.top, w, h);
-  const id = G.mapId, base = BASE[id] || (BASE[id] = E.MAPS[id].build());
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const t = G.map[c][r].t, b = base[c][r].t, [x, y] = center(c, r);
-    if (t === b) continue;
-    if (t === 'wire' && PT.spr.wireS) { const ws = s * 2, wh = ws * PT.spr.wireS.naturalHeight / PT.spr.wireS.naturalWidth * 0.8; g.drawImage(PT.spr.wireS, x - ws / 2, y - wh * 0.55, ws, wh); }
-    else if (b === 'wire' && PT.tex.mud) {   // Draht geschnitten: Schlamm darüber
-      const R = s * 1.05, m = document.createElement('canvas'); m.width = m.height = Math.ceil(R * 2); const mg = m.getContext('2d');
-      const gr = mg.createRadialGradient(R, R, 0, R, R, R); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.6, 'rgba(0,0,0,0.95)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-      mg.fillStyle = gr; mg.fillRect(0, 0, R * 2, R * 2); mg.globalCompositeOperation = 'source-in'; mg.fillStyle = mg.createPattern(PT.tex.mud, 'repeat'); mg.fillRect(0, 0, R * 2, R * 2);
-      g.drawImage(m, x - R, y - R * K, R * 2, R * 2 * K);
-    }
-  }
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    if (G.map[c][r].t === 'wire') { hexPath(g, c, r, 0.94); g.strokeStyle = 'rgba(205,210,215,0.55)'; g.lineWidth = Math.max(1.5, s * 0.035); g.setLineDash([s * 0.12, s * 0.08]); g.stroke(); g.setLineDash([]); }
-    hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.22)'; g.lineWidth = Math.max(1, s * 0.016); g.stroke();
-  }
-}
-const PT = { tex: {}, spr: {}, n: 0, need: 0 };
-{ const D = (window.FXDATA || {}).paint;
-  if (D) for (const grp of ['tex', 'spr']) for (const k in D[grp]) {
-    PT.need++; const im = new Image();
-    im.onload = () => { PT[grp][k] = im; PT.n++; if (PT.n === PT.need && L && G) renderTerrain(); };
-    im.src = D[grp][k];
-  } }
-const paintReady = () => PT.need > 0 && PT.n === PT.need;
-const WATER = new Set(['canal', 'bridge', 'furt']), TOWN = new Set(['village', 'kirche', 'fabrik', 'barrikade', 'bahn', 'schiff', 'turm']);
-function renderPainted(g) {
-  const { s, W, H } = L, x0 = 0, y0 = L.top - s * K * 1.2;
-  const pat = (k, sc = 1) => { const p = g.createPattern(PT.tex[k], 'repeat'); const f = s * 1.9 / 324 * sc; p.setTransform(new DOMMatrix([f, 0, 0, f * 0.92, 0, 0])); return p; };
-  const T = (c, r) => E.inMap(c, r) ? G.map[c][r].t : null;
-  // 1) Boden: Gras, darüber Schlamm, wo gekämpft wird
-  g.save(); g.beginPath(); g.rect(x0, y0, W, H - y0); g.clip();
-  g.fillStyle = pat('grass'); g.fillRect(x0, y0, W, H - y0);
-  const layer = (tex, wf, rad = 1.25, sc = 1) => {
-    const m = document.createElement('canvas'); m.width = W; m.height = H; const mg = m.getContext('2d');
-    for (let c = -1; c <= COLS; c++) for (let r = -1; r <= ROWS; r++) {
-      const cc = Math.max(0, Math.min(COLS - 1, c)), rr = Math.max(0, Math.min(ROWS - 1, r));
-      const w = wf(G.map[cc][rr], cc, rr); if (w <= 0) continue;
-      const [x, y] = center(c, r), R = s * rad * (0.9 + hash(c * 2.3, r * 5.1) * 0.25);
-      mg.save(); mg.translate(x, y); mg.scale(1, K * 0.95);
-      const gr = mg.createRadialGradient(0, 0, 0, 0, 0, R);
-      gr.addColorStop(0, `rgba(0,0,0,${w})`); gr.addColorStop(0.55, `rgba(0,0,0,${w * 0.85})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
-      mg.fillStyle = gr; mg.fillRect(-R, -R, R * 2, R * 2); mg.restore();
-    }
-    mg.globalCompositeOperation = 'source-in'; mg.fillStyle = pat(tex, sc); mg.fillRect(0, 0, W, H);
-    g.drawImage(m, 0, 0);
-  };
-  const mid = c => { const f = c / Math.max(1, COLS - 1); return Math.max(0, 1 - Math.abs(f - 0.5) * 2.2); };   // Niemandsland in der Mitte
-  layer('mud', (h, c, r) => ({ mud: 1, crater: 1, wire: 0.95, trench: 0.9, bunker: 0.8, barrikade: 0.6, furt: 0.5 })[h.t] ?? (h.t === 'open' ? 0.25 + mid(c) * 0.6 + (hash(c * 4.1, r * 1.3) > 0.7 ? 0.2 : 0) : 0));
-  layer('forestfloor', h => ({ wald: 1, forest: 0.8, waldweg: 0.95 })[h.t] || 0, 1.15);
-  layer('rubble', h => TOWN.has(h.t) && h.t !== 'bahn' ? 1 : 0, 1.05);
-  layer('swamp', h => h.t === 'sumpf' ? 1 : 0, 1.15);
-  // Höhen: heller, mit feinen Schraffen
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].ridge) {
-    const [x, y] = center(c, r); g.save(); g.translate(x, y); g.scale(1, K);
-    const gr = g.createRadialGradient(0, 0, 0, 0, 0, s * 1.1); gr.addColorStop(0, 'rgba(235,215,160,0.16)'); gr.addColorStop(1, 'rgba(235,215,160,0)');
-    g.fillStyle = gr; g.fillRect(-s * 1.1, -s * 1.1, s * 2.2, s * 2.2); g.restore();
-  }
-  // kleine Trichter und Pfützen im Schlamm
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const h = G.map[c][r]; if (!(h.t === 'mud' || h.t === 'open' && mid(c) > 0.4)) continue;
-    const n = hash(c * 7.7, r * 3.3); if (n < 0.45) continue;
-    const [x, y] = center(c, r), px = x + (n - 0.7) * s * 1.2, py = y + (hash(c, r * 2) - 0.5) * s * K, rr = s * (0.12 + n * 0.12);
-    g.fillStyle = 'rgba(30,22,12,0.45)'; g.beginPath(); g.ellipse(px, py, rr * 1.25, rr * K * 1.1, 0, 0, 7); g.fill();
-    g.fillStyle = 'rgba(70,88,90,0.55)'; g.beginPath(); g.ellipse(px + rr * 0.1, py + rr * K * 0.15, rr * 0.8, rr * K * 0.6, 0, 0, 7); g.fill();
-  }
-  // 2) Linien: Wege durch Feld zu Feld (Mittelpunkt zu Mittelpunkt, weich gebogen); am Kartenrand laufen sie hinaus
-  // wave(l, L): Versatz quer zur Linie (0 an beiden Enden, damit die Stücke nahtlos aneinander passen)
-  const linePath = (inSet, joinSet = inSet, wave = null) => {
-    const P = new Path2D();
-    let hc = 0, hr = 0;
-    const emit = pts => {   // Punktfolge mit Querversatz
-      let L = 0; const acc = [0]; for (let i = 1; i < pts.length; i++) { L += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); acc.push(L); }
-      for (let i = 0; i < pts.length; i++) {
-        let [x, y] = pts[i];
-        if (wave && L > 0) { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, o = wave(acc[i], L, hc, hr); x += -dy / l * o; y += dx / l * o; }
-        i ? P.lineTo(x, y) : P.moveTo(x, y);
-      }
-    };
-    const quad = (a, cx, cy, b) => { const out = []; for (let k = 0; k <= 12; k++) { const t = k / 12, u = 1 - t; out.push([u * u * a[0] + 2 * u * t * cx + t * t * b[0], u * u * a[1] + 2 * u * t * cy + t * t * b[1]]); } return out; };
-    const seg = (a, b) => { const out = []; for (let k = 0; k <= 8; k++) { const t = k / 8; out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } return out; };
-    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-      if (!inSet(G.map[c][r], c, r)) continue;
-      hc = c; hr = r;
-      const [x, y] = center(c, r), pts = [];
-      for (const [a, b] of E.neighbors(c, r)) if (joinSet(G.map[a][b], a, b)) { const [ex, ey] = center(a, b); pts.push([(x + ex) / 2, (y + ey) / 2]); }
-      if (pts.length <= 1) {   // Ende am Rand: hinaus verlängern
-        const out = [];
-        if (c === 0) out.push([x - s * 1.6, y]); if (c === COLS - 1) out.push([x + s * 1.6, y]);
-        if (r === 0) out.push([x, y - s * K * 1.8]); if (r === ROWS - 1) out.push([x, y + s * K * 1.8]);
-        if (out.length && pts.length) { const [px, py] = pts[0]; out.sort((p, q) => Math.hypot(q[0] - px, q[1] - py) - Math.hypot(p[0] - px, p[1] - py)); }
-        if (out.length) pts.push(out[0]);
-      }
-      if (!pts.length) { emit(seg([x - s * 0.3, y], [x + s * 0.3, y])); continue; }
-      if (pts.length === 1) { emit(seg([x, y], pts[0])); continue; }
-      for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) emit(quad(pts[i], x, y, pts[j]));
-    }
-    return P;
-  };
-  // Zickzack der Gräben (Schulterwehren) und sanfte Windungen des Flusses
-  const zig = (l, L, c, r) => s * 0.16 * ((c + r) & 1 ? 1 : -1) * Math.min(1, 2.2 * Math.sin(Math.PI * l / L));
-  const meander = (l, L) => s * 0.09 * Math.sin(Math.PI * l / L) * (hash(Math.round(L), 3) > 0.5 ? 1 : -1);
-  const stroke = (P, style, w, dash) => { g.strokeStyle = style; g.lineWidth = w; g.setLineDash(dash || []); g.stroke(P); g.setLineDash([]); };
-  g.lineCap = 'round'; g.lineJoin = 'round';
-  // Fluss und Kanal
-  const isW = h => WATER.has(h.t);
-  if ([...Array(COLS).keys()].some(c => G.map[c].some(isW))) {
-    const P = linePath(isW, isW, meander);
-    g.lineCap = 'butt';
-    stroke(P, 'rgba(22,18,10,0.45)', s * 1.22); stroke(P, '#463d2a', s * 1.04); stroke(P, '#2c3330', s * 0.84);
-    stroke(P, pat('water', 0.8), s * 0.74); stroke(P, 'rgba(160,190,195,0.10)', s * 0.5);
-    stroke(P, 'rgba(190,215,220,0.22)', s * 0.04, [s * 0.25, s * 0.5]);
-    g.lineCap = 'round';
-    // Kanalende mitten im Feld: gemauertes Becken mit Schleusentor
-    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-      const h = G.map[c][r]; if (!isW(h)) continue;
-      const nb = E.neighbors(c, r).filter(([a, b]) => isW(G.map[a][b])); if (nb.length !== 1) continue;
-      if (c === 0 || r === 0 || c === COLS - 1 || r === ROWS - 1) continue;
-      const [x, y] = center(c, r), [ex, ey] = center(nb[0][0], nb[0][1]), ang = Math.atan2(ey - y, ex - x);
-      g.save(); g.translate(x, y); g.rotate(ang);
-      g.fillStyle = '#2c3330'; g.fillRect(0, -s * 0.37, s * 0.1, s * 0.74);
-      g.fillStyle = '#6e6a60'; g.strokeStyle = O; g.lineWidth = Math.max(1, s * 0.025);
-      g.fillRect(-s * 0.12, -s * 0.52, s * 0.14, s * 1.04); g.strokeRect(-s * 0.12, -s * 0.52, s * 0.14, s * 1.04);
-      for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(-s * 0.12, i * s * 0.15); g.lineTo(s * 0.02, i * s * 0.15); g.stroke(); }
-      g.fillStyle = '#5a4128'; g.fillRect(s * 0.18, -s * 0.37, s * 0.06, s * 0.74); g.strokeRect(s * 0.18, -s * 0.37, s * 0.06, s * 0.74);
-      g.restore();
-    }
-    // Furt: Steine quer, flacheres Wasser
-    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'furt') {
-      const [x, y] = center(c, r);
-      for (let i = 0; i < 9; i++) { const n = hash(c * 3 + i, r * 5 - i), px = x + (i - 4) * s * 0.14, py = y + (n - 0.5) * s * K * 0.7;
-        g.fillStyle = '#6e6a5e'; g.strokeStyle = O; g.lineWidth = Math.max(1, s * 0.02); g.beginPath(); g.ellipse(px, py, s * 0.075, s * 0.055, 0, 0, 7); g.fill(); g.stroke(); }
-    }
-  }
-  // Bahn: Schotter, Schwellen, zwei Schienen
-  const isB = h => h.t === 'bahn' || h.rail;
-  if ([...Array(COLS).keys()].some(c => G.map[c].some(isB))) {
-    const P = linePath(isB);
-    g.lineCap = 'butt';
-    stroke(P, 'rgba(20,18,14,0.5)', s * 0.62); stroke(P, '#6a655c', s * 0.52); stroke(P, '#3b2c1f', s * 0.44, [s * 0.05, s * 0.07]);
-    stroke(P, '#8d9294', s * 0.25); stroke(P, '#4f483f', s * 0.19, [s * 0.05, s * 0.07]); g.lineCap = 'round';
-  }
-  // Wege (Waldweg und Straßen mit h.road): Fahrspuren im Schlamm
-  const isR = h => h.t === 'waldweg' || h.road;
-  if ([...Array(COLS).keys()].some(c => G.map[c].some(isR))) {
-    const P = linePath(isR);
-    stroke(P, 'rgba(25,20,12,0.35)', s * 0.42); stroke(P, '#5d4c35', s * 0.34); stroke(P, '#463826', s * 0.24); stroke(P, '#6c5a40', s * 0.16); stroke(P, '#4b3b28', s * 0.1);
-  }
-  // Gräben: Brustwehr, dunkle Wände, Laufroste; Bunker liegen in der Linie
-  const isT = h => h.t === 'trench', joinT = h => h.t === 'trench' || h.t === 'bunker';
-  if ([...Array(COLS).keys()].some(c => G.map[c].some(isT))) {
-    const P = linePath(isT, joinT, zig);
-    g.lineCap = 'butt';
-    stroke(P, 'rgba(18,14,8,0.45)', s * 0.82); stroke(P, '#5b4830', s * 0.68); stroke(P, '#7f6d4b', s * 0.56, [s * 0.11, s * 0.025]);
-    stroke(P, '#1d160e', s * 0.38); stroke(P, '#2e2418', s * 0.28); stroke(P, '#6b5434', s * 0.12, [s * 0.03, s * 0.05]);
-    g.lineCap = 'round';
-  }
-  g.restore();
-  // 3) Bilder: von hinten nach vorn, damit Vordergrund überdeckt
-  const S = PT.spr, items = [];
-  const put = (k, c, r, wk, dy = 0, flat = false, dx = 0) => { if (S[k]) { const [x, y] = center(c, r); items.push({ k, x: x + dx * s, y: y + dy * s * K, w: s * wk, flat }); } };
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const t = G.map[c][r].t, n = hash(c * 1.7, r * 9.1);
-    if (t === 'bunker') put(['bunker1', 'bunker2', 'bunker3', 'bunker4'][Math.floor(n * 4)], c, r, 2.1, -0.15, true);
-    else if (t === 'kirche') put('church', c, r, 2.5, -0.4);
-    else if (t === 'fabrik') put('factory', c, r, 2.5, -0.35);
-    else if (t === 'barrikade') put('barric', c, r, 2.1, -0.1, true);
-    else if (t === 'village') put(['house1', 'house2', 'ruinwall', 'house1', 'house2'][Math.floor(n * 5)], c, r, 2.3, -0.2, true);
-    else if (t === 'wald') put(n < 0.5 ? 'treeD' : 'treeK', c, r, 2.35, -0.5);
-    else if (t === 'forest') put(n < 0.75 ? 'treeX' : 'treeA', c, r, 2.2, -0.4);
-    else if (t === 'crater') put('craterS', c, r, 1.45, 0.05, true);
-    else if (t === 'wire') put('wireS', c, r, 2.0, -0.05, true);
-    else if (t === 'trench' && n > 0.86 && !E.neighbors(c, r).some(([a, b]) => G.map[a][b].t === 'bunker')) put(n > 0.93 ? 'dugout' : 'mgnest', c, r, 1.3, -0.1, true, (n - 0.9) * 2);
-  }
-  items.sort((a, b) => a.y - b.y);
-  for (const it of items) {
-    const im = S[it.k], w = it.w, hgt = w * im.naturalHeight / im.naturalWidth * (it.flat ? Math.max(0.72, Math.min(1, K / 0.6)) : 1);
-    g.save(); g.translate(it.x, it.y + hgt * 0.12); g.scale(1, 0.45);
-    const sh = g.createRadialGradient(0, 0, 0, 0, 0, w * 0.5); sh.addColorStop(0, 'rgba(10,8,4,0.45)'); sh.addColorStop(1, 'rgba(10,8,4,0)');
-    g.fillStyle = sh; g.fillRect(-w / 2, -w / 2, w, w); g.restore();
-    g.drawImage(im, it.x - w / 2, it.y - hgt * 0.55, w, hgt);
-  }
-  // 4) Brücken quer zum Fluss
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'bridge') {
-    const [x, y] = center(c, r); let dx = 0, dy = 0;
-    for (const [a, b] of E.neighbors(c, r)) if (WATER.has(G.map[a][b].t)) { const [ex, ey] = center(a, b); const ux = ex - x, uy = ey - y, l = Math.hypot(ux, uy); if (dx * ux + dy * uy < 0) { dx -= ux / l; dy -= uy / l; } else { dx += ux / l; dy += uy / l; } }
-    if (!dx && !dy) dy = 1;
-    const ang = Math.atan2(dy, dx) + Math.PI / 2, lw = Math.max(1.2, s * 0.03);
-    g.save(); g.translate(x, y); g.rotate(ang);
-    g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(-s * 0.95, -s * 0.2, s * 1.9, s * 0.48);
-    g.fillStyle = '#5a5248'; g.fillRect(-s * 0.98, -s * 0.3, s * 0.22, s * 0.6); g.fillRect(s * 0.76, -s * 0.3, s * 0.22, s * 0.6);
-    g.fillStyle = '#7d5b36'; g.strokeStyle = O; g.lineWidth = lw; g.fillRect(-s * 0.85, -s * 0.24, s * 1.7, s * 0.48); g.strokeRect(-s * 0.85, -s * 0.24, s * 1.7, s * 0.48);
-    g.lineWidth = lw * 0.6; for (let i = -7; i <= 7; i++) { g.beginPath(); g.moveTo(i * s * 0.11, -s * 0.24); g.lineTo(i * s * 0.11, s * 0.24); g.stroke(); }
-    g.strokeStyle = '#3a2a1a'; g.lineWidth = lw * 1.6; for (const yy of [-0.26, 0.26]) { g.beginPath(); g.moveTo(-s * 0.85, yy * s); g.lineTo(s * 0.85, yy * s); g.stroke(); }
-    g.restore();
-  }
-  // 5) Draht immer deutlich: Rollen und heller Rand
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'wire') {
-    hexPath(g, c, r, 0.94); g.strokeStyle = 'rgba(205,210,215,0.6)'; g.lineWidth = Math.max(1.5, s * 0.04); g.setLineDash([s * 0.12, s * 0.08]); g.stroke(); g.setLineDash([]);
-  }
-  // 6) feine Feldlinien, damit man die Felder noch zählen kann
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.2)'; g.lineWidth = Math.max(1, s * 0.018); g.stroke(); }
-}
 // ---------- Gelände-Bausteine (neue Ansicht, STYLE.md „Gelände-Bausteine“) ----------
 // Nur mit Schalter „Neue Ansicht (Test)“ und zuerst nur auf GB_KARTEN. Bilder: window.GELAENDE (src/gelaende.js), Aufbau: GBau (src/gelaende_bau.js).
 // GBW = aufgebaute Welt: flaches Weltbild (ersetzt tcv), aufrechte Teile (in drawTilt mit den Einheiten nach Tiefe gemischt), platz() für Trupps.
@@ -452,10 +196,10 @@ let FIGQ = null;   // drawTilt: Sammelliste für Grabenfiguren, die einzeln nach
 let GBW = null, GBIM = null, gbLaden = null, gbKey = '', gbFeld = null;   // gbFeld: Geländeart je Feld beim letzten Aufbau (Draht weg ohne Neuaufbau, F12)
 // Schräge Wandstücke kippen (Kirche, Zaun, Mauern, Ruinen; 2026-11-19): Stärke, zum Vergleich window.NOKIPP = true bzw. __dbg.kipp(0)
 const gbKipp = () => window.NOKIPP ? 0 : (window.KIPP ?? 1);
-const gbAn = () => VIEW.tilt() && GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE && !window.NOGB;
+const gbAn = () => GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE;
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
-  if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (VIEW.tilt() && L) renderTerrain(); }); return false; }
+  if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + bauSicht().join(), feld = G.map.map(col => col.map(h => h.t)), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return true;
   // Nur Draht verschwunden (geschnitten, niedergewalzt, zerschossen): Drahtstücke herausnehmen statt alles neu aufzubauen (0,4–0,6 s Stocken, F12 2026-11-20)
@@ -486,7 +230,7 @@ function gbPlatz(u, d) {
 }
 function renderTerrain() {   // Bildwirkung (2026-11-19): Boden in der neuen Ansicht danach einmal abdunkeln und entsättigen
   renderTerrain0();
-  if (!VIEW.tilt() || !BW || !tcv) return;
+  if (!BW || !tcv) return;
   const t = document.createElement('canvas'); t.width = tcv.width; t.height = tcv.height; const x = t.getContext('2d'); x.drawImage(tcv, 0, 0);
   const g = tcv.getContext('2d'); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, tcv.width, tcv.height); g.filter = BW_BODEN[BW]; g.drawImage(t, 0, 0); g.restore();
 }
@@ -494,126 +238,8 @@ function renderTerrain0() {
   const { s, W, H, dpr } = L;
   tcv = tcv || document.createElement('canvas'); tcv.width = W; tcv.height = H;
   const g = tcv.getContext('2d');
-  if (VIEW.tilt() && gbBereit()) { g.drawImage(GBW.ground, 0, 0); return; }   // neue Ansicht: Boden aus Bausteinen (Raster ist schon drin)
-  g.fillStyle = '#1c1d17'; g.fillRect(0, 0, W, H);
-  const sky = g.createLinearGradient(0, 0, 0, L.top * 1.2);
-  sky.addColorStop(0, 'rgba(120,22,12,0.78)'); sky.addColorStop(0.55, 'rgba(110,30,14,0.38)'); sky.addColorStop(1, 'rgba(110,30,14,0)');
-  g.fillStyle = sky; g.fillRect(0, 0, W, L.top * 1.2);
-  const mimg = mapImg();
-  if (mimg || paintReady() && !window.NOPAINT) {
-    if (mimg) renderImageMap(g, mimg); else renderPainted(g);
-    const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.72);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(6,5,3,0.5)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
-    return;
-  }
-  g.lineJoin = 'round'; g.lineCap = 'round';
-  const lw = Math.max(1.5, s * 0.045), tiled = new Set();
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const h = G.map[c][r], n = hash(c * 3.1, r * 7.7);
-    const tk = tileKey(c, r, h), tim = TIMG[tk]; if (tim) tiled.add(E.key(c, r));
-    hexPath(g, c, r, 1.02);
-    if (tim) {
-      const [hx, hy] = center(c, r), hw = s * 2.06, hh = s * K * SQ3 * 1.04, fl = !['trench', 'trenchF', 'trenchW', 'bridge', 'kirche', 'fabrik', 'bahn'].includes(tk) && n > 0.5;
-      g.save(); g.clip(); g.translate(hx, hy); if (fl) g.scale(-1, 1);
-      g.drawImage(tim, -hw / 2, -hh / 2, hw, hh); g.restore(); hexPath(g, c, r, 1.02);
-    } else { g.fillStyle = TC[h.t][Math.floor(n * 3)]; g.fill(); }
-    if (h.ridge) { g.fillStyle = 'rgba(255,226,160,0.12)'; g.fill(); }
-  }
-  // Gräben: erst Sandsackwall, dann Grabensohle
-  for (const pass of TIMG.trench ? [] : [0, 1]) {
-    g.strokeStyle = pass ? '#231d15' : '#b39c69'; g.lineWidth = s * (pass ? 0.3 : 0.52);
-    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'trench') {
-      const [x, y] = center(c, r);
-      const nb = E.neighbors(c, r).filter(([nc, nr]) => G.map[nc][nr].t === 'trench');
-      if (!nb.length) { g.beginPath(); g.moveTo(x - s * 0.3, y); g.lineTo(x + s * 0.3, y); g.stroke(); }
-      for (const [nc, nr] of nb) { const [ex, ey] = center(nc, nr); g.beginPath(); g.moveTo(x, y); g.lineTo((x + ex) / 2, (y + ey) / 2); g.stroke(); }
-    }
-    if (!pass) {
-      g.strokeStyle = 'rgba(22,21,15,0.55)'; g.lineWidth = lw * 0.7;
-      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (G.map[c][r].t === 'trench') {
-        const [x, y] = center(c, r);
-        for (const ox of [-0.24, 0.24]) for (const oy of [-0.5, 0, 0.5]) { g.beginPath(); g.moveTo(x + ox * s - s * 0.05, y + oy * s * K); g.lineTo(x + ox * s + s * 0.05, y + oy * s * K); g.stroke(); }
-      }
-    }
-  }
-  // Große weiche Flecken verbinden die Felder zu einem Boden, darüber feine Feldlinien
-  { let sd = 99; const rn = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
-    for (let i = 0; i < 70; i++) {
-      const px = rn() * W, py = L.top + rn() * (H - L.top), rad = s * (1.2 + rn() * 2.6);
-      const bg = g.createRadialGradient(px, py, 0, px, py, rad), dark = rn() < 0.6;
-      bg.addColorStop(0, dark ? 'rgba(30,22,12,0.14)' : 'rgba(150,130,90,0.07)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
-      g.fillStyle = bg; g.save(); g.translate(px, py); g.scale(1, K); g.translate(-px, -py); g.fillRect(px - rad, py - rad, rad * 2, rad * 2); g.restore();
-    } }
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { hexPath(g, c, r, 1); g.strokeStyle = 'rgba(12,10,6,0.3)'; g.lineWidth = Math.max(1, s * 0.022); g.stroke(); }
-  // Schmutz und Körnung, damit der Boden nicht wie eine glatte Fläche wirkt
-  { let sd = 4242; const rn = () => { sd = (sd * 1664525 + 1013904223) >>> 0; return sd / 4294967296; };
-    for (let i = 0; i < Math.round(W * H / 1400); i++) {
-      const px = rn() * W, py = L.top * 0.7 + rn() * (H - L.top * 0.7), rr0 = s * (0.02 + rn() * 0.09);
-      g.fillStyle = rn() < 0.55 ? 'rgba(24,18,10,0.16)' : rn() < 0.6 ? 'rgba(96,74,44,0.16)' : 'rgba(210,200,160,0.05)';
-      g.beginPath(); g.ellipse(px, py, rr0, rr0 * K, 0, 0, 7); g.fill();
-    } }
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const h = G.map[c][r], [x, y] = center(c, r), n = hash(c * 5.3, r * 2.9);
-    if (tiled.has(E.key(c, r)) && h.t !== 'wire') continue;   // gemalte Kachel: keine gezeichneten Zutaten (Draht wird immer zusätzlich gezeichnet, damit er auffällt)
-    if (h.t === 'wire') { hexPath(g, c, r, 0.94); g.strokeStyle = 'rgba(205,210,215,0.55)'; g.lineWidth = Math.max(1.5, s * 0.04); g.setLineDash([s * 0.12, s * 0.08]); g.stroke(); g.setLineDash([]); }
-    g.strokeStyle = O; g.lineWidth = lw;
-    if (h.t === 'mud') {
-      g.fillStyle = '#463826';
-      for (const [ox, oy, rx] of [[-0.3, -0.15, 0.22], [0.25, 0.1, 0.28], [-0.05, 0.3, 0.18]]) { g.beginPath(); g.ellipse(x + ox * s, y + oy * s * K, rx * s, rx * s * K * 0.7, 0, 0, 7); g.fill(); }
-      g.fillStyle = '#7b8b8c'; g.beginPath(); g.ellipse(x + 0.25 * s, y + 0.1 * s * K, 0.12 * s, 0.07 * s * K, 0, 0, 7); g.fill();
-    } else if (h.t === 'crater') {
-      g.beginPath(); g.ellipse(x, y, s * 0.58, s * 0.58 * K, 0, 0, 7); g.fillStyle = '#8a7a52'; g.fill(); g.stroke();
-      g.beginPath(); g.ellipse(x, y + s * 0.03, s * 0.44, s * 0.44 * K, 0, 0, 7); g.fillStyle = '#3c3122'; g.fill();
-      g.beginPath(); g.ellipse(x + s * 0.03, y + s * 0.08 * K, s * 0.24, s * 0.22 * K, 0, 0, 7); g.fillStyle = '#566a6c'; g.fill();
-    } else if (h.t === 'wire') {
-      for (const row of [-0.32, 0.3]) {
-        const yy = y + row * s * K;
-        for (const ox of [-0.5, 0, 0.5]) {
-          g.strokeStyle = O; g.lineWidth = lw * 2.2;
-          g.beginPath(); g.moveTo(x + (ox - 0.1) * s, yy + s * 0.12); g.lineTo(x + (ox + 0.1) * s, yy - s * 0.2); g.moveTo(x + (ox + 0.1) * s, yy + s * 0.12); g.lineTo(x + (ox - 0.1) * s, yy - s * 0.2); g.stroke();
-          g.strokeStyle = '#6b4a2b'; g.lineWidth = lw;
-          g.beginPath(); g.moveTo(x + (ox - 0.1) * s, yy + s * 0.12); g.lineTo(x + (ox + 0.1) * s, yy - s * 0.2); g.moveTo(x + (ox + 0.1) * s, yy + s * 0.12); g.lineTo(x + (ox - 0.1) * s, yy - s * 0.2); g.stroke();
-        }
-        g.strokeStyle = '#c3c6c8'; g.lineWidth = Math.max(1, lw * 0.6);
-        g.beginPath();
-        for (let i = 0; i <= 9; i++) { const cx = x + (-0.62 + i * 0.138) * s; g.moveTo(cx + s * 0.09, yy - s * 0.06); g.ellipse(cx, yy - s * 0.06, s * 0.09, s * 0.11, 0, 0, 7); }
-        g.stroke();
-      }
-    } else if (h.t === 'village') {
-      const wall = (wx, wy, w, hh, br) => {
-        g.beginPath(); g.moveTo(wx, wy); g.lineTo(wx, wy - hh); g.lineTo(wx + w * 0.3, wy - hh * (0.6 + br)); g.lineTo(wx + w * 0.55, wy - hh * 0.9); g.lineTo(wx + w * 0.8, wy - hh * 0.4); g.lineTo(wx + w, wy - hh * 0.55); g.lineTo(wx + w, wy); g.closePath();
-        g.fillStyle = '#9a9483'; g.fill(); g.strokeStyle = O; g.lineWidth = lw; g.stroke();
-        g.fillStyle = '#2b2a24'; g.fillRect(wx + w * 0.38, wy - hh * 0.5, w * 0.16, hh * 0.28);
-      };
-      wall(x - s * 0.62, y - s * 0.12 * K, s * 0.62, s * 0.62, n * 0.3);
-      wall(x + s * 0.02, y + s * 0.42 * K, s * 0.56, s * 0.46, 0.2);
-      g.fillStyle = '#6d6858'; for (const [ox, oy] of [[-0.2, 0.5], [0.4, -0.2], [0.1, 0.15]]) { g.beginPath(); g.ellipse(x + ox * s, y + oy * s * K, s * 0.09, s * 0.05, 0, 0, 7); g.fill(); }
-    } else if (h.t === 'forest') {
-      const tree = (tx, ty, hh, lean) => {
-        g.strokeStyle = O; g.lineWidth = lw * 3.2;
-        const p = () => { g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx + lean, ty - hh); g.moveTo(tx + lean * 0.5, ty - hh * 0.5); g.lineTo(tx + lean * 0.5 + hh * 0.28, ty - hh * 0.78); g.moveTo(tx + lean * 0.7, ty - hh * 0.7); g.lineTo(tx + lean * 0.7 - hh * 0.22, ty - hh * 0.95); g.stroke(); };
-        p(); g.strokeStyle = '#4a3b2a'; g.lineWidth = lw * 1.6; p();
-      };
-      tree(x - s * 0.42, y - s * 0.1 * K, s * 0.95, s * 0.06);
-      tree(x + s * 0.3, y - s * 0.35 * K, s * 0.8, -s * 0.05);
-      tree(x + s * 0.05, y + s * 0.45 * K, s * 0.6, s * 0.04);
-    } else if (h.t === 'canal' || h.t === 'bridge') {
-      g.strokeStyle = 'rgba(190,220,225,0.35)'; g.lineWidth = lw;
-      for (const [ox, oy] of [[-0.3, -0.3], [0.15, 0], [-0.2, 0.35]]) { g.beginPath(); g.moveTo(x + ox * s, y + oy * s * K); g.quadraticCurveTo(x + (ox + 0.12) * s, y + oy * s * K - s * 0.05, x + (ox + 0.26) * s, y + oy * s * K); g.stroke(); }
-      if (h.t === 'bridge') {
-        g.fillStyle = '#8a6238'; g.strokeStyle = O; g.lineWidth = lw;
-        g.beginPath(); g.rect(x - s * 1.0, y - s * 0.3 * K, s * 2.0, s * 0.6 * K); g.fill(); g.stroke();
-        g.lineWidth = lw * 0.6; for (let i = -4; i <= 4; i++) { g.beginPath(); g.moveTo(x + i * s * 0.22, y - s * 0.3 * K); g.lineTo(x + i * s * 0.22, y + s * 0.3 * K); g.stroke(); }
-      }
-    } else if (h.t === 'open' && n > 0.8) {
-      g.strokeStyle = 'rgba(30,36,16,0.5)'; g.lineWidth = lw * 0.8;
-      const gx = x + (n - 0.9) * s * 4, gy = y + (hash(c, r) - 0.5) * s * K;
-      g.beginPath(); g.moveTo(gx - s * 0.06, gy); g.lineTo(gx - s * 0.09, gy - s * 0.1); g.moveTo(gx, gy); g.lineTo(gx, gy - s * 0.13); g.moveTo(gx + s * 0.06, gy); g.lineTo(gx + s * 0.09, gy - s * 0.1); g.stroke();
-    }
-  }
-  const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.35, W / 2, H / 2, Math.max(W, H) * 0.72);
-  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(6,5,3,0.5)');
-  g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  if (gbBereit()) { g.drawImage(GBW.ground, 0, 0); return; }   // Boden aus Bausteinen (Raster ist schon drin)
+  g.fillStyle = '#1c1d17'; g.fillRect(0, 0, W, H);   // solange die Bausteine laden (gbBereit zeichnet danach neu)
 }
 
 // ---------- Einheiten ----------
@@ -800,7 +426,7 @@ function drawUnit(u, d) {
   const done = own && spent.has(u.id) && (u.id !== handelnd || (!busy && !shells.length && !tracers.length && !muzzles.length));   // F57 (2026-11-20): schon fertige Einheiten bleiben grau, während eine andere handelt; nur die handelnde wird erst nach ihren Effekten grau
   const ready = own && !busy && !G.over && !spent.has(u.id) && !placing;   // kann in dieser Runde noch handeln
   // Standplatz: dunkler Bodenschatten und dünner Ring in gedämpfter Fraktionsfarbe (keine knalligen Flächen)
-  const RS = VIEW.tilt() ? 0.72 : 1, RA = VIEW.tilt() ? 0.55 : 1;   // neue Ansicht: Ringe kleiner und dezenter, Figuren stehen auf dem Boden statt auf einer Scheibe
+  const RS = 0.72, RA = 0.55;   // Ringe kleiner und dezenter, Figuren stehen auf dem Boden statt auf einer Scheibe
   g.globalAlpha = A0 * RA; g.beginPath(); gEllipse(g, x, y, s * 0.66 * RS, s * 0.66 * RS); g.fillStyle = 'rgba(18,13,11,0.45)'; g.fill();
   g.globalAlpha = A0 * RA * (done ? 0.25 : d.vs.rout ? 0.3 : 0.45); if (!isSel) drawRing(g, acc, x, y, s * 0.66 * RS);   // Pinselstrich-Ring, gedämpft
   if (ready && OPT.ready && !isSel) { g.globalAlpha = A0 * RA * (0.6 + 0.35 * (0.5 + 0.5 * Math.sin(now / 520 + u.id))); drawRing(g, '#C2A461', x, y, s * 0.74 * RS); }   // bereit: dezenter pulsierender Messingring
@@ -821,7 +447,7 @@ function drawUnit(u, d) {
   }
   // Figuren. Neue Ansicht: Trupps aus Einzelfiguren bzw. Einzelmodelle aus den neuen Bögen (FIGMAP); ohne neues Bild wie bisher
   let topY = y - s;
-  const nf = VIEW.tilt() ? newFigs(u, d) : null;
+  const nf = newFigs(u, d);
   if (nf) { const w = d.wipp, sk = d.shake > 0 && TYPES[u.type].cls === 'walker' ? Math.sin(now / 26) * s * 0.035 : 0;   // F73: Wippen beim Gehen, Wanken bei Treffern
     topY = drawNewFigs(g, u, d, nf, x + (w ? w.dx : 0) + sk, y + (w ? w.dy : 0), flip, A0, done); }
   else {
@@ -987,14 +613,7 @@ function frame(t) {
 function draw() {
   if (!L || !tcv) return;
   MARKS.length = 0;
-  if (VIEW.tilt()) return drawTilt();
-  const g = ctx, s = L.s;
-  drawGround(g, s);
-  drawUnits();
-  for (const f of MARKQ) f(); MARKQ.length = 0;
-  drawDiaryMark(g);
-  drawAir(g, s);
-  drawFloaters(g, s); drawKZ(g, s);
+  drawTilt();
 }
 // Boden: Gelände, Flecken, Hilfsmarkierungen, Zielfahnen
 function drawGround(g, s) {
@@ -1026,7 +645,7 @@ function drawGround(g, s) {
   if (sel && TYPES[sel.type].banner && E.active(sel)) { const R = sel.planted ? P.BANNER_R_PLANTED : P.BANNER_R;
     for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.dist(sel.c, sel.r, c, r) <= R) { hexPath(g, c, r, 0.94); g.fillStyle = sel.planted ? 'rgba(226,176,74,0.26)' : 'rgba(226,176,74,0.16)'; g.fill(); g.lineWidth = Math.max(1.5, s * 0.03); g.strokeStyle = 'rgba(226,176,74,0.55)'; g.stroke(); } }
   // „Base“ unter Einheiten wie bei einer Tabletop-Miniatur (Test, Option): Feld leicht abgedunkelt, Boden schimmert durch, feiner Rand in Fraktionsfarbe
-  if (VIEW.tilt() && OPT.base > 0) {
+  if (OPT.base > 0) {
     const st = [null, [0.16, 0.4, 0.022], [0.28, 0.6, 0.03], [0.42, 0.85, 0.04]][OPT.base];
     for (const u of G.units) { const d = DU.get(u.id); if (!d || d.alpha <= 0 || !E.alive(u)) continue;
       const c = FIG.PAL[u.side] ? FIG.PAL[u.side].accent : '#8a8070', rgb = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)), m = rgb.map(v => Math.round(v * 0.75 + 40));
@@ -1107,7 +726,6 @@ function drawGround(g, s) {
       for (const [c, r] of cells) { hexPath(g, c, r, 0.9); g.fillStyle = artMode === 'gas' ? 'rgba(196,214,70,0.45)' : 'rgba(255,120,60,0.4)'; g.fill(); }
     }
   }
-  if (!VIEW.tilt()) drawFlags(g, s);
 }
 // MG-Schussfächer (Regel E.inFan): ausgefächerte Fläche am Boden, Ochsenblut zur Mitte, nach außen in Messing auslaufend,
 // gestrichelte Fächerkanten; Felder in Reichweite innerhalb des Fächers dezent umrandet. Blickrichtung aus dem Anzeige-Zustand.
@@ -1142,7 +760,7 @@ function drawFahne(g, s, x, y, o) {
   const sd = VIS.ctrl[o.id], [cr, cg, cb] = sd ? FAHNE_FARBE[fac(sd)] || FAHNE_NEUTRAL : FAHNE_NEUTRAL, sh = (v, k) => Math.round(Math.max(0, Math.min(255, v * k)));
   const col = k => `rgb(${sh(cr, k)},${sh(cg, k)},${sh(cb, k)})`, seed = o.c * 7 + o.r * 13;
   // 55 % der Vorschlagsgröße, am hinteren rechten Feldrand: verdeckt weder Figuren noch Ruinen (wird hinter den Einheiten gezeichnet)
-  const [ox, oy] = fahneOrt(o), px0 = x + s * ox, base0 = y + s * oy * kAt(x, y); g.save(); g.translate(px0, base0); const fk = VIEW.tilt() ? FAHNE_K : 0.9; g.scale(fk, fk); g.translate(-px0, -base0);   // alte Ansicht: Felder kleiner, Fahne verhältnismäßig größer
+  const [ox, oy] = fahneOrt(o), px0 = x + s * ox, base0 = y + s * oy * kAt(x, y); g.save(); g.translate(px0, base0); g.scale(FAHNE_K, FAHNE_K); g.translate(-px0, -base0);
   const px = px0, base = base0, H = s * 1.3, lean = s * 0.05, top = [px + lean, base - H];
   // Pfahl: grobes Holz, leicht schief, oben abgesplittert
   g.save(); g.lineCap = 'round';
@@ -1211,7 +829,6 @@ function unitList() {
   for (const u of G.units) { const d = DU.get(u.id); if (d && d.alpha > 0) list.push([d.y, u, d]); }
   return list.sort((a, b) => a[0] - b[0]);
 }
-function drawUnits() { for (const [, u, d] of unitList()) drawUnit(u, d); }
 function drawDiaryMark(g) { if (diaryMark && now - diaryMark.t < 2400) { const k = (now - diaryMark.t) / 2400, pz = 0.5 + 0.5 * Math.sin(now / 140); g.globalAlpha = 1 - k * 0.6; hexMark(diaryMark.c, diaryMark.r, { rgb: BRASS, fill: 0.18 + 0.1 * pz }); g.globalAlpha = 1; } }   // Ort aus dem Kriegstagebuch
 // Luft: Nebel, Gas, Regen, Effekte, Wegkosten
 function drawAir(g, s, up) {
@@ -1703,7 +1320,7 @@ const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenk
 // Stufe-3-Schreiter (2026-11-19, neue Modelle im Stil Retro-Zukunft): 2,3 SH, beide gleich groß, dürfen so breit werden wie Fahrzeuge (FIGW_VEH)
 const STUFE3 = ['kreuzschreiter_neu', 'eisenknecht_neu'];
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
-// ---------- Bildwirkung (2026-11-19): aus / leicht / stark, Einstellung bzw. Taste B, gespeichert arm.bildwirkung ----------
+// ---------- Bildwirkung (2026-11-19): aus / leicht / stark, Einstellung bzw. Taste B, gespeichert arm.bildwirkung3 ----------
 // Figuren: Plastik-Karte aus tools/figur_plastik.py (window.FIGSP, einmal beim Bauen vorberechnet: Klarheit und Metallglanz) wird
 // einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
 // Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
@@ -1837,7 +1454,7 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_2', kni
   mineur: { bereit: 'mineur_1', hacke: 'mineur_posen_1', ladung: 'mineur_posen_2', kolben: 'mineur_posen_3', getroffen: 'mineur_posen_4' } };
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
-const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && VIEW.tilt() && fac(u.side) !== 'F');
+const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
 function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
@@ -1873,7 +1490,7 @@ const GRABEN_TIEFE = { buechse: 0.35, pirsch: 0.5, scharf: 0.5 };
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
-  const pl = VIEW.tilt() ? gbPlatz(u, d) : null, [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
+  const pl = gbPlatz(u, d), [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) {
@@ -1969,8 +1586,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   return topY;
 }
 
-// ---------- Neue Ansicht (Test): gekippte Karte, Schritt 1 Kamera und Boden ----------
-// Schalter OPT.tilt („Neue Ansicht (Test)“). Alles Bisherige rechnet weiter in einem flachen Weltbild (K = 1, Feldradius WS):
+// ---------- Gekippte Ansicht: Kamera und Boden ----------
+// Alles rechnet in einem flachen Weltbild (K = 1, Feldradius WS):
 // center(), d.x/d.y, Hilfsmarkierungen und Effekte. Das Weltbild wird zeilenweise perspektivisch auf den Schirm projiziert
 // (wie im Probebild entwurf/probe/?v=D). Einheiten stehen als aufrechte Aufsteller an ihrem Fußpunkt, nach Tiefe sortiert.
 // Kamera: Ziel (CAM.x, CAM.y) auf dem Boden, Zoom CAM.z (1 = vorn ca. 8,5 Felder über die Bildbreite), Kippwinkel 39°,
@@ -2110,7 +1727,7 @@ let szene = null;
 function szeneTween(ms, f) { return new Promise(res => { const t0 = performance.now(), dur = ms / Math.min(speed, 2);
   const st = () => { const k = szene && szene.skip ? 1 : Math.min(1, (performance.now() - t0) / dur), e = 0.5 - 0.5 * Math.cos(Math.PI * k); f(e); if (k < 1) requestAnimationFrame(st); else res(); }; requestAnimationFrame(st); }); }
 async function kampfSzene(x, y) {
-  if (KS === 'aus' || speed >= INSTANT || !VIEW.tilt() || szene) return null;
+  if (KS === 'aus' || speed >= INSTANT || szene) return null;
   const st = { z0: CAM.z, x0: CAM.x, y0: CAM.y, vig: 0, skip: false }; szene = st;
   if (KS === 'an') { const z1 = Math.min(Z_MAX, Math.max(CAM.z * 1.45, 1.5)), tx = x, ty = y + L.s * 0.5; camAnim = null;
     await szeneTween(320, e => { CAM.z = st.z0 + (z1 - st.z0) * e; CAM.x = st.x0 + (tx - st.x0) * e; CAM.y = st.y0 + (ty - st.y0) * e; st.vig = 0.6 * e; camClamp(); camSetup(); }); }
@@ -2379,7 +1996,7 @@ function boom(x, y, r, kind, delay = 0) {
   booms.push({ x, y, r, cols, kind, img: opts[Math.floor(Math.random() * opts.length)], flip: Math.random() < 0.5, life, max: life, delay });
   if (kind === 'he') { boom(x, y, r * 0.9, 'dust'); boom(x, y - r * 0.2, r * 0.9, 'smoke', 14); }
 }
-// Effekt-Texte als Symbole (Wunsch des Nutzers; Symbolbögen in FXDATA.proj i_*). [Textanfang, Symbol, Zahl aus dem Text]
+// Effekt-Texte als Symbole (Wunsch des Nutzers; Symbole aus den Bögen über ISYM/UPI s_*). [Textanfang, Symbol, Zahl aus dem Text]
 const FICON = [['weicht zurück', 'retreat'], ['Rückzug', 'retreat'], ['Reaktionsfeuer', 'react'], ['Sperrfeuer', 'react'], ['Streuung', 'scatter'], ['Panik', 'rout'], ['flieht', 'rout'],
   ['Gas!', 'gas'], ['Schreck', 'fear', /−\d+/], ['niedergehalten', 'supp'], ['aufgerieben', 'worn'], ['Sammeln', 'rally'], ['gesammelt', 'rally'], ['Moral +', 'morup'],
   ['Vorwärts', 'whistle'], ['Sturm!', 'whistle'], ['Draht geschnitten', 'cut'], ['Draht niedergewalzt', 'crush'], ['steckt im Schlamm', 'stuck'], ['Panne', 'broken'],
@@ -2891,12 +2508,6 @@ async function playEvent0(e) {
       await wait(380); bauSicht()[e.bau] = true; renderTerrain();
       { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, 'Die Kirche stürzt ein!', '#f0c070', true); }
       await wait(700); break; }
-    case 'reinf': {
-      for (const id of e.ids) { const nu = unitById(id); addDU(nu); const d = DU.get(id); d.x += s * 2; }
-      banner('Gegenstoß der Aschenwacht', 'Sturmbrecher und Brandwerfer treffen ein'); playSound('horn', 0.5); playSound('march', 0.4);
-      await Promise.all(e.ids.map(async id => { const d = DU.get(id), nu = unitById(id), [x] = center(nu.c, nu.r); for (let k = 0; k < 20; k++) { d.x = x + s * 2 * (1 - (k + 1) / 20); await raf(); } }));
-      await wait(900); break;
-    }
   }
 }
 function play(events) {
@@ -2924,21 +2535,12 @@ async function runQueue() {
 // ---------- Eingabe ----------
 let lastSP = [0, 0];   // letzter Zeigerpunkt in Schirm-Pixeln des Canvas (neue Ansicht: Aufsteller und Marken werden dort getroffen)
 function evToPx(ev) { const r = cv.getBoundingClientRect(), sx = (ev.clientX - r.left) * cv.width / r.width, sy = (ev.clientY - r.top) * cv.height / r.height; lastSP = [sx, sy];
-  if (VIEW.tilt()) { camSetup(); return unproj(sx, sy) || [-1e6, -1e6]; }   // neue Ansicht: Punkt auf dem Boden im Weltbild
-  return [sx, sy]; }
+  camSetup(); return unproj(sx, sy) || [-1e6, -1e6]; }   // Punkt auf dem Boden im Weltbild
 // Was liegt unter dem Zeiger? h = Feld, uHex = Einheit auf diesem Feld, uFig = vorderste Figur, deren Körper man dort sieht
 function pick(x, y) {
   const h = pixToHex(x, y), uHex = h ? E.unitAt(G, h[0], h[1]) : null;
-  if (VIEW.tilt()) { let uFig = null; for (let i = UBOX.length - 1; i >= 0; i--) { const b = UBOX[i]; if (lastSP[0] >= b.x0 && lastSP[0] <= b.x1 && lastSP[1] >= b.y0 && lastSP[1] <= b.y1) { uFig = b.u; break; } } return { h, uHex, uFig }; }   // Aufsteller: vorderster getroffener Kasten
-  let uFig = null;
-  for (const u of G.units) {
-    if (!E.alive(u)) continue;
-    const d = DU.get(u.id);
-    if (Math.abs(x - d.x) < L.s * 0.42 && y < d.y + L.s * kAt(d.x, d.y) * 0.5 && y > d.y - L.s * Math.min(0.62, SQ3 * kAt(d.x, d.y) * 0.55)) if (!uFig || d.y > DU.get(uFig.id).y) uFig = u;
-  }
-  return { h, uHex, uFig };
+  let uFig = null; for (let i = UBOX.length - 1; i >= 0; i--) { const b = UBOX[i]; if (lastSP[0] >= b.x0 && lastSP[0] <= b.x1 && lastSP[1] >= b.y0 && lastSP[1] <= b.y1) { uFig = b.u; break; } } return { h, uHex, uFig };   // Aufsteller: vorderster getroffener Kasten
 }
-function unitAtPixel(x, y) { const p = pick(x, y); return p.uFig || p.uHex; }
 const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targets.has(p.uFig.id) ? p.uFig : null;
 let drag = null, dragged = 0;
 document.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; }, true);   // Maus oder Finger: zuletzt benutzt, überall (z. B. Nachschub-Menü)
@@ -2948,28 +2550,21 @@ window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = p
 const SCR = {};
 for (const [k, ch] of [['l', '◀'], ['r', '▶'], ['u', '▲'], ['d', '▼']]) {
   const el = document.createElement('button'); el.className = 'scrhint ' + k; el.textContent = ch; el.hidden = true; el.setAttribute('aria-label', 'Karte verschieben');
-  el.addEventListener('click', () => { userCam(); const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; if (VIEW.tilt()) return camPan(dx * 0.4, dy * 0.4); board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
+  el.addEventListener('click', () => { userCam(); const dx = k === 'l' ? -1 : k === 'r' ? 1 : 0, dy = k === 'u' ? -1 : k === 'd' ? 1 : 0; return camPan(dx * 0.4, dy * 0.4); board.scrollBy({ left: dx * board.clientWidth * 0.4, top: dy * board.clientHeight * 0.4, behavior: 'smooth' }); });
   document.body.appendChild(el); SCR[k] = el;
 }
 function updScroll() {
-  if (VIEW.tilt()) { for (const k in SCR) SCR[k].hidden = true; return; }   // neue Ansicht: Kamera statt Scrollen
-  const b = board.getBoundingClientRect(), sl = board.scrollLeft, st = board.scrollTop, mx = board.scrollWidth - board.clientWidth, my = board.scrollHeight - board.clientHeight;
-  const show = { l: sl > 4, r: sl < mx - 4, u: st > 4, d: st < my - 4 };
-  for (const k in SCR) {
-    const el = SCR[k]; el.hidden = !show[k] || !G || !document.querySelector('#start')?.hidden; if (el.hidden) continue;
-    const x = k === 'l' ? b.left + 6 : k === 'r' ? b.right - 34 : b.left + b.width / 2 - 14, y = k === 'u' ? b.top + 6 : k === 'd' ? b.bottom - 34 : b.top + b.height / 2 - 14;
-    el.style.left = x + 'px'; el.style.top = y + 'px';
-  }
+  for (const k in SCR) SCR[k].hidden = true;   // Kamera statt Scrollen
 }
 board.addEventListener('scroll', updScroll, { passive: true }); addEventListener('resize', () => setTimeout(updScroll, 50)); setInterval(updScroll, 700);
 board.addEventListener('wheel', ev => {   // Mausrad (und Touchpad-Pinch = Strg) zoomt auf den Punkt unter dem Zeiger; Umschalt + Rad verschiebt waagrecht
   if (!G) return; ev.preventDefault(); userCam();
-  if (ev.shiftKey && !ev.ctrlKey) { if (VIEW.tilt()) camPan((ev.deltaY || ev.deltaX) / 600, 0); else board.scrollLeft += ev.deltaY || ev.deltaX; return; }
+  if (ev.shiftKey && !ev.ctrlKey) { camPan((ev.deltaY || ev.deltaX) / 600, 0); return; }
   const dy = ev.deltaMode === 1 ? ev.deltaY * 30 : ev.deltaY; setZoom((zPend || ZOOM) * Math.exp(-dy * (ev.ctrlKey ? 0.006 : 0.0015)), ev.clientX, ev.clientY);
 }, { passive: false });
 cv.addEventListener('pointermove', ev => {
   if (drag && !pinch && (ev.buttons & 1)) { const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y; if (drag.moved || Math.hypot(dx, dy) > (ev.pointerType === 'mouse' ? 8 : 14)) { drag.moved = true; userCam(); cv.style.cursor = 'grabbing';
-    if (VIEW.tilt()) camDrag(drag, ev); else { board.scrollLeft = drag.sl - dx; board.scrollTop = drag.st - dy; } return; } }
+    camDrag(drag, ev); return; } }
   if (!G || ev.pointerType !== 'mouse') return;
   const [x, y] = evToPx(ev), p = pick(x, y);
   hoverHex = p.h;
@@ -3525,7 +3120,7 @@ function upBtn(b, i) {
 }
 let upBtns = [];
 // ---------- Bedienfeld der neuen Ansicht nach Entwurf A1 (2026-11-17) ----------
-// Nur mit OPT.tilt (body.neu): dieselben Elemente wie im alten Panel, per CSS neu angeordnet (index.html „Bedienfeld der neuen Ansicht“).
+// body.neu: dieselben Elemente wie im alten Panel, per CSS neu angeordnet (index.html „Bedienfeld der neuen Ansicht“).
 // Verschoben werden: Nachschub-Knopf nach oben links (#nachOben), Zustände unter die Moral, Hinweiszeile nach oben.
 let kartLang = false; try { kartLang = localStorage.getItem('arm.kartelang') === '1'; } catch (e) {}
 function neuBedienfeld(on) {
@@ -4022,14 +3617,13 @@ function drawMapPreview(cvs, id) {
   const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
   const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);
   cvs.width = W * dpr; cvs.height = H * dpr; const g2 = cvs.getContext('2d'); g2.scale(dpr, dpr);
-  const pim = m.img && MIMG[m.img], kp = pim ? (1.5 * m.cols + 0.5) / (pim.naturalWidth / pim.naturalHeight * SQ3 * (m.rows + 0.5)) : 0.58;   // gestaucht wie im Spiel (Seitenansicht)
+  const kp = 0.58;   // gestaucht wie im Spiel (Seitenansicht)
   const s2 = Math.min(W / (1.5 * m.cols + 0.5), H / (SQ3 * kp * (m.rows + 0.5)));
   const ox = (W - s2 * (1.5 * m.cols + 0.5)) / 2, oy = (H - s2 * SQ3 * kp * (m.rows + 0.5)) / 2;
   const hp = (c, r) => [ox + s2 * (1 + 1.5 * c), oy + s2 * SQ3 * kp * (r + 0.5 * (c & 1) + 0.5)];
-  if (pim) g2.drawImage(pim, ox, oy, s2 * (1.5 * m.cols + 0.5), s2 * SQ3 * kp * (m.rows + 0.5));
   for (let c = 0; c < m.cols; c++) for (let r = 0; r < m.rows; r++) {
     const [x, y] = hp(c, r); g2.beginPath(); for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; g2.lineTo(x + s2 * Math.cos(a), y + s2 * kp * Math.sin(a)); }
-    g2.closePath(); if (!pim) { g2.fillStyle = TCOL[M[c][r].t] || '#6d6250'; g2.fill(); }
+    g2.closePath(); g2.fillStyle = TCOL[M[c][r].t] || '#6d6250'; g2.fill();
     if (M[c][r].ridge) { g2.fillStyle = 'rgba(255,226,160,0.18)'; g2.fill(); }
     if (c <= m.zoneA) { g2.fillStyle = 'rgba(201,74,61,0.22)'; g2.fill(); }
   }
@@ -4145,8 +3739,7 @@ function nextUnit(back) {
   const u = list[((i < 0 ? (back ? 0 : -1) : i) + (back ? -1 : 1) + list.length) % list.length];
   select(u);
   const [x, y] = center(u.c, u.r), rc = cv.getBoundingClientRect(), bc = board.getBoundingClientRect();
-  if (VIEW.tilt()) { camTo(x, y, 400, true); return; }
-  board.scrollBy({ left: rc.left + x * rc.width / cv.width - (bc.left + bc.width / 2), top: rc.top + y * rc.height / cv.height - (bc.top + bc.height / 2), behavior: 'smooth' });
+  camTo(x, y, 400, true);
 }
 $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext').dataset.long; return; } nextUnit(false); };
 // Tooltip am Knopf: Maus beim Drüberfahren, Touch durch langes Drücken (dann kein Klick)
@@ -4194,7 +3787,7 @@ $('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,
 const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake']];   // „Neue Ansicht (Test)“ entfernt: immer neue Ansicht
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
-  if (k === 'tilt' && G) { zoomFit = false; ZOOM = 1; CAM.init = false; layout(); syncAll(); updScroll(); tbSync(); } });   // Ansicht wechseln: neu aufbauen
+  });
 let kiArt = 'angriff'; try { const v = localStorage.getItem('arm.ki'); if (['angriff', 'ruhig'].includes(v)) kiArt = v; } catch (e) {}
 if ($('optKI')) { $('optKI').value = kiArt; $('optKI').addEventListener('change', () => { kiArt = $('optKI').value; try { localStorage.setItem('arm.ki', kiArt); } catch (e) {} if (G && !G.over && typeof AI !== 'undefined') AI.setAktiv(kiArt === 'ruhig' ? [] : ['A', 'D'].filter(sd => !human(sd))); }); }   // F43
 if ($('optSzene')) { $('optSzene').value = KS; $('optSzene').addEventListener('change', () => { KS = $('optSzene').value; try { localStorage.setItem('arm.kampfszene', KS); } catch (e) {} }); }   // F48
@@ -4236,7 +3829,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Alt') { if (gameKeys(e)) e.preventDefault(); altHeld = true; return; }
   if (e.key === 'Tab' && gameKeys(e) && !e.ctrlKey && !e.altKey) { e.preventDefault(); nextUnit(e.shiftKey); return; }
   const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-  if (pan && $('start').hidden && !e.target.closest('input')) { userCam(); if (VIEW.tilt()) camPan(pan[0] * 0.18, pan[1] * 0.18); else board.scrollBy({ left: pan[0] * 160, top: pan[1] * 120, behavior: 'smooth' }); e.preventDefault(); }
+  if (pan && $('start').hidden && !e.target.closest('input')) { userCam(); camPan(pan[0] * 0.18, pan[1] * 0.18); e.preventDefault(); }
   // Tasten 1–n: Fähigkeiten-Knöpfe des Panels
   if (/^[1-9]$/.test(e.key) && G && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input')) && !e.ctrlKey && !e.altKey && !e.metaKey) {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
@@ -4251,26 +3844,11 @@ let camAnim = null, camHold = false, activeU = null, shakeT = 0, shakeA = 0, dia
 const lastSel = { A: null, D: null };   // zuletzt gewählte eigene Einheit je Seite (Kamera zu Rundenbeginn)
 const camOn = () => OPT.cam && speed < INSTANT && !camHold;
 function userCam() { camAnim = null; if (G && busy && !human(G.side)) camHold = true; }   // Spieler verschiebt selbst: Kamera hält still bis zur nächsten KI-Einheit
-function toBoard(x, y) { const rc = cv.getBoundingClientRect(), bc = board.getBoundingClientRect(); return [rc.left - bc.left + board.scrollLeft + x * rc.width / cv.width, rc.top - bc.top + board.scrollTop + y * rc.height / cv.height]; }
 function inView(x, y, m = 0.18) {
-  if (VIEW.tilt()) { camSetup(); const p = proj(x, y), W = cv.width, H = cv.height; return p[2] > 0 && p[0] >= W * m && p[0] <= W * (1 - m) && p[1] >= H * m && p[1] <= H * (1 - m); }
-  const [bx, by] = toBoard(x, y), w = board.clientWidth, h = board.clientHeight, sl = board.scrollLeft, st = board.scrollTop;
-  const mx = board.scrollWidth - w > 2 ? m : 0, my = board.scrollHeight - h > 2 ? m : 0;   // ohne Verschieben zählt das ganze Bild
-  return bx >= sl + w * mx && bx <= sl + w * (1 - mx) && by >= st + h * my && by <= st + h * (1 - my);
+  camSetup(); const p = proj(x, y), W = cv.width, H = cv.height; return p[2] > 0 && p[0] >= W * m && p[0] <= W * (1 - m) && p[1] >= H * m && p[1] <= H * (1 - m);
 }
 function camTo(x, y, ms = 380, force) {   // weich zum Punkt (Canvas-Pixel) fahren; Promise endet bei Ankunft oder Abbruch
-  if (VIEW.tilt()) return camToTilt(x, y, ms, force);
-  if (!L || (!force && !camOn())) return Promise.resolve();
-  const [bx, by] = toBoard(x, y), w = board.clientWidth, h = board.clientHeight;
-  const tl = Math.max(0, Math.min(board.scrollWidth - w, bx - w / 2)), tt = Math.max(0, Math.min(board.scrollHeight - h, by - h / 2));
-  const l0 = board.scrollLeft, t0 = board.scrollTop;
-  if (Math.abs(tl - l0) < 2 && Math.abs(tt - t0) < 2) return Promise.resolve();
-  const dur = speed >= INSTANT ? 0 : ms / Math.min(speed, 2), me = {}; camAnim = me;
-  if (!dur) { board.scrollLeft = tl; board.scrollTop = tt; return Promise.resolve(); }
-  return new Promise(res => { const st = performance.now();
-    const step = () => { if (camAnim !== me) return res(); const k = Math.min(1, (performance.now() - st) / dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      board.scrollLeft = l0 + (tl - l0) * e; board.scrollTop = t0 + (tt - t0) * e; if (k < 1) requestAnimationFrame(step); else { camAnim = null; res(); } };
-    requestAnimationFrame(step); });
+  return camToTilt(x, y, ms, force);
 }
 // Rundenbeginn: zur zuletzt gewählten eigenen Einheit, sonst zur eigenen Front (die drei Einheiten, die dem Gegner am nächsten stehen)
 function camHome(first) {
@@ -4299,23 +3877,7 @@ function shakeStep() {
 let zPend = 0, zTm = 0, pinch = null;
 const zoomTxt = () => zoomFit || ZOOM <= ZFIT + 0.01 ? 'Zoom: ganze Karte' : 'Zoom ' + String(Math.round(ZOOM * 10) / 10).replace('.', ',') + '×';
 function setZoom(z, cx, cy, fit, at) {
-  if (VIEW.tilt()) return zoomTilt(z, cx, cy, fit);
-  if (!G || !L) return;
-  const cur = zPend || ZOOM, nz = Math.max(ZFIT, Math.min(Z_MAX, z));
-  zoomFit = !!fit || nz <= ZFIT + 0.001;
-  if (Math.abs(nz - cur) < 0.002 && !at) return;
-  const rc = cv.getBoundingClientRect(), fx = (cx - rc.left) / rc.width, fy = (cy - rc.top) / rc.height;
-  const w = rc.width / cur * nz, h = rc.height / cur * nz;
-  zPend = nz; cv.style.width = w + 'px'; cv.style.height = h + 'px';
-  cv.style.marginLeft = Math.max(0, Math.floor((board.clientWidth - w) / 2)) + 'px'; cv.style.marginTop = Math.max(0, Math.floor((board.clientHeight - h) / 2)) + 'px';
-  const r2 = cv.getBoundingClientRect(); board.scrollLeft += r2.left + fx * r2.width - cx; board.scrollTop += r2.top + fy * r2.height - cy;
-  clearTimeout(zTm); zTm = setTimeout(() => {   // scharf neu zeichnen, Mitte des Bildes bleibt, wo sie war
-    const bc = board.getBoundingClientRect(), r0 = cv.getBoundingClientRect(), mx = bc.left + bc.width / 2, my = bc.top + bc.height / 2;
-    const gx = (mx - r0.left) / r0.width, gy = (my - r0.top) / r0.height;
-    ZOOM = zPend; zPend = 0; layout(); syncAll();
-    const r1 = cv.getBoundingClientRect(); board.scrollLeft += r1.left + gx * r1.width - mx; board.scrollTop += r1.top + gy * r1.height - my;
-    tbSync(); updScroll(); if ($('setZoom')) $('setZoom').textContent = zoomTxt();
-  }, at ? 0 : 170);
+  return zoomTilt(z, cx, cy, fit);
 }
 // Zwei Finger: Pinch-Zoom (ein Finger verschiebt, siehe pointerdown/pointermove oben)
 { const ptrs = new Map();
@@ -4388,7 +3950,6 @@ function noteEvent(e, u) {
     case 'banner': return logAdd(`${N(u)}: Banner ${e.planted ? 'aufgepflanzt' : 'aufgenommen'}`, u && u.side, ...at(u));
     case 'score': { const n = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side).reduce((m, o) => m + o.pts, 0); if (n) logAdd(`${SIDES[e.side].short}: +${n} Siegpunkte`, e.side, null, null); return; }
     case 'spawn': return logAdd(`Nachschub: ${N(u)}`, u.side, ...at(u));
-    case 'reinf': { const f = unitById(e.ids[0]); return logAdd('Gegenstoß: Verstärkung trifft ein', f && f.side, ...at(f), true); }
   }
 }
 // Kriegstagebuch: Liste der letzten Runden, neueste oben, Klick fährt die Kamera hin
@@ -4409,8 +3970,8 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { PT, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
-  hexCss: (c, r) => { let [x, y] = center(c, r); if (VIEW.tilt()) { camSetup(); [x, y] = proj(x, y); } const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
+window.__dbg = { ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+  hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },

@@ -1,5 +1,5 @@
 // KI gegen KI: node tools/sim.js [Anzahl] [Startwert]
-// Karte wählen: MAP=selm|lerne|front (Standard: grauwall)
+// Karte wählen: MAP=sanktruss (Standard: grauwall)
 // Übersteuern zum Testen: P_DMG=0.6 T_koloss_def=7 NOA=walker,art DROP_koloss=1 BREAK_A=0.6 node tools/sim.js
 const E = require('../src/engine.js');
 const AI = require('../src/ai.js');
