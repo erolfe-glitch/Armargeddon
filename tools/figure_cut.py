@@ -141,7 +141,7 @@ SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch
 # aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
 # dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
 # FAHNE: zusätzliche feste Bereiche (Anteile x0, y0, x1, y1), wo die Erkennung nicht reicht (dunkles Weinrot der Banner, Panzerstreifen).
-FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
+FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_banner_posen': (0, 0, 1, 0.42), 'aschenwacht_banner_posen2': (0.5, 0, 1, 0.42), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
 ASCHGRAU, KNOCHEN = np.array([108, 106, 100.]), np.array([222, 212, 186.])
 
 
@@ -192,12 +192,16 @@ def fahne_umfaerben(a, name, alpha):
 #   spitze (x0, y0, x1, y1, px0, px1, sy): Kreuz an der Fahnenspitze durch Stangenstück ersetzen (Rest Hintergrund)
 ABZEICHEN = {
     'aschenwacht_panzerknecht': [('platte', 106, 236, 50), ('platte', 619, 264, 46), ('platte', 1205, 294, 52)],
-    'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15)],
+    'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15),
+                            ('platte', 595, 273, 34), ('platte', 447, 451, 13), ('platte', 605, 458, 13), ('platte', 517, 692, 22)],   # Pflicht-Übermalung 2026-11-21: Helmemblem, Totenköpfe an den Schulterkordeln, Totenkopf-Schnalle
     'aschenwacht_bohrkoloss': [('platte', 468, 579, 27)],
     # Posenbögen 2026-11-20: Adler auf den Pickelhauben (Pflicht: keine Adler im Spiel)
     'aschenwacht_sanitaeter_posen': [('platte', 496, 137, 34), ('platte', 2424, 160, 32), ('platte', 1895, 261, 32), ('platte', 1169, 604, 32)],
     'aschenwacht_melder_posen': [('platte', 669, 934, 30), ('platte', 2335, 745, 34), ('platte', 301, 81, 26)],
     'aschenwacht_flammen_posen': [('platte', 1845, 150, 26), ('platte', 1738, 935, 26), ('platte', 705, 150, 26), ('platte', 785, 960, 26)],
+    # Runde 2 (2026-11-21, Pflicht-Übermalung): kleine Totenköpfe an den Schulterkordeln beider Generäle je Bogen
+    'aschenwacht_general_posen': [('platte', 610, 350, 14), ('platte', 775, 350, 14), ('platte', 1912, 350, 14), ('platte', 2075, 350, 14)],
+    'aschenwacht_general_posen2': [('platte', 550, 345, 14), ('platte', 720, 345, 14), ('platte', 1805, 372, 14), ('platte', 1970, 335, 14)],
 }
 
 
@@ -359,6 +363,22 @@ FIGUREN_POSEN = {
     'konkordat_mineur_posen': dict(n=4, reihen=2, grund='mineur', lampe=True),
     'konkordat_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann', spiegeln=[2]),   # Pistole zielt im Bogen nach links
     'aschenwacht_hauptmann_posen': dict(n=4, reihen=2, grund='hauptmann'),
+    # Posenbögen Runde 2 (2026-11-21, entwurf/POSEN_PROMPTS.md R1–R8)
+    'konkordat_reiter_posen': dict(n=4, reihen=2, grund='reiter', raster=2),   # Galopp mit Säbel vorn, Säbelhieb, Aufbäumen, Getroffen
+    'aschenwacht_reiter_posen': dict(n=4, reihen=2, grund='reiter', nimm=[1, 3, 4], raster=2),   # 2 (oben rechts): Lanze zeigt nach hinten – nicht verwenden
+    'aschenwacht_eingreif_posen': dict(n=4, reihen=2, grund='eingreif'),   # Bajonett-Angriff, Keule Durchzug, Wurf Panzergranaten-Bündel, Getroffen
+    'konkordat_pionier_posen2': dict(n=4, reihen=2, grund='pionier'),   # Anlegen stehend, Anlegen kniend, geduckt vorrücken, Getroffen
+    'aschenwacht_pionier_posen2': dict(n=4, reihen=2, grund='pionier'),   # Anlegen stehend, Anlegen kniend, geduckt vorrücken, Nahkampf-Vorstoß
+    'aschenwacht_eiserne_huenen_posen': dict(n=4, reihen=2, grund='eiserne_huenen'),   # Hüftfeuer, Sturmlauf, halb kniend, Getroffen mit Hackmesser
+    'konkordat_loewenoger_posen': dict(n=4, reihen=2, grund='loewenoger'),   # Sprung mit Krallen, Prankenhieb, Schrot angelegt, Getroffen brüllend
+    'aschenwacht_gasschutz_posen': dict(n=4, reihen=1, grund='gasschutz', gross={2: 1.3, 3: 1.3, 4: 1.3}),   # links stehend ~30 % größer gezeichnet
+    'aschenwacht_banner_posen': dict(n=2, reihen=1, grund='banner'),   # Fahne hoch rufend, Stange in den Boden rammen
+    'aschenwacht_banner_posen2': dict(n=2, reihen=1, grund='banner', nimm=[2]),   # links fehlerhaft (Fahne ohne Stange), rechts Getroffen
+    # Generäle: nur der General posiert, der Fahnenträger kommt aus dem (übermalten) Grundbild dahinter (traeger); ref = Pose ohne erhobenen Arm, gleich groß wie der General im Grundbild
+    'konkordat_general_posen': dict(n=4, reihen=2, grund='general', nimm=[3, 4], traeger=True, ref=3, raster=2),   # oben Beine abgeschnitten; unten Pistolenschuss, Getroffen
+    'konkordat_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Stab zeigend
+    'aschenwacht_general_posen': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Hand zeigend
+    'aschenwacht_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=1),   # Pistolenschuss, Getroffen
 }
 
 
@@ -376,6 +396,29 @@ def helm_gold_weg(q, hmax):
     print(f'  Helmabzeichen übermalt: {int(gold.sum())} px'); return q
 
 
+TRAEGER_NAHT = {'konkordat': 0.30, 'aschenwacht': 0.33}   # ungefähre Trennstelle Fahnenträger | General im Grundbild (Anteil der Breite)
+
+
+def general_grund(side):
+    """Grundbild des Generals (Spielordner, schon übermalt): Fahnenträger links einer Naht, Höhe des Generals und Mitte seiner Beine."""
+    g = np.asarray(Image.open(GAME / f'{side}_general.png').convert('RGBA')).astype(np.float64); op = g[..., 3] > 60; H, W = op.shape
+    xs = seam(op, int(W * TRAEGER_NAHT[side]), int(W * 0.08)); links = np.arange(W)[None, :] < xs[:, None]
+    tr = g.copy(); tr[~links, 3] = 0; gen = op & ~links; ys = np.nonzero(gen.any(1))[0]
+    beine = gen.copy(); beine[:int(H * 0.72)] = False; bx = np.nonzero(beine)[1].mean()
+    return tr, H - ys.min(), bx
+
+
+def traeger_setzen(im, tr, bx):
+    """General-Pose (Füße unten) vor den Fahnenträger setzen: Beine auf die Stelle des Generals im Grundbild; die Bildmitte bleibt (kein Springen beim Posenwechsel)."""
+    q = np.asarray(im).astype(np.float64); h, w = q.shape[:2]; H, W = tr.shape[:2]
+    al = q[..., 3] > 60; beine = al.copy(); beine[:int(h * 0.72)] = False; px = np.nonzero(beine)[1].mean()
+    ox = int(round(bx - px)); pad = max(0, -ox, ox + w - W); top = max(0, h - H)
+    C = np.zeros((top + H, W + 2 * pad, 4)); C[top:, pad:pad + W] = tr
+    y0, x0 = top + H - h, pad + ox; a = q[..., 3:4] / 255; C[y0:y0 + h, x0:x0 + w] = q * a + C[y0:y0 + h, x0:x0 + w] * (1 - a)
+    C[y0:y0 + h, x0:x0 + w, 3] = np.maximum(q[..., 3], C[y0:y0 + h, x0:x0 + w, 3])
+    return Image.fromarray(np.clip(C + 0.5, 0, 255).astype(np.uint8), 'RGBA')
+
+
 def figuren_posen(name, out):
     o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')); H, W = a.shape[:2]
     a = abzeichen_uebermalen(a, name)
@@ -387,6 +430,11 @@ def figuren_posen(name, out):
     if o.get('rauch'):   # Schlieren: halbdurchsichtig nach dem Freistellen oder blass-grau-lila
         a_ = a.astype(int); sat = a_.max(2) - a_.min(2); k = k.copy(); k[(k[..., 3] < 200) | ((sat < 40) & (a_.mean(2) > 120) & (np.minimum(a_[..., 0], a_[..., 2]) - a_[..., 1] > 10)) | (np.minimum(a_[..., 0], a_[..., 2]) - a_[..., 1] > 12), 3] = 0   # auch deckend gemalte rosa Rauchwolken
     al = ndimage.binary_closing(k[..., 3] > 60, iterations=4); lab, n = ndimage.label(al)
+    if o.get('raster'):   # Raster-Bogen (Runde 2, 2026-11-21): Nähte zwischen den Zeilen bzw. Spalten durch freie Stellen; was kreuzt (Lanze, Säbel), wird getrennt
+        op = al.copy(); cut_ = np.zeros_like(al)
+        if o['reihen'] == 2: ys = seam(op.T, H // 2, int(H * 0.18)); cut_[ys, np.arange(W)] = True
+        if o['raster'] == 2: xs = seam(op, W // 2, int(W * 0.15)); cut_[np.arange(H), xs] = True
+        al = al & ~ndimage.binary_dilation(cut_, iterations=1); lab, n = ndimage.label(al)
     sizes = ndimage.sum(al, lab, range(1, n + 1)); big = sorted(range(1, n + 1), key=lambda i: -sizes[i - 1])[:o['n']]
     fo = ndimage.find_objects(lab); zh = H / o['reihen']
     big.sort(key=lambda i: (int(((fo[i - 1][0].start + fo[i - 1][0].stop) / 2) // zh), fo[i - 1][1].start))
@@ -400,6 +448,7 @@ def figuren_posen(name, out):
     grund = sorted(GAME.glob(f"{name.split('_', 1)[0]}_{o['grund']}*.png")); grund = [g for g in grund if '_posen' not in g.stem]
     ref = max(Image.open(g).height for g in grund) if grund else H_OUT
     s = ref * o.get('f', 1.0) / hmax; out.mkdir(parents=True, exist_ok=True)
+    if o.get('traeger'): tr_, hg_, bx_ = general_grund(name.split('_', 1)[0]); s = hg_ / figs[o['ref'] - 1].shape[0]   # Größe wie der General im Grundbild
     for j, q in enumerate(figs, 1):
         if o.get('nimm') and j not in o['nimm']: print(f'{name}_{j}: ausgelassen'); continue
         q = entrosa(q.astype(np.float64))
@@ -411,6 +460,7 @@ def figuren_posen(name, out):
         if o.get('spiegeln') and j in o['spiegeln']: q = q[:, ::-1]
         sj = s * o.get('gross', {}).get(j, 1.0)
         im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA'); im = im.resize((max(1, round(im.width * sj)), max(1, round(im.height * sj))), Image.LANCZOS)
+        if o.get('traeger'): im = traeger_setzen(im, tr_, bx_)
         im.save(out / f'{name}_{j}.png'); print(f'{name}_{j}: {im.width}×{im.height}')
 
 
