@@ -7543,6 +7543,7 @@ function drawAir(g, s, up) {
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
     else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
+  drawSchall(g, s, up); drawNimbus(g, s, up);   // F82
   drawFxs(g, s, up);
   for (let i = booms.length - 1; i >= 0; i--) {
     const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
@@ -8953,7 +8954,7 @@ async function playEvent0(e) {
       fx('funken', null, x2, y2, { anchor: 'mitte', life: 18, fadeOut: 0.6, mul: 0.9 }); lastFire = { kind: 'cannon', t: performance.now(), a: e.u }; await wait(220); await kampfSzeneEnde(ksz); break; }
     case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
-      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900);   // Runde 2: Sprung mit Krallen
+      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0);   // Runde 2: Sprung mit Krallen
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
       d0.face = x1 >= x0 ? 0 : 3; d0.moving = true;
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
@@ -9023,7 +9024,7 @@ async function playEvent0(e) {
     case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
-    case 'clear': { visSync('clouds'); pose(e.u, 'spruehen', 1500); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
+    case 'clear': { visSync('clouds'); pose(e.u, 'spruehen', 1500); gasschutzFx(e.u); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
     case 'ammo': { if (e.by != null) pose(e.by, 'nachladen', 1400); playSound('nachladen', 0.55); kz(e.u, 'munition', 'steig'); await wait(260); break; }
     case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
@@ -10028,6 +10029,65 @@ function loewenGebruell(u, ids) {
   playSound('loewe', 0.6, null, { u });
   rings.push({ x: d.x, y: d.y, r: 1.6, col: '#E2B04A', life: 40, max: 40 }); rings.push({ x: d.x, y: d.y, r: 2.6, col: '#E2B04A', life: 52, max: 52 });
   for (const id of ids || []) { const f = DU.get(id); if (f) { f.vs.angst = true; kz(id, 'angst', 'puls'); } }   // Kopfzeichen „verängstigt“
+  gebruellFx(u.id, ids, 1);
+}
+// F82 (2026-11-21): Fähigkeits-Effekte, dezent und gemalt; Bildwirkung „aus“ = keine, „leicht“ = weniger.
+// Gebrüll: Comic-Schallwellen (Bögen mit Tintenkontur) vom Maul, rot-goldenes Glühen, Staub nach vorn, Gegner zucken zurück.
+const SCHALL = [];   // { m: [x, y] Maul, fuss, dir, t0, dauer, n, stark }
+function maulPunkt(id) {   // Kreuzschreiter: Löwenmaul = Mündung der Hauptwaffe; sonst Kopfhöhe an der Vorderkante der Figur
+  const d = DU.get(id), u = unitById(id); if (!d || !u) return null;
+  if (u.type === 'kreuz') { const p = fxMuzzle(id); if (p) return p; }
+  const bs = d.fbx || []; if (!bs.length) return [d.x, d.y - L.s * 0.9];
+  const lf = facesLeft(d.face); let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== lf) x0 = -(x0 + w);
+  return [d.x + (lf ? x0 + w * 0.15 : x0 + w * 0.85), d.y + y0 + h * 0.16];
+}
+function gebruellFx(id, ziele, stark) {
+  if (!BW) return; const d = DU.get(id), m = maulPunkt(id); if (!d || !m) return;
+  const dir = facesLeft(d.face) ? -1 : 1, n = BW === 1 ? 2 : 3;
+  SCHALL.push({ m: [m[0], m[1]], fuss: [d.x, d.y], dir, t0: now, dauer: 1100 + 300 * stark, n: stark ? n : 2, stark });
+  if (stark) { shake(BW === 1 ? 3 : 5); for (let q = 0; q < (BW === 1 ? 2 : 4); q++) boom(d.x + dir * L.s * (0.6 + q * 0.35), d.y + (Math.random() - 0.5) * L.s * 0.3, L.s * 0.35, 'dust', q * 5); }
+  for (const zid of ziele || []) { const f = DU.get(zid); if (!f) continue; pose(zid, 'getroffen', 380);
+    const ex = Math.sign(f.x - d.x) || dir; f.lunge = { dx: ex * L.s * 0.08, dy: 0 }; setTimeout(() => { if (f.lunge && f.lunge.dx === ex * L.s * 0.08) f.lunge = null; }, 320 / speed); }
+}
+function drawSchall(g, s, up) {
+  for (let i = SCHALL.length - 1; i >= 0; i--) {
+    const w = SCHALL[i], el = (now - w.t0) * speed; if (el > w.dauer) { SCHALL.splice(i, 1); continue; }
+    if (up && !up(w.fuss[0], w.fuss[1])) continue;
+    const [mx, my] = w.m, amp = BW === 1 ? 0.65 : 1;
+    if (el < 380) { const k = 1 - el / 380, gr = g.createRadialGradient(mx, my, 0, mx, my, s * 0.55);   // kurzes rot-goldenes Glühen am Maul
+      gr.addColorStop(0, `rgba(255,196,90,${0.55 * k * amp})`); gr.addColorStop(0.5, `rgba(200,60,30,${0.3 * k * amp})`); gr.addColorStop(1, 'rgba(200,60,30,0)');
+      g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(mx, my, s * 0.55, 0, 7); g.fill(); g.restore(); }
+    for (let q = 0; q < w.n; q++) {   // gezeichnete Bögen, nacheinander, breiten sich aus und verblassen
+      const k = (el - q * 170) / (w.dauer - q * 170); if (k <= 0 || k >= 1) continue;
+      const rad = s * (0.25 + (w.stark ? 2.1 : 1.2) * k), a0 = w.dir > 0 ? 0 : Math.PI, sp = 0.55 + 0.1 * q, al = (1 - k) * amp;
+      g.save(); g.lineCap = 'round';
+      g.beginPath(); g.arc(mx, my, rad, a0 - sp, a0 + sp); g.strokeStyle = `rgba(22,18,12,${0.75 * al})`; g.lineWidth = Math.max(3, s * (0.1 - 0.035 * k)); g.stroke();   // Tintenkontur
+      g.beginPath(); g.arc(mx, my, rad, a0 - sp * 0.96, a0 + sp * 0.96); g.strokeStyle = q === 0 ? `rgba(232,180,74,${al})` : `rgba(214,96,48,${0.9 * al})`; g.lineWidth = Math.max(2, s * (0.055 - 0.02 * k)); g.stroke();
+      g.restore(); }
+  }
+}
+// Gasschutz: blassgrüner Dunst um Figuren und Füße, langsam pulsierend. Beim Entgiften kräftig (mit Dampfstößen aus den Filtern),
+// sonst ganz fein um den Trupp und die geschützten Nachbarn (E.gasSafe: Feld daneben), solange Gas in der Nähe ist.
+const NIMBUS = [];   // { id, t0, dauer }
+function gasschutzFx(id) {
+  if (!BW) return; const d = DU.get(id); if (!d) return; NIMBUS.push({ id, t0: now, dauer: 3200 });
+  for (let q = 0; q < (BW === 1 ? 2 : 4); q++) setTimeout(() => { const d2 = DU.get(id); if (d2) burst(d2.x + (Math.random() - 0.5) * L.s * 0.5, d2.y - L.s * (0.55 + Math.random() * 0.2), 5, ['#dfe9d4', '#c9d8bd', '#eef3e8'], { up: 0.06, spread: 0.06 }); }, (150 + q * 420) / speed);
+}
+function drawNimbus(g, s, up) {
+  if (!BW || !G) return;
+  const st = new Map(), add = (id, v) => st.set(id, Math.max(st.get(id) || 0, v));
+  for (let i = NIMBUS.length - 1; i >= 0; i--) { const n = NIMBUS[i], el = (now - n.t0) * speed; if (el > n.dauer) { NIMBUS.splice(i, 1); continue; }
+    const k = Math.min(1, el / 400) * Math.min(1, (n.dauer - el) / 900), u = unitById(n.id); if (!u) continue; add(u.id, k);
+    for (const o of G.units) if (o.side === u.side && o.id !== u.id && E.alive(o) && E.dist(o.c, o.r, u.c, u.r) === 1 && TYPES[o.type].cls !== 'walker') add(o.id, k * 0.45); }
+  if (VIS.clouds.length) for (const u of G.units) if (TYPES[u.type].gasproof && E.alive(u)) {
+    const nah = (c, r) => VIS.clouds.some(k => E.dist(k.c, k.r, c, r) <= 1); if (!nah(u.c, u.r)) continue; add(u.id, 0.35);
+    for (const o of G.units) if (o.side === u.side && o.id !== u.id && E.alive(o) && E.dist(o.c, o.r, u.c, u.r) === 1 && TYPES[o.type].cls !== 'walker') add(o.id, 0.18); }
+  const amp = BW === 1 ? 0.6 : 1;
+  for (const [id, v] of st) { const d = DU.get(id); if (!d || (up && !up(d.x, d.y))) continue;
+    const p = (0.75 + 0.25 * Math.sin(now / 520 + id)) * v * amp, cy = d.y - s * 0.4, gr = g.createRadialGradient(d.x, cy, s * 0.1, d.x, cy, s * 0.85);
+    gr.addColorStop(0, `rgba(196,222,170,${0.24 * p})`); gr.addColorStop(0.6, `rgba(176,206,150,${0.12 * p})`); gr.addColorStop(1, 'rgba(176,206,150,0)');
+    g.save(); g.fillStyle = gr; g.beginPath(); g.ellipse(d.x, cy, s * 0.85, s * 0.75, 0, 0, 7); g.fill();
+    g.beginPath(); gEllipse(g, d.x, d.y, s * 0.7, s * 0.7); g.fillStyle = `rgba(186,214,160,${0.2 * p})`; g.fill(); g.restore(); }   // Dunst um die Füße
 }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
