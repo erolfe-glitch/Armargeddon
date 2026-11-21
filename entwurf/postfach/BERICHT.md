@@ -1,5 +1,14 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Kurzbericht zu Enricos Antworten (15:50)
+
+- **Löwengebrüll beider:** schon so gebaut (`3413bcf`).
+  - Der **Kreuzschreiter** zeigt bei seiner Fähigkeit die vollen Schallwellen: Bögen mit Tintenkontur, rot-gold, Glühen, Staub, Rütteln, zurückzuckende Gegner. Sie gehen vom Löwenmaul an der Front aus (Mündungspunkt der Löwenmaul-Kanone); im Headless-Test aufgenommen.
+  - Der **Löwenoger** zeigt beim Sprung die kleine Fassung.
+- **Probebilder** `entwurf/probe/fig/aschenwacht_soldat_1–4.png`: mit `git checkout` zurückgesetzt, der Arbeitsstand ist wieder sauber.
+
+Bereit für Spieltest Runde 5.
+
 ## 2026-11-21 – Posenbögen Runde 2, Pflicht-Übermalungen, F82 und zwei alte Fehler
 
 **Commits:**
