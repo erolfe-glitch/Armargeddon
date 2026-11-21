@@ -1,5 +1,117 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – F54 Sturmrollen, F66 Schere-Stein-Papier, Punkte 7–14; F70 Ballon-Vorschlag; ein Fehler gefunden und behoben
+
+**Commits:**
+- `91082c0` Fehlerbehebung, sofort online
+- `519e3a0` F54, F66, F59, Abstimmung, Punkte 7–14
+
+**Bilder:** `entwurf/probe/spieltest4_e/`
+- Medaillen: `f66_panel_medaillen.jpg`, `_1280.jpg`, `f66_info_medaillen.jpg`
+- `f54_sturmrollen_folge.jpg`, `f54_bohrstoss_folge.jpg`
+- `p8_armee_tooltip.jpg`
+- `f71_pulverdampf.jpg`, `f73_schreiter_gehen.jpg`, `f75_flammenstoss.jpg`
+
+### Wichtig: Fehler im letzten Stand (F36-Commit), behoben
+- **Was passiert war:** Beim Eintragen der Ausgraben-Kosten hatte ich einen Kommentar mitten in eine Zeile mit weiteren Regelkonstanten gesetzt. Dadurch waren vier Werte abgeschaltet: Schilde vor, Sturmlauf, Breitseite und Sprenglanze.
+  - Der Sturmpanzer machte mit seiner Breitseite ungültigen Schaden („NaN“).
+  - Die F36-Zahlen aus dem letzten Bericht (48 %/46 %) waren deshalb nicht gültig.
+- **Behoben:** Die Korrektur ging sofort getrennt online (`91082c0`). Alle Zahlen unten sind mit korrekten Werten gemessen.
+- Ausgraben kostet weiter die Aktion.
+
+### F66 Schere-Stein-Papier – gebaut wie bestätigt
+- **Faktortabelle** Waffenart gegen Panzerklasse, wie im letzten Bericht. Alte Einzelboni gehen darin auf:
+  - Panzerbüchse gegen Panzer ×1,5 statt ×2.
+  - Klinge gegen Panzer ×0,5 statt ×0,4.
+  - Kampfanzug ×0,5 kommt jetzt aus der Tabelle.
+- **Ausnahmen:**
+  - geballte Ladung ×1,5;
+  - MG gegen Reiter ×2;
+  - Flanke;
+  - direkter Geschützschuss auf Kolosse (×2,5, wie bisher).
+- **Rollen:** „schwach im Nahkampf“ (Angreifer ×1,5, Gegenschlag ×0,5) und „stark im Nahkampf“ (Gegenschlag ×1,25).
+- **Neu durch die Tabelle:** Drehlauf-Schreiter (Säge, Klaue, Orden) sind Gewehr/MG und prallen an Panzern ab.
+- **Anzeige:**
+  - Drei Medaillen unter dem Einheitenbild: gegen Infanterie, gegen Panzer, Nahkampf. Tooltip auch per Antippen.
+  - Im Info-Fenster der Abschnitt „Stärken und Schwächen“ mit Symbol, Stufe und Faktor in Worten.
+  - Beim Zielen erscheint der Faktor in der Vorschau, z. B. „panzerbrechend gegen schwer gepanzert ×1,5“.
+  - Alles kommt aus denselben Werten wie die Regeln.
+  - Die Medaillen sind 35 px groß, damit drei unter das Bild passen. Bei 1280 px brechen sie in 2 + 1 um. Sie sind Info-Flächen, keine Knöpfe.
+- **KI:** Die Zielwahl nutzt die Faktoren automatisch, weil sie über die Schadensvorschau läuft.
+
+### F54 Sturmrollen und Bohrkoloss – gebaut
+- **Wer:** Landkoloss und Sturmpanzer haben keinen Nahkampf mehr, dafür Sturmrollen. Das Ziel ist eine Fußtruppe oder ein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf, nur aus dem Stand).
+- **Endwerte (Simulation):**
+  - 24 Schaden, niedergehalten, Moral −15, kein Gegenschlag.
+  - Das Ziel rutscht ein Feld zurück. Ist dort kein Platz, ×1,5 („Eingeklemmt!“).
+  - Kampfanzüge nehmen nur halben Schaden.
+  - Kosten: die Aktion und alle Bewegung, danach 2 Runden Pause.
+  - Halber Schaden änderte auf dem Grauwall kaum etwas (93 % statt 96 %). Deshalb habe ich 24 gelassen und über die Armeen abgestimmt.
+- **Nutzung durch die KI:** je Schlacht etwa 13–16-mal beim Konkordat (3 Kolosse), etwa 8-mal bei der Aschenwacht (2 Sturmpanzer).
+- **Bohrkoloss:** behält den Nahkampf. Es gibt einen einzigen Stoß, der sich etwa 0,9 s hineinbohrt: Rütteln, Funken bzw. Blut, Bohrton hält an.
+
+### Abstimmung (je 200 Schlachten)
+
+| Stand | Grauwall (Konkordat) | Sankt Ruß (Konkordat) |
+|---|---|---|
+| F66 + F54 + F36, ohne Armee-Anpassung | 96 % | 25 % |
+| alle neuen Regeln abgeschaltet (Gegenprobe, 100 Schlachten) | 53 % | – |
+| **neu, mit Armee-Anpassung** | **55 %** | **51 %** |
+
+- **Grauwall:** Die Aschenwacht hatte keine Panzerabwehr gegen drei Kolosse (MGs prallen ab, Granaten nur halb). Sie bekommt **+2 Sturmbrecher** (geballte Ladung). Mit Panzerbüchsen statt Sturmbrechern blieb es bei 85–89 %.
+- **Sankt Ruß:** Zwei Sturmpanzer rollen in die verteidigende Konkordat-Infanterie, die MG-Trupps sind im Nahkampf schwach. Das Konkordat bekommt **+2 Kohorten und +1 Pionier**. Mit 2 Pionieren lag es bei 88 %, so empfindlich ist die Karte.
+- **Sturmpanzer:** kostet **100**.
+- **Ausgraben:** Mit allem anderen eingeschaltet machte die Ausgraben-Regel auf dem Grauwall nur etwa 2 Punkte aus (78 % → 80 % in der Gegenprobe).
+
+### Punkte 7–14
+- **7 Standard-Optionen:** Bildwirkung „stark“ und Tempo ½× gelten jetzt einmalig auch bei dir (neue Speicherschlüssel). Danach bleibt deine eigene Wahl.
+- **8 Armee-Auswahl:** Das Info-Feld steht direkt neben der überfahrenen Karte (rechts, sonst links, sonst darüber), nie mehr über der Übersicht.
+  - Die Details im Nachschub-Fenster standen schon neben dem Fenster.
+  - Die Panel-Tooltips erscheinen über ihrem Symbol.
+- **9 Musikregler:** Der Regler selbst wirkt überall (Test: Titelmusik bei 0 auf Lautstärke 0).
+  - Gefunden habe ich etwas anderes: Mit „Ton aus“ (M) startete beim Zurück ins Startmenü die Titelmusik trotzdem. Genauso bei Schlachtmusik, Niederlagenmusik und „Weiter“ aus dem Menü. Alle prüfen jetzt den Ton-Schalter.
+  - Falls du etwas anderes gemeint hast, sag mir bitte, wo du den Regler auf 0 gestellt hast.
+- **10 F71 Pulverdampf:** an jeder Mündung, durchsichtig, steigt und treibt seitlich, nach etwa 2,5 s weg.
+  - Größe je Waffe: Gewehr und Scharfschütze klein, MG je Feuerstoß zwei Wölkchen, Kanone groß.
+  - Höchstens 36 Wölkchen gleichzeitig; Bildwirkung „leicht“ halb so viele, „aus“ keine.
+- **11 F72 Beschuss-Wucht:**
+  - Gewehrsalve um 40 % lauter und dichter gestaffelt, Mündungsfeuer größer.
+  - Erd- und Staubspritzer um das Ziel.
+  - Mehr Blut bei Gewehrtreffern: Spritzer und Fleck schon ab mittlerem Treffer.
+  - Das Bildschirmrütteln bei schweren Treffern gab es schon.
+  - Echten Bass kann ich nur über den Ton-Bau anheben. Das mache ich mit deinem Ton-Pult-Export, wenn du einen Gewehrton festlegst.
+- **12 F73 Schreiter:**
+  - Gehen in zwei Schritten je Feld: anheben, aufstampfen, leicht zur Seite wiegen. Je Schritt eine Staubwolke und ein kleines Bodenbeben, bei Eisenknecht und Kreuzschreiter stärker.
+  - Kettenfahrzeuge rattern leicht.
+  - Rückstoß beim Schuss (Zweitwaffe kleiner), Ausholen vor dem Nahkampf-Stoß, Wanken bei Treffern.
+  - Bei Panne oder Festfahren sackt das Fahrzeug ab, wie bisher.
+- **13 F74 Scharfschützen:** je stehender Figur ein Schuss im Abstand von 0,4–0,6 s. Steht nur einer, fällt ein Schuss.
+  - Ursache der zwei Schüsse: Die Tondatei enthielt zwei Schüsse. Sie wird jetzt nach dem ersten gekappt.
+  - Gewehrsalven richten sich jetzt nach den tatsächlich gezeichneten Figuren statt nach einer festen Zahl.
+- **14 F75 Flammenwerfer:** **ein gemeinsamer Stoß je Trupp**, 1,5 s (Zweitwaffe Flammenstoß des Bohrkolosses 1,1 s).
+  - Der Strahl wird fortlaufend erneuert.
+  - Der Ton läuft als Schleife genau so lange, blendet mit dem Strahl aus, danach knistert es kurz nach.
+  - Ich habe den gemeinsamen Stoß gewählt, weil die Figuren dicht stehen und mehrere Strahlen übereinander unruhig wirken.
+- **F68:** Steht im Auftrag nur in der Reihenfolge, nirgends beschrieben. Was ist damit gemeint?
+
+### F70 – Vorschlag „Ballon auf- und abbauen“ (noch nicht gebaut)
+- **Heute:** Bewegung 0, Sicht 8.
+- **Aufgestiegen:** Sicht 6 statt 8, kann „Ziel markieren“, zieht nicht.
+- **Eingeholt:** zieht 2 Felder (Wagen mit Winde), Sicht wie Fußtruppen (2), kein Markieren, keine Sicht über Hindernisse.
+- **Kosten:** Einholen 1 BP. Aufsteigen kostet alle BP, aber nicht die Aktion, sodass in derselben Runde noch markiert werden kann (wie das MG).
+- **Preis:** 20 → 25.
+- **KI:** steigt auf, wenn Gegner in 4–6 Feldern liegen. Holt ein und zieht nach, wenn mehr als 6 Felder vor ihm keine Gegner mehr in Sicht sind.
+- **Bild und Ton:** Der Ballon sinkt bzw. steigt am Seil, die Höhe wird im Code verändert. Ton: Seilwinde/Ratsche, ein vorhandener Metall-Ratschenton, sonst bitte einen „winch“-Ton.
+
+### Offen
+- F76–F79 (neu um 01:47–01:53): baue ich als Nächstes.
+- Ton-Pult-Export (Gewehr 3 für die Grenadiere).
+
+### Fragen an Enrico
+1. **F70:** Ballon so wie vorgeschlagen?
+2. **F68:** Was ist gemeint?
+3. **Punkt 9:** Wo hast du die Musik auf 0 gestellt?
+
 ## 2026-11-21 – Nachträge F49–F65 erledigt, F44 Grauwall, Paket-E-Regeln; Vorschläge F54, F59-Preis und F66 zur Entscheidung
 
 **Commits (alle gepusht):**
