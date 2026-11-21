@@ -1,5 +1,80 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Posenbögen Runde 2, Pflicht-Übermalungen, F82 und zwei alte Fehler
+
+**Commits:**
+- `bdb9161` Löschen (`paint.js`, `mapimg.js`, die zwei Welle-Werkzeuge)
+- `6c01625` Bögen geschnitten, Übermalungen, Fehlerkorrekturen
+- `77a1e38` Posen im Spiel
+- `3413bcf` F82
+
+### Posenbögen R1–R8 im Spiel
+
+| Einheit | Posen |
+|---|---|
+| **Reiter** (Säbel) | Galopp beim Ziehen, Säbelhieb, Aufbäumen (bei 40 % der Treffer), Getroffen |
+| **Sprenglanzen-Reiter** | Galopp und Lanzenstoß (Bild oben links), Aufbäumen, Getroffen; oben rechts wie gewünscht nicht verwendet |
+| **Eingreiftrupp** | Bajonett-Angriff oder (zufällig) Keulenhieb: Ausholen mit „Keule erhoben“ aus dem Grundbogen, dann Durchzug; Panzergranaten-Bündel werfen; Getroffen. Der lose Schnipsel fällt beim Schneiden weg. |
+| **Graben-Pioniere** | Anlegen stehend, Anlegen kniend (in Deckung), geduckt vorrücken; Nahkampf weiter mit der Schaufel |
+| **Drahtpioniere** | dieselben Schuss-Posen, dazu Nahkampf-Vorstoß mit Gewehr |
+| **Eiserne Hünen** | Hüftfeuer, Sturmlauf, halb kniend (in Deckung), Getroffen mit Hackmesser |
+| **Löwenoger** | Sprung mit Krallen, Prankenhieb, Schrot angelegt, Getroffen brüllend |
+| **Gasschutz** | Anlegen stehend, Anlegen kniend, Sprühen beim Entgiften, Getroffen. Die zu große linke Figur ist auf Soldatenhöhe gebracht. |
+| **Bannerträger** | Fahne hoch beim Ziehen, Stange rammen beim Aufpflanzen, Getroffen (nur die rechte Figur aus `banner_posen2`) |
+| **Generäle** | Befehl zeigend, großer Befehl mit erhobenem Säbel, Pistolenschuss, Getroffen (Konkordat nur die untere Reihe des ersten Bogens) |
+
+- **Generäle:** Nur der General posiert. Der Fahnenträger wird an einer Naht aus dem (übermalten) Grundbild geschnitten und steht wie im Grundbild dahinter. Die Bildmitte bleibt dabei, damit die Figur beim Posenwechsel nicht springt.
+- **Mündungen neu gemessen:**
+  - Hünen-Hüftfeuer: [0,998; 0,698]
+  - Hünen kniend: [0,935; 0,80]
+  - Oger-Schrot: [0,92; 0,237] (Laufende, nicht die Klinge darunter)
+- **Getroffen-Richtung (F77):** Gemessen sind alle neuen Getroffen-Bilder.
+  - Gespiegelt, weil sie zum Feind kippen: Eingreiftrupp (+0,34), Hünen (+0,21), Löwenoger (+0,30), Gasschutz (+0,14).
+  - Der Bannerträger blickt im Bild nach links und fällt vom Feind weg; er bleibt ungespiegelt.
+- **Schnitt:** Bei beiden Reiterbögen und beim ersten Konkordat-General-Bogen hingen Figuren über Lanze bzw. Säbel zusammen. `figure_cut.py` trennt solche Bögen jetzt an Nähten (`raster=2`).
+- **Größe:** `figs.js` ist um 2,3 MB gewachsen, `index.html` liegt jetzt bei 56,5 MB.
+
+### Pflicht-Übermalungen
+- **Aschenwacht-General, Grundbild:** Helmemblem, Totenkopf-Gürtelschnalle und die zwei kleinen Totenköpfe an den Schulterkordeln sind übermalt. Fahnenspitze und Kreuz-Orden waren schon vorher ersetzt. Ärmelabzeichen sind im Bild keine zu sehen.
+- **Beide Aschenwacht-General-Posenbögen:** die Totenköpfe an den Schulterkordeln aller vier Figuren übermalt. Die „Knöpfe“ in `posen2` waren ebenfalls kleine Totenköpfe.
+- **Banner-Posenbögen:** Die Fahne war schwarz-weiß-rot und ist jetzt aschgrau, schwarz und knochenweiß, wie beim Grundbogen.
+- **Alle 109 Aschenwacht-Bilder geprüft**, dazu die 30 neuen Posen:
+  - Brust- und Schildabzeichen sowie die Fahnen zeigen nur das eigene Fraktionszeichen, den Ritterhelm (mit Kranz bzw. am Panzer mit Flügeln).
+  - Die goldenen Kreuze an Kampfanzügen und Schreitern sind Visierschlitze; laut Regel bleiben sie.
+  - Keine Eisernen Kreuze, Balkenkreuze, Adler oder Totenköpfe mehr.
+
+### F82 Fähigkeits-Effekte
+- **Löwengebrüll:**
+  - Vom Maul gehen Comic-Schallwellen aus (gezeichnete Bögen mit Tintenkontur, gold und rot), breiten sich aus und verblassen.
+  - Dazu kurzes rot-goldenes Glühen am Maul, Staub wird nach vorn weggeblasen, leichtes Rütteln.
+  - Die Gegner im Bereich zucken sichtbar zurück, mit Getroffen-Pose und Angst-Zeichen.
+  - Beim Sprung des Löwenogers kommt eine kleinere Fassung.
+  - **Hinweis:** Die Fähigkeit „Löwengebrüll“ hat laut Regeln der **Kreuzschreiter**, nicht der Löwenoger. Den Löwenoger habe ich beim Sprung brüllen lassen. Eine flatternde Mähne geht mit den festen Bildern nicht.
+- **Gasschutz:**
+  - Beim Entgiften pulsiert ein blassgrüner Dunst um den Trupp und seine Füße, dazu Dampfstöße aus den Filtern.
+  - Solange Gas in der Nähe ist, liegt ein ganz feiner Schleier um den Trupp und die geschützten Nachbarn.
+- **Bildwirkung:** „aus“ zeigt keine dieser Effekte, „leicht“ zeigt weniger.
+
+### Zwei alte Fehler „Kommentar verschluckt Code“ (gefunden beim Einbau)
+1. **Ziehen:** Ein Kommentar stand vor dem Code und verschluckte `lauf`-Pose, Bewegungsanimation und `break`.
+   - Seit dem Commit `10b9b3a` lief jeder Zug über den nächsten Fall `advance` (etwas anderes Tempo).
+   - Keine Einheit zeigte die `lauf`-Pose.
+2. **Auf-/Abprotzen:** Meldung, Warten und `break` waren verschluckt; der Fall lief in `spawn` durch.
+   - Dadurch kamen beim Protzen ein Pfiff und die Meldung „Nachschub: … trifft ein“.
+3. Dazu ein eigener Fehler aus den Ton-Nachträgen (`f6eaa7b`): Beim Sturmrollen zuckte das Ziel nicht.
+
+- **Behoben** sind alle drei.
+- **Neu:** `node tools/test_kommentare.js` meldet solche Zeilen und steht in CLAUDE.md.
+
+### Tests
+- Partietest nach jedem Schritt: Konsole ohne Fehler.
+- Posen und Effekte im Headless-Chrome geprüft: jede Pose bei allen 11 Einheiten, Gebrüll und Entgiften mitten im Effekt aufgenommen.
+
+### Frage an Enrico
+- Beim ersten Probeschnitt hat `figure_cut.py` vier Probebilder überschrieben: `entwurf/probe/fig/aschenwacht_soldat_1–4.png`. Die Sicherheitsprüfung hat das Zurücksetzen blockiert. Sie sind nicht committet; darf ich sie mit `git checkout` auf den alten Stand bringen?
+
+**Offen bei den Posen:** R9 Panzerbüchse und die Pistolen-Pose des Bannerträgers (Gemini-Bögen folgen).
+
 ## 2026-11-21 – Paket G, Schritte 6 und 7 (Leistung, KI) – Abschluss Paket G
 
 **Commits:**
