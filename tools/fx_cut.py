@@ -37,6 +37,7 @@ CFG = {
     'fx_nebel':       dict(bg='magenta', rows=[2, 2, 2]),
     'fx_gas':         dict(bg='magenta', rows=[3, 3], weg=[3]),   # oben rechts am Bildrand abgeschnitten
     'fx_blut':        dict(bg='magenta', rows=[3, 3], rosa=False),   # 1–3 Spritzer in der Luft, 4–6 Flecken am Boden
+    'fx_blut2':       dict(bg='magenta', rows=[3, 3], rosa=False, blutsaum=True),   # schweres Blut (2026-11-21): 1–3 große Stöße in der Luft nach rechts (Fächer, Schlieren, Spritzer), 4–6 Bodenflecken (Spritzer, Schleifspur, Lache)
     'fx_truemmer':    dict(bg='magenta', rows=[3, 3]),   # 1 Mauer/Ziegel, 2 Holz, 3 Schrittstaub, 4 Bohrgrus, 5 Sandsack, 6 Staubring
     'fx_bodenspuren': dict(bg='magenta', rows=[3, 3]),   # 1 Brandfleck, 2 Einschlag, 3 Öl, 4 Drahtreste, 5 Kettenspuren, 6 kleiner Trichter
     # Nachtrag 2026-11-17
@@ -130,6 +131,10 @@ def cut(name):
     H, W = a.shape[:2]
     if cfg.get('lauf_weg'): a = lauf_weg(a)
     k = schwarz(a) if cfg['bg'] == 'schwarz' else magenta(a, cfg.get('rosa', True))
+    if cfg.get('blutsaum'):   # trockene Pinselränder, die ins Rosa übergehen: rosa Anteil wird durchsichtig und blutrot statt grau
+        k = k.astype(np.float64).copy(); r_, g_, b_ = k[..., 0], k[..., 1], k[..., 2]
+        pink = np.clip(((b_ - g_) - 12) / 40, 0, 1) * np.clip(((r_ - g_) - 30) / 40, 0, 1)
+        k[..., 3] *= 1 - 0.9 * pink; blut = np.array([105., 16., 12.]); k[..., :3] = k[..., :3] * (1 - pink[..., None]) + blut * pink[..., None]
     cells = cells_rows(k, cfg['rows']) if 'rows' in cfg else cells_teile(k, cfg['teile'])
     parts = []
     for i, c in enumerate(cells, 1):

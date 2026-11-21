@@ -94,7 +94,7 @@ const FXN = {};
 { const D = window.FXNEU || {}; for (const k in D) { const m = k.match(/^(.+)_(\d+)$/); if (!m) continue; const im = new Image(); im.src = D[k]; (FXN[m[1]] = FXN[m[1]] || [])[+m[2] - 1] = im; } }
 const FX_GLOW = new Set(['muendung', 'explosion', 'feuer', 'funken', 'leuchtkugel', 'leuchtspur', 'flammenstrahl', 'drehlauf', 'nahkampf']);
 // Größe: längste Seite des größten Teils eines Bogens in Feldradien (Soldat ≈ 0,8 Feldradien hoch)
-const FX_SZ = { muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
+const FX_SZ = { blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
 const GESCHOSS_ANG = [-18, -15, -40, 0, -15, -15].map(a => a * Math.PI / 180);   // Grundrichtung der Geschosse im Bogen (gemessen)
 const fxIm = (b, i) => { const a = FXN[b]; if (!a || !a.length) return null; const im = a[i != null ? i : Math.floor(Math.random() * a.length)]; return im && im.complete && im.naturalWidth ? im : null; };
 const fxN = b => (FXN[b] || []).length;
@@ -407,13 +407,13 @@ function drawSym(g, im, cx, cy, R, ring) {
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
-const MUZ = { mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
+const MUZ = { aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
   konkordat_kreuzschreiter_neu: [0.632, 0.513], aschenwacht_eisenknecht_neu: [0.88, 0.61],
   // F16/F47 (2026-11-20): Rohrende statt Sehschlitz/Brust – Landkoloss-Kanone, Sturmpanzer, Turmschreiter-Turm-MG, Säge-/Klauenschreiter-Drehlauf
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
 // Mündung je Figurenbild eines Trupps (Posen): F47 Eiserne Hünen (schweres MG auf Hüfthöhe, nicht Brust), Löwenoger-Flinte
 const MUZ_FIG = { aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475], konkordat_loewenoger_2: [0.905, 0.305],
-  aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
+  aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237], aschenwacht_banner_posen3_1: [0.997, 0.366] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
 const MUZ2 = { konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
@@ -1423,7 +1423,7 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD',   /* Posenbögen Runde 2 (2026-11-21) */
+const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse',   /* Posenbögen Runde 2 (2026-11-21) */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
@@ -1461,14 +1461,16 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3
   // Eingreiftrupp: Bajonett-Angriff oder Keulenhieb (Ausholen mit „Keule erhoben“ aus dem Grundbogen, dann Durchzug), Panzergranaten-Bündel werfen
   eingreif: { kolben: 'eingreif_posen_1', hieb: 'eingreif_posen_2', hiebAus: 'eingreif_3', ausholen: 'eingreif_posen_3', loslassen: 'eingreif_posen_3', getroffen: 'eingreif_posen_4' },
   gasschutz: { anlegen: 'gasschutz_posen_1', knien: 'gasschutz_posen_3', spruehen: 'gasschutz_posen_2', getroffen: 'gasschutz_posen_4' },
-  banner: { lauf: 'banner_posen_1', rammen: 'banner_posen_2', getroffen: 'banner_posen2_2' },
+  banner: { lauf: 'banner_posen_1', rammen: 'banner_posen_2', getroffen: 'banner_posen2_2', anlegen: 'banner_posen3_1', knien: 'banner_posen3_1' },   // Pistole: Fahne in der linken Hand
+  // R9 Panzerbüchse (Einzelmodell, 2 Mann): Schütze kniend angelegt neben dem Ladeschützen, geht mit Gewehr über der Schulter, getroffen (Schütze oder Ladeschütze)
+  buechse: { anlegen: 'panzerbuechse_posen_1', knien: 'panzerbuechse_posen_1', lauf: 'panzerbuechse_posen_2', getroffen: 'panzerbuechse_posen_3', getroffen2: 'panzerbuechse_posen_4' },
   // Generäle (Einzelmodell mit Fahnenträger): Befehl zeigend, großer Befehl mit erhobenem Säbel, Pistolenschuss, Getroffen
   generalA: { befehl: 'general_posen2_2', grossbefehl: 'general_posen2_1', anlegen: 'general_posen_3', knien: 'general_posen_3', getroffen: 'general_posen_4' },
   generalD: { befehl: 'general_posen_2', grossbefehl: 'general_posen_1', anlegen: 'general_posen2_1', knien: 'general_posen2_1', getroffen: 'general_posen2_2' } };
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
-function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; d.pose = { art, t0: now, dauer, ...o }; return true; }
+function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; if (art === 'getroffen' && poseHat(u, 'getroffen2') && Math.random() < 0.5) art = 'getroffen2'; d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
 function poseFigur(u, d, j, fallback) {
@@ -1993,11 +1995,20 @@ function trefferSpritzer(dx0, dy0, d, stufe = 1, maschine = false) {
     if (stufe >= 2) fx('blut', Math.floor(Math.random() * 3), d.x + (fl ? -1 : 1) * s * 0.2, d.y - s * 0.35, { anchor: 'mitte', life: 24, mul: 0.3, grow: 0.2, flip: fl, filter: OEL_FILTER });
     if (stufe >= 3) fx('truemmer', 3, d.x, d.y + s * 0.2, { life: 30, mul: 0.45, grow: 0.25, flip: fl }); return; }
   if (!blood) return;
+  if (stufe >= 2) schwerBlut(dx0, dy0, d, stufe);
   for (let i = 0; i < n; i++) { const k = (i + 1) / (n + 1), ox = (fl ? -1 : 1) * s * (0.1 + 0.25 * k + Math.random() * 0.08), oy = -s * (0.25 + Math.random() * 0.3);
     fx('blut', Math.floor(Math.random() * 3), d.x + ox, d.y + oy, { anchor: 'mitte', life: 20 + stufe * 4, mul: 0.22 + 0.1 * stufe + Math.random() * 0.08, grow: 0.25, flip: fl, filter: BLUT_FILTER, delay: i * 2 }); }
   if (stufe >= 2 && Math.random() < 0.6) blutFleck(d.x + (fl ? -1 : 1) * s * (0.2 + Math.random() * 0.3), d.y + s * (0.1 + Math.random() * 0.2) * kAt(d.x, d.y), 0.2 + 0.08 * stufe);
 }
 const istMaschine = u => !!(u && ['walker', 'art'].includes(TYPES[u.type].cls));
+// Schweres Blut (Enrico 2026-11-21, fx_blut2): bei Nahkampf- und schweren Treffern gegen Weiche ein großer Blutstoß in Schlagrichtung,
+// ab Stufe 3 ein Bodenfleck, der nach 2 Runden verblasst; Bildwirkung leicht = kleiner und seltener, aus = keiner. Maschinen bluten nicht (Aufrufer).
+function schwerBlut(dx0, dy0, d, stufe) {
+  if (!blood || !BW || !fxIm('blut2', 0) || (BW === 1 && Math.random() < 0.4)) return; const s = L.s, k = BW === 1 ? 0.7 : 1, dr = fxDir(dx0, dy0, d.x, d.y, 0.8);
+  fx('blut2', Math.floor(Math.random() * 3), d.x + (dr.flip ? -1 : 1) * s * 0.25, d.y - s * 0.4, { anchor: 'mitte', life: 26 + stufe * 3, mul: (0.42 + 0.1 * stufe) * k, grow: 0.3, flip: dr.flip, ang: dr.ang, fadeOut: 0.5, filter: BLUT_FILTER });
+  if (stufe >= 3) bodenBlut(d.x + (dr.flip ? -1 : 1) * s * 0.3, d.y + s * 0.15 * kAt(d.x, d.y), 0.45 * k);
+}
+function bodenBlut(x, y, mul) { if (!blood || !BW) return; gmark('blut2', 3 + Math.floor(Math.random() * 3), x, y, { mul, turns: 2, alpha: 0.8, filter: BLUT_FILTER, ang: (Math.random() - 0.5) * 0.6 }); }
 function blutFleck(x, y, mul) { if (!blood) return false; if (!fxIm('blut', 3)) return false; gmark('blut', 3 + Math.floor(Math.random() * 3), x, y, { mul, turns: 9999, alpha: 0.85, filter: BLUT_FILTER, ang: (Math.random() - 0.5) * 0.6 }); return true; }
 const BOOM_IMG = { he: ['expl'], dust: ['dirt1', 'dirt2'], gas: ['gas2'], blood: ['splash'], smoke: ['smokeL1', 'smokeL2', 'smokeD'] };
 function boom(x, y, r, kind, delay = 0) {
@@ -2091,7 +2102,7 @@ async function nahkampfGleich(e, grp) {
   const a = DU.get(e.a), d = DU.get(e.d);
   // gemeinsamer Wucht-Moment: Stillstand, Rütteln, Getroffen-Posen und Spritzer an beiden, beide Schadenszahlen zugleich
   if (a && d) { for (const h of hits) { const z = DU.get(h.u), q = h.u === e.d ? a : d; if (!z || !q) continue; pose(h.u, 'getroffen', 700); z.lunge = { dx: (z.x - q.x) * 0.12, dy: (z.y - q.y) * 0.12 };
-      trefferSpritzer(q.x, q.y, z, h.dmg >= 3 ? 3 : h.dmg >= 1.5 ? 2 : 1, istMaschine(unitById(h.u))); if (st.ksz && blood && !istMaschine(unitById(h.u)) && h.dmg >= 1.5) fx('blut', Math.floor(Math.random() * 3), z.x, z.y - L.s * 0.5, { anchor: 'mitte', life: 30, mul: 0.6 + 0.12 * Math.min(3, h.dmg), grow: 0.35, flip: z.x < q.x, filter: BLUT_FILTER }); }
+      trefferSpritzer(q.x, q.y, z, h.dmg >= 3 ? 3 : 2, istMaschine(unitById(h.u)));   /* Nahkampf: immer schweres Blut gegen Weiche (fx_blut2, Enrico 2026-11-21) */ if (st.ksz && blood && !istMaschine(unitById(h.u)) && h.dmg >= 1.5) fx('blut', Math.floor(Math.random() * 3), z.x, z.y - L.s * 0.5, { anchor: 'mitte', life: 30, mul: 0.6 + 0.12 * Math.min(3, h.dmg), grow: 0.35, flip: z.x < q.x, filter: BLUT_FILTER }); }
     shake(6); if (!(st.ksz && st.ksz.skip)) await wait(120); }
   for (const h of hits) h.nkKurz = true;
   await Promise.all(hits.map(h => playEvent(h).catch(err => console.error(err))));
@@ -2416,7 +2427,7 @@ async function playEvent0(e) {
     case 'destroyed': {
       const d = DU.get(e.u); floater(...headPos(e.u), 'aufgerieben', '#ff6a50', true); toast(`${nm(u)} ist aufgerieben.`);
       if (TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') { if (!fxImpact(d.x, d.y, s * 1.1, { alt: true, noMark: true })) boom(d.x, d.y, s * 1.1, 'he'); gmark('bodenspuren', TYPES[u.type].cls === 'walker' ? 2 : 0, d.x, d.y + s * 0.2, { turns: 4, mul: 0.8 }); playSound('boom2', 0.75); if (TYPES[u.type].cls === 'walker') playSound('feuer', 0.35); shake(8); }
-      else if (blood) { boom(d.x, d.y, s * 0.6, 'blood'); if (blutFleck(d.x, d.y + s * 0.1, 0.55)) { for (let q = 0; q < 2; q++) blutFleck(d.x + (Math.random() - 0.5) * s * 1.1, d.y + (Math.random() - 0.3) * s * 0.6 * kAt(d.x, d.y), 0.25); } else { decals.push({ v: 3, x: d.x, y: d.y, r: s * 0.36, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * kAt(d.x, d.y), r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); } }   // F27: ohne runde Partikel
+      else if (blood) { boom(d.x, d.y, s * 0.6, 'blood'); bodenBlut(d.x, d.y + s * 0.1, BW === 1 ? 0.45 : 0.6);   /* Lache, verblasst nach 2 Runden */ if (blutFleck(d.x, d.y + s * 0.1, 0.55)) { for (let q = 0; q < 2; q++) blutFleck(d.x + (Math.random() - 0.5) * s * 1.1, d.y + (Math.random() - 0.3) * s * 0.6 * kAt(d.x, d.y), 0.25); } else { decals.push({ v: 3, x: d.x, y: d.y, r: s * 0.36, col: 'rgba(84,10,8,0.6)' }); for (let q = 0; q < 6; q++) decals.push({ v: 1 + Math.floor(Math.random() * 4), x: d.x + (Math.random() - 0.5) * s * 1.3, y: d.y + (Math.random() - 0.5) * s * 0.9 * kAt(d.x, d.y), r: s * (0.08 + Math.random() * 0.14), col: 'rgba(110,16,12,0.6)' }); } }   // F27: ohne runde Partikel
       for (let k = 0; k < 10; k++) { d.alpha = 1 - k / 10; await wait(28); } d.alpha = 0; break;
     }
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;

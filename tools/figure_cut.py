@@ -141,7 +141,7 @@ SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch
 # aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
 # dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
 # FAHNE: zusätzliche feste Bereiche (Anteile x0, y0, x1, y1), wo die Erkennung nicht reicht (dunkles Weinrot der Banner, Panzerstreifen).
-FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_banner_posen': (0, 0, 1, 0.42), 'aschenwacht_banner_posen2': (0.5, 0, 1, 0.42), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
+FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_banner_posen': (0, 0, 1, 0.42), 'aschenwacht_banner_posen2': (0.5, 0, 1, 0.42), 'aschenwacht_banner_posen3': (0, 0, 0.5, 0.42), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
 ASCHGRAU, KNOCHEN = np.array([108, 106, 100.]), np.array([222, 212, 186.])
 
 
@@ -379,6 +379,11 @@ FIGUREN_POSEN = {
     'konkordat_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Stab zeigend
     'aschenwacht_general_posen': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Hand zeigend
     'aschenwacht_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=1),   # Pistolenschuss, Getroffen
+    # R9 Panzerbüchse (16:00): 1 Schütze kniend angelegt, 2 geht mit Gewehr über der Schulter, 3 Schütze getroffen (Gewehr rutscht weg), 4 Ladeschütze getroffen (Patrone fällt);
+    # schwebende rosa Geisterhand neben Figur 1 gelöscht; Teile je Rasterzelle zusammen; der andere Mann kommt aus dem Grundbild (begleiter)
+    'aschenwacht_panzerbuechse_posen': dict(n=4, reihen=2, grund='panzerbuechse', raster=2, zellen=True, teile_min=0.005, loesch=[(708, 500, 955, 690), (725, 690, 800, 715)],
+                                            begleiter=dict(grund='aschenwacht_panzerbuechse', naht=0.31, mass='links', ref=1, setz={1: 'links', 2: None, 3: 'links', 4: 'rechts'})),
+    'aschenwacht_banner_posen3': dict(n=2, reihen=1, grund='banner', nimm=[1]),   # links: Pistole, Fahne in der linken Hand; rechts unbrauchbar (Stange nicht gehalten)
 }
 
 
@@ -419,6 +424,23 @@ def traeger_setzen(im, tr, bx):
     return Image.fromarray(np.clip(C + 0.5, 0, 255).astype(np.uint8), 'RGBA')
 
 
+def begleiter_grund(cfg):
+    """Zwei-Mann-Trupp im Grundbild (z. B. Panzerbüchse: Ladeschütze links, Schütze rechts) an einer Naht teilen: je Seite Bild, Höhe, Mitte der Beine."""
+    g = np.asarray(Image.open(GAME / f"{cfg['grund']}.png").convert('RGBA')).astype(np.float64); op = g[..., 3] > 60; H, W = op.shape
+    xs = seam(op, int(W * cfg['naht']), int(W * 0.06)); links = np.arange(W)[None, :] < xs[:, None]; out = {'W': W, 'H': H}
+    for seite, m in (('links', links), ('rechts', ~links)):
+        p = g.copy(); p[~m, 3] = 0; al = op & m; ys = np.nonzero(al.any(1))[0]; low = al.copy(); low[:int(H * 0.6)] = False
+        out[seite] = (p, H - ys.min(), np.nonzero(low)[1].mean() if low.any() else np.nonzero(al)[1].mean())
+    return out
+
+
+def begleiter_setzen(im, bg, halten):
+    """Pose an die Stelle des einen Manns setzen, der andere bleibt aus dem Grundbild (halten = 'links'/'rechts'); None = Pose allein, mittig."""
+    if halten == 'links': return traeger_setzen(im, bg['links'][0], bg['rechts'][2])
+    if halten == 'rechts': return traeger_setzen(im, bg['rechts'][0], bg['links'][2])
+    return traeger_setzen(im, np.zeros((bg['H'], bg['W'], 4)), bg['W'] / 2)
+
+
 def figuren_posen(name, out):
     o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')); H, W = a.shape[:2]
     a = abzeichen_uebermalen(a, name)
@@ -429,18 +451,20 @@ def figuren_posen(name, out):
         r_, g_, b_ = [a[..., i].astype(int) for i in range(3)]; sch = (np.minimum(r_, b_) - g_ > 28) & ((r_ + g_ + b_) < 560); k = k.copy(); k[ndimage.binary_dilation(sch, iterations=1), 3] = 0
     if o.get('rauch'):   # Schlieren: halbdurchsichtig nach dem Freistellen oder blass-grau-lila
         a_ = a.astype(int); sat = a_.max(2) - a_.min(2); k = k.copy(); k[(k[..., 3] < 200) | ((sat < 40) & (a_.mean(2) > 120) & (np.minimum(a_[..., 0], a_[..., 2]) - a_[..., 1] > 10)) | (np.minimum(a_[..., 0], a_[..., 2]) - a_[..., 1] > 12), 3] = 0   # auch deckend gemalte rosa Rauchwolken
+    for x0_, y0_, x1_, y1_ in o.get('loesch', []): k = k.copy(); k[y0_:y1_, x0_:x1_, 3] = 0   # Teile, die nicht zur Figur gehören (z. B. schwebende Geisterhand)
     al = ndimage.binary_closing(k[..., 3] > 60, iterations=4); lab, n = ndimage.label(al)
     if o.get('raster'):   # Raster-Bogen (Runde 2, 2026-11-21): Nähte zwischen den Zeilen bzw. Spalten durch freie Stellen; was kreuzt (Lanze, Säbel), wird getrennt
         op = al.copy(); cut_ = np.zeros_like(al)
         if o['reihen'] == 2: ys = seam(op.T, H // 2, int(H * 0.18)); cut_[ys, np.arange(W)] = True
         if o['raster'] == 2: xs = seam(op, W // 2, int(W * 0.15)); cut_[np.arange(H), xs] = True
         al = al & ~ndimage.binary_dilation(cut_, iterations=1); lab, n = ndimage.label(al)
+        if o.get('zellen'): Y_, X_ = np.mgrid[0:H, 0:W]; lab = np.where(al, 1 + (Y_ > ys[None, :]) * 2 + (X_ > xs[:, None]), 0); n = 4   # jede Zelle = eine Figur mit allen Teilen (Gewehr, Patrone)
     sizes = ndimage.sum(al, lab, range(1, n + 1)); big = sorted(range(1, n + 1), key=lambda i: -sizes[i - 1])[:o['n']]
     fo = ndimage.find_objects(lab); zh = H / o['reihen']
     big.sort(key=lambda i: (int(((fo[i - 1][0].start + fo[i - 1][0].stop) / 2) // zh), fo[i - 1][1].start))
     figs = []
     for i in big:
-        sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0; figs.append(keep_parts(t, not o.get('eins'), 0.15))
+        sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0; figs.append(keep_parts(t, not o.get('eins'), o.get('teile_min', 0.15)))
     for j in sorted(o.get('trenne', []), reverse=True):   # zwei sich berührende Figuren: Naht durch die dünnste Stelle
         f = figs[j - 1]; op = f[..., 3] > 40; xs = seam(op, f.shape[1] // 2, int(f.shape[1] * 0.25)); cols = np.arange(f.shape[1])[None, :]
         l = f.copy(); l[cols >= xs[:, None], 3] = 0; rr = f.copy(); rr[cols < xs[:, None], 3] = 0; figs[j - 1:j] = [keep_parts(l, True, 0.15), keep_parts(rr, True, 0.15)]
@@ -449,6 +473,7 @@ def figuren_posen(name, out):
     ref = max(Image.open(g).height for g in grund) if grund else H_OUT
     s = ref * o.get('f', 1.0) / hmax; out.mkdir(parents=True, exist_ok=True)
     if o.get('traeger'): tr_, hg_, bx_ = general_grund(name.split('_', 1)[0]); s = hg_ / figs[o['ref'] - 1].shape[0]   # Größe wie der General im Grundbild
+    if o.get('begleiter'): bc_ = o['begleiter']; bg_ = begleiter_grund(bc_); s = bg_[bc_['mass']][1] / figs[bc_['ref'] - 1].shape[0]   # Größe wie der Mann im Grundbild
     for j, q in enumerate(figs, 1):
         if o.get('nimm') and j not in o['nimm']: print(f'{name}_{j}: ausgelassen'); continue
         q = entrosa(q.astype(np.float64))
@@ -461,6 +486,7 @@ def figuren_posen(name, out):
         sj = s * o.get('gross', {}).get(j, 1.0)
         im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA'); im = im.resize((max(1, round(im.width * sj)), max(1, round(im.height * sj))), Image.LANCZOS)
         if o.get('traeger'): im = traeger_setzen(im, tr_, bx_)
+        if o.get('begleiter'): im = begleiter_setzen(im, bg_, bc_['setz'].get(j))
         im.save(out / f'{name}_{j}.png'); print(f'{name}_{j}: {im.width}×{im.height}')
 
 
