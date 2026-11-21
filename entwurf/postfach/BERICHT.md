@@ -1,5 +1,24 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – R9 Panzerbüchse, Bannerträger-Pistole, schweres Blut ()
+
+- **Panzerbüchse:** Das Spielbild ist ein Zwei-Mann-Trupp, die Posen zeigen einzelne Männer. Deshalb wird der jeweils andere Mann aus dem Grundbild danebengesetzt.
+  - **Schuss:** Schütze kniend angelegt, daneben der Ladeschütze. Mündung neu gemessen; auch das Grundbild hat jetzt eine gemessene Mündung.
+  - **Ziehen:** Schütze geht mit dem Gewehr über der Schulter, allein.
+  - **Getroffen**, zufällig eine von zwei Posen:
+    - Schütze, das Gewehr rutscht weg (Gewehr gehört zur Figur);
+    - Ladeschütze, die Patrone fällt (Patrone gehört zur Figur), daneben der liegende Schütze.
+  - Die schwebende rosa Geisterhand ist entfernt. Die Helme zeigen keine Adler, auch das Grundbild nicht (geprüft).
+- **Bannerträger mit Pistole:** Schuss-Pose aus der linken Figur, Mündung gemessen. Die Fahne ist auf aschgrau, schwarz und knochenweiß umgefärbt.
+- **Schweres Blut ():**
+  - **In der Luft:** Bei jedem Nahkampftreffer und bei schweren Treffern gegen Weiche gibt es einen großen Blutstoß, in Schlagrichtung gedreht. Das alte Blut bleibt für leichte Treffer und Schüsse.
+  - **Am Boden:** Bei schweren Treffern ein Fleck, bei Vernichtung eine Lache. Beide verblassen nach 2 Runden.
+  - Die rosa Pinselränder sind beim Freistellen blutrot und laufen durchsichtig aus, es bleiben keine rosa Säume.
+  - Bildwirkung „leicht“ zeigt weniger und kleiner, „aus“ nichts. Panzer, Schreiter und Geschütze bluten nicht.
+- **Prüfung:** im Headless-Chrome mit einem echten Nahkampf (Löwenoger gegen Grenadiere) aufgenommen; Partietest ohne Fehler.
+
+Damit sind alle Posen aus Runde 2 im Spiel. Weiter mit den Helden.
+
 ## 2026-11-21 – Kurzbericht zu Enricos Antworten (15:50)
 
 - **Löwengebrüll beider:** schon so gebaut (`3413bcf`).
