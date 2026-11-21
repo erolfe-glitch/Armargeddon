@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 const URL = process.env.URL || 'http://127.0.0.1:8765/index.html', BILDER = process.env.BILDER || '', KARTE = process.env.KARTE || '';   // KARTE=sanktruss: Karte im Startmenü wählen
 if (BILDER) mkdirSync(BILDER, { recursive: true });
+try { const r0 = await fetch(URL); if (!r0.ok) throw new Error(r0.status); } catch (e) { console.log(`Vorschau-Server nicht erreichbar (${URL}) – im Projektordner starten: python -m http.server 8765 --bind 127.0.0.1`); process.exit(2); }   // Prüfliste 5.9
 const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armpartie-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
@@ -72,7 +73,8 @@ async function zug(runde) {
     const knopf = graben && await ev(`(() => { const b = document.querySelector('#hudRow .up-ab[data-act="dig"]:not(.off)'); if (!b) return null; const r = b.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()`);
     if (knopf) { await maus(Math.round(knopf[0]), Math.round(knopf[1]), true); await sleep(300); await warteFrei();
       if (await ev(`__dbg.G.units.find(u => u.id === ${uid}).dug`)) { sum.gegraben++;
-        if (await ev(`__dbg.targets.filter(t => t.kind === 'fire').length`) > 0) { sum.schussNachGraben++; fehler.push(`Einheit ${uid}: nach dem Eingraben noch Schussziele`); } } }
+        if (await ev(`__dbg.targets.filter(t => t.kind === 'fire').length`) > 0) { sum.schussNachGraben++; fehler.push(`Einheit ${uid}: nach dem Eingraben noch Schussziele`); }
+        if (await ev(`(u => { u.bp = Math.max(u.bp || 0, 1); return __dbg.E.reachable(__dbg.G, u).size; })(__dbg.G.units.find(u => u.id === ${uid}))`) > 0) fehler.push(`Einheit ${uid}: eingegraben, aber ohne Ausgraben zugfähig (F36)`); } }   // Prüfliste 5.8
     const ziel = await ev(`(() => { const t = __dbg.targets.find(t => t.kind === 'fire'); return t ? t.id : null; })()`);
     if (ziel != null) { const [tx, ty] = await ev(`__dbg.hexCss(...(u => [u.c, u.r])(__dbg.G.units.find(u => u.id === ${ziel})))`);
       if (await imBild(tx, ty)) { await maus(Math.round(tx), Math.round(ty - 20)); await sleep(200); await maus(Math.round(tx), Math.round(ty - 20), true); await sleep(300); await warteFrei();
