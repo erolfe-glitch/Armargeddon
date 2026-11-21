@@ -191,7 +191,7 @@ function abilPlan(G, u) {
     else if (k === 'rollen') {   // F54 Sturmrollen: erwarteter Schaden gegen den des besten Schusses; Ziele in Deckung, MG, Geschütze, Zielfelder bevorzugt
       const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
       if (rw) { const dm = Math.min(E.rollenDmg(G, u, x, false), x.str), sch = G.units.filter(z => z.side !== u.side && E.canFire(G, u, z)).reduce((m, z) => Math.max(m, Math.min(E.preview(G, u, z, 'fire').dmg, z.str)), 0);
-        v = dm > sch * 0.9 ? 1 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.5 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0) : 0; }
+        v = dm > sch * 1.3 ?   /* Prüfliste 2.20: nur, wenn der Aufprall deutlich mehr bringt als der Schuss */ 1 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.5 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0) : 0; }
     }
     else if (k === 'sprung') {   // Sprungangriff (2026-11-20): Nahkampf-Vorschau vom Landefeld; schwache Gegner, MG, Geschütze und Zielfelder zuerst
       const x = foe(c, r), land = x && E.sprungLand(G, u, x);
