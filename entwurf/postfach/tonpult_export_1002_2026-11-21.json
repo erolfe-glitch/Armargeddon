@@ -1,0 +1,718 @@
+{
+ "werkzeug": "Armargeddon Ton-Pult",
+ "stand_toene": "2026-11-20",
+ "exportiert": "2026-11-21T09:02:14.413Z",
+ "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
+ "aenderungen": [
+  {
+   "einheit": "grenadier",
+   "name": "Aschengrenadiere",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:rifle3",
+   "schluessel": "rifle3",
+   "datei": "Infantry Guns/freesound_community-m1-garand-rifle-80192.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:grenade2",
+   "schluessel": "grenade2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schrei",
+   "titel": "Kampfschrei (manchmal)",
+   "platz_spiel": "cry",
+   "filter": "gm",
+   "wahl": "p:roar",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "roar",
+   "lautstaerke_spiel": 0.35,
+   "lautstaerke": 0.35,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sense",
+   "name": "Sensenwerk-Trupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "MG-Feuer",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "k:mg_2",
+   "schluessel": "mg_2",
+   "datei": "Infantry Guns/417688__superphat__lightmachinegun1.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sense",
+   "name": "Sensenwerk-Trupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:nahD_3",
+   "schluessel": "nahD_3",
+   "datei": "Heavy Meelee Mechs large/yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "signal",
+   "name": "Signaltrupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:pistol",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "pistol",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "signal",
+   "name": "Signaltrupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "p:axe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "axe",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionierD",
+   "name": "Drahtpioniere",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:rifle3",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "rifle3",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionierD",
+   "name": "Drahtpioniere",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "banner",
+   "name": "Bannerträger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "p:saebel",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "saebel",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "buechse",
+   "name": "Panzerbüchsen-Trupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "brand",
+   "name": "Brandwerfer",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sturm",
+   "name": "Sturmbrecher",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:neu_schrot",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu_schrot",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "huenen",
+   "name": "Eiserne Hünen",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "sword",
+   "filter": null,
+   "wahl": "k:heavy1",
+   "schluessel": "heavy1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "eingreif",
+   "name": "Eingreiftrupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:semi",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "semi",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "gasschutz",
+   "name": "Gasschutz-Trupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:pistol",
+   "schluessel": "pistol",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "gasschutz",
+   "name": "Gasschutz-Trupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "munition",
+   "name": "Versorgungstrupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pirsch",
+   "name": "Pirschjäger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "minenwerfer",
+   "name": "Minenwerfer",
+   "seite": "D",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "sperr",
+   "titel": "Einschläge Sperrfeuer",
+   "platz_spiel": "boom",
+   "filter": null,
+   "wahl": "k:grenade2_1",
+   "schluessel": "grenade2_1",
+   "datei": "Explosion/609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "minenwerfer",
+   "name": "Minenwerfer",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "geschuetz",
+   "name": "Grabengeschütz",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "panzerk",
+   "name": "Panzerknechte",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "p:nahD",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "nahD",
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "knecht",
+   "name": "Eisenknecht",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Kanone",
+   "platz_spiel": "panzerkanone",
+   "filter": null,
+   "wahl": "k:kolosskanone_2",
+   "schluessel": "kolosskanone_2",
+   "datei": "Heavy firing sounds/freesound_community-cannon-shot-14799.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "knecht",
+   "name": "Eisenknecht",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "faust",
+   "titel": "Faustsalve (zwei Kanonen)",
+   "platz_spiel": "panzerkanone",
+   "filter": null,
+   "wahl": "k:cannon_2",
+   "schluessel": "cannon_2",
+   "datei": "Heavy firing sounds/239137__qubodup__artillery-gunfire.flac",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "knecht",
+   "name": "Eisenknecht",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "k:neu_wucht_4",
+   "schluessel": "neu_wucht_4",
+   "datei": "Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "bohrer",
+   "name": "Bohrkoloss",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "p:smash",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "smash",
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "saeger",
+   "name": "Sägeschreiter",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "k:heavy_2",
+   "schluessel": "heavy_2",
+   "datei": "Crash vehicle damage/509007__audiopapkin__mechanical-sfx_m013.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:saebel",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "saebel",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "fernsprech",
+   "name": "Fernsprechtrupp",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "schildwall",
+   "name": "Schildwall",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:punch",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "punch",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "raeumer",
+   "name": "Grabenräumer",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Angriff: Handgranate",
+   "platz_spiel": "axe",
+   "filter": null,
+   "wahl": "p:nahA",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "nahA",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  }
+ ],
+ "roh": {
+  "grenadier": {
+   "schuss": {
+    "w": "k:rifle3"
+   }
+  },
+  "heiler": {
+   "schuss": {
+    "w": "k:grenade2"
+   },
+   "schlag": {
+    "w": "k:punch1"
+   },
+   "schrei": {
+    "w": "p:roar"
+   }
+  },
+  "sense": {
+   "schuss": {
+    "w": "k:mg_2"
+   },
+   "schlag": {
+    "w": "k:nahD_3"
+   }
+  },
+  "signal": {
+   "schuss": {
+    "w": "p:pistol"
+   },
+   "schlag": {
+    "w": "p:axe"
+   }
+  },
+  "pionierD": {
+   "schuss": {
+    "w": "p:rifle3"
+   },
+   "schlag": {
+    "w": "k:punch1"
+   }
+  },
+  "banner": {
+   "schlag": {
+    "w": "p:saebel"
+   }
+  },
+  "buechse": {
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "brand": {
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "sturm": {
+   "schuss": {
+    "w": "p:neu_schrot"
+   }
+  },
+  "huenen": {
+   "schlag": {
+    "w": "k:heavy1"
+   }
+  },
+  "eingreif": {
+   "schuss": {
+    "w": "p:semi"
+   }
+  },
+  "gasschutz": {
+   "schuss": {
+    "w": "k:pistol"
+   },
+   "schlag": {
+    "w": "k:punch1"
+   }
+  },
+  "munition": {
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "pirsch": {
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "minenwerfer": {
+   "sperr": {
+    "w": "k:grenade2_1"
+   },
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "geschuetz": {
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "panzerk": {
+   "schlag": {
+    "w": "p:nahD"
+   }
+  },
+  "knecht": {
+   "schuss": {
+    "w": "k:kolosskanone_2"
+   },
+   "faust": {
+    "w": "k:cannon_2"
+   },
+   "schlag": {
+    "w": "k:neu_wucht_4"
+   }
+  },
+  "bohrer": {
+   "schlag": {
+    "w": "p:smash"
+   }
+  },
+  "saeger": {
+   "schlag": {
+    "w": "k:heavy_2"
+   }
+  },
+  "generalA": {
+   "schlag": {
+    "w": "p:saebel"
+   }
+  },
+  "fernsprech": {
+   "schlag": {
+    "w": "k:punch1"
+   }
+  },
+  "schildwall": {
+   "schlag": {
+    "w": "p:punch"
+   }
+  },
+  "raeumer": {
+   "schlag": {
+    "w": "p:nahA"
+   }
+  }
+ }
+}

@@ -104,7 +104,11 @@ try { const s = JSON.parse(localStorage.getItem(SPEICHER_SEL) || 'null'); if (s)
 const U = Object.fromEntries(D.einheiten.map(u => [u.t, u]));
 if (!U[sel]) sel = D.einheiten.find(u => u.sd === seite).t;
 const merkeSel = () => { try { localStorage.setItem(SPEICHER_SEL, JSON.stringify({ sel, seite, kat })); } catch (e) {} };
-const speichern = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(AEND)); } catch (e) {} };
+// Paket G 4b (2026-11-21): zusätzlich ein Verlauf der letzten 20 Stände (Zeitstempel) – falls Auswahl verloren geht, lässt sie sich wiederherstellen
+const SPEICHER_VERLAUF = 'arm.tonpult.verlauf';
+let verlaufT = 0;
+const speichern = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(AEND));
+  if (Date.now() - verlaufT > 60000) { verlaufT = Date.now(); const v = JSON.parse(localStorage.getItem(SPEICHER_VERLAUF) || '[]'); v.push({ zeit: new Date().toISOString(), roh: AEND }); while (v.length > 20) v.shift(); localStorage.setItem(SPEICHER_VERLAUF, JSON.stringify(v)); } } catch (e) {} };
 const zahl = v => String(v).replace('.', ',');
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const datei = k => D.datei[k] || 'älterer Ton (vor 2026-11-16 eingebettet)';
@@ -318,12 +322,12 @@ document.getElementById('export').onclick = () => {
 };
 document.getElementById('import').onclick = () => {
   const datei_ = h('input', { type: 'file', accept: '.json,application/json', style: 'display:none' }); document.body.append(datei_);
-  dialog('Import', 'Export-Text hier einfügen oder eine Datei laden. Übernehmen ersetzt die Einstellungen der betroffenen Einheiten.', '', [
+  dialog('Import', 'Export-Text hier einfügen oder eine Datei laden. Übernehmen setzt die Plätze aus dem Export; alle anderen Einstellungen bleiben erhalten.', '', [
     ['Datei laden', f => { datei_.onchange = async () => { const x = datei_.files[0]; if (x) f.value = await x.text(); }; datei_.click(); }],
     ['Übernehmen', f => { try { const o = JSON.parse(f.value), neu = {};
         if (o.roh && typeof o.roh === 'object') Object.assign(neu, o.roh);
         else for (const a of o.aenderungen || []) { const e = ((neu[a.einheit] = neu[a.einheit] || {})[a.platz_id] = {}); e.w = a.wahl; e.vol = a.lautstaerke; e.ton = a.tonhoehe; }
-        let n = 0; for (const t of Object.keys(neu)) { if (!U[t]) continue; AEND[t] = {}; for (const id of Object.keys(neu[t])) { const s = U[t].slots.find(x => x.id === id); if (!s) continue; const e = neu[t][id];
+        let n = 0; for (const t of Object.keys(neu)) { if (!U[t]) continue; AEND[t] = AEND[t] || {}; for (const id of Object.keys(neu[t])) { const s = U[t].slots.find(x => x.id === id); if (!s) continue; const e = neu[t][id];
             for (const k of ['w', 'vol', 'ton']) if (e[k] != null) setze(U[t], s, k, e[k]); n++; } if (!Object.keys(AEND[t]).length) delete AEND[t]; }
         speichern(); liste(); pult(); dlg.close(); meldung(`${n} ${n === 1 ? "Platz" : "Plätze"} übernommen.`); } catch (e) { meldung('Das ist kein gültiger Export: ' + e.message); } }, true]]);
 };
@@ -336,7 +340,7 @@ let meldT = 0; function meldung(t) { const s = document.getElementById('status')
 liste(); pult();
 // Töne nachladen
 { const sc = document.createElement('script'); sc.src = 'src/sound.js';
-  sc.onload = () => { SND = window.SOUNDS || {}; document.getElementById('status').textContent = Object.keys(SND).length + ' Töne geladen.'; pult(); };
+  sc.onload = () => { SND = window.SOUNDS || {}; const n = Object.values(AEND).reduce((a, x) => a + Object.keys(x).length, 0); document.getElementById('status').textContent = Object.keys(SND).length + ' Töne geladen · ' + n + ' eigene Wahlen, gespeichert für ' + (location.origin === 'null' ? 'diese Datei' : location.host); pult(); };   // Hinweis: die Auswahl liegt je Adresse getrennt (lokal ≠ GitHub Pages)
   sc.onerror = () => { document.getElementById('status').textContent = 'Töne konnten nicht geladen werden (src/sound.js).'; };
   document.body.append(sc); }
 </script>
