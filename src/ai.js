@@ -18,7 +18,10 @@ function wOf(side) {
   return WK[side];
 }
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
-const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
+// Prüfliste 2.23 (2026-11-21): neue Einheiten in die Wunschliste aufgenommen (Mineure, Schildwall, Löwenoger, Versorgung; Hünen, Gasschutz, Versorgung);
+// alte Liste mit KAUF_ALT=1. Dazu Lage-Käufe (kaufNachLage), die bei klarem Bedarf vorgehen.
+const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch', 'mineur', 'schildwall', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
+const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
   schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3 };
@@ -453,13 +456,27 @@ function order(G, side) {
 }
 
 // Nachschub kaufen: der Reihe nach die Wunschliste, aufgestellt am eigenen Rand nahe am Geschehen
+// Prüfliste 2.23 (2026-11-21): Lage-Käufe vor der Wunschliste, nur bei klarem Bedarf (je Zug höchstens einer):
+// Panzerabwehr fehlt (3 feindliche Fahrzeuge/Schreiter mehr als eigene Panzerabwehr), Artillerie ohne Beobachter (Ballon bzw. Signaltrupp),
+// Abschalter NOLAGE_abwehr / NOLAGE_aufkl. Erste Fassungen (Kauf ganz nach Punktwerten) verschoben die Balance zu stark (Grauwall 6 % bzw. 13 % fürs
+// Konkordat), deshalb bleibt die Wunschliste das Rückgrat. Lage-Käufe für Sanitäter (3 Verwundete) und Gasschutz (2 Vergiftete) wieder entfernt:
+// Grauwall fiel damit auf 45 %; Sanitäter und Gasschutz kommen über die Liste.
+const PANZERABWEHR = new Set(['raeumer', 'pionier', 'feldkanone', 'kreuz', 'buechse', 'sturm', 'eingreif', 'geschuetz']), AUFKL = new Set(['ballon', 'signal', 'fernsprech']);
+const LAGE_KAUF = { A: { abwehr: 'pionier', aufkl: 'ballon' }, D: { abwehr: 'buechse', aufkl: 'signal' } };
+function kaufNachLage(G, side) {
+  const eig = G.units.filter(u => u.side === side && E.active(u)), fe = G.units.filter(u => u.side !== side && E.active(u)), pz = u => TYPES[u.type].cls === 'walker', K = LAGE_KAUF[side];
+  if (K.abwehr && !ENVW.NOLAGE_abwehr && fe.filter(pz).length - eig.filter(u => PANZERABWEHR.has(u.type)).length >= 3) return K.abwehr;
+  if (K.aufkl && !ENVW.NOLAGE_aufkl && eig.some(u => TYPES[u.type].cls === 'art') && !eig.some(u => AUFKL.has(u.type))) return K.aufkl;
+  return null;
+}
 function buy(G) {
   const side = G.side, ev = [];
-  G._wish = G._wish || { A: 0, D: 0 };
+  G._wish = G._wish || { A: 0, D: 0 }; G._kauf = G._kauf || { A: {}, D: {} };
+  const ENVX = typeof process !== 'undefined' && process.env || {};
   for (let guard = 0; guard < 6; guard++) {
-    const wl = G.mechs ? WISH[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : WISH[side];
-    const type = wl[G._wish[side] % wl.length];
-    if (!E.canBuy(G, side, type)) break;
+    const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : W[side];
+    const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null, type = lage || wl[G._wish[side] % wl.length];
+    if (!type || !E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
     if (!hs.length) break;
     let row = 6, bd = 99;
@@ -468,7 +485,7 @@ function buy(G) {
     hs.sort((p, q) => (Math.abs(p[1] - row) - Math.abs(q[1] - row)) || (side === 'A' ? q[0] - p[0] : p[0] - q[0]));
     const e = E.buy(G, side, type, hs[0][0], hs[0][1]);
     if (!e.length) break;
-    ev.push(...e); G._wish[side]++;
+    ev.push(...e); if (!lage) G._wish[side]++; G._kauf[side][type] = (G._kauf[side][type] || 0) + 1;
   }
   return ev;
 }

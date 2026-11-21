@@ -33,7 +33,7 @@ const typeLoss = {}, typeCount = {}, objHeld = {};
 const nutz = { A: {}, D: {} }, zaehl = (sd, k) => { nutz[sd][k] = (nutz[sd][k] || 0) + 1; };
 function schrittName(G, u, s, ev) {
   const T = E.TYPES[u.type];
-  if (s.k === 'abil') return 'Fähigkeit ' + T.abil;
+  if (s.k === 'abil') return 'Fähigkeit ' + T.abil + (T.abil === 'mark' ? ' (' + u.type + ')' : '');   // Prüfliste 2.23: Ballon und Signaltrupp getrennt zählen
   if (s.k === 'order') return 'Befehl ' + s.kind;
   if (s.k === 'shell') return 'Artillerie ' + s.mode;
   if (s.k === 'move') return ev.some(e => e.t === 'march') ? 'Marsch' : 'Zug';
@@ -58,7 +58,7 @@ for (let g = 0; g < N; g++) {
   try {
     let bk = '';
     while (!G.over && guard++ < 8000) {
-      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; const bev = AI.buy(G) || []; for (const e of bev) if (e.t === 'spawn') { const u = G.units.find(x => x.id === e.u); zaehl(u.side, 'Nachschub' + (E.OBJECTIVES.some(o => E.dist(o.c, o.r, u.c, u.r) <= 1) ? ' an Zielfeld' : ' am Rand')); } }
+      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; const bev = AI.buy(G) || []; for (const e of bev) if (e.t === 'spawn') { const u = G.units.find(x => x.id === e.u); zaehl(u.side, 'Nachschub' + (E.OBJECTIVES.some(o => E.dist(o.c, o.r, u.c, u.r) <= 1) ? ' an Zielfeld' : ' am Rand')); zaehl(u.side, 'Kauf ' + u.type); } }
       const act = AI.next(G);
       if (!act) { if (G.bauten && G.bauten.length) { const b = G.bauten[0], tu = b.turm && !b.kaputt && E.unitAt(G, b.turm[0], b.turm[1]); KI.zuege++; if (tu) KI.turm[tu.side]++;
           for (const [c, r] of b.felder) { const x = !b.kaputt && E.unitAt(G, c, r); if (x) KI.schiff[x.side]++; } }
