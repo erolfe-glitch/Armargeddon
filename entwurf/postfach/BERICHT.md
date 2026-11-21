@@ -1,5 +1,66 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Paket G, Schritte 4 und 4b (Tests, Ton-Nachträge) – „Ton-Pult neu“
+
+**Commits:**
+- `efb1f64` Schritt 4 (Tests)
+- `cf3ed93` Ton-Pult: Auswahl-Verlust behoben, Exporte zusammengeführt
+- `049910c` neue Töne
+
+### Schritt 4 – Tests (5.1, 5.2, 5.8, 5.9)
+- **`node tools/test_regeln.js` (neu, 5.2):** prüft, dass jede P-Konstante eine Zahl ist und keine fehlt (Liste `tools/p_schluessel.json`, 139 Schlüssel). So fällt „Kommentar verschluckt Code“ sofort auf. Dazu:
+  - Schadensvorschau und Faktortabelle für alle Paarungen (2704) ohne NaN;
+  - Text, Preis und Medaillen für alle 52 Einheiten.
+- **`node tools/test_ki_partie.mjs` (neu, 5.1):** KI gegen KI bis zum Ende über die echte Abspielschleife und misst dabei die Bildzeiten. Lief auf Grauwall und Sankt Ruß ohne Fehler (`KARTE=sanktruss`).
+- **`test_partie.mjs`:**
+  - meldet einen fehlenden Vorschau-Server klar (5.9);
+  - prüft, dass eingegrabene Trupps ohne Ausgraben nicht ziehen (5.8).
+
+### 4b (c) – Warum die Ton-Pult-Auswahl verloren ging
+- **Ursache:** Der Import hat für jede Einheit im Export zuerst **alle** ihre Wahlen gelöscht und dann nur die aus der Datei gesetzt. Der Export 10:02 enthielt deine Schuss-Wahlen von 09:09 nicht mehr. Hat ein Import diese Wahlen also gelöscht, waren sie weg. An den Platz-Namen lag es nicht; alle 46 Plätze gibt es weiterhin.
+- **Behoben:**
+  - Der Import **ergänzt** jetzt nur noch.
+  - Jede Änderung legt zusätzlich einen Verlauf der letzten 20 Stände an (`arm.tonpult.verlauf`, höchstens einer je Minute).
+  - Die Statuszeile zeigt, wie viele Wahlen gespeichert sind und **wo**. Die Auswahl liegt je Adresse getrennt: lokal ≠ GitHub Pages ≠ als Datei geöffnet.
+- **`entwurf/postfach/tonpult_zusammen.json`:** alle drei Exporte zusammengeführt, 46 Einträge. Je Einheit und Platz gilt der neueste. 13 Wahlen aus dem 09:09-Export sind wieder drin: die Schüsse von Hünen, Geschütz, Panzerkampfwagen, Klaue, Hauptmann/General Konkordat, Scharfschütze, Oger, Turm, Kreuzschreiter (Schuss und Zweitwaffe), dazu die Sturmpanzer-Zweitwaffe und der Ordens-Schlag. **Bitte im Ton-Pult über „Import“ laden.**
+
+### 4b (b) – Neue Töne aus `_neu`
+- **Bitgleich schon vorhanden**, nach `_neu_doppelt/` verschoben: `monster-bite-on-armor` und `axe-hit-head-beheaded`.
+- **Einsortiert** (verschoben, nichts gelöscht):
+
+| Datei | Ordner |
+|---|---|
+| Tiger-Attacke | `Monster/` |
+| Stich ins Fleisch, Blutspritzer | `Melee hit infantry/` |
+| Spaten mit Gore | `Schaufel/` |
+| Big Crash, Bassy Rock | `Impacts/` |
+| Ballon-Brenner | `Fire/` |
+
+- **Neue Auswahl im Ton-Pult und in der Tonprobe (Gruppe „Neue Töne 21.11.“):**
+
+| Pool | Töne |
+|---|---|
+| `neu3_bestie` | Tiger-Attacke, 4 Ausschnitte |
+| `neu3_biss` | Biss auf Panzerung |
+| `neu3_fleisch` | Stich ins Fleisch, 3 Einzeltöne |
+| `neu3_gore` | Blutspritzer, Spaten |
+| `neu3_aufprall` | Bassy Rock, 3 Einzeltöne, und Big Crash; Kandidaten für „Gebäude rammen“, Sturmrollen und „Einsturz“ |
+| `ballon_brenner` | 2 Fauch-Stöße; wählbar in den Ballon-Zeilen (Gruppe Handgriffe) |
+
+- **Löwenoger nach deiner Wahl im Spiel:** Nahkampf = Tiger-Attacke + Stich ins Fleisch, gegen Fahrzeuge, Schreiter und Kampfanzüge Biss auf Panzerung. Im Pult sind das drei eigene Zeilen (Schlag, Treffer ins Fleisch, Treffer gegen Gepanzerte), alle änderbar.
+- **CREDITS:**
+  - Pixabay-Töne: Pixabay-Lizenz.
+  - Monster Bite on Armor: CC BY 4.0, OGsoundFX.
+  - Bassy Rock: CC BY 4.0, Artninja. Laut Beschreibung ist es ein Remix mit einem CC-BY-NC-Teil.
+  - **Big Crash: CC BY-NC 3.0, also nicht kommerziell.** Vor einem Verkauf ersetzen.
+- **Gefunden:** Die F67-Töne von heute Nacht (`neu2_*`) stehen noch nicht einzeln in CREDITS. Das trage ich nach.
+- **Geprüft:**
+  - `test_regeln` ohne Fehler.
+  - Partietest ohne Fehler, 4 Runden, Konsole frei.
+  - sound-quelle gesichert (robocopy).
+
+**Weiter mit Schritt 5 (alte Karten raus).**
+
 ## 2026-11-21 – Paket G, Schritte 1–3 (Texte, Sturmrollen, Ton)
 
 **Commits:**
