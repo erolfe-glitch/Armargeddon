@@ -1,3 +1,23 @@
+# >>> JETZT: Paket G – Prüfliste abarbeiten (Enrico 2026-11-21 09:40) <<<
+Grundlage: `entwurf/postfach/PRUEFLISTE.md` (Prüfrunde Fable). Modell wieder **Opus**. Jeder Schritt einzeln committen und pushen; nach jeder Regeländerung Simulation Grauwall + Sankt Ruß (je 200).
+
+**Enricos Entscheidungen:**
+- **1.5/5.5 Alte Karten: JETZT RAUS.** Nur noch Grauwall und Sankt Ruß spielbar. Vorher Git-Tag `vor-alte-karten-raus` setzen (Rückweg). Dann: die 7 alten Karten aus MAPS/Kartenwahl, `mapimg.js` raus, alte flache Ansicht ausbauen (`VIEW.tilt()`-Abfragen, `OPT.tilt`, `renderPainted`, `renderImageMap`, alte Zeichenpfade), Welle/Nachschub-Code nur entfernen, wenn ihn keine der zwei Karten nutzt; `art.js`/`fx.js` auf das reduzieren, was als Ersatz noch wirklich gebraucht wird (Liste im Bericht). Regeln-Fenster 2.11 entsprechend. Sims, Tests und Ton-Pult/Tonprobe danach lauffähig halten. Größe vorher/nachher im Bericht.
+- **2.4 Kreuzschreiter:** gewollt als **Panzerjäger** – nur Text ergänzen (Löwenmaul/Unterarm panzerbrechend: Panzer ×1,5, Fußtruppen ×0,5; gegen Infanterie stark im Nahkampf).
+- **2.20 Sturmrollen gleich dämpfen:** Pause **3** statt 2 Runden **und** KI rollt nur, wenn der erwartete Schaden > Schuss × 1,3. Nutzung je Schlacht vorher/nachher + Simulation.
+- **4.7 MG drehen:** **so lassen** (MG-Trupps drehen sich wie Fußtruppen).
+
+**Reihenfolge:**
+1. **Texte** 2.1–2.3, 2.5–2.10, 2.12–2.13 (am besten aus `E.faktor`/Werten erzeugen), **2.14** Nahkampf-Knopf bei Landkoloss/Sturmpanzer weg → Sturmrollen an seine Stelle, **2.15** Zugvorschau mit Fähigkeiten-Symbol, **2.16** `einschlagArt` über `E.faktor`, **2.25** `sapper` aus `nahKaempfer`.
+2. **Entscheidungen oben** (2.4, 2.20).
+3. **Ton** 3.1 (Enfield `lvl` ~−15 + `bass: 3`), 3.2 (Abpraller lauter), 3.3 (Treffer weich `lvl` −14), 3.4 (kein Doppelton vorbei+Einschlag), 3.5 (abgehackte Enden, `pistol` aus Walther), 3.7 (Schritte +4–6 dB). Schlüssel/Namen nicht ändern (Enricos Ton-Pult-Auswahl!). Dazu **2.17 jetzt schon**: Ton-Pult-Zeilen für **Sturmrollen** (Anlauf/Kettenrollen + Aufprall), **Gebäude rammen** (Aufprall + Einsturz), **Panzergranate** (Wurf + Explosion am Panzer), **Bohrstoß**, **Ballon** (Winde), **Flammenschleife** – Enrico will diese Töne selbst auswählen. Danach „Ton-Pult neu – pb“ melden.
+4. **Tests** 5.2 (P-Konstanten/NaN-Test, vor jedem Regel-Commit), 5.1 (`tools/test_ki_partie.mjs`), 5.8, 5.9.
+5. **Alte Karten raus** (siehe oben) + 5.3, 5.4, 5.6, 1.6.
+6. **Leistung** 1.7 (Audio erst beim ersten Abspielen anlegen), 1.3 (Schlachtmusik 96 kbit/s), **1.2 erst nach Enricos vollständigem Ton-Pult-Export** (Auswahl-Töne in `sound_pult.js`).
+7. **KI** 2.21 (Auslöser „Halten um jeden Preis“), 2.23 (Kaufliste nach Lage, auch Ballon, Mineure, Löwenoger, Hünen, Schildwall usw.), danach Ballon/Mineure gezielt simulieren und Nutzung zählen.
+**Später, nicht jetzt:** 4.1 Mündungen nachmessen, 4.2, 4.4 Posen-Lücken (Berater schreibt Gemini-Prompts), 4.3 Hünen-Größe (Enrico schaut im Spiel), 4.5.
+Bericht nach Schritt 3 und am Ende; im Chat jeweils „pb“.
+
 # >>> ZUERST (Enrico 2026-11-21 00:15, vor allem anderen): F67 – fehlende Töne ins Ton-Pult <<<
 Enrico sitzt gerade am **Ton-Pult** und vermisst Töne, die er früher in `sound-quelle/` gelegt hat. Abgleich des Beraters: **88 Tondateien in `sound-quelle/` stehen nirgends in `tools/sound_bau.json`** (ohne `aus_spiel/`, `_neu_doppelt/` und die rohen eigenen Aufnahmen `Voices/eigene/*.wav`, die über `sprueche/` drin sind). Bitte:
 1. Alle unten gelisteten Dateien prüfen (gegenhören/Pegel), brauchbare Ausschnitte (lange Dateien schneiden, Mehrfach-Dateien in Einzeltöne teilen) in `sound_bau.json` aufnehmen – als **„Einzelne Töne“ wählbar im Ton-Pult**, in passenden Gruppen. Bestehende Zuordnungen im Spiel **nicht** ändern. Monster-Töne als eigene Gruppe „Monster (später Dämonen)“.

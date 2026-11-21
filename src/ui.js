@@ -1043,7 +1043,7 @@ function drawGround(g, s) {
       else { g.strokeStyle = 'rgba(240,237,225,0.4)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
       if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(142,43,34,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); }
       { const nz = nachZug.get(E.key(n.c, n.r)); if (nz) { const [x0, y0] = center(n.c, n.r), yy = y0 + s * 0.55 * kAt(x0, y0), R0 = Math.max(6, s * 0.1);   // F60: was danach noch geht
-        MARKQ.push(() => { const gg = ctx; const im = UPI[nz.art === 'sturm' ? 's_nahkampf' : 's_gewehr']; gg.save(); if (nz.art === 'nichts') gg.globalAlpha = 0.75; drawSym(gg, im, x0, yy, R0, nz.art === 'nichts' ? '#6d6458' : '#C2A461');
+        MARKQ.push(() => { const gg = ctx; const im = UPI[nz.art === 'sturm' ? 's_nahkampf' : nz.art === 'faehig' ? 's_' + (ABIL_SYM[TYPES[sel.type].abil] || 'blitz') : 's_gewehr'] || UPI.s_gewehr; gg.save(); if (nz.art === 'nichts') gg.globalAlpha = 0.75; drawSym(gg, im, x0, yy, R0, nz.art === 'nichts' ? '#6d6458' : '#C2A461');
           if (nz.art === 'nichts') { gg.lineCap = 'round'; gg.strokeStyle = '#120D0B'; gg.lineWidth = Math.max(3, R0 * 0.36); gg.beginPath(); gg.moveTo(x0 - R0 * 0.7, yy + R0 * 0.7); gg.lineTo(x0 + R0 * 0.7, yy - R0 * 0.7); gg.stroke(); gg.strokeStyle = '#C8402C'; gg.lineWidth = Math.max(1.6, R0 * 0.2); gg.stroke(); }
           gg.restore(); }); } } }
     if (!abilMode) for (const [c, r] of E.cutTargets(G, sel)) { const pu = 0.5 + 0.5 * Math.sin(now / 220); hexPath(g, c, r, 0.96); g.strokeStyle = `rgba(255,224,120,${0.45 + pu * 0.45})`; g.lineWidth = Math.max(3, s * 0.08); g.stroke(); }   // Draht in Reichweite der Schere (Paket 8)
@@ -2438,10 +2438,10 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
 }
 const unitById = id => G.units.find(u => u.id === id);
 // F64: wirkt die Waffe gegen Panzerung? (bis F66 vereinfacht) – Kanone, Granate/Artillerie, Panzerbüchse, panzerbrechende Schützen (T.at), Kanonen-Zweitwaffe; Gewehr, MG, Drehlauf, Pistole prallen ab
-function einschlagArt(ziel, lf) { const a = lf && lf.a != null ? unitById(lf.a) : null, T = a && TYPES[a.type];
-  if (lf.kind === 'shell' || lf.kind === 'cannon') return 'panzer';
-  if (T && (T.at || a.type === 'buechse' || (lf.zweit && T.zweit && T.zweit.kanone))) return 'panzer';
-  return 'abpraller'; }
+function einschlagArt(ziel, lf) { const a = lf && lf.a != null ? unitById(lf.a) : null;   // Prüfliste 2.16: „wirkt“ = Faktor der Tabelle (F66) mindestens ×1; Kanonen-Zweitwaffe wie panzerbrechend
+  if (!a) return lf.kind === 'shell' || lf.kind === 'cannon' ? 'panzer' : 'abpraller';
+  if (lf.zweit && TYPES[a.type].zweit && TYPES[a.type].zweit.kanone) return 'panzer';
+  return E.faktor(a.type, ziel.type, true).f >= 1 ? 'panzer' : 'abpraller'; }
 const nm = u => `${TYPES[u.type].name} (${SIDES[u.side].short})`;
 
 let marschU = null;   // Einheit im Marsch/Sturmlauf: ihr Zug klingt nach Marschtritt (Spieltest Runde 2)
@@ -3166,13 +3166,15 @@ function previewFrom(c, r) {
 }
 // F60 (2026-11-20): Vorschau beim Ziehen – je erreichbarem Feld (mit Gegner in der Nähe), ob danach noch Schuss (Gewehr), Sturm (Schwert) oder nichts geht
 let nachZug = new Map();
-function nachZugBerechnen() { nachZug = new Map(); if (!sel || !human(G.side) || sel.side !== G.side) return; const T0 = TYPES[sel.type]; if (T0.cls === 'art' || T0.cls === 'medic' || !(T0.rng > 0 || T0.atk >= 3)) return;
+function nachZugBerechnen() { nachZug = new Map(); if (!sel || !human(G.side) || sel.side !== G.side) return; const T0 = TYPES[sel.type]; if (T0.cls === 'art' || T0.cls === 'medic' || !(T0.rng > 0 || T0.atk >= 3 || T0.abil)) return;
   const foes = G.units.filter(d => d.side !== sel.side && E.alive(d) && E.active(d));
   for (const [k, n] of reach) { if (n.retreat) continue; const nah = foes.filter(d => E.dist(d.c, d.r, n.c, n.r) <= Math.max(1, T0.rng || 0) + 1); if (!nah.length) continue;
     if (n.march) { nachZug.set(k, { art: 'nichts', grund: 'Marsch: danach keine Aktion mehr.' }); continue; }
     const g0 = { ...sel, c: n.c, r: n.r, ap: sel.ap, bp: n.rest, bpUsed: (sel.bpUsed || 0) + n.cost, mvd: (sel.mvd || 0) + 1, setup: T0.mg ? false : sel.setup, dug: false };
     const schuss = nah.some(d => E.canFire(G, g0, d)), sturm = nah.some(d => E.dist(d.c, d.r, n.c, n.r) === 1 && E.canMelee(G, g0, d));
     const neben = nah.some(d => E.dist(d.c, d.r, n.c, n.r) === 1);
+    const AB = T0.abil && E.ABILS[T0.abil], faehig = !schuss && !sturm && AB && AB.atk && E.abilTargets(G, g0).some(([c, r]) => nah.some(d => d.c === c && d.r === r));   // Prüfliste 2.15: Sturmrollen, Panzergranate, Haftladung, Sprung …
+    if (faehig) { nachZug.set(k, { art: 'faehig', grund: '' }); continue; }
     nachZug.set(k, { art: schuss ? 'schuss' : sturm ? 'sturm' : 'nichts', grund: schuss || sturm ? '' : neben ? (T0.rng > 0 && !T0.flame ? 'Neben Feind: gebunden (kein Schuss), Sturm nur bis halbe Bewegung.' : 'Neben Feind: Sturm nur bis halbe Bewegung.') : T0.mg ? 'MG muss nach dem Zug erst aufgebaut werden.' : 'Von dort kein Ziel in Reichweite und Sicht.' }); }
 }
 function computeOptions() {
@@ -3689,7 +3691,7 @@ function unitButtons(T, hints) {
   }
   const nahGesperrt = T.atk > 0 && !E.nahFrei(sel) && !sel.attacked && sel.ap >= 1 && !sel.supp && G.units.some(o => o.side !== sel.side && E.alive(o) && E.dist(o.c, o.r, sel.c, sel.r) === 1);
   if (nahGesperrt) hints.push(`<i>Kein Nahkampf mehr:</i> mehr als die Hälfte der Bewegung verbraucht. Schwert am Zugfeld = von dort geht der Sturm noch.`);
-  if (T.atk > 0) btns.push({ act: 'p-melee', sym: 'nahkampf', name: 'Nahkampf', why: nahGesperrt ? `Mehr als die Hälfte der Bewegung verbraucht (${sel.bpUsed || 0} von ${E.bpMax(sel)} BP): Nahkampf nur mit höchstens ${Math.floor(E.bpMax(sel) / 2)} BP Weg. Reiter, Sturmtruppen und Kampfanzüge dürfen immer.` : atkWhy, cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both) });
+  if (T.atk > 0 && !T.keinNah) btns.push({ act: 'p-melee',   /* Prüfliste 2.14: Landkoloss/Sturmpanzer haben keinen Nahkampf (Sturmrollen) */ sym: 'nahkampf', name: 'Nahkampf', why: nahGesperrt ? `Mehr als die Hälfte der Bewegung verbraucht (${sel.bpUsed || 0} von ${E.bpMax(sel)} BP): Nahkampf nur mit höchstens ${Math.floor(E.bpMax(sel) / 2)} BP Weg. Reiter, Sturmtruppen und Kampfanzüge dürfen immer.` : atkWhy, cost: 1, costTxt: 'die Aktion, beendet die Bewegung', text: `Gegner auf einem Nachbarfeld anklicken (rot).${T.cls === 'cav' || T.cls === 'storm' || T.suit ? ' Darf auch nach vollem Weg angreifen.' : ` Nur, wenn höchstens die Hälfte der Bewegungspunkte (${Math.floor(E.bpMax(sel) / 2)}) verbraucht ist.`}`, on: atkPref === 'melee', off: !tg.some(t => t.kind === 'melee' || t.both) });
   if (T.abil) { const A = E.ABILS[T.abil], at = E.abilTargets(G, sel);
     btns.push({ act: 'abil', sym: ABIL_SYM[T.abil] || 'blitz', name: A.name + (T.ladungen ? ` (Ladungen ${T.ladungen - (sel.ladUsed || 0)}/${T.ladungen})` : ''), ...(T.ladungen ? { cnt: T.ladungen - (sel.ladUsed || 0) } : {}), cost: 1, costTxt: A.all ? 'die Aktion und alle Bewegungspunkte' : undefined, cd: sel.cdA, text: abilKurz(sel), on: abilMode && feldArt === 'abil', off: !at.length,
       why: sel.cdA > 0 ? `Wieder in ${upRunden(sel.cdA)}.` : T.abil === 'mine' && !(sel.mines > 0) ? 'Keine Minen mehr.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.supp > 0 ? 'Niedergehalten.' : ABIL_KEIN[T.abil] || 'Kein gültiges Zielfeld.' });

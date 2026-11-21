@@ -41,7 +41,7 @@ if (typeof process !== 'undefined' && process.env) for (const k in process.env) 
 const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
-const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit || !!T.sapper;
+const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit;   // Prüfliste 2.25: Pioniere/Mineure haben keine Nahkampf-Panzerwaffe mehr (F80)
 // Erwarteter Nahkampfschaden gegen ein Fahrzeug auf (c, r) in der nächsten gegnerischen Runde: Sturmtruppen, Reiter, Kampfanzüge, Pioniere,
 // die ein Nachbarfeld erreichen können. Eigene Trupps auf den Nachbarfeldern versperren Anmarschwege (je Trupp −30 %).
 function fzNahGefahr(G, u, c, r) {
