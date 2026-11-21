@@ -1,5 +1,88 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Helden-Töne, Hinrichtung 40, F83–F86 (`df0f6d4`, `0f2593f`, `a67d515`)
+
+### F83 / F85 Blickrichtung und Drehen – behoben
+- **Ursache (eine für beide):** Seit F77 (Spiegeln bei „Getroffen“, `d2cd205`) verglich das Zeichnen `flip` (Zahl 0/1) mit einem Wahrheitswert (`!==`). Das ist immer „ungleich“. Deshalb wurden **alle Trupp-Figuren gespiegelt**: Das Konkordat schaute nach links. Beim Drehen änderte sich die Richtung intern richtig, das Bild aber nicht. Die Einzelmodelle (Helden, Schreiter) waren nicht betroffen.
+- **Behebung:** `!!flip` an beiden Stellen. Zusätzlich merkt sich die Anzeige je Einheit, ob das Bild nach links blickt (`bildLinks`, für Tests).
+- **Neue Prüfungen im Partietest:**
+  - **Startausrichtung beider Seiten:** 33/33 richtig, in Graben, Ruine/Dorf, Wald und im Freien.
+  - **Drehen über das Bedienfeld:** 3× rechts dreht das Bild um, 3× links bringt es zurück.
+  - Der Test lief nach allen Änderungen fehlerfrei.
+
+### F84 Ofen-Glut der Roten Faust – neu gezeichnet
+- Die roten „Tropfen“ sind weg. Jetzt steigen **wenige glühende Funken aus dem Schornstein am Rücken (Ofen)** auf:
+  - gelb-oranger Kern mit weichem Schein, flackernd;
+  - sie treiben leicht zur Seite und verlöschen nach 1,3–2,2 s;
+  - beim Spezialschlag kommen mehr.
+- Die Bodenglut ist ein weicherer, dunkelroter Schein.
+- **Bildwirkung:** „leicht“ zeigt halb so viele und blassere Funken, „aus“ keine.
+- **Bild:** `entwurf/probe/f84_glut.jpg` (5 Augenblicke nebeneinander).
+
+### F86 Auftritt der Heldenfähigkeiten – gebaut
+- **Einblendung:** Der Fähigkeitsname steht groß in der Titelschrift (Arm Kopf), mit dicker Tintenkontur, leicht schräg, auf einem gerissenen dunklen Streifen. Er knallt herein (groß → kurz zu klein → fest), bleibt etwa 1,5 s und blendet nach oben aus. Darüber steht klein der Heldenname.
+  - Rote Faust: glühendes Rot-Orange.
+  - Kürassier: Eisweiß mit kaltem Schein.
+  - Standhaft und Furcht erscheinen in kleinerer Fassung.
+  - Die alte Zeile oben („Durchbruch!“) entfällt dafür.
+- **Durchbruch:**
+  - Beim Ausholen kommt ein Dampfstoß aus der Faust.
+  - Beim Anlauf zieht eine Staubschleppe.
+  - Beim Aufprall gibt es eine **Druckwelle als Ring am Boden** mit Staubschleier, eine Erdfontäne, Trümmer, Staubwolken rundum und starkes Rütteln. Dazu kommt ein ganz kurzes Einfrieren.
+  - Das Ziel **fliegt im Bogen ein Feld zurück** und schlägt mit Staub auf.
+  - Danach kommt noch einmal Dampf.
+- **Hinrichtung:**
+  - Beim Ausholen kommt der Sägestart.
+  - Im Treffer: kaltes Aufblitzen, ein heller Ring, **Funken von der Kettensäge** (`fx_funken`) und **Stillstand** von etwa 0,2 s (die Effekte frieren ein).
+  - Danach folgen ein schwerer Blutstoß (`fx_blut2`, zweimal) und die **Lache am Boden**. Bei Maschinen gibt es kein Blut.
+- **Auren:** Wenn Standhaft (Beschuss neben der Faust) oder Furcht (Gegner neben dem Kürassier) zum ersten Mal in einer Runde wirkt, pulsiert ein Ring am Boden. Dazu kommen ein Aufblitzen und die kleine Einblendung. Danach bleibt die Aura dezent.
+- **Bildwirkung:** Ringe sind bei „leicht“ und „aus“ schwächer, Funken und Staub weniger, der Stillstand bei „aus“ kürzer. Rütteln folgt wie immer dem Rütteln-Schalter.
+- **Bilder mitten im Effekt** (je 4 Augenblicke):
+  - `entwurf/probe/f86_durchbruch.jpg`: Einblendung, Anlauf, Druckwelle, Ziel fliegt.
+  - `entwurf/probe/f86_hinrichtung.jpg`: Einblendung, Ausholen, Funken und Blut, Lache.
+- **Gemalte Druckwelle fehlt:** Den Ring zeichnet der Code (Tintenkontur und Farbe, wie das Löwengebrüll). Wenn Enrico ihn gemalt möchte, braucht es einen Effektbogen **`fx_druckwelle`**: flacher Staub-/Druckring von oben schräg gesehen, 4 Größen bzw. Stufen, Magenta oder Schwarzgrund wie die anderen fx-Bögen.
+
+### Helden-Töne (Enricos Liste 16:43–17:11)
+- **Rote Faust:**
+  - Ausholen: Vortex-Aufladen (`held_aufladen`).
+  - Schlag: Hydraulik-Boom (`held_faustboom`, robot-footstep).
+  - Danach: Dampfstoß (`held_dampfstoss`, air blast) und Zischen (`held_dampf`).
+  - Kolben (Airlock, Compactor) liegen nur als Auswahl im Pult (`held_kolben`).
+- **Kürassier:**
+  - Ausholen: Sägestart (`held_saege_start`) und Kampfschrei hinter dem Helm (`held_ritter_schrei`, etwas tiefer und dumpfer).
+  - Treffer: Säge heult auf und schneidet (`held_saege_schnitt`, 3 Ausschnitte).
+  - Beim Ziehen: schwere Schritte im Takt (`held_schritt_ritter`, 4 Stampf-Stücke aus der Blast-Door-Datei).
+  - Getroffen: Rüstungstreffer (`held_ruestung`).
+- **Held fällt:** Hornstoß (`held_fall_horn`), 3,6 s mit 1,2 s Ausblenden.
+- Alle Töne stehen im Ton-Pult (Gruppe „Helden“). Quellen liegen in `sound-quelle/Helden/`, gesichert.
+- **Lizenzen** (nachgeschlagen, in CREDITS.md):
+  - Horn: CC0.
+  - Compactor: CC BY 3.0.
+  - Airlock: CC BY-NC 4.0.
+  - Air blast: Sampling+.
+  - Blast Door: CC BY 4.0, aber laut Beschreibung ein Remix mit zwei CC-BY-NC-Teilen.
+  - Die übrigen: Pixabay.
+- **Achtung vor einem Verkauf:** Die **Kürassier-Schritte** (Blast Door) und der **Dampfstoß** (Sampling+) stecken im Spiel-Standard und stehen in der Liste „nicht kommerziell“. Für ein reines Hobbyspiel ist das unkritisch, für einen Verkauf müssten sie ersetzt werden.
+
+### Hinrichtung ab unter 40 Stärke
+- Grenze 40 statt 30; Texte in Hilfe und Info angepasst.
+- **Sankt Ruß:**
+  - Hinrichtungen je Schlacht 0,07 → 0,09–0,10.
+  - Siegquote unverändert (53 % / 50 %; nach F86 erneut 53 %).
+- **Grauwall:**
+  - 0,01 Hinrichtungen je Schlacht. Dort kauft die KI den Kürassier selten (0,22–0,24 je Schlacht).
+  - Siegquote unverändert (53 % / 50 %).
+
+### Tests
+- test_regeln: in Ordnung.
+- test_kommentare: keine verschluckten Code-Reste.
+- test_partie: fehlerfrei, mit den neuen Prüfungen für Startausrichtung und Drehen.
+- Sim Sankt Ruß 200: Konkordat 53 %, keine Fehler.
+
+### Offen / Hinweise
+- Im Postfach liegt ein neuer Ton-Pult-Export `tonpult_export_1007_2026-11-21.json`. Ich baue ihn noch nicht ein; eingebaut wird wie vereinbart der letzte, vollständige Export (zusammengeführt mit den älteren).
+- Als Nächstes laut AUFTRAG: Spieltest Runde 5 (Enrico) und Fable-Prüfrunde 2 (Auftrag vom Berater).
+
 ## 2026-11-21 – Helden: Die Rote Faust und Der Eiserne Kürassier (`c932f69`)
 
 Beide sind im Spiel: kaufbar im Startmenü und im Nachschub, die KI kauft je einen. Sie spielen die Kampfszene, haben Posen, ein eigenes Porträt, eine Aura und Effekte beim Spezialschlag.
