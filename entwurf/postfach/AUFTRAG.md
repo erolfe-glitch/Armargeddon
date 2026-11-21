@@ -332,4 +332,5 @@ Als Symbol in der Einheitenanzeige („kann erobern“). Balance-Auswirkung per 
 - [x] 5c. Nachträge: erledigt F49 (10b9b3a), F50/F52 (13b2a89), F51 (f3d9c26), F56/F57 (8b580b2), F53/F55 (995b8ad), F60/F62 (d521862), F61 (19c8ff6), F58 (cfc7083), F59/F65 (f90ae96), F63 (1153d41), F67 (d379432), F64 (d8a24f1 + dieser Commit); F36 Ausgraben (dieser Commit)
 - [x] F54 Sturmrollen + Bohrstoß, F66 Schere-Stein-Papier, F59 Preis 100, Abstimmung Grauwall/Sankt Ruß (dieser Commit); F70 Vorschlag im Bericht
 - [x] Punkte 7–14: Standard-Optionen, Armee-Tooltip, Musik/Ton aus, F71 Pulverdampf, F72 Beschuss-Wucht, F73 Schreiter-Animation, F74 Scharfschützen, F75 Flammenstoß (dieser Commit)
-- [ ] F76–F79 gebaut (dieser Commit), Simulation Grauwall/Sankt Ruß und Mineur-Test noch offen (pausiert 2026-11-21)
+- [x] F76–F79 (d2cd205), Simulation Grauwall 52 % / Sankt Ruß 50 %, Mineur-Test im Bericht
+- [x] F70 Ballon, F46 Graben (10ded8e); Paket E abgeschlossen

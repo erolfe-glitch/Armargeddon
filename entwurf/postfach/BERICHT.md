@@ -1,5 +1,86 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – F76–F79, F70 Ballon, F46; Paket E abgeschlossen
+
+**Commits:**
+- `d2cd205` F76–F79
+- `10ded8e` F70, F46, Abhaken
+- Alles gepusht.
+
+**Bilder:** `entwurf/probe/spieltest4_e/`
+- `f77_stahl_getroffen.jpg`
+- `f79_rammen.jpg`
+- `f70_ballon_oben_unten_oben.jpg`
+- `f46_graben_vorher_nachher.jpg`
+
+### F76 – Verteidiger dreht sich zum Angreifer
+- Fußtruppen und Reiter wenden sich im Nahkampf zum Angreifer.
+  - In der Kampfszene geschieht das sofort.
+  - Nach dem Nahkampf bleiben sie ihm zugewandt.
+  - Der Flankenbonus des Angreifers zählt für diesen Angriff noch.
+- **Vorschlag:** Fahrzeuge und Schreiter drehen sich **nicht** von selbst.
+  - Sie haben Flanken und zahlen Drehkosten.
+  - Ein freies Umdrehen nach jedem Nahkampf würde den Flankenangriff entwerten.
+  - Wenn du willst, kann ich sie in der Szene nur sichtbar kurz zum Angreifer drehen und danach wieder zurück.
+- **Hinweis:** Auch ein MG-Trupp dreht sich zum Angreifer, sein Schussfeld zeigt danach in diese Richtung.
+
+### F77 – Getroffen-Richtung
+- Alle Getroffen-Bilder vermessen: Liegt der Kopf vor oder hinter den Füßen, bezogen auf die Blickrichtung?
+- Gespiegelt werden alle, die deutlich zum Feind kippen. So fallen sie vom Angreifer weg.
+  - Konkordat: Kampfanzug, Scharfschütze, Mineur, Schildwall (beide Bögen), Versorgung, Melder, Soldat, Sturm, Flammen.
+  - Aschenwacht: Melder, Sanitäter.
+- Die Aschenwacht-Panzerknechte (Kampfanzug) und die Hünen (keine eigene Getroffen-Pose) fallen schon richtig.
+- Rückstoß und Taumeln zeigen weiter vom Angreifer weg.
+
+### F78 – Mineure: Ladungen begrenzt
+- Höchstens **3 Ladungen je Trupp und Schlacht**. Ich habe „je Trupp“ gewählt: Wer zwei Trupps kauft, zahlt auch doppelt.
+- Zähler am Knopf („Stollen graben (Ladungen 2/3)“) und im Hinweistext. Die KI hält die Grenze ein.
+- **Simulation** mit 2 zusätzlichen Mineur-Trupps, je 100 Schlachten:
+
+| Karte | 3 Ladungen | unbegrenzt |
+|---|---|---|
+| Grauwall | 49 % | 49 % |
+| Sankt Ruß | 84 % | 84 % |
+
+- Die Grenze greift in der Simulation nicht: Wegen der 4 Runden Pause nach jedem Stollen sprengt die KI nur 1–2-mal je Schlacht.
+- **Die 84 % auf Sankt Ruß kommen nicht von den Sprengungen.** Mineure sind Sappeure: Mit der geballten Ladung machen sie gegen die Sturmpanzer im Nahkampf ×1,5. Zwei zusätzliche Trupps für je 30 Punkte sind dort sehr viel wert.
+- **Vorschlag:** 3 Ladungen lassen und die Mineure auf **40** verteuern.
+  - Oder: Mineure ohne geballte Ladung. Dann sind sie reine Tunnelgräber.
+
+### F79 – Panzer, Schreiter und Gebäude
+- **Intakte große Gebäude** (heute die Kirche von Sankt Ruß, Schiff und Turm):
+  - Für Fahrzeuge und Schreiter nicht betretbar, aber rammbar (Knopf „Gebäude rammen“, die Aktion und alle Bewegung).
+  - Wirkung: Bauzustand −1 (die Kirche hat 6), Truppen im Gebäude werden niedergehalten.
+  - Der Rammer nimmt etwa 6 Schaden und hat 15 % Pannengefahr. Bei 0 stürzt das Gebäude ein und wird Ruine.
+- **Trümmer** (Ruinen, Fabrikruine, Kirchenruine, eingestürzte Gebäude):
+  - Befahrbar, aber dort endet die Bewegung, mit 12 % Gefahr festzufahren.
+  - Die Zugvorschau zeigt „Trümmer: Zug endet · Festfahren 12 %“.
+- **KI:** rammt besetzte Gebäude, wenn kein besserer Angriff da ist. In der Simulation kam das kaum vor, sie greift lieber direkt an.
+- **Animation:** Anlauf, Aufprall mit Rütteln, Staub, Mauerbrocken; Einsturz mit dem Einsturz-Ton.
+
+### F70 – Fesselballon (gebaut wie bestätigt)
+- **Oben:** Sicht 6 über Wald und Häuser, Ziel markieren, zieht nicht.
+- **Eingeholt:** 2 Felder Zug, Sicht 2, kein Markieren.
+- **Kosten:** Einholen 1 BP. Aufsteigen kostet alle BP, nicht die Aktion; markieren geht danach noch.
+- **Preis:** 25.
+- **KI:** holt ein und rückt nach, wenn in 6 Feldern kein Gegner ist; steigt auf, sobald einer in 6 Feldern ist.
+- **Bild und Ton:** Der Ballon sinkt bzw. steigt am Seil zur Winde, dazu Kettenrasseln und Ratsche.
+- **Hinweis:** Im letzten Bericht stand „Sicht wie Fußtruppen (2)“. Fußtruppen sehen aber 4 Felder. Gebaut ist die bestätigte **2**. Wenn du 4 meintest, ist das eine Zahl im Code.
+
+### F46 – Graben
+- Panzerbüchsen-Trupp, Pirschjäger und Scharfschütze sind niedrig bzw. liegend gemalt. Sie sinken im Graben jetzt weniger tief ein (Panzerbüchse 35 %, die anderen 50 % der normalen Grabentiefe).
+- Vorher/nachher im Bild.
+
+### Simulation mit allen Änderungen (je 200 Schlachten)
+- Grauwall: Konkordat **52 %**.
+- Sankt Ruß: Konkordat **50 %**.
+- Paket E ist damit abgeschlossen.
+
+### Fragen an Enrico
+1. **F76:** Fahrzeuge und Schreiter drehen sich nicht von selbst zum Angreifer. Einverstanden, oder sollen sie sich in der Szene nur sichtbar drehen?
+2. **F78:** Mineure auf 40 Punkte, oder ohne geballte Ladung?
+3. **F70:** Eingeholter Ballon Sicht 2 (gebaut) oder 4?
+
 ## 2026-11-21 – F54 Sturmrollen, F66 Schere-Stein-Papier, Punkte 7–14; F70 Ballon-Vorschlag; ein Fehler gefunden und behoben
 
 **Commits:**
