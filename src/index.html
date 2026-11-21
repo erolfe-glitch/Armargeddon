@@ -1047,6 +1047,19 @@ body.aufstellung #hudRow { transform: translateY(-165px); }
 /* F61: Bewegung und Aktion im Panel mit Wort und groß */
 #hud .up-t .up-wort { font: 600 13px var(--s-body); color: #d8ccb0; letter-spacing: .02em; }
 #hud .up-akt { font: 700 15px var(--s-body); color: #ffe2a0; } #hud .up-akt.used { color: #8a8070; font-weight: 600; }
+/* F66 (2026-11-21): Medaillen Bronze/Silber/Gold unter dem Einheitenbild und im Info-Fenster */
+.up-med { display: flex; gap: 6px; justify-content: center; margin-top: 4px; }
+.med { width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; border: 2px solid #120D0B; box-shadow: inset 0 0 0 2px rgba(255,255,255,.18), 0 2px 0 #120D0B; cursor: help; flex: none; }
+.med img { width: 24px; height: 24px; filter: drop-shadow(0 1px 0 rgba(0,0,0,.6)); }
+.med.gold { background: radial-gradient(circle at 35% 30%, #fff1b8, #e2b04a 45%, #8a6418); }
+.med.silber { background: radial-gradient(circle at 35% 30%, #ffffff, #b9bfc2 45%, #5f6669); }
+.med.bronze { background: radial-gradient(circle at 35% 30%, #f3c79a, #a8693a 45%, #5a3216); }
+.med.keine { background: #3a322c; opacity: .55; } .med.keine img { opacity: .4; }
+.med.klasse { background: radial-gradient(circle at 35% 30%, #8f877c, #4a443e); width: 22px; height: 22px; }
+body.neu #hud .up-unit > .up-med { grid-column: 1; grid-row: 2; flex-wrap: wrap; gap: 3px; margin-top: 0; width: var(--pic); }
+body.neu #hud .up-unit > .up-stats { grid-column: 2; grid-row: 1 / span 2; }
+body.neu #hud .up-med .med { width: 35px; height: 35px; } body.neu #hud .up-med .med img { width: 22px; height: 22px; }
+.det-med { margin: 8px 0; } .det-med .dm { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
 </style>
 </head>
 <body>

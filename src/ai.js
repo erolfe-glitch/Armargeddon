@@ -187,6 +187,11 @@ function abilPlan(G, u) {
       const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
+    else if (k === 'rollen') {   // F54 Sturmrollen: erwarteter Schaden gegen den des besten Schusses; Ziele in Deckung, MG, Geschütze, Zielfelder bevorzugt
+      const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
+      if (rw) { const dm = Math.min(E.rollenDmg(G, u, x, false), x.str), sch = G.units.filter(z => z.side !== u.side && E.canFire(G, u, z)).reduce((m, z) => Math.max(m, Math.min(E.preview(G, u, z, 'fire').dmg, z.str)), 0);
+        v = dm > sch * 0.9 ? 1 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.5 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0) : 0; }
+    }
     else if (k === 'sprung') {   // Sprungangriff (2026-11-20): Nahkampf-Vorschau vom Landefeld; schwache Gegner, MG, Geschütze und Zielfelder zuerst
       const x = foe(c, r), land = x && E.sprungLand(G, u, x);
       if (land) { const p = E.preview(G, Object.assign({}, u, { c: land[0], r: land[1] }), x, 'melee'), dm = Math.min(p.dmg, x.str);

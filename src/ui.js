@@ -19,7 +19,8 @@ const WIND_DEG = [-30, 30, 90, 150, 210, 270];
 
 // ---------- Zustand ----------
 let G = null, mode = 'A', blood = true, tempo = 0.5, busy = false;   // tempo = gewählte Stufe; Standard für neue Spieler ½× (Spieltest Runde 2); gespeichertes Tempo gilt weiter
-try { const v = +localStorage.getItem('arm.tempo'); if ([0.5, 1, 2, 99].includes(v)) tempo = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
+try { const v = +localStorage.getItem('arm.tempo2');   // Punkt 7 (2026-11-21): neuer Schlüssel – einmalig Standard ½×, danach eigene Wahl
+ if ([0.5, 1, 2, 99].includes(v)) tempo = v; } catch (e) {}   // Tempo bleibt gespeichert (Paket 2)
 const GEGNER_TEMPO = 1.2;   // Gegnerzug (KI) etwas schneller als die gewählte Stufe: ½× → 0,6× (Spieltest Runde 2, Punkt 11)
 let speed = tempo;   // wirksames Tempo: im Gegnerzug tempo × GEGNER_TEMPO
 const INSTANT = 99;   // Tempo „Sofort“: Abläufe praktisch ohne Wartezeit, ohne Kamerafahrt und Ton
@@ -176,6 +177,15 @@ function fxSeite(id, zid) {
   if (u && u.type === 'kreuz') { const lf = facesLeft(d.face), p = [d.x + x0 + w * (lf ? 0.38 : 0.62), d.y + y0 + h * 0.27]; p.fuss = [d.x, d.y]; return p; }   // Kanone im Löwenmaul
   const z = DU.get(zid), rechts = z ? z.x >= d.x : true, p = [d.x + x0 + w * (rechts ? 0.62 : 0.38), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
 }
+// F71 (2026-11-21): Pulverdampf – an der Mündung, langsam steigend und seitlich treibend, durchsichtig, nach 2–3 s weg; Größe je Waffe; begrenzt; Bildwirkung aus = keiner, leicht = halb so viel
+// F75: Flammenwerfer-Ton als Schleife genau über die Dauer des Strahls, dann weich aus und kurzes Nachbrennen (Prasseln)
+function flammenTon(id, dauer) { const u = unitById(id), k = soundOn ? sndPick('flame', u && u.side) : null; if (!k || !SND[k]) return null;
+  const a = SND[k].cloneNode(), v = Math.min(1, 0.6 * effektVol); a.loop = true; a.volume = 0; a.playbackRate = 0.95 + Math.random() * 0.1; try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+  let t0 = performance.now(), aus = false; const tick = () => { if (aus) return; const t = performance.now() - t0; a.volume = v * Math.min(1, t / 60); requestAnimationFrame(tick); }; tick();
+  return { aus() { aus = true; const v0 = a.volume, t1 = performance.now(); const f = () => { const k2 = Math.min(1, (performance.now() - t1) / 260); try { a.volume = v0 * (1 - k2); } catch (e) {} if (k2 < 1) requestAnimationFrame(f); else a.pause(); }; f();
+    playSound('feuer', 0.3, null, { noGap: true, dur: 700 }); } }; }
+function pulverDampf(p, mul, delay = 0) { if (!p || !BW || (BW === 1 && Math.random() < 0.5) || fxs.filter(e => e.dampf).length > 36) return;
+  const drift = (Math.random() < 0.5 ? -1 : 1) * L.s * (0.15 + Math.random() * 0.25), e = fx('rauch', null, p[0], p[1], { fuss: p.fuss, move: [p[0] + drift, p[1] - L.s * 0.1], delay, life: 130 + Math.random() * 40, mul: mul * (0.85 + Math.random() * 0.3), grow: 0.8, rise: 0.45, alpha: 0.42, fadeIn: 8, fadeOut: 0.75, flip: Math.random() < 0.5 }); if (e) e.dampf = true; }
 let fxZielFuss = null;   // Fußpunkt des aktuellen Ziels (Leuchtspur endet dort am Aufsteller)
 // F65: Richtung auf dem Bildschirm – Mündung und Ziel stehen als Aufsteller an ihren Fußpunkten; in Weltkoordinaten stimmt der Winkel in der gekippten Ansicht nicht
 function fxScr(x, y, f) { const b = f && bbAt(f[0], f[1]); return b ? [b.px + b.sc * (x - f[0]), b.py + b.sc * (y - f[1])] : [x, y]; }
@@ -812,7 +822,8 @@ function drawUnit(u, d) {
   // Figuren. Neue Ansicht: Trupps aus Einzelfiguren bzw. Einzelmodelle aus den neuen Bögen (FIGMAP); ohne neues Bild wie bisher
   let topY = y - s;
   const nf = VIEW.tilt() ? newFigs(u, d) : null;
-  if (nf) topY = drawNewFigs(g, u, d, nf, x, y, flip, A0, done);
+  if (nf) { const w = d.wipp, sk = d.shake > 0 && TYPES[u.type].cls === 'walker' ? Math.sin(now / 26) * s * 0.035 : 0;   // F73: Wippen beim Gehen, Wanken bei Treffern
+    topY = drawNewFigs(g, u, d, nf, x + (w ? w.dx : 0) + sk, y + (w ? w.dy : 0), flip, A0, done); }
   else {
   const slots = SLOTS[k] || SLOTS[T.cls] || SLOTS.inf;   // neue Typen ohne alte Zeichnung (z. B. Löwenoger), solange ihr Bild lädt
   const n = slots.length === 1 ? 1 : Math.max(1, Math.min(slots.length, Math.ceil(d.str / (10 / slots.length) - 0.001)));
@@ -1696,7 +1707,7 @@ const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];  
 // einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
 // Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
 const BW_NAME = ['aus', 'leicht', 'stark'];
-let BW = 2; try { const v = localStorage.getItem('arm.bildwirkung2');   // F1 (2026-11-20): Standard stark; neuer Schlüssel, damit alte Einstellungen „leicht“ nicht stehen bleiben
+let BW = 2; try { const v = localStorage.getItem('arm.bildwirkung3');   // F1 (2026-11-20): Standard stark; neuer Schlüssel, damit alte Einstellungen „leicht“ nicht stehen bleiben
   if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
 const BW_KARTE = [0, 0.7, 1.3];                                   // Anteil der Plastik-Karte
 const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
@@ -1727,7 +1738,7 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   BWI.set(ck, c); return c;
 }
 function setBildwirkung(v, still) {
-  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung2', String(BW)); } catch (e) {}
+  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung3', String(BW)); } catch (e) {}
   if ($('optBild')) $('optBild').value = String(BW);
   gbKey = ''; if (L && G) renderTerrain();
   if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);
@@ -2206,7 +2217,7 @@ function setAmbient(on) {
   if (!wetter) { const k = sndPick('wetter'); if (k) { wetter = SND[k]; wetter.loop = true; } }
   kulisseVol();
   for (const a of [ambient, wetter]) if (a) try { if (on) { const p = a.play(); if (p && p.catch) p.catch(() => {}); } else a.pause(); } catch (e) {}
-  if (on) setMusik('musik_schlacht', 3); else if (musikName === 'musik_schlacht') setMusik(null, 2.5);   // Schlacht: Menümusik weich in die Schlachtmusik überblenden; Ende: ausblenden
+  if (on && soundOn) setMusik('musik_schlacht', 3); else if (musikName === 'musik_schlacht') setMusik(null, 2.5);   // Schlacht: Menümusik weich in die Schlachtmusik überblenden; Ende: ausblenden
   fireLoop(); ortKulisse(on);
 }
 // Musik (2026-11-17, eigene Stücke, Suno Pro): „musik_titel“ im Startmenü (auch Armee-Auswahl, Regeln), „musik_schlacht“ in der Schlacht,
@@ -2408,9 +2419,16 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
     if (x1 !== x0 && !keepFace) d.face = x1 > x0 ? (facesLeft(d.face) ? 0 : d.face) : (facesLeft(d.face) ? d.face : 3);   // nur die Seite wechseln, senkrechte Schritte drehen nicht
     if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
-    for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; }
+    const uu = unitById(id), TT = uu && TYPES[uu.type], fm = uu && FIGMAP[uu.type] && FIGMAP[uu.type][0], beine = TT && TT.cls === 'walker' && fm && SCHREITER.includes(fm), kette = TT && TT.cls === 'walker' && !beine;
+    const gross = TT && (TT.stufe3 || TT.def >= 9) ? 1.4 : 1; let schritt = 0;
+    for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k;
+      if (beine) { const ph = k * 2, n = Math.floor(ph);   // F73 (2026-11-21): zwei Schritte je Feld – heben, stampfen, leicht zur Seite neigen
+        d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.05 * gross, dx: Math.sin(ph * Math.PI) * L.s * 0.012 * (n % 2 ? 1 : -1) };
+        if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
+      else if (kette) d.wipp = { dy: Math.sin(k * Math.PI * 10) * L.s * 0.006, dx: 0 }; }   // Kettenfahrzeug: leichtes Rattern
+    d.wipp = null;
   }
-  } finally { d.moving = false; }
+  } finally { d.moving = false; d.wipp = null; }
 }
 const unitById = id => G.units.find(u => u.id === id);
 // F64: wirkt die Waffe gegen Panzerung? (bis F66 vereinfacht) – Kanone, Granate/Artillerie, Panzerbüchse, panzerbrechende Schützen (T.at), Kanonen-Zweitwaffe; Gewehr, MG, Drehlauf, Pistole prallen ab
@@ -2465,37 +2483,48 @@ async function playEvent0(e) {
       { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (!szene && camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
       if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
-      if (e.kind === 'flame') { playSound('flame', 0.6);
+      if (e.kind === 'flame') {   // F75 (2026-11-21): EIN längerer Feuerstoß je Trupp (gemeinsam, ca. 1,5 s; Zweitwaffe Flammenstoß 1,1 s) – Ton startet mit dem Strahl, hält so lange wie er sichtbar ist und klingt mit ihm aus, danach kurzes Nachbrennen
         const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
-        const dr = fxDir(p[0], p[1], x2, y2, 1.2), len = Math.hypot(x2 - p[0], y2 - p[1]) * 1.08, v = deck ? 3 : [0, 1, 2, 4, 5][Math.floor(Math.random() * 5)];
-        if (fx('flammenstrahl', v, p[0], p[1], { anchor: 'links', len, lenIn: 6, life: 30, fadeOut: 0.35, flip: dr.flip, ang: dr.ang })) await wait(450);
-        else { flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await wait(420); } }
+        const dr = fxDir(p[0], p[1], x2, y2, 1.2), len = Math.hypot(x2 - p[0], y2 - p[1]) * 1.08, dauer = (e.zweit ? 1100 : 1500) / Math.min(speed, 2), takt = 160 / Math.min(speed, 2);
+        const ton = flammenTon(e.a, dauer);
+        if (fxIm('flammenstrahl')) { const t0 = performance.now(); let n = 0;
+          while (performance.now() - t0 < dauer) { const v = deck ? 3 : [0, 1, 2, 4, 5][Math.floor(Math.random() * 5)];
+            fx('flammenstrahl', v, p[0], p[1], { anchor: 'links', len: len * (0.94 + Math.random() * 0.1), lenIn: n ? 2 : 6, life: 16, fadeIn: n ? 3 : 0, fadeOut: 0.4, flip: dr.flip, ang: dr.ang + (Math.random() - 0.5) * 0.05 });
+            if (n % 3 === 2) shake(1); n++; await new Promise(r => setTimeout(r, takt)); } }
+        else { flames.push({ x1, y1, x2, y2, life: 26, max: 26 }); await new Promise(r => setTimeout(r, dauer)); }
+        if (ton) ton.aus(); fx('feuer', null, x2, y2 + s * 0.2, { life: 50, mul: 0.6, fadeOut: 0.6 }); await wait(160); }
       else {
         const mini = e.kind === 'minigun', mg = e.kind === 'mg' || mini, can = e.kind === 'cannon', au = unitById(e.a), ang = Math.atan2(y2 - y1, x2 - x1);
         const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : au.type === 'oger' ? 'flinte' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'pistol' : AT.suit ? 'semi' : 'rifle';
-        lastFire = { kind: e.kind, t: performance.now(), a: e.a, zweit: e.zweit };   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
+        lastFire = { kind: e.kind, t: performance.now(), a: e.a, zweit: e.zweit };
+        { const au1 = unitById(e.a); if (au1 && TYPES[au1.type].cls === 'walker') { const st = e.zweit ? 0.025 : 0.06, dir = x2 >= x1 ? -1 : 1; a.wipp = { dx: dir * L.s * st, dy: -L.s * st * 0.3 }; setTimeout(() => { if (a.wipp && !a.moving) a.wipp = null; }, 140 / speed); } }   // F73: Rückstoß   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
         const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
         let salveT = 0;   // F28: Dauer der Salve – der Schaden erscheint erst danach
-        if (salve) { const n = Math.max(1, Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001))), m = n + Math.round(n * (0.5 + Math.random() * 0.5));   // F28 (2026-11-20): je Figur 1–2 Schüsse, zusammen 2–3 s
+        const figN = Math.max(1, (a.fbx && a.fbx.length) || Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001)));   // F74 (2026-11-21): so viele Schützen, wie Figuren stehen
+        if (rs === 'sniper' && e.kind === 'rifle') { const key = waffenTon('sniper', au); let t = 0;   // F74: Scharfschützen/Pirschjäger – je Figur ein Schuss, deutlich nacheinander („pam … pam“)
+          for (let q = 0; q < figN; q++) { if (q) t += 400 + Math.random() * 200; const tq = t; setTimeout(() => playSound(key, 0.6, au && au.side, { noGap: true, rate: 0.95 + Math.random() * 0.1, dur: 650 }), tq / speed);
+            const p = fxMuzzle(e.a, q % figN); if (p) { fxFlash(5, p, x2, y2, { delay: tq / 16.667, mul: 0.85 }); fxTracer(5, p, x2, y2, { delay: tq / 16.667 }); pulverDampf(p, 0.16, tq / 16.667 + 3); } }
+          salveT = t + 150; if (a.pose && a.pose.t0 != null) { a.pose.dauer = Math.max(900, t + 650); } }
+        if (salve) { const n = figN, m = n + Math.round(n * (0.5 + Math.random() * 0.5));   // F28 (2026-11-20): je Figur 1–2 Schüsse, zusammen 2–3 s
           const key = waffenTon('rifle', au);   // F30: fest je Seite und Typ   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
           // unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert: „pam – pam-pam – pam“. Abstände zufällig 0–0,25 s, manchmal zwei fast zugleich;
           // jeder Schuss kurz (ohne Nachhall), nur der letzte klingt voll aus (Spieltest 2026-11-17, gilt für beide Seiten)
-          let t = 0; const schuss = []; for (let q = 0; q < m; q++) { if (q) t += Math.random() < 0.2 ? 60 + Math.random() * 90 : 220 + Math.random() * 480; schuss.push(t);
-            const last = q === m - 1; setTimeout(() => playSound(key, 0.3 * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
-            const p = fxMuzzle(e.a, q % n); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 0.8 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); } }
+          let t = 0; const schuss = []; for (let q = 0; q < m; q++) { if (q) t += Math.random() < 0.25 ? 50 + Math.random() * 80 : 150 + Math.random() * 300; schuss.push(t);   // F72: dichter gestaffelt
+            const last = q === m - 1; setTimeout(() => playSound(key, 0.42 * (0.8 + Math.random() * 0.4), au && au.side,   /* F72: lauter */ { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
+            const p = fxMuzzle(e.a, q % n); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 1.05 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } }
           if (a.pose && a.pose.t0 != null) { a.pose.schuss = schuss; a.pose.gleich = true; a.pose.dauer = Math.max(900, t + 650); } salveT = t; }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
         else if (AT && AT.dauerfeuer) playSound(waffenTon('mg', au), 0.62, au.side, { rate: 0.8 + Math.random() * 0.06 });   // Eiserne Hünen: schweres MG, tiefer gestimmt
-        else playSound(waffenTon(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', au), mg ? 0.55 : 0.6, au && au.side);
+        else if (!(rs === 'sniper' && e.kind === 'rifle')) playSound(waffenTon(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', au), mg ? 0.55 : 0.6, au && au.side);
 
         // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
         const pm = e.zweit ? fxSeite(e.a, e.d) : fxMuzzle(e.a, 0, mini ? 0.45 : can ? 0.42 : 0.3), neu = !!(pm && fxIm('muendung'));
         if (neu) {
           if (mini && fxIm('drehlauf')) { const dr = fxDir(pm[0], pm[1], x2, y2, 0.5); for (let q = 0; q < 18; q++) fx('drehlauf', q % 2 ? 3 + Math.floor(Math.random() * 3) : Math.floor(Math.random() * 3), pm[0], pm[1], { anchor: q % 2 ? 'links' : 'mitte', delay: q * 4.5, life: 5, fadeOut: 0.6, flip: dr.flip, ang: dr.ang, mul: q % 2 ? 0.9 : 0.6 });
             for (let q = 0; q < 12; q++) fxTracer(1, pm, x2, y2, { delay: q * 6.5, life: 12 }); }   // F24: Salve etwa 1 s länger (18 statt 6 Feuerstöße)
-          else if (mg) { for (const st of [0, 45]) { for (let q = 0; q < 6; q++) fxFlash(1, pm, x2, y2, { delay: st + q * 4.5, life: 4, mul: 0.75 + Math.random() * 0.2 }); for (let q = 0; q < 4; q++) fxTracer(1, pm, x2, y2, { delay: st + 2 + q * 6, life: 12 }); } }   // F28: zwei Feuerstöße
-          else if (can) { fxFlash(3, pm, x2, y2, { life: 8, mul: 0.9 }); fx('rauch', null, pm[0], pm[1] + s * 0.15, { fuss: pm.fuss, life: 70, mul: 0.32, grow: 0.5, rise: 0.5, alpha: 0.75, fadeIn: 4, fadeOut: 0.6, flip: x2 < pm[0] }); }   // F16: Qualm an der Mündung
-          else if (!salve) { const bu = au && au.type === 'buechse', v = bu || rs === 'sniper' ? 5 : rs === 'pistol' ? 2 : 0;
-            if (rs !== 'grenade') { fxFlash(v, pm, x2, y2, { mul: v === 2 ? 0.7 : 0.85 }); fxTracer(bu ? 5 : 0, pm, x2, y2, bu ? { mul: 0.7 } : {}); } }
+          else if (mg) { for (const st of [0, 45]) { for (let q = 0; q < 6; q++) fxFlash(1, pm, x2, y2, { delay: st + q * 4.5, life: 4, mul: 0.75 + Math.random() * 0.2 }); for (let q = 0; q < 4; q++) fxTracer(1, pm, x2, y2, { delay: st + 2 + q * 6, life: 12 }); for (let q = 0; q < 2; q++) pulverDampf(pm, 0.13, st + 8 + q * 14); } }   // F28: zwei Feuerstöße; F71: kleine Wölkchen
+          else if (can) { fxFlash(3, pm, x2, y2, { life: 8, mul: 0.9 }); pulverDampf(pm, 0.42, 6); fx('rauch', null, pm[0], pm[1] + s * 0.15, { fuss: pm.fuss, life: 70, mul: 0.32, grow: 0.5, rise: 0.5, alpha: 0.75, fadeIn: 4, fadeOut: 0.6, flip: x2 < pm[0] }); }   // F16: Qualm an der Mündung
+          else if (!salve && rs !== 'sniper') { const bu = au && au.type === 'buechse', v = bu ? 5 : rs === 'pistol' ? 2 : 0;   // Scharfschützen: Schüsse oben (F74)
+            if (rs !== 'grenade') { pulverDampf(pm, v === 5 ? 0.2 : 0.14, 3); fxFlash(v, pm, x2, y2, { mul: v === 2 ? 0.7 : 0.85 }); fxTracer(bu ? 5 : 0, pm, x2, y2, bu ? { mul: 0.7 } : {}); } }
         }
         if (neu) {}   // F16: neue Effekte – auch Kanonen ohne alten Staub und ohne fliegendes Geschoss
         else if (mini) muzzles.push({ img: 'muzzle', x: x1 + Math.cos(ang) * s * 0.3, y: y1 + Math.sin(ang) * s * 0.3, ang, sz: 0.8, off: 0.12, life: 24, max: 24 });
@@ -2595,7 +2624,12 @@ async function playEvent0(e) {
       // der letzte, härteste Hieb kommt danach vom Angreifer mit der Wucht aus F48. Der Gegenschlag-Ereignis selbst ist dann nur noch kurz.
       if (e.t === 'melee' && !thrown) { const T0 = au && TYPES[au.type], du1 = unitById(e.d), Td = du1 && TYPES[du1.type], fl = d.x < a.x;
         const hiebTon = (x, T) => x && T ? (T.cls === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : T.cls === 'cav' ? 'saebel' : x.side === 'D' ? 'nahD' : 'nahA') : 'nahA';
-        const zug = nkGleich ? 2 : Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;   // F63: kürzer
+        const zug = af === 'drill' ? 0 : nkGleich ? 2 : Td && Td.atk > 0 && du1.status === 'ok' ? 4 : 2;   // F63: kürzer; Bohrkoloss: ein langer Bohrstoß (unten)
+        if (af === 'drill') {   // F54 (Enrico 2026-11-21): Bohrkoloss – ein einziger Stoß, der sich hineinbohrt: Vorstoß, dann ~0,9 s Rütteln, Funken bzw. Blut, Bohrton hält an
+          a.lunge = { dx: (d.x - a.x) * 0.3, dy: (d.y - a.y) * 0.3 }; playSound('smash', 0.65, au && au.side); playSound('neu_wucht', 0.45);
+          for (let q = 0; q < 8; q++) { a.lunge = { dx: (d.x - a.x) * (0.3 + (q % 2) * 0.03) + (Math.random() - 0.5) * L.s * 0.03, dy: (d.y - a.y) * 0.3 + (Math.random() - 0.5) * L.s * 0.03 };
+            if (q % 2 === 0) { shake(3); pose(e.d, 'getroffen', 200); trefferSpritzer(a.x, a.y, d, q >= 4 ? 2 : 1, istMaschine(du1)); fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 26, mul: 0.4, grow: 0.3, alpha: 0.7, fadeOut: 0.6 }); }
+            await wait(110); } }
         for (let i = 0; i < zug; i++) {
           if (nkGleich && nkGleich.gegen) {   // F51: beide schlagen gleichzeitig (Getümmel)
             pose(e.a, 'kolben', 380); pose(e.d, 'kolben', 380); a.lunge = { dx: (d.x - a.x) * 0.22, dy: (d.y - a.y) * 0.22 }; d.lunge = { dx: (a.x - d.x) * 0.22, dy: (a.y - d.y) * 0.22 };
@@ -2611,6 +2645,7 @@ async function playEvent0(e) {
           fx('nahkampf', istMaschine(angr ? du1 : au) ? 4 : Math.floor(Math.random() * 4), Z.x + (Z.x < S.x ? 1 : -1) * L.s * 0.08, Z.y - L.s * (0.35 + Math.random() * 0.2), { anchor: 'mitte', life: 12, fadeOut: 0.6, grow: 0.2, flip: Z.x < S.x, mul: 0.55 });
           trefferSpritzer(S.x, S.y, Z, 1, istMaschine(angr ? du1 : au));
           await wait(150 + Math.random() * 100); S.lunge = null; Z.lunge = null; } }
+      if (au && TYPES[au.type].cls === 'walker' && af !== 'drill') { a.lunge = { dx: (a.x - d.x) * 0.1, dy: (a.y - d.y) * 0.1 - L.s * 0.04 }; await wait(120); }   // F73: Ausholen
       a.lunge = { dx: (d.x - a.x) * 0.38, dy: (d.y - a.y) * 0.38 }; await wait(thrown ? 16 * 16.667 : e.t === 'counter' ? 90 : 140);   // Handgranate: Knall erst beim Aufschlag
       strikeSnd(); if (nkGleich) nkGleich.ksz = ksz; else await szeneWucht(ksz, e.a, e.d); if (e.t === 'melee' && !nkGleich) { trefferSpritzer(a.x, a.y, d, 3, armored); if (ksz && blood && !armored) fx('blut', Math.floor(Math.random() * 3), d.x + (d.x < a.x ? -1 : 1) * L.s * 0.1, d.y - L.s * 0.5, { anchor: 'mitte', life: 30, mul: 0.95, grow: 0.35, flip: d.x < a.x, filter: BLUT_FILTER }); }   // F50: Schwall beim Wucht-Moment
       const mx = (a.x + d.x) / 2 + (d.x - a.x) * 0.2, my = (a.y + d.y) / 2 - s * 0.5;
@@ -2657,12 +2692,13 @@ async function playEvent0(e) {
       // Kanone/Granate auf Fußtruppen Erd- und Blutfontäne mit Erdklumpen und Blutflecken am Boden
       if (!e.panic && !e.wire && !e.burn && blood && e.dmg >= 0.3 && lastFire && performance.now() - lastFire.t < 6000 && !istMaschine(u) && !TYPES[u.type].suit) {
         const q = DU.get(lastFire.a) || { x: d.x - L.s, y: d.y };
-        if (lastFire.kind === 'rifle') trefferSpritzer(q.x, q.y, d, e.dmg >= 1.2 ? 2 : 1);
+        if (lastFire.kind === 'rifle') { trefferSpritzer(q.x, q.y, d, e.dmg >= 0.6 ? 2 : 1); if (e.dmg >= 0.6) blutFleck(d.x + (Math.random() - 0.5) * s * 0.5, d.y + s * (0.05 + Math.random() * 0.2) * kAt(d.x, d.y), 0.22); }   // F72: kräftiger
         else if (lastFire.kind === 'cannon' || lastFire.kind === 'shell') { const fl = d.x < q.x;
           fx('erdfontaene', null, d.x, d.y + s * 0.3, { life: 44, mul: 0.32, grow: 0.2, flip: fl, fadeOut: 0.45, filter: 'brightness(0.7) sepia(0.3)' });
           for (let k = 0; k < 2; k++) fxOben(fx('blut', Math.floor(Math.random() * 3), d.x + (fl ? -1 : 1) * s * (0.1 + 0.2 * k), d.y - s * (0.5 - 0.15 * k), { anchor: 'mitte', life: 34, mul: 0.75 + 0.1 * Math.min(3, e.dmg) - 0.2 * k, grow: 0.35, flip: fl, filter: BLUT_FILTER, delay: 3 + k * 3 }));   // obenauf, sonst verdecken Feuerball und Erdfontäne das Blut
           fx('truemmer', 4, d.x, d.y + s * 0.2, { life: 34, mul: 0.4, grow: 0.25, flip: !fl, delay: 3 });
           trefferSpritzer(q.x, q.y, d, 3); blutFleck(d.x + (Math.random() - 0.5) * s * 0.5, d.y + s * (0.05 + Math.random() * 0.2) * kAt(d.x, d.y), 0.3 + Math.min(0.2, e.dmg * 0.06)); } }
+      if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 6000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) for (let k = 0; k < 3; k++) fx('truemmer', 2, d.x + (Math.random() - 0.5) * s * 1.1, d.y + s * (0.2 + Math.random() * 0.25), { delay: k * 4, life: 26, mul: 0.22 + Math.random() * 0.1, grow: 0.3, alpha: 0.75, fadeOut: 0.6, flip: Math.random() < 0.5 });   // F72: Erd- und Staubspritzer rund um das Ziel
       if (!e.panic && !e.wire && lastFire && performance.now() - lastFire.t < 6000 && ['rifle', 'mg', 'minigun'].includes(lastFire.kind)) {
         const soft = !(TYPES[u.type].cls === 'walker' || TYPES[u.type].suit);   // F64: Geschützbedienungen sind weich (Körpertreffer)
         if (!soft) {}   // gepanzert: Ton oben (Abpraller bzw. Metallkrach)
@@ -2698,6 +2734,16 @@ async function playEvent0(e) {
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
+    case 'rollen': {   // F54 (2026-11-21): Sturmrollen – Anlauf, ein Aufprall mit Kampfszene (Stillstand, Rütteln, Staub, Blut), Panzer bleibt stehen; das Zurückrutschen folgt als 'rollstoss'
+      const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4);
+      playSound('tank', 0.5); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 260); }
+      a.face = d.x >= a.x ? 0 : 3; const x0 = a.x, y0 = a.y, dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 220 / speed;
+      for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.32 * k * k, dy: dy * 0.32 * k * k }; }   // Anlauf: beschleunigt in den Gegner
+      playSound('neu_wucht', 0.7); playSound('ueberrollen', 0.45); shake(9); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };
+      fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 40, mul: 0.8, grow: 0.4, alpha: 0.85, fadeOut: 0.6 }); boom(d.x, d.y + L.s * 0.2, L.s * 0.5, 'dust');
+      trefferSpritzer(x0, y0, d, 3, istMaschine(unitById(e.d))); if (e.wand) floater(...headPos(e.d), 'Eingeklemmt!', '#ffb04a', true);
+      if (!(ksz && ksz.skip)) await wait(260); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
+    case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig');
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
@@ -2927,7 +2973,7 @@ function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym
     const w = Math.min(22, 22 * im.naturalWidth / im.naturalHeight), h = w * im.naturalHeight / im.naturalWidth; g.drawImage(im, 16 - w / 2, 16 - h / 2, w, h);
     SYMCUR[sym] = `url("${c.toDataURL('image/png')}") 16 16, pointer`; } catch (e) { SYMCUR[sym] = null; }
   return SYMCUR[sym] || fb; }
-const ABIL_CUR = { charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf' };
+const ABIL_CUR = { charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf', rollen: 'nahkampf' };
 const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
@@ -3414,7 +3460,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_KEIN = { rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 // F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
 // Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
 const ABIL_KURZ = {
@@ -3428,11 +3474,12 @@ const ABIL_KURZ = {
   mark: u => `Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder) markieren, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ${xf(P.GUIDED)} und ohne Streuung; deckt getarnte Gegner und Minen im Feld und daneben auf.`,
   strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
   rush: () => `Aus dem Stand bis ${P.RUSH} Felder geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
+  rollen: () => `Ein schwerer Aufprall auf Fußtruppen oder ein Geschütz daneben oder 2 Felder geradeaus (Anlauf aus dem Stand, Draht wird niedergewalzt): etwa ${fmt(P.ROLLEN_DMG)} Schaden, niedergehalten, Moral −${fmt(P.ROLLEN_MOR)}, kein Gegenschlag. Das Ziel rutscht ein Feld zurück; ist dort kein Platz, ${xf(P.ROLLEN_WAND)} Schaden. Kostet die Aktion und alle Bewegung, danach 2 Runden Pause.`,
   sprung: () => `Aus dem Stand bis ${P.SPRUNG} Felder neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Danach ${A.cd} Runden Pause.` : ''); }
-const ABIL_SYM = { sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { rollen: 'marsch', sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
@@ -3499,7 +3546,9 @@ function snZeig(det, el, sheet, w, platz) {   // platz: Element, über das die D
   const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
   det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
   det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight;
-  if (platz) { const p = platz.getBoundingClientRect(); det.style.left = Math.max(8, p.left + (p.width - dw) / 2) + 'px'; det.style.top = Math.max(8, Math.min(innerHeight - dh - 8, p.top)) + 'px'; el.parentElement.querySelectorAll('.sn-k').forEach(e => e.classList.toggle('offen', e === el)); return; }
+  if (platz) {   // Punkt 8 (2026-11-21): Armee-Auswahl – direkt neben der Karte (rechts, sonst links, sonst darüber), nie über der Auswahl-Übersicht
+    let x = r.right + 10, y = r.top - 10; if (x + dw > innerWidth - 8) x = r.left - dw - 10; if (x < 8) { x = Math.max(8, Math.min(innerWidth - dw - 8, r.left + (r.width - dw) / 2)); y = r.top - dh - 10 < 8 ? r.bottom + 10 : r.top - dh - 10; }
+    det.style.left = x + 'px'; det.style.top = Math.max(8, Math.min(innerHeight - dh - 8, y)) + 'px'; el.parentElement.querySelectorAll('.sn-k').forEach(e => e.classList.toggle('offen', e === el)); return; }
   let x = sh.left - dw - 8; if (x < 8) x = r.right + 10 + dw < innerWidth ? r.right + 10 : r.left - dw - 10;
   det.style.left = Math.max(8, Math.min(innerWidth - dw - 8, x)) + 'px'; det.style.top = Math.max(80, Math.min(innerHeight - dh - 8, r.top - 10)) + 'px';
   el.parentElement.querySelectorAll('.sn-k').forEach(e => e.classList.toggle('offen', e === el));
@@ -3667,7 +3716,7 @@ function updateHud() {
     const T = TYPES[u.type], h = G.map[u.c][u.r];
     $('portrait').hidden = false; drawPortrait($('portrait'), figU(u), u.side, u.type, u.limbered);
     const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
-    $('upMark').innerHTML = crest(u.side);
+    $('upMark').innerHTML = crest(u.side); medaillenZeigen(u);
     $('hudName').textContent = T.name;
     $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ` · ${UP.orden ? `<img class="up-orden" src="${UP.orden}" alt="Anführer">` : '★ '}${u.officer}` : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}`;
     // Zeile mit ALLEN Zuständen als Symbole (Deckung zuerst), Tooltip je Symbol
@@ -3689,7 +3738,7 @@ function updateHud() {
     if (sel && human(sel.side) && sel.side === G.side) btns = unitButtons(T, hints);
     else if (!hints.length) hints.push(T.can);
   } else {
-    $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = ''; $('upMark').innerHTML = ''; $('hudStates').innerHTML = ''; hudTips = [];
+    medaillenZeigen(null); $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = ''; $('upMark').innerHTML = ''; $('hudStates').innerHTML = ''; hudTips = [];
     if (placing) {
       $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
       $('hudSub').innerHTML = 'Aufstellen';
@@ -3739,6 +3788,30 @@ function updateHud() {
 }
 // Tooltips der Zustandssymbole im Panel: Maus beim Drüberfahren, Touch durch Antippen
 let hudTips = [];
+// F66 (2026-11-21): Medaillen unter dem Bild – gegen Infanterie, gegen Panzer, Nahkampf; Bronze ×0,5 (bzw. wirkungslos), Silber ×1, Gold ×1,5. Alles aus E.medaillen (dieselben Werte wie die Regeln)
+let medTips = [];
+const MED_STUFE = { gold: 'Gold – stark', silber: 'Silber – normal', bronze: 'Bronze – schwach', keine: 'keine – kann das nicht' };
+const fx10 = f => '×' + String(+f.toFixed(2)).replace('.', ',');
+function medaillenTexte(t) {
+  const m = E.medaillen(t), T = TYPES[t], W = E.WAFFE_NAME, wa = m.waffe;
+  return [
+    { k: 'inf', sym: 'gewehr', name: 'Gegen Infanterie: ' + MED_STUFE[m.inf], text: m.inf === 'keine' ? 'Kein Fernkampf.' : `${W[wa]} gegen ungepanzerte Ziele ${fx10(m.fInf)}.` },
+    { k: 'panzer', sym: 'sprengladung', name: 'Gegen Panzer: ' + MED_STUFE[m.panzer], text: m.panzer === 'keine' ? (wa ? `${W[wa]} ist gegen schwere Panzerung wirkungslos.` : 'Kann Panzern nichts anhaben.') : (m.fPz > (wa ? E.FAK[wa].S : 0) ? `Geballte Ladung im Nahkampf gegen Fahrzeuge und Schreiter ${fx10(m.fPz)}.` : `${W[wa]} gegen schwere Panzerung ${fx10(m.fPz)}.`) },
+    { k: 'nah', sym: 'nahkampf', name: 'Nahkampf: ' + MED_STUFE[m.nah], text: m.nah === 'keine' ? 'Kämpft nicht im Nahkampf.' : m.rolle === 'schwach' ? 'Schwach im Nahkampf: Angreifer ×1,5 gegen sie, Gegenschlag ×0,5.' : m.rolle === 'stark' ? 'Stark im Nahkampf: Gegenschlag ×1,25.' + (m.fNah >= 1.5 && E.waffeArt(t, false) === 'schwer' ? ' Schwerer Nahkampf gegen Fußtruppen ×1,5.' : '') : `${W[E.waffeArt(t, false)]} gegen Fußtruppen ${fx10(FAKN(t))}.` },
+    { k: 'klasse', name: 'Panzerung: ' + E.KLASSE_NAME[m.klasse], text: m.klasse === 'S' ? 'Gewehre und MG prallen ab; Panzerbüchsen und Kanonen wirken voll, Granaten halb.' : m.klasse === 'L' ? 'Gewehr, MG und Klingen nur halb; panzerbrechende Waffen ×1,5.' : 'Volle Wirkung aller Waffen.' } ];
+}
+const FAKN = t => E.FAK[E.waffeArt(t, false)].U;
+function medaillenZeigen(u) {
+  let box = $('upMed'); if (!box) { box = document.createElement('div'); box.id = 'upMed'; box.className = 'up-med'; document.querySelector('#hud .up-pic').after(box);
+    const at = e => e.target.closest('.med'), show = (el, ms) => { const t = medTips[+el.dataset.i], r = el.getBoundingClientRect(); if (t) showTip([t], r.left + r.width / 2, r.top, 'med' + t.name, ms); };
+    box.addEventListener('pointerover', e => { const el = at(e); if (el && e.pointerType === 'mouse') show(el); });
+    box.addEventListener('pointerout', e => { if (at(e) && e.pointerType === 'mouse') hideTip(); });
+    box.addEventListener('pointerdown', e => { const el = at(e); if (el && e.pointerType !== 'mouse') show(el, 3500); });
+    box.addEventListener('focusin', e => { const el = at(e); if (el) show(el); }); box.addEventListener('focusout', hideTip); box.addEventListener('contextmenu', e => e.preventDefault()); }
+  if (!u) { box.innerHTML = ''; medTips = []; return; }
+  const m = E.medaillen(u.type); medTips = medaillenTexte(u.type);
+  box.innerHTML = medTips.slice(0, 3).map((t, i) => `<span class="med ${m[t.k]}" data-i="${i}" tabindex="0" aria-label="${upEsc(t.name)}">${upSym(t.sym) ? `<img src="${upSym(t.sym)}" alt="">` : ''}</span>`).join('');
+}
 { const box = $('hudStates'), at = e => e.target.closest('.up-st'), show = (el, ms) => { const t = hudTips[+el.dataset.i], r = el.getBoundingClientRect(); if (t) showTip([t], r.left + r.width / 2, r.top, 'hud' + el.dataset.i + t.name, ms); };
   box.addEventListener('pointerover', e => { const el = at(e); if (el && e.pointerType === 'mouse') show(el); });
   box.addEventListener('pointerout', e => { if (at(e) && e.pointerType === 'mouse') hideTip(); });
@@ -3788,6 +3861,8 @@ function showDetail() {
   drawPortraitLater($('detPortrait'), figOf(T), u.side, u.type);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
+  { let mb = $('detMed'); if (!mb) { mb = document.createElement('div'); mb.id = 'detMed'; mb.className = 'det-med'; $('detCan').parentElement.after(mb); }   // F66: Stärken und Schwächen in Worten
+    const m = E.medaillen(u.type); mb.innerHTML = '<b>Stärken und Schwächen:</b>' + medaillenTexte(u.type).map(t => `<div class="dm">${t.k !== 'klasse' ? `<span class="med ${m[t.k]}">${upSym(t.sym) ? `<img src="${upSym(t.sym)}" alt="">` : ''}</span>` : '<span class="med klasse"></span>'}<span><b>${t.name}</b> – ${t.text}</span></div>`).join(''); }
   $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');
   $('detStats').innerHTML = pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Moral', T.mor) + pill('Zug', T.mv) + pill('Schuss', T.rng ? `${T.rng} Felder` : '–') + pill('Kosten', '★ ' + (E.COST[u.type] || '–'));
   const cp = E.costParts(u.type);
@@ -3823,7 +3898,7 @@ function setupSync() {
   armyInfo();
 }
 function showStart(first) {
-  setMusik('musik_titel', 2);   // Titelmusik im Startmenü (Schleife, aus der Schlacht weich übergeblendet)
+  setMusik(soundOn ? 'musik_titel' : null, 2);   // Punkt 9 (2026-11-21): nur mit Ton an   // Titelmusik im Startmenü (Schleife, aus der Schlacht weich übergeblendet)
   $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = speedTxt(); $('setZoom').textContent = zoomTxt(); $('closeStart').hidden = first;
   $('smNeu').hidden = !first; $('smBeenden').hidden = first; beendenScharf(false);   // F2 (2026-11-20): im Spiel oben „Zurück zum Spiel“, unten „Beenden“
   startStep('title');
@@ -4013,13 +4088,13 @@ function showEnd() {
     OBJECTIVES.map(o => `<div class="${G.ctrl[o.id] || 'N'}"><dt>${o.name}</dt><dd>${G.ctrl[o.id] ? SIDES[G.ctrl[o.id]].short : 'neutral'}</dd></div>`).join('');
   $('end').hidden = false;
   setAmbient(false);
-  if (win && (!me || win === me)) playSound('win', 0.6); else if (me && win && win !== me) setMusik('musikNiederlage');   // Niederlage: „Taps“
+  if (win && (!me || win === me)) playSound('win', 0.6); else if (me && win && win !== me && soundOn) setMusik('musikNiederlage');   // Niederlage: „Taps“
 }
 
 // Klick-Ton für Knöpfe (Oberfläche); Titelmusik startet, sobald der Browser Ton erlaubt (erste Berührung)
 document.addEventListener('pointerdown', ev => {
   const b = ev.target.closest && ev.target.closest('button, .up-btn, .tb-btn, [role="button"], label.mapcard'); if (b && b.id !== 'btnNext' && b.dataset.act !== 'pass') playSound('ui', 0.3, null);   // diese beiden haben den eigenen Klick
-  if (!$('start').hidden && musikName !== 'musik_titel') setMusik('musik_titel'); musikWecken();   // Browser erlaubt Ton erst nach der ersten Berührung
+  if (soundOn && !$('start').hidden && musikName !== 'musik_titel') setMusik('musik_titel'); musikWecken();   // Punkt 9: „Ton aus“ gilt auch im Startmenü   // Browser erlaubt Ton erst nach der ersten Berührung
 }, true);
 // ---------- Knöpfe ----------
 $('btnEnd').onclick = endTurn;
@@ -4066,7 +4141,7 @@ $('setSpeed').onclick = () => { $('btnSpeed').onclick(); $('setSpeed').textConte
 $('setZoom').onclick = () => { $('btnZoom').onclick(); $('setZoom').textContent = zoomTxt(); };
 document.addEventListener('fullscreenchange', () => { $('setFull').classList.toggle('on', !!document.fullscreenElement); });
 $('btnMenu').onclick = () => showStart(false);
-$('closeStart').onclick = () => { $('start').hidden = true; if (G && !G.over && musikName !== 'musik_schlacht') setMusik('musik_schlacht', 2); };
+$('closeStart').onclick = () => { $('start').hidden = true; if (soundOn && G && !G.over && musikName !== 'musik_schlacht') setMusik('musik_schlacht', 2); };
 // Beenden (F2): erster Klick fragt nach („Wirklich beenden?“, 4 s), zweiter Klick verlässt die Schlacht zum Startbildschirm
 let beendenT = 0; function beendenScharf(an) { clearTimeout(beendenT); const b = $('smBeenden'); b.classList.toggle('scharf', an); b.textContent = an ? 'Wirklich beenden?' : 'Beenden'; if (an) beendenT = setTimeout(() => beendenScharf(false), 4000); }
 $('smBeenden').onclick = () => { if (!$('smBeenden').classList.contains('scharf')) return beendenScharf(true); beendenScharf(false); if (G) G.over = G.over || { winner: null, why: 'quit' }; setAmbient(false); showStart(true); };
@@ -4115,7 +4190,7 @@ $('closeDetail').onclick = () => { $('detail').hidden = true; };
 // Klick (oder Antippen) in den dunklen Bereich neben dem Fenster schließt es wie der Schließen-Knopf (Spieltest 2026-11-17)
 for (const [ov, btn] of [['army', 'armyCancel'], ['shop', 'closeShop'], ['detail', 'closeDetail'], ['rules', 'closeRules']])
   $(ov).addEventListener('click', e => { if (e.target === $(ov) && !(ov === 'shop' && performance.now() - shopZieh < 400)) $(btn).click(); });   // nach dem Ziehen des Nachschub-Fensters nicht schließen
-$('btnSpeed').onclick = () => { tempo = tempo === 0.5 ? 1 : tempo === 1 ? 2 : tempo === 2 ? INSTANT : 0.5; speed = gegnerZug ? tempo * (tempo >= INSTANT ? 1 : GEGNER_TEMPO) : tempo; try { localStorage.setItem('arm.tempo', String(tempo)); } catch (e) {} tbSync(); };   // ½×, 1×, 2×, Sofort (Paket 2: langsamere Stufe, gespeichert)
+$('btnSpeed').onclick = () => { tempo = tempo === 0.5 ? 1 : tempo === 1 ? 2 : tempo === 2 ? INSTANT : 0.5; speed = gegnerZug ? tempo * (tempo >= INSTANT ? 1 : GEGNER_TEMPO) : tempo; try { localStorage.setItem('arm.tempo2', String(tempo)); } catch (e) {} tbSync(); };   // ½×, 1×, 2×, Sofort (Paket 2: langsamere Stufe, gespeichert)
 tbSync();
 $('btnFull').onclick = () => { const d = document, el = d.documentElement; if (!d.fullscreenElement) (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); else d.exitFullscreen(); };
 let rT = 0;
@@ -4245,6 +4320,7 @@ function noteEvent(e, u) {
     case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
+    case 'rollen': return logAdd(`${N(u)}: Sturmrollen`, u && u.side, ...at(u), true);
     case 'sprung': return logAdd(`${N(u)}: Sprungangriff`, u && u.side, ...at(u), true);
     case 'dauerfeuer': return logAdd(`${N(u)}: Dauerfeuer – das MG kühlt eine Runde ab`, u && u.side, ...at(u), true);
     case 'faust': logAdd(`${N(u)}: Faustsalve auf ${(e.d || []).map(id => N(unitById(id))).join(' und ')}`, u && u.side, ...at(u), true); return headline('Faustsalve!', u && u.side);
