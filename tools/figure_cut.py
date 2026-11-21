@@ -384,6 +384,15 @@ FIGUREN_POSEN = {
     'aschenwacht_panzerbuechse_posen': dict(n=4, reihen=2, grund='panzerbuechse', raster=2, zellen=True, teile_min=0.005, loesch=[(708, 500, 955, 690), (725, 690, 800, 715)],
                                             begleiter=dict(grund='aschenwacht_panzerbuechse', naht=0.31, mass='links', ref=1, setz={1: 'links', 2: None, 3: 'links', 4: 'rechts'})),
     'aschenwacht_banner_posen3': dict(n=2, reihen=1, grund='banner', nimm=[1]),   # links: Pistole, Fahne in der linken Hand; rechts unbrauchbar (Stange nicht gehalten)
+    # Helden (2026-11-21): etwa 1,5 Soldatenhöhen (Hauptmann 1,2 SH × 1,25); Grundbild = <seite>_held_1, Porträt fürs Panel = <seite>_held_portrait_1
+    'konkordat_held': dict(n=2, reihen=1, nimm=[1], grund='hauptmann', f=1.25),   # nur links (rechts zwei Kolbenfäuste); Schnipsel und rosa Fleck fallen weg
+    'konkordat_held_posen': dict(n=2, reihen=1, grund='held_1', refpose=1),   # Ausholen (Faust vor der Brust), Faustschlag
+    'konkordat_held_posen2': dict(n=2, reihen=1, grund='held_1', refpose=1, spiegeln=[2]),   # Revolverschuss, Getroffen (blickt nach links → gespiegelt)
+    'konkordat_held_portrait': dict(n=1, reihen=1, grund='held_1'),
+    'aschenwacht_held': dict(n=2, reihen=1, grund='hauptmann', f=1.25, refpose=1),   # Ruhe, Schwert über der Schulter (Ziehen)
+    'aschenwacht_held_posen': dict(n=2, reihen=1, grund='held_1', massvon='aschenwacht_held'),   # Ausholen, Hinrichtungsschlag; das verblassende zweite Schwert fällt weg
+    'aschenwacht_held_posen2': dict(n=2, reihen=1, grund='held_1', massvon='aschenwacht_held'),   # Querhieb, Getroffen kniend
+    'aschenwacht_held_portrait': dict(n=1, reihen=1, grund='held_1'),
 }
 
 
@@ -402,6 +411,7 @@ def helm_gold_weg(q, hmax):
 
 
 TRAEGER_NAHT = {'konkordat': 0.30, 'aschenwacht': 0.33}   # ungefähre Trennstelle Fahnenträger | General im Grundbild (Anteil der Breite)
+MASS = {}   # Maßstab je geschnittenem Posenbogen (für massvon)
 
 
 def general_grund(side):
@@ -472,6 +482,11 @@ def figuren_posen(name, out):
     grund = sorted(GAME.glob(f"{name.split('_', 1)[0]}_{o['grund']}*.png")); grund = [g for g in grund if '_posen' not in g.stem]
     ref = max(Image.open(g).height for g in grund) if grund else H_OUT
     s = ref * o.get('f', 1.0) / hmax; out.mkdir(parents=True, exist_ok=True)
+    if o.get('refpose'): s = ref * o.get('f', 1.0) / figs[o['refpose'] - 1].shape[0]   # Helden (2026-11-21): diese Pose bekommt die Grundgröße
+    if o.get('massvon'):
+        if o['massvon'] not in MASS: sys.exit(f"{name}: erst {o['massvon']} im selben Lauf schneiden (Maßstab)")
+        s = MASS[o['massvon']]
+    MASS[name] = s
     if o.get('traeger'): tr_, hg_, bx_ = general_grund(name.split('_', 1)[0]); s = hg_ / figs[o['ref'] - 1].shape[0]   # Größe wie der General im Grundbild
     if o.get('begleiter'): bc_ = o['begleiter']; bg_ = begleiter_grund(bc_); s = bg_[bc_['mass']][1] / figs[bc_['ref'] - 1].shape[0]   # Größe wie der Mann im Grundbild
     for j, q in enumerate(figs, 1):

@@ -407,7 +407,7 @@ function drawSym(g, im, cx, cy, R, ring) {
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
-const MUZ = { aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
+const MUZ = { konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
   konkordat_kreuzschreiter_neu: [0.632, 0.513], aschenwacht_eisenknecht_neu: [0.88, 0.61],
   // F16/F47 (2026-11-20): Rohrende statt Sehschlitz/Brust – Landkoloss-Kanone, Sturmpanzer, Turmschreiter-Turm-MG, Säge-/Klauenschreiter-Drehlauf
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
@@ -981,7 +981,7 @@ function drawAir(g, s, up) {
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
     else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
   }
-  drawSchall(g, s, up); drawNimbus(g, s, up);   // F82
+  drawSchall(g, s, up); drawNimbus(g, s, up); drawHeldAura(g, s, up);   // F82, Helden
   drawFxs(g, s, up);
   for (let i = booms.length - 1; i >= 0; i--) {
     const b = booms[i]; if (b.delay > 0) { b.delay -= FS; continue; } b.life -= FS;
@@ -1302,6 +1302,7 @@ const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Sold
 const ANZUG = { slots: [[-0.2, -0.06], [0.2, 0.2]] };   // Kampfanzug-Trupps: breit und groß, eng gestellt, damit nichts über den Feldrand ragt
 const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäter eng beieinander: Lauf- und Trage-Posen sind breit und ragten sonst aus dem Feld
 const FIGMAP = {
+  faust: ['held_1'], kuerass: ['held_1'],   // Helden (2026-11-21): Einzelmodelle, 1,5 Soldatenhöhen
   kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['reiter', 1, 3, { sc: 0.8, slots: [[-0.3, 0.14], [0.28, 0.28], [-0.02, -0.16]] }], lanzeD: ['reiter', 1, 3, { sc: 0.8, slots: [[-0.3, 0.14], [0.28, 0.28], [-0.02, -0.16]] }],   /* F58 (2026-11-20): drei Reiter, der dritte hinten in der Mitte */ sturmpz: ['panzer'], flammen: ['flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], raeumer: ['sturm', 1],
   pionier: ['pionier', 1], mineur: ['mineur', 1, 2],
@@ -1375,7 +1376,7 @@ function newFigs(u, d) {
   let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   let keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
-  if (!m[1] && d.pose && POSE_SETS[u.type]) { const el = (now - d.pose.t0) * speed, k = POSE_SETS[u.type][d.pose.art];   // Einzelmodell mit Posen (Hauptmann, 2026-11-20)
+  if (!m[1] && d.pose && POSE_SETS[u.type]) { const el = (now - d.pose.t0) * speed, PS = POSE_SETS[u.type], k = d.pose.art === 'hieb' && PS.hiebAus && el < d.pose.dauer * 0.4 ? PS.hiebAus : PS[d.pose.art];   // Hieb mit Ausholen auch bei Einzelmodellen (Helden)   // Einzelmodell mit Posen (Hauptmann, 2026-11-20)
     if (el > d.pose.dauer + 400) d.pose = null; else if (el >= 0 && el <= d.pose.dauer && k && window.FIGS && window.FIGS[pre + k]) keys = [pre + k]; }
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
   return { key: keys[0], ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, gross: STUFE3.includes(sheet), vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
@@ -1423,7 +1424,7 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse',   /* Posenbögen Runde 2 (2026-11-21) */
+const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
@@ -1463,6 +1464,9 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3
   gasschutz: { anlegen: 'gasschutz_posen_1', knien: 'gasschutz_posen_3', spruehen: 'gasschutz_posen_2', getroffen: 'gasschutz_posen_4' },
   banner: { lauf: 'banner_posen_1', rammen: 'banner_posen_2', getroffen: 'banner_posen2_2', anlegen: 'banner_posen3_1', knien: 'banner_posen3_1' },   // Pistole: Fahne in der linken Hand
   // R9 Panzerbüchse (Einzelmodell, 2 Mann): Schütze kniend angelegt neben dem Ladeschützen, geht mit Gewehr über der Schulter, getroffen (Schütze oder Ladeschütze)
+  // Helden: Rote Faust – Faustschlag mit Ausholen (Faust vor der Brust), Revolver, Getroffen; Kürassier – Schwert über der Schulter beim Ziehen, Querhieb bzw. Hieb über die Schulter, Getroffen kniend
+  faust: { kolben: 'held_posen_2', hieb: 'held_posen_2', hiebAus: 'held_posen_1', anlegen: 'held_posen2_1', knien: 'held_posen2_1', getroffen: 'held_posen2_2' },
+  kuerass: { lauf: 'held_2', kolben: 'held_posen2_1', hieb: 'held_posen_2', hiebAus: 'held_posen_1', getroffen: 'held_posen2_2' },
   buechse: { anlegen: 'panzerbuechse_posen_1', knien: 'panzerbuechse_posen_1', lauf: 'panzerbuechse_posen_2', getroffen: 'panzerbuechse_posen_3', getroffen2: 'panzerbuechse_posen_4' },
   // Generäle (Einzelmodell mit Fahnenträger): Befehl zeigend, großer Befehl mit erhobenem Säbel, Pistolenschuss, Getroffen
   generalA: { befehl: 'general_posen2_2', grossbefehl: 'general_posen2_1', anlegen: 'general_posen_3', knien: 'general_posen_3', getroffen: 'general_posen_4' },
@@ -2402,6 +2406,21 @@ async function playEvent0(e) {
       await poseWurf(e.u, x2, y2); await wait(280); if (!fxImpact(x2, y2 + L.s * 0.3, L.s * 0.7)) boom(x2, y2, L.s * 0.7, 'he'); playSound('boom', 0.6); playSound('einschlag_panzer', 0.55); shake(6);
       fx('funken', null, x2, y2, { anchor: 'mitte', life: 18, fadeOut: 0.6, mul: 0.9 }); lastFire = { kind: 'cannon', t: performance.now(), a: e.u }; await wait(220); await kampfSzeneEnde(ksz); break; }
     case 'rollstoss': { const d = DU.get(e.u); if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück
+    case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
+      const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
+      pose(e.u, 'hieb', 900); playSound('gas', 0.35); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 220); }
+      a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed;
+      for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.3 * k * k, dy: dy * 0.3 * k * k }; }
+      playSound('neu3_fzaufprall', 0.7); playSound('heavy', 0.5); shake(8); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };
+      trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d))); fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });
+      if (!(ksz && ksz.skip)) await wait(300); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
+    case 'hinrichtung': {   // Held Kürassier: Ausholen über die Schulter, Hieb nach unten, kaltes Aufblitzen, Rütteln; die Vernichtung folgt als eigenes Ereignis
+      const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
+      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); await wait(440); playSound('sword', 0.7); playSound('neu_wucht', 0.7);
+      shake(9); heldBlitz(e.u, 'kalt'); pose(e.d, 'getroffen', 700); trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d)));
+      if (!(ksz && ksz.skip)) await wait(420); await kampfSzeneEnde(ksz); break; }
+    case 'heldfall': { const hu = unitById(e.u); playSound('horn', 0.45); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
+    case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, 'angst', 'steig'); } await wait(120); break; }
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0);   // Runde 2: Sprung mit Krallen
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
@@ -2620,7 +2639,7 @@ function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym
     const w = Math.min(22, 22 * im.naturalWidth / im.naturalHeight), h = w * im.naturalHeight / im.naturalWidth; g.drawImage(im, 16 - w / 2, 16 - h / 2, w, h);
     SYMCUR[sym] = `url("${c.toDataURL('image/png')}") 16 16, pointer`; } catch (e) { SYMCUR[sym] = null; }
   return SYMCUR[sym] || fb; }
-const ABIL_CUR = { charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf', rollen: 'nahkampf', pzgranate: 'handgranate' };
+const ABIL_CUR = { durchbruch: 'nahkampf', hinrichtung: 'nahkampf', charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf', rollen: 'nahkampf', pzgranate: 'handgranate' };
 const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
@@ -3057,7 +3076,7 @@ function portraitKey(type, side, limbered) {
   const m = type && FIGMAP[type]; if (!m || !window.FIGS || fac(side) === 'F') return null;
   const pre = side === 'A' ? 'konkordat_' : 'aschenwacht_'; let sheet = m[0];
   if (limbered && sheet === 'geschuetz' && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';
-  const key = m[1] ? pre + sheet + '_' + (PORTRAIT_POSE[sheet] || 1) : pre + sheet;
+  const key = TYPES[type] && TYPES[type].held && window.FIGS[pre + 'held_portrait_1'] ? pre + 'held_portrait_1' : m[1] ? pre + sheet + '_' + (PORTRAIT_POSE[sheet] || 1) : pre + sheet;   // Helden: eigenes Porträt
   return window.FIGS[key] ? key : null;
 }
 function drawPortrait(canvas, kind, side, type, limbered) {
@@ -3110,7 +3129,7 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_KEIN = { durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen – oder schon bewegt, oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 30 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 // F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
 // Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
 const ABIL_KURZ = {
@@ -3126,11 +3145,13 @@ const ABIL_KURZ = {
   rush: () => `Aus dem Stand bis ${P.RUSH} Felder geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
   pzgranate: () => `Geballte Ladung auf ein Fahrzeug oder einen Schreiter 1–${P.PZG_RNG} Felder entfernt werfen: etwa ${fmt(P.PZG_DMG * 2)} Schaden (weniger bei starker Panzerung), ${Math.round(P.PZG_PANNE * 100)} % Pannengefahr. Nicht gegen Fußtruppen. Kostet die Aktion.`,
   rollen: () => `Ein schwerer Aufprall auf Fußtruppen oder ein Geschütz daneben oder 2 Felder geradeaus (Anlauf aus dem Stand, Draht wird niedergewalzt): etwa ${fmt(P.ROLLEN_DMG)} Schaden, niedergehalten, Moral −${fmt(P.ROLLEN_MOR)}, kein Gegenschlag. Das Ziel rutscht ein Feld zurück; ist dort kein Platz, ${xf(P.ROLLEN_WAND)} Schaden. Kostet die Aktion und alle Bewegung.`,
+  durchbruch: () => `Aus dem Stand bis 2 Felder geradeaus in eine Einheit (keine Panzer oder Schreiter): etwa ${fmt(P.DURCH_DMG)} Schaden, Moral −${fmt(P.DURCH_MOR)}, niedergehalten, ein Feld zurückgeschleudert (an einer Wand ×${xf(P.ROLLEN_WAND).slice(1)}).`,
+  hinrichtung: () => `Eine angeschlagene Einheit daneben (unter ${fmt(P.HINRICHT_STR)} Stärke, keine Panzer oder Schreiter) wird sofort vernichtet.`,
   sprung: () => `Aus dem Stand bis ${P.SPRUNG} Felder neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Danach ${A.cd} Runden Pause.` : ''); }
-const ABIL_SYM = { pzgranate: 'handgranate', rollen: 'marsch', sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { durchbruch: 'marsch', hinrichtung: 'nahkampf', pzgranate: 'handgranate', rollen: 'marsch', sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
@@ -3521,6 +3542,25 @@ const NIMBUS = [];   // { id, t0, dauer }
 function gasschutzFx(id) {
   if (!BW) return; const d = DU.get(id); if (!d) return; NIMBUS.push({ id, t0: now, dauer: 3200 });
   for (let q = 0; q < (BW === 1 ? 2 : 4); q++) setTimeout(() => { const d2 = DU.get(id); if (d2) burst(d2.x + (Math.random() - 0.5) * L.s * 0.5, d2.y - L.s * (0.55 + Math.random() * 0.2), 5, ['#dfe9d4', '#c9d8bd', '#eef3e8'], { up: 0.06, spread: 0.06 }); }, (150 + q * 420) / speed);
+}
+// Helden-Aura (2026-11-21, entwurf/HELDEN_PROMPTS.md): Rote Faust – dunkelrote Glut am Boden, aufsteigende Funken; Kürassier – kalter, bleicher Bodennebel,
+// fallende Ascheflocken, Gegner daneben mit dünnem kaltem Schimmer. Beim Spezialschlag kurz aufflammend bzw. kaltes Aufblitzen (heldBlitz).
+const HBLITZ = [];   // { id, art, t0 }
+function heldBlitz(id, art) { if (BW) HBLITZ.push({ id, art, t0: now }); }
+function drawHeldAura(g, s, up) {
+  if (!BW || !G) return; const amp = BW === 1 ? 0.55 : 1;
+  for (const u of G.units) { const T = TYPES[u.type]; if (!T.held || !E.alive(u)) continue; const d = DU.get(u.id); if (!d || (up && !up(d.x, d.y))) continue;
+    const warm = T.aura === 'standhaft', p = 0.75 + 0.25 * Math.sin(now / 700 + u.id); let bl = 0;
+    for (let i = HBLITZ.length - 1; i >= 0; i--) { const b = HBLITZ[i], el = (now - b.t0) * speed; if (el > 900) { HBLITZ.splice(i, 1); continue; } if (b.id === u.id) bl = Math.max(bl, 1 - el / 900); }
+    const gr = g.createRadialGradient(d.x, d.y, 0, d.x, d.y, s * (0.95 + 0.4 * bl));
+    if (warm) { gr.addColorStop(0, `rgba(190,52,24,${(0.32 * p + 0.5 * bl) * amp})`); gr.addColorStop(0.55, `rgba(120,28,14,${(0.16 * p + 0.25 * bl) * amp})`); gr.addColorStop(1, 'rgba(90,20,10,0)'); }
+    else { gr.addColorStop(0, `rgba(196,212,226,${(0.26 * p + 0.22 * bl) * amp})`); gr.addColorStop(0.6, `rgba(160,178,196,${(0.12 * p + 0.1 * bl) * amp})`); gr.addColorStop(1, 'rgba(160,178,196,0)'); }
+    g.save(); if (warm) g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); gEllipse(g, d.x, d.y, s * (0.95 + 0.4 * bl), s * (0.95 + 0.4 * bl)); g.fill(); g.restore();
+    if (Math.random() < (BW === 1 ? 0.03 : 0.07) * Math.min(2, FS)) { if (warm) burst(d.x + (Math.random() - 0.5) * s * 0.6, d.y - s * Math.random() * 0.3, 2, ['#ff8a3a', '#d8461a', '#ffd27a'], { up: 0.05, spread: 0.04 });   // Funken steigen
+      else burst(d.x + (Math.random() - 0.5) * s * 0.9, d.y - s * (1.2 + Math.random() * 0.5), 2, ['#cfd3d6', '#9aa0a6', '#e8ecee'], { up: -0.015, spread: 0.03 }); }   // Ascheflocken fallen
+    if (T.aura === 'furcht') for (const o of G.units) { if (o.side === u.side || !E.alive(o) || E.dist(o.c, o.r, u.c, u.r) !== 1 || TYPES[o.type].cls === 'walker') continue; const f = DU.get(o.id); if (!f || (up && !up(f.x, f.y))) continue;
+      g.save(); g.beginPath(); gEllipse(g, f.x, f.y, s * 0.62, s * 0.62); g.strokeStyle = `rgba(190,214,236,${0.28 * p * amp})`; g.lineWidth = Math.max(1, s * 0.03); g.stroke(); g.restore(); }   // dünner kalter Schimmer
+  }
 }
 function drawNimbus(g, s, up) {
   if (!BW || !G) return;
@@ -4008,6 +4048,10 @@ function noteEvent(e, u) {
     case 'pzgranate': return logAdd(`${N(u)}: Panzergranate`, u && u.side, ...at(u), true);
     case 'rammen': return logAdd(`${N(u)}: rammt das Gebäude`, u && u.side, ...at(u), true);
     case 'sprung': return logAdd(`${N(u)}: Sprungangriff`, u && u.side, ...at(u), true);
+    case 'durchbruch': logAdd(`${N(u)}: Durchbruch`, u && u.side, ...at(u), true); return headline('Durchbruch!', u && u.side);
+    case 'hinrichtung': logAdd(`${N(u)}: Hinrichtung`, u && u.side, ...at(u), true); return headline('Hinrichtung!', u && u.side);
+    case 'heldfall': logAdd(`${N(u)} ist gefallen – die Seite verliert Moral`, u && u.side, ...at(u), true); return headline(`${N(u)} fällt!`, u && u.side);
+    case 'furcht': return logAdd(`${N(u)}: Furcht vor dem Kürassier`, u && u.side, ...at(u));
     case 'dauerfeuer': return logAdd(`${N(u)}: Dauerfeuer – das MG kühlt eine Runde ab`, u && u.side, ...at(u), true);
     case 'faust': logAdd(`${N(u)}: Faustsalve auf ${(e.d || []).map(id => N(unitById(id))).join(' und ')}`, u && u.side, ...at(u), true); return headline('Faustsalve!', u && u.side);
     case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length} Gegner verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);

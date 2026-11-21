@@ -20,7 +20,7 @@ function wOf(side) {
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 // Prüfliste 2.23 (2026-11-21): neue Einheiten in die Wunschliste aufgenommen (Mineure, Schildwall, Löwenoger, Versorgung; Hünen, Gasschutz, Versorgung);
 // alte Liste mit KAUF_ALT=1. Dazu Lage-Käufe (kaufNachLage), die bei klarem Bedarf vorgehen.
-const WISH = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch', 'mineur', 'schildwall', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
+const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch', 'mineur', 'schildwall', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'kuerass', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
 const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
@@ -196,6 +196,12 @@ function abilPlan(G, u) {
       if (rw) { const dm = Math.min(E.rollenDmg(G, u, x, false), x.str), sch = G.units.filter(z => z.side !== u.side && E.canFire(G, u, z)).reduce((m, z) => Math.max(m, Math.min(E.preview(G, u, z, 'fire').dmg, z.str)), 0);
         v = dm > sch * 1.3 ?   /* Prüfliste 2.20: nur, wenn der Aufprall deutlich mehr bringt als der Schuss */ 1 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.5 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0) : 0; }
     }
+    else if (k === 'durchbruch') {   // Held Rote Faust (2026-11-21): Aufprall mit Rückstoß – schwache Gegner, MG, Geschütze, Gegner auf Zielfeldern (werden heruntergeschleudert)
+      const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
+      if (rw) { const dm = Math.min(P.DURCH_DMG * (0.4 + 0.6 * u.str / 10) * (TYPES[x.type].suit ? 0.5 : 1) / Math.max(1, TYPES[x.type].def / 4), x.str);
+        v = 1.5 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 2 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.4 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0); }
+    }
+    else if (k === 'hinrichtung') { const x = foe(c, r); if (x) v = 6 + (G.map[x.c][x.r].obj ? 2 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1 : 0) + x.str * 0.3; }   // Held Kürassier: sicherer Abschuss
     else if (k === 'sprung') {   // Sprungangriff (2026-11-20): Nahkampf-Vorschau vom Landefeld; schwache Gegner, MG, Geschütze und Zielfelder zuerst
       const x = foe(c, r), land = x && E.sprungLand(G, u, x);
       if (land) { const p = E.preview(G, Object.assign({}, u, { c: land[0], r: land[1] }), x, 'melee'), dm = Math.min(p.dmg, x.str);
@@ -476,6 +482,7 @@ function buy(G) {
   for (let guard = 0; guard < 6; guard++) {
     const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : W[side];
     const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null, type = lage || wl[G._wish[side] % wl.length];
+    if (type && ENVX.OHNEHELD && TYPES[type].held) { G._wish[side]++; continue; }   // Sim: ohne Helden (NOHELD ist schon der Abschalter für „gebunden im Nahkampf“)
     if (!type || !E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
     if (!hs.length) break;
