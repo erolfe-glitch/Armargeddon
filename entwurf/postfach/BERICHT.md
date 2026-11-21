@@ -1,5 +1,79 @@
 # Berichte von Claude Code (neuester oben)
 
+## 2026-11-21 – Paket G, Schritte 1–3 (Texte, Sturmrollen, Ton)
+
+**Commits:**
+- `a8c201c` Schritt 1
+- `8d947ec` Ton und Ton-Pult
+- `4e7fe48` Schritt 2 und Spiel gebaut
+
+### Schritt 1 – Texte und Anzeige (Prüfliste 2.1–2.16, 2.25)
+- **Panzerbüchse und Kreuzschreiter:** „panzerbrechend: Panzer ×1,5, Fußtruppen ×0,5“. Der Kreuzschreiter heißt im Text „Panzerjäger“ (2.4), dazu Kriegshammer gegen Fußtruppen ×1,5. Der Wert `at: 2` ist jetzt `at: true`; der Preis bleibt 50.
+- **Pioniere:** Der Satz „Nahkampf ×1,5 gegen Kolosse“ ist gestrichen.
+- **Kampfanzüge, Hünen, Löwenoger:** „leicht gepanzert: Gewehr, MG und Klingen ×0,5, panzerbrechend ×1,5“, dazu „stark im Nahkampf“. Beim Oger stehen jetzt auch Pranken und Schrot gegen Panzer im Text.
+- **Bohrkoloss:** Flammenstoß 2 Felder.
+- **Anführer:** „3 Befehle je Schlacht, an Nachbarn“.
+  - Fernsprech- und Signaltrupp: „Anführer bis 3 Felder können ihre Befehle eine Runde früher wieder geben“. Das ist die tatsächliche Wirkung; vorher stand dort „jede Runde“.
+- **Eingraben:** „zum Ziehen erst ausgraben (Aktion)“.
+- **Artillerie und Mörser:** „gegen Fahrzeuge und Schreiter nur ×0,5“. Bei Geschütz und Feldkanone steht dazu der Direktschuss ×2,5.
+- **Schlagworte:** Eingreiftrupp „Panzergranate“, Mineure „3 Ladungen“ und „Keine Panzerwaffe“.
+- **Regeln-Fenster:**
+  - Neuer Absatz „Stark und schwach (Medaillen)“ mit der Tabelle in Sätzen und der Medaillen-Legende.
+  - Neuer Absatz „Neue Handlungen“: Ausgraben, Sturmrollen, Panzergranate, Gebäude rammen und Trümmer, Ballon, Flammen 2 Felder, Mineur-Ladungen.
+  - Der Satz zur Reserve der Aschenwacht ist gestrichen.
+- **CLAUDE.md:** Kirchenfahne steht jetzt mit 3 Siegpunkten.
+- **2.14:** Landkoloss und Sturmpanzer haben keinen Nahkampf-Knopf mehr.
+- **2.15:** Die Zugvorschau zeigt jetzt auch ein Fähigkeiten-Symbol (z. B. Sturmrollen, Panzergranate, Haftladung, Sprung), wenn von dort nur die Fähigkeit geht.
+- **2.16:** Der Einschlag-Ton richtet sich jetzt nach der Faktortabelle. Granaten auf Panzer (×0,5) klingen deshalb nach Abpraller, Panzerbüchse und Kanone nach Metallkrach.
+- **2.25:** Die KI zählt Pioniere und Mineure nicht mehr als Nahkampf-Gefahr für Panzer.
+- **Simulation:** Grauwall 52 %, Sankt Ruß 47 %.
+
+### Schritt 2 – Sturmrollen gedämpft (2.20)
+- Pause **3** statt 2 Runden. Die KI rollt nur noch, wenn der erwartete Schaden größer ist als der Schuss × 1,3.
+- **Nutzung je Schlacht:**
+
+| Seite | vorher | nachher |
+|---|---|---|
+| Konkordat (Landkolosse) | 14,1 | 10,5 |
+| Aschenwacht (Sturmpanzer, Sankt Ruß) | 8,5 | 6,2 |
+
+- **Abstimmung:**
+  - Grauwall: **48 %**, ohne Änderung.
+  - Sankt Ruß fiel auf 41 %. Mit **8 Kohorten und 2 Pionieren** (statt 10 und 1) sind es **53 %**.
+- Sankt Ruß bleibt sehr empfindlich (je 200 Schlachten):
+
+| Änderung | Konkordat |
+|---|---|
+| +1 Kohorte | 41 % |
+| −1 Grenadier der Aschenwacht | 36 % |
+| +1 Pionier, 10 Kohorten | 77 % |
+| +1 Pionier, 8 Kohorten | 53 % |
+
+  Auf dieser Karte entscheidet die Panzerabwehr (Haftladung gegen die Sturmpanzer) fast alles.
+
+### Schritt 3 – Ton (3.1–3.7, 2.17)
+Pegel im Spiel, je vorher → nachher:
+
+| Ton | vorher | nachher |
+|---|---|---|
+| Konkordat-Gewehr (`rifle_1`) | −33 dB | **−24,5 dB** (gleichauf mit der Aschenwacht −24,8) |
+| Treffer weich | −29 bis −32 dB | −25 bis −28 dB |
+| Abpraller | −35 dB | −29,5 dB |
+| Schritte (weich begrenzt, die Spitzen lagen am Anschlag) | −32 dB | −25 bis −26 dB |
+
+- **Halbautomat:** längere Ausblendung.
+- **Pistole der Aschenwacht:** aus der Walther-Quelle mit Ausklang neu gebaut, der Schlüssel `pistol` bleibt.
+- **Kolosskanone (`kolosskanone_1`):** Die Quelle ist nur 0,4 s lang; mit `fo` lässt sich da nichts verlängern. Ich habe sie so gelassen. Im Ton-Pult kannst du für Kolosse die zweite Variante wählen.
+- **3.4:** „Kugel vorbei“ spielt nicht mehr, wenn im selben Moment ein Treffer folgt.
+- **Ton-Pult (2.17):** neue Zeilen für:
+  - Sturmrollen (Anlauf, Aufprall, Krachen),
+  - Gebäude rammen (Aufprall, Wucht, Einsturz) bei allen Fahrzeugen und Schreitern,
+  - Panzergranate (Explosion, Metalltreffer),
+  - Bohrstoß, Ballon (Winde, Ratsche), Flammen-Nachbrennen.
+  - Die Nahkampfzeile der Sturmtrupps zeigt jetzt den normalen Hieb (F80); Panzer haben keine Nahkampfzeile mehr.
+
+**Weiter mit Schritt 4 (Tests), danach Schritt 5 (alte Karten raus).**
+
 ## 2026-11-21 – F76 (geändert), F78, F70, F80, F81 – bereit für die Prüfrunde
 
 **Commit:** siehe unten (gepusht).
