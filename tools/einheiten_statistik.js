@@ -1,5 +1,5 @@
 // Einheiten-Statistik (Paket H Schritt 11 / F103, 2026-11-22): KI gegen KI, je Einheitentyp gezählt.
-// Aufruf: node tools/einheiten_statistik.js [Schlachten je Karte=200] > entwurf/postfach/einheiten_statistik.csv
+// Aufruf: node tools/einheiten_statistik.js [Schlachten je Karte=200] > entwurf/postfach/einheiten_statistik.csv   (MECHS=1: mit Kampfmaschinen)
 // Spalten: schluessel, name, seite, karte, preis, start_je_schlacht, nachschub_je_schlacht, gekauft_je_schlacht (Start + Nachschub), aktionen_je_schlacht,
 // schaden_gemacht_je_schlacht (Stärke ×10 wie in der Anzeige), schaden_je_100_punkte, ueberlebt_bis_ende_prozent, einsatz_ki, rolle, stark_gegen, schwach_gegen, kontert_man_mit.
 // Schaden wird dem zugeordnet, der gerade schießt oder schlägt (auch Gegenschlag, Sperrfeuer, Feuerbereitschaft); eigener Beschuss zählt nicht.
@@ -11,7 +11,7 @@ for (const karte of ['grauwall', 'sanktruss']) {
   const S = {};   // typ → Zähler
   const z = t => S[t] = S[t] || { start: 0, kauf: 0, akt: 0, schaden: 0, ende: 0, lebend: 0, einsatz: {} };
   for (let g = 0; g < N; g++) {
-    const G = E.newGame({ seed: 1 + g * 7919, map: karte }); E.startTurn(G);
+    const G = E.newGame({ seed: 1 + g * 7919, map: karte, mechs: !!process.env.MECHS }); E.startTurn(G);
     for (const u of G.units) z(u.type).start++;
     let guard = 0, bk = '';
     const verbuche = (ev, akteur) => {   // Schaden dem gerade Handelnden zuordnen
