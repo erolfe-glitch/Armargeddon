@@ -2902,7 +2902,7 @@ async function act(fn) {
   } catch (err) { console.error('Handlung:', err); }
   finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
     busy = false;
-    sel = (u && E.active(u) && (u.ap >= 1 || u.bp > 0)) ? u : null;   // bleibt gewählt, solange Aktion oder BP übrig sind
+    sel = (u && E.active(u) && hasAction(u)) ? u : null;   // F93 (2026-11-22): bleibt gewählt, solange sie noch etwas kann (zweite Waffe, Ziehen, Fähigkeit …) – dieselbe Prüfung wie „fertig/grau“ (F88)
     computeOptions(); updateUI();
   }
 }
@@ -3065,26 +3065,28 @@ function tbSync() {
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
 const ABGEHAKT = new Set();   // F11: per „Fertig“ abgehakt (je Runde und Seite), dann grau, auch wenn noch die Zweitwaffe ginge
-function hasAction(u) {
-  if (u.broken > 0 || ABGEHAKT.has(G.turn + G.side + ':' + u.id)) return false;
-  if (TYPES[u.type].zweit && !u.zw && E.zweitTargets(G, u).length) return true;   // F17: Zweitwaffe noch frei
-  if (TYPES[u.type].roar && E.canRoar(G, u)) return true;
-  if (!u.supp && E.reachable(G, u).size) return true;   // noch Bewegungspunkte
-  if (u.ap < 1) return E.canSetup(G, u) || E.canTeardown(G, u);
-  if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o) || E.canRecover(G, u, o))) return true;
-  if (E.canSetup(G, u)) return true;
+// F88 (2026-11-22): bereitGrund nennt, warum eine Einheit noch nicht fertig ist (Test __dbg.bereitGrund); hasAction = es gibt einen Grund
+function hasAction(u) { return !!bereitGrund(u); }
+function bereitGrund(u) {
+  if (u.broken > 0 || ABGEHAKT.has(G.turn + G.side + ':' + u.id)) return '';
+  if (TYPES[u.type].zweit && !u.zw && E.zweitTargets(G, u).length) return 'zweitwaffe';   // F17: Zweitwaffe noch frei
+  if (TYPES[u.type].roar && E.canRoar(G, u)) return 'gebruell';
+  if (!u.supp && E.reachable(G, u).size) return 'ziehen';   // noch Bewegungspunkte (F88/F93: wer laut Regeln noch ziehen darf, ist nicht fertig)
+  if (u.ap < 1) return E.canSetup(G, u) ? 'aufbauen' : E.canTeardown(G, u) ? 'abbauen' : '';
+  if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o) || E.canRecover(G, u, o))) return 'befehl';
+  if (E.canSetup(G, u)) return 'aufbauen';
   // Bereit heißt: irgendeine Aktion ist noch möglich (Wunsch 2026-11-16), nicht nur Ziehen. Aufgebautes MG kann abbauen,
   // Geschütz in Stellung aufprotzen, Schützen Feuerbereitschaft nehmen. (Bloßes Drehen zählt allein nicht, es ist frei.)
-  if (E.canTeardown(G, u) || E.canLimber(G, u) || E.canOverwatch(G, u)) return true;
-  if (E.canDig(G, u) || E.canShields(G, u) || E.canPlant(G, u) || E.canSperr(G, u) || E.canLay(G, u)) return true;   // F17
-  if (TYPES[u.type].abil && E.abilTargets(G, u).length) return true;
-  if (u.attacked) return false;
+  if (E.canTeardown(G, u)) return 'abbauen'; if (E.canLimber(G, u)) return 'aufprotzen'; if (E.canOverwatch(G, u)) return 'feuerbereit';
+  if (E.canDig(G, u)) return 'eingraben'; if (E.canShields(G, u)) return 'schilde'; if (E.canPlant(G, u)) return 'banner'; if (E.canSperr(G, u)) return 'sperrfeuer'; if (E.canLay(G, u)) return 'draht';   // F17
+  if (TYPES[u.type].abil && E.abilTargets(G, u).length) return 'faehigkeit';
+  if (u.attacked) return '';
   const T = TYPES[u.type];
-  if (T.cls === 'medic') return G.units.some(o => E.canHeal(G, u, o));
-  if (T.cls === 'art') { for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.canShell(G, u, c, r, 'he')) return true; }
-  if (E.canCut(G, u)) return true;
+  if (T.cls === 'medic') return G.units.some(o => E.canHeal(G, u, o)) ? 'heilen' : '';
+  if (T.cls === 'art') { for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.canShell(G, u, c, r, 'he')) return 'beschuss'; }
+  if (E.canCut(G, u)) return 'draht schneiden';
   const f0 = u.face, fan = d => { if (!T.mg) return false; u.face = E.faceIndex(E.angleTo(u.c, u.r, d.c, d.r)); const ok = E.canFire(G, u, d); u.face = f0; return ok; };   // MG: nach Drehen schussbereit
-  return G.units.some(d => d.side !== u.side && E.alive(d) && (E.canFire(G, u, d) || E.canMelee(G, u, d) || fan(d)));
+  return G.units.some(d => d.side !== u.side && E.alive(d) && (E.canFire(G, u, d) || E.canMelee(G, u, d) || fan(d))) ? 'angriff' : '';
 }
 function refreshSpent() { spent.clear(); if (!G || G.over || !human(G.side)) return; for (const u of G.units) if (u.side === G.side && E.active(u) && !hasAction(u)) spent.add(u.id); }
 function updateUI() {
@@ -3402,6 +3404,8 @@ function unitButtons(T, hints) {
   }
   if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
   btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', on: spent.has(sel.id), text: spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (wird grau), auch wenn sie noch etwas könnte.' });   // F11: für alle Einheiten
+  { const gr = !spent.has(sel.id) && sel.ap < 1 ? bereitGrund(sel) : ''; const NOCH = { ziehen: 'kann noch ziehen', aufbauen: 'kann noch aufbauen', abbauen: 'kann noch abbauen', gebruell: 'Löwengebrüll noch frei' };
+    if (NOCH[gr]) hints.push(`<i>Aktion verbraucht,</i> ${NOCH[gr]} – noch nicht fertig. „Fertig“ hakt sie ab.`); }   // F88 (2026-11-22): warum noch kein Haken
   if (!spent.has(sel.id) && TYPES[sel.type].zweit && !sel.zw && E.zweitTargets(G, sel).length) hints.push('<i>Zweitwaffe noch frei:</i> ' + (TYPES[sel.type].zweit.name || 'Zweitwaffe') + ' kann diese Runde noch feuern.');   // F17
   // Hinweiszeile
   if (sel.supp > 0) hints.push('▼ Niedergehalten: bleibt liegen, kann weder ziehen, schießen noch stürmen.');
@@ -4193,7 +4197,7 @@ window.__dbg = { ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: 
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
   sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx, bildLinks: d.bildLinks }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
-  select: id => select(G.units.find(u => u.id === id)), get sel() { return sel; },
+  select: id => select(G.units.find(u => u.id === id)), bereitGrund: id => { const u = G.units.find(x => x.id === id); return u ? bereitGrund(u) : null; }, get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd
 };
