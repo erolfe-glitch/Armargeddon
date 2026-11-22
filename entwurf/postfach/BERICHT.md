@@ -1,3 +1,55 @@
+## 2026-11-22 Nachmittag – Neue Töne als Standard (Aufträge 14:40, 14:50, 15:00) (`841f93f`)
+
+Alle Dateien aus `sound-quelle/_neu/` sind eingebaut. Die Dateien wurden in Ordner kopiert, nichts verschoben oder gelöscht:
+- `Voices/elevenlabs/rufe/`
+- `Voices/elevenlabs/schreiter/`
+- `Aufbau/`
+- `Helden/`
+
+Weiter gilt:
+- **Alte Töne:** bleiben im Pult wählbar.
+- **Pult:** Eine Wahl dort hat Vorrang vor dem neuen Standard.
+- **Abgeschlossen:** CREDITS ergänzt, sound-quelle gesichert, `index.html` neu gebaut und eingecheckt.
+- **Tests:** test_ton (prüft jetzt alle neuen Plätze, den Feuer-Ruf und eine Schreiter-Stimme mit Roboter-Filter), Partietest und test_kommentare fehlerfrei. `test_kommentare` erkennt jetzt auch verschluckte `let`-Zeilen; der Fehler ist heute zweimal passiert und behoben.
+- **Größe:** `index.html` ist jetzt 61,6 MB. GitHub warnt ab 50 MB, die harte Grenze liegt bei 100 MB. Die nur im Pult genutzten Töne liegen weiter getrennt in `sound_pult.js`.
+
+### Platz / Anlass → neuer Standard → Einheiten
+| Platz / Anlass | neuer Standard-Ton | für |
+|---|---|---|
+| Ruf „Feuer-Befehl“ | `ruf_feuer` (Rob „FIRE!“ / Ragnar „FEUER!“) | Hauptmann/General bei „Feuer frei“ und bei Feuerbereitschaft; Feuerschlag anfordern (Fernsprechtrupp) |
+| Ruf „Panik, einzeln“ | `panik_einzeln` | flüchtender Trupp mit 1–2 Figuren |
+| Ruf „Panik, Gruppe“ | `panik_gruppe` | flüchtender Trupp ab 3 Figuren oder zweite Flucht innerhalb von 3 s |
+| Ruf „Sterben, einzeln“ | `sterben_einzeln` (nach 5 s ausgeblendet) | jede dritte vernichtete Fußtruppe |
+| Ruf „Sterben, Gruppe“ | `sterben_gruppe` (leise) | Fußtruppe verliert auf einmal ab 25 Stärke (Granaten, Artillerie, schwere Treffer), wenn nicht schon „Sanitäter!“ gerufen wird |
+| Schreiter-Stimme (8 Anlässe) | `sst_auswahl` … `sst_zerstoert`, Roboter-Filter (Konkordat 45 %, Aschenwacht 70 %) | Säge-, Klauen-, Turm-, Ordens-, Kreuzschreiter und Eisenknecht; für sie gibt es keine Truppenrufe |
+| MG aufbauen / abbauen | `mg_aufbauen` / `mg_abbauen` (vorher mgsetup + mgladen / nachladen) | Mahlwerk-, Sensenwerk-Trupp |
+| Aufprotzen / Abprotzen | `geschuetz_aufprotzen` / `geschuetz_abprotzen` (vorher clank / abprotzen) | Feldkanone, Donnerrohr, Grabengeschütz |
+| Bauarbeit | `sandsaecke` (vorher bauen) | Draht ziehen (Drahtpioniere), Mine legen, Stollen (Mineure) |
+| Sprungangriff, Landung | `loewen_landung`, alter Landeton leise darunter | Löwenoger |
+| Schuss Offiziere | `neu4_pistole_schwer` (vorher pistol) | Hauptmann, General (beide Seiten) |
+| Schuss Panzerbüchse | `neu4_gewehr_schwer` (vorher buechse) | Panzerbüchsen-Trupp |
+| Schuss Eiserne Hünen | `neu4_mg_schwer` (vorher mg, tiefer gestimmt) | Eiserne Hünen |
+| schon seit Mittag Standard | Säge, Stahlklaue, Raubkatzen-Krallen, Kettenschwert, Schreiter- und Kampfanzug-Schritte, Stacheldraht | wie im Bericht von Mittag |
+
+- **Schreiter-Regeln:**
+  - Auswahl nur jede dritte.
+  - „Feind gesichtet“ beim Ziehen, wenn eine gegnerische Maschine bis 6 Felder entfernt ist, höchstens alle 30 s je Seite.
+  - „Schwer beschädigt“ einmal je Schreiter (unter 35 Stärke).
+- **Für alle Rufe:** höchstens einer zugleich, je Anlass höchstens alle 7 s.
+- **Ton-Pult:**
+  - Unter „Stimmen“ stehen die fünf neuen Rufe mit ihrem Standard.
+  - Neu ist die Gruppe **„Schreiter Konkordat/Aschenwacht“** mit acht Zeilen, Filter „Roboter-Lautsprecher“, Stärke je Zeile.
+  - Die Löwen-Landung steht unter „Nahkampf“.
+
+### Fragen an Enrico (nicht geraten)
+1. **Granatwerfer** (`granatwerfer_schuss`): Keine Einheit hat einen Granatwerfer. Wofür? Zum Beispiel als Abschuss von Grabenmörser/Minenwerfer, oder für den Handgranaten-Wurf der Grenadiere? Bis dahin nur im Pult.
+2. **Schweres MG:** nur bei den Eisernen Hünen, oder auch bei den MG-Trupps (Mahlwerk, Sensenwerk)?
+3. **Schweres Gewehr:** nur Panzerbüchse, oder auch Kampfanzüge (Stahlgänger, Panzerknechte; heute Halbautomatik) oder Scharfschützen?
+4. **Sandsäcke:** Eine eigene Handlung „Sandsackwall bauen“ gibt es nicht. Ich habe sie bei Draht ziehen, Mine legen und Stollen gesetzt; das Banner-Rammen behält den alten Ton. Passt das?
+5. **MG-Rückstoß** (Zurückschieben durch Durchbruch/Sturmrollen): Soll dort `mg_abbauen` klingen? Bisher kein Ton gesetzt.
+6. **Feuer-Befehl Aschenwacht:** Die Aschenwacht hat kein „Feuer frei“. Ihr Feuer-Ruf kommt nur bei Feuerbereitschaft von Hauptmann/General. Auch bei Sturmbefehl oder Generalangriff?
+7. **Panik:** Grenze einzeln/Gruppe = 3 Figuren bzw. zwei Fluchten in 3 s. Passt das?
+
 ## 2026-11-22 Abend – Entscheidungen von 13:35 umgesetzt (`fec57ae` … Abschluss)
 
 Alles eingebaut, gemessen und gepusht, `index.html` am Ende mit eingecheckt.
