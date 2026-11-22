@@ -56,6 +56,14 @@ await sleep(1500);
     for (let i = 0; i < 3; i++) { await __dbg.panelAct('tl'); await new Promise(r => setTimeout(r, 150)); } await new Promise(r => setTimeout(r, 400)); return JSON.stringify({ id: u.id, vor, nach, zurueck: [u.face, __dbg.du(u.id).bildLinks] }); })()`));
   if (r) { const ok = r.nach[0] === (r.vor[0] + 3) % 6 && r.nach[1] === !r.vor[1] && r.zurueck[0] === r.vor[0] && r.zurueck[1] === r.vor[1];
     if (!ok) fehler.push(`F85: Drehen wirkt nicht: ${JSON.stringify(r)}`); console.log(`  Drehen (3× rechts, 3× links): ${ok ? 'ok' : 'FEHLER'} ${JSON.stringify(r)}`); } }
+// F102 (2026-11-22): Leertaste hakt die gewählte Einheit ab und springt zur nächsten offenen, E auf der abgehakten Einheit öffnet sie wieder (Stand wie vorher)
+{ const v = JSON.parse(await ev(`(async () => { const G = __dbg.G, u = G.units.find(x => x.side === G.side && __dbg.E.alive(x) && __dbg.E.active(x) && x.ap >= 1 && x.bp > 0); if (!u) return 'null'; __dbg.select(u.id); await new Promise(r => setTimeout(r, 300)); return JSON.stringify({ id: u.id, ap: u.ap, bp: u.bp }); })()`));
+  if (v) { await taste(' ', 'Space'); await sleep(500);
+    const n1 = JSON.parse(await ev(`JSON.stringify((() => { const u = __dbg.G.units.find(x => x.id === ${v.id}); return { ap: u.ap, bp: u.bp, sel: __dbg.sel && __dbg.sel.id, grund: __dbg.bereitGrund(u.id) }; })())`));
+    await ev(`(__dbg.select(${v.id}), 1)`); await sleep(300); await taste('e', 'KeyE'); await sleep(500);
+    const n2 = JSON.parse(await ev(`JSON.stringify((() => { const u = __dbg.G.units.find(x => x.id === ${v.id}); return { ap: u.ap, bp: u.bp, grund: __dbg.bereitGrund(u.id) }; })())`));
+    const ok = n1.ap === 0 && n1.grund === '' && n1.sel !== v.id && n2.ap === v.ap && n2.bp === v.bp && n2.grund !== '';
+    console.log(`  F102 Leertaste/E: ${ok ? 'ok' : 'FEHLER'} ${JSON.stringify({ vorher: v, abgehakt: n1, wieder: n2 })}`); if (!ok) fehler.push('F102: Abhaken per Taste: ' + JSON.stringify({ v, n1, n2 })); } }
 await karteOk('Start');
 
 // Ein eigener Zug: alle Fußtruppen nacheinander wählen (Klick, sonst Tab), über verschiedene Felder fahren, zum Feind vorrücken,

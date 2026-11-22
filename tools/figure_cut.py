@@ -377,6 +377,7 @@ FIGUREN_POSEN = {
     # Generäle: nur der General posiert, der Fahnenträger kommt aus dem (übermalten) Grundbild dahinter (traeger); ref = Pose ohne erhobenen Arm, gleich groß wie der General im Grundbild
     'konkordat_general_posen': dict(n=4, reihen=2, grund='general', nimm=[3, 4], traeger=True, ref=3, raster=2),   # oben Beine abgeschnitten; unten Pistolenschuss, Getroffen
     'konkordat_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Stab zeigend
+    'konkordat_general_posen3': dict(n=2, reihen=1, grund='general', traeger=True, ref=1),   # F101 (2026-11-22): links Säbelhieb schräg nach unten, rechts Säbelstoß nach vorn
     'aschenwacht_general_posen': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Hand zeigend
     'aschenwacht_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=1),   # Pistolenschuss, Getroffen
     # R9 Panzerbüchse (16:00): 1 Schütze kniend angelegt, 2 geht mit Gewehr über der Schulter, 3 Schütze getroffen (Gewehr rutscht weg), 4 Ladeschütze getroffen (Patrone fällt);

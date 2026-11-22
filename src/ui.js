@@ -656,6 +656,7 @@ function drawGround(g, s) {
       g.lineWidth = s * st[2]; g.strokeStyle = `rgba(${m},${st[1]})`; g.stroke(); g.globalAlpha = 1; }
   }
   // Markierungen
+  try { drawWache(g, s); } catch (err) { }   // F96: Schussfelder der Bereitschaft (auch ohne Auswahl)
   if (sel && human(G.side) && !busy) {
     // Bewegungsfelder dezent (Wunsch des Nutzers): halbdurchsichtige Fläche, Gelände bleibt sichtbar. Ziehen = Knochenweiß, Marsch/Rückzug = Messing.
     // Paket 2: Marschfelder (nur mit Marsch erreichbar, danach keine Aktion) deutlich in leichtem Gelb/Messing mit gestrichelter Kante
@@ -1379,6 +1380,7 @@ function newFigs(u, d) {
   let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   let keys = m[1] ? [1, 2, 3, 4].map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
+  if (!m[1] && !d.pose && POSE_SETS[u.type]) { const wa = wachArt(u, POSE_SETS[u.type]); if (wa && window.FIGS && window.FIGS[pre + POSE_SETS[u.type][wa]]) keys = [pre + POSE_SETS[u.type][wa]]; }   // F99: Einzelmodelle in Bereitschaft zielen
   if (!m[1] && d.pose && POSE_SETS[u.type]) { const el = (now - d.pose.t0) * speed, PS = POSE_SETS[u.type], k = d.pose.art === 'hieb' && PS.hiebAus && el < d.pose.dauer * 0.4 ? PS.hiebAus : PS[d.pose.art];   // Hieb mit Ausholen auch bei Einzelmodellen (Helden)   // Einzelmodell mit Posen (Hauptmann, 2026-11-20)
     if (el > d.pose.dauer + 400) d.pose = null; else if (el >= 0 && el <= d.pose.dauer && k && window.FIGS && window.FIGS[pre + k]) keys = [pre + k]; }
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
@@ -1472,8 +1474,8 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3
   kuerass: { lauf: 'held_2', kolben: 'held_posen2_1', hieb: 'held_posen_2', hiebAus: 'held_posen_1', getroffen: 'held_posen2_2' },
   buechse: { anlegen: 'panzerbuechse_posen_1', knien: 'panzerbuechse_posen_1', lauf: 'panzerbuechse_posen_2', getroffen: 'panzerbuechse_posen_3', getroffen2: 'panzerbuechse_posen_4' },
   // Generäle (Einzelmodell mit Fahnenträger): Befehl zeigend, großer Befehl mit erhobenem Säbel, Pistolenschuss, Getroffen
-  generalA: { befehl: 'general_posen2_2', grossbefehl: 'general_posen2_1', anlegen: 'general_posen_3', knien: 'general_posen_3', getroffen: 'general_posen_4' },
-  generalD: { befehl: 'general_posen_2', grossbefehl: 'general_posen_1', anlegen: 'general_posen2_1', knien: 'general_posen2_1', getroffen: 'general_posen2_2' } };
+  generalA: { befehl: 'general_posen2_2', grossbefehl: 'general_posen2_1', kolben: 'general_posen3_2', hiebAus: 'general_posen2_1', hieb: 'general_posen3_1',   /* F101: Säbelstoß, Hieb schräg nach unten */ anlegen: 'general_posen_3', knien: 'general_posen_3', getroffen: 'general_posen_4' },
+  generalD: { befehl: 'general_posen_2', grossbefehl: 'general_posen_1', kolben: 'general_posen_1',   /* F101: bis ein Hieb-Bogen kommt, Säbel erhoben */ anlegen: 'general_posen2_1', knien: 'general_posen2_1', getroffen: 'general_posen2_2' } };
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
@@ -1483,8 +1485,10 @@ function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); 
   if (art === 'getroffen' && o.von == null && letzterAngreifer && letzterAngreifer.id !== id && performance.now() - letzterAngreifer.t < 3000) { const ad = DU.get(letzterAngreifer.id); if (ad) o = { ...o, von: ad.x }; } if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; if (art !== 'kolben' && poseHat(u, art + '2') && Math.random() < 0.5) art = art + '2'; /* K13 (2026-11-22): zweite Fassung je Pose (getroffen2, funk2, lauf2, reparieren2 …), zufällig */ d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
+// F99 (2026-11-22): in Feuerbereitschaft statt Ruhe die Zielpose (kniend, wo es eine gibt), solange die Bereitschaft gilt
+const wachArt = (u, PB) => u.ow && E.alive(u) ? (PB.knien ? 'knien' : PB.anlegen ? 'anlegen' : null) : null;
 function poseFigur(u, d, j, fallback) {
-  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', ruhe = { im: figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
+  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', wa = wachArt(u, PB), ruhe = { im: figImg(pre + (wa ? PB[wa] : PB.bereit)) || figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
   const P0 = d.pose; if (!P0) return ruhe;
   const vs = P0.gleich ? 0 : j * POSE_VERSATZ + ((u.id * 37 + j * 53) % 41), el = (now - P0.t0) * speed - vs;
   if (j === 0 && (now - P0.t0) * speed > P0.dauer + 400) { d.pose = null; return ruhe; }
@@ -3098,7 +3102,7 @@ function tbSync() {
 }
 // Einheiten, die in dieser Runde nichts mehr tun können (gezogen und kein Ziel mehr, oder „Fertig“ gedrückt)
 const spent = new Set();
-const ABGEHAKT = new Set();   // F11: per „Fertig“ abgehakt (je Runde und Seite), dann grau, auch wenn noch die Zweitwaffe ginge
+const ABGEHAKT = new Map();   // F11: per „Fertig“ abgehakt (je Runde und Seite), dann grau, auch wenn noch die Zweitwaffe ginge; F102: Wert = Stand davor (für Rückgängig)
 // F88 (2026-11-22): bereitGrund nennt, warum eine Einheit noch nicht fertig ist (Test __dbg.bereitGrund); hasAction = es gibt einen Grund
 function hasAction(u) { return !!bereitGrund(u); }
 function bereitGrund(u) {
@@ -3330,11 +3334,30 @@ function openShopNeu() {
 }
 // Wirkungsbereich (Paket 2): Befehle, großer Befehl, Banner, Schilde vor, Entgiften, Ziel markieren. Knopf überfahren (Maus) oder halten (Touch)
 let areaAct = null;
+// F96 (2026-11-22): Schussfeld der Feuerbereitschaft (Reichweite + Sicht, wie E.overwatch) bzw. des MG-Sperrfeuers (dazu Schussfächer, wie E.sperr)
+const WACH = new Map();   // id → { k, cells } (Zwischenspeicher, neu bei Lage-, Blick- oder Rundenwechsel)
+function wachFelder(u, art) {
+  const k = [u.c, u.r, u.face, art, G.turn, G.side, (G.smoke || []).length].join(','), w = WACH.get(u.id); if (w && w.k === k) return w.cells;
+  const cells = new Set(), fan = art === 'sperr';
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const dd = E.dist(u.c, u.r, c, r); if (dd < 1 || dd > E.rangeOf(G, u, c, r)) continue; if (fan && !E.inFan(G, u, c, r)) continue; if (!E.hasLOS(G, u.c, u.r, c, r)) continue; cells.add(E.key(c, r)); }
+  WACH.set(u.id, { k, cells }); return cells;
+}
+function drawWache(g, s) {   // solange die Bereitschaft gilt: feine Umrisslinie am Boden, beim Darüberfahren/Auswählen leicht gefüllt; Gegner nur, wenn sichtbar
+  for (const u of G.units) { if (!E.alive(u)) continue; const d = DU.get(u.id); if (!d || d.alpha <= 0) continue;
+    const art = u.ow ? 'ow' : TYPES[u.type].mg && d.vs && d.vs.sperr > 0 ? 'sperr' : null; if (!art) continue;
+    const eigen = human(u.side) || u.side === G.side; if (!eigen && hideSet.has(u.id)) continue;
+    const cells = wachFelder(u, art), nah = hoverU === u || sel === u, amp = BW === 0 ? 0.7 : 1, col = u.side === 'A' ? '226,176,74' : '170,196,214';
+    if (nah) for (const k of cells) { const c = Math.floor(k / 100), r = k % 100; hexPath(g, c, r, 0.96); g.fillStyle = `rgba(${col},${0.16 * amp})`; g.fill(); }
+    g.save(); g.lineCap = 'round'; g.setLineDash([s * 0.18, s * 0.14]); g.beginPath();
+    for (const [c, r, i] of contourOf(cells)) { const [x, y] = center(c, r), p0 = hexCorner(x, y, i, 0.98), p1 = hexCorner(x, y, i + 1, 0.98); g.moveTo(p0[0], p0[1]); g.lineTo(p1[0], p1[1]); }
+    g.strokeStyle = `rgba(18,13,11,${(nah ? 0.6 : 0.35) * amp})`; g.lineWidth = Math.max(3, s * 0.06); g.stroke(); g.strokeStyle = `rgba(${col},${(nah ? 0.95 : 0.55) * amp})`; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); g.restore(); }
+}
 function abilArea(act) {
   if (!sel || !act) return null; const T = TYPES[sel.type], own = o => o.side === sel.side && E.active(o), cells = new Set(), within = R => { for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.dist(sel.c, sel.r, c, r) <= R) cells.add(E.key(c, r)); };
   if (act.startsWith('o-')) { within(E.cmdRange(sel)); return { cells, ok: o => own(o) && TYPES[o.type].cls !== 'walker' && E.dist(o.c, o.r, sel.c, sel.r) <= E.cmdRange(sel) }; }   // Befehle: keine Kolosse/Kampfmaschinen
   if (act === 'big') { within(P.BIG_R); return { cells, ok: o => own(o) && E.dist(o.c, o.r, sel.c, sel.r) <= P.BIG_R }; }
   if (act === 'plant' || (act === 'sel' && T.banner)) { const R = (act === 'plant' ? !sel.planted : sel.planted) ? P.BANNER_R_PLANTED : P.BANNER_R; within(R); return { cells, ok: o => own(o) && E.dist(o.c, o.r, sel.c, sel.r) <= R }; }
+  if (act === 'ow' || act === 'sperr') { const cells = wachFelder(sel, act); return { cells, ok: o => o.side !== sel.side && E.alive(o) && cells.has(E.key(o.c, o.r)) }; }   // F96: Vorschau beim Überfahren des Knopfs
   if (act === 'shields') { within(1); return { cells, ok: o => own(o) && o !== sel && E.dist(o.c, o.r, sel.c, sel.r) <= 1 }; }
   if (act === 'abil' && T.abil === 'clear') { within(1); return { cells, ok: o => own(o) && E.dist(o.c, o.r, sel.c, sel.r) <= 1 }; }
   if (act === 'abil' && (T.abil === 'mark' || T.abil === 'strike' || T.abil === 'smoke')) { for (const [c, r] of E.abilTargets(G, sel)) cells.add(E.key(c, r)); return { cells, ok: null }; }
@@ -3437,7 +3460,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
   if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
-  btns.push({ act: 'pass', sym: 'haken', name: 'Fertig', on: spent.has(sel.id), text: spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (wird grau), auch wenn sie noch etwas könnte.' });   // F11: für alle Einheiten
+  { const ab = ABGEHAKT.has(G.turn + G.side + ':' + sel.id); btns.push({ act: 'pass', sym: 'haken', name: ab ? 'Wieder öffnen' : 'Fertig', on: spent.has(sel.id), text: ab ? 'Von Hand abgehakt. Noch einmal (Leertaste oder E): wieder offen, wie vorher.' : spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (wird grau), auch wenn sie noch etwas könnte – Leertaste oder E; danach geht es zur nächsten offenen Einheit.' }); }   // F102   // F11: für alle Einheiten
   { const gr = !spent.has(sel.id) && sel.ap < 1 ? bereitGrund(sel) : ''; const NOCH = { ziehen: 'kann noch ziehen', aufbauen: 'kann noch aufbauen', abbauen: 'kann noch abbauen', gebruell: 'Löwengebrüll noch frei' };
     if (NOCH[gr]) hints.push(`<i>Aktion verbraucht,</i> ${NOCH[gr]} – noch nicht fertig. „Fertig“ hakt sie ab.`); }   // F88 (2026-11-22): warum noch kein Haken
   if (!spent.has(sel.id) && TYPES[sel.type].zweit && !sel.zw && E.zweitTargets(G, sel).length) hints.push('<i>Zweitwaffe noch frei:</i> ' + (TYPES[sel.type].zweit.name || 'Zweitwaffe') + ' kann diese Runde noch feuern.');   // F17
@@ -3707,7 +3730,11 @@ async function panelAct(a) {
   if (a.startsWith('i-')) { toast({ 'i-heal': 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); return; }
   if (a === 'st-limber' || a === 'st-mg') { const u = inspect && inspect.unit; if (!u || !G.aufstellung) return; if (a === 'st-limber') u.limbered = !u.limbered; else u.setup = !u.setup;   // F6
     playSound(a === 'st-limber' ? (u.limbered ? 'clank' : 'abprotzen') : 'mgsetup', 0.4, u.side); syncAll(); updateHud(); return; }
-  if (a === 'pass') { playSound('klick', 0.5, null); ABGEHAKT.add(G.turn + G.side + ':' + sel.id); E.pass(G, sel); sel = null; computeOptions(); updateUI(); return; }
+  if (a === 'pass') {   // F102 (2026-11-22): jederzeit selbst abhaken (Knopf, Leertaste oder E), danach zur nächsten offenen Einheit; noch einmal = wieder öffnen
+    const k = G.turn + G.side + ':' + sel.id, alt = ABGEHAKT.get(k); playSound('klick', 0.5, null);
+    if (alt) { Object.assign(sel, alt); ABGEHAKT.delete(k); toast(`${TYPES[sel.type].name}: wieder offen.`); computeOptions(); updateUI(); return; }   // Rückgängig: Stand von vor dem Abhaken
+    ABGEHAKT.set(k, { ap: sel.ap, bp: sel.bp, moved: sel.moved, attacked: sel.attacked }); E.pass(G, sel); sel = null; computeOptions(); updateUI();
+    if (G.units.some(u => u.side === G.side && E.active(u) && !spent.has(u.id))) nextUnit(false); return; }
   if (a === 'p-melee' || a === 'p-fire') { const v = a.slice(2); atkPref = atkPref === v ? 'auto' : v; const keep = previewT; computeOptions(); previewT = keep && targets.has(keep.id) ? keep : null; updateHud(); return; }
   if (!sel || busy) return;   // Handlungen nur mit gewählter Einheit und nicht während einer laufenden Animation
   if (a === 'o-rally' || a === 'o-storm' || a === 'o-fire') return act(u => E.order(G, u, a.slice(2)));
@@ -4088,6 +4115,7 @@ document.addEventListener('keydown', e => {
     const b = $('hudRow').querySelectorAll('.up-ab')[+e.key - 1]; if (b && !b.classList.contains('off')) { b.click(); e.preventDefault(); } }
   if ((e.key === 'b' || e.key === 'B') && G && $('start').hidden && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { setBildwirkung(BW + 1); e.preventDefault(); return; }   // Bildwirkung umschalten: aus → leicht → stark
   if ((e.key === 'm' || e.key === 'M') && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { tonUmschalten(); e.preventDefault(); return; }   // F18: Ton an/aus per Taste
+  if ((e.key === ' ' || e.key === 'e' || e.key === 'E') && G && sel && human(G.side) && !busy && !G.over && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input, select, textarea, button')) && !e.ctrlKey && !e.altKey && !e.metaKey) { e.preventDefault(); panelAct('pass'); return; }   // F102: Leertaste oder E = Fertig
   if (e.key === 'Escape' && wayPt) { wayPt = null; computeOptions(); updateHud(); return; }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
