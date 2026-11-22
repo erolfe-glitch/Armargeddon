@@ -2334,7 +2334,8 @@ async function playEvent0(e) {
         const AT = au && TYPES[au.type], rs = !AT ? 'rifle' : au.type === 'oger' ? 'flinte' : AT.lob ? 'grenade' : AT.pin || AT.hidden ? 'sniper' : AT.cmd ? 'neu4_pistole_schwer' : AT.suit ? 'semi' : 'rifle';   /* Hauptmann/General: schwere Pistole (Standard 2026-11-22, vorher pistol) */
         lastFire = { kind: e.kind, t: performance.now(), a: e.a, zweit: e.zweit };
         { const au1 = unitById(e.a); if (au1 && TYPES[au1.type].cls === 'walker') { const st = e.zweit ? 0.025 : 0.06, dir = x2 >= x1 ? -1 : 1; a.wipp = { dx: dir * L.s * st, dy: -L.s * st * 0.3 }; setTimeout(() => { if (a.wipp && !a.moving) a.wipp = null; }, 140 / speed); } }   // F73: Rückstoß   // Hülsen-Ton nach der MG-Salve entfernt (Spieltest 2026-11-17: klang wie herumfliegende Splitter)
-        const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
+        const salve = e.kind === 'rifle' && rs === 'rifle' && !(au && au.type === 'buechse');
+        const schwerMG = !!(au && (((au.type === 'orden' || au.type === 'klaue') && mini) || (au.type === 'turm' && e.zweit)));   // Enrico 15:26: schweres MG für die MGs der Schreiter (Orden, Klaue, Turm-MG)   // Gewehrinfanterie: kurze Salve statt Einzelschuss (2026-11-17)
         let salveT = 0;   // F28: Dauer der Salve – der Schaden erscheint erst danach
         const figN = Math.max(1, (a.fbx && a.fbx.length) || Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001)));   // F74 (2026-11-21): so viele Schützen, wie Figuren stehen
         if (rs === 'sniper' && e.kind === 'rifle') { const key = waffenTon('sniper', au); let t = 0;   // F74: Scharfschützen/Pirschjäger – je Figur ein Schuss, deutlich nacheinander („pam … pam“)
@@ -2352,8 +2353,8 @@ async function playEvent0(e) {
             setTimeout(() => playSound(key, (GEWEHR_ART === 'B' ? 0.5 : 0.42) * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, hall: GEWEHR_ART }), t / speed);
             const p = fxMuzzle(e.a, f); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 1.05 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } }
           if (a.pose && a.pose.t0 != null) { a.pose.schuss = schuss; a.pose.gleich = true; a.pose.dauer = Math.max(900, t + 650); } salveT = t; }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
-        else if (AT && AT.dauerfeuer) playSound(waffenTon('neu4_mg_schwer', au), 0.62, au.side, { rate: 0.92 + Math.random() * 0.06 });   /* Eiserne Hünen: schweres MG (Standard 2026-11-22) */   // Eiserne Hünen: schweres MG, tiefer gestimmt
-        else if (!(rs === 'sniper' && e.kind === 'rifle')) playSound(waffenTon(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'neu4_gewehr_schwer' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', au), mg ? 0.55 : 0.6, au && au.side);
+        else if (AT && AT.dauerfeuer) playSound(waffenTon('mg', au), 0.62, au.side, { rate: 0.8 + Math.random() * 0.06 });   // Eiserne Hünen: schweres MG, tiefer gestimmt (Enrico 15:26: Pult-Wahl gilt)   // Eiserne Hünen: schweres MG, tiefer gestimmt
+        else if (!(rs === 'sniper' && e.kind === 'rifle')) playSound(waffenTon(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'neu4_gewehr_schwer' : rs) : schwerMG ? 'neu4_mg_schwer' : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', au), mg ? 0.55 : 0.6, au && au.side);
 
         // neue Effektbögen: Mündungsfeuer an der Laufmündung, Leuchtspuren; Drehlauf-Waffen mit eigenem Feuer
         const pm = e.zweit ? fxSeite(e.a, e.d) : fxMuzzle(e.a, 0, mini ? 0.45 : can ? 0.42 : 0.3), neu = !!(pm && fxIm('muendung'));
@@ -2372,7 +2373,7 @@ async function playEvent0(e) {
           muzzles.push({ img: 'mgfire', x: mx, y: my, ang: mz ? (lf ? Math.PI : 0) : ang, sz: 0.85, off: 0.02, life: 26, max: 26 }); }
         else if (can) muzzles.push({ img: 'dust', x: x1 + Math.cos(ang) * s * 0.5, y: y1 + Math.sin(ang) * s * 0.5, ang, sz: 0.6, off: 0.15, life: 26, max: 26 });
         if (!neu) tracers.push({ x1: x1 + (x2 > x1 ? 1 : -1) * s * 0.5, y1, x2, y2, life: mg ? 30 : 15, max: mg ? 30 : 15, n: mg ? 9 : 1, stream: mg, col: can ? '#ff9a3a' : '#ffe27a', img: can ? 'shard' : 'bullet', sz: mg ? 0.17 : can ? 0.34 : 0.2 });
-        if (mini) { setTimeout(() => playSound(waffenTon('minigun', au), 0.5, au && au.side, { noGap: true }), 650 / speed); await wait(1000); }   // F24: zweiter Feuerstoß im Ton, Ablauf länger
+        if (mini) { setTimeout(() => playSound(waffenTon(schwerMG ? 'neu4_mg_schwer' : 'minigun', au), 0.5, au && au.side, { noGap: true }), 650 / speed); await wait(1000); }   // F24: zweiter Feuerstoß im Ton, Ablauf länger
         else if (mg && !(AT && AT.dauerfeuer)) { setTimeout(() => playSound(waffenTon('mg', au), 0.5, au && au.side, { noGap: true, rate: 0.95 + Math.random() * 0.1 }), 750 / speed); await wait(750); }   // F28: zweiter MG-Feuerstoß
         if (salveT) await wait(Math.max(0, salveT - 150));   // F28: Schaden erst nach dem letzten Schuss der Salve
         await wait((mg ? 30 : 15) * 16.667 * 0.9);
@@ -2609,7 +2610,7 @@ async function playEvent0(e) {
       const d = DU.get(e.d); if (!d) break; const [x2, y2] = [d.x, d.y - L.s * 0.4]; const ksz = await kampfSzene((DU.get(e.u).x + d.x) / 2, (DU.get(e.u).y + d.y) / 2 - L.s * 0.4);
       await poseWurf(e.u, x2, y2); await wait(280); if (!fxImpact(x2, y2 + L.s * 0.3, L.s * 0.7)) boom(x2, y2, L.s * 0.7, 'he'); playSound('boom', 0.6); playSound('einschlag_panzer', 0.55); shake(6);
       fx('funken', null, x2, y2, { anchor: 'mitte', life: 18, fadeOut: 0.6, mul: 0.9 }); lastFire = { kind: 'cannon', t: performance.now(), a: e.u }; await wait(220); await kampfSzeneEnde(ksz); break; }
-    case 'rollstoss': { const d = DU.get(e.u); const fl = FLUG.get(e.u); FLUG.delete(e.u); if (d && fl && performance.now() - fl < 4000) { await flugZurueck(e.u, e.path); break; } if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück; F86: nach dem Durchbruch fliegt es
+    case 'rollstoss': { const d = DU.get(e.u); const fl = FLUG.get(e.u); FLUG.delete(e.u); if (u && TYPES[u.type].mg) playSound('mg_abbauen', 0.5, null, { noGap: true });   /* MG wird zurückgeschoben (Enrico 15:26) */ if (d && fl && performance.now() - fl < 4000) { await flugZurueck(e.u, e.path); break; } if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück; F86: nach dem Durchbruch fliegt es
     case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
       // Titel kam schon vor dem Anlauf ('abilTitel', Enrico 2026-11-22)
@@ -2691,7 +2692,7 @@ async function playEvent0(e) {
       { const [x, y] = center(e.c, e.r), w = e.what || '';
         if (w === 'gesprengt') fx('truemmer', [0, 1, 4][Math.floor(Math.random() * 3)], x, y + s * 0.4, { life: 80, grow: 0.25, rise: 0.15, fadeOut: 0.5 });   // Bunker/Barrikade: Ziegel, Holz, Sandsäcke
         if (w === 'Stollen gesprengt') { fx('truemmer', 4, x, y + s * 0.4, { life: 90, mul: 1.2, grow: 0.3, rise: 0.3, fadeOut: 0.5 }); fx('truemmer', 0, x + s * 0.3, y + s * 0.3, { delay: 6, life: 80, mul: 0.8, grow: 0.25 }); }
-        if (/^Draht (verbrannt|zerschossen|zerrissen|niedergewalzt)/.test(w)) gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); } if (e.what === 'Draht gezogen') playSound('sandsaecke', 0.4);   /* Bauarbeit: Sandsäcke (2026-11-22), vorher bauen */ if (e.what === 'Stollen gesprengt') playSound('blast', 0.8); if (e.what === 'gesprengt' || e.what === 'Stollen gesprengt') playSound('einsturz', 0.7); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
+        if (/^Draht (verbrannt|zerschossen|zerrissen|niedergewalzt)/.test(w)) gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); } if (e.what === 'Draht gezogen') playSound('bauen', 0.3); if (e.what === 'Stollen gesprengt') playSound('blast', 0.8); if (e.what === 'gesprengt' || e.what === 'Stollen gesprengt') playSound('einsturz', 0.7); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
     case 'stuck': if (TYPES[u.type].stecken) {   // M4 (2026-11-22): Kürassier – schwere Rüstung sackt ein, Metall und Stampfen statt Autounfall; Schlamm spritzt nur im Schlamm
       const d0 = DU.get(e.u); d0.vs.stuck = 1; playSound('held_ruestung', 0.55); playSound('held_schritt_ritter2', 0.7); shake(2); const ht = G.map[u.c] && G.map[u.c][u.r] && G.map[u.c][u.r].t;
       if (ht === 'mud' || ht === 'sumpf') muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.3, life: 50, max: 50 }); else boom(d0.x, d0.y + s * 0.15, s * 0.35, 'dust');
@@ -2706,14 +2707,14 @@ async function playEvent0(e) {
     case 'smoke': { if (u && u.type === 'rauch') playSound('werfer', 0.55); playSound(u && u.type === 'rauch' ? 'gas' : 'rauch', 0.5);   // Rauchgeschoss: gas_1, geworfen: rauch_1 (Tonprobe 2026-11-18)
       if (u && fxIm('geschosse', 4)) { const du = DU.get(u.id); for (const [c, r] of e.cells) { const [x, y] = center(c, r); shells.push({ fxi: 4, fxs: 0.8, x1: du.x, y1: du.y - s * 0.6, x2: x, y2: y, t: 0, dur: 18, arc: 1.4, spin: true, sz: 0.3 }); } await wait(18 * 16.667); }
       for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
-    case 'tunnel': { if (e.u != null) pose(e.u, 'hacke', 1500); playSound('tick', 0.45); playSound('sandsaecke', 0.4); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
+    case 'tunnel': { if (e.u != null) pose(e.u, 'hacke', 1500); playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('boom2', 0.8); playSound('grenade2', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'handgranate': {   // F103: Grenadiere werfen vor dem Nahkampf (Ausholen → Loslassen), kleine Explosion am Ziel
       const d = DU.get(e.d); if (!d || !DU.get(e.a)) break; const x2 = d.x, y2 = d.y - L.s * 0.3; await poseWurf(e.a, x2, y2); await wait(200);
       if (!fxImpact(x2, y2 + L.s * 0.25, L.s * 0.45)) boom(x2, y2, L.s * 0.45, 'he'); playSound('grenade', 0.55); shake(3); await wait(160); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
     case 'blast': { const [x, y] = center(e.c, e.r); const ksz = await kampfSzene(x, y - L.s * 0.3); if (e.u != null) pose(e.u, 'ladung', 1500); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); await kampfSzeneEnde(ksz); break; }
-    case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('sandsaecke', 0.4); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
+    case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }
     case 'mine': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.75); boom(x, y, s * 1.0, 'he'); floater(x, y - s * 0.9, 'Mine!', '#ff9a6a', true); await wait(380); break; }
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
     case 'clear': { visSync('clouds'); pose(e.u, 'spruehen', 1500); gasschutzFx(e.u); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
@@ -2742,7 +2743,7 @@ async function playEvent0(e) {
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': kz(e.u, 'feuer', 'puls'); await wait(120); break;
     case 'steadfast': kz(e.u, 'pfeil', 'steig'); await wait(160); break;
-    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; pose(e.u, 'graben', 1600); playSound('atmen', 0.42, null, { u, noGap: true });   /* F32: nur 72199 (Graben mit schwerem Atmen) */   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
+    case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; pose(e.u, 'graben', 1600); playSound('sandsaecke', 0.4, null, { noGap: true }); playSound('atmen', 0.42, null, { u, noGap: true });   /* Sandsäcke nur beim Eingraben (Enrico 15:26) */   /* F32: nur 72199 (Graben mit schwerem Atmen) */   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
     case 'shields': { pose(e.u, 'halten', 1800); const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); await wait(260); break; }
     case 'rush': marschU = e.u; if (poseHat(unitById(e.u), 'lauf')) pose(e.u, 'lauf', 1500); playSound(unitById(e.u) && unitById(e.u).side === 'D' ? 'roar' : 'forward', 0.7, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(200); break;
     case 'sperr': { const d = DU.get(e.u); d.vs.sperr = P.SPERR_SHOTS; playSound('nachladen', 0.4); await wait(220); break; }

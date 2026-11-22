@@ -125,7 +125,8 @@ function slotsVon(t) {
       S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
       if (T.at || t === 'buechse') S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' }); else S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' });
     } else if (fk === 'mg' || fk === 'minigun') {
-      if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'neu4_mg_schwer', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.95, hin: 'Schweres MG (Standard 2026-11-22, vorher mg tiefer gestimmt). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
+      if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'mg', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.83, hin: 'Tiefer gestimmt (0,80–0,86). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
+      else if (t === 'orden' || t === 'klaue') S('schuss', 'schuss', 'MG am Arm (schweres MG)', 'neu4_mg_schwer', 0.55, { gruppe: 'mg', kette: 'schuss', hin: 'Standard 2026-11-22 (Enrico 15:26), vorher Drehlauf.' });
       else S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
       S('ziel', 'ziel', 'Einschlag in den Körper (dumpf)', 'einschlag', 0.22, { gruppe: 'einschlag', rate: 0.82, dur: 260, kette: 'ziel', hin: 'Tiefer gestimmt (0,78–0,86) und nach 0,26 s ausgeblendet.' });
       S('ziel', 'vorbei', 'Daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
@@ -137,7 +138,7 @@ function slotsVon(t) {
     }
   }
   if (T.zweit) { const Z = T.zweit; if (Z.flamme) S('schuss', 'zweit', 'Zweitwaffe: ' + Z.name, 'flame', 0.6, { gruppe: 'flamme' });
-    else S('schuss', 'zweit', 'Zweitwaffe: ' + Z.name, Z.kanone ? kanone(t, T) : 'mg', Z.kanone ? 0.6 : 0.55, { gruppe: Z.kanone ? 'kanone' : 'mg' }); }
+    else S('schuss', 'zweit', 'Zweitwaffe: ' + Z.name, Z.kanone ? kanone(t, T) : t === 'turm' ? 'neu4_mg_schwer' : 'mg', Z.kanone ? 0.6 : 0.55, { gruppe: Z.kanone ? 'kanone' : 'mg' }); }   // Turm-MG: schweres MG (Enrico 15:26)
   if (T.faust) { S('schuss', 'faust', 'Faustsalve (zwei Kanonen)', 'panzerkanone', 0.6, { gruppe: 'kanone', mode: 'doppel' }); S('ziel', 'faustziel', 'Faustsalve: Einschläge', 'boom', 0.5, { gruppe: 'einschlag' }); }
   if (T.broadside) S('schuss', 'breit', 'Breitseite (zweiter Schuss)', kanone(t, T), 0.6, { gruppe: 'kanone', hin: 'Zwei Schüsse auf zwei Ziele, je derselbe Ton.' });
   // Nahkampf (melee/counter: strikeSnd)
@@ -186,18 +187,19 @@ function slotsVon(t) {
   if (fig === 'drill') S('abil', 'bohr_wucht', 'Bohrstoß: Wucht', 'neu3_fzaufprall', 0.45, { gruppe: 'fahrzeug', hin: 'Zusammen mit dem Bohrton (Nahkampf-Zeile), Bohrkopf dreht etwa 0,9 s.' });
   if (T.fessel) { S('abil', 'winde', 'Ballon einholen/aufsteigen: Winde', 'drahtwackeln', 0.45, { gruppe: 'handgriff' }); S('abil', 'ratsche', 'Ballon: Ratsche', 'mgladen', 0.35, { gruppe: 'handgriff' }); }
   if (T.flame || (T.zweit && T.zweit.flamme)) S('abil', 'nachbrennen', 'Flammenstoß: Nachbrennen (nach der Schleife)', 'feuer', 0.3, { gruppe: 'flamme', hin: 'Der Strahl selbst ist die Zeile „Flammenstrahl“; er läuft als Schleife genau so lange wie der Strahl (1,5 s, Bohrkoloss 1,1 s).' });
+  if (T.dig) S('abil', 'sandsack', 'Eingraben: Sandsäcke', 'sandsaecke', 0.4, { gruppe: 'handgriff', hin: 'Standard 2026-11-22 (Enrico 15:26), zusammen mit dem Atmen.' });
   if (T.dig) S('abil', 'atmen', 'Eingraben: Graben mit schwerem Atmen', 'atmen', 0.42, { gruppe: 'ruf', hin: 'Nur noch 72199 (F32).' });
   if (T.shieldWall) S('abil', 'schilde', 'Schilde vor', 'armor', 0.5, { gruppe: 'handgriff' });
   if (A === 'rush') S('abil', 'rush', 'Sturmlauf: Ruf', sd === 'D' ? 'roar' : 'forward', 0.7, { gruppe: 'ruf' });
   if (T.mg) { S('abil', 'mgauf', 'MG aufstellen', 'mg_aufbauen', 0.55, { gruppe: 'handgriff', hin: 'Standard 2026-11-22; vorher mgsetup + mgladen.' });
-    S('abil', 'mgab', 'MG abbauen', 'mg_abbauen', 0.5, { gruppe: 'handgriff' }); S('abil', 'sperr', 'MG-Sperrfeuer bereit', 'nachladen', 0.4, { gruppe: 'handgriff' }); }
+    S('abil', 'mgab', 'MG abbauen', 'mg_abbauen', 0.5, { gruppe: 'handgriff', hin: 'Klingt auch, wenn das MG durch Durchbruch/Sturmrollen zurückgeschoben wird.' }); S('abil', 'sperr', 'MG-Sperrfeuer bereit', 'nachladen', 0.4, { gruppe: 'handgriff' }); }
   if (A === 'mark') { S('abil', 'leucht', 'Ziel markieren: Leuchtpistole', 'leuchtschuss', 0.5, { gruppe: 'signal' }); S('abil', 'brand', 'Leuchtkugel brennt', 'leuchtbrand', 0.22, { gruppe: 'handgriff' }); }
   if (A === 'strike') { S('abil', 'strike', 'Feuerschlag: Abschuss', 'cannonH', 0.35, { gruppe: 'kanone' }); S('abil', 'strikeziel', 'Feuerschlag: Einschlag', 'einschlagH', 0.8, { gruppe: 'einschlag' }); }
   if (A === 'smoke') { S('abil', 'werfer', 'Nebelwand: Abschuss', 'werfer', 0.55, { gruppe: 'flamme' }); S('abil', 'nebel', 'Nebelwand: Geschoss', 'gas', 0.5, { gruppe: 'einschlag' }); }
-  if (A === 'tunnel') { S('abil', 'stollen', 'Stollen graben', 'sandsaecke', 0.4, { gruppe: 'handgriff' }); S('abil', 'stollenboom', 'Stollen sprengen', 'boom2', 0.8, { gruppe: 'einschlag' }); }
+  if (A === 'tunnel') { S('abil', 'stollen', 'Stollen graben', 'bauen', 0.3, { gruppe: 'handgriff' }); S('abil', 'stollenboom', 'Stollen sprengen', 'boom2', 0.8, { gruppe: 'einschlag' }); }
   if (A === 'charge') { S('abil', 'tick', 'Haftladung: Zünder', 'tick', 0.5, { gruppe: 'handgriff' }); S('abil', 'spreng', 'Haftladung: Sprengung', 'blast', 0.8, { gruppe: 'einschlag' }); }
-  if (A === 'mine') S('abil', 'mine', 'Mine legen', 'sandsaecke', 0.4, { gruppe: 'handgriff' });
-  if (T.wirelayer) S('abil', 'draht', 'Draht ziehen', 'sandsaecke', 0.4, { gruppe: 'handgriff' });
+  if (A === 'mine') S('abil', 'mine', 'Mine legen', 'bauen', 0.3, { gruppe: 'handgriff' });
+  if (T.wirelayer) S('abil', 'draht', 'Draht ziehen', 'bauen', 0.3, { gruppe: 'handgriff' });
   if (A === 'clear') S('abil', 'entgiften', 'Entgiften', 'gasmaske_1', 0.5, { gruppe: 'handgriff' });
   if (A === 'ammo') S('abil', 'munition', 'Munition verteilen', 'nachladen', 0.55, { gruppe: 'handgriff' });
   if (T.repair || T.recover) S('abil', 'bergen', T.repair ? 'Reparieren / Bergen' : 'Bergen / instand setzen', 'reparieren', 0.6, { gruppe: 'handgriff', hin: T.repair ? 'Werkstatt-Töne statt Sanitäter (F39).' : undefined });
