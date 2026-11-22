@@ -57,7 +57,7 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
-  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5,   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
+  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
 };
@@ -293,6 +293,12 @@ Object.assign(TYPES, {
     can: 'Getarnt: nur aus dem Nachbarfeld angreifbar, bis er schießt (dann eine gegnerische Runde sichtbar). Jeder Treffer hält nieder.',
     real: 'Deutsche Scharfschützen mit Zielfernrohr beherrschten 1915 das Niemandsland. Die Briten richteten daraufhin eigene Scharfschützenschulen ein.' }
 });
+// F103 Rollen schärfen (Enrico 2026-11-22 13:35): klarere Aufgaben je Einheit
+Object.assign(TYPES.grenadier, { granatSturm: true });   // Stoßinfanterie: Handgranaten vor dem Nahkampf (×P.GRANAT_NAH), Schuss schwächer (×P.GRANAT_FERN)
+Object.assign(TYPES.eingreif, { gegenstoss: true });     // Gegenstoß: Nahkampf auf eigenen Zielfeldern und in eigenen Gräben ×P.GEGENSTOSS, sonst ×P.GEGENSTOSS_VOR
+delete TYPES.raeumer.abil;                               // Grabenräumer: billiger Grabenkampf ohne Panzerabwehr (Panzergranate bleibt beim Sturmbrecher)
+Object.assign(TYPES.feldkanone, { direkt: true });       // Feldkanone: nur direktes Feuer mit Sicht über ihre ganze Reichweite, Abprotzen ohne die Aktion
+Object.assign(TYPES.panzerk, { cutter: true });          // Panzerknechte: Nahkampf und Draht
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
 const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Bord-MG", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "Panzergranate"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionier": ["Draht schneiden und angreifen", "Haftladung gegen Panzer"], "raeumer": ["Sickert durch", "Handgranaten", "Panzergranate"], "buechse": ["Schuss 3 Felder", "Panzer ×1,5, Fußtruppen ×0,5"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "schildwall": ["Sehr zäh", "Keine Schusswaffe", "Schilde vor"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Feuer frei"], "hauptD": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Sturmbefehl"], "generalA": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Generalangriff (zweiter Angriff)", "Höchstens einer"], "panzerk": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"], "oger": ["Sprungangriff (alle 2 Runden)", "Schrotflinte 1 Feld", "Sickert durch"], "faust": ["Held", "Durchbruch: 2 Felder, schleudert zurück", "Standhaft-Aura", "Leicht gepanzert", "Kaum Fernkampf"], "kuerass": ["Held", "Hinrichtung unter 40 %", "Furcht-Aura", "Leicht gepanzert", "Langsam, bleibt stecken"], "huenen": ["Dauerfeuer: 2 Salven, dann abkühlen", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Hält nieder", "Draht hält nicht auf"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
@@ -881,7 +887,7 @@ function canLimber(G, u) {
 }
 function limber(G, u) {
   if (!canLimber(G, u)) return [];
-  if (u.limbered) { u.limbered = false; u.bp = 0; u.attacked = true; u.moved = u.ap <= 0; }
+  if (u.limbered) { u.limbered = false; u.bp = 0; if (!TYPES[u.type].direkt) u.attacked = true; u.moved = u.ap <= 0; }   // F103: Feldkanone schnell abgeprotzt, darf noch schießen
   else { u.limbered = true; u.attacked = true; u.bp = Math.max(0, P.LIMBER_MV - 1); u.bpUsed = 0; }
   return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
@@ -941,14 +947,15 @@ function held(G, u) { return heldAt(G, u, u.c, u.r); }
 // ---------- F66 (2026-11-21): Schere-Stein-Papier – Waffenart gegen Panzerklasse, feste Faktoren ×1,5 / ×1 / ×0,5 ----------
 // Panzerklasse: U ungepanzert, L leicht (Kampfanzüge, Löwenoger), S schwer (Fahrzeuge, Schreiter). Waffenart aus den Werten (Text und Werte stimmen so immer überein).
 const FAK = { gewehr: { U: 1, L: 0.5, S: 0 }, schrot: { U: 1.5, L: 1, S: 0 }, at: { U: 0.5, L: 1.5, S: 1.5 }, kanone: { U: 1, L: 1, S: 1 },
-  explosiv: { U: 1, L: 1, S: 0.5 }, flamme: { U: 1, L: 1, S: 0.5 }, klinge: { U: 1, L: 0.5, S: 0.5 }, schwer: { U: 1.5, L: 1, S: 1 } };
-const WAFFE_NAME = { gewehr: 'Gewehr/MG', schrot: 'Schrot', at: 'panzerbrechend', kanone: 'Kanone', explosiv: 'Sprenggranate', flamme: 'Flamme', klinge: 'Klinge/Kolben', schwer: 'schwerer Nahkampf' };
+  explosiv: { U: 1, L: 1, S: 0.5 }, flamme: { U: 1, L: 1, S: 0.5 }, klinge: { U: 1, L: 0.5, S: 0.5 }, schwer: { U: 1.5, L: 1, S: 1 },
+  saege: { U: 1, L: 1.5, S: 1.5 }, klaue: { U: 2, L: 0.75, S: 0.5 } };   // F103: Sägeschreiter gegen Gepanzerte, Klauenschreiter gegen Fußtruppen (packen und schleudern)
+const WAFFE_NAME = { saege: 'Panzersäge', klaue: 'Stahlklaue', gewehr: 'Gewehr/MG', schrot: 'Schrot', at: 'panzerbrechend', kanone: 'Kanone', explosiv: 'Sprenggranate', flamme: 'Flamme', klinge: 'Klinge/Kolben', schwer: 'schwerer Nahkampf' };
 const KLASSE_NAME = { U: 'ungepanzert', L: 'leicht gepanzert', S: 'schwer gepanzert' };
 const NAH_SCHWACH = ['mahlwerk', 'sense', 'haubitze', 'geschuetz', 'moerser', 'minenwerfer', 'feldkanone', 'scharf', 'pirsch', 'feldscher', 'heiler', 'werkstatt', 'munition', 'melder', 'signal', 'fernsprech', 'ballon', 'rauch'];
 const NAH_STARK = ['sturm', 'raeumer', 'eingreif', 'schildwall', 'schwer', 'oger', 'stahl', 'panzerk', 'huenen'];
 function panzerKl(t) { const T = TYPES[t]; return T.cls === 'walker' ? 'S' : (T.suit || t === 'oger') ? 'L' : 'U'; }
 function waffeArt(t, ranged) { const T = TYPES[t];
-  if (!ranged) return T.cls === 'walker' || t === 'oger' || T.held ? 'schwer' : 'klinge';
+  if (!ranged) return t === 'saeger' ? 'saege' : t === 'klaue' ? 'klaue' : T.cls === 'walker' || t === 'oger' || T.held ? 'schwer' : 'klinge';
   if (T.flame || T.cls === 'flame') return 'flamme';
   if (T.cls === 'art' || T.lob) return 'explosiv';
   if (t === 'oger') return 'schrot';
@@ -1055,6 +1062,8 @@ function preview(G, a, d, kind, o) {
   if (ranged && a.fireFree) { m *= P.FIRE_FREE; tags.push('Feuer frei ×1,25'); }
   if (ranged && TYPES[a.type].broadside) { m *= P.BROADSIDE; tags.push('Breitseite ×0,6'); }
   if (!ranged && TYPES[a.type].blastLance && !a.lanceUsed) { m *= P.BLAST_LANCE; tags.push('Sprenglanze ×1,5'); }
+  if (A.granatSturm) { if (ranged) { m *= P.GRANAT_FERN; tags.push('Stoßtrupp: Schuss ×0,85'); } else { m *= P.GRANAT_NAH; tags.push('Handgranaten ×1,25'); } }   // F103
+  if (!ranged && A.gegenstoss) { if (gegenstossFeld(G, a.side, d.c, d.r)) { m *= P.GEGENSTOSS; tags.push('Gegenstoß ×1,25'); } else { m *= P.GEGENSTOSS_VOR; tags.push('im Vorgehen ×0,85'); } }
   if (ranged && G.units.some(o => o.shields && o.side === d.side && active(o) && dist(o.c, o.r, d.c, d.r) === 1)) { m *= P.SHIELDS; tags.push('Schilde vor ×0,75'); }
   if (a.supp > 0) { m *= P.SUPP_ATK; tags.push('niedergehalten ×0,5'); }
   if (a.gassed) { m *= P.GAS_ATK; tags.push('im Gas ×0,7'); }
@@ -1069,6 +1078,8 @@ function preview(G, a, d, kind, o) {
   if (!ranged && d.status === 'ok' && D.atk > 0) counter = counterDmg(G, d, a, ac, ar, arc, Math.max(0, d.str - dmg));
   return { dmg, counter, arc, tags };
 }
+// F103: Gegenstoß wirkt auf eigenen Zielfeldern (gehalten) und in Gräben der eigenen Kartenhälfte
+function gegenstossFeld(G, side, c, r) { const h = hex(G, c, r); if (!h) return false; if (h.obj && G.ctrl[h.obj] === side) return true; return h.t === 'trench' && (side === 'D' ? c >= COLS / 2 : c < COLS / 2); }
 function counterDmg(G, d, a, ac, ar, arc, dStr) {
   const A = TYPES[a.type], D = TYPES[d.type];
   let m = P.COUNTER[arc];
@@ -1237,7 +1248,8 @@ function melee(G, a, d) {
   a.attacked = true; a.ap = 0; a.bp = 0; a.moved = true;
   a.face = faceToward(a.face, a.c, a.r, d.c, d.r);
   ev.push({ t: 'melee', a: a.id, d: d.id, face: a.face });
-  if (TYPES[a.type].blastLance && !a.lanceUsed) { a.lanceUsed = true; ev.push({ t: 'lanceblast', a: a.id, c: d.c, r: d.r }); }   // Sprenglanze (preview hat ×1,5 schon eingerechnet)
+  if (TYPES[a.type].blastLance && !a.lanceUsed) { a.lanceUsed = true; ev.push({ t: 'lanceblast', a: a.id, c: d.c, r: d.r }); }
+  if (TYPES[a.type].granatSturm) ev.push({ t: 'handgranate', a: a.id, d: d.id });   // F103: Grenadiere werfen vor dem Nahkampf (im Schaden schon eingerechnet)   // Sprenglanze (preview hat ×1,5 schon eingerechnet)
   const dmg = p.dmg * (0.75 + G.rng() * 0.5);
   const dc = d.c, dr = d.r;
   applyDamage(G, a, d, dmg, p.arc, ev);
@@ -1302,7 +1314,7 @@ function einsturz(G, b, ev) {
     applyDamage(G, null, u, P.EINSTURZ_DMG * (0.8 + G.rng() * 0.4), 'front', ev, {});
     if (active(u) && !u.supp) { u.supp = 1; ev.push({ t: 'supp', u: u.id }); } }
 }
-function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= P.ART_DIRECT && hasLOS(G, a.c, a.r, c, r); }
+function isDirect(G, a, c, r) { return dist(a.c, a.r, c, r) <= (TYPES[a.type].direkt ? TYPES[a.type].rng : P.ART_DIRECT) && hasLOS(G, a.c, a.r, c, r); }   // F103: Feldkanone flache Bahn über die ganze Reichweite
 // F37 (2026-11-20): Mindestreichweite im Steilfeuer – kleine Werfer (Grabenmörser, Minenwerfer: mobile) ab 2 Feldern, große Geschütze ab 3 Feldern
 function minSteil(a) { return TYPES[a.type].mobile ? P.ART_MIN : P.ART_MIN_GROSS; }
 // F38 (2026-11-20): kein Beschuss leerer Drahtfelder – Draht geht nur nebenbei kaputt, wenn das Ziel im Draht steht
@@ -1317,6 +1329,7 @@ function canShell(G, a, c, r, mode) {
   if (mode === 'barrage' && (a.cdP > 0 || (a.barr || 0) >= P.BARRAGE_MAX)) return false;   // Sperrfeuer: Abklingzeit, höchstens 2× je Schlacht
   if (T.noMoveFire && a.mvd) return false;   // Minenwerfer: ziehen oder feuern
   if (isDirect(G, a, c, r)) return mode === 'he';
+  if (T.direkt) return false;   // F103: Feldkanone nur direkt
   return d >= minSteil(a) && spotted(G, a.side, c, r);   // F37
 }
 // Markiertes Ziel (Ballonbeobachter, Signaltrupp): keine Streuung, Sprenggranaten ×1,25 – gilt bis zum nächsten eigenen Zug
@@ -1875,6 +1888,25 @@ function checkEnd(G) {
   return G.over ? [{ t: 'over', result: G.over }] : [];
 }
 
+// F103 Rollen schärfen (Enrico 2026-11-22 13:35): Texte und Schlagworte zu den neuen Aufgaben (Regeln oben bei COST)
+{ const T = TYPES, ers = (t, alt, neu) => { const i = T[t].sp.indexOf(alt); if (i >= 0) T[t].sp[i] = neu; else T[t].sp.push(neu); };
+  T.kohorte.can = 'Schützenlinie: schießt 2 Felder weit, hält Zielfelder mit Feuerbereitschaft, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).';
+  T.grenadier.can = 'Stoßinfanterie: wirft vor jedem Nahkampf Handgranaten (Nahkampf ×1,25), schießt dafür schwächer (×0,85, 2 Felder). Schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).';
+  ers('grenadier', 'Schuss 2 Felder', 'Handgranaten vor dem Nahkampf');
+  T.raeumer.can = 'Billiger Grabenkampf: Nahkämpfer ohne Gewehr und ohne Panzerabwehr. Schneidet Draht vom Nachbarfeld aus (Aktion). Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf.';
+  T.raeumer.sp = T.raeumer.sp.filter(x => x !== 'Panzergranate');
+  T.sturm.can = 'Sturm und Panzerabwehr: Panzergranate (Aktion, alle 2 Runden) 1–2 Felder gegen Fahrzeuge und Schreiter – sein Kern. Sickert durch: Gegner halten ihn nicht auf. Schneidet Draht vom Nachbarfeld aus (Aktion). Handgranaten heben den Grabenschutz auf.';
+  T.eingreif.can = 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde). Nahkampf auf eigenen Zielfeldern und in eigenen Gräben ×1,25, beim Vorgehen ins Feindgebiet ×0,85. Panzergranate (Aktion, alle 2 Runden): 1–2 Felder gegen Fahrzeuge und Schreiter.';
+  ers('eingreif', 'Gegenstoß auf Zielfelder', 'Gegenstoß: ×1,25 auf eigenen Zielfeldern');
+  T.feldkanone.can = 'Direktes Feuer: flache Bahn bis 5 Felder, nur auf Ziele in Sicht, kein Gas, kein Sperrfeuer. Trifft Kolosse und Kampfmaschinen ×2,5. Schnell abgeprotzt: darf in derselben Runde noch schießen. Aufgeprotzt zieht sie 3 Felder. Im Nahkampf wehrlos.';
+  ers('feldkanone', 'Direktschuss ×2,5 auf Kolosse', 'Direktschuss 5 Felder, ×2,5 auf Kolosse'); ers('feldkanone', 'Aufprotzen', 'Schnell abgeprotzt');
+  T.haubitze.can = 'Steil- und Sperrfeuer: ' + T.haubitze.can;
+  T.panzerk.can = T.panzerk.can.replace('Motorisierte Kampfanzüge.', 'Motorisierte Kampfanzüge für Nahkampf und Draht. Schneidet Draht vom Nachbarfeld aus (Aktion).');
+  if (!T.panzerk.sp.includes('Draht schneiden (Nachbarfeld, Aktion)')) T.panzerk.sp.unshift('Draht schneiden (Nachbarfeld, Aktion)');
+  T.saeger.can += ' Die Panzersäge trifft Gepanzerte im Nahkampf ×1,5 (Fußtruppen ×1).'; ers('saeger', 'Maschinenwaffe und Säge', 'Panzersäge gegen Gepanzerte ×1,5');
+  T.klaue.can += ' Die Stahlklaue packt und schleudert Fußtruppen im Nahkampf ×2, gegen Gepanzerte nur ×0,75.'; ers('klaue', 'Maschinenwaffe', 'Stahlklaue gegen Fußtruppen ×2');
+  T.huenen.can = 'Schweres Feuer: ' + T.huenen.can;
+  T.fernsprech.can = 'Feuerleitung: ' + T.fernsprech.can; T.ballon.can = 'Aufklärung: ' + T.ballon.can; }
 const E = {
   P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
