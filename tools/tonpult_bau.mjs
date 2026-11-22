@@ -259,7 +259,65 @@ for (const [t, name, sd, filt, fst, spezial, pre] of [['stimmen_held_faust', 'He
 const nutzer = {};
 for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const key = s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || ''); (nutzer[key] = nutzer[key] || new Set()).add(u.name); }
 for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const n = [...nutzer[s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || '')]].filter(x => x !== u.name); s.auch = n; }
-const DATA = { stand: new Date().toISOString().slice(0, 10), einheiten, ab: AB, gruppen: GRUPPEN, name: NAME, var: VAR_NAME, satz: SATZ_NAME, pools: POOLS, sndvar: SND_VAR, datei: DATEI, kat: SHOP_KAT };
+// ================= Ton-Pult 2 (Enrico 2026-11-22 19:10) =================
+// Bibliothek nach dem, was man hört (ersetzt in der Auswahl die Code-Gruppen GRUPPEN, die intern bleiben). Je Rubrik Unterüberschriften mit Tonplätzen;
+// „x_*“ nimmt alle Plätze mit diesem Anfang. Ein Platz darf in zwei Rubriken stehen (Schritte im Schnee: Schritte und Winter). Neue Plätze hier eintragen –
+// was fehlt, landet in „Übrige Töne“ und wird beim Bauen gemeldet.
+const HOER = [
+  ['stimmen', 'Stimmen und Rufe', [['Rufe und Befehle', 'forward stand roar charge comeon cry scream ruf_feuer'], ['Schmerz, Panik, Sterben', 'pain medic panic panik_einzeln panik_gruppe sterben_einzeln sterben_gruppe husten grunzen gasmaske atmen selGas neu2_maske neu2_schrei'],
+    ['Stimmenpaket und Gefechtsrufe', 'stimmen_paket neu2_stimme'], ['Helden', 'hst_faust_* hst_kuerass_* held_ritter_schrei'], ['Schreiter-Stimmen', 'sst_*'],
+    ['Brüllen und Bestien', 'loewe oger_bruell tiger neu3_loewe neu3_loewe2 neu3_bestie neu_tiger_mech'], ['Monster (später Dämonen)', 'neu2_monster'], ['Sprüche beim Anklicken', 'sv_*']]],
+  ['schritte', 'Schritte', [['', 'schritte steps stepsWald marschtritt holzknacken'], ['Im Schnee', 'schnee_einzeln schnee_gruppe schnee_rennen neu2_schritte'], ['Schwere Schritte', 'kampfanzug_schritte neu_schritte_schwer held_schritt_ritter held_schritt_ritter2 stampfen_schnee']]],
+  ['pferde', 'Pferde', [['', 'pferd_auswahl pferd_unruhe neigh gallop gallop2'], ['Gespann und Wagen', 'gespann wagenknarren pferde_schnee']]],
+  ['motoren', 'Motoren und Ketten', [['', 'motor_auswahl tank panzerketten_schnee'], ['Überrollen und Panne', 'ueberrollen draht_ueberrollen crash'], ['Flugzeug', 'neu2_flug']]],
+  ['schreiter', 'Schreiter und Maschinen', [['', 'schreiter_schritte mech stampfen_schnee smash'], ['Maschinenstimmen', 'robot neu_roboter'], ['Dampf und Hydraulik', 'held_aufladen held_dampfstoss held_dampf held_kolben']]],
+  ['gewehre', 'Gewehre', [['', 'rifle rifle2 rifle3 rifle4 neu2_gewehr neu4_gewehr_schwer sniper semi buechse'], ['Pistolen', 'pistol neu4_pistole_schwer neu2_pistole'], ['Flinten', 'flinte neu_schrot']]],
+  ['mg', 'MG', [['', 'mg minigun neu_mg_schwer neu4_mg_schwer neu2_autokanone']]],
+  ['kanonen', 'Kanonen und Artillerie', [['', 'cannon neu_kanone neu2_kanone kolosskanone loewenkanone panzerkanone'], ['Schwere Artillerie', 'cannonH'], ['Mörser und Werfer', 'launch launch2 werfer neu4_granatwerfer']]],
+  ['einschlaege', 'Einschläge', [['', 'einschlag vorbei boomH einschlagH barrage grenade2 blast boom2 wasser neu2_einschlag neu2_knall'], ['Auf Panzerung und Stein', 'armor impact einschlag_panzer einschlag_abpraller neu2_metall held_ruestung'],
+    ['Aufprall und Einsturz', 'neu3_fzaufprall neu3_aufprall neu2_crash einsturz neu2_einsturz']]],
+  ['nahkampf', 'Nahkampf', [['', 'nahA nahD saebel sword axe slash heavy neu_wucht neu2_nahkampf getuemmel'], ['Fleisch und Blut', 'neu3_fleisch neu3_gore neu2_blut'], ['Klauen und Bisse', 'stahlklaue_fleisch stahlklaue_eisen krallen_fleisch krallen_eisen neu3_biss loewen_landung'],
+    ['Sägen und Kettenschwert', 'saege_einschlag saege_fleisch saege_metall held_saege_start held_saege_start2 held_saege_schnitt held_saege_schnitt2 held_kschwert_metall held_kschwert_fleisch'], ['Rote Faust', 'held_faustschlag held_faustschlag2 held_fausteinschlag held_faustboom']]],
+  ['feuer', 'Feuer, Gas, Rauch', [['', 'flame feuer neu2_feuer ballon_brenner'], ['Gas und Rauch', 'gas rauch'], ['Leuchtkugel', 'leuchtschuss leuchtbrand']]],
+  ['natur', 'Natur, Kulisse und Winter', [['', 'wind kraehe ambient wetter'], ['Winter', 'winterwind winterwind_stark eis_knackt eis_bricht schnee_einzeln schnee_gruppe schnee_rennen stampfen_schnee panzerketten_schnee pferde_schnee'], ['Glocken', 'glocke glocke_fern glocke_fall'], ['Tiere und Wasser', 'dog neu2_hund neu2_wasser']]],
+  ['oberflaeche', 'Oberfläche', [['', 'ui klick neu2_knopf'], ['Signale', 'whistle horn generalhorn held_fall_horn neu2_horn march zug_eigen zug_gegner erobert verloren win neu2_punkt'], ['Musik', 'musik_titel musik_schlacht musikNiederlage neu2_musik']]],
+  ['handgriffe', 'Handgriffe und Gerät', [['MG und Nachladen', 'mg_aufbauen mg_abbauen mgsetup mgladen nachladen neu_nachladen huelsen'], ['Geschütz', 'geschuetz_aufprotzen geschuetz_abprotzen clank abprotzen'], ['Graben und Bauen', 'sandsaecke schaufel bauen tick neu2_tuer'],
+    ['Draht', 'cut draht_schneiden draht_infanterie drahtlatch drahtwackeln'], ['Versorgen', 'heal reparieren neu_versorgung']]] ];
+const istVariante = p => { const m = p.match(/^(.+)_(gm|gs|bf|mr)$/); return !!(m && POOLS[m[1]]); };
+const POOL_KEYS = new Set(Object.values(POOLS).flat().map(x => x[0])), BIB_PLAETZE = [...Object.keys(POOLS).filter(p => !istVariante(p)), ...KEYS.filter(k => !POOL_KEYS.has(k))], inBib = new Set();
+const BIB = HOER.map(([id, titel, teile]) => { const e = [];
+  for (const [unter, liste] of teile) for (const w of liste.split(' ')) for (const p of (w.endsWith('*') ? BIB_PLAETZE.filter(x => x.startsWith(w.slice(0, -1))) : BIB_PLAETZE.includes(w) ? [w] : [])) { e.push([p, unter || null]); inBib.add(p); }
+  return { id, titel, e }; });
+{ const rest = BIB_PLAETZE.filter(p => !inBib.has(p)); if (rest.length) { BIB.push({ id: 'rest', titel: 'Übrige Töne', e: rest.map(p => [p, null]) }); console.log('Ton-Pult: ohne Rubrik in HOER (jetzt unter „Übrige Töne“):', rest.join(' ')); } }
+Object.assign(NAME, { saege_einschlag: 'Säge: Einschlag', saege_fleisch: 'Säge: Sägen in Fußtruppen', saege_metall: 'Säge gegen Panzerung', neu4_pistole_schwer: 'Schwere Pistole (Offiziere)', neu4_gewehr_schwer: 'Schweres Gewehr (Panzerbüchse)', neu4_mg_schwer: 'Schweres MG (Schreiter)',
+  neu4_granatwerfer: 'Granatwerfer', draht_schneiden: 'Draht schneiden (neu)', draht_ueberrollen: 'Draht niederwalzen', draht_infanterie: 'Im Stacheldraht (Fußtruppen)', schreiter_schritte: 'Schreiter-Schritte', kampfanzug_schritte: 'Kampfanzug-Schritte',
+  stahlklaue_fleisch: 'Stahlklaue gegen Fußtruppen', stahlklaue_eisen: 'Stahlklaue gegen Panzerung', krallen_fleisch: 'Krallen gegen Fußtruppen', krallen_eisen: 'Krallen gegen Panzerung', einsturz: 'Gebäude stürzt ein', glocke: 'Kirchenglocke', glocke_fern: 'Glocke, fern',
+  glocke_fall: 'Glocke fällt', kraehe: 'Krähen', wind: 'Wind', gasmaske: 'Gasmaske / Maskenlaut', erobert: 'Zielfeld erobert', verloren: 'Zielfeld verloren', win: 'Sieg', getuemmel: 'Nahkampf-Getümmel (Schleife)', ambient: 'Ferner Gefechtslärm', wetter: 'Regen und Donner',
+  musik_titel: 'Musik: Titel', musik_schlacht: 'Musik: Schlacht', musikNiederlage: 'Musik: Niederlage', klick: 'Klick (Nächste Einheit, Fertig)', ruf_feuer: 'Ruf: Feuer-Befehl', panik_einzeln: 'Panik, einzeln', panik_gruppe: 'Panik, Gruppe', sterben_einzeln: 'Sterben, einzeln',
+  sterben_gruppe: 'Sterben, Gruppe', mg_aufbauen: 'MG aufbauen', mg_abbauen: 'MG abbauen', geschuetz_aufprotzen: 'Geschütz aufprotzen', geschuetz_abprotzen: 'Geschütz abprotzen', sandsaecke: 'Sandsäcke (Eingraben)', loewen_landung: 'Löwen-Landung (Sprungangriff)',
+  schnee_einzeln: 'Schritte im Schnee, einzeln', schnee_gruppe: 'Schritte im Schnee, Gruppe', schnee_rennen: 'Rennen im Schnee', stampfen_schnee: 'Stampfen im Schnee', panzerketten_schnee: 'Ketten im Schnee', pferde_schnee: 'Pferde im Schnee', eis_knackt: 'Eis knackt',
+  eis_bricht: 'Eis bricht', winterwind: 'Winterwind', winterwind_stark: 'Winterwind, Böe', huelsen: 'Patronenhülsen fallen', stimmen_paket: 'Stimmenpaket (ElevenLabs)', selGas: 'Atmen in der Gasmaske (Gasschutz angeklickt)', launch2: 'Mörser (alt)', gallop: 'Galopp (alt)',
+  horn: 'Signalhorn', neigh: 'Wiehern', tiger: 'Brüllen (Klauenschreiter)' });
+{ const SST = { auswahl: 'Auswahl', bewegen: 'Bewegen', angriff: 'Angriff', nahkampf: 'Nahkampf', getroffen: 'Getroffen', schwer_beschaedigt: 'Schwer beschädigt', feind_gesichtet: 'Feind gesichtet', zerstoert: 'Zerstört', durchbruch: 'Durchbruch', hinrichtung: 'Hinrichtung', gegner_erledigt: 'Gegner vernichtet', schwer_verwundet: 'Schwer verwundet', tod: 'Tod' };
+  for (const p of BIB_PLAETZE) { const m = p.match(/^(sst|hst_faust|hst_kuerass)_(.+)$/); if (m && !NAME[p]) NAME[p] = (m[1] === 'sst' ? 'Schreiter-Stimme: ' : m[1] === 'hst_faust' ? 'Rote Faust spricht: ' : 'Kürassier spricht: ') + (SST[m[2]] || m[2]); }
+  const ohne = BIB_PLAETZE.filter(p => !NAME[p] && !/^sv_/.test(p)); if (ohne.length) console.log('Ton-Pult: Plätze ohne lesbaren Namen (NAME ergänzen):', ohne.join(' ')); }
+// Länge je Ton (Sekunden) aus den eingebetteten Daten: AAC (ADTS-Rahmen zählen) bzw. MP3 (Rahmen zählen)
+function dauerVon(uri) { const m = /^data:([^;]+);base64,/.exec(uri); if (!m) return null; const b = Buffer.from(uri.slice(m[0].length), 'base64'); let i = 0, t = 0;
+  if (m[1] === 'audio/aac') { const SR = [96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350];
+    while (i + 7 < b.length) { if (b[i] !== 0xFF || (b[i + 1] & 0xF0) !== 0xF0) return null; const len = ((b[i + 3] & 3) << 11) | (b[i + 4] << 3) | (b[i + 5] >> 5); if (len < 7) return null; t += 1024 / SR[(b[i + 2] >> 2) & 15]; i += len; } return t; }
+  const BR1 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320], BR2 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
+  if (b.slice(0, 3).toString('latin1') === 'ID3') i = 10 + (((b[6] & 127) << 21) | ((b[7] & 127) << 14) | ((b[8] & 127) << 7) | (b[9] & 127));
+  while (i + 4 < b.length) { const ver = (b[i + 1] >> 3) & 3, lay = (b[i + 1] >> 1) & 3, bri = b[i + 2] >> 4, sri = (b[i + 2] >> 2) & 3;
+    if (b[i] !== 0xFF || (b[i + 1] & 0xE0) !== 0xE0 || ver === 1 || lay !== 1 || bri === 0 || bri === 15 || sri === 3) { i++; continue; }
+    const sr = [44100, 48000, 32000][sri] / (ver === 3 ? 1 : ver === 2 ? 2 : 4), spf = ver === 3 ? 1152 : 576; t += spf / sr; i += Math.floor(spf / 8 * (ver === 3 ? BR1 : BR2)[bri] * 1000 / sr) + ((b[i + 2] >> 1) & 1); }
+  return t || null; }
+const DAUER = {}; for (const k of KEYS) { const d = dauerVon(ctx.SOUNDS[k]); if (d != null) DAUER[k] = +d.toFixed(2); }
+// Schnellwahl: Art und Hauptwaffe je Einheit; „gleich“ = andere Zeilen derselben Einheit mit demselben Tonplatz (im Spiel gilt eine Wahl je Einheit und Platz, also für alle diese Zeilen)
+for (const u of einheiten) { const T = TYPES[u.t];
+  u.art = !T ? null : T.held ? 'held' : T.cmd ? 'anfuehrer' : T.cls === 'cav' ? 'reiter' : T.cls === 'art' ? 'geschuetz' : T.cls === 'walker' ? (PANZER.includes(u.t) ? 'fahrzeug' : 'schreiter') : T.suit ? 'anzug' : 'fuss';
+  const hs = u.slots.find(s => s.ab === 'schuss' && s.id === 'schuss'); u.waffe = !T || !hs ? null : ({ gewehr: 'gewehr', mg: 'mg', kanone: 'kanone', flamme: 'flamme' })[hs.gruppe] || null;
+  for (const s of u.slots) s.gleich = s.mode === 'ruf' || s.platz === '-' ? [] : u.slots.filter(x => x !== s && x.mode !== 'ruf' && x.platz === s.platz).map(x => x.id); }
+const DATA = { bib: BIB, dauer: DAUER, stand: new Date().toISOString().slice(0, 10), einheiten, ab: AB, gruppen: GRUPPEN, name: NAME, var: VAR_NAME, satz: SATZ_NAME, pools: POOLS, sndvar: SND_VAR, datei: DATEI, kat: SHOP_KAT };
 
 const css = readFileSync(join(ROOT, 'tools', 'tonpult_seite.css'), 'utf8'), js = readFileSync(join(ROOT, 'tools', 'tonpult_seite.js'), 'utf8');
 const html = `<!doctype html>
@@ -270,13 +328,17 @@ ${css}</style></head>
 <body>
 <header>
   <h1>Armargeddon · Ton-Pult</h1>
+  <div class="tabs" id="ansichten"><button data-a="tabelle">Tabelle</button><button data-a="bib">Bibliothek</button><button data-a="einzeln">Einzelne Einheit</button></div>
   <span id="status">Töne werden geladen (ca. 22 MB) …</span>
   <div class="hk">
+    <button id="undo" disabled>↶ Rückgängig</button>
     <label class="regler">Effekte <input id="volEffekte" type="range" min="0" max="100" step="1"><b id="volEffekteW"></b></label>
     <button id="export">Export JSON</button><button id="import">Import</button><button id="allesZurueck">Alles zurücksetzen</button><button id="stopp" class="gold">■ Stopp</button>
   </div>
 </header>
-<div class="wrap">
+<div id="vTabelle" hidden><div id="tKopf"></div><div class="ttw" id="tWrap"></div><div id="leiste"></div></div>
+<div id="vBib" hidden></div>
+<div class="wrap" id="vEinzeln" hidden>
   <aside id="liste"><div class="tabs" id="seiten"></div><div class="kat" id="kats"></div><div id="einheiten"></div></aside>
   <main id="pult"></main>
 </div>

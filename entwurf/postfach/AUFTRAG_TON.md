@@ -37,9 +37,9 @@
 6. **Bericht:** Screenshots von Tabelle, Bibliothek und einer Mehrfach-Zuweisung (z. B. „alle Fußtruppen Konkordat → Schritte im Schnee beim Ziehen“), plus Test: Export → `tonwahl_bau.mjs` im Arbeitsordner (nur zum Prüfen, Änderung an `src/ui.js` danach wieder verwerfen) → richtige Einträge für alle gewählten Einheiten.
 
 ## Fortschritt (nur abhaken)
-- [ ] Schritt 0 Einrichtung
-- [ ] Bibliothek nach Gehör
-- [ ] Tabelle mit Mehrfachwahl
-- [ ] Vom Ton aus
-- [ ] Rückgängig, „gilt auch für“, Lautstärke für mehrere
-- [ ] Tests und Bericht
+- [x] Schritt 0 Einrichtung
+- [x] Bibliothek nach Gehör
+- [x] Tabelle mit Mehrfachwahl
+- [x] Vom Ton aus
+- [x] Rückgängig, „gilt auch für“, Lautstärke für mehrere
+- [x] Tests und Bericht
