@@ -96,11 +96,44 @@ const FXN = {};
 { const D = window.FXNEU || {}; for (const k in D) { const m = k.match(/^(.+)_(\d+)$/); if (!m) continue; const im = new Image(); im.src = D[k]; (FXN[m[1]] = FXN[m[1]] || [])[+m[2] - 1] = im; } }
 // Winter (Enrico 18:35): Schneetrichter und Brandfleck aus den Gelände-Bildern als Bodenspur-Bogen „kraterschnee“ (0, 1 Trichter, 2 Brandfleck)
 { const GL = window.GELAENDE || {}; const n = ['krater_schnee_1', 'krater_schnee_2', 'brand_schnee']; if (n.every(k => GL[k])) FXN.kraterschnee = n.map(k => { const im = new Image(); im.src = GL[k]; return im; }); }
+// Spuren im Schnee (Enrico 19:40): 0 Räder mit Hufen, 1 Schreiter, 2 Ketten gerade, 3 Ketten gebogen, 4 Hufe, 5 zertrampelt (Nahkampf), 6 Stapfen der Fußtruppen (im Code gezeichnet)
+{ const GL = window.GELAENDE || {}, n = [1, 2, 3, 4, 5, 6].map(k => 'spur_schnee_' + k);
+  if (n.every(k => GL[k])) { FXN.spurschnee = n.map(k => { const im = new Image(); im.src = GL[k]; return im; });
+    const c = document.createElement('canvas'); c.width = 320; c.height = 150; const x = c.getContext('2d');   // Stapfen: kleine ovale Abdrücke in zwei versetzten Reihen, Fahrtrichtung +x
+    for (let i = 0; i < 9; i++) for (const row of [0, 1]) { const px = 18 + i * 34 + row * 17 + (Math.random() - 0.5) * 6, py = 52 + row * 46 + (Math.random() - 0.5) * 8;
+      x.fillStyle = 'rgba(70,74,82,0.55)'; x.beginPath(); x.ellipse(px, py, 8, 4.5, (Math.random() - 0.5) * 0.4, 0, 7); x.fill(); x.fillStyle = 'rgba(245,248,252,0.5)'; x.beginPath(); x.ellipse(px - 1, py - 3, 7, 2, 0, 0, 7); x.fill(); }
+    const im = new Image(); im.src = c.toDataURL(); FXN.spurschnee.push(im); } }
+function spurSchnee(i, x0, y0, x1, y1, o = {}) {   // Spur am Boden zwischen zwei Punkten, in Fahrtrichtung gedreht; höchstens 60 Spuren (älteste fällt weg)
+  if (!(E.MAP && E.MAP.winter) || fxN('spurschnee') < 7) return;
+  let n = 0; for (let k = gmarks.length - 1; k >= 0; k--) if (gmarks[k].b === 'spurschnee' && ++n >= 60) { gmarks.splice(k, 1); break; }
+  gmark('spurschnee', i, (x0 + x1) / 2, (y0 + y1) / 2 + L.s * 0.12, Object.assign({ mul: 0.62, alpha: 0.8, flip: false, ang: Math.atan2(y1 - y0, x1 - x0), turns: 3 }, o));
+}
+// Atemwolken (Enrico 19:40): kleines Wölkchen am Kopf, wenn eine Fußtruppe spricht/ruft (nicht Kampfanzüge, Schreiter, Panzer); je Einheit höchstens alle 1,5 s
+const ATEM = new Map();
+function atem(u) {
+  const T = u && TYPES[u.type]; if (!T || !BW || ['walker', 'art'].includes(T.cls) || T.suit || T.mech || T.dauerfeuer || istMaschine(u)) return;
+  const t = performance.now(); if (t - (ATEM.get(u.id) || 0) < 1500) return; ATEM.set(u.id, t);
+  const d = DU.get(u.id); if (!d || !d.fbx || !d.fbx.length) return; const [x0, y0, w, h, fl] = d.fbx[0], lf = facesLeft(d.face); const xx = !!fl !== lf ? -(x0 + w) : x0;
+  const p = [d.x + xx + w * (lf ? 0.3 : 0.7), d.y + y0 + h * 0.15];
+  fx('rauch', null, p[0], p[1], { fuss: [d.x, d.y], anchor: 'mitte', life: 80, mul: 0.13, grow: 1.3, alpha: 0.55, fadeIn: 6, fadeOut: 0.7, filter: 'brightness(2.6) saturate(0)', move: [p[0] + (lf ? -1 : 1) * L.s * 0.12, p[1] - L.s * 0.05] });
+}
+// Schneefall (Enrico 19:40): wenige, langsame Flocken über dem Bild, nur Winterkarten, aus bei Bildwirkung aus (oder window.NOSCHNEEFALL); Böe treibt sie kurz zur Seite
+const SCHNEEFALL = []; let schneeBoeBis = 0;
+function drawSchneefall(g) {
+  if (!(E.MAP && E.MAP.winter) || !BW || window.NOSCHNEEFALL) return; const W = g.canvas.width, H = g.canvas.height, n = BW === 2 ? 110 : 70;
+  while (SCHNEEFALL.length < n) SCHNEEFALL.push({ x: Math.random(), y: Math.random(), v: 0.0006 + Math.random() * 0.0009, r: 0.6 + Math.random() * 1.4, ph: Math.random() * 6.28, a: 0.35 + Math.random() * 0.45 });
+  const boe = now < schneeBoeBis ? Math.sin(Math.PI * (1 - (schneeBoeBis - now) / 3500)) : 0, st = STEP;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#eef2f8';
+  for (let i = 0; i < n; i++) { const f = SCHNEEFALL[i]; f.ph += 0.02 * st; f.y += f.v * st * (1 + boe * 0.5); f.x += (Math.sin(f.ph) * 0.0004 + 0.0002 + boe * 0.006) * st;
+    if (f.y > 1.02) { f.y = -0.02; f.x = Math.random(); } if (f.x > 1.02) f.x -= 1.04;
+    g.globalAlpha = f.a; g.beginPath(); g.arc(f.x * W, f.y * H, f.r * H / 1080, 0, 7); g.fill(); }
+  g.restore();
+}
 const WFX = () => !!(E.MAP && E.MAP.winter && fxN('winter_schnee') >= 6);   // Wintereffekte nur auf Winterkarten und nur mit Bildern
 function aufEis(x, y) { try { const [c, r] = pixToHex(x, y); return !!(G && G.map[c] && G.map[c][r] && G.map[c][r].t === 'eis'); } catch (e) { return false; } }
 const FX_GLOW = new Set(['muendung', 'explosion', 'feuer', 'funken', 'leuchtkugel', 'leuchtspur', 'flammenstrahl', 'drehlauf', 'nahkampf']);
 // Größe: längste Seite des größten Teils eines Bogens in Feldradien (Soldat ≈ 0,8 Feldradien hoch)
-const FX_SZ = { winter_schnee: 2.0, kraterschnee: 1.4, heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
+const FX_SZ = { winter_schnee: 2.0, kraterschnee: 1.4, spurschnee: 1.45, heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
 const GESCHOSS_ANG = [-18, -15, -40, 0, -15, -15].map(a => a * Math.PI / 180);   // Grundrichtung der Geschosse im Bogen (gemessen)
 const fxIm = (b, i) => { const a = FXN[b]; if (!a || !a.length) return null; const im = a[i != null ? i : Math.floor(Math.random() * a.length)]; return im && im.complete && im.naturalWidth ? im : null; };
 const fxN = b => (FXN[b] || []).length;
@@ -111,6 +144,7 @@ const fxs = [], gmarks = [];   // laufende Effekte; Spuren am Boden (bleiben ein
 function fx(b, i, x, y, o = {}) {
   if (b === 'erdfontaene' && WFX()) {   // Winter: Schneefontäne (groß/klein), auf Eis Eissplitter mit Knacken
     const { filter, ...oo } = o; o = oo; if (aufEis(x, y - L.s * 0.3)) { b = 'winter_schnee'; i = 5; o = { ...o, mul: (o.mul || 1) * 0.8 }; playSound('eis_knackt', 0.45, null, { noGap: true }); } else { b = 'winter_schnee'; i = i != null ? i : (o.mul || 1) >= 0.7 ? 0 : 2; } }
+  if ((b === 'blut' || b === 'blut2') && E.MAP && E.MAP.winter) o = { ...o, mul: (o.mul || 1) * 0.72, filter: 'brightness(0.4) saturate(0.9)' };   // Blut auf Schnee dunkler und kleiner (Enrico 19:40)
   const im = fxIm(b, i); if (!im) return null; const e = Object.assign({ b, im, x, y, life: 30, delay: 0, mul: 1, anchor: 'unten', ang: 0, rise: 0, grow: 0, spin: 0, alpha: 1, fadeIn: 0, fadeOut: 0.4 }, o); e.max = e.life; fxs.push(e); return e; }
 function drawFxs(g, s, up) {
   for (let i = fxs.length - 1; i >= 0; i--) {
@@ -131,6 +165,7 @@ function drawFxs(g, s, up) {
 // Spur am Boden (Brandfleck, Einschlag, Öl, Drahtreste, Kettenspur, Trichter): bleibt „turns“ Runden, die letzte blasst aus
 function gmark(b, i, x, y, o = {}) {
   if (b === 'bodenspuren' && [0, 1, 5].includes(i) && E.MAP && E.MAP.winter && fxN('kraterschnee') === 3) { b = 'kraterschnee'; i = i === 0 ? 2 : i === 1 ? 0 : 1; }   // Winter: Brandfleck, Einschlag, kleiner Trichter im Schnee
+  if ((b === 'blut' || b === 'blut2') && E.MAP && E.MAP.winter) o = { ...o, mul: (o.mul || 1) * 0.72, filter: 'brightness(0.4) saturate(0.9)' };   // Blutflecken auf Schnee dunkler und kleiner
   const im = fxIm(b, i); if (!im || !G) return; gmarks.push(Object.assign({ b, im, x, y, mul: 1, flip: Math.random() < 0.5, turn: G.turn, turns: 3, alpha: 0.9, born: now }, o)); if (gmarks.length > 320) gmarks.shift(); }
 function drawGmarks(g) {
   for (let i = gmarks.length - 1; i >= 0; i--) { const m = gmarks[i], age = G.turn - m.turn; if (age >= m.turns) { gmarks.splice(i, 1); continue; }
@@ -1843,6 +1878,7 @@ function drawTilt() {
   drawKZ(g, s, (x, y) => { const b = bbAt(x, y); if (!b) return false; g.setTransform(b.sc, 0, 0, b.sc, b.px - b.sc * x, b.py - b.sc * y); return true; });   // Kopfzeichen (2026-11-18)
   g.setTransform(1, 0, 0, 1, 0, 0);
   drawStratMarks(g); SMARK.length = 0;
+  drawSchneefall(g);   // Winter (Enrico 19:40)
   drawVignette(g);   // F48: Kampfszene
 }
 // ---------- Kampfszene (F48, 2026-11-20, nach Darkest Dungeon) ----------
@@ -2110,7 +2146,7 @@ setInterval(() => {
   }
   if (!ortAn || !k || speed >= INSTANT) return;
   if (jetzt > kraeheT) { kraeheT = jetzt + zwischen(k.kraeheMs); playSound('kraehe', k.kraehe * (duckF() < 1 ? 0.5 : 1), null, { noGap: true, rate: 0.9 + Math.random() * 0.15 }); }
-  if (k.boeMs && jetzt > boeT) { boeT = jetzt + zwischen(k.boeMs); playSound('winterwind_stark', k.boe * (duckF() < 1 ? 0.5 : 1), null, { noGap: true, rate: 0.95 + Math.random() * 0.1 }); }   // Winter: Böe
+  if (k.boeMs && jetzt > boeT) { boeT = jetzt + zwischen(k.boeMs); schneeBoeBis = performance.now() + 3500; playSound('winterwind_stark', k.boe * (duckF() < 1 ? 0.5 : 1), null, { noGap: true, rate: 0.95 + Math.random() * 0.1 }); }   // Winter: Böe
   if (k.glockeMs && jetzt > glockeT) { glockeT = jetzt + zwischen(k.glockeMs); if (!bauSicht().some(x => x)) playSound('glocke_fern', k.glocke_fern, null, { noGap: true, rate: 1 }); }   // nach dem Einsturz schweigt sie
 }, 50);
 let hustenT = -1e9, hustenN = 0;
@@ -2270,6 +2306,7 @@ function tonWahl(platz, u) { for (const x of u ? [u, ...tonKontext] : tonKontext
 function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
   const tw = tonWahl(name, opt && opt.u); if (tw) { if (tw.aus) return; if (tw.vf) vol *= tw.vf; if (tw.rate) opt = { ...(opt || {}), rate: (opt && opt.rate || 0.94 + Math.random() * 0.12) * tw.rate }; }   // F91
   const gapKey = name; name = tw && tw.k ? tw.k : sndPick(tw && tw.p ? tw.p : name, side || (opt && opt.u && opt.u.side), opt && (opt.v || stimmVar(opt.u))) || (tw && tw.p) || name;
+  if (opt && opt.u && opt.u.type && E.MAP && E.MAP.winter && /^(sv_|pain|medic|cry|scream|panic|forward|roar|stand|charge|comeon|husten|ruf_|panik_|sterben_|stimme)/.test(gapKey)) try { atem(opt.u); } catch (e) {}   // Atemwolke bei Stimmen (Winter)
   if (!soundOn || !SND[name] || (speed >= INSTANT && qRunning)) return;
   if (gapKey === 'whistle' && performance.now() - verlorenT < 4000) return;
   const t = performance.now(); if (!(opt && opt.noGap)) { if (lastSnd[gapKey] != null && t - lastSnd[gapKey] < (SND_GAP[gapKey] || SND_GAP[name] || 100)) return; lastSnd[gapKey] = t; }   // nicht mehrfach im selben Augenblick
@@ -2367,10 +2404,13 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
   for (let i = 1; i < path.length; i++) {
     const [x0, y0] = center(path[i - 1][0], path[i - 1][1]), [x1, y1] = center(path[i][0], path[i][1]);
     { const uu = unitById(id), T = uu && TYPES[uu.type];
+      if (T && E.MAP.winter && !d.vs.rout) { const sh = FIGMAP[uu.type] && FIGMAP[uu.type][0];   // Spuren im Schnee (Enrico 19:40)
+        if (T.cls === 'walker') { if (sh && SCHREITER.includes(sh)) spurSchnee(1, x0, y0, x1, y1, { mul: 0.55 }); else { const p0 = i > 1 ? center(path[i - 2][0], path[i - 2][1]) : null, dw = p0 ? Math.abs(((Math.atan2(y1 - y0, x1 - x0) - Math.atan2(y0 - p0[1], x0 - p0[0]) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) : 0; spurSchnee(dw > 0.3 ? 3 : 2, x0, y0, x1, y1, { mul: 0.7, flipY: dw > 0.3 && false }); } }
+        else if (T.cls === 'cav') spurSchnee(4, x0, y0, x1, y1); else if (T.cls === 'art' || T.fahrbar) spurSchnee(0, x0, y0, x1, y1, { mul: 0.55 }); else spurSchnee(6, x0, y0, x1, y1, { mul: 0.42, alpha: 0.6 }); }
       if (T && T.cls === 'walker' && !d.vs.rout) { const sh = FIGMAP[uu.type] && FIGMAP[uu.type][0];
         { const h = G.map[path[i][0]] && G.map[path[i][0]][path[i][1]]; if (h && h.t === 'barrikade') playSound('ueberrollen', 0.5); }   // über eine Barrikade
         if (sh && SCHREITER.includes(sh)) fx('truemmer', Math.random() < 0.5 ? 5 : 2, x1, y1 + L.s * 0.3, { life: 40, mul: 0.5, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });   // Schreiter: Staub bei jedem Schritt
-        else gmark('bodenspuren', 4, (x0 + x1) / 2, (y0 + y1) / 2 + L.s * 0.1, { mul: 0.6, alpha: 0.7, flip: false, ang: Math.atan2(y1 - y0, x1 - x0) + 0.52 }); } }   // Kolosse: Kettenspur
+        else if (!(E.MAP.winter && fxN('spurschnee') >= 7)) gmark('bodenspuren', 4, (x0 + x1) / 2, (y0 + y1) / 2 + L.s * 0.1, { mul: 0.6, alpha: 0.7, flip: false, ang: Math.atan2(y1 - y0, x1 - x0) + 0.52 }); } }   // Kolosse: Kettenspur (Winter: Schneespur oben)
     if (x1 !== x0 && !keepFace) d.face = x1 > x0 ? (facesLeft(d.face) ? 0 : d.face) : (facesLeft(d.face) ? d.face : 3);   // nur die Seite wechseln, senkrechte Schritte drehen nicht
     if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
@@ -2567,6 +2607,7 @@ async function playEvent0(e) {
       await wait(e.mode === 'barrage' ? 420 : 260); break;
     }
     case 'melee': case 'counter': {
+      if (e.t === 'melee') { const dd = DU.get(e.d), da = DU.get(e.a); if (dd && da) spurSchnee(5, da.x, da.y, dd.x, dd.y, { mul: 0.55, alpha: 0.75 }); }   // Winter: zertrampelter Schnee
       getuemmel();   // Getümmel-Schleife, solange Nahkampf läuft (2026-11-18)
       { const ha = unitById(e.a); if (ha && ha.type === 'faust') playSound('held_aufladen', 0.5); else if (ha && ha.type === 'kuerass') { playSound('held_saege_start2', 0.55); if (e.t === 'melee') playSound('held_ritter_schrei', 0.45); } }   // Helden: Ausholen
       pose(e.a, 'kolben', 650);   // Kolbenschlag mit kurzem Vorstoß
@@ -4589,7 +4630,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

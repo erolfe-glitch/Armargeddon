@@ -111,6 +111,14 @@ TEILE = {
     'krater_schnee_1':     ('aufkleber', 320, {'quelle': ('furt_krater_schnee_bogen', (1032, 8, 2040, 1016))}),
     'krater_schnee_2':     ('aufkleber', 250, {'quelle': ('furt_krater_schnee_bogen', (8, 1032, 1016, 2040))}),
     'brand_schnee':        ('aufkleber', 300, {'quelle': ('furt_krater_schnee_bogen', (1032, 1032, 2040, 2040))}),
+    # Spuren im Schnee (Enrico 19:40, nur die ausgewählten Felder): alle so gedreht, dass die Fahrtrichtung nach rechts (+x) zeigt; Bogen b sind ganze Kacheln → maske
+    'spur_schnee_1':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_a', (1678, 4, 2507, 828)), 'angleichen': 'boden_schnee_rein_1'}),                      # Räder mit Hufen (Geschütz, Wagen)
+    'spur_schnee_2':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_a', (841, 836, 1670, 1660)), 'angleichen': 'boden_schnee_rein_1'}),                      # Schreiter-Fußabdrücke
+    'spur_schnee_3':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (853, 16, 1658, 816)), 'maske': True, 'drehen': 1, 'nur_dunkel': True}),   # Ketten geradeaus
+    'spur_schnee_4':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (1690, 16, 2495, 816)), 'maske': True, 'drehen': 1, 'nur_dunkel': True}),   # Ketten gebogen (Fahrzeug dreht)
+    'spur_schnee_5':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (16, 848, 821, 1648)), 'maske': True, 'drehen': 1, 'nur_dunkel': True}),   # Hufe (Reiter)
+    'spur_schnee_6':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (853, 848, 1658, 1648)), 'maske': True, 'entblut': True, 'nur_dunkel': True}),   # zertrampelt nach Nahkampf (roter Fleck → Matsch)
+    'eisloch_schnee':      ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_a', (1678, 836, 2507, 1660))}),                      # Eisloch (bereitgelegt, Regel offen)
     'zaun_schnee':         ('wand', 0.8, {'quelle': ('streifen_schnee_bogen', (0, 103, 2896, 355)), 'weich_unten': 30}),
     'ufer_schnee':         ('wand', 0.4, {'quelle': ('streifen_schnee_bogen', (0, 640, 2896, 845)), 'weich_unten': 6}),
     'unterholz_schnee':    ('wand', 0.45, {'quelle': ('streifen_schnee_bogen', (0, 1104, 2896, 1300)), 'weich_unten': 60}),
@@ -451,7 +459,26 @@ def roh(name, groesse, opt):   # deckendes Stück (Furt-Kachel): nur ausschneide
 
 def aufkleber(name, px, opt):   # Aufkleber aus einem Feld eines Bogens: freistellen (Hintergrund aus dem Feldrand), rosa Säume entfärben, größte Seite px
     b, box = opt['quelle']; a = np.asarray(Image.open(SRC / f'{b}.png').convert('RGB').crop(box))
-    q = entrosa(freistellen0(None, a)); q = zeilen(q)
+    if opt.get('maske'):   # ganze Kachel ohne Hintergrund: Rand weich auslaufen lassen (abgerundetes Rechteck), damit die Spur auf dem reinen Schnee liegt
+        h, w = a.shape[:2]; y = np.minimum(np.arange(h), h - 1 - np.arange(h))[:, None] / (h * 0.22); x = np.minimum(np.arange(w), w - 1 - np.arange(w))[None, :] / (w * 0.22)
+        t = np.clip(np.minimum(x, y), 0, 1); t = t * t * (3 - 2 * t); q = np.dstack([a.astype(np.float64), t * 255])
+    else:
+        q = entrosa(freistellen0(None, a))
+    if opt.get('entblut'):   # roter Blutfleck → Matschbraun
+        r_, g_, b_ = q[..., 0], q[..., 1], q[..., 2]; m = ndimage.gaussian_filter(np.clip((r_ - np.maximum(g_, b_) - 4) / 14, 0, 1), 2.0)
+        lum = 0.3 * r_ + 0.59 * g_ + 0.11 * b_
+        for c_, kk in enumerate((1.05, 0.98, 0.85)): q[..., c_] = q[..., c_] * (1 - m) + lum * kk * m
+        print(f'  Blut entfernt: {(m > 0.5).sum()} px')
+    if opt.get('nur_dunkel'):   # gemalter Schneegrund wird durchsichtig, nur die (dunkleren) Spuren bleiben – liegt dann auf dem Spielschnee ohne helles Rechteck
+        lum = 0.3 * q[..., 0] + 0.59 * q[..., 1] + 0.11 * q[..., 2]; ref = np.percentile(lum[q[..., 3] > 200], 55 if opt['nur_dunkel'] is True else opt['nur_dunkel'])   # Zahl = Perzentil des Schneegrunds (heller gemalter Grund: höher)
+        q[..., 3] *= np.clip((ref - lum - ref * 0.04) / (ref * 0.22), 0, 1) ** 0.8
+        q[..., 3] *= np.clip(ndimage.distance_transform_edt(q[..., 3] > 20) / 16, 0, 1)   # Saum der freigestellten Fläche (rosa Linie) weich weg
+    if opt.get('angleichen'):   # gemalter Schneegrund auf den Spielschnee abdunkeln (Median gleich), Rand breit weich – kein helles Rechteck
+        ziel = np.asarray(Image.open(OUT / f"{opt['angleichen']}.png").convert('RGB')).astype(np.float64).reshape(-1, 3); m_ = q[..., 3] > 200
+        q[..., :3] *= (np.median(ziel, axis=0) / np.median(q[..., :3][m_], axis=0))[None, None, :]
+        q[..., 3] *= np.clip(ndimage.distance_transform_edt(q[..., 3] > 20) / 45, 0, 1) ** 1.5
+    if opt.get('drehen'): q = np.rot90(q, opt['drehen']).copy()
+    q = zeilen(q)
     xs = np.where((q[..., 3] > 40).any(axis=0))[0]; q = q[:, xs.min():xs.max() + 1]
     f = px / max(q.shape[:2]); speichern(q, name, q.shape[0] * f, q.shape[1] * f)
 

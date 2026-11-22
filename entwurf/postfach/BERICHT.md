@@ -1,3 +1,57 @@
+## 2026-11-22 Abend – Krähenfurt: Wintereffekte (18:35) und Spuren, Schneefall, Atem, Blut (19:40)
+
+Gepusht. Tests: test_kommentare sauber, Partietest Krähenfurt fehlerfrei (Grauwall siehe Commit-Nachricht). Bilder in `entwurf/probe/kraehenfurt_effekte/`.
+
+### 18:35 Furt, Krater, Wintereffekte
+1. **Einschlag:** In `fxImpact` steht auf Winterkarten die Schneefontäne. Bei großen Geschossen folgt Bild 1 auf Bild 2 (fällt zusammen), bei kleinen kommt Bild 3. Feuerkern und Rauch bleiben wie bisher. Auch die übrigen Erdfontänen (Kanonentreffer auf Truppen, Faust-Einschlag, Festfahren) werden im Winter Schnee. Bilder: `einschlag_1.jpg`, `einschlag_2.jpg`.
+2. **Bodenspuren:**
+   - Einschlag und kleiner Trichter werden zu Schneetrichtern, Brandfleck zum Schnee-Brandfleck.
+   - Trichterfelder zeigen ebenfalls den Schneetrichter.
+   - Erd-Pfützen und Trümmerstreu auf Schneefeldern sind weg.
+   - Bild: `trichter_2_runden.jpg`.
+3. **Pulverschnee:** kommt hinter Ketten und Rädern, bei jedem Schreiter-Schritt und bei der Landung des Sprungangriffs. Höchstens 10 Wolken gleichzeitig, bei Infanterie gar nicht.
+4. **Eissplitter:** Bei Einschlägen auf Eisfeldern erscheinen Splitter mit etwas Schnee. Große Geschosse spielen `eis_bricht`, kleine und Treffer `eis_knackt`. `eis_bricht` ist damit im Spiel (vorher nur im Pult). Bild: `eistreffer.jpg`.
+5. **Schneekante im Code:**
+   - Grabenränder, Sandsack-Barrikaden, Bunker, Draht und Sperren sind oben weiß.
+   - Vorher/nachher: `schneekante_vorher.jpg` / `schneekante_nachher.jpg`; dafür habe ich auf Krähenfurt testweise Graben, Draht und Barrikade gesetzt.
+   - Zum Vergleich abschaltbar mit `window.NOSCHNEEKANTE`.
+6. **Furt:** Die gemalte Furt-Kachel liegt in Flussrichtung gedreht mit weichem Rand (`furt.jpg`). Fehlen Bilder, greifen die alten Effekte.
+
+### 19:40 Spuren, Eisloch, Schneefall, Atem, Blut
+1. **Spuren** (nur die genannten Felder):
+   - Alle sind so gedreht, dass sie in Fahrtrichtung liegen:
+     - Räder mit Hufen → Geschütze und Feldkanone
+     - Schreiter-Abdrücke → Schreiter
+     - gerade Kettenspur → Fahrzeug fährt geradeaus, gebogene → Fahrzeug dreht
+     - Hufe → Reiter
+     - zertrampelter Schnee → Nahkampf
+     - Fußtruppen → kleine Stapfen, im Code gezeichnet und dezent
+   - Spuren bleiben 3 Runden und verblassen in der letzten. Höchstens 60 gleichzeitig.
+   - Der gemalte Schneegrund unter den Spuren ist durchsichtig bzw. an den Spielschnee angeglichen, sonst entstünden helle Rechtecke.
+   - Der Blutfleck im Nahkampf-Feld ist zu Matsch umgefärbt.
+   - Bilder: `spuren_koloss.jpg`, `spuren_2_runden.jpg`.
+2. **Eisloch – Frage an Enrico: Soll Eis einbrechen können?**
+   - Zurzeit gibt es dafür keine Regel: Eis trägt Fußtruppen, Fahrzeuge kommen nicht drauf.
+   - Das Bild `eisloch_schnee` ist geschnitten und eingebettet, aber nicht benutzt.
+   - **Vorschlag, falls ja:** Ein schwerer Einschlag (Haubitze, Minenwerfer) auf Eis macht das Feld für 2 Runden zu „Wasser“ (unpassierbar). Eine Einheit darauf nimmt Schaden und wird ans Ufer zurückgeworfen. Dazu das Bild, der Ton `eis_bricht` und Splitter.
+   - Ohne deine Entscheidung baue ich das nicht.
+3. **Schneefall:**
+   - 70 Flocken bei Bildwirkung leicht, 110 bei stark, aus bei Bildwirkung aus.
+   - Bei der Böe (`winterwind_stark`) treiben die Flocken 3,5 s zur Seite.
+   - Leistung bei 1920 px, Mittel über 180 Bilder: ohne Schneefall 7,3 ms je Bild (längstes 17 ms), mit Schneefall 7,7 ms (längstes 13 ms). Kein messbarer Einbruch.
+   - Bild: `schneefall.jpg`.
+4. **Atemwolken:**
+   - Ein kleines helles Wölkchen erscheint vor dem Kopf, wenn eine Fußtruppe spricht oder ruft (Anwahl, Rufe, Schmerz, Panik …).
+   - Nicht bei Kampfanzügen, Hünen, Schreitern, Fahrzeugen und Geschützen.
+   - Je Einheit höchstens alle 1,5 s, aus bei Bildwirkung aus.
+   - Bild: `atem.jpg`.
+5. **Blut auf Schnee:** auf Winterkarten dunkler (Helligkeit 0,4) und kleiner (×0,72), Spritzer wie Flecken. Der Blut-Schalter gilt weiter.
+
+### Fragen an Enrico
+1. **Eis einbrechen lassen** (siehe oben, Vorschlag mit 2 Runden Wasser)?
+2. Sind die Spuren deutlich genug? Bei ganz herausgezoomter Karte sieht man sie kaum; ich könnte sie etwas dunkler machen.
+3. Atemwolke: so dezent lassen oder etwas größer?
+
 ## 2026-11-22 Abend – Krähenfurt-Bausteine, reine Schneeflächen, Feldkanonen-Ton, Titelbild (`a7f424b`, `bd026f1`, `c388e11`)
 
 Alles gepusht. Tests: Partietest Grauwall und Krähenfurt fehlerfrei, test_kommentare sauber (ein verschluckter Code-Rest von mir sofort behoben), Einschlag-Test, Einsturz-Test Haus. Bilder in `entwurf/probe/kraehenfurt_bausteine/` (vorher/nachher) und `entwurf/probe/titel_2026-11-22/`.
