@@ -202,12 +202,19 @@ const gbAn = () => GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + bauSicht().join(), feld = G.map.map(col => col.map(h => h.t)), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
-  if (GBW && gbKey === key) return true;
+  // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map(col => col.map(h => GB_PLATZHALTER[h.t] || h.t)), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  if (GBW && gbKey === key) return 'gleich';
+  // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
+  if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
+    const geht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true;
+      if (WEGBAR.has(a) && (t === 'open' || t === 'crater')) { weg.push([c, r]); if (t === 'crater') neu.push([c, r]); return true; }
+      if (FLACH.has(a) && t === 'crater') { neu.push([c, r]); return true; } return false; }));
+    if (geht) { for (const [c, r] of weg) GBW.feldWeg(c, r); for (const [c, r] of neu) { GBW.flachNeu(c, r); gbTcvNeu.push([c, r]); } gbKey = key; gbFeld = feld; return 'inkr'; } }
   // Nur Draht verschwunden (geschnitten, niedergewalzt, zerschossen): Drahtstücke herausnehmen statt alles neu aufzubauen (0,4–0,6 s Stocken, F12 2026-11-20)
   if (GBW && GBW.drahtWeg && gbFeld && gbKey.startsWith(basis + ':')) { const weg = [];
     const nurDraht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true; if (a === 'wire') { weg.push([c, r]); return true; } return false; }));
-    if (nurDraht) { for (const [c, r] of weg) GBW.drahtWeg(c, r); gbKey = key; gbFeld = feld; return true; } }
+    if (nurDraht) { for (const [c, r] of weg) GBW.drahtWeg(c, r); gbKey = key; gbFeld = feld; return 'gleich'; } }   // Boden unverändert
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
@@ -231,17 +238,27 @@ function gbPlatz(u, d) {
   const [cx, cy] = center(u.c, u.r); if (Math.hypot(d.x - cx, d.y - cy) > L.s * 0.05) return null;
   return GBW.platz(u.c, u.r);
 }
+let gbTcvNeu = [], tcvFertig = false, BODEN_TMP = null;
+// Zeichenfläche verloren (Enrico 2026-11-22: „Bild ganz weg, danach Bodentexturen kaputt“): beim Zurückkommen alle Zwischenbilder verwerfen und Gelände/Boden neu aufbauen
+function bildNeuAufbauen(grund) { try { console.warn('Zeichenfläche neu aufgebaut:', grund); BWI.clear(); for (const k in SPR) delete SPR[k]; } catch (e) {} GBW = null; gbKey = ''; gbFeld = null; tcvFertig = false; gbTcvNeu = []; BODEN_TMP = null; if (L && G) renderTerrain(); }
+cv.addEventListener('contextlost', e => { e.preventDefault(); });   // Chrome stellt die Fläche dann selbst wieder her
+cv.addEventListener('contextrestored', () => bildNeuAufbauen('contextrestored'));
+let kontextWeg = false; setInterval(() => { const weg = !!(MAINCTX.isContextLost && MAINCTX.isContextLost()); if (kontextWeg && !weg) bildNeuAufbauen('isContextLost'); kontextWeg = weg; }, 1000);   // falls das Ereignis fehlt   // Einzelfelder fürs gefilterte Bodenbild; Hilfsleinwand wird wiederverwendet (vorher je Aufruf neu angelegt)
 function renderTerrain() {   // Bildwirkung (2026-11-19): Boden in der neuen Ansicht danach einmal abdunkeln und entsättigen
-  renderTerrain0();
-  if (!BW || !tcv) return;
-  const t = document.createElement('canvas'); t.width = tcv.width; t.height = tcv.height; const x = t.getContext('2d'); x.drawImage(tcv, 0, 0);
+  const art = renderTerrain0();
+  if (art === 'gleich' || art === 'inkr' || !BW || !tcv) return;
+  const t = BODEN_TMP = BODEN_TMP || document.createElement('canvas'); if (t.width !== tcv.width || t.height !== tcv.height) { t.width = tcv.width; t.height = tcv.height; } else t.getContext('2d').clearRect(0, 0, t.width, t.height); const x = t.getContext('2d'); x.drawImage(tcv, 0, 0);
   const g = tcv.getContext('2d'); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, tcv.width, tcv.height); g.filter = BW_BODEN[BW]; g.drawImage(t, 0, 0); g.restore();
 }
 function renderTerrain0() {
   const { s, W, H, dpr } = L;
-  tcv = tcv || document.createElement('canvas'); tcv.width = W; tcv.height = H;
-  const g = tcv.getContext('2d');
-  if (gbBereit()) { g.drawImage(GBW.ground, 0, 0); return; }   // Boden aus Bausteinen (Raster ist schon drin)
+  const gb = gbBereit(), passt = tcv && tcv.width === W && tcv.height === H && tcvFertig;
+  if (gb === 'gleich' && passt) return 'gleich';   // nichts am Boden geändert (z. B. Draht weg): kein Kopieren, kein Neufiltern
+  if (gb === 'inkr' && passt) { const x = tcv.getContext('2d'); for (const [c, r] of gbTcvNeu) { x.save(); if (BW) x.filter = BW_BODEN[BW]; GBW.flachNeu(c, r, x); x.restore(); } gbTcvNeu = []; return 'inkr'; }
+  gbTcvNeu = []; tcv = tcv || document.createElement('canvas'); if (tcv.width !== W || tcv.height !== H) { tcv.width = W; tcv.height = H; }
+  const g = tcv.getContext('2d'); g.clearRect(0, 0, W, H);
+  if (gb) { g.drawImage(GBW.ground, 0, 0); tcvFertig = true; return 'voll'; }   // Boden aus Bausteinen (Raster ist schon drin)
+  tcvFertig = false;
   g.fillStyle = '#1c1d17'; g.fillRect(0, 0, W, H);   // solange die Bausteine laden (gbBereit zeichnet danach neu)
 }
 

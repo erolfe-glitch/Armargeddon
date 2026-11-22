@@ -174,10 +174,11 @@ function aufbauen(cfg, IM) {
   }
 
   // ---------- 2. Flache Details ----------
+  let FZ = null;   // Ziel für flach(): sonst das Weltbild w (flachNeu zeichnet ein einzelnes Feld nach, Enrico 2026-11-22: kein Neuaufbau bei Einschlägen)
   function flach(im, x, y, size, rot, alpha = 1) {   // size: größte Ausdehnung in R
     if (!im) return;
-    const k = size * R / Math.max(im.width, im.height);
-    w.save(); w.globalAlpha = alpha; w.translate(x, y); w.rotate(rot); w.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k); w.restore();
+    const k = size * R / Math.max(im.width, im.height), z = FZ || w;
+    z.save(); z.globalAlpha = alpha * (FZ ? z.globalAlpha : 1); z.translate(x, y); z.rotate(rot); z.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k); z.restore();
   }
   const WEICH = new Map(), weich = im => { if (!im) return im; if (WEICH.has(im)) return WEICH.get(im);   // Rand weich ausblenden (Spuren-Bild ist eckig)
     const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0); x.globalCompositeOperation = 'destination-in';
@@ -197,7 +198,7 @@ function aufbauen(cfg, IM) {
     x.putImageData(id, 0, 0); SCHL.set(im, c); return c; };
   const Fd = i => i === 8 ? weich(IM.flach_details_8) : i <= 4 ? schlammig(IM['flach_details_' + i]) : IM['flach_details_' + i];   // 1 Trichter klein, 2 groß, 3 Pfütze, 4 lange Pfütze, 5 Bretter, 6 Laufrost (nur Brücke), 7 Trümmerstreu; 8 Spuren nicht verwendet (wirkt als dunkles Rechteck)
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+  function flachDetail(c, r) {
     const t = terr(c, r), q = hrnd(c, r, 9);
     if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? schlammig(IM.trichter_gross_1) : Fd(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(Fd(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(Fd(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
     else if (t === 'mud') { if (q < 0.3) flach(Fd(q < 0.15 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.6 + q * 0.6, q * 30); else if (q > 0.75) flach(Fd(8), ...jit(c, r, 3, 0.6), 0.85, q * 17, 0.8); }   // sparsam: Pfütze oder Spuren
@@ -205,6 +206,7 @@ function aufbauen(cfg, IM) {
     else if (t === 'village' || t === 'rubble') { flach(Fd(7), ...jit(c, r, 1, 0.6), 0.9, q * 30, 0.9); }
     else if (t === 'wire') { if (q < 0.4) flach(Fd(1), ...jit(c, r, 1, 0.9), 0.5, q * 40); }
   }
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) flachDetail(c, r);
 
   // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
   const DRAW = [], SHADOW = []; let FELD = null, BAUMFELD = null;   // BAUMFELD: Feld, dessen Bäume gerade entstehen (cfg.baumAlpha macht sie durchsichtig, Enrico 2026-11-22)   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
@@ -365,7 +367,7 @@ function aufbauen(cfg, IM) {
   const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
   const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = t === 'wire' ? c + ',' + r : null; BAUMFELD = t === 'forest' || t === 'wald' ? c + ',' + r : null;
+    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = c + ',' + r; BAUMFELD = t === 'forest' || t === 'wald' ? c + ',' + r : null;
     if (BAUFELD.has(c + ',' + r)) continue;   // große Gebäude: eigener Aufbau weiter unten
     const deko = flags(c, r).deko || '';
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
@@ -542,7 +544,11 @@ function aufbauen(cfg, IM) {
   // Draht eines Felds entfernen, ohne die Welt neu aufzubauen (Drahtschneiden, Niederwalzen, Zerschießen): nur die aufrechten Drahtstücke fallen weg,
   // der weiche Schatten am Boden bleibt als zertretene Stelle. Der volle Neuaufbau dauert 0,4–0,6 s und ließ das Spiel stocken (F12, 2026-11-20).
   function drahtWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg,
+  // Einzelfeld ohne Neuaufbau (2026-11-22): flache Details eines Felds nachzeichnen (z. B. neuer Trichter) – ins Weltbild oder in ein anderes Ziel (gefiltertes Bodenbild)
+  function flachNeu(c, r, ziel) { FZ = ziel || null; try { flachDetail(c, r); } finally { FZ = null; } }
+  // aufrechte Teile eines Felds herausnehmen (zerstörte Barrikade, Bunker, Draht); Schatten im Boden bleiben schwach stehen
+  function feldWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 
