@@ -45,6 +45,7 @@ NAMES['bogen7_zustandszeichen'] = ['k_blitze', 'k_tropfen', 'k_schweiss', 'k_ang
 # Einzelsymbol Schaufel (2026-11-18): Eingraben (Knopf und Zustandsmarke), ersetzt dort die Spitzhacke
 NAMES['symbol_schaufel'] = ['s_schaufel']
 # Fähigkeiten-Symbole (Enrico 2026-11-22, 3×3, Nahtschnitt): je Fähigkeit ein eigenes Zeichen
+NAMES['bogen8b_befehle'] = ['s_sammeln', 's_sturmbefehl', 's_feuerfrei', 's_halten', 's_generalangriff', 's_markieren', 's_feuerschlag', 's_feuerbereit']   # Befehle (Enrico 2026-11-22, 4×2)
 NAMES['bogen8a_faehigkeiten'] = ['s_durchbruch', 's_hinrichtung', 's_sturmrollen', 's_sturmlauf', 's_sprung', 's_gebruell', 's_kanone_zweit', 's_panzergranate', 's_breitseite']
 # Fraktionswappen: links Emblem vor Flagge, rechts Emblem allein
 NAMES['wappen_konkordat'] = ['w_flagge', 'w_emblem']
@@ -70,7 +71,7 @@ GRID = {'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole':
 # Bögen mit Nahtschnitt (wie figure_cut): je Rasterlinie eine Naht durch den freien Hintergrund (geringste Deckung),
 # die Zellen dazwischen sind die Teile. Splitter und Funken bleiben so sicher beim eigenen Symbol.
 # bogen3c_symbole (2026-11-18): neue Fassung von bogen3b, gleiche Anordnung, ersetzt sie im Spiel.
-SEAM = {'bogen3c_symbole': (4, 4), 'bogen7_zustandszeichen': (4, 4), 'bogen8a_faehigkeiten': (3, 3)}
+SEAM = {'bogen3c_symbole': (4, 4), 'bogen7_zustandszeichen': (4, 4), 'bogen8a_faehigkeiten': (3, 3), 'bogen8b_befehle': (4, 2)}
 
 
 def naht(cost, pos, band):

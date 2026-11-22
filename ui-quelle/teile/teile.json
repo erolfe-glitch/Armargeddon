@@ -514,5 +514,37 @@
  "bogen8a_faehigkeiten/s_breitseite": [
   613,
   497
+ ],
+ "bogen8b_befehle/s_sammeln": [
+  658,
+  638
+ ],
+ "bogen8b_befehle/s_sturmbefehl": [
+  589,
+  690
+ ],
+ "bogen8b_befehle/s_feuerfrei": [
+  762,
+  680
+ ],
+ "bogen8b_befehle/s_halten": [
+  507,
+  718
+ ],
+ "bogen8b_befehle/s_generalangriff": [
+  656,
+  575
+ ],
+ "bogen8b_befehle/s_markieren": [
+  504,
+  719
+ ],
+ "bogen8b_befehle/s_feuerschlag": [
+  501,
+  736
+ ],
+ "bogen8b_befehle/s_feuerbereit": [
+  726,
+  616
  ]
 }
