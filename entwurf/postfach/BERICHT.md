@@ -1,3 +1,72 @@
+## 2026-11-22 Abend – Krähenfurt-Bausteine, reine Schneeflächen, Feldkanonen-Ton, Titelbild (`a7f424b`, `bd026f1`, `c388e11`)
+
+Alles gepusht. Tests: Partietest Grauwall und Krähenfurt fehlerfrei, test_kommentare sauber (ein verschluckter Code-Rest von mir sofort behoben), Einschlag-Test, Einsturz-Test Haus. Bilder in `entwurf/probe/kraehenfurt_bausteine/` (vorher/nachher) und `entwurf/probe/titel_2026-11-22/`.
+
+### 18:45 Entscheidungen
+1. **Ballon:** nichts geändert.
+2. **Rollen-Aufstellung:** in `IDEEN.md` geparkt (Stand, `AUFSTELLUNG_NEU=1`, Messtabelle, Idee „zusammen mit der KI-Startphase“).
+3. **Feldkanone, Bewegungston = `wagenknarren`**, im Winter `pferde_schnee` leise darunter.
+   - **Prüfung auf den 700-Hz-Pfiff:** Spektrum je 46-ms-Fenster gemessen. Kein Dauerton; ein Ton zählt erst als Dauerton, wenn er in den meisten Fenstern steht, und keiner steht in mehr als 11 von 69. Es gibt aber kurze Quietscher um 1,4 kHz (bis 21 dB über der Umgebung).
+   - **Gegenmaßnahme:** Tiefpass 1,2 kHz in `sound_bau.json`. Danach liegt die Spitze bei 1,4 kHz ca. 5 dB tiefer.
+   - **Bitte im Pult anhören** („Feldkanone → Ziehen (ohne Protzen)“). Wenn es noch pfeift, senke ich den Tiefpass auf ca. 900 Hz.
+   - Pult-Standard angepasst (vor der Übergabe an den zweiten Claude Code, wie verlangt zuerst gepusht).
+
+### 18:50 Titelbild
+- Das neue Bild ist schon 2736 px breit. Es wird jetzt nur noch auf 2560 px **verkleinert** und nicht mehr nachgeschärft (Schärfen nur noch beim Hochskalieren).
+- `titlebg.js` 1,25 → 1,5 MB.
+- Startmenü bei 1280, 1920 und 2560 px geprüft: Titel und Knöpfe gut lesbar, Panzer links und Mauer rechts im Bild (`entwurf/probe/titel_2026-11-22/start_*.jpg`).
+
+### 18:55 Idee
+- In `IDEEN.md` eingetragen, inklusive „Gräben von Grauwall zuerst“.
+
+### 18:00 + 19:15 Krähenfurt-Bausteine
+**Im Spiel (nur Winterkarten, `MAP.winter`; fehlen die Bilder, greifen die alten Platzhalter):**
+- **Häuser** `haus_heil_1–4`:
+  - Haus 2 ist gespiegelt.
+  - Je Feld steht ein Haus im hinteren Teil, so stehen Trupps davor.
+  - Manchmal liegt ein Holzstapel daneben.
+- **Kapelle** mit Türmchen.
+- **Ruinen** `haus_ruine_schnee_1–2` und `kapelle_ruine`:
+  - Der Einsturz wird erst beim Abspielen des Ereignisses gezeigt.
+  - Dabei wird nur das eine Feld neu aufgebaut: 14 ms statt 0,4 s.
+  - Die Meldung lautet „Das Haus stürzt ein!“ bzw. „Die Kapelle stürzt ein!“; bei Häusern läutet keine Glocke.
+- **Tannen** `tanne_schnee_1–4` im Wald. Im lichten Wald gibt es tote Bäume, Stümpfe und junge Tannen. Die Durchsichtigkeit ist wie bei den anderen Bäumen.
+- **Steinbrücke:**
+  - Selbst in `bruecke_stein_hinten`/`_vorn` geteilt, der Schneesockel und der Boden unter dem Bogen sind weg.
+  - Der Trupp steht auf der Fahrbahn, die vordere Brüstung davor.
+  - Die Brücke wird nicht durchsichtig.
+- **Dorfteile:** Brunnen, Karren, Schilf am Eisrand.
+- **Zäune:** Koppelzäune hinten um die Äcker. Bruchsteinmauern gibt es im Winter keine.
+- **Böden:**
+  - **Reine Schneeflächen (19:15):** Die vier Fassungen werden je Feld gemischt; die Felsen-Fassung kommt in etwa 1 von 8 Feldern vor.
+  - Die Helligkeit habe ich gedämpft (Mittelwert 0,6) und leicht bläulich gemacht. Figuren und Fahnen heben sich bei Bildwirkung leicht gut ab, siehe `nachher_dorfplatz.jpg`.
+  - Die fleckige Schneekachel liegt nur noch im Dorf und an den Wegrändern (zertrampelt).
+  - **Acker:** je Feld ein ganzes Stück, leicht gedreht, manche quer. Die gemalten Furchen sind ungleichmäßig gebogen und kacheln nie sauber; deshalb habe ich sie gerade gezogen und nicht gekachelt (wirkt wie ein Flickenteppich).
+  - **Eis** füllt Fluss und Teich.
+  - **Matschstraße:** liegt entlang der Wegpunkte der Karte und ist in Wegrichtung gedreht. Vorher wurde aus den Straßenfeldern ein Netz, das wie Wälle aussah.
+- Plastizität (`figur_plastik.py`) für alle neuen Teile gerechnet.
+
+**Nicht eingebaut, bitte entscheiden bzw. neu machen lassen:**
+- **`ufer_schnee`:**
+  - Geschnitten und nahtlos, aber aus.
+  - Als aufrechter Streifen wirkt er wie eine Mauer: an Feldkanten eckig, entlang der Flusslinie quer durch den Teich.
+  - **Vorschlag an den Berater:** die Uferkante als flachen Aufkleber von oben (Draufsicht, Schneerand mit Steinen, auf Magenta) oder als Teil der Eiskachel.
+- **Kapelle:** Den kleinen Zaun am Fuß habe ich gelassen; er stört nicht.
+- **Brücke:** Steht der Trupp ganz vorn im Feld, sieht man unter dem Bogen ein Paar Beine. Das bleibt so, solange das Bild ein durchgehender Bogen ist.
+
+**Messung Einschläge (längste Bildpause bei 6 Trichtern):**
+- Grauwall 22–24 ms, Sankt Ruß 28–29 ms, Krähenfurt 104–113 ms (vorher 73–76 ms).
+- Das ist noch flüssig. Der Anstieg kommt vom größeren Weltbild mit mehr Teilen; ich beobachte es.
+
+**Größe:** `src/gelaende.js` 10,7 → 11,3 MB, `index.html` 41 MB (Töne liegen weiter daneben).
+
+### Fragen an Enrico
+1. Klingt die Feldkanone (Wagenknarren, Tiefpass 1,2 kHz) jetzt ohne Pfiff?
+2. Uferkante: als flacher Aufkleber neu machen lassen, oder ohne Kante lassen?
+3. Häuser: Größe passt (ca. 1,75 Feldbreiten breit)? Lieber etwas größer?
+
+Als Nächstes: Abschnitt 18:35 (Furt, Krater, Wintereffekte).
+
 ## 2026-11-22 Abend – Fehler 17:32 und 17:40, Entscheidungen 17:30 (`d8d5b8d` … `0755a5b`)
 
 Alles gepusht. Tests: Partietest (Grauwall und Krähenfurt), test_regeln, test_kommentare, test_ton, dazu neu `tools/test_einschlag.mjs` und `tools/test_hilfe.mjs`. Alle fehlerfrei.
