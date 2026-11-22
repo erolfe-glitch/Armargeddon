@@ -99,6 +99,27 @@ try {
     pruef('TONWAHL: schweres MG bei den MG-Einheiten der Aschenwacht (wer es schon als Standard hat, braucht keinen Eintrag)', m1.length === mg.length && mg.length >= 1, m1.length + ' von ' + mg.length + ': ' + mg.map(a => a.einheit + '.' + a.platz_spiel).join(', '));
   } finally { writeFileSync(UI, vorher); if (existsSync(TMP)) unlinkSync(TMP); }
   pruef('src/ui.js wieder unverändert', readFileSync(UI).equals(vorher));
+
+  console.log('Fähigkeiten, Rufe, Suche, Favoriten, alter Export');
+  await ev("T.k('#ansichten button', 'Tabelle'); T.k('.schnell button', 'Auswahl leeren'); T.k('.schnell .chip', 'MG'); T.k('.tt th.sp .spk', 'Fähigkeiten')"); await sleep(150);
+  pruef('Fähigkeiten ohne gewählte Zeile: nichts zuweisbar', await ev("[...document.querySelectorAll('#leiste button')].find(b => b.textContent.startsWith('Ton aus')).disabled"));
+  await ev("(() => { const s = [...document.querySelectorAll('.tt th.sp')].find(t => t.textContent.startsWith('Fähigkeiten')).querySelector('select'); s.value = 'mgauf'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"); await sleep(150);
+  await ev("T.k('#leiste button', 'Ton aus der Bibliothek')"); await sleep(150);
+  pruef('Bibliothek öffnet für „MG aufstellen“ bei Handgriffe und Gerät', await ev("bibKat === 'handgriffe'"));
+  await ev("document.querySelector('#bibDlg input[type=search]').value = 'mgsetup'; document.querySelector('#bibDlg input[type=search]').dispatchEvent(new Event('input', { bubbles: true }))"); await sleep(100);
+  pruef('Suche nach Schlüssel findet den Ton', await ev("document.querySelectorAll('#bibDlg .bt').length >= 1 && !!document.querySelector('#bibDlg .bt[data-id=\"p:mgsetup\"]')"));
+  await ev("document.querySelector('#bibDlg .bt[data-id=\"p:mgsetup\"] .stern').click()"); pruef('Favorit gemerkt (arm.tonpult.fav)', await ev("JSON.parse(localStorage.getItem('arm.tonpult.fav')).includes('p:mgsetup')"));
+  await ev("document.querySelector('#bibDlg .bt[data-id=\"p:mgsetup\"] .gold').click()"); await sleep(200);
+  pruef('Fähigkeit „MG aufstellen“ bei den MG-Trupps beider Seiten', await ev("['mahlwerk', 'sense'].every(t => AEND[t].mgauf.w === 'p:mgsetup') && T.an().filter(t => (AEND[t] || {}).mgauf).length === 2"), await ev("T.an().join(', ')"));
+  await ev("document.querySelector('.tfilt input[type=checkbox]').click()"); await sleep(150);
+  pruef('Spalten Ankunft und Rufe und Zeilen „Stimmen und Karte“ einblendbar', await ev("document.querySelectorAll('.tt thead th.sp').length === 10 && [...document.querySelectorAll('.tt .nm')].some(n => /Winter/.test(n.textContent))"));
+  await bild('10_tabelle_mit_rufen.png');
+  const vorImport = await ev('JSON.stringify(AEND)');
+  const alt = readFileSync(join(ROOT, 'entwurf', 'postfach', 'tonpult_export_1002_2026-11-21.json'), 'utf8');
+  await ev("document.getElementById('import').click(); document.getElementById('dlgFeld').value = " + JSON.stringify(alt) + "; [...document.querySelectorAll('#dlgKnoepfe button')].find(b => b.textContent === 'Übernehmen').click(); true"); await sleep(250);
+  const imp = JSON.parse(await ev("(() => { const o = " + alt + ", r = o.roh || {}; let n = 0, gut = 0, fehlt = []; for (const t in r) { if (!U[t]) continue; for (const id in r[t]) { const s = U[t].slots.find(x => x.id === id); if (!s) continue; n++; const w = wert(U[t], s), e = r[t][id], g = grund(s); if (w.w === (e.w != null ? e.w : g.w) && Math.abs(w.vol - (e.vol != null ? e.vol : g.vol)) < 1e-6 && Math.abs(w.ton - (e.ton != null ? e.ton : 1)) < 1e-6) gut++; else fehlt.push(t + '.' + id); } } return JSON.stringify({ n, gut, fehlt }); })()"));
+  pruef('Enricos älterer Export (21.11.) lässt sich unverändert einlesen', imp.n > 0 && imp.gut === imp.n, imp.gut + ' von ' + imp.n + ' Plätzen' + (imp.fehlt.length ? ', abweichend: ' + imp.fehlt.join(', ') : ''));
+  await ev("document.getElementById('undo').click()"); pruef('Rückgängig nimmt den ganzen Import zurück', await ev('JSON.stringify(AEND)') === vorImport);
   pruef('keine Fehler in der Konsole', fehler.length === 0, fehler.slice(0, 5).join(' | '));
 } finally { ws.close(); ch.kill(); }
 console.log(`\n${ok} Prüfungen bestanden, ${nicht} fehlgeschlagen.`); process.exit(nicht ? 1 : 0);
