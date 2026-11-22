@@ -17,8 +17,10 @@ GAME = ROOT / 'ui-quelle' / 'teile' / 'figuren'
 # Gelände-Bausteine (seit 2026-11-19, Sankt Ruß): nur die neuen Teile, damit der Grauwall unverändert bleibt. Schlüssel „gel_<name>“,
 # im Spiel in ui.js gbBereit eingerechnet (nur die Karte, ohne Farbänderung). Wandstücke (Kachelstreifen) werden waagrecht umlaufend gefiltert.
 GELAENDE = ROOT / 'ui-quelle' / 'teile' / 'gelaende'
-GEL_TEILE = ('zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm_', 'kirche_innen_', 'friedhof_', 'dorf_aufsteller_')
-GEL_WAND = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig'}
+GEL_TEILE = ('zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm_', 'kirche_innen_', 'friedhof_', 'dorf_aufsteller_',
+             'haus_heil_', 'kapelle', 'haus_ruine_schnee_', 'tanne_schnee_', 'baum_tot_schnee_', 'bruecke_stein_', 'brunnen_schnee', 'holzstapel_',
+             'karren_schnee', 'schilf', 'ufer_schnee', 'unterholz_schnee')   # Krähenfurt (2026-11-22, Flux); zaun deckt zaun_schnee mit ab
+GEL_WAND = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee'}
 SKALA = 510   # Grauwert = 128 + Δ · SKALA  (Δ höchstens ±0,25)
 # Stärken für „stark“ (Bildhöhe 320 px = 1 Soldat; Radien in px dieser Größe, bei größeren Bildern mit der Bildhöhe/320 skaliert)
 FEIN, FEIN_A = 1.6, 0.45      # feine Zeichnung (Nähte, Riemen, Kanten)

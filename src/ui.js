@@ -193,6 +193,14 @@ const O = '#16150f';
 const GB_KARTEN = new Set(['grauwall', 'sanktruss', 'winterdorf']);
 // Winterdorf (2026-11-22): Platzhalter, bis die eigenen Bausteine da sind – Eis wie Wasser, Häuser und Kapelle wie Ruinen, Steinbrücke wie Brücke
 const GB_PLATZHALTER = { eis: 'canal', haus: 'village', kapelle: 'village', steinbruecke: 'bridge' };
+// Winter-Bausteine (Enrico 2026-11-22 18:00, Flux): mit Schneeboden in GELAENDE zeichnet GBau Eis, Häuser, Kapelle und Steinbrücke selbst (Platzhalter nur ohne Bilder)
+const gbWinter = () => !!(E.MAP.winter && window.GELAENDE && window.GELAENDE.boden_schnee);
+// Geländeart, wie sie gezeigt wird: eingestürztes Haus/Kapelle erst, wenn das Ereignis abgespielt ist (Regeln machen das Feld vorher zu 'village')
+function gbTerr(c, r) {
+  const h = G.map[c][r], b = h.bau != null && G.bauten ? G.bauten[h.bau] : null;
+  if (b && (b.art === 'haus' || b.art === 'kapelle') && h.t === 'village' && !bauSicht()[h.bau]) return gbWinter() ? b.art : 'village';
+  return gbWinter() ? h.t : (GB_PLATZHALTER[h.t] || h.t);
+}
 // Große Gebäude: gezeigter Zustand (eingestürzt erst, wenn das Ereignis abgespielt wird – die Regeln ändern G vorher)
 let BAUV = { g: null, k: [] };
 function bauSicht() { if (BAUV.g !== G) BAUV = { g: G, k: ((G && G.bauten) || []).map(b => !!b.kaputt) }; return BAUV.k; }
@@ -205,14 +213,15 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map(col => col.map(h => GB_PLATZHALTER[h.t] || h.t)), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
   // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
-  if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
+  if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
     const geht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true;
+      if ((a === 'haus' || a === 'kapelle') && t === 'village' && GBW.feldNeu) { bau.push([c, r]); return true; }   // Krähenfurt: Haus/Kapelle → Ruine, nur das Feld neu
       if (WEGBAR.has(a) && (t === 'open' || t === 'crater')) { weg.push([c, r]); if (t === 'crater') neu.push([c, r]); return true; }
       if (FLACH.has(a) && t === 'crater') { neu.push([c, r]); return true; } return false; }));
-    if (geht) { for (const [c, r] of weg) GBW.feldWeg(c, r); for (const [c, r] of neu) { GBW.flachNeu(c, r); gbTcvNeu.push([c, r]); } gbKey = key; gbFeld = feld; return 'inkr'; } }
+    if (geht) { for (const [c, r] of weg) GBW.feldWeg(c, r); for (const [c, r] of bau) GBW.feldNeu(c, r); for (const [c, r] of neu) { GBW.flachNeu(c, r); gbTcvNeu.push([c, r]); } gbKey = key; gbFeld = feld; return 'inkr'; } }
   // Nur Draht verschwunden (geschnitten, niedergewalzt, zerschossen): Drahtstücke herausnehmen statt alles neu aufzubauen (0,4–0,6 s Stocken, F12 2026-11-20)
   if (GBW && GBW.drahtWeg && gbFeld && gbKey.startsWith(basis + ':')) { const weg = [];
     const nurDraht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true; if (a === 'wire') { weg.push([c, r]); return true; } return false; }));
@@ -220,7 +229,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
-    terr: (c, r) => GB_PLATZHALTER[G.map[c][r].t] || G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
+    terr: gbTerr, winter: gbWinter(), strassen: gbWinter() ? [E.MAP.strasse, E.MAP.strasse2].filter(Boolean) : null, bauArt: (c, r) => { const h = G.map[c][r]; return h.bau != null && G.bauten && G.bauten[h.bau] ? G.bauten[h.bau].art : null; }, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
@@ -2884,9 +2893,10 @@ async function playEvent0(e) {
       pts.forEach(([x, y], i) => fx('truemmer', 2, x, y + s * 0.4, { delay: i * 4, life: 70, mul: 0.7, grow: 0.2, rise: 0.1, alpha: 0.6 }));   // erster Staub aus den Fugen
       await new Promise(r => setTimeout(r, speed >= INSTANT ? 0 : 1150)); shake(10);   // feste Zeit, nicht nach Tempo: der Ton läuft auch nicht schneller
       pts.forEach(([x, y], i) => { fx('truemmer', 4, x, y + s * 0.4, { delay: i * 5, life: 100, mul: 1.4, grow: 0.35, rise: 0.35, fadeOut: 0.5 }); fx('truemmer', [0, 1][i % 2], x + s * 0.3, y + s * 0.2, { delay: 8 + i * 5, life: 90, mul: 1, grow: 0.3 }); fxImpact(x, y - s * 0.2, s * 0.9, { delay: i * 6, alt: true }); });
-      setTimeout(() => playSound('boomH', 0.45, null, { noGap: true }), 120); setTimeout(() => playSound('glocke_fall', 0.6, null, { noGap: true, rate: 1 }), 1500);
+      const bauArt = G.bauten && G.bauten[e.bau] ? G.bauten[e.bau].art : 'kirche';   // Krähenfurt: auch Häuser und Kapelle (dort keine Glocke im Haus)
+      setTimeout(() => playSound('boomH', 0.45, null, { noGap: true }), 120); if (bauArt !== 'haus') setTimeout(() => playSound('glocke_fall', 0.6, null, { noGap: true, rate: 1 }), 1500);
       await wait(380); bauSicht()[e.bau] = true; renderTerrain();
-      { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, 'Die Kirche stürzt ein!', '#f0c070', true); }
+      { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, bauArt === 'haus' ? 'Das Haus stürzt ein!' : bauArt === 'kapelle' ? 'Die Kapelle stürzt ein!' : 'Die Kirche stürzt ein!', '#f0c070', true); }
       await wait(700); break; }
   }
 }

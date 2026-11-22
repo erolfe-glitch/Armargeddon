@@ -88,12 +88,34 @@ TEILE = {
     'friedhof':            ('bogen', [0.6, 0.5, 0.45, 1.0]),         # Kreuze, Grabsteine, Grabplatte, Heiligenfigur
     'dorf_aufsteller':     ('bogen', [1.15, 1.25, 0.65, 1.6]),       # Brunnen, Wegkreuz, Karren, Laterne
     'zaun':                ('wand', 1.0, {'fuss': 0.2}),            # G22 zerschossener Gartenzaun, nur hinten (Lücken zwischen den Latten durchsichtig; Fußlinie bei 20 % Deckung)
+    # Krähenfurt (2026-11-22, fal.ai Flux 3 Image Edit): Hintergrund kein reines Magenta (key_any findet ihn), weiche rosa Säume → ENTROSA.
+    # Optionen: namen = Dateinamen je Teil (statt <bogen>_k), spiegeln = Teilnummern waagrecht spiegeln, quelle = (Bogen, Kasten x0, y0, x1, y1) aus einem
+    # gemeinsamen Bogen, weich_unten = unterste Zeilen weich ausblenden (gemalter Schneeboden unter Streifen), furchen = Streifen waagrecht drehen,
+    # nur = 'senkrecht' (nur oben/unten nahtlos: Straße wird quer über den Weg gelegt)
+    'haus_heil_bogen':     ('bogen', ('gemeinsam', 2.0), {'namen': ['haus_heil_1', 'haus_heil_2', 'haus_heil_3', 'haus_heil_4'], 'spiegeln': [2]}),   # Haus 2 steht andersherum
+    'kapelle_ruinen_bogen': ('bogen', ('gemeinsam', 3.0), {'namen': ['kapelle', 'kapelle_ruine', 'haus_ruine_schnee_1', 'haus_ruine_schnee_2']}),
+    'baeume_schnee_bogen': ('bogen', ('gemeinsam', 2.6), {'namen': ['tanne_schnee_1', 'tanne_schnee_2', 'tanne_schnee_3', 'tanne_schnee_4', 'baum_tot_schnee_1', 'baum_tot_schnee_2']}),
+    'dorf_objekte_schnee_bogen': ('bogen', ('gemeinsam', 1.2), {'namen': ['bruecke_stein', 'brunnen_schnee', 'holzstapel_1', 'holzstapel_2', 'karren_schnee', 'schilf']}),
+    'boden_schnee':        ('textur', None, {'quelle': ('boden_schnee_bogen', (14, 12, 1010, 1008)), 'weich': True}),
+    # Reine Schneeflächen (Enrico 19:15): Grundboden der offenen Felder, 4 Fassungen je Feld gemischt; Helligkeit gedämpft und leicht bläulich (hell = Ziel-Mittelwert),
+    # damit der Schnee Figuren und Markierungen nicht überstrahlt (im Spiel kommt noch die Bodenaufhellung dazu)
+    'boden_schnee_rein_1': ('textur', None, {'quelle': ('boden_schnee_rein_bogen', (10, 8, 1008, 1010)), 'weich': True, 'hell': 0.6}),
+    'boden_schnee_rein_2': ('textur', None, {'quelle': ('boden_schnee_rein_bogen', (1036, 8, 2038, 1010)), 'weich': True, 'hell': 0.6}),
+    'boden_schnee_rein_3': ('textur', None, {'quelle': ('boden_schnee_rein_bogen', (10, 1036, 1008, 2036)), 'weich': True, 'hell': 0.6}),
+    'boden_schnee_rein_4': ('textur', None, {'quelle': ('boden_schnee_rein_bogen', (1036, 1036, 2038, 2036)), 'weich': True, 'hell': 0.6}),
+    'boden_acker_schnee':  ('textur', None, {'quelle': ('boden_schnee_bogen', (1040, 12, 2036, 1008)), 'furchen': True}),
+    'strasse_matsch':      ('textur', None, {'quelle': ('boden_schnee_bogen', (14, 1038, 1010, 2034)), 'nur': 'senkrecht', 'weich': True}),
+    'boden_eis':           ('textur', None, {'quelle': ('boden_schnee_bogen', (1040, 1038, 2036, 2034)), 'weich': True}),
+    'zaun_schnee':         ('wand', 0.8, {'quelle': ('streifen_schnee_bogen', (0, 103, 2896, 355)), 'weich_unten': 30}),
+    'ufer_schnee':         ('wand', 0.4, {'quelle': ('streifen_schnee_bogen', (0, 640, 2896, 845)), 'weich_unten': 6}),
+    'unterholz_schnee':    ('wand', 0.45, {'quelle': ('streifen_schnee_bogen', (0, 1104, 2896, 1300)), 'weich_unten': 60}),
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
 
 # Bögen aus JPG (Sankt Ruß): rosa Reste in Glasscherben und Säumen (Magenta schimmert durch) → neutrales Grau
-ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller'}
+ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller',
+           'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen'}   # Krähenfurt (Flux)
 
 
 def entrosa(q):
@@ -185,7 +207,13 @@ def speichern(q, name, h_px, w_px=None):
 
 def streifen(name, art, sh, opt=None):
     opt = opt or {}
-    q = freistellen(SRC / f'{name}.png')
+    if 'quelle' in opt:   # Ausschnitt aus einem gemeinsamen Bogen (Krähenfurt: drei Streifen untereinander)
+        b, (x0, y0, x1, y1) = opt['quelle']
+        q = freistellen(SRC / f'{b}.png')[y0:y1, x0:x1].copy()
+    else:
+        q = freistellen(SRC / f'{name}.png')
+    if opt.get('weich_unten'):   # gemalter Boden unter dem Streifen: nur der aufrechte Teil bleibt, die untersten Zeilen laufen weich aus
+        n = opt['weich_unten']; q[-n:, :, 3] *= np.linspace(1, 0, n)[:, None] ** 1.5
     if 'schnitt' in opt:   # Kachel von Hand: genau von x0 bis x1, die nächsten ow Spalten hinter x1 werden in den Anfang überblendet
         x0, x1 = opt['schnitt']; ow = 30
         q = zeilen(q[:, x0:x1 + ow])
@@ -259,17 +287,69 @@ def pfaehle_ausduennen(name, jede=2):
     out = Image.fromarray(q, 'RGBA'); out.save(OUT / f'{name}.png'); out.save(PROBE / f'g_{name}.webp', quality=88, method=6)
 
 
-def textur(name, ziel=None):
-    a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')).astype(np.float64)
+def furchen_waagrecht(a):
+    """Acker: Furchen per Strukturtensor messen, waagrecht drehen, Quadrat innen ausschneiden und die Höhe auf ganze Furchen kürzen (kachelt dann oben/unten)."""
+    lum = a.mean(axis=2); gy, gx = np.gradient(ndimage.gaussian_filter(lum, 2))
+    jxx, jyy, jxy = (gx * gx).mean(), (gy * gy).mean(), (gx * gy).mean()
+    winkel = 0.5 * np.degrees(np.arctan2(2 * jxy, jxx - jyy))   # Richtung des stärksten Anstiegs = quer zu den Furchen
+    dreh = winkel - 90 if winkel > 0 else winkel + 90
+    src = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
+    def schaerfe(d):   # Furchen genau waagrecht = Zeilenmittel schwanken am stärksten
+        b = np.asarray(src.rotate(d, resample=Image.BILINEAR)).astype(np.float64); n = a.shape[0] // 4
+        return b[n:-n, n:-n].mean(axis=(1, 2)).var()
+    for schritt in (1.0, 0.25, 0.0625):
+        dreh = max((dreh + k * schritt for k in range(-4, 5)), key=schaerfe)
+    im = src.rotate(dreh, resample=Image.BICUBIC)
+    s = int(a.shape[0] / (abs(np.cos(np.radians(dreh))) + abs(np.sin(np.radians(dreh))))) - 8
+    cx, cy = im.width // 2, im.height // 2; b = np.asarray(im.crop((cx - s // 2, cy - s // 2, cx + s // 2, cy + s // 2))).astype(np.float64)
+    # Furchen sind gemalt leicht gebogen: je Spaltenblock die senkrechte Verschiebung gegen die Mitte messen und gerade ziehen
+    lum = b.mean(axis=2); H, W = lum.shape; ref = lum[:, W // 2 - 24:W // 2 + 24].mean(axis=1); ref = ref - ref.mean()
+    zm = ref; ac = np.correlate(zm, zm, 'full')[len(zm) - 1:]
+    per = next(i for i in range(4, len(ac) - 1) if ac[i] > ac[i - 1] and ac[i] >= ac[i + 1] and ac[i] > 0.2 * ac[0])
+    xs, vs = [], []
+    for x0 in range(0, W - 24, 24):
+        p = lum[:, x0:x0 + 24].mean(axis=1); p = p - p.mean()
+        best = max(range(-per // 2, per // 2 + 1), key=lambda d: (np.roll(p, -d)[per:-per] * ref[per:-per]).sum())
+        xs.append(x0 + 12); vs.append(best)
+    vs = np.unwrap(np.array(vs, float) * 2 * np.pi / per) * per / (2 * np.pi)   # über die Breite stetig
+    versatz = ndimage.gaussian_filter1d(np.interp(np.arange(W), xs, vs), 20)
+    for x in range(W): b[:, x] = ndimage.shift(b[:, x], (-versatz[x], 0), order=1, mode='wrap')
+    n = int(b.shape[0] * 0.9 // per); h = n * per; b = b[(H - h) // 2:(H - h) // 2 + h, :]
+    print(f'  Furchen um {dreh:.2f}° gedreht, Biegung bis {np.ptp(versatz):.0f} px gerade gezogen, Abstand {per} px, {n} Furchen → {W}×{h}')
+    return b
+
+
+def textur(name, ziel=None, opt=None):
+    opt = opt or {}
+    if 'quelle' in opt:
+        bq, box = opt['quelle']; a = np.asarray(Image.open(SRC / f'{bq}.png').convert('RGB').crop(box)).astype(np.float64)
+    else:
+        a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')).astype(np.float64)
+    if opt.get('furchen'): a = furchen_waagrecht(a)
     name_q, name = name, ziel or name
     h, w = a.shape[:2]
     nx, ny = naht(a), naht(a.transpose(1, 0, 2))
-    if max(nx, ny) > 1.4:   # Hälfte verschieben (Naht liegt dann in der Mitte) und mit dem Original überblenden: Ränder aus der verschobenen Fassung, Mitte aus dem Original
+    if opt.get('weich'):   # Krähenfurt: weiche Überblendung über die ganze Kachel (sin²-Fenster) mit erhaltenem Kontrast – kein sichtbarer Rahmen wie bei der schmalen Rampe
+        # nacheinander je Richtung (erst waagrecht, dann senkrecht): ein Fenster in beiden Richtungen zugleich lässt die Naht der verschobenen Fassung in der Kachelmitte stehen
+        mu = a.mean(axis=(0, 1))
+        for ax in ((0,) if opt.get('nur') == 'senkrecht' else (1, 0)):
+            n = a.shape[ax]; T = np.sin(np.pi * (np.arange(n) + 0.5) / n) ** 2
+            T = (T[None, :, None] if ax == 1 else T[:, None, None]); rl = np.roll(a, n // 2, axis=ax)
+            a = mu + ((a - mu) * T + (rl - mu) * (1 - T)) / np.sqrt(T ** 2 + (1 - T) ** 2)
+    elif opt.get('furchen'): pass   # Acker wird im Spiel je Feld einmal gelegt (kein Kacheln, Felder wie ein Flickenteppich): gerade gezogen, sonst unverändert
+    elif opt.get('nur') == 'senkrecht':   # nur in einer Richtung überblenden (Furchen laufen waagrecht durch; Straße wird quer gelegt)
+        rl = np.roll(a, (h // 2, 0) if opt.get('nur') else (0, w // 2), axis=(0, 1))   # Furchen: gerade gezogen, Höhe = ganze Furchen; nur links/rechts überblenden
+        y = np.minimum(np.arange(h), h - 1 - np.arange(h))[:, None]; x = np.minimum(np.arange(w), w - 1 - np.arange(w))[None, :]
+        t = np.clip(y / (h * 0.16), 0, 1) if opt.get('nur') else np.clip(x / (w * 0.16), 0, 1)
+        t = (t * t * (3 - 2 * t)) * np.ones((h, w)); a = a * t[..., None] + rl * (1 - t[..., None])
+    elif max(nx, ny) > 1.4:   # Hälfte verschieben (Naht liegt dann in der Mitte) und mit dem Original überblenden: Ränder aus der verschobenen Fassung, Mitte aus dem Original
         rl = np.roll(a, (h // 2, w // 2), axis=(0, 1))
         y = np.minimum(np.arange(h), h - 1 - np.arange(h))[:, None]; x = np.minimum(np.arange(w), w - 1 - np.arange(w))[None, :]
         ramp = 0.16
         t = np.clip(np.minimum(y / (h * ramp), x / (w * ramp)), 0, 1); t = t * t * (3 - 2 * t)
         a = a * t[..., None] + rl * (1 - t[..., None])
+    if opt.get('hell'):   # auf Ziel-Mittelwert dämpfen, Schatten etwas bläulich (Schnee)
+        a = a * (opt['hell'] * 255 / a.mean()); a = a * np.array([0.96, 0.99, 1.05])
     hell = a.mean() / 255
     print(f'  Naht waagrecht {nx:.1f}×, senkrecht {ny:.1f}× → {naht(a):.1f}×, {naht(a.transpose(1, 0, 2)):.1f}×; Helligkeit {hell:.2f}')
     im = Image.fromarray(np.clip(a, 0, 255).astype(np.uint8), 'RGB')
@@ -308,12 +388,16 @@ def einzel(name, h):
     speichern(t, name, PX_SH * h)
 
 
-def bogen(name, hoehen):
+def bogen(name, hoehen, opt=None):
+    opt = opt or {}
     if isinstance(hoehen, tuple):   # ein Maßstab für den ganzen Bogen
         stuecke = teile_finden(freistellen(SRC / f'{name}.png'), reihen=hoehen[2] if len(hoehen) > 2 else 2)
         f = hoehen[1] * PX_SH / max(t.shape[0] for t in stuecke)
-        for k, t in enumerate(stuecke, 1):
-            speichern(t, f'{name}_{k}', t.shape[0] * f)
+        namen = opt.get('namen') or [f'{name}_{k}' for k in range(1, len(stuecke) + 1)]
+        if len(namen) != len(stuecke): print(f'  WARNUNG: {len(stuecke)} Teile gefunden, {len(namen)} erwartet')
+        for k, (t, n) in enumerate(zip(stuecke, namen), 1):
+            if k in opt.get('spiegeln', []): t = t[:, ::-1].copy(); print(f'  {n} gespiegelt')
+            speichern(t, n, t.shape[0] * f)
         print(f'  {len(stuecke)} Teile, gemeinsamer Maßstab')
         return
     q = freistellen(SRC / f'{name}.png')
@@ -332,6 +416,26 @@ def bogen(name, hoehen):
         maske = ndimage.binary_dilation((lab[b] > 0) & np.isin(lab[b], teile), iterations=3)
         t[~maske, 3] = 0
         speichern(zeilen(t), f'{name}_{k}', PX_SH * h)
+
+
+# Steinbrücke (Krähenfurt): in hinten (hintere Brüstung + Fahrbahn) und vorn (vordere Brüstung, Bogen, Pfeiler) teilen, damit Figuren auf der Fahrbahn
+# zwischen beiden stehen; der gemalte Schneesockel und der Boden unter dem Bogen fallen weg (darunter liegt im Spiel das Eis).
+# Vielecke von Hand in Bildpunkten von bruecke_stein.png (618×295, Ausschnitt aus dorf_objekte_schnee_bogen bei gemeinsamem Maßstab 1,2 SH).
+BRUECKE_HINTEN = [(146, 0), (200, 0), (300, 0), (380, 18), (440, 44), (500, 84), (556, 94), (558, 170), (452, 164), (395, 157), (350, 120),
+                  (300, 90), (230, 62), (150, 55), (92, 52), (146, 52)]
+BRUECKE_VORN = [(34, 38), (92, 42), (150, 46), (230, 53), (300, 81), (350, 111), (395, 148), (455, 153), (455, 247), (395, 248), (330, 240), (318, 234),
+                (310, 210), (295, 170), (270, 140), (245, 125), (210, 119), (175, 125), (150, 145), (140, 176), (75, 146), (34, 118)]
+
+
+def bruecke_teilen():
+    from PIL import ImageDraw, ImageFilter
+    im = Image.open(OUT / 'bruecke_stein.png').convert('RGBA')
+    for teil, poly in (('hinten', BRUECKE_HINTEN), ('vorn', BRUECKE_VORN)):
+        m = Image.new('L', im.size, 0); ImageDraw.Draw(m).polygon(poly, fill=255); m = m.filter(ImageFilter.GaussianBlur(0.8))
+        t = np.asarray(im).astype(np.float64); t[..., 3] *= np.asarray(m) / 255
+        out = Image.fromarray(np.clip(t, 0, 255).astype(np.uint8), 'RGBA')   # gleiche Leinwand wie das Ganze: beide Teile haben denselben Fußpunkt
+        out.save(OUT / f'bruecke_stein_{teil}.png'); out.save(PROBE / f'g_bruecke_stein_{teil}.webp', quality=88, method=6)
+        print(f'  → bruecke_stein_{teil}: {out.width}×{out.height}')
 
 
 def einbetten():
@@ -363,13 +467,14 @@ if __name__ == '__main__':
         art, h, *opt = TEILE[name]
         print(name)
         if art == 'bogen':
-            bogen(name, h)
+            bogen(name, h, opt[0] if opt else None)
+            if name == 'dorf_objekte_schnee_bogen': bruecke_teilen()
         elif art == 'flach':
             flach(name, h)
         elif art == 'einzel':
             einzel(name, h)
         elif art == 'textur':
-            textur(name, h)
+            textur(name, h, opt[0] if opt else None)
         else:
             streifen(name, art, h, opt[0] if opt else None)
             if name == 'draht': pfaehle_ausduennen(name)

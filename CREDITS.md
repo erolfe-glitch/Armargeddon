@@ -226,4 +226,6 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | Bild | Datei | Quelle | Herkunft |
 |---|---|---|---|
 | Ordensschreiter getroffen | ui-quelle/figuren/konkordat_ordensschreiter_posen5.png | fal.ai „Flux 3 Image Edit“ (Enrico, eigenes Konto, 2026-11-22) | eigene Erzeugung |
+| Krähenfurt: Häuser, Kapelle, Ruinen, Bäume, Dorfteile, Böden, Streifen, reine Schneeflächen, Furt/Krater | ui-quelle/gelaende/*_schnee*_bogen.png, haus_heil_bogen.png, kapelle_ruinen_bogen.png, furt_krater_schnee_bogen.png | fal.ai „Flux 3 Image Edit“ (Enrico, eigenes Konto, 2026-11-22) | eigene Erzeugung |
+| Titelbild | ui-quelle/titelbild_neu.png | fal.ai „Flux 3 Image Edit“ (Enrico, eigenes Konto, 2026-11-22) | eigene Erzeugung |
 | Figuren-, Symbol- und Gelände-Bögen | ui-quelle/** | Gemini (Enrico) | eigene Erzeugung |

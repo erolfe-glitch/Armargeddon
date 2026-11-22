@@ -26,16 +26,19 @@
 const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; });
 const SQ3 = Math.sqrt(3);
 const LISTE = {
-  tex: ['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n),
+  tex: [...['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n), 'boden_schnee', 'boden_acker_schnee', 'strasse_matsch', 'boden_eis', ...[1, 2, 3, 4].map(k => 'boden_schnee_rein_' + k)],
   flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
-    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
+    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
-    'kirchturm_1', 'kirchturm_2', ...['kirche_innen', 'friedhof', 'dorf_aufsteller'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`))],   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
+    'kirchturm_1', 'kirchturm_2', ...['kirche_innen', 'friedhof', 'dorf_aufsteller'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
+    // Krähenfurt (2026-11-22, Flux): Winter-Bausteine, nur mit cfg.winter benutzt
+    ...[1, 2, 3, 4].map(k => 'haus_heil_' + k), 'kapelle', 'kapelle_ruine', 'haus_ruine_schnee_1', 'haus_ruine_schnee_2', ...[1, 2, 3, 4].map(k => 'tanne_schnee_' + k),
+    'baum_tot_schnee_1', 'baum_tot_schnee_2', 'bruecke_stein_hinten', 'bruecke_stein_vorn', 'brunnen_schnee', 'holzstapel_1', 'holzstapel_2', 'karren_schnee', 'schilf'],   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
 const NAMEN = [...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand];
 
@@ -76,6 +79,11 @@ function teileGefiltert(IM, flt) {
 }
 function aufbauen(cfg, IM) {
   IM = teileGefiltert(IM, cfg.teilFilter);
+  // Winterkarten (Krähenfurt, 2026-11-22): Schneeboden statt Schlamm/Gras/Waldboden, Eis statt Wasser, verschneite Zäune, Unterholz, Brunnen und Karren;
+  // Häuser, Kapelle, Tannen, Steinbrücke, Ufer und Acker eigene Zweige (winterFeld). Fehlt der Schneeboden, bleibt alles wie bisher.
+  const WI = !!cfg.winter && !!IM.boden_schnee;
+  if (WI) { const ali = { boden_schlamm: IM.boden_schnee_rein_1 ? 'boden_schnee_rein_1' : 'boden_schnee', boden_wasser: 'boden_eis', wald_unterholz: 'unterholz_schnee', zaun: 'zaun_schnee', dorf_aufsteller_1: 'brunnen_schnee', dorf_aufsteller_3: 'karren_schnee' };
+    IM = { ...IM }; for (const k in ali) if (IM[ali[k]]) IM[k] = IM[ali[k]]; }
   const KIPP = cfg.kipp ?? 1;   // schräge Wandstücke kippen (Stärke, 0 = aus)
   const AO = cfg.ao || 0;   // Kantenverdeckung: dunkler, weicher Saum, wo Graben, Wälle und Befestigungen auf den flachen Boden treffen
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
@@ -120,14 +128,27 @@ function aufbauen(cfg, IM) {
   const felder = test => { const out = []; for (let c = -1; c <= COLS; c++) for (let r = -2; r <= ROWS; r++) if (test(terr(c, r), c, r)) out.push([c, r]); return out; };
   // Gras: offene Felder nach großflächigem Rauschen (nicht feldweise), Feldart 'grass' immer
   const noise = (x, y) => Math.sin(x * 0.011 * 120 / R + 1.3) * Math.sin(y * 0.013 * 120 / R + 0.4) + 0.6 * Math.sin((x * 0.023 + y * 0.017) * 120 / R);
-  schicht('boden_gras', ctx => { for (const [c, r] of felder((t, c, r) => t === 'grass' || ((t === 'open' || t === 'out') && noise(...hexC(c, r)) > 0.15))) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.22, 0.95, 37);
-  if (felder(t => t === 'garten' || t === 'friedhof').length) schicht('boden_gras', ctx => { for (const [c, r] of felder(t => t === 'garten' || t === 'friedhof')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 41);   // Gärten, Friedhof: Gras
-  schicht('boden_waldboden', ctx => { for (const [c, r] of felder(t => t === 'forest' || t === 'wald')) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.16, 1, 91);
-  schicht('boden_truemmer', ctx => {   // Trümmerboden leicht gedämpft (unruhiger als die übrigen)
+  if (!WI) schicht('boden_gras', ctx => { for (const [c, r] of felder((t, c, r) => t === 'grass' || ((t === 'open' || t === 'out') && noise(...hexC(c, r)) > 0.15))) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.22, 0.95, 37);
+  if (!WI && felder(t => t === 'garten' || t === 'friedhof').length) schicht('boden_gras', ctx => { for (const [c, r] of felder(t => t === 'garten' || t === 'friedhof')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 41);   // Gärten, Friedhof: Gras
+  if (!WI) schicht('boden_waldboden', ctx => { for (const [c, r] of felder(t => t === 'forest' || t === 'wald')) jitterHex(ctx, ...hexC(c, r), 1.05); }, 0.16, 1, 91);
+  if (!WI) schicht('boden_truemmer', ctx => {   // Trümmerboden leicht gedämpft (unruhiger als die übrigen)
     for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche' || t === 'schiff' || t === 'turm')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 0.92, 13, 0.86);
   const PLATZ = felder((t, c, r) => inMap(c, r) && /platz|brunnen/.test(flags(c, r).deko || ''));
   if (PLATZ.length) schicht('boden_kopfstein', ctx => { for (const [c, r] of PLATZ) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.1, 1, 7, (cfg.hell || 1.2) * 1.05);   // Dorfplatz: Kopfstein
-  schicht('boden_sumpf', ctx => { for (const [c, r] of felder(t => t === 'sumpf' || t === 'mud')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 53);
+  // Winter (Enrico 19:15): reine Schneefassungen je Feld gemischt (Felsen-Fassung etwa 1 von 8), die fleckige Kachel nur zertrampelt im Dorf
+  if (WI && IM.boden_schnee_rein_1) {
+    const fass = (c, r) => { const v = hrnd(c, r, 290); return v < 0.125 ? 4 : v < 0.45 ? 2 : v < 0.75 ? 3 : 1; };
+    for (const k of [2, 3, 4]) if (IM['boden_schnee_rein_' + k]) schicht('boden_schnee_rein_' + k, ctx => { for (const [c, r] of felder((t, c, r) => fass(c, r) === k)) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.22, 1, 29 * k);
+    schicht('boden_schnee', ctx => { for (const [c, r] of felder(t => ['haus', 'kapelle', 'village', 'steinbruecke'].includes(t))) jitterHex(ctx, ...hexC(c, r), 0.85); }, 0.25, 0.85, 17);
+  }
+  if (!WI) schicht('boden_sumpf', ctx => { for (const [c, r] of felder(t => t === 'sumpf' || t === 'mud')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 53);
+  // Acker im Schnee: je Feld ein ganzes Stück (gemalte Furchen kacheln nicht sauber), leicht gedreht, manche Felder quer – wie ein Flickenteppich
+  if (WI && IM.boden_acker_schnee) for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
+    const [x, y] = hexC(c, r), S = Math.ceil(R * 2.6), cv = document.createElement('canvas'); cv.width = cv.height = S; const a = cv.getContext('2d'), im = IM.boden_acker_schnee, k = S * 1.45 / im.width;
+    a.translate(S / 2, S / 2); a.rotate((hrnd(c, r, 260) - 0.5) * 0.7 + (hrnd(c, r, 261) < 0.3 ? Math.PI / 2 : 0)); a.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k);
+    a.setTransform(1, 0, 0, 1, 0, 0); a.globalCompositeOperation = 'destination-in'; a.filter = `blur(${R * 0.1}px)`; a.fillStyle = '#fff'; a.translate(S / 2 - x, S / 2 - y); jitterHex(a, x, y, 0.88);
+    w.globalAlpha = 0.9; w.drawImage(cv, x - S / 2, y - S / 2); w.globalAlpha = 1;
+  }
   // Großflächige Helligkeitsflecken gegen Kachelwiederholung
   for (let i = 0; i < WW * WH / (R * R) * 0.35; i++) { const x = rnd() * WW, y = rnd() * WH, rr = R * (0.8 + rnd() * 1.8), d = rnd() < 0.55;
     const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, d ? 'rgba(10,7,5,0.2)' : 'rgba(150,130,100,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); w.fillStyle = gr; w.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
@@ -165,13 +186,29 @@ function aufbauen(cfg, IM) {
   const strokeLines = (ctx, lines, wd) => { ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = wd; for (const p of lines) { ctx.beginPath(); p.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); } };
 
   // Straßen (Kopfstein) und Kanal (Wasser mit dunkler Uferkante)
-  const ROADS = ketten((c, r) => flags(c, r).road && terr(c, r) !== 'canal').filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
-  if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.2) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
-  const RIVERS = ketten((c, r) => flags(c, r).river || ['canal', 'bridge', 'furt'].includes(terr(c, r))).filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
+  // cfg.strassen (Winterkarten): Straßen entlang der Wegpunkte der Karte statt aus den Straßenfeldern (dort liegen Straßenfelder in Gruppen, die Ketten wurden ein Netz)
+  const ROADS = cfg.strassen ? cfg.strassen.filter(z => z.length > 1).map(z => chaikin(verlaengern(z).pts, 3))
+    : ketten((c, r) => flags(c, r).road && terr(c, r) !== 'canal' && terr(c, r) !== 'eis').filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
+  // Winter: Matschstraße mit Radspuren entlang des Wegs gedreht (Textur läuft senkrecht, wird je Stück in Wegrichtung gelegt), Schneeränder laufen in den Boden aus
+  function strasseWinter(lines) {
+    const im = IM.strasse_matsch, B = R * 1.7, k = B / im.width;   // Matschband (gut die Hälfte der Kachel) etwa so breit wie die Maske
+    l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH);
+    for (const p of lines) { let v = 0; for (let i = 0; i < p.length - 1; i++) { const a = p[i], b = p[i + 1], len = Math.hypot(b[0] - a[0], b[1] - a[1]); if (len < 0.5) continue;
+      l.save(); l.translate(a[0], a[1]); l.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.PI / 2);
+      const pat = l.createPattern(im, 'repeat'); pat.setTransform(new DOMMatrix().translate(-B * 0.53, -v).scale(k)); l.fillStyle = pat; l.fillRect(-B / 2, -3, B, len + 6); l.restore(); v += len; } }
+    m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.09}px)`; m.strokeStyle = '#fff'; strokeLines(m, lines, R * 0.8); m.filter = 'none';
+    l.globalCompositeOperation = 'destination-in'; l.drawImage(MK, 0, 0); l.globalCompositeOperation = 'source-over'; w.drawImage(LY, 0, 0);
+  }
+  if (ROADS.length && WI && IM.strasse_matsch) { if (IM.boden_schnee_rein_1) schicht('boden_schnee', ctx => strokeLines(ctx, ROADS, R * 1.5), 0.25, 0.8, 11); strasseWinter(ROADS); }   // Wegränder zertrampelt
+  else if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.2) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
+  const RIVERS = ketten((c, r) => flags(c, r).river || ['canal', 'bridge', 'furt', 'eis', 'steinbruecke'].includes(terr(c, r))).filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
   if (RIVERS.length) {
-    w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(28,21,14,0.95)'; strokeLines(w, RIVERS, R * 1.55); w.restore();
+    w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = WI ? 'rgba(30,34,38,0.55)' : 'rgba(28,21,14,0.95)'; strokeLines(w, RIVERS, R * (WI ? 1.4 : 1.55)); w.restore();
     schicht('boden_wasser', ctx => strokeLines(ctx, RIVERS, R * 1.22), 0.03, 1, 0);
   }
+  // Winter: Eisfelder ganz füllen (Teich, breite Stellen), nicht nur entlang der Flusslinie
+  const EISF = WI ? felder((t, c, r) => inMap(c, r) && t === 'eis') : [];
+  if (EISF.length) schicht('boden_eis', ctx => { for (const [c, r] of EISF) jitterHex(ctx, ...hexC(c, r), 0.8); }, 0.22, 1, 0);
 
   // ---------- 2. Flache Details ----------
   let FZ = null;   // Ziel für flach(): sonst das Weltbild w (flachNeu zeichnet ein einzelnes Feld nach, Enrico 2026-11-22: kein Neuaufbau bei Einschlägen)
@@ -265,7 +302,7 @@ function aufbauen(cfg, IM) {
     DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
-      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45; if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (!o.fest && hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45;   /* fest: nie durchsichtig (Brückenbrüstung) */ if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
       g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, -h, wd, h); g.restore();
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
@@ -366,14 +403,60 @@ function aufbauen(cfg, IM) {
   const BAUFELD = new Map(); for (const b of cfg.bauten || []) for (const f of [...b.felder, ...(b.turm ? [b.turm] : [])]) BAUFELD.set(f[0] + ',' + f[1], b);
   const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
   const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
-  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+  // Winterfelder (Krähenfurt): true = Feld fertig, sonst weiter mit den üblichen Teilen. Größen nach Breite in Feldradien (breit), Gebäude nie gespiegelt (Licht von links).
+  const WP = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
+  const TANNEN = WP('tanne_schnee'), HAEUSER = WP('haus_heil'), HRUINEN = WP('haus_ruine_schnee'), HOLZ = WP('holzstapel');
+  const breit = (im, wR) => im ? wR * R * im.height / im.width : 0;
+  const WASSER = new Set(['eis', 'canal', 'bridge', 'furt', 'steinbruecke', 'out']);
+  const pick = (arr, v) => arr[Math.min(arr.length - 1, Math.floor(v * arr.length))];
+  function winterFeld(c, r, t, hx, hy, q) {
+    if (t === 'haus' && HAEUSER.length) {
+      stand(pick(HAEUSER, q(300)), hx + (q(301) - 0.5) * R * 0.12, hy - R * 0.04, breit(HAEUSER[0], 1.75), { shadeK: 0.5 });
+      if (HOLZ.length && q(302) < 0.45) { const im = pick(HOLZ, q(305)); stand(im, ...corner(c, r, q(303) < 0.5 ? 0 : 3, 0.74), breit(im, 0.62), { flip: q(304) < 0.5, shadeK: 0.35 }); }
+      return true;
+    }
+    if (t === 'kapelle' && IM.kapelle) { stand(IM.kapelle, hx, hy - R * 0.05, breit(IM.kapelle, 1.85), { shadeK: 0.5 }); return true; }
+    if (t === 'village') {   // eingestürztes Haus bzw. eingestürzte Kapelle (Regeln machen daraus Ruine)
+      const art = cfg.bauArt && cfg.bauArt(c, r), im = art === 'kapelle' ? IM.kapelle_ruine : HRUINEN.length ? pick(HRUINEN, q(310)) : null;
+      if (!im) return false;
+      stand(im, hx, hy - R * 0.04, breit(im, art === 'kapelle' ? 1.85 : 1.75), { shadeK: 0.5 }); return true;
+    }
+    if (t === 'wald' && TANNEN.length) {   // verschneite Tannen an den hinteren Ecken, Unterholz an der vorderen Kante
+      const ecken = [[4, 0.82], [5, 0.82], ...(q(60) < 0.6 ? [[q(61) < 0.5 ? 3 : 0, 0.78]] : [])];
+      for (const [e, k] of ecken) stand(pick(TANNEN, q(e + 62)), ...corner(c, r, e, k), 2.0 * SH * (0.82 + q(e + 70) * 0.3), { flip: flipR(c, r, e + 80), shadeK: 0.3 });
+      wall(IM.wald_unterholz, corner(c, r, 2, 0.88), corner(c, r, 1, 0.88), 0.34 * SH, { u0: q(90) * 4, shade: 0.3 });
+      return true;
+    }
+    if (t === 'forest' && (IM.baum_tot_schnee_1 || TANNEN.length)) {   // lichter Winterwald: toter Baum hinten, Stumpf, manchmal eine junge Tanne
+      if (IM.baum_tot_schnee_1) stand(IM.baum_tot_schnee_1, ...corner(c, r, q(50) < 0.5 ? 4 : 5, 0.62), 1.7 * SH * (0.85 + q(51) * 0.25), { flip: flipR(c, r, 52), shadeK: 0.3 });
+      if (IM.baum_tot_schnee_2) stand(IM.baum_tot_schnee_2, ...corner(c, r, q(53) < 0.5 ? 3 : 0, 0.55), 0.95 * SH * (0.85 + q(54) * 0.3), { flip: flipR(c, r, 55) });
+      if (TANNEN.length && q(56) < 0.5) stand(pick(TANNEN, q(57)), ...corner(c, r, q(58) < 0.5 ? 2 : 1, 0.45), 1.45 * SH * (0.85 + q(59) * 0.25), { flip: flipR(c, r, 59), shadeK: 0.3 });
+      return true;
+    }
+    if (t === 'steinbruecke' && IM.bruecke_stein_hinten) {   // Steinbrücke: hinten (Brüstung, Fahrbahn) hinter den Figuren, vorn (Brüstung, Bogen) davor; gemalt von links oben nach rechts unten
+      const rd = ROADS.find(p => distTo([hx, hy], p) < R * 0.6); let flip = false;
+      if (rd) { let bi = 0, bd = 1e9; rd.forEach((p, i) => { const d = Math.hypot(p[0] - hx, p[1] - hy); if (d < bd) { bd = d; bi = i; } }); const a = rd[Math.max(0, bi - 2)], b = rd[Math.min(rd.length - 1, bi + 2)]; flip = (b[1] - a[1]) * (b[0] - a[0]) < 0; }
+      const hW = breit(IM.bruecke_stein_hinten, 2.5), x = hx, y = hy + R * 0.85;   // Fuß weit vorn: die Fahrbahn liegt dann etwa auf Höhe der Feldmitte (Figuren stehen auf der Brücke)
+      stand(IM.bruecke_stein_hinten, x, y, hW, { bias: -R * 1.3, flip, noShadow: true, fest: true });
+      stand(IM.bruecke_stein_vorn, x, y, hW, { bias: R * 0.05, flip, noShadow: true, fest: true });
+      return true;
+    }
+    if (t === 'eis') return true;   // Uferkante: entlang der Flusslinie (ufer() unten), nicht an Feldkanten
+    if ((t === 'open' || t === 'garten') && IM.schilf && q(280) < 0.4) {   // Schilf am Ufer
+      const e = [0, 1, 2, 3, 4, 5].find(e => terr(...nbE(c, r, e)) === 'eis');
+      if (e != null) { const p = edgeMid(c, r, e, 0.72); stand(IM.schilf, p[0], p[1], breit(IM.schilf, 0.62), { flip: q(281) < 0.5, shadeK: 0.25 }); }
+    }
+    return false;
+  }
+  function feldTeile(c, r) {   // aufrechte Teile eines Felds (einzeln aufrufbar: feldNeu, z. B. eingestürztes Haus in Krähenfurt)
     const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = c + ',' + r; BAUMFELD = t === 'forest' || t === 'wald' ? c + ',' + r : null;
-    if (BAUFELD.has(c + ',' + r)) continue;   // große Gebäude: eigener Aufbau weiter unten
+    if (BAUFELD.has(c + ',' + r)) return;   // große Gebäude: eigener Aufbau weiter unten
     const deko = flags(c, r).deko || '';
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
     if (deko === 'wegkreuz') stand(IM.dorf_aufsteller_2, hx + R * 0.55, hy - R * 0.45, px(IM.dorf_aufsteller_2), { shadeK: 0.3, flip: q(201) < 0.5 });
     if (deko === 'karren' || (deko === 'platz' && q(202) < 0.5)) stand(IM.dorf_aufsteller_3, hx - R * 0.55, hy - R * 0.5, px(IM.dorf_aufsteller_3), { flip: q(203) < 0.5 });
     if (deko === 'platz' && q(204) < 0.4) stand(IM.dorf_aufsteller_4, ...corner(c, r, q(205) < 0.5 ? 1 : 2, 0.72), px(IM.dorf_aufsteller_4, 0.85), { flip: q(206) < 0.5, shadeK: 0.2 });   // Laterne selten, vorn im Feld
+    if (WI && winterFeld(c, r, t, hx, hy, q)) return;
     if (t === 'friedhof') {   // Grabkreuze, Grabsteine, Grabplatte an den Rändern; Heiligenfigur nur mit Schmuck 'figur'
       const plaetze = [[4, 0.62], [5, 0.62], [3, 0.6], [1, 0.62], [0, 0.6]].sort((a, b) => q(a[0] + 210) - q(b[0] + 210)).slice(0, deko === 'figur' ? 2 : 3);
       plaetze.forEach(([e, kk], i) => { const im = IM['friedhof_' + [1, 2, 3, 1, 2][(Math.floor(q(e + 220) * 5) + i) % 5]]; stand(im, ...corner(c, r, e, kk), px(im), { flip: q(e + 230) < 0.5 }); });
@@ -431,6 +514,20 @@ function aufbauen(cfg, IM) {
       if (im) SHADOW.push(() => { w.save(); w.translate(hx, hy); w.rotate(ang + Math.PI / 2); w.fillStyle = 'rgba(8,6,4,0.55)'; w.fillRect(-L / 2, -Wd / 2 + R * 0.06, L, Wd); w.drawImage(im, -L / 2, -Wd / 2, L, Wd); w.restore(); });
     }
   }
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) feldTeile(c, r);
+  // Winter: Uferkante (Schneewall mit Steinen) nur am hinteren Ufer – parallel zur geglätteten Flusslinie, wo das Ufer zum Betrachter zeigt; nicht an Brücke und Furt
+  // Aus (2026-11-22): als aufrechter Streifen wirkt die Uferkante wie eine Mauer und kreuzt im Teich die Flusslinien; Schalter cfg.ufer zum Ausprobieren
+  if (WI && IM.ufer_schnee && cfg.ufer) { FELD = null; BAUMFELD = null;
+    const QUER = felder((t, c, r) => inMap(c, r) && ['steinbruecke', 'bridge', 'furt'].includes(t)).map(([c, r]) => hexC(c, r));
+    const naechstes = (x, y) => { let best = null, bd = 1e9; for (let c = -1; c <= COLS; c++) for (let r = -1; r <= ROWS; r++) { const [hx, hy] = hexC(c, r), d = (hx - x) ** 2 + (hy - y) ** 2; if (d < bd) { bd = d; best = [c, r]; } } return best; };
+    const land = (x, y) => !WASSER.has(terr(...naechstes(x, y)));
+    for (const p of RIVERS) { const off = R * 0.72; let u = 0;
+      for (let i = 0; i < p.length - 1; i++) { const a = p[i], b = p[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < 1) continue;
+        for (const s of [1, -1]) { const nx = -dy / l * s, ny = dx / l * s; if (ny > -0.3) continue;   // Normale nach oben = hinteres Ufer
+          const A = [a[0] + nx * off, a[1] + ny * off], B = [b[0] + nx * off, b[1] + ny * off], M = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+          if (QUER.some(([x, y]) => Math.hypot(x - M[0], y - M[1]) < R * 0.95)) continue;
+          if (!land(M[0] + nx * R * 0.45, M[1] + ny * R * 0.45)) continue;   // dahinter Wasser (Teich, Flussbiegung): keine Kante mitten im Eis
+          u = wall(IM.ufer_schnee, A[0] < B[0] ? A : B, A[0] < B[0] ? B : A, 0.26 * SH, { u0: u, shade: 0.3 }); } } } }
   // ---------- Mauerzüge entlang von Feldkanten (Gebäude, Friedhof, Gärten) ----------
   // kanten: [{ c, r, e }]; zusammenhängende Kanten werden zu Zügen verbunden und von links nach rechts gezogen (das Bild läuft durch).
   // passend: Zug auf ganze bzw. halbe Kacheln dehnen und bei u = 0 beginnen (Kirchenmauer: Anfang und Ende mitten im Strebepfeiler).
@@ -487,11 +584,11 @@ function aufbauen(cfg, IM) {
   mauerzug(aussenKanten(felder((t, c, r) => inMap(c, r) && t === 'friedhof'), (c, r) => terr(c, r) === 'friedhof' || BAUFELD.has(c + ',' + r)), IM.mauer_niedrig, 0.5 * SH, { k: 0.97, seed: 17, wall: { shade: 0.45 } });
   // Gärten: hinten (Kanten 3–5) je Garten entweder zerschossener Zaun (1 SH, Latten durchsichtig, nur hinten erlaubt) oder Bruchsteinmauer, vorn nur die Mauer
   { const mauer = [], zaun = []; for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
-      const mitZaun = !!IM.zaun && hrnd(c, r, 252) < 0.55;
+      const mitZaun = !!IM.zaun && (WI || hrnd(c, r, 252) < 0.55);   // Winter: Koppelzaun um die Äcker
       for (const e of [4, hrnd(c, r, 250) < 0.5 ? 3 : 5, ...(hrnd(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (terr(nc, nr) === 'garten' || BAUFELD.has(nc + ',' + nr) || terr(nc, nr) === 'friedhof') continue;
-        (e >= 3 && mitZaun ? zaun : mauer).push({ c, r, e }); } }
+        (e >= 3 && mitZaun ? zaun : WI ? [] : mauer).push({ c, r, e }); } }
     mauerzug(mauer, IM.mauer_niedrig, 0.45 * SH, { k: 0.9, seed: 19, wall: { shade: 0.45 } });
-    mauerzug(zaun, IM.zaun, 1.0 * SH, { k: 0.9, seed: 23, wall: { shade: 0.35, shadeW: 0.1 } }); }
+    mauerzug(zaun, IM.zaun, (WI ? 0.7 : 1.0) * SH, { k: 0.9, seed: 23, wall: { shade: 0.35, shadeW: 0.1 } }); }
 
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
   // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).
@@ -538,6 +635,7 @@ function aufbauen(cfg, IM) {
       return { pts: [-0.6, -0.2, 0.2, 0.6].map((o, i) => { const [x, y, dx, dy] = at(arc[best.i] + o * R), q = (i % 2 ? 0.07 : -0.07) * R; return [x - dy * q, y + dx * q]; }), sink: 0.32, cut: EINSINK };
     }
     if (t === 'village' || BAUFELD.has(c + ',' + r)) return { sy: 0.85 };
+    if (t === 'steinbruecke' && WI) return { sy: 0.35 };   // Trupp eng auf der Fahrbahn (sonst steht die vordere Figur unter dem Bogen)
     return null;
   }
   FELD = null; BAUMFELD = null;
@@ -548,7 +646,9 @@ function aufbauen(cfg, IM) {
   function flachNeu(c, r, ziel) { FZ = ziel || null; try { flachDetail(c, r); } finally { FZ = null; } }
   // aufrechte Teile eines Felds herausnehmen (zerstörte Barrikade, Bunker, Draht); Schatten im Boden bleiben schwach stehen
   function feldWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg,
+  // aufrechte Teile eines Felds neu aufbauen (Krähenfurt: Haus/Kapelle eingestürzt → Ruine), ohne die ganze Welt neu zu bauen; Bodenschatten bleiben
+  function feldNeu(c, r) { feldWeg(c, r); try { feldTeile(c, r); } finally { FELD = null; BAUMFELD = null; } DRAW.sort((a, b) => a.y - b.y); }
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 
