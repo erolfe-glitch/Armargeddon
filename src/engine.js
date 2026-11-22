@@ -630,7 +630,7 @@ function deploy(G, side, army) {
   const ROWS_OUT = rowsOut(), zA = MAP.zoneA;
   const lead = () => null;   // Offiziere nur noch als eigene Einheiten (Hauptmann/General mit Stab), keine Titel mehr für Schützen (Spieltest 2026-11-17)
   const free = (t, c, r) => inMap(c, r) && !unitAt(G, c, r) && cost(G, { type: t, side }, c, r) < 99;
-  if (!TOG.AUFSTELLUNG_ALT) return deployZone(G, side, list, lead, free);   // Enrico 2026-11-22 17:30: beide Seiten nach Rollen (AUFSTELLUNG_ALT=1: alte Konkordat-Aufstellung zum Vergleich)
+  if (TOG.AUFSTELLUNG_NEU) return deployZone(G, side, list, lead, free);   // Versuch 2026-11-22 (Enrico 17:30): beide Seiten nach Rollen – noch nicht Standard: fest/gemischt teils weiter weit auseinander, Krähenfurt 80–100 % (siehe BERICHT)
   if (side === 'A') {
     const pref = t => { const T = TYPES[t], k = T.cls === 'art' && !T.mobile ? 0 : (T.mobile || T.pin || T.relay || T.cls === 'cav' || T.cls === 'medic' || T.fig === 'bike') ? 1 : (T.cls === 'walker' || T.cls === 'mg') ? 2 : 3; return Math.round(k * zA / 3); };
     for (const t of list) {
@@ -659,8 +659,8 @@ function deployZone(G, side, list, lead, free) {
   const zD = Math.max(MAP.zoneD, COLS - (+(TOG.M_band || 0) || MAP.band || P.D_BAND)), zA = MAP.zoneA, placed = [];
   const c0 = side === 'A' ? 0 : zD, c1 = side === 'A' ? zA : COLS - 1, tiefe = Math.max(1, c1 - c0);
   const dOf = c => side === 'A' ? (zA - c) / tiefe : (c - zD) / tiefe;   // 0 = vorderste Spalte der Zone, 1 = hinterste
-  const role = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 'art' : T.cls === 'walker' ? 'fz' : (T.cls === 'medic' || T.relay || T.mobile || T.spot || T.cls === 'cav' || T.cmd || T.abil === 'mark' || T.abil === 'smoke' || T.courier) ? 'back' : T.mg ? 'mg' : 'inf'; };
-  const RANG = { inf: 0, fz: 1, mg: 2, back: 3, art: 4 };
+  const role = t => { const T = TYPES[t]; return T.cmd ? 'back' /* Anführer hinten (stabilste Fassung: fest/gemischt höchstens 7 Punkte auseinander; vorn bzw. nah an der Front schwankte es um 40–55 Punkte) */ : T.cls === 'art' && !T.mobile ? 'art' : T.cls === 'walker' ? 'fz' : (T.cls === 'medic' || T.relay || T.mobile || T.spot || T.cls === 'cav' || T.abil === 'mark' || T.abil === 'smoke' || T.courier) ? 'back' : T.mg ? 'mg' : 'inf'; };
+  const RANG = { inf: 0, fz: 1, fuehrung: 2, mg: 3, back: 4, art: 5 };
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
   const score = (t, c, r) => {
@@ -672,6 +672,7 @@ function deployZone(G, side, list, lead, free) {
     else if (rl === 'back') v += d * 3;
     else if (rl === 'mg') v += (1 - d) * 3;
     else if (rl === 'fz') v += (1 - Math.abs(d - 0.4)) * 2;
+    else if (rl === 'fuehrung') { v += (1 - Math.abs(d - 0.45)) * 2.5; let n = 0; for (const p of placed) if (dist(c, r, p[0], p[1]) === 1) n++; v += Math.min(n, 3) * 2.2; }   // nah bei eigenen Trupps (gleicht den Abstands-Abzug aus)
     else v += (1 - d) * 3.2;   // Fußtruppen und Nahkämpfer vorn
     for (const p of placed) { const dd = dist(c, r, p[0], p[1]); if (dd <= 1) v -= 3.2; else if (dd === 2) v -= 1.2; else if (dd === 3) v -= 0.3; }
     return v;
