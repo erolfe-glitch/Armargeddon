@@ -146,6 +146,16 @@ for (let r = 2; r <= 4 && !(await ev('__dbg.G.over')); r++) { await rundeBeenden
   console.log(`  Blickrichtung aller ${r.n} Typen: ${r.falsch.length ? 'FEHLER ' + r.falsch.join(', ') : 'ok'}${r.ohne.length ? ' (ohne neue Figur: ' + r.ohne.join(', ') + ')' : ''}; Panzer im Nahkampf ${r.panzerGedreht ? 'GEDREHT' : 'bleibt'} (${r.evs.join(' ')})`);
   if (r.falsch.length) fehler.push('F89: falsche Blickrichtung: ' + r.falsch.join(', '));
   if (r.panzerGedreht) fehler.push('F90: Panzer dreht sich im Nahkampf'); if (!r.evs.length) fehler.push('F90: Nahkampf gegen den Panzer kam nicht zustande'); }
+// F100 (2026-11-22): Fähigkeits-Modus, Klick auf ein ungültiges Ziel (Panzer, Sturmrollen, Gegner 4 Felder weg) – kein Schuss, keine Pause, Meldung
+{ const vorher = JSON.parse(await ev(`(async () => { const D = __dbg, G = D.G, E = D.E, W = ms => new Promise(r => setTimeout(r, ms)); const [u, v] = G.units;
+    Object.assign(u, { type: 'sturmpz', side: G.side, officer: null, c: 4, r: 4, face: G.side === 'A' ? 0 : 3, str: 10, mor: 8, ap: 1, bp: 4, bpUsed: 0, attacked: false, moved: false, supp: 0, status: 'ok', cdA: 0, broken: 0, stuck: 0, zw: 0, held: false });
+    Object.assign(v, { type: G.side === 'A' ? 'grenadier' : 'kohorte', side: G.side === 'A' ? 'D' : 'A', officer: null, c: G.side === 'A' ? 8 : 0, r: 4, str: 10, mor: 8, status: 'ok', supp: 0 });
+    D.sync(); D.select(u.id); await W(300); await D.panelAct('abil'); await W(300); const p = D.hexCss(v.c, v.r); return JSON.stringify({ p, id: u.id, set: D.abilSet.size, fire: E.canFire(G, u, v) }); })()`));
+  await maus(vorher.p[0], vorher.p[1], true); await sleep(1500); await warteFrei();
+  const nach = JSON.parse(await ev(`JSON.stringify((() => { const u = __dbg.G.units.find(x => x.id === ${vorher.id}); return { ap: u.ap, cdA: u.cdA || 0, attacked: !!u.attacked, toast: document.getElementById('toast').textContent, an: document.getElementById('toast').classList.contains('on') }; })())`));
+  const ok = nach.ap === 1 && !nach.cdA && !nach.attacked && nach.an;
+  console.log(`  F100 Sturmrollen auf zu weites Ziel: ${ok ? 'ok' : 'FEHLER'} (Ziele ${vorher.set}, normaler Schuss wäre ${vorher.fire ? 'möglich' : 'nicht möglich'}; Meldung „${nach.toast}“)`);
+  if (!ok) fehler.push('F100: ungültiges Fähigkeitsziel löst etwas aus: ' + JSON.stringify(nach)); }
 ws.close(); ch.kill();
 console.log(fehler.length ? `\nFEHLER (${fehler.length}):\n  ` + [...new Set(fehler)].join('\n  ') : '\nKonsole rot-frei, keine Fehler.');
 process.exit(fehler.length ? 1 : 0);

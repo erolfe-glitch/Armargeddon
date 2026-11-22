@@ -2,7 +2,7 @@
 // Spiel-Lautstärken und Stimmfiltern wie im Spiel, dazu Mischproben und die Regler Musik/Effekte (gleiche Speicherplätze wie das Spiel).
 // Die Töne selbst lädt die Seite aus src/sound.js (wird nicht kopiert).
 // Aufruf: node tools/tonprobe_bau.mjs   – nach jedem Lauf von tools/sound_bau.mjs neu bauen.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import vm from 'node:vm';
 import { join, dirname } from 'node:path';
@@ -13,7 +13,7 @@ const E = require(join(ROOT, 'src', 'engine.js'));
 
 // Töne und Plätze aus src/sound.js (ohne Daten), Kopfkommentar für die älteren Töne
 const src = readFileSync(join(ROOT, 'src', 'sound.js'), 'utf8');
-const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx);
+const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx); if (existsSync(join(ROOT, 'src', 'sound_pult.js'))) vm.runInContext(readFileSync(join(ROOT, 'src', 'sound_pult.js'), 'utf8'), ctx);   // M9: ausgelagerte Pult-Töne
 const POOLS = ctx.SOUND_POOLS, KEYS = new Set(Object.keys(ctx.SOUNDS));
 const kopf = src.slice(0, src.indexOf('(function (root)'));
 const rows = JSON.parse(readFileSync(join(ROOT, 'entwurf', 'tonplaetze.json'), 'utf8'));
@@ -243,7 +243,8 @@ document.getElementById('stopp').onclick = stoppAlles;
 document.getElementById('streuung').onclick = e => { streuen = !streuen; e.currentTarget.classList.toggle('an', streuen); };
 // Töne nachladen (nach dem Aufbau der Seite)
 const knoepfe = () => document.querySelectorAll('main button'); knoepfe().forEach(b => b.disabled = true);
-const sc = document.createElement('script'); sc.src = 'src/sound.js';
+const sp = document.createElement('script'); sp.src = 'src/sound_pult.js'; sp.async = false; document.body.append(sp);   // M9: nur im Pult wählbare Töne (vor sound.js, feste Reihenfolge)
+const sc = document.createElement('script'); sc.src = 'src/sound.js'; sc.async = false;
 sc.onload = () => { SND = window.SOUNDS || {}; knoepfe().forEach(b => b.disabled = false); document.getElementById('status').textContent = Object.keys(SND).length + ' Töne geladen – antippen zum Abspielen.'; };
 sc.onerror = () => { document.getElementById('status').textContent = 'Töne konnten nicht geladen werden (src/sound.js).'; };
 document.body.append(sc);

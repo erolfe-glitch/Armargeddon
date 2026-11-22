@@ -475,6 +475,7 @@ function kaufNachLage(G, side) {
   if (K.aufkl && !ENVW.NOLAGE_aufkl && eig.some(u => TYPES[u.type].cls === 'art') && !eig.some(u => AUFKL.has(u.type))) return K.aufkl;
   return null;
 }
+function einmalGesperrt(G, side, type) { const T = TYPES[type], hat = f => G.units.some(u => u.side === side && f(TYPES[u.type])); return (T.held && hat(x => x.held)) || (T.stufe3 && hat(x => x.stufe3)) || (T.cmd === 2 && hat(x => x.cmd === 2)); }
 function buy(G) {
   const side = G.side, ev = [];
   G._wish = G._wish || { A: 0, D: 0 }; G._kauf = G._kauf || { A: {}, D: {} };
@@ -483,6 +484,7 @@ function buy(G) {
     const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : W[side];
     const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null, type = lage || wl[G._wish[side] % wl.length];
     if (type && ENVX.OHNEHELD && TYPES[type].held) { G._wish[side]++; continue; }   // Sim: ohne Helden (NOHELD ist schon der Abschalter für „gebunden im Nahkampf“)
+    if (type && !lage && einmalGesperrt(G, side, type)) { G._wish[side]++; continue; }   // M1 (2026-11-22): Held/Stufe 3/General gibt es nur einmal je Schlacht – überspringen, sonst bleibt die Liste daran hängen und die KI kauft nichts mehr
     if (!type || !E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
     if (!hs.length) break;

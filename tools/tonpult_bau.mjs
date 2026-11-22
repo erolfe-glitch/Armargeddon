@@ -16,7 +16,7 @@ const TYPES = E.TYPES;
 
 // Töne und Plätze aus src/sound.js (ohne Daten), Quelldateien aus entwurf/tonplaetze.json
 const src = readFileSync(join(ROOT, 'src', 'sound.js'), 'utf8');
-const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx);
+const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx); if (existsSync(join(ROOT, 'src', 'sound_pult.js'))) vm.runInContext(readFileSync(join(ROOT, 'src', 'sound_pult.js'), 'utf8'), ctx);   // M9: ausgelagerte Pult-Töne
 const POOLS = ctx.SOUND_POOLS, KEYS = Object.keys(ctx.SOUNDS);
 const rows = JSON.parse(readFileSync(join(ROOT, 'entwurf', 'tonplaetze.json'), 'utf8'));
 const DATEI = {}; for (const r of rows) if (r.key && r.key !== '–' && r.f && !r.f.startsWith('(') && !DATEI[r.key]) DATEI[r.key] = r.f;
@@ -87,6 +87,8 @@ function slotsVon(t) {
   else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); }   // F8: Wagenknarren entfernt (pfiff wie ein Zug)
   else if (k === 'walker') { S('zug', 'ziehen', fig ? 'Ziehen (Maschinenschritte)' : 'Ziehen (Kettenrollen)', fig ? 'mech' : 'tank', fig ? 0.5 : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
     S('zug', 'walzen', 'Draht niederwalzen', 'ueberrollen', 0.55, { gruppe: 'fahrzeug', hin: 'Über eine Barrikade: dasselbe mit 0,5.' }); }
+  else if (t === 'kuerass') S('zug', 'ziehen', 'Ziehen: schwere Ritter-Schritte (im Takt)', 'held_schritt_ritter', 0.55, { gruppe: 'held', kette: 'zug', hin: 'Je Schritt ein Stampfen (M8, wie im Spiel).' });   // M8 (2026-11-22)
+  else if (t === 'faust') { S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.4, { gruppe: 'bewegung', kette: 'zug' }); S('zug', 'dampf', 'Ziehen: leiser Dampfstoß (jedes zweite Mal)', 'held_dampfstoss', 0.22, { gruppe: 'held' }); }   // M8
   else if (T.mech || T.dauerfeuer) S('zug', 'ziehen', 'Ziehen (Kampfanzug)', 'mech', 0.45, { gruppe: 'bewegung', kette: 'zug' });
   else {
     if (fig === 'dog') S('zug', 'hund', 'Hund beim Ziehen', 'dog', 0.5, { gruppe: 'bewegung', kette: 'zug' });
@@ -135,11 +137,14 @@ function slotsVon(t) {
   if (T.broadside) S('schuss', 'breit', 'Breitseite (zweiter Schuss)', kanone(t, T), 0.6, { gruppe: 'kanone', hin: 'Zwei Schüsse auf zwei Ziele, je derselbe Ton.' });
   // Nahkampf (melee/counter: strikeSnd)
   { const tank = k === 'walker' && !T.mech, base = sd === 'D' ? 'nahD' : 'nahA';
-    const p = T.mech ? 'heavy' : tank ? 'armor' : T.suit ? 'sword' : k === 'cav' ? 'saebel' : fig === 'raider' || fig === 'brawler' ? 'axe' : t === 'oger' ? 'neu3_bestie' : base;   // F80: Sturmtrupps schlagen normal zu
-    if (!T.keinNah) S('nah', 'schlag', T.cls === 'walker' && fig === 'drill' ? 'Bohrstoß (ein langer Stoß)' : 'Schlag', p, T.mech || tank ? 0.7 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' });
+    const p = t === 'oger' ? 'neu3_bestie' : t === 'faust' ? 'held_faustboom' : t === 'kuerass' ? 'held_saege_schnitt' : T.mech ? 'heavy' : tank ? 'armor' : T.suit ? 'sword' : k === 'cav' ? 'saebel' : fig === 'raider' || fig === 'brawler' ? 'axe' : base;   // M8 (2026-11-22): Löwenoger und Helden wie im Spiel (vorher axe bzw. sword)
+    if (t === 'faust') S('nah', 'ausholen', 'Ausholen: Aufladen', 'held_aufladen', 0.5, { gruppe: 'held' });
+    if (t === 'kuerass') { S('nah', 'ausholen', 'Ausholen: Kettensäge springt an', 'held_saege_start', 0.55, { gruppe: 'held' }); S('nah', 'ausholen_schrei', 'Ausholen: Kampfschrei hinter dem Helm (nur beim Angriff)', 'held_ritter_schrei', 0.45, { gruppe: 'held' }); }   // F80: Sturmtrupps schlagen normal zu
+    if (!T.keinNah) S('nah', 'schlag', T.cls === 'walker' && fig === 'drill' ? 'Bohrstoß (ein langer Stoß)' : t === 'faust' ? 'Schlag: Hydraulik-Boom' : t === 'kuerass' ? 'Schlag: Säge heult auf und schneidet' : 'Schlag', p, T.mech || tank ? 0.7 : T.held ? 0.65 : t === 'oger' ? 0.5 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' });
     if (k === 'inf' && !T.suit && !T.cmd) S('nah', 'spaten', 'Spatenhiebe im Grabenkampf', 'schaufel', 0.4, { gruppe: 'handgriff', hin: 'In 60 % der Schläge (F32).' });
     if (['raeumer', 'sturm'].includes(t)) S('nah', 'flinte', 'Kurzer Schuss im Grabenkampf', 'flinte', 0.5, { gruppe: 'gewehr' });
     if (t === 'oger') { S('nah', 'fleisch', 'Treffer ins Fleisch', 'neu3_fleisch', 0.5, { gruppe: 'nahkampf', hin: 'Zusammen mit der Tiger-Attacke (Enricos Wahl 21.11.).' }); S('nah', 'biss', 'Treffer gegen Gepanzerte (Biss auf Panzerung)', 'neu3_biss', 0.5, { gruppe: 'nahkampf', hin: 'Statt des Fleisch-Treffers gegen Fahrzeuge, Schreiter und Kampfanzüge.' }); }
+    if (t === 'faust') S('nah', 'nachdampf', 'Nach dem Schlag: Dampfstoß', 'held_dampfstoss', 0.35, { gruppe: 'held' });
     if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'oger_bruell', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
     else if (k === 'storm') S('nah', 'schrei', 'Kampfschrei beim Sturm', 'cry', 0.45, { gruppe: 'ruf' });
     else if (fuss && !T.suit) S('nah', 'schrei', 'Kampfschrei (manchmal)', 'cry', 0.35, { gruppe: 'ruf', hin: 'In 35 % der Schläge, wenn beide Seiten Fußtruppen sind.' });

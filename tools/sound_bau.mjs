@@ -5,7 +5,7 @@
 // Alte Einträge in src/sound.js bleiben erhalten (außer „drop“), neue kommen als <pool>_<n> dazu; SOUND_POOLS ordnet Plätze und Seiten zu.
 // Kopien der neuen Töne: ui-quelle/toene/<schlüssel>.aac. Aufruf: node tools/sound_bau.mjs   (Server: python -m http.server 8765 im Projektordner)
 import { spawn } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -79,7 +79,7 @@ const PROC = `async (url, o) => {
 // Alte Töne aus src/sound.js lesen (Schlüssel → Daten-URL), Kopfkommentar behalten
 const old = readFileSync(join(ROOT, 'src', 'sound.js'), 'utf8');
 const head = old.slice(0, old.indexOf('(function (root)')).split('\n').filter(l => !l.startsWith('// Neu (2026-11-16, tools/sound_bau') && !l.startsWith('// neue Töne als <platz>_<n>')).join('\n');
-const OLD = {}; for (const m of old.matchAll(/^  ([A-Za-z0-9_]+): '(data:audio\/[^']+)',?$/gm)) OLD[m[1]] = m[2];
+const OLD = {}; for (const t of [old, existsSync(join(ROOT, 'src', 'sound_pult.js')) ? readFileSync(join(ROOT, 'src', 'sound_pult.js'), 'utf8') : '']) for (const m of t.matchAll(/^  ([A-Za-z0-9_]+): '(data:audio\/[^']+)',?$/gm)) OLD[m[1]] = m[2];   // M9: auch die ausgelagerten Pult-Töne
 const drop = new Set(SPEC.drop || []);
 // wiederholbar: Töne aus einem früheren Lauf (<platz>_<n>) werden neu erzeugt, nicht als alt übernommen
 const POOLNAMES = new Set([...SPEC.eintraege.map(e => e.pool), ...(SPEC.dropPools || [])]); /* dropPools: entfallene Plätze, ihre <platz>_<n> verschwinden */ for (const k of Object.keys(OLD)) { const m = k.match(/^(.+)_(\d+)$/); if (m && POOLNAMES.has(m[1])) delete OLD[k]; }
@@ -112,5 +112,6 @@ for (const k in NEW) L.push(`  ${k}: '${NEW[k]}',`);
 L.push('};', 'root.SOUND_POOLS = ' + JSON.stringify(POOLS) + ';', '})(this);', '');
 writeFileSync(join(ROOT, 'src', 'sound.js'), L.join('\n'));
 writeFileSync(join(ROOT, 'entwurf', 'tonplaetze.json'), JSON.stringify(rows, null, 1));
+await new Promise(res => spawn(process.execPath, [join(ROOT, 'tools', 'ton_teilen.mjs')], { stdio: 'inherit' }).on('exit', res));   // M9: nur im Pult wählbare Töne nach src/sound_pult.js
 console.log('src/sound.js', Math.round(L.join('\n').length / 1024), 'KB,', keep.length, 'alte +', Object.keys(NEW).length, 'neue Töne,', Object.keys(POOLS).length, 'Plätze');
 process.exit(0);

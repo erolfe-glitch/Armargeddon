@@ -757,7 +757,7 @@
   "dur": 0.34,
   "src": 9.03,
   "start": 0.98,
-  "gain": -10.2,
+  "gain": -4.5,
   "kb": 4,
   "note": "Kürassier: schwerer Ritter-Schritt (Stampfen, je Schritt) (Helden, Enrico 2026-11-21 17:03/17:11)"
  },
@@ -769,7 +769,7 @@
   "dur": 0.36,
   "src": 9.03,
   "start": 1.32,
-  "gain": -8.9,
+  "gain": -1.5,
   "kb": 4
  },
  {
@@ -780,7 +780,7 @@
   "dur": 0.4,
   "src": 9.03,
   "start": 4.28,
-  "gain": -12.1,
+  "gain": -7.5,
   "kb": 5
  },
  {
@@ -791,7 +791,7 @@
   "dur": 0.4,
   "src": 9.03,
   "start": 6.92,
-  "gain": -12.5,
+  "gain": -8.5,
   "kb": 5
  },
  {

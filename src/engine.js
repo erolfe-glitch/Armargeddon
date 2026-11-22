@@ -84,10 +84,10 @@ const TYPES = {
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas; gegen Fahrzeuge und Schreiter nur ×0,5. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', abil: 'rollen', keinNah: true, zweit: { name: 'Seiten-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben. Kanone vorn, Seiten-MG (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus (Aktion und alle Bewegung, danach 3 Runden Pause). Selten Panne: 3 Runden aus.',
+    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben. Kanone vorn, Seiten-MG (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus (Aktion und alle Bewegung, höchstens alle 3 Runden). Selten Panne: 3 Runden aus.',
     real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
   sturmpz: { side: 'D', name: 'Sturmpanzer', cls: 'walker', abil: 'rollen', keinNah: true, broadside: true, zweit: { name: 'Bord-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben, selten Panne. Breitseite: nach dem ersten Schuss ein zweiter auf ein anderes Ziel bis 2 Felder, beide ×0,6 (eine Aktion). Bord-MG der Bordschützen (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus (Aktion und alle Bewegung, danach 3 Runden Pause).',
+    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben, selten Panne. Breitseite: nach dem ersten Schuss ein zweiter auf ein anderes Ziel bis 2 Felder, beide ×0,6 (eine Aktion). Bord-MG der Bordschützen (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus (Aktion und alle Bewegung, höchstens alle 3 Runden).',
     real: 'Der deutsche A7V hatte 18 Mann Besatzung, eine Kanone und sechs Maschinengewehre ringsum. Gebaut wurden nur 20 Stück; bei Villers-Bretonneux trafen im April 1918 erstmals Panzer auf Panzer.' },
   reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
@@ -136,7 +136,7 @@ Object.assign(TYPES, {
     can: 'Schnell (5 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +2 Bewegungspunkte, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
     real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
   pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', cutter: true, fig: 'sapper', sapper: true, recover: true, abil: 'charge', atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
-    can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Haftladung an ein Nachbarfeld (Aktion, 2 Runden Pause): schwerer Schaden, doppelt gegen Kolosse (dazu 50 % Panne); Bunker und Barrikaden werden Trichter, Draht wird zerrissen. Bergt festgefahrene Fahrzeuge.',
+    can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Haftladung an ein Nachbarfeld (Aktion, alle 2 Runden): schwerer Schaden, doppelt gegen Kolosse (dazu 50 % Panne); Bunker und Barrikaden werden Trichter, Draht wird zerrissen. Bergt festgefahrene Fahrzeuge.',
     real: 'Pioniere schnitten nachts Gassen in den Draht, legten Sprengladungen und gruben Stollen unter die gegnerischen Linien.' },
   raeumer: { side: 'A', name: 'Grabenräumer', cls: 'storm', cutter: true, abil: 'pzgranate', fig: 'raider', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Nahkämpfer ohne Gewehr. Schneidet Draht vom Nachbarfeld aus (Aktion). Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Panzergranate (Aktion, alle 2 Runden): 1–2 Felder gegen Fahrzeuge und Schreiter.',
@@ -171,17 +171,17 @@ Object.assign(TYPES, {
   // Neue Einheiten im Stil Retro-Zukunft (2026-11-20, Bögen ui-quelle/figuren/konkordat_loewenoger.png, aschenwacht_eiserne_huenen.png);
   // fig = alte Ersatzzeichnung (Grabenräumer bzw. Panzerknecht), nur solange die neuen Bilder laden (ui.js FIGMAP)
   oger: { side: 'A', name: 'Löwenoger', cls: 'storm', fig: 'raider', abil: 'sprung', atk: 8, def: 5, mor: 9, mv: 4, rng: 1, fs: 6,
-    can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark (Pranken gegen Fußtruppen ×1,5, gegen Panzer ×1). Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Schrotflinte nur auf 1 Feld (gegen Fußtruppen ×1,5, an Panzern wirkungslos). Gegner halten ihn nicht auf. Sprungangriff (Aktion und alle BP, 2 Runden Pause, nur aus dem Stand): bis 2 Felder neben einen Gegner, auch über Draht und Gräben, sofort Nahkampf.',
+    can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark (Pranken gegen Fußtruppen ×1,5, gegen Panzer ×1). Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Schrotflinte nur auf 1 Feld (gegen Fußtruppen ×1,5, an Panzern wirkungslos). Gegner halten ihn nicht auf. Sprungangriff (Aktion und alle BP, alle 2 Runden, nur aus dem Stand): bis 2 Felder neben einen Gegner, auch über Draht und Gräben, sofort Nahkampf.',
     real: 'Amerikanische Soldaten nahmen 1918 Vorderschaftrepetierflinten (Winchester M1897, „Grabenflinte“) mit in den Grabenkampf. Deutschland protestierte im September 1918 offiziell gegen diese Waffe.' },
   huenen: { side: 'D', name: 'Eiserne Hünen', cls: 'inf', fig: 'suitD', suit: true, mgfire: true, pin: true, dauerfeuer: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 3, fs: 7,
     can: 'Riesen in Rüstung mit schwerem MG aus der Hüfte (3 Felder, kein Aufbauen, jeder Treffer hält nieder). Langsam. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht hält nicht auf. Stark im Nahkampf. Dauerfeuer: eine zweite Salve in derselben Runde, danach eine eigene Runde kein Schuss.',
     real: 'Das deutsche MG 08 wog mit Schlitten und Kühlwasser rund 60 Kilogramm und brauchte eine Bedienung. MG-Schützen trugen ab 1916 teils Stahlbrustpanzer von etwa zehn Kilogramm. Das leichtere MG 08/15 kam 1917.' },
   // Helden (2026-11-21): Einzelmodell, höchstens einer je Armee und Schlacht (auch wenn er gefallen ist); Aura, Spezialschlag, klare Schwäche; fällt er, verliert die Seite Moral
   faust: { side: 'A', name: 'Die Rote Faust', cls: 'storm', fig: 'suitA', suit: true, held: true, abil: 'durchbruch', aura: 'standhaft', atk: 9, def: 6, mor: 10, mv: 3, rng: 1, fs: 2,
-    can: 'Held, höchstens einer je Armee: Oberst im Kampfanzug mit dampfgetriebener Schlagfaust. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Durchbruch (Aktion und alle BP, 2 Runden Pause, nur aus dem Stand): stürmt bis 2 Felder geradeaus in eine Einheit (keine Panzer oder Schreiter) – 26 Schaden, Moral −15, niedergehalten, sie wird ein Feld zurückgeschleudert (an einer Wand ×1,5). Standhaft: eigene Einheiten neben ihm verlieren unter Beschuss nur halb so viel Moral. Schwäche: kaum Fernkampf (Revolver, 1 Feld). Fällt er, verliert die ganze Seite Moral (−10).',
+    can: 'Held, höchstens einer je Armee: Oberst im Kampfanzug mit dampfgetriebener Schlagfaust. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Durchbruch (Aktion und alle BP, alle 2 Runden): stürmt in eine Einheit daneben oder mit Anlauf (nur aus dem Stand) bis 2 Felder geradeaus (keine Panzer oder Schreiter) – bis 26 Schaden, gegen Gepanzerte weniger, Moral −15, niedergehalten, sie wird ein Feld zurückgeschleudert (an einer Wand ×1,5). Standhaft: er selbst und eigene Einheiten neben ihm verlieren unter Beschuss nur halb so viel Moral. Schwäche: kaum Fernkampf (Revolver, 1 Feld). Fällt er, verliert die ganze Seite Moral (−10).',
     real: 'Offiziere gingen beim Sturm meist vorneweg und trugen dabei oft nur einen Revolver, bei den Briten etwa den Webley Mk VI (ab 1915). Entsprechend hoch waren ihre Verluste.' },
   kuerass: { side: 'D', name: 'Der Eiserne Kürassier', cls: 'storm', fig: 'suitD', suit: true, held: true, abil: 'hinrichtung', aura: 'furcht', stecken: true, atk: 10, def: 8, mor: 10, mv: 2, rng: 0, fs: 0,
-    can: 'Held, höchstens einer je Armee: riesiger gepanzerter Ritter mit Kettenklinge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Hinrichtung (Aktion, 3 Runden Pause): eine angeschlagene Einheit daneben (unter 40 Stärke, keine Panzer oder Schreiter) wird sofort vernichtet. Furcht: Gegner neben ihm verlieren zu Beginn ihrer Runde Moral (−4). Schwäche: langsam (2 Bewegung), kein Fernkampf, bleibt in Schlamm, Sumpf und Gräben leicht stecken (30 %, dann eine Runde fest). Fällt er, verliert die ganze Seite Moral (−10).',
+    can: 'Held, höchstens einer je Armee: riesiger gepanzerter Ritter mit Kettenklinge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Hinrichtung (Aktion, alle 3 Runden): eine angeschlagene Einheit daneben (unter 40 Stärke, keine Panzer oder Schreiter) wird sofort vernichtet. Furcht: Gegner neben ihm (keine Fahrzeuge oder Schreiter) verlieren zu Beginn ihrer Runde Moral (−4), höchstens bis 5; das allein löst keine Flucht aus. Schwäche: langsam (2 Bewegung), kein Fernkampf, bleibt in Schlamm, Sumpf und Gräben leicht stecken (30 %, dann eine Runde fest). Fällt er, verliert die ganze Seite Moral (−10).',
     real: 'Französische Kürassiere ritten im August 1914 noch mit Brustpanzer ins Feld. Gegen Maschinengewehre half er nicht; ab 1916 kämpften die Kürassiere abgesessen als Infanterie.' },
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Motorisierte Kampfanzüge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Stark im Nahkampf.',
@@ -196,7 +196,7 @@ Object.assign(TYPES, {
     can: 'Leichte Artillerie: 5 Felder Reichweite, kein Gas. Direkter Schuss bis 3 Felder trifft Kolosse und Kampfmaschinen ×2,5. Aufgeprotzt zieht sie 3 Felder. Im Nahkampf wehrlos.',
     real: 'Die britische 18-Pfünder-Feldkanone war das wichtigste Geschütz der britischen Armee. Bis 1918 verschoss sie rund 100 Millionen Granaten.' },
   fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 6, relay: true, abil: 'strike', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Feuerschlag (Aktion und alle BP, 3 Runden Pause): wie ein Haubitzenschuss auf ein Feld in Sicht (bis 6 Felder), 25 % Streuung. Anführer bis 3 Felder können ihre Befehle eine Runde früher wieder geben.',
+    can: 'Feuerschlag (Aktion und alle BP, alle 3 Runden): wie ein Haubitzenschuss auf ein Feld in Sicht (bis 6 Felder), 25 % Streuung. Anführer bis 3 Felder können ihre Befehle eine Runde früher wieder geben.',
     real: 'Feldtelefone verbanden die Gräben mit den Batterien. Die Leitungen wurden tief eingegraben, rissen im Trommelfeuer aber trotzdem ständig.' },
   pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', cutter: true, fig: 'sapperD', sapper: true, recover: true, wirelayer: true, abil: 'mine', mines: 3, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Je Runde Draht ziehen (aufs Feld, in das er blickt) oder eine Mine auf ein freies Nachbarfeld (3 Stück): unsichtbar, wer hineinzieht, nimmt Schaden und bleibt stehen. Danach kein Angriff mehr.',
@@ -269,13 +269,13 @@ const COST = {}; for (const k in TYPES) COST[k] = costParts(k).total;
 // Paket 2: Skirmish-Trupps (Bögen des Nutzers)
 Object.assign(TYPES, {
   rauch: { side: 'A', name: 'Rauchwerfer-Trupp', cls: 'inf', fig: 'smoke', abil: 'smoke', atk: 2, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
-    can: 'Nebelwand (Aktion, 3 Runden Pause): Feld bis 3 Felder und seine Nachbarn bis zur nächsten eigenen Runde im Nebel. Ziel im Nebel: Beschuss ×0,5; Schütze im Nebel ×0,75; keine Sicht hindurch. Vor dem Vorrücken legen.',
+    can: 'Nebelwand (Aktion, alle 3 Runden): Feld bis 3 Felder und seine Nachbarn bis zur nächsten eigenen Runde im Nebel. Ziel im Nebel: Beschuss ×0,5; Schütze im Nebel ×0,75; keine Sicht hindurch. Vor dem Vorrücken legen.',
     real: 'Bei Loos legten die Briten im September 1915 neben Gas auch künstlichen Nebel aus Rauchkerzen, um den Angriff zu verschleiern. Später verschossen Stokes-Mörser Nebelgranaten.' },
   mineur: { side: 'A', name: 'Mineure (Tunnelgräber)', cls: 'inf', fig: 'miner', abil: 'tunnel', ladungen: 3, sapper: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Stollen graben (Aktion, alle 4 Runden): unter einen Graben, Bunker oder ein Gebäude bis 2 Felder. Zwei eigene Runden später fliegt das Feld in die Luft (schwerer Schaden, wird zum Trichter). Höchstens 3 Ladungen je Schlacht.',
     real: 'Bei Messines zündeten britische Tunnelbauer am 7. Juni 1917 19 Minen unter den deutschen Stellungen. Die Explosionen waren bis nach London zu hören.' },
   werkstatt: { side: 'A', name: 'Versorgungstrupp', cls: 'medic', fig: 'wrench', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, 2 Runden Pause), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, 2 Runden Pause): ein MG oder Geschütz daneben schießt noch einmal.',
+    can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, alle 2 Runden), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, alle 2 Runden): ein MG oder Geschütz daneben schießt noch einmal.',
     real: 'Bei Cambrai 1917 fiel ein großer Teil der britischen Panzer durch Pannen und Festfahren aus. Bergungs- und Werkstattzüge holten sie zurück; Trägertrupps brachten Granaten und Gurte nach vorn.' },
   ballon: { side: 'A', name: 'Ballonbeobachter', cls: 'inf', fig: 'balloon', relay: true, abil: 'mark', aerial: true, fessel: true, spot: 6, atk: 0, def: 1, mor: 4, mv: 2, rng: 0, fs: 0,
     can: 'Fesselballon, wehrlos. Aufgestiegen: sieht 6 Felder über Wald und Häuser, zieht nicht. Einholen (1 Bewegungspunkt): zieht 2 Felder, sieht 4 Felder wie Fußtruppen, kein Markieren. Aufsteigen kostet alle Bewegung, nicht die Aktion. Ziel markieren (Aktion): ein Feld in Sicht bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar.',
@@ -287,7 +287,7 @@ Object.assign(TYPES, {
     can: 'Gas schadet ihm und seinen Nachbarn nicht, auch keine Vergiftung. Entgiften (Aktion, alle 2 Runden): löst Gaswolken bis 1 Feld auf.',
     real: 'Gasschutzoffiziere schulten die Truppe im schnellen Aufsetzen der Masken und prüften die Filter. Nach einem Angriff wurden Unterstände mit Feuer und Chlorkalk entgiftet.' },
   munition: { side: 'D', name: 'Versorgungstrupp', cls: 'medic', fig: 'ammo', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
-    can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, 2 Runden Pause), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, 2 Runden Pause): ein MG oder Geschütz daneben schießt noch einmal.',
+    can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, alle 2 Runden), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, alle 2 Runden): ein MG oder Geschütz daneben schießt noch einmal.',
     real: 'Ein MG 08 verschoss rund 500 Schuss in der Minute. Munitionsträger schleppten die schweren Gurtkästen unter Feuer nach vorn; Instandsetzungstrupps flickten liegengebliebene Panzer.' },
   pirsch: { side: 'D', name: 'Pirschjäger', cls: 'inf', fig: 'stalker', pin: true, hidden: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 4, fs: 3,
     can: 'Getarnt: nur aus dem Nachbarfeld angreifbar, bis er schießt (dann eine gegnerische Runde sichtbar). Jeder Treffer hält nieder.',
@@ -346,7 +346,7 @@ const TERRAIN = {
   bahn:    { name: 'Bahndamm', cost: 1, info: 'Abwehr ×1,3 gegen Beschuss. Fester Untergrund: Kolosse kommen gut voran.',
              real: 'Eisenbahnen brachten Truppen und Granaten an die Front. Bahndämme dienten oft als Deckung.' },
   // Sankt Ruß (2026-11-19)
-  schiff:  { name: 'Kirche', cost: 1, info: 'Nur Fußtruppen und Anführer kommen hinein. Abwehr ×1,8, halber Moralverlust. Versperrt die Sicht. Treffer von Artillerie, Mörsern und Kanonen bringen die Kirche zum Einsturz.',
+  schiff:  { name: 'Kirche', cost: 1, info: 'Nur Fußtruppen und Anführer kommen hinein (keine Helden). Abwehr ×1,8, halber Moralverlust. Versperrt die Sicht. Treffer von Artillerie, Mörsern und Kanonen bringen die Kirche zum Einsturz.',
              real: 'Ab September 1914 lag die Kathedrale von Reims unter deutschem Artilleriefeuer; das Dach brannte aus, die Glocken schmolzen.' },
   turm:    { name: 'Kirchturm', cost: 1, info: 'Wie die Kirche. Wer im Turm steht, schießt und sieht 1 Feld weiter. Stürzt mit der Kirche ein.',
              real: 'Kirchtürme waren begehrte Beobachtungsposten. In Albert hing die vergoldete Madonna ab 1915 nach einem Treffer fast waagerecht vom Turm.' },
@@ -704,7 +704,7 @@ function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
   if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt'].includes(t) && k !== 'cav') return 1;   // Straße
   if (t === 'canal') return 99;
-  if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // Kirche: nur Fußtruppen und Anführer
+  if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art' || TYPES[u.type].held)) return 99;   // Kirche: nur Fußtruppen und Anführer; K11 (Enrico 2026-11-22): Helden nicht ins Schiff und nicht auf den Turm
   if ((t === 'garten' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
   if (k === 'cav') { if (['wire', 'forest', 'wald', 'barrikade', 'fabrik'].includes(t)) return 99; if (t === 'crater' || t === 'trench') return 3; }
   if (k === 'walker') { const sch = fahrzeugArt(u) === 'schreiter';   // Fahrplan 2: Graben/Trichter teurer, Schreiter kommen durch Wald (3)
@@ -1583,6 +1583,20 @@ function abilTargets(G, u) {
   }
   return out;
 }
+// K4 (Enrico 2026-11-22): Anlauf von Durchbruch und Sturmrollen nach den normalen Zugregeln (moveUnit: Minen, Sperrfeuer, Feuerbereitschaft, Freischlag, Feuer, Gas, Draht);
+// kommt der Angreifer nicht unversehrt am Anlauffeld an (Halt, niedergehalten, geflohen), entfällt der Stoß – die Fähigkeit ist trotzdem verbraucht.
+function anlauf(G, u, mitte, ev) {
+  ev.push(...moveUnit(G, u, mitte[0], mitte[1], { path: [mitte], ap: 0, rush: true }));
+  return !G.over && alive(u) && u.status === 'ok' && u.c === mitte[0] && u.r === mitte[1] && !(u.supp > 0) && !(u.stuck > 0) && !(u.broken > 0);
+}
+// K4: das zurückgeschleuderte Ziel löst eine Mine aus; ein aufgebautes MG wird durch den Rückstoß abgebaut
+function rueckstossFolgen(G, d, ev) {
+  if (TYPES[d.type].mg && d.setup) { d.setup = false; d.ow = false; d.sperr = 0; ev.push({ t: 'teardown', u: d.id }); }
+  const mi = G.mines.findIndex(k => k.c === d.c && k.r === d.r && k.side !== d.side);
+  if (mi >= 0) { G.mines.splice(mi, 1); ev.push({ t: 'mine', u: d.id, c: d.c, r: d.r }); applyDamage(G, null, d, P.MINE_DMG * (0.8 + G.rng() * 0.4), 'front', ev, { ranged: true }); }
+  if (alive(d) && fireAt(G, d.c, d.r)) burn(G, d, ev);
+  claimObjective(G, d);
+}
 function canAbil(G, u, c, r) { return abilTargets(G, u).some(([a, b]) => a === c && b === r); }
 function useAbil(G, u, c, r) {
   if (!canAbil(G, u, c, r)) return [];
@@ -1627,24 +1641,24 @@ function useAbil(G, u, c, r) {
     if (alive(d) && G.rng() < P.PZG_PANNE) { d.broken = Math.max(d.broken || 0, P.PANNE_RUNDEN + 1); ev.push({ t: 'breakdown', u: d.id }); }
   }
   else if (k === 'rollen' && rw) {   // F54 Sturmrollen: Anlauf, ein Aufprall, Ziel rutscht zurück
-    const d = unitAt(G, c, r), von = [u.c, u.r];
-    if (rw.mitte) { const h = hex(G, rw.mitte[0], rw.mitte[1]); u.c = rw.mitte[0]; u.r = rw.mitte[1]; u.dug = false; u.mvd = (u.mvd || 0) + 1; if (h.t === 'wire') { h.t = 'open'; ev.push({ t: 'crush', u: u.id, c: u.c, r: u.r }); } claimObjective(G, u); }
+    const d = unitAt(G, c, r);
+    if (rw.mitte && !anlauf(G, u, rw.mitte, ev)) { u.ap = 0; u.bp = 0; u.attacked = true; u.moved = true; ev.push(...checkEnd(G)); return ev; }   // K4
     const ziel = step(d.c, d.r, rw.richtung), frei = inMap(ziel[0], ziel[1]) && !unitAt(G, ziel[0], ziel[1]) && cost(G, d, ziel[0], ziel[1]) < 99 && hex(G, ziel[0], ziel[1]).t !== 'wire';
-    ev.push({ t: 'rollen', u: u.id, d: d.id, path: rw.mitte ? [von, rw.mitte] : null, wand: !frei });
+    ev.push({ t: 'rollen', u: u.id, d: d.id, path: null, wand: !frei });   // K4: der Anlauf läuft schon als normaler Zug (moveUnit)
     const dc = d.c, dr = d.r; applyDamage(G, u, d, rollenDmg(G, u, d, !frei) * (0.8 + G.rng() * 0.4), 'front', ev, { morPlus: P.ROLLEN_MOR });
     if (alive(d) && d.status === 'ok') { if (!d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
-      if (frei && d.c === dc && d.r === dr) { d.c = ziel[0]; d.r = ziel[1]; d.dug = false; ev.push({ t: 'rollstoss', u: d.id, path: [[dc, dr], ziel] }); } }
-    u.ap = 0; u.bp = 0; u.attacked = true; u.moved = true;
+      if (frei && d.c === dc && d.r === dr) { d.c = ziel[0]; d.r = ziel[1]; d.dug = false; ev.push({ t: 'rollstoss', u: d.id, path: [[dc, dr], ziel] }); rueckstossFolgen(G, d, ev); } }
+    ev.push(...checkEnd(G)); u.ap = 0; u.bp = 0; u.attacked = true; u.moved = true;
   }
   else if (k === 'durchbruch' && rw) {   // Held Rote Faust: Anlauf bis 2 Felder, Schlag, Ziel ein Feld zurück (wie Sturmrollen, ohne Draht niederzuwalzen)
-    const d = unitAt(G, c, r), von = [u.c, u.r];
-    if (rw.mitte) { u.c = rw.mitte[0]; u.r = rw.mitte[1]; u.dug = false; u.mvd = (u.mvd || 0) + 1; claimObjective(G, u); }
+    const d = unitAt(G, c, r);
+    if (rw.mitte && !anlauf(G, u, rw.mitte, ev)) { u.ap = 0; u.bp = 0; u.attacked = true; u.moved = true; ev.push(...checkEnd(G)); return ev; }   // K4
     const ziel = step(d.c, d.r, rw.richtung), frei = inMap(ziel[0], ziel[1]) && !unitAt(G, ziel[0], ziel[1]) && cost(G, d, ziel[0], ziel[1]) < 99 && hex(G, ziel[0], ziel[1]).t !== 'wire';
-    ev.push({ t: 'durchbruch', u: u.id, d: d.id, path: rw.mitte ? [von, rw.mitte] : null, wand: !frei });
+    ev.push({ t: 'durchbruch', u: u.id, d: d.id, path: null, wand: !frei });   // K4: Anlauf schon als normaler Zug
     const dc = d.c, dr = d.r, dmg = P.DURCH_DMG * (0.4 + 0.6 * u.str / 10) * (TYPES[d.type].suit ? 0.5 : 1) * (frei ? 1 : P.ROLLEN_WAND) / Math.max(1, TYPES[d.type].def / 4);
     applyDamage(G, u, d, dmg * (0.8 + G.rng() * 0.4), 'front', ev, { morPlus: P.DURCH_MOR });
     if (alive(d) && d.status === 'ok') { if (!d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
-      if (frei && d.c === dc && d.r === dr) { d.c = ziel[0]; d.r = ziel[1]; d.dug = false; ev.push({ t: 'rollstoss', u: d.id, path: [[dc, dr], ziel] }); } }
+      if (frei && d.c === dc && d.r === dr) { d.c = ziel[0]; d.r = ziel[1]; d.dug = false; ev.push({ t: 'rollstoss', u: d.id, path: [[dc, dr], ziel] }); rueckstossFolgen(G, d, ev); } }
     ev.push(...checkEnd(G)); u.ap = 0; u.bp = 0; u.attacked = true; u.moved = true;
   }
   else if (k === 'hinrichtung') {   // Held Kürassier: angeschlagene Einheit sofort vernichtet

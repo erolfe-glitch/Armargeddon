@@ -245,7 +245,8 @@ let meldT = 0; function meldung(t) { const s = document.getElementById('status')
   r.oninput = () => { effektVol = r.value / 100; b.textContent = r.value; try { localStorage.setItem('arm.effektvol', effektVol); } catch (e) {} for (const a of laufend) if (a._vol != null) try { a.volume = Math.min(1, a._vol * effektVol); } catch (e) {} }; }
 liste(); pult();
 // Töne nachladen
-{ const sc = document.createElement('script'); sc.src = 'src/sound.js';
+{ const sp = document.createElement('script'); sp.src = 'src/sound_pult.js'; sp.async = false; document.body.append(sp);   // M9: nur im Pult wählbare Töne (vor sound.js, feste Reihenfolge)
+  const sc = document.createElement('script'); sc.src = 'src/sound.js'; sc.async = false;
   sc.onload = () => { SND = window.SOUNDS || {}; const n = Object.values(AEND).reduce((a, x) => a + Object.keys(x).length, 0); document.getElementById('status').textContent = Object.keys(SND).length + ' Töne geladen · ' + n + ' eigene Wahlen, gespeichert für ' + (location.origin === 'null' ? 'diese Datei' : location.host); pult(); };   // Hinweis: die Auswahl liegt je Adresse getrennt (lokal ≠ GitHub Pages)
   sc.onerror = () => { document.getElementById('status').textContent = 'Töne konnten nicht geladen werden (src/sound.js).'; };
   document.body.append(sc); }
