@@ -1,3 +1,140 @@
+## 2026-11-22 – Paket H abgeschlossen (Prüfliste 2 + Spieltest Runde 5, F100) (`314fc93`, `30c4e01`)
+
+Nachtarbeit wie gewünscht. Alles ist committet und gepusht, `index.html` erst am Paketende (H2).
+- **Tests:** test_partie fehlerfrei bei 1280/1920/2560 px, mit neuen Prüfungen für F88, F89, F90, F97 und F100. test_regeln, test_belegung, test_draht (jetzt ohne Fehlalarm) und test_kommentare in Ordnung.
+
+### Bitte entscheiden (übersprungen oder offen)
+1. **Balance nach K4 (Anlauf nach normalen Zugregeln):**
+   - **Messung Grauwall** (je 200 Schlachten, Startwerte 1–4): Konkordat **55,5 % statt 52,0 %**.
+     - Neu: 58, 54, 60, 50 %.
+     - Alt: 53, 50, 56, 49 %.
+   - **Sankt Ruß** (Startwert 1): 56–57 % statt 53 %.
+   - **Vermutete Ursache:** Das Sturmrollen der Kolosse (Konkordat rollt etwa 10-mal je Schlacht) löst jetzt wie jeder Zug auch die Kolossfurcht (Moral) bei nahen Gegnern aus. Minen, Sperrfeuer und Feuerbereitschaft bremsen den Anlauf dagegen kaum.
+   - **Möglichkeiten:**
+     - (a) So lassen.
+     - (b) Beim Anlauf keine Kolossfurcht.
+     - (c) Rollen-Schaden leicht senken.
+   - Ich habe nichts nachgestellt.
+2. **Ablauf Durchbruch:** Durch K4 läuft die Faust jetzt erst als normaler Zug ans Ziel; danach kommen Titel und Schlag. Soll der Titel schon vor dem Anlauf kommen?
+3. **F88 Haken:** Nach der Berater-Regel ist eine Einheit erst fertig, wenn auch Ziehen nicht mehr geht. Mörser, Minenwerfer und Schützen, die schießen, ohne vorher zu ziehen, bekommen deshalb keinen Haken. Neu steht im Bedienfeld „Aktion verbraucht, kann noch ziehen – noch nicht fertig“. Passt das so?
+4. **F91 ältere Pult-Wahlen:**
+   - Sechs Wahlen stehen nur in älteren Exporten, nicht im neuesten: Schlag bei Sturmtrupp, Eingreiftrupp, Sturmpanzer, Hauptmann D, General D und Schwerer Grabenwacht. Sie sind eingebaut (Auftrag: „zusammenführen“). Wenn Enrico sie im Pult bewusst zurückgesetzt hatte: Bescheid geben, dann nehme ich sie heraus.
+   - Schildwall: Die Wahl `punch` gibt es nicht als Platz, deshalb ausgelassen.
+5. **Löwenoger-Brüllen:**
+   - Das tiefe „Low-Low-Brüllen“ ist **`oger_bruell`**: Lion roars mit Knurren und Einatmen. Es kommt beim **Anwählen** und als **Brüllen im Nahkampf**. Im Pult sind das die Zeilen „Brüllen beim Anklicken“ und „Brüllen im Nahkampf“ (Gruppe Fahrzeug/Monster). Dort kann Enrico gezielt tauschen.
+   - Nichts davon ist fest im Code; alle Oger-Töne laufen über Tonplätze.
+   - Der normale Oger-Schlag war `neu3_bestie` (Tiger-Attacke). Das Pult hatte dafür fälschlich `axe` gezeigt (M8, behoben). Enricos Wahl „Schlag = sword“ gilt jetzt dort.
+6. **K13:** Zehn Posenbilder ohne Verwendung, Zuordnung nach Augenmaß nötig: Melder 3, Sanitäter 1, Schwere Grabenwacht 2, Schildwall posen2_1/2 und posen_3, Versorgung posen2_3/4.
+7. **K14 Rest:**
+   - `mg3` ist ein alter Ton ohne Quelldatei; ein Ausklang ließe sich nur neu schneiden.
+   - `kolosskanone_1` wird beim Bau auf 0,37 s gekürzt (Stille-Erkennung).
+   - Beides bitte im Pult anhören. Wenn nötig, tausche ich die Datei.
+   - `boomH_1` ist angeglichen.
+8. **M6 Grauwall-Einsatz:** Die KI kauft den Kürassier auf Grauwall weiter selten (0,2 je Schlacht). Früher kaufen oder am Zielfeld aufstellen wäre ein KI-Umbau mit Balance-Folgen. Erst nach Punkt 1.
+
+### Schritt 1–3 (Zwischenbericht oben): H1, K1, F89, F90, M7, F97, F88, F93
+Dazu kam der Befehlsruf der Offiziere, der stumm war; jetzt hörbar.
+
+### F100 Fähigkeits-Modus
+- Ein Klick neben die markierten Ziele löst nichts mehr aus: kein Schuss, kein Zug, keine Pause.
+- Stattdessen kommt eine kurze Meldung, z. B. „Sturmrollen: zu weit – reicht 2 Felder geradeaus.“; eigene Texte gibt es für Durchbruch, Hinrichtung und Sprung.
+- Gilt für alle Feld-Modi: Fähigkeiten, Draht schneiden, Zweitwaffe, Rammen, Faustsalve.
+- Eine andere eigene Einheit anklicken wechselt wie gewohnt die Auswahl.
+- Test mit echten Mausklicks im Partietest.
+
+### Schritt 4
+- **M1:** Die KI überspringt Held, Stufe-3-Schreiter und General, wenn es sie schon gab. Vorher blieb die Wunschliste daran hängen und die KI kaufte nichts mehr. Mit 150 Punkten je Runde kauft sie jetzt durchgehend.
+- **M2/K5:** Armee-Auswahl: „Held: höchstens einer je Armee.“ Nachschub: „Held: nur einer je Schlacht, auch nach seinem Fall.“; ebenso für Stufe 3.
+
+### Schritt 5
+- **M3/K12 Mündungen:**
+  - Gemessen für 20 Schuss-Posen: Soldat stehend und kniend beider Seiten, Pioniere, Gasschutz, Kampfanzug, Scharfschütze, Pirschjäger, Flammentrupp, Hauptmann-Pistole.
+  - Helden und Generäle lesen jetzt ihre gemessenen Werte.
+  - Schildwall: Das Gewehr ist hinter dem Schild verdeckt, nicht gemessen.
+- **M4:** Der Kürassier „hängt im Graben/im Schlamm fest“ mit Rüstungsschlag und Stampfen statt Autounfall. Schlamm spritzt nur im Schlamm, sonst Staub; Kopfzeichen Schweißtropfen.
+- **K6:** „Kugel vorbei“ nur noch nach einem Schuss.
+- **K7:** Flug- und Aura-Merker gelten je Schlacht; der Flug nur direkt nach dem Durchbruch.
+- **K8:** Ritter-Schritte +8 dB und Bass +6 dB.
+- **K10:** Die Helden zeigen auch mit der Blauen Legion ihren eigenen Bogen und ihr Porträt.
+
+### Entscheidungen von Enrico umgesetzt
+- **K4:** Der Anlauf von Durchbruch und Sturmrollen läuft als normaler Zug.
+  - Minen, Sperrfeuer, Feuerbereitschaft, Freischlag, Feuer, Gas und Draht greifen.
+  - Kommt der Angreifer nicht unversehrt an, entfällt der Stoß.
+  - Das zurückgeschleuderte Ziel löst Minen aus und brennt im Feuer; ein aufgebautes MG wird abgebaut.
+  - Regeltest in Node bestanden: Mine im Anlauf, Mine hinter dem Ziel, MG als Ziel.
+  - Sim: siehe Punkt 1 oben.
+- **K9:** Helden 1,65, Hünen 1,7 Soldatenhöhen (Maßstab beim Zeichnen, die Bögen bleiben).
+- **K11:** Helden nicht ins Kirchenschiff und nicht auf den Turm; Texte ergänzt.
+- **K17:** Medaillen 40 px.
+
+### Schritt 6 Texte
+- **M5:** Überall „alle N Runden“ bzw. „höchstens alle N Runden“ statt „N Runden Pause“; die Regel bleibt.
+- **K2 Durchbruch:**
+  - „Kostet die Aktion und alle Bewegung“.
+  - „Anlauf nur aus dem Stand“, ein Ziel direkt daneben geht auch nach dem Ziehen.
+  - „bis 26 Schaden, gegen Gepanzerte weniger“.
+- **K3:**
+  - Standhaft wirkt auch auf die Faust selbst.
+  - Furcht gilt nicht gegen Fahrzeuge und Schreiter, senkt höchstens bis 5 und löst allein keine Flucht aus.
+- **K15:** Regeln „Stark und schwach“: Helden beim schweren Nahkampf; Schrot an Panzern wirkungslos; normaler Nahkampf gegen Kampfanzüge und Panzer ×0,5.
+- **K16:** CLAUDE.md berichtigt (Ballon-Sicht 4, Befehle 1 Feld, höchstens 3, großer Befehl 2 Felder).
+
+### Schritt 7 Töne
+- **F91:** Neues Werkzeug `tools/tonwahl_bau.mjs`. Es führt alle sechs Pult-Exporte zusammen (der neueste gewinnt; 58 Wahlen, davon 55 wirksam für 35 Einheiten) und schreibt sie als Tabelle `TONWAHL` ins Spiel.
+  - `playSound` nimmt die Wahl der Einheit, die gerade schießt, schlägt oder getroffen wird: fester Ton, anderer Platz, still, Lautstärke, Tonhöhe.
+  - Im Browser geprüft: Der Löwenoger schlägt mit `sword`.
+- **M8:** Die Pult-Zeilen der Helden und des Löwenogers entsprechen jetzt dem Spiel.
+  - Faust: Ausholen, Hydraulik-Boom und Dampfstoß; beim Ziehen Schritte und leiser Dampf.
+  - Kürassier: Säge springt an, Kampfschrei, Schnitt; beim Ziehen Ritter-Schritte.
+  - Löwenoger: Tiger-Attacke statt `axe`.
+  - Eine Pult-Wahl an Zeilen, die das Spiel anders benennt, wird beim Einbau auf den echten Platz umgeschrieben.
+
+### Schritt 8 Größe (H2 + M9)
+- **Auslagerung:** 162 Töne aus 41 Plätzen, die das Spiel nie spielt, liegen jetzt in **`src/sound_pult.js`** (6 MB).
+  - Pult und Tonprobe laden beide Dateien und zeigen alle 785 Töne (geprüft).
+  - `sound_bau.mjs` teilt nach jedem Lauf automatisch (`tools/ton_teilen.mjs`).
+  - Im Zweifel bleibt ein Ton im Spiel.
+- **Ballon:** `ballon_brenner` faucht jetzt beim Aufsteigen.
+- **`index.html`: 52,3 MB statt 58,3 MB.**
+- **Git:** `git gc` hat den lokalen Git-Ordner von **3,6 GB auf 1,3 GB** verkleinert (2,47 GiB lose Objekte gepackt; Paket jetzt 1,26 GiB). Die Größe bei GitHub habe ich nicht gemessen.
+- `index.html` wird künftig nur am Paketende eingecheckt (CLAUDE.md und Gedächtnis).
+
+### Schritt 9
+- **M6:**
+  - Die KI-Gefahr Graben/Schlamm/Sumpf für den Kürassier ist neu (`W_STECKEN`).
+  - Sankt Ruß: steckt fest 21× in 200 Schlachten (0,11 je Schlacht, vorher 0,18), Hinrichtung 0,12 je Schlacht.
+  - Heldenfall gezielt (`HELD_STR=2.5`): 14 Heldenfälle in 200 Sankt-Ruß-Schlachten, keine Fehler, Konkordat 53 % statt 57 % (schwache Faust).
+- **K18:** Brett-Scroll-Rest und die Exporte `totalPts`/`cutCost` entfernt.
+- **K19:** test_draht ohne Fehlalarm; der Kartenaufbau zählt nicht.
+
+### Schritt 10 Größenprobe (nur gemessen, nichts am Spiel geändert)
+Grauwall gestapelt (16 Spalten, 10/20/30 Zeilen, Armeen und Ziele ×k), Dateien in `entwurf/probe/groesse/`. Unsichtbarer Chrome 1920×1080.
+
+| Karte | Einheiten | Bild Übersicht Ø / 95 % / max | Bild nah Ø / 95 % | Bild im KI-Zug Ø / 95 % | KI-Rechnen je Seitenzug Ø / 95 % | KI-Zug gesamt (mit Animation) | Speicher | Schlacht bereit |
+|---|---|---|---|---|---|---|---|---|
+| ×1 (16×10) | 39 | 17 / 28 / 33 ms | 5,6 / 5,7 ms | 16 / 28 ms | 15 / 22 ms | 30 s | 112 MB | 5,1 s |
+| ×2 (16×20) | 76 | 37 / 67 / 78 ms | 12 / 28 ms | 30 / 61 ms | 104 / 173 ms | 56 s | 118 MB | 6,2 s |
+| ×3 (16×30) | 113 | 46 / 83 / 95 ms | 14 / 33 ms | 41 / 72 ms | 322 / 511 ms | 80 s | 110 MB | 6,1 s |
+
+- **Messbedingungen:** Die KI-Zeiten in Node wurden gemessen, während parallel Sims liefen; die echten Werte sind eher niedriger. Die Probekarten laufen ohne Gelände-Bausteine (klassisches Bodenbild), Grauwall mit.
+- **Was gezeichnet wird:** Figuren nur im sichtbaren Ausschnitt. Das **flache Bodenbild wird in jedem Bild für die ganze Karte neu gezeichnet** (`drawGround`); die gekippte Projektion arbeitet zeilenweise nach Bildschirmgröße.
+- **Was zuerst bremst:** Das Zeichnen in der Übersicht. Bei ×2 sinkt die Übersicht auf etwa 25 Bilder/s, nah bleibt es flüssig. Die KI-Rechenzeit wächst stark (×3: 0,3–0,5 s je Seitenzug, ohne Worker kurze Ruckler). Der Speicher bleibt unkritisch.
+- **Einschätzung:**
+  - Bis etwa doppelte Fläche geht es ohne Umbau, wenn das Bodenbild nur bei Änderungen neu gezeichnet wird statt in jedem Bild (Zwischenspeicher, kleiner Umbau).
+  - Ab dreifacher Fläche lohnt WebGL (Mittelweg: Gelände und Figuren) und die KI im Worker.
+
+### Vorschlag: wo noch Posen, Effekte und Töne fehlen (je Einheit, zum Auswählen)
+- **Ganz ohne Posen** (nur Grundbild): Mahlwerk-Trupp, Sensenwerk-Trupp, Meldegänger mit Hund, Rauchwerfer, Ballonbeobachter. Dazu alle Geschütze, Fahrzeuge und Schreiter (Einzelbild; Bewegung nur über Rückstoß, Rütteln und Effekte).
+- **Ohne Nahkampf-Pose** (stehen beim Schlag still): Brandtrupp, Feldscher, Aschenpfleger, Scharfschütze, Panzerbüchse, Signaltrupp, Flammentrupp, Fernsprechtrupp, Bannerträger, Hauptleute, Generäle, Versorgung, Gasschutz, Munition, Pirschjäger.
+- **Ohne gemessene Mündung:** Schildwall; Ordensschreiter; Geschütz, Feldkanone, Mörser, Minenwerfer (Mündungsfeuer an der Bildkante).
+- **Töne:** Tod und Aufreiben hat bei Fußtruppen keinen eigenen Ton (nur Blut; im Pult wählbar).
+- **Ideen, noch nicht geprüft, ob schon etwas davon da ist:** Staub beim Hinfallen und Fliehen, Hülsen beim MG, Fußspuren im Schlamm, eigene Handgriff-Töne beim Heilen und Reparieren.
+- Enrico wählt; dann Prompts für die Bögen.
+
+### Nächstes
+Paket I (F93 ist schon mit F88 erledigt; F94 Skirmish, F95 Tonmischung, F96 Schussfeld) nach Enricos Entscheidungen oben.
+
 ## 2026-11-22 – Paket H, Zwischenbericht nach Schritt 3 (+ F97)
 
 Commits `0ccac2d`, `a61cec6`, `1bc6fc5`, `258c5b4`, `57bce68`. `index.html` ist lokal gebaut, aber nach H2 erst am Paketende eingecheckt – GitHub Pages zeigt bis dahin den alten Stand.
