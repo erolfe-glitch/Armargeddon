@@ -46,6 +46,7 @@ CFG = {
     'fx_flammenstrahl': dict(bg='schwarz', rows=[2, 2, 2]),   # 1 kurz, 2 lang mit Wolke, 3 lang mit großer Wolke, 4 Aufprall an Deckung, 5 tropfend, 6 züngelnd
     'fx_drehlauf':    dict(bg='schwarz', rows=[3, 3], lauf_weg=True),   # 1–3 Feuerstern, 4–6 Garbe mit Hülsen; gemalte Läufe entfernt
     'fx_nahkampf':    dict(bg='schwarz', rows=[3, 3]),   # 1 Schwung, 2 Kreuzhieb, 3 Aufprallstern, 4 Stich, 5 Funkenstern, 6 Bodenschlag
+    'fx_heldenfunken': dict(bg='magenta', rows=[3, 3]),   # Helden (Enrico 2026-11-22): 1 blauer Funkenstrich, 2 blau-weißer Einschlag, 3 kaltes Leuchten (Kürassier); 4 orangener Einschlag, 5 orangener Funkenstrich, 6 Glutsprenkel (Rote Faust)
 }
 
 

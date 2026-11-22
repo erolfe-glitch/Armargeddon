@@ -94,7 +94,7 @@ const FXN = {};
 { const D = window.FXNEU || {}; for (const k in D) { const m = k.match(/^(.+)_(\d+)$/); if (!m) continue; const im = new Image(); im.src = D[k]; (FXN[m[1]] = FXN[m[1]] || [])[+m[2] - 1] = im; } }
 const FX_GLOW = new Set(['muendung', 'explosion', 'feuer', 'funken', 'leuchtkugel', 'leuchtspur', 'flammenstrahl', 'drehlauf', 'nahkampf']);
 // Größe: längste Seite des größten Teils eines Bogens in Feldradien (Soldat ≈ 0,8 Feldradien hoch)
-const FX_SZ = { blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
+const FX_SZ = { heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
 const GESCHOSS_ANG = [-18, -15, -40, 0, -15, -15].map(a => a * Math.PI / 180);   // Grundrichtung der Geschosse im Bogen (gemessen)
 const fxIm = (b, i) => { const a = FXN[b]; if (!a || !a.length) return null; const im = a[i != null ? i : Math.floor(Math.random() * a.length)]; return im && im.complete && im.naturalWidth ? im : null; };
 const fxN = b => (FXN[b] || []).length;
@@ -2300,8 +2300,8 @@ async function playEvent0(e) {
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
         const gep0 = du0 && (TYPES[du0.type].cls === 'walker' || TYPES[du0.type].suit);   // Paket G 4b (Enrico 2026-11-21): Löwenoger = Tiger-Attacke + Fleisch-Treffer, gegen Gepanzerte Biss auf Panzerung
-        if (au && au.type === 'faust') { playSound('held_faustschlag2', 0.65); setTimeout(() => playSound('held_dampfstoss', 0.35), 240 / speed); } else   // Helden (Enrico 2026-11-21)
-        if (au && au.type === 'kuerass') { playSound('held_saege_schnitt2', 0.6); playSound(kschwertTon(e.d), 0.5); } else
+        if (au && au.type === 'faust') { heldFunken(4, (a.x + d.x) / 2 + (d.x - a.x) * 0.25, d.y - L.s * 0.45, { mul: 0.5 }); playSound('held_faustschlag2', 0.65); setTimeout(() => playSound('held_dampfstoss', 0.35), 240 / speed); } else   // Helden (Enrico 2026-11-21)
+        if (au && au.type === 'kuerass') { const hx = (a.x + d.x) / 2 + (d.x - a.x) * 0.25, hy = d.y - L.s * 0.5; heldFunken(1, hx, hy, { mul: 0.5, flip: d.x < a.x }); heldFunken(2, hx, hy, { mul: 0.45, delay: 2 }); playSound('held_saege_schnitt2', 0.6); playSound(kschwertTon(e.d), 0.5); } else
         if (au && au.type === 'oger') { playSound('neu3_bestie', 0.5 * (e.t === 'counter' ? 0.85 : 1)); playSound(gep0 ? 'neu3_biss' : 'neu3_fleisch', 0.5); } else
         playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : base,   /* F80: normaler Hiebton statt Granate */ (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('oger_bruell', 0.45); }   // Löwenoger brüllt statt zu schreien
@@ -2451,11 +2451,12 @@ async function playEvent0(e) {
     case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
       // Titel kam schon vor dem Anlauf ('abilTitel', Enrico 2026-11-22)
-      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); faustDampf(e.u, 1); playSound('held_dampf', 0.25);   // Dampfstoß aus der Faust beim Ausholen
+      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); faustDampf(e.u, 1); playSound('held_dampf', 0.25); heldFunken(5, a.x + (d.x >= a.x ? 1 : -1) * L.s * 0.25, a.y - L.s * 0.6, { mul: 0.45, flip: d.x < a.x });   // Dampfstoß aus der Faust beim Ausholen
       if (e.path) { const sch = staubSchleppe(e.u); await animPath(e.u, e.path, 200); sch(); }
       a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed; let ls = 0;
       for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.3 * k * k, dy: dy * 0.3 * k * k };
         if (performance.now() - ls > 60 / speed) { ls = performance.now(); boom(a.x + a.lunge.dx, a.y + a.lunge.dy + L.s * 0.12, L.s * 0.26, 'dust'); } }   // Staubschleppe beim Sturm
+      heldFunken(4, d.x, d.y - L.s * 0.35, { mul: 0.8, life: 26 }); heldFunken(6, d.x, d.y - L.s * 0.2, { mul: 0.6, delay: 4, life: 30 });
       playSound('held_fausteinschlag', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); faustDampf(e.u, 0.8); }, 260 / speed); shake(14); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
       stopBis = performance.now() + 70; heldRing(d.x, d.y, 'faust', true);   // Druckwelle am Boden
       for (let q = 0; q < (BW === 2 ? 7 : 5); q++) { const w = q / (BW === 2 ? 7 : 5) * Math.PI * 2 + Math.random() * 0.4; boom(d.x + Math.cos(w) * L.s * 0.75, d.y + Math.sin(w) * L.s * 0.75 * kAt(d.x, d.y), L.s * 0.32, 'dust', 3 + q); }
@@ -2468,7 +2469,7 @@ async function playEvent0(e) {
       await heldTitelErst(ksz, 'Hinrichtung', 'kalt', heldName(e.u));   // F86: großer Auftritt; F87: erst Schrift, dann Schlag
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start2', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt2', 0.7); playSound(kschwertTon(e.d), 0.55);
       const mx = d.x + (a.x - d.x) * 0.35, my = d.y - L.s * 0.55, masch = istMaschine(unitById(e.d));   // Treffpunkt der Säge
-      heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11);
+      heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11); heldFunken(2, mx, my, { mul: 0.75, life: 24 }); heldFunken(1, mx, my, { mul: 0.6, flip: d.x < a.x });
       for (let q = 0; q < (BW === 2 ? 4 : 3); q++) fx('funken', null, mx + (Math.random() - 0.5) * L.s * 0.25, my + (Math.random() - 0.5) * L.s * 0.2, { anchor: 'mitte', delay: q * 3, life: 18 + q * 3, mul: 0.65 + q * 0.12, fadeOut: 0.6, flip: Math.random() < 0.5 });   // Funken von der Kettensäge
       stopBis = performance.now() + (BW ? 230 : 140); if (!(ksz && ksz.skip)) await wait(220);   // kurzer Stillstand im Treffer
       trefferSpritzer(a.x, a.y, d, 3, masch); if (!masch) { schwerBlut(a.x, a.y, d, 3); schwerBlut(a.x, a.y, d, 3); bodenBlut(d.x + (Math.random() - 0.5) * L.s * 0.3, d.y + L.s * 0.12 * kAt(d.x, d.y), 0.7); }   // schwerer Blutstoß, dann Lache
@@ -3654,6 +3655,8 @@ function drawGlut(g, s, up) {
     gr.addColorStop(0, `rgba(255,236,170,${a})`); gr.addColorStop(0.25, `rgba(255,170,60,${0.85 * a})`); gr.addColorStop(0.6, `rgba(220,80,20,${0.3 * a})`); gr.addColorStop(1, 'rgba(160,40,10,0)');
     g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr * 2.6, 0, 7); g.fill(); g.restore(); }
 }
+// Heldenfunken (fx_heldenfunken, Enrico 2026-11-22): 1 blauer Strich, 2 blau-weißer Einschlag, 3 kaltes Leuchten (Kürassier); 4 oranger Einschlag, 5 oranger Strich, 6 Glutsprenkel (Rote Faust)
+function heldFunken(n, x, y, o = {}) { if (!BW && n !== 2 && n !== 4) return; fx('heldenfunken', n, x, y, { anchor: 'mitte', life: 22, mul: (o.mul || 0.6) * (BW === 1 ? 0.85 : 1), grow: 0.15, fadeOut: 0.6, ...o }); }
 // Kettenschwert des Kürassiers trifft (Enrico 2026-11-22, ElevenLabs): gegen Gepanzerte Metall, gegen Fußtruppen Fleisch
 function kschwertTon(id) { const x = unitById(id), T = x && TYPES[x.type]; return T && (T.suit || T.cls === 'walker') ? 'held_kschwert_metall' : 'held_kschwert_fleisch'; }
 // F86 (2026-11-21): Auftritt der Heldenfähigkeiten – große Einblendung (heldTitel, #heldTitel), Druckwelle/Ring am Boden (heldRing),
@@ -3686,7 +3689,7 @@ function drawHeldRinge(g, s, up) {
 const AURA_PULS = new Set();
 function auraPuls(id, art) {   // Aura hat gewirkt: einmal je Held und Runde Ring, Aufblitzen und kleine Einblendung
   if (!G) return; const k = id + ':' + G.turn + ':' + G.side; if (AURA_PULS.has(k)) return; AURA_PULS.add(k); const d = DU.get(id); if (!d) return;
-  heldRing(d.x, d.y, art, false); heldBlitz(id, art === 'faust' ? 'glut' : 'kalt'); heldTitel(art === 'faust' ? 'Standhaft' : 'Furcht', art + ' klein', heldName(id));
+  heldRing(d.x, d.y, art, false); heldBlitz(id, art === 'faust' ? 'glut' : 'kalt'); heldFunken(art === 'faust' ? 6 : 3, d.x, d.y - L.s * 0.75, { mul: 0.5, life: 30 }); heldTitel(art === 'faust' ? 'Standhaft' : 'Furcht', art + ' klein', heldName(id));
 }
 function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
   const d = DU.get(id); if (!d) return; const b = d.fbx && d.fbx[0], lf = facesLeft(d.face), s = L.s;
