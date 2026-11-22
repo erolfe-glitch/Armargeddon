@@ -38,8 +38,9 @@ const fireKind = T => T.mg ? 'mg' : T.flame ? 'flame' : T.gat ? 'minigun' : T.mg
 // Gruppen für die Auswahlliste (passende Alternativen); Stimm-Gruppen nehmen den Filter des Sprechers mit
 const GRUPPEN = {
   stimmen: ['stimmen_paket', 'medic'],   // Stimmenpaket (Enrico 2026-11-22): Kandidaten für die Rufe je Ereignis
+  schritte_schwer: ['schreiter_schritte', 'kampfanzug_schritte', 'mech', 'held_schritt_ritter2', 'neu_schritte_schwer'],
   draht: ['draht_schneiden', 'draht_ueberrollen', 'draht_infanterie', 'cut', 'ueberrollen', 'drahtlatch', 'drahtwackeln'],
-  saege: ['saege_einschlag', 'saege_fleisch', 'saege_metall', 'held_kschwert_metall', 'held_kschwert_fleisch', 'heavy'],
+  saege: ['stahlklaue_fleisch', 'stahlklaue_eisen', 'krallen_fleisch', 'krallen_eisen', 'neu3_fleisch', 'neu3_biss', 'saege_einschlag', 'saege_fleisch', 'saege_metall', 'held_kschwert_metall', 'held_kschwert_fleisch', 'heavy'],
   waffen_neu: ['neu4_pistole_schwer', 'neu4_granatwerfer', 'neu4_gewehr_schwer', 'neu4_mg_schwer'],
   gewehr: ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'buechse', 'flinte', 'neu_schrot', 'grenade2', 'neu2_gewehr', 'neu2_pistole'],
   mg: ['mg', 'minigun', 'neu_mg_schwer', 'rifle4', 'neu2_gewehr', 'neu2_autokanone'],
@@ -89,11 +90,11 @@ function slotsVon(t) {
   // Bewegung (move)
   if (k === 'cav') S('zug', 'ziehen', 'Ziehen (Galopp)', 'gallop2', 0.55, { gruppe: 'bewegung', kette: 'zug' });
   else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); }   // F8: Wagenknarren entfernt (pfiff wie ein Zug)
-  else if (k === 'walker') { S('zug', 'ziehen', fig ? 'Ziehen (Maschinenschritte)' : 'Ziehen (Kettenrollen)', fig ? 'mech' : 'tank', fig ? 0.5 : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
+  else if (k === 'walker') { S('zug', 'ziehen', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 'Ziehen (Schreiter-Schritte im Takt)' : 'Ziehen (Maschinenschritte)') : 'Ziehen (Kettenrollen)', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 'schreiter_schritte' : 'mech') : 'tank', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 0.45 : 0.5) : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
     S('zug', 'walzen', 'Draht niederwalzen', 'draht_ueberrollen', 0.6, { gruppe: 'draht', hin: 'Über eine Barrikade: Überrollen mit 0,5.' }); }
   else if (t === 'kuerass') S('zug', 'ziehen', 'Ziehen: schwere Ritter-Schritte (im Takt)', 'held_schritt_ritter2', 0.55, { gruppe: 'held', kette: 'zug', hin: 'Je Schritt ein Stampfen (M8, wie im Spiel).' });   // M8 (2026-11-22)
   else if (t === 'faust') { S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.4, { gruppe: 'bewegung', kette: 'zug' }); S('zug', 'dampf', 'Ziehen: leiser Dampfstoß (jedes zweite Mal)', 'held_dampfstoss', 0.22, { gruppe: 'held' }); }   // M8
-  else if (T.mech || T.dauerfeuer) S('zug', 'ziehen', 'Ziehen (Kampfanzug)', 'mech', 0.45, { gruppe: 'bewegung', kette: 'zug' });
+  else if (T.mech || T.dauerfeuer) S('zug', 'ziehen', 'Ziehen (Kampfanzug-Schritte)', 'kampfanzug_schritte', 0.45, { gruppe: 'schritte_schwer', kette: 'zug' });
   else {
     if (fig === 'dog') S('zug', 'hund', 'Hund beim Ziehen', 'dog', 0.5, { gruppe: 'bewegung', kette: 'zug' });
     S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.5, { gruppe: 'bewegung', kette: 'zug' });
@@ -147,7 +148,8 @@ function slotsVon(t) {
     if (!T.keinNah) S('nah', 'schlag', T.cls === 'walker' && fig === 'drill' ? 'Bohrstoß (ein langer Stoß)' : t === 'faust' ? 'Schlag: Hydraulik-Boom' : t === 'kuerass' ? 'Schlag: Säge heult auf und schneidet' : 'Schlag', p, T.mech || tank ? 0.7 : T.held ? 0.65 : t === 'oger' ? 0.5 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' });
     if (k === 'inf' && !T.suit && !T.cmd) S('nah', 'spaten', 'Spatenhiebe im Grabenkampf', 'schaufel', 0.4, { gruppe: 'handgriff', hin: 'In 60 % der Schläge (F32).' });
     if (['raeumer', 'sturm'].includes(t)) S('nah', 'flinte', 'Kurzer Schuss im Grabenkampf', 'flinte', 0.5, { gruppe: 'gewehr' });
-    if (t === 'oger') { S('nah', 'fleisch', 'Treffer ins Fleisch', 'neu3_fleisch', 0.5, { gruppe: 'nahkampf', hin: 'Zusammen mit der Tiger-Attacke (Enricos Wahl 21.11.).' }); S('nah', 'biss', 'Treffer gegen Gepanzerte (Biss auf Panzerung)', 'neu3_biss', 0.5, { gruppe: 'nahkampf', hin: 'Statt des Fleisch-Treffers gegen Fahrzeuge, Schreiter und Kampfanzüge.' }); }
+    if (t === 'klaue') { S('nah', 'klaue_fl', 'Stahlklaue gegen Fußtruppen', 'stahlklaue_fleisch', 0.6, { gruppe: 'saege' }); S('nah', 'klaue_ei', 'Stahlklaue gegen Gepanzerte', 'stahlklaue_eisen', 0.6, { gruppe: 'saege' }); }
+    if (t === 'oger') { S('nah', 'fleisch', 'Krallen gegen Fußtruppen', 'krallen_fleisch', 0.55, { gruppe: 'nahkampf', hin: 'Zusammen mit der Tiger-Attacke (Enricos Wahl 21.11.).' }); S('nah', 'biss', 'Krallen gegen Gepanzerte', 'krallen_eisen', 0.55, { gruppe: 'nahkampf', hin: 'Statt des Fleisch-Treffers gegen Fahrzeuge, Schreiter und Kampfanzüge.' }); }
     if (t === 'faust') S('nah', 'nachdampf', 'Nach dem Schlag: Dampfstoß', 'held_dampfstoss', 0.35, { gruppe: 'held' });
     if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'oger_bruell', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
     else if (k === 'storm') S('nah', 'schrei', 'Kampfschrei beim Sturm', 'cry', 0.45, { gruppe: 'ruf' });

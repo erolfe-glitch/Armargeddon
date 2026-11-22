@@ -396,6 +396,10 @@ FIGUREN_POSEN = {
     'aschenwacht_eisenknecht_posen2': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen'),   # Hackklinge erhoben (Ausholen), Kanonen nach vorn
     'aschenwacht_eisenknecht_posen3': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen', spiegeln=[2]),   # Hieb nach vorn; rechts blickt nach links
     # Säge- und Klauenschreiter neu (Enrico 2026-11-22): Grundbild = linke Figur aus posen2 (gespiegelt); nach links blickende Figuren gespiegelt
+    'konkordat_ordensschreiter_posen': dict(n=2, reihen=1, grund='ordensschreiter', refpose=1, leeren=[(330, 0, 570, 112), (1470, 0, 1730, 104)], leeren_aus={1: [(188, 0, 252, 35)], 2: [(186, 0, 224, 28), (62, 22, 86, 46)]}),   # neues Aussehen (Enrico 2026-11-22): Gehen = Grundbild, MG feuert; Rauch über den Orgelpfeifen weg
+    'aschenwacht_klauenschreiter_posen4': dict(n=2, reihen=1, grund='klauenschreiter', massvon='aschenwacht_klauenschreiter_posen2', spiegeln=[1]),   # Ausholen (beide Beine, ersetzt posen3_1), Getroffen
+    'konkordat_ordensschreiter_posen2': dict(n=2, reihen=1, grund='ordensschreiter', refpose=1, nimm=[1]),   # Ruhe; rechte Figur hat zwei Kettenschwerter, nicht verwenden
+    'konkordat_ordensschreiter_posen3': dict(n=1, reihen=1, grund='ordensschreiter', refpose=1),   # Kettenschwert-Hieb (Einzelfigur, volle Höhe wie Gehen)
     'konkordat_turmschreiter_posen': dict(n=2, reihen=1, grund='turmschreiter', refpose=1, nimm=[1]),   # neues Aussehen (Enrico 2026-11-22): links Gehen = Grundbild; rechts Arme vertauscht, nicht verwenden
     'aschenwacht_saegeschreiter_posen2': dict(n=2, reihen=1, grund='saegeschreiter', refpose=1, nimm=[1], spiegeln=[1]),   # Ruhe (neues Grundbild); rechte Figur missraten
     'aschenwacht_saegeschreiter_posen': dict(n=2, reihen=1, grund='saegeschreiter', massvon='aschenwacht_saegeschreiter_posen2', spiegeln=[1]),   # Gehen, Drehlauf feuert
@@ -473,6 +477,9 @@ def figuren_posen(name, out):
     o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')); H, W = a.shape[:2]
     a = abzeichen_uebermalen(a, name)
     a = rauch_weg(a, name)   # gemalter Rauch über den Rohren (Eisenknecht-Posen, 2026-11-22)
+    if o.get('leeren'):   # feste Kästen auf Hintergrund setzen (dunkler Rauch, den rauch_weg nicht erkennt; Ordensschreiter 2026-11-22)
+        a = a.copy(); bg = np.median(np.concatenate([a[3], a[-4]]), axis=0)
+        for x0, y0, x1, y1 in o['leeren']: a[y0:y1, x0:x1] = bg
     k = keyed(a)
     if name.startswith('aschenwacht_'): a = fahne_umfaerben(a, name, k[..., 3]); k = keyed(a)
     if o.get('lampe'): k = lampe_gelb(k)
@@ -522,6 +529,8 @@ def figuren_posen(name, out):
         im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA'); im = im.resize((max(1, round(im.width * sj)), max(1, round(im.height * sj))), Image.LANCZOS)
         if o.get('traeger'): im = traeger_setzen(im, tr_, bx_)
         if o.get('begleiter'): im = begleiter_setzen(im, bg_, bc_['setz'].get(j))
+        for x0, y0, x1, y1 in o.get('leeren_aus', {}).get(j, []):   # Reste im fertigen Bild entfernen (Rauch über Pfeifen, Ordensschreiter 2026-11-22)
+            q_ = np.array(im.convert('RGBA')); q_[y0:y1, x0:x1, 3] = 0; im = Image.fromarray(q_)
         im.save(out / f'{name}_{j}.png'); print(f'{name}_{j}: {im.width}×{im.height}')
 
 
