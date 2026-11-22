@@ -46,7 +46,8 @@ CFG = {
     'fx_flammenstrahl': dict(bg='schwarz', rows=[2, 2, 2]),   # 1 kurz, 2 lang mit Wolke, 3 lang mit großer Wolke, 4 Aufprall an Deckung, 5 tropfend, 6 züngelnd
     'fx_drehlauf':    dict(bg='schwarz', rows=[3, 3], lauf_weg=True),   # 1–3 Feuerstern, 4–6 Garbe mit Hülsen; gemalte Läufe entfernt
     'fx_nahkampf':    dict(bg='schwarz', rows=[3, 3]),   # 1 Schwung, 2 Kreuzhieb, 3 Aufprallstern, 4 Stich, 5 Funkenstern, 6 Bodenschlag
-    'fx_heldenfunken': dict(bg='magenta', rows=[3, 3]),   # Helden (Enrico 2026-11-22): 1 blauer Funkenstrich, 2 blau-weißer Einschlag, 3 kaltes Leuchten (Kürassier); 4 orangener Einschlag, 5 orangener Funkenstrich, 6 Glutsprenkel (Rote Faust)
+    'fx_heldenfunken': dict(bg='magenta', rows=[3, 3]),
+    'fx_winter_schnee': dict(bg='magenta', rows=[3, 3], rosa='grau'),   # Krähenfurt (Flux, 2026-11-22): 1 großer Schnee-Einschlag, 2 derselbe fällt zusammen, 3 kleiner Einschlag, 4–5 Pulverschnee (flach), 6 Eissplitter; rosa Säume → Grau (Schnee)   # Helden (Enrico 2026-11-22): 1 blauer Funkenstrich, 2 blau-weißer Einschlag, 3 kaltes Leuchten (Kürassier); 4 orangener Einschlag, 5 orangener Funkenstrich, 6 Glutsprenkel (Rote Faust)
 }
 
 
@@ -77,7 +78,10 @@ def magenta(a, rosa=True):
     # Reste am Saum: halbdurchsichtige Pixel mit Magenta-Farbton ganz weg
     r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
     al = np.where((al < 200) & (r > g + 60) & (b > g + 60), 0, al)
-    if rosa:   # rosa/malvenfarben (Blau nicht unter Grün bei Rotüberhang) → Braun wie die übrige Erde: Blau unter Grün, Rot etwas zurück
+    if rosa == 'grau':   # Schnee: rosa Stich → neutrales Grau gleicher Helligkeit (nicht braun)
+        d = np.clip(np.minimum(r, b) - g, 0, None); m = np.clip((d - 4) / 14, 0, 1) * (al > 0); lum = 0.3 * r + 0.59 * g + 0.11 * b
+        for c_, kk in enumerate((0.98, 1.0, 1.03)): rgb[..., c_] = rgb[..., c_] * (1 - m) + lum * kk * m
+    elif rosa:   # rosa/malvenfarben (Blau nicht unter Grün bei Rotüberhang) → Braun wie die übrige Erde: Blau unter Grün, Rot etwas zurück
         d = r - g; pk = (d > 8) & (b >= g - 4) & (al > 0)
         rgb[..., 2] = np.where(pk, g - 0.6 * d, b); rgb[..., 0] = np.where(pk, r - 0.2 * d, r)
     return np.dstack([np.clip(rgb, 0, 255), al])

@@ -94,9 +94,13 @@ const fxw = (im, h) => h * im.naturalWidth / im.naturalHeight;
 // Fehlt ein Bild, greifen die alten Effekte aus fx.js.
 const FXN = {};
 { const D = window.FXNEU || {}; for (const k in D) { const m = k.match(/^(.+)_(\d+)$/); if (!m) continue; const im = new Image(); im.src = D[k]; (FXN[m[1]] = FXN[m[1]] || [])[+m[2] - 1] = im; } }
+// Winter (Enrico 18:35): Schneetrichter und Brandfleck aus den Gelände-Bildern als Bodenspur-Bogen „kraterschnee“ (0, 1 Trichter, 2 Brandfleck)
+{ const GL = window.GELAENDE || {}; const n = ['krater_schnee_1', 'krater_schnee_2', 'brand_schnee']; if (n.every(k => GL[k])) FXN.kraterschnee = n.map(k => { const im = new Image(); im.src = GL[k]; return im; }); }
+const WFX = () => !!(E.MAP && E.MAP.winter && fxN('winter_schnee') >= 6);   // Wintereffekte nur auf Winterkarten und nur mit Bildern
+function aufEis(x, y) { try { const [c, r] = pixToHex(x, y); return !!(G && G.map[c] && G.map[c][r] && G.map[c][r].t === 'eis'); } catch (e) { return false; } }
 const FX_GLOW = new Set(['muendung', 'explosion', 'feuer', 'funken', 'leuchtkugel', 'leuchtspur', 'flammenstrahl', 'drehlauf', 'nahkampf']);
 // Größe: längste Seite des größten Teils eines Bogens in Feldradien (Soldat ≈ 0,8 Feldradien hoch)
-const FX_SZ = { heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
+const FX_SZ = { winter_schnee: 2.0, kraterschnee: 1.4, heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
 const GESCHOSS_ANG = [-18, -15, -40, 0, -15, -15].map(a => a * Math.PI / 180);   // Grundrichtung der Geschosse im Bogen (gemessen)
 const fxIm = (b, i) => { const a = FXN[b]; if (!a || !a.length) return null; const im = a[i != null ? i : Math.floor(Math.random() * a.length)]; return im && im.complete && im.naturalWidth ? im : null; };
 const fxN = b => (FXN[b] || []).length;
@@ -104,7 +108,10 @@ const fxDim = (im, b, mul = 1) => { const k = L.s * FX_SZ[b] * mul / 320; return
 const fxs = [], gmarks = [];   // laufende Effekte; Spuren am Boden (bleiben einige Runden)
 // o: life/delay in 60-Hz-Bildern (mit Spieltempo), mul Größe, anchor 'unten'|'mitte'|'links'|'rechts', ang, flip, flipY, rise (Feldradien),
 //    grow (Anteil), spin (Bogenmaß über die Lebenszeit), alpha, fadeIn, fadeOut (Anteil), len (Länge in px, Strahlen/Spuren), move [x2, y2] (fliegt hin)
-function fx(b, i, x, y, o = {}) { const im = fxIm(b, i); if (!im) return null; const e = Object.assign({ b, im, x, y, life: 30, delay: 0, mul: 1, anchor: 'unten', ang: 0, rise: 0, grow: 0, spin: 0, alpha: 1, fadeIn: 0, fadeOut: 0.4 }, o); e.max = e.life; fxs.push(e); return e; }
+function fx(b, i, x, y, o = {}) {
+  if (b === 'erdfontaene' && WFX()) {   // Winter: Schneefontäne (groß/klein), auf Eis Eissplitter mit Knacken
+    const { filter, ...oo } = o; o = oo; if (aufEis(x, y - L.s * 0.3)) { b = 'winter_schnee'; i = 5; o = { ...o, mul: (o.mul || 1) * 0.8 }; playSound('eis_knackt', 0.45, null, { noGap: true }); } else { b = 'winter_schnee'; i = i != null ? i : (o.mul || 1) >= 0.7 ? 0 : 2; } }
+  const im = fxIm(b, i); if (!im) return null; const e = Object.assign({ b, im, x, y, life: 30, delay: 0, mul: 1, anchor: 'unten', ang: 0, rise: 0, grow: 0, spin: 0, alpha: 1, fadeIn: 0, fadeOut: 0.4 }, o); e.max = e.life; fxs.push(e); return e; }
 function drawFxs(g, s, up) {
   for (let i = fxs.length - 1; i >= 0; i--) {
     const e = fxs[i]; if (e.delay > 0) { e.delay -= FS; continue; } e.life -= FS;
@@ -122,7 +129,9 @@ function drawFxs(g, s, up) {
   }
 }
 // Spur am Boden (Brandfleck, Einschlag, Öl, Drahtreste, Kettenspur, Trichter): bleibt „turns“ Runden, die letzte blasst aus
-function gmark(b, i, x, y, o = {}) { const im = fxIm(b, i); if (!im || !G) return; gmarks.push(Object.assign({ b, im, x, y, mul: 1, flip: Math.random() < 0.5, turn: G.turn, turns: 3, alpha: 0.9, born: now }, o)); if (gmarks.length > 320) gmarks.shift(); }
+function gmark(b, i, x, y, o = {}) {
+  if (b === 'bodenspuren' && [0, 1, 5].includes(i) && E.MAP && E.MAP.winter && fxN('kraterschnee') === 3) { b = 'kraterschnee'; i = i === 0 ? 2 : i === 1 ? 0 : 1; }   // Winter: Brandfleck, Einschlag, kleiner Trichter im Schnee
+  const im = fxIm(b, i); if (!im || !G) return; gmarks.push(Object.assign({ b, im, x, y, mul: 1, flip: Math.random() < 0.5, turn: G.turn, turns: 3, alpha: 0.9, born: now }, o)); if (gmarks.length > 320) gmarks.shift(); }
 function drawGmarks(g) {
   for (let i = gmarks.length - 1; i >= 0; i--) { const m = gmarks[i], age = G.turn - m.turn; if (age >= m.turns) { gmarks.splice(i, 1); continue; }
     const [w, h0] = fxDim(m.im, m.b, m.mul), h = h0 * Math.max(0.55, kAt(m.x, m.y)) * 0.8, fin = Math.min(1, (now - m.born) / 400);
@@ -179,7 +188,12 @@ function fxImpact(x, y, r, o = {}) {
   const s = L.s, m = r / (s * 0.95), by = y + s * 0.3 * Math.min(1.2, m), dl = o.delay || 0, fl = Math.random() < 0.5;
   if (o.alt) fx('explosion', 4 + (Math.random() < 0.5 ? 0 : 1), x, by, { delay: dl, life: 26, mul: m, grow: 0.15, fadeOut: 0.5 });
   else for (let st = 0; st < 4; st++) fx('explosion', st, x, by, { delay: dl + st * 7.5, life: st < 3 ? 9 : 16, mul: m * (st ? 1 : 0.8), fadeOut: st < 3 ? 0.15 : 0.6, flip: fl });
-  fx('erdfontaene', null, x, by, { delay: dl + 4, life: 64, mul: m, grow: 0.2, flip: fl, fadeOut: 0.45 });
+  if (WFX() && aufEis(x, y)) {   // Einschlag auf dem Eis: Splitter, darunter Schnee; großer Ton „Eis bricht“, sonst Knacken
+    fx('winter_schnee', 5, x, by, { delay: dl + 4, life: 56, mul: m * 0.75, grow: 0.15, flip: fl, fadeOut: 0.5 }); fx('winter_schnee', 3, x, by + s * 0.05, { delay: dl + 8, life: 60, mul: m * 0.6, grow: 0.3, alpha: 0.8, fadeOut: 0.6 });
+    setTimeout(() => playSound(m >= 0.7 ? 'eis_bricht' : 'eis_knackt', m >= 0.7 ? 0.55 : 0.5, null, { noGap: true }), (dl * 16.667 + 120) / speed);
+  } else if (WFX()) { if (m >= 0.7) { fx('winter_schnee', 0, x, by, { delay: dl + 4, life: 30, mul: m, grow: 0.15, flip: fl, fadeOut: 0.25 }); fx('winter_schnee', 1, x, by, { delay: dl + 28, life: 46, mul: m, grow: 0.1, flip: fl, fadeIn: 3, fadeOut: 0.55 }); }   // Schneefontäne, fällt zusammen
+    else fx('winter_schnee', 2, x, by, { delay: dl + 4, life: 56, mul: m * 1.2, grow: 0.2, flip: fl, fadeOut: 0.45 }); }
+  else fx('erdfontaene', null, x, by, { delay: dl + 4, life: 64, mul: m, grow: 0.2, flip: fl, fadeOut: 0.45 });
   fx('rauch', null, x, by - s * 0.1 * m, { delay: dl + 24, life: 150, mul: m * 0.75, grow: 0.35, rise: 0.9, alpha: 0.72, fadeIn: 18, fadeOut: 0.6, flip: Math.random() < 0.5 });
   if (!o.noMark) setTimeout(() => gmark('bodenspuren', Math.random() < 0.55 ? 1 : 5, x, y + s * 0.15, { mul: 0.7 * Math.min(1.4, m) }), (dl * 16.667 + 200) / speed);
   return true;
@@ -229,7 +243,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
-    terr: gbTerr, winter: gbWinter(), strassen: gbWinter() ? [E.MAP.strasse, E.MAP.strasse2].filter(Boolean) : null, bauArt: (c, r) => { const h = G.map[c][r]; return h.bau != null && G.bauten && G.bauten[h.bau] ? G.bauten[h.bau].art : null; }, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
+    terr: gbTerr, winter: gbWinter(), schneeKante: !window.NOSCHNEEKANTE, strassen: gbWinter() ? [E.MAP.strasse, E.MAP.strasse2].filter(Boolean) : null, bauArt: (c, r) => { const h = G.map[c][r]; return h.bau != null && G.bauten && G.bauten[h.bau] ? G.bauten[h.bau].art : null; }, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
@@ -2361,11 +2375,13 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
     if (camOn() && !inView(x1, y1 - L.s * 0.4, 0.14)) camTo(x1, y1 - L.s * 0.4, 300);   // Kamera geht mit
     const dur = msPer / speed, t0 = performance.now();
     const uu = unitById(id), TT = uu && TYPES[uu.type], fm = uu && FIGMAP[uu.type] && FIGMAP[uu.type][0], beine = TT && TT.cls === 'walker' && fm && SCHREITER.includes(fm), kette = TT && TT.cls === 'walker' && !beine;
-    const gross = TT && (TT.stufe3 || TT.def >= 9) ? 1.4 : 1, ritter = TT && TT.stecken; let schritt = 0;   // ritter: Kürassier stampft mit eigenem Schritt-Ton
+    const gross = TT && (TT.stufe3 || TT.def >= 9) ? 1.4 : 1, ritter = TT && TT.stecken; let schritt = 0;
+    if (WFX() && TT && (kette || TT.cls === 'art' || TT.fahrbar) && fxs.filter(e => e.pulver).length < 10) {   // Winter (Enrico 18:35): Pulverschnee hinter Ketten und Rädern, klein und kurz
+      const e = fx('winter_schnee', Math.random() < 0.5 ? 3 : 4, x0 + (x1 - x0) * 0.35, y0 + (y1 - y0) * 0.35 + L.s * 0.28, { delay: 6, life: 40, mul: kette ? 0.42 : 0.3, grow: 0.5, alpha: 0.85, fadeIn: 4, fadeOut: 0.6, flip: x1 < x0 }); if (e) e.pulver = true; }   // ritter: Kürassier stampft mit eigenem Schritt-Ton
     for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k;
       if (beine) { const ph = k * 2, n = Math.floor(ph);   // F73 (2026-11-21): zwei Schritte je Feld – heben, stampfen, leicht zur Seite neigen
         d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.05 * gross, dx: Math.sin(ph * Math.PI) * L.s * 0.012 * (n % 2 ? 1 : -1) };
-        if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); playSound('schreiter_schritte', 0.45, null, { noGap: true }); if (E.MAP.winter) playSound('stampfen_schnee', 0.25, null, { noGap: true });   /* Schreiter-Schritte im Takt (Enrico 2026-11-22) */ fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
+        if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); playSound('schreiter_schritte', 0.45, null, { noGap: true }); if (E.MAP.winter) playSound('stampfen_schnee', 0.25, null, { noGap: true }); if (WFX()) fx('winter_schnee', 3 + (n % 2), d.x, d.y + L.s * 0.3, { life: 36, mul: 0.3 * gross, grow: 0.45, alpha: 0.8, fadeOut: 0.6 });   /* Schreiter-Schritte im Takt (Enrico 2026-11-22) */ fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
       else if (kette) d.wipp = { dy: Math.sin(k * Math.PI * 10) * L.s * 0.006, dx: 0 };
       else if (ritter) { const ph = k * 2, n = Math.floor(ph); d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.035, dx: 0 }; if (n > schritt || (k >= 1 && schritt < 2)) { schritt = Math.max(n, schritt + (k >= 1 ? 1 : 0)); playSound('held_schritt_ritter2', 0.55, null, { noGap: true }); } } }   // Kettenfahrzeug: leichtes Rattern
     d.wipp = null;
@@ -2760,7 +2776,7 @@ async function playEvent0(e) {
       d0.face = x1 >= x0 ? 0 : 3; d0.moving = true;
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
       try { for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); d0.x = x0 + (x1 - x0) * k; d0.y = y0 + (y1 - y0) * k - Math.sin(Math.PI * k) * L.s * 0.9; } } finally { d0.moving = false; d0.x = x1; d0.y = y1; }
-      fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('loewen_landung', 0.6); playSound('steps', 0.2); shake(3);   /* Landung (Enrico 2026-11-22 15:00), alter Landeton leise darunter */ VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
+      if (WFX()) fx('winter_schnee', 4, x1, y1 + L.s * 0.3, { life: 44, mul: 0.55, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); else fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('loewen_landung', 0.6); playSound('steps', 0.2); shake(3);   /* Landung (Enrico 2026-11-22 15:00), alter Landeton leise darunter */ VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
     case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
       const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]); pose(e.u, 'faust', 1600);   // Schreiter-Posen: beide Kanonen feuern

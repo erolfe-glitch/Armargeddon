@@ -27,7 +27,7 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
 const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: [...['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n), 'boden_schnee', 'boden_acker_schnee', 'strasse_matsch', 'boden_eis', ...[1, 2, 3, 4].map(k => 'boden_schnee_rein_' + k)],
-  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1'],
+  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
     'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
@@ -64,6 +64,18 @@ function eingesunken(im, cut = EINSINK) {
 }
 
 // Bildwirkung (ui.js, 2026-11-19): aufrechte Teile mit demselben Filter wie der Boden (einmal je Filter vorberechnet)
+// Winter (Enrico 18:35): weiße Schneekante oben auf aufrechten Teilen (Grabenränder, Sandsäcke, Draht) – im Code, kein neuer Bogen.
+// Je Spalte die obersten Pixel unter einer freien Stelle aufhellen (Dicke leicht schwankend), einmal je Bild gerechnet.
+const SCHNEE = new Map();
+function schneeKante(im, anteil, minPx = 2) {
+  if (!im) return im; const key = im; if (SCHNEE.has(key)) return SCHNEE.get(key);
+  const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.drawImage(im, 0, 0); const id = x.getImageData(0, 0, W, H), d = id.data, k0 = Math.max(minPx, H * anteil);
+  for (let px = 0; px < W; px++) { const k = k0 * (0.7 + 0.3 * Math.sin(px * 0.11) * Math.sin(px * 0.037 + 1)); let tief = 0;
+    for (let py = 0; py < H; py++) { const i = (py * W + px) * 4; if (d[i + 3] < 90) { tief = 0; continue; }
+      if (tief < k) { const f = 0.88 * Math.pow(1 - tief / k, 0.6); d[i] += (226 - d[i]) * f; d[i + 1] += (231 - d[i + 1]) * f; d[i + 2] += (238 - d[i + 2]) * f; } tief++; } }
+  x.putImageData(id, 0, 0); SCHNEE.set(key, c); return c;
+}
 const TEILF = new Map();
 function teileGefiltert(IM, flt) {
   if (!flt) return IM;
@@ -83,7 +95,8 @@ function aufbauen(cfg, IM) {
   // Häuser, Kapelle, Tannen, Steinbrücke, Ufer und Acker eigene Zweige (winterFeld). Fehlt der Schneeboden, bleibt alles wie bisher.
   const WI = !!cfg.winter && !!IM.boden_schnee;
   if (WI) { const ali = { boden_schlamm: IM.boden_schnee_rein_1 ? 'boden_schnee_rein_1' : 'boden_schnee', boden_wasser: 'boden_eis', wald_unterholz: 'unterholz_schnee', zaun: 'zaun_schnee', dorf_aufsteller_1: 'brunnen_schnee', dorf_aufsteller_3: 'karren_schnee' };
-    IM = { ...IM }; for (const k in ali) if (IM[ali[k]]) IM[k] = IM[ali[k]]; }
+    IM = { ...IM }; for (const k in ali) if (IM[ali[k]]) IM[k] = IM[ali[k]];
+    if (cfg.schneeKante !== false) { for (const [n, a, mp] of [['graben_kante_vorn', 0.14], ['graben_kante_hinten', 0.12], ['barrikade', 0.1], ['bunker_1', 0.05], ['bunker_2', 0.05], ...[1, 2, 3, 4].map(k => ['draht_stuecke_' + k, 0.012, 2]), ...[1, 2, 3, 4].map(k => ['panzersperren_' + k, 0.05])]) if (IM[n]) IM[n] = schneeKante(IM[n], a, mp); } }
   const KIPP = cfg.kipp ?? 1;   // schräge Wandstücke kippen (Stärke, 0 = aus)
   const AO = cfg.ao || 0;   // Kantenverdeckung: dunkler, weicher Saum, wo Graben, Wälle und Befestigungen auf den flachen Boden treffen
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
@@ -237,6 +250,12 @@ function aufbauen(cfg, IM) {
   const jit = (c, r, k, s) => { const [x, y] = hexC(c, r); return [x + (hrnd(c, r, k) - 0.5) * R * s, y + (hrnd(c, r, k + 1) - 0.5) * R * s * 0.9]; };
   function flachDetail(c, r) {
     const t = terr(c, r), q = hrnd(c, r, 9);
+    if (WI && t === 'crater' && IM.krater_schnee_1) { flach(q < 0.5 ? IM.krater_schnee_1 : IM.krater_schnee_2, ...jit(c, r, 1, 0.3), 1.05 + q * 0.35, q * 20); return; }   // Winter: Trichter im Schnee
+    if (WI && t === 'furt' && IM.furt_schnee) {   // Winter: gemalte Furt (Fluss waagrecht im Bild) in Flussrichtung gedreht, Rand weich
+      const [hx, hy] = hexC(c, r), rv = RIVERS.find(p => distTo([hx, hy], p) < R * 0.6); let ang = 0;
+      if (rv) { let bi = 0, bd = 1e9; rv.forEach((p, i) => { const d = Math.hypot(p[0] - hx, p[1] - hy); if (d < bd) { bd = d; bi = i; } }); const a = rv[Math.max(0, bi - 1)], b = rv[Math.min(rv.length - 1, bi + 1)]; ang = Math.atan2(b[1] - a[1], b[0] - a[0]); }
+      flach(weich(IM.furt_schnee), hx, hy, 2.5, ang); return; }
+    if (WI && IM.krater_schnee_1 && ['open', 'grass', 'mud', 'village', 'rubble', 'wire'].includes(t)) return;   // Winter: keine Erd-Trichter, Pfützen und Trümmerstreu auf dem Schnee
     if (t === 'crater') { if (q < 0.55) flach(q < 0.28 ? schlammig(IM.trichter_gross_1) : Fd(2), ...jit(c, r, 1, 0.3), 1.15 + q * 0.3, q * 20); else { flach(Fd(1), ...jit(c, r, 1, 0.9), 0.6, q * 9); flach(Fd(1), ...jit(c, r, 3, 0.9), 0.55, q * 13); } }
     else if (t === 'mud') { if (q < 0.3) flach(Fd(q < 0.15 ? 3 : 4), ...jit(c, r, 1, 0.8), 0.6 + q * 0.6, q * 30); else if (q > 0.75) flach(Fd(8), ...jit(c, r, 3, 0.6), 0.85, q * 17, 0.8); }   // sparsam: Pfütze oder Spuren
     else if (t === 'open' || t === 'grass') { if (q < 0.18) flach(Fd(1), ...jit(c, r, 1, 1), 0.55, q * 40); else if (q < 0.3) flach(Fd(5), ...jit(c, r, 1, 0.8), 0.6, q * 40); else if (q < 0.34) flach(Fd(3), ...jit(c, r, 1, 0.9), 0.5, q * 40); else if (q < 0.38) flach(Fd(8), ...jit(c, r, 1, 0.8), 0.8, q * 40, 0.75); }

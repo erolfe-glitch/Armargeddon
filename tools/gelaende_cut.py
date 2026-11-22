@@ -106,6 +106,11 @@ TEILE = {
     'boden_acker_schnee':  ('textur', None, {'quelle': ('boden_schnee_bogen', (1040, 12, 2036, 1008)), 'furchen': True}),
     'strasse_matsch':      ('textur', None, {'quelle': ('boden_schnee_bogen', (14, 1038, 1010, 2034)), 'nur': 'senkrecht', 'weich': True}),
     'boden_eis':           ('textur', None, {'quelle': ('boden_schnee_bogen', (1040, 1038, 2036, 2034)), 'weich': True}),
+    # Furt und Bodenspuren (Enrico 18:35): Furt-Kachel deckend (roh, Fluss läuft waagrecht), Trichter/Brandfleck als Aufkleber (größte Seite px, für gmark wie die Effekte)
+    'furt_schnee':         ('roh', 2.3, {'quelle': ('furt_krater_schnee_bogen', (8, 8, 1016, 1016))}),
+    'krater_schnee_1':     ('aufkleber', 320, {'quelle': ('furt_krater_schnee_bogen', (1032, 8, 2040, 1016))}),
+    'krater_schnee_2':     ('aufkleber', 250, {'quelle': ('furt_krater_schnee_bogen', (8, 1032, 1016, 2040))}),
+    'brand_schnee':        ('aufkleber', 300, {'quelle': ('furt_krater_schnee_bogen', (1032, 1032, 2040, 2040))}),
     'zaun_schnee':         ('wand', 0.8, {'quelle': ('streifen_schnee_bogen', (0, 103, 2896, 355)), 'weich_unten': 30}),
     'ufer_schnee':         ('wand', 0.4, {'quelle': ('streifen_schnee_bogen', (0, 640, 2896, 845)), 'weich_unten': 6}),
     'unterholz_schnee':    ('wand', 0.45, {'quelle': ('streifen_schnee_bogen', (0, 1104, 2896, 1300)), 'weich_unten': 60}),
@@ -132,8 +137,8 @@ def freistellen(path):
     return freistellen0(path)
 
 
-def freistellen0(path):
-    a = np.asarray(Image.open(path).convert('RGB'))
+def freistellen0(path, a=None):
+    if a is None: a = np.asarray(Image.open(path).convert('RGB'))
     rand_px = np.concatenate([a[0], a[-1], a[:, 0], a[:, -1]]).astype(float)
     if np.median(rand_px, axis=0).max() < 30:   # schwarzer Hintergrund: Deckung nach Helligkeit, Farben nicht entmischen (dunkler Saum = Schatten)
         lum = a.astype(float).mean(axis=2)
@@ -438,6 +443,19 @@ def bruecke_teilen():
         print(f'  → bruecke_stein_{teil}: {out.width}×{out.height}')
 
 
+def roh(name, groesse, opt):   # deckendes Stück (Furt-Kachel): nur ausschneiden und auf groesse Feldradien bringen
+    b, box = opt['quelle']; im = Image.open(SRC / f'{b}.png').convert('RGB').crop(box)
+    a = np.dstack([np.asarray(im).astype(np.float64), np.full(im.size[::-1], 255.0)])
+    speichern(a, name, groesse * PX_R, groesse * PX_R)
+
+
+def aufkleber(name, px, opt):   # Aufkleber aus einem Feld eines Bogens: freistellen (Hintergrund aus dem Feldrand), rosa Säume entfärben, größte Seite px
+    b, box = opt['quelle']; a = np.asarray(Image.open(SRC / f'{b}.png').convert('RGB').crop(box))
+    q = entrosa(freistellen0(None, a)); q = zeilen(q)
+    xs = np.where((q[..., 3] > 40).any(axis=0))[0]; q = q[:, xs.min():xs.max() + 1]
+    f = px / max(q.shape[:2]); speichern(q, name, q.shape[0] * f, q.shape[1] * f)
+
+
 def einbetten():
     """Bausteine fürs Spiel in src/gelaende.js einbetten (window.GELAENDE = { name: data-URI }); nur was gelaende_bau.js lädt."""
     import base64, re
@@ -475,6 +493,10 @@ if __name__ == '__main__':
             einzel(name, h)
         elif art == 'textur':
             textur(name, h, opt[0] if opt else None)
+        elif art == 'roh':
+            roh(name, h, opt[0])
+        elif art == 'aufkleber':
+            aufkleber(name, h, opt[0])
         else:
             streifen(name, art, h, opt[0] if opt else None)
             if name == 'draht': pfaehle_ausduennen(name)
