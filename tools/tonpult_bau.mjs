@@ -49,6 +49,7 @@ const GRUPPEN = {
   flamme: ['flame', 'werfer', 'feuer', 'neu2_feuer'],
   einschlag: ['neu3_fzaufprall', 'einschlag', 'vorbei', 'boom', 'boomH', 'einschlagH', 'barrage', 'gas', 'rauch', 'boom2', 'blast', 'grenade2', 'wasser', 'impact', 'armor', 'feuer', 'neu2_einschlag', 'neu2_metall', 'neu2_knall', 'neu2_einsturz', 'neu2_blut', 'neu2_wasser', 'neu2_crash', 'neu3_aufprall', 'neu3_gore', 'einschlag_panzer', 'einschlag_abpraller'],
   nahkampf: ['loewen_landung', 'nahA', 'nahD', 'saebel', 'sword', 'axe', 'slash', 'smash', 'heavy', 'neu_wucht', 'armor', 'grenade2', 'flinte', 'punch', 'neu2_nahkampf', 'neu2_metall', 'neu2_blut', 'neu2_monster', 'neu3_bestie', 'neu3_loewe', 'neu3_loewe2', 'neu3_fleisch', 'neu3_biss', 'neu3_gore'],
+  gespann: ['gespann', 'gallop', 'wagenknarren', 'pferd_unruhe', 'pferde_schnee'],   // Feldkanone ziehen (2026-11-22)
   bewegung: ['schritte', 'steps', 'stepsWald', 'marschtritt', 'holzknacken', 'gallop2', 'dog', 'gespann', 'wagenknarren', 'tank', 'mech', 'neu_schritte_schwer', 'ueberrollen', 'drahtlatch', 'drahtwackeln', 'neu2_schritte', 'neu2_hund', 'neu2_flug', 'neu2_wasser'],
   fahrzeug: ['motor_auswahl', 'tank', 'mech', 'ueberrollen', 'crash', 'tiger', 'oger_bruell', 'neu_tiger_mech', 'neu_roboter', 'robot', 'neu2_crash', 'neu2_flug', 'neu2_monster', 'neu3_bestie', 'neu3_aufprall', 'neu3_fzaufprall', 'ballon_brenner'],
   pferd: ['pferd_auswahl', 'pferd_unruhe', 'neigh', 'gallop2'],
@@ -90,7 +91,8 @@ function slotsVon(t) {
   if (k === 'cav') S('anw', 'pferd', 'Pferd beim Anklicken', 'pferd_auswahl', 0.26, { gruppe: 'pferd', kette: 'anw' });
   // Bewegung (move)
   if (k === 'cav') S('zug', 'ziehen', 'Ziehen (Galopp)', 'gallop2', 0.55, { gruppe: 'bewegung', kette: 'zug' });
-  else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); }   // F8: Wagenknarren entfernt (pfiff wie ein Zug)
+  else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); }
+  else if (T.fahrbar) { S('zug', 'ziehen', 'Ziehen (ohne Protzen): Räder und Pferde', 'gespann', 0.5, { gruppe: 'gespann', kette: 'zug', hin: 'Feldkanone (2026-11-22): Standard Gespann; Kandidaten Galopp-Gespann und Wagenknarren. Im Winter Pferde im Schnee.' }); }   // F8: Wagenknarren entfernt (pfiff wie ein Zug)
   else if (k === 'walker') { S('zug', 'ziehen', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 'Ziehen (Schreiter-Schritte im Takt)' : 'Ziehen (Maschinenschritte)') : 'Ziehen (Kettenrollen)', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 'schreiter_schritte' : 'mech') : 'tank', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 0.45 : 0.5) : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
     S('zug', 'walzen', 'Draht niederwalzen', 'draht_ueberrollen', 0.6, { gruppe: 'draht', hin: 'Über eine Barrikade: Überrollen mit 0,5.' }); }
   else if (t === 'kuerass') S('zug', 'ziehen', 'Ziehen: schwere Ritter-Schritte (im Takt)', 'held_schritt_ritter2', 0.55, { gruppe: 'held', kette: 'zug', hin: 'Je Schritt ein Stampfen (M8, wie im Spiel).' });   // M8 (2026-11-22)

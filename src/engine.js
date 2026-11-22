@@ -334,7 +334,7 @@ const TERRAIN = {
   canal:   { name: 'Kanal', cost: 99, info: 'Nicht passierbar, nur über die Brücke.' },
   eis:     { name: 'Eis', cost: 2, info: 'Zugefrorenes Wasser: trägt Fußtruppen, Anführer und Helden (2 Bewegung, keine Deckung). Fahrzeuge, Schreiter, Geschütze und Reiter brechen ein und kommen nicht hinüber.' },
   haus:    { name: 'Haus', cost: 1, info: 'Heiles Fachwerkhaus: nur Fußtruppen und Anführer kommen hinein (keine Helden). Abwehr ×1,6, halber Moralverlust. Versperrt die Sicht. Schwere Treffer machen es zur Ruine.' },
-  kapelle: { name: 'Kapelle', cost: 1, info: 'Kleine Steinkapelle: wie ein Haus (Abwehr ×1,6, halber Moralverlust, Sicht gesperrt), etwas fester gebaut.' },
+  kapelle: { name: 'Kapelle', cost: 1, info: 'Kleine Steinkapelle mit Türmchen: wie ein Haus (Abwehr ×1,6, halber Moralverlust, Sicht gesperrt), etwas fester gebaut. Wer drin steht, sieht 1 Feld weiter.' },
   steinbruecke: { name: 'Steinbrücke', cost: 1, info: 'Fester Übergang über den Fluss, trägt auch Kolosse und Geschütze.' },
   bridge:  { name: 'Brücke', cost: 1, info: 'Einziger Weg über den Kanal. Zu schwach für Landkolosse.' },
   furt:    { name: 'Furt', cost: 3, info: 'Seichtes Wasser: kostet 3 Bewegung, Abwehr ×0,8. Geschütze kommen nicht durch.',
@@ -481,7 +481,7 @@ const MAPS = {
   // Winterdorf (Arbeitstitel, Enrico 2026-11-22, Plan entwurf/KARTE_WINTERDORF.md, Bauplan entwurf/karte_winterdorf/konzept_flux.png): Dorf am zugefrorenen Fluss,
   // noch fast heil. Konkordat von Westen (Dorfseite), Aschenwacht von Osten (Felder jenseits des Flusses). Eis trägt nur Fußvolk; Fahrzeuge über Steinbrücke oder Furt.
   // Raster: E Eis, H Haus (je eigener Bauzustand), C Kapelle, R Steinbrücke, F Furt, g Feld mit Zaun, W Tannenwald, f lichter Wald
-  winterdorf: { id: 'winterdorf', name: 'Winterdorf', size: 'Groß', cols: 18, rows: 12, zoneA: 2, zoneD: 13, band: 5, nebelRand: true, winter: true,   /* Abgleich 2026-11-22: Aschenwacht stellt bis ans Ostufer auf (mit zoneD 15: Konkordat 97 %) */
+  winterdorf: { id: 'winterdorf', name: 'Krähenfurt',   /* Name von Enrico (2026-11-22 17:30), intern weiter winterdorf */ size: 'Groß', cols: 18, rows: 12, zoneA: 2, zoneD: 13, band: 5, nebelRand: true, winter: true,   /* Abgleich 2026-11-22: Aschenwacht stellt bis ans Ostufer auf (mit zoneD 15: Konkordat 97 %) */
     ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },   // wie Sankt Ruß: die Aschenwacht muss über den Fluss vorgehen
     desc: 'Ein verschneites Dorf am zugefrorenen Fluss, noch fast unversehrt. Das Eis trägt Fußtruppen, Fahrzeuge brauchen die Steinbrücke oder die Furt. Um Dorfplatz, Kapelle und Brücke wird gekämpft.',
     armyMax: { A: 24, D: 24 },
@@ -630,6 +630,7 @@ function deploy(G, side, army) {
   const ROWS_OUT = rowsOut(), zA = MAP.zoneA;
   const lead = () => null;   // Offiziere nur noch als eigene Einheiten (Hauptmann/General mit Stab), keine Titel mehr für Schützen (Spieltest 2026-11-17)
   const free = (t, c, r) => inMap(c, r) && !unitAt(G, c, r) && cost(G, { type: t, side }, c, r) < 99;
+  if (!TOG.AUFSTELLUNG_ALT) return deployZone(G, side, list, lead, free);   // Enrico 2026-11-22 17:30: beide Seiten nach Rollen (AUFSTELLUNG_ALT=1: alte Konkordat-Aufstellung zum Vergleich)
   if (side === 'A') {
     const pref = t => { const T = TYPES[t], k = T.cls === 'art' && !T.mobile ? 0 : (T.mobile || T.pin || T.relay || T.cls === 'cav' || T.cls === 'medic' || T.fig === 'bike') ? 1 : (T.cls === 'walker' || T.cls === 'mg') ? 2 : 3; return Math.round(k * zA / 3); };
     for (const t of list) {
@@ -651,6 +652,37 @@ function deploy(G, side, army) {
   }
 }
 
+// Robuste Aufstellung (Enrico 2026-11-22 17:30): beide Seiten nach Rollen in fester Folge – Fußtruppen/Nahkämpfer vorn, Fahrzeuge an Straßen und
+// im Offenen, MG vorn in Deckung, Unterstützung (Sanität, Beobachter, Reiter, Mörser) und Geschütze hinten; je Platz bewertet (Deckung, Abstand,
+// Nähe zu Fahnen, Tiefe in der Zone). Mischen (Tests) vertauscht nur innerhalb einer Rolle – so sind die Plätze gleich gut verteilt.
+function deployZone(G, side, list, lead, free) {
+  const zD = Math.max(MAP.zoneD, COLS - (+(TOG.M_band || 0) || MAP.band || P.D_BAND)), zA = MAP.zoneA, placed = [];
+  const c0 = side === 'A' ? 0 : zD, c1 = side === 'A' ? zA : COLS - 1, tiefe = Math.max(1, c1 - c0);
+  const dOf = c => side === 'A' ? (zA - c) / tiefe : (c - zD) / tiefe;   // 0 = vorderste Spalte der Zone, 1 = hinterste
+  const role = t => { const T = TYPES[t]; return T.cls === 'art' && !T.mobile ? 'art' : T.cls === 'walker' ? 'fz' : (T.cls === 'medic' || T.relay || T.mobile || T.spot || T.cls === 'cav' || T.cmd || T.abil === 'mark' || T.abil === 'smoke' || T.courier) ? 'back' : T.mg ? 'mg' : 'inf'; };
+  const RANG = { inf: 0, fz: 1, mg: 2, back: 3, art: 4 };
+  const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
+  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
+  const score = (t, c, r) => {
+    const h = G.map[c][r], rl = role(t), d = dOf(c);
+    let v = rl === 'fz' ? (h.road ? 2 : ['open', 'crater', 'grass'].includes(h.t) ? 1 : -1.5) : (DECK[h.t] || 0);   // Fahrzeuge: Straße und Offenes statt Deckung
+    if (h.ridge) v += 1;
+    for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v -= 50; else if (dd === 1) v += 1.2; }
+    if (rl === 'art') v += d * 6 - (d < 0.45 ? 5 : 0);
+    else if (rl === 'back') v += d * 3;
+    else if (rl === 'mg') v += (1 - d) * 3;
+    else if (rl === 'fz') v += (1 - Math.abs(d - 0.4)) * 2;
+    else v += (1 - d) * 3.2;   // Fußtruppen und Nahkämpfer vorn
+    for (const p of placed) { const dd = dist(c, r, p[0], p[1]); if (dd <= 1) v -= 3.2; else if (dd === 2) v -= 1.2; else if (dd === 3) v -= 0.3; }
+    return v;
+  };
+  const order = list.map((t, i) => [t, i]).sort((a, b) => RANG[role(a[0])] - RANG[role(b[0])] || a[1] - b[1]).map(x => x[0]);
+  for (const t of order) {
+    let best = null, bv = -1e9;
+    for (let c = c0; c <= c1; c++) for (let r = 0; r < ROWS; r++) { if (!free(t, c, r)) continue; const v = score(t, c, r); if (v > bv) { bv = v; best = [c, r]; } }
+    if (best) { addUnit(G, t, best[0], best[1], lead(t)); placed.push(best); }
+  }
+}
 // Verteidiger auf neuen Karten: Besatzung für jedes Zielfeld, MG in die vorderen Gräben, Geschütze nach hinten,
 // alles mit Abstand, damit die ganze Front besetzt ist.
 function deployD(G, list, lead, free) {
@@ -1332,7 +1364,7 @@ function spotted(G, side, c, r) {
   if (smokeAt(G, c, r)) return false;   // in den Nebel hinein sieht kein Beobachter (Artillerie, Feuerschlag, Markieren)
   return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= sichtOf(G, u) && hasLOS(G, u.c, u.r, c, r, luft(u)));
 }
-function sichtOf(G, u) { if (TYPES[u.type].fessel && u.eingeholt) return P.BALLON_SICHT_UNTEN; const t = hex(G, u.c, u.r).t; return Math.max(TYPES[u.type].spot || P.SPOT, t === 'kirche' ? 6 : 0) + (t === 'turm' ? P.TURM_SPOT : 0); }   // alter Kirchturm 6 Felder, Sankt Ruß +1
+function sichtOf(G, u) { if (TYPES[u.type].fessel && u.eingeholt) return P.BALLON_SICHT_UNTEN; const t = hex(G, u.c, u.r).t; return Math.max(TYPES[u.type].spot || P.SPOT, t === 'kirche' ? 6 : 0) + (t === 'turm' || t === 'kapelle' ? P.TURM_SPOT : 0); }   /* Kapelle mit Türmchen: +1 Sicht, keine Reichweite (Enrico 2026-11-22 17:30) */   // alter Kirchturm 6 Felder, Sankt Ruß +1
 // ---------- Große Gebäude (Kirche von Sankt Ruß) ----------
 function bauAt(G, c, r) { const i = inMap(c, r) ? hex(G, c, r).bau : null; return i != null && G.bauten && G.bauten[i] && !G.bauten[i].kaputt ? G.bauten[i] : null; }
 const schwereWaffe = a => { const T = a && TYPES[a.type]; return !!T && (T.cls === 'art' || (T.cls === 'walker' && !T.gat && !T.mgfire && T.rng >= 2)); };

@@ -1087,6 +1087,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
 .sn-k .rl { display: block; font-size: 12px; color: #C2A461; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #hudSub em.rl { color: #C2A461; font-weight: 600; }
 #detRolle .rolle { font-size: 15px; margin: 4px 0 10px; }
+.toene-status { position: fixed; top: 14px; right: 74px; z-index: 50; font-size: 13px; color: #cdbd9c; text-shadow: 0 1px 0 #000; pointer-events: none; }   /* Töne werden nachgeladen (2026-11-22) */
 /* auf Pergament (Details im Nachschub/Armee-Auswahl, Info-Fenster) dunkle Tinte statt heller Schrift */
 #shopDet .rolle, #armyDet .rolle, #detRolle .rolle { color: #2a1d14; }
 #shopDet .rolle .rl-n b, #armyDet .rolle .rl-n b, #detRolle .rolle .rl-n b, #shopDet .rolle .rl-k b, #armyDet .rolle .rl-k b, #detRolle .rolle .rl-k b { color: #5a3e12; }
@@ -1150,6 +1151,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
 
 <div class="overlay sm" id="start" hidden data-step="title">
   <div class="sm-bg" aria-hidden="true"></div>
+  <span id="toeneStatus" class="toene-status">Töne werden geladen …</span>
   <button class="tb-btn sm-snd" id="smSound" data-tip="Ton und Musik an/aus" aria-label="Ton und Musik an/aus"></button>
   <!-- 1 Startbildschirm -->
   <section class="sm-page sm-title" data-page="title">
