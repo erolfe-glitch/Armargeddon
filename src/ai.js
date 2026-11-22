@@ -44,6 +44,7 @@ if (typeof process !== 'undefined' && process.env) for (const k in process.env) 
 const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
+const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
 const W_CAV_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_CAV_ZIEL) || 3);   // F94: Anreiz für Reiter-Ziele
 const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit;   // Prüfliste 2.25: Pioniere/Mineure haben keine Nahkampf-Panzerwaffe mehr (F80)
 // Erwarteter Nahkampfschaden gegen ein Fahrzeug auf (c, r) in der nächsten gegnerischen Runde: Sturmtruppen, Reiter, Kampfanzüge, Pioniere,
@@ -433,7 +434,7 @@ function planUnit(G, u) {
     else {
       const s = planArt(G, u); if (s) { u.ohneZiel = 0; return { shell: s }; }
       if (u._ozT !== G.turn) { u._ozT = G.turn; u.ohneZiel = (u.ohneZiel || 0) + 1; }   // eigene Runden ohne Ziel
-      if (TYPES[u.type].limber && (alt ? u.side === 'A' && G.turn >= 4 && near > 8 : u.ohneZiel >= 2 && near > rw) && E.canLimber(G, u)) return { limber: true };
+      if (TYPES[u.type].limber && (alt ? u.side === 'A' && G.turn >= 4 && near > 8 : u.ohneZiel >= (wOf(u.side).artRunden || ART_RUNDEN) && near > rw) && E.canLimber(G, u)) return { limber: true };
       if (TYPES[u.type].mv < 2 || u.ap < 1) return { v: 0 };
     }
   }

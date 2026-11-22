@@ -414,8 +414,9 @@ const MAPS = {
       { id: 'suedgraben', name: 'Südgraben', c: 7, r: 7, pts: 2 },
       { id: 'schanze', name: 'Die Schanze', c: 10, r: 5, pts: 2 },
       { id: 'veskar', name: 'Veskar', c: 12, r: 4, pts: 1 }],
+    ki: { A: { artRunden: 5 }, D: { artRunden: 4 } },   /* F94-Abgleich (2026-11-22): Geschütze ziehen erst nach 5 bzw. 4 Runden ohne Ziel nach – feste Aufstellung 54,3 % (8 × 200) */
     army: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 1, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, rauch: 1, generalA: 1, hauptA: 1 },   // F94 (Enrico 2026-11-22 13:35): gemischte Startarmeen, höchstens 5 vom selben Typ
-      D: { grenadier: 5, sense: 3, geschuetz: 2, sturm: 1, sturmpz: 1, minenwerfer: 1, pionierD: 1, buechse: 1, heiler: 1, signal: 1, lanzeD: 1, generalD: 1, hauptD: 1 } },   // vorher A: 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter; D: 8 Grenadiere, 5 Sensenwerk, 2 Geschütze, 2 Sturmbrecher   // F66/F54/F80 (2026-11-21): +2 Sturmbrecher (Panzergranate gegen die Kolosse), 8 statt 10 Grenadiere (Sim 52 %)
+      D: { grenadier: 5, gasschutz: 2, banner: 1, sense: 3, geschuetz: 2, sturm: 1, sturmpz: 1, minenwerfer: 1, signal: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* Abgleich nach F103 (je 8 × 200): feste Aufstellung 46,5 %, gemischt 57,1 % */   // vorher A: 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter; D: 8 Grenadiere, 5 Sensenwerk, 2 Geschütze, 2 Sturmbrecher   // F66/F54/F80 (2026-11-21): +2 Sturmbrecher (Panzergranate gegen die Kolosse), 8 statt 10 Grenadiere (Sim 52 %)
     build: () => {
       const T = mapTools(16, 10, 1917);
       T.line(2, 0, 9, 'trench');
@@ -449,7 +450,8 @@ const MAPS = {
     bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[8, 5], [9, 5]], turm: [9, 4] }],
     ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },
     // Beide Seiten greifen an: Aschenwacht etwa gleich viel wert wie das Konkordat (940 zu 910 – ein Grenadier-Trupp mehr gleicht den ersten Zug aus), ohne Reserve zur Mitte der Schlacht
-    army: { A: { kohorte: 8, mahlwerk: 3, koloss: 3, haubitze: 2, reiter: 2, pionier: 2, generalA: 1, hauptA: 1 }, D: { grenadier: 11, sense: 3, geschuetz: 2, sturmpz: 2,   /* Paket G (2026-11-21): nach gedämpftem Sturmrollen 2 Pioniere (Haftladung gegen die Sturmpanzer), 8 Kohorten – Sim 53 % */ lanzeD: 2, minenwerfer: 1, generalD: 1, hauptD: 1 } },
+    army: { A: { kohorte: 5, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, rauch: 1, generalA: 1, hauptA: 1 },   /* F94 (2026-11-22): gemischte Startarmeen, höchstens 5 vom selben Typ; vorher 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter, 2 Pioniere */
+      D: { grenadier: 5, pionierD: 2, gasschutz: 2, sense: 2, geschuetz: 2, sturmpz: 2, sturm: 1, minenwerfer: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* vorher 11 Grenadiere, 3 Sensenwerk, 2 Geschütze, 2 Sturmpanzer, 2 Sprenglanzen, 1 Minenwerfer; Abgleich: feste Aufstellung 49,4 %, gemischt 77,5 % */
     grid: [
       '...=xg.gVg.x=f..',
       '.f.=.VV.gVgx=..,',

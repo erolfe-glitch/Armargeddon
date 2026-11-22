@@ -8,6 +8,7 @@
 const E = require('../src/engine.js'), AI = require('../src/ai.js');
 const modus = process.argv[2] || 'basis', N = +(process.argv[3] || 200), KARTE = process.argv[4] || 'grauwall', SEED = +(process.argv[5] || 1);
 E.useMap(KARTE);
+if (process.env.PSET) Object.assign(E.P, JSON.parse(process.env.PSET));   // Abgleich: P-Werte probeweise ändern, z. B. PSET='{"GRANAT_FERN":1}'
 const GEMISCHT = {
   grauwall: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 1, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, rauch: 1, generalA: 1, hauptA: 1 },
     D: { grenadier: 5, sense: 3, geschuetz: 2, sturm: 1, sturmpz: 1, minenwerfer: 1, pionierD: 1, buechse: 1, heiler: 1, signal: 1, lanzeD: 1, generalD: 1, hauptD: 1 } },
