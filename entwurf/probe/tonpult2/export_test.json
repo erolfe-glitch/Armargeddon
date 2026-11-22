@@ -1,0 +1,421 @@
+{
+ "werkzeug": "Armargeddon Ton-Pult",
+ "stand_toene": "2026-11-22",
+ "exportiert": "2026-11-22T18:34:23.796Z",
+ "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
+ "aenderungen": [
+  {
+   "einheit": "kohorte",
+   "name": "Schützenkohorte",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "melder",
+   "name": "Meldegänger mit Hund",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "fernsprech",
+   "name": "Fernsprechtrupp",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "feldscher",
+   "name": "Feldscher",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionier",
+   "name": "Graben-Pioniere",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "scharf",
+   "name": "Scharfschütze",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "schildwall",
+   "name": "Schildwall",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mahlwerk",
+   "name": "Mahlwerk-Trupp",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "raeumer",
+   "name": "Grabenräumer",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "flammen",
+   "name": "Flammentrupp",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "rauch",
+   "name": "Rauchwerfer-Trupp",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mineur",
+   "name": "Mineure (Tunnelgräber)",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "werkstatt",
+   "name": "Versorgungstrupp",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "ballon",
+   "name": "Ballonbeobachter",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schritte)",
+   "platz_spiel": "schritte",
+   "filter": null,
+   "wahl": "p:schnee_gruppe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "schnee_gruppe",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sense",
+   "name": "Sensenwerk-Trupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "MG-Feuer",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "p:neu4_mg_schwer",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu4_mg_schwer",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "huenen",
+   "name": "Eiserne Hünen",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schweres MG aus der Hüfte",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "p:neu4_mg_schwer",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu4_mg_schwer",
+   "lautstaerke_spiel": 0.62,
+   "lautstaerke": 0.62,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "saeger",
+   "name": "Sägeschreiter",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Drehlauf",
+   "platz_spiel": "minigun",
+   "filter": null,
+   "wahl": "p:neu4_mg_schwer",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu4_mg_schwer",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  }
+ ],
+ "roh": {
+  "kohorte": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "melder": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "fernsprech": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "feldscher": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "pionier": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "scharf": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "schildwall": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "mahlwerk": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "raeumer": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "oger": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "flammen": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "rauch": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "mineur": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "werkstatt": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "ballon": {
+   "ziehen": {
+    "w": "p:schnee_gruppe",
+    "vol": 0.6
+   }
+  },
+  "sense": {
+   "schuss": {
+    "w": "p:neu4_mg_schwer"
+   }
+  },
+  "huenen": {
+   "schuss": {
+    "w": "p:neu4_mg_schwer"
+   }
+  },
+  "saeger": {
+   "schuss": {
+    "w": "p:neu4_mg_schwer"
+   }
+  }
+ }
+}
