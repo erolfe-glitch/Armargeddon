@@ -309,7 +309,10 @@ def kontrast(q, f):
 # Gemalter Rauch über Auspuffrohren (Stufe-3-Schreiter, 2026-11-19): den Rauch macht im Spiel der Effekt. Kästen in Quellkoordinaten (vor dem Spiegeln)
 # über den Rohröffnungen; darin werden helle, ungesättigte Flächen (Rauch) samt ihrer dunklen Kontur zur Hintergrundfarbe – die dunkelgraue
 # Fahne und die Rohre bleiben (zu dunkel bzw. unterhalb der Kästen).
-RAUCH = {'aschenwacht_eisenknecht_neu': [(1370, 195, 1512, 326), (1480, 185, 1615, 306), (1830, 160, 2045, 268), (1950, 222, 2100, 323)]}
+RAUCH = {'aschenwacht_eisenknecht_neu': [(1370, 195, 1512, 326), (1480, 185, 1615, 306), (1830, 160, 2045, 268), (1950, 222, 2100, 323)],
+         # Schreiter-Posen (2026-11-22): nur die linke Figur raucht; Kästen links der Fahne bzw. rechts davon über den Rohren
+         'aschenwacht_eisenknecht_posen': [(280, 190, 395, 278), (330, 135, 455, 238), (665, 190, 760, 268), (760, 190, 862, 288)],
+         'aschenwacht_eisenknecht_posen3': [(290, 185, 405, 275), (350, 130, 475, 232), (670, 190, 762, 268), (760, 190, 852, 288)]}
 
 
 def rauch_weg(a, name):
@@ -330,7 +333,7 @@ def rauch_weg(a, name):
 
 
 # Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
-ENTROSA = {'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
+ENTROSA = {'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
 
 
 def entrosa(q):
@@ -377,7 +380,7 @@ FIGUREN_POSEN = {
     # Generäle: nur der General posiert, der Fahnenträger kommt aus dem (übermalten) Grundbild dahinter (traeger); ref = Pose ohne erhobenen Arm, gleich groß wie der General im Grundbild
     'konkordat_general_posen': dict(n=4, reihen=2, grund='general', nimm=[3, 4], traeger=True, ref=3, raster=2),   # oben Beine abgeschnitten; unten Pistolenschuss, Getroffen
     'konkordat_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Stab zeigend
-    'konkordat_general_posen3': dict(n=2, reihen=1, grund='general', traeger=True, ref=1),   # F101 (2026-11-22): links Säbelhieb schräg nach unten, rechts Säbelstoß nach vorn
+    'konkordat_general_posen3': dict(n=2, reihen=1, grund='general', traeger=True, ref=1, skal=0.84),   # F101 (2026-11-22): links Säbelhieb schräg nach unten, rechts Säbelstoß nach vorn
     'aschenwacht_general_posen': dict(n=2, reihen=1, grund='general', traeger=True, ref=2),   # Säbel erhoben, mit Hand zeigend
     'aschenwacht_general_posen2': dict(n=2, reihen=1, grund='general', traeger=True, ref=1),   # Pistolenschuss, Getroffen
     # R9 Panzerbüchse (16:00): 1 Schütze kniend angelegt, 2 geht mit Gewehr über der Schulter, 3 Schütze getroffen (Gewehr rutscht weg), 4 Ladeschütze getroffen (Patrone fällt);
@@ -386,6 +389,12 @@ FIGUREN_POSEN = {
                                             begleiter=dict(grund='aschenwacht_panzerbuechse', naht=0.31, mass='links', ref=1, setz={1: 'links', 2: None, 3: 'links', 4: 'rechts'})),
     'aschenwacht_banner_posen3': dict(n=2, reihen=1, grund='banner', nimm=[1]),   # links: Pistole, Fahne in der linken Hand; rechts unbrauchbar (Stange nicht gehalten)
     # Helden (2026-11-21): etwa 1,5 Soldatenhöhen (Hauptmann 1,2 SH × 1,25); Grundbild = <seite>_held_1, Porträt fürs Panel = <seite>_held_portrait_1
+    # Stufe-3-Schreiter-Posen (Enrico 2026-11-22): Größe wie das Grundbild (Gehen = Grundgröße, die anderen im selben Maßstab)
+    'konkordat_kreuzschreiter_posen': dict(n=2, reihen=1, grund='kreuzschreiter_neu', refpose=1, raster=2),   # Gehen mit Hammer, Löwenmaul-Schuss
+    'konkordat_kreuzschreiter_posen2': dict(n=2, reihen=1, grund='kreuzschreiter_neu', massvon='konkordat_kreuzschreiter_posen'),   # Hammerschlag, Unterarm-Kanone erhoben
+    'aschenwacht_eisenknecht_posen': dict(n=2, reihen=1, grund='eisenknecht_neu', refpose=1),   # Gehen, beide Kanonen feuern (Faustsalve); Rauch: RAUCH
+    'aschenwacht_eisenknecht_posen2': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen'),   # Hackklinge erhoben (Ausholen), Kanonen nach vorn
+    'aschenwacht_eisenknecht_posen3': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen', spiegeln=[2]),   # Hieb nach vorn; rechts blickt nach links
     'konkordat_held': dict(n=2, reihen=1, nimm=[1], grund='hauptmann', f=1.25),   # nur links (rechts zwei Kolbenfäuste); Schnipsel und rosa Fleck fallen weg
     'konkordat_held_posen': dict(n=2, reihen=1, grund='held_1', refpose=1),   # Ausholen (Faust vor der Brust), Faustschlag
     'konkordat_held_posen2': dict(n=2, reihen=1, grund='held_1', refpose=1, spiegeln=[2]),   # Revolverschuss, Getroffen (blickt nach links → gespiegelt)
@@ -455,6 +464,7 @@ def begleiter_setzen(im, bg, halten):
 def figuren_posen(name, out):
     o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')); H, W = a.shape[:2]
     a = abzeichen_uebermalen(a, name)
+    a = rauch_weg(a, name)   # gemalter Rauch über den Rohren (Eisenknecht-Posen, 2026-11-22)
     k = keyed(a)
     if name.startswith('aschenwacht_'): a = fahne_umfaerben(a, name, k[..., 3]); k = keyed(a)
     if o.get('lampe'): k = lampe_gelb(k)
@@ -489,6 +499,7 @@ def figuren_posen(name, out):
         s = MASS[o['massvon']]
     MASS[name] = s
     if o.get('traeger'): tr_, hg_, bx_ = general_grund(name.split('_', 1)[0]); s = hg_ / figs[o['ref'] - 1].shape[0]   # Größe wie der General im Grundbild
+    if o.get('skal'): s *= o['skal']   # gebückte Posen (Hieb/Stoß): Höhe ist kleiner als beim stehenden General, sonst wirkt er zu groß (F101, 2026-11-22)
     if o.get('begleiter'): bc_ = o['begleiter']; bg_ = begleiter_grund(bc_); s = bg_[bc_['mass']][1] / figs[bc_['ref'] - 1].shape[0]   # Größe wie der Mann im Grundbild
     for j, q in enumerate(figs, 1):
         if o.get('nimm') and j not in o['nimm']: print(f'{name}_{j}: ausgelassen'); continue

@@ -1588,9 +1588,10 @@ function anlauf(G, u, mitte, ev) {
   ev.push(...moveUnit(G, u, mitte[0], mitte[1], { path: [mitte], ap: 0, rush: true, keineFurcht: true }));
   return !G.over && alive(u) && u.status === 'ok' && u.c === mitte[0] && u.r === mitte[1] && !(u.supp > 0) && !(u.stuck > 0) && !(u.broken > 0);
 }
-// K4: das zurückgeschleuderte Ziel löst eine Mine aus; ein aufgebautes MG wird durch den Rückstoß abgebaut
+// K4: das zurückgeschleuderte Ziel löst eine Mine aus (ein aufgebautes MG bleibt aufgebaut, Enrico 2026-11-22)
 function rueckstossFolgen(G, d, ev) {
-  if (TYPES[d.type].mg && d.setup && !TOG.NORUECKMG) { d.setup = false; d.ow = false; d.sperr = 0; ev.push({ t: 'teardown', u: d.id }); }
+  if (TYPES[d.type].mg && d.setup && TOG.RUECKMG_AB) { d.setup = false;   // Enrico 2026-11-22: Rückstoß schiebt ein MG nur zurück, baut es nicht ab (RUECKMG_AB=1 nur zum Messen)
+    d.ow = false; d.sperr = 0; ev.push({ t: 'teardown', u: d.id }); }
   const mi = G.mines.findIndex(k => k.c === d.c && k.r === d.r && k.side !== d.side);
   if (mi >= 0) { G.mines.splice(mi, 1); ev.push({ t: 'mine', u: d.id, c: d.c, r: d.r }); applyDamage(G, null, d, P.MINE_DMG * (0.8 + G.rng() * 0.4), 'front', ev, { ranged: true }); }
   if (alive(d) && fireAt(G, d.c, d.r)) burn(G, d, ev);

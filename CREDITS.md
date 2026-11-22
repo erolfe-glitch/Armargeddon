@@ -192,6 +192,12 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | held_ruestung | held_ruestung_1 | Helden/dragon-studio-armor-impact-from-sword-393843.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
 | held_ritter_schrei | held_ritter_schrei_1 | Helden/phatphrogstudio-rpg-m-knight-voice-attack-grunt-490291.mp3 | Pixabay / phatphrogstudio | Pixabay Content License | – |
 | held_fall_horn | held_fall_horn_1 | Helden/392618__poligonstudio__movie-horn.wav | Freesound / Poligonstudio | CC0 | <https://freesound.org/s/392618/> |
+| held_faustschlag2 | _1, _2 | Helden/el_faust_schlag_mit_laden_3.mp3, _4.mp3 | ElevenLabs Sound Effects (erzeugt von Enrico, 2026-11-22) | ElevenLabs-Nutzungsbedingungen (eigene Erzeugung) | – |
+| held_fausteinschlag | _1, _2 | Helden/el_faust_einschlag_2.mp3, _4.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| held_schritt_ritter2 | _1–_3 | Helden/el_kuerassier_schritte_1.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| held_saege_start2, held_saege_schnitt2 | _1 | Helden/el_kuerassier_saege_start_1.mp3, el_kuerassier_schwung_schnitt_4.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| held_kschwert_metall, held_kschwert_fleisch | _1, _2 | Helden/el_kettenschwert_metall_1/3.mp3, el_kettenschwert_fleisch_2/3.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| medic (Konkordat, Aschenwacht) | medic_1–_4 | Voices/elevenlabs/stimme_gravel_0908_a/b.mp3, stimme_ragnar_0914_a/b.mp3 | ElevenLabs Stimmen „Gravel Midnight“, „Ragnar“ (Enrico) | ElevenLabs (eigene Erzeugung) | – |
 | ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
 **Nicht kommerziell (CC BY-NC):** held_kolben_1 (Pneumatic Airlock), held_schritt_ritter_1–4 (vermutlich, Remix mit NC-Teilen), held_dampfstoss_1 (Sampling+: Rohdatei nicht kommerziell weitergeben), barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)

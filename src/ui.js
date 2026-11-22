@@ -407,7 +407,7 @@ function drawSym(g, im, cx, cy, R, ring) {
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
-const MUZ = { konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
+const MUZ = { /* Schreiter-Posen (2026-11-22, gemessen) */ konkordat_kreuzschreiter_posen_2: [0.82, 0.49], aschenwacht_eisenknecht_posen_2: [0.984, 0.487], aschenwacht_eisenknecht_posen2_2: [0.998, 0.589], konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
   konkordat_kreuzschreiter_neu: [0.632, 0.513], aschenwacht_eisenknecht_neu: [0.88, 0.61],
   // F16/F47 (2026-11-20): Rohrende statt Sehschlitz/Brust – Landkoloss-Kanone, Sturmpanzer, Turmschreiter-Turm-MG, Säge-/Klauenschreiter-Drehlauf
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
@@ -415,7 +415,7 @@ const MUZ = { konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse
 const MUZ_FIG = { /* K12 (2026-11-22): Schuss-Posen gemessen (rechteste Laufspitze im oberen Bildteil, tools-Probe muz.py; Schildwall verdeckt, nicht gemessen) */ konkordat_soldat_2: [1, 0.164], aschenwacht_soldat_2: [1, 0.199], konkordat_soldat_3: [1, 0.183], aschenwacht_soldat_3: [1, 0.243], konkordat_pionier_posen2_1: [1, 0.147], aschenwacht_pionier_posen2_1: [1, 0.229], konkordat_pionier_posen2_2: [1, 0.172], aschenwacht_pionier_posen2_2: [1, 0.27], aschenwacht_gasschutz_posen_1: [1, 0.18], aschenwacht_gasschutz_posen_3: [1, 0.266], konkordat_kampfanzug_posen_3: [1, 0.243], aschenwacht_kampfanzug_posen_3: [1, 0.267], konkordat_scharfschuetze_posen_1: [1, 0.667], konkordat_scharfschuetze_posen_3: [0.996, 0.253], aschenwacht_pirschjaeger_posen_1: [1, 0.553], aschenwacht_pirschjaeger_posen_2: [1, 0.219], konkordat_flammen_posen_2: [1, 0.166], aschenwacht_flammen_posen_2: [1, 0.298], konkordat_hauptmann_posen_2: [1, 0.133], aschenwacht_hauptmann_posen_2: [0.997, 0.147],
   aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475], konkordat_loewenoger_2: [0.905, 0.305],
   aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237], aschenwacht_banner_posen3_1: [0.997, 0.366] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
-const MUZ2 = { konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
+const MUZ2 = { konkordat_kreuzschreiter_posen2_2: [0.64, 0.1], aschenwacht_eisenknecht_posen_2: [0.984, 0.526], konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -1429,12 +1429,15 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
+const POSE_TYPEN = new Set(['kreuz', 'knecht', /* Stufe-3-Schreiter (2026-11-22) */ 'kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
 // Runde 2 (2026-11-21): Oger mit Sprung, Prankenhieb, Schrot angelegt, Getroffen; Hünen mit Hüftfeuer, Sturmlauf, halb kniend, Getroffen
-const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3', knien: 'loewenoger_posen_3', kolben: 'loewenoger_posen_2', sprung: 'loewenoger_posen_1', getroffen: 'loewenoger_posen_4' },
+const POSE_SETS = { /* Stufe-3-Schreiter (Enrico 2026-11-22): Einzelmodelle mit Posen; Gehen des Kreuzschreiters = Grundbild */
+  kreuz: { anlegen: 'kreuzschreiter_posen_2', knien: 'kreuzschreiter_posen_2', kolben: 'kreuzschreiter_posen2_1', zweit: 'kreuzschreiter_posen2_2', gebruell: 'kreuzschreiter_posen2_2' },
+  knecht: { lauf: 'eisenknecht_posen_1', anlegen: 'eisenknecht_posen2_2', knien: 'eisenknecht_posen2_2', faust: 'eisenknecht_posen_2', kolben: 'eisenknecht_posen3_2', hiebAus: 'eisenknecht_posen2_1', hieb: 'eisenknecht_posen3_1' },
+  oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3', knien: 'loewenoger_posen_3', kolben: 'loewenoger_posen_2', sprung: 'loewenoger_posen_1', getroffen: 'loewenoger_posen_4' },
   huenen: { bereit: 'eiserne_huenen_1', anlegen: 'eiserne_huenen_posen_1', knien: 'eiserne_huenen_posen_3', kolben: 'eiserne_huenen_3', lauf: 'eiserne_huenen_posen_2', getroffen: 'eiserne_huenen_posen_4' },
   // Posenbögen 2026-11-20 (Grundbogen + <bogen>_posen: Ausholen, Loslassen, Graben, Getroffen bzw. Draht schneiden, Haftladung, Graben, Getroffen).
   // Grundbögen sind unterschiedlich geordnet: Konkordat-Sturm 1 Ruhe, 3 kniend zielen, 4 Keule; Aschenwacht-Sturm 1 Spaten, 2 Keule, 4 Ruhe; Pioniere 1 Ruhe, 2 Schaufel, 3 kniend (Ladung/Mine)
@@ -2103,7 +2106,7 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
         d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.05 * gross, dx: Math.sin(ph * Math.PI) * L.s * 0.012 * (n % 2 ? 1 : -1) };
         if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
       else if (kette) d.wipp = { dy: Math.sin(k * Math.PI * 10) * L.s * 0.006, dx: 0 };
-      else if (ritter) { const ph = k * 2, n = Math.floor(ph); d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.035, dx: 0 }; if (n > schritt || (k >= 1 && schritt < 2)) { schritt = Math.max(n, schritt + (k >= 1 ? 1 : 0)); playSound('held_schritt_ritter', 0.55, null, { noGap: true }); } } }   // Kettenfahrzeug: leichtes Rattern
+      else if (ritter) { const ph = k * 2, n = Math.floor(ph); d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.035, dx: 0 }; if (n > schritt || (k >= 1 && schritt < 2)) { schritt = Math.max(n, schritt + (k >= 1 ? 1 : 0)); playSound('held_schritt_ritter2', 0.55, null, { noGap: true }); } } }   // Kettenfahrzeug: leichtes Rattern
     d.wipp = null;
   }
   } finally { d.moving = false; d.wipp = null; }
@@ -2161,7 +2164,7 @@ async function playEvent0(e) {
       const a = DU.get(e.a), [x1, y1] = bodyPos(e.a), [x2, y2] = bodyPos(e.d);
       { const dz = DU.get(e.d); fxZielFuss = dz ? [dz.x, dz.y] : null; }
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
-      { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
+      { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, e.zweit && poseHat(au0, 'zweit') ? 'zweit' : poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (!szene && camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
       if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') {   // F75 (2026-11-21): EIN längerer Feuerstoß je Trupp (gemeinsam, ca. 1,5 s; Zweitwaffe Flammenstoß 1,1 s) – Ton startet mit dem Strahl, hält so lange wie er sichtbar ist und klingt mit ihm aus, danach kurzes Nachbrennen
@@ -2278,7 +2281,7 @@ async function playEvent0(e) {
     }
     case 'melee': case 'counter': {
       getuemmel();   // Getümmel-Schleife, solange Nahkampf läuft (2026-11-18)
-      { const ha = unitById(e.a); if (ha && ha.type === 'faust') playSound('held_aufladen', 0.5); else if (ha && ha.type === 'kuerass') { playSound('held_saege_start', 0.55); if (e.t === 'melee') playSound('held_ritter_schrei', 0.45); } }   // Helden: Ausholen
+      { const ha = unitById(e.a); if (ha && ha.type === 'faust') playSound('held_aufladen', 0.5); else if (ha && ha.type === 'kuerass') { playSound('held_saege_start2', 0.55); if (e.t === 'melee') playSound('held_ritter_schrei', 0.45); } }   // Helden: Ausholen
       pose(e.a, 'kolben', 650);   // Kolbenschlag mit kurzem Vorstoß
       const a = DU.get(e.a), d = DU.get(e.d);
       const ksz = e.t === 'melee' ? await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4) : null;   // F48: Kampfszene
@@ -2295,8 +2298,8 @@ async function playEvent0(e) {
         // Kolosse/Schreiter (heavy/impact), Kampfanzüge (sword), Grabenräumer (axe + Flinte), Sturmbrecher (Handgranate + Flinte)
         const base = au && au.side === 'D' ? 'nahD' : 'nahA', suit = au && TYPES[au.type].suit;
         const gep0 = du0 && (TYPES[du0.type].cls === 'walker' || TYPES[du0.type].suit);   // Paket G 4b (Enrico 2026-11-21): Löwenoger = Tiger-Attacke + Fleisch-Treffer, gegen Gepanzerte Biss auf Panzerung
-        if (au && au.type === 'faust') { playSound('held_faustboom', 0.65); setTimeout(() => playSound('held_dampfstoss', 0.35), 240 / speed); } else   // Helden (Enrico 2026-11-21)
-        if (au && au.type === 'kuerass') playSound('held_saege_schnitt', 0.65); else
+        if (au && au.type === 'faust') { playSound('held_faustschlag2', 0.65); setTimeout(() => playSound('held_dampfstoss', 0.35), 240 / speed); } else   // Helden (Enrico 2026-11-21)
+        if (au && au.type === 'kuerass') { playSound('held_saege_schnitt2', 0.6); playSound(kschwertTon(e.d), 0.5); } else
         if (au && au.type === 'oger') { playSound('neu3_bestie', 0.5 * (e.t === 'counter' ? 0.85 : 1)); playSound(gep0 ? 'neu3_biss' : 'neu3_fleisch', 0.5); } else
         playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : base,   /* F80: normaler Hiebton statt Granate */ (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('oger_bruell', 0.45); }   // Löwenoger brüllt statt zu schreien
@@ -2424,7 +2427,7 @@ async function playEvent0(e) {
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.5); playSound('drahtwackeln', 0.4);   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
-    case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
+    case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); pose(e.u, 'gebruell', 1800); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
     case 'abilTitel': {   // Enrico 2026-11-22: Titel zuerst, dann Anlauf/Sprung und Schlag (Durchbruch, Sturmrollen, Sprungangriff)
       const a = DU.get(e.u), au = unitById(e.u); if (!a || !au) break; if (camOn() && !inView(a.x, a.y, 0.15)) await camTo(a.x, a.y - L.s * 0.4, 360);
       const NAME = { durchbruch: 'Durchbruch', rollen: 'Sturmrollen', sprung: 'Sprungangriff' }, art = e.k === 'durchbruch' ? 'faust' : au.side === 'A' ? 'faust' : 'kalt';
@@ -2451,7 +2454,7 @@ async function playEvent0(e) {
       a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed; let ls = 0;
       for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.3 * k * k, dy: dy * 0.3 * k * k };
         if (performance.now() - ls > 60 / speed) { ls = performance.now(); boom(a.x + a.lunge.dx, a.y + a.lunge.dy + L.s * 0.12, L.s * 0.26, 'dust'); } }   // Staubschleppe beim Sturm
-      playSound('held_faustboom', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); faustDampf(e.u, 0.8); }, 260 / speed); shake(14); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
+      playSound('held_fausteinschlag', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); faustDampf(e.u, 0.8); }, 260 / speed); shake(14); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
       stopBis = performance.now() + 70; heldRing(d.x, d.y, 'faust', true);   // Druckwelle am Boden
       for (let q = 0; q < (BW === 2 ? 7 : 5); q++) { const w = q / (BW === 2 ? 7 : 5) * Math.PI * 2 + Math.random() * 0.4; boom(d.x + Math.cos(w) * L.s * 0.75, d.y + Math.sin(w) * L.s * 0.75 * kAt(d.x, d.y), L.s * 0.32, 'dust', 3 + q); }
       fx('erdfontaene', null, d.x, d.y + L.s * 0.3, { life: 52, mul: 0.55, grow: 0.25, flip: dx < 0, fadeOut: 0.45, filter: 'brightness(0.75) sepia(0.3)' });
@@ -2461,7 +2464,7 @@ async function playEvent0(e) {
     case 'hinrichtung': {   // Held Kürassier: Ausholen über die Schulter, Hieb nach unten, kaltes Aufblitzen, Rütteln; die Vernichtung folgt als eigenes Ereignis
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
       await heldTitelErst(ksz, 'Hinrichtung', 'kalt', heldName(e.u));   // F86: großer Auftritt; F87: erst Schrift, dann Schlag
-      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt', 0.75);
+      a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start2', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt2', 0.7); playSound(kschwertTon(e.d), 0.55);
       const mx = d.x + (a.x - d.x) * 0.35, my = d.y - L.s * 0.55, masch = istMaschine(unitById(e.d));   // Treffpunkt der Säge
       heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11);
       for (let q = 0; q < (BW === 2 ? 4 : 3); q++) fx('funken', null, mx + (Math.random() - 0.5) * L.s * 0.25, my + (Math.random() - 0.5) * L.s * 0.2, { anchor: 'mitte', delay: q * 3, life: 18 + q * 3, mul: 0.65 + q * 0.12, fadeOut: 0.6, flip: Math.random() < 0.5 });   // Funken von der Kettensäge
@@ -2479,7 +2482,7 @@ async function playEvent0(e) {
       fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('steps', 0.4); shake(2); VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
     case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
-      const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]);
+      const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]); pose(e.u, 'faust', 1600);   // Schreiter-Posen: beide Kanonen feuern
       if (camOn() || OPT.cam) { await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
       floater(a.x, a.y - L.s * 1.3, 'Faustsalve!', '#ffb04a', true); await wait(180);
       const mx = zs.reduce((n, z) => n + z[1], 0) / Math.max(1, zs.length); a.face = mx >= a.x ? 0 : 3;
@@ -2525,7 +2528,7 @@ async function playEvent0(e) {
         if (w === 'Stollen gesprengt') { fx('truemmer', 4, x, y + s * 0.4, { life: 90, mul: 1.2, grow: 0.3, rise: 0.3, fadeOut: 0.5 }); fx('truemmer', 0, x + s * 0.3, y + s * 0.3, { delay: 6, life: 80, mul: 0.8, grow: 0.25 }); }
         if (/^Draht (verbrannt|zerschossen|zerrissen|niedergewalzt)/.test(w)) gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); } if (e.what === 'Draht gezogen') playSound('bauen', 0.3); if (e.what === 'Stollen gesprengt') playSound('blast', 0.8); if (e.what === 'gesprengt' || e.what === 'Stollen gesprengt') playSound('einsturz', 0.7); if (e.what) { const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, e.what, '#e6e9ec'); } break; }
     case 'stuck': if (TYPES[u.type].stecken) {   // M4 (2026-11-22): Kürassier – schwere Rüstung sackt ein, Metall und Stampfen statt Autounfall; Schlamm spritzt nur im Schlamm
-      const d0 = DU.get(e.u); d0.vs.stuck = 1; playSound('held_ruestung', 0.55); playSound('held_schritt_ritter', 0.7); shake(2); const ht = G.map[u.c] && G.map[u.c][u.r] && G.map[u.c][u.r].t;
+      const d0 = DU.get(e.u); d0.vs.stuck = 1; playSound('held_ruestung', 0.55); playSound('held_schritt_ritter2', 0.7); shake(2); const ht = G.map[u.c] && G.map[u.c][u.r] && G.map[u.c][u.r].t;
       if (ht === 'mud' || ht === 'sumpf') muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.3, life: 50, max: 50 }); else boom(d0.x, d0.y + s * 0.15, s * 0.35, 'dust');
       kz(e.u, 'schweiss', 'puls'); await wait(250); break; }
     { DU.get(e.u).vs.stuck = 1; playSound('crash', 0.65); const d0 = DU.get(e.u); muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.4, center: true, up: 0.85, sz: 1.8, life: 56, max: 56 }); } playSound('steps', 0.7); kz(e.u, 'panne', 'puls'); await wait(250); break;
@@ -3649,6 +3652,8 @@ function drawGlut(g, s, up) {
     gr.addColorStop(0, `rgba(255,236,170,${a})`); gr.addColorStop(0.25, `rgba(255,170,60,${0.85 * a})`); gr.addColorStop(0.6, `rgba(220,80,20,${0.3 * a})`); gr.addColorStop(1, 'rgba(160,40,10,0)');
     g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr * 2.6, 0, 7); g.fill(); g.restore(); }
 }
+// Kettenschwert des Kürassiers trifft (Enrico 2026-11-22, ElevenLabs): gegen Gepanzerte Metall, gegen Fußtruppen Fleisch
+function kschwertTon(id) { const x = unitById(id), T = x && TYPES[x.type]; return T && (T.suit || T.cls === 'walker') ? 'held_kschwert_metall' : 'held_kschwert_fleisch'; }
 // F86 (2026-11-21): Auftritt der Heldenfähigkeiten – große Einblendung (heldTitel, #heldTitel), Druckwelle/Ring am Boden (heldRing),
 // Dampf aus der Faust, Staubschleppe, Ziel fliegt zurück (flugZurueck), Auren pulsieren beim ersten Auslösen je Runde (auraPuls)
 function heldName(id) { const u = unitById(id); return u ? TYPES[u.type].name : ''; }

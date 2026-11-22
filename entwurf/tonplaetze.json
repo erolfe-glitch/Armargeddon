@@ -866,6 +866,202 @@
   "note": "Kürassier: Ächzen hinter dem Helm beim Ausholen (tiefer, dumpf) (Helden, Enrico 2026-11-21 17:03/17:11)"
  },
  {
+  "pool": "held_faustschlag2",
+  "key": "held_faustschlag2_1",
+  "s": null,
+  "f": "Helden/el_faust_schlag_mit_laden_3.mp3",
+  "dur": 1.66,
+  "src": 2.48,
+  "start": 0,
+  "gain": -2,
+  "kb": 20,
+  "note": "Rote Faust: Servo lädt kurz, Schlag mit Einschlag – Standard beim Faustschlag (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_faustschlag2",
+  "key": "held_faustschlag2_2",
+  "s": null,
+  "f": "Helden/el_faust_schlag_mit_laden_4.mp3",
+  "dur": 1.92,
+  "src": 2.48,
+  "start": 0,
+  "gain": -0.9,
+  "kb": 23
+ },
+ {
+  "pool": "held_fausteinschlag",
+  "key": "held_fausteinschlag_1",
+  "s": null,
+  "f": "Helden/el_faust_einschlag_2.mp3",
+  "dur": 1.13,
+  "src": 1.48,
+  "start": 0,
+  "gain": -1.6,
+  "kb": 13,
+  "note": "Rote Faust: nur der Einschlag – Durchbruch-Aufprall (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_fausteinschlag",
+  "key": "held_fausteinschlag_2",
+  "s": null,
+  "f": "Helden/el_faust_einschlag_4.mp3",
+  "dur": 1.25,
+  "src": 1.48,
+  "start": 0,
+  "gain": -2.5,
+  "kb": 15
+ },
+ {
+  "pool": "held_schritt_ritter2",
+  "key": "held_schritt_ritter2_1",
+  "s": null,
+  "f": "Helden/el_kuerassier_schritte_1.mp3",
+  "dur": 0.5,
+  "src": 3.08,
+  "start": 0.08,
+  "gain": -1.9,
+  "kb": 6,
+  "note": "Kürassier: schwerer Ritter-Schritt, je Stampfer ein Ausschnitt – Standard beim Ziehen (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_schritt_ritter2",
+  "key": "held_schritt_ritter2_2",
+  "s": null,
+  "f": "Helden/el_kuerassier_schritte_1.mp3",
+  "dur": 0.5,
+  "src": 3.08,
+  "start": 1.26,
+  "gain": -3.6,
+  "kb": 6
+ },
+ {
+  "pool": "held_schritt_ritter2",
+  "key": "held_schritt_ritter2_3",
+  "s": null,
+  "f": "Helden/el_kuerassier_schritte_1.mp3",
+  "dur": 0.57,
+  "src": 3.08,
+  "start": 2.38,
+  "gain": 1.2,
+  "kb": 7
+ },
+ {
+  "pool": "held_saege_start2",
+  "key": "held_saege_start2_1",
+  "s": null,
+  "f": "Helden/el_kuerassier_saege_start_1.mp3",
+  "dur": 1.6,
+  "src": 2,
+  "start": 0,
+  "gain": 1.9,
+  "kb": 19,
+  "note": "Kürassier: Kettenschwert springt tief knurrend an – Standard beim Ausholen (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_saege_schnitt2",
+  "key": "held_saege_schnitt2_1",
+  "s": null,
+  "f": "Helden/el_kuerassier_schwung_schnitt_4.mp3",
+  "dur": 1.9,
+  "src": 2,
+  "start": 0,
+  "gain": 4.9,
+  "kb": 22,
+  "note": "Kürassier: schwerer Schwung mit Schnitt – Standard bei Querhieb und Hinrichtung (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_kschwert_metall",
+  "key": "held_kschwert_metall_1",
+  "s": null,
+  "f": "Helden/el_kettenschwert_metall_1.mp3",
+  "dur": 1.56,
+  "src": 2,
+  "start": 0,
+  "gain": 0.7,
+  "kb": 19,
+  "note": "Kürassier: Kettenschwert trifft Gepanzerte (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_kschwert_metall",
+  "key": "held_kschwert_metall_2",
+  "s": null,
+  "f": "Helden/el_kettenschwert_metall_3.mp3",
+  "dur": 1.64,
+  "src": 2,
+  "start": 0,
+  "gain": 5.3,
+  "kb": 19
+ },
+ {
+  "pool": "held_kschwert_fleisch",
+  "key": "held_kschwert_fleisch_1",
+  "s": null,
+  "f": "Helden/el_kettenschwert_fleisch_2.mp3",
+  "dur": 1.64,
+  "src": 2.56,
+  "start": 0.7,
+  "gain": 0.4,
+  "kb": 19,
+  "note": "Kürassier: Kettenschwert trifft Fußtruppen (Helden, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "held_kschwert_fleisch",
+  "key": "held_kschwert_fleisch_2",
+  "s": null,
+  "f": "Helden/el_kettenschwert_fleisch_3.mp3",
+  "dur": 1.8,
+  "src": 2.56,
+  "start": 0.1,
+  "gain": -1.9,
+  "kb": 21
+ },
+ {
+  "pool": "medic",
+  "key": "medic_1",
+  "s": "A",
+  "f": "Voices/elevenlabs/stimme_gravel_0908_a.mp3",
+  "dur": 2.19,
+  "src": 2.19,
+  "start": 0,
+  "gain": -3.3,
+  "kb": 26,
+  "note": "Sanitäter-Ruf Konkordat (Stimme Gravel, ElevenLabs, Enrico 2026-11-22; Zuordnung nach Länge, nicht gehört)"
+ },
+ {
+  "pool": "medic",
+  "key": "medic_2",
+  "s": "A",
+  "f": "Voices/elevenlabs/stimme_gravel_0908_b.mp3",
+  "dur": 2.43,
+  "src": 2.43,
+  "start": 0,
+  "gain": -4,
+  "kb": 29
+ },
+ {
+  "pool": "medic",
+  "key": "medic_3",
+  "s": "D",
+  "f": "Voices/elevenlabs/stimme_ragnar_0914_a.mp3",
+  "dur": 3.32,
+  "src": 3.32,
+  "start": 0,
+  "gain": -2.4,
+  "kb": 39,
+  "note": "Sanitäter-Ruf Aschenwacht (Stimme Ragnar, ElevenLabs, Enrico 2026-11-22)"
+ },
+ {
+  "pool": "medic",
+  "key": "medic_4",
+  "s": "D",
+  "f": "Voices/elevenlabs/stimme_ragnar_0914_b.mp3",
+  "dur": 3.47,
+  "src": 3.47,
+  "start": 0,
+  "gain": -2.3,
+  "kb": 41
+ },
+ {
   "pool": "held_fall_horn",
   "key": "held_fall_horn_1",
   "s": null,
@@ -5556,26 +5752,114 @@
  {
   "pool": "medic_gm",
   "key": "medic_gm_1",
+  "s": "A",
+  "f": "Voices/eigene/filter/medic_1_gm.wav",
+  "dur": 2.04,
+  "src": 2.21,
+  "start": 0.17,
+  "gain": -5,
+  "kb": 24,
+  "note": "Gasmaske leicht: medic gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
+  "pool": "medic_gm",
+  "key": "medic_gm_2",
+  "s": "A",
+  "f": "Voices/eigene/filter/medic_2_gm.wav",
+  "dur": 2.24,
+  "src": 2.44,
+  "start": 0.18,
+  "gain": -4.6,
+  "kb": 26
+ },
+ {
+  "pool": "medic_gm",
+  "key": "medic_gm_3",
+  "s": "D",
+  "f": "Voices/eigene/filter/medic_3_gm.wav",
+  "dur": 3.18,
+  "src": 3.32,
+  "start": 0.14,
+  "gain": -3.4,
+  "kb": 37
+ },
+ {
+  "pool": "medic_gm",
+  "key": "medic_gm_4",
+  "s": "D",
+  "f": "Voices/eigene/filter/medic_4_gm.wav",
+  "dur": 3.31,
+  "src": 3.48,
+  "start": 0.16,
+  "gain": -4.9,
+  "kb": 39
+ },
+ {
+  "pool": "medic_gm",
+  "key": "medic_gm_5",
   "s": null,
   "f": "Voices/eigene/filter/medic_gm.wav",
   "dur": 0.86,
   "src": 0.9,
   "start": 0,
   "gain": -6,
-  "kb": 10,
-  "note": "Gasmaske leicht: medic gefiltert (tools/stimmfilter.py, 2026-11-17)"
+  "kb": 10
  },
  {
   "pool": "medic_gs",
   "key": "medic_gs_1",
+  "s": "A",
+  "f": "Voices/eigene/filter/medic_1_gs.wav",
+  "dur": 2.05,
+  "src": 2.21,
+  "start": 0.16,
+  "gain": -7.1,
+  "kb": 24,
+  "note": "Gasmaske mittel (Kampfanzug): medic gefiltert (tools/stimmfilter.py, 2026-11-17)"
+ },
+ {
+  "pool": "medic_gs",
+  "key": "medic_gs_2",
+  "s": "A",
+  "f": "Voices/eigene/filter/medic_2_gs.wav",
+  "dur": 2.27,
+  "src": 2.44,
+  "start": 0.17,
+  "gain": -6.9,
+  "kb": 27
+ },
+ {
+  "pool": "medic_gs",
+  "key": "medic_gs_3",
+  "s": "D",
+  "f": "Voices/eigene/filter/medic_3_gs.wav",
+  "dur": 3.18,
+  "src": 3.32,
+  "start": 0.14,
+  "gain": -6.6,
+  "kb": 37
+ },
+ {
+  "pool": "medic_gs",
+  "key": "medic_gs_4",
+  "s": "D",
+  "f": "Voices/eigene/filter/medic_4_gs.wav",
+  "dur": 3.33,
+  "src": 3.48,
+  "start": 0.15,
+  "gain": -7.5,
+  "kb": 39
+ },
+ {
+  "pool": "medic_gs",
+  "key": "medic_gs_5",
   "s": null,
   "f": "Voices/eigene/filter/medic_gs.wav",
   "dur": 0.86,
   "src": 0.9,
   "start": 0,
-  "gain": -8.6,
-  "kb": 10,
-  "note": "Gasmaske mittel (Kampfanzug): medic gefiltert (tools/stimmfilter.py, 2026-11-17)"
+  "gain": -8.8,
+  "kb": 10
  },
  {
   "pool": "cry_gm",
@@ -5585,7 +5869,7 @@
   "dur": 1.18,
   "src": 1.3,
   "start": 0.04,
-  "gain": -3.3,
+  "gain": -3,
   "kb": 14,
   "note": "Gasmaske leicht: cry gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5597,7 +5881,7 @@
   "dur": 1.18,
   "src": 1.18,
   "start": 0,
-  "gain": -5.1,
+  "gain": -5,
   "kb": 14
  },
  {
@@ -5620,7 +5904,7 @@
   "dur": 1.18,
   "src": 1.18,
   "start": 0,
-  "gain": -7.2,
+  "gain": -7.6,
   "kb": 14
  },
  {
@@ -5631,7 +5915,7 @@
   "dur": 1.69,
   "src": 1.7,
   "start": 0.01,
-  "gain": -7.9,
+  "gain": -7.8,
   "kb": 20,
   "note": "Gasmaske leicht: scream gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5643,7 +5927,7 @@
   "dur": 1.6,
   "src": 1.6,
   "start": 0,
-  "gain": -5.3,
+  "gain": -5.4,
   "kb": 19
  },
  {
@@ -5654,7 +5938,7 @@
   "dur": 1.69,
   "src": 1.7,
   "start": 0.01,
-  "gain": -9.7,
+  "gain": -9.8,
   "kb": 20,
   "note": "Gasmaske mittel (Kampfanzug): scream gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5666,7 +5950,7 @@
   "dur": 1.6,
   "src": 1.6,
   "start": 0,
-  "gain": -7.6,
+  "gain": -7.7,
   "kb": 19
  },
  {
@@ -5689,7 +5973,7 @@
   "dur": 2.2,
   "src": 2.2,
   "start": 0,
-  "gain": -4.5,
+  "gain": -4.4,
   "kb": 26,
   "note": "Gasmaske mittel (Kampfanzug): panic gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5701,7 +5985,7 @@
   "dur": 2.36,
   "src": 2.36,
   "start": 0,
-  "gain": -5.4,
+  "gain": -5.1,
   "kb": 28,
   "note": "Bordfunk stark (Panzer): panic gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5737,7 +6021,7 @@
   "dur": 0.65,
   "src": 0.67,
   "start": 0,
-  "gain": -4.2,
+  "gain": -4.1,
   "kb": 8
  },
  {
@@ -5745,7 +6029,7 @@
   "key": "forward_gs_1",
   "s": "A",
   "f": "Voices/eigene/filter/forward_gs.wav",
-  "dur": 1.56,
+  "dur": 1.58,
   "src": 1.73,
   "start": 0.07,
   "gain": -8.4,
@@ -5771,7 +6055,7 @@
   "dur": 0.74,
   "src": 0.8,
   "start": 0.06,
-  "gain": -7.3,
+  "gain": -7.4,
   "kb": 9,
   "note": "Gasmaske leicht: roar gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5783,7 +6067,7 @@
   "dur": 3.02,
   "src": 3.02,
   "start": 0,
-  "gain": -5.6,
+  "gain": -5.7,
   "kb": 35
  },
  {
@@ -5828,7 +6112,7 @@
   "dur": 1.6,
   "src": 1.6,
   "start": 0,
-  "gain": -7.8,
+  "gain": -7.7,
   "kb": 19
  },
  {
@@ -5839,7 +6123,7 @@
   "dur": 1.65,
   "src": 1.87,
   "start": 0.08,
-  "gain": -6.3,
+  "gain": -6.2,
   "kb": 20,
   "note": "Gasmaske leicht: stand gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5851,7 +6135,7 @@
   "dur": 1,
   "src": 1.02,
   "start": 0,
-  "gain": -6.6,
+  "gain": -6.7,
   "kb": 12
  },
  {
@@ -5862,7 +6146,7 @@
   "dur": 2.69,
   "src": 2.69,
   "start": 0.01,
-  "gain": -7.3,
+  "gain": -7.1,
   "kb": 32,
   "note": "Gasmaske leicht: charge gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5874,7 +6158,7 @@
   "dur": 2.69,
   "src": 2.69,
   "start": 0,
-  "gain": -8.9,
+  "gain": -8.6,
   "kb": 32,
   "note": "Gasmaske mittel (Kampfanzug): charge gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5898,7 +6182,7 @@
   "dur": 0.85,
   "src": 0.93,
   "start": 0,
-  "gain": -7.4,
+  "gain": -7.3,
   "kb": 10,
   "note": "Gasmaske leicht: husten gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5907,7 +6191,7 @@
   "key": "husten_gm_2",
   "s": null,
   "f": "Voices/eigene/filter/husten_2_gm.wav",
-  "dur": 1.21,
+  "dur": 1.19,
   "src": 1.21,
   "start": 0,
   "gain": -3.6,
@@ -5929,11 +6213,11 @@
   "key": "robot_mr_1",
   "s": null,
   "f": "Voices/eigene/filter/robot_mr.wav",
-  "dur": 1.5,
+  "dur": 1.46,
   "src": 1.81,
   "start": 0.18,
-  "gain": -2.9,
-  "kb": 18,
+  "gain": -3.8,
+  "kb": 17,
   "note": "Maschine mittel (Schreiter/Eisenknecht): robot gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
  {
@@ -5944,7 +6228,7 @@
   "dur": 0.56,
   "src": 0.58,
   "start": 0,
-  "gain": -8.3,
+  "gain": -8.4,
   "kb": 7,
   "note": "Gasmaske leicht: grunzen gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5956,7 +6240,7 @@
   "dur": 0.61,
   "src": 0.65,
   "start": 0,
-  "gain": -7.7,
+  "gain": -7.6,
   "kb": 7
  },
  {
@@ -5967,7 +6251,7 @@
   "dur": 0.32,
   "src": 0.33,
   "start": 0,
-  "gain": -9.4,
+  "gain": -9.1,
   "kb": 4
  },
  {
@@ -5978,7 +6262,7 @@
   "dur": 0.56,
   "src": 0.58,
   "start": 0,
-  "gain": -9,
+  "gain": -8.8,
   "kb": 7,
   "note": "Gasmaske mittel (Kampfanzug): grunzen gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },
@@ -5990,7 +6274,7 @@
   "dur": 0.61,
   "src": 0.65,
   "start": 0,
-  "gain": -8.8,
+  "gain": -8.7,
   "kb": 7
  },
  {
@@ -6001,7 +6285,7 @@
   "dur": 0.32,
   "src": 0.33,
   "start": 0,
-  "gain": -10.8,
+  "gain": -10.6,
   "kb": 4
  },
  {
@@ -6058,7 +6342,7 @@
   "dur": 1.02,
   "src": 1.02,
   "start": 0,
-  "gain": -11.6,
+  "gain": -11.5,
   "kb": 12
  },
  {
@@ -6080,7 +6364,7 @@
   "dur": 1.13,
   "src": 1.17,
   "start": 0,
-  "gain": -1.8,
+  "gain": -1,
   "kb": 13,
   "note": "Maschine mittel (Schreiter/Eisenknecht): loewe gefiltert (tools/stimmfilter.py, 2026-11-17)"
  },

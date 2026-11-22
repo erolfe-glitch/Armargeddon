@@ -36,7 +36,7 @@ def r90_db(x):   # wie tools/sound_bau.mjs: 90-%-Wert der 50-ms-RMS-Fenster
 
 
 def main():
-    pools = json.loads(re.search(r'root\.SOUND_POOLS = (\{.*\});', (ROOT / 'src/sound.js').read_text(encoding='utf8')).group(1))
+    pools = json.loads(re.search(r'root\.SOUND_POOLS = (?:Object\.assign\(root\.SOUND_POOLS \|\| \{\}, )?(\{.*\})\)?;', (ROOT / 'src/sound.js').read_text(encoding='utf8')).group(1))   # M9: neues Format (Object.assign)
     keys = {p: [(k, s) for k, s, *_ in pools[p] if k not in OHNE] for p in PLAN}
     roh = DIR / 'roh'; roh.mkdir(parents=True, exist_ok=True)
     alle = sorted({k for v in keys.values() for k, _ in v})
