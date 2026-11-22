@@ -5,7 +5,7 @@
 // Schaden wird dem zugeordnet, der gerade schießt oder schlägt (auch Gegenschlag, Sperrfeuer, Feuerbereitschaft); eigener Beschuss zählt nicht.
 const E = require('../src/engine.js'), AI = require('../src/ai.js'), rollen = require('./einheiten_rollen.js');
 const N = +(process.argv[2] || 200);
-const ART = { fire: 'Schießen', melee: 'Nahkampf', move: 'Ziehen', shell: 'Artillerie', abil: 'Fähigkeit', order: 'Befehl', big: 'großer Befehl', heal: 'Heilen', dig: 'Eingraben', setup: 'MG aufbauen', sperr: 'Sperrfeuer', ow: 'Feuerbereitschaft', cut: 'Draht schneiden', lay: 'Draht legen', zweit: 'Zweitwaffe', recover: 'Bergen', send: 'Meldegänger', plant: 'Banner', limber: 'Aufprotzen', unlimber: 'Abprotzen', shields: 'Schilde', roar: 'Gebrüll' };
+const ART = { fire: 'Schießen', melee: 'Nahkampf', move: 'Ziehen', shell: 'Artillerie', abil: 'Fähigkeit', order: 'Befehl', big: 'großer Befehl', heal: 'Heilen', dig: 'Eingraben', setup: 'MG aufbauen', sperr: 'Sperrfeuer', ow: 'Feuerbereitschaft', cut: 'Draht schneiden', lay: 'Draht legen', zweit: 'Zweitwaffe', recover: 'Bergen', send: 'Meldegänger', plant: 'Banner', limber: 'Aufprotzen', unlimber: 'Abprotzen', shields: 'Schilde', roar: 'Gebrüll', turn: 'Drehen', teardown: 'MG abbauen', einholen: 'Ballon einholen' };
 const zeilen = [];
 for (const karte of ['grauwall', 'sanktruss']) {
   const S = {};   // typ → Zähler

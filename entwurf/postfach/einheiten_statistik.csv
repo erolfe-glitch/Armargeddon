@@ -1,0 +1,63 @@
+schluessel;name;seite;karte;preis;start_je_schlacht;nachschub_je_schlacht;gekauft_je_schlacht;aktionen_je_schlacht;schaden_gemacht_je_schlacht;schaden_je_100_punkte;ueberlebt_bis_ende_prozent;einsatz_ki;rolle;stark_gegen;schwach_gegen;kontert_man_mit
+banner;Bannerträger;Aschenwacht;sanktruss;40;0.00;0.06;0.06;0.0;0;0;100;Ziehen 80 % / Banner 20 %;Moral (Banner);Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+buechse;Panzerbüchsen-Trupp;Aschenwacht;grauwall;50;0.00;0.13;0.13;0.0;0;2;84;Ziehen 60 % / Schießen 40 %;Panzerjäger;Gepanzerte;;MG-Trupps, Artillerie
+buechse;Panzerbüchsen-Trupp;Aschenwacht;sanktruss;50;0.00;0.36;0.36;0.9;2;10;99;Ziehen 60 % / Schießen 40 % / Drehen 1 %;Panzerjäger;Gepanzerte;;MG-Trupps, Artillerie
+generalD;General mit Stab;Aschenwacht;grauwall;70;1.00;0.00;1.00;10.9;0;0;100;Ziehen 74 % / Befehl 18 % / großer Befehl 8 %;Führung (General);Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+generalD;General mit Stab;Aschenwacht;sanktruss;70;1.00;0.00;1.00;8.3;0;0;99;Ziehen 66 % / Befehl 21 % / großer Befehl 12 %;Führung (General);Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+geschuetz;Grabengeschütz;Aschenwacht;grauwall;60;2.00;0.00;2.00;9.2;56;47;84;Artillerie 100 % / Drehen 0 %;Fernfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+geschuetz;Grabengeschütz;Aschenwacht;sanktruss;60;2.00;0.00;2.00;14.1;97;81;97;Artillerie 100 %;Fernfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+grenadier;Aschengrenadiere;Aschenwacht;grauwall;30;8.00;1.00;9.00;99.5;135;50;79;Ziehen 51 % / Schießen 16 % / Nahkampf 12 %;Linieninfanterie;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+grenadier;Aschengrenadiere;Aschenwacht;sanktruss;30;11.00;0.99;11.99;142.4;287;80;56;Ziehen 52 % / Schießen 21 % / Nahkampf 18 %;Linieninfanterie;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+hauptD;Hauptmann mit Stab;Aschenwacht;grauwall;45;1.00;0.00;1.00;7.9;3;6;99;Ziehen 55 % / Befehl 24 % / Feuerbereitschaft 13 %;Führung;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+hauptD;Hauptmann mit Stab;Aschenwacht;sanktruss;45;1.00;0.00;1.00;12.0;6;14;97;Ziehen 71 % / Schießen 12 % / Befehl 11 %;Führung;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+heiler;Aschenpfleger;Aschenwacht;grauwall;20;0.00;0.01;0.01;0.0;0;1;100;Ziehen 100 %;Sanität;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+heiler;Aschenpfleger;Aschenwacht;sanktruss;20;0.00;0.31;0.31;0.3;0;0;94;Ziehen 68 % / Heilen 32 %;Sanität;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+kuerass;Der Eiserne Kürassier;Aschenwacht;grauwall;110;0.00;0.27;0.27;0.3;4;14;100;Ziehen 48 % / Nahkampf 48 % / Fähigkeit 4 %;Held;Nahkampf, Geschütze;Beschuss auf Abstand, Panzerbrechende Waffen;Panzerjäger, Schwerer Nahkampf
+kuerass;Der Eiserne Kürassier;Aschenwacht;sanktruss;110;0.00;0.81;0.81;2.5;29;33;100;Ziehen 61 % / Nahkampf 34 % / Fähigkeit 4 %;Held;Nahkampf, Geschütze;Beschuss auf Abstand, Panzerbrechende Waffen;Panzerjäger, Schwerer Nahkampf
+lanzeD;Sprenglanzen-Reiter;Aschenwacht;sanktruss;25;2.00;0.04;2.04;16.9;5;9;99;Ziehen 98 % / Nahkampf 1 % / Drehen 0 %;Reiter (schneller Stoß);Geschütze;Beschuss auf Abstand;MG-Trupps, Feuerbereitschaft
+minenwerfer;Minenwerfer;Aschenwacht;grauwall;25;0.00;0.11;0.11;0.0;0;6;91;Artillerie 50 % / Ziehen 38 % / Drehen 13 %;Steilfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+minenwerfer;Minenwerfer;Aschenwacht;sanktruss;25;1.00;0.69;1.69;12.0;69;163;90;Artillerie 66 % / Ziehen 33 % / Drehen 1 %;Steilfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+schwer;Schwere Grabenwacht;Aschenwacht;grauwall;35;0.00;0.01;0.01;0.0;0;0;100;;Schutz (Schildwall);Nahkampf;Beschuss auf Abstand;MG-Trupps, Artillerie
+schwer;Schwere Grabenwacht;Aschenwacht;sanktruss;35;0.00;0.15;0.15;0.1;0;5;100;Ziehen 76 % / Nahkampf 24 %;Schutz (Schildwall);Nahkampf;Beschuss auf Abstand;MG-Trupps, Artillerie
+sense;Sensenwerk-Trupp;Aschenwacht;grauwall;40;5.00;0.00;5.00;59.6;97;49;46;Sperrfeuer 39 % / Schießen 21 % / Ziehen 15 %;Feuerunterstützung (MG);Fußtruppen, Reiter;Gepanzerte, Nahkampf;Grabenstürmer, Reiter
+sense;Sensenwerk-Trupp;Aschenwacht;sanktruss;40;3.00;0.00;3.00;50.3;41;34;84;Sperrfeuer 38 % / Ziehen 24 % / MG aufbauen 12 %;Feuerunterstützung (MG);Fußtruppen, Reiter;Gepanzerte, Nahkampf;Grabenstürmer, Reiter
+signal;Signaltrupp;Aschenwacht;grauwall;15;0.00;1.07;1.07;11.3;0;0;89;Fähigkeit 58 % / Ziehen 42 % / Drehen 0 %;Aufklärung und Feuerleitung;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+signal;Signaltrupp;Aschenwacht;sanktruss;15;0.00;1.02;1.02;14.1;0;0;98;Fähigkeit 55 % / Ziehen 45 %;Aufklärung und Feuerleitung;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+sturm;Sturmbrecher;Aschenwacht;grauwall;100;2.00;1.00;3.00;26.7;171;57;34;Ziehen 38 % / Nahkampf 37 % / Draht schneiden 15 %;Grabenstürmer;Gepanzerte, Nahkampf, Geschütze;Beschuss auf Abstand;MG-Trupps, Feuerbereitschaft
+sturm;Sturmbrecher;Aschenwacht;sanktruss;100;0.00;1.00;1.00;9.9;64;64;70;Ziehen 53 % / Nahkampf 29 % / Fähigkeit 12 %;Grabenstürmer;Gepanzerte, Nahkampf, Geschütze;Beschuss auf Abstand;MG-Trupps, Feuerbereitschaft
+sturmpz;Sturmpanzer;Aschenwacht;sanktruss;100;2.00;0.00;2.00;43.0;217;108;80;Ziehen 37 % / Zweitwaffe 26 % / Schießen 22 %;Durchbruch (Panzer);Stellungen und Gebäude;Panzerbrechende Waffen;Panzerjäger, Pioniere mit Ladung
+ballon;Ballonbeobachter;Konkordat;grauwall;25;0.00;1.07;1.07;6.5;0;0;92;Fähigkeit 82 % / Ziehen 11 % / Ballon einholen 4 %;Aufklärung und Feuerleitung;;Nahkampf;Grabenstürmer, Reiter
+ballon;Ballonbeobachter;Konkordat;sanktruss;25;0.00;1.49;1.49;9.4;0;0;62;Fähigkeit 56 % / Ziehen 22 % / Ballon einholen 11 %;Aufklärung und Feuerleitung;;Nahkampf;Grabenstürmer, Reiter
+faust;Die Rote Faust;Konkordat;grauwall;110;0.00;0.88;0.88;2.9;42;43;100;Ziehen 54 % / Nahkampf 28 % / Fähigkeit 17 %;Held;Nahkampf, Geschütze;Gepanzerte, Panzerbrechende Waffen;Panzerjäger, Schwerer Nahkampf
+faust;Die Rote Faust;Konkordat;sanktruss;110;0.00;0.93;0.93;4.3;60;59;99;Ziehen 52 % / Nahkampf 31 % / Fähigkeit 17 %;Held;Nahkampf, Geschütze;Gepanzerte, Panzerbrechende Waffen;Panzerjäger, Schwerer Nahkampf
+feldkanone;Feldkanone;Konkordat;grauwall;40;0.00;0.01;0.01;0.0;0;0;100;;Fernfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+feldkanone;Feldkanone;Konkordat;sanktruss;40;0.00;0.14;0.14;0.1;1;10;100;Artillerie 100 %;Fernfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+feldscher;Feldscher;Konkordat;grauwall;20;0.00;0.82;0.82;1.5;0;0;99;Ziehen 85 % / Heilen 15 %;Sanität;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+feldscher;Feldscher;Konkordat;sanktruss;20;0.00;0.87;0.87;2.3;0;0;98;Ziehen 81 % / Heilen 19 % / Drehen 0 %;Sanität;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+flammen;Flammentrupp;Konkordat;grauwall;45;0.00;0.10;0.10;0.0;0;0;100;Ziehen 100 %;Flammen;Stellungen und Gebäude;;MG-Trupps, Artillerie
+flammen;Flammentrupp;Konkordat;sanktruss;45;0.00;0.23;0.23;0.4;1;13;100;Ziehen 62 % / Schießen 35 % / Drehen 1 %;Flammen;Stellungen und Gebäude;;MG-Trupps, Artillerie
+generalA;General mit Stab;Konkordat;grauwall;70;1.00;0.00;1.00;8.6;0;0;100;Ziehen 73 % / Befehl 14 % / großer Befehl 12 %;Führung (General);Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+generalA;General mit Stab;Konkordat;sanktruss;70;1.00;0.00;1.00;7.8;0;0;100;Ziehen 70 % / Befehl 16 % / großer Befehl 13 %;Führung (General);Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+haubitze;Donnerrohr-Batterie;Konkordat;grauwall;50;2.00;0.00;2.00;10.7;51;51;100;Artillerie 78 % / Aufprotzen 13 % / Ziehen 10 %;Fernfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+haubitze;Donnerrohr-Batterie;Konkordat;sanktruss;50;2.00;0.00;2.00;12.7;61;61;98;Artillerie 98 % / Aufprotzen 1 % / Ziehen 1 %;Fernfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+hauptA;Hauptmann mit Stab;Konkordat;grauwall;45;1.00;0.00;1.00;10.3;6;14;100;Ziehen 70 % / Schießen 16 % / Befehl 13 %;Führung;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+hauptA;Hauptmann mit Stab;Konkordat;sanktruss;45;1.00;0.00;1.00;12.2;7;15;100;Ziehen 73 % / Befehl 13 % / Schießen 10 %;Führung;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+kohorte;Schützenkohorte;Konkordat;grauwall;40;8.00;1.00;9.00;136.6;238;66;82;Ziehen 50 % / Schießen 24 % / Nahkampf 13 %;Linieninfanterie;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+kohorte;Schützenkohorte;Konkordat;sanktruss;40;8.00;1.00;9.00;106.4;202;56;63;Ziehen 54 % / Schießen 22 % / Nahkampf 17 %;Linieninfanterie;Fußtruppen;Gepanzerte;MG-Trupps, Artillerie
+koloss;Landkoloss;Konkordat;grauwall;70;3.00;1.00;4.00;95.3;508;182;99;Ziehen 39 % / Zweitwaffe 32 % / Schießen 17 %;Durchbruch (Panzer);Stellungen und Gebäude;Panzerbrechende Waffen;Panzerjäger, Pioniere mit Ladung
+koloss;Landkoloss;Konkordat;sanktruss;70;3.00;1.00;4.00;82.4;469;168;94;Ziehen 41 % / Zweitwaffe 28 % / Schießen 18 %;Durchbruch (Panzer);Stellungen und Gebäude;Panzerbrechende Waffen;Panzerjäger, Pioniere mit Ladung
+mahlwerk;Mahlwerk-Trupp;Konkordat;grauwall;35;3.00;0.00;3.00;59.8;78;74;99;Ziehen 31 % / Schießen 24 % / MG abbauen 17 %;Feuerunterstützung (MG);Fußtruppen, Reiter;Gepanzerte, Nahkampf;Grabenstürmer, Reiter
+mahlwerk;Mahlwerk-Trupp;Konkordat;sanktruss;35;3.00;0.00;3.00;50.4;42;40;98;Sperrfeuer 31 % / Ziehen 27 % / MG abbauen 14 %;Feuerunterstützung (MG);Fußtruppen, Reiter;Gepanzerte, Nahkampf;Grabenstürmer, Reiter
+mineur;Mineure (Tunnelgräber);Konkordat;sanktruss;40;0.00;0.04;0.04;0.0;0;0;100;Ziehen 100 %;Pioniere;;Beschuss auf Abstand;MG-Trupps, Artillerie
+moerser;Grabenmörser;Konkordat;grauwall;25;0.00;0.51;0.51;0.3;1;5;99;Ziehen 61 % / Artillerie 39 %;Steilfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+moerser;Grabenmörser;Konkordat;sanktruss;25;0.00;0.64;0.64;0.9;3;16;96;Artillerie 56 % / Ziehen 42 % / Drehen 2 %;Steilfeuer;Stellungen und Gebäude;Nahkampf, Reiter;Grabenstürmer, Reiter
+oger;Löwenoger;Konkordat;sanktruss;105;0.00;0.01;0.01;0.0;0;0;100;;Grabenstürmer;Fußtruppen, Nahkampf, Geschütze;Panzerbrechende Waffen;Panzerjäger, Schwerer Nahkampf
+pionier;Graben-Pioniere;Konkordat;grauwall;45;0.00;0.67;0.67;1.0;2;6;100;Ziehen 66 % / Schießen 19 % / Draht schneiden 6 %;Pioniere;Gepanzerte, Stellungen und Gebäude;;MG-Trupps, Artillerie
+pionier;Graben-Pioniere;Konkordat;sanktruss;45;2.00;0.71;2.71;25.6;97;79;81;Ziehen 54 % / Schießen 24 % / Fähigkeit 9 %;Pioniere;Gepanzerte, Stellungen und Gebäude;;MG-Trupps, Artillerie
+rauch;Rauchwerfer-Trupp;Konkordat;sanktruss;25;0.00;0.08;0.08;0.1;0;0;100;Ziehen 63 % / Fähigkeit 37 %;Nebel;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter
+reiter;Lanzenreiter;Konkordat;grauwall;30;2.00;0.00;2.00;19.4;4;6;100;Ziehen 98 % / Nahkampf 2 % / Drehen 0 %;Reiter (schneller Stoß);Geschütze;Beschuss auf Abstand;MG-Trupps, Feuerbereitschaft
+reiter;Lanzenreiter;Konkordat;sanktruss;30;2.00;0.00;2.00;16.8;4;6;99;Ziehen 98 % / Nahkampf 2 % / Drehen 0 %;Reiter (schneller Stoß);Geschütze;Beschuss auf Abstand;MG-Trupps, Feuerbereitschaft
+scharf;Scharfschütze;Konkordat;grauwall;45;0.00;0.28;0.28;0.2;0;3;100;Ziehen 64 % / Schießen 36 %;Scharfschützen;Reiter;Gepanzerte, Nahkampf;Grabenstürmer, Reiter
+scharf;Scharfschütze;Konkordat;sanktruss;45;0.00;0.42;0.42;0.9;1;7;93;Ziehen 65 % / Schießen 35 %;Scharfschützen;Reiter;Gepanzerte, Nahkampf;Grabenstürmer, Reiter
+schildwall;Schildwall;Konkordat;sanktruss;35;0.00;0.03;0.03;0.0;0;0;100;Ziehen 100 %;Schutz (Schildwall);Nahkampf;Beschuss auf Abstand;MG-Trupps, Artillerie
+werkstatt;Versorgungstrupp;Konkordat;sanktruss;40;0.00;0.01;0.01;0.0;0;0;100;;Versorgung;;Nahkampf, Beschuss auf Abstand;Grabenstürmer, Reiter

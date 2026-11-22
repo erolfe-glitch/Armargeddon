@@ -425,10 +425,11 @@ function planUnit(G, u) {
   const k = E.cls(u);
   if (k === 'art') {
     const near = nearestEnemyDist(G, u.side, u.c, u.r);
-    if (u.limbered) { if (near <= 6 || u.side === 'D') return { limber: true }; }
+    const nach = typeof process !== 'undefined' && process.env && process.env.ART_NACH, rw = TYPES[u.type].rng || 6;   // F94-Versuch (2026-11-22): beide Seiten ziehen Geschütze nach, wenn die Front außer Reichweite ist
+    if (u.limbered) { if (nach ? near <= rw : (near <= 6 || u.side === 'D')) return { limber: true }; }
     else {
       const s = planArt(G, u); if (s) return { shell: s };
-      if (TYPES[u.type].limber && u.side === 'A' && G.turn >= 4 && near > 8 && E.canLimber(G, u)) return { limber: true };
+      if (TYPES[u.type].limber && (nach ? G.turn >= 3 && near > rw + 1 : u.side === 'A' && G.turn >= 4 && near > 8) && E.canLimber(G, u)) return { limber: true };
       if (TYPES[u.type].mv < 2 || u.ap < 1) return { v: 0 };
     }
   }
