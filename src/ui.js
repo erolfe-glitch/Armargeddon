@@ -2443,6 +2443,12 @@ async function playEvent0(e) {
       if (!e.panic && !e.wire && !e.burn && lastFire && performance.now() - lastFire.t < 6000 && lastFire.kind !== 'gas' && lastFire.kind !== 'flame' && (TYPES[u.type].cls === 'walker' || TYPES[u.type].suit)) {
         const art = einschlagArt(u, lastFire); setTimeout(() => playSound(art === 'panzer' ? 'einschlag_panzer' : 'einschlag_abpraller', art === 'panzer' ? 0.5 : 0.3, null, { rate: 0.92 + Math.random() * 0.16 }), (60 + Math.random() * 90) / speed); }
       else if (!e.panic && !e.wire && !e.burn && lastFire && performance.now() - lastFire.t < 6000 && (lastFire.kind === 'cannon' || lastFire.kind === 'shell') && e.dmg >= 0.3) playSound('einschlag', 0.3, null, { rate: 0.72 + Math.random() * 0.08, dur: 320 });   // Granatsplitter/Kanone in weiches Ziel: dumpf, tief
+      // F98 (2026-11-22): kleine Blutspritzer auch bei Handwaffen (Gewehr, MG, Drehlauf, Schrot, Pistole, Splitter) – etwa jeder zweite Treffer, 1–2 kleine fx_blut in Schussrichtung an einer getroffenen Figur;
+      // nie an Fahrzeugen und Schreitern, an Kampfanzügen nur, wenn der Treffer wirkt; Bildwirkung „leicht“ weniger, „aus“ keine
+      if (!e.panic && !e.wire && !e.burn && blood && BW && e.dmg >= 0.2 && lastFire && performance.now() - lastFire.t < 6000 && !['cannon', 'shell', 'flame', 'gas'].includes(lastFire.kind) && !istMaschine(u) && (!TYPES[u.type].suit || e.dmg >= 0.35) && Math.random() < (BW === 1 ? 0.4 : 0.55)) {
+        const q = DU.get(lastFire.a) || { x: d.x - L.s, y: d.y }, fl = d.x < q.x, b = d.fbx && d.fbx.length ? d.fbx[Math.floor(Math.random() * d.fbx.length)] : null;
+        for (let k = 0; k < (e.dmg >= 0.8 ? 2 : 1); k++) { const bx = b ? d.x + b[0] + b[2] * (0.3 + Math.random() * 0.4) : d.x, by = b ? d.y + b[1] + b[3] * (0.25 + Math.random() * 0.3) : d.y - s * 0.5;
+          fxOben(fx('blut', Math.floor(Math.random() * 3), bx + (fl ? -1 : 1) * s * 0.06, by, { anchor: 'mitte', life: 22, mul: 0.26 + Math.random() * 0.1, grow: 0.25, flip: fl, filter: BLUT_FILTER, delay: 1 + k * 4 })); } }
       // F64 Teil 3 (2026-11-21): etwas blutiger auch bei Beschuss (Comic-Tinte, abschaltbar über „Blut“): Gewehr kleiner Blutnebel,
       // Kanone/Granate auf Fußtruppen Erd- und Blutfontäne mit Erdklumpen und Blutflecken am Boden
       if (!e.panic && !e.wire && !e.burn && blood && e.dmg >= 0.3 && lastFire && performance.now() - lastFire.t < 6000 && !istMaschine(u) && !TYPES[u.type].suit) {
