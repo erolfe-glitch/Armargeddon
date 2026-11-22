@@ -1499,9 +1499,9 @@ function poseFigur(u, d, j, fallback) {
   else if (art === 'graben') { dy = 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * el / 520)); rot = 0.03 * Math.sin(2 * Math.PI * el / 520); }   // im Takt der Schaufel
   else if (art === 'wurf') { const h0 = P0.dauer * 0.45; art = el < h0 ? 'ausholen' : 'loslassen'; if (art === 'ausholen') { dx = -0.03 * el / h0; rot = -0.05 * el / h0; } else dx = 0.05 * Math.sin(Math.PI * Math.min(1, (el - h0) / (P0.dauer * 0.4))); }
   else if (art === 'getroffen') { const k = Math.sin(Math.PI * q); dx = -0.07 * k; rot = -0.09 * Math.sin(Math.PI * 2.2 * q) * (1 - q); }   // taumelt zurück
-  const hinten = art === 'getroffen' && P0.von != null && (facesLeft(d.face) ? P0.von > d.x + 1 : P0.von < d.x - 1);   // M7: Angreifer im Rücken – nach vorn taumeln, Bild umgekehrt spiegeln
+  const hinten = art === 'getroffen' && P0.von != null && (facesLeft(d.face) ? P0.von > d.x + 1 : P0.von < d.x - 1);   // M7: Angreifer im Rücken – nach vorn taumeln; F97 (2026-11-22): Blickrichtung bleibt, nur das Kippen geht vom Angreifer weg
   if (hinten) { dx = -dx; rot = -rot; }
-  return { im: (PB[art] && figImg(pre + PB[art])) || ruhe.im, dx, dy, rot, spiegel: art === 'getroffen' && !!PB[art] && (GETROFFEN_SPIEGEL.has(pre + PB[art]) !== hinten) };
+  return { im: (PB[art] && figImg(pre + PB[art])) || ruhe.im, dx, dy, rot, spiegel: art === 'getroffen' && !!PB[art] && GETROFFEN_SPIEGEL.has(pre + PB[art]) && !hinten };   // F97: nie zusätzlich umdrehen; Bilder, die nach vorn kippen, bleiben bei Angriff von hinten ungespiegelt (kippen dann vom Angreifer weg)
 }
 // F77 (2026-11-21): Getroffen-Bilder, deren Figur zum Feind hin kippt (Kopf deutlich vor den Füßen in Blickrichtung, gemessen: Neigung ab +0,12), werden gespiegelt – sie fallen dann vom Angreifer weg
 const GETROFFEN_SPIEGEL = new Set(['aschenwacht_eingreif_posen_4', 'aschenwacht_eiserne_huenen_posen_4', 'konkordat_loewenoger_posen_4', 'aschenwacht_gasschutz_posen_4',   /* Runde 2, gemessen +0,14 bis +0,34 */ 'konkordat_kampfanzug_posen_4', 'konkordat_scharfschuetze_posen_4', 'konkordat_mineur_posen_4', 'konkordat_schildwall_posen_4', 'konkordat_schildwall_posen2_4', 'konkordat_versorgung_posen_4', 'konkordat_melder_posen_4', 'aschenwacht_melder_posen_4', 'konkordat_soldat_posen_4', 'konkordat_sturm_posen_4', 'konkordat_flammen_posen_4', 'aschenwacht_sanitaeter_posen_4']);
