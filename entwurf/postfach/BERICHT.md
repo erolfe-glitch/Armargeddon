@@ -1,3 +1,50 @@
+## 2026-11-22 Abend – Entscheidungen 20:50: Eis bricht ein, Spuren dunkler
+
+Gepusht. Tests: test_regeln, test_belegung (alle Karten), test_kommentare, Partietest Krähenfurt – alle fehlerfrei. Bilder in `entwurf/probe/kraehenfurt_spuren/`.
+
+### 1. Eis bricht ein
+**Regel** (nur Winterkarten, Sim-Abschalter `NOEISBRUCH=1`):
+- **Wer bricht es auf:**
+  - Sprenggranaten schwerer Geschütze auf ein Eisfeld: Haubitze, Aschenwacht-Geschütz und Minenwerfer, nicht Feldkanone und Grabenmörser.
+  - Der Feuerschlag.
+  - Sperrfeuer auf ein Eisfeld zu 50 % (nur das Zielfeld).
+- **Folge:** Das Feld wird für 2 Runden **Eisloch**, offenes Wasser und für alle unpassierbar.
+- **Einheit auf dem Feld:**
+  - Sie nimmt ca. 16–24 Stärke Schaden (P.EISBRUCH_DMG 2,0).
+  - Danach rettet sie sich aufs nächste freie Ufer, bevorzugt zur eigenen Seite.
+  - Ist kein Ufer frei, wird sie nur niedergehalten.
+- **Zufrieren:** Zu Beginn der übernächsten Runde friert das Loch wieder zu; das Bild blendet in knapp 1 s aus.
+
+**Anzeige:**
+- Erst beim Abspielen: Krachen (`eis_bricht`), Splitter, Eisloch-Bild (Rand an das Eis angeglichen), Meldung „Das Eis bricht!“. Danach läuft die Einheit sichtbar ans Ufer.
+- Beim Zufrieren: leises Knacken und „Eis friert zu“.
+- Auf Eis liegt kein Schneetrichter mehr.
+- Hinweise:
+  - Der Geländehinweis zeigt auf Eis „▼ Eis kann brechen“, wenn der Gegner schwere Geschütze hat.
+  - Die Gelände-Info, die auch im Regeln-Fenster steht, erklärt es.
+  - Das Protokoll meldet Einbruch und Zufrieren.
+- Bilder: `eisbruch.jpg` (Loch, Treffer −22, Grenadiere ans Ufer), `eiszu.jpg`.
+
+**KI:**
+- Schwere Geschütze beschießen Gegner auf dem Eis bevorzugt (`W_EISZIEL` 2,0).
+- Fußtruppen meiden Eisfelder, die in Reichweite gegnerischer schwerer Geschütze liegen (`W_EIS` 0,8).
+- Ein erster Versuch mit pauschalem Meiden (sobald der Gegner überhaupt schwere Artillerie hat) lähmte die angreifende Aschenwacht: Konkordat 61–66 %. Darum gilt das Meiden jetzt nur in Reichweite.
+
+**Messung Krähenfurt** (Sieg Konkordat, 4 × 200, feste Aufstellung):
+
+| Fassung | Sieg Konkordat | Runden Ø | Ausfälle Konkordat / Aschenwacht | Eisbrüche je Schlacht |
+|---|---|---|---|---|
+| ohne (`NOEISBRUCH=1`) | 51,0 % (50 / 45 / 53 / 56) | 14,2 | 43 % / 32–33 % | 0 |
+| **mit (Standard)** | **52,8 % (50 / 52 / 52 / 57)** | 14,0 | 43 % / 32–33 % | 2,5 (davon ca. 70 % mit Einheit darauf) |
+| pauschal meiden (verworfen) | 61,5 % | 14,2 | 44 % / 30 % | 2,6 |
+
+### 2. Spuren dunkler
+- Spuren sind jetzt dunkler (Helligkeit 0,62, Kontrast 1,35), etwas größer und doppelt gezeichnet, weil die Bilder halbdurchsichtig sind. Stapfen der Fußtruppen 0,75 statt 0,6.
+- `vergleich_alt_oben_neu_unten.jpg`: in der Übersicht oben die alte, unten die neue Kettenspur. Nah bleiben sie unaufdringlich.
+
+### 3. Atemwolken
+- Unverändert.
+
 ## 2026-11-22 Abend – Entscheidungen 19:45: Uferkante flach, Häuser größer
 
 Gepusht. Partietest Krähenfurt fehlerfrei, test_kommentare sauber. Bilder in `entwurf/probe/kraehenfurt_ufer/` (`teich.jpg`, `fluss.jpg`, Dorfplatz vorher `dorfplatz_vorher.jpg` / nachher `platz.jpg`, Übersicht `uebersicht.jpg`).

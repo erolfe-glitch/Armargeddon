@@ -64,7 +64,7 @@ for (let g = 0; g < N; g++) {
           for (const [c, r] of b.felder) { const x = !b.kaputt && E.unitAt(G, c, r); if (x) KI.schiff[x.side]++; } }
         E.endTurn(G); continue; }
       for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || [];
-        for (const e of ev) { if (e.t === 'heldfall') KI.heldfall = (KI.heldfall || 0) + 1; if (e.t === 'stuck' && u && E.TYPES[u.type].stecken) KI.stecken = (KI.stecken || 0) + 1; }   // M6: Heldenfall, Kürassier steckt fest
+        for (const e of ev) { if (e.t === 'eisbruch') { KI.eis = (KI.eis || 0) + 1; if (e.u) KI.eisU = (KI.eisU || 0) + 1; } if (e.t === 'heldfall') KI.heldfall = (KI.heldfall || 0) + 1; if (e.t === 'stuck' && u && E.TYPES[u.type].stecken) KI.stecken = (KI.stecken || 0) + 1; }   // M6: Heldenfall, Kürassier steckt fest
         if (u && ev.length) { for (const e of ev) if (e.t === 'einsturz') { KI.einsturz++; KI.runde.push(G.turn); KI.durch[sd]++; KI.typ[u.type] = (KI.typ[u.type] || 0) + 1; } zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); if (e.t === 'sprung') zaehl(sd, 'Sprungangriff (Löwenoger)'); if (e.t === 'dauerfeuer') zaehl(sd, 'Dauerfeuer (Hünen, 2. Salve)'); } }
         if (G.over) break; }
     }
@@ -85,6 +85,7 @@ const pc = x => (100 * x / N).toFixed(0) + ' %';
 if (MP.bauten) console.log(`Kirche: Einsturz in ${pc(KI.einsturz)} der Schlachten (Runde Ø ${avg(KI.runde).toFixed(1)}, durch Konkordat ${KI.durch.A} / Aschenwacht ${KI.durch.D}, ${JSON.stringify(KI.typ)}); Turm besetzt ${(100 * KI.turm.A / Math.max(1, KI.zuege)).toFixed(0)} % / ${(100 * KI.turm.D / Math.max(1, KI.zuege)).toFixed(0)} % der Züge, Schiff ${(50 * KI.schiff.A / Math.max(1, KI.zuege)).toFixed(0)} % / ${(50 * KI.schiff.D / Math.max(1, KI.zuege)).toFixed(0)} %`);
 console.log(`${N} Schlachten  Konkordat ${pc(res.A)}  Aschenwacht ${pc(res.D)}  unentschieden ${pc(res.draw)}  Fehler ${errors}`);
 console.log('Ausgang:', JSON.stringify(why));
+if (E.MAPS[process.env.MAP || 'grauwall'] && E.MAPS[process.env.MAP || 'grauwall'].winter) console.log(`Eis eingebrochen: ${KI.eis || 0}× (je Schlacht ${((KI.eis || 0) / N).toFixed(2)}), davon mit Einheit darauf ${KI.eisU || 0}×`);
 console.log(`Helden: gefallen ${KI.heldfall || 0} (je Schlacht ${((KI.heldfall || 0) / N).toFixed(2)}), Kürassier steckt fest ${KI.stecken || 0}×`);
 console.log(`Runden Ø ${avg(turns).toFixed(1)}  Punkte Ø ${avg(pts).toFixed(1)}  Ausfälle Ø Konkordat ${(100 * avg(loss.A)).toFixed(0)} %  Aschenwacht ${(100 * avg(loss.D)).toFixed(0)} %`);
 console.log('Zielfelder beim Konkordat:', JSON.stringify(Object.fromEntries(E.OBJECTIVES.map(o => [o.id, pc(objHeld[o.id] || 0)]))));

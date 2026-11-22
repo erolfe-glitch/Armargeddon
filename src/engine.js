@@ -31,6 +31,7 @@ const P = {
   // Kirche von Sankt Ruß (2026-11-19, entwurf/KARTE_SANKT_RUSS.md): Deckung ×1,8 und halber Moralverlust (nur Fußtruppen und Anführer kommen hinein);
   // Turm +1 Reichweite und +1 Sicht; Bauzustand KIRCHE_HP, jeder Treffer schwerer Waffen (Artillerie, Mörser, Kanonen der Kolosse) −1 (Minenwerfer −2);
   // bei 0 Einsturz: Kirche und Turm werden Ruine, wer drin ist, nimmt EINSTURZ_DMG Schaden und wird niedergehalten. GARTEN_DEF: Garten-/Friedhofsmauer gegen Beschuss
+  EISBRUCH_DMG: 2.0, EISBRUCH_RUNDEN: 2, EISBRUCH_SPERR: 0.5,   /* Eis bricht ein (Enrico 2026-11-22 20:50): Schaden, Runden offen, Chance beim Sperrfeuer (Zielfeld) */
   KIRCHE_DEF: 1.8, KIRCHE_HP: 6, HAUS_DEF: 1.6, HAUS_HP: 3, KAPELLE_HP: 4,   /* Winterdorf (2026-11-22): heile Häuser und Kapelle mit Bauzustand */ EINSTURZ_DMG: 2.5, TURM_RNG: 1, TURM_SPOT: 1, GARTEN_DEF: 1.2,
   OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2,
   // Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke beim Betreten, Gas wirkt nach (vergiftet: ½, dann ¼ des Gasschadens), Sperrfeuer mit Abklingzeit
@@ -332,7 +333,8 @@ const TERRAIN = {
   forest:  { name: 'Totholz', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,4. Versperrt die Sicht.',
              real: 'Nach Monaten Beschuss blieben von ganzen Wäldern nur Baumstümpfe, etwa im Wald von Delville an der Somme.' },
   canal:   { name: 'Kanal', cost: 99, info: 'Nicht passierbar, nur über die Brücke.' },
-  eis:     { name: 'Eis', cost: 2, info: 'Zugefrorenes Wasser: trägt Fußtruppen, Anführer und Helden (2 Bewegung, keine Deckung). Fahrzeuge, Schreiter, Geschütze und Reiter brechen ein und kommen nicht hinüber.' },
+  eis:     { name: 'Eis', cost: 2, info: 'Zugefrorenes Wasser: trägt Fußtruppen, Anführer und Helden (2 Bewegung, keine Deckung). Fahrzeuge, Schreiter, Geschütze und Reiter brechen ein und kommen nicht hinüber. Schwerer Beschuss (Haubitze, Minenwerfer, Feuerschlag, Sperrfeuer) kann es aufbrechen: 2 Runden offenes Wasser, wer darauf steht, nimmt Schaden und rettet sich ans Ufer.' },
+  eisloch: { name: 'Eisloch', cost: 99, info: 'Aufgebrochenes Eis: offenes Wasser, für alle unpassierbar. Friert nach 2 Runden wieder zu.' },
   haus:    { name: 'Haus', cost: 1, info: 'Heiles Fachwerkhaus: nur Fußtruppen und Anführer kommen hinein (keine Helden). Abwehr ×1,6, halber Moralverlust. Versperrt die Sicht. Schwere Treffer machen es zur Ruine.' },
   kapelle: { name: 'Kapelle', cost: 1, info: 'Kleine Steinkapelle mit Türmchen: wie ein Haus (Abwehr ×1,6, halber Moralverlust, Sicht gesperrt), etwas fester gebaut. Wer drin steht, sieht 1 Feld weiter.' },
   steinbruecke: { name: 'Steinbrücke', cost: 1, info: 'Fester Übergang über den Fluss, trägt auch Kolosse und Geschütze.' },
@@ -790,7 +792,7 @@ function canMarch(u) { const k = cls(u); return k !== 'art' && k !== 'walker' &&
 function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
   if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt', 'eis'].includes(t) && k !== 'cav') return 1;   // Straße
-  if (t === 'canal') return 99;
+  if (t === 'canal' || t === 'eisloch') return 99;
   if (t === 'eis' && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // Winterdorf: Eis trägt nur Fußvolk (auch nicht über eine Straße)
   if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art' || TYPES[u.type].held)) return 99;   // Kirche: nur Fußtruppen und Anführer; K11 (Enrico 2026-11-22): Helden nicht ins Schiff und nicht auf den Turm
   if ((t === 'garten' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
@@ -1440,6 +1442,25 @@ function barrageCells(G, a, c, r) {
   const d = h => dist(a.c, a.r, h[0], h[1]) + Math.hypot(h[0] - a.c, h[1] - a.r) * 0.001;
   return [[c, r], ...nb.slice().sort((x, y) => d(x) - d(y)).slice(0, 2)];
 }
+// Eis bricht ein (Enrico 2026-11-22 20:50, nur Winterkarten, Sim-Abschalter NOEISBRUCH): schwere Geschütze (Haubitze, Minenwerfer – nicht Feldkanone/Grabenmörser) und Feuerschlag.
+// Das Feld wird für P.EISBRUCH_RUNDEN Runden Eisloch (unpassierbar); wer darauf steht, nimmt Schaden und rettet sich aufs nächste freie Ufer, sonst niedergehalten.
+function eisSchwer(G, a) { if (!MAP.winter || TOG.NOEISBRUCH) return false; const T = TYPES[a.type]; return T.cls === 'art' && !T.direkt && (!T.mobile || (T.heMul || 1) > 1); }
+function eisBruch(G, c, r, ev) {
+  const h = hex(G, c, r); if (!MAP.winter || TOG.NOEISBRUCH || !h || h.t !== 'eis') return false;
+  h.t = 'eisloch'; h.eisBis = G.turn + P.EISBRUCH_RUNDEN; G.eisBrueche = (G.eisBrueche || 0) + 1;
+  const u = unitAt(G, c, r); ev.push({ t: 'eisbruch', c, r, u: u && alive(u) ? u.id : null });
+  if (u && alive(u)) {
+    applyDamage(G, null, u, P.EISBRUCH_DMG * (0.8 + G.rng() * 0.4), 'front', ev, {});
+    if (alive(u)) {
+      let best = null, bv = -1e9;
+      for (const [nc, nr] of neighbors(c, r)) { if (!inMap(nc, nr) || unitAt(G, nc, nr)) continue; const t = hex(G, nc, nr).t; if (t === 'eis' || t === 'eisloch' || cost(G, u, nc, nr) >= 99) continue;
+        const v = (u.side === 'A' ? -nc : nc) * 0.1 + (t === 'open' ? 0.2 : 0) + G.rng() * 0.05; if (v > bv) { bv = v; best = [nc, nr]; } }   // lieber zur eigenen Seite
+      if (best) { ev.push({ t: 'eisweg', u: u.id, path: [[c, r], best] }); u.c = best[0]; u.r = best[1]; }
+      else if (active(u) && !u.supp) { u.supp = 1; ev.push({ t: 'supp', u: u.id }); }
+    }
+  }
+  return true;
+}
 function shell(G, a, c, r, mode) {
   if (!canShell(G, a, c, r, mode)) return [];
   const ev = [];
@@ -1460,12 +1481,14 @@ function shell(G, a, c, r, mode) {
     if (TYPES[a.type].breaker && (h.t === 'barrikade' || (h.t === 'wire' && G.rng() < P.BREAKER_WIRE))) { const w = h.t === 'wire'; h.t = w ? 'open' : 'crater'; ev.push({ t: 'terrain', c: tc, r: tr, what: w ? 'Draht zerschossen' : 'gesprengt' }); }   // F38: Minenwerfer am stärksten, aber nicht sicher   // Minenwerfer räumt Draht und Barrikaden
     else if (h.t === 'wire' && G.rng() < P.HE_WIRE) { h.t = 'open'; ev.push({ t: 'terrain', c: tc, r: tr, what: 'Draht zerschossen' }); }
     else if (h.t === 'open' && G.rng() < P.HE_CRATER) { h.t = 'crater'; ev.push({ t: 'terrain', c: tc, r: tr }); }
+    else if (h.t === 'eis' && eisSchwer(G, a)) eisBruch(G, tc, tr, ev);
   } else if (mode === 'barrage') {
     for (const [hc, hr] of barrageCells(G, a, tc, tr)) {
       const u = unitAt(G, hc, hr);
       if (u && alive(u)) applyDamage(G, a, u, shellDmg(G, a, u, false) * P.BARRAGE_DMG * (0.75 + G.rng() * 0.5), 'front', ev, { ranged: true });   // Paket 8: Schaden ×0,7 eines Einzelschusses
       if (u && active(u) && cls(u) !== 'walker' && !u.supp) { u.supp = 1; ev.push({ t: 'supp', u: u.id }); }
     }
+    if (hex(G, tc, tr).t === 'eis' && eisSchwer(G, a) && G.rng() < P.EISBRUCH_SPERR) eisBruch(G, tc, tr, ev);   // Sperrfeuer: Zielfeld bricht manchmal ein
     { const getroffen = new Set(); for (const [hc, hr] of barrageCells(G, a, tc, tr)) { const b = bauAt(G, hc, hr); if (b && !getroffen.has(b)) { getroffen.add(b); kircheTreffer(G, a, hc, hr, ev); } } }   // Sperrfeuer: je Gebäude ein Treffer
   } else if (mode === 'gas') {
     a.gas--;
@@ -1484,6 +1507,7 @@ function startTurn(G) {
   const ev = [];
   const s = G.side;
   if (s === 'A' && G.turn > 1) {
+    if (MAP.winter) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const h = G.map[c][r]; if (h.t === 'eisloch' && G.turn >= h.eisBis) { h.t = 'eis'; delete h.eisBis; ev.push({ t: 'eiszu', c, r }); } }   // Eisloch friert wieder zu
     if (G.rng() < P.WIND_SHIFT) { G.wind = (G.wind + (G.rng() < 0.5 ? 1 : 5)) % 6; ev.push({ t: 'wind', dir: G.wind }); }
     if (G.clouds.length) {
       for (const k of G.clouds) { k.ttl--; const p = step(k.c, k.r, G.wind); k.c = p[0]; k.r = p[1]; }
@@ -1788,6 +1812,7 @@ function useAbil(G, u, c, r) {
     const h = hex(G, tc, tr);
     if (h.t === 'wire' && G.rng() < P.HE_WIRE) { h.t = 'open'; ev.push({ t: 'terrain', c: tc, r: tr, what: 'Draht zerschossen' }); }
     else if (h.t === 'open' && G.rng() < P.HE_CRATER) { h.t = 'crater'; ev.push({ t: 'terrain', c: tc, r: tr }); }
+    else if (h.t === 'eis' && MAP.winter && !TOG.NOEISBRUCH) eisBruch(G, tc, tr, ev);   // Feuerschlag wirkt wie eine Haubitze
     ev.push(...checkEnd(G));
   }
   else if (k === 'ammo') { u.task = 'ammo'; const x = unitAt(G, c, r); x.attacked = false; x.ammoed = true; x.ap = Math.max(x.ap || 0, 1); x.moved = false; ev.push({ t: 'ammo', u: x.id, by: u.id }); }
@@ -1991,7 +2016,7 @@ function checkEnd(G) {
   T.huenen.can = 'Schweres Feuer: ' + T.huenen.can;
   T.fernsprech.can = 'Feuerleitung: ' + T.fernsprech.can; T.ballon.can = 'Aufklärung: ' + T.ballon.can; }
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, eisSchwer, eisBruch, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,

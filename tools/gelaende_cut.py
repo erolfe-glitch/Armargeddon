@@ -118,7 +118,7 @@ TEILE = {
     'spur_schnee_4':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (1690, 16, 2495, 816)), 'maske': True, 'drehen': 1, 'nur_dunkel': True}),   # Ketten gebogen (Fahrzeug dreht)
     'spur_schnee_5':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (16, 848, 821, 1648)), 'maske': True, 'drehen': 1, 'nur_dunkel': True}),   # Hufe (Reiter)
     'spur_schnee_6':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (853, 848, 1658, 1648)), 'maske': True, 'entblut': True, 'nur_dunkel': True}),   # zertrampelt nach Nahkampf (roter Fleck → Matsch)
-    'eisloch_schnee':      ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_a', (1678, 836, 2507, 1660))}),                      # Eisloch (bereitgelegt, Regel offen)
+    'eisloch_schnee':      ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_a', (1678, 836, 2507, 1660)), 'angleichen': 'boden_eis'}),                      # Eisloch (bereitgelegt, Regel offen)
     # Uferkante flach (Enrico 19:45): Draufsicht, oben Schnee, Mitte Uferlinie, unten Eis; Mittelteil, waagrecht nahtlos, oben/unten weich
     'ufer_flach_1':        ('uferstreifen', None, {'quelle': ('ufer_schnee_flach_bogen', (240, 10, 2320, 548))}),
     'ufer_flach_2':        ('uferstreifen', None, {'quelle': ('ufer_schnee_flach_bogen', (240, 577, 2320, 1107))}),

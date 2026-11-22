@@ -242,9 +242,11 @@ function hazard(G, u, c, r) {
   if (E.hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !E.wireProof(T) && (c !== u.c || r !== u.r)) h += W_HAZ.wire;
   if (E.cloudAt(G, c, r) && !E.gasSafe(G, u)) h += W_HAZ.gas;
   if (E.fireAt(G, c, r)) h += W_HAZ.fire * (T.cls === 'walker' ? 0.5 : 1);   // brennende Felder meiden
+  if (W_EIS && E.hex(G, c, r).t === 'eis' && G.units.some(a => a.side !== u.side && E.alive(a) && E.eisSchwer(G, a) && (TYPES[a.type].mobile || !a.limbered) && E.dist(a.c, a.r, c, r) <= TYPES[a.type].rng && E.dist(a.c, a.r, c, r) >= E.minSteil(a))) h += W_EIS;   // nur in Reichweite schwerer Geschütze (pauschal meiden lähmte den Angreifer: Konkordat 61–66 %)   // Eis bricht unter schwerem Beschuss ein (Enrico 2026-11-22 20:50)
   if (T.stecken && (c !== u.c || r !== u.r) && ['mud', 'sumpf', 'trench'].includes(E.hex(G, c, r).t)) h += W_STECKEN * E.P.STECKEN;   // M6 (2026-11-22): Kürassier bleibt dort leicht stecken
   return h;
 }
+const W_EIS = +((typeof process !== 'undefined' && process.env && process.env.W_EIS) || 0.8), W_EISZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_EISZIEL) || 2.0);   // Eis meiden / Gegner auf Eis beschießen
 const W_STECKEN = +((typeof process !== 'undefined' && process.env && process.env.W_STECKEN) || 3);   // M6: Gewicht Steckenbleiben (× P.STECKEN 0,3)
 const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
@@ -382,6 +384,7 @@ function planArt(G, u) {
       }
       for (const [nc, nr] of E.neighbors(d.c, d.r)) { const f = E.unitAt(G, nc, nr); if (f && f.side === u.side) v -= 0.4; }
       v += kirchenWert(G, u, d.c, d.r);   // Einsturz nutzen
+      if (E.hex(G, d.c, d.r).t === 'eis' && E.eisSchwer(G, u)) v += W_EISZIEL;   // Eis unter dem Gegner aufbrechen
       consider(v, d.c, d.r, 'he');
     }
     if (E.canShell(G, u, d.c, d.r, 'barrage')) {
