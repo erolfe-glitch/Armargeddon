@@ -1640,8 +1640,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
 const WS = 100;   // Feldradius im Weltbild (Pixel); vorn wird leicht vergrößert, weiter hinten verkleinert
 const CAM = { x: 0, y: 0, z: 1, init: false };
 const WCV = document.createElement('canvas'), WCTX = WCV.getContext('2d');
-// F92 Schärfe (Versuch 2026-11-22, Standard aus): 1 = Figuren und Boden mit imageSmoothingQuality 'high', 2 = dazu Boden-Mipmaps (Weltbild halb/viertel, Stufe je Schirmzeile nach Verkleinerung). Test __dbg.schaerfe(n)
-let SCHAERFE = 0; const WMIP = [];
+// F92 Schärfe (2026-11-22, Standard Stufe 1): 1 = Figuren und Boden mit imageSmoothingQuality 'high', 2 = dazu Boden-Mipmaps (Weltbild halb/viertel, Stufe je Schirmzeile nach Verkleinerung). Test __dbg.schaerfe(n)
+let SCHAERFE = 1; const WMIP = [];   /* Enrico 2026-11-22 13:35: Stufe 1 als Standard */
 function wMipBau() { let q = WCV; for (let i = 0; i < 3; i++) { const c = WMIP[i] || (WMIP[i] = document.createElement('canvas')), w = Math.max(1, q.width >> 1), h = Math.max(1, q.height >> 1); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.clearRect(0, 0, w, h); x.drawImage(q, 0, 0, w, h); q = c; } }
 const UBOX = [];   // Kästen der gezeichneten Einheiten auf dem Schirm (Klicktreffer)
 let PJ = null;
