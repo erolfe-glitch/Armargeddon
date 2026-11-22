@@ -1,3 +1,76 @@
+## 2026-11-22 Mittag – Aufträge 10:25 bis 12:18 erledigt (`66d3315` … `3065341`)
+
+Alles eingebaut, getestet und gepusht. Partietest fehlerfrei, test_regeln und test_kommentare in Ordnung.
+
+### 10:25 Entscheidungen
+- **MG-Rückstoß:**
+  - Das MG wird nur zurückgeschoben, nicht mehr abgebaut. Zum Messen dient `RUECKMG_AB=1`.
+  - Messung (je 200 Schlachten, Startwerte 1–4):
+    - Grauwall 50, 58, 56, 49 % → **Ø 53,3 %**.
+    - Sankt Ruß 50, 56, 52, 51 % → **Ø 52,3 %**.
+- **Konkordat-General:** Hieb und Stoß haben jetzt dieselbe Größe wie die übrigen Posen. Bild: `entwurf/probe/f101_general_nahkampf.jpg`.
+- **Heldentöne (ElevenLabs) als Standard**, die alten bleiben im Pult wählbar:
+  - Rote Faust: Servo-Faustschlag; beim Durchbruch-Aufprall der Einschlag.
+  - Kürassier: neue Schritte, Kettenschwert springt an, Schwung mit Schnitt.
+  - Treffer nach Ziel: Metall gegen Gepanzerte, Fleisch gegen Fußtruppen.
+- **Sanitäter-Rufe:** Gravel fürs Konkordat und Ragnar für die Aschenwacht, im Platz `medic`, mit den Gasmasken-Filtern. Zugeordnet nach Länge, nicht nach Gehör.
+- **Kreuzschreiter-Posen:** Löwenmaul-Schuss, Hammerschlag, Unterarm-Kanone (Zweitwaffe und Gebrüll).
+  - Die Geh-Pose aus dem Bogen ist unbrauchbar: Sein Hammerkopf hängt an der Nachbarfigur. Gehen = Grundbild, das zeigt denselben Schritt.
+- **Eisenknecht-Posen:** Gehen, Kanonen, Faustsalve, Ausholen und Hieb mit der Hackklinge. Rauch entfernt, Mündungen gemessen.
+- Bild: `entwurf/probe/schreiter_posen.jpg`.
+
+### 10:35 Symbole, Heldenfunken, Stimmen
+- **bogen8a** (9 Fähigkeiten-Symbole) und **bogen8b** (8 Befehlssymbole, 11:37) sind eingebaut: auf Knöpfen, Mauszeigern, Zustandsmarken und Feld-Meldungen. Die Gaswolke unter „Feuer frei“ ist entfernt.
+- **Symbol → Stellen** (Knopf = Bedienfeld, Zustand = Marke/Tooltip, Feld-Meldung = Symbol statt Text):
+  - **Eine Bedeutung:**
+    - Durchbruch, Hinrichtung, Sturmrollen, Sturmlauf, Sprung (Knopf + Zeiger).
+    - Gebrüll, Kanone-Zweitwaffe (Faustsalve und Unterarm-Kanone), Panzergranate, Breitseite.
+    - Sammeln (Befehl, „Moral steigt“), Sturmbefehl (Befehl + Zustand), Feuer frei (Befehl + Zustand).
+    - Halten (Befehl + Zustand), Generalangriff, Markieren, Feuerschlag, Feuerbereitschaft (Knopf + Zustand).
+    - Fahne nur noch Banner, Auge nur noch Sicht und Aufklärer, Schild nur noch „Schilde vor“, Fadenkreuz nur noch „Schuss“ in der Zugvorschau. Der Blitz ist jetzt frei.
+    - Marsch (geflügelter Stiefel) nur Bewegung, Nahkampf nur Nahkampf (Knopf, „Gebunden“, Medaille), Artillerie-Granate nur Sprenggranate und Streuung.
+  - **Noch doppelt (markiert, Vorschlag: Bogen C):**
+    - **Sprengladung** steht für vier Dinge: Haftladung, Sprenglanze, Gebäude rammen und die Medaille „gegen Panzer“.
+    - **Stiefel ohne Flügel** steht für „Ziehen“ und für „Ballon einholen“.
+    - **Garbe** steht für MG-Sperrfeuer, Dauerfeuer bereit und Reaktionsfeuer. Das ist dieselbe Waffe, deshalb vertretbar.
+- **Heldenfunken** (fx_heldenfunken):
+  - Kürassier: blau-weißer Einschlag und Funkenstrich bei Kettenschwert-Treffer und Hinrichtung, kaltes Leuchten beim Furcht-Puls.
+  - Rote Faust: oranger Einschlag, Strich und Glut bei Faustschlag und Durchbruch.
+  - Bilder: `entwurf/probe/heldenfunken_faust.jpg`, `heldenfunken_kalt.jpg`.
+- **Stimmenpaket:**
+  - Neuer Pult-Bereich **„Stimmen“**: links unter der Kategorie „Stimmen“, je Seite 15 Zeilen (Auswahl, Vorrücken, Feuer, Sturm, Niedergehalten, Rückzug, Sammeln, Granate, Gas, Koloss gesichtet, Feuerbereitschaft, Sanitäter, Held tritt an, Held fällt, Sieg).
+  - Alle 26 Dateien sowie Gravel und Ragnar stehen als Kandidaten bereit. Standard ist „kein Ton“; Enrico ordnet zu.
+  - Je Zeile ein Filter (Gasmaske + Rauschen, nur Rauschen, roh) mit Stärke. Er läuft live über WebAudio, gleich im Pult und im Spiel.
+  - Im Spiel kommt die Wahl über den Export und `tonwahl_bau` an.
+  - Regeln: höchstens ein Ruf gleichzeitig, je Ereignis höchstens alle 7 s, Auswahl nur jede dritte (dann statt des Spruchs).
+  - Bild: `entwurf/probe/pult_stimmen.jpg`.
+  - Die Sprache konnte ich nicht hören, deshalb ist nichts vorsortiert.
+
+### Schreiter mit neuem Aussehen (10:47–12:15)
+- **Sägeschreiter:**
+  - Grundbild = Ruhe, dazu Gehen, Drehlauf feuert, Ausholen und Sägehieb.
+  - Töne: Einschlag und Sägen gegen Fußtruppen, Metall gegen Gepanzerte. Welche der beiden Metall-Dateien Einschlag und welche Sägen ist, konnte ich nicht hören; beide laufen zufällig.
+  - Doppelte alte Dateien liegen in `sound-quelle/_neu/doppelt/` (verschoben, nicht gelöscht).
+- **Klauenschreiter:**
+  - Ruhe, Gehen, MG feuert, Klauenhieb (loses MG-Rohr entfernt), Ausholen aus posen4 (beide Beine), Getroffen aus posen4.
+  - Ton Stahlklaue nach Ziel.
+- **Turmschreiter:** Gehen = Grundbild. Mündungen: Kanone am hinteren Arm, Turm-MG am vorderen Arm.
+- **Ordensschreiter:**
+  - Ruhe als Grundbild, dazu Gehen, MG feuert und Kettenschwert-Hieb. Rauch über den Orgelpfeifen entfernt.
+  - Treffer gegen Panzerung: Kettenschwert-Töne.
+  - **Abweichung:** Enrico schrieb „Gehen = neues Grundbild“. Seit die Ruhepose da ist, steht er im Stand in Ruhe und läuft mit der Geh-Pose, wie Säge- und Klauenschreiter. Wenn Gehen als Standbild gewünscht ist: eine Zeile.
+- Bilder: `entwurf/probe/saege_klaue_posen.jpg`, `orden_klaue_posen.jpg`, `turmschreiter_neu.jpg`.
+
+### Weitere Töne (11:18–12:18, alle ElevenLabs, CREDITS ergänzt, sound-quelle gesichert)
+- **Kettenschwert gegen Rüstung:** 3 weitere Fassungen, auch für den Ordensschreiter. Allgemein neu: nie zweimal hintereinander dieselbe Fassung.
+- **Neue Waffentöne als Pult-Kandidaten** (Gruppe „waffen_neu“), nicht automatisch: schwere Pistole, Granatwerfer, schweres Gewehr, schweres MG.
+- **Stacheldraht:** Schneiden, Überrollen (Fahrzeuge/Schreiter) und Infanterie im Draht sind Standard.
+- **Schritte:** Schreiter-Schritte im Takt der Beinbewegung (Säge-, Klauen-, Turm-, Ordens-, Kreuzschreiter, Eisenknecht). Kampfanzug-Schritte für Stahlgänger, Hünen und Panzerknechte.
+- **Krallen:** Raubkatzen-Krallen gibt es laut Einheitendaten nur beim **Löwenoger** (Pranken). Kreuzschreiter (Löwenkopf, aber Hammer) und Klauenschreiter (Stahlklaue) nehmen sie nicht.
+
+### Noch offen (geht jetzt weiter)
+F98 Blut bei Beschuss, Schritt 11 Einheiten-Statistik (mit Rolle/Stark/Schwach für F103), Schritt 12 F92 Schärfe, F94 und F95 (Vorschläge und Proben), F103 Rollen in den Texten.
+
 ## 2026-11-22 – Entscheidungen Paket H umgesetzt, Paket I Zwischenbericht (F102, F96, F99, F101) (`2e1ca6c`, `e018a4f`)
 
 ### Entscheidungen zum Paket-H-Bericht
