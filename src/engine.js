@@ -699,7 +699,6 @@ function arcOf(G, d, ac, ar) {
 // ---------- Bewegung ----------
 // Marsch: Fußtruppen und Reiter tauschen die Aktion gegen +50 % Bewegungspunkte, dürfen nicht neben dem Feind enden
 function canMarch(u) { const k = cls(u); return k !== 'art' && k !== 'walker' && !u.limbered; }
-function cutCost(u) { return 1; }
 function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
   if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt'].includes(t) && k !== 'cav') return 1;   // Straße
@@ -1875,9 +1874,9 @@ function checkEnd(G) {
 }
 
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, barrageCells, coverOf, defMods, useMap: useMapArmy, totalPts: () => OBJECTIVES.reduce((n, o) => n + o.pts, 0), COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
-  canMarch, cutCost, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
+  canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
   canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, rollenWeg, rollenDmg, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,

@@ -39,7 +39,7 @@
     { "pool": "cannonH", "alt": "cannonH", "s": null },
     { "pool": "cannonH", "f": "Water/212689__tb0y298__water-explosion-1.wav", "s": null, "max": 2.5 },
     { "pool": "boomH", "alt": "boomH", "s": null },
-    { "pool": "boomH", "f": "Crash vehicle damage/511884__audiopapkin__impact-sfx-016.wav", "s": null, "max": 2.5 },
+    { "pool": "boomH", "f": "Crash vehicle damage/511884__audiopapkin__impact-sfx-016.wav", "s": null, "max": 2.5, "lvl": -8, "note": "K14 (2026-11-22): an boomH angeglichen (vorher etwa 6 dB leiser)" },
     { "pool": "einschlagH", "f": "Crash vehicle damage/841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav", "s": null, "ab": 1.05, "max": 2.6, "bass": 5, "lvl": -11, "mix": [{ "f": "Explosion/609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac", "at": 0, "db": -3, "max": 2.2 }], "note": "Einschlag eines einzelnen Artilleriegeschosses: mehr Volumen und Tiefe (Bass +5 dB, zweite Explosion darunter) – Spieltest Runde 2, Paket 6 (2026-11-17)" },
     { "pool": "einschlagH", "f": "Crash vehicle damage/841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav", "s": null, "ab": 5.05, "max": 2.6, "bass": 5, "lvl": -11, "mix": [{ "f": "Crash vehicle damage/511884__audiopapkin__impact-sfx-016.wav", "at": 0, "db": -3, "bass": 4, "max": 2.2 }] },
     { "pool": "barrage", "alt": "barrage", "s": null },

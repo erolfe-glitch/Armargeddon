@@ -240,8 +240,10 @@ function hazard(G, u, c, r) {
   if (E.hex(G, c, r).t === 'wire' && T.cls !== 'walker' && !E.wireProof(T) && (c !== u.c || r !== u.r)) h += W_HAZ.wire;
   if (E.cloudAt(G, c, r) && !E.gasSafe(G, u)) h += W_HAZ.gas;
   if (E.fireAt(G, c, r)) h += W_HAZ.fire * (T.cls === 'walker' ? 0.5 : 1);   // brennende Felder meiden
+  if (T.stecken && (c !== u.c || r !== u.r) && ['mud', 'sumpf', 'trench'].includes(E.hex(G, c, r).t)) h += W_STECKEN * E.P.STECKEN;   // M6 (2026-11-22): Kürassier bleibt dort leicht stecken
   return h;
 }
+const W_STECKEN = +((typeof process !== 'undefined' && process.env && process.env.W_STECKEN) || 3);   // M6: Gewicht Steckenbleiben (× P.STECKEN 0,3)
 const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }

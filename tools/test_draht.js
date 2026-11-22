@@ -57,7 +57,7 @@ function freeNear(G, u) { return E.neighbors(u.c, u.r).find(([c, r]) => E.inMap(
 // Kein anderer Weg im Regelwerk darf Draht still entfernen: alle Stellen, an denen .t = 'open' oder 'crater' gesetzt wird, haben ein Ereignis
 { const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'src', 'engine.js'), 'utf8').split('\n');
   const near = i => src.slice(i, i + 3).join(' ');   // Ereignis in derselben oder den zwei folgenden Zeilen
-  const silent = src.map((l, i) => [i + 1, l, near(i)]).filter(([, l, w]) => /\.t = '(open|crater)'/.test(l) && !/ev\.push|return \[\{ t: 'cut'/.test(w));
+  const silent = src.map((l, i) => [i + 1, l, near(i)]).filter(([, l, w]) => /\.t = '(open|crater)'/.test(l) && !/ev\.push|return \[\{ t: 'cut'/.test(w) && !/\bT\.M\[/.test(l));   // K19 (2026-11-22): Kartenaufbau (mapTools, T.M[…]) läuft vor der Schlacht und zählt nicht
   ok('keine stillen Geländeänderungen', silent.length === 0, silent.map(([n, l, w]) => `Zeile ${n}: ${l.trim().slice(0, 80)}`).join(' | '));
 }
 console.log(fail ? `\n${fail} Fehler` : '\nalle Prüfungen bestanden');

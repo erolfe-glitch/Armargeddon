@@ -329,8 +329,9 @@
   "dur": 2.2,
   "src": 2.92,
   "start": 0,
-  "gain": -4.4,
-  "kb": 26
+  "gain": -1,
+  "kb": 26,
+  "note": "K14 (2026-11-22): an boomH angeglichen (vorher etwa 6 dB leiser)"
  },
  {
   "pool": "einschlagH",
