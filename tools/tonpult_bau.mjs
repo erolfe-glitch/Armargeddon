@@ -37,6 +37,7 @@ const fireKind = T => T.mg ? 'mg' : T.flame ? 'flame' : T.gat ? 'minigun' : T.mg
 
 // Gruppen für die Auswahlliste (passende Alternativen); Stimm-Gruppen nehmen den Filter des Sprechers mit
 const GRUPPEN = {
+  winter: ['schnee_einzeln', 'schnee_gruppe', 'schnee_rennen', 'stampfen_schnee', 'panzerketten_schnee', 'pferde_schnee', 'eis_knackt', 'eis_bricht', 'winterwind', 'winterwind_stark', 'kraehe', 'wind'],   // Wintertöne (Enrico 2026-11-22 17:05)
   stimmen: ['hst_faust_auswahl', 'hst_faust_bewegen', 'hst_faust_angriff', 'hst_faust_durchbruch', 'hst_faust_getroffen', 'hst_faust_gegner_erledigt', 'hst_faust_schwer_verwundet', 'hst_faust_tod', 'hst_kuerass_auswahl', 'hst_kuerass_bewegen', 'hst_kuerass_angriff', 'hst_kuerass_hinrichtung', 'hst_kuerass_getroffen', 'hst_kuerass_gegner_erledigt', 'hst_kuerass_schwer_verwundet', 'hst_kuerass_tod', 'ruf_feuer', 'panik_einzeln', 'panik_gruppe', 'sterben_einzeln', 'sterben_gruppe', 'sst_auswahl', 'sst_bewegen', 'sst_angriff', 'sst_nahkampf', 'sst_getroffen', 'sst_schwer_beschaedigt', 'sst_feind_gesichtet', 'sst_zerstoert', 'stimmen_paket', 'medic'],   // Stimmenpaket (Enrico 2026-11-22): Kandidaten für die Rufe je Ereignis
   schritte_schwer: ['schreiter_schritte', 'kampfanzug_schritte', 'mech', 'held_schritt_ritter2', 'neu_schritte_schwer'],
   draht: ['draht_schneiden', 'draht_ueberrollen', 'draht_infanterie', 'cut', 'ueberrollen', 'drahtlatch', 'drahtwackeln'],
@@ -241,6 +242,17 @@ const HELD_RUFE = [['auswahl', 'Auswahl (etwa jede zweite)'], ['bewegen', 'Ziehe
 for (const [t, name, sd, filt, fst, spezial, pre] of [['stimmen_held_faust', 'Held Rote Faust', 'A', 'roh', 0, ['durchbruch', 'Durchbruch (beim Anlauf)'], 'hst_faust_'], ['stimmen_held_kuerass', 'Held Eiserner Kürassier', 'D', 'helm', 0.6, ['hinrichtung', 'Hinrichtung (vor dem Säge-Schnitt)'], 'hst_kuerass_']])
   einheiten.push({ t, name, sd, kat: 'Stimmen', mech: false, img: '', stimme: '', slots: HELD_RUFE.map(([id, titel]) => ({ ab: 'stimme', id: 'ruf_' + id, titel: titel || spezial[1], platz: pre + (id === 'spezial' ? spezial[0] : id), vol: 0.6, v: null, gruppe: 'stimmen', mode: 'ruf', filt, fst, rate: null, dur: 0,
     hin: (t.endsWith('kuerass') ? 'Stimme Ragnar mit Helm-Filter, im Spiel tiefer (0,92); je Anlass zwei Fassungen im Wechsel. ' : 'Ohne Filter. ') + 'Höchstens ein Ruf gleichzeitig, je Anlass höchstens alle 7 s.', kette: null, sd, auch: [] })) });
+// Winter (Karte) (Enrico 2026-11-22 17:05): alle Wintertöne an einer Stelle; eine Wahl hier gilt im Spiel auf Winterkarten (ui.js tonWahl → TONWAHL.winter)
+{ const W = (ab, id, titel, platz, vol, hin) => ({ ab, id, titel, platz, vol, v: null, gruppe: 'winter', mode: null, rate: null, dur: 0, hin, kette: null, sd: null, auch: [] });
+  einheiten.push({ t: 'winter', name: 'Winter (Karte)', sd: null, kat: 'Stimmen', mech: false, img: '', stimme: '', slots: [
+    W('zug', 'schnee_einzeln', 'Schritte kleiner Trupps im Schnee', 'schnee_einzeln', 0.5, 'Anführer, Melder, Scharfschützen und Trupps mit 1–2 Figuren.'),
+    W('zug', 'schnee_gruppe', 'Schritte der Fußtrupps im Schnee', 'schnee_gruppe', 0.5, 'Statt der normalen Schritte.'),
+    W('zug', 'schnee_rennen', 'Marsch, Sturmlauf, Rückzug im Schnee', 'schnee_rennen', 0.5, 'Bei Marsch und Sturmlauf leise unter den Schritten.'),
+    W('zug', 'stampfen_schnee', 'Stampfen im Schnee (unter Schreitern und Kampfanzügen)', 'stampfen_schnee', 0.25, 'Unterlage, gleicher Takt.'),
+    W('zug', 'panzerketten_schnee', 'Ketten im Schnee (unter dem Kettenrollen)', 'panzerketten_schnee', 0.35, 'Landkoloss, Sturmpanzer, Bohrkoloss.'),
+    W('zug', 'pferde_schnee', 'Pferde mit Protze im Schnee', 'pferde_schnee', 0.5, 'Aufgeprotzte Geschütze; leise (0,22) auch unter Reitern.'),
+    W('zug', 'eis_knackt', 'Eis knackt (Fußtruppen auf Eis)', 'eis_knackt', 0.5, 'Nur der Anfang (1,5 s). Ganzer Ton mit Einbrechen: Platz eis_bricht, nur im Pult.'),
+    W('ankunft', 'winterwind_stark', 'Böe (selten, Kulisse)', 'winterwind_stark', 0.12, 'Grundschleife: winterwind (0,13, zwei Spuren mit Überblendung).') ] }); }
 // Wer nutzt welchen Platz (gleiche Seite, gleicher Filter): Hinweis „gilt im Spiel auch für“
 const nutzer = {};
 for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const key = s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || ''); (nutzer[key] = nutzer[key] || new Set()).add(u.name); }

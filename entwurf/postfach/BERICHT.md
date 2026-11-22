@@ -1,3 +1,29 @@
+## 2026-11-22 Abend – Wintertöne (Auftrag 17:05)
+
+Eingebaut und gepusht. Sie gelten nur auf Karten mit `MAP.winter` (vorerst das Winterdorf). Tests (test_ton mit allen Winterplätzen, Partietest, test_kommentare) fehlerfrei. CREDITS ergänzt, sound-quelle gesichert (Dateien kopiert nach `sound-quelle/Winter/`).
+
+| Anlass | Ton | Einsatz |
+|---|---|---|
+| Fußtruppen ziehen | `schnee_gruppe`, bei Trupps mit 1–2 Figuren und Anführern `schnee_einzeln` | ersetzt `schritte` (im Wald bleibt `stepsWald`) |
+| Marsch und Sturmlauf | bisherige Schritte leiser (0,35), darunter `schnee_rennen` | – |
+| Rückzug | `schnee_rennen` | – |
+| Schreiter, Kampfanzüge, Rote Faust | `stampfen_schnee` leise (0,25) | im gleichen Takt unter die vorhandenen Schritte |
+| Landkoloss, Sturmpanzer, Bohrkoloss | `panzerketten_schnee` (0,35) | unter das Kettenrollen |
+| aufgeprotzte Geschütze | `pferde_schnee` | statt `gespann` |
+| Reiter | `pferde_schnee` leise (0,22) | unter den Galopp |
+| Fußtruppen auf Eis | `eis_knackt` (nur die ersten 1,5 s, ausgeblendet) | – |
+| Kulisse | `winterwind` als Schleife (zwei Spuren mit Überblendung wie `wind`, 0,13), dazu alle 45–110 s eine Böe `winterwind_stark`, dazu Krähen | unter Stimmen abgesenkt |
+
+- **Eis einbrechen:** Der ganze Ton liegt nur im Pult (`eis_bricht`), weil es keine Einbruch-Regel gibt.
+- **Ton-Pult:**
+  - Neue Gruppe „Winter“ mit allen Kandidaten.
+  - Neuer Eintrag „Winter (Karte)“ unter Stimmen mit allen Winterplätzen. Eine Wahl dort gilt im Spiel auf Winterkarten.
+  - Die Grundschleife des Windes läuft (wie bisher beim Wind) nicht über das Pult.
+- **Größe:**
+  - Wind auf 26 s (Schleife) und Böe auf 8 s geschnitten, Schritte 1,2–2,5 s.
+  - `src/sound.js` 28,9 → 30,2 MB, `index.html` 64,6 → 65,9 MB. GitHub warnt ab 50 MB, die harte Grenze liegt bei 100 MB.
+  - Bleibt es bei dieser Rate (gut 1 MB je Tonpaket), ist die Grenze in etwa 30 Paketen erreicht. Vorschlag für später: Töne als eigene Datei neben `index.html` laden statt einbetten (wie `tonprobe.html`).
+
 ## 2026-11-22 Abend – Winterdorf, Schritt 1 (`4694911`)
 
 Die Karte ist spielbar, steht im Startmenü (Kartenwahl „Winterdorf“, Größe „Groß“) und ist gepusht; `index.html` neu eingecheckt.

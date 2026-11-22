@@ -46,7 +46,7 @@ const r = await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r
     out.held = {}; for (const an of ['auswahl', 'bewegen', 'angriff', 'getroffen', 'gegner_erledigt', 'schwer_verwundet', 'tod']) out.held[an] = !!(D.sndPick('hst_faust_' + an, 'A') && D.sndPick('hst_kuerass_' + an, 'D'));
     out.held.spezial = !!(D.sndPick('hst_faust_durchbruch', 'A') && D.sndPick('hst_kuerass_hinrichtung', 'D'));
     out.heldSpielt = D.heldRuf(9998, 'angriff') && (await W(200), D.heldRuf(9997, 'spezial')); await W(400); }
-  out.neu = ['mg_aufbauen', 'mg_abbauen', 'geschuetz_aufprotzen', 'geschuetz_abprotzen', 'sandsaecke', 'loewen_landung', 'neu4_pistole_schwer', 'neu4_gewehr_schwer', 'neu4_mg_schwer'].filter(p => !D.sndPick(p, 'A'));
+  out.neu = ['mg_aufbauen', 'mg_abbauen', 'geschuetz_aufprotzen', 'geschuetz_abprotzen', 'sandsaecke', 'loewen_landung', 'neu4_pistole_schwer', 'neu4_gewehr_schwer', 'neu4_mg_schwer', 'schnee_einzeln', 'schnee_gruppe', 'schnee_rennen', 'stampfen_schnee', 'panzerketten_schnee', 'pferde_schnee', 'eis_knackt', 'winterwind', 'winterwind_stark'].filter(p => !D.sndPick(p, 'A'));
   return out; })()`);
 console.log(JSON.stringify(r, null, 1));
 console.log(fehler.length ? 'FEHLER:\n' + fehler.join('\n') : 'keine Seitenfehler');

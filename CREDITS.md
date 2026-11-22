@@ -210,6 +210,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | loewen_landung | _1–_4 | Helden/loewen_sprung_einschlag_1–4.mp3 | ElevenLabs Sound Effects (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
 | hst_faust_* (8 Anlässe) | _1 | Voices/elevenlabs/helden/held_rotefaust_01–08_*.mp3 (Voice Design „Rote Faust“) | ElevenLabs Text to Speech (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
 | hst_kuerass_* (8 Anlässe) | _1–_2 | Voices/elevenlabs/helden/held_kuerassier_01–08_*_a/b.mp3 (Stimme Ragnar) | ElevenLabs Text to Speech (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
+| schnee_einzeln, schnee_gruppe, schnee_rennen, stampfen_schnee, panzerketten_schnee, pferde_schnee, eis_knackt, eis_bricht, winterwind, winterwind_stark | _1… | Winter/*.mp3 | ElevenLabs Sound Effects bzw. eigene Aufnahmen (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) / Enrico | – |
 | ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
 **Nicht kommerziell (CC BY-NC):** held_kolben_1 (Pneumatic Airlock), held_schritt_ritter_1–4 (vermutlich, Remix mit NC-Teilen), held_dampfstoss_1 (Sampling+: Rohdatei nicht kommerziell weitergeben), barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)

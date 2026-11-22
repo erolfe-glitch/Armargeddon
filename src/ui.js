@@ -2031,16 +2031,17 @@ const SND_POOLS = window.SOUND_POOLS || {};
 // Kulisse je Karte (2026-11-19, Sankt Ruß): Wind in den Ruinen als nahtlose Schleife (zwei Spuren, WIND_X s mit gleicher Leistung übergeblendet –
 // eine Audio-Schleife hätte an der Nahtstelle eine Lücke), dazu vereinzelt Krähen (lange, unregelmäßige Pausen) und ganz selten eine ferne Glocke.
 // Leise, unter einer Stimme weiter abgesenkt, damit Musik und Stimmen vorn bleiben. Rundenbeginn mit Kirchenglocke: ORT_GLOCKE (rundenSchild).
-const ORT_KULISSE = { sanktruss: { wind: 0.1, kraehe: 0.14, kraeheMs: [22000, 60000], glocke_fern: 0.1, glockeMs: [200000, 420000] } };
+const ORT_KULISSE = { sanktruss: { wind: 0.1, kraehe: 0.14, kraeheMs: [22000, 60000], glocke_fern: 0.1, glockeMs: [200000, 420000] },
+  winterdorf: { wind: 0.13, windPl: 'winterwind', boe: 0.12, boeMs: [45000, 110000], kraehe: 0.12, kraeheMs: [26000, 70000] } };   // Winter (Enrico 2026-11-22 17:05): Winterwind als Schleife, seltene Böe, Krähen
 const ORT_GLOCKE = { sanktruss: 0.42 };
-const WIND_X = 4; let windSp = [], ortAn = false, ortLvl = 0, kraeheT = 0, glockeT = 0;
+const WIND_X = 4; let windSp = [], ortAn = false, ortLvl = 0, kraeheT = 0, glockeT = 0, boeT = 0;
 const ortK = () => ORT_KULISSE[E.MAP && E.MAP.id];
 const zwischen = ([a, b]) => a + Math.random() * (b - a);
-function windSpur() { const k = sndPick('wind'); if (!k || !SND[k]) return; try { const a = SND[k].cloneNode(); a.loop = false; a.volume = 0; anBus(a, 'e'); const p = a.play(); if (p && p.catch) p.catch(() => {}); windSp.push({ a, weiter: false }); } catch (e) {} }
+function windSpur() { const k = sndPick((ortK() && ortK().windPl) || 'wind'); if (!k || !SND[k]) return; try { const a = SND[k].cloneNode(); a.loop = false; a.volume = 0; anBus(a, 'e'); const p = a.play(); if (p && p.catch) p.catch(() => {}); windSp.push({ a, weiter: false }); } catch (e) {} }
 function ortKulisse(on) {
   const k = ortK(); ortAn = !!(on && soundOn && k);
   if (ortAn) { const t = performance.now(); if (!windSp.length) windSpur(); else for (const w of windSp) { const p = w.a.play(); if (p && p.catch) p.catch(() => {}); }
-    if (t > kraeheT) kraeheT = t + zwischen([6000, 16000]); if (t > glockeT) glockeT = t + zwischen(k.glockeMs); }
+    if (t > kraeheT) kraeheT = t + zwischen([6000, 16000]); if (k.glockeMs && t > glockeT) glockeT = t + zwischen(k.glockeMs); if (k.boeMs && t > boeT) boeT = t + zwischen(k.boeMs); }
 }
 setInterval(() => {
   const k = ortK(), jetzt = performance.now(); ortLvl = Math.max(0, Math.min(1, ortLvl + (ortAn && k ? 0.05 / 2 : -0.05 / 1.2)));
@@ -2054,7 +2055,8 @@ setInterval(() => {
   }
   if (!ortAn || !k || speed >= INSTANT) return;
   if (jetzt > kraeheT) { kraeheT = jetzt + zwischen(k.kraeheMs); playSound('kraehe', k.kraehe * (duckF() < 1 ? 0.5 : 1), null, { noGap: true, rate: 0.9 + Math.random() * 0.15 }); }
-  if (jetzt > glockeT) { glockeT = jetzt + zwischen(k.glockeMs); if (!bauSicht().some(x => x)) playSound('glocke_fern', k.glocke_fern, null, { noGap: true, rate: 1 }); }   // nach dem Einsturz schweigt sie
+  if (k.boeMs && jetzt > boeT) { boeT = jetzt + zwischen(k.boeMs); playSound('winterwind_stark', k.boe * (duckF() < 1 ? 0.5 : 1), null, { noGap: true, rate: 0.95 + Math.random() * 0.1 }); }   // Winter: Böe
+  if (k.glockeMs && jetzt > glockeT) { glockeT = jetzt + zwischen(k.glockeMs); if (!bauSicht().some(x => x)) playSound('glocke_fern', k.glocke_fern, null, { noGap: true, rate: 1 }); }   // nach dem Einsturz schweigt sie
 }, 50);
 let hustenT = -1e9, hustenN = 0;
 function husten() { const t = performance.now(); if (t - hustenT > 1500) hustenN = 0; hustenT = t; if (++hustenN <= 2) setTimeout(() => playSound('husten', 0.4, null, { v: 'gm' }), (hustenN - 1) * 380 / speed); }   // Tonplatz „husten“ (Dateien folgen)
@@ -2207,7 +2209,9 @@ function rufBeiEreignis(e, u) {
   }
 }
 let tonKontext = [];   // Einheiten des laufenden Ereignisses (Schütze/Schlagender zuerst, dann Getroffener), gesetzt in playEvent0 und beim Anwählen
-function tonWahl(platz, u) { for (const x of u ? [u, ...tonKontext] : tonKontext) { const w = x && TONWAHL[x.type] && TONWAHL[x.type][platz]; if (w) return w; } return null; }
+function tonWahl(platz, u) { for (const x of u ? [u, ...tonKontext] : tonKontext) { const w = x && TONWAHL[x.type] && TONWAHL[x.type][platz]; if (w) return w; }
+  if (E.MAP && E.MAP.winter && TONWAHL.winter && TONWAHL.winter[platz]) return TONWAHL.winter[platz];   // Ton-Pult „Winter (Karte)“: gilt auf Winterkarten
+  return null; }
 function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
   const tw = tonWahl(name, opt && opt.u); if (tw) { if (tw.aus) return; if (tw.vf) vol *= tw.vf; if (tw.rate) opt = { ...(opt || {}), rate: (opt && opt.rate || 0.94 + Math.random() * 0.12) * tw.rate }; }   // F91
   const gapKey = name; name = tw && tw.k ? tw.k : sndPick(tw && tw.p ? tw.p : name, side || (opt && opt.u && opt.u.side), opt && (opt.v || stimmVar(opt.u))) || (tw && tw.p) || name;
@@ -2320,7 +2324,7 @@ async function animPath(id, path, msPer, keepFace) {   // keepFace: Zurückweich
     for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k;
       if (beine) { const ph = k * 2, n = Math.floor(ph);   // F73 (2026-11-21): zwei Schritte je Feld – heben, stampfen, leicht zur Seite neigen
         d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.05 * gross, dx: Math.sin(ph * Math.PI) * L.s * 0.012 * (n % 2 ? 1 : -1) };
-        if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); playSound('schreiter_schritte', 0.45, null, { noGap: true });   /* Schreiter-Schritte im Takt (Enrico 2026-11-22) */ fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
+        if (n > schritt || k >= 1) { schritt = n; shake(gross > 1 ? 3 : 2); playSound('schreiter_schritte', 0.45, null, { noGap: true }); if (E.MAP.winter) playSound('stampfen_schnee', 0.25, null, { noGap: true });   /* Schreiter-Schritte im Takt (Enrico 2026-11-22) */ fx('truemmer', 2, d.x + (n % 2 ? 1 : -1) * L.s * 0.18, d.y + L.s * 0.3, { life: 30, mul: 0.3 * gross, grow: 0.35, alpha: 0.7, fadeOut: 0.6 }); } }
       else if (kette) d.wipp = { dy: Math.sin(k * Math.PI * 10) * L.s * 0.006, dx: 0 };
       else if (ritter) { const ph = k * 2, n = Math.floor(ph); d.wipp = { dy: -Math.abs(Math.sin(ph * Math.PI)) * L.s * 0.035, dx: 0 }; if (n > schritt || (k >= 1 && schritt < 2)) { schritt = Math.max(n, schritt + (k >= 1 ? 1 : 0)); playSound('held_schritt_ritter2', 0.55, null, { noGap: true }); } } }   // Kettenfahrzeug: leichtes Rattern
     d.wipp = null;
@@ -2372,9 +2376,13 @@ async function playEvent0(e) {
   try { rufBeiEreignis(e, u); } catch (err) { }   // Rufe der Truppen (Ton-Pult „Stimmen“)
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
-    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') { if (!(FIGMAP[u.type] && SCHREITER.includes(FIGMAP[u.type][0]))) playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); }   /* Schreiter: Schritte im Takt (animPath) */ else if (u.type === 'kuerass') {} else if (u.type === 'faust') { playSound('schritte', 0.4); if (Math.random() < 0.5) setTimeout(() => playSound('held_dampfstoss', 0.22), 400 / speed); } else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) { playSound('kampfanzug_schritte', 0.45); if (e.path.length > 2) setTimeout(() => playSound('kampfanzug_schritte', 0.4), 520 / speed); }   /* schwere Kampfanzüge (Enrico 2026-11-22) */ else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) { musikDucken(2600); playSound('schritte', 0.6); } /* F49 (2026-11-20): Marsch/Sturmlauf ohne Trommel (marschtritt enthielt ein Marschstück), beide Seiten nur Schritte */ else playSound( wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } } if (poseHat(u, 'lauf')) pose(e.u, 'lauf', e.path.length * 170 + 250); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht); Paket G: Kommentar stand vor dem Code und verschluckte lauf-Pose, animPath und break
+    case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t));
+      const winter = !!E.MAP.winter, fuss = !['cav', 'walker', 'art'].includes(k0), klein = (() => { const d0 = DU.get(e.u); return !!(TYPES[u.type].cmd || (d0 && d0.fbx && d0.fbx.length <= 2)); })();   // Wintertöne (Enrico 2026-11-22 17:05)
+      if (winter) { if (k0 === 'cav') playSound('pferde_schnee', 0.22, null, { noGap: true }); if (k0 === 'walker' && !(FIGMAP[u.type] && SCHREITER.includes(FIGMAP[u.type][0])) && !TYPES[u.type].fig) playSound('panzerketten_schnee', 0.35, null, { noGap: true });
+        if (u.type === 'faust' || TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('stampfen_schnee', 0.25, null, { noGap: true });
+        if (fuss && e.path.some(h => G.map[h[0]][h[1]].t === 'eis')) setTimeout(() => playSound('eis_knackt', 0.5, null, { noGap: true }), 200 / speed); } if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound(E.MAP.winter ? 'pferde_schnee' : 'gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') { if (!(FIGMAP[u.type] && SCHREITER.includes(FIGMAP[u.type][0]))) playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); }   /* Schreiter: Schritte im Takt (animPath) */ else if (u.type === 'kuerass') {} else if (u.type === 'faust') { playSound('schritte', 0.4); if (Math.random() < 0.5) setTimeout(() => playSound('held_dampfstoss', 0.22), 400 / speed); } else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) { playSound('kampfanzug_schritte', 0.45); if (e.path.length > 2) setTimeout(() => playSound('kampfanzug_schritte', 0.4), 520 / speed); }   /* schwere Kampfanzüge (Enrico 2026-11-22) */ else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) { musikDucken(2600); playSound('schritte', winter ? 0.35 : 0.6); if (winter) playSound('schnee_rennen', 0.5, null, { noGap: true }); } /* F49 (2026-11-20): Marsch/Sturmlauf ohne Trommel (marschtritt enthielt ein Marschstück), beide Seiten nur Schritte */ else playSound(winter && !wald ? (klein ? 'schnee_einzeln' : 'schnee_gruppe') : wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } } if (poseHat(u, 'lauf')) pose(e.u, 'lauf', e.path.length * 170 + 250); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht); Paket G: Kommentar stand vor dem Code und verschluckte lauf-Pose, animPath und break
     case 'advance': await animPath(e.u, e.path, 200); break;
-    case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); await animPath(e.u, e.path, 200, true); kz(e.u, 'zurueck', 'steig'); break;   // F40
+    case 'fallback': if (u && TYPES[u.type].cls === 'cav') playSound('pferd_unruhe', 0.5); else if (E.MAP.winter && u && !['walker', 'art'].includes(TYPES[u.type].cls)) playSound('schnee_rennen', 0.45, null, { noGap: true });   /* Winter: Rückzug im Schnee */ await animPath(e.u, e.path, 200, true); kz(e.u, 'zurueck', 'steig'); break;   // F40
     case 'flee': await animPath(e.u, e.path, 120); break;
     case 'face': DU.get(e.u).face = e.face; break;
     case 'fire': {
