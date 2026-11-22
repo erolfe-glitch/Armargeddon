@@ -35,8 +35,19 @@ const r = await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r
   out.duckNachSchuss = D.ton.duck();
   out.duckVor = vor;
   D.gewehr('A');
+  // Rufe 14:40–15:00: Standardbelegung je Seite, Schreiter-Stimmen (Platz und Roboter-Filter)
+  out.rufe = {}; for (const ev of ['feuer_befehl', 'panik_einzeln', 'panik_gruppe', 'sterben_einzeln', 'sterben_gruppe']) for (const sd of ['A', 'D']) { const w = D.rufWahl('stimmen_', ev, sd); out.rufe[ev + sd] = w ? w.k : null; }
+  out.rufSpielt = D.ruf('feuer_befehl', 'A'); await W(300);
+  out.sst = {}; for (const an of ['auswahl', 'bewegen', 'angriff', 'nahkampf', 'getroffen', 'schwer_beschaedigt', 'feind_gesichtet', 'zerstoert']) for (const sd of ['A', 'D']) out.sst[an + sd] = D.sndPick('sst_' + an, sd) || null;
+  { const G = D.G, E = D.E, frei = []; for (let c = 0; c < 6; c++) for (let r = 0; r < 8; r++) if (!G.units.some(u => u.c === c && u.r === r)) frei.push([c, r]);
+    const vorlage = G.units.find(u => u.side === 'A'), id = 9999; G.units.push({ ...vorlage, id, type: 'kreuz', c: frei[0][0], r: frei[0][1] }); D.neuDU(); out.schreiter = D.istSchreiter(id);
+    out.sstSpielt = D.schreiterRuf(id, 'angriff'); await W(400); }
+  out.neu = ['mg_aufbauen', 'mg_abbauen', 'geschuetz_aufprotzen', 'geschuetz_abprotzen', 'sandsaecke', 'loewen_landung', 'neu4_pistole_schwer', 'neu4_gewehr_schwer', 'neu4_mg_schwer'].filter(p => !D.sndPick(p, 'A'));
   return out; })()`);
 console.log(JSON.stringify(r, null, 1));
 console.log(fehler.length ? 'FEHLER:\n' + fehler.join('\n') : 'keine Seitenfehler');
 ws.close(); ch.kill();
-process.exit(fehler.length || typeof r === 'string' ? 1 : 0);
+const leer = typeof r === 'object' ? [...Object.entries(r.rufe || {}), ...Object.entries(r.sst || {})].filter(([, v]) => !v).map(([k]) => k).concat(r.neu || []) : ['?'];
+if (typeof r === 'object' && !(r.schreiter && r.sstSpielt)) leer.push('Schreiter-Stimme spielt nicht');
+console.log(leer.length ? 'FEHLENDE TÖNE: ' + leer.join(', ') : 'alle neuen Plätze belegt');
+process.exit(fehler.length || typeof r === 'string' || leer.length ? 1 : 0);

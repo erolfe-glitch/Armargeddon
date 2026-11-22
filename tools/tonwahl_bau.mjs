@@ -25,7 +25,7 @@ for (const [k, e] of wahl) {
   else if (e.wahl.startsWith('p:')) { const p = e.wahl.slice(2); if (!D.pools[p]) { bericht.push(`${k}: Platz ${p} fehlt – ausgelassen`); continue; } if (p !== platz) w.p = p; }
   const vf = volSpiel ? +(e.lautstaerke / volSpiel).toFixed(3) : 1; if (Math.abs(vf - 1) > 0.01) w.vf = vf;
   if (e.tonhoehe && Math.abs(e.tonhoehe - 1) > 0.005) w.rate = e.tonhoehe;
-  if (ruf) { if (!w.k) { bericht.push(k + ': Ruf ohne einzelnen Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : 0.6; }
+  if (ruf) { if (!w.k && !w.aus && zeile.platz === '-' && !w.p) { bericht.push(k + ': Ruf ohne Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || zeile.filt || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : zeile.fst != null ? zeile.fst : 0.6; }   // Rufe mit Standard-Platz: Filter auch ohne eigenen Ton übernehmen
   if (!Object.keys(w).length) continue;
   (tab[e.einheit] = tab[e.einheit] || {})[platz] = w;
   if (zeile && e.platz_spiel && e.platz_spiel !== platz) bericht.push(`${k}: Pult-Zeile zeigte ${e.platz_spiel}, das Spiel spielt ${platz} – dort eingetragen`);

@@ -12,7 +12,9 @@ const CODE = [/\bbreak;/, /\bcontinue;/, /\breturn\b[^;]{0,60};/, /\bawait [a-zA
   /\b[a-zA-Z_$][\w$.]*\([^()]*(\([^()]*\)[^()]*)*\);/,            // beliebiger Aufruf mit Semikolon
   /\b[a-z][a-zA-Z]*\.[a-zA-Z]+ = [^=]/,                          // a.b = …
   /(^|[;{]\s*|\s)[a-zA-Z_$][\w$]* = [^=>][^;]{0,80};/,            // x = …;
-  /\b(if|for) \([^)]*\) [a-zA-Z_]+\(/];
+  /\b(if|for) \([^)]*\) [a-zA-Z_]+\(/,
+  /\b(let|const|var) [\w$]+ = [^;]{0,120};/,                     // 2026-11-22: verschluckte Deklaration (let sstAnwahl = …)
+  /\bG\._[a-zA-Z]+ = /];                                         // 2026-11-22: verschluckte Zustands-Zuweisung (G._kauf = …)
 // ganze Kommentarzeilen: nur deutliche Code-Zeilen (Aufruf bzw. Zuweisung mit Semikolon am Ende)
 const CODE_ZEILE = [/^\s*(const|let|var) [\w$]+ = .*;\s*$/, /^\s*[a-zA-Z_$][\w$.]*\([^]*\);\s*$/, /^\s*[a-zA-Z_$][\w$.]* = [^=][^]*;\s*$/, /^\s*(break|continue);\s*$/];
 // bewusste Beispiele in Kommentaren (Datei, Textanfang)

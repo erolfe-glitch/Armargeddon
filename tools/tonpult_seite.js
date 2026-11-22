@@ -35,7 +35,7 @@ const vorhanden = list => SND ? list.filter(c => SND[c.k]) : list;
 const zieh = list => { const l = []; for (const c of list) for (let i = 0; i < (c.w || 1); i++) l.push(c); return l.length ? l[Math.floor(Math.random() * l.length)].k : null; };
 
 // ---- Einstellungen je Platz ----
-const grund = s => Object.assign({ w: s.platz === '-' ? '-' : 'p:' + s.platz, vol: s.vol, ton: 1 }, s.mode === 'ruf' ? { filt: 'maske', fst: 0.6 } : {});
+const grund = s => Object.assign({ w: s.platz === '-' ? '-' : 'p:' + s.platz, vol: s.vol, ton: 1 }, s.mode === 'ruf' ? { filt: s.filt || 'maske', fst: s.fst != null ? s.fst : 0.6 } : {});
 // Stimmfilter live (Enrico 2026-11-22): „Gasmaske + Rauschen“ = Bandpass ca. 300–3000 Hz mit leichter Resonanz und leichter Verzerrung, dazu leises Feldtelefon-Rauschen/Knistern;
 // „nur Rauschen“ = Stimme roh plus Rauschen; „roh“ = ohne. st = Stärke 0–1. Gleiche Kette im Spiel (ui.js) und im Ton-Pult.
 let RUF_AC = null, RUF_RAUSCH = null;
@@ -50,6 +50,15 @@ function rufKette(a, art, st) {
       const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 1300; pk.Q.value = 2.2; pk.gain.value = 3 + 6 * st;
       const ws = ac.createWaveShaper(), k = 1 + 6 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
       n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(ws); n = ws;
+    }
+    if (art === 'roboter') {   // Schreiter-Stimmen (Enrico 2026-11-22): metallischer Lautsprecher – Bandpass, Verzerrung, Ringmodulation (Aschenwacht rauer über st)
+      const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 280 + 120 * st;
+      const bp = ac.createBiquadFilter(); bp.type = 'peaking'; bp.frequency.value = 1500; bp.Q.value = 1.4; bp.gain.value = 5 + 5 * st;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4200 - 1200 * st;
+      const ws = ac.createWaveShaper(), k = 1.5 + 5 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
+      const tr = ac.createGain(); tr.gain.value = 1 - 0.45 * st; const rm = ac.createGain(); rm.gain.value = 0; const osc = ac.createOscillator(); osc.frequency.value = 55 + 35 * (1 - st); const od = ac.createGain(); od.gain.value = 0.45 * st;
+      osc.connect(od); od.connect(rm.gain); osc.start(); a.addEventListener('ended', () => { try { osc.stop(); } catch (e) {} }, { once: true }); a.addEventListener('pause', () => { try { osc.stop(); } catch (e) {} }, { once: true });
+      const mix = ac.createGain(); n.connect(hp); hp.connect(bp); bp.connect(lp); lp.connect(ws); ws.connect(tr); ws.connect(rm); tr.connect(mix); rm.connect(mix); n = mix;
     }
     n.connect(ac.destination);
     if (!RUF_RAUSCH) { const len = ac.sampleRate * 3; RUF_RAUSCH = ac.createBuffer(1, len, ac.sampleRate); const d = RUF_RAUSCH.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.45 + (Math.random() < 0.0012 ? (Math.random() * 2 - 1) * 0.9 : 0); }
@@ -179,7 +188,7 @@ function zeile(u, s) {
   const hin = [s.hin, s.auch.length ? `Dieser Platz klingt im Spiel auch bei: ${s.auch.slice(0, 6).join(', ')}${s.auch.length > 6 ? ` und ${s.auch.length - 6} weiteren` : ''}.` : ''].filter(Boolean).join(' ');
   row.append(play, info, h('div', { cls: 'wahl' }, sel_, alleB), h('label', { cls: 'r' }, 'Lautstärke ', volB, vol), h('label', { cls: 'r' }, 'Tonhöhe ', tonB, ton), zur);
   if (s.mode === 'ruf') {   // Filter je Ruf (Enrico 2026-11-22)
-    const fs_ = h('select', { 'aria-label': 'Filter für ' + s.titel }); for (const [v, l] of [['maske', 'Gasmaske + Rauschen'], ['rauschen', 'nur Rauschen'], ['roh', 'roh']]) fs_.append(h('option', { value: v }, l)); fs_.value = w.filt;
+    const fs_ = h('select', { 'aria-label': 'Filter für ' + s.titel }); for (const [v, l] of [['maske', 'Gasmaske + Rauschen'], ['roboter', 'Roboter-Lautsprecher'], ['rauschen', 'nur Rauschen'], ['roh', 'roh']]) fs_.append(h('option', { value: v }, l)); fs_.value = w.filt;
     fs_.onchange = () => { setze(u, s, 'filt', fs_.value); auffrischen(u, s, row, true); spielPlatz(u, s); };
     const st = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(w.fst * 100) }), stB = h('b', {}, Math.round(w.fst * 100) + ' %');
     st.oninput = () => { setze(u, s, 'fst', st.value / 100); stB.textContent = st.value + ' %'; auffrischen(u, s, row, true); }; st.onchange = () => spielPlatz(u, s);
