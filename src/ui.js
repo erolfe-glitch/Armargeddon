@@ -188,7 +188,9 @@ const O = '#16150f';
 // ---------- Gelände-Bausteine (neue Ansicht, STYLE.md „Gelände-Bausteine“) ----------
 // Nur mit Schalter „Neue Ansicht (Test)“ und zuerst nur auf GB_KARTEN. Bilder: window.GELAENDE (src/gelaende.js), Aufbau: GBau (src/gelaende_bau.js).
 // GBW = aufgebaute Welt: flaches Weltbild (ersetzt tcv), aufrechte Teile (in drawTilt mit den Einheiten nach Tiefe gemischt), platz() für Trupps.
-const GB_KARTEN = new Set(['grauwall', 'sanktruss']);
+const GB_KARTEN = new Set(['grauwall', 'sanktruss', 'winterdorf']);
+// Winterdorf (2026-11-22): Platzhalter, bis die eigenen Bausteine da sind – Eis wie Wasser, Häuser und Kapelle wie Ruinen, Steinbrücke wie Brücke
+const GB_PLATZHALTER = { eis: 'canal', haus: 'village', kapelle: 'village', steinbruecke: 'bridge' };
 // Große Gebäude: gezeigter Zustand (eingestürzt erst, wenn das Ereignis abgespielt wird – die Regeln ändern G vorher)
 let BAUV = { g: null, k: [] };
 function bauSicht() { if (BAUV.g !== G) BAUV = { g: G, k: ((G && G.bauten) || []).map(b => !!b.kaputt) }; return BAUV.k; }
@@ -209,9 +211,10 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
-    terr: (c, r) => G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
-    bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })),
+    terr: (c, r) => GB_PLATZHALTER[G.map[c][r].t] || G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
+    bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
+    baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, IMB);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
   gbKey = key; gbFeld = feld; window.__gbMs = Math.round(performance.now() - t0);
   return true;
@@ -1721,12 +1724,40 @@ function projectGround(g) {
   const fog = g.createLinearGradient(0, 0, 0, H); fog.addColorStop(0, 'rgba(18,13,11,0.55)'); fog.addColorStop(0.4, 'rgba(18,13,11,0.12)'); fog.addColorStop(1, 'rgba(18,13,11,0)');
   g.fillStyle = fog; g.fillRect(0, 0, W, H);
 }
+// Bäume durchsichtig (Enrico 2026-11-22, alle Karten): Bäume auf Feldern mit Einheit, unter der Maus und vor der gewählten Einheit weich auf BAUM_DURCH Deckkraft
+const BAUM_A = new Map(), BAUM_DURCH = 0.4; let baumT = 0;
+function baumZiele() {
+  const z = new Set(); if (!G) return z;
+  for (const u of G.units) if (E.alive(u)) { const d = DU.get(u.id); if (d && d.alpha > 0.05) z.add(u.c + ',' + u.r); }
+  if (hoverHex) z.add(hoverHex[0] + ',' + hoverHex[1]);
+  if (sel && E.alive(sel)) for (const [c, r] of E.neighbors(sel.c, sel.r)) if (center(c, r)[1] > center(sel.c, sel.r)[1] + 1) z.add(c + ',' + r);   // Felder davor (näher am Betrachter)
+  return z;
+}
+function baumNachfuehren() {   // weich ein- und ausblenden (ca. 0,25 s)
+  const t = performance.now(), dt = Math.min(0.1, (t - (baumT || t)) / 1000); baumT = t; const z = baumZiele(), k = 1 - Math.exp(-dt / 0.09);
+  for (const key of z) if (!BAUM_A.has(key)) BAUM_A.set(key, 1);
+  for (const [key, a] of BAUM_A) { const ziel = z.has(key) ? BAUM_DURCH : 1, n = a + (ziel - a) * k; if (Math.abs(n - 1) < 0.01 && ziel === 1) BAUM_A.delete(key); else BAUM_A.set(key, n); }
+}
+// Nebel am Kartenrand (Winterdorf, nur Bild): weicher, langsam ziehender Schleier an allen vier Rändern im Weltbild; Bildwirkung „aus“ = kein Nebel
+function randNebel(g, s) {
+  const W = L.W, y0 = L.top - s * 0.3, H = L.H, tz = now / 1000, st = BW === 2 ? 1.15 : 1, band = s * 1.6;
+  g.save(); g.globalCompositeOperation = 'source-over';
+  const kante = (x0, y0_, x1, y1_, gx0, gy0, gx1, gy1) => { const gr = g.createLinearGradient(gx0, gy0, gx1, gy1); gr.addColorStop(0, `rgba(196,202,208,${0.34 * st})`); gr.addColorStop(1, 'rgba(196,202,208,0)'); g.fillStyle = gr; g.fillRect(x0, y0_, x1 - x0, y1_ - y0_); };
+  kante(0, y0, band, H, 0, 0, band, 0); kante(W - band, y0, W, H, W, 0, W - band, 0); kante(0, y0, W, y0 + band, 0, y0, 0, y0 + band); kante(0, H - band, W, H, 0, H, 0, H - band);
+  for (let i = 0; i < 26; i++) {   // ziehende Schwaden entlang der Ränder
+    const seite = i % 4, f = ((i * 0.618 + tz * (0.006 + (i % 3) * 0.002)) % 1 + 1) % 1, rr = s * (1.1 + (i % 5) * 0.25), off = s * (0.2 + (i % 3) * 0.25);
+    const x = seite === 0 ? off : seite === 1 ? W - off : f * W, y = seite === 2 ? y0 + off : seite === 3 ? H - off : y0 + f * (H - y0);
+    const gr = g.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, `rgba(205,210,215,${0.2 * st})`); gr.addColorStop(1, 'rgba(205,210,215,0)'); g.fillStyle = gr; g.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+  }
+  g.restore();
+}
 function drawTilt() {
+  baumNachfuehren();
   camSetup();
   const s = L.s;
   WCTX.setTransform(1, 0, 0, 1, 0, 0);
   ctx = WCTX;   // flaches Weltbild: nur Boden und Bodenmarkierungen; alles Aufrechte kommt danach auf den Schirm
-  try { drawGround(WCTX, s); drawDiaryMark(WCTX); }
+  try { drawGround(WCTX, s); drawDiaryMark(WCTX); if (BW && E.MAP.nebelRand) randNebel(WCTX, s); }
   finally { ctx = MAINCTX; }
   const g = MAINCTX; g.setTransform(1, 0, 0, 1, 0, 0);
   g.imageSmoothingQuality = SCHAERFE ? 'high' : 'low'; if (SCHAERFE >= 2) wMipBau();
@@ -4123,7 +4154,7 @@ function armyKeep() { if (armySide === feindSeite() && !feindSelbst[armySide]) {
 // ---------- Kartenwahl ----------
 const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a',
   furt: '#4f7480', sumpf: '#4b5a36', wald: '#24331c', waldweg: '#6b6a44', bunker: '#a7a59a', fabrik: '#8a5a44', kirche: '#c2bba8', barrikade: '#7a5a3a', bahn: '#56524a',
-  schiff: '#c2bba8', turm: '#d8d0bc', friedhof: '#6f7258', garten: '#66704a' };
+  schiff: '#c2bba8', turm: '#d8d0bc', friedhof: '#6f7258', garten: '#66704a', eis: '#9fb4bf', haus: '#7a6a58', kapelle: '#b8b0a0', steinbruecke: '#a49a88' };
 function drawMapPreview(cvs, id) {
   const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
   const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);

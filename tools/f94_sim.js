@@ -7,6 +7,10 @@
 // Ausgabe: Siegquote Konkordat, Dauer, Verluste, Anteil Schlachten mit bewegter Artillerie, Vielfalt (Typen je Seite).
 const E = require('../src/engine.js'), AI = require('../src/ai.js');
 const modus = process.argv[2] || 'basis', N = +(process.argv[3] || 200), KARTE = process.argv[4] || 'grauwall', SEED = +(process.argv[5] || 1);
+if (process.env.OBJ) E.MAPS[KARTE].objectives = JSON.parse(process.env.OBJ);   // Abgleich: Zielfelder probeweise (JSON)
+if (process.env.BAND) E.MAPS[KARTE].band = +process.env.BAND;
+if (process.env.ZONED) E.MAPS[KARTE].zoneD = +process.env.ZONED;
+if (process.env.KI) E.MAPS[KARTE].ki = JSON.parse(process.env.KI);
 E.useMap(KARTE);
 if (process.env.PSET) Object.assign(E.P, JSON.parse(process.env.PSET));   // Abgleich: P-Werte probeweise ändern, z. B. PSET='{"GRANAT_FERN":1}'
 const GEMISCHT = {

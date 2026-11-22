@@ -24,7 +24,7 @@ const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerse
 const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
-  schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3 };
+  schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3, haus: 1.2, kapelle: 1.2, eis: -0.4, steinbruecke: 0 };
 // Kirche von Sankt Ruß (KI 2026-11-19): Turm besetzen (Schützen, W_TURM), Kirche als Ziel (Deckung oben), Einsturz nutzen (Artillerie/Kanonen auf
 // Gegner in der Kirche, W_EINSTURZ je Gegner, der beim Einsturz drin wäre), eigene Truppen aus einer fast eingestürzten Kirche heraus (W_KRISS)
 const W_TURM = envZahl('W_TURM', 1.4), W_EINSTURZ = envZahl('W_EINSTURZ', 2.2), W_KRISS = envZahl('W_KRISS', 1.2);
@@ -90,7 +90,7 @@ const thKapp = (th, voll) => th <= voll ? th : voll + (th - voll) * W_TH_REST;
 const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
-  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, friedhof: 1.1 };
+  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, friedhof: 1.1, haus: P.HAUS_DEF, kapelle: P.HAUS_DEF, eis: 1, steinbruecke: 1 };
   const defm = (t === 'village' || t === 'kirche' || t === 'fabrik') && D.cls === 'walker' ? 0.7 : DM[t] || 1;
   let th = 0;
   for (const o of G.units) {
