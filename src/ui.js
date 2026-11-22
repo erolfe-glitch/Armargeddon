@@ -1441,20 +1441,20 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3
   pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen; Nahkampf weiter mit der Schaufel
   pionierD: { bereit: 'pionier_1', kolben: 'pionier_posen2_4', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen, Nahkampf-Vorstoß mit Gewehr
   // weitere Posenbögen (2026-11-20, frei verteilte Figuren, figure_cut.py FIGUREN_POSEN); lauf = beim Ziehen
-  feldscher: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
-  heiler: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
+  feldscher: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', lauf2: 'sanitaeter_posen_1', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
+  heiler: { bereit: 'sanitaeter_1', lauf: 'sanitaeter_posen_3', lauf2: 'sanitaeter_posen_1', heilen: 'sanitaeter_posen_2', getroffen: 'sanitaeter_posen_4' },
   flammen: { bereit: 'flammen_1', lauf: 'flammen_posen_1', anlegen: 'flammen_posen_2', knien: 'flammen_posen_2', getroffen: 'flammen_posen_4' },
   brand: { bereit: 'flammen_1', lauf: 'flammen_posen_3', anlegen: 'flammen_posen_2', knien: 'flammen_posen_2', getroffen: 'flammen_posen_4' },
   stahl: { bereit: 'stahl_1', lauf: 'kampfanzug_posen_1', kolben: 'kampfanzug_posen_2', anlegen: 'kampfanzug_posen_3', knien: 'kampfanzug_posen_3', getroffen: 'kampfanzug_posen_4' },
   panzerk: { bereit: 'panzerknecht_1', lauf: 'kampfanzug_posen_1', kolben: 'kampfanzug_posen_2', anlegen: 'kampfanzug_posen_3', knien: 'kampfanzug_posen_3', getroffen: 'kampfanzug_posen_4' },
-  werkstatt: { bereit: 'versorgung_1', lauf: 'versorgung_posen_3', reparieren: 'versorgung_posen_1', nachladen: 'versorgung_posen2_1', getroffen: 'versorgung_posen_4' },
+  werkstatt: { bereit: 'versorgung_1', lauf: 'versorgung_posen_3', reparieren: 'versorgung_posen_1', reparieren2: 'versorgung_posen2_3', bergen: 'versorgung_posen2_4', nachladen: 'versorgung_posen2_1', getroffen: 'versorgung_posen_4' },
   munition: { bereit: 'versorgung_1', lauf: 'versorgung_posen_1', reparieren: 'versorgung_posen_2', nachladen: 'versorgung_posen_3', getroffen: 'versorgung_posen_4' },
-  schildwall: { bereit: 'schildwall_1', kolben: 'schildwall_posen_1', anlegen: 'schildwall_posen_2', knien: 'schildwall_posen_2', halten: 'schildwall_posen2_3', getroffen: 'schildwall_posen_4' },
-  schwer: { bereit: 'schwer_1', kolben: 'schwer_posen_1', halten: 'schwer_posen_3', getroffen: 'schwer_posen_4' },
+  schildwall: { bereit: 'schildwall_1', kolben: 'schildwall_posen_1', hiebAus: 'schildwall_posen2_1', hieb: 'schildwall_posen2_2', lauf: 'schildwall_posen_3', anlegen: 'schildwall_posen_2', knien: 'schildwall_posen_2', halten: 'schildwall_posen2_3', getroffen: 'schildwall_posen_4' },
+  schwer: { bereit: 'schwer_1', kolben: 'schwer_posen_1', hiebAus: 'schwer_posen_1', hieb: 'schwer_posen_2', halten: 'schwer_posen_3', getroffen: 'schwer_posen_4' },
   scharf: { bereit: 'scharfschuetze_1', lauf: 'scharfschuetze_posen_2', anlegen: 'scharfschuetze_posen_1', knien: 'scharfschuetze_posen_3', getroffen: 'scharfschuetze_posen_4' },
   pirsch: { bereit: 'pirschjaeger_1', lauf: 'pirschjaeger_posen_3', anlegen: 'pirschjaeger_posen_1', knien: 'pirschjaeger_posen_2', getroffen: 'pirschjaeger_posen_4' },
-  fernsprech: { bereit: 'fernsprech_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', getroffen: 'melder_posen_4' },
-  signal: { bereit: 'signal_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', getroffen: 'melder_posen_4' },
+  fernsprech: { bereit: 'fernsprech_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', funk2: 'melder_posen_3', getroffen: 'melder_posen_4' },
+  signal: { bereit: 'signal_1', lauf: 'melder_posen_1', funk: 'melder_posen_2', funk2: 'melder_posen_3', getroffen: 'melder_posen_4' },
   // Hauptmann: Einzelmodell – solange eine Pose läuft, wird das ganze Bild getauscht (newFigs)
   hauptA: { befehl: 'hauptmann_posen_1', anlegen: 'hauptmann_posen_2', knien: 'hauptmann_posen_2', fernglas: 'hauptmann_posen_3', getroffen: 'hauptmann_posen_4' },
   hauptD: { befehl: 'hauptmann_posen_1', anlegen: 'hauptmann_posen_2', knien: 'hauptmann_posen_2', fernglas: 'hauptmann_posen_3', getroffen: 'hauptmann_posen_4' },
@@ -1480,7 +1480,7 @@ const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
 // M7 (2026-11-22): letzter Angreifer (Schuss, Granate, Nahkampf, Spezialschlag) – „getroffen“ taumelt und kippt von ihm weg, auch wenn er von hinten kommt
 let letzterAngreifer = null;
 function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false;
-  if (art === 'getroffen' && o.von == null && letzterAngreifer && letzterAngreifer.id !== id && performance.now() - letzterAngreifer.t < 3000) { const ad = DU.get(letzterAngreifer.id); if (ad) o = { ...o, von: ad.x }; } if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; if (art === 'getroffen' && poseHat(u, 'getroffen2') && Math.random() < 0.5) art = 'getroffen2'; d.pose = { art, t0: now, dauer, ...o }; return true; }
+  if (art === 'getroffen' && o.von == null && letzterAngreifer && letzterAngreifer.id !== id && performance.now() - letzterAngreifer.t < 3000) { const ad = DU.get(letzterAngreifer.id); if (ad) o = { ...o, von: ad.x }; } if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; if (art !== 'kolben' && poseHat(u, art + '2') && Math.random() < 0.5) art = art + '2'; /* K13 (2026-11-22): zweite Fassung je Pose (getroffen2, funk2, lauf2, reparieren2 …), zufällig */ d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
 function poseFigur(u, d, j, fallback) {
@@ -2421,6 +2421,10 @@ async function playEvent0(e) {
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
+    case 'abilTitel': {   // Enrico 2026-11-22: Titel zuerst, dann Anlauf/Sprung und Schlag (Durchbruch, Sturmrollen, Sprungangriff)
+      const a = DU.get(e.u), au = unitById(e.u); if (!a || !au) break; if (camOn() && !inView(a.x, a.y, 0.15)) await camTo(a.x, a.y - L.s * 0.4, 360);
+      const NAME = { durchbruch: 'Durchbruch', rollen: 'Sturmrollen', sprung: 'Sprungangriff' }, art = e.k === 'durchbruch' ? 'faust' : au.side === 'A' ? 'faust' : 'kalt';
+      await heldTitelErst(null, NAME[e.k] || '', TYPES[au.type].held ? art : art + ' klein mitte', TYPES[au.type].name); break; }
     case 'rollen': {   // F54 (2026-11-21): Sturmrollen – Anlauf, ein Aufprall mit Kampfszene (Stillstand, Rütteln, Staub, Blut), Panzer bleibt stehen; das Zurückrutschen folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4);
       playSound('tank', 0.5); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 260); }
@@ -2437,7 +2441,7 @@ async function playEvent0(e) {
     case 'rollstoss': { const d = DU.get(e.u); const fl = FLUG.get(e.u); FLUG.delete(e.u); if (d && fl && performance.now() - fl < 4000) { await flugZurueck(e.u, e.path); break; } if (d) { playSound('steps', 0.35); await animPath(e.u, e.path, 160, true); } break; }   // F54: Ziel rutscht ein Feld zurück; F86: nach dem Durchbruch fliegt es
     case 'durchbruch': {   // Held Rote Faust: Anlauf, Faustschlag mit Ausholen, Aufflammen (Glut), Dampf; der Rückstoß folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.5);
-      await heldTitelErst(ksz, 'Durchbruch', 'faust', heldName(e.u));   // F86: großer Auftritt; F87: erst Schrift, dann Schlag
+      // Titel kam schon vor dem Anlauf ('abilTitel', Enrico 2026-11-22)
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 900); playSound('held_aufladen', 0.6); faustDampf(e.u, 1); playSound('held_dampf', 0.25);   // Dampfstoß aus der Faust beim Ausholen
       if (e.path) { const sch = staubSchleppe(e.u); await animPath(e.u, e.path, 200); sch(); }
       a.face = d.x >= a.x ? 0 : 3; const dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 320 / speed; let ls = 0;
@@ -2542,7 +2546,7 @@ async function playEvent0(e) {
     case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': DU.get(e.u).vs.stuck = 0; kz(e.u, 'funkeln', 'steig'); await wait(150); break;
-    case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } playSound('reparieren', 0.6); kz(e.u, 'werkzeug', 'steig'); await wait(320); break; }
+    case 'recovered': { const dr = DU.get(e.u); if (dr) { dr.vs.broken = 0; dr.vs.stuck = 0; } if (e.by != null) { pose(e.by, 'bergen', 1600); const m = DU.get(e.by); if (m && dr) m.face = dr.x >= m.x ? 0 : 3; } /* K13: Versorgung zeigt beim Bergen */ playSound('reparieren', 0.6); kz(e.u, 'werkzeug', 'steig'); await wait(320); break; }
     case 'setup': { DU.get(e.u).vs.setup = true; playSound('mgsetup', 0.5); playSound('mgladen', 0.45); await wait(200); break; }
     case 'undig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = false; playSound('schaufel', 0.4, null, { noGap: true }); await wait(250); break; }   // F36: aus der Stellung
     case 'einholen': case 'aufsteigen': {   // F70: Ballon sinkt bzw. steigt am Seil, Winde rattert

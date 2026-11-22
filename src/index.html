@@ -1070,6 +1070,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
 #heldTitel span { font: 400 clamp(17px, 1.3vw, 24px) var(--s-head); letter-spacing: .2em; text-transform: uppercase; color: #d9c7a2; -webkit-text-stroke: 2px #140d08; paint-order: stroke fill; margin-bottom: 2px; }
 #heldTitel.faust { --hc: #ffae52; --hg: rgba(255,84,20,.7); }
 #heldTitel.kalt { --hc: #eaf3fa; --hg: rgba(140,196,240,.62); }
+#heldTitel.klein.mitte { top: 31%; }   /* Sturmrollen/Sprung: kleiner Titel, aber vor dem Anlauf in der Mitte */
 #heldTitel.klein { top: calc(var(--tb-unten, 70px) + 150px); padding: 10px 56px 14px; }   /* F87: Aura-Titel oben, nicht über den Figuren */ #heldTitel.klein b { font-size: clamp(38px, 3.3vw, 64px); -webkit-text-stroke-width: 4px; }
 #heldTitel.an { animation: heldTitel 1.9s cubic-bezier(.2,.9,.3,1) both; }
 @keyframes heldTitel { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-4deg) scale(2.3); filter: blur(5px); } 9% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(.93); filter: none; }

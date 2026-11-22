@@ -855,7 +855,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
   flush();
   ev.push({ t: 'face', u: u.id, face: u.face });
   if (T.cls === 'walker') {
-    for (const e of G.units) if (e.side !== u.side && active(e) && !e.seenWalker && cls(e) !== 'walker' && dist(e.c, e.r, u.c, u.r) <= 2) {
+    if (!opt.keineFurcht) for (const e of G.units) if (e.side !== u.side && active(e) && !e.seenWalker && cls(e) !== 'walker' && dist(e.c, e.r, u.c, u.r) <= 2) {   // Enrico 2026-11-22: Sturmrollen-Anlauf (keineFurcht) löst keine Kolossfurcht aus
       e.seenWalker = true; e.mor = Math.max(0.5, e.mor - P.WALKER_FEAR);
       ev.push({ t: 'fear', u: e.id, morv: e.mor });
     }
@@ -1585,12 +1585,12 @@ function abilTargets(G, u) {
 // K4 (Enrico 2026-11-22): Anlauf von Durchbruch und Sturmrollen nach den normalen Zugregeln (moveUnit: Minen, Sperrfeuer, Feuerbereitschaft, Freischlag, Feuer, Gas, Draht);
 // kommt der Angreifer nicht unversehrt am Anlauffeld an (Halt, niedergehalten, geflohen), entfällt der Stoß – die Fähigkeit ist trotzdem verbraucht.
 function anlauf(G, u, mitte, ev) {
-  ev.push(...moveUnit(G, u, mitte[0], mitte[1], { path: [mitte], ap: 0, rush: true }));
+  ev.push(...moveUnit(G, u, mitte[0], mitte[1], { path: [mitte], ap: 0, rush: true, keineFurcht: true }));
   return !G.over && alive(u) && u.status === 'ok' && u.c === mitte[0] && u.r === mitte[1] && !(u.supp > 0) && !(u.stuck > 0) && !(u.broken > 0);
 }
 // K4: das zurückgeschleuderte Ziel löst eine Mine aus; ein aufgebautes MG wird durch den Rückstoß abgebaut
 function rueckstossFolgen(G, d, ev) {
-  if (TYPES[d.type].mg && d.setup) { d.setup = false; d.ow = false; d.sperr = 0; ev.push({ t: 'teardown', u: d.id }); }
+  if (TYPES[d.type].mg && d.setup && !TOG.NORUECKMG) { d.setup = false; d.ow = false; d.sperr = 0; ev.push({ t: 'teardown', u: d.id }); }
   const mi = G.mines.findIndex(k => k.c === d.c && k.r === d.r && k.side !== d.side);
   if (mi >= 0) { G.mines.splice(mi, 1); ev.push({ t: 'mine', u: d.id, c: d.c, r: d.r }); applyDamage(G, null, d, P.MINE_DMG * (0.8 + G.rng() * 0.4), 'front', ev, { ranged: true }); }
   if (alive(d) && fireAt(G, d.c, d.r)) burn(G, d, ev);
@@ -1601,6 +1601,7 @@ function useAbil(G, u, c, r) {
   if (!canAbil(G, u, c, r)) return [];
   const T = TYPES[u.type], k = T.abil, A = ABILS[k], ev = [];
   const rw = k === 'rollen' || k === 'durchbruch' ? rollenWeg(G, u, unitAt(G, c, r)) : null;   // vor dem Verbuchen prüfen (aus dem Stand)
+  if (k === 'rollen' || k === 'durchbruch' || k === 'sprung') ev.push({ t: 'abilTitel', u: u.id, k });   // Enrico 2026-11-22: Titel vor dem Anlauf/Sprung (nur Anzeige)
   spend(u, 1); u.cdA = A.cd; if (T.ladungen) u.ladUsed = (u.ladUsed || 0) + 1; if (A.atk) u.attacked = true; if (A.all) { u.ap = 0; u.bp = 0; u.moved = true; }
   u.face = faceToward(u.face, u.c, u.r, c, r);
   const area = [[c, r], ...neighbors(c, r)].filter(([a, b]) => inMap(a, b));
