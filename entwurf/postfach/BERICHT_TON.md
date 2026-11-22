@@ -14,7 +14,7 @@
 |---|---|
 | `d43fbd7` | Ton-Pult 2: Bau-Skript, Seitenlogik, Stylesheet, Test |
 | `776e071` | `tonpult.html` neu gebaut, Aufnahmen, Test-Export |
-| (dieser) | Test erweitert (40 Prüfungen), Bericht, Auftrag abgehakt |
+| `4216b15` | Test erweitert (40 Prüfungen), Bericht, Auftrag abgehakt |
 
 Die Teile „Bibliothek“, „Tabelle“, „Vom Ton aus“ und „Rückgängig“ stecken in denselben drei Dateien und greifen ineinander – deshalb ein gemeinsamer Commit statt vier.
 
