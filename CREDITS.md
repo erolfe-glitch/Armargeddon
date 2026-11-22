@@ -208,6 +208,8 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | sst_auswahl … sst_zerstoert | _1… | Voices/elevenlabs/schreiter/schreiter_konkordat_0*.mp3, schreiter_aschenwacht_0*.mp3 (Voice Design) | ElevenLabs Text to Speech (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
 | mg_aufbauen, mg_abbauen, geschuetz_aufprotzen, geschuetz_abprotzen, sandsaecke | _1… | Aufbau/*_mixpaket_*.mp3 | ElevenLabs Sound Effects (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
 | loewen_landung | _1–_4 | Helden/loewen_sprung_einschlag_1–4.mp3 | ElevenLabs Sound Effects (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
+| hst_faust_* (8 Anlässe) | _1 | Voices/elevenlabs/helden/held_rotefaust_01–08_*.mp3 (Voice Design „Rote Faust“) | ElevenLabs Text to Speech (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
+| hst_kuerass_* (8 Anlässe) | _1–_2 | Voices/elevenlabs/helden/held_kuerassier_01–08_*_a/b.mp3 (Stimme Ragnar) | ElevenLabs Text to Speech (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
 | ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
 **Nicht kommerziell (CC BY-NC):** held_kolben_1 (Pneumatic Airlock), held_schritt_ritter_1–4 (vermutlich, Remix mit NC-Teilen), held_dampfstoss_1 (Sampling+: Rohdatei nicht kommerziell weitergeben), barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)

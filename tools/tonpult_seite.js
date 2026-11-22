@@ -51,6 +51,13 @@ function rufKette(a, art, st) {
       const ws = ac.createWaveShaper(), k = 1 + 6 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
       n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(ws); n = ws;
     }
+    if (art === 'helm') {   // Kürassier (Enrico 2026-11-22 16:08): hohler Stahlhelm – Bandpass 300–3000 Hz, Resonanz um 1,6 kHz, kurzer Kammfilter, Hauch Nachhall; jedes Wort bleibt verständlich
+      const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 300; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3000;
+      const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 1600; pk.Q.value = 4; pk.gain.value = 3 + 6 * st;
+      const dl = ac.createDelay(0.05); dl.delayTime.value = 0.0035; const fb = ac.createGain(); fb.gain.value = 0.25 + 0.35 * st; const dg = ac.createGain(); dg.gain.value = 0.35 * st;
+      const hall = ac.createDelay(0.2); hall.delayTime.value = 0.045; const hg = ac.createGain(); hg.gain.value = 0.12 * st; const mix = ac.createGain();
+      n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(mix); pk.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(dg); dg.connect(mix); pk.connect(hall); hall.connect(hg); hg.connect(mix); n = mix;
+    }
     if (art === 'roboter') {   // Schreiter-Stimmen (Enrico 2026-11-22): metallischer Lautsprecher – Bandpass, Verzerrung, Ringmodulation (Aschenwacht rauer über st)
       const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 280 + 120 * st;
       const bp = ac.createBiquadFilter(); bp.type = 'peaking'; bp.frequency.value = 1500; bp.Q.value = 1.4; bp.gain.value = 5 + 5 * st;
@@ -188,7 +195,7 @@ function zeile(u, s) {
   const hin = [s.hin, s.auch.length ? `Dieser Platz klingt im Spiel auch bei: ${s.auch.slice(0, 6).join(', ')}${s.auch.length > 6 ? ` und ${s.auch.length - 6} weiteren` : ''}.` : ''].filter(Boolean).join(' ');
   row.append(play, info, h('div', { cls: 'wahl' }, sel_, alleB), h('label', { cls: 'r' }, 'Lautstärke ', volB, vol), h('label', { cls: 'r' }, 'Tonhöhe ', tonB, ton), zur);
   if (s.mode === 'ruf') {   // Filter je Ruf (Enrico 2026-11-22)
-    const fs_ = h('select', { 'aria-label': 'Filter für ' + s.titel }); for (const [v, l] of [['maske', 'Gasmaske + Rauschen'], ['roboter', 'Roboter-Lautsprecher'], ['rauschen', 'nur Rauschen'], ['roh', 'roh']]) fs_.append(h('option', { value: v }, l)); fs_.value = w.filt;
+    const fs_ = h('select', { 'aria-label': 'Filter für ' + s.titel }); for (const [v, l] of [['maske', 'Gasmaske + Rauschen'], ['roboter', 'Roboter-Lautsprecher'], ['helm', 'Stahlhelm (blechern)'], ['rauschen', 'nur Rauschen'], ['roh', 'roh']]) fs_.append(h('option', { value: v }, l)); fs_.value = w.filt;
     fs_.onchange = () => { setze(u, s, 'filt', fs_.value); auffrischen(u, s, row, true); spielPlatz(u, s); };
     const st = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(w.fst * 100) }), stB = h('b', {}, Math.round(w.fst * 100) + ' %');
     st.oninput = () => { setze(u, s, 'fst', st.value / 100); stB.textContent = st.value + ' %'; auffrischen(u, s, row, true); }; st.onchange = () => spielPlatz(u, s);

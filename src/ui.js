@@ -2060,6 +2060,13 @@ function rufKette(a, art, st) {
       const ws = ac.createWaveShaper(), k = 1 + 6 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
       n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(ws); n = ws;
     }
+    if (art === 'helm') {   // Kürassier (Enrico 2026-11-22 16:08): hohler Stahlhelm – Bandpass 300–3000 Hz, Resonanz um 1,6 kHz, kurzer Kammfilter, Hauch Nachhall; jedes Wort bleibt verständlich
+      const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 300; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 3000;
+      const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 1600; pk.Q.value = 4; pk.gain.value = 3 + 6 * st;
+      const dl = ac.createDelay(0.05); dl.delayTime.value = 0.0035; const fb = ac.createGain(); fb.gain.value = 0.25 + 0.35 * st; const dg = ac.createGain(); dg.gain.value = 0.35 * st;
+      const hall = ac.createDelay(0.2); hall.delayTime.value = 0.045; const hg = ac.createGain(); hg.gain.value = 0.12 * st; const mix = ac.createGain();
+      n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(mix); pk.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(dg); dg.connect(mix); pk.connect(hall); hall.connect(hg); hg.connect(mix); n = mix;
+    }
     if (art === 'roboter') {   // Schreiter-Stimmen (Enrico 2026-11-22): metallischer Lautsprecher – Bandpass, Verzerrung, Ringmodulation (Aschenwacht rauer über st)
       const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 280 + 120 * st;
       const bp = ac.createBiquadFilter(); bp.type = 'peaking'; bp.frequency.value = 1500; bp.Q.value = 1.4; bp.gain.value = 5 + 5 * st;
@@ -2115,11 +2122,38 @@ function schreiterBeiEreignis(e, u) {   // true = Ereignis gehört einem Schreit
   }
   return false;
 }
+// Heldenstimmen (Enrico 2026-11-22 15:58/16:08): je Held 8 Anlässe, Plätze ausgeschrieben (sound_bau ordnet sie dann dem Spiel zu); spezial = Durchbruch bzw. Hinrichtung
+const HELD_ST = {
+  faust: { tab: 'stimmen_held_faust', filt: 'roh', fst: 0, rate: 1, pl: { auswahl: 'hst_faust_auswahl', bewegen: 'hst_faust_bewegen', angriff: 'hst_faust_angriff', spezial: 'hst_faust_durchbruch', getroffen: 'hst_faust_getroffen', gegner_erledigt: 'hst_faust_gegner_erledigt', schwer_verwundet: 'hst_faust_schwer_verwundet', tod: 'hst_faust_tod' } },
+  kuerass: { tab: 'stimmen_held_kuerass', filt: 'helm', fst: 0.6, rate: 0.92, pl: { auswahl: 'hst_kuerass_auswahl', bewegen: 'hst_kuerass_bewegen', angriff: 'hst_kuerass_angriff', spezial: 'hst_kuerass_hinrichtung', getroffen: 'hst_kuerass_getroffen', gegner_erledigt: 'hst_kuerass_gegner_erledigt', schwer_verwundet: 'hst_kuerass_schwer_verwundet', tod: 'hst_kuerass_tod' } } };
+let heldAnwahl = 0;
+function heldRuf(u, anlass) {
+  const H = u && HELD_ST[u.type]; if (!soundOn || speed >= INSTANT || !H || !H.pl[anlass]) return false;
+  const t = performance.now(), sk = u.side + 'held' + anlass, sperre = anlass === 'getroffen' ? 8000 : 7000, wichtig = anlass === 'tod' || anlass === 'spezial';
+  if ((!wichtig && t < rufBis) || t - (RUF_SPERRE[sk] || -1e9) < sperre) return false; if (anlass === 'auswahl' && (++heldAnwahl % 2)) return false;
+  const tw = TONWAHL[H.tab] && TONWAHL[H.tab]['ruf_' + anlass]; if (tw && tw.aus) return false;
+  const k = tw && tw.k ? tw.k : sndPick((tw && tw.p) || H.pl[anlass], u.side); if (!k || !SND[k]) return false;
+  RUF_SPERRE[sk] = t; rufBis = t + 3800; const a = SND[k].cloneNode(); a.volume = Math.min(1, 0.6 * ((tw && tw.vf) || 1)); a.preservesPitch = false; a.playbackRate = (tw && tw.rate) || H.rate;
+  a.addEventListener('ended', () => { rufBis = 0; }); rufKette(a, (tw && tw.filt) || H.filt, tw && tw.fst != null ? tw.fst : H.fst); anBus(a, 's'); const p = a.play(); if (p && p.catch) p.catch(() => {}); try { duckStimme(a); } catch (e) {} return true;
+}
+function heldBeiEreignis(e, u) {   // true = Ereignis gehört einem Helden mit eigener Stimme, dann keine Truppenrufe
+  const ua = unitById(e.a != null ? e.a : e.u), held = x => !!(x && HELD_ST[x.type]);
+  switch (e.t) {
+    case 'move': if (!held(u)) return false; heldRuf(u, 'bewegen'); return true;
+    case 'abilTitel': if (!held(u) || e.k !== 'durchbruch') return false; heldRuf(u, 'spezial'); return true;   // Durchbruch-Ruf beim Anlauf, vor dem Faustschlag
+    case 'hinrichtung': if (!held(u)) return false; heldRuf(u, 'spezial'); return true;   // vor dem Säge-Schnitt
+    case 'melee': if (!held(ua)) return false; heldRuf(ua, 'angriff'); return true;
+    case 'hit': if (!held(u) || !(e.dmg > 0)) return false; if (e.str < 3.5 && !u._heldSchwer) { u._heldSchwer = true; heldRuf(u, 'schwer_verwundet'); } else heldRuf(u, 'getroffen'); return true;
+    case 'heldfall': if (!held(u)) return false; rufBis = 0; heldRuf(u, 'tod'); return true;
+    case 'destroyed': { const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 4000 ? unitById(letzterAngreifer.id) : null; if (held(la) && la.side !== (u && u.side)) heldRuf(la, 'gegner_erledigt'); return false; }
+  }
+  return false;
+}
 const fussTrupp = u => !!(u && TYPES[u.type] && !['walker', 'cav'].includes(TYPES[u.type].cls) && !TYPES[u.type].aerial);
 let rufRoutT = 0, rufSterbenN = 0;
 function rufBeiEreignis(e, u) {
   const sd = x => { const v = x != null && unitById(x); return v ? v.side : null; };
-  if (schreiterBeiEreignis(e, u)) return;
+  if (schreiterBeiEreignis(e, u) || heldBeiEreignis(e, u)) return;
   switch (e.t) {
     case 'move': if (e.path && e.path.length > 2) ruf('vorruecken', u && u.side); break;
     case 'fire': if (!e.reaction) ruf('feuer', sd(e.a)); break;
@@ -3002,7 +3036,7 @@ function stimmZiehen(pool) {   // Beutel: alle Sprüche der Stimme gemischt, nac
 }
 function klickStimme(u) { refreshSpent(); if (spent.has(u.id)) playSound('klick', 0.2, null, { noGap: true }); else selectVoice(u); }   // ausgegraut (fertig): kein Spruch
 function selectVoice(u) {
-  if (u && istSchreiter(u) ? schreiterRuf(u, 'auswahl') : u && ruf('auswahl', u.side)) return;   // Schreiter: Roboterstimme statt Truppenruf   // Ruf „Auswahl“ aus dem Ton-Pult (jede dritte Auswahl) statt des Spruchs
+  if (u && HELD_ST[u.type] ? heldRuf(u, 'auswahl') : u && istSchreiter(u) ? schreiterRuf(u, 'auswahl') : u && ruf('auswahl', u.side)) return;   // Helden: eigene Stimme (etwa jede zweite Auswahl)   // Schreiter: Roboterstimme statt Truppenruf   // Ruf „Auswahl“ aus dem Ton-Pult (jede dritte Auswahl) statt des Spruchs
   if (!soundOn || speed >= INSTANT) return;
   if (u.type === 'oger') { playSound('oger_bruell', 0.4, null, { noGap: true }); return; }   // neue Töne 2026-11-20: Löwengebrüll statt Tiger   // Löwenoger: Brüllen statt Spruch (2026-11-20)
   const pool = stimmPool(u); const k = pool && stimmZiehen(pool); if (!k) return;
@@ -4456,7 +4490,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

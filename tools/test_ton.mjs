@@ -42,6 +42,10 @@ const r = await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r
   { const G = D.G, E = D.E, frei = []; for (let c = 0; c < 6; c++) for (let r = 0; r < 8; r++) if (!G.units.some(u => u.c === c && u.r === r)) frei.push([c, r]);
     const vorlage = G.units.find(u => u.side === 'A'), id = 9999; G.units.push({ ...vorlage, id, type: 'kreuz', c: frei[0][0], r: frei[0][1] }); D.neuDU(); out.schreiter = D.istSchreiter(id);
     out.sstSpielt = D.schreiterRuf(id, 'angriff'); await W(400); }
+  { const G = D.G, v = G.units.find(u => u.side === 'D'), w = G.units.find(u => u.side === 'A'); G.units.push({ ...w, id: 9998, type: 'faust' }, { ...v, id: 9997, type: 'kuerass' }); D.neuDU();
+    out.held = {}; for (const an of ['auswahl', 'bewegen', 'angriff', 'getroffen', 'gegner_erledigt', 'schwer_verwundet', 'tod']) out.held[an] = !!(D.sndPick('hst_faust_' + an, 'A') && D.sndPick('hst_kuerass_' + an, 'D'));
+    out.held.spezial = !!(D.sndPick('hst_faust_durchbruch', 'A') && D.sndPick('hst_kuerass_hinrichtung', 'D'));
+    out.heldSpielt = D.heldRuf(9998, 'angriff') && (await W(200), D.heldRuf(9997, 'spezial')); await W(400); }
   out.neu = ['mg_aufbauen', 'mg_abbauen', 'geschuetz_aufprotzen', 'geschuetz_abprotzen', 'sandsaecke', 'loewen_landung', 'neu4_pistole_schwer', 'neu4_gewehr_schwer', 'neu4_mg_schwer'].filter(p => !D.sndPick(p, 'A'));
   return out; })()`);
 console.log(JSON.stringify(r, null, 1));
@@ -49,5 +53,6 @@ console.log(fehler.length ? 'FEHLER:\n' + fehler.join('\n') : 'keine Seitenfehle
 ws.close(); ch.kill();
 const leer = typeof r === 'object' ? [...Object.entries(r.rufe || {}), ...Object.entries(r.sst || {})].filter(([, v]) => !v).map(([k]) => k).concat(r.neu || []) : ['?'];
 if (typeof r === 'object' && !(r.schreiter && r.sstSpielt)) leer.push('Schreiter-Stimme spielt nicht');
+if (typeof r === 'object') { for (const [k, v] of Object.entries(r.held || {})) if (!v) leer.push('Held ' + k); if (!r.heldSpielt) leer.push('Heldenstimme spielt nicht'); }
 console.log(leer.length ? 'FEHLENDE TÖNE: ' + leer.join(', ') : 'alle neuen Plätze belegt');
 process.exit(fehler.length || typeof r === 'string' || leer.length ? 1 : 0);
