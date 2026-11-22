@@ -27,7 +27,7 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
 const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: [...['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n), 'boden_schnee', 'boden_acker_schnee', 'strasse_matsch', 'boden_eis', ...[1, 2, 3, 4].map(k => 'boden_schnee_rein_' + k)],
-  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee'],
+  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee', 'ufer_flach_1', 'ufer_flach_2', 'ufer_flach_3'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
     'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
@@ -222,6 +222,27 @@ function aufbauen(cfg, IM) {
   // Winter: Eisfelder ganz füllen (Teich, breite Stellen), nicht nur entlang der Flusslinie
   const EISF = WI ? felder((t, c, r) => inMap(c, r) && t === 'eis') : [];
   if (EISF.length) schicht('boden_eis', ctx => { for (const [c, r] of EISF) jitterHex(ctx, ...hexC(c, r), 0.8); }, 0.22, 1, 0);
+  // Uferkante flach (Enrico 19:45): Streifen (oben Schnee, Uferlinie bei 58 %, unten Eis) entlang der weichen Eisgrenze, nicht an den Feldkanten.
+  // Eisgrenze aus einer kleinen Maske (Flusslinien + Eisfelder, weichgezeichnet); alle 0,5 R ein Punkt auf der Grenze, Richtung aus dem Gefälle der Maske.
+  // Streifen 1–2 meist, 3 (steinig) selten; Enden weich, damit sich überlappende Stücke nicht hart absetzen.
+  const UFER = { n: 0 };   // Test: Anzahl gelegter Uferstreifen (__dbg.gbw.UFER)
+  if (EISF.length && IM.ufer_flach_1) {
+    const f = 0.125, MW = Math.ceil(WW * f), MH = Math.ceil(WH * f), mc = document.createElement('canvas'); mc.width = MW; mc.height = MH; const mx = mc.getContext('2d');
+    mx.scale(f, f); mx.fillStyle = mx.strokeStyle = '#fff'; strokeLines(mx, RIVERS, R * 1.22); for (const [c, r] of EISF) jitterHex(mx, ...hexC(c, r), 0.8);
+    const tmp = document.createElement('canvas'); tmp.width = MW; tmp.height = MH; const tx = tmp.getContext('2d'); tx.filter = `blur(${Math.max(2, R * f * 0.35)}px)`; tx.drawImage(mc, 0, 0);
+    const md = tx.getImageData(0, 0, MW, MH).data, mv = (x, y) => { const X = Math.max(0, Math.min(MW - 1, Math.round(x * f))), Y = Math.max(0, Math.min(MH - 1, Math.round(y * f))); return md[(Y * MW + X) * 4 + 3] / 255; };   // Alpha (weiße Maske: Farbe bleibt 255, nur Alpha läuft aus)
+    const ENDF = new Map(), enden = im => { if (ENDF.has(im)) return ENDF.get(im); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+      x.globalCompositeOperation = 'destination-in'; const gr = x.createLinearGradient(0, 0, im.width, 0); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(0.22, 'rgba(0,0,0,1)'); gr.addColorStop(0.78, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+      x.fillStyle = gr; x.fillRect(0, 0, im.width, im.height); ENDF.set(im, c); return c; };
+    const S = R * 0.5, d = Math.max(R * 0.3, 2 / f);   // Gefälle über mindestens 2 Maskenpixel
+    for (let y = S / 2; y < WH; y += S) for (let x = S / 2; x < WW; x += S) {
+      const jx = x + (hrnd(Math.round(x), Math.round(y), 320) - 0.5) * S * 0.6, jy = y + (hrnd(Math.round(x), Math.round(y), 321) - 0.5) * S * 0.6, v = mv(jx, jy);
+      if (v < 0.2 || v > 0.8) continue;   // nur auf der Grenze (weichgezeichneter Saum)
+      const gx = mv(jx + d, jy) - mv(jx - d, jy), gy = mv(jx, jy + d) - mv(jx, jy - d), gl = Math.hypot(gx, gy); if (gl < 0.05) continue;
+      const nx = -gx / gl, ny = -gy / gl;   // zum Land
+      const q = hrnd(Math.round(jx), Math.round(jy), 322), im0 = IM['ufer_flach_' + (q < 0.42 ? 1 : q < 0.84 ? 2 : 3)] || IM.ufer_flach_1, im = enden(im0);
+      const L = R * 1.35, H = L * im.height / im.width, px = jx + nx * (v - 0.5) * R * 0.5, py = jy + ny * (v - 0.5) * R * 0.5;
+      UFER.n++; w.save(); w.translate(px, py); w.rotate(Math.atan2(nx, -ny)); if (q * 7 % 1 < 0.5) w.scale(-1, 1); w.drawImage(im, -L / 2, -H * 0.58, L, H); w.restore(); } }
 
   // ---------- 2. Flache Details ----------
   let FZ = null;   // Ziel für flach(): sonst das Weltbild w (flachNeu zeichnet ein einzelnes Feld nach, Enrico 2026-11-22: kein Neuaufbau bei Einschlägen)
@@ -422,7 +443,7 @@ function aufbauen(cfg, IM) {
   const BAUFELD = new Map(); for (const b of cfg.bauten || []) for (const f of [...b.felder, ...(b.turm ? [b.turm] : [])]) BAUFELD.set(f[0] + ',' + f[1], b);
   const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
   const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
-  // Winterfelder (Krähenfurt): true = Feld fertig, sonst weiter mit den üblichen Teilen. Größen nach Breite in Feldradien (breit), Gebäude nie gespiegelt (Licht von links).
+  // Winterfelder (Krähenfurt): true = Feld fertig, sonst weiter mit den üblichen Teilen. Größen nach Breite in Feldradien (breit), Gebäude nie gespiegelt (Licht von links). Häuser/Kapelle seit Enrico 19:45 15 % größer; steht ein Trupp dahinter, werden sie durchsichtig (stand/hides).
   const WP = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
   const TANNEN = WP('tanne_schnee'), HAEUSER = WP('haus_heil'), HRUINEN = WP('haus_ruine_schnee'), HOLZ = WP('holzstapel');
   const breit = (im, wR) => im ? wR * R * im.height / im.width : 0;
@@ -430,15 +451,15 @@ function aufbauen(cfg, IM) {
   const pick = (arr, v) => arr[Math.min(arr.length - 1, Math.floor(v * arr.length))];
   function winterFeld(c, r, t, hx, hy, q) {
     if (t === 'haus' && HAEUSER.length) {
-      stand(pick(HAEUSER, q(300)), hx + (q(301) - 0.5) * R * 0.12, hy - R * 0.04, breit(HAEUSER[0], 1.75), { shadeK: 0.5 });
+      stand(pick(HAEUSER, q(300)), hx + (q(301) - 0.5) * R * 0.12, hy - R * 0.04, breit(HAEUSER[0], 2.0), { shadeK: 0.5 });
       if (HOLZ.length && q(302) < 0.45) { const im = pick(HOLZ, q(305)); stand(im, ...corner(c, r, q(303) < 0.5 ? 0 : 3, 0.74), breit(im, 0.62), { flip: q(304) < 0.5, shadeK: 0.35 }); }
       return true;
     }
-    if (t === 'kapelle' && IM.kapelle) { stand(IM.kapelle, hx, hy - R * 0.05, breit(IM.kapelle, 1.85), { shadeK: 0.5 }); return true; }
+    if (t === 'kapelle' && IM.kapelle) { stand(IM.kapelle, hx, hy - R * 0.05, breit(IM.kapelle, 2.1), { shadeK: 0.5 }); return true; }
     if (t === 'village') {   // eingestürztes Haus bzw. eingestürzte Kapelle (Regeln machen daraus Ruine)
       const art = cfg.bauArt && cfg.bauArt(c, r), im = art === 'kapelle' ? IM.kapelle_ruine : HRUINEN.length ? pick(HRUINEN, q(310)) : null;
       if (!im) return false;
-      stand(im, hx, hy - R * 0.04, breit(im, art === 'kapelle' ? 1.85 : 1.75), { shadeK: 0.5 }); return true;
+      stand(im, hx, hy - R * 0.04, breit(im, art === 'kapelle' ? 2.1 : 2.0), { shadeK: 0.5 }); return true;
     }
     if (t === 'wald' && TANNEN.length) {   // verschneite Tannen an den hinteren Ecken, Unterholz an der vorderen Kante
       const ecken = [[4, 0.82], [5, 0.82], ...(q(60) < 0.6 ? [[q(61) < 0.5 ? 3 : 0, 0.78]] : [])];
@@ -667,7 +688,7 @@ function aufbauen(cfg, IM) {
   function feldWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
   // aufrechte Teile eines Felds neu aufbauen (Krähenfurt: Haus/Kapelle eingestürzt → Ruine), ohne die ganze Welt neu zu bauen; Bodenschatten bleiben
   function feldNeu(c, r) { feldWeg(c, r); try { feldTeile(c, r); } finally { FELD = null; BAUMFELD = null; } DRAW.sort((a, b) => a.y - b.y); }
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu,
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu, UFER,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 

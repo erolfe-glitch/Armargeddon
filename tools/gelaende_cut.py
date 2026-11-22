@@ -119,6 +119,10 @@ TEILE = {
     'spur_schnee_5':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (16, 848, 821, 1648)), 'maske': True, 'drehen': 1, 'nur_dunkel': True}),   # Hufe (Reiter)
     'spur_schnee_6':       ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_b', (853, 848, 1658, 1648)), 'maske': True, 'entblut': True, 'nur_dunkel': True}),   # zertrampelt nach Nahkampf (roter Fleck → Matsch)
     'eisloch_schnee':      ('aufkleber', 320, {'quelle': ('spuren_schnee_bogen_a', (1678, 836, 2507, 1660))}),                      # Eisloch (bereitgelegt, Regel offen)
+    # Uferkante flach (Enrico 19:45): Draufsicht, oben Schnee, Mitte Uferlinie, unten Eis; Mittelteil, waagrecht nahtlos, oben/unten weich
+    'ufer_flach_1':        ('uferstreifen', None, {'quelle': ('ufer_schnee_flach_bogen', (240, 10, 2320, 548))}),
+    'ufer_flach_2':        ('uferstreifen', None, {'quelle': ('ufer_schnee_flach_bogen', (240, 577, 2320, 1107))}),
+    'ufer_flach_3':        ('uferstreifen', None, {'quelle': ('ufer_schnee_flach_bogen', (240, 1137, 2320, 1655))}),   # steinig (seltener)
     'zaun_schnee':         ('wand', 0.8, {'quelle': ('streifen_schnee_bogen', (0, 103, 2896, 355)), 'weich_unten': 30}),
     'ufer_schnee':         ('wand', 0.4, {'quelle': ('streifen_schnee_bogen', (0, 640, 2896, 845)), 'weich_unten': 6}),
     'unterholz_schnee':    ('wand', 0.45, {'quelle': ('streifen_schnee_bogen', (0, 1104, 2896, 1300)), 'weich_unten': 60}),
@@ -483,6 +487,15 @@ def aufkleber(name, px, opt):   # Aufkleber aus einem Feld eines Bogens: freiste
     f = px / max(q.shape[:2]); speichern(q, name, q.shape[0] * f, q.shape[1] * f)
 
 
+def uferstreifen(name, opt):   # flacher Uferstreifen: waagrecht nahtlos (Überblendung mit Kontrasterhalt), oben und unten weich auslaufend; Breite 1024 px
+    b, box = opt['quelle']; a = np.asarray(Image.open(SRC / f'{b}.png').convert('RGB').crop(box)).astype(np.float64)
+    h, w = a.shape[:2]; mu = a.mean(axis=(0, 1)); T = (np.sin(np.pi * (np.arange(w) + 0.5) / w) ** 2)[None, :, None]; rl = np.roll(a, w // 2, axis=1)
+    a = mu + ((a - mu) * T + (rl - mu) * (1 - T)) / np.sqrt(T ** 2 + (1 - T) ** 2)
+    y = np.arange(h); t = np.clip(np.minimum(y / (h * 0.2), (h - 1 - y) / (h * 0.2)), 0, 1); t = t * t * (3 - 2 * t)
+    q = np.dstack([a, np.repeat(t[:, None], w, axis=1) * 255])
+    print(f'  Naht {naht(q):.1f}×'); speichern(q, name, 1024 * h / w, 1024)
+
+
 def einbetten():
     """Bausteine fürs Spiel in src/gelaende.js einbetten (window.GELAENDE = { name: data-URI }); nur was gelaende_bau.js lädt."""
     import base64, re
@@ -520,6 +533,8 @@ if __name__ == '__main__':
             einzel(name, h)
         elif art == 'textur':
             textur(name, h, opt[0] if opt else None)
+        elif art == 'uferstreifen':
+            uferstreifen(name, opt[0])
         elif art == 'roh':
             roh(name, h, opt[0])
         elif art == 'aufkleber':

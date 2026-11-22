@@ -1,3 +1,23 @@
+## 2026-11-22 Abend – Entscheidungen 19:45: Uferkante flach, Häuser größer
+
+Gepusht. Partietest Krähenfurt fehlerfrei, test_kommentare sauber. Bilder in `entwurf/probe/kraehenfurt_ufer/` (`teich.jpg`, `fluss.jpg`, Dorfplatz vorher `dorfplatz_vorher.jpg` / nachher `platz.jpg`, Übersicht `uebersicht.jpg`).
+
+1. **Uferkante als flacher Aufkleber:**
+   - Aus `ufer_schnee_flach_bogen.png` sind drei Streifen geschnitten, `ufer_flach_1–3`: der Mittelteil, waagrecht nahtlos (Überblendung mit Kontrasterhalt), oben und unten weich auslaufend.
+   - Die Streifen liegen flach auf dem Boden, aber nicht an den Feldkanten; die gaben harte, sechseckige Linien.
+   - Stattdessen folgen sie der weichen Eisgrenze, wie sie gezeichnet ist (Fluss und Teich). Ich berechne sie aus einer kleinen Eismaske: etwa alle halbe Feldbreite ein Stück, in Richtung der Kante gedreht, oben Schnee, unten Eis.
+   - Die Enden sind weich, Überlappungen setzen sich nicht ab.
+   - Streifen 1 und 2 kommen meist, Streifen 3 (steinig) seltener.
+   - Auf Krähenfurt sind es etwa 180 Stücke; sie werden einmal beim Aufbau ins Bodenbild gemalt und kosten im Spiel nichts.
+   - `ufer_schnee` (aufrecht) bleibt aus.
+2. **Häuser 15 % größer:**
+   - Heile Häuser und Ruinen sind jetzt 2,0 Feldradien breit statt 1,75, die Kapelle 2,1 statt 1,85.
+   - Steht ein Trupp dahinter, werden sie halb durchsichtig wie die Bäume (bestehende Regel für hohe Teile).
+   - Sie ragen links und rechts etwa eine Viertel-Feldbreite in die Nachbarfelder, Trupps dort bleiben sichtbar.
+3. **Feldkanone:** nichts geändert.
+
+Als Nächstes: offen ist nur noch die Frage zum Eisloch (Bericht 18:35/19:40).
+
 ## 2026-11-22 Abend – Krähenfurt: Wintereffekte (18:35) und Spuren, Schneefall, Atem, Blut (19:40)
 
 Gepusht. Tests: test_kommentare sauber, Partietest Krähenfurt fehlerfrei (Grauwall siehe Commit-Nachricht). Bilder in `entwurf/probe/kraehenfurt_effekte/`.
