@@ -10,7 +10,8 @@ im = Image.open(root / 'ui-quelle' / QUELLE).convert('RGB')
 W = 2560
 H = round(im.height * W / im.width)
 big = im.resize((W, H), Image.LANCZOS)
-big = big.filter(ImageFilter.UnsharpMask(radius=1.6, percent=55, threshold=2))   # Kanten nach dem Hochskalieren wieder fassen
+if im.width < W:   # nur beim Hochskalieren nachschärfen (Flux-Bild vom 2026-11-22 ist 2736 px breit: wird nur verkleinert)
+    big = big.filter(ImageFilter.UnsharpMask(radius=1.6, percent=55, threshold=2))   # Kanten nach dem Hochskalieren wieder fassen
 buf = io.BytesIO()
 big.save(buf, 'WEBP', quality=92, method=6)   # feine Tuschlinien nicht verschmieren
 data = 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode()
