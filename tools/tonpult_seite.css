@@ -70,3 +70,7 @@ dialog textarea { width: 100%; height: 46vh; background: #1a1411; color: var(--t
 #alleDlg details { border-top: 1px solid var(--rust); padding: 4px 0; } #alleDlg summary { cursor: pointer; font-weight: 700; padding: 8px 2px; min-height: 40px; }
 #alleDlg .ai { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 3px 0; }
 #alleDlg .ai.an { background: rgba(194, 164, 97, .16); } #alleDlg .ai span { overflow-wrap: anywhere; } #alleDlg .ai small { color: var(--dim); }
+/* Stimmen-Zeilen (2026-11-22): Filterwahl breit genug */
+.p label.rf select { min-width: 210px; display: block; margin-top: 4px; }
+.p .rufzeile { grid-column: 1 / -1; display: flex; gap: 28px; align-items: end; padding-left: 64px; }
+.p .rufzeile label.r input[type=range] { width: 220px; }

@@ -17,7 +17,7 @@ const neuste = exporte[exporte.length - 1], ausNeu = new Set(neuste.j.aenderunge
 const alleKeys = new Set(Object.values(D.pools).flat().map(x => x[0])), tab = {}, bericht = [];
 for (const [k, e] of wahl) {
   const einh = D.einheiten.find(x => x.t === e.einheit), zeile = einh && einh.slots.find(z => z.id === e.platz_id);
-  const platz = zeile ? zeile.platz : e.platz_spiel, volSpiel = zeile ? zeile.vol : e.lautstaerke_spiel;
+  const ruf = zeile && zeile.mode === 'ruf', platz = ruf ? zeile.id : zeile ? zeile.platz : e.platz_spiel, volSpiel = zeile ? zeile.vol : e.lautstaerke_spiel;   // Rufe (Stimmen): Platz = Zeile
   if (!platz || platz === '-') { bericht.push(`${k}: keine Zeile im Spiel – ausgelassen`); continue; }
   const w = { };
   if (e.wahl === '-') w.aus = 1;
@@ -25,6 +25,7 @@ for (const [k, e] of wahl) {
   else if (e.wahl.startsWith('p:')) { const p = e.wahl.slice(2); if (!D.pools[p]) { bericht.push(`${k}: Platz ${p} fehlt – ausgelassen`); continue; } if (p !== platz) w.p = p; }
   const vf = volSpiel ? +(e.lautstaerke / volSpiel).toFixed(3) : 1; if (Math.abs(vf - 1) > 0.01) w.vf = vf;
   if (e.tonhoehe && Math.abs(e.tonhoehe - 1) > 0.005) w.rate = e.tonhoehe;
+  if (ruf) { if (!w.k) { bericht.push(k + ': Ruf ohne einzelnen Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : 0.6; }
   if (!Object.keys(w).length) continue;
   (tab[e.einheit] = tab[e.einheit] || {})[platz] = w;
   if (zeile && e.platz_spiel && e.platz_spiel !== platz) bericht.push(`${k}: Pult-Zeile zeigte ${e.platz_spiel}, das Spiel spielt ${platz} – dort eingetragen`);

@@ -35,11 +35,36 @@ const vorhanden = list => SND ? list.filter(c => SND[c.k]) : list;
 const zieh = list => { const l = []; for (const c of list) for (let i = 0; i < (c.w || 1); i++) l.push(c); return l.length ? l[Math.floor(Math.random() * l.length)].k : null; };
 
 // ---- Einstellungen je Platz ----
-const grund = s => ({ w: s.platz === '-' ? '-' : 'p:' + s.platz, vol: s.vol, ton: 1 });
+const grund = s => Object.assign({ w: s.platz === '-' ? '-' : 'p:' + s.platz, vol: s.vol, ton: 1 }, s.mode === 'ruf' ? { filt: 'maske', fst: 0.6 } : {});
+// Stimmfilter live (Enrico 2026-11-22): „Gasmaske + Rauschen“ = Bandpass ca. 300–3000 Hz mit leichter Resonanz und leichter Verzerrung, dazu leises Feldtelefon-Rauschen/Knistern;
+// „nur Rauschen“ = Stimme roh plus Rauschen; „roh“ = ohne. st = Stärke 0–1. Gleiche Kette im Spiel (ui.js) und im Ton-Pult.
+let RUF_AC = null, RUF_RAUSCH = null;
+function rufKette(a, art, st) {
+  if (!a || art === 'roh' || !(st > 0)) return;
+  try {
+    const ac = RUF_AC = RUF_AC || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume();
+    const src = ac.createMediaElementSource(a); let n = src;
+    if (art === 'maske') {
+      const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 220 + 120 * st;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4400 - 1500 * st;
+      const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 1300; pk.Q.value = 2.2; pk.gain.value = 3 + 6 * st;
+      const ws = ac.createWaveShaper(), k = 1 + 6 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
+      n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(ws); n = ws;
+    }
+    n.connect(ac.destination);
+    if (!RUF_RAUSCH) { const len = ac.sampleRate * 3; RUF_RAUSCH = ac.createBuffer(1, len, ac.sampleRate); const d = RUF_RAUSCH.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.45 + (Math.random() < 0.0012 ? (Math.random() * 2 - 1) * 0.9 : 0); }
+    const ns = ac.createBufferSource(); ns.buffer = RUF_RAUSCH; ns.loop = true;
+    const nf = ac.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 2400; nf.Q.value = 0.7;
+    const ng = ac.createGain(); ng.gain.value = (0.015 + 0.045 * st) * Math.max(0.2, a.volume);
+    ns.connect(nf); nf.connect(ng); ng.connect(ac.destination); ns.start();
+    const stop = () => { try { ns.stop(); } catch (e) {} }; a.addEventListener('ended', stop); a.addEventListener('pause', stop);
+  } catch (e) {}
+}
+
 const wert = (u, s) => Object.assign(grund(s), (AEND[u.t] || {})[s.id] || {});
 function setze(u, s, feld, x) {
   const g = grund(s), a = AEND[u.t] = AEND[u.t] || {}, e = a[s.id] = a[s.id] || {};
-  if (feld === 'vol' || feld === 'ton' ? Math.abs(x - g[feld]) < 1e-6 : x === g[feld]) delete e[feld]; else e[feld] = x;
+  if (feld === 'vol' || feld === 'ton' || feld === 'fst' ? Math.abs(x - g[feld]) < 1e-6 : x === g[feld]) delete e[feld]; else e[feld] = x;
   if (!Object.keys(e).length) delete a[s.id]; if (!Object.keys(a).length) delete AEND[u.t];
   speichern();
 }
@@ -71,6 +96,7 @@ function spielPlatz(u, s, o = {}) {   // o.duck: Fahrzeugton unter einer Stimme 
       nach(t, () => spiel(k, vol * (0.8 + Math.random() * 0.4), streu() * ton, last ? 0 : 170 + Math.random() * 60)); } }
   else if (s.mode === 'motor') motorRev(k, vol, 0.7, ton);
   else if (s.mode === 'doppel') { spiel(k, vol, 0.96 * ton); nach(60, () => spiel(k, vol, 1.02 * ton)); }
+  else if (s.mode === 'ruf') { const a = spiel(k, vol, ton); if (a) rufKette(a, w.filt, w.fst); }
   else spiel(k, vol, (s.mode === 'stimme' ? 1 : s.rate ? s.rate + (Math.random() - 0.5) * 0.08 : streu()) * ton, s.dur);
   zeigeZuletzt(u, s, k);
   return k;
@@ -152,6 +178,12 @@ function zeile(u, s) {
   const zur = h('button', { cls: 'x', title: 'Diesen Platz zurücksetzen', 'aria-label': 'Zurücksetzen: ' + s.titel, on: () => { delete (AEND[u.t] || {})[s.id]; if (AEND[u.t] && !Object.keys(AEND[u.t]).length) delete AEND[u.t]; speichern(); const neu = zeile(u, s); row.replaceWith(neu); liste(); } }, '↺');
   const hin = [s.hin, s.auch.length ? `Dieser Platz klingt im Spiel auch bei: ${s.auch.slice(0, 6).join(', ')}${s.auch.length > 6 ? ` und ${s.auch.length - 6} weiteren` : ''}.` : ''].filter(Boolean).join(' ');
   row.append(play, info, h('div', { cls: 'wahl' }, sel_, alleB), h('label', { cls: 'r' }, 'Lautstärke ', volB, vol), h('label', { cls: 'r' }, 'Tonhöhe ', tonB, ton), zur);
+  if (s.mode === 'ruf') {   // Filter je Ruf (Enrico 2026-11-22)
+    const fs_ = h('select', { 'aria-label': 'Filter für ' + s.titel }); for (const [v, l] of [['maske', 'Gasmaske + Rauschen'], ['rauschen', 'nur Rauschen'], ['roh', 'roh']]) fs_.append(h('option', { value: v }, l)); fs_.value = w.filt;
+    fs_.onchange = () => { setze(u, s, 'filt', fs_.value); auffrischen(u, s, row, true); spielPlatz(u, s); };
+    const st = h('input', { type: 'range', min: 0, max: 100, step: 5, value: Math.round(w.fst * 100) }), stB = h('b', {}, Math.round(w.fst * 100) + ' %');
+    st.oninput = () => { setze(u, s, 'fst', st.value / 100); stB.textContent = st.value + ' %'; auffrischen(u, s, row, true); }; st.onchange = () => spielPlatz(u, s);
+    row.append(h('div', { cls: 'rufzeile' }, h('label', { cls: 'r rf' }, 'Filter ', fs_), h('label', { cls: 'r' }, 'Stärke ', stB, st))); }
   if (hin) row.append(h('p', { cls: 'hin' }, hin));
   return row;
 }
@@ -209,7 +241,7 @@ function exportDaten() {
     for (const id of Object.keys(AEND[t])) { const s = u.slots.find(x => x.id === id); if (!s) continue; const w = wert(u, s);
       aenderungen.push({ einheit: t, name: u.name, seite: u.sd, anlass: (D.ab.find(a => a[0] === s.ab) || [])[1], platz_id: id, titel: s.titel, platz_spiel: s.platz, filter: s.v || null,
         wahl: w.w, schluessel: w.w.startsWith('k:') ? w.w.slice(2) : null, datei: w.w.startsWith('k:') ? datei(w.w.slice(2)) : null, platz_neu: w.w.startsWith('p:') && w.w.slice(2) !== s.platz ? w.w.slice(2) : null,
-        lautstaerke_spiel: s.vol, lautstaerke: +w.vol.toFixed(3), tonhoehe: +w.ton.toFixed(3) }); } }
+        lautstaerke_spiel: s.vol, lautstaerke: +w.vol.toFixed(3), tonhoehe: +w.ton.toFixed(3), ...(s.mode === 'ruf' ? { filter_stimme: w.filt, filter_staerke: +w.fst.toFixed(2) } : {}) }); } }
   return { werkzeug: 'Armargeddon Ton-Pult', stand_toene: D.stand, exportiert: new Date().toISOString(), hinweis: 'wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate', aenderungen, roh: AEND };
 }
 const dlg = document.getElementById('dlg');

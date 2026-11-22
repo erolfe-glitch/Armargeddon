@@ -396,6 +396,7 @@ FIGUREN_POSEN = {
     'aschenwacht_eisenknecht_posen2': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen'),   # Hackklinge erhoben (Ausholen), Kanonen nach vorn
     'aschenwacht_eisenknecht_posen3': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen', spiegeln=[2]),   # Hieb nach vorn; rechts blickt nach links
     # Säge- und Klauenschreiter neu (Enrico 2026-11-22): Grundbild = linke Figur aus posen2 (gespiegelt); nach links blickende Figuren gespiegelt
+    'konkordat_turmschreiter_posen': dict(n=2, reihen=1, grund='turmschreiter', refpose=1, nimm=[1]),   # neues Aussehen (Enrico 2026-11-22): links Gehen = Grundbild; rechts Arme vertauscht, nicht verwenden
     'aschenwacht_saegeschreiter_posen2': dict(n=2, reihen=1, grund='saegeschreiter', refpose=1, nimm=[1], spiegeln=[1]),   # Ruhe (neues Grundbild); rechte Figur missraten
     'aschenwacht_saegeschreiter_posen': dict(n=2, reihen=1, grund='saegeschreiter', massvon='aschenwacht_saegeschreiter_posen2', spiegeln=[1]),   # Gehen, Drehlauf feuert
     'aschenwacht_saegeschreiter_posen3': dict(n=2, reihen=1, grund='saegeschreiter', massvon='aschenwacht_saegeschreiter_posen2', spiegeln=[1]),   # Ausholen, Sägehieb

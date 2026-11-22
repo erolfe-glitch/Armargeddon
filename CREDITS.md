@@ -198,6 +198,11 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | held_saege_start2, held_saege_schnitt2 | _1 | Helden/el_kuerassier_saege_start_1.mp3, el_kuerassier_schwung_schnitt_4.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
 | held_kschwert_metall, held_kschwert_fleisch | _1, _2 | Helden/el_kettenschwert_metall_1/3.mp3, el_kettenschwert_fleisch_2/3.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
 | medic (Konkordat, Aschenwacht) | medic_1–_4 | Voices/elevenlabs/stimme_gravel_0908_a/b.mp3, stimme_ragnar_0914_a/b.mp3 | ElevenLabs Stimmen „Gravel Midnight“, „Ragnar“ (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| saege_einschlag, saege_fleisch, saege_metall | _1… | Schreiter/saege_fleisch_einschlag.mp3, saege_fleisch_saegen.mp3, saege_metall_1/3.mp3 | ElevenLabs Sound Effects (Enrico, 2026-11-22) | ElevenLabs (eigene Erzeugung) | – |
+| held_kschwert_metall (weitere) | _3–_5 | Helden/kettenschwert_ruestung_1–3.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| neu4_pistole_schwer, neu4_granatwerfer, neu4_gewehr_schwer, neu4_mg_schwer | _1… | Waffen_neu/schwere_pistole_schuss.mp3, granatwerfer_schuss.mp3, schweres_gewehr_salve_2/4.mp3, schweres_mg_feuer_1/2.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| draht_schneiden, draht_ueberrollen, draht_infanterie | _1… | Draht/stacheldraht_durchschneiden.mp3, panzer_ueberrollt_stacheldraht.mp3, infanterie_stacheldraht_mixpaket_1–3von3.mp3 | ElevenLabs Sound Effects (Enrico) | ElevenLabs (eigene Erzeugung) | – |
+| stimmen_paket | _1–_30 | Voices/elevenlabs/stimmen_0922/stimme_*.mp3 (und gravel/ragnar) | ElevenLabs Text to Speech (Enrico) | ElevenLabs (eigene Erzeugung) | – |
 | ballon_brenner | ballon_brenner_* | Fire/freesound_community-hotairbaloontorch-60586.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 
 **Nicht kommerziell (CC BY-NC):** held_kolben_1 (Pneumatic Airlock), held_schritt_ritter_1–4 (vermutlich, Remix mit NC-Teilen), held_dampfstoss_1 (Sampling+: Rohdatei nicht kommerziell weitergeben), barrage_1, charge_1, erobert_1, tick_1, neu3_aufprall_4 (Big Crash; neu3_aufprall_1–3 vermutlich auch, siehe oben) (die frühere Menümusik 744062 heroic-war-march ist seit 2026-11-17 nicht mehr eingebaut)

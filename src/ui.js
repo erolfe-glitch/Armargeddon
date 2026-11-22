@@ -407,7 +407,7 @@ function drawSym(g, im, cx, cy, R, ring) {
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
-const MUZ = { aschenwacht_saegeschreiter_posen_2: [0.83, 0.38], aschenwacht_klauenschreiter_posen_2: [0.8, 0.35], aschenwacht_saegeschreiter_posen2_1: [0.98, 0.5], aschenwacht_klauenschreiter_posen2_1: [0.83, 0.54], /* Schreiter-Posen (2026-11-22, gemessen) */ konkordat_kreuzschreiter_posen_2: [0.82, 0.49], aschenwacht_eisenknecht_posen_2: [0.984, 0.487], aschenwacht_eisenknecht_posen2_2: [0.998, 0.589], konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
+const MUZ = { konkordat_turmschreiter_posen_1: [0.975, 0.555], aschenwacht_saegeschreiter_posen_2: [0.83, 0.38], aschenwacht_klauenschreiter_posen_2: [0.8, 0.35], aschenwacht_saegeschreiter_posen2_1: [0.98, 0.5], aschenwacht_klauenschreiter_posen2_1: [0.83, 0.54], /* Schreiter-Posen (2026-11-22, gemessen) */ konkordat_kreuzschreiter_posen_2: [0.82, 0.49], aschenwacht_eisenknecht_posen_2: [0.984, 0.487], aschenwacht_eisenknecht_posen2_2: [0.998, 0.589], konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
   konkordat_kreuzschreiter_neu: [0.632, 0.513], aschenwacht_eisenknecht_neu: [0.88, 0.61],
   // F16/F47 (2026-11-20): Rohrende statt Sehschlitz/Brust – Landkoloss-Kanone, Sturmpanzer, Turmschreiter-Turm-MG, Säge-/Klauenschreiter-Drehlauf
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
@@ -415,7 +415,7 @@ const MUZ = { aschenwacht_saegeschreiter_posen_2: [0.83, 0.38], aschenwacht_klau
 const MUZ_FIG = { /* K12 (2026-11-22): Schuss-Posen gemessen (rechteste Laufspitze im oberen Bildteil, tools-Probe muz.py; Schildwall verdeckt, nicht gemessen) */ konkordat_soldat_2: [1, 0.164], aschenwacht_soldat_2: [1, 0.199], konkordat_soldat_3: [1, 0.183], aschenwacht_soldat_3: [1, 0.243], konkordat_pionier_posen2_1: [1, 0.147], aschenwacht_pionier_posen2_1: [1, 0.229], konkordat_pionier_posen2_2: [1, 0.172], aschenwacht_pionier_posen2_2: [1, 0.27], aschenwacht_gasschutz_posen_1: [1, 0.18], aschenwacht_gasschutz_posen_3: [1, 0.266], konkordat_kampfanzug_posen_3: [1, 0.243], aschenwacht_kampfanzug_posen_3: [1, 0.267], konkordat_scharfschuetze_posen_1: [1, 0.667], konkordat_scharfschuetze_posen_3: [0.996, 0.253], aschenwacht_pirschjaeger_posen_1: [1, 0.553], aschenwacht_pirschjaeger_posen_2: [1, 0.219], konkordat_flammen_posen_2: [1, 0.166], aschenwacht_flammen_posen_2: [1, 0.298], konkordat_hauptmann_posen_2: [1, 0.133], aschenwacht_hauptmann_posen_2: [0.997, 0.147],
   aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475], konkordat_loewenoger_2: [0.905, 0.305],
   aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237], aschenwacht_banner_posen3_1: [0.997, 0.366] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
-const MUZ2 = { konkordat_kreuzschreiter_posen2_2: [0.64, 0.1], aschenwacht_eisenknecht_posen_2: [0.984, 0.526], konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
+const MUZ2 = { konkordat_turmschreiter_posen_1: [0.49, 0.71], konkordat_kreuzschreiter_posen2_2: [0.64, 0.1], aschenwacht_eisenknecht_posen_2: [0.984, 0.526], konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.395, 0.445] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -1317,11 +1317,11 @@ const FIGMAP = {
   ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
-  turm: ['turmschreiter'], orden: ['ordensschreiter'], kreuz: ['kreuzschreiter_neu'], knecht: ['eisenknecht_neu'], saeger: ['saegeschreiter_posen2_1'], klaue: ['klauenschreiter_posen2_1'],   /* neues Aussehen (Enrico 2026-11-22): Grundbild = Ruhepose aus posen2 */   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
+  turm: ['turmschreiter_posen_1'], /* neues Aussehen (Enrico 2026-11-22) */ orden: ['ordensschreiter'], kreuz: ['kreuzschreiter_neu'], knecht: ['eisenknecht_neu'], saeger: ['saegeschreiter_posen2_1'], klaue: ['klauenschreiter_posen2_1'],   /* neues Aussehen (Enrico 2026-11-22): Grundbild = Ruhepose aus posen2 */   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
 };
 // Farbstimmung der Kettenfahrzeuge an die Umgebung; der neue Landkoloss (Dreiviertelansicht, 2026-11-17) nur leicht gedämpft, damit das Rot kräftig bleibt
 const KETTE_FILTER = { konkordat_koloss: 'brightness(0.95) contrast(1.03) saturate(0.97)' };
-const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter', 'kreuzschreiter_neu', 'eisenknecht_neu', 'saegeschreiter_posen2_1', 'klauenschreiter_posen2_1'];
+const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter', 'kreuzschreiter_neu', 'eisenknecht_neu', 'saegeschreiter_posen2_1', 'klauenschreiter_posen2_1', 'turmschreiter_posen_1'];
 // Stufe-3-Schreiter (2026-11-19, neue Modelle im Stil Retro-Zukunft): 2,3 SH, beide gleich groß, dürfen so breit werden wie Fahrzeuge (FIGW_VEH)
 const STUFE3 = ['kreuzschreiter_neu', 'eisenknecht_neu'];
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
@@ -1982,16 +1982,71 @@ let sndSide = null, lastFire = null;   // lastFire: zuletzt abgespielter Schuss 
 // _bf (Bordfunk stark: Panzerbesatzung), _mr (Maschine mittel: Schreiter, Eisenknecht); Hauptmann/General ohne Filter. Erzeugt mit tools/stimmfilter.py.
 const PANZER = ['koloss', 'sturmpz', 'bohrer'];
 function stimmVar(u) { const T = u && TYPES[u.type]; if (!T) return null; return T.cmd ? null : T.dauerfeuer ? 'mr' : PANZER.includes(u.type) ? 'bf' : T.cls === 'walker' ? 'mr' : T.suit ? 'gs' : 'gm'; }
+const letzteFassung = {};
 function sndPick(name, side, v) {
   const cand = [], add = (n, deep) => { if (!deep && SND_VAR[n]) { for (const m of SND_VAR[n]) add(m, true); return; } if (v && SND_POOLS[n + '_' + v]) n += '_' + v; if (SND_POOLS[n]) for (const [k, sd, w] of SND_POOLS[n]) { if (SND[k]) for (let i = 0; i < (w || 1); i++) cand.push([k, sd]); } else if (SND[n]) cand.push([n, null]); };   // Gruppe (SND_VAR) vor Platz, damit z. B. „rifle“ alle Gewehr-Plätze mischt; Gewicht w: Hauptton öfter
   add(name); if (!cand.length) return null;
   const sd = side || sndSide, own = cand.filter(c => !c[1] || c[1] === sd), list = own.length ? own : cand.filter(c => !c[1]);
-  return list.length ? list[Math.floor(Math.random() * list.length)][0] : null;   // nur Varianten der anderen Seite: lieber still
+  if (!list.length) return null; let k = list[Math.floor(Math.random() * list.length)][0];   // nur Varianten der anderen Seite: lieber still
+  if (k === letzteFassung[name] && new Set(list.map(c => c[0])).size > 1) { const rest = list.filter(c => c[0] !== k); k = rest[Math.floor(Math.random() * rest.length)][0]; }   // Enrico 2026-11-22: nie zweimal hintereinander dieselbe Fassung
+  letzteFassung[name] = k; return k;
 }
 // F91 (2026-11-22): Ton-Pult-Wahl je Einheit und Tonplatz (k = fester Ton, p = anderer Platz, aus = still, vf = Lautstärke-Faktor, rate = Tonhöhe)
 // TONWAHL-ANFANG (erzeugt mit tools/tonwahl_bau.mjs aus 6 Ton-Pult-Exporten, neuester tonpult_export_2026-11-22_0151.json; 55 Einträge – nicht von Hand ändern)
 const TONWAHL = {"grenadier":{"rifle":{"k":"rifle3"}},"heiler":{"nahD":{"k":"punch1"},"cry":{"p":"roar"},"rifle":{"k":"grenade2"}},"sense":{"mg":{"k":"mg_2"},"nahD":{"k":"nahD_3"}},"signal":{"rifle":{"p":"pistol"},"nahD":{"p":"axe"}},"pionierD":{"rifle":{"p":"rifle3"},"nahD":{"k":"punch1"}},"banner":{"nahD":{"p":"saebel"}},"buechse":{"nahD":{"k":"punch2"}},"brand":{"nahD":{"k":"punch2"},"flame":{"p":"feuer"}},"sturm":{"rifle":{"p":"neu_schrot"},"nahD":{"p":"neu2_nahkampf"}},"huenen":{"sword":{"k":"heavy1"},"mg":{"k":"neu_mg_schwer_1"}},"eingreif":{"rifle":{"p":"semi"},"nahD":{"p":"slash"}},"gasschutz":{"rifle":{"k":"pistol"},"nahD":{"k":"punch1"}},"munition":{"nahD":{"k":"punch2"}},"pirsch":{"nahD":{"k":"punch2"}},"minenwerfer":{"boom":{"k":"grenade2_1"},"nahD":{"k":"punch2"}},"geschuetz":{"nahD":{"k":"punch2"},"artD":{"k":"kolosskanone_2"}},"panzerk":{"heavy":{"p":"nahD"},"semi":{"k":"semi"}},"knecht":{"panzerkanone":{"k":"kolosskanone_2"},"heavy":{"k":"neu_wucht_4"}},"sturmpz":{"mg":{"p":"neu_mg_schwer"},"armor":{"k":"neu2_monster_12"}},"klaue":{"minigun":{"k":"neu2_autokanone_2"}},"hauptA":{"pistol":{"k":"pistol_2"}},"generalA":{"pistol":{"k":"pistol_2"},"nahA":{"p":"saebel"}},"scharf":{"sniper":{"k":"sniper_2"}},"oger":{"flinte":{"k":"neu_schrot_2"},"neu3_bestie":{"p":"sword","vf":1.1},"medic":{"k":"neu2_monster_42"}},"turm":{"kolosskanone":{"k":"neu_kanone_1"}},"orden":{"heavy":{"k":"heavy3"}},"kreuz":{"loewenkanone":{"k":"neu_kanone_1"},"heavy":{"k":"neu_wucht_4"},"loewe":{"k":"neu_tiger_mech_1"}},"bohrer":{"heavy":{"p":"smash"}},"saeger":{"heavy":{"k":"heavy_2"}},"fernsprech":{"nahA":{"k":"punch1"}},"raeumer":{"axe":{"p":"nahA"}},"hauptD":{"nahD":{"p":"slash"}},"generalD":{"nahD":{"p":"saebel"}},"schwer":{"nahD":{"p":"neu2_nahkampf"}},"flammen":{"flame":{"k":"feuer_1"}}};
 // TONWAHL-ENDE
+// Stimmfilter live (Enrico 2026-11-22): „Gasmaske + Rauschen“ = Bandpass ca. 300–3000 Hz mit leichter Resonanz und leichter Verzerrung, dazu leises Feldtelefon-Rauschen/Knistern;
+// „nur Rauschen“ = Stimme roh plus Rauschen; „roh“ = ohne. st = Stärke 0–1. Gleiche Kette im Spiel (ui.js) und im Ton-Pult.
+let RUF_AC = null, RUF_RAUSCH = null;
+function rufKette(a, art, st) {
+  if (!a || art === 'roh' || !(st > 0)) return;
+  try {
+    const ac = RUF_AC = RUF_AC || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume();
+    const src = ac.createMediaElementSource(a); let n = src;
+    if (art === 'maske') {
+      const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 220 + 120 * st;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4400 - 1500 * st;
+      const pk = ac.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 1300; pk.Q.value = 2.2; pk.gain.value = 3 + 6 * st;
+      const ws = ac.createWaveShaper(), k = 1 + 6 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
+      n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(ws); n = ws;
+    }
+    n.connect(ac.destination);
+    if (!RUF_RAUSCH) { const len = ac.sampleRate * 3; RUF_RAUSCH = ac.createBuffer(1, len, ac.sampleRate); const d = RUF_RAUSCH.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.45 + (Math.random() < 0.0012 ? (Math.random() * 2 - 1) * 0.9 : 0); }
+    const ns = ac.createBufferSource(); ns.buffer = RUF_RAUSCH; ns.loop = true;
+    const nf = ac.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 2400; nf.Q.value = 0.7;
+    const ng = ac.createGain(); ng.gain.value = (0.015 + 0.045 * st) * Math.max(0.2, a.volume);
+    ns.connect(nf); nf.connect(ng); ng.connect(ac.destination); ns.start();
+    const stop = () => { try { ns.stop(); } catch (e) {} }; a.addEventListener('ended', stop); a.addEventListener('pause', stop);
+  } catch (e) {}
+}
+// Rufe der Truppen je Ereignis (Enrico 2026-11-22): Wahl kommt aus dem Ton-Pult (TONWAHL['stimmen_A'|'stimmen_D']['ruf_<ereignis>'] = { k, vf, rate, filt, fst });
+// höchstens ein Ruf gleichzeitig, je Seite und Ereignis höchstens alle 7 s, Auswahl nur jede dritte; etwas leiser als Schüsse, unter dem Ruf werden Fahrzeuge gedämpft
+const RUF_SPERRE = {}; let rufBis = 0, rufAnwahl = 0;
+function ruf(ev, side) {
+  if (!soundOn || speed >= INSTANT || !side) return false; const w = TONWAHL['stimmen_' + side] && TONWAHL['stimmen_' + side]['ruf_' + ev]; if (!w || !w.k || !SND[w.k]) return false;
+  const t = performance.now(), sk = side + ev; if (t < rufBis || t - (RUF_SPERRE[sk] || -1e9) < 7000) return false; if (ev === 'auswahl' && (++rufAnwahl % 3)) return false;
+  RUF_SPERRE[sk] = t; rufBis = t + 3800; const a = SND[w.k].cloneNode(); a.volume = Math.min(1, 0.5 * (w.vf || 1) * effektVol); a.playbackRate = w.rate || 1;
+  a.addEventListener('ended', () => { rufBis = 0; }); rufKette(a, w.filt || 'maske', w.fst != null ? w.fst : 0.6); const p = a.play(); if (p && p.catch) p.catch(() => {}); try { duckStimme(a); } catch (e) {} return true;
+}
+function rufBeiEreignis(e, u) {
+  const sd = x => { const v = x != null && unitById(x); return v ? v.side : null; };
+  switch (e.t) {
+    case 'move': if (e.path && e.path.length > 2) ruf('vorruecken', u && u.side); break;
+    case 'fire': if (!e.reaction) ruf('feuer', sd(e.a)); break;
+    case 'melee': ruf('sturm', sd(e.a)); break;
+    case 'supp': ruf('niedergehalten', u && u.side); break;
+    case 'rout': case 'retreat': ruf('rueckzug', u && u.side); break;
+    case 'order': if (e.kind === 'rally') ruf('sammeln', u && u.side); break;
+    case 'pzgranate': ruf('granate', u && u.side); break;
+    case 'gas': if (!e.late) ruf('gas', u && u.side); break;
+    case 'fear': ruf('koloss', u && u.side); break;
+    case 'ow': case 'sperr': ruf('feuerbereit', u && u.side); break;
+    case 'hit': if (u && !e.panic && e.str < 3.5 && e.dmg > 0) ruf('sanitaeter', u.side); break;
+    case 'spawn': if (u && TYPES[u.type].held) ruf('held_an', u.side); break;
+    case 'heldfall': ruf('held_faellt', u && u.side); break;
+    case 'over': { const w = e.result && (e.result.winner || (typeof e.result === 'string' && /^[AD]/.test(e.result) ? e.result[0] : null)); if (w) ruf('sieg', w); break; }
+  }
+}
 let tonKontext = [];   // Einheiten des laufenden Ereignisses (Schütze/Schlagender zuerst, dann Getroffener), gesetzt in playEvent0 und beim Anwählen
 function tonWahl(platz, u) { for (const x of u ? [u, ...tonKontext] : tonKontext) { const w = x && TONWAHL[x.type] && TONWAHL[x.type][platz]; if (w) return w; } return null; }
 function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
@@ -2154,6 +2209,7 @@ async function playEvent0(e) {
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   tonKontext = [e.a, e.u, e.d, e.by].filter(x => x != null).map(unitById).filter(Boolean);   // F91: Ton-Pult-Wahl gilt für die Einheiten dieses Ereignisses
+  try { rufBeiEreignis(e, u); } catch (err) { }   // Rufe der Truppen (Ton-Pult „Stimmen“)
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
   switch (e.t) {
     case 'move': { const k0 = TYPES[u.type].cls, wald = e.path.some(h => ['forest', 'wald', 'waldweg'].includes(G.map[h[0]][h[1]].t)); if (marschU != null && marschU !== e.u) marschU = null; if (k0 === 'cav') playSound('gallop2', 0.55); else if (u.limbered) playSound('gespann', 0.5);   /* F8: ohne Wagenknarren (pfiff wie ein Zug) */ else if (k0 === 'walker') playSound(TYPES[u.type].fig ? 'mech' : 'tank', TYPES[u.type].fig ? 0.5 : 0.3); else if (u.type === 'kuerass') {} else if (u.type === 'faust') { playSound('schritte', 0.4); if (Math.random() < 0.5) setTimeout(() => playSound('held_dampfstoss', 0.22), 400 / speed); } else if (TYPES[u.type].mech || TYPES[u.type].dauerfeuer) playSound('mech', 0.45); else { if (TYPES[u.type].fig === 'dog') playSound('dog', 0.5); if (marschU === e.u) { musikDucken(2600); playSound('schritte', 0.6); } /* F49 (2026-11-20): Marsch/Sturmlauf ohne Trommel (marschtritt enthielt ein Marschstück), beide Seiten nur Schritte */ else playSound( wald ? 'stepsWald' : e.path.some(h => G.map[h[0]][h[1]].t === 'mud') ? 'steps' : 'schritte', 0.5); if (wald && marschU !== e.u) for (let q = 0; q < 2; q++) setTimeout(() => playSound('holzknacken', 0.45, null, { noGap: true }), (250 + q * (500 + Math.random() * 400)) / speed); } } if (poseHat(u, 'lauf')) pose(e.u, 'lauf', e.path.length * 170 + 250); await animPath(e.u, e.path, TYPES[u.type].cls === 'cav' ? 110 : 170); VIS.ctrl = { ...G.ctrl }; break;   // Wald: Äste knacken (Tonprobe 2026-11-18, vorher beim Draht); Paket G: Kommentar stand vor dem Code und verschluckte lauf-Pose, animPath und break
@@ -2302,6 +2358,8 @@ async function playEvent0(e) {
         const gep0 = du0 && (TYPES[du0.type].cls === 'walker' || TYPES[du0.type].suit);   // Paket G 4b (Enrico 2026-11-21): Löwenoger = Tiger-Attacke + Fleisch-Treffer, gegen Gepanzerte Biss auf Panzerung
         if (au && au.type === 'faust') { heldFunken(4, (a.x + d.x) / 2 + (d.x - a.x) * 0.25, d.y - L.s * 0.45, { mul: 0.5 }); playSound('held_faustschlag2', 0.65); setTimeout(() => playSound('held_dampfstoss', 0.35), 240 / speed); } else   // Helden (Enrico 2026-11-21)
         if (au && au.type === 'kuerass') { const hx = (a.x + d.x) / 2 + (d.x - a.x) * 0.25, hy = d.y - L.s * 0.5; heldFunken(1, hx, hy, { mul: 0.5, flip: d.x < a.x }); heldFunken(2, hx, hy, { mul: 0.45, delay: 2 }); playSound('held_saege_schnitt2', 0.6); playSound(kschwertTon(e.d), 0.5); } else
+        if (au && au.type === 'saeger') { if (gep0) playSound('saege_metall', 0.6); else { playSound('saege_einschlag', 0.6); setTimeout(() => playSound('saege_fleisch', 0.45), 220 / speed); } } else   // Sägeschreiter (Enrico 2026-11-22)
+        if (au && au.type === 'orden' && gep0) { playSound('heavy', 0.6); playSound('held_kschwert_metall', 0.5); } else   // Kettensäge des Ordensschreiters gegen Rüstung
         if (au && au.type === 'oger') { playSound('neu3_bestie', 0.5 * (e.t === 'counter' ? 0.85 : 1)); playSound(gep0 ? 'neu3_biss' : 'neu3_fleisch', 0.5); } else
         playSound(mech ? 'heavy' : tank ? 'armor' : suit ? 'sword' : au && TYPES[au.type].cls === 'cav' ? 'saebel' : af === 'raider' || af === 'brawler' ? 'axe' : base,   /* F80: normaler Hiebton statt Granate */ (mech || tank ? 0.7 : 0.55) * (e.t === 'counter' ? 0.85 : 1));
         if (au && au.type === 'oger') { if (e.t === 'melee' || Math.random() < 0.5) playSound('oger_bruell', 0.45); }   // Löwenoger brüllt statt zu schreien
@@ -2426,7 +2484,7 @@ async function playEvent0(e) {
     case 'gas': { husten();   // Husten: 1–2 Figuren, je nachdem wie viele Einheiten getroffen werden
       const d = DU.get(e.u); if (e.late) d.vs.poison = e.poison; else { d.vs.gassed = true; d.vs.poison = e.poison || 0; } d.str = e.str; d.mor = e.morv;
       kz(e.u, e.late ? 'gift' : 'gas', 'puls'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
-    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('drahtlatch', 0.5); playSound('drahtwackeln', 0.4);   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
+    case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('draht_infanterie', 0.55);   /* Enrico 2026-11-22: Infanterie im Stacheldraht (vorher drahtlatch + drahtwackeln, im Pult wählbar) */   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); pose(e.u, 'gebruell', 1800); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
@@ -2523,8 +2581,8 @@ async function playEvent0(e) {
       a.lunge = { dx: (bx - a.x) * 0.3, dy: (by - a.y) * 0.3 }; await wait(220); playSound('impact', 0.7); playSound('neu3_fzaufprall', 0.6); shake(9);
       for (let q = 0; q < 3; q++) fx('truemmer', q === 1 ? 0 : 1, bx + (q - 1) * s * 0.3, by + s * 0.2, { delay: q * 3, life: 50, mul: 0.7, grow: 0.4, alpha: 0.85, fadeOut: 0.6 }); boom(bx, by, s * 0.6, 'dust');
       await wait(260); a.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
-    case 'cut': { if (e.u != null) { pose(e.u, 'schneiden', 1300); await wait(350); } playSound('cut', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln
-    case 'crush': { const [x, y] = center(e.c, e.r); playSound('ueberrollen', 0.55); /* Fahrzeug walzt Draht nieder */ gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
+    case 'cut': { if (e.u != null) { pose(e.u, 'schneiden', 1300); await wait(350); } playSound('draht_schneiden', 0.7); const [x, y] = center(e.c, e.r); boom(x, y, s * 0.4, 'dust'); floater(x, y - s, 'Draht geschnitten', '#e6e9ec'); renderTerrain(); await wait(280); break; }   // F12: Staub statt bunter Funken-Kugeln
+    case 'crush': { const [x, y] = center(e.c, e.r); playSound('draht_ueberrollen', 0.6); /* Fahrzeug walzt Draht nieder */ gmark('bodenspuren', 3, x, y + s * 0.1, { mul: 0.75 }); boom(x, y, s * 0.5, 'dust'); floater(x, y - s * 1.2, 'Draht niedergewalzt', '#e6e9ec'); renderTerrain(); await wait(160); break; }
     case 'terrain': { renderTerrain();
       { const [x, y] = center(e.c, e.r), w = e.what || '';
         if (w === 'gesprengt') fx('truemmer', [0, 1, 4][Math.floor(Math.random() * 3)], x, y + s * 0.4, { life: 80, grow: 0.25, rise: 0.15, fadeOut: 0.5 });   // Bunker/Barrikade: Ziegel, Holz, Sandsäcke
@@ -2827,6 +2885,7 @@ function stimmZiehen(pool) {   // Beutel: alle Sprüche der Stimme gemischt, nac
 }
 function klickStimme(u) { refreshSpent(); if (spent.has(u.id)) playSound('klick', 0.2, null, { noGap: true }); else selectVoice(u); }   // ausgegraut (fertig): kein Spruch
 function selectVoice(u) {
+  if (u && ruf('auswahl', u.side)) return;   // Ruf „Auswahl“ aus dem Ton-Pult (jede dritte Auswahl) statt des Spruchs
   if (!soundOn || speed >= INSTANT) return;
   if (u.type === 'oger') { playSound('oger_bruell', 0.4, null, { noGap: true }); return; }   // neue Töne 2026-11-20: Löwengebrüll statt Tiger   // Löwenoger: Brüllen statt Spruch (2026-11-20)
   const pool = stimmPool(u); const k = pool && stimmZiehen(pool); if (!k) return;

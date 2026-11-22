@@ -30,13 +30,17 @@ const stimmSatz = t => { const T = TYPES[t]; return PANZER.includes(t) ? 'panzer
 const SATZ_NAME = { inf: 'Fußtruppen (Gasmaske leicht)', anzug: 'Kampfanzüge (Gasmaske mittel)', fuehrer: 'Anführer (ohne Filter)', panzer: 'Panzerbesatzung (Bordfunk stark)', schreiter: 'Schreiter (Maschine mittel)' };
 const VAR_NAME = { gm: 'Gasmaske leicht', gs: 'Gasmaske mittel', bf: 'Bordfunk stark', mr: 'Maschine mittel' };
 const STIMM_PL = new Set(['loewe', 'atmen', 'pain', 'medic', 'cry', 'scream', 'roar', 'panic', 'forward', 'stand', 'charge', 'comeon', 'robot', 'husten', 'grunzen', 'gasmaske_2']);
-const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge und Kampfmaschinen'];
+const SHOP_KAT = ['Kommando', 'Standard', 'Spezial', 'Artillerie', 'Fahrzeuge und Kampfmaschinen', 'Stimmen'];
 const SHOP_STANDARD = ['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'];
 const katVon = t => { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls === 'walker' || E.isMech(t) ? 'Fahrzeuge und Kampfmaschinen' : T.cls === 'art' ? 'Artillerie' : SHOP_STANDARD.includes(t) ? 'Standard' : 'Spezial'; };
 const fireKind = T => T.mg ? 'mg' : T.flame ? 'flame' : T.gat ? 'minigun' : T.mgfire ? 'mg' : T.cls === 'walker' ? 'cannon' : 'rifle';
 
 // Gruppen für die Auswahlliste (passende Alternativen); Stimm-Gruppen nehmen den Filter des Sprechers mit
 const GRUPPEN = {
+  stimmen: ['stimmen_paket', 'medic'],   // Stimmenpaket (Enrico 2026-11-22): Kandidaten für die Rufe je Ereignis
+  draht: ['draht_schneiden', 'draht_ueberrollen', 'draht_infanterie', 'cut', 'ueberrollen', 'drahtlatch', 'drahtwackeln'],
+  saege: ['saege_einschlag', 'saege_fleisch', 'saege_metall', 'held_kschwert_metall', 'held_kschwert_fleisch', 'heavy'],
+  waffen_neu: ['neu4_pistole_schwer', 'neu4_granatwerfer', 'neu4_gewehr_schwer', 'neu4_mg_schwer'],
   gewehr: ['rifle', 'rifle2', 'rifle3', 'rifle4', 'sniper', 'pistol', 'semi', 'buechse', 'flinte', 'neu_schrot', 'grenade2', 'neu2_gewehr', 'neu2_pistole'],
   mg: ['mg', 'minigun', 'neu_mg_schwer', 'rifle4', 'neu2_gewehr', 'neu2_autokanone'],
   kanone: ['cannon', 'neu_kanone', 'kolosskanone', 'loewenkanone', 'panzerkanone', 'cannonH', 'artD', 'launch', 'werfer', 'neu2_kanone', 'neu2_knall', 'neu2_autokanone'],
@@ -72,7 +76,7 @@ const NAME = { held_faustschlag2: 'Rote Faust: Servo lädt + Schlag (ElevenLabs)
   husten: 'Husten', grunzen: 'Grunzen', gasmaske_2: 'Maskenlaut', atmen: 'Schweres Atmen', loewe: 'Löwengebrüll' };
 
 // ---- Tonplätze je Einheit (nach src/ui.js) ----
-const AB = [['anw', 'Anwählen'], ['zug', 'Bewegung'], ['schuss', 'Schuss'], ['ziel', 'Einschlag beim Ziel'], ['nah', 'Nahkampf'], ['treffer', 'Getroffen'], ['tod', 'Tod und Ausfall'], ['abil', 'Fähigkeiten und Handgriffe'], ['ankunft', 'Ankunft']];
+const AB = [['stimme', 'Rufe (Stimmen)'], ['anw', 'Anwählen'], ['zug', 'Bewegung'], ['schuss', 'Schuss'], ['ziel', 'Einschlag beim Ziel'], ['nah', 'Nahkampf'], ['treffer', 'Getroffen'], ['tod', 'Tod und Ausfall'], ['abil', 'Fähigkeiten und Handgriffe'], ['ankunft', 'Ankunft']];
 function slotsVon(t) {
   const T = TYPES[t], sd = T.side, k = T.cls, fig = T.fig, v = stimmVar(t), out = [];
   const S = (ab, id, titel, platz, vol, o = {}) => out.push({ ab, id, titel, platz, vol: +vol.toFixed(3), v: STIMM_PL.has(platz) ? (o.v === undefined ? v : o.v) : null, gruppe: o.gruppe, mode: o.mode || 'eins', rate: o.rate || null, dur: o.dur || 0, hin: o.hin || '', kette: o.kette || null, sd: o.sd || sd });
@@ -86,7 +90,7 @@ function slotsVon(t) {
   if (k === 'cav') S('zug', 'ziehen', 'Ziehen (Galopp)', 'gallop2', 0.55, { gruppe: 'bewegung', kette: 'zug' });
   else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); }   // F8: Wagenknarren entfernt (pfiff wie ein Zug)
   else if (k === 'walker') { S('zug', 'ziehen', fig ? 'Ziehen (Maschinenschritte)' : 'Ziehen (Kettenrollen)', fig ? 'mech' : 'tank', fig ? 0.5 : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
-    S('zug', 'walzen', 'Draht niederwalzen', 'ueberrollen', 0.55, { gruppe: 'fahrzeug', hin: 'Über eine Barrikade: dasselbe mit 0,5.' }); }
+    S('zug', 'walzen', 'Draht niederwalzen', 'draht_ueberrollen', 0.6, { gruppe: 'draht', hin: 'Über eine Barrikade: Überrollen mit 0,5.' }); }
   else if (t === 'kuerass') S('zug', 'ziehen', 'Ziehen: schwere Ritter-Schritte (im Takt)', 'held_schritt_ritter2', 0.55, { gruppe: 'held', kette: 'zug', hin: 'Je Schritt ein Stampfen (M8, wie im Spiel).' });   // M8 (2026-11-22)
   else if (t === 'faust') { S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.4, { gruppe: 'bewegung', kette: 'zug' }); S('zug', 'dampf', 'Ziehen: leiser Dampfstoß (jedes zweite Mal)', 'held_dampfstoss', 0.22, { gruppe: 'held' }); }   // M8
   else if (T.mech || T.dauerfeuer) S('zug', 'ziehen', 'Ziehen (Kampfanzug)', 'mech', 0.45, { gruppe: 'bewegung', kette: 'zug' });
@@ -97,7 +101,7 @@ function slotsVon(t) {
     S('zug', 'schlamm', 'Ziehen durch Schlamm', 'steps', 0.5, { gruppe: 'bewegung' });
     S('zug', 'wald', 'Ziehen durch Wald', 'stepsWald', 0.5, { gruppe: 'bewegung' });
     S('zug', 'holz', 'Äste knacken (Wald, 2×)', 'holzknacken', 0.45, { gruppe: 'bewegung' });
-    if (fuss && !T.wireProof && !T.suit) { S('zug', 'draht1', 'In den Draht: Klirren', 'drahtlatch', 0.5, { gruppe: 'handgriff' }); S('zug', 'draht2', 'In den Draht: Wackeln', 'drahtwackeln', 0.4, { gruppe: 'handgriff' }); }
+    if (fuss && !T.wireProof && !T.suit) S('zug', 'draht1', 'Im Stacheldraht (Stärkeverlust)', 'draht_infanterie', 0.55, { gruppe: 'draht', hin: 'Zufällig aus drei Fassungen, nie zweimal dieselbe hintereinander.' });
   }
   // Schuss und Einschlag (fire, shell)
   const kanone = (x, Tx) => x === 'kreuz' ? 'loewenkanone' : ['koloss', 'turm'].includes(x) ? 'kolosskanone' : Tx.side === 'D' && Tx.cls === 'walker' ? 'panzerkanone' : 'cannon';
@@ -201,7 +205,9 @@ function slotsVon(t) {
     else { S('abil', 'befehl', 'Befehl „Feuer frei“', 'forward', 0.45, { gruppe: 'ruf' }); S('abil', 'sammeln', 'Befehl „Sammeln“', 'stand', 0.45, { gruppe: 'ruf' }); }
     if (T.cmd === 2) S('abil', 'gross', sd === 'D' ? 'Generalangriff' : 'Halten um jeden Preis', sd === 'D' ? 'generalhorn' : 'march', 0.5, { gruppe: 'signal' }); }
   if (T.banner) S('abil', 'banner', 'Banner aufpflanzen', 'bauen', 0.32, { gruppe: 'handgriff', hin: 'Aufnehmen: 0,22.' });
-  if (T.cutter) S('abil', 'schneiden', 'Draht schneiden', 'cut', 0.7, { gruppe: 'handgriff' });
+  if (T.cutter) S('abil', 'schneiden', 'Draht schneiden', 'draht_schneiden', 0.7, { gruppe: 'draht' });
+  if (t === 'saeger') { S('nah', 'saege_ein', 'Sägehieb: Einschlag (Fußtruppen)', 'saege_einschlag', 0.6, { gruppe: 'saege' }); S('nah', 'saege_fl', 'Sägehieb: Sägen (Fußtruppen, danach)', 'saege_fleisch', 0.45, { gruppe: 'saege' }); S('nah', 'saege_me', 'Sägehieb gegen Gepanzerte', 'saege_metall', 0.6, { gruppe: 'saege' }); }
+  if (t === 'orden') S('nah', 'kettensaege_me', 'Kettensäge gegen Gepanzerte', 'held_kschwert_metall', 0.5, { gruppe: 'saege' });
   if (T.limber) { S('abil', 'auf', 'Aufprotzen', 'clank', 0.6, { gruppe: 'handgriff' }); S('abil', 'ab', 'Abprotzen', 'abprotzen', 0.6, { gruppe: 'handgriff' }); }
   if (T.roar) S('abil', 'loewe', 'Löwengebrüll', 'loewe', 0.6, { gruppe: 'ruf' });
   if (T.blastLance) S('abil', 'lanze', 'Sprenglanze', 'grenade2', 0.6, { gruppe: 'einschlag' });
@@ -214,10 +220,15 @@ function slotsVon(t) {
 const einheiten = [];
 for (const sd of ['A', 'D']) for (const t of E.ROSTER[sd]) { const T = TYPES[t];
   einheiten.push({ t, name: T.name, sd, kat: katVon(t), mech: !!E.isMech(t), img: BILDER[t] || '', stimme: SATZ_NAME[stimmSatz(t)], slots: slotsVon(t) }); }
+// Stimmen (Enrico 2026-11-22): je Seite eine Zeile je Ereignis; Standard „kein Ton“, Enrico wählt aus dem Stimmenpaket. Filter live: Gasmaske + Rauschen (Standard), nur Rauschen, roh.
+const RUFE = [['auswahl', 'Auswahl / Bestätigung (etwa jede dritte Auswahl)'], ['vorruecken', 'Vorrücken'], ['feuer', 'Feuer'], ['sturm', 'Sturm / Nahkampf'], ['niedergehalten', 'Niedergehalten'], ['rueckzug', 'Rückzug / Flucht'], ['sammeln', 'Sammeln'],
+  ['granate', 'Granate'], ['gas', 'Gas'], ['koloss', 'Koloss / Panzer gesichtet'], ['feuerbereit', 'Feuerbereitschaft'], ['sanitaeter', 'Sanitäter!'], ['held_an', 'Held tritt an'], ['held_faellt', 'Held fällt'], ['sieg', 'Sieg']];
+for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_' + sd, name: sd === 'A' ? 'Stimmen Konkordat' : 'Stimmen Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
+  slots: RUFE.map(([id, titel]) => ({ ab: 'stimme', id: 'ruf_' + id, titel, platz: '-', vol: 0.5, v: null, gruppe: 'stimmen', mode: 'ruf', rate: null, dur: 0, hin: 'Höchstens ein Ruf gleichzeitig, je Ereignis höchstens alle 7 s. Filter und Stärke gelten für diese Zeile.', kette: null, sd, auch: [] })) });
 // Wer nutzt welchen Platz (gleiche Seite, gleicher Filter): Hinweis „gilt im Spiel auch für“
 const nutzer = {};
-for (const u of einheiten) for (const s of u.slots) { const key = s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || ''); (nutzer[key] = nutzer[key] || new Set()).add(u.name); }
-for (const u of einheiten) for (const s of u.slots) { const n = [...nutzer[s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || '')]].filter(x => x !== u.name); s.auch = n; }
+for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const key = s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || ''); (nutzer[key] = nutzer[key] || new Set()).add(u.name); }
+for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const n = [...nutzer[s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || '')]].filter(x => x !== u.name); s.auch = n; }
 const DATA = { stand: new Date().toISOString().slice(0, 10), einheiten, ab: AB, gruppen: GRUPPEN, name: NAME, var: VAR_NAME, satz: SATZ_NAME, pools: POOLS, sndvar: SND_VAR, datei: DATEI, kat: SHOP_KAT };
 
 const css = readFileSync(join(ROOT, 'tools', 'tonpult_seite.css'), 'utf8'), js = readFileSync(join(ROOT, 'tools', 'tonpult_seite.js'), 'utf8');
