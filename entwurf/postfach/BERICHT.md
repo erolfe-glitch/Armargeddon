@@ -1,3 +1,38 @@
+## 2026-11-22 – Paket H, Zwischenbericht nach Schritt 3 (+ F97)
+
+Commits `0ccac2d`, `a61cec6`, `1bc6fc5`, `258c5b4`, `57bce68`. `index.html` ist lokal gebaut, aber nach H2 erst am Paketende eingecheckt – GitHub Pages zeigt bis dahin den alten Stand.
+
+### H1 / K1 Kommentar verschluckt Code
+- H1 behoben: Die Siegwarnung (F41) wird je Schlacht wieder zurückgesetzt.
+- **Zusätzlicher Fund durch den erweiterten Test:** Der **Befehlsruf der Offiziere** (Hauptmann/General bei Sammeln, Feuer frei, Sturmbefehl) stand seit `f383ac0` (Hauptmann-Posen) ebenfalls hinter einem `//` und war stumm. Behoben.
+- `test_kommentare.js` prüft jetzt auch einfache Zuweisungen, beliebige Aufrufe, `return`/`continue`, ganze Kommentarzeilen, stillen `case`-Durchlauf und `tools/`. Gegen den alten Stand findet er genau diese zwei Stellen.
+
+### F89 Mörser-Blickrichtung
+- Ursache: Die Bögen **Mörser, Rauchwerfer (Konkordat) und Minenwerfer (Aschenwacht)** sind nach links gemalt (Rohr links, Mannschaft dahinter). Alle anderen Geschütze, Panzer und Schreiter waren richtig (Bildvergleich aller 54 Typen).
+- Behoben über eine Liste nach links gemalter Bögen (`BILD_LINKS`), beim Zeichnen gespiegelt.
+- Partietest: Blickrichtung aller 54 Typen in beide Richtungen.
+
+### F90 Panzer drehen sich im Nahkampf
+- Die Regel drehte Fahrzeuge nicht (F76), aber die **Nahkampf-Szene** drehte den Verteidiger sichtbar zum Angreifer – und beim Gegenschlag den zurückschlagenden Panzer. Fahrzeuge bleiben jetzt auch in der Szene in ihrer Richtung (Schreiter wenden sich wie bisher). Test im Partietest.
+
+### M7 + F97 Getroffen-Richtung
+- M7 hatte die Getroffen-Pose bei Angriff von hinten gespiegelt – das sah wie Umdrehen aus (F97).
+- Jetzt: **Getroffen wird nie gespiegelt.** Die Blickrichtung bleibt; Taumeln und Kippen gehen vom letzten Angreifer weg (Schuss, Granate, Nahkampf, Spezialschlag, auch von hinten).
+- Die Bilder, die nach vorn kippen (F77-Liste), wurden bisher bei jedem Treffer gespiegelt (auch das wirkte wie Umdrehen). Sie werden jetzt stattdessen um den Fußpunkt **nach hinten geneigt**.
+- Test: Konkordat und Aschenwacht, Beschuss von vorn, hinten, Seite, Nahkampf – nie gespiegelt, nie gedreht, nie zum Angreifer hin.
+
+### F88 Haken „alles erledigt“ (abgestimmt mit F93, Hinweis des Beraters)
+- Fertig (grau, Haken) heißt: **nichts geht mehr** – keine Aktion, keine freie Zweitwaffe, keine Fähigkeit, **kein erlaubtes Ziehen**. Das war schon die Regel im Code.
+- Gemessen je Typ: Nahkämpfer verbrauchen beim Angriff alle Bewegungspunkte und werden fertig. **Mörser, Minenwerfer, Schützen**, die ohne vorher zu ziehen schießen, behalten Bewegungspunkte und dürfen laut Regel noch ziehen – darum kein Haken. Kolosse, Turm- und Kreuzschreiter bleiben bereit, solange die Zweitwaffe frei ist. Ein falsches „bereit“ habe ich nicht gefunden.
+- **Neu:** Hat eine Einheit ihre Aktion verbraucht, steht im Bedienfeld, warum sie noch nicht fertig ist („Aktion verbraucht, kann noch ziehen – noch nicht fertig. „Fertig“ hakt sie ab.“).
+- **F93** gleich mit: Nach dem Schuss bleibt die Einheit gewählt, solange sie noch etwas kann (dieselbe Prüfung). Vorher wurde z. B. der Landkoloss nach der Kanone abgewählt, obwohl das Seiten-MG noch frei war.
+- Partietest: Schütze, Mörser, MG mit und ohne Bewegungspunkte.
+
+### Tests
+- test_kommentare in Ordnung, test_partie fehlerfrei (mit den neuen Prüfungen). Nur Anzeige, keine Regeländerung – keine Sim.
+
+Weiter mit Schritt 4 (M1 KI-Wunschliste, M2/K5 Gründe für gesperrten Helden).
+
 ## 2026-11-21 – F87 Erst Schrift, dann Schlag (`0fa7ebc`)
 
 - **Ablauf jetzt:** Der Fähigkeitsname knallt herein, steht etwa 1 s allein und ist ausgeblendet, **bevor** Ausholen, Anlauf, Druckwelle und Treffer beginnen. Der Schlag läuft danach frei sichtbar.
