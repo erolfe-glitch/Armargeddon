@@ -1,3 +1,117 @@
+## 2026-11-22 Abend – Winterdorf, Schritt 1 (`4694911`)
+
+Die Karte ist spielbar, steht im Startmenü (Kartenwahl „Winterdorf“, Größe „Groß“) und ist gepusht; `index.html` neu eingecheckt.
+- **Grauwall und Sankt Ruß:** unverändert bis auf die Baum-Durchsichtigkeit (`sim.js`: 51 % bzw. 47 % wie vorher).
+- **Tests:** test_regeln, test_kommentare und Partietest fehlerfrei.
+- **Partietest auf dem Winterdorf:** meldet zwei Testannahmen, keine Spielfehler.
+  - Er stellt für einen Test Einheiten fest auf Feld (8,4), das hier ein Haus ist.
+  - Er erwartet 80 % der Einheiten im Startbild; die größere Karte ist beim Start nicht ganz im Bild.
+
+### Raster (18 × 12, Spalten von links, Zeilen von oben)
+```
+    012345678901234567
+ 0  WWWWWWWEWWWWWWWWWW   Wald oben, Fluss kommt herein
+ 1  WW..ggg.EE.ggggg.W   Felder mit Zäunen
+ 2  Wf..ggH..EE.ggg..W
+ 3  Wf.....H.H.FE..H.W   Furt (11,3), Gehöft (15,3)
+ 4  Wf...H....H.EE..gW
+ 5  W...H......C.E..gW   Dorfplatz (8,5) mit Brunnen, Kapelle (11,5)
+ 6  Wf....H......E.ggW
+ 7  W......H.H..EE.ggW
+ 8  W.EEE.......R..ggW   Teich links, Steinbrücke (12,8)
+ 9  WfEEE..f...EE...gW
+10  Wf.E...ff.EE...ggW
+11  WWWWWWWWWWEWWWWWWW   Fluss läuft unten hinaus
+```
+Legende: E Eis, H Haus, C Kapelle, R Steinbrücke, F Furt, g Feld mit Zaun, W Tannenwald, f lichter Wald; dazu Straßen über Kreuz durchs Dorf und über die Brücke.
+
+- **Fahnen wie im Plan:**
+  - Teichufer (4,7) = 1.
+  - Dorfplatz (8,5) = 3.
+  - Kapelle (11,5) = 2.
+  - Steinbrücke (12,8) = 2.
+  - Gehöft am Ostufer (14,3) = 1.
+- **Seiten:** Konkordat von Westen, Aschenwacht von Osten. Armeen wie Sankt Ruß (gemischt).
+- **Fluss geprüft:** Ein Koloss kommt nur über die Steinbrücke oder die Furt ans andere Ufer. Zwei Lücken an schrägen Stellen des Flusses sind dafür mit Eis geschlossen.
+
+### Neue Feldarten und Regeln
+- **Eis** (Fluss und Teich):
+  - Fußtruppen, Anführer und Helden: 2 BP, keine Deckung.
+  - Fahrzeuge, Schreiter, Geschütze und Reiter: gesperrt, auch über eine Straße.
+- **Haus / Kapelle:** wie die Kirche von Sankt Ruß.
+  - Nur Fußtruppen und Anführer, keine Helden.
+  - Sicht gesperrt, halber Moralverlust, Abwehr ×1,6 (`P.HAUS_DEF`).
+  - Bauzustand je Gebäude: Haus 3, Kapelle 4 (`P.HAUS_HP`, `P.KAPELLE_HP`). Schwere Treffer und Rammen machen es zur Ruine.
+  - Die Technik der Kirche (`G.bauten`, `kircheTreffer`, `einsturz`) wird wiederverwendet. In 200 Schlachten stürzen im Schnitt 1,4 Häuser ein.
+- **Steinbrücke:** eigene Feldart, trägt alle. Die alte Holzbrücke trägt keine Kolosse.
+- **Furt:** wie bisher.
+
+### Darstellung
+- **Platzhalter, bis die neuen Bausteine da sind:**
+  - Eis = Wasser.
+  - Häuser und Kapelle = Ruinen.
+  - Steinbrücke = Holzbrücke.
+  - Wald = Totholz-Stämme.
+  - Noch kein Schnee.
+- **Bäume durchsichtig (alle Karten):**
+  - Bäume auf Feldern mit Einheit, auf dem Feld unter der Maus und auf den Feldern vor der gewählten Einheit blenden weich (ca. 0,25 s) auf 40 % Deckkraft aus.
+  - Wie bisher werden große Teile außerdem blass, wenn sie eine Figur verdecken.
+- **Nebel am Rand:**
+  - Weicher, langsam ziehender Schleier an allen vier Rändern, im Weltbild gezeichnet; er folgt also der Perspektive.
+  - Nur auf dem Winterdorf (`MAP.nebelRand`); Bildwirkung „aus“ = kein Nebel, „stark“ etwas dichter.
+- **Bilder** in `entwurf/probe/winterdorf/`:
+  - `uebersicht.jpg`: ganze Karte mit Fluss, Brücke, Teich, Dorf, Waldrand, Nebel unten und links.
+  - `nah_wald.jpg`: Konkordat im Waldrand, Stämme blass.
+  - `01_runde1` … `08_runde4.webp`: Partietest.
+
+### Balance (je 200 Schlachten, Startwerte 1–8, feste Aufstellung)
+| Fassung | Sieg Konkordat |
+|---|---|
+| erster Entwurf (Aschenwacht stellt ab Spalte 15 auf) | 96,8 % |
+| Fahnen nach Osten verschoben | 96,9 % |
+| Aufstellung Aschenwacht bis Spalte 13, KI-Gewichte wie Sankt Ruß (vorwärts) | **52,9 %** (50, 49, 54, 51, 53,5, 64,5, 49, 52,5) |
+
+- Ø 14,1 Runden. `sim.js 200`: 50 % zu 50 %.
+- Mit gemischter Aufstellung 92 %. Das ist wieder die Empfindlichkeit der automatischen Aufstellung (siehe F94); deren Umbau bleibt als Vorschlag offen.
+
+### Bausteinliste
+**Wiederverwendet (vorerst als Platzhalter):**
+- Totholz-Stämme und Stümpfe (Wald).
+- Ruinen-Wandstücke (Häuser, Kapelle).
+- Kanalwasser und Ufer (Eis).
+- Holzbrücke.
+- Gartenzaun (Felder).
+- Brunnen, Karren, Straßen.
+- Bodentexturen Gras/Schlamm.
+
+**Neu gebraucht** (Ansicht wie die übrigen Bausteine: schräg von vorn oben, Magenta-Hintergrund; Höhen in Soldatenhöhen SH):
+
+| Teil | Art | Größe | Ansicht | Varianten | Dateiname |
+|---|---|---|---|---|---|
+| Schneeboden | Boden, kachelbar | 512 px, nahtlos | Draufsicht | 2 | `boden_schnee.png` |
+| Acker im Schnee (Furchen) | Boden, kachelbar | 512 px | Draufsicht | 2 | `boden_acker_schnee.png` |
+| Matschstraße mit Radspuren | Bodenstreifen, kachelbar längs | Breite ca. 0,6 Feld | Draufsicht | 2 | `strasse_matsch.png` |
+| Eis mit Rissen (Fluss, Teich) | Boden, kachelbar | 512 px | Draufsicht | 2 | `boden_eis.png` |
+| Verschneite Uferkante | Wandstück-Streifen | 0,25 SH | schräg | 1 | `ufer_schnee.png` |
+| Steinbrücke (Bogen) | Wandstück vorn und hinten getrennt | 1 Feld lang, 0,8 SH | schräg, quer zum Fluss | 1 | `bruecke_stein_vorn.png`, `bruecke_stein_hinten.png` |
+| Fachwerkhaus heil, verschneites Dach | Aufsteller | 1 Feld, ca. 2,2 SH bis zum First | schräg von vorn | 4 Formen | `haus_heil_1–4.png` |
+| Fachwerkhaus als Ruine (nach Einsturz) | Aufsteller | 1 Feld, ca. 1,5 SH | schräg | 2 | `haus_ruine_schnee_1–2.png` |
+| Kapelle mit Türmchen, heil und Ruine | Aufsteller | 1 Feld, ca. 2,8 SH | schräg | 1 + 1 | `kapelle.png`, `kapelle_ruine.png` |
+| Verschneite Tanne | Aufsteller | 2,0–2,6 SH | seitlich | 4 | `tanne_schnee_1–4.png` |
+| Toter Baum, verschneit | Aufsteller | 1,6–2,0 SH | seitlich | 2 | `baum_tot_schnee_1–2.png` |
+| Unterholz/Büsche verschneit | Wandstück-Streifen | 0,3 SH | schräg | 1 | `unterholz_schnee.png` |
+| Zaun verschneit | Wandstück-Streifen | 0,5 SH | schräg | 1 | `zaun_schnee.png` |
+| Holzstapel | Aufsteller | 0,6 SH | schräg | 2 | `holzstapel_1–2.png` |
+| Karren verschneit | Aufsteller | 0,8 SH | schräg | 1 | `karren_schnee.png` |
+| Brunnen verschneit | Aufsteller | 1,1 SH | schräg | 1 | `brunnen_schnee.png` |
+| Schilf und Steine am Teich | Aufsteller klein | 0,3 SH | seitlich | 3 | `schilf_1–3.png` |
+
+**Töne laut Plan noch gesucht:** Schritte im Schnee, Eis knackt, Winterwind, Krähen, ferner Geschützdonner.
+
+### Für Enrico
+- Den endgültigen **Kartennamen** setzt eine Zeile (`MAPS.winterdorf.name`).
+- Die **Kapelle** hat noch keinen Turm mit Sichtbonus (im Plan „eventuell“). Wenn gewünscht, wie der Kirchturm in Sankt Ruß, eine Zeile Regel.
+
 ## 2026-11-22 Spätnachmittag – Aufträge 15:12 bis 16:08 erledigt (`399106e` … `3290b1d`)
 
 Alles gepusht; `index.html` am Ende neu eingecheckt (jetzt 63,0 MB). Tests: test_ton (mit Heldenstimmen), test_zeiger (neu), Partietest und test_kommentare fehlerfrei.

@@ -1373,7 +1373,7 @@ const P = {
   // Kirche von Sankt Ruß (2026-11-19, entwurf/KARTE_SANKT_RUSS.md): Deckung ×1,8 und halber Moralverlust (nur Fußtruppen und Anführer kommen hinein);
   // Turm +1 Reichweite und +1 Sicht; Bauzustand KIRCHE_HP, jeder Treffer schwerer Waffen (Artillerie, Mörser, Kanonen der Kolosse) −1 (Minenwerfer −2);
   // bei 0 Einsturz: Kirche und Turm werden Ruine, wer drin ist, nimmt EINSTURZ_DMG Schaden und wird niedergehalten. GARTEN_DEF: Garten-/Friedhofsmauer gegen Beschuss
-  KIRCHE_DEF: 1.8, KIRCHE_HP: 6, EINSTURZ_DMG: 2.5, TURM_RNG: 1, TURM_SPOT: 1, GARTEN_DEF: 1.2,
+  KIRCHE_DEF: 1.8, KIRCHE_HP: 6, HAUS_DEF: 1.6, HAUS_HP: 3, KAPELLE_HP: 4,   /* Winterdorf (2026-11-22): heile Häuser und Kapelle mit Bauzustand */ EINSTURZ_DMG: 2.5, TURM_RNG: 1, TURM_SPOT: 1, GARTEN_DEF: 1.2,
   OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2,
   // Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke beim Betreten, Gas wirkt nach (vergiftet: ½, dann ¼ des Gasschadens), Sperrfeuer mit Abklingzeit
   WIRE_DMG: 1.0, POISON_TURNS: 2, POISON_K: [0.25, 0.5], BARRAGE_CD: 2,
@@ -1674,6 +1674,10 @@ const TERRAIN = {
   forest:  { name: 'Totholz', cost: 2, info: 'Kostet 2 Bewegung. Abwehr ×1,4. Versperrt die Sicht.',
              real: 'Nach Monaten Beschuss blieben von ganzen Wäldern nur Baumstümpfe, etwa im Wald von Delville an der Somme.' },
   canal:   { name: 'Kanal', cost: 99, info: 'Nicht passierbar, nur über die Brücke.' },
+  eis:     { name: 'Eis', cost: 2, info: 'Zugefrorenes Wasser: trägt Fußtruppen, Anführer und Helden (2 Bewegung, keine Deckung). Fahrzeuge, Schreiter, Geschütze und Reiter brechen ein und kommen nicht hinüber.' },
+  haus:    { name: 'Haus', cost: 1, info: 'Heiles Fachwerkhaus: nur Fußtruppen und Anführer kommen hinein (keine Helden). Abwehr ×1,6, halber Moralverlust. Versperrt die Sicht. Schwere Treffer machen es zur Ruine.' },
+  kapelle: { name: 'Kapelle', cost: 1, info: 'Kleine Steinkapelle: wie ein Haus (Abwehr ×1,6, halber Moralverlust, Sicht gesperrt), etwas fester gebaut.' },
+  steinbruecke: { name: 'Steinbrücke', cost: 1, info: 'Fester Übergang über den Fluss, trägt auch Kolosse und Geschütze.' },
   bridge:  { name: 'Brücke', cost: 1, info: 'Einziger Weg über den Kanal. Zu schwach für Landkolosse.' },
   furt:    { name: 'Furt', cost: 3, info: 'Seichtes Wasser: kostet 3 Bewegung, Abwehr ×0,8. Geschütze kommen nicht durch.',
              real: 'Flüsse waren Hindernisse. Im Oktober 1914 öffneten die Belgier an der Yser die Schleusen und setzten das Land unter Wasser, um den deutschen Vormarsch zu stoppen.' },
@@ -1703,7 +1707,8 @@ const TERRAIN = {
   garten:  { name: 'Garten', cost: 1, info: 'Niedrige Gartenmauern: Abwehr ×1,2 gegen Beschuss.',
              real: 'In den Dörfern an der Westfront wurde um jede Mauer gekämpft; Gärten und Hecken waren oft die einzige Deckung zwischen den Häusern.' }
 };
-const KIRCHE = new Set(['schiff', 'turm']);
+const KIRCHE = new Set(['schiff', 'turm', 'haus', 'kapelle']);   // große Gebäude: nur Fußtruppen und Anführer, Sicht gesperrt, halber Moralverlust (Winterdorf: auch Häuser und Kapelle)
+const gebDef = t => t === 'haus' || t === 'kapelle' ? P.HAUS_DEF : P.KIRCHE_DEF;
 const RUINE = new Set(['village', 'fabrik', 'kirche']);   // F79 (2026-11-21): Trümmer – Fahrzeuge/Schreiter: Bewegung endet dort, Gefahr festzufahren
 
 function mulberry32(a) {
@@ -1745,7 +1750,7 @@ function mapTools(cols, rows, seed) {
 }
 // Zeichenraster (Sankt Ruß): ein Zeichen je Feld
 const GRID_CODE = { '.': 'open', ',': 'mud', o: 'crater', f: 'forest', W: 'wald', '=': 'trench', x: 'wire', U: 'bunker', '~': 'canal', B: 'bridge', F: 'furt', s: 'sumpf', V: 'village', K: 'fabrik', '+': 'kirche', '#': 'barrikade', '-': 'bahn',
-  S: 'schiff', t: 'turm', h: 'friedhof', g: 'garten' };
+  S: 'schiff', t: 'turm', h: 'friedhof', g: 'garten', E: 'eis', H: 'haus', C: 'kapelle', R: 'steinbruecke' };
 const MAPS = {
   grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 7,
     desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke.',
@@ -1814,7 +1819,48 @@ const MAPS = {
       for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
       this.bauten.forEach((b, i) => { for (const [c, r] of [...b.felder, b.turm]) T.M[c][r].bau = i; });
       return T.M;
-    } }
+    } },
+  // Winterdorf (Arbeitstitel, Enrico 2026-11-22, Plan entwurf/KARTE_WINTERDORF.md, Bauplan entwurf/karte_winterdorf/konzept_flux.png): Dorf am zugefrorenen Fluss,
+  // noch fast heil. Konkordat von Westen (Dorfseite), Aschenwacht von Osten (Felder jenseits des Flusses). Eis trägt nur Fußvolk; Fahrzeuge über Steinbrücke oder Furt.
+  // Raster: E Eis, H Haus (je eigener Bauzustand), C Kapelle, R Steinbrücke, F Furt, g Feld mit Zaun, W Tannenwald, f lichter Wald
+  winterdorf: { id: 'winterdorf', name: 'Winterdorf', size: 'Groß', cols: 18, rows: 12, zoneA: 2, zoneD: 13, band: 5, nebelRand: true,   /* Abgleich 2026-11-22: Aschenwacht stellt bis ans Ostufer auf (mit zoneD 15: Konkordat 97 %) */
+    ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },   // wie Sankt Ruß: die Aschenwacht muss über den Fluss vorgehen
+    desc: 'Ein verschneites Dorf am zugefrorenen Fluss, noch fast unversehrt. Das Eis trägt Fußtruppen, Fahrzeuge brauchen die Steinbrücke oder die Furt. Um Dorfplatz, Kapelle und Brücke wird gekämpft.',
+    armyMax: { A: 24, D: 24 },
+    objectives: [
+      { id: 'teich', name: 'Teichufer', c: 4, r: 7, pts: 1 },
+      { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 5, pts: 3 },
+      { id: 'kapelle', name: 'Kapelle', c: 11, r: 5, pts: 2 },
+      { id: 'bruecke', name: 'Steinbrücke', c: 12, r: 8, pts: 2 },
+      { id: 'gehoeft', name: 'Gehöft am Ostufer', c: 14, r: 3, pts: 1 }],
+    get bauten() { const out = []; this.grid.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'C') out.push({ art: 'kapelle', name: 'Kapelle', felder: [[c, r]] }); else if (ch === 'H') out.push({ art: 'haus', name: 'Haus', felder: [[c, r]] }); })); return out; },   // jedes H ein Haus, C die Kapelle
+    army: { A: { kohorte: 5, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, rauch: 1, generalA: 1, hauptA: 1 },
+      D: { grenadier: 5, pionierD: 2, gasschutz: 2, sense: 2, geschuetz: 2, sturmpz: 2, sturm: 1, minenwerfer: 1, heiler: 1, generalD: 1, hauptD: 1 } },
+    //         012345678901234567
+    grid: [
+      'WWWWWWWEWWWWWWWWWW',   //  0  Wald oben, Fluss kommt herein
+      'WW..ggg.EE.ggggg.W',   //  1  Felder mit Zäunen
+      'Wf..ggH..EE.ggg..W',   //  2  
+      'Wf.....H.H.FE..H.W',   //  3  Furt (11,3), Gehöft (15,3)
+      'Wf...H....H.EE..gW',   //  4  
+      'W...H......C.E..gW',   //  5  Dorfplatz (8,5) mit Brunnen, Kapelle (11,5)
+      'Wf....H......E.ggW',   //  6  
+      'W......H.H..EE.ggW',   //  7  
+      'W.EEE.......R..ggW',   //  8  Teich links, Steinbrücke (12,8)
+      'WfEEE..f...EE...gW',   //  9  
+      'Wf.E...ff.EE...ggW',   // 10  
+      'WWWWWWWWWWEWWWWWWW'],   // 11  Fluss läuft unten hinaus
+    deko: { '8,5': 'brunnen', '13,9': 'karren' },
+    strasse: [[0, 8], [4, 6], [7, 5], [8, 5], [9, 5], [11, 6], [12, 8], [14, 9], [17, 10]],
+    strasse2: [[3, 0], [6, 3], [8, 5], [10, 7], [10, 9]],
+    build() {
+      const T = mapTools(18, 12, 1);
+      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, GRID_CODE[ch] || 'open')));
+      for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
+      for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
+      this.bauten.forEach((b, i) => { for (const [c, r] of b.felder) T.M[c][r].bau = i; });
+      return T.M;
+    } },
 };
 let MAP = MAPS.grauwall, OBJECTIVES = MAPS.grauwall.objectives;
 function useMap(id) {
@@ -2003,7 +2049,7 @@ function newGame(opts) {
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
-    bauten: (MAP.bauten || []).map(b => ({ ...b, hp: +(TOG.M_kirche || 0) || P.KIRCHE_HP, max: +(TOG.M_kirche || 0) || P.KIRCHE_HP, kaputt: false }))   // große Gebäude mit Bauzustand (Kirche)
+    bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
   G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
@@ -2052,8 +2098,9 @@ function arcOf(G, d, ac, ar) {
 function canMarch(u) { const k = cls(u); return k !== 'art' && k !== 'walker' && !u.limbered; }
 function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
-  if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt'].includes(t) && k !== 'cav') return 1;   // Straße
+  if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt', 'eis'].includes(t) && k !== 'cav') return 1;   // Straße
   if (t === 'canal') return 99;
+  if (t === 'eis' && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // Winterdorf: Eis trägt nur Fußvolk (auch nicht über eine Straße)
   if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art' || TYPES[u.type].held)) return 99;   // Kirche: nur Fußtruppen und Anführer; K11 (Enrico 2026-11-22): Helden nicht ins Schiff und nicht auf den Turm
   if ((t === 'garten' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
   if (k === 'cav') { if (['wire', 'forest', 'wald', 'barrikade', 'fabrik'].includes(t)) return 99; if (t === 'crater' || t === 'trench') return 3; }
@@ -2362,7 +2409,7 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
   if (t === 'bunker') { if (lob) tags.push('Bogenwurf: kein Bunkerschutz'); else { m *= 2; tags.push('Bunker ×2'); } }
   if (t === 'fabrik') { m *= wk ? 0.7 : 1.7; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Fabrik ×1,7'); }
   if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
-  if (KIRCHE.has(t)) { m *= P.KIRCHE_DEF; tags.push(`${t === 'turm' ? 'Kirchturm' : 'Kirche'} ×${String(P.KIRCHE_DEF).replace('.', ',')}`); }
+  if (KIRCHE.has(t)) { m *= gebDef(t); tags.push(`${t === 'turm' ? 'Kirchturm' : t === 'haus' ? 'Haus' : t === 'kapelle' ? 'Kapelle' : 'Kirche'} ×${String(gebDef(t)).replace('.', ',')}`); }
   if ((t === 'garten' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'garten' ? 'Gartenmauer' : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
   if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
   if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
@@ -2374,7 +2421,7 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
 function coverOf(G, u) { const f = defMods(G, u, 'front', true, []); return { f, tier: f >= 1.7 ? 3 : f >= 1.35 ? 2 : f >= 1.15 ? 1 : 0 }; }
 function hexDef(G, c, r, isWalker) {
   const t = hex(G, c, r).t;
-  return KIRCHE.has(t) ? P.KIRCHE_DEF : t === 'village' || t === 'kirche' ? (isWalker ? 0.7 : P.VILLAGE_DEF) : t === 'fabrik' ? (isWalker ? 0.7 : 1.7) : t === 'forest' ? P.FOREST_DEF : t === 'wire' ? P.WIRE_DEF
+  return KIRCHE.has(t) ? gebDef(t) : t === 'village' || t === 'kirche' ? (isWalker ? 0.7 : P.VILLAGE_DEF) : t === 'fabrik' ? (isWalker ? 0.7 : 1.7) : t === 'forest' ? P.FOREST_DEF : t === 'wire' ? P.WIRE_DEF
     : t === 'furt' ? 0.8 : t === 'wald' ? 1.5 : t === 'waldweg' ? 1.2 : t === 'bunker' ? 2 : t === 'barrikade' ? 1.6 : 1;
 }
 
@@ -4934,7 +4981,7 @@ function aufbauen(cfg, IM) {
   }
 
   // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
-  const DRAW = [], SHADOW = []; let FELD = null;   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
+  const DRAW = [], SHADOW = []; let FELD = null, BAUMFELD = null;   // BAUMFELD: Feld, dessen Bäume gerade entstehen (cfg.baumAlpha macht sie durchsichtig, Enrico 2026-11-22)   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
   // Durchsichtig nur, wenn eine Einheit wirklich dahinter steht: seitlich innerhalb der Teilbreite, nicht bloß daneben (2026-11-16)
   const hides = (x, y, hb = R * 0.45, hW = SH) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < hW * 1.3 + R * 0.3 && Math.abs(hx - x) < hb * 0.75);
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
@@ -4986,10 +5033,11 @@ function aufbauen(cfg, IM) {
   }
   function stand(im, x, y, hW, o = {}) {   // Aufsteller am Fußpunkt (x, y), Höhe hW
     if (!im) return;
+    const baum = BAUMFELD;
     DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
-      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45;
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45; if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
       g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, -h, wd, h); g.restore();
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
@@ -5091,7 +5139,7 @@ function aufbauen(cfg, IM) {
   const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };   // Nachbar über Kante e
   const px = (im, k = 1) => im ? im.height / 320 * SH * k : 0;   // Höhe im Malmaßstab (320 px = 1 SH)
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = t === 'wire' ? c + ',' + r : null;
+    const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = t === 'wire' ? c + ',' + r : null; BAUMFELD = t === 'forest' || t === 'wald' ? c + ',' + r : null;
     if (BAUFELD.has(c + ',' + r)) continue;   // große Gebäude: eigener Aufbau weiter unten
     const deko = flags(c, r).deko || '';
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
@@ -5264,7 +5312,7 @@ function aufbauen(cfg, IM) {
     if (t === 'village' || BAUFELD.has(c + ',' + r)) return { sy: 0.85 };
     return null;
   }
-  FELD = null;
+  FELD = null; BAUMFELD = null;
   // Draht eines Felds entfernen, ohne die Welt neu aufzubauen (Drahtschneiden, Niederwalzen, Zerschießen): nur die aufrechten Drahtstücke fallen weg,
   // der weiche Schatten am Boden bleibt als zertretene Stelle. Der volle Neuaufbau dauert 0,4–0,6 s und ließ das Spiel stocken (F12, 2026-11-20).
   function drahtWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
@@ -6195,7 +6243,7 @@ const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerse
 const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
-  schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3 };
+  schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3, haus: 1.2, kapelle: 1.2, eis: -0.4, steinbruecke: 0 };
 // Kirche von Sankt Ruß (KI 2026-11-19): Turm besetzen (Schützen, W_TURM), Kirche als Ziel (Deckung oben), Einsturz nutzen (Artillerie/Kanonen auf
 // Gegner in der Kirche, W_EINSTURZ je Gegner, der beim Einsturz drin wäre), eigene Truppen aus einer fast eingestürzten Kirche heraus (W_KRISS)
 const W_TURM = envZahl('W_TURM', 1.4), W_EINSTURZ = envZahl('W_EINSTURZ', 2.2), W_KRISS = envZahl('W_KRISS', 1.2);
@@ -6261,7 +6309,7 @@ const thKapp = (th, voll) => th <= voll ? th : voll + (th - voll) * W_TH_REST;
 const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
-  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, friedhof: 1.1 };
+  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, friedhof: 1.1, haus: P.HAUS_DEF, kapelle: P.HAUS_DEF, eis: 1, steinbruecke: 1 };
   const defm = (t === 'village' || t === 'kirche' || t === 'fabrik') && D.cls === 'walker' ? 0.7 : DM[t] || 1;
   let th = 0;
   for (const o of G.units) {
@@ -7100,7 +7148,9 @@ const O = '#16150f';
 // ---------- Gelände-Bausteine (neue Ansicht, STYLE.md „Gelände-Bausteine“) ----------
 // Nur mit Schalter „Neue Ansicht (Test)“ und zuerst nur auf GB_KARTEN. Bilder: window.GELAENDE (src/gelaende.js), Aufbau: GBau (src/gelaende_bau.js).
 // GBW = aufgebaute Welt: flaches Weltbild (ersetzt tcv), aufrechte Teile (in drawTilt mit den Einheiten nach Tiefe gemischt), platz() für Trupps.
-const GB_KARTEN = new Set(['grauwall', 'sanktruss']);
+const GB_KARTEN = new Set(['grauwall', 'sanktruss', 'winterdorf']);
+// Winterdorf (2026-11-22): Platzhalter, bis die eigenen Bausteine da sind – Eis wie Wasser, Häuser und Kapelle wie Ruinen, Steinbrücke wie Brücke
+const GB_PLATZHALTER = { eis: 'canal', haus: 'village', kapelle: 'village', steinbruecke: 'bridge' };
 // Große Gebäude: gezeigter Zustand (eingestürzt erst, wenn das Ereignis abgespielt wird – die Regeln ändern G vorher)
 let BAUV = { g: null, k: [] };
 function bauSicht() { if (BAUV.g !== G) BAUV = { g: G, k: ((G && G.bauten) || []).map(b => !!b.kaputt) }; return BAUV.k; }
@@ -7121,9 +7171,10 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   const t0 = performance.now();
   const IMB = BW ? Object.fromEntries(Object.entries(GBIM).map(([n, im]) => [n, im && window.FIGSP && window.FIGSP['gel_' + n] ? bwBild('gel_' + n, im, true) : im])) : GBIM;
   GBW = GBau.aufbauen({ cols: COLS, rows: ROWS, R: L.s, rand: { mx: 0, top: L.top, mb: L.H - (L.top + L.s * SQ3 * (ROWS + 0.5)) },
-    terr: (c, r) => G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
-    bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })),
+    terr: (c, r) => GB_PLATZHALTER[G.map[c][r].t] || G.map[c][r].t, flags: (c, r) => ({ road: !!G.map[c][r].road, river: !!G.map[c][r].river, deko: G.map[c][r].deko }),
+    bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
+    baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW] }, IMB);   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
   gbKey = key; gbFeld = feld; window.__gbMs = Math.round(performance.now() - t0);
   return true;
@@ -8633,12 +8684,40 @@ function projectGround(g) {
   const fog = g.createLinearGradient(0, 0, 0, H); fog.addColorStop(0, 'rgba(18,13,11,0.55)'); fog.addColorStop(0.4, 'rgba(18,13,11,0.12)'); fog.addColorStop(1, 'rgba(18,13,11,0)');
   g.fillStyle = fog; g.fillRect(0, 0, W, H);
 }
+// Bäume durchsichtig (Enrico 2026-11-22, alle Karten): Bäume auf Feldern mit Einheit, unter der Maus und vor der gewählten Einheit weich auf BAUM_DURCH Deckkraft
+const BAUM_A = new Map(), BAUM_DURCH = 0.4; let baumT = 0;
+function baumZiele() {
+  const z = new Set(); if (!G) return z;
+  for (const u of G.units) if (E.alive(u)) { const d = DU.get(u.id); if (d && d.alpha > 0.05) z.add(u.c + ',' + u.r); }
+  if (hoverHex) z.add(hoverHex[0] + ',' + hoverHex[1]);
+  if (sel && E.alive(sel)) for (const [c, r] of E.neighbors(sel.c, sel.r)) if (center(c, r)[1] > center(sel.c, sel.r)[1] + 1) z.add(c + ',' + r);   // Felder davor (näher am Betrachter)
+  return z;
+}
+function baumNachfuehren() {   // weich ein- und ausblenden (ca. 0,25 s)
+  const t = performance.now(), dt = Math.min(0.1, (t - (baumT || t)) / 1000); baumT = t; const z = baumZiele(), k = 1 - Math.exp(-dt / 0.09);
+  for (const key of z) if (!BAUM_A.has(key)) BAUM_A.set(key, 1);
+  for (const [key, a] of BAUM_A) { const ziel = z.has(key) ? BAUM_DURCH : 1, n = a + (ziel - a) * k; if (Math.abs(n - 1) < 0.01 && ziel === 1) BAUM_A.delete(key); else BAUM_A.set(key, n); }
+}
+// Nebel am Kartenrand (Winterdorf, nur Bild): weicher, langsam ziehender Schleier an allen vier Rändern im Weltbild; Bildwirkung „aus“ = kein Nebel
+function randNebel(g, s) {
+  const W = L.W, y0 = L.top - s * 0.3, H = L.H, tz = now / 1000, st = BW === 2 ? 1.15 : 1, band = s * 1.6;
+  g.save(); g.globalCompositeOperation = 'source-over';
+  const kante = (x0, y0_, x1, y1_, gx0, gy0, gx1, gy1) => { const gr = g.createLinearGradient(gx0, gy0, gx1, gy1); gr.addColorStop(0, `rgba(196,202,208,${0.34 * st})`); gr.addColorStop(1, 'rgba(196,202,208,0)'); g.fillStyle = gr; g.fillRect(x0, y0_, x1 - x0, y1_ - y0_); };
+  kante(0, y0, band, H, 0, 0, band, 0); kante(W - band, y0, W, H, W, 0, W - band, 0); kante(0, y0, W, y0 + band, 0, y0, 0, y0 + band); kante(0, H - band, W, H, 0, H, 0, H - band);
+  for (let i = 0; i < 26; i++) {   // ziehende Schwaden entlang der Ränder
+    const seite = i % 4, f = ((i * 0.618 + tz * (0.006 + (i % 3) * 0.002)) % 1 + 1) % 1, rr = s * (1.1 + (i % 5) * 0.25), off = s * (0.2 + (i % 3) * 0.25);
+    const x = seite === 0 ? off : seite === 1 ? W - off : f * W, y = seite === 2 ? y0 + off : seite === 3 ? H - off : y0 + f * (H - y0);
+    const gr = g.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, `rgba(205,210,215,${0.2 * st})`); gr.addColorStop(1, 'rgba(205,210,215,0)'); g.fillStyle = gr; g.fillRect(x - rr, y - rr, rr * 2, rr * 2);
+  }
+  g.restore();
+}
 function drawTilt() {
+  baumNachfuehren();
   camSetup();
   const s = L.s;
   WCTX.setTransform(1, 0, 0, 1, 0, 0);
   ctx = WCTX;   // flaches Weltbild: nur Boden und Bodenmarkierungen; alles Aufrechte kommt danach auf den Schirm
-  try { drawGround(WCTX, s); drawDiaryMark(WCTX); }
+  try { drawGround(WCTX, s); drawDiaryMark(WCTX); if (BW && E.MAP.nebelRand) randNebel(WCTX, s); }
   finally { ctx = MAINCTX; }
   const g = MAINCTX; g.setTransform(1, 0, 0, 1, 0, 0);
   g.imageSmoothingQuality = SCHAERFE ? 'high' : 'low'; if (SCHAERFE >= 2) wMipBau();
@@ -11035,7 +11114,7 @@ function armyKeep() { if (armySide === feindSeite() && !feindSelbst[armySide]) {
 // ---------- Kartenwahl ----------
 const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a',
   furt: '#4f7480', sumpf: '#4b5a36', wald: '#24331c', waldweg: '#6b6a44', bunker: '#a7a59a', fabrik: '#8a5a44', kirche: '#c2bba8', barrikade: '#7a5a3a', bahn: '#56524a',
-  schiff: '#c2bba8', turm: '#d8d0bc', friedhof: '#6f7258', garten: '#66704a' };
+  schiff: '#c2bba8', turm: '#d8d0bc', friedhof: '#6f7258', garten: '#66704a', eis: '#9fb4bf', haus: '#7a6a58', kapelle: '#b8b0a0', steinbruecke: '#a49a88' };
 function drawMapPreview(cvs, id) {
   const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
   const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);
