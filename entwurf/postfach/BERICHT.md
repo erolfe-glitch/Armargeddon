@@ -1,22 +1,22 @@
-## 2026-11-22 – Entscheidungen Paket H umgesetzt, Paket I Zwischenbericht (F102, F96, F99, F101) (, )
+## 2026-11-22 – Entscheidungen Paket H umgesetzt, Paket I Zwischenbericht (F102, F96, F99, F101) (`2e1ca6c`, `e018a4f`)
 
 ### Entscheidungen zum Paket-H-Bericht
 - **(1) Sturmrollen-Anlauf ohne Kolossfurcht:** umgesetzt.
   - **Messung** (je 200 Schlachten, Startwerte 1–4):
     - Grauwall: Konkordat 58, 54, 60, 50 % → **Ø 55,5 %**, unverändert. Die Furcht war also nicht die Ursache.
     - Sankt Ruß: 52, 56, 51, 51 % → **Ø 52,5 %**.
-  - **Nächster Vorschlag (nichts nachgestellt):** Der Rückstoß baut aufgebaute MG ab (K4). Mit dem Sim-Schalter  (MG bleibt aufgebaut) liegt Grauwall bei **50, 58, 56, 49 % → Ø 53,3 %**. Vorschlag: Der Rückstoß schiebt das MG zurück, baut es aber nicht ab. Enrico entscheidet.
+  - **Nächster Vorschlag (nichts nachgestellt):** Der Rückstoß baut aufgebaute MG ab (K4). Mit dem Sim-Schalter `NORUECKMG=1` (MG bleibt aufgebaut) liegt Grauwall bei **50, 58, 56, 49 % → Ø 53,3 %**. Vorschlag: Der Rückstoß schiebt das MG zurück, baut es aber nicht ab. Enrico entscheidet.
 - **(2) Titel vor dem Anlauf:** Bei Durchbruch, Sturmrollen und Sprungangriff kommt jetzt zuerst der Titel, dann Anlauf bzw. Sprung, dann der Schlag.
   - Helden zeigen den großen Titel. Sturmrollen und Sprung zeigen einen kleineren Titel in der Bildmitte (Konkordat warm, Aschenwacht kalt).
-  - Bilder: , .
-- **(6) K13 Posen zugeordnet** (Vorher/Nachher: ):
+  - Bilder: `entwurf/probe/titel_vor_anlauf_durchbruch.jpg`, `entwurf/probe/titel_vor_anlauf_sturmrollen.jpg`.
+- **(6) K13 Posen zugeordnet** (Vorher/Nachher: `entwurf/probe/k13_vorher_nachher.jpg`):
   - **Fernsprechtrupp:** Flaggenwinken als zweite Funk-Pose.
   - **Signaltrupp:** kniend am Telefon als zweite Funk-Pose. Sie sieht der Ruhepose sehr ähnlich, deshalb fällt der Wechsel kaum auf.
   - **Feldscher und Aschenpfleger:** mit Trage als zweite Laufpose.
   - **Schwere Grabenwacht:** Keulenhieb.
   - **Schildwall:** Ausholen mit der Keule, Hieb mit dem Schild vorn, Vorrücken mit dem Schild.
   - **Werkstatt:** Schraubenschlüssel als zweite Reparaturpose, Zeigen beim Bergen.
-  - Neu und allgemein: Jede Pose darf eine zweite Fassung haben (), die zufällig gewählt wird.
+  - Neu und allgemein: Jede Pose darf eine zweite Fassung haben (`…2`), die zufällig gewählt wird.
 
 ### F102 Fertig selbst setzen – so bedient es sich
 - Bei jeder gewählten eigenen Einheit, in jedem Zustand: Knopf **„Fertig“** (Haken) im Bedienfeld oder **Leertaste** bzw. **E**.
@@ -30,7 +30,7 @@
 - **Überwachte Felder:** Feuerbereitschaft = Reichweite und Sicht in alle Richtungen, wie die Regel. MG-Sperrfeuer = Reichweite, Sicht und Schussfächer.
 - **Solange die Bereitschaft gilt:** eine feine gestrichelte Umrisslinie am Boden (Konkordat Gold, Aschenwacht Graublau). Beim Darüberfahren oder Auswählen ist das Feld leicht gefüllt.
 - Gegnerische Bereitschaft wird nur gezeigt, wenn die Einheit sichtbar ist. Bei Bildwirkung „aus“ ist alles blasser.
-- Bilder: , .
+- Bilder: `entwurf/probe/f96_schussfeld.jpg`, `entwurf/probe/f96_schussfeld_gewaehlt.jpg`.
 
 ### F99 Zielpose in Feuerbereitschaft
 - Einheiten in Feuerbereitschaft knien in ihrer Zielpose, solange sie gilt. Sie stehen wieder auf, sobald sie geschossen haben oder die Bereitschaft endet.
@@ -39,12 +39,12 @@
 
 ### F101 General-Nahkampf
 - **Konkordat:**
-  - Neuer Bogen  geschnitten (Säbelhieb schräg nach unten, Säbelstoß nach vorn; Fahnenträger dahinter wie bei den anderen Posen).
+  - Neuer Bogen `konkordat_general_posen3` geschnitten (Säbelhieb schräg nach unten, Säbelstoß nach vorn; Fahnenträger dahinter wie bei den anderen Posen).
   - Im Nahkampf zufällig: Stoß, oder Ausholen (Säbel erhoben) und dann der Hieb.
-  - Bild: . Der General wirkt in der Hieb-Pose etwas größer; wenn das stört, gleiche ich den Maßstab an.
+  - Bild: `entwurf/probe/f101_general_nahkampf.jpg`. Der General wirkt in der Hieb-Pose etwas größer; wenn das stört, gleiche ich den Maßstab an.
 - **Aschenwacht:**
   - Hatte keine Nahkampf-Pose. Jetzt hebt er im Nahkampf den Säbel (vorhandene Pose).
-  - **Es fehlt ein Bogen mit Hieb bzw. Stoß** wie beim Konkordat-General. Vorschlag: , gleiche Machart (2 Figuren, Fahnenträger dahinter).
+  - **Es fehlt ein Bogen mit Hieb bzw. Stoß** wie beim Konkordat-General. Vorschlag: `aschenwacht_general_posen3.png`, gleiche Machart (2 Figuren, Fahnenträger dahinter).
 
 ### Tests
 Partietest fehlerfrei (F88, F89, F90, F97, F100, F102), test_regeln und test_kommentare in Ordnung.
