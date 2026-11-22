@@ -7278,9 +7278,9 @@
   "dur": 3,
   "src": 8.16,
   "start": 0.5,
-  "gain": 8.2,
+  "gain": 7.5,
   "kb": 35,
-  "note": "Knarren des Wagens, leise unter dem Gespann"
+  "note": "Knarren des Wagens; seit 2026-11-22 Bewegungston der Feldkanone (ohne Protzen). Tiefpass 1,2 kHz: kein Dauerton gemessen, nur kurze Quietscher um 1,4 kHz (Zugpfeifen-Gefahr, Paket B)"
  },
  {
   "pool": "motor_auswahl",
