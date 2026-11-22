@@ -407,7 +407,7 @@ function drawSym(g, im, cx, cy, R, ring) {
   g.drawImage(im, cx - ww / 2, cy - h2 / 2, ww, h2);
 }
 // Laufmündung der MG je Bild (Anteile der Bildbreite/-höhe, Blick nach rechts), gemessen an der Laufspitze (Spieltest 2026-11-17)
-const MUZ = { /* Schreiter-Posen (2026-11-22, gemessen) */ konkordat_kreuzschreiter_posen_2: [0.82, 0.49], aschenwacht_eisenknecht_posen_2: [0.984, 0.487], aschenwacht_eisenknecht_posen2_2: [0.998, 0.589], konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
+const MUZ = { aschenwacht_saegeschreiter_posen_2: [0.83, 0.38], aschenwacht_klauenschreiter_posen_2: [0.8, 0.35], aschenwacht_saegeschreiter_posen2_1: [0.98, 0.5], aschenwacht_klauenschreiter_posen2_1: [0.83, 0.54], /* Schreiter-Posen (2026-11-22, gemessen) */ konkordat_kreuzschreiter_posen_2: [0.82, 0.49], aschenwacht_eisenknecht_posen_2: [0.984, 0.487], aschenwacht_eisenknecht_posen2_2: [0.998, 0.589], konkordat_held_posen2_1: [0.998, 0.163], aschenwacht_panzerbuechse: [0.998, 0.595], aschenwacht_panzerbuechse_posen_1: [0.999, 0.30], konkordat_general_posen_3: [0.996, 0.151], aschenwacht_general_posen2_1: [0.998, 0.232],   /* Runde 2 (2026-11-21) */ mg_A: [0.99, 0.401], mg_D: [0.99, 0.306], mg_F: [0.99, 0.316], konkordat_mg: [0.995, 0.267], aschenwacht_mg: [0.995, 0.472],
   konkordat_kreuzschreiter_neu: [0.632, 0.513], aschenwacht_eisenknecht_neu: [0.88, 0.61],
   // F16/F47 (2026-11-20): Rohrende statt Sehschlitz/Brust – Landkoloss-Kanone, Sturmpanzer, Turmschreiter-Turm-MG, Säge-/Klauenschreiter-Drehlauf
   konkordat_koloss: [0.875, 0.43], aschenwacht_panzer: [0.94, 0.48], konkordat_turmschreiter: [0.99, 0.31], aschenwacht_saegeschreiter: [0.995, 0.48], aschenwacht_klauenschreiter: [0.99, 0.47] };
@@ -1317,11 +1317,11 @@ const FIGMAP = {
   ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
   sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
-  turm: ['turmschreiter'], orden: ['ordensschreiter'], kreuz: ['kreuzschreiter_neu'], knecht: ['eisenknecht_neu'], saeger: ['saegeschreiter'], klaue: ['klauenschreiter'],   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
+  turm: ['turmschreiter'], orden: ['ordensschreiter'], kreuz: ['kreuzschreiter_neu'], knecht: ['eisenknecht_neu'], saeger: ['saegeschreiter_posen2_1'], klaue: ['klauenschreiter_posen2_1'],   /* neues Aussehen (Enrico 2026-11-22): Grundbild = Ruhepose aus posen2 */   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
 };
 // Farbstimmung der Kettenfahrzeuge an die Umgebung; der neue Landkoloss (Dreiviertelansicht, 2026-11-17) nur leicht gedämpft, damit das Rot kräftig bleibt
 const KETTE_FILTER = { konkordat_koloss: 'brightness(0.95) contrast(1.03) saturate(0.97)' };
-const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter', 'kreuzschreiter_neu', 'eisenknecht_neu'];
+const SCHREITER = ['turmschreiter', 'ordensschreiter', 'kreuzschreiter', 'eisenknecht', 'saegeschreiter', 'klauenschreiter', 'kreuzschreiter_neu', 'eisenknecht_neu', 'saegeschreiter_posen2_1', 'klauenschreiter_posen2_1'];
 // Stufe-3-Schreiter (2026-11-19, neue Modelle im Stil Retro-Zukunft): 2,3 SH, beide gleich groß, dürfen so breit werden wie Fahrzeuge (FIGW_VEH)
 const STUFE3 = ['kreuzschreiter_neu', 'eisenknecht_neu'];
 const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];   // Feldradien (x, y), y > 0 = vorn; Füße sicher im eigenen Feld
@@ -1429,12 +1429,14 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
-const POSE_TYPEN = new Set(['kreuz', 'knecht', /* Stufe-3-Schreiter (2026-11-22) */ 'kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
+const POSE_TYPEN = new Set(['kreuz', 'knecht', 'saeger', 'klaue', /* Stufe-3-Schreiter (2026-11-22) */ 'kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
 // Löwenoger und Eiserne Hünen (2026-11-20): 3 Posen – vorrücken (Ruhe), schießen aus der Hüfte, Nahkampf; fehlende Arten = Ruhe
 // Runde 2 (2026-11-21): Oger mit Sprung, Prankenhieb, Schrot angelegt, Getroffen; Hünen mit Hüftfeuer, Sturmlauf, halb kniend, Getroffen
 const POSE_SETS = { /* Stufe-3-Schreiter (Enrico 2026-11-22): Einzelmodelle mit Posen; Gehen des Kreuzschreiters = Grundbild */
+  saeger: { lauf: 'saegeschreiter_posen_1', anlegen: 'saegeschreiter_posen_2', knien: 'saegeschreiter_posen_2', hiebAus: 'saegeschreiter_posen3_1', hieb: 'saegeschreiter_posen3_2', kolben: 'saegeschreiter_posen3_2' },
+  klaue: { lauf: 'klauenschreiter_posen_1', anlegen: 'klauenschreiter_posen_2', knien: 'klauenschreiter_posen_2', hieb: 'klauenschreiter_posen3_2', kolben: 'klauenschreiter_posen3_2' },   /* Ausholen weggelassen: dem Bild fehlt ein Bein */
   kreuz: { anlegen: 'kreuzschreiter_posen_2', knien: 'kreuzschreiter_posen_2', kolben: 'kreuzschreiter_posen2_1', zweit: 'kreuzschreiter_posen2_2', gebruell: 'kreuzschreiter_posen2_2' },
   knecht: { lauf: 'eisenknecht_posen_1', anlegen: 'eisenknecht_posen2_2', knien: 'eisenknecht_posen2_2', faust: 'eisenknecht_posen_2', kolben: 'eisenknecht_posen3_2', hiebAus: 'eisenknecht_posen2_1', hieb: 'eisenknecht_posen3_1' },
   oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3', knien: 'loewenoger_posen_3', kolben: 'loewenoger_posen_2', sprung: 'loewenoger_posen_1', getroffen: 'loewenoger_posen_4' },

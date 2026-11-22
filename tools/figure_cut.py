@@ -395,6 +395,13 @@ FIGUREN_POSEN = {
     'aschenwacht_eisenknecht_posen': dict(n=2, reihen=1, grund='eisenknecht_neu', refpose=1),   # Gehen, beide Kanonen feuern (Faustsalve); Rauch: RAUCH
     'aschenwacht_eisenknecht_posen2': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen'),   # Hackklinge erhoben (Ausholen), Kanonen nach vorn
     'aschenwacht_eisenknecht_posen3': dict(n=2, reihen=1, grund='eisenknecht_neu', massvon='aschenwacht_eisenknecht_posen', spiegeln=[2]),   # Hieb nach vorn; rechts blickt nach links
+    # Säge- und Klauenschreiter neu (Enrico 2026-11-22): Grundbild = linke Figur aus posen2 (gespiegelt); nach links blickende Figuren gespiegelt
+    'aschenwacht_saegeschreiter_posen2': dict(n=2, reihen=1, grund='saegeschreiter', refpose=1, nimm=[1], spiegeln=[1]),   # Ruhe (neues Grundbild); rechte Figur missraten
+    'aschenwacht_saegeschreiter_posen': dict(n=2, reihen=1, grund='saegeschreiter', massvon='aschenwacht_saegeschreiter_posen2', spiegeln=[1]),   # Gehen, Drehlauf feuert
+    'aschenwacht_saegeschreiter_posen3': dict(n=2, reihen=1, grund='saegeschreiter', massvon='aschenwacht_saegeschreiter_posen2', spiegeln=[1]),   # Ausholen, Sägehieb
+    'aschenwacht_klauenschreiter_posen2': dict(n=2, reihen=1, grund='klauenschreiter', refpose=1, nimm=[1], spiegeln=[1]),   # Ruhe (neues Grundbild); rechte Figur nicht verwenden
+    'aschenwacht_klauenschreiter_posen': dict(n=2, reihen=1, grund='klauenschreiter', massvon='aschenwacht_klauenschreiter_posen2', spiegeln=[1]),   # Gehen, MG feuert
+    'aschenwacht_klauenschreiter_posen3': dict(n=2, reihen=1, grund='klauenschreiter', massvon='aschenwacht_klauenschreiter_posen2', spiegeln=[1], eins=True, raster=2),   # Ausholen (Bein fehlt), Klauenhieb; loses MG-Rohr und Fleck fallen weg
     'konkordat_held': dict(n=2, reihen=1, nimm=[1], grund='hauptmann', f=1.25),   # nur links (rechts zwei Kolbenfäuste); Schnipsel und rosa Fleck fallen weg
     'konkordat_held_posen': dict(n=2, reihen=1, grund='held_1', refpose=1),   # Ausholen (Faust vor der Brust), Faustschlag
     'konkordat_held_posen2': dict(n=2, reihen=1, grund='held_1', refpose=1, spiegeln=[2]),   # Revolverschuss, Getroffen (blickt nach links → gespiegelt)
