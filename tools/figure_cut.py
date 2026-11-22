@@ -333,7 +333,7 @@ def rauch_weg(a, name):
 
 
 # Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
-ENTROSA = {'konkordat_ordensschreiter_posen4', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
+ENTROSA = {'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
 
 
 def entrosa(q):
@@ -400,7 +400,7 @@ FIGUREN_POSEN = {
     'aschenwacht_klauenschreiter_posen4': dict(n=2, reihen=1, grund='klauenschreiter', massvon='aschenwacht_klauenschreiter_posen2', spiegeln=[1]),   # Ausholen (beide Beine, ersetzt posen3_1), Getroffen
     'konkordat_ordensschreiter_posen2': dict(n=2, reihen=1, grund='ordensschreiter', refpose=1, nimm=[1]),   # Ruhe; rechte Figur hat zwei Kettenschwerter, nicht verwenden
     'konkordat_ordensschreiter_posen3': dict(n=1, reihen=1, grund='ordensschreiter', refpose=1),   # Kettenschwert-Hieb (Einzelfigur, volle Höhe wie Gehen)
-    'konkordat_ordensschreiter_posen4': dict(n=1, reihen=1, grund='ordensschreiter', refpose=1),   # Getroffen (Enrico 2026-11-22 15:23): Haltung wie Gehen, Funken an der Brust; Größe wie Gehen
+    'konkordat_ordensschreiter_posen5': dict(n=1, reihen=1, grund='ordensschreiter', refpose=1),   # Getroffen (Enrico 2026-11-22 15:47, Flux 3 Edit): echte Treffer-Haltung; ersetzt posen4 (Gemini, nur Geh-Pose mit Funken, nicht verwenden)
     'konkordat_turmschreiter_posen': dict(n=2, reihen=1, grund='turmschreiter', refpose=1, nimm=[1]),   # neues Aussehen (Enrico 2026-11-22): links Gehen = Grundbild; rechts Arme vertauscht, nicht verwenden
     'aschenwacht_saegeschreiter_posen2': dict(n=2, reihen=1, grund='saegeschreiter', refpose=1, nimm=[1], spiegeln=[1]),   # Ruhe (neues Grundbild); rechte Figur missraten
     'aschenwacht_saegeschreiter_posen': dict(n=2, reihen=1, grund='saegeschreiter', massvon='aschenwacht_saegeschreiter_posen2', spiegeln=[1]),   # Gehen, Drehlauf feuert

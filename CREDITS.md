@@ -217,3 +217,10 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 **Ältere Töne** (Schlüssel ohne `_n`, schon vor 2026-11-16 eingebettet): Herkunft im Kopf von `src/sound.js` beschrieben; Lizenzen dort nicht erfasst.
 
 **Aufgehoben, nicht eingebaut:** ganze Datei `street-battle-lviv` (für „Kugelhagel“), Frauenstimmen (`woman-fighting`, `communication-voicelines-woman`), `Win Point` (gleich wie `Win Point 2`), Dämonen-Töne, „Seven Nation Army“ (geschütztes Lied, wird nicht eingebaut).
+
+# Credits – Bilder
+
+| Bild | Datei | Quelle | Herkunft |
+|---|---|---|---|
+| Ordensschreiter getroffen | ui-quelle/figuren/konkordat_ordensschreiter_posen5.png | fal.ai „Flux 3 Image Edit“ (Enrico, eigenes Konto, 2026-11-22) | eigene Erzeugung |
+| Figuren-, Symbol- und Gelände-Bögen | ui-quelle/** | Gemini (Enrico) | eigene Erzeugung |
