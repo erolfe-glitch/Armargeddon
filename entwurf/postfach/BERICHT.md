@@ -1,3 +1,89 @@
+## 2026-11-22 Spätnachmittag – Aufträge 15:12 bis 16:08 erledigt (`399106e` … `3290b1d`)
+
+Alles gepusht; `index.html` am Ende neu eingecheckt (jetzt 63,0 MB). Tests: test_ton (mit Heldenstimmen), test_zeiger (neu), Partietest und test_kommentare fehlerfrei.
+
+### 15:26 Antworten zu den Tönen – umgesetzt
+- **Schweres MG:**
+  - Neuer Standard bei den Schreiter-MGs: Orden- und Klauenschreiter (Drehlauf am Arm), Turm-MG des Turmschreiters.
+  - Die Eisernen Hünen haben wieder ihren alten Ton, damit Enricos Pult-Wahl `neu_mg_schwer_1` greift. Die MG-Trupps sind unverändert.
+- **Sandsäcke** nur beim Eingraben, neben `atmen`. Draht ziehen, Mine legen und Stollen haben wieder `bauen`.
+- **MG-Rückstoß:** Beim Zurückschieben durch Durchbruch oder Sturmrollen spielt `mg_abbauen`.
+- **Feuer-Ruf der Aschenwacht:**
+  - Er kommt bei Feuerbereitschaft von Hauptmann oder General, wie beim Konkordat. Sturmbefehl und Generalangriff behalten den Kampfschrei.
+  - Einen Feuerschlag gibt es nur beim Konkordat (Fernsprechtrupp). Der Signaltrupp der Aschenwacht kann nur markieren, deshalb dort kein Ruf.
+- **Granatwerfer** bleibt nur im Pult; **Panik**-Grenze bleibt.
+- Ton-Pult nachgezogen.
+
+### 15:23/15:47 Ordensschreiter Treffer-Pose
+- **Bild:** `posen5` (Flux) ist eingebaut, `posen4` nicht verwendet; dessen Teil liegt in `ui-quelle/teile/_abgelegt/`.
+- **Größe:** Sie entspricht der Ruhe-Pose (Kopf, Gürtel, Füße auf denselben Linien). Die Geh-Pose ist schon vorher etwas kleiner geschnitten.
+- **Wanken im Code:** etwa 7° nach hinten um den Fußpunkt (vom Angreifer weg), kurzer Rückstoß nach vorn, dann Ruhe.
+- **Spiegelung:** Die Pose wird nie zusätzlich gespiegelt (F97). Schaut der Schreiter nach links, wird wie bei jeder Figur das ganze Bild gespiegelt, die Funken also mit. Sie bleiben dabei auf der Brust und sprühen zur Vorderseite; das passt zur Blickrichtung.
+- **Bilder:** `entwurf/probe/orden_treffer/groesse.jpg` (Größenvergleich) und `spiel_ablauf.jpg` (Ruhe und drei Momente des Wankens, beide Blickrichtungen).
+- **CREDITS:** neuer Abschnitt „Bilder“ mit fal.ai Flux 3 Image Edit.
+
+### 15:12 Bogen C
+- **Gewählt wie bestellt:**
+  - Sprenglanze: unten.
+  - Rammen: oben.
+  - Gegen Panzer: unten.
+  - Einholen: unten.
+- Die nicht gewählten Fassungen (`*_x`) sind nur abgelegt.
+- **Eingebaut:**
+  - Zustand „Sprenglanze bereit“.
+  - Knopf „Gebäude rammen“.
+  - Medaille „gegen Panzer“ (Karte und Info).
+  - Knopf „Einholen“.
+- Sprengladung gilt jetzt nur noch für die Haftladung, der Stiefel nur noch fürs Ziehen.
+- **Vergleich bei 40 und 80 px:** `entwurf/probe/symbole/bogenC_vorher_nachher.png`.
+- **Noch doppelt** (geprüft über alle Symbol-Zuordnungen in ui.js; gleiche Sache an mehreren Stellen zählt als eine):
+  - **s_gas:** „Im Gas“, „Vergiftet“ und „Gasgranate“.
+  - **s_fernglas:** „Beobachter“ und „Ballon aufsteigen“.
+  - Die Garbe darf bleiben.
+  - Nachgetragen in `entwurf/symbol-liste.md`.
+
+### 15:53 Gemalte Mauszeiger
+- **Alle 8 Zeiger aus `bogen_zeiger.png`:**
+  - Werkzeug `tools/zeiger_bau.py` → `src/zeiger.js`.
+  - 32 px, auf 2×-Bildschirmen 64 px über `image-set`. 32 px ist die sichere Größe unter Windows.
+- **Nacharbeit:**
+  - Sperrkreis gespiegelt.
+  - Drahtschere ohne das Fremdteil.
+  - Feld-Zielring auf ein Sechseck maskiert (Spitzen links und rechts wie unsere Felder), Rand nachgezogen.
+- **Klickpunkte:**
+
+  | Zeiger | Klickpunkt |
+  |---|---|
+  | Pfeil | 3,1 |
+  | Hand | 3,1 (Fingerspitze) |
+  | Stiefel | 3,27 (Stiefelspitze) |
+  | Fadenkreuz, Sperrkreis, Feld | Mitte |
+  | Säbel | 2,1 |
+  | Schere | 5,2 |
+
+- **Verhalten:**
+  - Der Pfeil gilt überall, auch über Menüs; Knöpfe behalten die Hand des Systems.
+  - Die Hand erscheint über eigenen Einheiten, auch ohne Auswahl.
+  - Der Zeiger wird nur bei echtem Wechsel gesetzt, so flackert an Feldgrenzen nichts.
+  - Die Leuchtpistole bleibt.
+  - Fehlt ein Bild, greift der alte gezeichnete Zeiger.
+  - Auf Touch ändert sich nichts.
+- **Test** `tools/test_zeiger.mjs`: eigene Einheit, Ziehen, gesperrtes Feld, Nahkampf und Schuss liefern den richtigen Zeiger.
+- **Bild:** `entwurf/probe/zeiger/zeiger_im_spiel.png`. Die Zeiger sind an ihrem Klickpunkt (türkiser Punkt) in eine Spielaufnahme gesetzt, weil Bildschirmfotos den Mauszeiger nicht zeigen.
+
+### 15:58/16:08 Heldenstimmen
+- **Die Rote Faust:** englisch, ohne Filter.
+- **Der Eiserne Kürassier:**
+  - Ragnar mit neuem **Helm-Filter**: Bandpass 300–3000 Hz, Resonanz 1,6 kHz, kurzer Kammfilter, Hauch Nachhall.
+  - Tiefer (0,92), je Anlass zufällig Fassung a oder b.
+- **Anlässe:**
+  - Auswahl (etwa jede zweite), Ziehen, Angriff.
+  - Durchbruch beim Anlauf, vor dem Faustschlag und ohne den Heldentitel zu stören; bzw. Hinrichtung vor dem Säge-Schnitt.
+  - Getroffen (höchstens alle 8 s), Gegner vernichtet, schwer verwundet (einmal), Tod.
+- Für Helden kommen keine Truppenrufe mehr; die übrigen Heldentöne bleiben.
+- **Ton-Pult:** unter „Stimmen“ die Gruppen „Held Rote Faust“ und „Held Eiserner Kürassier“; Filter je Zeile wählbar (neu: „Stahlhelm“).
+- CREDITS ergänzt, sound-quelle gesichert.
+
 ## 2026-11-22 Nachmittag – Neue Töne als Standard (Aufträge 14:40, 14:50, 15:00) (`841f93f`)
 
 Alle Dateien aus `sound-quelle/_neu/` sind eingebaut. Die Dateien wurden in Ordner kopiert, nichts verschoben oder gelöscht:
