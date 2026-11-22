@@ -1,3 +1,83 @@
+## 2026-11-22 Abend – Entscheidungen von 13:35 umgesetzt (`fec57ae` … Abschluss)
+
+Alles eingebaut, gemessen und gepusht, `index.html` am Ende mit eingecheckt.
+- **Tests:** Partietest, test_regeln, test_kommentare sowie die zwei neuen Tests `tools/test_ton.mjs` (Ton-Umbau) und `tools/test_feindarmee.mjs` (Feind-Armee) laufen fehlerfrei.
+- **Endstand Balance** (je 4 × 200 Schlachten, feste Aufstellung wie bisher gemessen): **Grauwall 54,5 %**, **Sankt Ruß 49,4 %** Sieg Konkordat.
+- **`sim.js 200`:**
+  - Grauwall: 51 % zu 50 %, 14,9 Runden.
+  - Sankt Ruß: 47 % zu 53 %. Kirche stürzt in 52 % der Schlachten ein.
+- **Verluste je Typ:** in `sim.js`-Ausgabe; auffällig hoch bei Flammentrupp 80 %, Sensenwerk 70 %, Sturmbrecher 69 % und Banner 63 %.
+
+### F92 Schärfe
+- Stufe 1 ist Standard: hochwertige Glättung für Boden und Figuren.
+- Stufe 2 bleibt nur als Versuchsschalter (`__dbg.schaerfe(2)`).
+
+### F95 Tonmischung
+- **Drei Wege:** Musik, Effekte und Stimmen laufen über WebAudio, mit einem leichten Begrenzer auf der Summe.
+- **Neuer Regler „Stimmen“** in den Einstellungen (`arm.stimmvol`). Er regelt Sprüche und Rufe; der Effekte-Regler wirkt nicht mehr auf Stimmen.
+- **Abweichung:** Die Töne bleiben `<audio>`-Elemente und werden per `createMediaElementSource` in die Wege gehängt (so liefen die Rufe schon), nicht als Tonpuffer.
+  - Ergebnis wie bestellt: Wege, Begrenzer, Regler.
+  - Alle Schleifen, Überblendungen, Tonhöhen und Pausen bleiben unverändert. Ein Umbau auf Puffer hätte jede dieser Stellen neu gebraucht.
+- **Zielmischung** aus der Tabelle (`MISCH_F` in ui.js):
+  - Gewehr 0,7 (Konkordat) bzw. 0,8 (Aschenwacht).
+  - MG 0,85, Kanonen 0,8, Panzer 0,8.
+  - Schritte 0,75, Kürassier-Schritte 0,9, Schreiter-Schritte 0,7.
+  - Rufe 0,3, Kulisse 0,13 (Wetter 0,07).
+- **Musik bei Beschuss −6 dB** für 2,5 s (Schuss, Artillerie, Zweitwaffe, Faustsalve, Panzergranate).
+- **Gewehr:** Kein Schuss wird mehr abgeschnitten.
+  - Standard ist **Variante A** (Feld-Nachhall 0,6 s).
+  - **Variante B „Hagel“** ist fertig gebaut. Umschalten: eine Zeile (`GEWEHR_ART = 'B'`), zum Probieren `__dbg.gewehr('B')`.
+
+### F103 Rollen schärfen (alle sieben)
+1. **Eingreiftrupp = Gegenstoß:** Nahkampf ×1,25 auf eigenen Zielfeldern und in Gräben der eigenen Kartenhälfte, sonst ×0,85.
+   - **Sturmbrecher = „Sturm und Panzerabwehr“:** Panzergranate als Kern im Text.
+2. **Grabenräumer = „Grabenkampf“:** ohne Panzergranate. Der Preis bleibt 50, weil die Formel die Granate nicht berechnet hatte.
+3. **Kohorte = „Schützenlinie“.**
+   - **Grenadiere = „Stoßinfanterie“:** Handgranaten vor jedem Nahkampf ×1,25, mit Wurf-Pose und Explosion (Ereignis `handgranate`, Zeile im Ton-Pult); Schuss ×0,85.
+4. **Feldkanone = „Direktes Feuer“:** nur mit Sicht, über die ganze Reichweite (5), ×2,5 gegen Kolosse, kein Steilfeuer. Darf nach dem Abprotzen noch schießen.
+   - **Donnerrohr und Grabengeschütz = „Steil- und Sperrfeuer“.**
+5. **Fernsprechtrupp = „Feuerleitung“**; Ballon und Signaltrupp = „Aufklärung“.
+6. **Sägeschreiter:** Panzersäge, Gepanzerte ×1,5.
+   - **Klauenschreiter:** Stahlklaue, Fußtruppen ×2, Gepanzerte ×0,75. Beide nur mit Kampfmaschinen.
+7. **Eiserne Hünen = „Schweres Feuer“.**
+   - **Panzerknechte = „Nahkampf und Draht“:** schneiden jetzt Draht.
+- Texte, Schlagworte, Rollen-Zeilen und die CSV sind angepasst; `einheiten_statistik.csv` ist neu gemessen.
+
+### F94 Gefecht
+- **Gemischte Startarmeen, höchstens 5 vom selben Typ**, gleiches Budget:
+
+| Karte | Konkordat | Aschenwacht |
+|---|---|---|
+| Grauwall (vorher A 8 Kohorten, 3 Mahlwerk, 3 Kolosse …; D 8 Grenadiere, 5 Sensenwerk …) | 5 Kohorten, 2 Mahlwerk, 2 Kolosse, 2 Donnerrohre, je 1 Reiter, Pioniere, Scharfschütze, Mörser, Feldscher, Grabenräumer, Flammen, Rauch | 5 Grenadiere, 2 Gasschutz, 1 Banner, 3 Sensenwerk, 2 Geschütze, je 1 Sturmbrecher, Sturmpanzer, Minenwerfer, Signal, Aschenpfleger |
+| Sankt Ruß (vorher D 11 Grenadiere …) | wie Grauwall, aber 3 Mahlwerk und 2 Pioniere | 5 Grenadiere, 2 Drahtpioniere, 2 Gasschutz, 2 Sensenwerk, 2 Geschütze, 2 Sturmpanzer, je 1 Sturmbrecher, Minenwerfer, Aschenpfleger |
+
+- **Nachschub:** Der Einstieg in die Wunschliste ist je Schlacht gemischt, dazu kauft die KI wie bisher nach Lage.
+- **Geschütze ziehen sanft nach** (beide Seiten): erst wenn sie mehrere eigene Runden lang kein Ziel hatten, dann bis in Reichweite.
+  - Die Rundenzahl ist je Karte einstellbar (`MAP.ki.artRunden`): Grauwall 5 (Konkordat) / 4 (Aschenwacht), Sankt Ruß 2.
+  - Das war der wirksamste Abgleich-Hebel. Mit 2 Runden auf beiden Seiten lag Grauwall bei 45 %.
+  - Geschütze protzen jetzt in rund 20 % ihrer Handlungen auf; vorher blieben die der Aschenwacht immer stehen.
+- **Reiter-KI:**
+  - **Ursache:** Reiter haben nur Abwehr 2. Die KI rechnete den Gegenschlag fast immer höher als den eigenen Angriff und mied Bedrohung zusätzlich.
+  - **Neu:** Bonus (`W_CAV_ZIEL` 3, mit Anlauf ×1,5) gegen Geschütze, MG, Beobachter, Sanitäter, Fliehende und Niedergehaltene.
+  - **Ergebnis:**
+    - Lanzenreiter auf Sankt Ruß: Nahkampf in 18 % der Züge (vorher 2 %).
+    - Sprenglanzen: 17 %.
+    - Grauwall: 4–7 %, dort sperrt der Draht die Wege.
+- **Feind-Armee selbst zusammenstellen** (auch gegen die KI):
+  - Armee-Auswahl → Knopf **„Feind-Armee“** → **„KI stellt selbst zusammen“** oder **„Ich stelle zusammen“**. Wer an der Feindliste etwas ändert, ist automatisch auf „Ich“.
+  - Gleiche Regeln: Budget, ein General, ein Held, ein Stufe-3-Schreiter.
+  - Die KI stellt die Armee automatisch auf und kauft weiter selbst.
+  - Die Startseite zeigt beide Armeen.
+- **Wichtig zur Messung:**
+  - Mit gemischter Aufstellung (`MISCHEN=1`) liegen die Werte anders: Grauwall etwa 62 %, Sankt Ruß 77,5 %.
+  - Grund: Die automatische Aufstellung vergibt die Plätze gierig der Reihe nach, schon ein Trupp mehr oder weniger verschiebt die Quote um bis zu 40 Punkte (z. B. 45 % gegen 91 %).
+  - Abgeglichen ist auf die feste Aufstellung, wie bisher berichtet und wie die KI im Spiel wirklich aufstellt.
+  - **Vorschlag für später:** die automatische Aufstellung robuster machen (Rollen vorn/hinten fest, Plätze nicht nur der Reihe nach). Dann gleichen sich beide Messungen an.
+
+### Offen
+- **Gewehr A oder B:** Enrico hört in der Tonprobe; Umschalten ist eine Zeile.
+- **Roboter-Stimmen** für Schreiter, Bogen C für die doppelten Symbole: kommen später.
+
 ## 2026-11-22 Nachmittag – Paket I fertig: F98, Schritt 11, F92, F94, F95, F103 (`6669289` … Abschluss)
 
 Alles gepusht, `index.html` jetzt mit eingecheckt (Ende von Paket I). Tests:
