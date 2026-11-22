@@ -156,7 +156,7 @@ function fxSeite(id, zid) {
 // F71 (2026-11-21): Pulverdampf – an der Mündung, langsam steigend und seitlich treibend, durchsichtig, nach 2–3 s weg; Größe je Waffe; begrenzt; Bildwirkung aus = keiner, leicht = halb so viel
 // F75: Flammenwerfer-Ton als Schleife genau über die Dauer des Strahls, dann weich aus und kurzes Nachbrennen (Prasseln)
 function flammenTon(id, dauer) { const u = unitById(id), k = soundOn ? sndPick('flame', u && u.side) : null; if (!k || !SND[k]) return null;
-  const a = SND[k].cloneNode(), v = Math.min(1, 0.6 * effektVol); a.loop = true; a.volume = 0; a.playbackRate = 0.95 + Math.random() * 0.1; try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+  const a = SND[k].cloneNode(), v = Math.min(1, 0.6 * effektVol); a.loop = true; a.volume = 0; anBus(a, 'e'); a.playbackRate = 0.95 + Math.random() * 0.1; try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
   let t0 = performance.now(), aus = false; const tick = () => { if (aus) return; const t = performance.now() - t0; a.volume = v * Math.min(1, t / 60); requestAnimationFrame(tick); }; tick();
   return { aus() { aus = true; const v0 = a.volume, t1 = performance.now(); const f = () => { const k2 = Math.min(1, (performance.now() - t1) / 260); try { a.volume = v0 * (1 - k2); } catch (e) {} if (k2 < 1) requestAnimationFrame(f); else a.pause(); }; f();
     playSound('feuer', 0.3, null, { noGap: true, dur: 700 }); } }; }
@@ -1874,22 +1874,61 @@ const lastSnd = {}, SND_GAP = { ueberrollen: 600, pferd_auswahl: 2500, pferd_unr
 // Prüfliste 1.7 (2026-11-21): Audio-Objekte erst beim ersten Zugriff anlegen (vorher ~750 beim Start, alle mit preload 'auto')
 const SND = new Proxy({}, { get(t, k) { if (k in t) return t[k]; const src = typeof k === 'string' && window.SOUNDS && window.SOUNDS[k]; if (!src) return undefined; const a = new Audio(src); a.preload = 'auto'; return (t[k] = a); } });
 // Hintergrundkulisse als leise Schleife
+
+// ---- F95 Tonmischung (Enrico 2026-11-22 13:35): drei Wege Musik / Effekte / Stimmen, leichter Begrenzer auf der Summe, Feld-Nachhall für Gewehre ----
+// Die <audio>-Elemente laufen über WebAudio (createMediaElementSource, wie schon die Rufe): so bleiben Lautstärke, Tonhöhe, Schleifen und Pausen wie bisher,
+// dazu kommen Wege mit eigenem Regler und der Begrenzer. Ohne WebAudio spielt alles wie früher direkt.
+let TAC = null, TBUS = null, stimmVol = 1;
+try { const s = localStorage.getItem('arm.stimmvol'); if (s != null && s !== '') stimmVol = Math.max(0, Math.min(1, +s)); } catch (e) {}
+function feldRaum(ac, sek, frueh) {   // Impulsantwort „offenes Feld“: frühe Reflexion (Scheppern an Gräben/Mauern), dann abklingendes, dumpfer werdendes Rauschen
+  const sr = ac.sampleRate, n = Math.round(sr * sek), b = ac.createBuffer(2, n, sr);
+  for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); let lp = 0;
+    for (let i = 0; i < n; i++) { const t = i / sr, k = 0.12 + 0.75 * (1 - t / sek); lp += (Math.random() * 2 - 1 - lp) * k; d[i] = lp * Math.pow(1 - t / sek, 2.2) * 0.9; }
+    const e = Math.round(sr * (frueh + c * 0.011)); for (let i = 0; i < Math.round(sr * 0.03) && e + i < n; i++) d[e + i] += (Math.random() * 2 - 1) * 0.55 * (1 - i / (sr * 0.03)); }
+  return b; }
+function tonNetz() {
+  if (TAC || TAC === false) return TAC || null;
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const lim = ac.createDynamicsCompressor(); lim.threshold.value = -6; lim.knee.value = 4; lim.ratio.value = 20; lim.attack.value = 0.002; lim.release.value = 0.15; lim.connect(ac.destination);
+    const g = v => { const x = ac.createGain(); x.gain.value = v; x.connect(lim); return x; };
+    TBUS = { m: g(1), e: g(1), s: g(stimmVol), hallA: ac.createGain(), hallB: ac.createGain() };
+    const hall = (ein, sek, frueh, nass, echo) => { const cv = ac.createConvolver(); cv.buffer = feldRaum(ac, sek, frueh); const w = ac.createGain(); w.gain.value = nass; ein.connect(cv); cv.connect(w); w.connect(TBUS.e);
+      if (echo) { const d = ac.createDelay(1), fb = ac.createGain(), lp = ac.createBiquadFilter(); d.delayTime.value = 0.135; fb.gain.value = 0.28; lp.type = 'lowpass'; lp.frequency.value = 2200; ein.connect(d); d.connect(lp); lp.connect(fb); fb.connect(d); lp.connect(TBUS.e); } };
+    hall(TBUS.hallA, 0.6, 0.09, 0.42); hall(TBUS.hallB, 0.85, 0.12, 0.55, true);   // A: Feld-Nachhall, B: „Hagel“ mit Echo (Hörproben F95)
+    TAC = ac;
+  } catch (e) { TAC = false; }
+  return TAC || null;
+}
+function tonWecken() { const ac = tonNetz(); if (ac && ac.state === 'suspended') try { ac.resume(); } catch (e) {} }
+function anBus(a, bus, hall) {   // Element in den Weg hängen (einmal je Element); hall: 'A' | 'B' = zusätzlich in den Nachhall
+  if (!a || a._bus) return a; const ac = tonNetz(); if (!ac) return a;
+  try { if (ac.state === 'suspended') ac.resume(); const src = ac.createMediaElementSource(a); src.connect(TBUS[bus] || TBUS.e); if (hall && TBUS['hall' + hall]) src.connect(TBUS['hall' + hall]); a._bus = bus; a._src = src;
+    if (!a.loop) a.addEventListener('ended', () => { try { src.disconnect(); } catch (e) {} }, { once: true }); } catch (e) {}
+  return a; }
+function stimmVolSetzen(v) { stimmVol = v; if (TBUS) TBUS.s.gain.value = v; try { localStorage.setItem('arm.stimmvol', v); } catch (e) {} }
+// Zielmischung (Bericht Paket I, Tabelle F95): Faktor auf die bisherige Spiel-Lautstärke je Ton, Schlüssel = Anfang des Tonnamens
+const MISCH_F = [[/^rifle/, { A: 0.7 / 0.42, D: 0.8 / 0.42 }], [/^(mg|minigun|neu_mg_schwer)/, 0.85 / 0.55], [/^(cannon|kolosskanone|panzerkanone|loewenkanone)/, 0.8 / 0.6], [/^tank/, 0.8 / 0.5],
+  [/^(schritte|steps|stepsWald|kampfanzug_schritte)/, 0.75 / 0.5], [/^held_schritt_ritter2/, 0.9 / 0.63], [/^schreiter_schritte/, 0.7 / 0.45], [/^(pain|cry|scream|panic|medic)(_|$)/, 0.3 / 0.4]];
+function mischF(name, side) { for (const [re, f] of MISCH_F) if (re.test(name)) return typeof f === 'number' ? f : (f[side] || f.A); return 1; }
+// Gewehrsalve (F95): kein Schuss wird mehr abgeschnitten. A = Ablauf wie bisher + Feld-Nachhall (Standard), B = „Hagel“ (je Mann 1, 2 oder 4 Schüsse, Nachhall + Echo). Enrico wählt noch.
+let GEWEHR_ART = 'A';
 let ambient = null;
 let wetter = null, musik = null, feuerTon = null;
 // Lautstärke (Optionen, gespeichert): Musik und Effekte getrennt, 0–1 (2026-11-17)
 let musikVol = 0.8, effektVol = 1;
 try { const m = localStorage.getItem('arm.musikvol'), f = localStorage.getItem('arm.effektvol'); if (m != null && m !== '') musikVol = Math.max(0, Math.min(1, +m)); if (f != null && f !== '') effektVol = Math.max(0, Math.min(1, +f)); } catch (e) {}
-const KULISSE = { ambient: 0.22, wetter: 0.12, feuer: 0.12 };   // Grundlautstärke der Schleifen, mal effektVol
+const KULISSE = { ambient: 0.13, wetter: 0.07, feuer: 0.12 };   /* F95 Zielmischung (vorher 0,22 / 0,12) */   // Grundlautstärke der Schleifen, mal effektVol
 function kulisseVol() { if (ambient) ambient.volume = KULISSE.ambient * effektVol; if (wetter) wetter.volume = KULISSE.wetter * effektVol; if (feuerTon) feuerTon.volume = KULISSE.feuer * effektVol; }
 // Brennende Felder: leise Feuer-Schleife, solange irgendwo etwas brennt
 function fireLoop() {
   const on = soundOn && G && !G.over && (VIS.fires || []).length > 0;
-  if (on && !feuerTon) { const k = sndPick('feuer'); if (!k) return; feuerTon = SND[k].cloneNode(); feuerTon.loop = true; feuerTon.volume = KULISSE.feuer * effektVol; }
+  if (on && !feuerTon) { const k = sndPick('feuer'); if (!k) return; feuerTon = SND[k].cloneNode(); feuerTon.loop = true; anBus(feuerTon, 'e'); feuerTon.volume = KULISSE.feuer * effektVol; }
   if (feuerTon) try { if (on) { const p = feuerTon.play(); if (p && p.catch) p.catch(() => {}); } else feuerTon.pause(); } catch (e) {}
 }
 function setAmbient(on) {
-  if (!ambient) { const k = sndPick('ambient'); if (!k) return; ambient = SND[k]; ambient.loop = true; }
-  if (!wetter) { const k = sndPick('wetter'); if (k) { wetter = SND[k]; wetter.loop = true; } }
+  if (!ambient) { const k = sndPick('ambient'); if (!k) return; ambient = SND[k]; ambient.loop = true; anBus(ambient, 'e'); }
+  if (!wetter) { const k = sndPick('wetter'); if (k) { wetter = SND[k]; wetter.loop = true; anBus(wetter, 'e'); } }
   kulisseVol();
   for (const a of [ambient, wetter]) if (a) try { if (on) { const p = a.play(); if (p && p.catch) p.catch(() => {}); } else a.pause(); } catch (e) {}
   if (on && soundOn) setMusik('musik_schlacht', 3); else if (musikName === 'musik_schlacht') setMusik(null, 2.5);   // Schlacht: Menümusik weich in die Schlachtmusik überblenden; Ende: ausblenden
@@ -1900,8 +1939,9 @@ function setAmbient(on) {
 // Schleifen blenden 2 s vor dem Ende in eine neue Spur desselben Stücks über. null = Musik aus (ausblenden).
 const MUSIK_VOL = { musik_titel: 0.34, musik_schlacht: 0.085, musikNiederlage: 0.32 };   // Schlachtmusik deutlich unter den Effekten (F4, 2026-11-20: 0,13 → 0,085, etwa −4 dB)
 // F5: solange Stimmen oder Marschtritt laufen, Musik weich auf MUSIK_DUCK absenken (nicht aus)
-const MUSIK_DUCK = 0.45; let musikDuckBis = 0, musikDuckL = 1;
+const MUSIK_DUCK = 0.45, MUSIK_GEFECHT = 0.5; let musikDuckBis = 0, musikDuckL = 1, musikGefechtBis = 0;   /* F95: im Gefecht −6 dB */
 const musikDucken = ms => { musikDuckBis = Math.max(musikDuckBis, performance.now() + ms); };
+const musikGefecht = (ms = 2500) => { musikGefechtBis = Math.max(musikGefechtBis, performance.now() + ms); };   // F95: Beschuss senkt die Musik 2,5 s
 const musikSp = []; let musikName = null;
 function setMusik(name, fade = 1.5) {
   const want = soundOn ? name : null;
@@ -1912,13 +1952,13 @@ function setMusik(name, fade = 1.5) {
   musikSpur(want, k, musikSp.length ? fade : 0.6);
 }
 function musikSpur(name, k, fade) {
-  const a = SND[k].cloneNode(); a.loop = false; a.volume = 0;
+  const a = SND[k].cloneNode(); a.loop = false; a.volume = 0; anBus(a, 'm');
   const t = { a, name, k, lvl: 0, fade, aus: false, schleife: name !== 'musikNiederlage', weiter: false }; musikSp.push(t);
   try { const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
   musik = a;
 }
 setInterval(() => {   // Lautstärken nachführen (alle 50 ms), Schleifen überblenden
-  musikDuckL += ((performance.now() < musikDuckBis ? MUSIK_DUCK : 1) - musikDuckL) * 0.22;   // F5: weich absenken und wieder anheben
+  { const jt = performance.now(); musikDuckL += (Math.min(jt < musikDuckBis ? MUSIK_DUCK : 1, jt < musikGefechtBis ? MUSIK_GEFECHT : 1) - musikDuckL) * 0.22; }   // F5: weich absenken und wieder anheben; F95: auch bei Beschuss
   for (let i = musikSp.length - 1; i >= 0; i--) { const t = musikSp[i], a = t.a;
     t.lvl = Math.max(0, Math.min(1, t.lvl + (t.aus ? -1 : 1) * 0.05 / Math.max(0.1, t.fade)));
     try { a.volume = Math.min(1, t.lvl * (MUSIK_VOL[t.name] || 0.3) * musikVol * musikDuckL); } catch (e) {}
@@ -1927,7 +1967,7 @@ setInterval(() => {   // Lautstärken nachführen (alle 50 ms), Schleifen überb
   }
   musik = (musikSp.find(t => !t.aus) || {}).a || null;
 }, 50);
-function musikWecken() { for (const t of musikSp) if (!t.aus && t.a.paused) { const p = t.a.play(); if (p && p.catch) p.catch(() => {}); } }   // Browser erlaubt Ton erst nach der ersten Berührung
+function musikWecken() { tonWecken(); for (const t of musikSp) if (!t.aus && t.a.paused) { const p = t.a.play(); if (p && p.catch) p.catch(() => {}); } }   // Browser erlaubt Ton erst nach der ersten Berührung
 // Abwechslung: Gruppen von Tönen, aus denen zufällig gewählt wird (Wunsch des Nutzers)
 // Seit 2026-11-16: Tonplätze (SOUND_POOLS) mit Varianten je Seite; SND_VAR fasst Plätze zusammen. Die Seite kommt aus dem gerade abgespielten Ereignis (sndSide).
 // F30 (2026-11-20): Waffenton fest je Seite und Einheitentyp – einmal gewählt, dann immer derselbe (Salven variieren nur Tonhöhe/Lautstärke)
@@ -1949,7 +1989,7 @@ const GETUEMMEL_VOL = 0.3, GETUEMMEL_NACH = 2500; let gtA = null, gtBis = 0;
 function getuemmel() {
   if (!soundOn || speed >= INSTANT) return; gtBis = performance.now() + GETUEMMEL_NACH; if (gtA) return;
   const k = sndPick('getuemmel'); if (!k || !SND[k]) return;
-  try { const a = SND[k].cloneNode(); a.loop = true; a.volume = 0; try { a.currentTime = Math.random() * 12; } catch (e) {} const p = a.play(); if (p && p.catch) p.catch(() => {}); gtA = a; } catch (e) { return; }
+  try { const a = SND[k].cloneNode(); a.loop = true; a.volume = 0; anBus(a, 'e'); try { a.currentTime = Math.random() * 12; } catch (e) {} const p = a.play(); if (p && p.catch) p.catch(() => {}); gtA = a; } catch (e) { return; }
   const tick = () => { const a = gtA; if (!a) return; const jetzt = performance.now(), ziel = soundOn && jetzt < gtBis ? Math.min(1, GETUEMMEL_VOL * effektVol * duckF()) : 0;
     try { a.volume = Math.max(0, Math.min(1, a.volume + (ziel - a.volume) * 0.18)); } catch (e) {}
     if (ziel === 0 && a.volume < 0.01) { a.pause(); gtA = null; return; } setTimeout(tick, 50); };
@@ -1964,7 +2004,7 @@ const ORT_GLOCKE = { sanktruss: 0.42 };
 const WIND_X = 4; let windSp = [], ortAn = false, ortLvl = 0, kraeheT = 0, glockeT = 0;
 const ortK = () => ORT_KULISSE[E.MAP && E.MAP.id];
 const zwischen = ([a, b]) => a + Math.random() * (b - a);
-function windSpur() { const k = sndPick('wind'); if (!k || !SND[k]) return; try { const a = SND[k].cloneNode(); a.loop = false; a.volume = 0; const p = a.play(); if (p && p.catch) p.catch(() => {}); windSp.push({ a, weiter: false }); } catch (e) {} }
+function windSpur() { const k = sndPick('wind'); if (!k || !SND[k]) return; try { const a = SND[k].cloneNode(); a.loop = false; a.volume = 0; anBus(a, 'e'); const p = a.play(); if (p && p.catch) p.catch(() => {}); windSp.push({ a, weiter: false }); } catch (e) {} }
 function ortKulisse(on) {
   const k = ortK(); ortAn = !!(on && soundOn && k);
   if (ortAn) { const t = performance.now(); if (!windSp.length) windSpur(); else for (const w of windSp) { const p = w.a.play(); if (p && p.catch) p.catch(() => {}); }
@@ -2010,7 +2050,7 @@ let RUF_AC = null, RUF_RAUSCH = null;
 function rufKette(a, art, st) {
   if (!a || art === 'roh' || !(st > 0)) return;
   try {
-    const ac = RUF_AC = RUF_AC || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume();
+    const ac = RUF_AC = RUF_AC || tonNetz() || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume();
     const src = ac.createMediaElementSource(a); let n = src;
     if (art === 'maske') {
       const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 220 + 120 * st;
@@ -2019,7 +2059,7 @@ function rufKette(a, art, st) {
       const ws = ac.createWaveShaper(), k = 1 + 6 * st, cur = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cur[i] = Math.tanh(k * x) / Math.tanh(k); } ws.curve = cur;
       n.connect(hp); hp.connect(lp); lp.connect(pk); pk.connect(ws); n = ws;
     }
-    n.connect(ac.destination);
+    n.connect(TBUS && ac === TAC ? TBUS.s : ac.destination); a._bus = 's';
     if (!RUF_RAUSCH) { const len = ac.sampleRate * 3; RUF_RAUSCH = ac.createBuffer(1, len, ac.sampleRate); const d = RUF_RAUSCH.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.45 + (Math.random() < 0.0012 ? (Math.random() * 2 - 1) * 0.9 : 0); }
     const ns = ac.createBufferSource(); ns.buffer = RUF_RAUSCH; ns.loop = true;
     const nf = ac.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 2400; nf.Q.value = 0.7;
@@ -2034,8 +2074,8 @@ const RUF_SPERRE = {}; let rufBis = 0, rufAnwahl = 0;
 function ruf(ev, side) {
   if (!soundOn || speed >= INSTANT || !side) return false; const w = TONWAHL['stimmen_' + side] && TONWAHL['stimmen_' + side]['ruf_' + ev]; if (!w || !w.k || !SND[w.k]) return false;
   const t = performance.now(), sk = side + ev; if (t < rufBis || t - (RUF_SPERRE[sk] || -1e9) < 7000) return false; if (ev === 'auswahl' && (++rufAnwahl % 3)) return false;
-  RUF_SPERRE[sk] = t; rufBis = t + 3800; const a = SND[w.k].cloneNode(); a.volume = Math.min(1, 0.5 * (w.vf || 1) * effektVol); a.playbackRate = w.rate || 1;
-  a.addEventListener('ended', () => { rufBis = 0; }); rufKette(a, w.filt || 'maske', w.fst != null ? w.fst : 0.6); const p = a.play(); if (p && p.catch) p.catch(() => {}); try { duckStimme(a); } catch (e) {} return true;
+  RUF_SPERRE[sk] = t; rufBis = t + 3800; const a = SND[w.k].cloneNode(); a.volume = Math.min(1, 0.5 * (w.vf || 1)); a.playbackRate = w.rate || 1;   /* F95: Regler „Stimmen“ über den Weg s */
+  a.addEventListener('ended', () => { rufBis = 0; }); rufKette(a, w.filt || 'maske', w.fst != null ? w.fst : 0.6); anBus(a, 's'); const p = a.play(); if (p && p.catch) p.catch(() => {}); try { duckStimme(a); } catch (e) {} return true;
 }
 function rufBeiEreignis(e, u) {
   const sd = x => { const v = x != null && unitById(x); return v ? v.side : null; };
@@ -2067,7 +2107,7 @@ function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u
   window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
   window.__snd = (window.__snd || 0) + 1;
   const stimme = STIMM_PL.has(gapKey), fz = DUCK_PL.has(gapKey); if (stimme) vol *= STIMM_VOL;
-  try { const a = SND[name].cloneNode(); vol = Math.min(1, vol * effektVol); a.volume = fz ? vol * duckF() : vol; a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {});
+  try { const a = SND[name].cloneNode(); vol = Math.min(1, vol * (stimme ? 1 : effektVol) * mischF(name, side || sndSide)); a.volume = fz ? vol * duckF() : vol; anBus(a, stimme ? 's' : 'e', opt && opt.hall); a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {});
     if (fz) duckLauf.push({ a, vol }); if (stimme) duckStimme(a);
     if (opt && opt.dur) { let k = 0; setTimeout(function fade() { k++; try { a.volume = Math.max(0, vol * (1 - k / 5)); } catch (e) {} if (k < 5) setTimeout(fade, 12); else a.pause(); }, opt.dur); }   // ca. 60 ms ausblenden
   } catch (e) {}
@@ -2216,6 +2256,7 @@ const ANGRIFF_EV = new Set(['fire', 'shell', 'melee', 'counter', 'durchbruch', '
 async function playEvent0(e) {
   if (ANGRIFF_EV.has(e.t)) { const aid = e.a != null ? e.a : e.u; if (aid != null) letzterAngreifer = { id: aid, t: performance.now() }; }   // M7
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
+  if (['fire', 'shell', 'zweit', 'faust', 'pzgranate'].includes(e.t)) musikGefecht(2500);   // F95: Musik im Gefecht −6 dB
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   tonKontext = [e.a, e.u, e.d, e.by].filter(x => x != null).map(unitById).filter(Boolean);   // F91: Ton-Pult-Wahl gilt für die Einheiten dieses Ereignisses
   try { rufBeiEreignis(e, u); } catch (err) { }   // Rufe der Truppen (Ton-Pult „Stimmen“)
@@ -2260,9 +2301,12 @@ async function playEvent0(e) {
           const key = waffenTon('rifle', au);   // F30: fest je Seite und Typ   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
           // unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert: „pam – pam-pam – pam“. Abstände zufällig 0–0,25 s, manchmal zwei fast zugleich;
           // jeder Schuss kurz (ohne Nachhall), nur der letzte klingt voll aus (Spieltest 2026-11-17, gilt für beide Seiten)
-          let t = 0; const schuss = []; for (let q = 0; q < m; q++) { if (q) t += Math.random() < 0.25 ? 50 + Math.random() * 80 : 150 + Math.random() * 300; schuss.push(t);   // F72: dichter gestaffelt
-            const last = q === m - 1; setTimeout(() => playSound(key, 0.42 * (0.8 + Math.random() * 0.4), au && au.side,   /* F72: lauter */ { noGap: true, rate: 0.94 + Math.random() * 0.12, dur: last ? 0 : 170 + Math.random() * 60 }), t / speed);
-            const p = fxMuzzle(e.a, q % n); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 1.05 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } }
+          // F95 (Enrico 2026-11-22): kein Schuss wird mehr nach 0,2 s abgeschnitten, jeder klingt mit Feld-Nachhall aus. A = Abstände wie bisher; B = „Hagel“: je Mann 1, 2 oder 4 Schüsse, zufällig versetzt
+          const plan = []; if (GEWEHR_ART === 'B') { for (let f = 0; f < n; f++) { const z = [1, 1, 2, 2, 4][Math.floor(Math.random() * 5)]; let tt = Math.random() * 650; for (let q = 0; q < z; q++) { plan.push([tt, f]); tt += z === 4 ? 110 + Math.random() * 120 : 220 + Math.random() * 380; } } plan.sort((x, y) => x[0] - y[0]); }
+          else { let tt = 0; for (let q = 0; q < m; q++) { if (q) tt += Math.random() < 0.25 ? 50 + Math.random() * 80 : 150 + Math.random() * 300; plan.push([tt, q % n]); } }   // F72: dichter gestaffelt
+          let t = 0; const schuss = []; for (const [tq, f] of plan) { t = tq; schuss.push(t);
+            setTimeout(() => playSound(key, (GEWEHR_ART === 'B' ? 0.5 : 0.42) * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, hall: GEWEHR_ART }), t / speed);
+            const p = fxMuzzle(e.a, f); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 1.05 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } }
           if (a.pose && a.pose.t0 != null) { a.pose.schuss = schuss; a.pose.gleich = true; a.pose.dauer = Math.max(900, t + 650); } salveT = t; }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
         else if (AT && AT.dauerfeuer) playSound(waffenTon('mg', au), 0.62, au.side, { rate: 0.8 + Math.random() * 0.06 });   // Eiserne Hünen: schweres MG, tiefer gestimmt
         else if (!(rs === 'sniper' && e.kind === 'rifle')) playSound(waffenTon(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'buechse' : rs) : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', au), mg ? 0.55 : 0.6, au && au.side);
@@ -2910,14 +2954,14 @@ function selectVoice(u) {
   const T = TYPES[u.type], panzer = PANZER.includes(u.type);
   let m = null; if (panzer) { const mk = sndPick('motor_auswahl', u.side); if (mk) m = motorRev(mk, { vol: 0.13, dauer: 0.7 }); }   // Motor leiser und kürzer, die Stimme liegt klar darüber
   if (T.cls === 'cav') playSound('pferd_auswahl', 0.26, u.side, { noGap: true });   // Reiter: Pferd und Spruch
-  try { const a = SND[k].cloneNode(); a.volume = Math.min(1, 0.34 * STIMM_VOL * effektVol); const p = a.play(); if (p && p.catch) p.catch(() => {});
+  try { const a = SND[k].cloneNode(); a.volume = Math.min(1, 0.34 * STIMM_VOL); anBus(a, 's'); const p = a.play(); if (p && p.catch) p.catch(() => {});
     duckStimme(a); stimmeLauf = { a, t, m }; window.__sndBy = window.__sndBy || {}; window.__sndBy[k] = (window.__sndBy[k] || 0) + 1; } catch (e) {}
 }
 // Motor kurz aufheulen lassen („Rumm“, ca. 1 s): einblenden, Tonhöhe 0,8× → 1,2× wie leicht Gas geben, ausblenden (Paket 4)
 function motorRev(k, o = {}) {   // o.vol (Grundlautstärke), o.dauer (s): beim Anklicken leiser und kürzer, damit die Stimme darüber klar bleibt
   if (!soundOn || !SND[k] || speed >= INSTANT) return null;
   const V = o.vol || 0.32, D = o.dauer || 1.1; let aus = false;
-  try { const a = SND[k].cloneNode(); a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.volume = 0; a.playbackRate = 0.8;
+  try { const a = SND[k].cloneNode(); a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; a.volume = 0; a.playbackRate = 0.8; anBus(a, 'e');
     const p = a.play(); if (p && p.catch) p.catch(() => {}); const t0 = performance.now();
     const tick = () => { const t = (performance.now() - t0) / 1000; if (t > D || aus) { a.pause(); return; }
       try { a.volume = V * effektVol * duckF() * Math.min(1, t / 0.08) * Math.min(1, Math.max(0, (D - t) / (D * 0.36))); a.playbackRate = 0.8 + 0.4 * Math.min(1, t / (D * 0.4)); } catch (e) {}
@@ -4166,7 +4210,8 @@ if ($('optMeld')) { $('optMeld').value = meldArt; $('optMeld').addEventListener(
 if ($('optBild')) { $('optBild').value = String(BW); $('optBild').addEventListener('change', () => setBildwirkung(+$('optBild').value, true)); }   // Bildwirkung (2026-11-19)
 if ($('optBase')) { $('optBase').value = String(OPT.base); $('optBase').addEventListener('change', () => { OPT.base = +$('optBase').value; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {} }); }
 // Lautstärke-Regler (Optionen): Musik und Effekte getrennt, gespeichert
-{ const set = () => { $('volMusik').value = Math.round(musikVol * 100); $('volEffekte').value = Math.round(effektVol * 100); $('volMusikW').textContent = $('volMusik').value; $('volEffekteW').textContent = $('volEffekte').value; }; set();
+{ const set = () => { $('volMusik').value = Math.round(musikVol * 100); $('volEffekte').value = Math.round(effektVol * 100); $('volMusikW').textContent = $('volMusik').value; $('volEffekteW').textContent = $('volEffekte').value; $('volStimmen').value = Math.round(stimmVol * 100); $('volStimmenW').textContent = $('volStimmen').value; }; set();
+  $('volStimmen').addEventListener('input', () => { stimmVolSetzen(+$('volStimmen').value / 100); set(); });   // F95: eigener Regler für Stimmen und Rufe
   $('volMusik').addEventListener('input', () => { musikVol = +$('volMusik').value / 100; try { localStorage.setItem('arm.musikvol', musikVol); } catch (e) {} set(); });
   $('volEffekte').addEventListener('input', () => { effektVol = +$('volEffekte').value / 100; try { localStorage.setItem('arm.effektvol', effektVol); } catch (e) {} kulisseVol(); set(); });
   $('volEffekte').addEventListener('change', () => playSound('whistle', 0.4)); }
@@ -4346,7 +4391,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
