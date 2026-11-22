@@ -8,6 +8,9 @@ Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über all
 - `symbol_schaufel` (Einzelsymbol, 2026-11-18): schaufel
 - `bogen7_zustandszeichen` (2026-11-19, Kopfzeichen über den Figuren, Schlüssel k_*): blitze, tropfen, schweiss (Staubwolke), angst, gas, gift, feuer, panne, klingen, wut, auge, pfeil, garbe, funkeln (Stern), kreuz, reserve (nur abgelegt)
 - `bogen4c_symbole`: panzerbrecher, durchsickern, niedergehalten, flucht, gebrochen (vorläufig), festgefahren, walze
+- `bogen8a_faehigkeiten` (2026-11-22): durchbruch, hinrichtung, sturmrollen, sturmlauf, sprung, gebruell, kanone_zweit, panzergranate, breitseite
+- `bogen8b_befehle` (2026-11-22): sammeln, sturmbefehl, feuerfrei, halten, generalangriff, markieren, feuerschlag, feuerbereit
+- `bogenC_symbole` (2026-11-22, gewählt von Enrico): sprenglanze, rammen, gegen_panzer, einholen; nicht gewählte Fassungen `*_x` nur abgelegt
 
 „– (Text)“ heißt: reiner Textknopf, ein Symbol ist nicht nötig.
 
@@ -133,6 +136,22 @@ Symbolbögen (ausgeschnitten in `ui-quelle/teile/<bogen>/`, Namen sind über all
 | Im Gas | s_gas | nein |
 | Feuerbereit | s_auge | nein |
 | Aufklärer sieht | s_fernglas | nein |
+
+## Bogen C: doppelte Belegungen aufgelöst (2026-11-22)
+
+| Bedeutung | vorher | jetzt |
+|---|---|---|
+| Sprenglanze bereit (Zustand, Sprenglanzen-Reiter) | s_sprengladung | s_sprenglanze |
+| Gebäude rammen (Knopf) | s_sprengladung | s_rammen |
+| Medaille „gegen Panzer“ (Einheitenkarte, Stärken und Schwächen) | s_sprengladung | s_gegen_panzer |
+| Ballon einholen (Knopf) | s_stiefel | s_einholen |
+
+s_sprengladung steht jetzt nur noch für die **Haftladung** (Knopf und Mauszeiger), s_stiefel nur noch für **Ziehen**.
+
+Noch mehrfach belegt (Prüfung aller `sym:`-Zuordnungen in ui.js; gleiche Sache an mehreren Stellen wie Knopf + Zeiger + Zustand gilt als eine Bedeutung):
+- **s_garbe**: MG-Sperrfeuer, Dauerfeuer bereit, Reaktionsfeuer – darf bleiben (Enrico).
+- **s_gas**: „Im Gas“, „Vergiftet“ und „Gasgranate“ (Artillerie) – drei Bedeutungen.
+- **s_fernglas**: Zustand „Beobachter“ und Knopf „Ballon aufsteigen“ – zwei Bedeutungen.
 
 ## Stand
 

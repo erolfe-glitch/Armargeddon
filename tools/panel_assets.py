@@ -60,6 +60,7 @@ SYMBOLS = {
     'symbol_schaufel': ['schaufel'],
     # Fähigkeiten (bogen8a, 2026-11-22): kein Symbol mit zwei Bedeutungen
     'bogen8b_befehle': ['sammeln', 'sturmbefehl', 'feuerfrei', 'halten', 'generalangriff', 'markieren', 'feuerschlag', 'feuerbereit'],   # Befehle (2026-11-22)
+    'bogenC_symbole': ['sprenglanze', 'rammen', 'gegen_panzer', 'einholen'],   # Bogen C (2026-11-22): doppelte Symbole aufgelöst (nur die gewählten Fassungen)
     'bogen8a_faehigkeiten': ['durchbruch', 'hinrichtung', 'sturmrollen', 'sturmlauf', 'sprung', 'gebruell', 'kanone_zweit', 'panzergranate', 'breitseite'],
 }
 # Kartenmarken (ui-quelle/kartenmarken.png): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
