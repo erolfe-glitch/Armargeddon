@@ -36,8 +36,9 @@ for (let g = 0; g < N; g++) {
   const seed = SEED + g * 7919, rnd = rng(seed * 31 + 7);
   let army;
   if (modus === 'gemischt') army = GEMISCHT[KARTE];
+  if (process.env.ARMEE_A || process.env.ARMEE_D) { army = army ? { ...army } : { A: E.MAP.army.A, D: E.MAP.army.D }; if (process.env.ARMEE_A) army.A = JSON.parse(process.env.ARMEE_A); if (process.env.ARMEE_D) army.D = JSON.parse(process.env.ARMEE_D); }   // Abgleich: eigene Listen (JSON)
   else if (modus === 'zufall') army = { A: zufallsArmee('A', rnd), D: zufallsArmee('D', rnd) };
-  const G = E.newGame({ seed, map: KARTE, army, mischen: modus !== 'basis', free: false });
+  const G = E.newGame({ seed, map: KARTE, army, mischen: modus !== 'basis' || !!process.env.MISCHEN, free: !!process.env.FREI });
   if (army && (!G.armee || G.armee.A !== army.A || G.armee.D !== army.D)) { fehler++; }
   if (process.env.WUNSCH_MISCH) G._wish = { A: Math.floor(rnd() * 14), D: Math.floor(rnd() * 15) };   // anderer Einstieg in die Wunschliste
   E.startTurn(G);

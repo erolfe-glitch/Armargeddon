@@ -962,6 +962,8 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 #armyNeu .an-wahl button:hover { border-color: var(--s-brass); }
 #armyNeu .an-wahl button b { font: 400 18px var(--s-num); color: #fff2cc; } #armyNeu .an-wahl button span:last-child { font: 400 15px var(--s-num); color: #e6c97a; }
 #armyNeu #armyMechRow .tbtn { width: 100%; min-height: 44px; }
+#armyNeu #armyFeind { display: grid; gap: 6px; margin: 6px 0; } #armyNeu #armyFeind[hidden] { display: none; }
+#armyNeu #armyFeind .tbtn { width: 100%; min-height: 44px; } #armyNeu #armyFeind .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; }   /* F94: Wahl KI / selbst für die Feind-Armee */
 #armyDet { width: clamp(260px, 22vw, 380px); box-sizing: border-box; }
 :is(#shopNeu, #armyNeu) .sn-k .nm { hyphens: manual; -webkit-hyphens: manual; }
 #armyNeu .sn-titel b span { font: inherit; color: inherit; text-shadow: inherit; }
@@ -1265,6 +1267,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
           <h3>Gewählte Armee</h3>
           <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em></div>
           <div class="an-wahl" id="armyWahl"></div>
+          <div id="armyFeind" hidden><button class="tbtn" data-f="ki">KI stellt selbst zusammen</button><button class="tbtn" data-f="ich">Ich stelle zusammen</button></div>
           <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
         </aside>
       </div>

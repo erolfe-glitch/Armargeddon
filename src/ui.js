@@ -3950,6 +3950,11 @@ function showStart(first) {
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
 const customArmy = { A: null, D: null };
+// F94 (Enrico 2026-11-22 13:35): Feind-Armee auch gegen die KI selbst zusammenstellen. feindSelbst[sd] = true: die KI spielt mit customArmy[sd] (gleiche Regeln), sonst stellt sie selbst zusammen (Kartenarmee)
+const feindSelbst = { A: false, D: false };
+const feindSeite = () => curMode() === 'hot' ? null : curMode() === 'A' ? 'D' : 'A';
+function feindWahlZeigen() { const sd = armySide, f = sd === feindSeite(), w = $('armyFeind'); if (!w) return; w.hidden = !f; if (!f) return;
+  w.querySelectorAll('button').forEach(b => b.classList.toggle('an', (b.dataset.f === 'ich') === !!feindSelbst[sd])); }
 const mechsOn = () => $('optMechs').checked;
 function mechChanged() { if (!mechsOn()) for (const sd of ['A', 'D']) if (customArmy[sd]) { for (const t in customArmy[sd]) if (E.isMech(t)) delete customArmy[sd][t]; if (!E.armyOk(sd, customArmy[sd], false)) customArmy[sd] = null; } armyInfo(); }
 const roster = sd => E.ROSTER[sd].filter(t => mechsOn() || !E.isMech(t));
@@ -3962,8 +3967,8 @@ const isGeneral = t => TYPES[t] && TYPES[t].cmd === 2;
 function armyFixGeneral(sd) { for (const t in armyDraft) if (isGeneral(t)) delete armyDraft[t]; const g = roster(sd).find(isGeneral); if (g) armyDraft[g] = 1; }
 const curMode = () => (document.querySelector('input[name=opp]:checked') || {}).value === 'hot' ? 'hot' : curSide() === 'D' ? 'D' : 'A';
 function armyInfo() {
-  const sides = curMode() === 'hot' ? ['A', 'D'] : [curMode()];
-  $('armyInfo').textContent = sides.map(sd => SIDES[sd].short + ': ' + (customArmy[sd] ? `eigene Armee (${E.armyCost(customArmy[sd])}/${E.ARMY_BUDGET[sd]} Punkte, ${E.armyCount(customArmy[sd])} Einheiten)` : 'Standardarmee')).join(' · ');
+  const sides = curMode() === 'hot' ? ['A', 'D'] : [curMode(), feindSeite()];
+  $('armyInfo').textContent = sides.map(sd => SIDES[sd].short + ': ' + (sd === feindSeite() && !feindSelbst[sd] ? 'KI stellt selbst zusammen' : customArmy[sd] ? `${sd === feindSeite() ? 'selbst gewählte Feind-Armee' : 'eigene Armee'} (${E.armyCost(customArmy[sd])}/${E.ARMY_BUDGET[sd]} Punkte, ${E.armyCount(customArmy[sd])} Einheiten)` : 'Standardarmee')).join(' · ');
 }
 // Armee-Auswahl (2026-11-20) im selben Aufbau wie das Nachschub-Menü: Kategorien als Reiter (SHOP_KAT, gleiche Reihenfolge), Karten im Querformat,
 // Pergament-Details beim Überfahren bzw. ersten Antippen; Klick bzw. zweites Antippen nimmt eine Einheit dazu, −/+ auf jeder Karte.
@@ -3982,7 +3987,7 @@ function armyWarum(t) {   // warum diese Einheit nicht noch einmal dazukommen ka
 function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
   applySkin(curSkin());
-  $('armyName').textContent = SIDES[sd].short; $('armySwap').hidden = curMode() !== 'hot'; $('armyMechRow').hidden = mechsOn();
+  $('armyName').textContent = SIDES[sd].short; $('armySwap').hidden = false; $('armySwap').textContent = curMode() === 'hot' ? 'Andere Seite' : sd === feindSeite() ? 'Eigene Armee' : 'Feind-Armee'; $('armyMechRow').hidden = mechsOn(); feindWahlZeigen();
   for (const t in armyDraft) if (E.isMech(t) && !mechsOn()) delete armyDraft[t];
   armyFixGeneral(sd);
   $('army').hidden = false; armyListe();
@@ -3994,7 +3999,7 @@ function armyListe() {   // Reiter und Karten der gewählten Kategorie neu aufba
   requestAnimationFrame(() => $('armyList').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, sd, c.dataset.t)));
   hideArmyDet();
   const det = $('armyDet'), sheet = $('army').querySelector('.sheet'), zeig = el => snZeig(det, el, sheet, armyWarum(el.dataset.t), document.querySelector('#armyNeu .an-seite'));
-  const dazu = (el, d) => { const t = el.dataset.t; if (isGeneral(t)) return; if (d > 0 && armyWarum(t)) { zeig(el); return; }
+  const dazu = (el, d) => { const t = el.dataset.t; if (isGeneral(t)) return; if (sd === feindSeite() && !feindSelbst[sd]) { feindSelbst[sd] = true; feindWahlZeigen(); } if (d > 0 && armyWarum(t)) { zeig(el); return; }
     armyDraft[t] = Math.max(0, Math.min(E.ARMY_CAP, (armyDraft[t] || 0) + d)); armyRefresh(); if (det.classList.contains('zeigen')) zeig(el); };
   $('armyList').querySelectorAll('.sn-k').forEach(el => {
     el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') zeig(el); });
@@ -4021,10 +4026,11 @@ function armyRefresh() {
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
     : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
-  $('armyMsg').textContent = msg; $('armyOk').disabled = !E.armyOk(sd, armyDraft, mechsOn());
+  $('armyMsg').textContent = msg; $('armyOk').disabled = !((sd === feindSeite() && !feindSelbst[sd]) || E.armyOk(sd, armyDraft, mechsOn()));
   $('armyFussText').textContent = (lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick nimmt eine dazu' : 'Antippen zeigt alle Werte, nochmal antippen nimmt eine dazu') + ', −/+ ändert die Anzahl. Ein General ist immer dabei.';
 }
-function armyKeep() { if (!E.armyOk(armySide, armyDraft, mechsOn())) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
+function armyKeep() { if (armySide === feindSeite() && !feindSelbst[armySide]) { customArmy[armySide] = null; return true; }   // F94: KI stellt selbst zusammen
+  if (!E.armyOk(armySide, armyDraft, mechsOn())) return false; const a = {}; for (const t in armyDraft) if (armyDraft[t] > 0) a[t] = armyDraft[t]; customArmy[armySide] = a; return true; }
 
 // ---------- Kartenwahl ----------
 const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a',
@@ -4063,7 +4069,7 @@ function startGame() {
   applySkin(curSkin());
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
-  G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') ? customArmy.A : null, D: human('D') ? customArmy.D : null } });
+  G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') || feindSelbst.A ? customArmy.A : null, D: human('D') || feindSelbst.D ? customArmy.D : null } });   // F94: Feind-Armee selbst gewählt
   if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(kiArt === 'ruhig' ? [] : ['A', 'D'].filter(sd => !human(sd))); siegGemeldet = { A: 0, D: 0 };   // F43: Einstellung KI ruhig / angriffslustig, die KI greift gegen Menschen aktiver an (ai.js AKTIV); H1 (2026-11-22): Siegwarnung je Schlacht neu
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
@@ -4169,6 +4175,7 @@ $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext
   b.addEventListener('contextmenu', e => e.preventDefault()); }
 $('startBtn').onclick = startGame;
 $('btnArmy').onclick = () => openArmy(curMode() === 'D' ? 'D' : 'A');
+document.querySelectorAll('#armyFeind button').forEach(b => b.onclick = () => { feindSelbst[armySide] = b.dataset.f === 'ich'; feindWahlZeigen(); armyRefresh(); });   // F94
 $('armyStd').onclick = () => { armyDraft = Object.assign({}, E.defaultArmy(armySide)); armyRefresh(); };
 $('armyClear').onclick = () => { armyDraft = {}; armyFixGeneral(armySide); armyRefresh(); };
 $('armyOk').onclick = () => { if (armyKeep()) { $('army').hidden = true; hideArmyDet(); armyInfo(); } };

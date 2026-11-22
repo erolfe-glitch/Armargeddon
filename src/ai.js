@@ -44,6 +44,7 @@ if (typeof process !== 'undefined' && process.env) for (const k in process.env) 
 const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
+const W_CAV_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_CAV_ZIEL) || 3);   // F94: Anreiz für Reiter-Ziele
 const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit;   // Prüfliste 2.25: Pioniere/Mineure haben keine Nahkampf-Panzerwaffe mehr (F80)
 // Erwarteter Nahkampfschaden gegen ein Fahrzeug auf (c, r) in der nächsten gegnerischen Runde: Sturmtruppen, Reiter, Kampfanzüge, Pioniere,
 // die ein Nachbarfeld erreichen können. Eigene Trupps auf den Nachbarfeldern versperren Anmarschwege (je Trupp −30 %).
@@ -346,7 +347,8 @@ function bestAttackFrom(G, u, c, r, moved, run, kosten) {
     if (d.side === u.side || !E.alive(d)) continue;
     const dd = E.dist(c, r, d.c, d.r);
     if (dd === 1 && T.atk >= 3 && !(u.supp > 0) && nahOk) {
-      const v = attackValue(G, u, d, 'melee', { c, r, run });
+      let v = attackValue(G, u, d, 'melee', { c, r, run });
+      if (T.cls === 'cav' && !ENVX0().NOCAVZIEL && E.cls(d) !== 'walker' && (E.medaillen(d.type).rolle === 'schwach' || d.status === 'rout' || d.supp > 0)) v += W_CAV_ZIEL * (run >= P.CHARGE_MIN ? 1.5 : 1);   // F94 (2026-11-22): Reiter gegen Geschütze, MG, Beobachter, Sanitäter, Fliehende und Niedergehaltene
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
     if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.nahSchreiter && moved && ((u.bpUsed || 0) + (kosten || 0)) > E.bpMax(u) / 2) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
@@ -425,11 +427,13 @@ function planUnit(G, u) {
   const k = E.cls(u);
   if (k === 'art') {
     const near = nearestEnemyDist(G, u.side, u.c, u.r);
-    const nach = typeof process !== 'undefined' && process.env && process.env.ART_NACH, rw = TYPES[u.type].rng || 6;   // F94-Versuch (2026-11-22): beide Seiten ziehen Geschütze nach, wenn die Front außer Reichweite ist
-    if (u.limbered) { if (nach ? near <= rw : (near <= 6 || u.side === 'D')) return { limber: true }; }
+    // F94 (Enrico 2026-11-22 13:35): Geschütze beider Seiten sanft nachziehen – erst wenn zwei eigene Runden lang kein Ziel in Reichweite war; abprotzen, sobald der Gegner in Reichweite ist. ART_ALT=1: alte Regel (Sim-Vergleich)
+    const alt = typeof process !== 'undefined' && process.env && process.env.ART_ALT, rw = TYPES[u.type].rng || 6;
+    if (u.limbered) { if (alt ? (near <= 6 || u.side === 'D') : near <= rw) return { limber: true }; }
     else {
-      const s = planArt(G, u); if (s) return { shell: s };
-      if (TYPES[u.type].limber && (nach ? G.turn >= 3 && near > rw + 1 : u.side === 'A' && G.turn >= 4 && near > 8) && E.canLimber(G, u)) return { limber: true };
+      const s = planArt(G, u); if (s) { u.ohneZiel = 0; return { shell: s }; }
+      if (u._ozT !== G.turn) { u._ozT = G.turn; u.ohneZiel = (u.ohneZiel || 0) + 1; }   // eigene Runden ohne Ziel
+      if (TYPES[u.type].limber && (alt ? u.side === 'A' && G.turn >= 4 && near > 8 : u.ohneZiel >= 2 && near > rw) && E.canLimber(G, u)) return { limber: true };
       if (TYPES[u.type].mv < 2 || u.ap < 1) return { v: 0 };
     }
   }
@@ -479,9 +483,10 @@ function kaufNachLage(G, side) {
   return null;
 }
 function einmalGesperrt(G, side, type) { const T = TYPES[type], hat = f => G.units.some(u => u.side === side && f(TYPES[u.type])); return (T.held && hat(x => x.held)) || (T.stufe3 && hat(x => x.stufe3)) || (T.cmd === 2 && hat(x => x.cmd === 2)); }
+const ENVX0 = () => typeof process !== 'undefined' && process.env || {};
 function buy(G) {
   const side = G.side, ev = [];
-  G._wish = G._wish || { A: 0, D: 0 }; G._kauf = G._kauf || { A: {}, D: {} };
+  G._wish = G._wish || (ENVX0().KAUF_FEST ? { A: 0, D: 0 } : { A: Math.floor(G.rng() * 16), D: Math.floor(G.rng() * 16) });   /* F94: gemischter Einstieg in die Wunschliste je Schlacht (KAUF_FEST=1: alt) */ G._kauf = G._kauf || { A: {}, D: {} };
   const ENVX = typeof process !== 'undefined' && process.env || {};
   for (let guard = 0; guard < 6; guard++) {
     const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : W[side];
