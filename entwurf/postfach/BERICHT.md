@@ -1,3 +1,192 @@
+## 2026-11-22 Nachmittag – Paket I fertig: F98, Schritt 11, F92, F94, F95, F103 (`6669289` … Abschluss)
+
+Alles gepusht, `index.html` jetzt mit eingecheckt (Ende von Paket I). Tests:
+- Partietest fehlerfrei (F88, F97, F100, Blickrichtung aller 54 Typen).
+- test_regeln und test_kommentare in Ordnung.
+- `sim.js 200` unverändert bei 50 % zu 51 %, 15,1 Runden. Alle Versuchsschalter stehen standardmäßig aus.
+
+### F98 Blut bei Beschuss (eingebaut)
+- Kleine Spritzer bei Gewehr, MG, Drehlauf, Schrot und Pistole an Fußtruppen, etwa bei jedem zweiten Treffer, in Schussrichtung.
+- Kampfanzüge bluten nur bei wirksamen Treffern; Panzer, Schreiter und Fahrzeuge gar nicht.
+- Bildwirkung „leicht“ zeigt weniger, „aus“ keine.
+
+### Schritt 11 Einheiten-Statistik → `entwurf/postfach/einheiten_statistik.csv`
+- **Umfang:** je 200 Schlachten KI gegen KI auf Grauwall und Sankt Ruß. Werkzeug: `node tools/einheiten_statistik.js [N]`.
+- **Spalten:**
+  - Wie bestellt: Start, Nachschub und gekauft (getrennt), Aktionen, Schaden (×10 wie in der Anzeige), Schaden je 100 Punkte, überlebt %, Einsatz der KI (die drei häufigsten Handlungen).
+  - Dazu für F103: Rolle, Stark gegen, Schwach gegen, Kontert man mit.
+- **Zählweise:** Der Schaden zählt für den, der gerade schießt oder schlägt (auch Gegenschlag, Sperrfeuer und Feuerbereitschaft).
+- **Auffällig für die Balance-Tabelle (nur gemessen, nichts geändert):**
+  - **Lanzenreiter** (beide Karten) und **Sprenglanzen-Reiter** ziehen zu 98 % nur. Sie greifen fast nie an (Schaden 4 bzw. 5 je Schlacht). Die KI nutzt Reiter praktisch nicht.
+  - **Landkoloss** ist mit Abstand der stärkste Schadensbringer: 182 bzw. 168 je 100 Punkte, überlebt zu 94–99 %. **Sturmpanzer** auf Sankt Ruß: 108.
+  - **Minenwerfer** auf Sankt Ruß: 163 je 100 Punkte (billig und wirksam).
+  - Kaum gekauft und kaum genutzt: Feldkanone, Löwenoger, Schildwall, Mineure, Versorgungstrupps, Schwere Grabenwacht, Flammentrupp.
+  - Auf Grauwall gekaufte Einheiten handeln oft nicht mehr, weil die Schlacht vorher endet: Überleben 100 %, Aktionen nahe 0.
+- **Kampfmaschinen:** Ein Lauf mit `MECHS=1` gab dieselben Zahlen. Die KI kommt in ihrer Wunschliste nie bis zu den Maschinen. Für Maschinenwerte müssten sie in die Startarmee.
+
+### Schritt 12 F92 Schärfe (nur untersucht, Enrico entscheidet)
+- **Bildschirmskalierung ist nicht die Ursache.** Die Zeichenfläche rechnet schon mit `devicePixelRatio` (bis 2,5): bei 125/150 % entsprechend mehr Pixel.
+- **Ursache des Grisselns:** Boden und Figuren werden mit der Standard-Glättung „low“ in einem Schritt verkleinert. Der Boden wird zudem zeilenweise aus dem Weltbild geschnitten. Beim Herauszoomen fallen dadurch Pixel weg, das gibt Treppen und Flimmern.
+- **Versuchsschalter (Konsole `__dbg.schaerfe(n)`, im Spiel aus):**
+  - **Stufe 1:** hochwertige Glättung (`imageSmoothingQuality 'high'`) für Boden und Figuren. Chrome verkleinert damit selbst in Zwischenstufen, also genau die gewünschten „Mipmaps“, ohne eigene Bildstufen.
+  - **Stufe 2:** zusätzlich eigene Boden-Mipmaps (halb und viertel), je Bildzeile passend gewählt.
+- **Messung** (1920×1080, `tools/schaerfe_bilder.mjs`):
+
+| Zoom / DPR | Stufe 0 heute | Stufe 1 | Stufe 2 |
+|---|---|---|---|
+| ganz heraus, DPR 1: Bildzeit | 17,5 ms | 21,6 ms | 33,8 ms |
+| ganz heraus, DPR 1,5: Bildzeit | 19,3 ms | 23,5 ms | 23,9 ms |
+| mittel, DPR 1: Bildzeit / Flimmern | 11,2 ms / 8,96 | 16,1 ms / 6,83 (−24 %) | 16,4 ms / 6,61 |
+| mittel, DPR 1,5: Bildzeit / Flimmern | 14,6 ms / 9,39 | 18,5 ms / 7,96 (−15 %) | 18,2 ms / 7,97 |
+
+  - „Flimmern“ = mittlere Pixeländerung bei 1 Pixel Kameraschwenk.
+  - Beim Zoom „ganz heraus“ ist der Flimmerwert nicht verwertbar, weil die Kamera dort am Rand festsitzt.
+- **Bilder:** `entwurf/probe/schaerfe/vergleich_ganz.jpg` und `vergleich_mittel.jpg` (von oben: Stufe 0, 1, 2). Dazu die ganzen Bildschirme `dpr*_*_stufe*.jpg`.
+  - Stufe 0 zeigt sichtbare Treppen an Grabenkanten und Draht und grisselige Figuren.
+  - Stufe 1 ist ruhig und trotzdem scharf. Stufe 2 bringt kaum mehr.
+- **Vorschlag:**
+  - **Stufe 1 einschalten:** eine Zeile, etwa +4 ms je Bild, weiter deutlich unter 25 ms.
+  - Stufe 2 lohnt den Aufwand nicht.
+  - Kein Nachschärfen der Bilder nötig; Konturen und Sockel bleiben unverändert.
+
+### F94 Gefecht statt Kampagnenmission (nur untersucht, Enrico entscheidet)
+**Befund:**
+- **Geschütze:** Die KI protzt Geschütze nur auf der Konkordat-Seite auf, und das erst ab Runde 4, wenn der Gegner über 8 Felder weg ist. Aschenwacht-Geschütze werden sofort wieder abgeprotzt und bewegen sich nie (in 1–2 % der Schlachten).
+- **Startarmeen:**
+  - Die Aschenwacht beginnt auf Grauwall mit 8 Grenadieren und 5 Sensenwerken (6 Typen), das Konkordat mit 8 Kohorten (7 Typen).
+  - Nachschub kommt aus einer festen Wunschliste. Die ersten Käufe sind deshalb fast immer gleich (Koloss, Sturmbrecher, Grenadiere, Kohorten je genau 1,0 je Schlacht). Das wirkt wie eine geskriptete Verstärkung.
+
+**Gemessen** (je 4 × 200 Schlachten, Startwerte 1–4, `tools/f94_sim.js`):
+
+| Möglichkeit | Grauwall Sieg Konkordat | Sankt Ruß Sieg Konkordat | Typen zu Beginn A/D | Geschütze bewegt (Aschenwacht) |
+|---|---|---|---|---|
+| heute | 52,9 % | 52,1 % | 7 / 6 (SR 8 / 8) | 2 % / 1 % |
+| **A** KI zieht Geschütze nach (beide Seiten) | 37,6 % | 61,6 % | wie heute | 100 % / 44 % |
+| **B** feste gemischte Startarmeen (gleiches Budget, höchstens 5 vom selben Typ) | **53,6 %** | 80,8 % | 14 / 13 | wie heute |
+| B + Geschütze nachziehen | 50,5 % | 83,4 % | 14 / 13 | 91 % / 9 % |
+| **C** Zufallsarmee je Schlacht mit Mindestvielfalt + gemischter Nachschub | 28,6 % | 77,8 % | 14 / 13 | – |
+| C + Geschütze nachziehen | 28,5 % | 78,6 % | 14 / 14 | 37 % / 4 % |
+
+- **A** verschiebt die Balance stark: Auf Grauwall nützen der Aschenwacht nachgezogene Geschütze, auf Sankt Ruß schaden sie ihr. Das ginge nur mit einer sanfteren Regel (z. B. erst nachziehen, wenn zwei Runden kein Ziel in Reichweite war) und einem Nachgleich.
+- **B** ist auf Grauwall sofort ausgeglichen. Auf Sankt Ruß fehlt der angreifenden Aschenwacht die Masse. Ihre gemischte Liste braucht dort einen Abgleich (mehr Grenadiere statt Reitern), etwa eine Messrunde.
+- **C** ist zu zufällig: Die Karten brauchen bestimmte Truppen (Grauwall: Konkordat-Infanterie; Sankt Ruß: Angriffsmasse der Aschenwacht). Ohne Kartenvorgaben (Mindestanteile) kippt die Quote um 20–30 Punkte.
+
+**Vorschlag:**
+- **B** als neue Kartenarmeen (beide Seiten gemischt).
+- Nachschub nach Lage mit gemischtem Einstieg in die Wunschliste (`WUNSCH_MISCH`).
+- Geschütze sanft nachziehen.
+- Zusätzlich **„Feind-Armee selbst zusammenstellen“**:
+  - Die Armee-Auswahl kann das schon für Zwei-Spieler (Knopf „Seite wechseln“). Für das Spiel gegen die KI braucht es:
+    - den Knopf auch dort,
+    - eine Wahl „KI stellt selbst zusammen / ich stelle zusammen“,
+    - die Übergabe an `newGame`.
+  - Die KI stellt die Armee mit `autoAufstellen` auf und kauft weiter selbst.
+  - Gleiche Regeln (Budget, ein General, ein Held, ein Stufe-3-Schreiter).
+  - **Aufwand etwa 2–3 Stunden** samt Test.
+
+### F95 Tonmischung (gemessen, Proben gebaut, Enrico wählt)
+- **Messung:** alle 880 Töne (`tools/ton_pegel.mjs`): Spitze, lautestes 400-ms-Fenster, Lautstärke im Code. Wirksamer Pegel = Datei + Code-Lautstärke (Regler 100):
+
+| Gruppe | heute wirksam | Vorschlag Code-Lautstärke | danach |
+|---|---|---|---|
+| Granat-Einschlag | −14,9 dB | bleibt 0,5 | −14,9 |
+| Kanone | −18,6 | 0,6 → 0,8 | −16,1 |
+| MG Aschenwacht | −21,1 | 0,55 → 0,85 | −17,3 |
+| MG Konkordat | −21,7 | 0,55 → 0,85 | −17,9 |
+| Gewehr Konkordat (je Schuss) | −22,4 | 0,42 → 0,7 | −18,0 |
+| Gewehr Aschenwacht (je Schuss) | −24,1 | 0,42 → 0,8 | −18,5 |
+| Panzer fährt | −19,6 (unter einer Stimme −27,5) | 0,5 → 0,8 | −15,5 |
+| Schritte Fußtruppen | −23,5 | 0,5 → 0,75 | −20,0 |
+| Kürassier-Schritte | −24,3 | 0,63 → 0,9 | −21,2 |
+| Schreiter-Schritte | −25,5 | 0,45 → 0,7 | −21,7 |
+| Rufe (Schmerz, Schreie) | −20,1 | 0,4 → 0,3 | −22,6 |
+| Auswahl-Sprüche | −24,6 | bleibt | −24,6 |
+| Kulisse (Grundrauschen) | −25,0 | 0,22 → 0,13 | −29,6 |
+| Schlachtmusik | −44,8 (RMS) | bleibt, im Gefecht −6 dB | −50,8 im Gefecht |
+
+- **Warum Effekte zu leise wirken:** Waffen, Stimmen und Kulisse liegen heute alle bei −20 bis −25 dB, ohne Abstand.
+  - Das Aschenwacht-Gewehr ist 1,7 dB leiser als das Konkordat-Gewehr.
+  - Das Panzer-Rollen sinkt unter jeder Stimme um 8 dB.
+  - Die Musik ist schon sehr leise. Lauter wirkt dagegen die Kulisse (Grundrauschen 0,22).
+- **Grenze:** Das Spiel spielt Töne als `<audio>` ab, dessen Lautstärke höchstens 1 ist. Die Vorschläge bleiben darunter.
+- **Begrenzer und getrennte Regler** gehen nur über WebAudio:
+  - `playSound` auf Tonpuffer umstellen, drei Wege Musik / Effekte / Stimmen, Begrenzer auf der Summe.
+  - Neuer Regler „Stimmen“; heute gibt es nur Musik und Effekte.
+  - Aufwand etwa ein halber Tag.
+- **Musik-Ducking** gibt es heute nur unter Stimmen. Vorschlag: auch bei Beschuss −6 dB für 2,5 s.
+- **Gewehr abgehackt – Ursache gefunden:** Jeder Schuss einer Salve wird nach 170–230 ms abgeschnitten (`dur` in ui.js), nur der letzte klingt aus.
+- **Hörproben in `tonprobe.html`** (oberster Abschnitt „F95 Hörproben“, auch online), je Seite:
+  - **heute**
+  - **Variante A:** gleicher Ablauf, jeder Schuss klingt voll aus, 0,6 s Feld-Nachhall mit kurzem Scheppern.
+  - **Variante B „Hagel“:** 4 Männer, je Mann 1, 2 oder 4 Schüsse, zufällig versetzt, 0,85 s Nachhall und Echo, wuchtiger, etwa gleiche Dauer.
+  - Dazu **„Gefecht – Mischung heute“** gegen **„Gefecht – Zielmischung“** (Werte aus der Tabelle, Musik im Gefecht −6 dB) zum direkten Vergleich.
+  - A und B laufen schon über einen leichten Begrenzer.
+
+### F103 Klare Rollen (eingebaut, ohne Werteänderung)
+- **Herleitung:** `src/rollen.js` leitet für alle 54 Einheiten Rolle, Stark gegen, Schwach gegen und Kontert man mit aus den Werten ab: Faktortabelle (`E.medaillen`), Klasse, Fähigkeit, `at`, Panzerklasse, Nahkampf-Rolle. Die Begriffe sind überall gleich.
+- **Wo es steht:**
+  - Nachschub- und Armee-Karten (Rolle unter dem Namen).
+  - Details beim Überfahren (ganzer Block).
+  - Einheitenkarte: kurz = Rolle in der Unterzeile, Maus-Tooltip am Namen; ausführlich = ganzer Block.
+  - Info-Fenster, auch für Gegner.
+- **Bilder:** `entwurf/probe/rollen/` (kaufmenue, karte_kurz, karte_ausfuehrlich, info, je `_vorher`/`_nachher`).
+- **Tabelle aller Einheiten:** steht in `einheiten_statistik.csv`, Spalten 14–17. Kurzfassung:
+
+| Einheit | Rolle | Stark gegen | Schwach gegen | Kontert man mit |
+|---|---|---|---|---|
+| Schützenkohorte / Aschengrenadiere | Linieninfanterie | Fußtruppen | Gepanzerte | MG-Trupps, Artillerie |
+| Mahlwerk / Sensenwerk | Feuerunterstützung (MG) | Fußtruppen, Reiter | Gepanzerte, Nahkampf | Grabenstürmer, Reiter |
+| Grabenräumer / Sturmbrecher / Eingreiftrupp | Grabenstürmer | Gepanzerte, Nahkampf, Geschütze | Beschuss auf Abstand | MG-Trupps, Feuerbereitschaft |
+| Löwenoger | Grabenstürmer | Fußtruppen, Nahkampf, Geschütze | Panzerbrechende Waffen | Panzerjäger, Schwerer Nahkampf |
+| Graben-Pioniere | Pioniere | Gepanzerte, Stellungen und Gebäude | – | MG-Trupps, Artillerie |
+| Panzerbüchsen-Trupp | Panzerjäger | Gepanzerte | – | MG-Trupps, Artillerie |
+| Grabenmörser / Minenwerfer | Steilfeuer | Stellungen und Gebäude | Nahkampf, Reiter | Grabenstürmer, Reiter |
+| Feldkanone / Donnerrohr / Grabengeschütz | Fernfeuer | Stellungen und Gebäude | Nahkampf, Reiter | Grabenstürmer, Reiter |
+| Landkoloss / Sturmpanzer | Durchbruch (Panzer) | Stellungen und Gebäude | Panzerbrechende Waffen | Panzerjäger, Pioniere mit Ladung |
+| Kreuzschreiter / Eisenknecht | Durchbruch (Stufe 3) | Nahkampf, Stellungen (Kreuz auch Gepanzerte) | Panzerbrechende Waffen | Panzerjäger, Pioniere mit Ladung |
+| Lanzen- / Sprenglanzen-Reiter | Reiter (schneller Stoß) | Geschütze | Beschuss auf Abstand | MG-Trupps, Feuerbereitschaft |
+| Scharfschütze / Pirschjäger | Scharfschützen | Reiter | Gepanzerte, Nahkampf | Grabenstürmer, Reiter |
+| Stahlgänger / Panzerknechte / Eiserne Hünen | Schwere Infanterie | Nahkampf (Hünen auch Reiter) | Gepanzerte, Panzerbrechende Waffen | Panzerjäger, Schwerer Nahkampf |
+| Rote Faust / Eiserner Kürassier | Held | Nahkampf, Geschütze | Panzerbrechende Waffen (+ Gepanzerte bzw. Beschuss) | Panzerjäger, Schwerer Nahkampf |
+| Hauptmann / General | Führung | – | Gepanzerte | MG-Trupps, Artillerie |
+| Feldscher / Aschenpfleger · Versorgungstrupps | Sanität · Versorgung | – | Nahkampf, Beschuss auf Abstand | Grabenstürmer, Reiter |
+| Fernsprech-, Signaltrupp, Ballon | Aufklärung und Feuerleitung | – | Nahkampf (+ Beschuss) | Grabenstürmer, Reiter |
+| Weitere | Meldegänger: Unterstützung · Rauchwerfer: Nebel · Flammen-/Brandwerfer: Flammen · Schildwall/Schwere Grabenwacht: Schutz · Bannerträger: Moral · Gasschutz: Gasschutz · Mineure, Drahtpioniere: Pioniere | | | |
+
+- **Rollen schärfen (Vorschläge, nichts an Werten geändert):**
+  1. **Sturmbrecher ↔ Eingreiftrupp** (Aschenwacht, beide 100, beide Grabenstürmer): echte Dublette.
+     - Sturmbrecher = Angriff (Panzergranate gegen Kolosse, Draht schneiden).
+     - Eingreiftrupp = **Gegenstoß**: stark gegen Gegner auf eigenen Zielfeldern oder in eigenen Gräben, z. B. ×1,25 dort, schwächer im Vorgehen.
+  2. **Sturmbrecher (100) ↔ Grabenräumer (50)** (Seitenspiegel, Enricos Beispiel): gleiche Rolle, doppelter Preis.
+     - Grabenräumer = billiger Grabenkampf ohne Panzerabwehr.
+     - Sturmbrecher = „Sturm und Panzerabwehr“, die Panzergranate als Kern in den Text.
+     - Oder Preis/Werte annähern.
+  3. **Kohorte ↔ Grenadiere** (Enricos Beispiel, 40 zu 30): beide Linieninfanterie.
+     - Kohorte = **Schützenlinie** (Schuss 2 Felder, Feuerbereitschaft, hält Zielfelder).
+     - Grenadiere = **Stoßinfanterie** (Handgranaten vor dem Nahkampf, Nahkampf stärker, Schuss schwächer).
+     - Die Rolle hieße dann je Seite anders.
+  4. **Feldkanone (40) ↔ Donnerrohr (50)** (Konkordat, beide Fernfeuer).
+     - Feldkanone = direktes Feuer, flache Bahn, gegen Gepanzerte und Gebäude, schnell aufgeprotzt.
+     - Donnerrohr = Steil- und Sperrfeuer.
+  5. **Fernsprechtrupp (20) ↔ Ballonbeobachter (25)** (Konkordat): Rollennamen trennen.
+     - Fernsprech = „Feuerleitung“ (Feuerschlag).
+     - Ballon = „Aufklärung“ (Sicht, Markieren).
+  6. **Sägeschreiter ↔ Klauenschreiter** (Aschenwacht, je 105, nur mit Kampfmaschinen): beide Nahkampf-Maschinen.
+     - Säge = gegen Gepanzerte.
+     - Klaue = gegen Fußtruppen (packen/schleudern).
+  7. **Panzerknechte (65) ↔ Eiserne Hünen (90)**: beide Schwere Infanterie.
+     - Hünen = MG-Feuer (Dauerfeuer); so auch die Rolle nennen: „Schweres Feuer“.
+     - Panzerknechte = Nahkampf und Draht.
+
+### Noch offen / für Enrico
+- Entscheidungen:
+  - **F92:** Stufe 1 einschalten?
+  - **F94:** B + Feind-Armee selbst wählen + sanftes Nachziehen?
+  - **F95:** Zielmischung übernehmen? Gewehr A oder B? WebAudio-Umbau mit Begrenzer und Stimmen-Regler?
+  - **F103:** welche Schärfungen?
+- MERKEN: Roboter-Stimmen für Schreiter. Im Pult gibt es den Bereich „Stimmen“, dort kommt eine Gruppe „Schreiter“ dazu, sobald die Dateien da sind.
+- Aschenwacht-General Säbelhieb: wartet auf Enricos Bogen `aschenwacht_general_posen3.png`.
+
 ## 2026-11-22 Mittag – Aufträge 10:25 bis 12:18 erledigt (`66d3315` … `3065341`)
 
 Alles eingebaut, getestet und gepusht. Partietest fehlerfrei, test_regeln und test_kommentare in Ordnung.
