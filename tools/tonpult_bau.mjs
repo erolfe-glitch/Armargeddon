@@ -82,7 +82,7 @@ const NAME = { held_faustschlag2: 'Rote Faust: Servo lädt + Schlag (ElevenLabs)
 const AB = [['stimme', 'Rufe (Stimmen)'], ['anw', 'Anwählen'], ['zug', 'Bewegung'], ['schuss', 'Schuss'], ['ziel', 'Einschlag beim Ziel'], ['nah', 'Nahkampf'], ['treffer', 'Getroffen'], ['tod', 'Tod und Ausfall'], ['abil', 'Fähigkeiten und Handgriffe'], ['ankunft', 'Ankunft']];
 function slotsVon(t) {
   const T = TYPES[t], sd = T.side, k = T.cls, fig = T.fig, v = stimmVar(t), out = [];
-  const S = (ab, id, titel, platz, vol, o = {}) => out.push({ ab, id, titel, platz, vol: +vol.toFixed(3), v: STIMM_PL.has(platz) ? (o.v === undefined ? v : o.v) : null, gruppe: o.gruppe, mode: o.mode || 'eins', rate: o.rate || null, dur: o.dur || 0, hin: o.hin || '', kette: o.kette || null, sd: o.sd || sd });
+  const S = (ab, id, titel, platz, vol, o = {}) => out.push({ ab, id, titel, platz, vol: +vol.toFixed(3), v: STIMM_PL.has(platz) ? (o.v === undefined ? v : o.v) : null, gruppe: o.gruppe, mode: o.mode || 'eins', rate: o.rate || null, dur: o.dur || 0, hin: o.hin || '', kette: o.kette || null, sd: o.sd || sd, spiel: o.spiel || null });   // spiel: eigener Tonplatz im Spiel (Wahl getrennt), gespielt wird im Pult weiter „platz“ (Enrico 21:00)
   const fuss = ['inf', 'mg', 'storm', 'medic', 'flame'].includes(k), stimme = vol => vol * STIMM_VOL;
   // Anwählen (selectVoice)
   if (t === 'oger') S('anw', 'spruch', 'Brüllen beim Anklicken', 'oger_bruell', 0.4, { gruppe: 'fahrzeug', kette: 'anw', hin: 'Löwenoger: Brüllen statt Spruch.' }); else
@@ -101,7 +101,7 @@ function slotsVon(t) {
   else {
     if (fig === 'dog') S('zug', 'hund', 'Hund beim Ziehen', 'dog', 0.5, { gruppe: 'bewegung', kette: 'zug' });
     S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.5, { gruppe: 'bewegung', kette: 'zug' });
-    S('zug', 'marsch', 'Marsch und Sturmlauf', 'schritte', 0.6, { gruppe: 'bewegung', hin: 'Nur Schritte, keine Trommel mehr (F49).' });
+    S('zug', 'marsch', 'Marsch und Sturmlauf', 'schritte', 0.6, { gruppe: 'bewegung', spiel: 'marsch_schritte', hin: 'Nur Schritte, keine Trommel mehr (F49). Eigener Tonplatz, getrennt von „Ziehen“ (Enrico 21:00).' });
     S('zug', 'schlamm', 'Ziehen durch Schlamm', 'steps', 0.5, { gruppe: 'bewegung' });
     S('zug', 'wald', 'Ziehen durch Wald', 'stepsWald', 0.5, { gruppe: 'bewegung' });
     S('zug', 'holz', 'Äste knacken (Wald, 2×)', 'holzknacken', 0.45, { gruppe: 'bewegung' });
@@ -113,7 +113,7 @@ function slotsVon(t) {
     const mob = T.mobile, ab = mob ? 'launch' : t === 'feldkanone' ? 'cannon' : sd === 'D' ? 'artD' : 'cannonH';
     S('schuss', 'schuss', mob ? 'Abschuss (Steilfeuer)' : 'Abschuss', ab, mob ? 0.42 : 0.8, { gruppe: 'kanone', kette: 'schuss', hin: `Sperrfeuer: ${mob ? 3 : 4} Abschüsse desselben Tons mit ${mob ? '0,42' : '0,75'}.` });
     S('ziel', 'ziel', 'Einschlag Einzelschuss', mob ? 'boom' : 'einschlagH', mob ? 0.7 : 0.8, { gruppe: 'einschlag', kette: 'ziel', hin: 'Nach der Flugzeit (ca. 0,57 s).' });
-    S('ziel', 'sperr', 'Einschläge Sperrfeuer', mob ? 'boom' : 'boomH', 0.5, { gruppe: 'einschlag', hin: 'Je Feld ein Einschlag, versetzt.' });
+    S('ziel', 'sperr', 'Einschläge Sperrfeuer', mob ? 'boom' : 'boomH', 0.5, { gruppe: 'einschlag', spiel: mob ? 'sperr_boom' : 'sperr_boomH', hin: 'Je Feld ein Einschlag, versetzt. Eigener Tonplatz, getrennt vom Einzelschuss (Enrico 21:00).' });
     if (T.gas) S('ziel', 'gas', 'Gasgranate', 'gas', 0.7, { gruppe: 'einschlag' });
     S('ziel', 'wasser', 'Einschlag im Wasser (zusätzlich)', 'wasser', 0.6, { gruppe: 'einschlag' });
     S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' });
@@ -175,7 +175,7 @@ function slotsVon(t) {
   if (fuss || k === 'cav' || k === 'art') S('treffer', 'husten', 'Im Gas: Husten', 'husten', 0.4, { gruppe: 'ruf', v: 'gm', hin: 'Immer mit Gasmaske leicht, 1–2 Figuren.' });
   S('treffer', 'panik', 'Flieht', 'panic', 0.4, { gruppe: 'ruf' });
   // Tod und Ausfall (destroyed, breakdown, stuck)
-  if (k === 'walker' || k === 'art') S('tod', 'tod', 'Zerstört', 'boom2', 0.75, { gruppe: 'einschlag' }); else S('tod', 'tod', 'Aufgerieben', '-', 0.5, { gruppe: 'ruf', hin: 'Im Spiel ohne eigenen Ton (nur Blut). Hier kann einer gewählt werden.' });
+  if (k === 'walker' || k === 'art') S('tod', 'tod', 'Zerstört', 'boom2', 0.75, { gruppe: 'einschlag' }); else S('tod', 'tod', 'Aufgerieben', '-', 0.5, { gruppe: 'ruf', spiel: 'aufgerieben', hin: 'Im Spiel ohne eigenen Ton (nur Blut), bis hier einer gewählt wird (Spiel-Platz „aufgerieben“, seit 21:00).' });
   if (k === 'walker') { S('tod', 'brand', 'Wrack brennt', 'feuer', 0.35, { gruppe: 'flamme' }); S('tod', 'panne', 'Panne / festgefahren', 'crash', 0.7, { gruppe: 'fahrzeug' }); S('tod', 'schlamm', 'Ketten im Schlamm', 'steps', 0.6, { gruppe: 'bewegung' }); }
   // Fähigkeiten und Handgriffe
   const A = T.abil;
@@ -184,10 +184,10 @@ function slotsVon(t) {
   if (A === 'durchbruch') { S('abil', 'durch_aufladen', 'Ausholen: Aufladen', 'held_aufladen', 0.6, { gruppe: 'held' }); S('abil', 'durch_schlag', 'Durchbruch-Aufprall: Einschlag', 'held_fausteinschlag', 0.8, { gruppe: 'held', hin: 'Normaler Faustschlag: Zeile Nahkampf (Servo lädt + Schlag). Robot-Boom: Platz held_faustboom.' }); S('abil', 'durch_dampfstoss', 'Danach: Dampfstoß', 'held_dampfstoss', 0.5, { gruppe: 'held' }); S('abil', 'durch_dampf', 'Danach: Dampfzischen', 'held_dampf', 0.35, { gruppe: 'held' }); }   // Held Rote Faust (2026-11-21)
   if (A === 'hinrichtung') { S('abil', 'hinr_start', 'Ausholen: Kettenschwert springt an', 'held_saege_start2', 0.6, { gruppe: 'held', hin: 'Auch vor dem Querhieb.' }); S('abil', 'hinr_schrei', 'Ausholen: Ächzen hinter dem Helm', 'held_ritter_schrei', 0.5, { gruppe: 'held' }); S('abil', 'hinr_schnitt', 'Schlag: Schwung mit Schnitt', 'held_saege_schnitt2', 0.7, { gruppe: 'held', hin: 'Auch beim Querhieb.' }); S('abil', 'ritter_schritt', 'Schritte (zwei je Feld)', 'held_schritt_ritter2', 0.55, { gruppe: 'held' }); }
   if (T.held) { S('treffer', 'held_ruestung', 'Getroffen: Schlag auf Rüstung', 'held_ruestung', 0.5, { gruppe: 'held' }); S('tod', 'held_horn', 'Fällt: Horn', 'held_fall_horn', 0.6, { gruppe: 'held' }); }   // Held Kürassier
-  if (A === 'rollen') { S('abil', 'rollen_anlauf', 'Sturmrollen: Anlauf (Kettenrollen)', 'tank', 0.5, { gruppe: 'fahrzeug' }); S('abil', 'rollen_aufprall', 'Sturmrollen: Aufprall', 'neu3_fzaufprall', 0.7, { gruppe: 'fahrzeug' }); S('abil', 'rollen_krach', 'Sturmrollen: Krachen beim Aufprall', 'ueberrollen', 0.45, { gruppe: 'fahrzeug' }); }
-  if (k === 'walker') { S('abil', 'rammen', 'Gebäude rammen: Aufprall', 'impact', 0.7, { gruppe: 'einschlag' }); S('abil', 'rammen_wucht', 'Gebäude rammen: Wucht', 'neu3_fzaufprall', 0.6, { gruppe: 'fahrzeug' }); S('abil', 'einsturz', 'Gebäude stürzt ein', 'einsturz', 0.8, { gruppe: 'einschlag' }); }
+  if (A === 'rollen') { S('abil', 'rollen_anlauf', 'Sturmrollen: Anlauf (Kettenrollen)', 'tank', 0.5, { gruppe: 'fahrzeug' }); S('abil', 'rollen_aufprall', 'Sturmrollen: Aufprall', 'neu3_fzaufprall', 0.7, { gruppe: 'fahrzeug', spiel: 'aufprall_rollen' }); S('abil', 'rollen_krach', 'Sturmrollen: Krachen beim Aufprall', 'ueberrollen', 0.45, { gruppe: 'fahrzeug' }); }
+  if (k === 'walker') { S('abil', 'rammen', 'Gebäude rammen: Aufprall', 'impact', 0.7, { gruppe: 'einschlag' }); S('abil', 'rammen_wucht', 'Gebäude rammen: Wucht', 'neu3_fzaufprall', 0.6, { gruppe: 'fahrzeug', spiel: 'aufprall_rammen' }); S('abil', 'einsturz', 'Gebäude stürzt ein', 'einsturz', 0.8, { gruppe: 'einschlag' }); }
   if (A === 'pzgranate') { S('abil', 'pzg_wurf', 'Panzergranate: Explosion', 'boom', 0.6, { gruppe: 'einschlag' }); S('abil', 'pzg_metall', 'Panzergranate: Treffer am Panzer', 'einschlag_panzer', 0.55, { gruppe: 'einschlag' }); }
-  if (fig === 'drill') S('abil', 'bohr_wucht', 'Bohrstoß: Wucht', 'neu3_fzaufprall', 0.45, { gruppe: 'fahrzeug', hin: 'Zusammen mit dem Bohrton (Nahkampf-Zeile), Bohrkopf dreht etwa 0,9 s.' });
+  if (fig === 'drill') S('abil', 'bohr_wucht', 'Bohrstoß: Wucht', 'neu3_fzaufprall', 0.45, { gruppe: 'fahrzeug', spiel: 'aufprall_bohr', hin: 'Zusammen mit dem Bohrton (Nahkampf-Zeile), Bohrkopf dreht etwa 0,9 s.' });
   if (T.fessel) { S('abil', 'winde', 'Ballon einholen/aufsteigen: Winde', 'drahtwackeln', 0.45, { gruppe: 'handgriff' }); S('abil', 'ratsche', 'Ballon: Ratsche', 'mgladen', 0.35, { gruppe: 'handgriff' }); }
   if (T.flame || (T.zweit && T.zweit.flamme)) S('abil', 'nachbrennen', 'Flammenstoß: Nachbrennen (nach der Schleife)', 'feuer', 0.3, { gruppe: 'flamme', hin: 'Der Strahl selbst ist die Zeile „Flammenstrahl“; er läuft als Schleife genau so lange wie der Strahl (1,5 s, Bohrkoloss 1,1 s).' });
   if (T.dig) S('abil', 'sandsack', 'Eingraben: Sandsäcke', 'sandsaecke', 0.4, { gruppe: 'handgriff', hin: 'Standard 2026-11-22 (Enrico 15:26), zusammen mit dem Atmen.' });
@@ -316,7 +316,7 @@ const DAUER = {}; for (const k of KEYS) { const d = dauerVon(ctx.SOUNDS[k]); if 
 for (const u of einheiten) { const T = TYPES[u.t];
   u.art = !T ? null : T.held ? 'held' : T.cmd ? 'anfuehrer' : T.cls === 'cav' ? 'reiter' : T.cls === 'art' ? 'geschuetz' : T.cls === 'walker' ? (PANZER.includes(u.t) ? 'fahrzeug' : 'schreiter') : T.suit ? 'anzug' : 'fuss';
   const hs = u.slots.find(s => s.ab === 'schuss' && s.id === 'schuss'); u.waffe = !T || !hs ? null : ({ gewehr: 'gewehr', mg: 'mg', kanone: 'kanone', flamme: 'flamme' })[hs.gruppe] || null;
-  for (const s of u.slots) s.gleich = s.mode === 'ruf' || s.platz === '-' ? [] : u.slots.filter(x => x !== s && x.mode !== 'ruf' && x.platz === s.platz).map(x => x.id); }
+  for (const s of u.slots) s.gleich = s.mode === 'ruf' || s.platz === '-' ? [] : u.slots.filter(x => x !== s && x.mode !== 'ruf' && (x.spiel || x.platz) === (s.spiel || s.platz)).map(x => x.id); }   // gleicher Spiel-Platz (eigene Plätze über spiel)
 const DATA = { bib: BIB, dauer: DAUER, stand: new Date().toISOString().slice(0, 10), einheiten, ab: AB, gruppen: GRUPPEN, name: NAME, var: VAR_NAME, satz: SATZ_NAME, pools: POOLS, sndvar: SND_VAR, datei: DATEI, kat: SHOP_KAT };
 
 const css = readFileSync(join(ROOT, 'tools', 'tonpult_seite.css'), 'utf8'), js = readFileSync(join(ROOT, 'tools', 'tonpult_seite.js'), 'utf8');

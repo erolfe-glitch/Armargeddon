@@ -1,0 +1,2751 @@
+{
+ "werkzeug": "Armargeddon Ton-Pult",
+ "stand_toene": "2026-11-22",
+ "exportiert": "2026-11-22T19:52:20.707Z",
+ "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
+ "aenderungen": [
+  {
+   "einheit": "grenadier",
+   "name": "Aschengrenadiere",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:rifle3",
+   "schluessel": "rifle3",
+   "datei": "Infantry Guns/freesound_community-m1-garand-rifle-80192.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "grenadier",
+   "name": "Aschengrenadiere",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:grenade2",
+   "schluessel": "grenade2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schrei",
+   "titel": "Kampfschrei (manchmal)",
+   "platz_spiel": "cry",
+   "filter": "gm",
+   "wahl": "p:roar",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "roar",
+   "lautstaerke_spiel": 0.35,
+   "lautstaerke": 0.35,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "heiler",
+   "name": "Aschenpfleger",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sense",
+   "name": "Sensenwerk-Trupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "MG-Feuer",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "k:mg_2",
+   "schluessel": "mg_2",
+   "datei": "Infantry Guns/417688__superphat__lightmachinegun1.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sense",
+   "name": "Sensenwerk-Trupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:nahD_3",
+   "schluessel": "nahD_3",
+   "datei": "Heavy Meelee Mechs large/yodguard-giant-axe-strike-hitting-solid-wood-2-450250.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sense",
+   "name": "Sensenwerk-Trupp",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "signal",
+   "name": "Signaltrupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:pistol",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "pistol",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "signal",
+   "name": "Signaltrupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "p:axe",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "axe",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "signal",
+   "name": "Signaltrupp",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionierD",
+   "name": "Drahtpioniere",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:rifle3",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "rifle3",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionierD",
+   "name": "Drahtpioniere",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionierD",
+   "name": "Drahtpioniere",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "banner",
+   "name": "Bannerträger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "p:saebel",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "saebel",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "banner",
+   "name": "Bannerträger",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "buechse",
+   "name": "Panzerbüchsen-Trupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "buechse",
+   "name": "Panzerbüchsen-Trupp",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "brand",
+   "name": "Brandwerfer",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "brand",
+   "name": "Brandwerfer",
+   "seite": "D",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "feuer",
+   "titel": "Feld fängt Feuer",
+   "platz_spiel": "flame",
+   "filter": null,
+   "wahl": "p:feuer",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "feuer",
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "brand",
+   "name": "Brandwerfer",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sturm",
+   "name": "Sturmbrecher",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:neu_schrot",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu_schrot",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sturm",
+   "name": "Sturmbrecher",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "huenen",
+   "name": "Eiserne Hünen",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "sword",
+   "filter": null,
+   "wahl": "k:heavy1",
+   "schluessel": "heavy1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "huenen",
+   "name": "Eiserne Hünen",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schweres MG aus der Hüfte",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "k:neu_mg_schwer_1",
+   "schluessel": "neu_mg_schwer_1",
+   "datei": "Hevay Mech guns/dragon-studio-machine-gun-sfx-631486.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.62,
+   "lautstaerke": 0.62,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "eingreif",
+   "name": "Eingreiftrupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "p:semi",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "semi",
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "eingreif",
+   "name": "Eingreiftrupp",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "gasschutz",
+   "name": "Gasschutz-Trupp",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:pistol",
+   "schluessel": "pistol",
+   "datei": "Infantry Guns/gutierrreztom-walther-p38-firing-sound-effect-11651.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "gasschutz",
+   "name": "Gasschutz-Trupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "gasschutz",
+   "name": "Gasschutz-Trupp",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "munition",
+   "name": "Versorgungstrupp",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "munition",
+   "name": "Versorgungstrupp",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pirsch",
+   "name": "Pirschjäger",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pirsch",
+   "name": "Pirschjäger",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "minenwerfer",
+   "name": "Minenwerfer",
+   "seite": "D",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "sperr",
+   "titel": "Einschläge Sperrfeuer",
+   "platz_spiel": "boom",
+   "filter": null,
+   "wahl": "k:grenade2_1",
+   "schluessel": "grenade2_1",
+   "datei": "Explosion/609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "minenwerfer",
+   "name": "Minenwerfer",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "geschuetz",
+   "name": "Grabengeschütz",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahD",
+   "filter": null,
+   "wahl": "k:punch2",
+   "schluessel": "punch2",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "geschuetz",
+   "name": "Grabengeschütz",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Abschuss",
+   "platz_spiel": "artD",
+   "filter": null,
+   "wahl": "k:kolosskanone_2",
+   "schluessel": "kolosskanone_2",
+   "datei": "Heavy firing sounds/freesound_community-cannon-shot-14799.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.8,
+   "lautstaerke": 0.8,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "panzerk",
+   "name": "Panzerknechte",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "p:nahD",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "nahD",
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "panzerk",
+   "name": "Panzerknechte",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schuss",
+   "platz_spiel": "semi",
+   "filter": null,
+   "wahl": "k:semi",
+   "schluessel": "semi",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "knecht",
+   "name": "Eisenknecht",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Kanone",
+   "platz_spiel": "panzerkanone",
+   "filter": null,
+   "wahl": "k:kolosskanone_2",
+   "schluessel": "kolosskanone_2",
+   "datei": "Heavy firing sounds/freesound_community-cannon-shot-14799.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "knecht",
+   "name": "Eisenknecht",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "faust",
+   "titel": "Faustsalve (zwei Kanonen)",
+   "platz_spiel": "panzerkanone",
+   "filter": null,
+   "wahl": "k:cannon_2",
+   "schluessel": "cannon_2",
+   "datei": "Heavy firing sounds/239137__qubodup__artillery-gunfire.flac",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "knecht",
+   "name": "Eisenknecht",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "k:neu_wucht_4",
+   "schluessel": "neu_wucht_4",
+   "datei": "Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "bohrer",
+   "name": "Bohrkoloss",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Bohrstoß (ein langer Stoß)",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "p:smash",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "smash",
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "saeger",
+   "name": "Sägeschreiter",
+   "seite": "D",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "k:heavy_2",
+   "schluessel": "heavy_2",
+   "datei": "Crash vehicle damage/509007__audiopapkin__mechanical-sfx_m013.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:saebel",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "saebel",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schuss",
+   "platz_spiel": "neu4_pistole_schwer",
+   "filter": null,
+   "wahl": "k:pistol_2",
+   "schluessel": "pistol_2",
+   "datei": "Infantry Guns/dragon-studio-gunshot-511311.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "grunzen",
+   "titel": "Leicht getroffen: Grunzen",
+   "platz_spiel": "grunzen",
+   "filter": null,
+   "wahl": "p:pain",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "pain",
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "gross",
+   "titel": "Halten um jeden Preis",
+   "platz_spiel": "march",
+   "filter": null,
+   "wahl": "k:march_1",
+   "schluessel": "march_1",
+   "datei": "Ereignisse/324539__deleted_user_2104797__whistle-army-old.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "panik",
+   "titel": "Flieht",
+   "platz_spiel": "panic",
+   "filter": null,
+   "wahl": "k:panik_gruppe_1",
+   "schluessel": "panik_gruppe_1",
+   "datei": "Voices/elevenlabs/rufe/konkordat_panik_gruppe_1.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_1",
+   "schluessel": "sterben_gruppe_1",
+   "datei": "Voices/elevenlabs/rufe/konkordat_sterben_gruppe_1.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "generalA",
+   "name": "General mit Stab",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "befehl",
+   "titel": "Befehl „Feuer frei“",
+   "platz_spiel": "forward",
+   "filter": null,
+   "wahl": "k:ruf_feuer_1",
+   "schluessel": "ruf_feuer_1",
+   "datei": "Voices/elevenlabs/rufe/konkordat_ruf_feuer_a.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "fernsprech",
+   "name": "Fernsprechtrupp",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "k:punch1",
+   "schluessel": "punch1",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "fernsprech",
+   "name": "Fernsprechtrupp",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:pistol",
+   "schluessel": "pistol",
+   "datei": "Infantry Guns/gutierrreztom-walther-p38-firing-sound-effect-11651.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "fernsprech",
+   "name": "Fernsprechtrupp",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "fernsprech",
+   "name": "Fernsprechtrupp",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "strike",
+   "titel": "Feuerschlag: Abschuss",
+   "platz_spiel": "cannonH",
+   "filter": null,
+   "wahl": "k:neu_kanone_2",
+   "schluessel": "neu_kanone_2",
+   "datei": "Kanone schwer/freesound_community-cannon-shot-6153.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.35,
+   "lautstaerke": 0.35,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "schildwall",
+   "name": "Schildwall",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:neu2_nahkampf",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu2_nahkampf",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "schildwall",
+   "name": "Schildwall",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "schildwall",
+   "name": "Schildwall",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "schilde",
+   "titel": "Schilde vor",
+   "platz_spiel": "armor",
+   "filter": null,
+   "wahl": "k:neu2_nahkampf_1",
+   "schluessel": "neu2_nahkampf_1",
+   "datei": "Melee hit infantry/freesound_community-shield-guard-6963.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "raeumer",
+   "name": "Grabenräumer",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "axe",
+   "filter": null,
+   "wahl": "p:nahA",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "nahA",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "raeumer",
+   "name": "Grabenräumer",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "sani",
+   "titel": "Schwer getroffen, schwach: „Sanitäter!“",
+   "platz_spiel": "medic",
+   "filter": "gm",
+   "wahl": "k:neu3_loewe_3",
+   "schluessel": "neu3_loewe_3",
+   "datei": "Monster/magiaz-lion2-327520.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schuss",
+   "platz_spiel": "flinte",
+   "filter": null,
+   "wahl": "k:neu_schrot_2",
+   "schluessel": "neu_schrot_2",
+   "datei": "Infantry Guns/freesound_community-shotgun-firing-3-14483.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "neu3_bestie",
+   "filter": null,
+   "wahl": "p:krallen_eisen",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "krallen_eisen",
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "biss",
+   "titel": "Krallen gegen Gepanzerte",
+   "platz_spiel": "krallen_eisen",
+   "filter": null,
+   "wahl": "p:stahlklaue_eisen",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "stahlklaue_eisen",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "schmerz",
+   "titel": "Schwer getroffen",
+   "platz_spiel": "pain",
+   "filter": "gm",
+   "wahl": "k:neu3_loewe_2",
+   "schluessel": "neu3_loewe_2",
+   "datei": "Monster/magiaz-lion2-327520.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "panik",
+   "titel": "Flieht",
+   "platz_spiel": "panic",
+   "filter": "gm",
+   "wahl": "p:neu3_loewe2",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu3_loewe2",
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "oger",
+   "name": "Löwenoger",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_4",
+   "schluessel": "sterben_gruppe_4",
+   "datei": "Voices/elevenlabs/rufe/konkordat_sterben_gruppe_4.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "sturmpz",
+   "name": "Sturmpanzer",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "zweit",
+   "titel": "Zweitwaffe: Bord-MG",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "p:neu_mg_schwer",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu_mg_schwer",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "klaue",
+   "name": "Klauenschreiter",
+   "seite": "D",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "MG am Arm (schweres MG)",
+   "platz_spiel": "neu4_mg_schwer",
+   "filter": null,
+   "wahl": "k:neu2_autokanone_2",
+   "schluessel": "neu2_autokanone_2",
+   "datei": "Hevay Mech guns/freesound_community-066496_heavy-machine-gun-50-caliber-28243.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schuss",
+   "platz_spiel": "neu4_pistole_schwer",
+   "filter": null,
+   "wahl": "k:pistol_2",
+   "schluessel": "pistol_2",
+   "datei": "Infantry Guns/dragon-studio-gunshot-511311.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:saebel",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "saebel",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "sani",
+   "titel": "Schwer getroffen, schwach: „Sanitäter!“",
+   "platz_spiel": "medic",
+   "filter": null,
+   "wahl": "k:medic",
+   "schluessel": "medic",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "grunzen",
+   "titel": "Leicht getroffen: Grunzen",
+   "platz_spiel": "grunzen",
+   "filter": null,
+   "wahl": "p:pain",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "pain",
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "sammeln",
+   "titel": "Befehl „Sammeln“",
+   "platz_spiel": "stand",
+   "filter": null,
+   "wahl": "k:stand",
+   "schluessel": "stand",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:panik_einzeln_1",
+   "schluessel": "panik_einzeln_1",
+   "datei": "Voices/elevenlabs/rufe/konkordat_panik_einzeln_1.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "hauptA",
+   "name": "Hauptmann mit Stab",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "befehl",
+   "titel": "Befehl „Feuer frei“",
+   "platz_spiel": "forward",
+   "filter": null,
+   "wahl": "p:stand",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "stand",
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "scharf",
+   "name": "Scharfschütze",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schuss",
+   "platz_spiel": "sniper",
+   "filter": null,
+   "wahl": "k:neu2_gewehr_9",
+   "schluessel": "neu2_gewehr_9",
+   "datei": "Infantry Guns/freesound_community-m1-garand-rifle-80192.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "scharf",
+   "name": "Scharfschütze",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:punch",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "punch",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "scharf",
+   "name": "Scharfschütze",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "scharf",
+   "name": "Scharfschütze",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "panik",
+   "titel": "Flieht",
+   "platz_spiel": "panic",
+   "filter": "gm",
+   "wahl": "k:panik_einzeln_2",
+   "schluessel": "panik_einzeln_2",
+   "datei": "Voices/elevenlabs/rufe/konkordat_panik_einzeln_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "turm",
+   "name": "Turmschreiter",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Kanone",
+   "platz_spiel": "kolosskanone",
+   "filter": null,
+   "wahl": "k:neu_kanone_1",
+   "schluessel": "neu_kanone_1",
+   "datei": "Kanone schwer/freesound_community-cannon-shot-6153.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "orden",
+   "name": "Ordensschreiter",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "k:heavy3",
+   "schluessel": "heavy3",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Kanone",
+   "platz_spiel": "loewenkanone",
+   "filter": null,
+   "wahl": "k:neu_kanone_3",
+   "schluessel": "neu_kanone_3",
+   "datei": "Kanone schwer/soundtaker-heavy-shot-sound-477215_neu.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "zweit",
+   "titel": "Zweitwaffe: Unterarm-Kanone",
+   "platz_spiel": "loewenkanone",
+   "filter": null,
+   "wahl": "k:neu_kanone_1",
+   "schluessel": "neu_kanone_1",
+   "datei": "Kanone schwer/freesound_community-cannon-shot-6153.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "heavy",
+   "filter": null,
+   "wahl": "k:neu_wucht_4",
+   "schluessel": "neu_wucht_4",
+   "datei": "Heavy Meelee Mechs large/lordsonny-heavy-cineamtic-hit-166888.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "loewe",
+   "titel": "Löwengebrüll",
+   "platz_spiel": "loewe",
+   "filter": "mr",
+   "wahl": "k:neu_tiger_mech_1",
+   "schluessel": "neu_tiger_mech_1",
+   "datei": "Monster/freesound_community-robot-tiger-roar-96261.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Anwählen",
+   "platz_id": "spruch",
+   "titel": "Spruch beim Anklicken",
+   "platz_spiel": "sv_schreiter_A",
+   "filter": null,
+   "wahl": "k:neu_roboter_6",
+   "schluessel": "neu_roboter_6",
+   "datei": "Monster/freesound_community-robotic-monster-roar-96249.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.493,
+   "lautstaerke": 0.493,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "ziehen",
+   "titel": "Ziehen (Schreiter-Schritte im Takt)",
+   "platz_spiel": "schreiter_schritte",
+   "filter": null,
+   "wahl": "k:neu_schritte_schwer_6",
+   "schluessel": "neu_schritte_schwer_6",
+   "datei": "Footsteps robot mud marching/kalsstockmedia-dinosaur-monster-heavy-foot-steps-earth-shattering-246899.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kreuz",
+   "name": "Kreuzschreiter",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "panik",
+   "titel": "Flieht",
+   "platz_spiel": "panic",
+   "filter": "mr",
+   "wahl": "k:neu_roboter_1",
+   "schluessel": "neu_roboter_1",
+   "datei": "Monster/daviddumaisaudio-robotic-monster-roars-x5-194041.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "flammen",
+   "name": "Flammentrupp",
+   "seite": "A",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "feuer",
+   "titel": "Feld fängt Feuer",
+   "platz_spiel": "flame",
+   "filter": null,
+   "wahl": "k:ballon_brenner_1",
+   "schluessel": "ballon_brenner_1",
+   "datei": "Fire/freesound_community-hotairbaloontorch-60586.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "flammen",
+   "name": "Flammentrupp",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "flammen",
+   "name": "Flammentrupp",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Flammenstrahl",
+   "platz_spiel": "flame",
+   "filter": null,
+   "wahl": "k:flame_1",
+   "schluessel": "flame_1",
+   "datei": "Flamethrower/freesound_community-gas-torch-burn-74271.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "melder",
+   "name": "Meldegänger mit Hund",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:pistol_3",
+   "schluessel": "pistol_3",
+   "datei": "Infantry Guns/freesound_community-darkscape-1911-a1-101298.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "melder",
+   "name": "Meldegänger mit Hund",
+   "seite": "A",
+   "anlass": "Bewegung",
+   "platz_id": "hund",
+   "titel": "Hund beim Ziehen",
+   "platz_spiel": "dog",
+   "filter": null,
+   "wahl": "k:neu2_hund_3",
+   "schluessel": "neu2_hund_3",
+   "datei": "Animals/dragon-studio-dog-barking-406629.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "melder",
+   "name": "Meldegänger mit Hund",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "feldscher",
+   "name": "Feldscher",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Gewehrsalve (je Figur ein Schuss)",
+   "platz_spiel": "rifle",
+   "filter": null,
+   "wahl": "k:pistol_3",
+   "schluessel": "pistol_3",
+   "datei": "Infantry Guns/freesound_community-darkscape-1911-a1-101298.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.3,
+   "lautstaerke": 0.3,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "feldscher",
+   "name": "Feldscher",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mahlwerk",
+   "name": "Mahlwerk-Trupp",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:punch",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "punch",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mahlwerk",
+   "name": "Mahlwerk-Trupp",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "mgauf",
+   "titel": "MG aufstellen",
+   "platz_spiel": "mg_aufbauen",
+   "filter": null,
+   "wahl": "k:nachladen_1",
+   "schluessel": "nachladen_1",
+   "datei": "Repair reload heal etc/847367__adrian_sommer__gun-reloading-walther-p99.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mahlwerk",
+   "name": "Mahlwerk-Trupp",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "sperr",
+   "titel": "MG-Sperrfeuer bereit",
+   "platz_spiel": "nachladen",
+   "filter": null,
+   "wahl": "k:neu_nachladen_2",
+   "schluessel": "neu_nachladen_2",
+   "datei": "Repair reload heal etc/freesound_community-pistol-cock-6014.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mahlwerk",
+   "name": "Mahlwerk-Trupp",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "reiter",
+   "name": "Lanzenreiter",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "panik",
+   "titel": "Flieht",
+   "platz_spiel": "panic",
+   "filter": "gm",
+   "wahl": "k:pferd_unruhe_1",
+   "schluessel": "pferd_unruhe_1",
+   "datei": "Animals/271266__arnaud-coutancier__nervous-horses.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "reiter",
+   "name": "Lanzenreiter",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_4",
+   "schluessel": "sterben_gruppe_4",
+   "datei": "Voices/elevenlabs/rufe/konkordat_sterben_gruppe_4.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "rauch",
+   "name": "Rauchwerfer-Trupp",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag",
+   "platz_spiel": "nahA",
+   "filter": null,
+   "wahl": "p:punch",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "punch",
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "rauch",
+   "name": "Rauchwerfer-Trupp",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "rauch",
+   "name": "Rauchwerfer-Trupp",
+   "seite": "A",
+   "anlass": "Getroffen",
+   "platz_id": "panik",
+   "titel": "Flieht",
+   "platz_spiel": "panic",
+   "filter": "gm",
+   "wahl": "k:panik_einzeln_1",
+   "schluessel": "panik_einzeln_1",
+   "datei": "Voices/elevenlabs/rufe/konkordat_panik_einzeln_1.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mineur",
+   "name": "Mineure (Tunnelgräber)",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "stollenboom",
+   "titel": "Stollen sprengen",
+   "platz_spiel": "boom2",
+   "filter": null,
+   "wahl": "k:einschlagH_1",
+   "schluessel": "einschlagH_1",
+   "datei": "Crash vehicle damage/841046__artninja__rock_explosion_impact_booming_sound_hf_01052026.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.8,
+   "lautstaerke": 0.8,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "mineur",
+   "name": "Mineure (Tunnelgräber)",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "werkstatt",
+   "name": "Versorgungstrupp",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "munition",
+   "titel": "Munition verteilen",
+   "platz_spiel": "nachladen",
+   "filter": null,
+   "wahl": "k:neu2_tuer_1",
+   "schluessel": "neu2_tuer_1",
+   "datei": "Repair reload heal etc/yodguard-locked-door-4-540180.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "werkstatt",
+   "name": "Versorgungstrupp",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kohorte",
+   "name": "Schützenkohorte",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "kohorte",
+   "name": "Schützenkohorte",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "sandsack",
+   "titel": "Eingraben: Sandsäcke",
+   "platz_spiel": "sandsaecke",
+   "filter": null,
+   "wahl": "k:sandsaecke_3",
+   "schluessel": "sandsaecke_3",
+   "datei": "Aufbau/sandsaecke_bauen_mixpaket_3von4.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.4,
+   "lautstaerke": 0.4,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "pionier",
+   "name": "Graben-Pioniere",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "ballon",
+   "name": "Ballonbeobachter",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "schwer",
+   "name": "Schwere Grabenwacht",
+   "seite": "D",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_6",
+   "schluessel": "sterben_gruppe_6",
+   "datei": "Voices/elevenlabs/rufe/aschenwacht_sterben_gruppe_2.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "faust",
+   "name": "Die Rote Faust",
+   "seite": "A",
+   "anlass": "Anwählen",
+   "platz_id": "spruch",
+   "titel": "Spruch beim Anklicken",
+   "platz_spiel": "sv_anzug_A",
+   "filter": null,
+   "wahl": "p:hst_faust_auswahl",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "hst_faust_auswahl",
+   "lautstaerke_spiel": 0.493,
+   "lautstaerke": 0.493,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "faust",
+   "name": "Die Rote Faust",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schlag",
+   "titel": "Schlag: Hydraulik-Boom",
+   "platz_spiel": "held_faustschlag2",
+   "filter": null,
+   "wahl": "k:neu_wucht_2",
+   "schluessel": "neu_wucht_2",
+   "datei": "Heavy Meelee Mechs large/yodguard-a-massive-axe-impact-hitting-metal-2-450253.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.65,
+   "lautstaerke": 0.65,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "faust",
+   "name": "Die Rote Faust",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "durch_schlag",
+   "titel": "Durchbruch-Aufprall: Einschlag",
+   "platz_spiel": "held_fausteinschlag",
+   "filter": null,
+   "wahl": "k:neu_wucht_3",
+   "schluessel": "neu_wucht_3",
+   "datei": "Heavy Meelee Mechs large/dragon-studio-heavy-impact-loud-515259.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.8,
+   "lautstaerke": 0.8,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "faust",
+   "name": "Die Rote Faust",
+   "seite": "A",
+   "anlass": "Nahkampf",
+   "platz_id": "schrei",
+   "titel": "Kampfschrei beim Sturm",
+   "platz_spiel": "cry",
+   "filter": "gs",
+   "wahl": "p:hst_faust_angriff",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "hst_faust_angriff",
+   "lautstaerke_spiel": 0.45,
+   "lautstaerke": 0.45,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "faust",
+   "name": "Die Rote Faust",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:panik_einzeln_4",
+   "schluessel": "panik_einzeln_4",
+   "datei": "Voices/elevenlabs/rufe/konkordat_panik_einzeln_4.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "faust",
+   "name": "Die Rote Faust",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "durch_aufladen",
+   "titel": "Ausholen: Aufladen",
+   "platz_spiel": "held_aufladen",
+   "filter": null,
+   "wahl": "p:held_faustschlag",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "held_faustschlag",
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "moerser",
+   "name": "Grabenmörser",
+   "seite": "A",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "ziel",
+   "titel": "Einschlag Einzelschuss",
+   "platz_spiel": "boom",
+   "filter": null,
+   "wahl": "k:grenade2_1",
+   "schluessel": "grenade2_1",
+   "datei": "Explosion/609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "moerser",
+   "name": "Grabenmörser",
+   "seite": "A",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "sperr",
+   "titel": "Einschläge Sperrfeuer",
+   "platz_spiel": "boom",
+   "filter": null,
+   "wahl": "k:grenade2_1",
+   "schluessel": "grenade2_1",
+   "datei": "Explosion/609587__unfa__grenade-explosion-sfx-medium-sized-meaty-realistic.flac",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "haubitze",
+   "name": "Donnerrohr-Batterie",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Abschuss",
+   "platz_spiel": "cannonH",
+   "filter": null,
+   "wahl": "k:cannonH_1",
+   "schluessel": "cannonH_1",
+   "datei": "Water/212689__tb0y298__water-explosion-1.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.8,
+   "lautstaerke": 0.8,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "koloss",
+   "name": "Landkoloss",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Kanone",
+   "platz_spiel": "kolosskanone",
+   "filter": null,
+   "wahl": "p:loewenkanone",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "loewenkanone",
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "koloss",
+   "name": "Landkoloss",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "zweit",
+   "titel": "Zweitwaffe: Seiten-MG",
+   "platz_spiel": "mg",
+   "filter": null,
+   "wahl": "k:neu4_gewehr_schwer_2",
+   "schluessel": "neu4_gewehr_schwer_2",
+   "datei": "Waffen_neu/schweres_gewehr_salve_4.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.55,
+   "lautstaerke": 0.55,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "koloss",
+   "name": "Landkoloss",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "panne",
+   "titel": "Panne / festgefahren",
+   "platz_spiel": "crash",
+   "filter": null,
+   "wahl": "k:crash_1",
+   "schluessel": "crash_1",
+   "datei": "Crash vehicle damage/423116__ogsoundfx__guns-explosions-album-heavy-object-impact-4.wav",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "stahl",
+   "name": "Stahlgänger-Trupp",
+   "seite": "A",
+   "anlass": "Schuss",
+   "platz_id": "schuss",
+   "titel": "Schuss",
+   "platz_spiel": "semi",
+   "filter": null,
+   "wahl": "k:mg_3",
+   "schluessel": "mg_3",
+   "datei": "Infantry Guns/kave_msri-machine-gun-sfx-320986.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.6,
+   "lautstaerke": 0.6,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "stahl",
+   "name": "Stahlgänger-Trupp",
+   "seite": "A",
+   "anlass": "Tod und Ausfall",
+   "platz_id": "tod",
+   "titel": "Aufgerieben",
+   "platz_spiel": "-",
+   "filter": null,
+   "wahl": "k:sterben_gruppe_4",
+   "schluessel": "sterben_gruppe_4",
+   "datei": "Voices/elevenlabs/rufe/konkordat_sterben_gruppe_4.mp3",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.5,
+   "lautstaerke": 0.5,
+   "tonhoehe": 1
+  },
+  {
+   "einheit": "stahl",
+   "name": "Stahlgänger-Trupp",
+   "seite": "A",
+   "anlass": "Fähigkeiten und Handgriffe",
+   "platz_id": "rush",
+   "titel": "Sturmlauf: Ruf",
+   "platz_spiel": "forward",
+   "filter": "gs",
+   "wahl": "p:neu2_maske",
+   "schluessel": null,
+   "datei": null,
+   "platz_neu": "neu2_maske",
+   "lautstaerke_spiel": 0.7,
+   "lautstaerke": 0.7,
+   "tonhoehe": 1
+  }
+ ],
+ "roh": {
+  "grenadier": {
+   "schuss": {
+    "w": "k:rifle3"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "heiler": {
+   "schuss": {
+    "w": "k:grenade2"
+   },
+   "schlag": {
+    "w": "k:punch1"
+   },
+   "schrei": {
+    "w": "p:roar"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "sense": {
+   "schuss": {
+    "w": "k:mg_2"
+   },
+   "schlag": {
+    "w": "k:nahD_3"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "signal": {
+   "schuss": {
+    "w": "p:pistol"
+   },
+   "schlag": {
+    "w": "p:axe"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "pionierD": {
+   "schuss": {
+    "w": "p:rifle3"
+   },
+   "schlag": {
+    "w": "k:punch1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "banner": {
+   "schlag": {
+    "w": "p:saebel"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "buechse": {
+   "schlag": {
+    "w": "k:punch2"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "brand": {
+   "schlag": {
+    "w": "k:punch2"
+   },
+   "feuer": {
+    "w": "p:feuer"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "sturm": {
+   "schuss": {
+    "w": "p:neu_schrot"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "huenen": {
+   "schlag": {
+    "w": "k:heavy1"
+   },
+   "schuss": {
+    "w": "k:neu_mg_schwer_1"
+   }
+  },
+  "eingreif": {
+   "schuss": {
+    "w": "p:semi"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "gasschutz": {
+   "schuss": {
+    "w": "k:pistol"
+   },
+   "schlag": {
+    "w": "k:punch1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "munition": {
+   "schlag": {
+    "w": "k:punch2"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "pirsch": {
+   "schlag": {
+    "w": "k:punch2"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "minenwerfer": {
+   "sperr": {
+    "w": "k:grenade2_1"
+   },
+   "schlag": {
+    "w": "k:punch2"
+   }
+  },
+  "geschuetz": {
+   "schlag": {
+    "w": "k:punch2"
+   },
+   "schuss": {
+    "w": "k:kolosskanone_2"
+   }
+  },
+  "panzerk": {
+   "schlag": {
+    "w": "p:nahD"
+   },
+   "schuss": {
+    "w": "k:semi"
+   }
+  },
+  "knecht": {
+   "schuss": {
+    "w": "k:kolosskanone_2"
+   },
+   "faust": {
+    "w": "k:cannon_2"
+   },
+   "schlag": {
+    "w": "k:neu_wucht_4"
+   }
+  },
+  "bohrer": {
+   "schlag": {
+    "w": "p:smash"
+   }
+  },
+  "saeger": {
+   "schlag": {
+    "w": "k:heavy_2"
+   }
+  },
+  "generalA": {
+   "schlag": {
+    "w": "p:saebel"
+   },
+   "schuss": {
+    "w": "k:pistol_2"
+   },
+   "grunzen": {
+    "w": "p:pain"
+   },
+   "gross": {
+    "w": "k:march_1"
+   },
+   "panik": {
+    "w": "k:panik_gruppe_1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_1"
+   },
+   "befehl": {
+    "w": "k:ruf_feuer_1"
+   }
+  },
+  "fernsprech": {
+   "schlag": {
+    "w": "k:punch1"
+   },
+   "schuss": {
+    "w": "k:pistol"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   },
+   "strike": {
+    "w": "k:neu_kanone_2"
+   }
+  },
+  "schildwall": {
+   "schlag": {
+    "w": "p:neu2_nahkampf"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   },
+   "schilde": {
+    "w": "k:neu2_nahkampf_1"
+   }
+  },
+  "raeumer": {
+   "schlag": {
+    "w": "p:nahA"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "oger": {
+   "sani": {
+    "w": "k:neu3_loewe_3"
+   },
+   "schuss": {
+    "w": "k:neu_schrot_2"
+   },
+   "schlag": {
+    "w": "p:krallen_eisen"
+   },
+   "biss": {
+    "w": "p:stahlklaue_eisen"
+   },
+   "schmerz": {
+    "w": "k:neu3_loewe_2"
+   },
+   "panik": {
+    "w": "p:neu3_loewe2"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_4"
+   }
+  },
+  "sturmpz": {
+   "zweit": {
+    "w": "p:neu_mg_schwer"
+   }
+  },
+  "klaue": {
+   "schuss": {
+    "w": "k:neu2_autokanone_2"
+   }
+  },
+  "hauptA": {
+   "schuss": {
+    "w": "k:pistol_2"
+   },
+   "schlag": {
+    "w": "p:saebel"
+   },
+   "sani": {
+    "w": "k:medic"
+   },
+   "grunzen": {
+    "w": "p:pain"
+   },
+   "sammeln": {
+    "w": "k:stand"
+   },
+   "tod": {
+    "w": "k:panik_einzeln_1"
+   },
+   "befehl": {
+    "w": "p:stand"
+   }
+  },
+  "scharf": {
+   "schuss": {
+    "w": "k:neu2_gewehr_9"
+   },
+   "schlag": {
+    "w": "p:punch"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   },
+   "panik": {
+    "w": "k:panik_einzeln_2"
+   }
+  },
+  "turm": {
+   "schuss": {
+    "w": "k:neu_kanone_1"
+   }
+  },
+  "orden": {
+   "schlag": {
+    "w": "k:heavy3"
+   }
+  },
+  "kreuz": {
+   "schuss": {
+    "w": "k:neu_kanone_3"
+   },
+   "zweit": {
+    "w": "k:neu_kanone_1"
+   },
+   "schlag": {
+    "w": "k:neu_wucht_4"
+   },
+   "loewe": {
+    "w": "k:neu_tiger_mech_1"
+   },
+   "spruch": {
+    "w": "k:neu_roboter_6"
+   },
+   "ziehen": {
+    "w": "k:neu_schritte_schwer_6"
+   },
+   "panik": {
+    "w": "k:neu_roboter_1"
+   }
+  },
+  "flammen": {
+   "feuer": {
+    "w": "k:ballon_brenner_1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   },
+   "schuss": {
+    "w": "k:flame_1"
+   }
+  },
+  "melder": {
+   "schuss": {
+    "w": "k:pistol_3"
+   },
+   "hund": {
+    "w": "k:neu2_hund_3"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "feldscher": {
+   "schuss": {
+    "w": "k:pistol_3"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "mahlwerk": {
+   "schlag": {
+    "w": "p:punch"
+   },
+   "mgauf": {
+    "w": "k:nachladen_1"
+   },
+   "mgladen": {
+    "w": "k:clank"
+   },
+   "sperr": {
+    "w": "k:neu_nachladen_2"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "reiter": {
+   "panik": {
+    "w": "k:pferd_unruhe_1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_4"
+   }
+  },
+  "rauch": {
+   "schlag": {
+    "w": "p:punch"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   },
+   "panik": {
+    "w": "k:panik_einzeln_1"
+   }
+  },
+  "mineur": {
+   "stollenboom": {
+    "w": "k:einschlagH_1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "werkstatt": {
+   "munition": {
+    "w": "k:neu2_tuer_1"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "kohorte": {
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   },
+   "sandsack": {
+    "w": "k:sandsaecke_3"
+   }
+  },
+  "pionier": {
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "ballon": {
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "schwer": {
+   "tod": {
+    "w": "k:sterben_gruppe_6"
+   }
+  },
+  "faust": {
+   "spruch": {
+    "w": "p:hst_faust_auswahl"
+   },
+   "schlag": {
+    "w": "k:neu_wucht_2"
+   },
+   "durch_schlag": {
+    "w": "k:neu_wucht_3"
+   },
+   "schrei": {
+    "w": "p:hst_faust_angriff"
+   },
+   "tod": {
+    "w": "k:panik_einzeln_4"
+   },
+   "durch_aufladen": {
+    "w": "p:held_faustschlag"
+   }
+  },
+  "moerser": {
+   "ziel": {
+    "w": "k:grenade2_1"
+   },
+   "sperr": {
+    "w": "k:grenade2_1"
+   }
+  },
+  "haubitze": {
+   "schuss": {
+    "w": "k:cannonH_1"
+   }
+  },
+  "koloss": {
+   "schuss": {
+    "w": "p:loewenkanone"
+   },
+   "zweit": {
+    "w": "k:neu4_gewehr_schwer_2"
+   },
+   "panne": {
+    "w": "k:crash_1"
+   }
+  },
+  "stahl": {
+   "schuss": {
+    "w": "k:mg_3"
+   },
+   "tod": {
+    "w": "k:sterben_gruppe_4"
+   },
+   "rush": {
+    "w": "p:neu2_maske"
+   }
+  }
+ }
+}

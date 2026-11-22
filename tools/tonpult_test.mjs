@@ -48,7 +48,7 @@ try {
   const z1 = JSON.parse(await ev("JSON.stringify(T.an().map(t => [t, ((AEND[t] || {}).ziehen || {}).w]))"));
   pruef('Mehrfach-Zuweisung: Schritte im Schnee bei allen angehakten', z1.every(x => x[1] === 'p:schnee_gruppe'), z1.filter(x => x[1] === 'p:schnee_gruppe').length + ' von ' + z1.length);
   pruef('nicht angehakte bleiben unverändert', await ev("Object.keys(AEND).every(t => T.an().includes(t))"));
-  pruef('Hinweis „Gilt im Spiel auch für“ (gleicher Tonplatz Marsch) wird gezeigt', await ev("/Gilt im Spiel auch für/.test(document.getElementById('leiste').textContent)"), await ev("(document.querySelector('#leiste .gilt') || {}).textContent || ''"));
+  pruef('Marsch hat seit 21:00 einen eigenen Spiel-Platz: kein Hinweis „Gilt im Spiel auch für“ beim Ziehen', await ev("!/Gilt im Spiel auch für/.test(document.getElementById('leiste').textContent)"), await ev("(document.querySelector('#leiste .gilt') || {}).textContent || ''"));
   await bild('04_mehrfach_zugewiesen.png');
   await ev("T.regler('Lautstärke', 120)"); await sleep(150);
   pruef('Lautstärke 120 % für alle angehakten', await ev("T.an().every(t => { const u = U[t], s = u.slots.find(x => x.id === 'ziehen'); return Math.abs(wert(u, s).vol - Math.min(1, s.vol * 1.2)) < 0.002; })"));

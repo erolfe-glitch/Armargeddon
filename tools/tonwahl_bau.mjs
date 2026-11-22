@@ -14,19 +14,28 @@ const exporte = readdirSync(PF).filter(f => /^tonpult.*\.json$/.test(f)).map(f =
 const wahl = new Map();
 for (const { f, j } of exporte) for (const e of j.aenderungen) wahl.set(e.einheit + '|' + e.platz_id, { ...e, quelle: f });
 const neuste = exporte[exporte.length - 1], ausNeu = new Set(neuste.j.aenderungen.map(e => e.einheit + '|' + e.platz_id));
-const alleKeys = new Set(Object.values(D.pools).flat().map(x => x[0])), tab = {}, bericht = [];
+// alle Schlüssel aus SOUNDS (Spiel und Pult), nicht nur die in Tonplätzen – sonst gehen Einzeltöne wie horn, tiger, gallop als „Ton fehlt“ verloren (Ton-Bericht Punkt 3)
+const sKeys = f => { try { return [...readFileSync(join(ROOT, f), 'utf8').matchAll(/^\s+([A-Za-z0-9_]+): 'data:/gm)].map(m => m[1]); } catch (e) { return []; } };
+const SNDVAR = new Set((/const SND_VAR = \{([^\n]*)/.exec(readFileSync(join(ROOT, 'src/ui.js'), 'utf8')) || ['', ''])[1].match(/\b([A-Za-z0-9_]+): \[/g)?.map(x => x.split(':')[0]) || []);   // Sammelnamen (punch, artD …) aus ui.js
+const alleKeys = new Set([...Object.values(D.pools).flat().map(x => x[0]), ...sKeys('src/sound.js'), ...sKeys('src/sound_pult.js')]), tab = {}, bericht = [];
+// Zeilen, die bis 21:00 im Spiel denselben Platz hatten und jetzt einen eigenen bekommen (spiel): bisherige Wahl auf die Schwester-Zeile übertragen, wenn dort keine eigene steht
+for (const u of D.einheiten) { const gruppen = {}; for (const z of u.slots) if (z.mode !== 'ruf' && z.platz && z.platz !== '-') (gruppen[z.platz] = gruppen[z.platz] || []).push(z);
+  for (const zs of Object.values(gruppen)) { if (zs.length < 2 || new Set(zs.map(z => z.spiel || z.platz)).size < 2) continue;
+    for (const z of zs) { const e = wahl.get(u.t + '|' + z.id); if (!e || e.uebertragen) continue;
+      for (const y of zs) if (y !== z && !wahl.has(u.t + '|' + y.id)) { wahl.set(u.t + '|' + y.id, { ...e, platz_id: y.id, lautstaerke: e.lautstaerke / (z.vol || 1) * (y.vol || 1), uebertragen: z.id }); bericht.push(`${u.t}|${y.id}: Wahl von „${z.titel}“ übertragen (eigener Platz seit 21:00)`); } } } }
 for (const [k, e] of wahl) {
   const einh = D.einheiten.find(x => x.t === e.einheit), zeile = einh && einh.slots.find(z => z.id === e.platz_id);
-  const ruf = zeile && zeile.mode === 'ruf', platz = ruf ? zeile.id : zeile ? zeile.platz : e.platz_spiel, volSpiel = zeile ? zeile.vol : e.lautstaerke_spiel;   // Rufe (Stimmen): Platz = Zeile
+  const ruf = zeile && zeile.mode === 'ruf', platz = ruf ? zeile.id : zeile ? (zeile.spiel || zeile.platz) : e.platz_spiel, volSpiel = zeile ? zeile.vol : e.lautstaerke_spiel;   // Rufe (Stimmen): Platz = Zeile
   if (!platz || platz === '-') { bericht.push(`${k}: keine Zeile im Spiel – ausgelassen`); continue; }
   const w = { };
   if (e.wahl === '-') w.aus = 1;
   else if (e.wahl.startsWith('k:')) { const key = e.wahl.slice(2); if (!alleKeys.has(key)) { bericht.push(`${k}: Ton ${key} fehlt – ausgelassen`); continue; } w.k = key; }
-  else if (e.wahl.startsWith('p:')) { const p = e.wahl.slice(2); if (!D.pools[p]) { bericht.push(`${k}: Platz ${p} fehlt – ausgelassen`); continue; } if (p !== platz) w.p = p; }
+  else if (e.wahl.startsWith('p:')) { const p = e.wahl.slice(2); if (!D.pools[p] && !SNDVAR.has(p)) { bericht.push(`${k}: Platz ${p} fehlt – ausgelassen`); continue; } if (p !== (zeile ? zeile.platz : platz)) w.p = p; }
   const vf = volSpiel ? +(e.lautstaerke / volSpiel).toFixed(3) : 1; if (Math.abs(vf - 1) > 0.01) w.vf = vf;
   if (e.tonhoehe && Math.abs(e.tonhoehe - 1) > 0.005) w.rate = e.tonhoehe;
   if (ruf) { if (!w.k && !w.aus && zeile.platz === '-' && !w.p) { bericht.push(k + ': Ruf ohne Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || zeile.filt || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : zeile.fst != null ? zeile.fst : 0.6; }   // Rufe mit Standard-Platz: Filter auch ohne eigenen Ton übernehmen
   if (!Object.keys(w).length) continue;
+  if (zeile && !ruf) w.r = ['treffer', 'tod'].includes(zeile.ab) ? 'z' : 'a';   // Täter oder Getroffener (tonKontext, Ton-Bericht Punkt 2)
   (tab[e.einheit] = tab[e.einheit] || {})[platz] = w;
   if (zeile && e.platz_spiel && e.platz_spiel !== platz) bericht.push(`${k}: Pult-Zeile zeigte ${e.platz_spiel}, das Spiel spielt ${platz} – dort eingetragen`);
   if (!ausNeu.has(k)) bericht.push(`${k}: nur in älterem Export (${e.quelle})`);

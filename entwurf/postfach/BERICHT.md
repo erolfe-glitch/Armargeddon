@@ -1,3 +1,50 @@
+## 2026-11-22 Abend – 21:00: Ton-Pult 2 zusammengeführt, Enricos Tonwahl im Spiel
+
+Gepusht. Tests: `tonpult_test` 40/40, test_ton, Partietest Grauwall, test_kommentare – alle fehlerfrei.
+
+### 1. Zusammenführen
+- `origin/tonpult2` ist nach `main` gemergt (Merge-Commit), ohne Konflikte.
+- `tonpult_bau.mjs` ist neu gelaufen; `tonpult_test.mjs` bestand nach dem Merge 40/40.
+- Der Abschnitt aus Punkt 7 steht in `CLAUDE.md`.
+- **Arbeitsordner `C:\Projekte\Armargeddon-ton`:**
+  - Er ist sauber (nichts Ungesichertes), alles liegt in `main` auf GitHub, der Zweig `tonpult2` bleibt.
+  - Das Entfernen hat meine Sicherheitsabfrage hier blockiert (Löschen eines Ordners).
+  - Bitte selbst ausführen, wenn gewünscht: `git worktree remove C:\Projekte\Armargeddon-ton` (im Ordner `C:\Projekte\Armargeddon`).
+
+### 2. Enricos Tonwahl (Export 20:52, 132 Einträge)
+- Mit den älteren Exporten zusammengeführt sind es 139 Wahlen, der neueste Export gewinnt. **136 wirken im Spiel**, verteilt auf 51 Einheiten; 3 brauchen keinen Eintrag, weil sie dem Spielstandard entsprechen.
+- **Vorher ausgelassen, jetzt übernommen:**
+  - **„Aufgerieben“ (34 Einheiten, Sterbe-Rufe):** Diese Zeile hatte im Spiel gar keinen Ton.
+    - Sie hat jetzt einen eigenen Spiel-Platz `aufgerieben`.
+    - Er klingt, wenn ein Trupp aufgerieben wird; ohne Wahl bleibt es stumm wie bisher.
+  - **„Schlag: Fäuste und Klingen“ (`punch`) bei Scharfschützen, Mahlwerk und Rauchwerfern:** Das ist ein Sammelname, kein Tonplatz. Er ist jetzt zulässig.
+- Gewählte Töne, die bisher nur im Pult lagen, liegen jetzt auch im Spiel (`ton_teilen.mjs`); geprüft, alle 136 sind vorhanden.
+
+### 3. Aus dem Ton-Bericht
+- **Eigene Tonplätze statt Doppelbelegung:**
+
+  | Zeile | Spiel-Platz |
+  |---|---|
+  | Marsch und Sturmlauf | `marsch_schritte` |
+  | Einschläge Sperrfeuer | `sperr_boom` (Mörser, Minenwerfer) / `sperr_boomH` (schwere Geschütze) |
+  | Sturmrollen: Aufprall | `aufprall_rollen` |
+  | Gebäude rammen: Wucht | `aufprall_rammen` |
+  | Bohrstoß: Wucht | `aufprall_bohr` |
+
+  - Alle klingen ohne Wahl wie bisher. Im Pult hört man weiter denselben Ton, die Wahl ist aber getrennt.
+  - Der Hinweis „Gilt im Spiel auch für“ verschwindet dort.
+  - Die bisherige Wahl wird auf die Schwester-Zeile übertragen, wenn dort keine eigene steht: Beim Minenwerfer gilt die Sperrfeuer-Wahl so weiter auch für den Einzelschuss.
+- **`tonKontext`:**
+  - Jeder Eintrag weiß jetzt, ob er für den Handelnden gilt (Schuss, Treffer am Ziel, Nahkampf, Ziehen, Fähigkeiten) oder für den Getroffenen (Getroffen, Tod).
+  - Die Wahl „Treffer am Ziel“ einer Einheit klingt nicht mehr, wenn sie selbst getroffen wird.
+  - Umgekehrt klingt ihre Getroffen-Wahl nicht, wenn sie selbst schießt.
+- **`alleKeys`:** Alle Schlüssel aus `src/sound.js` und `src/sound_pult.js` sind zulässig (auch `horn`, `tiger`, `gallop` …). Nichts geht mehr als „Ton fehlt“ verloren.
+- `tonpult_test.mjs`: Eine Prüfung ist angepasst. Sie erwartete den Hinweis „gilt auch für“ bei Ziehen/Marsch; jetzt erwartet sie, dass er fehlt (eigener Platz).
+
+### 4./5.
+- Antworten notiert, nichts zu ändern.
+- Weitere Exporte liegen künftig als `tonpult_export_<datum>_<uhrzeit>.json` im Postfach, der neueste gewinnt. Nach jedem neuen Export: `node tools/tonwahl_bau.mjs`, `node tools/ton_teilen.mjs`, build.
+
 ## 2026-11-22 Abend – Entscheidungen 20:50: Eis bricht ein, Spuren dunkler
 
 Gepusht. Tests: test_regeln, test_belegung (alle Karten), test_kommentare, Partietest Krähenfurt – alle fehlerfrei. Bilder in `entwurf/probe/kraehenfurt_spuren/`.
