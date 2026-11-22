@@ -213,6 +213,7 @@ function slotsVon(t) {
   if (T.limber) { S('abil', 'auf', 'Aufprotzen', 'clank', 0.6, { gruppe: 'handgriff' }); S('abil', 'ab', 'Abprotzen', 'abprotzen', 0.6, { gruppe: 'handgriff' }); }
   if (T.roar) S('abil', 'loewe', 'Löwengebrüll', 'loewe', 0.6, { gruppe: 'ruf' });
   if (T.blastLance) S('abil', 'lanze', 'Sprenglanze', 'grenade2', 0.6, { gruppe: 'einschlag' });
+  if (T.granatSturm) S('nah', 'handgranate', 'Handgranaten vor dem Nahkampf', 'grenade', 0.55, { gruppe: 'einschlag' });   // F103 (2026-11-22)
   if (T.counterStrike) S('abil', 'gegenstoss', 'Gegenstoß', 'charge', 0.6, { gruppe: 'ruf' });
   // Ankunft
   S('ankunft', 'nachschub', 'Nachschub trifft ein', 'whistle', 0.5, { gruppe: 'signal' });
