@@ -1370,6 +1370,8 @@ function figImg(key) {
   const src = window.FIGS && window.FIGS[key]; if (!src) { FIGI[key] = null; return null; }
   const im = new Image(); im.src = src; FIGI[key] = im; return null;
 }
+// F89 (2026-11-22): Bögen, deren Modell nach links blickt (Rohr/Mündung links, Mannschaft dahinter) – beim Zeichnen gespiegelt, damit sie wie alle anderen zum Feind schauen
+const BILD_LINKS = new Set(['konkordat_moerser', 'konkordat_rauchwerfer', 'aschenwacht_minenwerfer']);
 function newFigs(u, d) {
   const m = FIGMAP[u.type]; if (!m || fac(u.side) === 'F') return null;   // Blaue Legion: noch keine neuen Bögen
   const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
@@ -1379,7 +1381,7 @@ function newFigs(u, d) {
   if (!m[1] && d.pose && POSE_SETS[u.type]) { const el = (now - d.pose.t0) * speed, PS = POSE_SETS[u.type], k = d.pose.art === 'hieb' && PS.hiebAus && el < d.pose.dauer * 0.4 ? PS.hiebAus : PS[d.pose.art];   // Hieb mit Ausholen auch bei Einzelmodellen (Helden)   // Einzelmodell mit Posen (Hauptmann, 2026-11-20)
     if (el > d.pose.dauer + 400) d.pose = null; else if (el >= 0 && el <= d.pose.dauer && k && window.FIGS && window.FIGS[pre + k]) keys = [pre + k]; }
   const ims = keys.map(figImg); if (!ims.length || ims.some(im => !im)) return null;   // noch nicht geladen: diesmal altes Bild
-  return { key: keys[0], ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, gross: STUFE3.includes(sheet), vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
+  return { key: keys[0], links: BILD_LINKS.has(keys[0]) || BILD_LINKS.has(pre + sheet), ims, trupp: !!m[1], max: m[2] || 4, sc: (m[3] && m[3].sc) || 1, slots: m[3] && m[3].slots, gross: STUFE3.includes(sheet), vehicle: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch'].includes(sheet), kette: ['koloss', 'panzer', 'bohrkoloss'].includes(sheet), deep: ['koloss', 'panzer', 'bohrkoloss', 'geschuetz_marsch', 'mg', 'mg_marsch', 'geschuetz', 'moerser', 'minenwerfer', 'rauchwerfer', 'panzerbuechse', 'ballon', 'feldkanone', ...SCHREITER].includes(sheet) };   // Gespann wie Fahrzeug verankert (Hufe/Räder auf dem Boden)
 }
 // Fahrzeuge (Dreiviertelansicht): Unterkante der Ketten je Bildspalte aus dem Bild messen (einmal je Bild).
 // pts = Unterkante als Anteile von Breite/Höhe, mid = mittlere Höhe der Unterkante (liegt auf dem Feldboden).
@@ -1474,7 +1476,10 @@ const POSE_SETS = { oger: { bereit: 'loewenoger_1', anlegen: 'loewenoger_posen_3
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
-function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false; if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; if (art === 'getroffen' && poseHat(u, 'getroffen2') && Math.random() < 0.5) art = 'getroffen2'; d.pose = { art, t0: now, dauer, ...o }; return true; }
+// M7 (2026-11-22): letzter Angreifer (Schuss, Granate, Nahkampf, Spezialschlag) – „getroffen“ taumelt und kippt von ihm weg, auch wenn er von hinten kommt
+let letzterAngreifer = null;
+function pose(id, art, dauer, o = {}) { const d = DU.get(id), u = unitById(id); if (!d || !posenAn(u)) return false;
+  if (art === 'getroffen' && o.von == null && letzterAngreifer && letzterAngreifer.id !== id && performance.now() - letzterAngreifer.t < 3000) { const ad = DU.get(letzterAngreifer.id); if (ad) o = { ...o, von: ad.x }; } if (art === 'kolben' && poseHat(u, 'hieb') && Math.random() < 0.5) art = 'hieb'; if (art === 'getroffen' && poseHat(u, 'getroffen2') && Math.random() < 0.5) art = 'getroffen2'; d.pose = { art, t0: now, dauer, ...o }; return true; }
 const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c][u.r]; return (d && d.vs && d.vs.dug) || (h && h.t === 'trench') || E.coverOf(G, u).tier >= 1 ? 'knien' : 'anlegen'; };
 // Bild und Bewegung einer Figur (j = Platz im Trupp): { im, dx, dy, rot } in Feldradien, rot > 0 = nach vorn geneigt
 function poseFigur(u, d, j, fallback) {
@@ -1494,7 +1499,9 @@ function poseFigur(u, d, j, fallback) {
   else if (art === 'graben') { dy = 0.035 * (0.5 - 0.5 * Math.cos(2 * Math.PI * el / 520)); rot = 0.03 * Math.sin(2 * Math.PI * el / 520); }   // im Takt der Schaufel
   else if (art === 'wurf') { const h0 = P0.dauer * 0.45; art = el < h0 ? 'ausholen' : 'loslassen'; if (art === 'ausholen') { dx = -0.03 * el / h0; rot = -0.05 * el / h0; } else dx = 0.05 * Math.sin(Math.PI * Math.min(1, (el - h0) / (P0.dauer * 0.4))); }
   else if (art === 'getroffen') { const k = Math.sin(Math.PI * q); dx = -0.07 * k; rot = -0.09 * Math.sin(Math.PI * 2.2 * q) * (1 - q); }   // taumelt zurück
-  return { im: (PB[art] && figImg(pre + PB[art])) || ruhe.im, dx, dy, rot, spiegel: art === 'getroffen' && !!PB[art] && GETROFFEN_SPIEGEL.has(pre + PB[art]) };
+  const hinten = art === 'getroffen' && P0.von != null && (facesLeft(d.face) ? P0.von > d.x + 1 : P0.von < d.x - 1);   // M7: Angreifer im Rücken – nach vorn taumeln, Bild umgekehrt spiegeln
+  if (hinten) { dx = -dx; rot = -rot; }
+  return { im: (PB[art] && figImg(pre + PB[art])) || ruhe.im, dx, dy, rot, spiegel: art === 'getroffen' && !!PB[art] && (GETROFFEN_SPIEGEL.has(pre + PB[art]) !== hinten) };
 }
 // F77 (2026-11-21): Getroffen-Bilder, deren Figur zum Feind hin kippt (Kopf deutlich vor den Füßen in Blickrichtung, gemessen: Neigung ab +0,12), werden gespiegelt – sie fallen dann vom Angreifer weg
 const GETROFFEN_SPIEGEL = new Set(['aschenwacht_eingreif_posen_4', 'aschenwacht_eiserne_huenen_posen_4', 'konkordat_loewenoger_posen_4', 'aschenwacht_gasschutz_posen_4',   /* Runde 2, gemessen +0,14 bis +0,34 */ 'konkordat_kampfanzug_posen_4', 'konkordat_scharfschuetze_posen_4', 'konkordat_mineur_posen_4', 'konkordat_schildwall_posen_4', 'konkordat_schildwall_posen2_4', 'konkordat_versorgung_posen_4', 'konkordat_melder_posen_4', 'aschenwacht_melder_posen_4', 'konkordat_soldat_posen_4', 'konkordat_sturm_posen_4', 'konkordat_flammen_posen_4', 'aschenwacht_sanitaeter_posen_4']);
@@ -1510,6 +1517,7 @@ async function poseWurf(id, x2, y2) {
 // F46 (2026-11-21): liegend bzw. niedrig gemalte Trupps sinken im Graben weniger tief ein (sonst sieht man sie kaum)
 const GRABEN_TIEFE = { buechse: 0.35, pirsch: 0.5, scharf: 0.5 };
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
+  const flipL = flip; if (nf.links) flip = flip ? 0 : 1;   // F89: flip = tatsächlich gespiegelt, flipL = Blick nach links (für Kästen/Mündung)
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
   const pl = gbPlatz(u, d), [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
@@ -1565,9 +1573,9 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const filt = [nf.kette ? (KETTE_FILTER[nf.key] || 'brightness(0.84) contrast(0.92) saturate(0.8) sepia(0.1)') : '', done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');   // Panzer: Farbstimmung der Umgebung
     if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
-    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore(); d.bildLinks = !!flip;   // F83: gezeigte Blickrichtung (Test)
-    d.fbx = [[x - w / 2 - d.x, top + sink * 0.8 - d.y, w, h, flip]];
-    { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip]; }   // Laufmündung (neue Ansicht)
+    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore(); d.bildLinks = !!flip !== !!nf.links;   // F83: gezeigte Blickrichtung (Test); F89: nach links gemalte Bilder
+    d.fbx = [[x - w / 2 - d.x, top + sink * 0.8 - d.y, w, h, flipL]];
+    { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flipL]; }   // Laufmündung (neue Ansicht)
     { const mz = MUZ2[nf.key]; d.muz2 = mz ? [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip] : null; }   // Mündung der Zweitwaffe
     g.filter = 'none';
     if (u.type === 'ballon') drawBallon(g, s, u, x, top, w, h, flip, filt);
@@ -2121,7 +2129,9 @@ async function playEvent(e) {
   const sp = speed; speed = Math.min(1, sp * 1.5);
   try { return await playEvent0(e); } finally { if (speed === Math.min(1, sp * 1.5)) speed = sp; }
 }
+const ANGRIFF_EV = new Set(['fire', 'shell', 'melee', 'counter', 'durchbruch', 'rollen', 'hinrichtung', 'freeblow', 'zweit', 'pzgranate', 'faust', 'strike']);
 async function playEvent0(e) {
+  if (ANGRIFF_EV.has(e.t)) { const aid = e.a != null ? e.a : e.u; if (aid != null) letzterAngreifer = { id: aid, t: performance.now() }; }   // M7
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
   const u = e.u != null ? unitById(e.u) : null, s = L.s;
   try { noteEvent(e, u); } catch (err) { console.error(err); }   // Ereignistext und Kriegstagebuch
@@ -2258,8 +2268,9 @@ async function playEvent0(e) {
       const a = DU.get(e.a), d = DU.get(e.d);
       const ksz = e.t === 'melee' ? await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4) : null;   // F48: Kampfszene
       if (!ksz && camOn() && e.t === 'melee' && !inView((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 0.15)) await camTo((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4, 520);   // F34: Kamera weich zum Nahkampf
-      if (e.face != null) a.face = e.face; else a.face = d.x >= a.x ? 0 : 3;
-      { const du0 = unitById(e.d); if (e.t === 'melee' && du0) d.face = a.x >= d.x ? 0 : 3; }   // F76: Verteidiger dreht sich in der Szene zum Angreifer (Panzer nur sichtbar – nach der Szene stellt syncAll ihre Blickrichtung aus den Regeln wieder her)
+      const fzFest = id => { const x = unitById(id); return !!x && E.fahrzeugArt && E.fahrzeugArt(x) === 'fahrzeug'; };   // F90 (2026-11-22): Fahrzeuge bleiben in ihrer Richtung (Regel F76), auch beim Gegenschlag
+      if (e.face != null) a.face = e.face; else if (!fzFest(e.a)) a.face = d.x >= a.x ? 0 : 3;
+      { const du0 = unitById(e.d); if (e.t === 'melee' && du0 && !fzFest(e.d)) d.face = a.x >= d.x ? 0 : 3; }   // F76: Verteidiger dreht sich in der Szene zum Angreifer (Panzer nur sichtbar – nach der Szene stellt syncAll ihre Blickrichtung aus den Regeln wieder her)
       const au = unitById(e.a), du = unitById(e.d), af = au && TYPES[au.type].fig, armored = du && TYPES[du.type].cls === 'walker';
       const strikeSnd = () => {   // Ton für jeden, der zuschlägt: Angreifer (melee) und Verteidiger beim Gegenschlag (counter) – Wunsch des Nutzers; erklingt beim Treffer
         const mech = au && TYPES[au.type].mech;
@@ -3618,7 +3629,7 @@ function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
 function staubSchleppe(id) { let an = true; (async () => { while (an) { const d = DU.get(id); if (d) boom(d.x, d.y + L.s * 0.12, L.s * 0.24, 'dust'); await wait(70); } })(); return () => { an = false; }; }
 const FLUG = new Set();
 async function flugZurueck(id, path) {   // Ziel des Durchbruchs fliegt im Bogen ein Feld zurück und schlägt auf
-  const d = DU.get(id), [x0, y0] = center(path[0][0], path[0][1]), [x1, y1] = center(path[1][0], path[1][1]), dur = 380 / speed, t0 = performance.now(); pose(id, 'getroffen', 900);
+  const d = DU.get(id), [x0, y0] = center(path[0][0], path[0][1]), [x1, y1] = center(path[1][0], path[1][1]), dur = 380 / speed, t0 = performance.now(); pose(id, 'getroffen', 900, { von: x0 - (x1 - x0) });   // M7: fliegt vom Stoß weg
   for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; d.lunge = { dx: 0, dy: -Math.sin(Math.PI * k) * L.s * 0.55 }; }
   d.lunge = null; d.x = x1; d.y = y1; playSound('impact', 0.4); shake(5); boom(x1, y1 + L.s * 0.1, L.s * 0.45, 'dust'); fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 34, mul: 0.5, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });
 }

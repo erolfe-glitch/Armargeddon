@@ -114,6 +114,20 @@ for (const [w, h] of [[1280, 800], [2560, 1440], [1920, 1200], [1920, 1080]]) { 
 await bild('nach_groessen');
 for (const [w, h] of [[1280, 800], [2560, 1440], [1920, 1200], [1920, 1080]]) { await groesse(w, h); await sleep(900); await karteOk(`${w}×${h}`); }
 for (let r = 2; r <= 4 && !(await ev('__dbg.G.over')); r++) { await rundeBeenden(); await zug(r); }
+// F89 (2026-11-22): alle Einheitentypen beider Seiten – gezeigte Blickrichtung zum Feind (Konkordat rechts, Aschenwacht links) und gedreht;
+// F90: Fahrzeuge drehen sich im Nahkampf (auch beim Gegenschlag) nicht zum Angreifer. Läuft zuletzt, weil es die Partie umbaut.
+{ await groesse(1920, 1080); await sleep(500);
+  const r = JSON.parse(await ev(`(async () => { const D = __dbg, G = D.G, E = D.E, W = ms => new Promise(r => setTimeout(r, ms)); const u = G.units[0], v = G.units[1], falsch = [], ohne = [];
+    for (const x of G.units) { x.c = -5; x.r = -5; } G.units = [u, v]; v.type = 'kohorte'; v.side = 'A'; v.c = 2; v.r = 2; u.c = 6; u.r = 4; D.select(u.id);
+    for (const t of Object.keys(E.TYPES)) { const T = E.TYPES[t]; u.type = t; u.side = T.side || 'A'; u.c = 6; u.r = 4; u.str = 10; u.mor = T.mor || 8; u.supp = 0; u.status = 'ok';
+      for (const f of [u.side === 'A' ? 0 : 3, u.side === 'A' ? 3 : 0]) { u.face = f; D.sync(); await W(120); const b = D.du(u.id).bildLinks; if (b == null) ohne.push(t); else if (b !== (f === 3)) falsch.push(t + '/' + f); } }
+    // F90: Panzer (Aschenwacht, Blick links) wird von rechts angegriffen und schlägt zurück
+    u.type = 'sturmpz'; u.side = 'D'; u.face = 3; u.c = 6; u.r = 4; u.str = 10; v.type = 'kohorte'; v.side = 'A'; v.c = 7; v.r = 4; v.face = 3; v.str = 10; v.mor = 8; v.ap = 1; v.bp = 3; v.attacked = false; v.status = 'ok'; G.side = 'A'; v.held = false; u.status = 'ok';
+    D.sync(); await W(200); const evs = E.melee(G, v, u); let gedreht = false; const p = D.spiel(evs); for (let i = 0; i < 60; i++) { if (D.du(u.id).face !== 3 || D.du(u.id).bildLinks !== true) gedreht = true; await W(50); } await p;
+    return JSON.stringify({ n: Object.keys(E.TYPES).length, falsch, ohne, panzerGedreht: gedreht, evs: evs.map(e => e.t) }); })()`));
+  console.log(`  Blickrichtung aller ${r.n} Typen: ${r.falsch.length ? 'FEHLER ' + r.falsch.join(', ') : 'ok'}${r.ohne.length ? ' (ohne neue Figur: ' + r.ohne.join(', ') + ')' : ''}; Panzer im Nahkampf ${r.panzerGedreht ? 'GEDREHT' : 'bleibt'} (${r.evs.join(' ')})`);
+  if (r.falsch.length) fehler.push('F89: falsche Blickrichtung: ' + r.falsch.join(', '));
+  if (r.panzerGedreht) fehler.push('F90: Panzer dreht sich im Nahkampf'); }
 ws.close(); ch.kill();
 console.log(fehler.length ? `\nFEHLER (${fehler.length}):\n  ` + [...new Set(fehler)].join('\n  ') : '\nKonsole rot-frei, keine Fehler.');
 process.exit(fehler.length ? 1 : 0);
