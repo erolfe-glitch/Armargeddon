@@ -2820,7 +2820,7 @@ const targetOf = p => p.uHex && targets.has(p.uHex.id) ? p.uHex : p.uFig && targ
 let drag = null, dragged = 0;
 document.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; }, true);   // Maus oder Finger: zuletzt benutzt, überall (z. B. Nachschub-Menü)
 cv.addEventListener('pointerdown', ev => { lastPT = ev.pointerType || 'touch'; if (!pinch) drag = { x: ev.clientX, y: ev.clientY, moved: false };   /* K18: Brett-Scrollen gibt es nicht mehr */ });   // Maus und Finger verschieben
-window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = performance.now(); drag = null; cv.style.cursor = ''; });
+window.addEventListener('pointerup', () => { if (drag && drag.moved) dragged = performance.now(); drag = null; cv.style.cursor = ''; cv._zeiger = ''; });
 // Kleine Pfeile am Rand zeigen, wohin man noch verschieben kann (Wunsch des Nutzers); antippen verschiebt ein Stück
 const SCR = {};
 for (const [k, ch] of [['l', '◀'], ['r', '▶'], ['u', '▲'], ['d', '▼']]) {
@@ -2846,9 +2846,9 @@ cv.addEventListener('pointermove', ev => {
   const movable = sel && !busy && p.h && reach.has(E.key(p.h[0], p.h[1]));
   hoverU = movable ? null : (p.uFig || p.uHex);
   if (sel && !busy) { const np = targetOf(p); if (np !== previewT) { previewT = np; updateHud(); } }
-  { const c = cursorFor(p); if (cv.style.cursor !== c && cv.style.cursor !== 'grabbing') cv.style.cursor = c; }
+  { const c = cursorFor(p); if (cv._zeiger !== c && cv.style.cursor !== 'grabbing') { cv.style.cursor = c; cv._zeiger = c; } }   // nur bei echtem Wechsel setzen (kein Flackern an Feldgrenzen)
 });
-cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; hideTip(); cv.style.cursor = ''; });
+cv.addEventListener('pointerleave', () => { hoverHex = null; hoverU = null; hideTip(); cv.style.cursor = ''; cv._zeiger = ''; });
 // Mauszeiger (Paket 2, nur Maus): Schwert über Gegnern für Nahkampf, Fadenkreuz für Beschuss, durchgestrichener Kreis, wenn nichts geht
 const CUR = (svg, x, y, fb) => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>${svg}</svg>`)}") ${x} ${y}, ${fb}`;
 const CURSOR = {
@@ -2859,6 +2859,11 @@ const CURSOR = {
   leucht: CUR("<g stroke='#120D0B' stroke-width='2' stroke-linejoin='round'><path d='M16 30 L16 15' stroke='#120D0B' stroke-width='4'/><path d='M16 30 L16 15' stroke='#C2A461' stroke-width='2'/><circle cx='16' cy='10' r='6.5' fill='#FFE08A'/><circle cx='16' cy='10' r='3' fill='#FFF7D6' stroke='none'/></g><g stroke='#FFD24A' stroke-width='1.6' stroke-linecap='round'><path d='M6 10 L3 10 M26 10 L29 10 M8.5 3.5 L6.5 1.5 M23.5 3.5 L25.5 1.5'/></g>", 16, 30, 'crosshair'),
   feld: CUR("<g fill='none' stroke-linejoin='round'><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#120D0B' stroke-width='5'/><path d='M16 4 L27 10 L27 22 L16 28 L5 22 L5 10 Z' stroke='#E2B04A' stroke-width='2.4'/></g><circle cx='16' cy='16' r='3.2' fill='#E2B04A' stroke='#120D0B' stroke-width='1.5'/>", 16, 16, 'pointer'),
 };
+// Gemalte Mauszeiger (Enrico 2026-11-22 15:53, tools/zeiger_bau.py → src/zeiger.js): 32 px, auf 2×-Bildschirmen 64 px; fehlt ein Bild, bleibt der gezeichnete Zeiger
+{ const Z = window.ZEIGER || {}, mitSet = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('cursor', 'image-set(url("data:,") 1x) 0 0, auto');
+  const zc = (n, fb) => Z[n] ? (mitSet ? `image-set(url("${Z[n].a}") 1x, url("${Z[n].b}") 2x) ${Z[n].x} ${Z[n].y}, ${fb}` : `url("${Z[n].a}") ${Z[n].x} ${Z[n].y}, ${fb}`) : null;
+  for (const [k, n, fb] of [['schwert', 'saebel', 'crosshair'], ['ziel', 'ziel', 'crosshair'], ['nein', 'nein', 'not-allowed'], ['feld', 'feld', 'pointer'], ['pfeil', 'pfeil', 'default'], ['hand', 'hand', 'pointer'], ['stiefel', 'stiefel', 'pointer'], ['schere', 'schere', 'pointer']]) { const v = zc(n, fb); if (v) CURSOR[k] = v; else if (!CURSOR[k]) CURSOR[k] = ''; }
+  if (CURSOR.pfeil) document.documentElement.style.cursor = CURSOR.pfeil; }   // Grundzeiger überall, auch über Menüs; Knöpfe behalten den Hand-Zeiger des Systems
 // F33 (2026-11-20): Zeiger passend zur Fähigkeit über gültigem Ziel – Symbol aus dem Bogen auf dunkler Plakette; ungültig bleibt das Verbotszeichen
 const SYMCUR = {};
 function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym] || fb; const im = UPI['s_' + sym]; if (!im || !im.complete || !im.naturalWidth) return fb;
@@ -2867,10 +2872,10 @@ function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym
     SYMCUR[sym] = `url("${c.toDataURL('image/png')}") 16 16, pointer`; } catch (e) { SYMCUR[sym] = null; }
   return SYMCUR[sym] || fb; }
 const ABIL_CUR = { durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'sturmlauf', sprung: 'sprung', rollen: 'sturmrollen', pzgranate: 'panzergranate' };   // bogen8a (2026-11-22): Zeiger wie die Knöpfe
-const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
+const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return CURSOR.schere || symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
 function cursorFor(p) {
-  if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
   const u = p.uFig || p.uHex;
+  if (!G || !sel || busy || !human(G.side) || G.over || drag) return G && !busy && !drag && !G.over && human(G.side) && u && u.side === G.side && E.alive(u) ? CURSOR.hand : '';   // '' = Grundzeiger (Pfeil); eigene Einheit zum Anwählen: Panzerhandschuh
   { const hk = u ? E.key(u.c, u.r) : p.h && E.key(p.h[0], p.h[1]); if (abilMode && hk != null && abilSet.has(hk)) return abilCursor(); }   // Feld-Fähigkeit gewählt: gültiges Feld (auch mit Einheit darauf)
   if (u && u.side !== sel.side && E.alive(u)) { const t = targets.get(u.id); if (!t) return shellHexes.has(E.key(u.c, u.r)) ? CURSOR.ziel : CURSOR.nein;   // Artillerie: Ziel geht vor „nicht begehbar“
     const k = t.both ? (atkPref !== 'auto' ? atkPref : t.kind) : t.kind; return k === 'melee' ? CURSOR.schwert : CURSOR.ziel; }
@@ -2878,8 +2883,11 @@ function cursorFor(p) {
   if (k && healSet.has(k)) return symCursor(TYPES[sel.type].repair ? 'zahnrad' : 'sanitaeter');   // F33: Heilen bzw. Reparieren
   if (k && recSet.has(k)) return symCursor('schraubenschluessel');   // Bergen
   if (k && sendSet.has(k)) return symCursor('meldehund');   // Befehl überbringen
-  if (u && u.side === sel.side) return '';
-  if (!k || reach.has(k) || abilSet.has(k) || shellHexes.has(k) || healSet.has(k) || sendSet.has(k) || recSet.has(k) || spawnSet.has(k)) return '';
+  if (u && u.side === sel.side) return CURSOR.hand;
+  if (k && reach.has(k)) return CURSOR.stiefel;   // gemalte Zeiger: Ziehen
+  if (k && shellHexes.has(k)) return CURSOR.ziel;
+  if (k && (abilSet.has(k) || spawnSet.has(k))) return CURSOR.feld;
+  if (!k || healSet.has(k) || sendSet.has(k) || recSet.has(k)) return '';
   return CURSOR.nein;
 }
 // Pergament-Tooltips für Marken (Karte und Panel), per Maus beim Drüberfahren, per Touch durch Antippen oder langes Drücken
