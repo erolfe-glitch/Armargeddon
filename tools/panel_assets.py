@@ -58,6 +58,8 @@ SYMBOLS = {
     'abgeleitet': ['stiefel', 'garbe'],
     # Einzelsymbol (ui-quelle/symbol_schaufel.png, 2026-11-18): Eingraben
     'symbol_schaufel': ['schaufel'],
+    # Fähigkeiten (bogen8a, 2026-11-22): kein Symbol mit zwei Bedeutungen
+    'bogen8a_faehigkeiten': ['durchbruch', 'hinrichtung', 'sturmrollen', 'sturmlauf', 'sprung', 'gebruell', 'kanone_zweit', 'panzergranate', 'breitseite'],
 }
 # Kartenmarken (ui-quelle/kartenmarken.png): heile Deckungsschilde, Anführer-Orden, Aktionspunkt-Münzen
 PARTS.update({

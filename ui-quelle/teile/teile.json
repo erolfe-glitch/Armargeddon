@@ -478,5 +478,41 @@
  "wimpel/wimpel_legion": [
   721,
   794
+ ],
+ "bogen8a_faehigkeiten/s_durchbruch": [
+  636,
+  578
+ ],
+ "bogen8a_faehigkeiten/s_hinrichtung": [
+  573,
+  620
+ ],
+ "bogen8a_faehigkeiten/s_sturmrollen": [
+  636,
+  462
+ ],
+ "bogen8a_faehigkeiten/s_sturmlauf": [
+  641,
+  550
+ ],
+ "bogen8a_faehigkeiten/s_sprung": [
+  641,
+  581
+ ],
+ "bogen8a_faehigkeiten/s_gebruell": [
+  641,
+  613
+ ],
+ "bogen8a_faehigkeiten/s_kanone_zweit": [
+  745,
+  444
+ ],
+ "bogen8a_faehigkeiten/s_panzergranate": [
+  561,
+  599
+ ],
+ "bogen8a_faehigkeiten/s_breitseite": [
+  613,
+  497
  ]
 }

@@ -2696,7 +2696,7 @@ function symCursor(sym, fb = CURSOR.feld) { if (sym in SYMCUR) return SYMCUR[sym
     const w = Math.min(22, 22 * im.naturalWidth / im.naturalHeight), h = w * im.naturalHeight / im.naturalWidth; g.drawImage(im, 16 - w / 2, 16 - h / 2, w, h);
     SYMCUR[sym] = `url("${c.toDataURL('image/png')}") 16 16, pointer`; } catch (e) { SYMCUR[sym] = null; }
   return SYMCUR[sym] || fb; }
-const ABIL_CUR = { durchbruch: 'nahkampf', hinrichtung: 'nahkampf', charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'marsch', sprung: 'nahkampf', rollen: 'nahkampf', pzgranate: 'handgranate' };
+const ABIL_CUR = { durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', charge: 'sprengladung', mine: 'tellermine', smoke: 'nebel', tunnel: 'spitzhacke', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste', rush: 'sturmlauf', sprung: 'sprung', rollen: 'sturmrollen', pzgranate: 'panzergranate' };   // bogen8a (2026-11-22): Zeiger wie die Knöpfe
 const abilCursor = () => { if (feldArt === 'zweit' || feldArt === 'faust') return CURSOR.ziel; if (feldArt === 'cut') return symCursor('drahtschere'); const a = sel && TYPES[sel.type].abil; return a === 'mark' ? CURSOR.leucht : a === 'strike' ? CURSOR.ziel : ABIL_CUR[a] ? symCursor(ABIL_CUR[a]) : CURSOR.feld; };
 function cursorFor(p) {
   if (!G || !sel || busy || !human(G.side) || G.over || drag) return '';
@@ -3224,7 +3224,7 @@ const ABIL_KURZ = {
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Höchstens alle ${A.cd} Runden.` : ''); }
-const ABIL_SYM = { durchbruch: 'marsch', hinrichtung: 'nahkampf', pzgranate: 'handgranate', rollen: 'marsch', sprung: 'nahkampf', rush: 'marsch', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { /* bogen8a (Enrico 2026-11-22): je Fähigkeit ein eigenes Zeichen */ durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', pzgranate: 'panzergranate', rollen: 'sturmrollen', sprung: 'sprung', rush: 'sturmlauf', mark: 'zielen', strike: 'granate_artillerie', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
@@ -3405,13 +3405,13 @@ function unitButtons(T, hints) {
   }
   if (T.zweit) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG)
     const zt = E.zweitTargets(G, sel), Z = T.zweit;
-    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'granate_artillerie' : 'garbe', name: Z.name, costTxt: 'einmal je Runde zusätzlich, kostet keine Aktion', text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
+    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'kanone_zweit' : 'garbe', name: Z.name, costTxt: 'einmal je Runde zusätzlich, kostet keine Aktion', text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
       why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
     if (abilMode && feldArt === 'zweit') hints.push('<i>Messing markiert:</i> Ziel anklicken.');
   }
   if (T.faust) {   // Faustsalve (Eisenknecht, 2026-11-20): einmal je Schlacht, zwei Ziele nacheinander anklicken
     const ft = E.faustTargets(G, sel);
-    btns.push({ act: 'faust', sym: 'granate_artillerie', name: 'Faustsalve', cost: 1, costTxt: 'die Aktion, einmal je Schlacht', text: `Beide Unterarm-Kanonen feuern zugleich auf zwei verschiedene Ziele, jeder Schuss ×${String(P.FAUST_MUL).replace('.', ',')}. Statt des normalen Schusses, nur einmal je Schlacht.`,
+    btns.push({ act: 'faust', sym: 'kanone_zweit', name: 'Faustsalve', cost: 1, costTxt: 'die Aktion, einmal je Schlacht', text: `Beide Unterarm-Kanonen feuern zugleich auf zwei verschiedene Ziele, jeder Schuss ×${String(P.FAUST_MUL).replace('.', ',')}. Statt des normalen Schusses, nur einmal je Schlacht.`,
       on: abilMode && feldArt === 'faust', off: !E.canFaust(G, sel), why: sel.faustUsed ? 'Schon abgefeuert (einmal je Schlacht).' : sel.supp > 0 ? 'Niedergehalten.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : `Braucht zwei Ziele in Reichweite und Schussfeld (jetzt ${ft.length}).` });
     if (abilMode && feldArt === 'faust') hints.push(faustErst == null ? '<i>Messing markiert:</i> erstes Ziel anklicken.' : '<i>Messing markiert:</i> zweites Ziel anklicken.');
   }
@@ -3422,7 +3422,7 @@ function unitButtons(T, hints) {
     const why = T.mg && !sel.setup ? 'MG erst aufbauen.' : !sel.supp && !sel.attacked && E.held(G, sel) ? 'Im Nahkampf gebunden: Schießen geht nicht.' : atkWhy;
     if (T.broadside) {   // Sturmpanzer: Breitseite deutlich (2026-11-17) – zwei Schüsse je Runde auf zwei Ziele, Zähler am Knopf, nach dem ersten Schuss pulsiert er
       const n = (sel.bsT || []).length, zweiter = sel.attacked && n === 1, frei = tg.some(t => t.kind === 'fire' || t.both);
-      btns.push({ act: 'p-fire', sym: 'zielen', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${T.rng} Felder, danach ein anderes bis 2 Felder (beide Schüsse zusammen die Aktion).`, on: atkPref === 'fire', off: !frei,
+      btns.push({ act: 'p-fire', sym: 'breitseite', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${T.rng} Felder, danach ein anderes bis 2 Felder (beide Schüsse zusammen die Aktion).`, on: atkPref === 'fire', off: !frei,
         why: n >= 2 ? 'Beide Schüsse der Breitseite sind abgegeben.' : zweiter ? 'Kein zweites Ziel bis 2 Felder.' : why });
       if (zweiter && frei) hints.push('<i>Breitseite:</i> zweites Ziel bis 2 Felder anklicken (×0,6).');
     } else
@@ -3462,7 +3462,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tl', sym: 'drehpfeil', name: 'Nach links drehen', bp: dk, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
-  if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'flucht', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
+  if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'gebruell', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
   { const ab = ABGEHAKT.has(G.turn + G.side + ':' + sel.id); btns.push({ act: 'pass', sym: 'haken', name: ab ? 'Wieder öffnen' : 'Fertig', on: spent.has(sel.id), text: ab ? 'Von Hand abgehakt. Noch einmal (Leertaste oder E): wieder offen, wie vorher.' : spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (wird grau), auch wenn sie noch etwas könnte – Leertaste oder E; danach geht es zur nächsten offenen Einheit.' }); }   // F102   // F11: für alle Einheiten
   { const gr = !spent.has(sel.id) && sel.ap < 1 ? bereitGrund(sel) : ''; const NOCH = { ziehen: 'kann noch ziehen', aufbauen: 'kann noch aufbauen', abbauen: 'kann noch abbauen', gebruell: 'Löwengebrüll noch frei' };
     if (NOCH[gr]) hints.push(`<i>Aktion verbraucht,</i> ${NOCH[gr]} – noch nicht fertig. „Fertig“ hakt sie ab.`); }   // F88 (2026-11-22): warum noch kein Haken
