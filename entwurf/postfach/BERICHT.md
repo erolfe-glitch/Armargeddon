@@ -1,3 +1,85 @@
+## 2026-11-22 Abend – Fehler 17:32 und 17:40, Entscheidungen 17:30 (`d8d5b8d` … `0755a5b`)
+
+Alles gepusht. Tests: Partietest (Grauwall und Krähenfurt), test_regeln, test_kommentare, test_ton, dazu neu `tools/test_einschlag.mjs` und `tools/test_hilfe.mjs`. Alle fehlerfrei.
+
+### 17:32 Bild hängt bei Artillerie-Einschlag – behoben
+- **Ursache:**
+  - Jeder Feldwechsel durch einen Einschlag (offenes Feld → Trichter, 30 % je Einschlag; Barrikade/Bunker → Trichter; Draht zerschossen) baute die **ganze Gelände-Welt neu** auf (0,4–0,6 s).
+  - Danach wurde das ganze Bodenbild neu gefiltert, jedes Mal mit einer frisch angelegten großen Leinwand.
+  - Bei Sperrfeuer passierte das mehrmals hintereinander. Das ist das „Aufhängen“; es liegt nicht an einem bestimmten Untergrund.
+  - Die vielen großen Zwischenleinwände treiben den Grafikspeicher hoch. Das ist die wahrscheinliche Ursache für „Bild ganz weg, danach Boden kaputt“.
+- **Behoben:**
+  - Ein neuer Trichter wird nur auf seinem Feld nachgezeichnet, ins Weltbild und ins gefilterte Bodenbild.
+  - Bei zerstörter Barrikade, Bunker oder Draht werden nur deren Teile herausgenommen.
+  - Bleibt der Boden gleich, wird nichts neu gefiltert; die Hilfsleinwand wird wiederverwendet.
+  - Eingestürzte Häuser in Krähenfurt (Platzhalter = Ruine) brauchen keinen Neuaufbau.
+  - Geht die Zeichenfläche verloren, baut das Spiel beim Zurückkommen alle Zwischenbilder, das Gelände und den Boden sauber neu auf.
+- **Messung** (`tools/test_einschlag.mjs`, sechs Einschläge kurz hintereinander, Bildwirkung leicht und stark, längste Bildpause):
+
+| Karte | vorher | nachher |
+|---|---|---|
+| Grauwall | 540–543 ms | 22–28 ms |
+| Sankt Ruß | 621–711 ms | 30–33 ms |
+| Krähenfurt | 654–675 ms | 73–76 ms |
+
+- **Bleibt:** Einen vollen Neuaufbau gibt es nur noch beim Einsturz der Kirche von Sankt Ruß (ca. 0,4 s, einmal je Schlacht, unter Staub und Einsturz-Ton).
+
+### 17:40 Spielfehler
+1. **Sanitäter:**
+   - Versorgen geht nur noch über den Knopf „Versorgen“. Knopf an: Ziele markiert und Zeiger, ein Klick heilt. Zweiter Druck schaltet aus.
+   - Ohne Knopf wählt ein Klick auf eine eigene Einheit nur aus.
+   - Genauso bei Versorgungstrupps (Reparieren), Meldegänger (Befehl überbringen) und Bergen.
+   - Gasschutz und die übrigen Fähigkeiten liefen schon über den Fähigkeitsmodus.
+   - Test: ohne Knopf Stärke unverändert und Einheit gewählt; mit Knopf geheilt.
+2. **Feldkanone fliegt flach:** fast gerade Bahn (Bogen 0,15 statt 3,2), schnelles Geschoss (12 statt 34 Bilder), Mündungsfeuer waagerecht zum Ziel.
+3. **Feldkanone ohne Protzen:**
+   - Sie zieht immer 2 Felder und darf danach schießen; Protz-Knöpfe sind bei ihr weg, die KI zieht sie wie andere Einheiten.
+   - Donnerrohr und Aschenwacht-Geschütze bleiben wie sie sind.
+   - **Bewegungston:** neuer Pult-Eintrag „Ziehen (ohne Protzen)“ in der Gruppe „Gespann und Räder“. Standard `gespann`; Kandidaten `gallop` (Galopp-Gespann), `wagenknarren`, `pferd_unruhe`, im Winter `pferde_schnee`.
+   - Preis bleibt 40.
+   - **Messung** (4 × 200): Grauwall 54,3 %, Sankt Ruß 48,9 %, Krähenfurt 51,0 %.
+4. **Fesselballon, Fertig-Haken:**
+   - Ich finde keinen fehlenden Knopf. In allen Zuständen (oben, eingeholt, nach dem Markieren, ohne Bewegungspunkte) steht „Fertig“ (Taste 5) im Bedienfeld.
+   - Auch der automatische Haken kommt richtig, sobald nichts mehr geht. Eingeholt mit Punkten darf er noch ziehen.
+   - **Frage an Enrico:** In welcher Lage fehlte er (Seite, Runde, gerade gekauft, eingeholt)? Ein Bildschirmfoto würde helfen.
+5. **Nachtrag (Meldegänger):** Gibt der Hund einer schon fertigen (abgehakten) Einheit Punkte, wird der Haken entfernt. Sie kann wieder ziehen; ein aufgebautes MG kann sich mit dem Punkt abbauen. Test: 2 BP, „ziehen“, 3 erreichbare Felder.
+
+### 17:30 Entscheidungen
+1. **Kartenname „Krähenfurt“:** im Startmenü und in den Texten; intern weiter `winterdorf`.
+2. **Kapelle mit Türmchen:** +1 Sicht (keine Reichweite). Balance siehe oben: 51,0 %.
+3. **Robustere Aufstellung – versucht, noch nicht Standard:**
+   - Gebaut ist eine Rollen-Aufstellung für beide Seiten (`deployZone`):
+     - Fußtruppen vorn, Fahrzeuge an Straßen und im Offenen, MG vorn in Deckung, Unterstützung und Geschütze hinten.
+     - Plätze bewertet statt der Reihe nach; Mischen nur innerhalb einer Rolle.
+   - **Ergebnis** (Sieg Konkordat, je 4 × 200, fest / gemischt):
+
+| Fassung | Grauwall | Sankt Ruß | Krähenfurt |
+|---|---|---|---|
+| bisher (bleibt Standard) | 54,3 / 60,3 | 48,9 / 78,3 | 51,0 / 91,6 |
+| Rollen-Aufstellung, Anführer hinten | 46,1 / 52,9 | 78,8 / 83,8 | 99,4 / 92,8 |
+| dto., Anführer vorn | 22,1 / 62,4 | 94,3 / 79,8 | 90,0 / 93,8 |
+| dto., Anführer nah hinter den Trupps | 42,9 / 57,4 | 28,9 / 85,1 | 99,9 / 96,0 |
+| beste Variante + Stellschrauben (Band, KI-Vorstoß) | – | 39–84 / 53–81 | 97–100 / 80–96 |
+
+   - **Bewertung:**
+     - Die erste Fassung macht fest und gemischt zwar ähnlich (höchstens 7 Punkte), verschiebt aber die Balance stark, auf Krähenfurt auf 99 %.
+     - Kleine Änderungen der Anführer-Plätze kippen das Ergebnis um 40–55 Punkte.
+     - Die Empfindlichkeit liegt also nicht nur in der Aufstellung, sondern auch daran, wie die KI auf die Startlage reagiert.
+     - Mit kleinen Werten war das heute nicht ins Ziel zu bringen.
+   - Ich habe deshalb die **bewährte Aufstellung als Standard** gelassen; mit ihr liegen alle drei Karten fest im Ziel (siehe Tabelle).
+   - Die neue ist mit `AUFSTELLUNG_NEU=1` abrufbar.
+   - **Vorschlag:** als eigenes Paket weiterführen und dabei die KI-Startphase mit untersuchen. Enrico entscheidet.
+4. **Töne ausgelagert:**
+   - `index.html` bettet `src/sound.js` nicht mehr ein; `ui.js` lädt die Töne nach dem Start daneben.
+   - Bis dahin steht im Startmenü „Töne werden geladen …“; danach startet die Titelmusik bzw. Kulisse.
+   - Fehlt die Datei, läuft das Spiel ohne Ton weiter (Hinweis statt Fehler).
+   - Pult und Tonprobe laden `src/sound.js` wie bisher selbst.
+   - **Größe `index.html`: 65,9 MB → 35,7 MB.**
+   - GitHub Pages: `src/sound.js` ist eingecheckt und wird von dort geladen; lokal über den Vorschau-Server ebenso.
+5. **Partietest für Krähenfurt** angepasst (Testgebiet wird im Test frei gemacht, größere Karte beim Start nicht ganz im Bild = erlaubt): fehlerfrei.
+
+Als Nächstes: Abschnitt 18:00 (neue Bausteine für Krähenfurt).
+
 ## 2026-11-22 Abend – Wintertöne (Auftrag 17:05)
 
 Eingebaut und gepusht. Sie gelten nur auf Karten mit `MAP.winter` (vorerst das Winterdorf). Tests (test_ton mit allen Winterplätzen, Partietest, test_kommentare) fehlerfrei. CREDITS ergänzt, sound-quelle gesichert (Dateien kopiert nach `sound-quelle/Winter/`).
