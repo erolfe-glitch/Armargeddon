@@ -1076,6 +1076,21 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
 @keyframes heldTitel { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-4deg) scale(2.3); filter: blur(5px); } 9% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(.93); filter: none; }
   14% { transform: translate(-50%, -50%) rotate(-4deg) scale(1.04); } 19% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); } 70% { opacity: 1; transform: translate(-50%, -50%) rotate(-4deg) scale(1.02); }
   100% { opacity: 0; transform: translate(-50%, -60%) rotate(-4deg) scale(1.05); } }
+
+/* F103 Rollen (2026-11-22): Rolle, Stark/Schwach gegen, Kontert man mit – Pergament-Inhalt sauber, gleiche Begriffe überall */
+.rolle { margin: 6px 0 8px; font-size: 14px; line-height: 1.35; }
+.rolle .rl-n b, .rolle .rl-k b { color: #C2A461; }
+.rolle .rl-p { color: #9fbf7a; } .rolle .rl-m { color: #d98a6a; } .rolle .rl-p b, .rolle .rl-m b { color: inherit; }
+.rolle .rl-k { color: #cdbd9c; font-size: 13px; }
+.sn-k .rl { display: block; font-size: 12px; color: #C2A461; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#hudSub em.rl { color: #C2A461; font-weight: 600; }
+#detRolle .rolle { font-size: 15px; margin: 4px 0 10px; }
+/* auf Pergament (Details im Nachschub/Armee-Auswahl, Info-Fenster) dunkle Tinte statt heller Schrift */
+#shopDet .rolle, #armyDet .rolle, #detRolle .rolle { color: #2a1d14; }
+#shopDet .rolle .rl-n b, #armyDet .rolle .rl-n b, #detRolle .rolle .rl-n b, #shopDet .rolle .rl-k b, #armyDet .rolle .rl-k b, #detRolle .rolle .rl-k b { color: #5a3e12; }
+#shopDet .rolle .rl-p, #armyDet .rolle .rl-p, #detRolle .rolle .rl-p { color: #3c5a1c; }
+#shopDet .rolle .rl-m, #armyDet .rolle .rl-m, #detRolle .rolle .rl-m { color: #8E2B22; }
+#shopDet .rolle .rl-k, #armyDet .rolle .rl-k, #detRolle .rolle .rl-k { color: #3a2c1e; }
 </style>
 </head>
 <body>

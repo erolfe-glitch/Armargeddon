@@ -10,6 +10,7 @@
     if (T.cls === 'medic') return T.repair || A === 'ammo' ? 'Versorgung' : 'Sanität';
     if (T.cls === 'art') return T.mobile ? 'Steilfeuer' : 'Fernfeuer';
     if (A === 'mark' || A === 'strike' || T.relay || T.spot) return 'Aufklärung und Feuerleitung';
+    if (T.courier) return 'Unterstützung (Meldegänger)';
     if (A === 'smoke') return 'Nebel';
     if (T.cls === 'mg') return 'Feuerunterstützung (MG)';
     if (T.cls === 'walker') { const m = E.medaillen(t); return T.stufe3 ? 'Durchbruch (Stufe 3)' : m.fPz >= 1 && T.at ? 'Panzerjäger' : E.isMech(t) ? 'Kampfmaschine' : 'Durchbruch (Panzer)'; }
@@ -35,7 +36,8 @@
     if (T.cls === 'cav' || T.cls === 'storm') stark.push(ZIEL.gesch);
     if (T.cls === 'art' || T.flame || T.cls === 'flame' || T.breaker || T.abil === 'charge' || (T.cls === 'walker' && !T.gat)) stark.push(ZIEL.stell);
     if (T.cls === 'mg' || T.pin) stark.push(ZIEL.reiter);
-    if (!stark.length && m.fInf >= 1) stark.push(ZIEL.fuss);
+    const hilfe = T.cmd || T.cls === 'medic' || ['mark', 'strike', 'smoke', 'ammo'].includes(T.abil) || T.relay || T.spot || T.banner || T.courier;   // Führung und Unterstützung: kein „stark gegen“ nur aus der Grundwaffe
+    if (!stark.length && m.fInf >= 1 && !hilfe) stark.push(ZIEL.fuss);
     const fern = T.rng > 0 || T.cls === 'art';
     if (fern && m.fPz === 0) schwach.push(ZIEL.gep);
     if (m.rolle === 'schwach' || (T.atk > 0 && m.fNah <= 0.5)) schwach.push(ZIEL.nah);

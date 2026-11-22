@@ -3347,7 +3347,7 @@ function neuKarteMehr(u) {
   if (!u) { m.innerHTML = ''; return; }
   const T = TYPES[u.type];
   m.innerHTML = `<div class="hm-w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', u.limbered ? P.LIMBER_MV : T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div>` +
-    (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` + (T.real ? `<p class="real"><b>Im echten Krieg:</b> ${T.real}</p>` : '');
+    rolleHtml(u.type) + (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` + (T.real ? `<p class="real"><b>Im echten Krieg:</b> ${T.real}</p>` : '');
 }
 { const b = document.createElement('button'); b.className = 'neu-mehr'; b.id = 'btnMehr'; b.title = 'Einheitenkarte: kurz oder ausführlich'; $('btnInfo').after(b);
   const set = () => { document.body.classList.toggle('kartelang', kartLang); b.textContent = kartLang ? 'kurz' : 'ausführlich'; }; set();
@@ -3364,10 +3364,13 @@ function shopKatOf(t) { const T = TYPES[t]; return T.cmd ? 'Kommando' : T.cls ==
 // weiche Trennstellen an Wortfugen langer Namen (Karten werden bei 1280 px schmal; automatische Silbentrennung greift nicht überall)
 const SN_FUGE = /(Schützen|Melde|Fernsprech|Scharf|Graben|Lanzen|Flammen|Stahl|Turm|Ordens|Kreuz|Rauch|Tunnel|Versorgungs|Ballon|Aschen|Spreng|Signal|Draht|Banner|Panzer|Minen|Brand|Sturm|Eisen|Säge|Klauen|Eingreif|Pirsch)(?=\p{Ll}{4})/gu;
 const snName = n => n.replace(SN_FUGE, '$1­');
-function snKarte(t) { const T = TYPES[t]; return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+// F103 (2026-11-22): Rolle, Stark/Schwach gegen, Kontert man mit – aus den Werten abgeleitet (src/rollen.js), überall dieselben Begriffe
+function rolle(t) { return window.ROLLEN ? ROLLEN.rollenVon(E, t) : null; }
+function rolleHtml(t) { const r = rolle(t); if (!r) return ''; return `<div class="rolle"><div class="rl-n"><b>Rolle:</b> ${r.rolle}</div>${r.stark.length ? `<div class="rl-p">▲ <b>Stark gegen:</b> ${r.stark.join(', ')}</div>` : ''}${r.schwach.length ? `<div class="rl-m">▼ <b>Schwach gegen:</b> ${r.schwach.join(', ')}</div>` : ''}<div class="rl-k"><b>Kontert man mit:</b> ${r.konter.join(', ')}</div></div>`; }
+function snKarte(t) { const T = TYPES[t], r = rolle(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span>${r ? `<span class="rl">${r.rolle}</span>` : ''}<span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
 function snZeig(det, el, sheet, w, platz) {   // platz: Element, über das die Details gelegt werden (Armee-Auswahl: Seitenleiste), sonst neben das Fenster
   const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
-  det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
+  det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${rolleHtml(t)}${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
   det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight;
   if (platz) {   // Punkt 8 (2026-11-21): Armee-Auswahl – direkt neben der Karte (rechts, sonst links, sonst darüber), nie über der Auswahl-Übersicht
     let x = r.right + 10, y = r.top - 10; if (x + dw > innerWidth - 8) x = r.left - dw - 10; if (x < 8) { x = Math.max(8, Math.min(innerWidth - dw - 8, r.left + (r.width - dw) / 2)); y = r.top - dh - 10 < 8 ? r.bottom + 10 : r.top - dh - 10; }
@@ -3565,7 +3568,8 @@ function updateHud() {
     const mine = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
     $('upMark').innerHTML = crest(u.side); medaillenZeigen(u);
     $('hudName').textContent = T.name;
-    $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${u.officer ? ` · ${UP.orden ? `<img class="up-orden" src="${UP.orden}" alt="Anführer">` : '★ '}${u.officer}` : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}`;
+    { const r = rolle(u.type); $('hudName').title = r ? `${r.rolle}${r.stark.length ? ' · stark gegen ' + r.stark.join(', ') : ''}${r.schwach.length ? ' · schwach gegen ' + r.schwach.join(', ') : ''}` : ''; }
+    $('hudSub').innerHTML = `<i class="${u.side}">${SIDES[u.side].short}</i>${rolle(u.type) ? ` · <em class="rl">${rolle(u.type).rolle}</em>` : ''}${u.officer ? ` · ${UP.orden ? `<img class="up-orden" src="${UP.orden}" alt="Anführer">` : '★ '}${u.officer}` : ''} · ${h.river && h.t === 'canal' ? 'Fluss' : TERRAIN[h.t].name}${h.ridge ? ' (Höhe)' : ''}`;
     // Zeile mit ALLEN Zuständen als Symbole (Deckung zuerst), Tooltip je Symbol
     { const d = DU.get(u.id), cv = coverTip(u);
       hudTips = [cv && { ...cv, img: UP['cov' + cv.tier], cls: 'cov' }, ...statesOf(u, d).map(st => st.blockiert && st.blockiert(u, d) ? { name: st.name + ' (blockiert)', text: st.textBlock(u, d), img: upSym(st.sym), cls: 'blockiert' } : { name: st.name, text: st.text(u, d), img: upSym(st.sym), cls: st.k === 'supp' ? 'gross' : '' })].filter(Boolean);
@@ -3854,6 +3858,7 @@ function showDetail() {
   drawPortraitLater($('detPortrait'), figOf(T), u.side, u.type);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detReal').textContent = T.real;
+  { let rb = $('detRolle'); if (!rb) { rb = document.createElement('div'); rb.id = 'detRolle'; $('detCan').parentElement.before(rb); } rb.innerHTML = rolleHtml(u.type); }   // F103
   { let mb = $('detMed'); if (!mb) { mb = document.createElement('div'); mb.id = 'detMed'; mb.className = 'det-med'; $('detCan').parentElement.after(mb); }   // F66: Stärken und Schwächen in Worten
     const m = E.medaillen(u.type); mb.innerHTML = '<b>Stärken und Schwächen:</b>' + medaillenTexte(u.type).map(t => `<div class="dm">${t.k !== 'klasse' ? `<span class="med ${m[t.k]}">${upSym(t.sym) ? `<img src="${upSym(t.sym)}" alt="">` : ''}</span>` : '<span class="med klasse"></span>'}<span><b>${t.name}</b> – ${t.text}</span></div>`).join(''); }
   $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');
