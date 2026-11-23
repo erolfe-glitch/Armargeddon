@@ -6464,6 +6464,11 @@ let wayPt = null;   // Wegpunkt (Paket 3): Umschalt+Klick bzw. langes Drücken a
 let sel = null, reach = new Map(), targets = new Map(), shellHexes = new Set(), artMode = 'he';
 let recSet = new Set(), abilSet = new Set(), abilMode = false, feldArt = 'abil', faustErst = null;   // faustErst: erstes Ziel der Faustsalve (2026-11-20)   // feldArt: 'abil' | 'cut' | 'zweit' (Paket 8)
 // Hilfsfähigkeiten nur über den Knopf (Enrico 2026-11-22 17:40: Sanitäter heilte beim Anklicken eigener Nachbarn): hilfeModus = { art: 'heal'|'send'|'rec', id }
+// Paket A (Enrico 2026-11-23, Spieltest Punkt 9/22): immer nur EIN Bedienmodus – Angriffsart (p-), Geschützart (m-), Feld-Fähigkeit (abil/cut/zweit/ramm/faust), Hilfe (i-).
+// Neuer Knopf löst den alten ab, gleicher Knopf/Esc/Rechtsklick bricht ab, Wechsel der Einheit löscht ihn (vorher blieb er beim Weiterschalten aktiv: Munition „beim Anklicken“).
+function aktModus() { return abilMode ? feldArt : hilfeModus ? 'i-' + hilfeModus.art : artMode !== 'he' ? 'm-' + artMode : atkPref !== 'auto' ? 'p-' + atkPref : null; }
+function modiAus() { abilMode = false; feldArt = 'abil'; faustErst = null; hilfeModus = null; artMode = 'he'; atkPref = 'auto'; }
+const MODUS_KNOPF = /^(p-melee|p-fire|m-|i-|abil$|cut$|zweit$|ramm$|faust$)/;
 let hilfeModus = null; const hilfeAn = art => !!(hilfeModus && sel && hilfeModus.id === sel.id && hilfeModus.art === art);
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
@@ -7250,6 +7255,7 @@ function drawGround(g, s) {
 // MG-Schussfächer (Regel E.inFan): ausgefächerte Fläche am Boden, Ochsenblut zur Mitte, nach außen in Messing auslaufend,
 // gestrichelte Fächerkanten; Felder in Reichweite innerhalb des Fächers dezent umrandet. Blickrichtung aus dem Anzeige-Zustand.
 function drawFan(g, u, zweit) {   // zweit: Schussfeld der Seitenwaffen (Fahrzeuge/Schreiter), heller in Messing
+  if (!u || !G.map[u.c] || !G.map[u.c][u.r]) return;   // Einheit außerhalb der Karte (z. B. entfernt): nichts zeichnen
   const d = DU.get(u.id), [x, y] = center(u.c, u.r), s = L.s, k = kAt(x, y), T = TYPES[u.type], F = E.fanOf(u, zweit), rg = zweit ? (T.zweit ? T.zweit.rng : 2) : T.rng;
   if (zweit) { const R = (rg + 0.55) * s * SQ3, mid = d.face * 60, a0 = (mid - F) * Math.PI / 180, a1 = (mid + F) * Math.PI / 180;
     g.save(); g.translate(x, y); g.scale(1, k); g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, R, a0, a1); g.closePath(); g.fillStyle = 'rgba(194,164,97,0.13)'; g.fill();
@@ -9579,7 +9585,7 @@ cv.addEventListener('pointermove', ev => {
   const stop = () => clearTimeout(tm);
   cv.addEventListener('pointerup', stop); cv.addEventListener('pointercancel', stop);
   cv.addEventListener('click', ev => { if (long) { long = false; ev.stopImmediatePropagation(); ev.preventDefault(); } }, true);
-  cv.addEventListener('contextmenu', ev => { if (ev.pointerType !== 'mouse') ev.preventDefault(); });
+  cv.addEventListener('contextmenu', ev => { if (ev.pointerType !== 'mouse') ev.preventDefault(); if (G && aktModus()) { ev.preventDefault(); modiAus(); computeOptions(); updateHud(); toast('Abgebrochen.'); } });   // Paket A: Rechtsklick bricht den Modus ab
 }
 cv.addEventListener('click', ev => {
   if (performance.now() - dragged < 250) return;   // war ein Verschieben, kein Klick
@@ -9668,7 +9674,7 @@ function motorRev(k, o = {}) {   // o.vol (Grundlautstärke), o.dauer (s): beim 
 }
 function select(u) {
   if (u && u !== sel && G && u.side === G.side && human(u.side) && E.active(u)) klickStimme(u);   // Spruch bei jedem Anwählen (Reiter: Pferd + Spruch); fertige Einheiten nur ein leiser Klick   // Reiter: Schnauben häufig, Wiehern etwa jedes 4. Mal (Gewicht im Tonplatz)   // Stimme beim Anwählen (selten, siehe selectVoice)
-  if (u !== sel) { wayPt = null; if (u && G && E.alive(u)) kzAnwahl(u); }   // Kopfzeichen der andauernden Zustände
+  if (u !== sel) { wayPt = null; modiAus(); if (u && G && E.alive(u)) kzAnwahl(u); }   // Paket A: Modus gilt nur für die Einheit, die ihn eingeschaltet hat   // Kopfzeichen der andauernden Zustände
   sel = u; if (u && G && u.side === G.side) lastSel[u.side] = u.id; previewT = null; inspect = null; artMode = 'he'; atkPref = 'auto';
   computeOptions(); updateHud();
 }
@@ -9927,11 +9933,18 @@ const spent = new Set();
 const ABGEHAKT = new Map();   // F11: per „Fertig“ abgehakt (je Runde und Seite), dann grau, auch wenn noch die Zweitwaffe ginge; F102: Wert = Stand davor (für Rückgängig)
 // F88 (2026-11-22): bereitGrund nennt, warum eine Einheit noch nicht fertig ist (Test __dbg.bereitGrund); hasAction = es gibt einen Grund
 function hasAction(u) { return !!bereitGrund(u); }
+function zielDa(u) {   // gibt es einen Gegner, den die Einheit jetzt beschießen kann (Geschütz: Granate/Sperrfeuer; sonst Schuss oder MG nach Drehen)?
+  const T = TYPES[u.type], f0 = u.face;
+  return G.units.some(d => { if (d.side === u.side || !E.alive(d)) return false;
+    if (T.cls === 'art') return E.canShell(G, u, d.c, d.r, 'he') || E.canShell(G, u, d.c, d.r, 'barrage');
+    if (E.canFire(G, u, d)) return true; if (!T.mg) return false; u.face = E.faceIndex(E.angleTo(u.c, u.r, d.c, d.r)); const ok = E.canFire(G, u, d); u.face = f0; return ok; });
+}
 function bereitGrund(u) {
   if (u.broken > 0 || ABGEHAKT.has(G.turn + G.side + ':' + u.id)) return '';
   if (TYPES[u.type].zweit && !u.zw && E.zweitTargets(G, u).length) return 'zweitwaffe';   // F17: Zweitwaffe noch frei
   if (TYPES[u.type].roar && E.canRoar(G, u)) return 'gebruell';
-  if (!u.supp && E.reachable(G, u).size) return 'ziehen';   // noch Bewegungspunkte (F88/F93: wer laut Regeln noch ziehen darf, ist nicht fertig)
+  if (!u.supp && E.reachable(G, u).size) return 'ziehen';   /* noch Bewegungspunkte */
+  if ((E.canTeardown(G, u) || (TYPES[u.type].cls === 'art' && !u.limbered)) && !zielDa(u) && !(TYPES[u.type].abil && E.abilTargets(G, u).length)) return '';   // Fehler 18:30: in Stellung (MG aufgebaut, Geschütz abgeprotzt), nicht beweglich, kein Ziel → fertig
   if (u.ap < 1) return E.canSetup(G, u) ? 'aufbauen' : E.canTeardown(G, u) ? 'abbauen' : '';
   if (E.canOrder(G, u) || G.units.some(o => E.canSend(G, u, o) || E.canRecover(G, u, o))) return 'befehl';
   if (E.canSetup(G, u)) return 'aufbauen';
@@ -9943,7 +9956,7 @@ function bereitGrund(u) {
   if (u.attacked) return '';
   const T = TYPES[u.type];
   if (T.cls === 'medic') return G.units.some(o => E.canHeal(G, u, o)) ? 'heilen' : '';
-  if (T.cls === 'art') { for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (E.canShell(G, u, c, r, 'he')) return 'beschuss'; }
+  if (T.cls === 'art') return zielDa(u) ? 'beschuss' : '';   // Fehler 18:30: nur mit einem Gegner in Reichweite und Sicht, nicht schon ein leeres Feld
   if (E.canCut(G, u)) return 'draht schneiden';
   const f0 = u.face, fan = d => { if (!T.mg) return false; u.face = E.faceIndex(E.angleTo(u.c, u.r, d.c, d.r)); const ok = E.canFire(G, u, d); u.face = f0; return ok; };   // MG: nach Drehen schussbereit
   return G.units.some(d => d.side !== u.side && E.alive(d) && (E.canFire(G, u, d) || E.canMelee(G, u, d) || fan(d))) ? 'angriff' : '';
@@ -10201,6 +10214,7 @@ function drawArea(g, s) {
   }   // nicht betroffen: abgedunkelt
 }
 // Knöpfe der gewählten eigenen Einheit (gleiche Bedingungen wie bisher, nur als Symbole)
+function fertigKnopf(btns) { const ab = ABGEHAKT.has(G.turn + G.side + ':' + sel.id); btns.push({ act: 'pass', sym: 'haken', name: ab ? 'Wieder öffnen' : 'Fertig', on: spent.has(sel.id), text: ab ? 'Von Hand abgehakt. Noch einmal (Leertaste oder E): wieder offen, wie vorher.' : spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (Leertaste oder E).' }); }
 function unitButtons(T, hints) {
   const btns = [], tg = [...targets.values()];
   if (T.cls === 'art') {
@@ -10216,6 +10230,7 @@ function unitButtons(T, hints) {
     if (sel.gas > 0 || T.gas > 0) btns.push({ act: 'm-gas', sym: 'gas', name: 'Gasgranate', cost: c, cd: sel.cdG, cnt: sel.gas, text: `Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen. Höchstens alle ${P.GAS_CD} Runden (noch ${sel.gas || 0} Gasgranaten).`, on: can && !gcd && artMode === 'gas', off: !can || !(sel.gas > 0) || gcd, why: !(sel.gas > 0) ? 'Keine Gasgranaten mehr.' : gcd ? `Wieder in ${upRunden(sel.cdG)}.` : why });
     hints.push(can ? (shellHexes.size ? 'Zielfeld anklicken.' : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).') : why);
     if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> markiert: keine Streuung, ×1,25.`);
+    fertigKnopf(btns);   // Fehler 18:30: Geschütze hatten keinen „Fertig“-Knopf
     return btns;
   }
   { const rz = E.rammZiele(G, sel); if (rz.length) btns.push({ act: 'ramm', sym: 'rammen', name: 'Gebäude rammen', cost: 1, on: abilMode && feldArt === 'ramm', text: `Ein intaktes Gebäude daneben rammen: Bauschaden ${fmt(P.RAMM_BAU)} (bis zum Einsturz), Truppen darin werden niedergehalten. Eigener Schaden etwa ${fmt(P.RAMM_SELBST)}, ${Math.round(P.RAMM_PANNE * 100)} % Pannengefahr. Kostet die Aktion und alle Bewegung.` }); }   // F79
@@ -10285,7 +10300,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'tr', sym: 'drehpfeil', name: 'Nach rechts drehen', bp: dk, mirror: true, text: dt, off: (sel.bp || 0) < dk, why: 'Keine Bewegungspunkte mehr.' });
   }
   if (TYPES[sel.type].roar) { const n = E.roarTargets(G, sel).length; btns.push({ act: 'loewe', sym: 'gebruell', name: 'Löwengebrüll', costTxt: 'nichts (einmal je Schlacht)', text: `Einmal je Schlacht, kostet keine Aktion: Gegner ohne Panzerung im Umkreis von ${P.ROAR_R} ${P.ROAR_R === 1 ? 'Feld' : 'Feldern'} verlieren ${String(P.ROAR_MOR).replace('.', ',')} Moral und werden niedergehalten (bis zum Ende ihrer nächsten Runde).`, off: !E.canRoar(G, sel), why: sel.roared ? 'Schon gebrüllt (einmal je Schlacht).' : !n ? 'Kein Gegner ohne Panzerung daneben.' : sel.broken > 0 ? 'Panne.' : 'Gerade nicht möglich.' }); }   // 2026-11-20: echte Wirkung (vorher Test)
-  { const ab = ABGEHAKT.has(G.turn + G.side + ':' + sel.id); btns.push({ act: 'pass', sym: 'haken', name: ab ? 'Wieder öffnen' : 'Fertig', on: spent.has(sel.id), text: ab ? 'Von Hand abgehakt. Noch einmal (Leertaste oder E): wieder offen, wie vorher.' : spent.has(sel.id) ? 'Diese Einheit ist für diese Runde fertig.' : 'Diese Einheit für diese Runde abhaken (wird grau), auch wenn sie noch etwas könnte – Leertaste oder E; danach geht es zur nächsten offenen Einheit.' }); }   // F102   // F11: für alle Einheiten
+  fertigKnopf(btns);
   { const gr = !spent.has(sel.id) && sel.ap < 1 ? bereitGrund(sel) : ''; const NOCH = { ziehen: 'kann noch ziehen', aufbauen: 'kann noch aufbauen', abbauen: 'kann noch abbauen', gebruell: 'Löwengebrüll noch frei' };
     if (NOCH[gr]) hints.push(`<i>Aktion verbraucht,</i> ${NOCH[gr]} – noch nicht fertig. „Fertig“ hakt sie ab.`); }   // F88 (2026-11-22): warum noch kein Haken
   if (!spent.has(sel.id) && TYPES[sel.type].zweit && !sel.zw && E.zweitTargets(G, sel).length) hints.push('<i>Zweitwaffe noch frei:</i> ' + (TYPES[sel.type].zweit.name || 'Zweitwaffe') + ' kann diese Runde noch feuern.');   // F17
@@ -10557,6 +10572,7 @@ function drawNimbus(g, s, up) {
 }
 async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
+  if (MODUS_KNOPF.test(a)) { const war = aktModus(); if (war && war !== a && !(a === 'm-he' && war === 'm-he')) modiAus(); }   // Paket A: nur ein Modus
   if (a.startsWith('i-')) { const art = a.slice(2); if (hilfeAn(art)) { hilfeModus = null; updateUI(); return; }   // zweiter Druck schaltet aus
     abilMode = false; hilfeModus = sel ? { art, id: sel.id } : null; toast({ 'i-heal': TYPES[sel.type].repair ? 'Versorgen: Einheit mit Zahnrad anklicken.' : 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); updateUI(); return; }
   if (a === 'st-limber' || a === 'st-mg') { const u = inspect && inspect.unit; if (!u || !G.aufstellung) return; if (a === 'st-limber') u.limbered = !u.limbered; else u.setup = !u.setup;   // F6
@@ -10575,14 +10591,16 @@ async function panelAct(a) {
   if (a === 'undig') return act(u => E.undig(G, u));   // F36
   if (a === 'loewe') return act(u => E.roar(G, u));
   if (a === 'shields') return act(u => E.shieldsUp(G, u));
-  if (a.startsWith('m-')) { artMode = a.slice(2); previewT = null; computeOptions(); updateHud(); return; }
+  if (a.startsWith('m-')) { const m = a.slice(2); artMode = m !== 'he' && artMode === m ? 'he' : m; previewT = null; computeOptions();
+    if (artMode !== 'he' && !shellHexes.size) { toast(`${m === 'barrage' ? 'Sperrfeuer' : m === 'gas' ? 'Gasgranate' : 'Beschuss'}: kein Zielfeld (Abklingzeit, Reichweite oder keine Sicht).`); artMode = 'he'; computeOptions(); }   // nicht ausführbar: gleich zurück
+    updateHud(); return; }
   if (a === 'tl' || a === 'tr') { const nf = (sel.face + (a === 'tr' ? 1 : 5)) % 6; await play(E.turnUnit(G, sel, nf)); computeOptions(); updateHud(); return; }
-  if (a === 'faust') { faustErst = null; if (abilMode && feldArt === 'faust') { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = 'faust'; } previewT = null; computeOptions(); updateHud(); return; }
+  if (a === 'faust') { faustErst = null; if (abilMode && feldArt === 'faust') { abilMode = false; feldArt = 'abil'; } else if (!E.faustTargets(G, sel).length) { toast('Faustsalve: kein Ziel in Reichweite.'); } else { abilMode = true; feldArt = 'faust'; } previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'ramm') { const t = E.rammZiele(G, sel); if (t.length === 1) return act(u => E.rammen(G, u, t[0][0], t[0][1]));   // F79: nur ein Gebäude daneben – gleich rammen
-    if (abilMode && feldArt === a) { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = a; } previewT = null; computeOptions(); updateHud(); return; }
+    if (abilMode && feldArt === a) { abilMode = false; feldArt = 'abil'; } else if (!t.length) { toast('Rammen: kein Gebäude daneben.'); } else { abilMode = true; feldArt = a; } previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'cut' || a === 'zweit') { const t = a === 'cut' ? E.cutTargets(G, sel) : E.zweitTargets(G, sel);
     if (a === 'cut' && t.length === 1) return act(u => E.cutWire(G, u, t[0][0], t[0][1]));   // nur ein Drahtfeld: gleich schneiden
-    if (abilMode && feldArt === a) { abilMode = false; feldArt = 'abil'; } else { abilMode = true; feldArt = a; }
+    if (abilMode && feldArt === a) { abilMode = false; feldArt = 'abil'; } else if (!t.length) { toast(a === 'cut' ? 'Draht schneiden: kein Drahtfeld daneben.' : 'Zweitwaffe: kein Ziel in Reichweite oder Schussfeld.'); } else { abilMode = true; feldArt = a; }
     previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'lay') return act(u => E.layWire(G, u));
   if (a === 'limber') return act(u => E.limber(G, u));
@@ -10590,7 +10608,7 @@ async function panelAct(a) {
   if (a === 'teardown') return act(u => E.teardownMG(G, u));
   if (a === 'ball-ein') return act(u => E.einholen(G, u));
   if (a === 'ball-auf') return act(u => E.aufsteigen(G, u));   // F70
-  if (a === 'abil') { abilMode = !(abilMode && feldArt === 'abil'); feldArt = 'abil'; previewT = null; computeOptions(); updateHud(); return; }
+  if (a === 'abil') { const an = !(abilMode && feldArt === 'abil'); feldArt = 'abil'; abilMode = an && !!E.abilTargets(G, sel).length; if (an && !abilMode) toast(`${(E.ABILS[TYPES[sel.type].abil] || {}).name || 'Fähigkeit'}: gerade kein gültiges Ziel.`); previewT = null; computeOptions(); updateHud(); return; }
   if (a === 'ow') return act(u => E.overwatch(G, u));
   if (a === 'sperr') return act(u => E.sperr(G, u));
 }
@@ -10956,6 +10974,7 @@ document.addEventListener('keydown', e => {
   if ((e.key === 'b' || e.key === 'B') && G && $('start').hidden && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { setBildwirkung(BW + 1); e.preventDefault(); return; }   // Bildwirkung umschalten: aus → leicht → stark
   if ((e.key === 'm' || e.key === 'M') && !(e.target.closest && e.target.closest('input, select, textarea')) && !e.ctrlKey && !e.altKey && !e.metaKey) { tonUmschalten(); e.preventDefault(); return; }   // F18: Ton an/aus per Taste
   if ((e.key === ' ' || e.key === 'e' || e.key === 'E') && G && sel && human(G.side) && !busy && !G.over && $('start').hidden && $('shop').hidden && $('detail').hidden && $('rules').hidden && $('army').hidden && !(e.target.closest && e.target.closest('input, select, textarea, button')) && !e.ctrlKey && !e.altKey && !e.metaKey) { e.preventDefault(); panelAct('pass'); return; }   // F102: Leertaste oder E = Fertig
+  if (e.key === 'Escape' && G && aktModus()) { modiAus(); computeOptions(); updateHud(); toast('Abgebrochen.'); return; }   // Paket A: Esc bricht den Modus ab
   if (e.key === 'Escape' && wayPt) { wayPt = null; computeOptions(); updateHud(); return; }
   if (e.key === 'Escape') { cancelPlace(); $('shop').hidden = true; select(null); $('detail').hidden = true; $('rules').hidden = true; } });
 
@@ -11099,7 +11118,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { spur: (i, c0, r0, c1, r1, o) => { const [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1); spurSchnee(i, x0, y0, x1, y1, o || {}); }, spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { modus: () => aktModus(), zielDa: id => zielDa(unitById(id)), knoepfe: () => [...document.querySelectorAll('[data-act]')].filter(b => b.offsetParent).map(b => b.dataset.act), spur: (i, c0, r0, c1, r1, o) => { const [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1); spurSchnee(i, x0, y0, x1, y1, o || {}); }, spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,

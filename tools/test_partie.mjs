@@ -165,6 +165,33 @@ for (let r = 2; r <= 4 && !(await ev('__dbg.G.over')); r++) { await rundeBeenden
   const ok = nach.ap === 1 && !nach.cdA && !nach.attacked && nach.an;
   console.log(`  F100 Sturmrollen auf zu weites Ziel: ${ok ? 'ok' : 'FEHLER'} (Ziele ${vorher.set}, normaler Schuss wäre ${vorher.fire ? 'möglich' : 'nicht möglich'}; Meldung „${nach.toast}“)`);
   if (!ok) fehler.push('F100: ungültiges Fähigkeitsziel löst etwas aus: ' + JSON.stringify(nach)); }
+// Paket A (Enrico 2026-11-23): Fertig ohne Ziel (18:30), nur ein Bedienmodus (Punkt 9), Fähigkeit nicht durch bloßes Anklicken (Punkt 22)
+{ const r = JSON.parse(await ev(`(async () => { try { const D = __dbg, G = D.G, W = ms => new Promise(r => setTimeout(r, ms)), out = {};
+    while (G.units.length < 4) G.units.push({ ...G.units[0], id: 900 + G.units.length, c: 3 + G.units.length, r: 8, status: 'ok' });   /* am Ende der Partie können Einheiten fehlen */
+    G.units.forEach((x, i) => { if (x.c < 0 || x.r < 0) { x.c = 9 + (i % 4); x.r = 1 + Math.floor(i / 4); } });   /* Überbleibsel früherer Testblöcke außerhalb der Karte */
+    const [u, v, w] = G.units; for (const x of [u, v, w]) x.side = G.side; if (!G.units.some(x => x.side !== G.side)) G.units[3].side = G.side === 'A' ? 'D' : 'A'; D.neuDU(); const fe = G.units.filter(x => x.side !== G.side), alt = fe.map(x => x.status);
+    const basis = { officer: null, face: G.side === 'A' ? 0 : 3, str: 10, mor: 8, ap: 1, bp: 0, bpUsed: 0, attacked: false, moved: false, supp: 0, status: 'ok', cdP: 0, cdA: 0, broken: 0, stuck: 0, zw: 0, sent: false };
+    // 18:30: Haubitze in Stellung, kein Gegner am Leben → Fertig-Knopf da, ohne Grund offen zu sein
+    for (const x of fe) x.status = 'dead';   /* kein Gegner am Leben */
+    Object.assign(u, basis, { type: 'haubitze', c: 2, r: 2, limbered: false }); D.sync(); D.select(u.id); await W(300);
+    out.fertigKnopf = D.knoepfe().includes('pass'); out.grund = D.bereitGrund(u.id); out.ziel = D.zielDa(u.id);
+    fe.forEach((x, i) => x.status = alt[i]);
+    // Punkt 9: Panzer – Kanone (p-fire), dann Zweitwaffe: nie zwei Modi; gleicher Knopf schaltet aus; Esc bricht ab
+    Object.assign(u, basis, { type: 'sturmpz', c: 4, r: 4, bp: 4, limbered: false }); D.sync(); D.select(u.id); await W(200);
+    await D.panelAct('p-fire'); out.m1 = D.modus(); await D.panelAct('zweit'); out.m2 = D.modus(); await D.panelAct('p-fire'); out.m3 = D.modus(); await D.panelAct('p-fire'); out.m4 = D.modus();
+    await D.panelAct('p-fire'); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); await W(100); out.m5 = D.modus();
+    // Punkt 22: Versorgungstrupp mit Munition-Modus, dann andere Einheit wählen → Modus weg, keine Munition
+    Object.assign(v, basis, { type: 'munition', c: 5, r: 5 }); Object.assign(w, basis, { type: 'feldkanone', c: 6, r: 5, attacked: true, ap: 0 }); D.sync();
+    D.select(v.id); await W(200); await D.panelAct('abil'); out.m6 = D.modus(); D.select(w.id); await W(200); out.m7 = D.modus(); out.wNachher = { attacked: w.attacked, ap: w.ap };
+    D.select(v.id); await W(200); out.p = D.hexCss(w.c, w.r); out.v = v.id; out.w = w.id; return JSON.stringify(out); } catch (e) { return JSON.stringify({ err: String(e.stack).slice(0, 400) }); } })()`));
+  if (r.err) { console.log("  Paket A: FEHLER im Test " + r.err); fehler.push("Paket A Test: " + r.err); } else {
+  await maus(r.p[0], r.p[1], true); await sleep(900); await warteFrei();   // ohne Modus auf die eigene Feldkanone klicken
+  const n = JSON.parse(await ev(`JSON.stringify((() => { const D = __dbg, w = D.G.units.find(x => x.id === ${r.w}); return { sel: D.sel && D.sel.id, attacked: w.attacked, ap: w.ap }; })())`));
+  const ok18 = r.fertigKnopf && r.grund === '' && !r.ziel, ok9 = r.m1 === 'p-fire' && r.m2 !== 'p-fire' && r.m3 === 'p-fire' && r.m4 === null && r.m5 === null, ok22 = r.m6 !== 'abil' || (r.m7 === null && r.wNachher.attacked && n.attacked && n.sel === r.w);
+  console.log(`  Paket A 18:30 Geschütz ohne Ziel: ${ok18 ? 'ok' : 'FEHLER'} (Fertig-Knopf ${r.fertigKnopf}, Grund „${r.grund}“)`);
+  console.log(`  Paket A Punkt 9 nur ein Modus: ${ok9 ? 'ok' : 'FEHLER'} (${[r.m1, r.m2, r.m3, r.m4, r.m5].join(' → ')})`);
+  console.log(`  Paket A Punkt 22 keine Fähigkeit durch Anklicken: ${ok22 ? 'ok' : 'FEHLER'} (Modus ${r.m6} → nach Wechsel ${r.m7}; Klick ohne Modus: gewählt ${n.sel === r.w ? 'Feldkanone' : n.sel}, Munition ${n.attacked ? 'nicht gegeben' : 'GEGEBEN'})`);
+  if (!ok18) fehler.push('18:30: Geschütz ohne Ziel ' + JSON.stringify(r)); if (!ok9) fehler.push('Punkt 9: Modi ' + JSON.stringify(r)); if (!ok22) fehler.push('Punkt 22: ' + JSON.stringify({ r, n })); } }
 ws.close(); ch.kill();
 console.log(fehler.length ? `\nFEHLER (${fehler.length}):\n  ` + [...new Set(fehler)].join('\n  ') : '\nKonsole rot-frei, keine Fehler.');
 process.exit(fehler.length ? 1 : 0);
