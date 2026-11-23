@@ -92,32 +92,38 @@ function slotsVon(t) {
   // Bewegung (move)
   if (k === 'cav') S('zug', 'ziehen', 'Ziehen (Galopp)', 'gallop2', 0.55, { gruppe: 'bewegung', kette: 'zug' });
   else if (T.limber) { S('zug', 'ziehen', 'Ziehen aufgeprotzt: Gespann', 'gespann', 0.5, { gruppe: 'bewegung', kette: 'zug' }); }
-  else if (T.fahrbar) { S('zug', 'ziehen', 'Ziehen (ohne Protzen): Räder und Pferde', 'wagenknarren', 0.8, { gruppe: 'gespann', kette: 'zug', hin: 'Feldkanone (Enrico 2026-11-22 18:45): Standard Wagenknarren (Tiefpass 1,2 kHz gegen Quietscher); Kandidaten Gespann und Galopp-Gespann. Im Winter Pferde im Schnee darunter.' }); }   // F8: unter dem Gespann entfernt (pfiff wie ein Zug); hier allein und gedämpft
+  else if (T.fahrbar) { S('zug', 'ziehen', 'Ziehen (ohne Protzen): Räder und Pferde', 'wagenknarren', 0.8, { gruppe: 'gespann', kette: 'zug', spiel: 'feldkanone_zug', hin: 'Feldkanone (Enrico 2026-11-22 18:45): Standard Wagenknarren (Tiefpass 1,2 kHz gegen Quietscher); Kandidaten Gespann und Galopp-Gespann. Im Winter Pferde im Schnee darunter.' }); }   // F8: unter dem Gespann entfernt (pfiff wie ein Zug); hier allein und gedämpft
   else if (k === 'walker') { S('zug', 'ziehen', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 'Ziehen (Schreiter-Schritte im Takt)' : 'Ziehen (Maschinenschritte)') : 'Ziehen (Kettenrollen)', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 'schreiter_schritte' : 'mech') : 'tank', fig ? (['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'].includes(t) ? 0.45 : 0.5) : 0.3, { gruppe: 'bewegung', kette: 'zug', hin: 'Unter einer Stimme auf 40 % abgesenkt.' });
-    S('zug', 'walzen', 'Draht niederwalzen', 'draht_ueberrollen', 0.6, { gruppe: 'draht', hin: 'Über eine Barrikade: Überrollen mit 0,5.' }); }
+    S('zug', 'walzen', 'Draht niederwalzen', 'draht_ueberrollen', 0.6, { gruppe: 'draht' });
+    if (T.abil !== 'rollen') S('zug', 'barrikade', 'Über eine Barrikade', 'ueberrollen', 0.5, { gruppe: 'fahrzeug' }); }   // Ton-Spur 2026-11-23 (bei Landkoloss und Sturmpanzer derselbe Platz wie „Sturmrollen: Krachen“)
   else if (t === 'kuerass') S('zug', 'ziehen', 'Ziehen: schwere Ritter-Schritte (im Takt)', 'held_schritt_ritter2', 0.55, { gruppe: 'held', kette: 'zug', hin: 'Je Schritt ein Stampfen (M8, wie im Spiel).' });   // M8 (2026-11-22)
   else if (t === 'faust') { S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.4, { gruppe: 'bewegung', kette: 'zug' }); S('zug', 'dampf', 'Ziehen: leiser Dampfstoß (jedes zweite Mal)', 'held_dampfstoss', 0.22, { gruppe: 'held' }); }   // M8
   else if (T.mech || T.dauerfeuer) S('zug', 'ziehen', 'Ziehen (Kampfanzug-Schritte)', 'kampfanzug_schritte', 0.45, { gruppe: 'schritte_schwer', kette: 'zug' });
   else {
     if (fig === 'dog') S('zug', 'hund', 'Hund beim Ziehen', 'dog', 0.5, { gruppe: 'bewegung', kette: 'zug' });
     S('zug', 'ziehen', 'Ziehen (Schritte)', 'schritte', 0.5, { gruppe: 'bewegung', kette: 'zug' });
-    S('zug', 'marsch', 'Marsch und Sturmlauf', 'schritte', 0.6, { gruppe: 'bewegung', spiel: 'marsch_schritte', hin: 'Nur Schritte, keine Trommel mehr (F49). Eigener Tonplatz, getrennt von „Ziehen“ (Enrico 21:00).' });
+    if (k !== 'art') S('zug', 'marsch', 'Marsch und Sturmlauf', 'schritte', 0.6, { gruppe: 'bewegung', spiel: 'marsch_schritte', hin: 'Nur Schritte, keine Trommel mehr (F49). Eigener Tonplatz, getrennt von „Ziehen“ (Enrico 21:00).' });
     S('zug', 'schlamm', 'Ziehen durch Schlamm', 'steps', 0.5, { gruppe: 'bewegung' });
-    S('zug', 'wald', 'Ziehen durch Wald', 'stepsWald', 0.5, { gruppe: 'bewegung' });
-    S('zug', 'holz', 'Äste knacken (Wald, 2×)', 'holzknacken', 0.45, { gruppe: 'bewegung' });
+    if (k !== 'art') S('zug', 'wald', 'Ziehen durch Wald', 'stepsWald', 0.5, { gruppe: 'bewegung' });
+    if (k !== 'art') S('zug', 'holz', 'Äste knacken (Wald, 2×)', 'holzknacken', 0.45, { gruppe: 'bewegung' });
     if (fuss && !T.wireProof && !T.suit) S('zug', 'draht1', 'Im Stacheldraht (Stärkeverlust)', 'draht_infanterie', 0.55, { gruppe: 'draht', hin: 'Zufällig aus drei Fassungen, nie zweimal dieselbe hintereinander.' });
   }
   // Schuss und Einschlag (fire, shell)
+  const gepZiele = Object.keys(TYPES).filter(z => TYPES[z].side !== sd && (TYPES[z].cls === 'walker' || TYPES[z].suit) && (k === 'art' || !E.immune(T, TYPES[z])));   // gepanzerte Ziele, auf die diese Einheit schießen darf
+  const wirkt = gepZiele.some(z => E.faktor(t, z, true).f >= 1), prallt = gepZiele.some(z => E.faktor(t, z, true).f < 1);   // wie ui.js einschlagArt
+  const PZ = () => { if (wirkt) S('ziel', k === 'walker' ? 'zielpanzer' : 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug, und die Waffe wirkt dagegen (F64).' });
+    if (prallt) S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' }); };
+  const SPLITTER = () => S('ziel', 'splitter', 'Splitter treffen Fußtruppen (dumpf)', 'einschlag', 0.3, { gruppe: 'einschlag', rate: 0.76, dur: 320, hin: 'Zusätzlich zum Granateinschlag, wenn weiche Ziele Schaden nehmen; tief gestimmt und kurz.' });
   const kanone = (x, Tx) => x === 'kreuz' ? 'loewenkanone' : ['koloss', 'turm'].includes(x) ? 'kolosskanone' : Tx.side === 'D' && Tx.cls === 'walker' ? 'panzerkanone' : 'cannon';
   if (k === 'art') {
     const mob = T.mobile, ab = mob ? 'launch' : t === 'feldkanone' ? 'cannon' : sd === 'D' ? 'artD' : 'cannonH';
     S('schuss', 'schuss', mob ? 'Abschuss (Steilfeuer)' : 'Abschuss', ab, mob ? 0.42 : 0.8, { gruppe: 'kanone', kette: 'schuss', hin: `Sperrfeuer: ${mob ? 3 : 4} Abschüsse desselben Tons mit ${mob ? '0,42' : '0,75'}.` });
     S('ziel', 'ziel', 'Einschlag Einzelschuss', mob ? 'boom' : 'einschlagH', mob ? 0.7 : 0.8, { gruppe: 'einschlag', kette: 'ziel', hin: 'Nach der Flugzeit (ca. 0,57 s).' });
-    S('ziel', 'sperr', 'Einschläge Sperrfeuer', mob ? 'boom' : 'boomH', 0.5, { gruppe: 'einschlag', spiel: mob ? 'sperr_boom' : 'sperr_boomH', hin: 'Je Feld ein Einschlag, versetzt. Eigener Tonplatz, getrennt vom Einzelschuss (Enrico 21:00).' });
+    if (!T.direkt) S('ziel', 'sperr', 'Einschläge Sperrfeuer', mob ? 'boom' : 'boomH', 0.5, { gruppe: 'einschlag', spiel: mob ? 'sperr_boom' : 'sperr_boomH', hin: 'Je Feld ein Einschlag, versetzt. Eigener Tonplatz, getrennt vom Einzelschuss (Enrico 21:00).' });
     if (T.gas) S('ziel', 'gas', 'Gasgranate', 'gas', 0.7, { gruppe: 'einschlag' });
     S('ziel', 'wasser', 'Einschlag im Wasser (zusätzlich)', 'wasser', 0.6, { gruppe: 'einschlag' });
-    S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' });
-  } else {
+    SPLITTER(); PZ();
+  } else if (T.rng > 0) {   // Ton-Spur 2026-11-23: Einheiten ohne Fernkampf haben keine Schuss- und Treffer-Zeilen
     const fk = fireKind(T);
     if (fk === 'flame') { S('schuss', 'schuss', 'Flammenstrahl', 'flame', 0.6, { gruppe: 'flamme', kette: 'schuss' }); S('ziel', 'feuer', 'Feld fängt Feuer', 'flame', 0.4, { gruppe: 'flamme', kette: 'ziel' }); }
     else if (fk === 'rifle') {
@@ -126,18 +132,17 @@ function slotsVon(t) {
       else S('schuss', 'schuss', 'Schuss', p, 0.6, { gruppe: 'gewehr', kette: 'schuss' });
       S('ziel', 'ziel', 'Treffer am Ziel', 'einschlag', 0.35, { gruppe: 'einschlag', kette: 'ziel' });
       S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
-      if (T.at || t === 'buechse') S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' }); else S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' });
+      PZ();
     } else if (fk === 'mg' || fk === 'minigun') {
       if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'mg', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.83, hin: 'Tiefer gestimmt (0,80–0,86). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
       else if (t === 'orden' || t === 'klaue') S('schuss', 'schuss', 'MG am Arm (schweres MG)', 'neu4_mg_schwer', 0.55, { gruppe: 'mg', kette: 'schuss', hin: 'Standard 2026-11-22 (Enrico 15:26), vorher Drehlauf.' });
       else S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
       S('ziel', 'ziel', 'Einschlag in den Körper (dumpf)', 'einschlag', 0.22, { gruppe: 'einschlag', rate: 0.82, dur: 260, kette: 'ziel', hin: 'Tiefer gestimmt (0,78–0,86) und nach 0,26 s ausgeblendet.' });
-      S('ziel', 'vorbei', 'Daneben', 'vorbei', 0.35, { gruppe: 'einschlag' });
-      S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' });
+      PZ();   // „Daneben“ gibt es beim MG nicht: jeder Treffer klingt als dumpfer Einschlag (Ton-Spur 2026-11-23)
     } else if (fk === 'cannon') {
       S('schuss', 'schuss', 'Kanone', kanone(t, T), 0.6, { gruppe: 'kanone', kette: 'schuss' });
       S('ziel', 'ziel', 'Granateinschlag', 'boom', 0.45, { gruppe: 'einschlag', kette: 'ziel' });
-      S('ziel', 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; gilt für alle Waffen, die dagegen wirken (F64).' });
+      SPLITTER(); PZ();
     }
   }
   if (T.zweit) { const Z = T.zweit; if (Z.flamme) S('schuss', 'zweit', 'Zweitwaffe: ' + Z.name, 'flame', 0.6, { gruppe: 'flamme' });
@@ -149,7 +154,10 @@ function slotsVon(t) {
     const p = t === 'oger' ? 'neu3_bestie' : t === 'faust' ? 'held_faustschlag2' : t === 'kuerass' ? 'held_saege_schnitt2' : T.mech ? 'heavy' : tank ? 'armor' : T.suit ? 'sword' : k === 'cav' ? 'saebel' : fig === 'raider' || fig === 'brawler' ? 'axe' : base;   // M8 (2026-11-22): Löwenoger und Helden wie im Spiel (vorher axe bzw. sword)
     if (t === 'faust') S('nah', 'ausholen', 'Ausholen: Aufladen', 'held_aufladen', 0.5, { gruppe: 'held' });
     if (t === 'kuerass') { S('nah', 'treffer_kschwert', 'Treffer: Kettenschwert (Fußtruppen; gegen Gepanzerte Platz held_kschwert_metall)', 'held_kschwert_fleisch', 0.5, { gruppe: 'held' }); S('nah', 'treffer_kschwert_metall', 'Treffer: Kettenschwert gegen Gepanzerte', 'held_kschwert_metall', 0.5, { gruppe: 'held' }); S('nah', 'ausholen', 'Ausholen: Kettenschwert springt an', 'held_saege_start2', 0.55, { gruppe: 'held' }); S('nah', 'ausholen_schrei', 'Ausholen: Kampfschrei hinter dem Helm (nur beim Angriff)', 'held_ritter_schrei', 0.45, { gruppe: 'held' }); }   // F80: Sturmtrupps schlagen normal zu
-    if (!T.keinNah) S('nah', 'schlag', T.cls === 'walker' && fig === 'drill' ? 'Bohrstoß (ein langer Stoß)' : t === 'faust' ? 'Schlag: Hydraulik-Boom' : t === 'kuerass' ? 'Schlag: Säge heult auf und schneidet' : 'Schlag', p, T.mech || tank ? 0.7 : T.held ? 0.65 : t === 'oger' ? 0.5 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' });
+    const kaempft = !T.keinNah && T.atk > 0, hieb = t === 'oger' ? 'neu3_fleisch' : k === 'walker' ? (T.mech ? 'heavy' : 'armor') : T.suit ? 'sword' : k === 'cav' ? 'saebel' : base;   // ui.js hiebTon
+    if (kaempft) S('nah', 'schlag', T.cls === 'walker' && fig === 'drill' ? 'Bohrstoß (ein langer Stoß)' : t === 'faust' ? 'Schlag: Hydraulik-Boom' : t === 'kuerass' ? 'Schlag: Säge heult auf und schneidet' : 'Schlag', p, T.mech || tank ? 0.7 : T.held ? 0.65 : t === 'oger' ? 0.5 : 0.55, { gruppe: 'nahkampf', hin: 'Bei jedem Schlag, beim Gegenschlag ×0,85.' });
+    if (kaempft && fig === 'drill') S('nah', 'bohrton', 'Bohrstoß: Bohrer', 'smash', 0.65, { gruppe: 'nahkampf' });
+    if (!kaempft || (fig !== 'drill' && hieb !== p)) S('nah', kaempft ? 'abtausch' : 'schlag', kaempft ? 'Schlagabtausch: schnelle Hiebe' : 'Im Nahkampf angegriffen: Abwehrhieb', hieb, 0.4, { gruppe: 'nahkampf', hin: kaempft ? 'Hieb und Gegenhieb im Wechsel vor dem letzten, harten Schlag.' : 'Die Einheit kämpft nicht selbst, wehrt sich im Bild aber mit einem Hieb.' });   // Ton-Spur 2026-11-23
     if (k === 'inf' && !T.suit && !T.cmd) S('nah', 'spaten', 'Spatenhiebe im Grabenkampf', 'schaufel', 0.4, { gruppe: 'handgriff', hin: 'In 60 % der Schläge (F32).' });
     if (['raeumer', 'sturm'].includes(t)) S('nah', 'flinte', 'Kurzer Schuss im Grabenkampf', 'flinte', 0.5, { gruppe: 'gewehr' });
     if (t === 'klaue') { S('nah', 'klaue_fl', 'Stahlklaue gegen Fußtruppen', 'stahlklaue_fleisch', 0.6, { gruppe: 'saege' }); S('nah', 'klaue_ei', 'Stahlklaue gegen Gepanzerte', 'stahlklaue_eisen', 0.6, { gruppe: 'saege' }); }
@@ -157,7 +165,7 @@ function slotsVon(t) {
     if (t === 'faust') S('nah', 'nachdampf', 'Nach dem Schlag: Dampfstoß', 'held_dampfstoss', 0.35, { gruppe: 'held' });
     if (t === 'oger') S('nah', 'schrei', 'Brüllen im Nahkampf', 'oger_bruell', 0.45, { gruppe: 'fahrzeug', hin: 'Beim Angriff immer, beim Gegenschlag jedes zweite Mal.' });
     else if (k === 'storm') S('nah', 'schrei', 'Kampfschrei beim Sturm', 'cry', 0.45, { gruppe: 'ruf' });
-    else if (fuss && !T.suit) S('nah', 'schrei', 'Kampfschrei (manchmal)', 'cry', 0.35, { gruppe: 'ruf', hin: 'In 35 % der Schläge, wenn beide Seiten Fußtruppen sind.' });
+    else if (kaempft && fuss && !T.suit) S('nah', 'schrei', 'Kampfschrei (manchmal)', 'cry', 0.35, { gruppe: 'ruf', hin: 'In 35 % der Schläge, wenn beide Seiten Fußtruppen sind.' });
     if (fig === 'mechB') S('nah', 'tiger', 'Brüllen', 'tiger', 0.4, { gruppe: 'fahrzeug' }); }
   // Getroffen (hit, melee auf Panzerung, gas, rout)
   if (k === 'walker') { if (E.isMech(t)) S('treffer', 'robot', 'Getroffen (Maschinenstimme)', 'robot', 0.5, { gruppe: 'ruf', kette: 'treffer' });
@@ -172,7 +180,7 @@ function slotsVon(t) {
     S('treffer', 'grunzen', 'Leicht getroffen: Grunzen', 'grunzen', 0.4, { gruppe: 'ruf', hin: '60 % Grunzen, sonst Maskenlaut.' });
     S('treffer', 'maske', 'Leicht getroffen: Maskenlaut', 'gasmaske_2', 0.4, { gruppe: 'ruf' }); }
   }
-  if (fuss || k === 'cav' || k === 'art') S('treffer', 'husten', 'Im Gas: Husten', 'husten', 0.4, { gruppe: 'ruf', v: 'gm', hin: 'Immer mit Gasmaske leicht, 1–2 Figuren.' });
+  if ((fuss || k === 'cav' || k === 'art') && !T.gasproof) S('treffer', 'husten', 'Im Gas: Husten', 'husten', 0.4, { gruppe: 'ruf', v: 'gm', hin: 'Immer mit Gasmaske leicht, 1–2 Figuren.' });
   S('treffer', 'panik', 'Flieht', 'panic', 0.4, { gruppe: 'ruf' });
   // Tod und Ausfall (destroyed, breakdown, stuck)
   if (k === 'walker' || k === 'art') S('tod', 'tod', 'Zerstört', 'boom2', 0.75, { gruppe: 'einschlag' }); else S('tod', 'tod', 'Aufgerieben', '-', 0.5, { gruppe: 'ruf', spiel: 'aufgerieben', hin: 'Im Spiel ohne eigenen Ton (nur Blut), bis hier einer gewählt wird (Spiel-Platz „aufgerieben“, seit 21:00).' });
@@ -185,10 +193,11 @@ function slotsVon(t) {
   if (A === 'hinrichtung') { S('abil', 'hinr_start', 'Ausholen: Kettenschwert springt an', 'held_saege_start2', 0.6, { gruppe: 'held', hin: 'Auch vor dem Querhieb.' }); S('abil', 'hinr_schrei', 'Ausholen: Ächzen hinter dem Helm', 'held_ritter_schrei', 0.5, { gruppe: 'held' }); S('abil', 'hinr_schnitt', 'Schlag: Schwung mit Schnitt', 'held_saege_schnitt2', 0.7, { gruppe: 'held', hin: 'Auch beim Querhieb.' }); S('abil', 'ritter_schritt', 'Schritte (zwei je Feld)', 'held_schritt_ritter2', 0.55, { gruppe: 'held' }); }
   if (T.held) { S('treffer', 'held_ruestung', 'Getroffen: Schlag auf Rüstung', 'held_ruestung', 0.5, { gruppe: 'held' }); S('tod', 'held_horn', 'Fällt: Horn', 'held_fall_horn', 0.6, { gruppe: 'held' }); }   // Held Kürassier
   if (A === 'rollen') { S('abil', 'rollen_anlauf', 'Sturmrollen: Anlauf (Kettenrollen)', 'tank', 0.5, { gruppe: 'fahrzeug' }); S('abil', 'rollen_aufprall', 'Sturmrollen: Aufprall', 'neu3_fzaufprall', 0.7, { gruppe: 'fahrzeug', spiel: 'aufprall_rollen' }); S('abil', 'rollen_krach', 'Sturmrollen: Krachen beim Aufprall', 'ueberrollen', 0.45, { gruppe: 'fahrzeug' }); }
-  if (k === 'walker') { S('abil', 'rammen', 'Gebäude rammen: Aufprall', 'impact', 0.7, { gruppe: 'einschlag' }); S('abil', 'rammen_wucht', 'Gebäude rammen: Wucht', 'neu3_fzaufprall', 0.6, { gruppe: 'fahrzeug', spiel: 'aufprall_rammen' }); S('abil', 'einsturz', 'Gebäude stürzt ein', 'einsturz', 0.8, { gruppe: 'einschlag' }); }
+  if (k === 'walker') { if (!out.some(z => z.platz === 'tank')) S('abil', 'rammen_anlauf', 'Gebäude rammen: Anlauf', 'tank', 0.5, { gruppe: 'fahrzeug' });   // Ton-Spur 2026-11-23
+    S('abil', 'rammen', 'Gebäude rammen: Aufprall', 'impact', 0.7, { gruppe: 'einschlag' }); S('abil', 'rammen_wucht', 'Gebäude rammen: Wucht', 'neu3_fzaufprall', 0.6, { gruppe: 'fahrzeug', spiel: 'aufprall_rammen' }); }   // „Gebäude stürzt ein“ steht unter „Gelände und Gebäude“
   if (A === 'pzgranate') { S('abil', 'pzg_wurf', 'Panzergranate: Explosion', 'boom', 0.6, { gruppe: 'einschlag' }); S('abil', 'pzg_metall', 'Panzergranate: Treffer am Panzer', 'einschlag_panzer', 0.55, { gruppe: 'einschlag' }); }
   if (fig === 'drill') S('abil', 'bohr_wucht', 'Bohrstoß: Wucht', 'neu3_fzaufprall', 0.45, { gruppe: 'fahrzeug', spiel: 'aufprall_bohr', hin: 'Zusammen mit dem Bohrton (Nahkampf-Zeile), Bohrkopf dreht etwa 0,9 s.' });
-  if (T.fessel) { S('abil', 'winde', 'Ballon einholen/aufsteigen: Winde', 'drahtwackeln', 0.45, { gruppe: 'handgriff' }); S('abil', 'ratsche', 'Ballon: Ratsche', 'mgladen', 0.35, { gruppe: 'handgriff' }); }
+  if (T.fessel) { S('abil', 'brenner', 'Aufsteigen: Brenner faucht', 'ballon_brenner', 0.4, { gruppe: 'handgriff' }); S('abil', 'winde', 'Ballon einholen/aufsteigen: Winde', 'drahtwackeln', 0.45, { gruppe: 'handgriff' }); S('abil', 'ratsche', 'Ballon: Ratsche', 'mgladen', 0.35, { gruppe: 'handgriff' }); }
   if (T.flame || (T.zweit && T.zweit.flamme)) S('abil', 'nachbrennen', 'Flammenstoß: Nachbrennen (nach der Schleife)', 'feuer', 0.3, { gruppe: 'flamme', hin: 'Der Strahl selbst ist die Zeile „Flammenstrahl“; er läuft als Schleife genau so lange wie der Strahl (1,5 s, Bohrkoloss 1,1 s).' });
   if (T.dig) S('abil', 'sandsack', 'Eingraben: Sandsäcke', 'sandsaecke', 0.4, { gruppe: 'handgriff', hin: 'Standard 2026-11-22 (Enrico 15:26), zusammen mit dem Atmen.' });
   if (T.dig) S('abil', 'atmen', 'Eingraben: Graben mit schwerem Atmen', 'atmen', 0.42, { gruppe: 'ruf', hin: 'Nur noch 72199 (F32).' });
@@ -199,15 +208,15 @@ function slotsVon(t) {
   if (A === 'mark') { S('abil', 'leucht', 'Ziel markieren: Leuchtpistole', 'leuchtschuss', 0.5, { gruppe: 'signal' }); S('abil', 'brand', 'Leuchtkugel brennt', 'leuchtbrand', 0.22, { gruppe: 'handgriff' }); }
   if (A === 'strike') { S('abil', 'strike', 'Feuerschlag: Abschuss', 'cannonH', 0.35, { gruppe: 'kanone' }); S('abil', 'strikeziel', 'Feuerschlag: Einschlag', 'einschlagH', 0.8, { gruppe: 'einschlag' }); }
   if (A === 'smoke') { S('abil', 'werfer', 'Nebelwand: Abschuss', 'werfer', 0.55, { gruppe: 'flamme' }); S('abil', 'nebel', 'Nebelwand: Geschoss', 'gas', 0.5, { gruppe: 'einschlag' }); }
-  if (A === 'tunnel') { S('abil', 'stollen', 'Stollen graben', 'bauen', 0.3, { gruppe: 'handgriff' }); S('abil', 'stollenboom', 'Stollen sprengen', 'boom2', 0.8, { gruppe: 'einschlag' }); }
+  if (A === 'tunnel') { S('abil', 'stollen', 'Stollen graben', 'bauen', 0.3, { gruppe: 'handgriff' }); S('abil', 'stollentick', 'Stollen graben: Ticken', 'tick', 0.45, { gruppe: 'handgriff' }); }   // „Stollen gesprengt“ steht unter „Gelände und Gebäude“ (passiert zu Rundenbeginn ohne Einheit)
   if (A === 'charge') { S('abil', 'tick', 'Haftladung: Zünder', 'tick', 0.5, { gruppe: 'handgriff' }); S('abil', 'spreng', 'Haftladung: Sprengung', 'blast', 0.8, { gruppe: 'einschlag' }); }
-  if (A === 'mine') S('abil', 'mine', 'Mine legen', 'bauen', 0.3, { gruppe: 'handgriff' });
+  if (A === 'mine') { S('abil', 'mine', 'Mine legen', 'bauen', 0.3, { gruppe: 'handgriff' }); S('abil', 'minetick', 'Mine legen: Ticken', 'tick', 0.4, { gruppe: 'handgriff' }); }
   if (T.wirelayer) S('abil', 'draht', 'Draht ziehen', 'bauen', 0.3, { gruppe: 'handgriff' });
   if (A === 'clear') S('abil', 'entgiften', 'Entgiften', 'gasmaske_1', 0.5, { gruppe: 'handgriff' });
   if (A === 'ammo') S('abil', 'munition', 'Munition verteilen', 'nachladen', 0.55, { gruppe: 'handgriff' });
   if (T.repair || T.recover) S('abil', 'bergen', T.repair ? 'Reparieren / Bergen' : 'Bergen / instand setzen', 'reparieren', 0.6, { gruppe: 'handgriff', hin: T.repair ? 'Werkstatt-Töne statt Sanitäter (F39).' : undefined });
   if (k === 'medic' && !T.repair) S('abil', 'heilen', 'Versorgen', 'heal', 0.5, { gruppe: 'handgriff' });
-  if (T.courier) { S('abil', 'hund', 'Befehl überbringen: Hund', 'dog', 0.55, { gruppe: 'bewegung' }); S('abil', 'ruf', 'Befehl überbringen: Ruf', 'comeon', 0.45, { gruppe: 'ruf' }); }
+  if (T.courier) { S('abil', 'befehlhund', 'Befehl überbringen: Hund', 'dog', 0.55, { gruppe: 'bewegung' }); S('abil', 'ruf', 'Befehl überbringen: Ruf', 'comeon', 0.45, { gruppe: 'ruf' }); }
   if (T.cmd) { if (sd === 'D') S('abil', 'befehl', 'Befehl (Sammeln, Sturmbefehl)', 'roar', 0.45, { gruppe: 'ruf' });
     else { S('abil', 'befehl', 'Befehl „Feuer frei“', 'forward', 0.45, { gruppe: 'ruf' }); S('abil', 'sammeln', 'Befehl „Sammeln“', 'stand', 0.45, { gruppe: 'ruf' }); }
     if (T.cmd === 2) S('abil', 'gross', sd === 'D' ? 'Generalangriff' : 'Halten um jeden Preis', sd === 'D' ? 'generalhorn' : 'march', 0.5, { gruppe: 'signal' }); }
@@ -222,6 +231,7 @@ function slotsVon(t) {
   if (T.counterStrike) S('abil', 'gegenstoss', 'Gegenstoß', 'charge', 0.6, { gruppe: 'ruf' });
   // Ankunft
   S('ankunft', 'nachschub', 'Nachschub trifft ein', 'whistle', 0.5, { gruppe: 'signal' });
+  { const ids = out.map(z => z.id), dopp = ids.filter((x, i) => ids.indexOf(x) !== i); if (dopp.length) throw new Error('doppelte Zeilen-Kennung bei ' + t + ': ' + dopp.join(', ')); }   // jede Zeile braucht eine eigene Kennung (Speicher je Einheit und Zeile)
   return out;
 }
 
@@ -235,7 +245,8 @@ const RUFE = [['auswahl', 'Auswahl / Bestätigung (etwa jede dritte Auswahl)'], 
   ['sterben_einzeln', 'Sterben, einzeln (etwa jede dritte Vernichtung, nach 5 s ausgeblendet)', 'sterben_einzeln'], ['sterben_gruppe', 'Sterben, Gruppe (schwere Verluste, leise)', 'sterben_gruppe']];   // dritter Wert = Standard-Platz (Enrico 2026-11-22 14:50)
 const SST_RUFE = [['auswahl', 'Auswahl (jede dritte)'], ['bewegen', 'Bewegen'], ['angriff', 'Angriff (Fernkampf)'], ['nahkampf', 'Nahkampf'], ['getroffen', 'Getroffen'], ['schwer_beschaedigt', 'Schwer beschädigt (einmal je Schreiter)'], ['feind_gesichtet', 'Feindliche Maschine gesichtet'], ['zerstoert', 'Zerstört']];
 for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_' + sd, name: sd === 'A' ? 'Stimmen Konkordat' : 'Stimmen Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
-  slots: RUFE.map(([id, titel, std]) => ({ ab: 'stimme', id: 'ruf_' + id, titel, platz: std || '-', vol: 0.5, v: null, gruppe: 'stimmen', mode: 'ruf', rate: null, dur: 0, hin: 'Höchstens ein Ruf gleichzeitig, je Ereignis höchstens alle 7 s. Filter und Stärke gelten für diese Zeile.', kette: null, sd, auch: [] })) });
+  slots: RUFE.filter(([id]) => id !== 'held_faellt' && !(id === 'granate' && sd === 'A')).map(([id, titel, std]) => ({   // Held fällt: die Heldenstimme übernimmt; Granate: nur die Aschenwacht hat Panzergranaten (Ton-Spur 2026-11-23)
+     ab: 'stimme', id: 'ruf_' + id, titel, platz: std || '-', vol: 0.5, v: null, gruppe: 'stimmen', mode: 'ruf', rate: null, dur: 0, hin: 'Höchstens ein Ruf gleichzeitig, je Ereignis höchstens alle 7 s. Filter und Stärke gelten für diese Zeile.', kette: null, sd, auch: [] })) });
 // Schreiter-Stimmen (Enrico 2026-11-22 14:40): Gruppe „Schreiter“ unter Stimmen, Roboter-Filter je Zeile
 for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_schreiter_' + sd, name: sd === 'A' ? 'Schreiter Konkordat' : 'Schreiter Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
   slots: SST_RUFE.map(([id, titel]) => ({ ab: 'stimme', id: 'ruf_' + id, titel, platz: 'sst_' + id, vol: 0.55, v: null, gruppe: 'stimmen', mode: 'ruf', filt: 'roboter', fst: sd === 'D' ? 0.7 : 0.45, rate: null, dur: 0, hin: 'Gilt für alle Schreiter (Säge, Klaue, Turm, Orden, Kreuz, Eisenknecht). Höchstens ein Ruf gleichzeitig, je Anlass höchstens alle 7 s.', kette: null, sd, auch: [] })) });
@@ -255,6 +266,13 @@ for (const [t, name, sd, filt, fst, spezial, pre] of [['stimmen_held_faust', 'He
     W('zug', 'pferde_schnee', 'Pferde mit Protze im Schnee', 'pferde_schnee', 0.5, 'Aufgeprotzte Geschütze; leise (0,22) auch unter Reitern.'),
     W('zug', 'eis_knackt', 'Eis knackt (Fußtruppen auf Eis)', 'eis_knackt', 0.5, 'Nur der Anfang (1,5 s). Ganzer Ton mit Einbrechen: Platz eis_bricht, nur im Pult.'),
     W('ankunft', 'winterwind_stark', 'Böe (selten, Kulisse)', 'winterwind_stark', 0.12, 'Grundschleife: winterwind (0,13, zwei Spuren mit Überblendung).') ] }); }
+// Gelände und Gebäude (2026-11-23): Töne ohne Einheit; eine Wahl hier gilt im Spiel immer (ui.js tonWahl → TONWAHL.gelaende)
+{ const W = (ab, id, titel, platz, vol, hin, spiel) => ({ ab, id, titel, platz, vol, v: null, gruppe: 'einschlag', mode: null, rate: null, dur: 0, hin, kette: null, sd: null, spiel: spiel || null, auch: [] });
+  einheiten.push({ t: 'gelaende', name: 'Gelände und Gebäude', sd: null, kat: 'Stimmen', mech: false, img: '', stimme: '', slots: [
+    W('tod', 'einsturz', 'Gebäude stürzt ein', 'einsturz', 0.95, 'Kirche, Haus, Kapelle; auch nach Rammen und Sprengen.'),
+    W('tod', 'stollenboom', 'Stollen wird gesprengt: Explosion', 'boom2', 0.8, 'Zu Rundenbeginn, zwei Runden nach dem Graben. Eigener Tonplatz im Spiel.', 'stollen_boom'),
+    W('tod', 'stollenknall', 'Stollen wird gesprengt: Nachknall', 'grenade2', 0.6, 'Zusammen mit der Explosion.', 'stollen_knall'),
+    W('tod', 'stollenblast', 'Stollen wird gesprengt: Erdreich bricht ein', 'blast', 0.8, 'Gleich danach, zusammen mit dem Einsturz-Ton.', 'stollen_blast') ] }); }
 // Wer nutzt welchen Platz (gleiche Seite, gleicher Filter): Hinweis „gilt im Spiel auch für“
 const nutzer = {};
 for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const key = s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || ''); (nutzer[key] = nutzer[key] || new Set()).add(u.name); }

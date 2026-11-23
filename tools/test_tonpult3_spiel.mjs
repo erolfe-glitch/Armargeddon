@@ -47,6 +47,19 @@ try {
   pruef('Mischton: beide Spuren spielen', r3.spuren.length === 2 && !!sa && !!sb, JSON.stringify(r3.spuren));
   pruef('Mischton: Startversatz der zweiten Spur (ca. 220 ms)', !!sa && !!sb && sb.t - sa.t > 150 && sb.t - sa.t < 400, sa && sb ? (sb.t - sa.t) + ' ms' : '');
   pruef('Mischton: Lautstärke und Tonhöhe je Spur', !!sa && !!sb && sb.vol < sa.vol * 0.62 && sb.vol > sa.vol * 0.38 && Math.abs(sb.rate - 0.8) < 0.02 && Math.abs(sa.rate - 1) < 0.02, sa && sb ? `Lautstärke ${sa.vol} / ${sb.vol}, Tonhöhe ${sa.rate} / ${sb.rate}` : '');
+  // 4. Pult-Wahl greift dort, wo sie bis 2026-11-23 nie ankam: Waffenton (Marke aus waffenTon), Ton ohne playSound (tonPick), Rolle Handelnde/Getroffene
+  const r4 = JSON.parse(await ev(`(async () => { const S = __dbg.SND, P = window.SOUND_POOLS, T = __dbg.TONWAHL, u = { id: 99001, type: 'kohorte', side: 'A' }, gespielt = [], ziel = P.einschlagH[0][0], alt = T.kohorte;
+    const o = S[ziel], c = o.cloneNode.bind(o); o.cloneNode = () => { gespielt.push(ziel); return c(); }; __dbg.setSound(true);
+    T.kohorte = { rifle: { k: ziel, r: 'a' } }; __dbg.playSound(__dbg.waffenTon('rifle', u), 0.3, 'A', { noGap: true }); const mitWahl = gespielt.length;
+    T.kohorte = { rifle: { k: ziel, r: 'z' } }; gespielt.length = 0; __dbg.playSound(__dbg.waffenTon('rifle', u), 0.3, 'A', { noGap: true }); const falscheRolle = gespielt.length;
+    T.kohorte = { flame: { k: ziel, r: 'a' } }; const pick = __dbg.tonPick('flame', u);
+    T.kohorte = { heavy: { k: 'x', r: 'a' }, 'heavy#z': { k: ziel, r: 'z' } }; gespielt.length = 0; __dbg.playSound('heavy', 0.3, null, { noGap: true, an: u }); const zweite = gespielt.length;
+    if (alt) T.kohorte = alt; else delete T.kohorte; gespielt.length = 0; __dbg.playSound(__dbg.waffenTon('rifle', u), 0.3, 'A', { noGap: true }); const ohne = gespielt.length;
+    return JSON.stringify({ ziel, mitWahl, falscheRolle, pick, zweite, ohne }); })()`));
+  pruef('Pult-Wahl greift beim Waffenton der Einheit (Gewehrsalve)', r4.mitWahl === 1 && r4.ohne === 0, 'gewählter Ton ' + r4.ziel + ' gespielt: ' + r4.mitWahl + '×, ohne Wahl: ' + r4.ohne + '×');
+  pruef('Wahl einer Getroffen-Zeile gilt nicht für den Schuss derselben Einheit', r4.falscheRolle === 0);
+  pruef('Pult-Wahl greift bei Tönen ohne playSound (Flammenschleife, Motor, Sperrfeuer-Abschuss)', r4.pick === r4.ziel, String(r4.pick));
+  pruef('derselbe Platz in Handeln- und Getroffen-Zeile: die Getroffen-Wahl klingt, wenn die Einheit getroffen wird', r4.zweite === 1);
   pruef('keine Fehler in der Konsole', fehler.length === 0, fehler.slice(0, 4).join(' | '));
 } finally { ws.close(); ch.kill(); }
 console.log(`\n${ok} Prüfungen bestanden, ${nicht} fehlgeschlagen.`); process.exit(nicht ? 1 : 0);

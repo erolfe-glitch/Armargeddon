@@ -24,6 +24,8 @@ const echteKeys = new Set([...Object.values(D.pools).flat().map(x => x[0]), ...s
 for (const [key, m] of Object.entries(mischAlle)) { const sp = m.spuren.filter(x => echteKeys.has(x.k)); if (sp.length < m.spuren.length) bericht.push(`Mischton ${key}: ${m.spuren.length - sp.length} Spur(en) ohne Ton – ausgelassen`); if (sp.length) MISCHTON[key] = sp.map(x => [x.k, +(x.vol == null ? 1 : x.vol), Math.round(x.ms || 0), +(x.ton || 1)]); }
 const alleKeys = new Set([...echteKeys, ...Object.keys(MISCHTON)]);
 const TON_AUS = p3 ? ((p3.j.aussortiert && p3.j.aussortiert.schluessel) || []).filter(k => echteKeys.has(k)).sort() : [];
+// Ton-Spur 2026-11-23: „Stollen sprengen“ stand beim Mineur, klingt aber zu Rundenbeginn ohne Einheit → Zeile unter „Gelände und Gebäude“; alte Wahl dorthin
+if (wahl.has('mineur|stollenboom') && !wahl.has('gelaende|stollenboom')) { const e = wahl.get('mineur|stollenboom'); wahl.set('gelaende|stollenboom', { ...e, einheit: 'gelaende', verlegt: 1 }); wahl.delete('mineur|stollenboom'); bericht.push('mineur|stollenboom: Wahl nach „Gelände und Gebäude“ verlegt'); }
 // Zeilen, die bis 21:00 im Spiel denselben Platz hatten und jetzt einen eigenen bekommen (spiel): bisherige Wahl auf die Schwester-Zeile übertragen, wenn dort keine eigene steht
 for (const u of D.einheiten) { const gruppen = {}; for (const z of u.slots) if (z.mode !== 'ruf' && z.platz && z.platz !== '-') (gruppen[z.platz] = gruppen[z.platz] || []).push(z);
   for (const zs of Object.values(gruppen)) { if (zs.length < 2 || new Set(zs.map(z => z.spiel || z.platz)).size < 2) continue;
@@ -31,6 +33,7 @@ for (const u of D.einheiten) { const gruppen = {}; for (const z of u.slots) if (
       for (const y of zs) if (y !== z && !wahl.has(u.t + '|' + y.id)) { wahl.set(u.t + '|' + y.id, { ...e, platz_id: y.id, lautstaerke: e.lautstaerke / (z.vol || 1) * (y.vol || 1), uebertragen: z.id }); bericht.push(`${u.t}|${y.id}: Wahl von „${z.titel}“ übertragen (eigener Platz seit 21:00)`); } } } }
 for (const [k, e] of wahl) {
   const einh = D.einheiten.find(x => x.t === e.einheit), zeile = einh && einh.slots.find(z => z.id === e.platz_id);
+  if (einh && !zeile) { bericht.push(`${k}: diese Zeile gibt es im Pult nicht mehr (die Einheit spielt den Ton im Spiel nie) – ausgelassen`); continue; }
   const ruf = zeile && zeile.mode === 'ruf', platz = ruf ? zeile.id : zeile ? (zeile.spiel || zeile.platz) : e.platz_spiel, volSpiel = zeile ? zeile.vol : e.lautstaerke_spiel;   // Rufe (Stimmen): Platz = Zeile
   if (!platz || platz === '-') { bericht.push(`${k}: keine Zeile im Spiel – ausgelassen`); continue; }
   const w = { };
@@ -43,9 +46,10 @@ for (const [k, e] of wahl) {
   if (ruf) { if (!w.k && !w.aus && zeile.platz === '-' && !w.p) { bericht.push(k + ': Ruf ohne Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || zeile.filt || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : zeile.fst != null ? zeile.fst : 0.6; }   // Rufe mit Standard-Platz: Filter auch ohne eigenen Ton übernehmen
   if (!Object.keys(w).length) continue;
   if (zeile && !ruf) w.r = ['treffer', 'tod'].includes(zeile.ab) ? 'z' : 'a';   // Täter oder Getroffener (tonKontext, Ton-Bericht Punkt 2)
-  (tab[e.einheit] = tab[e.einheit] || {})[platz] = w;
+  const te = tab[e.einheit] = tab[e.einheit] || {}, vor = te[platz];   // derselbe Platz in einer Handeln- und einer Getroffen-Zeile: zweite Wahl unter '<platz>#z' (ui.js tonWahl)
+  if (vor && vor.r && w.r && vor.r !== w.r) { if (w.r === 'z') te[platz + '#z'] = w; else { te[platz + '#z'] = vor; te[platz] = w; } } else te[platz] = w;
   if (zeile && e.platz_spiel && e.platz_spiel !== platz) bericht.push(`${k}: Pult-Zeile zeigte ${e.platz_spiel}, das Spiel spielt ${platz} – dort eingetragen`);
-  if (!ausNeu.has(k)) bericht.push(`${k}: nur in älterem Export (${e.quelle})`);
+  if (!ausNeu.has(k) && !e.verlegt) bericht.push(`${k}: nur in älterem Export (${e.quelle})`);
 }
 const F = join(ROOT, 'src/ui.js'); let s = readFileSync(F, 'utf8');
 const a = s.indexOf('// TONWAHL-ANFANG'), b = s.indexOf('// TONWAHL-ENDE');

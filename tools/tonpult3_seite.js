@@ -86,7 +86,9 @@ spielMisch = (spuren, vol = 1, rate = 1) => {
 };
 const mixDauer = spuren => Math.max(0, ...spuren.map(sp => (sp.ms || 0) / 1000 + (D.dauer[sp.k] || 0) / (sp.ton || 1)));
 function mischNeu() { for (const [k, m] of Object.entries(MISCH)) D.dauer[k] = +mixDauer(m.spuren).toFixed(2); }
-function allesNeu3() { mischNeu(); ausNeu(); bibNeu(); ausNeu(); }
+// Zeilen, die umgezogen sind (Ton-Spur 2026-11-23): „Stollen sprengen“ stand beim Mineur, gehört aber zu „Gelände und Gebäude“ – eine alte Wahl zieht mit
+function verlegen() { const alt = AEND.mineur && AEND.mineur.stollenboom; if (!alt || (AEND.gelaende && AEND.gelaende.stollenboom)) return; (AEND.gelaende = AEND.gelaende || {}).stollenboom = alt; delete AEND.mineur.stollenboom; if (!Object.keys(AEND.mineur).length) delete AEND.mineur; speichern(); }
+function allesNeu3() { verlegen(); mischNeu(); ausNeu(); bibNeu(); ausNeu(); }
 allesNeu3();
 
 // ---------- Export / Import ----------
@@ -125,7 +127,8 @@ function e3Auto(nurOffen) {   // ersten offenen Moment und darin die erste offen
   const o = offen(ab); E3.ab = ab; E3.slot = o ? o[0] : [...slotsGemeinsam(us, ab).keys()][0]; e3Merke(); return true;
 }
 function e3Wahl(ts, mehr) { E3.wer = ts; if (mehr != null) E3.mehr = mehr; if (ts.length) E3.seite = seiteVon(U[ts[0]]); e3Auto(); stoppAlles(); zeichneEinfach(); }
-function springZu(u, s) { ansicht = 'einfach'; E3.wer = [u.t]; E3.mehr = false; E3.seite = seiteVon(u); E3.ab = s.ab; E3.slot = s.id; e3Merke(); merkeSel(); zeichne(); }
+let e3Zeig = false;   // gewählte Einheit einmal ins Bild rollen (nach einem Sprung von woanders)
+function springZu(u, s) { ansicht = 'einfach'; e3Zeig = true; E3.wer = [u.t]; E3.mehr = false; E3.seite = seiteVon(u); E3.ab = s.ab; E3.slot = s.id; e3Merke(); merkeSel(); zeichne(); }
 
 function waehle3(ziele, id, was) {   // Ton zuweisen heißt eingestellt (ein Schritt für „Rückgängig“)
   const ne = new Set(ziele.map(z => z.u.t)).size, text = (id === '-' ? 'kein Ton' : '„' + wahlName(id) + '“') + ' → ' + (ne === 1 ? ziele[0].u.name : ne + ' Einheiten') + ' · ' + was;
@@ -147,7 +150,7 @@ function passend(u, s) {   // nur Töne, die zu diesem Moment passen: die Rubrik
     return gruppen.filter(x => x.items.length); }
   const heim = id => { if (!id || id === '-') return null; let x = id; if (id.startsWith('p:')) { const p = id.slice(2); x = D.pools[p] ? id : D.sndvar[p] && D.sndvar[p].length ? idVon(D.sndvar[p][0]) : 'k:' + p; } const r = rubrikVon(x); return r[0] === 'rest' ? null : r; };
   const h0 = heim(g) || [s.mode === 'ruf' ? 'stimmen' : AB_RUB[s.ab], s.mode === 'ruf' ? 'Stimmenpaket und Gefechtsrufe' : s.ab === 'tod' ? 'Schmerz, Panik, Sterben' : null], hw = heim(w);
-  const seiteOk = it => !it.id.startsWith('p:') || kandidaten(it.id.slice(2), s.sd, s.v).length > 0;
+  const seiteOk = it => it.id.startsWith('p:') ? kandidaten(it.id.slice(2), s.sd, s.v).length > 0 : !(s.mode === 'ruf' && MISCH[it.id.slice(2)]);   // Rufe laufen im Spiel über einen eigenen Weg: dort keine Mischtöne
   for (const rid of uniq3([h0[0], hw && hw[0]].filter(Boolean))) { const items = bibListe(rid).filter(it => !bibAus(it.id) && !/^p:sv_/.test(it.id) && seiteOk(it));
     for (const un of uniq3(items.map(it => it.unter))) gruppen.push({ titel: (RUB_TITEL[rid] || rid) + (un ? ' – ' + un : ''), offen: (rid === h0[0] && (h0[1] == null || un === h0[1] || items.length <= 20 || un === 'Eigene Mischtöne')) || !!(hw && rid === hw[0] && un === hw[1]), items: items.filter(it => it.unter === un) }); }   // kleine Rubriken ganz aufgeklappt
   return gruppen.sort((a, b) => b.offen - a.offen);
@@ -195,10 +198,11 @@ function zeichneWer() {
   for (const u of liste_) { const f = fortschritt([u]), fertig = f.n === f.von;
     gitter.append(h('button', { cls: 'e3k' + (an.has(u.t) ? ' an' : '') + (fertig ? ' fertig' : ''), 'data-t': u.t, 'aria-pressed': an.has(u.t) ? 'true' : 'false', title: u.name + ': ' + f.n + ' von ' + f.von + ' Momenten eingestellt',
       on: () => { if (E3.mehr) { const ts = an.has(u.t) ? (an.size > 1 ? [...an].filter(t => t !== u.t) : [...an]) : [...an, u.t]; e3Wahl(ts); } else e3Wahl([u.t]); } },
-      u.img ? h('img', { src: u.img, alt: '' }) : h('i', {}, u.sd ? '🗣️' : '❄️'), h('span', { cls: 'nm' }, u.name), h('span', { cls: 'fs' }, fertig ? '✓ fertig' : f.n + ' / ' + f.von)));
+      u.img ? h('img', { src: u.img, alt: '' }) : h('i', {}, u.sd ? '🗣️' : u.t === 'gelaende' ? '🏚️' : '❄️'), h('span', { cls: 'nm' }, u.name), h('span', { cls: 'fs' }, fertig ? '✓ fertig' : f.n + ' / ' + f.von)));
   }
   const alleF = liste_.filter(u => { const f = fortschritt([u]); return f.n === f.von; }).length;
   roll.append(gitter, h('p', { cls: 'hin' }, `${alleF} von ${liste_.length} fertig.`)); el.append(roll); roll.scrollTop = y;
+  if (e3Zeig) { e3Zeig = false; const k = gitter.querySelector('.e3k.an'); if (k) k.scrollIntoView({ block: 'nearest' }); }
 }
 function zeichneWann() {
   const el = el3('e3wann'), alt = el.querySelector('.e3roll'), y = alt ? alt.scrollTop : 0; el.innerHTML = '';
@@ -227,7 +231,7 @@ function zeichneWann() {
     }
     roll.append(box);
   }
-  if (u1 && u1.gemeinsam) for (const g of u1.gemeinsam) if (U[g]) roll.append(h('button', { cls: 'e3m gem', on: () => e3Wahl([g], false) }, h('span', { cls: 'bi' }, '🗣️'), h('span', { cls: 'mt' }, h('b', {}, 'Rufe (gemeinsam)'), h('small', {}, U[g].name + ' – gilt für alle Einheiten dieser Gruppe')), h('span', { cls: 'st' }, '→')));
+  if (u1 && u1.gemeinsam) for (const g of u1.gemeinsam) if (U[g]) roll.append(h('button', { cls: 'e3m gem', on: () => { e3Zeig = true; e3Wahl([g], false); } }, h('span', { cls: 'bi' }, '🗣️'), h('span', { cls: 'mt' }, h('b', {}, 'Rufe (gemeinsam)'), h('small', {}, U[g].name + ' – gilt für alle Einheiten dieser Gruppe')), h('span', { cls: 'st' }, '→')));
   el.append(roll); roll.scrollTop = y;
 }
 function zeichneTon() {
@@ -289,7 +293,7 @@ function bib3Bau(o = {}) {   // o: { ziel: {u, s} (Vorhören wie an dieser Stell
     hk.append(h('span', { cls: 'sgt' }, 'Herkunft'), h('button', { cls: 'chip' + (!B3.herk ? ' an' : ''), on: () => { B3.herk = null; zeig(); } }, 'alle'));
     for (const [id, name] of D.herkunftName) hk.append(h('button', { cls: 'chip' + (B3.herk === id ? ' an' : ''), 'aria-pressed': B3.herk === id ? 'true' : 'false', on: () => { B3.herk = B3.herk === id ? null : id; zeig(); } }, name));
     for (const rid of q || B3.herk ? [...D.bib.map(b => b.id), 'misch'] : [B3.rub]) { let kopf = !(q || B3.herk), ua = null;
-      for (const it of bibListe(rid)) { if (bibAus(it.id)) continue;
+      for (const it of bibListe(rid)) { if (bibAus(it.id) || (o.ziel && o.ziel.s.mode === 'ruf' && MISCH[it.id.slice(2)])) continue;
         const istP = it.id.startsWith('p:'), keys = (it.kinder ? it.kinder.map(x => x[0]) : [it.id.slice(2)]).filter(k => !AUS_K.has(k) && (!B3.herk || herk3(k) === B3.herk)); if (!keys.length) continue;
         const txt = (wahlName(it.id) + ' ' + it.id.slice(2) + ' ' + (RUB_TITEL[rid] || '') + ' ' + it.unter).toLowerCase(), pq = !q || txt.includes(q), kt = keys.filter(k => pq || (k + ' ' + datei(k)).toLowerCase().includes(q)); if (!kt.length) continue; n++;
         if (!kopf) { lst.append(h('div', { cls: 'bkopf' }, RUB_TITEL[rid])); kopf = true; }
