@@ -1,0 +1,79 @@
+{
+ "werkzeug": "Armargeddon Ton-Pult",
+ "stand_toene": "2026-11-23",
+ "exportiert": "2026-11-23T16:15:30.276Z",
+ "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
+ "aenderungen": [
+  {
+   "einheit": "haubitze",
+   "name": "Donnerrohr-Batterie",
+   "seite": "A",
+   "anlass": "Einschlag beim Ziel",
+   "platz_id": "ziel",
+   "titel": "Einschlag Einzelschuss",
+   "platz_spiel": "einschlagH",
+   "filter": null,
+   "wahl": "k:mix_test_einschlag_mit_erdregen",
+   "schluessel": "mix_test_einschlag_mit_erdregen",
+   "datei": "älterer Ton (vor 2026-11-16 eingebettet)",
+   "platz_neu": null,
+   "lautstaerke_spiel": 0.8,
+   "lautstaerke": 0.8,
+   "tonhoehe": 1
+  }
+ ],
+ "roh": {
+  "haubitze": {
+   "ziel": {
+    "w": "k:mix_test_einschlag_mit_erdregen"
+   }
+  }
+ },
+ "pult3": 1,
+ "fertig": {
+  "haubitze": {
+   "ziel": 1
+  }
+ },
+ "aussortiert": {
+  "toene": [
+   "p:stepsWald",
+   "k:schritte_1"
+  ],
+  "bereiche": [
+   "s:sv_inf_A2"
+  ],
+  "schluessel": [
+   "schritte_1",
+   "stepsWald_1",
+   "sv_inf_A2_1",
+   "sv_inf_A2_2",
+   "sv_inf_A2_3",
+   "sv_inf_A2_4",
+   "sv_inf_A2_5",
+   "sv_inf_A2_6"
+  ]
+ },
+ "rubriken": {},
+ "mischtoene": [
+  {
+   "key": "mix_test_einschlag_mit_erdregen",
+   "name": "Test Einschlag mit Erdregen",
+   "rubrik": "einschlaege",
+   "spuren": [
+    {
+     "k": "einschlagH_1",
+     "vol": 1,
+     "ms": 0,
+     "ton": 1
+    },
+    {
+     "k": "neu2_einschlag_1",
+     "vol": 0.6,
+     "ms": 250,
+     "ton": 0.9
+    }
+   ]
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 {
  "werkzeug": "Armargeddon Ton-Pult",
- "stand_toene": "2026-11-22",
- "exportiert": "2026-11-22T20:21:31.317Z",
+ "stand_toene": "2026-11-23",
+ "exportiert": "2026-11-23T16:15:40.080Z",
  "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
  "aenderungen": [
   {
@@ -417,5 +417,14 @@
     "w": "p:neu4_mg_schwer"
    }
   }
- }
+ },
+ "pult3": 1,
+ "fertig": {},
+ "aussortiert": {
+  "toene": [],
+  "bereiche": [],
+  "schluessel": []
+ },
+ "rubriken": {},
+ "mischtoene": []
 }

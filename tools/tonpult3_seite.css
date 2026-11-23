@@ -1,0 +1,70 @@
+
+/* ================= Ton-Pult 3 (Enrico 2026-11-23): drei Schritte, große Flächen, wenig Text ================= */
+* { scrollbar-color: var(--rust) var(--panel2); }
+#ansichten { flex-wrap: wrap; } #ansichten button { flex: none; } #expTabs { display: flex; gap: 6px; } #expTabs[hidden] { display: none; }
+#expKnopf { color: var(--dim); font-weight: 400; } #expTabs button { font-weight: 400; }
+#vEinfach { display: grid; grid-template-columns: minmax(300px, 25fr) minmax(300px, 24fr) minmax(0, 51fr); gap: 10px; padding: 10px 12px; height: calc(100vh - var(--kopfh, 70px)); }
+#vEinfach[hidden], #vAlle[hidden], #vKammer[hidden], #vMisch[hidden] { display: none; }
+.e3s { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--panel); border: 2px solid var(--rust); border-radius: 8px; padding: 8px 10px 10px; }
+.e3t { margin: 0 0 8px; font: 700 22px Georgia, serif; display: flex; align-items: center; gap: 10px; color: var(--parch); }
+.e3t .nr { width: 34px; height: 34px; border-radius: 50%; background: var(--brass); color: var(--ink); display: grid; place-items: center; font: 700 19px Georgia, serif; }
+.e3roll { overflow-y: auto; flex: 1; min-height: 0; padding-right: 4px; }
+.e3s .tabs { margin-bottom: 8px; } .e3s .tabs button.G.an { border-color: var(--brass); background: #4a3d2a; }
+.e3chips { margin-bottom: 8px; } .e3chips .chip { min-height: 40px; font-size: 14px; padding: 2px 11px; }
+.e3mehr { width: 100%; text-align: left; margin-bottom: 8px; } .e3mehr.an { background: #5a4630; border-color: var(--brass); }
+.e3gitter { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 6px; }
+.e3k { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; min-height: 126px; text-align: center; position: relative; }
+.e3k img, .e3k i { width: 72px; height: 72px; border-radius: 6px; background: #4a3d33; object-fit: contain; display: grid; place-items: center; font-style: normal; font-size: 34px; }
+.e3k .nm { font-size: 14px; font-weight: 600; line-height: 1.15; } .e3k .fs { font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.e3k.an { border-color: var(--brass); background: #5a4630; box-shadow: 0 0 0 2px var(--brass), 0 2px 0 var(--ink); }
+.e3k.fertig .fs { color: #a9c48a; font-weight: 700; } .e3k.fertig { border-color: #6f8a55; }
+.e3kopf { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; } .e3kopf img { width: 64px; height: 64px; border-radius: 6px; background: #4a3d33; object-fit: contain; }
+.e3kopf b { font: 700 20px Georgia, serif; display: block; } .e3kopf small { color: var(--dim); }
+.e3fort { margin-bottom: 8px; font-weight: 700; color: var(--brass); } .e3fort.voll { color: #a9c48a; }
+.e3fort .bk { height: 12px; border-radius: 6px; background: #1a1411; border: 1px solid var(--rust); overflow: hidden; margin-bottom: 4px; } .e3fort .bk i { display: block; height: 100%; background: var(--brass); } .e3fort.voll .bk i { background: #8fb06a; }
+.e3kn { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; } .e3kn button { flex: 1; min-width: 150px; font-size: 15px; }
+.e3m { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; min-height: 62px; text-align: left; margin: 5px 0 0; padding: 6px 10px; }
+.e3m .bi { font-size: 28px; text-align: center; } .e3m .mt b { display: block; font-size: 17px; } .e3m .mt small, .e3s1 .mt small, .m3e .mt small { color: var(--dim); font-size: 13px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.e3m .st, .e3s1 .st { font-weight: 700; color: var(--brass); white-space: nowrap; } .e3m.fertig .st, .e3s1.fertig .st { color: #a9c48a; font-size: 20px; } .st.warn { color: #ff8a60 !important; font-size: 20px; }
+.e3m.an { border-color: var(--brass); background: #5a4630; } .e3m.gem { border-style: dashed; margin-top: 14px; }
+.e3sl { margin: 0 0 6px 18px; border-left: 3px solid var(--brass); padding-left: 6px; }
+.e3s1 { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 52px; padding: 4px 8px; margin-top: 4px; border: 2px solid transparent; border-radius: 6px; background: var(--panel2); cursor: pointer; }
+.e3s1 .mt b { display: block; font-size: 15px; font-weight: 600; } .e3s1.an { border-color: var(--brass); background: #41352c; }
+.e3st b { font: 700 22px Georgia, serif; display: block; } .e3st small { color: var(--dim); } .e3st { margin-bottom: 8px; }
+.e3warn { background: #5b2a22; border: 2px solid #ff8a60; border-radius: 6px; padding: 8px 10px; margin: 0 0 8px; font-weight: 600; }
+.e3jetzt { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--panel2); border: 2px solid var(--rust); border-radius: 8px; padding: 8px 10px; }
+.e3jetzt.fertig { border-color: #6f8a55; } .play.gross { width: 64px; height: 64px; font-size: 28px; }
+.e3jetzt .tn b { display: block; font-size: 19px; } .e3jetzt .tn small { color: var(--dim); font-size: 13px; display: block; overflow-wrap: anywhere; }
+.e3jetzt .jk { display: flex; flex-direction: column; gap: 6px; align-items: stretch; } .e3jetzt .ok { color: #a9c48a; font-weight: 700; text-align: center; } #e3passt { min-height: 52px; font-size: 17px; }
+.e3reg { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin: 8px 0; } .e3reg .regler input[type=range] { width: 150px; } .e3reg .regler b { min-width: 3.4em; }
+.e3h { margin: 12px 0 4px; font: 700 18px Georgia, serif; color: var(--parch); } .e3h small { font: 400 13px system-ui, sans-serif; color: var(--dim); }
+.e3g { width: 100%; text-align: left; margin-top: 6px; background: transparent; border-color: #4a3d33; box-shadow: none; color: var(--parch); font-weight: 700; } .e3g small { color: var(--dim); font-weight: 400; }
+.t3 { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 58px; padding: 4px 6px; border-bottom: 1px solid #3d3129; border-radius: 4px; }
+.t3.klick { cursor: pointer; } .t3.klick:hover { background: rgba(194, 164, 97, .1); } .t3.kind { margin-left: 34px; background: rgba(0, 0, 0, .16); }
+.t3.an { background: rgba(194, 164, 97, .22); box-shadow: inset 5px 0 0 var(--brass); }
+.t3 .tn b { display: block; font-size: 16px; } .t3 .tn small { color: var(--dim); font-size: 12.5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.t3 .tr { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; } .t3 .tr select { max-width: 250px; }
+.kl3 { min-height: 40px; padding: 2px 10px; font-size: 14px; color: var(--dim); background: transparent; box-shadow: none; } .kl3.raus:hover { color: #ff8a60; border-color: #ff8a60; }
+.mk { display: inline-block; margin-left: 8px; padding: 0 7px; border-radius: 10px; font-size: 12px; font-weight: 700; vertical-align: 2px; border: 1px solid var(--rust); color: var(--dim); }
+.mk.frage { background: var(--brass); color: var(--ink); border-color: var(--ink); cursor: help; } .mk.hk-suno { border-color: #8fb06a; color: #b9d49a; } .mk.hk-el { border-color: #7d9bb5; color: #a9c4dc; } .mk.hk-helden { border-color: var(--brass); color: var(--brass); } .mk.hk-mix { border-color: #b58bb5; color: #d6b3d6; }
+.e3alle { width: 100%; min-height: 54px; margin-top: 12px; font-weight: 700; }
+/* Alle Töne */
+#vAlle { padding: 10px 14px; height: calc(100vh - var(--kopfh, 70px)); display: flex; flex-direction: column; gap: 8px; } #vAlle .bib { flex: 1; min-height: 0; } .v3hin { font-size: 14px; }
+.b3hk .chip { min-height: 40px; font-size: 13.5px; padding: 2px 10px; }
+/* Abstellkammer */
+#vKammer { padding: 12px 18px 60px; max-width: 1500px; height: calc(100vh - var(--kopfh, 70px)); overflow-y: auto; }
+#vKammer h2 { margin: 0 0 4px; font: 700 24px Georgia, serif; } #vKammer h3 { margin: 18px 0 6px; font: 700 18px Georgia, serif; color: var(--parch); } #vKammer h3.warn { color: #ff8a60; }
+.k3gr { margin: 8px 0; } .k3gr > b { display: block; margin-bottom: 4px; color: var(--dim); font-size: 14px; }
+.schalter { min-height: 44px; font-size: 15px; } .schalter small { color: var(--dim); } .schalter.aus { opacity: .5; background: #1f1915; text-decoration: line-through; border-style: dashed; }
+.k3ers { display: flex; flex-wrap: wrap; gap: 6px; } .k3ers button { border-color: #ff8a60; } .k3list { border: 2px solid var(--rust); border-radius: 6px; background: var(--panel2); padding: 2px 8px 8px; margin-top: 8px; }
+/* Mischton bauen */
+#vMisch { display: grid; grid-template-columns: minmax(340px, 34fr) minmax(0, 66fr); gap: 12px; padding: 10px 14px 40px; height: calc(100vh - var(--kopfh, 70px)); }
+.m3l, .m3r { background: var(--panel); border: 2px solid var(--rust); border-radius: 8px; padding: 8px 12px 12px; overflow-y: auto; min-height: 0; } .m3l h3, .m3r h3 { margin: 6px 0 6px; font: 700 18px Georgia, serif; color: var(--parch); }
+.m3e { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 4px 4px; border-bottom: 1px solid #3d3129; } .m3e.an { background: rgba(194, 164, 97, .2); } .m3e .mt b { display: block; }
+.m3kopf { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; } .m3kopf input { flex: 1; min-width: 260px; font: inherit; color: var(--text); background: #2a221c; border: 2px solid var(--rust); border-radius: 6px; min-height: 44px; padding: 6px 12px; }
+.m3s { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; background: var(--panel2); border: 2px solid var(--rust); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; } .m3s .mt { flex: 1 1 100%; order: -1; } .m3s .mt b { display: block; } .m3s .mt small { color: var(--dim); font-size: 12.5px; }
+.m3s .regler input[type=range] { width: 130px; } .m3s .regler b { min-width: 4em; }
+.m3fuss { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+@media (max-width: 1500px) { .e3gitter { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); } .e3k img, .e3k i { width: 60px; height: 60px; } .e3jetzt { grid-template-columns: 64px minmax(0, 1fr); } .e3jetzt .jk { grid-column: 1 / -1; flex-direction: row; } .e3jetzt .jk > * { flex: 1; } }
+.e3roll { overflow-x: hidden; } .e3s .tabs button { min-width: 0; padding: 6px 4px; } .e3kopf > div { min-width: 0; } .e3kopf b { overflow-wrap: anywhere; line-height: 1.15; }
+@media (max-width: 1500px) { #vEinfach { grid-template-columns: minmax(270px, 22fr) minmax(280px, 24fr) minmax(0, 54fr); gap: 8px; padding: 8px; } .e3s .tabs button { font-size: 14px; } .e3chips .chip { min-height: 40px; font-size: 13px; padding: 2px 9px; } .e3kopf b { font-size: 18px; } .e3t { font-size: 19px; margin-bottom: 6px; } }

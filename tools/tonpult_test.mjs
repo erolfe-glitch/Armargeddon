@@ -1,11 +1,11 @@
-// Test für das Ton-Pult 2 (tonpult.html): bedient die Seite im unsichtbaren Chrome mit echten Klicks, prüft Mehrfach-Zuweisung, Rückgängig,
+// Test für das Ton-Pult (tonpult.html), Ton-Pult 3 (drei Schritte, Abstellkammer, Umsortieren, Mischtöne; Aufnahmen nach entwurf/probe/tonpult3/) und Ton-Pult 2 (Experten-Ansicht): bedient die Seite im unsichtbaren Chrome mit echten Klicks, prüft Mehrfach-Zuweisung, Rückgängig,
 // Lautstärke für mehrere, „Vom Ton aus“ und den Export, macht Aufnahmen nach entwurf/probe/tonpult2/ und prüft den Export mit tools/tonwahl_bau.mjs
 // (src/ui.js wird dafür kurz geändert und danach wieder genau so hergestellt, wie es war).
 // Aufruf: node tools/tonpult_test.mjs   (vorher node tools/tonpult_bau.mjs; kein Vorschau-Server nötig, die Seite wird als Datei geladen)
 import { spawn, execFileSync } from 'node:child_process'; import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os'; import { join, dirname } from 'node:path'; import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..'), AUS = join(ROOT, 'entwurf', 'probe', 'tonpult2'), URL_ = pathToFileURL(join(ROOT, 'tonpult.html')).href;
-mkdirSync(AUS, { recursive: true });
+mkdirSync(AUS, { recursive: true }); const AUS3 = join(ROOT, 'entwurf', 'probe', 'tonpult3'); mkdirSync(AUS3, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armpult2-'))}`, '--no-first-run', '--mute-audio', '--allow-file-access-from-files', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
@@ -18,6 +18,7 @@ const cmd = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] 
 const ev = async x => { const r = await cmd('Runtime.evaluate', { expression: x, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text); return r.result?.result?.value; };
 const groesse = (w, h) => cmd('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
 const bild = async name => { await sleep(250); const r = await cmd('Page.captureScreenshot', { format: 'png' }); writeFileSync(join(AUS, name), Buffer.from(r.result.data, 'base64')); console.log('  Bild', 'entwurf/probe/tonpult2/' + name); };
+const bild3 = async name => { await sleep(300); const r = await cmd('Page.captureScreenshot', { format: 'png' }); writeFileSync(join(AUS3, name), Buffer.from(r.result.data, 'base64')); console.log('  Bild', 'entwurf/probe/tonpult3/' + name); };
 let ok = 0, nicht = 0; const pruef = (was, gut, mehr = '') => { if (gut) ok++; else nicht++; console.log((gut ? '  ok    ' : '  FEHLER ') + was + (mehr ? ' – ' + mehr : '')); };
 // Klick-Helfer in der Seite: Knopf nach Text (innerhalb eines Bereichs), Chip, Spaltenkopf
 const HELFER = `window.T = { k: (sel, text) => { const b = [...document.querySelectorAll(sel)].find(b => b.offsetParent && b.textContent.trim().startsWith(text)); if (!b) throw new Error('nicht gefunden: ' + sel + ' ' + text); b.click(); return true; },
@@ -29,6 +30,118 @@ try {
   let geladen = false; for (let i = 0; i < 120 && !geladen; i++) { await sleep(500); try { geladen = await ev("typeof SND !== 'undefined' && !!SND && /Töne geladen/.test(document.getElementById('status').textContent)"); } catch { } }
   pruef('Seite und Töne geladen', geladen, await ev("document.getElementById('status').textContent"));
   await ev(HELFER);
+
+  // ================= Ton-Pult 3 (Enrico 2026-11-23) =================
+  console.log('Ton-Pult 3: Wer? – Wann? – Welcher Ton?');
+  pruef('Startansicht „Töne einstellen“ mit drei Spalten', await ev("ansicht === 'einfach' && !document.getElementById('vEinfach').hidden && ['e3wer', 'e3wann', 'e3ton'].every(id => document.getElementById(id))"));
+  pruef('Einheitenbilder groß und antippbar (mindestens 40 px)', await ev("[...document.querySelectorAll('.e3k')].length > 20 && [...document.querySelectorAll('#vEinfach button')].every(b => !b.offsetParent || (b.offsetHeight >= 40 && b.offsetWidth >= 40))"), await ev("[...document.querySelectorAll('#vEinfach button')].filter(b => b.offsetParent && (b.offsetHeight < 40 || b.offsetWidth < 40)).map(b => b.className + ' ' + b.offsetWidth + 'x' + b.offsetHeight).slice(0, 5).join(', ')"));
+  await ev("document.querySelector('.e3k[data-t=\"kohorte\"]').click()"); await sleep(150);
+  await bild3('01_drei_schritte_1920.png');
+  const voll = JSON.parse(await ev("JSON.stringify((() => { const falsch = []; for (const u of D.einheiten) { e3Wahl([u.t], false); const ids = []; for (const b of document.querySelectorAll('.e3m[data-ab]')) { b.click(); const b2 = document.querySelector('.e3m[data-ab=\"' + b.dataset.ab + '\"]'); if (!b2 || !b2.classList.contains('an')) { falsch.push(u.t + ': Moment ' + b.dataset.ab + ' öffnet nicht'); continue; } for (const r of document.querySelectorAll('.e3sl .e3s1')) ids.push(r.dataset.id); } const soll = u.slots.map(s => s.id).sort().join(','), ist = ids.sort().join(','); if (soll !== ist) falsch.push(u.t + ': Kacheln ' + ist + ' ≠ Plätze ' + soll); const mo = [...document.querySelectorAll('.e3m[data-ab]')].map(b => b.dataset.ab).sort().join(','), ms = [...new Set(u.slots.map(s => s.ab))].sort().join(','); if (mo !== ms) falsch.push(u.t + ': Momente ' + mo + ' ≠ ' + ms); } return { n: D.einheiten.length, falsch }; })())"));
+  pruef('je Einheit: Kacheln im Pult == Tonplätze der Einheit (nichts fehlt, nichts zu viel)', voll.falsch.length === 0, voll.n + ' Einheiten' + (voll.falsch.length ? ', abweichend: ' + voll.falsch.slice(0, 4).join(' | ') : ''));
+  const ohneSchuss = await ev("(D.einheiten.find(u => echt(u) && !u.slots.some(s => s.ab === 'schuss')) || {}).t || ''");
+  if (ohneSchuss) { await ev("e3Wahl(['" + ohneSchuss + "'], false)"); pruef('Einheit ohne Schuss (' + ohneSchuss + ') hat keine Kachel „Schießen“', await ev("!document.querySelector('.e3m[data-ab=\"schuss\"]') && document.querySelectorAll('.e3m[data-ab]').length > 2")); }
+  await ev("e3Wahl(['kohorte'], false); document.querySelector('.e3m[data-ab=\"zug\"]').click()"); await sleep(100); await ev("document.querySelector('.e3s1[data-id=\"ziehen\"]').click()"); await sleep(100);
+  pruef('Schritt 3 zeigt nur passende Töne (Laufen → Rubrik Schritte, keine Waffen)', await ev("(() => { const ids = [...document.querySelectorAll('#e3ton .t3')].map(r => r.dataset.id); return ids.includes('p:schnee_gruppe') && ids.includes('p:schritte') && !ids.some(id => /rifle|mg|cannon|boom/.test(id)); })()"), await ev("[...document.querySelectorAll('#e3ton .e3g')].map(b => b.textContent.trim()).join(' · ')"));
+  const f0 = await ev("fortschritt([U.kohorte]).n");
+  await ev("document.querySelector('#e3ton .t3[data-id=\"p:schnee_gruppe\"]').click()"); await sleep(250);
+  pruef('Antippen = gewählt: Schritte im Schnee bei der Schützenkohorte, Stelle hat einen Haken', await ev("AEND.kohorte.ziehen.w === 'p:schnee_gruppe' && document.querySelector('.e3s1[data-id=\"ziehen\"]').classList.contains('fertig')"));
+  await bild3('02_ton_gewaehlt.png');
+  await ev("document.querySelector('.e3s1[data-id=\"marsch\"]').click()"); await sleep(100); await ev("document.getElementById('e3passt').click()"); await sleep(150);
+  pruef('„Passt so“ hakt die Stelle ab, ohne den Ton zu ändern, und springt zur nächsten offenen', await ev("FERTIG.kohorte.marsch === 1 && !AEND.kohorte.marsch && E3.slot !== 'marsch' && JSON.parse(localStorage.getItem('arm.tonpult.fertig')).kohorte.marsch === 1"), await ev("E3.ab + '/' + E3.slot"));
+  await ev("[...document.querySelectorAll('#e3wann .e3kn button')].find(b => /Alles Übrige/.test(b.textContent)).click()"); await sleep(200);
+  const f1 = JSON.parse(await ev("JSON.stringify(fortschritt([U.kohorte]))"));
+  pruef('Fortschritt: Einheit einmal durchgegangen = fertig', f1.n === f1.von && f1.von >= 7 && f0 < f1.n && await ev("document.querySelector('.e3k[data-t=\"kohorte\"]').classList.contains('fertig') && /fertig/.test(document.querySelector('.e3fort').textContent) && /✓ fertig/.test(document.querySelector('.e3k[data-t=\"kohorte\"] .fs').textContent)"), f1.n + ' von ' + f1.von + ' Momenten');
+  await bild3('03_einheit_fertig.png');
+  await ev("document.getElementById('undo').click()"); pruef('Rückgängig nimmt „Alles Übrige passt so“ zurück', await ev("fortschritt([U.kohorte]).n < " + f1.von + " && FERTIG.kohorte.marsch === 1 && AEND.kohorte.ziehen.w === 'p:schnee_gruppe'"));
+  await ev("document.getElementById('undo').click(); document.getElementById('undo').click()"); pruef('Rückgängig bis zum Anfang', await ev("Object.keys(AEND).length === 0 && Object.keys(FERTIG).length === 0"));
+  await ev("[...document.querySelectorAll('.e3chips .chip')].find(b => b.textContent === 'Fußtruppen').click()"); await sleep(150);
+  const mehr = await ev("E3.wer.length"); await ev("document.querySelector('.e3m[data-ab=\"zug\"]').click()"); await sleep(80); await ev("document.querySelector('.e3s1[data-id=\"ziehen\"]').click()"); await sleep(80);
+  await ev("document.querySelector('#e3ton .t3[data-id=\"p:schnee_gruppe\"]').click()"); await sleep(250);
+  pruef('Gruppenknopf „Fußtruppen“ wählt mehrere; ein Antippen stellt alle ein', mehr > 5 && await ev("E3.wer.every(t => !U[t].slots.some(s => s.id === 'ziehen') || AEND[t].ziehen.w === 'p:schnee_gruppe') && Object.keys(AEND).length > 5"), mehr + ' Einheiten');
+  await bild3('04_mehrere_einheiten.png');
+  await ev("document.getElementById('undo').click(); e3Wahl(['kohorte'], false)");
+  await ev("document.getElementById('e3alle').click()"); await sleep(200);
+  pruef('„Alle Töne ansehen“ öffnet die ganze Bibliothek', await ev("!!document.getElementById('bibDlg') && document.querySelectorAll('#bibDlg .bibnav button').length >= 15 && document.querySelectorAll('#bibDlg .t3').length > 3"));
+  await bild3('05_alle_toene_dialog.png'); await ev("document.querySelector('#bibDlg .akopf .x').click()");
+
+  console.log('Ton-Pult 3: Bibliothek nach Gehör, Umsortieren, Herkunft');
+  pruef('neue Rubrik „Graben und Schanzen“ mit Schaufeln, Atmen, Sandsäcken, Draht', await ev("['schaufel', 'atmen', 'sandsaecke', 'draht_schneiden', 'drahtwackeln'].every(p => PLATZKAT[p] === 'graben') && BIBKAT.graben.titel === 'Graben und Schanzen' && !!BIBKAT.handgriffe"));
+  pruef('unsichere Einsortierungen tragen ein „?“', await ev("D.unsicher.length >= 5") && (await ev("(() => { ansicht = 'alle'; B3.rub = 'stimmen'; B3.suche = ''; zeichne(); return !!document.querySelector('#vAlle .t3[data-id=\"p:charge\"] .mk.frage'); })()")), await ev("D.unsicher.join(', ')"));
+  pruef('jede Stimme zeigt ihre Herkunft (Suno, ElevenLabs, Helden, Freesound u. a.)', await ev("herk3(D.pools.sv_inf_A1[0][0]) === 'suno' && herk3(D.pools.stimmen_paket[0][0]) === 'el' && herk3(D.pools.hst_faust_tod[0][0]) === 'helden' && herk3(D.pools.pain[1][0]) === 'sonst' && !!document.querySelector('#vAlle .t3 .mk.hk-el')"));
+  await bild3('06_alle_toene_stimmen.png');
+  await ev("B3.rub = 'graben'; zeichne()"); await sleep(100); await bild3('07_rubrik_graben_und_schanzen.png');
+  await ev("document.querySelector('#vAlle .t3[data-id=\"p:atmen\"] .kl3.rub').click()"); await ev("(() => { const s = document.querySelector('#vAlle .t3[data-id=\"p:atmen\"] select'); s.value = 'stimmen|Husten, Atmen, Maske'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"); await sleep(150);
+  pruef('Umsortieren: „Schweres Atmen“ nach Stimmen verschoben, gespeichert', await ev("PLATZKAT.atmen === 'stimmen' && RUBRIK['p:atmen'] === 'stimmen|Husten, Atmen, Maske' && JSON.parse(localStorage.getItem('arm.tonpult.rubrik'))['p:atmen'] && !document.querySelector('#vAlle .t3[data-id=\"p:atmen\"]')"));
+  await ev("document.getElementById('undo').click()"); pruef('Rückgängig stellt die Rubrik wieder her', await ev("PLATZKAT.atmen === 'graben' && !RUBRIK['p:atmen']"));
+  await ev("B3.herk = 'suno'; zeichne()"); pruef('Filter je Herkunft: nur Suno-Sprüche', await ev("document.querySelectorAll('#vAlle .t3').length > 20 && [...document.querySelectorAll('#vAlle .t3')].every(r => /^p:sv_/.test(r.dataset.id))")); await ev("B3.herk = null; true");
+
+  console.log('Ton-Pult 3: Abstellkammer');
+  const k0 = await ev("D.pools.schritte[0][0]");
+  await ev("ansicht = 'einfach'; e3Wahl(['kohorte'], false); E3.ab = 'zug'; E3.slot = 'ziehen'; zeichne(); e3Offen.add('p:schritte'); zeichneTon(); document.querySelector('#e3ton .t3[data-id=\"k:" + k0 + "\"] .raus').click()"); await sleep(200);
+  pruef('Aussortieren: Ton verschwindet aus der Auswahl und aus der Zufallsgruppe, liegt in der Abstellkammer', await ev("AUS.toene.includes('k:" + k0 + "') && AUS_K.has('" + k0 + "') && !kandidaten('schritte', 'A', null).some(c => c.k === '" + k0 + "') && kandidaten('schritte', 'A', null).length >= 1 && !document.querySelector('#e3ton .t3[data-id=\"k:" + k0 + "\"]') && !!SND['" + k0 + "']"));
+  await ev("document.querySelector('#ansichten [data-a=\"kammer\"]').click()"); await sleep(150);
+  pruef('Abstellkammer zeigt den Ton mit „Zurückholen“', await ev("!!document.querySelector('#vKammer .t3[data-id=\"k:" + k0 + "\"] .gold')"));
+  const einzig = JSON.parse(await ev("JSON.stringify((() => { for (const u of D.einheiten) if (echt(u)) for (const s of u.slots) if (s.mode !== 'ruf' && s.platz !== '-' && D.pools[s.platz] && D.pools[s.platz].length === 1 && kandidaten(s.platz, s.sd, s.v).length === 1) return { t: u.t, id: s.id, p: s.platz }; })())"));
+  await ev("aussortieren('p:" + einzig.p + "')"); await sleep(150);
+  pruef('einziger Ton einer Stelle bleibt im Spiel und ist markiert „⚠ aussortiert, bitte Ersatz wählen“', await ev("brauchtErsatz(U['" + einzig.t + "'], U['" + einzig.t + "'].slots.find(s => s.id === '" + einzig.id + "')) && kandidaten('" + einzig.p + "', U['" + einzig.t + "'].sd, null).length === 1 && /Bitte Ersatz wählen/.test(document.getElementById('vKammer').textContent)"), einzig.t + ' · ' + einzig.id + ' (' + einzig.p + ')');
+  await bild3('08_abstellkammer.png');
+  await ev("springZu(U['" + einzig.t + "'], U['" + einzig.t + "'].slots.find(s => s.id === '" + einzig.id + "'))"); await sleep(150);
+  pruef('die Stelle zeigt die Warnung im Pult', await ev("/aussortiert, bitte Ersatz wählen/.test((document.querySelector('#e3ton .e3warn') || {}).textContent || '') && !!document.querySelector('.e3s1.an .st.warn')")); await bild3('09_ersatz_waehlen.png');
+  await ev("ansicht = 'kammer'; zeichne(); document.querySelector('#vKammer .schalter[data-b=\"h:el\"]').click()"); await sleep(200);
+  pruef('ganzer Bereich „ElevenLabs (Stimmen)“ abgeschaltet – Heldenstimmen bleiben unberührt', await ev("AUS.bereiche.includes('h:el') && D.pools.stimmen_paket.every(x => AUS_K.has(x[0])) && D.pools.sst_auswahl.every(x => AUS_K.has(x[0])) && !D.pools.hst_faust_tod.some(x => AUS_K.has(x[0])) && !D.pools.hst_kuerass_tod.some(x => AUS_K.has(x[0])) && document.querySelector('#vKammer .schalter[data-b=\"h:el\"]').classList.contains('aus')"));
+  await ev("document.querySelector('#vKammer .schalter[data-b=\"s:sv_inf_A2\"]').click()"); await sleep(150);
+  pruef('Sprechergruppe abschaltbar (Fußtruppen Konkordat, Stimme 2)', await ev("D.pools.sv_inf_A2.every(x => AUS_K.has(x[0])) && !D.pools.sv_inf_A1.some(x => AUS_K.has(x[0])) && !kandidaten('sv_inf_A', 'A', null).some(c => D.pools.sv_inf_A2.some(x => x[0] === c.k))"));
+  await bild3('10_bereiche_abgeschaltet.png');
+  await ev("document.querySelector('#vKammer .schalter[data-b=\"h:el\"]').click()"); await sleep(120); await ev("document.querySelector('#vKammer .t3[data-id=\"k:" + k0 + "\"] .gold').click()"); await sleep(150);
+  pruef('Zurückholen und wieder einschalten mit einem Klick', await ev("!AUS.toene.includes('k:" + k0 + "') && !AUS_K.has('" + k0 + "') && !AUS.bereiche.includes('h:el') && !D.pools.stimmen_paket.some(x => AUS_K.has(x[0]))"));
+
+  console.log('Ton-Pult 3: Mischton bauen');
+  await ev("document.querySelector('#ansichten [data-a=\"misch\"]').click()"); await sleep(120);
+  pruef('bestehende Mischtöne aus sound_bau.json lassen sich als Vorlage öffnen', await ev("D.mixe.length >= 5 && (() => { [...document.querySelectorAll('#vMisch .m3l .m3e button')].find(b => b.textContent === 'Als Vorlage öffnen').click(); return M3.spuren.length >= 1 && /neu$/.test(M3.name); })()"), await ev("M3.name + ': ' + M3.spuren.map(s => s.k).join(' + ')"));
+  await ev("M3 = { key: null, name: 'Test Einschlag mit Erdregen', rubrik: '', spuren: [{ k: D.pools.einschlagH[0][0], vol: 1, ms: 0, ton: 1 }, { k: D.pools.neu2_einschlag[0][0], vol: 0.6, ms: 180, ton: 0.9 }] }; zeichneMisch()"); await sleep(100);
+  await ev("(() => { const r = document.querySelectorAll('#vMisch .m3s')[1].querySelectorAll('input[type=range]')[1]; r.value = 250; r.dispatchEvent(new Event('input', { bubbles: true })); })()");
+  pruef('Spur-Regler: Lautstärke, Startversatz (ms), Tonhöhe je Spur', await ev("M3.spuren[1].ms === 250 && document.querySelectorAll('#vMisch .m3s').length === 2 && document.querySelectorAll('#vMisch .m3s input[type=range]').length === 6"));
+  const hoer = await ev("(async () => { document.getElementById('m3hoer').click(); await new Promise(r => setTimeout(r, 700)); return [laufend.size, Object.keys(MIX_BUF).length, MIX_AC ? MIX_AC.state : '-'].join('/'); })()");
+  pruef('▶ spielt die Mischung sofort (WebAudio, beide Spuren dekodiert)', /^\d+\/2\//.test(hoer), hoer);
+  await bild3('11_mischton_bauen.png');
+  await ev("stoppAlles(); document.getElementById('m3speichern').click()"); await sleep(200);
+  const mk = await ev("Object.keys(MISCH)[0] || ''");
+  pruef('Speichern unter eigenem Namen: steht in der Bibliothek und ist zuweisbar', mk === 'mix_test_einschlag_mit_erdregen' && await ev("zuweisbar('k:" + mk + "') && bibListe(rubrikVon('k:" + mk + "')[0]).some(it => it.id === 'k:" + mk + "') && D.dauer['" + mk + "'] > 1 && JSON.parse(localStorage.getItem('arm.tonpult.misch'))['" + mk + "'].spuren.length === 2"), mk);
+  await ev("ansicht = 'einfach'; e3Wahl(['haubitze'], false); E3.ab = 'ziel'; E3.slot = 'ziel'; zeichne()"); await sleep(120);
+  const hatMix = await ev("!!document.querySelector('#e3ton .t3[data-id=\"k:" + mk + "\"]')"); if (hatMix) await ev("document.querySelector('#e3ton .t3[data-id=\"k:" + mk + "\"]').click()"); await sleep(250);
+  pruef('Mischton erscheint bei den passenden Tönen (Einschlag) und lässt sich zuweisen', hatMix && await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && /Test Einschlag/.test(document.querySelector('.e3jetzt').textContent)"));
+  await bild3('12_mischton_zugewiesen.png');
+
+  console.log('Ton-Pult 3: Export, Import, Einbau ins Spiel');
+  await ev("aussortieren('k:" + k0 + "')"); await sleep(100);
+  const exp3 = JSON.parse(await ev('JSON.stringify(exportDaten())'));
+  pruef('Export: altes Format plus Abstellkammer, Rubriken, Mischtöne (Rezept), „passt so“', Array.isArray(exp3.aenderungen) && !!exp3.roh && exp3.pult3 === 1 && exp3.aussortiert.toene.includes('k:' + k0) && exp3.aussortiert.schluessel.includes(k0) && exp3.aussortiert.bereiche.includes('s:sv_inf_A2') && exp3.mischtoene.length === 1 && exp3.mischtoene[0].spuren.length === 2 && exp3.aenderungen.some(a => a.wahl === 'k:' + mk), exp3.aenderungen.length + ' Änderungen, ' + exp3.aussortiert.schluessel.length + ' aussortierte Schlüssel');
+  writeFileSync(join(AUS3, 'export_test.json'), JSON.stringify(exp3, null, 1));
+  await ev("(() => { for (const k of ['arm.tonpult', 'arm.tonpult.fertig', 'arm.tonpult.aus', 'arm.tonpult.rubrik', 'arm.tonpult.misch']) localStorage.removeItem(k); AEND = {}; zusatzSetzen(JSON.stringify({})); zeichne(); return Object.keys(MISCH).length + AUS.toene.length; })()");
+  await ev("document.getElementById('import').click(); document.getElementById('dlgFeld').value = " + JSON.stringify(JSON.stringify(exp3)) + "; [...document.querySelectorAll('#dlgKnoepfe button')].find(b => b.textContent === 'Übernehmen').click(); true"); await sleep(250);
+  pruef('Import stellt alles wieder her (Wahl, Abstellkammer, Mischton)', await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && AUS.toene.includes('k:" + k0 + "') && AUS_K.has('" + k0 + "') && AUS.bereiche.includes('s:sv_inf_A2') && !!MISCH['" + mk + "'] && MISCH['" + mk + "'].spuren[1].ms === 250"));
+  if (process.env.OHNE_EINBAU) console.log('  (Einbau-Probe mit tonwahl_bau übersprungen: OHNE_EINBAU)'); else {
+    const UI3 = join(ROOT, 'src', 'ui.js'), vor3 = readFileSync(UI3), TMP3 = join(ROOT, 'entwurf', 'postfach', 'tonpult_test_tonpult3.json');
+    try { writeFileSync(TMP3, JSON.stringify(exp3)); const aus = execFileSync(process.execPath, [join(ROOT, 'tools', 'tonwahl_bau.mjs')], { encoding: 'utf8' }); console.log('  ' + aus.trim().split('\n')[0]);
+      const u3 = readFileSync(UI3, 'utf8'), ta = JSON.parse(/const TON_AUS = new Set\((\[.*?\])\);/.exec(u3)[1]), mt = JSON.parse(/const MISCHTON = (\{.*?\});/.exec(u3)[1]), i = u3.indexOf('const TONWAHL = ') + 16, TW = JSON.parse(u3.slice(i, u3.indexOf(';\n', i)));
+      pruef('tonwahl_bau: Abstellkammer als TON_AUS im Spiel', ta.includes(k0) && ta.length === exp3.aussortiert.schluessel.length, ta.length + ' Schlüssel');
+      pruef('tonwahl_bau: Mischton als Rezept MISCHTON im Spiel, Wahl zeigt darauf', Array.isArray(mt[mk]) && mt[mk].length === 2 && mt[mk][1][2] === 250 && TW.haubitze && Object.values(TW.haubitze).some(w => w.k === mk), JSON.stringify(mt[mk]));
+      execFileSync(process.execPath, ['--check', UI3]); pruef('src/ui.js bleibt gültiges JavaScript', true);
+    } finally { writeFileSync(UI3, vor3); if (existsSync(TMP3)) unlinkSync(TMP3); }
+    pruef('src/ui.js wieder unverändert (Ton-Pult 3)', readFileSync(UI3).equals(vor3)); }
+  await ev("(() => { for (const k of ['arm.tonpult', 'arm.tonpult.fertig', 'arm.tonpult.aus', 'arm.tonpult.rubrik', 'arm.tonpult.misch']) localStorage.removeItem(k); AEND = {}; zusatzSetzen(JSON.stringify({})); UNDO.length = 0; return true; })()");
+  const e22 = readFileSync(join(ROOT, 'entwurf', 'postfach', 'tonpult_export_2026-11-22_2052.json'), 'utf8');
+  await ev("document.getElementById('import').click(); document.getElementById('dlgFeld').value = " + JSON.stringify(e22) + "; [...document.querySelectorAll('#dlgKnoepfe button')].find(b => b.textContent === 'Übernehmen').click(); true"); await sleep(300);
+  const i22 = JSON.parse(await ev("(() => { const o = " + e22 + ", r = o.roh || {}; let n = 0, gut = 0, fehlt = [], ohne = []; for (const t in r) for (const id in r[t]) { n++; const s = U[t] && U[t].slots.find(x => x.id === id); if (!s) { if (JSON.stringify((AEND[t] || {})[id]) === JSON.stringify(r[t][id])) { gut++; ohne.push(t + '.' + id); } else fehlt.push(t + '.' + id + ' (Zeile fehlt, Wahl verloren)'); continue; } const w = wert(U[t], s), e = r[t][id], g = grund(s); if (w.w === (e.w != null ? e.w : g.w) && Math.abs(w.vol - (e.vol != null ? e.vol : g.vol)) < 1e-6 && Math.abs(w.ton - (e.ton != null ? e.ton : 1)) < 1e-6) gut++; else fehlt.push(t + '.' + id); } return JSON.stringify({ n, gut, fehlt, ohne, einh: Object.keys(r).length, fertig: D.einheiten.filter(u => { const f = fortschritt([u]); return f.n === f.von; }).length }); })()"));
+  pruef('Enricos Export vom 22.11. (20:52) ist vollständig einlesbar', i22.n >= 130 && i22.gut === i22.n, i22.gut + ' von ' + i22.n + ' Einträgen, ' + i22.einh + ' Einheiten' + (i22.ohne.length ? '; ohne Zeile im Pult, aber bewahrt: ' + i22.ohne.join(', ') : '') + (i22.fehlt.length ? ', abweichend: ' + i22.fehlt.slice(0, 8).join(', ') : ''));
+  await ev("ansicht = 'einfach'; e3Wahl(['grenadier'], false)"); await sleep(150); await bild3('13_export_2211_eingelesen.png');
+  for (const [w, hh] of [[1280, 720], [2560, 1440]]) { await groesse(w, hh); await sleep(350); pruef('Ton-Pult 3 bei ' + w + ' px: nichts läuft über den Rand', await ev("document.querySelector('header').scrollWidth <= document.documentElement.clientWidth && document.documentElement.scrollWidth <= window.innerWidth && [...document.querySelectorAll('.e3s')].every(e => e.getBoundingClientRect().right <= window.innerWidth + 1)")); await bild3('14_drei_schritte_' + w + '.png'); }
+  await groesse(1920, 1080); await sleep(200);
+  await ev("document.getElementById('undo').click()"); pruef('Rückgängig nimmt den Import zurück', await ev("Object.keys(AEND).length === 0"));
+  // ---- ab hier Ton-Pult 2 (Experten-Ansicht) wie bisher ----
+  await ev("document.getElementById('expKnopf').click(); document.querySelector('#expTabs [data-a=\"tabelle\"]').click()"); await sleep(200);
+  pruef('Ton-Pult 2 bleibt als Experten-Ansicht erreichbar', await ev("!document.getElementById('expTabs').hidden && ansicht === 'tabelle'"));
 
   console.log('Bibliothek nach Gehör');
   const bib = await ev("JSON.stringify({ kat: D.bib.map(b => b.titel + ' ' + b.e.length), rest: D.bib.some(b => b.id === 'rest'), ohneDauer: Object.keys(SND).filter(k => D.dauer[k] == null).length, oger: PLATZKAT.oger_bruell, schnee: PLATZKAT.schnee_gruppe })");

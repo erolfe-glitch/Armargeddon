@@ -14,10 +14,16 @@ const exporte = readdirSync(PF).filter(f => /^tonpult.*\.json$/.test(f)).map(f =
 const wahl = new Map();
 for (const { f, j } of exporte) for (const e of j.aenderungen) wahl.set(e.einheit + '|' + e.platz_id, { ...e, quelle: f });
 const neuste = exporte[exporte.length - 1], ausNeu = new Set(neuste.j.aenderungen.map(e => e.einheit + '|' + e.platz_id));
+// Ton-Pult 3 (2026-11-23): Abstellkammer und eigene Mischtöne aus dem neuesten Export, der sie enthält (pult3). Mischtöne aller Exporte bleiben erhalten (neuerer gewinnt je Schlüssel).
+const mitP3 = exporte.filter(x => x.j.pult3), p3 = mitP3[mitP3.length - 1], mischAlle = {};
+for (const x of mitP3) for (const m of x.j.mischtoene || []) if (m && m.key && Array.isArray(m.spuren)) mischAlle[m.key] = m;
 // alle Schlüssel aus SOUNDS (Spiel und Pult), nicht nur die in Tonplätzen – sonst gehen Einzeltöne wie horn, tiger, gallop als „Ton fehlt“ verloren (Ton-Bericht Punkt 3)
 const sKeys = f => { try { return [...readFileSync(join(ROOT, f), 'utf8').matchAll(/^\s+([A-Za-z0-9_]+): 'data:/gm)].map(m => m[1]); } catch (e) { return []; } };
 const SNDVAR = new Set((/const SND_VAR = \{([^\n]*)/.exec(readFileSync(join(ROOT, 'src/ui.js'), 'utf8')) || ['', ''])[1].match(/\b([A-Za-z0-9_]+): \[/g)?.map(x => x.split(':')[0]) || []);   // Sammelnamen (punch, artD …) aus ui.js
-const alleKeys = new Set([...Object.values(D.pools).flat().map(x => x[0]), ...sKeys('src/sound.js'), ...sKeys('src/sound_pult.js')]), tab = {}, bericht = [];
+const echteKeys = new Set([...Object.values(D.pools).flat().map(x => x[0]), ...sKeys('src/sound.js'), ...sKeys('src/sound_pult.js')]), tab = {}, bericht = [], MISCHTON = {};
+for (const [key, m] of Object.entries(mischAlle)) { const sp = m.spuren.filter(x => echteKeys.has(x.k)); if (sp.length < m.spuren.length) bericht.push(`Mischton ${key}: ${m.spuren.length - sp.length} Spur(en) ohne Ton – ausgelassen`); if (sp.length) MISCHTON[key] = sp.map(x => [x.k, +(x.vol == null ? 1 : x.vol), Math.round(x.ms || 0), +(x.ton || 1)]); }
+const alleKeys = new Set([...echteKeys, ...Object.keys(MISCHTON)]);
+const TON_AUS = p3 ? ((p3.j.aussortiert && p3.j.aussortiert.schluessel) || []).filter(k => echteKeys.has(k)).sort() : [];
 // Zeilen, die bis 21:00 im Spiel denselben Platz hatten und jetzt einen eigenen bekommen (spiel): bisherige Wahl auf die Schwester-Zeile übertragen, wenn dort keine eigene steht
 for (const u of D.einheiten) { const gruppen = {}; for (const z of u.slots) if (z.mode !== 'ruf' && z.platz && z.platz !== '-') (gruppen[z.platz] = gruppen[z.platz] || []).push(z);
   for (const zs of Object.values(gruppen)) { if (zs.length < 2 || new Set(zs.map(z => z.spiel || z.platz)).size < 2) continue;
@@ -33,6 +39,7 @@ for (const [k, e] of wahl) {
   else if (e.wahl.startsWith('p:')) { const p = e.wahl.slice(2); if (!D.pools[p] && !SNDVAR.has(p)) { bericht.push(`${k}: Platz ${p} fehlt – ausgelassen`); continue; } if (p !== (zeile ? zeile.platz : platz)) w.p = p; }
   const vf = volSpiel ? +(e.lautstaerke / volSpiel).toFixed(3) : 1; if (Math.abs(vf - 1) > 0.01) w.vf = vf;
   if (e.tonhoehe && Math.abs(e.tonhoehe - 1) > 0.005) w.rate = e.tonhoehe;
+  if (ruf && w.k && MISCHTON[w.k]) { bericht.push(`${k}: Mischton in einer Ruf-Zeile kann das Spiel nicht mischen – ausgelassen`); continue; }
   if (ruf) { if (!w.k && !w.aus && zeile.platz === '-' && !w.p) { bericht.push(k + ': Ruf ohne Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || zeile.filt || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : zeile.fst != null ? zeile.fst : 0.6; }   // Rufe mit Standard-Platz: Filter auch ohne eigenen Ton übernehmen
   if (!Object.keys(w).length) continue;
   if (zeile && !ruf) w.r = ['treffer', 'tod'].includes(zeile.ab) ? 'z' : 'a';   // Täter oder Getroffener (tonKontext, Ton-Bericht Punkt 2)
@@ -44,6 +51,6 @@ const F = join(ROOT, 'src/ui.js'); let s = readFileSync(F, 'utf8');
 const a = s.indexOf('// TONWAHL-ANFANG'), b = s.indexOf('// TONWAHL-ENDE');
 if (a < 0 || b < 0) throw new Error('Marken TONWAHL-ANFANG/-ENDE fehlen in src/ui.js');
 const n = Object.values(tab).reduce((x, o) => x + Object.keys(o).length, 0);
-const block = `// TONWAHL-ANFANG (erzeugt mit tools/tonwahl_bau.mjs aus ${exporte.length} Ton-Pult-Exporten, neuester ${neuste.f}; ${n} Einträge – nicht von Hand ändern)\nconst TONWAHL = ${JSON.stringify(tab)};\n`;
+const block = `// TONWAHL-ANFANG (erzeugt mit tools/tonwahl_bau.mjs aus ${exporte.length} Ton-Pult-Exporten, neuester ${neuste.f}; ${n} Einträge – nicht von Hand ändern)\nconst TONWAHL = ${JSON.stringify(tab)};\nconst TON_AUS = new Set(${JSON.stringify(TON_AUS)});   // Abstellkammer (Ton-Pult 3): aussortierte Tonschlüssel, fallen aus der Zufallsauswahl (sndPick, Sprüche)\nconst MISCHTON = ${JSON.stringify(MISCHTON)};   // eigene Mischtöne (Ton-Pult 3): Schlüssel → Spuren [Ton, Lautstärke, Versatz ms, Tonhöhe], gemischt beim Abspielen (playSound)\n`;
 s = s.slice(0, a) + block + s.slice(b); writeFileSync(F, s);
-console.log(`${wahl.size} Pult-Wahlen zusammengeführt, ${n} wirken im Spiel (${Object.keys(tab).length} Einheiten).`); for (const z of bericht) console.log('  ' + z);
+console.log(`${wahl.size} Pult-Wahlen zusammengeführt, ${n} wirken im Spiel (${Object.keys(tab).length} Einheiten). Abstellkammer: ${TON_AUS.length} Töne${p3 ? ' (aus ' + p3.f + ')' : ''}. Mischtöne: ${Object.keys(MISCHTON).length}.`); for (const z of bericht) console.log('  ' + z);

@@ -263,30 +263,32 @@ for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') cont
 // Bibliothek nach dem, was man hört (ersetzt in der Auswahl die Code-Gruppen GRUPPEN, die intern bleiben). Je Rubrik Unterüberschriften mit Tonplätzen;
 // „x_*“ nimmt alle Plätze mit diesem Anfang. Ein Platz darf in zwei Rubriken stehen (Schritte im Schnee: Schritte und Winter). Neue Plätze hier eintragen –
 // was fehlt, landet in „Übrige Töne“ und wird beim Bauen gemeldet.
-const HOER = [
-  ['stimmen', 'Stimmen und Rufe', [['Rufe und Befehle', 'forward stand roar charge comeon cry scream ruf_feuer'], ['Schmerz, Panik, Sterben', 'pain medic panic panik_einzeln panik_gruppe sterben_einzeln sterben_gruppe husten grunzen gasmaske atmen selGas neu2_maske neu2_schrei'],
-    ['Stimmenpaket und Gefechtsrufe', 'stimmen_paket neu2_stimme'], ['Helden', 'hst_faust_* hst_kuerass_* held_ritter_schrei'], ['Schreiter-Stimmen', 'sst_*'],
+const HOER = [   // Ton-Pult 3 (Enrico 2026-11-23): nach Inhalt statt Dateiname, jeder Platz nur noch an EINER Stelle; „?“ hinter dem Namen = Einsortierung unsicher (Enrico prüft beim Hören, kann im Pult umsortieren)
+  ['stimmen', 'Stimmen und Rufe', [['Rufe und Befehle', 'forward stand roar charge? comeon cry scream ruf_feuer mgsetup?'], ['Schmerz, Panik, Sterben', 'pain medic panic panik_einzeln panik_gruppe sterben_einzeln sterben_gruppe neu2_schrei'],
+    ['Husten, Atmen, Maske', 'husten grunzen gasmaske selGas neu2_maske'], ['Stimmenpaket und Gefechtsrufe', 'stimmen_paket neu2_stimme'], ['Helden', 'hst_faust_* hst_kuerass_* held_ritter_schrei'], ['Schreiter-Stimmen', 'sst_*'],
     ['Brüllen und Bestien', 'loewe oger_bruell tiger neu3_loewe neu3_loewe2 neu3_bestie neu_tiger_mech'], ['Monster (später Dämonen)', 'neu2_monster'], ['Sprüche beim Anklicken', 'sv_*']]],
-  ['schritte', 'Schritte', [['', 'schritte steps stepsWald marschtritt holzknacken'], ['Im Schnee', 'schnee_einzeln schnee_gruppe schnee_rennen neu2_schritte'], ['Schwere Schritte', 'kampfanzug_schritte neu_schritte_schwer held_schritt_ritter held_schritt_ritter2 stampfen_schnee']]],
-  ['pferde', 'Pferde', [['', 'pferd_auswahl pferd_unruhe neigh gallop gallop2'], ['Gespann und Wagen', 'gespann wagenknarren pferde_schnee']]],
+  ['schritte', 'Schritte', [['', 'schritte steps stepsWald marschtritt holzknacken'], ['Im Schnee', 'schnee_einzeln schnee_gruppe schnee_rennen neu2_schritte?'], ['Schwere Schritte', 'kampfanzug_schritte neu_schritte_schwer held_schritt_ritter? held_schritt_ritter2 stampfen_schnee'],
+    ['Schreiter und Maschinen', 'schreiter_schritte mech']]],
+  ['pferde', 'Pferde und Gespann', [['', 'pferd_auswahl pferd_unruhe neigh gallop gallop2'], ['Gespann und Wagen', 'gespann wagenknarren pferde_schnee']]],
   ['motoren', 'Motoren und Ketten', [['', 'motor_auswahl tank panzerketten_schnee'], ['Überrollen und Panne', 'ueberrollen draht_ueberrollen crash'], ['Flugzeug', 'neu2_flug']]],
-  ['schreiter', 'Schreiter und Maschinen', [['', 'schreiter_schritte mech stampfen_schnee smash'], ['Maschinenstimmen', 'robot neu_roboter'], ['Dampf und Hydraulik', 'held_aufladen held_dampfstoss held_dampf held_kolben']]],
+  ['schreiter', 'Maschinen, Dampf, Hydraulik', [['', 'smash'], ['Maschinenstimmen', 'robot neu_roboter'], ['Dampf und Hydraulik', 'held_aufladen? held_dampfstoss held_dampf held_kolben']]],
   ['gewehre', 'Gewehre', [['', 'rifle rifle2 rifle3 rifle4 neu2_gewehr neu4_gewehr_schwer sniper semi buechse'], ['Pistolen', 'pistol neu4_pistole_schwer neu2_pistole'], ['Flinten', 'flinte neu_schrot']]],
-  ['mg', 'MG', [['', 'mg minigun neu_mg_schwer neu4_mg_schwer neu2_autokanone']]],
-  ['kanonen', 'Kanonen und Artillerie', [['', 'cannon neu_kanone neu2_kanone kolosskanone loewenkanone panzerkanone'], ['Schwere Artillerie', 'cannonH'], ['Mörser und Werfer', 'launch launch2 werfer neu4_granatwerfer']]],
-  ['einschlaege', 'Einschläge', [['', 'einschlag vorbei boomH einschlagH barrage grenade2 blast boom2 wasser neu2_einschlag neu2_knall'], ['Auf Panzerung und Stein', 'armor impact einschlag_panzer einschlag_abpraller neu2_metall held_ruestung'],
+  ['mg', 'MG', [['', 'mg minigun neu_mg_schwer neu4_mg_schwer neu2_autokanone?']]],
+  ['kanonen', 'Kanonen und Artillerie', [['', 'cannon neu_kanone neu2_kanone kolosskanone loewenkanone panzerkanone'], ['Schwere Artillerie', 'cannonH?'], ['Mörser und Werfer', 'launch launch2 werfer neu4_granatwerfer']]],
+  ['einschlaege', 'Einschläge', [['', 'einschlag vorbei boomH einschlagH barrage grenade2 blast boom2 wasser neu2_einschlag neu2_knall?'], ['Auf Panzerung und Stein', 'armor impact einschlag_panzer einschlag_abpraller neu2_metall held_ruestung'],
     ['Aufprall und Einsturz', 'neu3_fzaufprall neu3_aufprall neu2_crash einsturz neu2_einsturz']]],
   ['nahkampf', 'Nahkampf', [['', 'nahA nahD saebel sword axe slash heavy neu_wucht neu2_nahkampf getuemmel'], ['Fleisch und Blut', 'neu3_fleisch neu3_gore neu2_blut'], ['Klauen und Bisse', 'stahlklaue_fleisch stahlklaue_eisen krallen_fleisch krallen_eisen neu3_biss loewen_landung'],
     ['Sägen und Kettenschwert', 'saege_einschlag saege_fleisch saege_metall held_saege_start held_saege_start2 held_saege_schnitt held_saege_schnitt2 held_kschwert_metall held_kschwert_fleisch'], ['Rote Faust', 'held_faustschlag held_faustschlag2 held_fausteinschlag held_faustboom']]],
+  ['graben', 'Graben und Schanzen', [['Schaufeln und Atmen', 'schaufel atmen'], ['Sandsäcke und Bauen', 'sandsaecke bauen?'], ['Draht', 'cut draht_schneiden draht_infanterie drahtlatch? drahtwackeln']]],
   ['feuer', 'Feuer, Gas, Rauch', [['', 'flame feuer neu2_feuer ballon_brenner'], ['Gas und Rauch', 'gas rauch'], ['Leuchtkugel', 'leuchtschuss leuchtbrand']]],
-  ['natur', 'Natur, Kulisse und Winter', [['', 'wind kraehe ambient wetter'], ['Winter', 'winterwind winterwind_stark eis_knackt eis_bricht schnee_einzeln schnee_gruppe schnee_rennen stampfen_schnee panzerketten_schnee pferde_schnee'], ['Glocken', 'glocke glocke_fern glocke_fall'], ['Tiere und Wasser', 'dog neu2_hund neu2_wasser']]],
+  ['natur', 'Natur, Kulisse und Winter', [['', 'wind kraehe ambient wetter neu_versorgung?'], ['Winter', 'winterwind winterwind_stark eis_knackt eis_bricht'], ['Glocken', 'glocke glocke_fern glocke_fall'], ['Tiere und Wasser', 'dog neu2_hund neu2_wasser']]],
   ['oberflaeche', 'Oberfläche', [['', 'ui klick neu2_knopf'], ['Signale', 'whistle horn generalhorn held_fall_horn neu2_horn march zug_eigen zug_gegner erobert verloren win neu2_punkt'], ['Musik', 'musik_titel musik_schlacht musikNiederlage neu2_musik']]],
-  ['handgriffe', 'Handgriffe und Gerät', [['MG und Nachladen', 'mg_aufbauen mg_abbauen mgsetup mgladen nachladen neu_nachladen huelsen'], ['Geschütz', 'geschuetz_aufprotzen geschuetz_abprotzen clank abprotzen'], ['Graben und Bauen', 'sandsaecke schaufel bauen tick neu2_tuer'],
-    ['Draht', 'cut draht_schneiden draht_infanterie drahtlatch drahtwackeln'], ['Versorgen', 'heal reparieren neu_versorgung']]] ];
+  ['handgriffe', 'Handgriffe und Gerät', [['MG und Nachladen', 'mg_aufbauen mg_abbauen mgladen nachladen neu_nachladen huelsen'], ['Geschütz', 'geschuetz_aufprotzen geschuetz_abprotzen clank abprotzen'], ['Zünder und Riegel', 'tick neu2_tuer'], ['Versorgen', 'heal reparieren']]] ];
+const UNSICHER = [];   // Plätze mit „?“ in HOER
 const istVariante = p => { const m = p.match(/^(.+)_(gm|gs|bf|mr)$/); return !!(m && POOLS[m[1]]); };
 const POOL_KEYS = new Set(Object.values(POOLS).flat().map(x => x[0])), BIB_PLAETZE = [...Object.keys(POOLS).filter(p => !istVariante(p)), ...KEYS.filter(k => !POOL_KEYS.has(k))], inBib = new Set();
 const BIB = HOER.map(([id, titel, teile]) => { const e = [];
-  for (const [unter, liste] of teile) for (const w of liste.split(' ')) for (const p of (w.endsWith('*') ? BIB_PLAETZE.filter(x => x.startsWith(w.slice(0, -1))) : BIB_PLAETZE.includes(w) ? [w] : [])) { e.push([p, unter || null]); inBib.add(p); }
+  for (const [unter, liste] of teile) for (let w of liste.split(' ')) { const frag = w.endsWith('?'); if (frag) w = w.slice(0, -1); for (const p of (w.endsWith('*') ? BIB_PLAETZE.filter(x => x.startsWith(w.slice(0, -1))) : BIB_PLAETZE.includes(w) ? [w] : [])) { e.push([p, unter || null]); inBib.add(p); if (frag) UNSICHER.push(p); } }
   return { id, titel, e }; });
 { const rest = BIB_PLAETZE.filter(p => !inBib.has(p)); if (rest.length) { BIB.push({ id: 'rest', titel: 'Übrige Töne', e: rest.map(p => [p, null]) }); console.log('Ton-Pult: ohne Rubrik in HOER (jetzt unter „Übrige Töne“):', rest.join(' ')); } }
 Object.assign(NAME, { saege_einschlag: 'Säge: Einschlag', saege_fleisch: 'Säge: Sägen in Fußtruppen', saege_metall: 'Säge gegen Panzerung', neu4_pistole_schwer: 'Schwere Pistole (Offiziere)', neu4_gewehr_schwer: 'Schweres Gewehr (Panzerbüchse)', neu4_mg_schwer: 'Schweres MG (Schreiter)',
@@ -317,9 +319,37 @@ for (const u of einheiten) { const T = TYPES[u.t];
   u.art = !T ? null : T.held ? 'held' : T.cmd ? 'anfuehrer' : T.cls === 'cav' ? 'reiter' : T.cls === 'art' ? 'geschuetz' : T.cls === 'walker' ? (PANZER.includes(u.t) ? 'fahrzeug' : 'schreiter') : T.suit ? 'anzug' : 'fuss';
   const hs = u.slots.find(s => s.ab === 'schuss' && s.id === 'schuss'); u.waffe = !T || !hs ? null : ({ gewehr: 'gewehr', mg: 'mg', kanone: 'kanone', flamme: 'flamme' })[hs.gruppe] || null;
   for (const s of u.slots) s.gleich = s.mode === 'ruf' || s.platz === '-' ? [] : u.slots.filter(x => x !== s && x.mode !== 'ruf' && (x.spiel || x.platz) === (s.spiel || s.platz)).map(x => x.id); }   // gleicher Spiel-Platz (eigene Plätze über spiel)
-const DATA = { bib: BIB, dauer: DAUER, stand: new Date().toISOString().slice(0, 10), einheiten, ab: AB, gruppen: GRUPPEN, name: NAME, var: VAR_NAME, satz: SATZ_NAME, pools: POOLS, sndvar: SND_VAR, datei: DATEI, kat: SHOP_KAT };
+// ================= Ton-Pult 3 (Enrico 2026-11-23 16:50) =================
+// Herkunft je Ton (aus der Quelldatei): suno = eigene Sprüche (Suno), el = ElevenLabs-Stimmen, helden = Heldenstimmen (ElevenLabs, eigene Gruppe), sonst = Stimmen von Freesound/Pixabay/älter,
+// elfx = ElevenLabs-Geräusche, fx = Geräusche von Freesound/Pixabay/älter. Filter-Fassungen (_gm …) erben vom Grundton.
+const HEIMAT = {}; for (const b of BIB) for (const [p] of b.e) for (const [k] of (POOLS[p] || [[p]])) if (!HEIMAT[k]) HEIMAT[k] = b.id;
+const EL_FX = /^(Winter|Waffen_neu|Schreiter|Aufbau|Draht)[/]|^Helden[/](el_|loewen_sprung|kettenschwert_ruestung)/;
+const herkunftVon = k => { const f = DATEI[k] || '', stimme = f.startsWith('Voices/') || HEIMAT[k] === 'stimmen';
+  return f.startsWith('Voices/eigene/sprueche') || /^sv_/.test(k) ? 'suno' : f.startsWith('Voices/elevenlabs/helden') ? 'helden' : f.startsWith('Voices/elevenlabs') ? 'el' : stimme ? 'sonst' : EL_FX.test(f) ? 'elfx' : 'fx'; };
+const HERKUNFT = {}; for (const k of KEYS) HERKUNFT[k] = herkunftVon(k);
+for (const p of Object.keys(POOLS)) { const m = p.match(/^(.+)_(gm|gs|bf|mr)$/); if (!m || !POOLS[m[1]]) continue; const g = POOLS[m[1]]; POOLS[p].forEach(([k], i) => { HERKUNFT[k] = HERKUNFT[(g[g.length === POOLS[p].length ? i : 0] || g[0])[0]]; }); }   // Filter-Fassung = Herkunft des Grundtons
+for (const p of Object.keys(POOLS)) if (/^sv_/.test(p)) for (const [k] of POOLS[p]) HERKUNFT[k] = 'suno';
+const HERKUNFT_NAME = [['suno', 'Suno (eigene Sprüche)', 1], ['el', 'ElevenLabs (Stimmen)', 1], ['helden', 'Helden (ElevenLabs)', 1], ['sonst', 'Freesound und sonstige (Stimmen)', 1], ['elfx', 'ElevenLabs (Geräusche)', 0], ['fx', 'Freesound, Pixabay, sonstige (Geräusche)', 0]];
+// Sprechergruppen: jede Spruch-Stimme einzeln, dazu die ElevenLabs-Pakete
+const SPRECHER = [];
+for (const p of Object.keys(POOLS)) { const m = p.match(/^sv_([a-z]+)_([AD])([0-9]+)$/); if (m) SPRECHER.push({ id: p, name: (SATZ_NAME[m[1]] || m[1]).split(' (')[0] + ' ' + (m[2] === 'A' ? 'Konkordat' : 'Aschenwacht') + ' · Stimme ' + m[3], plaetze: [p], herkunft: 'suno' }); }
+for (const [id, name, re, hk] of [['rufe_el', 'Rufe: Feuer, Panik, Sterben', /^(ruf_feuer|panik_|sterben_)/, 'el'], ['stimmenpaket', 'Stimmenpaket (30 Rufe)', /^stimmen_paket$/, 'el'], ['sani_el', '„Sanitäter!“', /^medic$/, 'el'], ['schreiter_el', 'Schreiter-Stimmen', /^sst_/, 'el'],
+  ['held_faust', 'Held Rote Faust', /^hst_faust_/, 'helden'], ['held_kuerass', 'Held Eiserner Kürassier', /^hst_kuerass_/, 'helden']]) SPRECHER.push({ id, name, plaetze: Object.keys(POOLS).filter(p => re.test(p) && !istVariante(p)), herkunft: hk });
+// Bestehende Mischtöne aus tools/sound_bau.json (mix): Rezept zum Öffnen im Mischton-Bereich; Spuren, soweit möglich, einem Bibliotheks-Ton aus derselben Quelldatei zugeordnet (Nachbau, nicht derselbe Ausschnitt/Filter)
+const BAU = JSON.parse(readFileSync(join(ROOT, 'tools', 'sound_bau.json'), 'utf8')).eintraege, KEY_VON_DATEI = {};
+const MIX_KEYS = new Set(BAU.map((e, i) => e.mix && rows[i] && rows[i].pool === e.pool ? rows[i].key : null).filter(Boolean));   // fertig gemischte Töne taugen nicht als Spur ihres eigenen Rezepts
+for (const k of KEYS) if (DATEI[k] && !KEY_VON_DATEI[DATEI[k]] && !MIX_KEYS.has(k)) KEY_VON_DATEI[DATEI[k]] = k;
+const MIXE = []; BAU.forEach((e, i) => { if (!e.mix || !rows[i] || rows[i].pool !== e.pool || !ctx.SOUNDS[rows[i].key]) return;
+  MIXE.push({ key: rows[i].key, platz: e.pool, notiz: e.note || '', spuren: [{ f: e.f, k: KEY_VON_DATEI[e.f] || null, ms: 0, db: 0 }, ...e.mix.map(m => ({ f: m.f, k: KEY_VON_DATEI[m.f] || null, ms: Math.round((m.at || 0) * 1000), db: m.db || 0 }))] }); });
+// Gemeinsame Stimmen je Einheit (Rufe gelten je Seite bzw. für alle Schreiter; Helden haben eigene)
+const SCHREITER_T = ['saeger', 'klaue', 'turm', 'orden', 'kreuz', 'knecht'];
+for (const u of einheiten) { if (!TYPES[u.t]) continue; u.gemeinsam = u.t === 'faust' ? ['stimmen_held_faust'] : u.t === 'kuerass' ? ['stimmen_held_kuerass'] : SCHREITER_T.includes(u.t) ? ['stimmen_schreiter_' + u.sd] : ['stimmen_' + u.sd]; }
+const DATA = { unsicher: UNSICHER, herkunft: HERKUNFT, herkunftName: HERKUNFT_NAME, sprecher: SPRECHER, mixe: MIXE, bib: BIB, dauer: DAUER, stand: new Date().toISOString().slice(0, 10), einheiten, ab: AB, gruppen: GRUPPEN, name: NAME, var: VAR_NAME, satz: SATZ_NAME, pools: POOLS, sndvar: SND_VAR, datei: DATEI, kat: SHOP_KAT };
 
-const css = readFileSync(join(ROOT, 'tools', 'tonpult_seite.css'), 'utf8'), js = readFileSync(join(ROOT, 'tools', 'tonpult_seite.js'), 'utf8');
+const css = readFileSync(join(ROOT, 'tools', 'tonpult_seite.css'), 'utf8') + readFileSync(join(ROOT, 'tools', 'tonpult3_seite.css'), 'utf8');
+const js0 = readFileSync(join(ROOT, 'tools', 'tonpult_seite.js'), 'utf8'), MARKE = '// <<TONPULT3>>';
+if (!js0.includes(MARKE)) throw new Error('Marke ' + MARKE + ' fehlt in tools/tonpult_seite.js');
+const js = js0.replace(MARKE, () => readFileSync(join(ROOT, 'tools', 'tonpult3_seite.js'), 'utf8'));
 const html = `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Armargeddon – Ton-Pult</title>
@@ -328,7 +358,8 @@ ${css}</style></head>
 <body>
 <header>
   <h1>Armargeddon · Ton-Pult</h1>
-  <div class="tabs" id="ansichten"><button data-a="tabelle">Tabelle</button><button data-a="bib">Bibliothek</button><button data-a="einzeln">Einzelne Einheit</button></div>
+  <div class="tabs" id="ansichten"><button data-a="einfach">Töne einstellen</button><button data-a="alle">Alle Töne</button><button data-a="kammer">Abstellkammer</button><button data-a="misch">Mischton bauen</button><button id="expKnopf" aria-expanded="false" title="Ton-Pult 2: Tabelle, Bibliothek, Einzelne Einheit">Experten ▾</button>
+    <span id="expTabs" hidden><button data-a="tabelle">Tabelle</button><button data-a="bib">Bibliothek</button><button data-a="einzeln">Einzelne Einheit</button></span></div>
   <span id="status">Töne werden geladen (ca. 22 MB) …</span>
   <div class="hk">
     <button id="undo" disabled>↶ Rückgängig</button>
@@ -336,6 +367,7 @@ ${css}</style></head>
     <button id="export">Export JSON</button><button id="import">Import</button><button id="allesZurueck">Alles zurücksetzen</button><button id="stopp" class="gold">■ Stopp</button>
   </div>
 </header>
+<div id="vEinfach" hidden></div><div id="vAlle" hidden></div><div id="vKammer" hidden></div><div id="vMisch" hidden></div>
 <div id="vTabelle" hidden><div id="tKopf"></div><div class="ttw" id="tWrap"></div><div id="leiste"></div></div>
 <div id="vBib" hidden></div>
 <div class="wrap" id="vEinzeln" hidden>

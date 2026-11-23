@@ -5,11 +5,13 @@ let SND = null, effektVol = 1, laufend = new Set(), zeiten = [];
 let AEND = {};   // { typ: { platzId: { w: 'p:platz' | 'k:schlüssel' | '-', vol, ton } } } – nur Abweichungen von der Grundeinstellung
 try { const f = localStorage.getItem('arm.effektvol'); if (f != null && f !== '') effektVol = +f; } catch (e) {}
 try { AEND = JSON.parse(localStorage.getItem(SPEICHER) || '{}') || {}; } catch (e) { AEND = {}; }
-let sel = null, seite = 'A', kat = 'Alle', ansicht = 'tabelle';   // ansicht (Ton-Pult 2): 'tabelle' | 'bib' | 'einzeln'
-try { const s = JSON.parse(localStorage.getItem(SPEICHER_SEL) || 'null'); if (s) { sel = s.sel; seite = s.seite || 'A'; kat = s.kat || 'Alle'; if (['tabelle', 'bib', 'einzeln'].includes(s.ansicht)) ansicht = s.ansicht; } } catch (e) {}
+const ANSICHTEN = ['einfach', 'alle', 'kammer', 'misch', 'tabelle', 'bib', 'einzeln'], EXPERTE = ['tabelle', 'bib', 'einzeln'];
+let sel = null, seite = 'A', kat = 'Alle', ansicht = 'einfach';   // ansicht (Ton-Pult 2): 'tabelle' | 'bib' | 'einzeln'
+try { const s = JSON.parse(localStorage.getItem(SPEICHER_SEL) || 'null'); if (s) { sel = s.sel; seite = s.seite || 'A'; kat = s.kat || 'Alle'; if (ANSICHTEN.includes(s.ansicht) && s.v3) ansicht = s.ansicht; } } catch (e) {}
+let AUS_K = new Set(), MISCH = {}, zusatzStand = () => null, zusatzSetzen = () => {}, exportZusatz = () => ({}), importZusatz = () => 0, zeichne3 = () => {}, spielMisch = () => null, bibAus = () => false;   // Ton-Pult 3
 const U = Object.fromEntries(D.einheiten.map(u => [u.t, u]));
 if (!U[sel]) sel = D.einheiten.find(u => u.sd === seite).t;
-const merkeSel = () => { try { localStorage.setItem(SPEICHER_SEL, JSON.stringify({ sel, seite, kat, ansicht })); } catch (e) {} };
+const merkeSel = () => { try { localStorage.setItem(SPEICHER_SEL, JSON.stringify({ sel, seite, kat, ansicht, v3: 1 })); } catch (e) {} };
 // Paket G 4b (2026-11-21): zusätzlich ein Verlauf der letzten 20 Stände (Zeitstempel) – falls Auswahl verloren geht, lässt sie sich wiederherstellen
 const SPEICHER_VERLAUF = 'arm.tonpult.verlauf';
 let verlaufT = 0;
@@ -24,14 +26,14 @@ const h = (t, a = {}, ...kids) => { const e = document.createElement(t); for (co
 // ---- Kandidaten wie im Spiel (sndPick): Gruppe (SND_VAR), Stimmfilter-Variante, Seite ----
 function kandidaten(name, side, v) {
   if (!name || name === '-') return [];
-  if (/^sv_[a-z]+_[AD]$/.test(name)) { const out = []; for (let n = 1; D.pools[name + n]; n++) for (const [k] of D.pools[name + n]) out.push({ k, sd: null }); return out; }
+  if (/^sv_[a-z]+_[AD]$/.test(name)) { const out = []; for (let n = 1; D.pools[name + n]; n++) for (const [k] of D.pools[name + n]) out.push({ k, sd: null }); const frei = out.filter(c => !AUS_K.has(c.k)); return frei.length ? frei : out; }   // Abstellkammer: aussortierte Sprüche und Sprecher fallen heraus
   const cand = [], add = (n, deep) => { if (!deep && D.sndvar[n]) { for (const m of D.sndvar[n]) add(m, true); return; } if (v && D.pools[n + '_' + v]) n += '_' + v;
     if (D.pools[n]) for (const [k, sd, w] of D.pools[n]) cand.push({ k, sd: sd || null, w: w || 1 }); else cand.push({ k: n, sd: null, w: 1 }); };
   add(name);
-  const own = cand.filter(c => !c.sd || c.sd === side);
-  return own.length ? own : cand.filter(c => !c.sd);
+  const own = cand.filter(c => !c.sd || c.sd === side), list = own.length ? own : cand.filter(c => !c.sd), rest = list.filter(c => !AUS_K.has(c.k));
+  return rest.length ? rest : list;   // Abstellkammer: der letzte Ton eines Platzes bleibt
 }
-const vorhanden = list => SND ? list.filter(c => SND[c.k]) : list;
+const vorhanden = list => SND ? list.filter(c => SND[c.k] || MISCH[c.k]) : list;
 const zieh = list => { const l = []; for (const c of list) for (let i = 0; i < (c.w || 1); i++) l.push(c); return l.length ? l[Math.floor(Math.random() * l.length)].k : null; };
 
 // ---- Einstellungen je Platz ----
@@ -91,6 +93,7 @@ const wahlKand = (u, s) => { const w = wert(u, s).w; return w === '-' ? [] : w.s
 // ---- Abspielen ----
 const nach = (ms, f) => { const id = setTimeout(f, ms); zeiten.push(id); };
 function spiel(k, vol, rate, dur) {
+  if (MISCH[k]) return spielMisch(MISCH[k].spuren, vol, rate);   // eigener Mischton (Ton-Pult 3)
   if (!SND || !SND[k]) return null;
   const a = new Audio(SND[k]); a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
   a._vol = vol; a.volume = Math.max(0, Math.min(1, vol * effektVol)); a.playbackRate = Math.max(0.25, Math.min(4, rate));
@@ -219,14 +222,14 @@ const basis = p => { const m = p.match(VARIANTE); return m && D.pools[m[1]] ? m[
 const platzName = p => { const m = p.match(/^sv_([a-z]+)_([AD])(\d*)$/); return m ? 'Spruch ' + (D.satz[m[1]] || m[1]) + (m[3] ? ', Stimme ' + m[3] : ', Stimmen reihum') : (D.name[p] || p); };
 const KEYPOOL = {};   // Schlüssel → [Platz, Nummer im Platz, Anzahl]; bevorzugt der Platz, dessen Name im Schlüssel steckt
 for (const p of Object.keys(D.pools)) D.pools[p].forEach(([k], i) => { const alt = KEYPOOL[k], pre = k.startsWith(p); if (!alt || (pre && (!alt[3] || p.length > alt[0].length))) KEYPOOL[k] = [p, i, D.pools[p].length, pre]; });
-function tonName(k) { const e = KEYPOOL[k]; if (!e) return D.name[k] || k; const p = basis(e[0]), v = p !== e[0] ? e[0].slice(p.length + 1) : null; return platzName(p) + (e[2] > 1 ? ' ' + (e[1] + 1) : '') + (v ? ' (' + D.var[v] + ')' : ''); }
+function tonName(k) { if (MISCH[k]) return MISCH[k].name + ' (Mischton)'; const e = KEYPOOL[k]; if (!e) return D.name[k] || k; const p = basis(e[0]), v = p !== e[0] ? e[0].slice(p.length + 1) : null; return platzName(p) + (e[2] > 1 ? ' ' + (e[1] + 1) : '') + (v ? ' (' + D.var[v] + ')' : ''); }
 const BIBKAT = Object.fromEntries(D.bib.map(b => [b.id, b])), PLATZKAT = {};
 for (const b of D.bib) for (const [p] of b.e) if (!PLATZKAT[p]) PLATZKAT[p] = b.id;
 const katVonPlatz = p => !p || p === '-' ? null : PLATZKAT[basis(p)] || PLATZKAT[p + '1'] || (KEYPOOL[p] ? PLATZKAT[basis(KEYPOOL[p][0])] : null) || (D.sndvar[p] ? katVonPlatz(D.sndvar[p][0]) : null);
 const katVonWahl = w => !w || w === '-' ? null : w.startsWith('k:') ? (KEYPOOL[w.slice(2)] ? PLATZKAT[basis(KEYPOOL[w.slice(2)][0])] : PLATZKAT[w.slice(2)]) : katVonPlatz(w.slice(2));
 const platzKeys = p => D.pools[p] || [[p, null]];
 const platzSeite = p => { const l = platzKeys(p), m = /^sv_[a-z]+_([AD])/.exec(p); return m ? m[1] : l.every(x => x[1] && x[1] === l[0][1]) ? l[0][1] : null; };
-const zuweisbar = id => id.startsWith('p:') ? !!D.pools[id.slice(2)] : !!KEYPOOL[id.slice(2)];   // nur was tools/tonwahl_bau.mjs kennt (echte Plätze und Töne darin)
+const zuweisbar = id => id.startsWith('p:') ? !!D.pools[id.slice(2)] : !!KEYPOOL[id.slice(2)] || !!MISCH[id.slice(2)] || D.dauer[id.slice(2)] != null;   // Einzeltöne außerhalb der Plätze kennt tonwahl_bau seit 2026-11-22 21:00   // nur was tools/tonwahl_bau.mjs kennt (echte Plätze und Töne darin)
 function platzMeta(p) { const keys = platzKeys(p), sd = platzSeite(p), ds = keys.map(x => D.dauer[x[0]]).filter(x => x != null), mn = Math.min(...ds), mx = Math.max(...ds);
   return [keys.length > 1 ? `Zufall aus ${keys.length}` : '', sd ? 'nur ' + seiteTxt(sd) : '', ds.length ? (mx - mn < 0.05 ? sek(mn) : sek(mn) + ' – ' + sek(mx)) : '', esc(keys.length > 1 ? 'Platz ' + p : keys[0][0] + ' · ' + kurz(datei(keys[0][0])))].filter(Boolean).join(' · '); }
 const tonMeta = (k, sd) => [sd ? 'nur ' + seiteTxt(sd) : '', D.dauer[k] != null ? sek(D.dauer[k]) : '', esc(k), esc(kurz(datei(k)))].filter(Boolean).join(' · ');
@@ -260,11 +263,12 @@ function nutzEl(id) { const l = nutzListe(id); if (!l.length) return h('span', {
 const UNDO = [];
 function merke(text, ziele, sch) {   // sch: gleiche Stelle kurz hintereinander (Regler ziehen) = ein Schritt
   const l = UNDO[UNDO.length - 1]; if (sch && l && l.sch === sch && Date.now() - l.zeit < 4000) { l.zeit = Date.now(); return; }
-  UNDO.push({ text, sch: sch || null, zeit: Date.now(), alt: ziele.map(({ u, s }) => [u.t, s.id, (AEND[u.t] || {})[s.id] ? JSON.stringify(AEND[u.t][s.id]) : null]) }); if (UNDO.length > 80) UNDO.shift(); }
-function merkeAlles(text) { UNDO.push({ text, zeit: Date.now(), ganz: JSON.stringify(AEND) }); if (UNDO.length > 80) UNDO.shift(); }
+  UNDO.push({ text, sch: sch || null, zeit: Date.now(), z: zusatzStand(), alt: ziele.map(({ u, s }) => [u.t, s.id, (AEND[u.t] || {})[s.id] ? JSON.stringify(AEND[u.t][s.id]) : null]) }); if (UNDO.length > 80) UNDO.shift(); }
+function merkeAlles(text) { UNDO.push({ text, zeit: Date.now(), z: zusatzStand(), ganz: JSON.stringify(AEND) }); if (UNDO.length > 80) UNDO.shift(); }
 function rueckgaengig() { const op = UNDO.pop(); if (!op) return;
   if (op.ganz != null) AEND = JSON.parse(op.ganz);
   else for (const [t, id, j] of op.alt) { if (j) (AEND[t] = AEND[t] || {})[id] = JSON.parse(j); else if (AEND[t]) { delete AEND[t][id]; if (!Object.keys(AEND[t]).length) delete AEND[t]; } }
+  if (op.z != null) zusatzSetzen(op.z);
   speichern(); zeichne(); meldung('Zurückgenommen: ' + op.text); }
 function undoKnopf() { const b = document.getElementById('undo'); if (!b) return; b.disabled = !UNDO.length; b.title = UNDO.length ? 'Zurücknehmen: ' + UNDO[UNDO.length - 1].text : 'Nichts zum Zurücknehmen'; }
 
@@ -343,14 +347,15 @@ function bibBau(o) {
     nav.querySelectorAll('button').forEach(b => b.classList.toggle('an', !q && b.dataset.k === (bibNurFav ? '*fav' : bibKat)));
     for (const b of alle ? D.bib : [BIBKAT[bibKat]]) { let kopf = !alle, unterAlt = null;
       for (const [p, unter] of b.e) { const keys = platzKeys(p), pt = (platzName(p) + ' ' + p + ' ' + b.titel + ' ' + (unter || '')).toLowerCase(), pq = !q || pt.includes(q), pf = !bibNurFav || FAV.has('p:' + p);
-        const kt = keys.filter(([k]) => (pq || (k + ' ' + datei(k)).toLowerCase().includes(q)) && (pf || FAV.has('k:' + k)));
+        if (bibAus('p:' + p)) continue;   // Abstellkammer (Ton-Pult 3)
+        const kt = keys.filter(([k]) => !AUS_K.has(k) && (pq || (k + ' ' + datei(k)).toLowerCase().includes(q)) && (pf || FAV.has('k:' + k)));
         if (!kt.length) continue; n++;
         if (!kopf) { lst.append(h('div', { cls: 'bkopf' }, b.titel)); kopf = true; }
         if ((unter || null) !== unterAlt) { unterAlt = unter || null; if (unter) lst.append(h('div', { cls: 'bunter' }, unter)); }
         const erzwungen = keys.length > 1 && ((q && !pt.includes(q)) || (bibNurFav && !FAV.has('p:' + p))), offen = keys.length > 1 && (erzwungen || bibOffen.has(p));
         const auf = keys.length > 1 ? h('button', { cls: 'auf', 'aria-expanded': offen ? 'true' : 'false', on: e => { e.stopPropagation(); if (bibOffen.has(p)) bibOffen.delete(p); else bibOffen.add(p); zeig(); } }, (offen ? '▾ ' : '▸ ') + keys.length + ' Töne') : null;
         lst.append(reihe('p:' + p, platzName(p), platzMeta(p), false, auf));
-        if (offen) for (const [k, sd] of (erzwungen ? kt : keys)) lst.append(reihe('k:' + k, tonName(k), tonMeta(k, sd), true)); } }
+        if (offen) for (const [k, sd] of (erzwungen ? kt : keys.filter(x => !AUS_K.has(x[0])))) lst.append(reihe('k:' + k, tonName(k), tonMeta(k, sd), true)); } }
     if (!n) lst.append(h('p', { cls: 'leer' }, bibNurFav && !q ? 'Noch keine Favoriten – der Stern ☆ an einem Ton merkt ihn hier vor.' : 'Nichts gefunden.'));
   }
   nav.append(h('button', { 'data-k': '*fav', on: () => { bibNurFav = true; bibSuche = such.value = ''; lst.scrollTop = 0; zeig(); } }, '★ Favoriten'));
@@ -484,12 +489,14 @@ const kopfHoehe = () => document.documentElement.style.setProperty('--kopfh', do
 window.addEventListener('resize', kopfHoehe);
 function zeichne() {
   const y = window.scrollY; kopfHoehe();
-  for (const [id, a] of [['vTabelle', 'tabelle'], ['vBib', 'bib'], ['vEinzeln', 'einzeln']]) document.getElementById(id).hidden = ansicht !== a;
-  document.querySelectorAll('#ansichten button').forEach(b => { b.classList.toggle('an', b.dataset.a === ansicht); b.setAttribute('aria-pressed', b.dataset.a === ansicht ? 'true' : 'false'); });
-  if (ansicht === 'tabelle') zeichneTabelle(); else if (ansicht === 'bib') zeichneBib(); else { liste(); pult(); }
+  for (const [id, a] of [['vEinfach', 'einfach'], ['vAlle', 'alle'], ['vKammer', 'kammer'], ['vMisch', 'misch'], ['vTabelle', 'tabelle'], ['vBib', 'bib'], ['vEinzeln', 'einzeln']]) document.getElementById(id).hidden = ansicht !== a;
+  document.querySelectorAll('#ansichten button[data-a]').forEach(b => { b.classList.toggle('an', b.dataset.a === ansicht); b.setAttribute('aria-pressed', b.dataset.a === ansicht ? 'true' : 'false'); });
+  { const ex = EXPERTE.includes(ansicht), k = document.getElementById('expKnopf'); if (ex) document.getElementById('expTabs').hidden = false; k.classList.toggle('an', ex); k.setAttribute('aria-expanded', document.getElementById('expTabs').hidden ? 'false' : 'true'); }
+  if (ansicht === 'tabelle') zeichneTabelle(); else if (ansicht === 'bib') zeichneBib(); else if (ansicht === 'einzeln') { liste(); pult(); } else zeichne3();
   zeichneLeiste(); undoKnopf(); window.scrollTo(0, y);
 }
-document.querySelectorAll('#ansichten button').forEach(b => { b.onclick = () => { ansicht = b.dataset.a; merkeSel(); stoppAlles(); zeichne(); window.scrollTo({ top: 0 }); }; });
+document.querySelectorAll('#ansichten button[data-a]').forEach(b => { b.onclick = () => { ansicht = b.dataset.a; merkeSel(); stoppAlles(); zeichne(); window.scrollTo({ top: 0 }); }; });
+document.getElementById('expKnopf').onclick = () => { const t = document.getElementById('expTabs'); t.hidden = !t.hidden; document.getElementById('expKnopf').setAttribute('aria-expanded', t.hidden ? 'false' : 'true'); kopfHoehe(); };
 document.getElementById('undo').onclick = rueckgaengig;
 document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || '')) { e.preventDefault(); rueckgaengig(); } });
 
@@ -514,7 +521,7 @@ function exportDaten() {
       aenderungen.push({ einheit: t, name: u.name, seite: u.sd, anlass: (D.ab.find(a => a[0] === s.ab) || [])[1], platz_id: id, titel: s.titel, platz_spiel: s.platz, filter: s.v || null,
         wahl: w.w, schluessel: w.w.startsWith('k:') ? w.w.slice(2) : null, datei: w.w.startsWith('k:') ? datei(w.w.slice(2)) : null, platz_neu: w.w.startsWith('p:') && w.w.slice(2) !== s.platz ? w.w.slice(2) : null,
         lautstaerke_spiel: s.vol, lautstaerke: +w.vol.toFixed(3), tonhoehe: +w.ton.toFixed(3), ...(s.mode === 'ruf' ? { filter_stimme: w.filt, filter_staerke: +w.fst.toFixed(2) } : {}) }); } }
-  return { werkzeug: 'Armargeddon Ton-Pult', stand_toene: D.stand, exportiert: new Date().toISOString(), hinweis: 'wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate', aenderungen, roh: AEND };
+  return { werkzeug: 'Armargeddon Ton-Pult', stand_toene: D.stand, exportiert: new Date().toISOString(), hinweis: 'wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate', aenderungen, roh: AEND, ...exportZusatz() };
 }
 const dlg = document.getElementById('dlg');
 function dialog(titel, text, wertTxt, knoepfe) {
@@ -537,9 +544,10 @@ document.getElementById('import').onclick = () => {
     ['Übernehmen', f => { try { const o = JSON.parse(f.value), neu = {}; merkeAlles('Import');
         if (o.roh && typeof o.roh === 'object') Object.assign(neu, o.roh);
         else for (const a of o.aenderungen || []) { const e = ((neu[a.einheit] = neu[a.einheit] || {})[a.platz_id] = {}); e.w = a.wahl; e.vol = a.lautstaerke; e.ton = a.tonhoehe; }
-        let n = 0; for (const t of Object.keys(neu)) { if (!U[t]) continue; AEND[t] = AEND[t] || {}; for (const id of Object.keys(neu[t])) { const s = U[t].slots.find(x => x.id === id); if (!s) continue; const e = neu[t][id];
+        let n = 0; for (const t of Object.keys(neu)) { if (!U[t]) continue; AEND[t] = AEND[t] || {}; for (const id of Object.keys(neu[t])) { const s = U[t].slots.find(x => x.id === id); if (!s) { AEND[t][id] = neu[t][id]; continue; } const e = neu[t][id];   /* Zeile gibt es nicht (mehr): Wahl bleibt im Speicher und im Export (roh), damit nichts verloren geht */
             for (const k of ['w', 'vol', 'ton', ...(s.mode === 'ruf' ? ['filt', 'fst'] : [])]) if (e[k] != null) setzeRoh(U[t], s, k, e[k]); n++; } if (!Object.keys(AEND[t]).length) delete AEND[t]; }
-        speichern(); zeichne(); dlg.close(); meldung(`${n} ${n === 1 ? "Platz" : "Plätze"} übernommen.`); } catch (e) { meldung('Das ist kein gültiger Export: ' + e.message); } }, true]]);
+        const nz = importZusatz(o);
+        speichern(); zeichne(); dlg.close(); meldung(`${n} ${n === 1 ? "Platz" : "Plätze"} übernommen` + (nz ? `, dazu ${nz} Einträge aus Abstellkammer, Rubriken, Mischtönen und „passt so“.` : '.')); } catch (e) { meldung('Das ist kein gültiger Export: ' + e.message); } }, true]]);
 };
 document.getElementById('allesZurueck').onclick = () => { const n = Object.values(AEND).reduce((a, x) => a + Object.keys(x).length, 0); if (n && confirm(`Alle ${n} Änderungen bei allen Einheiten zurücksetzen?`)) { merkeAlles('Alles zurückgesetzt'); AEND = {}; speichern(); zeichne(); } };
 document.getElementById('stopp').onclick = stoppAlles;
@@ -547,6 +555,7 @@ let meldT = 0; function meldung(t) { const s = document.getElementById('status')
 // Effekte-Regler wie im Spiel (gleicher Speicherplatz)
 { const r = document.getElementById('volEffekte'), b = document.getElementById('volEffekteW'); r.value = Math.round(effektVol * 100); b.textContent = r.value;
   r.oninput = () => { effektVol = r.value / 100; b.textContent = r.value; try { localStorage.setItem('arm.effektvol', effektVol); } catch (e) {} for (const a of laufend) if (a._vol != null) try { a.volume = Math.min(1, a._vol * effektVol); } catch (e) {} }; }
+// <<TONPULT3>>
 zeichne();
 // Töne nachladen
 { const sp = document.createElement('script'); sp.src = 'src/sound_pult.js'; sp.async = false; document.body.append(sp);   // M9: nur im Pult wählbare Töne (vor sound.js, feste Reihenfolge)

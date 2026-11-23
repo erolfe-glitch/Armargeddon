@@ -25,6 +25,7 @@ for (const p of Object.keys(POOLS)) {
 }
 for (const p of Object.keys(SND_VAR)) if (lit.has(p)) nimm(p);
 for (const o of Object.values(TW)) for (const w of Object.values(o)) { if (w.p) nimm(w.p); if (w.k) keys.add(w.k); }
+{ const mm = ui.match(/const MISCHTON = (\{.*?\});/); if (mm) for (const sp of Object.values(JSON.parse(mm[1]))) for (const [k] of sp) keys.add(k); }   // Spuren eigener Mischtöne (Ton-Pult 3) bleiben im Spiel
 for (const p of [...benutzt]) for (const v of ['gm', 'gs', 'bf', 'mr']) if (POOLS[p + '_' + v]) benutzt.add(p + '_' + v);
 for (const p of benutzt) for (const [k] of POOLS[p]) keys.add(k);
 for (const k of Object.keys(SND)) if (lit.has(k)) keys.add(k);   // direkt im Code genannte Töne
