@@ -20,7 +20,7 @@ const SP = join(ROOT, process.env.SPUR || 'tools/ton_spur.json');
 if (!existsSync(SP)) { console.error('Spur fehlt: erst node tools/ton_spur.mjs laufen lassen (' + SP + ')'); process.exit(2); }
 const S = JSON.parse(readFileSync(SP, 'utf8'));
 const html = readFileSync(join(ROOT, 'tonpult.html'), 'utf8'), i0 = html.indexOf('const D = ') + 10, D = JSON.parse(html.slice(i0, html.indexOf(';\n', i0)));
-const hash = createHash('sha1').update(readFileSync(join(ROOT, 'src', 'ui.js'))).digest('hex');
+const hash = createHash('sha1').update((u => { const a = u.indexOf('// TONWAHL-ANFANG'), b = u.indexOf('// TONWAHL-ENDE'); return a >= 0 && b > a ? u.slice(0, a) + u.slice(b) : u; })(readFileSync(join(ROOT, 'src', 'ui.js'), 'utf8'))).digest('hex');
 if (hash !== S.ui_hash) console.log('WARNUNG: src/ui.js hat sich seit der Spur geändert (Spur vom ' + S.erzeugt.slice(0, 16).replace('T', ' ') + ' UTC) – node tools/ton_spur.mjs neu laufen lassen, sonst kann der Vergleich veraltet sein.\n');
 
 // Begründete Ausnahmen
@@ -38,6 +38,9 @@ const U = Object.fromEntries(D.einheiten.map(u => [u.t, u]));
 const zeilen = t => (U[t] ? U[t].slots.filter(z => z.mode !== 'ruf' && platzVon(z) && platzVon(z) !== '-') : []);
 const cache = {}, plaetze = (t, r) => { const k = t + '|' + (r || ''); return cache[k] || (cache[k] = new Set(zeilen(t).filter(z => !r || rolleVon(z) === r).map(platzVon))); };
 const WINTER = plaetze('winter');
+// Ton, der schon als fertiger Schlüssel gespielt wird (z. B. Sperrfeuer-Abschüsse: einmal über die Zeile der Einheit gezogen, dann mehrfach abgespielt): zählt zum Platz dieser Zeile
+const keysVonPlatz = q => { const out = new Set(); for (const n of (D.sndvar && D.sndvar[q]) || [q]) for (const e of D.pools[n] || []) out.add(e[0]); return out; };
+const istSchluesselVon = (t, p) => [...plaetze(t)].some(q => keysVonPlatz(q).has(p));
 const gegnerVon = sz => { const i = sz.indexOf(':'); return i < 0 ? null : sz.slice(i + 1); };
 const basis = key => key.split(':')[0].replace(/[01]$/, '');
 const NAHKAMPF_SZ = /^(nahkampf|gegenschlag|gegner_vernichtet|freischlag|faehigkeit_sprung)/;   // gemeinsamer Schlagabtausch: beide Seiten klingen im selben Ereignis
@@ -59,7 +62,7 @@ const kurzSz = l => [...new Set(l)].slice(0, 5).join(', ') + (new Set(l).size > 
 for (const u of D.einheiten) { const t = u.t, sp = S.typen[t]; if (!sp || (nur.length && !nur.includes(t))) continue;
   const rows = zeilen(t), pult = plaetze(t), aus = [];
   // (a) fehlt im Pult
-  for (const p of Object.keys(sp.wahl)) { if (pult.has(p) || ALLGEMEIN[p] || GELAENDE[p]) continue; const e = eigene(sp, p), keys = Object.keys(e); if (!keys.length) continue;
+  for (const p of Object.keys(sp.wahl)) { if (pult.has(p) || ALLGEMEIN[p] || GELAENDE[p] || istSchluesselVon(t, p)) continue; const e = eigene(sp, p), keys = Object.keys(e); if (!keys.length) continue;
     const eimer = [...new Set(keys.map(k => (k.endsWith(':a') ? 'handelt' : 'getroffen')))].join('+');
     aus.push(['fehlt', `fehlt im Pult: ${p} (${eimer}; ${keys.map(k => WIE[basis(k)]).filter((x, i, l) => l.indexOf(x) === i).join(' / ')}; Szenen: ${kurzSz(keys.flatMap(k => e[k]))})`, `fehlt im Pult: ${p} (${eimer})`]); summe.fehlt++; }
   // (b) zu viel, (c) Rolle
@@ -78,7 +81,7 @@ for (const u of D.einheiten) { const t = u.t, sp = S.typen[t]; if (!sp || (nur.l
   for (const [k, szenen] of Object.entries(sp.stimmen)) { const [tab, id] = k.split('|'); (gesehenRuf[tab] = gesehenRuf[tab] || new Set()).add(id);
     if (!U[tab] || !U[tab].slots.some(z => z.id === id)) { aus.push(['ruf', `Ruf fehlt im Pult: ${tab} / ${id} (Szenen: ${kurzSz(szenen)})`, `Ruf fehlt im Pult: ${tab} / ${id}`]); summe.ruf++; } }
   // Winter: was auf der Winterkarte zusätzlich klingt, muss unter „Winter (Karte)“ oder bei der Einheit stehen
-  const wi = S.winter && S.winter[t]; if (wi) for (const p of Object.keys(wi.wahl || {})) { if (WINTER.has(p)) gesehenWinter.add(p); if (WINTER.has(p) || pult.has(p) || ALLGEMEIN[p] || GELAENDE[p]) continue;
+  const wi = S.winter && S.winter[t]; if (wi) for (const p of Object.keys(wi.wahl || {})) { if (WINTER.has(p)) gesehenWinter.add(p); if (WINTER.has(p) || pult.has(p) || ALLGEMEIN[p] || GELAENDE[p] || istSchluesselVon(t, p)) continue;
     const e = eigene(wi, p), keys = Object.keys(e); if (!keys.length) continue;
     aus.push(['fehlt', `fehlt im Pult (nur auf der Winterkarte): ${p} (Szenen: ${kurzSz(keys.flatMap(k => e[k]))})`, `fehlt im Pult (nur auf der Winterkarte): ${p}`]); summe.fehlt++; }
   const hart = aus.filter(a => a[0] !== 'teil').length; abw += hart;

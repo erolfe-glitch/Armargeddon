@@ -2323,7 +2323,7 @@ function tonPick(platz, u, side) { if (window.__tonSpur) window.__tonSpur({ ps: 
   const tw = tonWahl(platz, null, u); return tw && tw.aus ? null : tw && tw.k && SND[tw.k] ? tw.k : sndPick(tw && tw.p ? tw.p : platz, side || (u && u.side)); }
 function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
   const wt = WAFFE_TOK[name] || null; if (wt) { name = wt.pool; opt = { ...(opt || {}), von: wt.u }; }   // Waffenton: Platz und Schütze aus der Marke
-  if (window.__tonSpur) window.__tonSpur({ ps: name, u: opt && opt.u ? opt.u.id : null, k: tonKontext.map(x => x.id), z: tonZiel ? tonZiel.id : null, von: opt && opt.von ? opt.von.id : null, an: opt && opt.an ? opt.an.id : null });   // Ton-Spur (tools/ton_spur.mjs): Platz, Sprecher, Einheiten des Ereignisses – vor Pult-Wahl und allen Abbrüchen
+  if (window.__tonSpur && !(opt && opt.gezogen)) window.__tonSpur({ ps: name, u: opt && opt.u ? opt.u.id : null, k: tonKontext.map(x => x.id), z: tonZiel ? tonZiel.id : null, von: opt && opt.von ? opt.von.id : null, an: opt && opt.an ? opt.an.id : null });   // Ton-Spur (tools/ton_spur.mjs): Platz, Sprecher, Einheiten des Ereignisses – vor Pult-Wahl und allen Abbrüchen
   const tw = opt && opt.spur ? null : tonWahl(name, opt && opt.u, opt && opt.von, opt && opt.an); if (tw) { if (tw.aus) return; if (tw.vf) vol *= tw.vf; if (tw.rate) opt = { ...(opt || {}), rate: (opt && opt.rate || 0.94 + Math.random() * 0.12) * tw.rate }; }   // F91
   let gapKey = name; name = tw && tw.k ? tw.k : wt ? waffeFest(tw && tw.p ? tw.p : name, wt.u) : sndPick(tw && tw.p ? tw.p : name, side || (opt && opt.u && opt.u.side), opt && (opt.v || stimmVar(opt.u))) || (tw && tw.p) || name; if (wt) gapKey = name;
   if (opt && opt.u && opt.u.type && E.MAP && E.MAP.winter && /^(sv_|pain|medic|cry|scream|panic|forward|roar|stand|charge|comeon|husten|ruf_|panik_|sterben_|stimme)/.test(gapKey)) try { atem(opt.u); } catch (e) {}   // Atemwolke bei Stimmen (Winter)
@@ -2585,7 +2585,7 @@ async function playEvent0(e) {
       const shots = []; let t = 0;
       for (let q = 0; q < n; q++) { if (q) t += 220 + Math.random() * 140; shots.push(t); }
       shots.forEach((t, q) => setTimeout(() => {   // je Abschuss: Ton, Mündungsfeuer, Rückstoß-Ruck, Rauch, Granate
-        if (key) playSound(key, (mob ? 0.42 : 0.75) * (0.85 + Math.random() * 0.25), ua.side, { noGap: true, rate: 0.9 + Math.random() * 0.15 });
+        if (key) playSound(key, (mob ? 0.42 : 0.75) * (0.85 + Math.random() * 0.25), ua.side, { noGap: true, rate: 0.9 + Math.random() * 0.15, gezogen: true });
         const pa = fxIm('muendung') ? fxMuzzle(e.a, 0, mob ? 0.12 : 0.32) : null;
         if (pa) { if (mob) fx('muendung', 4, pa[0], pa[1], { anchor: 'mitte', life: 7, fadeOut: 0.7, flip: x2 < x1, mul: 0.8 }); else fxFlash(3, pa, x2, y2 - s * 2, { life: 8 });
           fx('rauch', 0, pa[0], pa[1] + s * 0.2, { life: 60, mul: 0.28, grow: 0.6, rise: 0.5, alpha: 0.55, fadeIn: 5, fadeOut: 0.7 }); }
