@@ -1,3 +1,34 @@
+## 2026-11-23 – Paket A: Bedienfehler (18:30, Spieltest-Punkte 9 und 22) (`e2c793c`)
+
+Gepusht. Tests: Partietest Grauwall und Krähenfurt fehlerfrei, darin die drei neuen Prüfungen; test_kommentare sauber. Keine Regeländerung, deshalb keine Simulation.
+
+### 18:30 Geschütze ohne Ziel
+- **Ursache 1:** Beim Aufbau der Knöpfe für Geschütze brach die Liste vor dem „Fertig“-Knopf ab, deshalb gab es nie einen Haken. Jetzt hat jede Einheit „Fertig“ (Taste 5, Leertaste, E).
+- **Ursache 2:** Geschütze galten als „noch nicht fertig“, sobald irgendein Feld in Reichweite lag, auch ein leeres.
+  - Jetzt zählt nur ein Gegner, den sie beschießen können (Sprenggranate oder Sperrfeuer).
+  - Einheiten in Stellung (MG aufgebaut, Geschütz abgeprotzt), die nicht ziehen können und kein Ziel haben, werden automatisch grau. Abbauen/Aufprotzen allein hält sie nicht mehr offen.
+  - Sie bleiben anwählbar, man kann also trotzdem abbauen oder aufprotzen.
+  - Das gilt für alle Einheitenarten (Mörser, Haubitze, Minenwerfer, Scharfschützen, MG). Ballon und Scharfschützen hatten diese Ursache nicht, sie folgten schon der allgemeinen Regel.
+
+### Punkt 9 – nur ein Modus
+- Es gibt jetzt nur einen Bedienmodus gleichzeitig: Angriffsart (Kanone/Nahkampf), Geschützart (Sperrfeuer, Gas), Feld-Fähigkeit (Fähigkeit, Zweitwaffe, Draht schneiden, Rammen, Faustsalve) oder Hilfe (Versorgen, Meldegänger, Bergen).
+- Ein neuer Knopf löst den alten ab. Abbrechen geht mit demselben Knopf noch einmal, mit **Esc** oder mit **Rechtsklick**; es erscheint die Meldung „Abgebrochen.“.
+- **Nicht ausführbar → sofort zurück** mit kurzem Hinweis, warum. Beispiele: „Zweitwaffe: kein Ziel in Reichweite oder Schussfeld.“, „Sperrfeuer: kein Zielfeld (Abklingzeit, Reichweite oder keine Sicht).“, „Draht schneiden: kein Drahtfeld daneben.“
+- Befehle, Marsch, Feuerbereitschaft und MG-Sperrfeuer sind sofort-Aktionen ohne Modus; sie können nicht hängen bleiben.
+
+### Punkt 22 – Fähigkeit durch Anklicken
+- **Ursache:** Ein eingeschalteter Fähigkeitsmodus blieb aktiv, wenn man über „Nächste Einheit“, Tasten oder das Panel zu einer anderen Einheit wechselte. Danach löste ein Klick auf eine passende eigene Einheit die Fähigkeit aus (Munition an die Feldkanone).
+- Jetzt löscht jeder Wechsel der gewählten Einheit den Modus. Ohne Modus wählt ein Klick auf eine eigene Einheit sie nur aus.
+- Das gilt für alle Fähigkeiten mit Ziel (Munition, Reparieren, Versorgen, Meldegänger, Bergen, Entgiften, Befehle …).
+
+### Tests (`tools/test_partie.mjs`, neu)
+- Haubitze ohne Gegner: „Fertig“-Knopf da, kein Grund offen zu bleiben.
+- Panzer: Kanone → Zweitwaffe → Kanone → Kanone (aus) → Esc: nie zwei Modi.
+- Versorgungstrupp mit Munitionsmodus, dann Feldkanone gewählt: Modus weg, keine Munition. Danach ein Klick ohne Modus auf die Feldkanone: sie wird nur ausgewählt.
+- Nebenbei behoben: Das Schussfeld wurde für eine Einheit außerhalb der Karte gezeichnet. Das ging nur im Test auf, ist aber jetzt auch im Spiel abgesichert.
+
+Als Nächstes laut Reihenfolge: **Paket A2** (Ton-Pult „Eigenes Paket“, Punkt 25).
+
 ## 2026-11-23 Abend – Ton-Pult 3 (Auftrag 16:50): einfach, vollständig je Einheit, Abstellkammer, Mischtöne
 
 Gepusht: `ea5037c` (Teil 1: neues Pult), `6627dca` (Teil 2: Spiel und Pult abgeglichen), dazu der Abschluss-Commit mit `index.html` (Titel „Ton-Pult 3, Abschluss“).
