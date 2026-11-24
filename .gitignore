@@ -18,3 +18,6 @@ ui-quelle/konzept/trupp_konzept.png
 # Prüfbilder der Werkzeuge (werden bei jedem Lauf neu erzeugt)
 ui-quelle/einheiten_neu/vorschau.png
 ui-quelle/teile/texturen/_kachel_2x2.png
+
+# Stimmproben zum Klonen (Kopien aus sound-quelle, 26 MB, nur lokal; 2026-11-24)
+entwurf/postfach/stimmproben/
