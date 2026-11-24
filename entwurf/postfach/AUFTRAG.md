@@ -226,7 +226,7 @@ Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
 5. Bildwirkung „aus“ = ohne diese Effekte wie bisher. Vorher/nachher-Bilder in den Bericht.
 6. **Nachtrag Enrico (18:04) – Wucht und Panache:** Die Sonderfähigkeiten der **Helden** (Rote Faust: Durchbruch; Eiserner Kürassier: Hinrichtung, Furcht) und der **Stufe-3-Schreiter** (Kreuzschreiter: Löwengebrüll, Löwenmaul-Kanone; Eisenknecht: Faustsalve) sollen **richtig reinhauen** – zuerst diese, die übrigen Fähigkeiten danach. Zusammenspiel prüfen: Bild (gemalter Effekt), kurzer Stillstand im Treffer (`stopBis`), Kamerawackeln/-fahrt, Ton, Ziel fliegt/kippt, Figuren fallen sichtbar. Der Eindruck hängt auch am **Schaden**: im Bericht je Fähigkeit den tatsächlichen Schaden (Durchschnitt aus der Simulation) nennen und sagen, ob er zur Wirkung passt – **Werte nicht ändern**, nur Vorschlag (gehört zur späteren Balance-Runde „Fleischwolf“). Fehlen gemalte Bilder für diese Momente (z. B. Mündungsdonner der Löwenmaul-Kanone, Doppelschuss der Faustsalve, Hinrichtungs-Hieb), im Bericht auflisten – der Berater lässt sie malen.
 
-# >>> JETZT (Enrico 2026-11-23 17:20): Liste fehlender Sprachbefehle + Stimmproben zum Klonen (nur Liste, nichts einbauen) <<<
+# >>> ✓ JETZT (Enrico 2026-11-23 17:20): Liste fehlender Sprachbefehle + Stimmproben zum Klonen (nur Liste, nichts einbauen) <<<
 **Reihenfolge:** nach 16:50 (Ton-Pult 3) und 17:10 (Brainstorm/Maßstab). Kleiner Auftrag.
 
 Enrico vermisst gesprochene Befehle (z. B. „Feuer frei“). Der Berater will die fehlenden Sätze mit **geklonten Suno-Stimmen** (die „Command & Conquer“-Sprüche aus `sound-quelle/Voices/eigene/`) bei fal.ai erzeugen. Dafür bitte:
@@ -235,7 +235,7 @@ Enrico vermisst gesprochene Befehle (z. B. „Feuer frei“). Der Berater will d
 2. **Stimmproben zum Klonen:** je Seite und Sprechergruppe die 2–3 besten **ungefilterten** Suno-Originalaufnahmen (klar, ohne Musik/Hall, zusammen 10–30 s) heraussuchen und als WAV nach `entwurf/postfach/stimmproben/<seite>_<gruppe>_<n>.wav` kopieren (nur Kopien, Originale bleiben). Gibt es keine ungefilterte Fassung, die leichteste Filterstufe nehmen und das vermerken.
 3. Ergebnis als `entwurf/postfach/STIMMEN_FEHLEN.md` (Tabelle) + kurzer Bericht. Nichts im Spiel ändern.
 
-# >>> JETZT (Enrico 2026-11-23 17:10): Brainstorm festhalten + Probebild „Maßstab“ (NICHTS im Spiel ändern) <<<
+# >>> ✓ JETZT (Enrico 2026-11-23 17:10): Brainstorm festhalten + Probebild „Maßstab“ (NICHTS im Spiel ändern) <<<
 **Reihenfolge:** nach 16:50 (Ton-Pult 3). Reine Ideen und eine Testseite – **keine Änderung an Regeln, Spiel oder Balance.**
 
 **1. In `IDEEN.md` eintragen** als Abschnitt „Brainstorm Spielsystem (Enrico + Berater, 2026-11-23) – noch nichts bauen“:
