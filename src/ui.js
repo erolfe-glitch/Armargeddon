@@ -830,6 +830,10 @@ function drawGround(g, s) {
   if (G.aufstellung) {   // Startzone grün, gewählte Einheit gelb, Ziel beim Ziehen grün bzw. rot
     for (const [c, r] of E.startZone(G, G.aufstellung)) hexMark(c, r, { rgb: '96,196,92', fill: 0.18, soft: true });
     if (aufstellWahl) hexMark(aufstellWahl.c, aufstellWahl.r, { rgb: '226,176,74', fill: 0.35 });
+    { const w = aufstellWahl || (inspect && inspect.unit && inspect.unit.side === G.aufstellung ? inspect.unit : null), T = w && TYPES[w.type], h = !w ? null : aufstellZiel ? aufstellZiel.h : hoverHex && E.canPlaceStart(G, w, hoverHex[0], hoverHex[1]) ? hoverHex : [w.c, w.r];   // Punkt 2 (2026-11-24): Reichweite bzw. Schussfeld von dem Feld aus, über dem Maus/Finger steht
+      if (w && T && T.rng && h) { const pr = Object.assign({}, w, { c: h[0], r: h[1] }), rw = T.rng + (G.map[h[0]][h[1]].ridge ? 1 : 0);
+        for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const dd = E.dist(h[0], h[1], c, r); if (dd < 1 || dd > rw || !E.hasLOS(G, h[0], h[1], c, r)) continue; if ((T.mg || TYPES[w.type].cls === 'walker') && !E.inFan(G, pr, c, r)) continue;
+          hexMark(c, r, { rgb: BRASS, fill: 0.1, soft: true }); } } }
     if (aufstellZiel) hexMark(aufstellZiel.h[0], aufstellZiel.h[1], { rgb: aufstellZiel.ok ? '120,220,110' : '200,64,44', fill: 0.45 }); }
   if (placing) for (const k of spawnSet) hexMark(Math.floor(k / 100), k % 100, { rgb: '96,196,92', fill: 0.3 });   // Aufstellungsfelder für Nachschub grün (Spieltest Runde 2, Punkt 15)
   if (hoverHex) {
@@ -4009,7 +4013,12 @@ function updateHud() {
     const T = TYPES[u.type]; btns = []; hints.length = 0;
     if (T.cls === 'art' && T.limber) btns.push({ act: 'st-limber', sym: u.limbered ? 'aufprotzen' : 'abprotzen', name: u.limbered ? 'Start: aufgeprotzt' : 'Start: abgeprotzt', on: !!u.limbered, costTxt: 'kostet nichts', text: u.limbered ? 'Beginnt angespannt: kann sofort ziehen, schießt aber erst nach dem Abprotzen. Antippen: abgeprotzt beginnen.' : 'Beginnt in Stellung: schießt sofort, zieht erst nach dem Aufprotzen. Antippen: aufgeprotzt beginnen.' });
     if (T.mg) btns.push({ act: 'st-mg', sym: u.setup ? 'mg_auf' : 'mg_ab', name: u.setup ? 'Start: aufgebaut' : 'Start: abgebaut', on: !!u.setup, costTxt: 'kostet nichts', text: u.setup ? 'Beginnt in Stellung: schießt und gibt Sperrfeuer, zieht erst nach dem Abbauen. Antippen: abgebaut beginnen.' : 'Beginnt marschbereit: kann sofort ziehen, schießt erst nach dem Aufbauen. Antippen: aufgebaut beginnen.' });
-    hints.push(btns.length ? '<i>Aufstellung:</i> Startzustand mit dem Knopf wählen.' : '<i>Aufstellung:</i> in der grünen Zone verschieben.');
+    if (T.fessel) btns.push({ act: 'st-ballon', sym: u.eingeholt ? 'einholen' : 'fernglas', name: u.eingeholt ? 'Start: eingeholt' : 'Start: oben', on: !u.eingeholt, costTxt: 'kostet nichts', text: u.eingeholt ? 'Beginnt eingeholt: kann sofort ziehen, sieht aber nur 4 Felder. Antippen: oben beginnen.' : 'Beginnt in der Luft: sieht weit und markiert Ziele, zieht erst nach dem Einholen. Antippen: eingeholt beginnen.' });   // Punkt 2 (2026-11-24)
+    btns.push({ act: 'st-dreh-l', sym: 'drehpfeil', name: 'Blick nach links drehen', costTxt: 'kostet nichts', text: 'Startblickrichtung um 60° nach links drehen (wichtig für MG-Schussfeld und Fahrzeuge).' }, { act: 'st-dreh-r', sym: 'drehpfeil', name: 'Blick nach rechts drehen', costTxt: 'kostet nichts', text: 'Startblickrichtung um 60° nach rechts drehen.' });
+    { const r = rolle(u.type), ab = T.abil && E.ABILS[T.abil] ? E.ABILS[T.abil].name : null;   // Punkt 2: wen stelle ich wohin – Rolle, Reichweite, Fähigkeiten
+      hints.push(`${r ? '<b>' + r.rolle + '</b> · ' : ''}${T.rng ? 'Reichweite ' + felder(T.rng) : 'nur Nahkampf'}${ab ? ' · Fähigkeit: ' + ab : ''}${(T.sp || []).length ? ' · ' + T.sp.slice(0, 4).join(' · ') : ''}`); }
+    hints.push('<i>Aufstellung:</i> Startzustand und Blickrichtung mit den Knöpfen wählen; über einem Feld zeigt die Karte Reichweite bzw. Schussfeld von dort.');
+    hn.innerHTML = hints.filter(Boolean).join(' · '); hn.title = hn.textContent;   // Hinweiszeile wurde oben schon geschrieben
   }
   btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
   upBtns = btns;
@@ -4222,7 +4231,7 @@ async function panelAct(a) {
   if (MODUS_KNOPF.test(a)) { const war = aktModus(); if (war && war !== a && !(a === 'm-he' && war === 'm-he')) modiAus(); }   // Paket A: nur ein Modus
   if (a.startsWith('i-')) { const art = a.slice(2); if (hilfeAn(art)) { hilfeModus = null; updateUI(); return; }   // zweiter Druck schaltet aus
     abilMode = false; hilfeModus = sel ? { art, id: sel.id } : null; toast({ 'i-heal': TYPES[sel.type].repair ? 'Versorgen: Einheit mit Zahnrad anklicken.' : 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); updateUI(); return; }
-  if (a === 'st-limber' || a === 'st-mg') { const u = inspect && inspect.unit; if (!u || !G.aufstellung) return; if (a === 'st-limber') u.limbered = !u.limbered; else u.setup = !u.setup;   // F6
+  if (a === 'st-limber' || a === 'st-mg' || a === 'st-ballon' || a === 'st-dreh-l' || a === 'st-dreh-r') { const u = inspect && inspect.unit; if (!u || !G.aufstellung) return; if (a === 'st-limber') u.limbered = !u.limbered; else if (a === 'st-mg') u.setup = !u.setup; else if (a === 'st-ballon') u.eingeholt = !u.eingeholt; else u.face = (u.face + (a === 'st-dreh-r' ? 1 : 5)) % 6;   // Punkt 2: Ballon und Blickrichtung kostenlos   // F6
     playSound(a === 'st-limber' ? (u.limbered ? 'clank' : 'abprotzen') : 'mgsetup', 0.4, u.side); syncAll(); updateHud(); return; }
   if (a === 'pass') {   // F102 (2026-11-22): jederzeit selbst abhaken (Knopf, Leertaste oder E), danach zur nächsten offenen Einheit; noch einmal = wieder öffnen
     const k = G.turn + G.side + ':' + sel.id, alt = ABGEHAKT.get(k); playSound('klick', 0.5, null);
