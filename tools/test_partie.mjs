@@ -3,15 +3,17 @@
 // Prüft: Konsole ohne Fehler, Bildschleife läuft (Karte wird neu gezeichnet, nicht einfarbig), nach jeder Handlung wieder bedienbar,
 // nach dem Eingraben kein Schuss mehr möglich.
 // Aufruf: node tools/test_partie.mjs   (Vorschau-Server auf 127.0.0.1:8765; URL=… für eine andere Seite; BILDER=ordner für Aufnahmen)
+// Gegenprobe (Punkt 47): GEGENPROBE=schwarz (Karte wird nach dem Start nur noch schwarz gefüllt) bzw. GEGENPROBE=steht (Bildschleife angehalten) – beide MÜSSEN als Fehler gemeldet werden.
+// Bildprüfung (Punkt 47, 2026-11-24): Chrome ohne Hintergrund-Drosselung, Zeichenfläche verloren (isContextLost) wird eigens gemeldet, ein dunkles/stehendes Bild wird bis zu 3× im Abstand von 1 s nachgeprüft (vorübergehende Aussetzer zählen nicht).
 import { spawn } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const URL = process.env.URL || 'http://127.0.0.1:8765/index.html', BILDER = process.env.BILDER || '', KARTE = process.env.KARTE || '';   // KARTE=sanktruss: Karte im Startmenü wählen
+const GEGEN = process.env.GEGENPROBE || '', URL = process.env.URL || 'http://127.0.0.1:8765/index.html', BILDER = process.env.BILDER || '', KARTE = process.env.KARTE || '';   // KARTE=sanktruss: Karte im Startmenü wählen
 if (BILDER) mkdirSync(BILDER, { recursive: true });
 try { const r0 = await fetch(URL); if (!r0.ok) throw new Error(r0.status); } catch (e) { console.log(`Vorschau-Server nicht erreichbar (${URL}) – im Projektordner starten: python -m http.server 8765 --bind 127.0.0.1`); process.exit(2); }   // Prüfliste 5.9
 const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
-const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armpartie-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', 'about:blank'], { stdio: 'ignore' });
+const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armpartie-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows', 'about:blank'], { stdio: 'ignore' });   // Punkt 47: unsichtbarer Chrome darf das Zeichnen nicht drosseln
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pend = {}, fehler = [];
@@ -26,11 +28,13 @@ const taste = async (key, code) => { await cmd('Input.dispatchKeyEvent', { type:
 let nBild = 0; const bild = async name => { if (!BILDER) return; const r = await cmd('Page.captureScreenshot', { format: 'webp', quality: 80 }); writeFileSync(join(BILDER, `${String(++nBild).padStart(2, '0')}_${name}.webp`), Buffer.from(r.result.data, 'base64')); };
 const groesse = (w, h) => cmd('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
 // Bildschleife lebt: zwei Abtastungen der Karte im Abstand – Pulsring/Effekte ändern Pixel; dazu Helligkeitsstreuung (einfarbig braun = kaputt)
-const karteOk = async tag => { const r = await ev(`(async () => { const c = document.getElementById('map'), g = c.getContext('2d');
+const karteMessen = () => ev(`(async () => { const c = document.getElementById('map'), g = c.getContext('2d');
     const probe = () => { const d = g.getImageData(0, 0, c.width, c.height).data; let s = 0, s2 = 0, n = 0, h = 0; for (let i = 0; i < d.length; i += 4 * 499) { const l = (d[i] + d[i + 1] + d[i + 2]) / 3; s += l; s2 += l * l; n++; h = (h * 31 + d[i]) | 0; } const m = s / n; return { m, sd: Math.sqrt(Math.max(0, s2 / n - m * m)), h }; };
     const a = probe(); let b = a; for (let i = 0; i < 20 && b.h === a.h; i++) { await new Promise(r => setTimeout(r, 100)); b = probe(); }
-    return { mittel: Math.round(b.m), streuung: Math.round(b.sd), laeuft: b.h !== a.h }; })()`);
-  const ok = r && r.laeuft && r.streuung > 12; console.log(`  Karte ${tag}: ${ok ? 'ok' : 'FEHLER'} (Helligkeit ${r && r.mittel}, Streuung ${r && r.streuung}, Bild läuft ${r && r.laeuft})`); if (!ok) fehler.push(`Karte ${tag}: dunkel/eingefroren ${JSON.stringify(r)}`); return ok; };
+    return { mittel: Math.round(b.m), streuung: Math.round(b.sd), laeuft: b.h !== a.h, verloren: !!(g.isContextLost && g.isContextLost()), sicht: document.visibilityState }; })()`);
+const karteOk = async tag => { let r, ok = false, n = 0;   // Punkt 47: bis zu 3 Messungen im Abstand von 1 s – ein einmaliger Aussetzer zählt nicht, ein bleibend dunkles/stehendes Bild schon
+  for (; n < 3 && !ok; n++) { if (n) await sleep(1000); r = await karteMessen(); ok = !!(r && r.laeuft && r.streuung > 12); if (r && r.verloren) console.log(`  Karte ${tag}: Zeichenfläche verloren (Context Loss, Seite ${r.sicht})`); }
+  console.log(`  Karte ${tag}: ${ok ? 'ok' : 'FEHLER'} (Helligkeit ${r && r.mittel}, Streuung ${r && r.streuung}, Bild läuft ${r && r.laeuft}${n > 1 ? ', Messungen ' + n : ''})`); if (!ok) fehler.push(`Karte ${tag}: dunkel/eingefroren ${JSON.stringify(r)}`); return ok; };
 const warteFrei = async () => { for (let i = 0; i < 200; i++) { if (await ev(`!__dbg.busy`)) return true; await sleep(100); } fehler.push('Spiel bleibt beschäftigt (busy)'); return false; };
 
 await cmd('Runtime.enable'); await cmd('Page.enable');
@@ -64,7 +68,12 @@ await sleep(1500);
     const n2 = JSON.parse(await ev(`JSON.stringify((() => { const u = __dbg.G.units.find(x => x.id === ${v.id}); return { ap: u.ap, bp: u.bp, grund: __dbg.bereitGrund(u.id) }; })())`));
     const ok = n1.ap === 0 && n1.grund === '' && n1.sel !== v.id && n2.ap === v.ap && n2.bp === v.bp && n2.grund !== '';
     console.log(`  F102 Leertaste/E: ${ok ? 'ok' : 'FEHLER'} ${JSON.stringify({ vorher: v, abgehakt: n1, wieder: n2 })}`); if (!ok) fehler.push('F102: Abhaken per Taste: ' + JSON.stringify({ v, n1, n2 })); } }
+if (GEGEN) await ev(`(() => { const c = document.getElementById('map'), g = c.getContext('2d');   // Punkt 47: absichtlich kaputtes Bild für die Gegenprobe
+  if (${JSON.stringify(GEGEN)} === 'steht') window.requestAnimationFrame = () => 0;
+  else { const P = CanvasRenderingContext2D.prototype; for (const k of ['drawImage', 'fill', 'stroke', 'fillRect', 'fillText', 'strokeText', 'putImageData']) { const o = P[k]; P[k] = function (...a) { return this === g ? undefined : o.apply(this, a); }; } const z = () => { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.restore(); setTimeout(z, 30); }; z(); }
+  return true; })()`);
 await karteOk('Start');
+if (GEGEN) { await karteOk('Start (2)'); console.log(fehler.length ? `Gegenprobe ${GEGEN}: Fehler erkannt (richtig) – ${fehler.length} Meldungen` : `Gegenprobe ${GEGEN}: NICHT erkannt (Test taugt nicht)`); ws.close(); ch.kill(); process.exit(fehler.length ? 0 : 1); }   // Punkt 47: Gegenprobe endet nach der Bildprüfung
 
 // Ein eigener Zug: alle Fußtruppen nacheinander wählen (Klick, sonst Tab), über verschiedene Felder fahren, zum Feind vorrücken,
 // abwechselnd eingraben (danach darf kein Schuss mehr gehen) oder schießen

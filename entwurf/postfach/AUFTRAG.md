@@ -21,9 +21,16 @@
 - ✓ **Paket C2 – Krähenfurt-Rest (Abschnitt 24.11. 18:20, Punkte 35–38).**
 - ✓ **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder). **Teil 1 (`d135239`) und Teil 2 (`0f9e557`) erledigt. Im nächsten Teil ZUERST die Korrekturen 39–42 (Abschnitt 24.11. 19:05), dann der Rest.**
 - ✓ **Paket E – Regeln (mit Messung):** **zuerst Punkt 42 (Dampfpfeife, aus Paket D übrig, Abschnitt 24.11. 19:05)**, dann Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
-- **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
+- **Paket F – Kleinkram/Listen:** **zuerst Punkte 46–47 (Abschnitt 24.11. 22:02)**, dann Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen). **Danach (nach Paket F): Bauplan für den großen Umbau schreiben, noch nichts bauen** (Etappe 3/4 in PLAN.md; Punkte 26, 43, 44, 45b einbeziehen).
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Enrico 2026-11-24 22:02): Antworten zu Paket E Teil 5 (Aufstellungsphase) <<<
+**Reihenfolge:** zu Beginn von Paket F.
+
+- **Eingraben als Startzustand:** Enrico: **nein, so lassen** (wie von CC vorgeschlagen). Nichts bauen.
+- [x] **46. Drehknöpfe der Aufstellung: Symbol für „links drehen“ spiegeln.** Beide Knöpfe haben heute denselben Drehpfeil. Kein neues Bild: das vorhandene Symbol im Code waagerecht spiegeln (z. B. CSS `transform: scaleX(-1)` am Symbol), damit links und rechts klar unterscheidbar sind. Bild nachher im Bericht.
+- [x] **47. Partietest reparieren (vor dem großen Umbau).** `test_partie.mjs` meldet „Karte schwarz“ (Helligkeit 0) auch für alte Stände, die früher bestanden haben – Problem der Testumgebung, nicht des Spiels. Ursache finden (Headless-Chrome-Version/GPU/WebGL-Flag? Aufnahme zu früh? Canvas-Auslesen durch Filter/`willReadFrequently`?) und beheben, sodass der Test wieder echte Fehler meldet und keine falschen. Gegenprobe: ein Stand, der schwarz sein **müsste** (z. B. Zeichnen absichtlich abgeschaltet), muss weiter als Fehler gemeldet werden. Sparregel 2 beachten (unter 10 Minuten je Lauf).
 
 # >>> JETZT (Enrico 2026-11-24 19:05): Korrekturen zu Paket D Teil 1 <<<
 **Reihenfolge:** im nächsten `pw` für Paket D **zuerst** diese drei Punkte, danach die offenen Schritte aus dem Bericht (Schritte 1, 4, 6, Punkte 14, 19). Grundlage: `entwurf/probe/effekte_d/alle_vorher_nachher.jpg`. Enrico: „Die Effekte sind schon ganz okay“ – nur diese Fehler beheben.
