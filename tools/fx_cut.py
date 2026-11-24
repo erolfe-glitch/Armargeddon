@@ -47,6 +47,7 @@ CFG = {
     'fx_drehlauf':    dict(bg='schwarz', rows=[3, 3], lauf_weg=True),   # 1–3 Feuerstern, 4–6 Garbe mit Hülsen; gemalte Läufe entfernt
     'fx_nahkampf':    dict(bg='schwarz', rows=[3, 3]),   # 1 Schwung, 2 Kreuzhieb, 3 Aufprallstern, 4 Stich, 5 Funkenstern, 6 Bodenschlag
     'fx_heldenfunken': dict(bg='magenta', rows=[3, 3]),
+    'fx_faehigkeiten': dict(bg='magenta', rows=[3, 3], leeren=[(0, 350, 75, 500), (0, 1150, 112, 1360)]),   # Paket D (2026-11-24): 1 Gebrüll-Kegel (Düse weg), 2 Gebrüll-Ringe von oben, 3 Boden-Druckwelle, 4 Dampfstoß (Düse weg), 5 Furcht-Ring mit Rauchklauen, 6 Funken und Metallsplitter
     'fx_winter_schnee': dict(bg='magenta', rows=[3, 3], rosa='grau'),   # Krähenfurt (Flux, 2026-11-22): 1 großer Schnee-Einschlag, 2 derselbe fällt zusammen, 3 kleiner Einschlag, 4–5 Pulverschnee (flach), 6 Eissplitter; rosa Säume → Grau (Schnee)   # Helden (Enrico 2026-11-22): 1 blauer Funkenstrich, 2 blau-weißer Einschlag, 3 kaltes Leuchten (Kürassier); 4 orangener Einschlag, 5 orangener Funkenstrich, 6 Glutsprenkel (Rote Faust)
 }
 
@@ -135,6 +136,9 @@ def cut(name):
     a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
     H, W = a.shape[:2]
     if cfg.get('lauf_weg'): a = lauf_weg(a)
+    if cfg.get('leeren'):   # Kästen auf Hintergrundfarbe setzen (mitgemalte Düsen/Rohre, Paket D 2026-11-24)
+        a = a.copy(); bg = np.median(np.concatenate([a[3], a[-4]]), axis=0)
+        for x0, y0, x1, y1 in cfg['leeren']: a[y0:y1, x0:x1] = bg
     k = schwarz(a) if cfg['bg'] == 'schwarz' else magenta(a, cfg.get('rosa', True))
     if cfg.get('blutsaum'):   # trockene Pinselränder, die ins Rosa übergehen: rosa Anteil wird durchsichtig und blutrot statt grau
         k = k.astype(np.float64).copy(); r_, g_, b_ = k[..., 0], k[..., 1], k[..., 2]

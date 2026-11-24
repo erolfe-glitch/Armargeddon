@@ -142,7 +142,7 @@ const WFX = () => !!(E.MAP && E.MAP.winter && fxN('winter_schnee') >= 6);   // W
 function aufEis(x, y) { try { const [c, r] = pixToHex(x, y); return !!(G && G.map[c] && G.map[c][r] && (G.map[c][r].t === 'eis' || G.map[c][r].t === 'eisloch')); } catch (e) { return false; } }   // Eisloch: Regeln ändern das Feld vor dem Abspielen
 const FX_GLOW = new Set(['muendung', 'explosion', 'feuer', 'funken', 'leuchtkugel', 'leuchtspur', 'flammenstrahl', 'drehlauf', 'nahkampf']);
 // Größe: längste Seite des größten Teils eines Bogens in Feldradien (Soldat ≈ 0,8 Feldradien hoch)
-const FX_SZ = { winter_schnee: 2.0, kraterschnee: 1.4, spurschnee: 1.45, eisloch: 2.1, heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
+const FX_SZ = { faehigkeiten: 2.4, winter_schnee: 2.0, kraterschnee: 1.4, spurschnee: 1.45, eisloch: 2.1, heldenfunken: 0.75, blut2: 1.05, muendung: 0.7, explosion: 1.7, erdfontaene: 2.0, rauch: 2.3, nebel: 1.7, gas: 1.8, feuer: 0.75, funken: 0.95, blut: 0.8, leuchtkugel: 1.0, truemmer: 1.6, bodenspuren: 1.4, geschosse: 0.42, leuchtspur: 1.2, flammenstrahl: 1, drehlauf: 0.95, nahkampf: 1.15 };
 const GESCHOSS_ANG = [-18, -15, -40, 0, -15, -15].map(a => a * Math.PI / 180);   // Grundrichtung der Geschosse im Bogen (gemessen)
 const fxIm = (b, i) => { const a = FXN[b]; if (!a || !a.length) return null; const im = a[i != null ? i : Math.floor(Math.random() * a.length)]; return im && im.complete && im.naturalWidth ? im : null; };
 const fxN = b => (FXN[b] || []).length;
@@ -2868,7 +2868,7 @@ async function playEvent0(e) {
       await heldTitelErst(ksz, 'Hinrichtung', 'kalt', heldName(e.u));   // F86: großer Auftritt; F87: erst Schrift, dann Schlag
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start2', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt2', 0.7); playSound(kschwertTon(e.d), 0.55);
       const mx = d.x + (a.x - d.x) * 0.35, my = d.y - L.s * 0.55, masch = istMaschine(unitById(e.d));   // Treffpunkt der Säge
-      heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11); heldFunken(2, mx, my, { mul: 0.75, life: 24 }); heldFunken(1, mx, my, { mul: 0.6, flip: d.x < a.x });
+      heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11); if (BW) fx('faehigkeiten', 5, mx, my + L.s * 0.25, { anchor: 'mitte', life: 36, mul: 0.62, grow: 0.3, fadeOut: 0.6, flip: d.x < a.x, fuss: [d.x, d.y] }); heldFunken(2, mx, my, { mul: 0.75, life: 24 }); heldFunken(1, mx, my, { mul: 0.6, flip: d.x < a.x });   // Paket D: Funken und Kettensplitter (fx_faehigkeiten 6)
       for (let q = 0; q < (BW >= 2 ? 4 : 3); q++) fx('funken', null, mx + (Math.random() - 0.5) * L.s * 0.25, my + (Math.random() - 0.5) * L.s * 0.2, { anchor: 'mitte', delay: q * 3, life: 18 + q * 3, mul: 0.65 + q * 0.12, fadeOut: 0.6, flip: Math.random() < 0.5 });   // Funken von der Kettensäge
       stopBis = performance.now() + (BW ? 230 : 140); if (!(ksz && ksz.skip)) await wait(220);   // kurzer Stillstand im Treffer
       trefferSpritzer(a.x, a.y, d, 3, masch); if (!masch) { schwerBlut(a.x, a.y, d, 3); schwerBlut(a.x, a.y, d, 3); bodenBlut(d.x + (Math.random() - 0.5) * L.s * 0.3, d.y + L.s * 0.12 * kAt(d.x, d.y), 0.7); }   // schwerer Blutstoß, dann Lache
@@ -2881,7 +2881,7 @@ async function playEvent0(e) {
       d0.face = x1 >= x0 ? 0 : 3; d0.moving = true;
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
       try { for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); d0.x = x0 + (x1 - x0) * k; d0.y = y0 + (y1 - y0) * k - Math.sin(Math.PI * k) * L.s * 0.9; } } finally { d0.moving = false; d0.x = x1; d0.y = y1; }
-      if (WFX()) fx('winter_schnee', 4, x1, y1 + L.s * 0.3, { life: 44, mul: 0.55, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); else fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('loewen_landung', 0.6); playSound('steps', 0.2); shake(3);   /* Landung (Enrico 2026-11-22 15:00), alter Landeton leise darunter */ VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
+      if (WFX()) fx('winter_schnee', 4, x1, y1 + L.s * 0.3, { life: 44, mul: 0.55, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); else fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('loewen_landung', 0.6); playSound('steps', 0.2); shake(3); if (BW && fxIm('faehigkeiten', 2)) fx('faehigkeiten', 2, x1, y1 + L.s * 0.12, { anchor: 'mitte', life: 44, mul: 0.62, grow: 0.45, alpha: 0.9, fadeOut: 0.6 });   /* Landung (Enrico 2026-11-22 15:00), alter Landeton leise darunter */ VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
     case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
       const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]); pose(e.u, 'faust', 1600);   // Schreiter-Posen: beide Kanonen feuern
@@ -4028,7 +4028,7 @@ function medaillenZeigen(u) {
 function loewenGebruell(u, ids) {
   const d = DU.get(u.id); if (!d) return;
   playSound('loewe', 0.6, null, { u });
-  rings.push({ x: d.x, y: d.y, r: 1.6, col: '#E2B04A', life: 40, max: 40 }); rings.push({ x: d.x, y: d.y, r: 2.6, col: '#E2B04A', life: 52, max: 52 });
+  if (!(BW && fxIm('faehigkeiten', 1))) { rings.push({ x: d.x, y: d.y, r: 1.6, col: '#E2B04A', life: 40, max: 40 }); rings.push({ x: d.x, y: d.y, r: 2.6, col: '#E2B04A', life: 52, max: 52 }); }   // Paket D: gelbe Ringe nur noch, wenn der gemalte Bogen fehlt
   for (const id of ids || []) { const f = DU.get(id); if (f) { f.vs.angst = true; kz(id, 'angst', 'puls'); } }   // Kopfzeichen „verängstigt“
   gebruellFx(u.id, ids, 1);
 }
@@ -4045,7 +4045,11 @@ function maulPunkt(id) {   // Kreuzschreiter: Löwenmaul = Mündung der Hauptwaf
 function gebruellFx(id, ziele, stark) {
   if (!BW) return; const d = DU.get(id), m = maulPunkt(id); if (!d || !m) return;
   const dir = facesLeft(d.face) ? -1 : 1, n = BW === 1 ? 2 : 3;
-  SCHALL.push({ m: [m[0], m[1]], fuss: [d.x, d.y], dir, t0: now, dauer: 1100 + 300 * stark, n: stark ? n : 2, stark });
+  const FB = fxIm('faehigkeiten', 0) && fxIm('faehigkeiten', 1);   // Paket D (2026-11-24): Tintenbogen fx_faehigkeiten – Kegel in Blickrichtung, Staubringe am Boden; die glatten Gold-Bögen entfallen
+  if (FB) { const k = stark ? 1.05 : 0.62;
+    fx('faehigkeiten', 0, m[0] + dir * L.s * 0.85 * k, m[1] + L.s * 0.55, { anchor: 'mitte', flip: dir < 0, life: 44 + 10 * stark, mul: k, grow: 0.55, fadeIn: 2, fadeOut: 0.65, fuss: [d.x, d.y] });
+    for (let q = 0; q < (stark ? 2 : 1); q++) fx('faehigkeiten', 1, d.x, d.y + L.s * 0.12, { anchor: 'mitte', delay: q * 9, life: 46, mul: (stark ? 0.75 : 0.5) + q * 0.25, grow: 0.9, alpha: 0.95, fadeOut: 0.7 }); }
+  else SCHALL.push({ m: [m[0], m[1]], fuss: [d.x, d.y], dir, t0: now, dauer: 1100 + 300 * stark, n: stark ? n : 2, stark });
   if (stark) { shake(BW === 1 ? 3 : 5); for (let q = 0; q < (BW === 1 ? 2 : 4); q++) boom(d.x + dir * L.s * (0.6 + q * 0.35), d.y + (Math.random() - 0.5) * L.s * 0.3, L.s * 0.35, 'dust', q * 5); }
   for (const zid of ziele || []) { const f = DU.get(zid); if (!f) continue; pose(zid, 'getroffen', 380);
     const ex = Math.sign(f.x - d.x) || dir; f.lunge = { dx: ex * L.s * 0.08, dy: 0 }; setTimeout(() => { if (f.lunge && f.lunge.dx === ex * L.s * 0.08) f.lunge = null; }, 320 / speed); }
@@ -4107,7 +4111,9 @@ function heldTitel(text, art, wer) {
 }
 async function heldTitelErst(ksz, text, art, wer) { const ms = heldTitel(text, art, wer); if (ms && !(ksz && ksz.skip) && speed < INSTANT) await new Promise(r => setTimeout(r, ms)); }
 const HRING = [];   // { x, y, t0, dauer, art, gross }
-function heldRing(x, y, art, gross) { HRING.push({ x, y, t0: now, dauer: gross ? 720 : 950, art, gross }); }
+function heldRing(x, y, art, gross) {   // Paket D: gemalte Druckwelle (Faust) bzw. Furcht-Ring mit Rauchklauen (Kürassier); glatter Ring nur noch, wenn das Bild fehlt
+  const i = art === 'faust' ? 2 : 4; if (BW && fxIm('faehigkeiten', i)) { fx('faehigkeiten', i, x, y + L.s * 0.12, { anchor: 'mitte', life: gross ? 54 : 46, mul: gross ? 0.95 : 0.6, grow: gross ? 0.55 : 0.4, alpha: 0.95, fadeIn: 1, fadeOut: 0.6 }); if (gross) boom(x, y, L.s * 0.6, 'dust'); return; }
+  HRING.push({ x, y, t0: now, dauer: gross ? 720 : 950, art, gross }); }
 function drawHeldRinge(g, s, up) {
   const amp = BW === 0 ? 0.55 : BW === 1 ? 0.8 : 1;
   for (let i = HRING.length - 1; i >= 0; i--) { const w = HRING[i], el = (now - w.t0) * speed; if (el > w.dauer) { HRING.splice(i, 1); continue; } if (up && !up(w.x, w.y)) continue;
@@ -4130,6 +4136,7 @@ function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
   const x = b ? d.x + b[0] + b[2] * (lf ? 0.15 : 0.85) : d.x + (lf ? -1 : 1) * s * 0.4, y = b ? d.y + b[1] + b[3] * 0.5 : d.y - s * 0.6;
   for (let q = 0; q < (BW >= 2 ? 3 : 2); q++) { const e = fx('rauch', null, x + (lf ? -1 : 1) * q * s * 0.12, y, { delay: q * 4, move: [x + (lf ? -1 : 1) * s * (0.3 + q * 0.15), y - s * 0.25], life: 60 + q * 10, mul: 0.22 * st + q * 0.04, grow: 1.1, rise: 0.5, alpha: 0.55, fadeIn: 3, fadeOut: 0.7, flip: lf, filter: 'brightness(2.1) saturate(0.2)' }); if (e) e.dampf = true; }
   burst(x, y, BW >= 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });
+  if (BW && fxIm('faehigkeiten', 3)) fx('faehigkeiten', 3, x + (lf ? -1 : 1) * s * 0.75 * st, y, { anchor: 'mitte', flip: lf, life: 40, mul: 0.3 + 0.32 * st, grow: 0.5, alpha: 0.9, fadeIn: 1, fadeOut: 0.65, fuss: [d.x, d.y] });   // Paket D: gemalter Dampfstoß
 }
 function staubSchleppe(id) { let an = true; (async () => { while (an) { const d = DU.get(id); if (d) boom(d.x, d.y + L.s * 0.12, L.s * 0.24, 'dust'); await wait(70); } })(); return () => { an = false; }; }
 const FLUG = new Map();   // K7 (2026-11-22): id → Zeitpunkt; nur der direkt folgende Rückstoß fliegt, in startGame geleert
@@ -4146,7 +4153,9 @@ function drawHeldAura(g, s, up) {
     const gr = g.createRadialGradient(d.x, d.y, 0, d.x, d.y, s * (0.95 + 0.4 * bl));
     if (warm) { gr.addColorStop(0, `rgba(170,46,20,${(0.24 * p + 0.45 * bl) * amp})`); gr.addColorStop(0.5, `rgba(120,30,14,${(0.14 * p + 0.22 * bl) * amp})`); gr.addColorStop(1, 'rgba(90,20,10,0)'); }   // F84: weicher Schein
     else { gr.addColorStop(0, `rgba(196,212,226,${(0.26 * p + 0.22 * bl) * amp})`); gr.addColorStop(0.6, `rgba(160,178,196,${(0.12 * p + 0.1 * bl) * amp})`); gr.addColorStop(1, 'rgba(160,178,196,0)'); }
-    g.save(); if (warm) g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); gEllipse(g, d.x, d.y, s * (0.95 + 0.4 * bl), s * (0.95 + 0.4 * bl)); g.fill(); g.restore();
+    const fr = !warm && fxIm('faehigkeiten', 4);   // Paket D: Furcht-Aura als gemalter Rauchklauen-Ring am Boden (pulsierend) statt kaltem Leuchtkreis; warmer Schein der Faust gedämpft
+    if (fr) { const [w0, h0] = fxDim(fr, 'faehigkeiten', 0.62 * (1 + 0.06 * p + 0.15 * bl)); g.save(); g.globalAlpha = Math.min(1, (0.35 + 0.25 * p + 0.4 * bl) * amp); g.drawImage(fr, d.x - w0 / 2, d.y + s * 0.1 - h0 / 2, w0, h0); g.restore(); }
+    else { g.save(); if (warm) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.6; } g.fillStyle = gr; g.beginPath(); gEllipse(g, d.x, d.y, s * (0.95 + 0.4 * bl), s * (0.95 + 0.4 * bl)); g.fill(); g.restore(); }
     if (warm) { if (Math.random() < (BW === 1 ? 0.025 : 0.05) * Math.min(2, FS) * (1 + 3 * bl)) GLUT.push({ id: u.id, t0: now, dauer: 1300 + Math.random() * 900, ox: (Math.random() - 0.5) * 0.35, vx: (Math.random() - 0.5) * 0.25, gr: 0.6 + Math.random() * 0.6 }); }   // F84: Glutfunken aus dem Ofenkern
     else if (Math.random() < (BW === 1 ? 0.03 : 0.07) * Math.min(2, FS)) { burst(d.x + (Math.random() - 0.5) * s * 0.9, d.y - s * (1.2 + Math.random() * 0.5), 2, ['#cfd3d6', '#9aa0a6', '#e8ecee'], { up: -0.015, spread: 0.03 }); }   // Ascheflocken fallen
     if (T.aura === 'furcht') for (const o of G.units) { if (o.side === u.side || !E.alive(o) || E.dist(o.c, o.r, u.c, u.r) !== 1 || TYPES[o.type].cls === 'walker') continue; const f = DU.get(o.id); if (!f || (up && !up(f.x, f.y))) continue;
