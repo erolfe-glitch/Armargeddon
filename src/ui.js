@@ -39,7 +39,7 @@ let hilfeModus = null; const hilfeAn = art => !!(hilfeModus && sel && hilfeModus
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
-const OPT = { ready: true, strag: true, cam: true, shake: true, base: 0 };   // base: „Base“ unter Einheiten (0 aus … 3 deutlich)   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
+const OPT = { ready: true, strag: true, cam: true, shake: true, base: 0, camZurueck: true };   // base: „Base“ unter Einheiten (0 aus … 3 deutlich)   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
 try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === typeof OPT[k]) OPT[k] = o[k]; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
@@ -1109,14 +1109,15 @@ function drawAir(g, s, up) {
   }
   g.globalAlpha = 1;
   // Pfadvorschau (Paket 2): kleine halbdurchsichtige Punkte Feld für Feld bis zum Zielfeld; Gefahr (Draht, Gas, Feuer, MG-Sperrfeuer) rot mit Warnzeichen
-  { const n = sel && human(G.side) && !busy && hoverHex && reach.get(E.key(hoverHex[0], hoverHex[1]));
+  { const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]), rushV = sel && human(G.side) && !busy && hk != null && abilMode && feldArt === 'abil' && TYPES[sel.type].abil === 'rush' && abilSet.has(hk) && E.rushPath(G, sel, hoverHex[0], hoverHex[1]);   // Punkt 8: Wegvorschau auch für den Sturmlauf (Warndreieck bei Mine, Draht, Gas …)
+    const n = rushV ? { path: rushV, rest: null } : sel && human(G.side) && !busy && hoverHex && reach.get(hk);
     if (n && n.path && n.path.length) { const pts = [[sel.c, sel.r], ...n.path]; let warnAt = null;
       for (let i = 1; i < pts.length; i++) { const [c0, r0] = pts[i - 1], [c1, r1] = pts[i], [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1), hz = pathHazard(sel, c1, r1);
         if (hz && !warnAt) warnAt = [x1, y1, hz];
         for (const k of i === pts.length - 1 ? [0.5] : [0.5, 1]) { const x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k; if (up && !up(x, y)) continue;
           g.beginPath(); g.arc(x, y, Math.max(3, s * (k === 1 ? 0.075 : 0.055)), 0, 7); g.fillStyle = hz && k === 1 || hz && i === pts.length - 1 ? 'rgba(200,52,40,0.72)' : 'rgba(240,237,225,0.55)'; g.fill();
           g.lineWidth = Math.max(1, s * 0.018); g.strokeStyle = 'rgba(18,13,11,0.55)'; g.stroke(); } }
-      { const [c1, r1] = pts[pts.length - 1], [x, y] = center(c1, r1); if (!up || up(x, y)) {   // Rest-BP am Zielfeld (Fahrplan 2)
+      if (n.rest != null) { const [c1, r1] = pts[pts.length - 1], [x, y] = center(c1, r1); if (!up || up(x, y)) {   // Rest-BP am Zielfeld (Fahrplan 2)
           const t = String(n.rest), R = Math.max(10, s * 0.19), yy = y + s * 0.05; g.beginPath(); g.arc(x, yy, R, 0, 7); g.fillStyle = n.march ? 'rgba(226,176,74,0.92)' : 'rgba(232,221,184,0.92)'; g.fill();
           g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = '#120D0B'; g.stroke(); g.font = `400 ${Math.round(R * 1.25)}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#120D0B'; g.fillText(t, x, yy + R * 0.06); } }
       if (warnAt) { const [x, y, hz] = warnAt, ty = y - s * 0.55; if (!up || up(x, ty)) { const r = Math.max(9, s * 0.17);   // Warndreieck
@@ -1145,6 +1146,7 @@ function fbTxt(u) { const f = u ? E.freeBlows(G, u) : []; return f.length ? ` ·
 // Gefahr auf einem Wegfeld für die Pfadvorschau: 'draht' | 'gas' | 'feuer' | 'mg' oder null
 function pathHazard(u, c, r) {
   const T = TYPES[u.type], h = G.map[c] && G.map[c][r]; if (!h) return null;
+  if ((G.mines || []).some(q => q.c === c && q.r === r && q.side !== u.side && q.known === u.side)) return 'mine';   // Punkt 8: bekannte Mine des Gegners (Ziehen und Sturmlauf)
   if (h.t === 'wire' && T.cls !== 'walker' && !E.wireProof(T)) return 'draht';
   if ((VIS.clouds || []).some(k => k.c === c && k.r === r) && !E.gasSafe(G, u)) return 'gas';
   if ((VIS.fires || []).some(k => k.c === c && k.r === r)) return 'feuer';
@@ -2533,7 +2535,7 @@ async function playEvent0(e) {
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
       { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, e.zweit && poseHat(au0, 'zweit') ? 'zweit' : poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (!szene && camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
-      if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
+      if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) { camFern(); await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320); }   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') {   // F75 (2026-11-21): EIN längerer Feuerstoß je Trupp (gemeinsam, ca. 1,5 s; Zweitwaffe Flammenstoß 1,1 s) – Ton startet mit dem Strahl, hält so lange wie er sichtbar ist und klingt mit ihm aus, danach kurzes Nachbrennen
         const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
         const dr = fxDir(p[0], p[1], x2, y2, 1.2), len = Math.hypot(x2 - p[0], y2 - p[1]) * 1.08, dauer = (e.zweit ? 1100 : 1500) / Math.min(speed, 2), takt = 160 / Math.min(speed, 2);
@@ -2615,7 +2617,7 @@ async function playEvent0(e) {
         const [cx, cy] = center(...cells[order[q % order.length]]);
         shells.push({ fxi: mob ? 1 : 0, x1, y1, x2: cx, y2: cy, t: 0, dur, col: '#2a2a26', img: mob ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       }, t / speed));
-      if (camOn() && !inView(x2, y2, 0.12)) setTimeout(() => camTo(x2, y2, dur * 16.667 * 0.8), 200 / speed);
+      if (camOn() && !inView(x2, y2, 0.12)) { camFern(); setTimeout(() => camTo(x2, y2, dur * 16.667 * 0.8), 200 / speed); }
       await wait(shots[0] + dur * 16.667);
       // Einschläge versetzt über alle Zielfelder (Zielfeld zuerst), jeder mit eigenem Knall
       const imp = order.map((ci, i) => [cells[ci], i < n ? shots[i] : shots[n - 1] + (i - n + 1) * (140 + Math.random() * 120)]);
@@ -2637,7 +2639,7 @@ async function playEvent0(e) {
       else if (e.strike) {} else if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = flach ? 12 : 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn; Feldkanone: schnelles Geschoss
       shells.push({ fxi: e.mode === 'gas' ? 5 : TYPES[ua.type].mobile && !e.strike ? 1 : 0, x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4, ...(flach ? { arc: 0.15, fxs: 0.8 } : {}) });
-      if (camOn() && !inView(x2, y2, 0.12)) camTo(x2, y2, dur * 16.667 * 0.8);
+      if (camOn() && !inView(x2, y2, 0.12)) { camFern(); camTo(x2, y2, dur * 16.667 * 0.8); }
       await wait(dur * 16.667);
       lastFire = { kind: e.mode === 'gas' ? 'gas' : 'shell', t: performance.now(), a: e.a };   // F64: Einschlag-Ton beim folgenden Treffer
       shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
@@ -2873,7 +2875,7 @@ async function playEvent0(e) {
     case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
       const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]); pose(e.u, 'faust', 1600);   // Schreiter-Posen: beide Kanonen feuern
-      if (camOn() || OPT.cam) { await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
+      if (camOn() || OPT.cam) { camFern(); await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
       floater(a.x, a.y - L.s * 1.3, 'Faustsalve!', '#ffb04a', true); await wait(180);
       const mx = zs.reduce((n, z) => n + z[1], 0) / Math.max(1, zs.length); a.face = mx >= a.x ? 0 : 3;
       zs.forEach(([id, x2, y2], i) => { const p = fxFaust(e.u, i) || [a.x, a.y - L.s * 0.5]; fxZielFuss = (DU.get(id) ? [DU.get(id).x, DU.get(id).y] : null);
@@ -3334,6 +3336,7 @@ let handelnd = null;   // F57: Einheit der laufenden Handlung
 async function act(fn) {
   if (busy || !sel || !G || G.over) return;   // nur mit gewählter Einheit und nie während einer laufenden Handlung (sonst zwei Handlungen gleichzeitig)
   busy = true; const u = sel; handelnd = u.id;
+  camRueck = human(G.side) && OPT.camZurueck !== false ? { x: CAM.x, y: CAM.y, fern: false, t: performance.now() } : null;   // Punkt 24: Kamera vor der Handlung merken
   try {
     previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
     await play(fn(u) || []);
@@ -3341,7 +3344,7 @@ async function act(fn) {
   finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
     busy = false;
     sel = (u && E.active(u) && hasAction(u)) ? u : null;   // F93 (2026-11-22): bleibt gewählt, solange sie noch etwas kann (zweite Waffe, Ziehen, Fähigkeit …) – dieselbe Prüfung wie „fertig/grau“ (F88)
-    computeOptions(); updateUI();
+    computeOptions(); updateUI(); camZurueckFahren();
   }
 }
 const doMove = (c, r) => { const n = reach.get(E.key(c, r)), via = wayPt; wayPt = null; return act(u => via && n && n.via ? E.moveUnit(G, u, c, r, n) : E.moveUnit(G, u, c, r)); };   // mit Wegpunkt: genau der gezeigte Weg
@@ -4506,7 +4509,7 @@ $('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,
   const bc = board.getBoundingClientRect(); setZoom(nz, bc.left + bc.width / 2, bc.top + bc.height / 2, nz <= ZFIT + 0.001, true);
 };
 // Hilfen (Optionen): sofort wirksam, im Browser gemerkt
-const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake']];   // „Neue Ansicht (Test)“ entfernt: immer neue Ansicht
+const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake'], ['optCamZ', 'camZurueck']];   // „Neue Ansicht (Test)“ entfernt: immer neue Ansicht
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   });
@@ -4572,6 +4575,15 @@ function userCam() { camAnim = null; if (G && busy && !human(G.side)) camHold = 
 function inView(x, y, m = 0.18) {
   camSetup(); const p = proj(x, y), W = cv.width, H = cv.height; return p[2] > 0 && p[0] >= W * m && p[0] <= W * (1 - m) && p[1] >= H * m && p[1] <= H * (1 - m);
 }
+// Punkt 24 (Enrico 2026-11-23): nach einem Fernschuss im eigenen Zug fährt die Kamera nach 0,5 s weich dorthin zurück, wo sie vor der Handlung stand; Klick, Scrollen, Ziehen oder eine Taste bricht ab (Optionen: optCamZ)
+let camRueck = null, camEingriff = 0;
+function camFern() { if (camRueck) camRueck.fern = true; }
+['pointerdown', 'wheel', 'keydown'].forEach(t => addEventListener(t, () => { camEingriff = performance.now(); }, { capture: true, passive: true }));
+async function camZurueckFahren() { const r = camRueck; camRueck = null; if (!r || !r.fern || !G || !human(G.side) || camEingriff > r.t) return;
+  const t0 = performance.now(); await wait(500); if (camEingriff > t0 || busy || camAnim || Math.hypot(CAM.x - r.x, CAM.y - r.y) < 4) return;
+  const x0 = CAM.x, y0 = CAM.y, dur = Math.max(380, Math.min(900, 380 + Math.hypot(r.x - x0, r.y - y0) * 0.35)), me = {}; camAnim = me; const st = performance.now();
+  const step = () => { if (camAnim !== me) return; if (camEingriff > t0) { camAnim = null; return; } const k = Math.min(1, (performance.now() - st) / dur), e = 0.5 - 0.5 * Math.cos(Math.PI * k);
+    CAM.x = x0 + (r.x - x0) * e; CAM.y = y0 + (r.y - y0) * e; camClamp(); if (k < 1) requestAnimationFrame(step); else camAnim = null; }; requestAnimationFrame(step); }
 function camTo(x, y, ms = 380, force) {   // weich zum Punkt (Canvas-Pixel) fahren; Promise endet bei Ankunft oder Abbruch
   return camToTilt(x, y, ms, force);
 }

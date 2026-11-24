@@ -1662,6 +1662,13 @@ function gasSafe(G, u) { return !!TYPES[u.type].gasproof || TYPES[u.type].cls ==
 // Sturmlauf: gerade Linie (eine der 6 Richtungen), 1–4 Felder, keine Einheit im Weg, Ziel frei und betretbar; Draht hält nicht auf
 function rushPath(G, u, c, r) {
   if (u.mvd || u.ap < 1 || unitAt(G, c, r)) return null;   // Sturmlauf: die Aktion, nur aus dem Stand
+  if (!TOG.RUSH_GERADE) {   // Punkt 8 (Enrico 2026-11-23): kürzester Weg bis P.RUSH Felder statt nur gerade Linien; Feindberührung hält nicht auf, durch Einheiten nicht hindurch; Minen, Draht, Gas, Feuer werden betreten (moveUnit hält dort an bzw. verletzt)
+    const prev = new Map([[key(u.c, u.r), null]]); let front = [[u.c, u.r]];
+    for (let i = 0; i < P.RUSH && front.length; i++) { const nf = [];
+      for (const [a, b] of front) for (const [x, y] of neighbors(a, b)) { if (!inMap(x, y)) continue; const k = key(x, y); if (prev.has(k) || cost(G, u, x, y) >= 99 || unitAt(G, x, y)) continue;
+        prev.set(k, [a, b]); nf.push([x, y]); if (x === c && y === r) { const path = []; let p = [x, y]; while (p && !(p[0] === u.c && p[1] === u.r)) { path.unshift(p); p = prev.get(key(p[0], p[1])); } return path; } }
+      front = nf; }
+    return null; }
   for (let f = 0; f < 6; f++) { const path = []; let p = [u.c, u.r];
     for (let i = 0; i < P.RUSH; i++) { p = step(p[0], p[1], f); if (!inMap(p[0], p[1]) || cost(G, u, p[0], p[1]) >= 99) break; const x = unitAt(G, p[0], p[1]); if (x) break; path.push(p); if (p[0] === c && p[1] === r) return path; } }
   return null;

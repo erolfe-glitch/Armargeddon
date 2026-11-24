@@ -1181,7 +1181,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
       <div class="sm-row"><span>Lautstärke</span><label class="sm-chip vol">Musik <input type="range" id="volMusik" min="0" max="100" step="5"><b id="volMusikW">80</b></label><label class="sm-chip vol">Effekte <input type="range" id="volEffekte" min="0" max="100" step="5"><b id="volEffekteW">100</b></label><label class="sm-chip vol">Stimmen <input type="range" id="volStimmen" min="0" max="100" step="5"><b id="volStimmenW">100</b></label></div>
       <div class="sm-row"><span>Effekte</span><label class="sm-chip"><input type="checkbox" id="optBlood" checked>Blut-Effekte</label><label class="sm-chip"><input type="checkbox" id="optSound" checked>Ton</label></div>
       <div class="sm-row"><span>Hilfen</span><label class="sm-chip" title="Dezenter Messingring am Boden unter jeder eigenen Einheit, die noch handeln kann"><input type="checkbox" id="optReady" checked>Bereite Einheiten</label><label class="sm-chip" title="Messingwinkel über der Figur, wenn nur noch höchstens 3 eigene Einheiten handeln können"><input type="checkbox" id="optStrag" checked>Nachzügler zeigen</label></div>
-      <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label></div>
+      <div class="sm-row"><span>Kamera</span><label class="sm-chip" title="Bei Zügen der KI fährt die Kamera zur aktiven Einheit, zu Schüssen und Einschlägen; zu Beginn der eigenen Runde zurück zur eigenen Front"><input type="checkbox" id="optCam" checked>Kamera folgt der KI</label><label class="sm-chip" title="Kurzes Wackeln bei schweren Treffern und Einschlägen"><input type="checkbox" id="optShake" checked>Bildwackeln</label><label class="sm-chip" title="Nach einem Fernschuss im eigenen Zug (Kanone, Haubitze, Mörser, Feuerschlag …) fährt die Kamera nach einer halben Sekunde zurück, wo sie vorher stand. Aus: sie bleibt beim Einschlag."><input type="checkbox" id="optCamZ" checked>Kamera nach dem Schuss zurück</label></div>
       <div class="sm-row"><span>Figuren</span><label class="sm-chip" title="Feld unter jeder Einheit leicht abgedunkelt mit feinem Rand in Fraktionsfarbe – wie die Base einer Tabletop-Miniatur.">Base <select id="optBase"><option value="0">aus</option><option value="1">dezent</option><option value="2">mittel</option><option value="3">deutlich</option></select></label><label class="sm-chip" title="Kontaktschatten, dunklere Grabenkanten, Boden etwas gedämpft, Figuren plastischer mit mehr Metallglanz. Taste B schaltet im Spiel um.">Bildwirkung <select id="optBild"><option value="0">aus</option><option value="1">leicht</option><option value="2">stark</option></select></label><label class="sm-chip" title="Kurze Meldungen auf dem Feld (Draht geschnitten, Streuung, Mine …) als Text, als Symbol oder gar nicht. Schadenszahlen, Punkte und wichtige Meldungen bleiben immer.">Meldungen <select id="optMeld"><option value="text">Text</option><option value="symbol">Symbole</option><option value="aus">aus</option></select></label><label class="sm-chip" title="Nahkampf und große Fähigkeiten: Kamera fährt heran, Wucht beim Treffer. „kurz“ = ohne Heranfahren. Ein Klick überspringt.">KI <select id="optKI" title="Wie die Computerseite spielt: angriffslustig rückt vor und greift Fahnen an, ruhig verteidigt eher."><option value="angriff">angriffslustig</option><option value="ruhig">ruhig</option></select></label><label class="sm-chip" title="Nahkampf und große Fähigkeiten: Kamera fährt heran, Wucht beim Treffer. „kurz“ = ohne Heranfahren. Ein Klick überspringt.">Kampfszenen <select id="optSzene"><option value="an">an</option><option value="kurz">kurz</option><option value="aus">aus</option></select></label></div>
     </div></div>
     <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
@@ -1386,7 +1386,7 @@ const P = {
   // Drehen auf der Stelle kostet sie 1 Punkt je Runde (danach in derselben Runde frei)
   FZ_FAN: 60, ZWEIT_FAN: 135, DREH_BP: 1,
   // Fahrplan 2, Schritt 1 (2026-11-17): Bewegungspunkte (BP) und eine Aktion (AP) getrennt – Marsch +50 % BP für die Aktion; Nahkampf nur mit höchstens halb verbrauchten BP
-  MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2,
+  MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2, MELDER_CD: 2,
   PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 2, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
   BALLON_SICHT_UNTEN: 4,   // F70: eingeholter Ballon sieht wie Fußtruppen 4 Felder (Enrico 2026-11-21)
@@ -2704,7 +2704,10 @@ function melee(G, a, d) {
   ev.push(...checkEnd(G));
   return ev;
 }
-function claimObjective(G, u) {
+// Punkt 15 (Enrico 2026-11-23): solange eine Markierung („Ziel markieren“) gilt, deckt ihr Lichtkreis (Feld und Nachbarn) auch neu gelegte Minen und hineinziehende versteckte Einheiten sofort auf
+function imLicht(G, side, c, r) { return (G.marks || []).some(m => m.side !== side && dist(m.c, m.r, c, r) <= 1); }
+function lichtAufdecken(G, u) { if (!u || !alive(u) || TOG.NOLICHT) return; if (TYPES[u.type].hidden && imLicht(G, u.side, u.c, u.r)) u.revealed = Math.max(u.revealed || 0, 1); }
+function claimObjective(G, u) { lichtAufdecken(G, u);
   if (!active(u) || cls(u) === 'art') return;
   const o = hex(G, u.c, u.r).obj;
   if (o && G.ctrl[o] !== u.side) { G.ctrl[o] = u.side; G.pts[u.side] += OBJECTIVES.find(x => x.id === o).pts * P.PTS_OBJ; }
@@ -2879,7 +2882,7 @@ function startTurn(G) {
     u.fireDmg = 0;
     if (u.side === s) {
       u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false;
-      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'kuehl']) if (u[k] > 0) u[k]--;
+      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'cdM', 'kuehl']) if (u[k] > 0) u[k]--;
       u.dfN = 0;
       if (u.revealed > 0) u.revealed--;
       if (TYPES[u.type].counterStrike) u.cready = true;
@@ -2941,8 +2944,8 @@ function canLay(G, u) { return active(u) && !!TYPES[u.type].wirelayer && u.side 
 function layWire(G, u) { if (!canLay(G, u)) return []; const [c, r] = layTarget(G, u); hex(G, c, r).t = 'wire'; u.attacked = true; spend(u, 1); return [{ t: 'terrain', c, r, what: 'Draht gezogen' }]; }
 
 // Meldegänger mit Hund: bringt einer eigenen Einheit bis 3 Felder einen Befehl, sie bekommt +1 Aktionspunkt (einmal je Runde)
-function canSend(G, m, t) { return active(m) && !!TYPES[m.type].courier && m.side === G.side && m.ap >= 1 && !(m.supp > 0) && !m.sent && t && t !== m && t.side === m.side && active(t) && !t.broken && !TYPES[t.type].courier && (t.ap || 0) < 3 && dist(m.c, m.r, t.c, t.r) <= 3; }
-function sendOrder(G, m, t) { if (!canSend(G, m, t)) return []; m.sent = true; spend(m, 1); t.bp = (t.bp || 0) + P.MELDER_BP; t.moved = false; return [{ t: 'sent', u: t.id, by: m.id, bp: t.bp }]; }   // Meldegänger: +2 BP
+function canSend(G, m, t) { return active(m) && !!TYPES[m.type].courier && m.side === G.side && m.ap >= 1 && !(m.supp > 0) && !m.sent && !(m.cdM > 0 && !TOG.NOMELDERCD) && t && t !== m && t.side === m.side && active(t) && !t.broken && !TYPES[t.type].courier && (t.ap || 0) < 3 && dist(m.c, m.r, t.c, t.r) <= 3; }
+function sendOrder(G, m, t) { if (!canSend(G, m, t)) return []; m.sent = true; m.cdM = P.MELDER_CD; spend(m, 1); t.bp = (t.bp || 0) + P.MELDER_BP; t.moved = false; return [{ t: 'sent', u: t.id, by: m.id, bp: t.bp }]; }   // Meldegänger: +2 BP, danach Abklingzeit P.MELDER_CD (Punkt 7, 2026-11-24: jede zweite eigene Runde)
 
 // MG aufbauen (1 Punkt): erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.
 function canSetup(G, u) { return active(u) && !!TYPES[u.type].mg && u.side === G.side && !u.setup && (u.bp || 0) >= 1 && !u.broken && u.supp <= 0; }   // 1 BP, nimmt alle restlichen BP
@@ -2998,6 +3001,13 @@ function gasSafe(G, u) { return !!TYPES[u.type].gasproof || TYPES[u.type].cls ==
 // Sturmlauf: gerade Linie (eine der 6 Richtungen), 1–4 Felder, keine Einheit im Weg, Ziel frei und betretbar; Draht hält nicht auf
 function rushPath(G, u, c, r) {
   if (u.mvd || u.ap < 1 || unitAt(G, c, r)) return null;   // Sturmlauf: die Aktion, nur aus dem Stand
+  if (!TOG.RUSH_GERADE) {   // Punkt 8 (Enrico 2026-11-23): kürzester Weg bis P.RUSH Felder statt nur gerade Linien; Feindberührung hält nicht auf, durch Einheiten nicht hindurch; Minen, Draht, Gas, Feuer werden betreten (moveUnit hält dort an bzw. verletzt)
+    const prev = new Map([[key(u.c, u.r), null]]); let front = [[u.c, u.r]];
+    for (let i = 0; i < P.RUSH && front.length; i++) { const nf = [];
+      for (const [a, b] of front) for (const [x, y] of neighbors(a, b)) { if (!inMap(x, y)) continue; const k = key(x, y); if (prev.has(k) || cost(G, u, x, y) >= 99 || unitAt(G, x, y)) continue;
+        prev.set(k, [a, b]); nf.push([x, y]); if (x === c && y === r) { const path = []; let p = [x, y]; while (p && !(p[0] === u.c && p[1] === u.r)) { path.unshift(p); p = prev.get(key(p[0], p[1])); } return path; } }
+      front = nf; }
+    return null; }
   for (let f = 0; f < 6; f++) { const path = []; let p = [u.c, u.r];
     for (let i = 0; i < P.RUSH; i++) { p = step(p[0], p[1], f); if (!inMap(p[0], p[1]) || cost(G, u, p[0], p[1]) >= 99) break; const x = unitAt(G, p[0], p[1]); if (x) break; path.push(p); if (p[0] === c && p[1] === r) return path; } }
   return null;
@@ -3089,7 +3099,7 @@ function useAbil(G, u, c, r) {
     else if (h.t === 'wire') { h.t = 'open'; ev.push({ t: 'terrain', c, r, what: 'Draht zerrissen' }); }
     ev.push(...checkEnd(G));
   }
-  else if (k === 'mine') { G.mines.push({ c, r, side: u.side }); u.mines--; if (T.wirelayer) u.attacked = true;   // Drahtpioniere: Mine statt Draht
+  else if (k === 'mine') { G.mines.push({ c, r, side: u.side, ...(!TOG.NOLICHT && imLicht(G, u.side, c, r) ? { known: (G.marks.find(m => m.side !== u.side && dist(m.c, m.r, c, r) <= 1) || {}).side } : {}) }); u.mines--; if (T.wirelayer) u.attacked = true;   // Drahtpioniere: Mine statt Draht
     ev.push({ t: 'mineLaid', u: u.id, c, r, left: u.mines }); }
   else if (k === 'light') { for (const [a, b] of area) { G.lit.push({ c: a, r: b, side: u.side }); G.smoke = G.smoke.filter(q => !(q.c === a && q.r === b)); } ev.push({ t: 'light', u: u.id, c, r, cells: area }); }
   else if (k === 'clear') { const n = G.clouds.length; G.clouds = G.clouds.filter(q => dist(q.c, q.r, c, r) > 1); ev.push({ t: 'clear', u: u.id, c, r, n: n - G.clouds.length }); }
@@ -6478,7 +6488,7 @@ let hilfeModus = null; const hilfeAn = art => !!(hilfeModus && sel && hilfeModus
 let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
-const OPT = { ready: true, strag: true, cam: true, shake: true, base: 0 };   // base: „Base“ unter Einheiten (0 aus … 3 deutlich)   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
+const OPT = { ready: true, strag: true, cam: true, shake: true, base: 0, camZurueck: true };   // base: „Base“ unter Einheiten (0 aus … 3 deutlich)   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
 try { const o = JSON.parse(localStorage.getItem('arm.hilfen') || '{}'); for (const k in OPT) if (typeof o[k] === typeof OPT[k]) OPT[k] = o[k]; } catch (e) {}
 const DU = new Map();
 const particles = [], floaters = [], decals = [], tracers = [], shells = [], booms = [], flames = [], rings = [], muzzles = [];
@@ -6548,8 +6558,11 @@ const FXN = {};
     for (let i = 0; i < 9; i++) for (const row of [0, 1]) { const px = 18 + i * 34 + row * 17 + (Math.random() - 0.5) * 6, py = 52 + row * 46 + (Math.random() - 0.5) * 8;
       x.fillStyle = 'rgba(70,74,82,0.55)'; x.beginPath(); x.ellipse(px, py, 8, 4.5, (Math.random() - 0.5) * 0.4, 0, 7); x.fill(); x.fillStyle = 'rgba(245,248,252,0.5)'; x.beginPath(); x.ellipse(px - 1, py - 3, 7, 2, 0, 0, 7); x.fill(); }
     const im = new Image(); im.src = c.toDataURL(); FXN.spurschnee.push(im); } }
+const KEIN_SCHNEE = new Set(['eis', 'eisloch', 'furt', 'bridge', 'steinbruecke', 'canal', 'bahn', 'waldweg']);
+function aufSchnee(x, y) { const p = pixToHex(x, y), h = p && G && G.map[p[0]] && G.map[p[0]][p[1]]; return !h || !(h.road || h.rail || h.river || KEIN_SCHNEE.has(h.t)); }
 function spurSchnee(i, x0, y0, x1, y1, o = {}) {   // Spur am Boden zwischen zwei Punkten, in Fahrtrichtung gedreht; höchstens 60 Spuren (älteste fällt weg)
   if (!(E.MAP && E.MAP.winter) || fxN('spurschnee') < 7) return;
+  if (!aufSchnee(x0, y0) || !aufSchnee(x1, y1)) return;   // Punkt 5 (Enrico 2026-11-23): nur auf Schnee – nicht auf Straßen, Wegen, Eis, Furt, Brücken
   let n = 0; for (let k = gmarks.length - 1; k >= 0; k--) if (gmarks[k].b === 'spurschnee' && ++n >= 60) { gmarks.splice(k, 1); break; }
   gmark('spurschnee', i, (x0 + x1) / 2, (y0 + y1) / 2 + L.s * 0.12, Object.assign({ mul: 0.7, alpha: 1, flip: false, ang: Math.atan2(y1 - y0, x1 - x0), turns: 3, filter: 'brightness(0.62) contrast(1.35)', doppelt: true }, o));   // Enrico 20:50: dunkler, auch herausgezoomt erkennbar
 }
@@ -7119,6 +7132,12 @@ function hpNach(o, cur) {   // o: beliebiges Objekt (Anzeige-Einheit, Panel-Spei
   return hpNachV(h, t);
 }
 const HP_NACH = '#5a1810', hudHN = {};
+function heilZeichen(g, x, y, id, rep) {   // 3 kleine Zeichen steigen nacheinander auf und verblassen (Punkt 20, 2026-11-24)
+  const s = L.s; for (let i = 0; i < 3; i++) { const t = ((now / 1500) + i / 3 + id * 0.13) % 1, a = Math.sin(t * Math.PI), xx = x + s * (i - 1) * 0.22 + Math.sin(t * 6 + i) * s * 0.03, yy = y - t * s * 0.5, R = s * (0.07 + 0.02 * (1 - t));
+    g.save(); g.globalAlpha = a * 0.95;
+    if (rep && UPI.s_schraubenschluessel) drawSym(g, UPI.s_schraubenschluessel, xx, yy, R * 1.5);
+    else { const q = R * 0.36; g.beginPath(); for (const [px, py] of [[-q, -R], [q, -R], [q, -q], [R, -q], [R, q], [q, q], [q, R], [-q, R], [-q, q], [-R, q], [-R, -q], [-q, -q]]) g.lineTo(xx + px, yy + py); g.closePath(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, s * 0.03); g.strokeStyle = 'rgba(20,16,12,0.85)'; g.stroke(); g.fillStyle = i === 1 ? '#B4453A' : `rgb(${BONE})`; g.fill(); }
+    g.restore(); } }
 function hexMark(c, r, o) {
   const g = ctx, s = L.s, pz = 0.5 + 0.5 * Math.sin(now / 320);
   hexPath(g, c, r, 0.9); g.fillStyle = `rgba(${o.rgb},${(o.fill ?? 0.14) + 0.05 * pz})`; g.fill();
@@ -7222,6 +7241,7 @@ function drawGround(g, s) {
     if (hilfeAn('send')) for (const id of sendSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, dash: true, sym: UPI.s_meldehund }); }
     if (hilfeAn('rec')) for (const id of recSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BRASS, sym: UPI.s_schraubenschluessel }); }
     if (hilfeAn('heal')) for (const id of healSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, sym: UPI.s_sanitaeter }); }
+    if (healSet.size) { const gg = ctx; for (const id of healSet) { if (!DU.get(id)) continue; const [hx, hy] = headPos(id), rep = TYPES[unitById(id).type].cls === 'walker'; MARKQ.push(() => heilZeichen(gg, hx, hy, id, rep)); } }   // Punkt 20: wer jetzt versorgt werden kann – aufsteigende Pluszeichen (Fahrzeuge: Schraubenschlüssel), solange der Sanitäts-/Versorgungstrupp gewählt ist
     for (const [, t] of targets) { const u = unitById(t.id), fire = t.kind === 'fire'; hexMark(u.c, u.r, { rgb: fire ? BRASS : LIFE, fill: 0.2, sym: UPI[fire ? 's_zielen' : 's_nahkampf'] }); }
     // Ziele in Schussreichweite: Messing-Eckklammern um die Figur (obenauf)
     for (const [, t] of targets) if (t.kind === 'fire' || t.both) { const u = unitById(t.id), [x, y] = center(u.c, u.r); MARKQ.push(() => brackets(x, y - s * 0.38, s * 0.6, '#C2A461')); }
@@ -7394,12 +7414,13 @@ function drawAir(g, s, up) {
     const sch = fxIm('leuchtkugel', 2), gl = fxIm('leuchtkugel', 3 + (k.c + k.r) % 3);
     if (gl) { const [w, h] = fxDim(gl, 'leuchtkugel', 0.55 * pz); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.85; g.drawImage(gl, x + sw - w / 2, fy + s * 0.32 - h / 2, w, h); g.restore(); }
     if (sch) { const [w, h] = fxDim(sch, 'leuchtkugel', 0.75); g.save(); g.globalCompositeOperation = 'lighter'; g.translate(x + sw, fy); g.rotate(Math.sin(now / 900 + k.r) * 0.08); g.drawImage(sch, -w / 2, -h * 0.55, w, h); g.restore(); } }
-  // Markierte Ziele der eigenen Seite: Messing-Zielkreuz am Boden (gilt bis zum nächsten eigenen Zug)
-  for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
-    g.save(); g.globalAlpha = pz; g.strokeStyle = O; g.lineWidth = Math.max(4, s * 0.1); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
-    g.strokeStyle = '#E2B04A'; g.lineWidth = Math.max(2, s * 0.05); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
-    g.beginPath(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.moveTo(x + dx * s * 0.4, y + dy * s * 0.4 * kk); g.lineTo(x + dx * s * 0.75, y + dy * s * 0.75 * kk); } g.stroke(); g.restore(); }
-  for (const q of G.mines || []) if (q.side === mySide || q.known === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
+  // Markierte Ziele der eigenen Seite: flacher Ring in Knochenweiß am Boden um die Figur, Striche nur nach außen (Punkt 6, Enrico 2026-11-23: nicht gelb, nicht über der Figur; gilt bis zum nächsten eigenen Zug)
+  for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.6 + 0.15 * Math.sin(now / 420), R = s * 0.84;
+    g.save(); g.globalAlpha = pz; g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = Math.max(3, s * 0.07); g.beginPath(); gEllipse(g, x, y, R, R); g.stroke();
+    g.strokeStyle = `rgb(${BONE})`; g.lineWidth = Math.max(1.5, s * 0.03); g.setLineDash([s * 0.16, s * 0.07]); g.beginPath(); gEllipse(g, x, y, R, R); g.stroke(); g.setLineDash([]);
+    g.lineWidth = Math.max(2, s * 0.04); g.beginPath(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.moveTo(x + dx * R, y + dy * R * kk); g.lineTo(x + dx * s * 0.98, y + dy * s * 0.98 * kk); } g.stroke(); g.restore(); }
+  for (const q of G.mines || []) if (q.side === mySide || q.known === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
+    if (q.side !== mySide && UPI.s_tellermine) { const gg = ctx, pz = 0.8 + 0.2 * Math.sin(now / 300), yy = y + s * 0.2 * kAt(x, y); MARKQ.push(() => { gg.globalAlpha = pz; drawSym(gg, UPI.s_tellermine, x, yy, s * 0.2, `rgb(${BONE})`); gg.globalAlpha = 1; }); } }   // entdeckte Minen des Gegners (Punkt 15): Tellerminen-Zeichen über allem, sonst verdecken Figuren und Teile sie
   // Gaswolken
   for (const k of VIS.clouds) {
     const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v]; if (up && !up(x, y)) continue;
@@ -7537,14 +7558,15 @@ function drawAir(g, s, up) {
   }
   g.globalAlpha = 1;
   // Pfadvorschau (Paket 2): kleine halbdurchsichtige Punkte Feld für Feld bis zum Zielfeld; Gefahr (Draht, Gas, Feuer, MG-Sperrfeuer) rot mit Warnzeichen
-  { const n = sel && human(G.side) && !busy && hoverHex && reach.get(E.key(hoverHex[0], hoverHex[1]));
+  { const hk = hoverHex && E.key(hoverHex[0], hoverHex[1]), rushV = sel && human(G.side) && !busy && hk != null && abilMode && feldArt === 'abil' && TYPES[sel.type].abil === 'rush' && abilSet.has(hk) && E.rushPath(G, sel, hoverHex[0], hoverHex[1]);   // Punkt 8: Wegvorschau auch für den Sturmlauf (Warndreieck bei Mine, Draht, Gas …)
+    const n = rushV ? { path: rushV, rest: null } : sel && human(G.side) && !busy && hoverHex && reach.get(hk);
     if (n && n.path && n.path.length) { const pts = [[sel.c, sel.r], ...n.path]; let warnAt = null;
       for (let i = 1; i < pts.length; i++) { const [c0, r0] = pts[i - 1], [c1, r1] = pts[i], [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1), hz = pathHazard(sel, c1, r1);
         if (hz && !warnAt) warnAt = [x1, y1, hz];
         for (const k of i === pts.length - 1 ? [0.5] : [0.5, 1]) { const x = x0 + (x1 - x0) * k, y = y0 + (y1 - y0) * k; if (up && !up(x, y)) continue;
           g.beginPath(); g.arc(x, y, Math.max(3, s * (k === 1 ? 0.075 : 0.055)), 0, 7); g.fillStyle = hz && k === 1 || hz && i === pts.length - 1 ? 'rgba(200,52,40,0.72)' : 'rgba(240,237,225,0.55)'; g.fill();
           g.lineWidth = Math.max(1, s * 0.018); g.strokeStyle = 'rgba(18,13,11,0.55)'; g.stroke(); } }
-      { const [c1, r1] = pts[pts.length - 1], [x, y] = center(c1, r1); if (!up || up(x, y)) {   // Rest-BP am Zielfeld (Fahrplan 2)
+      if (n.rest != null) { const [c1, r1] = pts[pts.length - 1], [x, y] = center(c1, r1); if (!up || up(x, y)) {   // Rest-BP am Zielfeld (Fahrplan 2)
           const t = String(n.rest), R = Math.max(10, s * 0.19), yy = y + s * 0.05; g.beginPath(); g.arc(x, yy, R, 0, 7); g.fillStyle = n.march ? 'rgba(226,176,74,0.92)' : 'rgba(232,221,184,0.92)'; g.fill();
           g.lineWidth = Math.max(2, s * 0.035); g.strokeStyle = '#120D0B'; g.stroke(); g.font = `400 ${Math.round(R * 1.25)}px "Arm Ziffer", "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#120D0B'; g.fillText(t, x, yy + R * 0.06); } }
       if (warnAt) { const [x, y, hz] = warnAt, ty = y - s * 0.55; if (!up || up(x, ty)) { const r = Math.max(9, s * 0.17);   // Warndreieck
@@ -7573,6 +7595,7 @@ function fbTxt(u) { const f = u ? E.freeBlows(G, u) : []; return f.length ? ` ·
 // Gefahr auf einem Wegfeld für die Pfadvorschau: 'draht' | 'gas' | 'feuer' | 'mg' oder null
 function pathHazard(u, c, r) {
   const T = TYPES[u.type], h = G.map[c] && G.map[c][r]; if (!h) return null;
+  if ((G.mines || []).some(q => q.c === c && q.r === r && q.side !== u.side && q.known === u.side)) return 'mine';   // Punkt 8: bekannte Mine des Gegners (Ziehen und Sturmlauf)
   if (h.t === 'wire' && T.cls !== 'walker' && !E.wireProof(T)) return 'draht';
   if ((VIS.clouds || []).some(k => k.c === c && k.r === r) && !E.gasSafe(G, u)) return 'gas';
   if ((VIS.fires || []).some(k => k.c === c && k.r === r)) return 'feuer';
@@ -8961,7 +8984,7 @@ async function playEvent0(e) {
       if (e.face != null && !e.reaction) a.face = e.face; else a.face = x2 >= x1 ? 0 : 3;
       { const au0 = unitById(e.a); if ((e.kind === 'rifle' || (au0 && TYPES[au0.type].dauerfeuer) || poseHat(au0, 'anlegen')) && au0 && pose(e.a, e.zweit && poseHat(au0, 'zweit') ? 'zweit' : poseSchiessen(au0), 1100)) { await raf(); await raf(); } }   // Posenwechsel: anlegen bzw. kniend, Rückstoß je Schuss
       if (e.reaction) { if (!szene && camOn() && !inView(x1, y1)) await camTo(x1, y1, 260); kz(e.a, TYPES[(unitById(e.a) || {}).type || 'kohorte'].mg ? 'garbe' : 'auge', 'steig'); await wait(220); }   // erst kurz zum Schützen
-      if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320);   // Schütze und Ziel ins Bild
+      if (!szene && camOn() && !(inView(x1, y1, 0.08) && inView(x2, y2, 0.08))) { camFern(); await camTo((x1 + x2) / 2, (y1 + y2) / 2, 320); }   // Schütze und Ziel ins Bild
       if (e.kind === 'flame') {   // F75 (2026-11-21): EIN längerer Feuerstoß je Trupp (gemeinsam, ca. 1,5 s; Zweitwaffe Flammenstoß 1,1 s) – Ton startet mit dem Strahl, hält so lange wie er sichtbar ist und klingt mit ihm aus, danach kurzes Nachbrennen
         const p = fxMuzzle(e.a, 0, 0.42) || [x1, y1], du = unitById(e.d), deck = du && E.coverOf(G, du).tier >= 2;   // Ziel in Deckung: Strahl prallt ab (Variante 4)
         const dr = fxDir(p[0], p[1], x2, y2, 1.2), len = Math.hypot(x2 - p[0], y2 - p[1]) * 1.08, dauer = (e.zweit ? 1100 : 1500) / Math.min(speed, 2), takt = 160 / Math.min(speed, 2);
@@ -9043,7 +9066,7 @@ async function playEvent0(e) {
         const [cx, cy] = center(...cells[order[q % order.length]]);
         shells.push({ fxi: mob ? 1 : 0, x1, y1, x2: cx, y2: cy, t: 0, dur, col: '#2a2a26', img: mob ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4 });
       }, t / speed));
-      if (camOn() && !inView(x2, y2, 0.12)) setTimeout(() => camTo(x2, y2, dur * 16.667 * 0.8), 200 / speed);
+      if (camOn() && !inView(x2, y2, 0.12)) { camFern(); setTimeout(() => camTo(x2, y2, dur * 16.667 * 0.8), 200 / speed); }
       await wait(shots[0] + dur * 16.667);
       // Einschläge versetzt über alle Zielfelder (Zielfeld zuerst), jeder mit eigenem Knall
       const imp = order.map((ci, i) => [cells[ci], i < n ? shots[i] : shots[n - 1] + (i - n + 1) * (140 + Math.random() * 120)]);
@@ -9065,7 +9088,7 @@ async function playEvent0(e) {
       else if (e.strike) {} else if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = flach ? 12 : 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn; Feldkanone: schnelles Geschoss
       shells.push({ fxi: e.mode === 'gas' ? 5 : TYPES[ua.type].mobile && !e.strike ? 1 : 0, x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4, ...(flach ? { arc: 0.15, fxs: 0.8 } : {}) });
-      if (camOn() && !inView(x2, y2, 0.12)) camTo(x2, y2, dur * 16.667 * 0.8);
+      if (camOn() && !inView(x2, y2, 0.12)) { camFern(); camTo(x2, y2, dur * 16.667 * 0.8); }
       await wait(dur * 16.667);
       lastFire = { kind: e.mode === 'gas' ? 'gas' : 'shell', t: performance.now(), a: e.a };   // F64: Einschlag-Ton beim folgenden Treffer
       shake(e.mode === 'barrage' ? 7 : 5);   // Einschlag: kurzes Bildwackeln
@@ -9301,7 +9324,7 @@ async function playEvent0(e) {
     case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
       const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]); pose(e.u, 'faust', 1600);   // Schreiter-Posen: beide Kanonen feuern
-      if (camOn() || OPT.cam) { await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
+      if (camOn() || OPT.cam) { camFern(); await camTo(a.x, a.y - L.s * 0.4, 520, true); await wait(260); }
       floater(a.x, a.y - L.s * 1.3, 'Faustsalve!', '#ffb04a', true); await wait(180);
       const mx = zs.reduce((n, z) => n + z[1], 0) / Math.max(1, zs.length); a.face = mx >= a.x ? 0 : 3;
       zs.forEach(([id, x2, y2], i) => { const p = fxFaust(e.u, i) || [a.x, a.y - L.s * 0.5]; fxZielFuss = (DU.get(id) ? [DU.get(id).x, DU.get(id).y] : null);
@@ -9404,7 +9427,7 @@ async function playEvent0(e) {
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
       visSync('marks'); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
-      rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
+      rings.push({ x, y, r: 1.2, col: 'rgb(' + BONE + ')', life: 40, max: 40 }); await wait(300); break; }
     case 'march': marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)
     case 'retreatmove': kz(e.u, 'zurueck', 'steig'); break;   // F40
     case 'freeblow': { const a = DU.get(e.a), d = DU.get(e.u); if (!a || !d) break; const fl = d.x < a.x; a.face = d.x >= a.x ? 0 : 3;   // Freischlag: kurzer Nahkampf-Effekt am Weichenden
@@ -9762,6 +9785,7 @@ let handelnd = null;   // F57: Einheit der laufenden Handlung
 async function act(fn) {
   if (busy || !sel || !G || G.over) return;   // nur mit gewählter Einheit und nie während einer laufenden Handlung (sonst zwei Handlungen gleichzeitig)
   busy = true; const u = sel; handelnd = u.id;
+  camRueck = human(G.side) && OPT.camZurueck !== false ? { x: CAM.x, y: CAM.y, fern: false, t: performance.now() } : null;   // Punkt 24: Kamera vor der Handlung merken
   try {
     previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
     await play(fn(u) || []);
@@ -9769,7 +9793,7 @@ async function act(fn) {
   finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
     busy = false;
     sel = (u && E.active(u) && hasAction(u)) ? u : null;   // F93 (2026-11-22): bleibt gewählt, solange sie noch etwas kann (zweite Waffe, Ziehen, Fähigkeit …) – dieselbe Prüfung wie „fertig/grau“ (F88)
-    computeOptions(); updateUI();
+    computeOptions(); updateUI(); camZurueckFahren();
   }
 }
 const doMove = (c, r) => { const n = reach.get(E.key(c, r)), via = wayPt; wayPt = null; return act(u => via && n && n.via ? E.moveUnit(G, u, c, r, n) : E.moveUnit(G, u, c, r)); };   // mit Wegpunkt: genau der gezeigte Weg
@@ -10305,7 +10329,7 @@ function unitButtons(T, hints) {
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', on: hilfeAn('heal'), cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
-  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', on: hilfeAn('send'), cost: 1, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte.`, off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
+  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', on: hilfeAn('send'), cost: 1, cd: sel.cdM, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte. Danach ${P.MELDER_CD} Runden Pause.`, off: !sendSet.size, why: sel.cdM > 0 ? 'Der Meldegänger ist noch unterwegs.' : 'Keine Einheit in Reichweite.' });
   if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', on: hilfeAn('rec'), cost: 1, cd: sel.cdB, text: 'Koloss bzw. Maschine mit Schraubenschlüssel anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
   if (!sel.supp && !sel.broken) {
     const dk = E.drehKosten(sel), dt = T.cls === 'walker' ? `Fahrzeuge und Schreiter: Drehen auf der Stelle kostet ${P.DREH_BP} Bewegungspunkt je 60°. Die Hauptwaffe schießt nur nach vorn (±${P.FZ_FAN}°).` : 'Blickrichtung ändern. Drehen kostet nichts.';
@@ -10934,7 +10958,7 @@ $('btnZoom').onclick = () => {   // Stufen: ganze Karte → 1× → 1,3× → 1,
   const bc = board.getBoundingClientRect(); setZoom(nz, bc.left + bc.width / 2, bc.top + bc.height / 2, nz <= ZFIT + 0.001, true);
 };
 // Hilfen (Optionen): sofort wirksam, im Browser gemerkt
-const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake']];   // „Neue Ansicht (Test)“ entfernt: immer neue Ansicht
+const OPT_IDS = [['optReady', 'ready'], ['optStrag', 'strag'], ['optCam', 'cam'], ['optShake', 'shake'], ['optCamZ', 'camZurueck']];   // „Neue Ansicht (Test)“ entfernt: immer neue Ansicht
 for (const [id, k] of OPT_IDS) $(id).checked = OPT[k];
 for (const [id, k] of OPT_IDS) $(id).addEventListener('change', () => { OPT[k] = $(id).checked; try { localStorage.setItem('arm.hilfen', JSON.stringify(OPT)); } catch (e) {}
   });
@@ -11000,6 +11024,15 @@ function userCam() { camAnim = null; if (G && busy && !human(G.side)) camHold = 
 function inView(x, y, m = 0.18) {
   camSetup(); const p = proj(x, y), W = cv.width, H = cv.height; return p[2] > 0 && p[0] >= W * m && p[0] <= W * (1 - m) && p[1] >= H * m && p[1] <= H * (1 - m);
 }
+// Punkt 24 (Enrico 2026-11-23): nach einem Fernschuss im eigenen Zug fährt die Kamera nach 0,5 s weich dorthin zurück, wo sie vor der Handlung stand; Klick, Scrollen, Ziehen oder eine Taste bricht ab (Optionen: optCamZ)
+let camRueck = null, camEingriff = 0;
+function camFern() { if (camRueck) camRueck.fern = true; }
+['pointerdown', 'wheel', 'keydown'].forEach(t => addEventListener(t, () => { camEingriff = performance.now(); }, { capture: true, passive: true }));
+async function camZurueckFahren() { const r = camRueck; camRueck = null; if (!r || !r.fern || !G || !human(G.side) || camEingriff > r.t) return;
+  const t0 = performance.now(); await wait(500); if (camEingriff > t0 || busy || camAnim || Math.hypot(CAM.x - r.x, CAM.y - r.y) < 4) return;
+  const x0 = CAM.x, y0 = CAM.y, dur = Math.max(380, Math.min(900, 380 + Math.hypot(r.x - x0, r.y - y0) * 0.35)), me = {}; camAnim = me; const st = performance.now();
+  const step = () => { if (camAnim !== me) return; if (camEingriff > t0) { camAnim = null; return; } const k = Math.min(1, (performance.now() - st) / dur), e = 0.5 - 0.5 * Math.cos(Math.PI * k);
+    CAM.x = x0 + (r.x - x0) * e; CAM.y = y0 + (r.y - y0) * e; camClamp(); if (k < 1) requestAnimationFrame(step); else camAnim = null; }; requestAnimationFrame(step); }
 function camTo(x, y, ms = 380, force) {   // weich zum Punkt (Canvas-Pixel) fahren; Promise endet bei Ankunft oder Abbruch
   return camToTilt(x, y, ms, force);
 }
