@@ -1,3 +1,48 @@
+## 2026-11-24 – Paket F, Teil 4 und Abschluss: Punkte 48, 17, 49 (`dceec61`, `d36fccf`)
+
+Gepusht, **index.html gebaut und eingecheckt – Paket F ist abgeschlossen.** Als Nächstes kommt der Bauplan für den großen Umbau (eigenes `pa`).
+
+### Punkt 48 – Antworten
+In `STIMMEN_FEHLEN.md` geändert: Aschenwacht beim Koloss „Panzer!“ statt „Stahl kommt!“, bei der Granate „Handgranate!“ statt „Wurf!“. Die übrigen Antworten (Maßstab noch offen, Klone zuerst im Code, Helden schrumpfen mit, 10 Grabenplätze, Stimmen klonen später) nehme ich in den Bauplan auf.
+
+### Punkt 17 – Schadenszahlen im Spielstil
+- **Neu:** Die Zahl über einer getroffenen Einheit trägt die Farbe der **getroffenen Seite**:
+  - **Konkordat:** Ochsenblut-Verlauf mit hellem Stempelrand, weil Rot auf dunklem Schlamm sonst untergeht (STYLE.md);
+  - **Aschenwacht:** Knochenweiß bis Feldgrau;
+  - **Blaue Legion:** Horizontblau.
+- **Gestaltung:**
+  - Schrift weiter „Arm Ziffer“;
+  - rauer Stempel-Look mit ausgestanzter Körnung und 2–3 Kratzern, für jede Zahl immer gleich;
+  - dicke dunkle Kontur und Schatten;
+  - kurzes Aufploppen;
+  - schwere Treffer (ab 30) etwas größer.
+- **Technik:** Jede Zahl wird einmal je Text, Seite und Größe vorgezeichnet (`SCHADEN_BILD`), das kostet beim Zeichnen nichts. Mit `window.SCHADEN_ALT = true` kommen die alten Farben nach Schadenshöhe zurück.
+- **Kritische Treffer** gibt es in den Regeln nicht. „Krit!“ (gold, neben der Zahl) ist nur vorbereitet und erscheint, sobald ein Treffer-Ereignis `krit: true` trägt.
+- **Bilder** in `entwurf/probe/schadenszahlen/`:
+  - `grauwall_1280.jpg`, `grauwall_2560.jpg` (Schlamm, dunkel);
+  - `winterdorf_1280.jpg`, `winterdorf_2560.jpg` (Schnee, hell);
+  - Übersicht mit Vergrößerung: `uebersicht.jpg`.
+  - Gezeigt werden je 2 Treffer auf Konkordat (−6, −34 mit „Krit!“) und Aschenwacht (−18, −42). Auf beiden Böden gut lesbar. Die Aschenwacht-Zahlen sind auf Schnee etwas weniger auffällig als die roten, aber klar lesbar.
+- Test-Hilfe: `__dbg.schaden(id, dmg, krit)`. Partietest: alles ok, Konsole rot-frei.
+
+### Punkt 49 – Maßstab-Probe E
+- Aufruf: `VARIANTEN=D,E1,E2 node tools/massstab_bilder.mjs grauwall winterdorf`. Das Spiel bleibt unverändert.
+- **E1:** Soldat 0,52, **E2:** Soldat 0,48 Feldradien. Beide mit Figurenzahl wie D (10 / Reiter 6 / Spezial 4), lockerer verteilt (Reihen weiter auseinander, Trupp nutzt die Feldbreite).
+- **Schrumpfen im selben Verhältnis mit:** MG-Trupps, Geschütze und Reiter (Pferde samt Reiter), außerdem Helden.
+- **Bleiben gleich:** Panzer und Schreiter.
+- **Bilder:**
+  - `entwurf/probe/massstab/vergleich_E_grauwall_nah.jpg` und `vergleich_E_winterdorf_nah.jpg`: D, E1, E2 nah, dazu E2 auf der ganzen Karte;
+  - einzeln: `grauwall_E1_nah.jpg`, `grauwall_E2_nah.jpg`, `winterdorf_E1_nah.jpg`, `winterdorf_E2_nah.jpg`.
+- **Beobachtung:**
+  - Mit kleinerem MG und Geschütz passt die Infanterie jetzt zusammen, und die Reihen wirken weniger gedrängt.
+  - **Panzer und vor allem der Kreuzschreiter wirken dadurch sehr groß.** Der Schreiter ist fast so hoch wie zwei Felder voller Soldaten. Wenn das zu viel ist, könnten beide um etwa 10–15 % mitschrumpfen. Das ist noch nicht gezeigt.
+- **Leistung:** D, E1 und E2 gleich (Median 5,6–6,1 ms je Bild, 95 % unter 10 ms).
+
+### Fragen an Enrico
+- Gefällt E1 (0,52) oder E2 (0,48) besser – oder keine von beiden?
+- Sollen Panzer und Schreiter bei E etwas mitschrumpfen (z. B. ×0,9)? In E wirken sie sehr groß.
+- Passen die Schadenszahlen so? Besonders die Aschenwacht-Zahlen auf Schnee: so lassen oder kräftiger machen?
+
 ## 2026-11-24 – Paket F, Teil 2 und 3: Sprachbefehle, Brainstorm, Probebild Maßstab (`5e57aba`, `13a006f`, `09581a5`)
 
 Gepusht. **Paket F ist noch nicht fertig:** Punkt 17 (Schadenszahlen) fehlt noch. index.html wird erst am Ende des Pakets eingecheckt. Ich habe nach Sparregel 5 hier aufgehört.
