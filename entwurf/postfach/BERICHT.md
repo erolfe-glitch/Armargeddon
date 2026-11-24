@@ -1,3 +1,20 @@
+## 2026-11-24 – Paket A3: Chroniken-Texte statt „Im echten Krieg“ (Punkt 28) (`639f648`)
+
+Gepusht. Tests: `test_regeln` in Ordnung (54 Einheiten), `test_kommentare` sauber. Keine Regeländerung, keine Simulation.
+
+- **Alle 54 Einheiten** haben jetzt den Chroniken-Text aus `entwurf/welt/weltbibel.md`: in TYPES ersetzt `chronik: { quelle, text }` das alte Feld `real` (Weltkriegsfakten sind aus den Einheiten raus). Kein Typ ohne Text, kein Text ohne Typ, keiner länger als 280 Zeichen.
+- **Anzeige „Aus den Chroniken“**, darunter die Quellenzeile klein und kursiv, dann der Text: im Info-Fenster, in der ausführlichen Einheitenkarte und in den Nachschub- und Armee-Details (eine gemeinsame Funktion `chronikHtml` in ui.js).
+- **Blaue Legion:** dieselben Einheiten wie das Konkordat, damit automatisch dieselben Texte.
+- `test_regeln` verlangt jetzt Quelle und Text (höchstens 280 Zeichen) und meldet, falls irgendwo noch ein alter `real`-Text steht.
+- **CLAUDE.md:** Projektziel (Grabenkrieg-Stil, eigene Welt, Weltbibel) und Textregel wie vorgegeben umgestellt.
+- Weltbibel mit eingecheckt (die Texte im Spiel stammen daraus).
+- **Bilder** (1920 px): `entwurf/probe/chronik/info_oger_1920.jpg`, `entwurf/probe/chronik/info_knecht_1920.jpg` (neu erzeugbar mit `node tools/chronik_bilder.mjs [typ …]`). Für die Aufnahme wurde eine vorhandene Einheit kurz zum Oger bzw. Eisenknecht umgebaut. Der Block „Anführer“ im Eisenknecht-Bild kommt daher, die Einheit war vorher ein Hauptmann. Im echten Spiel steht er dort nicht.
+
+### Fragen an Enrico
+- **Gelände-Texte:** Die Geländearten (Trichter, Graben, Draht, Wald, Kirche, Friedhof …, 17 Stück) haben noch Weltkriegsfakten (Passchendaele, Somme, Reims …). Sie erscheinen im Feld-Tooltip als „Im echten Krieg“. Soll der Berater auch dafür Chroniken-Texte schreiben (gleiche Form: Quelle + 1–2 Sätze), oder sollen die Gelände-Texte einfach weg?
+
+---
+
 ## 2026-11-24 – Paket A2: Ton-Pult „Eigenes Paket“ (Punkt 25) + Export 23.11. 22:17
 
 Gepusht (`a90a934`). Tests: `tonpult_test` 92/92 (darin 10 neue Prüfungen zum eigenen Paket), `test_tonpult3_spiel` 17/17 (3 neue), `test_kommentare` sauber. Keine Regeländerung, keine Simulation, kein Ton-Spur-Volllauf (Sparregel).
