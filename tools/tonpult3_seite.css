@@ -68,3 +68,9 @@
 @media (max-width: 1500px) { .e3gitter { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); } .e3k img, .e3k i { width: 60px; height: 60px; } .e3jetzt { grid-template-columns: 64px minmax(0, 1fr); } .e3jetzt .jk { grid-column: 1 / -1; flex-direction: row; } .e3jetzt .jk > * { flex: 1; } }
 .e3roll { overflow-x: hidden; } .e3s .tabs button { min-width: 0; padding: 6px 4px; } .e3kopf > div { min-width: 0; } .e3kopf b { overflow-wrap: anywhere; line-height: 1.15; }
 @media (max-width: 1500px) { #vEinfach { grid-template-columns: minmax(270px, 22fr) minmax(280px, 24fr) minmax(0, 54fr); gap: 8px; padding: 8px; } .e3s .tabs button { font-size: 14px; } .e3chips .chip { min-height: 40px; font-size: 13px; padding: 2px 9px; } .e3kopf b { font-size: 18px; } .e3t { font-size: 19px; margin-bottom: 6px; } }
+
+/* Eigenes Paket (Punkt 25, 2026-11-24) */
+.pk3 { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 10px; border: 1px solid #5a4836; border-radius: 4px; color: var(--dim); font-size: 14px; cursor: pointer; white-space: nowrap; }
+.pk3 input { width: 22px; height: 22px; margin: 0; accent-color: #c9a24a; cursor: pointer; } .pk3.an { color: #e6d3a3; border-color: #c9a24a; background: rgba(201, 162, 74, 0.12); }
+.e3pk { border: 2px solid #c9a24a; border-radius: 8px; padding: 4px 8px; background: rgba(201, 162, 74, 0.06); } .e3pk .e3g { width: 100%; text-align: left; }
+.e3pkneu { display: flex; align-items: center; gap: 8px; } .e3pkneu button { min-height: 44px; } .e3pkneu small { color: var(--dim); }

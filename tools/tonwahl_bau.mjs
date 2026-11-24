@@ -1,4 +1,4 @@
-// F91 (2026-11-22): Ton-Pult-Wahl ins Spiel übernehmen.
+// F91 (2026-11-22): Ton-Pult-Wahl ins Spiel übernehmen. Wahltypen: p:Platz | k:Schlüssel | pk:[Schlüssel, …] (eigenes Paket) | - (still).
 // Liest alle Exporte entwurf/postfach/tonpult*.json, führt sie nach Exportzeit zusammen (der neuere hat Vorrang, Schlüssel Einheit + Pult-Zeile),
 // löst die Pult-Zeile über die aktuelle Zuordnung in tonpult.html auf den Tonplatz auf, den das Spiel dort wirklich spielt (M8),
 // und schreibt die Tabelle TONWAHL in src/ui.js zwischen die Marken „TONWAHL-ANFANG“ und „TONWAHL-ENDE“.
@@ -39,11 +39,14 @@ for (const [k, e] of wahl) {
   const w = { };
   if (e.wahl === '-') w.aus = 1;
   else if (e.wahl.startsWith('k:')) { const key = e.wahl.slice(2); if (!alleKeys.has(key)) { bericht.push(`${k}: Ton ${key} fehlt – ausgelassen`); continue; } w.k = key; }
+  else if (e.wahl.startsWith('pk:')) { let l = []; try { l = JSON.parse(e.wahl.slice(3)); } catch (x) {} if (!Array.isArray(l)) l = [];   // eigenes Paket (Punkt 25, 2026-11-24): pk:["schlüssel", …], im Spiel klingt zufällig einer
+    const da = [...new Set(l)].filter(x => alleKeys.has(x) && !(ruf && MISCHTON[x])); if (da.length < l.length) bericht.push(`${k}: eigenes Paket – ${l.length - da.length} von ${l.length} Tönen fehlen oder sind Mischtöne in einer Ruf-Zeile – ausgelassen`);
+    if (!da.length) { bericht.push(`${k}: eigenes Paket leer – ausgelassen`); continue; } if (da.length === 1) w.k = da[0]; else w.pk = da; }
   else if (e.wahl.startsWith('p:')) { const p = e.wahl.slice(2); if (!D.pools[p] && !SNDVAR.has(p)) { bericht.push(`${k}: Platz ${p} fehlt – ausgelassen`); continue; } if (p !== (zeile ? zeile.platz : platz)) w.p = p; }
   const vf = volSpiel ? +(e.lautstaerke / volSpiel).toFixed(3) : 1; if (Math.abs(vf - 1) > 0.01) w.vf = vf;
   if (e.tonhoehe && Math.abs(e.tonhoehe - 1) > 0.005) w.rate = e.tonhoehe;
   if (ruf && w.k && MISCHTON[w.k]) { bericht.push(`${k}: Mischton in einer Ruf-Zeile kann das Spiel nicht mischen – ausgelassen`); continue; }
-  if (ruf) { if (!w.k && !w.aus && zeile.platz === '-' && !w.p) { bericht.push(k + ': Ruf ohne Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || zeile.filt || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : zeile.fst != null ? zeile.fst : 0.6; }   // Rufe mit Standard-Platz: Filter auch ohne eigenen Ton übernehmen
+  if (ruf) { if (!w.k && !w.pk && !w.aus && zeile.platz === '-' && !w.p) { bericht.push(k + ': Ruf ohne Ton – ausgelassen'); continue; } w.filt = e.filter_stimme || zeile.filt || 'maske'; w.fst = e.filter_staerke != null ? e.filter_staerke : zeile.fst != null ? zeile.fst : 0.6; }   // Rufe mit Standard-Platz: Filter auch ohne eigenen Ton übernehmen
   if (!Object.keys(w).length) continue;
   if (zeile && !ruf) w.r = ['treffer', 'tod'].includes(zeile.ab) ? 'z' : 'a';   // Täter oder Getroffener (tonKontext, Ton-Bericht Punkt 2)
   const te = tab[e.einheit] = tab[e.einheit] || {}, vor = te[platz];   // derselbe Platz in einer Handeln- und einer Getroffen-Zeile: zweite Wahl unter '<platz>#z' (ui.js tonWahl)

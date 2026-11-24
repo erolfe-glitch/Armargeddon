@@ -88,7 +88,7 @@ function setzeRoh(u, s, feld, x) {
 function setze(u, s, feld, x) { merke(u.name + ': ' + s.titel, [{ u, s }], u.t + '|' + s.id + '|' + feld); setzeRoh(u, s, feld, x); speichern(); undoKnopf(); }
 const geaendert = (u, s) => !!((AEND[u.t] || {})[s.id]);
 const zahlGeaendert = u => Object.keys(AEND[u.t] || {}).length;
-const wahlKand = (u, s) => { const w = wert(u, s).w; return w === '-' ? [] : w.startsWith('k:') ? [{ k: w.slice(2), sd: null }] : kandidaten(w.slice(2), s.sd, s.v); };
+const wahlKand = (u, s) => { const w = wert(u, s).w; return w === '-' ? [] : istPk(w) ? pkKeys(w).map(k => ({ k, sd: null })) : w.startsWith('k:') ? [{ k: w.slice(2), sd: null }] : kandidaten(w.slice(2), s.sd, s.v); };
 
 // ---- Abspielen ----
 const nach = (ms, f) => { const id = setTimeout(f, ms); zeiten.push(id); };
@@ -156,6 +156,7 @@ function optionen(u, s) {
 function tonText(u, s) {
   const w = wert(u, s).w;
   if (w === '-') return 'kein Ton';
+  if (istPk(w)) { const l = pkKeys(w); return `<b>Eigenes Paket</b> · Zufall aus ${l.length}: ${esc(l.slice(0, 5).join(', '))}${l.length > 5 ? ' …' : ''}`; }
   if (w.startsWith('k:')) return `<b>${esc(tonName(w.slice(2)))}</b> · ${esc(w.slice(2))} · ${esc(datei(w.slice(2)))}`;
   const l = kandidaten(w.slice(2), s.sd, s.v), p = w.slice(2);
   if (l.length === 1) return `<b>${esc(platzName(p))}</b> · ${esc(l[0].k)} · ${esc(datei(l[0].k))}`;
@@ -183,7 +184,7 @@ function zeile(u, s) {
   const info = h('div', {}, h('div', { cls: 'ti' }, s.titel, tag), h('div', { cls: 'ton', html: tonText(u, s) }), h('div', { cls: 'ton zul' }));
   const sel_ = h('select', { 'aria-label': 'Ton für ' + s.titel });
   for (const [titel, list] of optionen(u, s)) { const g = h('optgroup', { label: titel }); for (const [v, l] of list) g.append(h('option', { value: v }, l)); sel_.append(g); }
-  sel_.value = w.w; if (sel_.value !== w.w) { sel_.append(h('option', { value: w.w }, wahlName(w.w) + ' · ' + w.w.slice(2) + ' (aus der Bibliothek)')); sel_.value = w.w; }
+  sel_.value = w.w; if (sel_.value !== w.w) { sel_.append(h('option', { value: w.w }, wahlName(w.w) + (istPk(w.w) ? '' : ' · ' + w.w.slice(2)) + ' (aus der Bibliothek)')); sel_.value = w.w; }
   const alleB = h('button', { cls: 'alle', title: 'Alle Töne des Spiels, nach Gehör sortiert, mit Suche und Favoriten', 'aria-label': 'Bibliothek für ' + s.titel, on: () => bibDialog([{ u, s }], u.name + ' · ' + s.titel, id => zuweisen([{ u, s }], id, s.titel)) }, 'Bibliothek …');
   sel_.onchange = () => { setze(u, s, 'w', sel_.value); auffrischen(u, s, row); spielPlatz(u, s); };
   const vol = h('input', { type: 'range', min: 0, max: 100, step: 1, value: Math.round(w.vol * 100) }), volB = h('b', {}, Math.round(w.vol * 100));
@@ -226,15 +227,19 @@ function tonName(k) { if (MISCH[k]) return MISCH[k].name + ' (Mischton)'; const 
 const BIBKAT = Object.fromEntries(D.bib.map(b => [b.id, b])), PLATZKAT = {};
 for (const b of D.bib) for (const [p] of b.e) if (!PLATZKAT[p]) PLATZKAT[p] = b.id;
 const katVonPlatz = p => !p || p === '-' ? null : PLATZKAT[basis(p)] || PLATZKAT[p + '1'] || (KEYPOOL[p] ? PLATZKAT[basis(KEYPOOL[p][0])] : null) || (D.sndvar[p] ? katVonPlatz(D.sndvar[p][0]) : null);
-const katVonWahl = w => !w || w === '-' ? null : w.startsWith('k:') ? (KEYPOOL[w.slice(2)] ? PLATZKAT[basis(KEYPOOL[w.slice(2)][0])] : PLATZKAT[w.slice(2)]) : katVonPlatz(w.slice(2));
+const katVonWahl = w => !w || w === '-' ? null : istPk(w) ? (pkKeys(w).length ? katVonWahl('k:' + pkKeys(w)[0]) : null) : w.startsWith('k:') ? (KEYPOOL[w.slice(2)] ? PLATZKAT[basis(KEYPOOL[w.slice(2)][0])] : PLATZKAT[w.slice(2)]) : katVonPlatz(w.slice(2));
 const platzKeys = p => D.pools[p] || [[p, null]];
 const platzSeite = p => { const l = platzKeys(p), m = /^sv_[a-z]+_([AD])/.exec(p); return m ? m[1] : l.every(x => x[1] && x[1] === l[0][1]) ? l[0][1] : null; };
-const zuweisbar = id => id.startsWith('p:') ? !!D.pools[id.slice(2)] : !!KEYPOOL[id.slice(2)] || !!MISCH[id.slice(2)] || D.dauer[id.slice(2)] != null;   // Einzeltöne außerhalb der Plätze kennt tonwahl_bau seit 2026-11-22 21:00   // nur was tools/tonwahl_bau.mjs kennt (echte Plätze und Töne darin)
+const zuweisbar = id => istPk(id) ? pkKeys(id).every(k => zuweisbar('k:' + k)) : id.startsWith('p:') ? !!D.pools[id.slice(2)] : !!KEYPOOL[id.slice(2)] || !!MISCH[id.slice(2)] || D.dauer[id.slice(2)] != null;   // Einzeltöne außerhalb der Plätze kennt tonwahl_bau seit 2026-11-22 21:00   // nur was tools/tonwahl_bau.mjs kennt (echte Plätze und Töne darin)
 function platzMeta(p) { const keys = platzKeys(p), sd = platzSeite(p), ds = keys.map(x => D.dauer[x[0]]).filter(x => x != null), mn = Math.min(...ds), mx = Math.max(...ds);
   return [keys.length > 1 ? `Zufall aus ${keys.length}` : '', sd ? 'nur ' + seiteTxt(sd) : '', ds.length ? (mx - mn < 0.05 ? sek(mn) : sek(mn) + ' – ' + sek(mx)) : '', esc(keys.length > 1 ? 'Platz ' + p : keys[0][0] + ' · ' + kurz(datei(keys[0][0])))].filter(Boolean).join(' · '); }
 const tonMeta = (k, sd) => [sd ? 'nur ' + seiteTxt(sd) : '', D.dauer[k] != null ? sek(D.dauer[k]) : '', esc(k), esc(kurz(datei(k)))].filter(Boolean).join(' · ');
-const wahlName = id => id == null ? 'wie im Spiel' : id === '-' ? 'kein Ton' : id.startsWith('k:') ? tonName(id.slice(2)) : platzName(id.slice(2));
-function tonKurz(u, s) { const w = wert(u, s).w; if (w === '-') return 'kein Ton'; if (w.startsWith('k:')) return tonName(w.slice(2)); const p = w.slice(2), n = kandidaten(p, s.sd, s.v).length; return platzName(p) + (n > 1 ? ' ×' + n : ''); }
+// Eigenes Paket (Punkt 25, 2026-11-24): Wahl 'pk:["schlüssel", …]' – beliebige Töne (auch aus verschiedenen Rubriken, auch eigene Mischtöne), im Spiel klingt zufällig einer
+const istPk = w => typeof w === 'string' && w.startsWith('pk:');
+const pkKeys = w => { try { const l = JSON.parse(w.slice(3)); return Array.isArray(l) ? l.filter(x => typeof x === 'string') : []; } catch (e) { return []; } };
+const pkId = l => 'pk:' + JSON.stringify([...new Set(l)]);
+const wahlName = id => id == null ? 'wie im Spiel' : id === '-' ? 'kein Ton' : istPk(id) ? 'Eigenes Paket · ' + pkKeys(id).length + ' Töne' : id.startsWith('k:') ? tonName(id.slice(2)) : platzName(id.slice(2));
+function tonKurz(u, s) { const w = wert(u, s).w; if (w === '-') return 'kein Ton'; if (istPk(w)) return wahlName(w); if (w.startsWith('k:')) return tonName(w.slice(2)); const p = w.slice(2), n = kandidaten(p, s.sd, s.v).length; return platzName(p) + (n > 1 ? ' ×' + n : ''); }
 
 // ---- Favoriten ----
 const SPEICHER_FAV = 'arm.tonpult.fav'; let FAV = new Set();
@@ -245,7 +250,8 @@ const favUm = id => { if (FAV.has(id)) FAV.delete(id); else FAV.add(id); try { l
 let NUTZ = null;
 function nutzIndex() { if (NUTZ) return NUTZ; const p = {}, k = {};
   for (const u of D.einheiten) for (const s of u.slots) { const w = wert(u, s).w; if (w === '-') continue;
-    if (w.startsWith('k:')) (k[w.slice(2)] = k[w.slice(2)] || []).push({ u, s });
+    if (istPk(w)) { for (const x of pkKeys(w)) (k[x] = k[x] || []).push({ u, s }); }
+    else if (w.startsWith('k:')) (k[w.slice(2)] = k[w.slice(2)] || []).push({ u, s });
     else { const pl = w.slice(2); for (const x of new Set([pl, ...(D.sndvar[pl] || [])])) (p[x] = p[x] || []).push({ u, s }); for (const c of kandidaten(pl, s.sd, s.v)) (k[c.k] = k[c.k] || []).push({ u, s }); } }
   return NUTZ = { p, k }; }
 const nutzListe = id => { const N = nutzIndex(); if (id.startsWith('k:')) return N.k[id.slice(2)] || []; const p = id.slice(2), out = [...(N.p[p] || [])]; if (!D.pools[p]) out.push(...(N.k[p] || [])); return out; };
@@ -519,9 +525,9 @@ function exportDaten() {
   for (const t of Object.keys(AEND)) { const u = U[t]; if (!u) continue;
     for (const id of Object.keys(AEND[t])) { const s = u.slots.find(x => x.id === id); if (!s) continue; const w = wert(u, s);
       aenderungen.push({ einheit: t, name: u.name, seite: u.sd, anlass: (D.ab.find(a => a[0] === s.ab) || [])[1], platz_id: id, titel: s.titel, platz_spiel: s.platz, filter: s.v || null,
-        wahl: w.w, schluessel: w.w.startsWith('k:') ? w.w.slice(2) : null, datei: w.w.startsWith('k:') ? datei(w.w.slice(2)) : null, platz_neu: w.w.startsWith('p:') && w.w.slice(2) !== s.platz ? w.w.slice(2) : null,
+        wahl: w.w, schluessel: w.w.startsWith('k:') ? w.w.slice(2) : null, ...(istPk(w.w) ? { paket: pkKeys(w.w) } : {}), datei: w.w.startsWith('k:') ? datei(w.w.slice(2)) : null, platz_neu: w.w.startsWith('p:') && w.w.slice(2) !== s.platz ? w.w.slice(2) : null,
         lautstaerke_spiel: s.vol, lautstaerke: +w.vol.toFixed(3), tonhoehe: +w.ton.toFixed(3), ...(s.mode === 'ruf' ? { filter_stimme: w.filt, filter_staerke: +w.fst.toFixed(2) } : {}) }); } }
-  return { werkzeug: 'Armargeddon Ton-Pult', stand_toene: D.stand, exportiert: new Date().toISOString(), hinweis: 'wahl: p:<Tonplatz> | k:<Tonschlüssel> | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate', aenderungen, roh: AEND, ...exportZusatz() };
+  return { werkzeug: 'Armargeddon Ton-Pult', stand_toene: D.stand, exportiert: new Date().toISOString(), hinweis: 'wahl: p:<Tonplatz> | k:<Tonschlüssel> | pk:[<Tonschlüssel>, …] (eigenes Paket, Zufall) | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate', aenderungen, roh: AEND, ...exportZusatz() };
 }
 const dlg = document.getElementById('dlg');
 function dialog(titel, text, wertTxt, knoepfe) {

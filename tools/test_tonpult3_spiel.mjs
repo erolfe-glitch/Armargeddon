@@ -60,6 +60,18 @@ try {
   pruef('Wahl einer Getroffen-Zeile gilt nicht für den Schuss derselben Einheit', r4.falscheRolle === 0);
   pruef('Pult-Wahl greift bei Tönen ohne playSound (Flammenschleife, Motor, Sperrfeuer-Abschuss)', r4.pick === r4.ziel, String(r4.pick));
   pruef('derselbe Platz in Handeln- und Getroffen-Zeile: die Getroffen-Wahl klingt, wenn die Einheit getroffen wird', r4.zweite === 1);
+  // 5. Eigenes Paket (Punkt 25, 2026-11-24): drei Töne aus zwei Rubriken (Einschläge, Treffer auf Stein), im Spiel abwechselnd, nie zweimal hintereinander derselbe
+  const r5 = JSON.parse(await ev(`(async () => { const S = __dbg.SND, P = window.SOUND_POOLS, T = __dbg.TONWAHL, u = { id: 99002, type: 'kohorte', side: 'A' }, alt = T.kohorte, folge = [];
+    const pk = [P.einschlagH[0][0], P.einschlagH[1][0], S.impact ? 'impact' : P.impact[0][0]];
+    for (const k of pk) { const o = S[k], c = o.cloneNode.bind(o); o.cloneNode = () => { folge.push(k); return c(); }; } __dbg.setSound(true);
+    T.kohorte = { rifle: { pk, r: 'a' } }; for (let i = 0; i < 40; i++) __dbg.playSound(__dbg.waffenTon('rifle', u), 0.2, 'A', { noGap: true });
+    const zweiMal = folge.filter((k, i) => i && k === folge[i - 1]).length; const n = folge.length, arten = [...new Set(folge)].length, vert = pk.map(k => folge.filter(x => x === k).length);
+    T.kohorte = { rifle: { pk: [pk[0], 'gibt_es_nicht'], r: 'a' } }; folge.length = 0; for (let i = 0; i < 5; i++) __dbg.playSound(__dbg.waffenTon('rifle', u), 0.2, 'A', { noGap: true });
+    const nurEchte = folge.every(k => k === pk[0]) && folge.length === 5;
+    if (alt) T.kohorte = alt; else delete T.kohorte; return JSON.stringify({ pk, n, arten, zweiMal, nurEchte, vert }); })()`));
+  pruef('eigenes Paket: alle drei Töne (zwei Rubriken) klingen abwechselnd', r5.arten === 3, 'Verteilung ' + r5.vert.join(' / ') + ' (' + r5.pk.join(', ') + ')');
+  pruef('eigenes Paket: nie zweimal hintereinander derselbe Ton', r5.zweiMal === 0, r5.zweiMal + '× doppelt');
+  pruef('eigenes Paket: fehlende Töne im Paket werden übergangen', r5.nurEchte);
   pruef('keine Fehler in der Konsole', fehler.length === 0, fehler.slice(0, 4).join(' | '));
 } finally { ws.close(); ch.kill(); }
 console.log(`\n${ok} Prüfungen bestanden, ${nicht} fehlgeschlagen.`); process.exit(nicht ? 1 : 0);

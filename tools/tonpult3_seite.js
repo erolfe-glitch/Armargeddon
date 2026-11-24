@@ -139,7 +139,7 @@ function waehle3(ziele, id, was) {   // Ton zuweisen heißt eingestellt (ein Sch
 function passtSo(ziele, text, weiter) { merke('Passt so: ' + text, ziele); setzeFertig(ziele, true); zusatzSpeichern(); if (weiter) e3Auto(true); zeichne(); }
 function wieImSpiel(ziele, text) { merke('Wie im Spiel: ' + text, ziele); for (const { u, s } of ziele) if (AEND[u.t]) { delete AEND[u.t][s.id]; if (!Object.keys(AEND[u.t]).length) delete AEND[u.t]; } setzeFertig(ziele, false); speichern(); zusatzSpeichern(); zeichne(); }
 function vorhoeren(id, z) { stoppAlles(); let k, vol = 0.6, ton = 1;
-  if (id.startsWith('k:')) k = id.slice(2); else { const p = id.slice(2), alle = platzKeys(p).map(x => ({ k: x[0] })), frei = alle.filter(c => !AUS_K.has(c.k)); k = zieh(vorhanden(z ? kandidaten(p, z.s.sd, z.s.v) : frei.length ? frei : alle)); }
+  if (istPk(id)) k = zieh(vorhanden(pkKeys(id).map(x => ({ k: x })))); else if (id.startsWith('k:')) k = id.slice(2); else { const p = id.slice(2), alle = platzKeys(p).map(x => ({ k: x[0] })), frei = alle.filter(c => !AUS_K.has(c.k)); k = zieh(vorhanden(z ? kandidaten(p, z.s.sd, z.s.v) : frei.length ? frei : alle)); }
   if (z) { const w = wert(z.u, z.s); vol = w.vol; ton = w.ton; } if (k) spiel(k, vol, ton); }
 
 function passend(u, s) {   // nur Töne, die zu diesem Moment passen: die Rubrik des Spiel-Tons (und des gewählten), die passende Unterrubrik aufgeklappt
@@ -148,7 +148,7 @@ function passend(u, s) {   // nur Töne, die zu diesem Moment passen: die Rubrik
     gruppen.push({ titel: 'Stimmen dieser Truppe', offen: true, items: ps.filter(p => p.startsWith('sv_' + satz + '_')).map(p => ({ id: 'p:' + p, kinder: D.pools[p] })) });
     gruppen.push({ titel: 'Stimmen anderer Truppen', offen: false, items: ps.filter(p => !p.startsWith('sv_' + satz + '_')).map(p => ({ id: 'p:' + p, kinder: D.pools[p] })) });
     return gruppen.filter(x => x.items.length); }
-  const heim = id => { if (!id || id === '-') return null; let x = id; if (id.startsWith('p:')) { const p = id.slice(2); x = D.pools[p] ? id : D.sndvar[p] && D.sndvar[p].length ? idVon(D.sndvar[p][0]) : 'k:' + p; } const r = rubrikVon(x); return r[0] === 'rest' ? null : r; };
+  const heim = id => { if (!id || id === '-') return null; if (istPk(id)) { const l = pkKeys(id); if (!l.length) return null; id = 'k:' + l[0]; } let x = id; if (id.startsWith('p:')) { const p = id.slice(2); x = D.pools[p] ? id : D.sndvar[p] && D.sndvar[p].length ? idVon(D.sndvar[p][0]) : 'k:' + p; } const r = rubrikVon(x); return r[0] === 'rest' ? null : r; };
   const h0 = heim(g) || [s.mode === 'ruf' ? 'stimmen' : AB_RUB[s.ab], s.mode === 'ruf' ? 'Stimmenpaket und Gefechtsrufe' : s.ab === 'tod' ? 'Schmerz, Panik, Sterben' : null], hw = heim(w);
   const seiteOk = it => it.id.startsWith('p:') ? kandidaten(it.id.slice(2), s.sd, s.v).length > 0 : !(s.mode === 'ruf' && MISCH[it.id.slice(2)]);   // Rufe laufen im Spiel über einen eigenen Weg: dort keine Mischtöne
   for (const rid of uniq3([h0[0], hw && hw[0]].filter(Boolean))) { const items = bibListe(rid).filter(it => !bibAus(it.id) && !/^p:sv_/.test(it.id) && seiteOk(it));
@@ -172,6 +172,9 @@ function tonReihe(id, o = {}) {
     rb.onclick = e => { e.stopPropagation(); const [r, u] = rubrikVon(id), sel_ = h('select', { 'aria-label': 'Rubrik für ' + name }); for (const [v, l] of RUB_WAHL) sel_.append(h('option', { value: v }, l));
       sel_.value = r + '|' + u; sel_.onclick = ev => ev.stopPropagation(); sel_.onchange = () => { merke('Umsortiert: ' + name, []); RUBRIK[id] = sel_.value; allesNeu3(); zusatzSpeichern(); o.rubrik(); meldung('„' + name + '“ steht jetzt unter ' + (RUB_WAHL.find(x => x[0] === sel_.value) || ['', ''])[1] + '.'); undoKnopf(); }; rb.replaceWith(sel_); sel_.focus(); };
     rechts.append(rb); }
+  if (o.paket) { const pk = o.paket.keys(id); if (pk.length) { const st = o.paket.stand(pk), cb = h('input', { type: 'checkbox', 'aria-label': 'Ins eigene Paket: ' + name }); cb.checked = st === 'ja'; cb.indeterminate = st === 'teil';
+      const lb = h('label', { cls: 'pk3' + (st !== 'nein' ? ' an' : ''), title: pk.length > 1 ? 'Alle ' + pk.length + ' Töne dieses Pakets in das eigene Paket dieser Stelle nehmen (bzw. wieder herausnehmen)' : 'Diesen Ton in das eigene Paket dieser Stelle nehmen (bzw. wieder herausnehmen) – im Spiel klingt zufällig einer der angekreuzten Töne' }, cb, st === 'ja' ? ' im Paket' : ' + ins Paket');
+      lb.onclick = e => e.stopPropagation(); cb.onchange = () => o.paket.um(pk); rechts.append(lb); } }
   if (o.wahl) rechts.append(h('button', { cls: 'gold', on: e => { e.stopPropagation(); o.wahl(id); } }, o.aktiv ? '✓ jetzt' : 'Wählen'));
   if (o.zurueck) rechts.append(h('button', { cls: 'gold', on: e => { e.stopPropagation(); zurueckholen(id); } }, '↩ Zurückholen'));
   else if (o.aus !== false) rechts.append(h('button', { cls: 'kl3 raus', title: 'Aussortieren: verschwindet aus allen Auswahllisten und liegt dann in der Abstellkammer (nichts wird gelöscht).', 'aria-label': 'Aussortieren: ' + name, on: e => { e.stopPropagation(); aussortieren(id); } }, '✕ aussortieren'));
@@ -179,7 +182,7 @@ function tonReihe(id, o = {}) {
   return row;
 }
 
-function jetztText(u, s) { const w = wert(u, s).w; if (w === '-') return ''; if (w.startsWith('k:')) { const k = w.slice(2); return MISCH[k] ? 'Mischton aus ' + MISCH[k].spuren.length + ' Spuren' : tonMeta(k, null); }
+function jetztText(u, s) { const w = wert(u, s).w; if (w === '-') return ''; if (istPk(w)) return 'im Spiel zufällig einer von ' + pkKeys(w).length + ' Tönen, nie zweimal hintereinander derselbe'; if (w.startsWith('k:')) { const k = w.slice(2); return MISCH[k] ? 'Mischton aus ' + MISCH[k].spuren.length + ' Spuren' : tonMeta(k, null); }
   const l = kandidaten(w.slice(2), s.sd, s.v); return l.length === 1 ? tonMeta(l[0].k, null) : 'im Spiel zufällig einer von ' + l.length + ' Tönen · Platz ' + esc(w.slice(2)); }
 function zeichneWer() {
   const el = el3('e3wer'), alt = el.querySelector('.e3roll'), y = alt ? alt.scrollTop : 0; el.innerHTML = '';
@@ -234,6 +237,20 @@ function zeichneWann() {
   if (u1 && u1.gemeinsam) for (const g of u1.gemeinsam) if (U[g]) roll.append(h('button', { cls: 'e3m gem', on: () => { e3Zeig = true; e3Wahl([g], false); } }, h('span', { cls: 'bi' }, '🗣️'), h('span', { cls: 'mt' }, h('b', {}, 'Rufe (gemeinsam)'), h('small', {}, U[g].name + ' – gilt für alle Einheiten dieser Gruppe')), h('span', { cls: 'st' }, '→')));
   el.append(roll); roll.scrollTop = y;
 }
+// ---------- Eigenes Paket (Punkt 25, 2026-11-24): beliebige Töne einer Stelle zusammenstellen, im Spiel klingt zufällig einer ----------
+function paketSetzen(ziele, liste, text) {   // gilt für alle gewählten Einheiten; leeres Paket = wieder wie im Spiel
+  merke(text, ziele); for (const { u, s } of ziele) setzeRoh(u, s, 'w', liste.length ? pkId(liste) : grund(s).w);
+  setzeFertig(ziele, !!liste.length); speichern(); zusatzSpeichern(); zeichne(); meldung(text + ' – „↶ Rückgängig“ nimmt es zurück.'); }
+function paketOpt(ziele, was) { const { u: u0, s } = ziele[0];
+  const basis = () => { const w = wert(u0, s).w; return istPk(w) ? pkKeys(w) : w.startsWith('k:') ? [w.slice(2)] : []; };   // Start: das eigene Paket bzw. der eine gewählte Ton; ein ganzes Werks-Paket übernimmt „Paket bearbeiten“
+  return { keys: id => (id.startsWith('k:') ? [id.slice(2)] : kandidaten(id.slice(2), s.sd, s.v).map(c => c.k)).filter(k => !AUS_K.has(k) && !(s.mode === 'ruf' && MISCH[k])),
+    stand: pk => { const w = wert(u0, s).w; if (!istPk(w)) return 'nein'; const l = pkKeys(w), n = pk.filter(k => l.includes(k)).length; return n === pk.length ? 'ja' : n ? 'teil' : 'nein'; },
+    um: pk => { let l = basis(); const drin = istPk(wert(u0, s).w) && pk.every(k => l.includes(k));
+      l = drin ? l.filter(k => !pk.includes(k)) : [...l, ...pk.filter(k => !l.includes(k))];
+      const ne = new Set(ziele.map(z => z.u.t)).size, nm = pk.length > 1 ? pk.length + ' Töne' : '„' + wahlName('k:' + pk[0]) + '“';
+      paketSetzen(ziele, l, (drin ? 'Aus dem Paket: ' : 'Ins Paket: ') + nm + ' → ' + (ne === 1 ? u0.name : ne + ' Einheiten') + ' · ' + was + ' (' + l.length + ' Töne)'); } }; }
+function paketBearbeiten(ziele, was) { const { u, s } = ziele[0], w = wert(u, s).w, l = w.startsWith('p:') ? kandidaten(w.slice(2), s.sd, s.v).map(c => c.k).filter(k => !AUS_K.has(k)) : w.startsWith('k:') ? [w.slice(2)] : [];
+  paketSetzen(ziele, l, 'Paket bearbeiten: ' + wahlName(w) + ' als eigenes Paket übernommen · ' + was + ' (' + l.length + ' Töne)'); }
 function zeichneTon() {
   const el = el3('e3ton'), alt = el.querySelector('.e3roll'), y = alt ? alt.scrollTop : 0, altSlot = el.dataset.slot; el.innerHTML = '';
   el.append(h('h2', { cls: 'e3t' }, h('span', { cls: 'nr' }, '3'), 'Welcher Ton?'));
@@ -249,6 +266,13 @@ function zeichneTon() {
     h('div', { cls: 'jk' }, fertig ? h('span', { cls: 'ok' }, '✓ eingestellt') : h('button', { cls: 'gold', id: 'e3passt', disabled: warn, on: () => passtSo(ziele, wer + ' · ' + was, true) }, '✓ Passt so'),
       fertig ? h('button', { id: 'e3weiter', on: () => { if (!e3Auto(true)) meldung('Alles eingestellt – ' + wer + ' ist fertig.'); zeichneEinfach(); } }, 'Weiter ▶') : null));
   roll.append(jetzt);
+  const z0 = { u: u0, s }, pkNow = istPk(w.w) ? pkKeys(w.w) : null, pkO = paketOpt(ziele, was);
+  if (pkNow) { const key = 'pk|' + el.dataset.slot, offen = !e3Offen.has('!' + key), box = h('div', { cls: 'e3pk' });
+    box.append(h('button', { cls: 'e3g', id: 'e3pkkopf', 'aria-expanded': offen ? 'true' : 'false', on: () => { if (e3Offen.has('!' + key)) e3Offen.delete('!' + key); else e3Offen.add('!' + key); zeichneTon(); } }, (offen ? '▾ ' : '▸ ') + 'Eigenes Paket · ' + pkNow.length + ' Töne', h('small', {}, ' – im Spiel zufällig einer davon; ✕ nimmt nur aus diesem Paket')));
+    if (offen) for (const k of pkNow) { const r = tonReihe('k:' + k, { kind: true, ziel: z0, aus: false }), tr = r.querySelector('.tr');
+      tr.append(h('button', { cls: 'kl3 raus pkx', 'aria-label': 'Aus dem Paket nehmen: ' + wahlName('k:' + k), title: 'Nur aus diesem Paket nehmen (nicht aussortieren)', on: e => { e.stopPropagation(); pkO.um([k]); } }, '✕ aus dem Paket')); box.append(r); }
+    roll.append(box); }
+  else if (w.w.startsWith('p:') && kandidaten(w.w.slice(2), s.sd, s.v).length > 1) roll.append(h('div', { cls: 'e3pkneu' }, h('button', { id: 'e3pkbearb', title: 'Alle Töne des jetzigen Pakets ankreuzen; danach einzelne abwählen oder aus anderen Rubriken dazunehmen', on: () => paketBearbeiten(ziele, was) }, '✎ Paket bearbeiten'), h('small', {}, ' oder unten bei einzelnen Tönen „+ ins Paket“ ankreuzen')));
   const reg = h('div', { cls: 'e3reg' });
   const regler = (name, feld, max, lies_, schreib) => { const v0 = lies_({ u: u0, s }), r = h('input', { type: 'range', min: feld === 'ton' ? 50 : 0, max, step: feld === 'ton' ? 1 : 5, value: Math.round(v0 * 100), 'aria-label': name }), b = h('b', {}, Math.round(v0 * 100) + ' %');
     r.oninput = () => { merke(`${name} ${r.value} % → ${wer} · ${was}`, ziele, 'e3|' + feld + '|' + s.id); for (const z of ziele) setzeRoh(z.u, z.s, feld, schreib(z, r.value / 100)); speichern(); b.textContent = r.value + ' %'; undoKnopf(); };
@@ -262,16 +286,15 @@ function zeichneTon() {
   roll.append(reg);
   if (s.hin) roll.append(h('p', { cls: 'hin' }, s.hin));
   roll.append(h('h3', { cls: 'e3h' }, 'Passende Töne', h('small', {}, ' – antippen = gewählt, ▶ = nur hören')));
-  const z0 = { u: u0, s };
   for (const gr of passend(u0, s)) { const key = 'g|' + gr.titel, offen = e3Offen.has(key) ? true : e3Offen.has('!' + key) ? false : gr.offen;
     roll.append(h('button', { cls: 'e3g', 'aria-expanded': offen ? 'true' : 'false', on: () => { e3Offen.delete(key); e3Offen.delete('!' + key); e3Offen.add(offen ? '!' + key : key); zeichneTon(); } }, (offen ? '▾ ' : '▸ ') + gr.titel, h('small', {}, ' ' + gr.items.length)));
     if (!offen) continue;
     for (const it of gr.items) { const kinder = (it.kinder || []).filter(([k]) => !AUS_K.has(k)), mehrere = it.id.startsWith('p:') && kinder.length > 1, auf_ = mehrere && (e3Offen.has(it.id) || (w.w.startsWith('k:') && kinder.some(([k]) => 'k:' + k === w.w)));
       const auf = mehrere ? h('button', { cls: 'kl3', 'aria-expanded': auf_ ? 'true' : 'false', title: 'Im Spiel klingt zufällig einer dieser Töne; hier lassen sie sich einzeln hören und wählen', on: e => { e.stopPropagation(); if (e3Offen.has(it.id)) e3Offen.delete(it.id); else e3Offen.add(it.id); zeichneTon(); } }, (auf_ ? '▾ ' : '▸ ') + kinder.length + ' Töne') : null;
-      roll.append(tonReihe(it.id, { aktiv: w.w === it.id, ziel: z0, auf, wahl: id => waehle3(ziele, id, was) }));
-      if (auf_) for (const [k] of kinder) roll.append(tonReihe('k:' + k, { kind: true, aktiv: w.w === 'k:' + k, ziel: z0, wahl: id => waehle3(ziele, id, was) })); }
+      roll.append(tonReihe(it.id, { aktiv: w.w === it.id, ziel: z0, auf, paket: pkO, wahl: id => waehle3(ziele, id, was) }));
+      if (auf_) for (const [k] of kinder) roll.append(tonReihe('k:' + k, { kind: true, aktiv: w.w === 'k:' + k, ziel: z0, paket: pkO, wahl: id => waehle3(ziele, id, was) })); }
   }
-  roll.append(h('button', { cls: 'e3alle', id: 'e3alle', on: () => bib3Dialog({ titel: 'Alle Töne ansehen – ' + wer + ' · ' + was, ziel: z0, aktiv: w.w, wahl: id => waehle3(ziele, id, was) }) }, '📚 Alle Töne ansehen …'));
+  roll.append(h('button', { cls: 'e3alle', id: 'e3alle', on: () => bib3Dialog({ titel: 'Alle Töne ansehen – ' + wer + ' · ' + was, ziel: z0, aktiv: w.w, paket: pkO, wahl: id => waehle3(ziele, id, was) }) }, '📚 Alle Töne ansehen …'));
   if (altSlot === el.dataset.slot) roll.scrollTop = y;
 }
 function zeichneEinfach() {
@@ -286,6 +309,7 @@ function bib3Bau(o = {}) {   // o: { ziel: {u, s} (Vorhören wie an dieser Stell
   const nav = h('div', { cls: 'bibnav' }), such = h('input', { type: 'search', placeholder: 'Suchen: Name, Schlüssel oder Datei …', 'aria-label': 'Töne suchen' }), hk = h('div', { cls: 'sg b3hk' }), lst = h('div', { cls: 'biblist b3list' });
   such.value = B3.suche;
   const frisch = () => { const y = lst.scrollTop; zeig(); lst.scrollTop = y; };
+  const pkFrisch = o.paket ? { keys: o.paket.keys, stand: o.paket.stand, um: pk => { o.paket.um(pk); frisch(); } } : null;   // Ankreuzen lässt den Dialog offen
   function zeig() {
     const q = B3.suche.trim().toLowerCase(); lst.innerHTML = ''; nav.innerHTML = ''; hk.innerHTML = ''; let n = 0;
     for (const rid of [...D.bib.map(b => b.id), 'misch']) { const anz = bibListe(rid).filter(it => !bibAus(it.id)).length; if (rid === 'misch' && !anz) continue;
@@ -301,8 +325,8 @@ function bib3Bau(o = {}) {   // o: { ziel: {u, s} (Vorhören wie an dieser Stell
         const mehrere = istP && keys.length > 1, offen = mehrere && (B3.offen.has(it.id) || (q && !pq));
         const auf = mehrere ? h('button', { cls: 'kl3', 'aria-expanded': offen ? 'true' : 'false', on: e => { e.stopPropagation(); if (B3.offen.has(it.id)) B3.offen.delete(it.id); else B3.offen.add(it.id); frisch(); } }, (offen ? '▾ ' : '▸ ') + keys.length + ' Töne') : null;
         const waehlbar = o.wahl && (!o.nurKeys || !mehrere);
-        lst.append(tonReihe(it.id, { ziel: o.ziel, auf, nutz: !o.nurKeys, aktiv: o.aktiv === it.id, rubrik: frisch, wahl: waehlbar ? id => o.wahl(o.nurKeys && id.startsWith('p:') ? 'k:' + keys[0] : id) : null }));
-        if (offen) for (const k of (q && !pq ? kt : keys)) lst.append(tonReihe('k:' + k, { kind: true, ziel: o.ziel, nutz: !o.nurKeys, aktiv: o.aktiv === 'k:' + k, rubrik: frisch, wahl: o.wahl })); } }
+        lst.append(tonReihe(it.id, { ziel: o.ziel, auf, nutz: !o.nurKeys, aktiv: o.aktiv === it.id, rubrik: frisch, paket: pkFrisch, wahl: waehlbar ? id => o.wahl(o.nurKeys && id.startsWith('p:') ? 'k:' + keys[0] : id) : null }));
+        if (offen) for (const k of (q && !pq ? kt : keys)) lst.append(tonReihe('k:' + k, { kind: true, ziel: o.ziel, nutz: !o.nurKeys, aktiv: o.aktiv === 'k:' + k, rubrik: frisch, paket: pkFrisch, wahl: o.wahl })); } }
     if (!n) lst.append(h('p', { cls: 'leer' }, 'Nichts gefunden.'));
   }
   such.oninput = () => { B3.suche = such.value; zeig(); }; lst.onscroll = () => { B3.roll = lst.scrollTop; };

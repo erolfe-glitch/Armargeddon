@@ -116,19 +116,49 @@ try {
   pruef('Mischton erscheint bei den passenden Tönen (Einschlag) und lässt sich zuweisen', hatMix && await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && /Test Einschlag/.test(document.querySelector('.e3jetzt').textContent)"));
   await bild3('12_mischton_zugewiesen.png');
 
+  console.log('Ton-Pult 3: Eigenes Paket (Punkt 25)');
+  const PK = JSON.parse(await ev(`JSON.stringify((() => { ansicht = 'einfach'; e3Wahl(['kohorte', 'grenadier'], true); E3.ab = 'zug'; E3.slot = 'ziehen'; zeichne();
+    const ent = slotsGemeinsam(werListe(), 'zug').get('ziehen'), kE = D.pools.einschlagH[0][0], kS = (D.pools.schritte || [])[0][0];
+    return { gemeinsam: ent ? ent.ziele.length : 0, kE, kS, rE: rubrikVon(idVon('einschlagH'))[0], rS: rubrikVon(idVon('schritte'))[0], rM: rubrikVon('k:${mk}')[0] }; })())`));
+  pruef('Mehrere wählen: Stelle „Ziehen“ gilt für beide Einheiten', PK.gemeinsam === 2, PK.gemeinsam + ' Einheiten');
+  const kreuz = async (sel, k) => ev(`(() => { const r = [...document.querySelectorAll('${sel} .t3')].find(r => r.dataset.id === 'k:${k}' || (r.dataset.id.startsWith('p:') && platzKeys(r.dataset.id.slice(2)).length === 1 && platzKeys(r.dataset.id.slice(2))[0][0] === '${k}')); if (!r) return 'Zeile fehlt'; const cb = r.querySelector('.pk3 input'); if (!cb) return 'kein Ankreuzfeld'; cb.click(); return 'ok'; })()`);
+  const such = async q => ev(`(() => { const i = document.querySelector('#bibDlg input[type=search]'); i.value = ${JSON.stringify(q)}; i.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
+  await ev("document.getElementById('e3alle').click()"); await sleep(150);
+  await such(mk); await sleep(100); const k1 = await kreuz('#bibDlg', mk);
+  await such(PK.kE); await sleep(100); const k2 = await kreuz('#bibDlg', PK.kE);
+  pruef('„Alle Töne ansehen“: Ankreuzen nimmt Töne ins Paket, das Fenster bleibt offen', k1 === 'ok' && k2 === 'ok' && await ev("!!document.getElementById('bibDlg')"), k1 + ' / ' + k2);
+  await bild3('14_eigenes_paket_alle_toene.png');
+  await ev("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); e3Offen.add('p:schritte'); zeichneTon()"); await sleep(120);
+  const k3 = await kreuz('#e3ton', PK.kS);
+  const pk3 = JSON.parse(await ev("JSON.stringify([AEND.kohorte.ziehen.w, AEND.grenadier.ziehen.w])"));
+  pruef('„Welcher Ton?“: Ankreuzen; Paket aus 3 Tönen dreier Rubriken (mit eigenem Mischton) für beide gewählten Einheiten', k3 === 'ok' && pk3[0] === pk3[1] && /^pk:/.test(pk3[0]) && JSON.parse(pk3[0].slice(3)).length === 3 && JSON.parse(pk3[0].slice(3)).includes(mk) && new Set([PK.rE, PK.rS, PK.rM]).size >= 2, pk3[0] + ' · Rubriken ' + [PK.rE, PK.rS, PK.rM].join(', '));
+  pruef('Anzeige „Eigenes Paket · 3 Töne“ mit ▶ und ✕ je Ton', await ev("/Eigenes Paket · 3 Töne/.test(document.getElementById('e3pkkopf').textContent) && document.querySelectorAll('#e3ton .e3pk .t3').length === 3 && document.querySelectorAll('#e3ton .e3pk .t3 .play').length === 3 && document.querySelectorAll('#e3ton .e3pk .pkx').length === 3 && /Eigenes Paket/.test(document.querySelector('.e3jetzt').textContent)"));
+  pruef('Ankreuzfelder sind fingergroß (mindestens 40 px)', await ev("[...document.querySelectorAll('#e3ton .pk3')].filter(l => l.offsetParent).every(l => l.offsetHeight >= 40)"));
+  await bild3('15_eigenes_paket.png');
+  const aus0 = await ev("AUS.toene.length"); await ev("document.querySelector('#e3ton .e3pk .pkx').click()"); await sleep(120);
+  pruef('✕ nimmt den Ton nur aus diesem Paket (nicht aussortiert)', await ev("JSON.parse(AEND.kohorte.ziehen.w.slice(3)).length === 2 && AEND.grenadier.ziehen.w === AEND.kohorte.ziehen.w && AUS.toene.length === " + aus0 + " && /· 2 Töne/.test(document.getElementById('e3pkkopf').textContent)"));
+  const PB = JSON.parse(await ev(`JSON.stringify((() => { const u = D.einheiten.find(u => !['kohorte', 'grenadier'].includes(u.t) && u.slots.some(s => s.id === 'ziehen' && !geaendert(u, s) && kandidaten(s.platz, s.sd, s.v).length > 2)); if (!u) return {}; const s = u.slots.find(s => s.id === 'ziehen');
+    e3Wahl([u.t], false); E3.ab = s.ab; E3.slot = 'ziehen'; zeichne(); const b = document.getElementById('e3pkbearb'); if (!b) return { t: u.t, knopf: false }; b.click(); const w = AEND[u.t].ziehen.w, n = kandidaten(s.platz, s.sd, s.v).filter(c => !AUS_K.has(c.k)).length;
+    const alle = [...document.querySelectorAll('#e3ton .t3')].filter(r => r.dataset.id === 'p:' + s.platz).every(r => r.querySelector('.pk3 input').checked); return { t: u.t, knopf: true, w, n, alle }; })())`));
+  pruef('„Paket bearbeiten“: vorhandenes Paket als Start, alle seine Töne angekreuzt', PB.knopf && /^pk:/.test(PB.w) && JSON.parse(PB.w.slice(3)).length === PB.n && PB.alle, (PB.t || '-') + ': ' + (PB.n || 0) + ' Töne übernommen');
+  await ev("document.getElementById('undo').click()"); await sleep(80);
+  pruef('„↶ Rückgängig“ nimmt „Paket bearbeiten“ zurück', await ev("!geaendert(U['" + PB.t + "'], U['" + PB.t + "'].slots.find(s => s.id === 'ziehen'))"));
+
   console.log('Ton-Pult 3: Export, Import, Einbau ins Spiel');
   await ev("aussortieren('k:" + k0 + "')"); await sleep(100);
   const exp3 = JSON.parse(await ev('JSON.stringify(exportDaten())'));
   pruef('Export: altes Format plus Abstellkammer, Rubriken, Mischtöne (Rezept), „passt so“', Array.isArray(exp3.aenderungen) && !!exp3.roh && exp3.pult3 === 1 && exp3.aussortiert.toene.includes('k:' + k0) && exp3.aussortiert.schluessel.includes(k0) && exp3.aussortiert.bereiche.includes('s:sv_inf_A2') && exp3.mischtoene.length === 1 && exp3.mischtoene[0].spuren.length === 2 && exp3.aenderungen.some(a => a.wahl === 'k:' + mk), exp3.aenderungen.length + ' Änderungen, ' + exp3.aussortiert.schluessel.length + ' aussortierte Schlüssel');
+  pruef('Export: eigenes Paket als Wahl pk:[…] mit Schlüsselliste', exp3.aenderungen.some(a => a.einheit === 'kohorte' && /^pk:\[/.test(a.wahl) && Array.isArray(a.paket) && a.paket.length === 2) && /pk:/.test(exp3.hinweis));
   writeFileSync(join(AUS3, 'export_test.json'), JSON.stringify(exp3, null, 1));
   await ev("(() => { for (const k of ['arm.tonpult', 'arm.tonpult.fertig', 'arm.tonpult.aus', 'arm.tonpult.rubrik', 'arm.tonpult.misch']) localStorage.removeItem(k); AEND = {}; zusatzSetzen(JSON.stringify({})); zeichne(); return Object.keys(MISCH).length + AUS.toene.length; })()");
   await ev("document.getElementById('import').click(); document.getElementById('dlgFeld').value = " + JSON.stringify(JSON.stringify(exp3)) + "; [...document.querySelectorAll('#dlgKnoepfe button')].find(b => b.textContent === 'Übernehmen').click(); true"); await sleep(250);
-  pruef('Import stellt alles wieder her (Wahl, Abstellkammer, Mischton)', await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && AUS.toene.includes('k:" + k0 + "') && AUS_K.has('" + k0 + "') && AUS.bereiche.includes('s:sv_inf_A2') && !!MISCH['" + mk + "'] && MISCH['" + mk + "'].spuren[1].ms === 250"));
+  pruef('Import stellt alles wieder her (Wahl, Abstellkammer, Mischton, eigenes Paket)', await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && /^pk:/.test(AEND.kohorte.ziehen.w) && AUS.toene.includes('k:" + k0 + "') && AUS_K.has('" + k0 + "') && AUS.bereiche.includes('s:sv_inf_A2') && !!MISCH['" + mk + "'] && MISCH['" + mk + "'].spuren[1].ms === 250"));
   if (process.env.OHNE_EINBAU) console.log('  (Einbau-Probe mit tonwahl_bau übersprungen: OHNE_EINBAU)'); else {
     const UI3 = join(ROOT, 'src', 'ui.js'), vor3 = readFileSync(UI3), TMP3 = join(ROOT, 'entwurf', 'postfach', 'tonpult_test_tonpult3.json');
     try { writeFileSync(TMP3, JSON.stringify(exp3)); const aus = execFileSync(process.execPath, [join(ROOT, 'tools', 'tonwahl_bau.mjs')], { encoding: 'utf8' }); console.log('  ' + aus.trim().split('\n')[0]);
       const u3 = readFileSync(UI3, 'utf8'), ta = JSON.parse(/const TON_AUS = new Set\((\[.*?\])\);/.exec(u3)[1]), mt = JSON.parse(/const MISCHTON = (\{.*?\});/.exec(u3)[1]), i = u3.indexOf('const TONWAHL = ') + 16, TW = JSON.parse(u3.slice(i, u3.indexOf(';\n', i)));
       pruef('tonwahl_bau: Abstellkammer als TON_AUS im Spiel', ta.includes(k0) && ta.length === exp3.aussortiert.schluessel.length, ta.length + ' Schlüssel');
+      const pkW = TW.kohorte && Object.values(TW.kohorte).find(w => w.pk); pruef('tonwahl_bau: eigenes Paket als pk im Spiel (mit Mischton als Mitglied)', !!pkW && pkW.pk.length === 2 && JSON.stringify(TW.grenadier && Object.values(TW.grenadier).find(w => w.pk)) === JSON.stringify(pkW), JSON.stringify(pkW));
       pruef('tonwahl_bau: Mischton als Rezept MISCHTON im Spiel, Wahl zeigt darauf', Array.isArray(mt[mk]) && mt[mk].length === 2 && mt[mk][1][2] === 250 && TW.haubitze && Object.values(TW.haubitze).some(w => w.k === mk), JSON.stringify(mt[mk]));
       execFileSync(process.execPath, ['--check', UI3]); pruef('src/ui.js bleibt gültiges JavaScript', true);
     } finally { writeFileSync(UI3, vor3); if (existsSync(TMP3)) unlinkSync(TMP3); }
