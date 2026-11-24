@@ -139,7 +139,7 @@ window.TS = (() => {
     await sz('ankunft', 'a', async () => { const x = X(cX - 2 * dir, R); neu(); await D.play([{ t: 'spawn', u: x.id }]); });
     // ---- Fähigkeit (T.abil): Umfeld mit Gegnern, Draht, eigenen Einheiten; je Zielart einmal ----
     if (T.abil) { const A = T.abil, umfeld = [], nah = ['charge', 'hinrichtung'].includes(A);
-      if (['charge', 'sprung', 'rollen', 'durchbruch', 'hinrichtung', 'pzgranate', 'handgranate'].includes(A)) { for (const za of A === 'pzgranate' ? ['panzer', 'schreiter'] : ['fuss', 'anzug', 'reiter', 'mg']) umfeld.push({ n: A + ':' + zn(za), bau: () => { const x = X(), p = linie(nah ? 1 : 2), v = Z(za, p[0], p[1], A === 'hinrichtung' ? { str: 2 } : null); return [x, [v.c, v.r]]; } });
+      if (['charge', 'sprung', 'rollen', 'durchbruch', 'hinrichtung', 'pzgranate', 'handgranate', 'pzschuss'].includes(A)) { for (const za of A === 'pzgranate' || A === 'pzschuss' ? ['panzer', 'schreiter'] : ['fuss', 'anzug', 'reiter', 'mg']) umfeld.push({ n: A + ':' + zn(za), bau: () => { const x = X(), p = linie(nah ? 1 : 2), v = Z(za, p[0], p[1], A === 'hinrichtung' ? { str: 2 } : null); return [x, [v.c, v.r]]; } });
         if (A === 'charge') umfeld.push({ n: A + '_draht', bau: () => { const x = X(cX, BAHN.draht); return [x, [cX + dir, BAHN.draht], G.map[cX + dir][BAHN.draht], 'wire']; } }); }
       else if (A === 'rush') umfeld.push({ n: 'sturmlauf', bau: () => { const x = X(); Z('fuss', cX + 5 * dir); return [x, null]; } });
       else if (A === 'ammo') umfeld.push({ n: 'munition', bau: () => { const x = X(), f = F('mg', cX, R + 1, { attacked: true }); return [x, [f.c, f.r]]; } });

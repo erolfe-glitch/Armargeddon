@@ -192,6 +192,7 @@ function abilPlan(G, u) {
       const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
+    else if (k === 'pzschuss') { const x = foe(c, r); if (x) { const S = E.panzerKl(x.type) === 'S'; v = (S ? 3 : 1.6) + (TYPES[x.type].mg ? 0.5 : 0) + (G.map[x.c][x.r].obj ? 0.8 : 0) + (x.str < 4 ? 1 : 0); } }   // Punkt 16: Panzergranate nur gegen gepanzerte Ziele (abilTargets), schwere zuerst
     else if (k === 'kopfrunter') {   // Punkt 3 (2026-11-24): MG, Geschütze und Gegner, die eigene Truppen bedrängen, niederhalten; sonst lieber schießen (planUnit)
       const x = foe(c, r); if (x) { const T = TYPES[x.type], schwer = (T.mg && x.setup) || E.cls(x) === 'art', draengt = G.units.some(o => o.side === u.side && E.alive(o) && o !== u && E.dist(o.c, o.r, x.c, x.r) <= 1) && T.atk >= 3;
         if (schwer || draengt) v = 1 + (schwer ? 1.8 : 0) + (draengt ? 1.1 : 0) + (G.map[x.c][x.r].obj ? 0.5 : 0) - (E.cls(x) === 'walker' ? 1.5 : 0); } }

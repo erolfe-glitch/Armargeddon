@@ -58,7 +58,7 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
-  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
+  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
 };
@@ -230,7 +230,7 @@ Object.assign(TYPES, {
 //   Angriff = stärkere Waffe + 0,4 × schwächere (Feuer = Feuerkraft × (1 + 0,15 je Feld Reichweite über 1), Steilfeuer ×1,3;
 //             Nahkampf = Angriff, Reiter ×1,2, Sturmtruppen ×1,15). Zähigkeit = Abwehr (Kolosse ×1,6, Rüstung ×1,4) + halbe Moral.
 // Dazu Fähigkeiten (ABIL) und ein kleiner Abgleich aus der Simulation (ADJ). Prüfen: node tools/costcheck.js
-const ABIL = { grenadier: ['Handgranaten', 10], feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: [!TOG.SCHARF_NEU ? 'Niederhalten' : 'Kopf runter!', 15], buechse: ['Panzerbrechend', 25],
+const ABIL = { grenadier: ['Handgranaten', 10], ...(TOG.PZS_ALT ? {} : { feldkanone: ['Panzergranate (3×)', 10] }), feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: [!TOG.SCHARF_NEU ? 'Niederhalten' : 'Kopf runter!', 15], buechse: ['Panzerbrechend', 25],
   signal: ['Ziel markieren', 5], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
   hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
   pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen, Faustsalve', 30], oger: ['Sprungangriff', 15], huenen: ['Dauerfeuer', 10],
@@ -251,7 +251,7 @@ const ABIL = { grenadier: ['Handgranaten', 10], feldscher: ['Versorgen', 30], he
 // (Aschenwacht ohne Tausch 65 %): statt 3 → 66 %, statt 4 → 57 %; neutral bei 3 Grenadieren = 90 (ADJ −15). Mit Feuer 5/Reichweite 2 waren sie keine 2 Grenadiere wert.
 const ADJ = { kohorte: 5, grenadier: -15, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
   sturm: 40, knecht: -10, huenen: -15, bohrer: 80, brand: 0, sturmpz: 20, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, ballon: -5, mineur: 10, rauch: -5, melder: 15,
-  feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
+  feldkanone: TOG.PZS_ALT ? -10 : -20, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5, faust: -15, kuerass: -25 };   // Helden vorläufig je 110 (unter den Stufe-3-Schreitern), Abgleich per Simulation
 function costParts(k) {
   const t = TYPES[k], c = t.cls;
@@ -299,7 +299,8 @@ if (TOG.SCHARF_NEU) for (const t of ['scharf', 'pirsch']) Object.assign(TYPES[t]
 Object.assign(TYPES.grenadier, TOG.NOHANDGRANATE ? { granatSturm: true } : { abil: 'handgranate' });   // Punkt 34 (Enrico 2026-11-24): Handgranaten als Fähigkeit (Aktion, Abklingzeit 2) statt fester Regel; NOHANDGRANATE = alte Regel   // Stoßinfanterie: Handgranaten vor dem Nahkampf (×P.GRANAT_NAH), Schuss schwächer (×P.GRANAT_FERN)
 Object.assign(TYPES.eingreif, { gegenstoss: true });     // Gegenstoß: Nahkampf auf eigenen Zielfeldern und in eigenen Gräben ×P.GEGENSTOSS, sonst ×P.GEGENSTOSS_VOR
 delete TYPES.raeumer.abil;                               // Grabenräumer: billiger Grabenkampf ohne Panzerabwehr (Panzergranate bleibt beim Sturmbrecher)
-Object.assign(TYPES.feldkanone, { direkt: true, fahrbar: true, mv: 2 }); delete TYPES.feldkanone.limber;   // Feldkanone: nur direktes Feuer mit Sicht über ihre ganze Reichweite; ohne Protzen, zieht immer 2 Felder und schießt danach noch (Enrico 2026-11-22 17:40)
+Object.assign(TYPES.feldkanone, { direkt: true, fahrbar: true, mv: 2 }); delete TYPES.feldkanone.limber;
+if (!TOG.PZS_ALT) Object.assign(TYPES.feldkanone, { abil: 'pzschuss', ladungen: P.PZS_LADUNGEN });   // Punkt 16 (2026-11-24): Panzergranate mit begrenzten Ladungen; normaler Schuss gegen Panzer schwächer (P.FK_VS_WALKER); PZS_ALT=1 = vorher   // Feldkanone: nur direktes Feuer mit Sicht über ihre ganze Reichweite; ohne Protzen, zieht immer 2 Felder und schießt danach noch (Enrico 2026-11-22 17:40)
 Object.assign(TYPES.panzerk, { cutter: true });          // Panzerknechte: Nahkampf und Draht
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
 const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Bord-MG", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "reiter": ["Ansturm ×1,5", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "Panzergranate"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionier": ["Draht schneiden und angreifen", "Haftladung gegen Panzer"], "raeumer": ["Sickert durch", "Handgranaten", "Panzergranate"], "buechse": ["Schuss 3 Felder", "Panzer ×1,5, Fußtruppen ×0,5"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "schildwall": ["Sehr zäh", "Keine Schusswaffe", "Schilde vor"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Feuer frei"], "hauptD": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Sturmbefehl"], "generalA": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Generalangriff (zweiter Angriff)", "Höchstens einer"], "panzerk": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"], "oger": ["Sprungangriff (alle 2 Runden)", "Schrotflinte 1 Feld", "Sickert durch"], "faust": ["Held", "Durchbruch: 2 Felder, schleudert zurück", "Standhaft-Aura", "Leicht gepanzert", "Kaum Fernkampf"], "kuerass": ["Held", "Hinrichtung unter 40 %", "Furcht-Aura", "Leicht gepanzert", "Langsam, bleibt stecken"], "huenen": ["Dauerfeuer: 2 Salven, dann abkühlen", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Hält nieder", "Draht hält nicht auf"]};
@@ -1441,7 +1442,8 @@ function guided(G, side, c, r) { return (G.marks || []).some(m => m.side === sid
 function shellDmg(G, a, d, direct, tags) {
   tags = tags || [];
   let m = 1;
-  if (cls(d) === 'walker' && direct) { m *= P.ART_VS_WALKER; tags.push('direkter Schuss auf Koloss ×2,5'); }
+  if (cls(d) === 'walker' && direct && TYPES[a.type].abil === 'pzschuss') { m *= P.FK_VS_WALKER; tags.push('Standardgranate auf Panzerung ×1,25'); }   // Punkt 16: der Panzerknacker ist die Panzergranate
+  else if (cls(d) === 'walker' && direct) { m *= P.ART_VS_WALKER; tags.push('direkter Schuss auf Koloss ×2,5'); }
   else if (cls(d) === 'walker') { m *= FAK.explosiv.S; tags.push('Sprenggranate gegen schwer gepanzert ×0,5'); }   // F66
   if (direct && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }   // direkter Schuss in den Nebel
   if (cls(d) === 'flame') m *= P.FLAME_HIT;
@@ -1662,7 +1664,8 @@ const ABILS = {
   hinrichtung: { name: 'Hinrichtung', icon: '⚔', ap: 1, cd: 3, atk: true },
   pzgranate: { name: 'Panzergranate werfen', icon: '✸', ap: 1, cd: 2, atk: true },
   handgranate: { name: 'Handgranaten', icon: '✸', ap: 1, cd: 2, atk: true },
-  kopfrunter: { name: 'Kopf runter!', icon: '⌖', ap: 1, cd: 2, atk: true }
+  kopfrunter: { name: 'Kopf runter!', icon: '⌖', ap: 1, cd: 2, atk: true },
+  pzschuss: { name: 'Panzergranate', icon: '✸', ap: 1, cd: 0, atk: true }
 };
 const FORT = ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village', 'schiff', 'turm'];
 function gasSafe(G, u) { return !!TYPES[u.type].gasproof || TYPES[u.type].cls === 'walker' ||   // Kolosse und Maschinen: geschlossen, immun
@@ -1724,6 +1727,7 @@ function abilTargets(G, u) {
     else if (k === 'rollen' && x && d <= 2 && rollenWeg(G, u, x)) out.push([c, r]);
     else if (k === 'durchbruch' && x && d <= 2 && rollenWeg(G, u, x)) out.push([c, r]);   // Held Rote Faust: wie Sturmrollen (geradeaus, keine Panzer/Schreiter)
     else if (k === 'hinrichtung' && x && d === 1 && x.side !== u.side && alive(x) && cls(x) !== 'walker' && x.str < P.HINRICHT_STR) out.push([c, r]);
+    else if (k === 'pzschuss' && x && x.side !== u.side && alive(x) && panzerKl(x.type) !== 'U' && !u.limbered && !(u.supp > 0) && d >= 1 && d <= T.rng && isDirect(G, u, c, r)) out.push([c, r]);   // Punkt 16: nur gepanzerte Ziele, direkter Schuss
     else if (k === 'kopfrunter' && x && x.side !== u.side && !u.mvd && !(x.supp > 0) && canFire(G, Object.assign({}, u, { attacked: false }), x)) out.push([c, r]);   // Punkt 3: gezielter Schuss zum Niederhalten, nur aus dem Stand, wie ein Schuss in Reichweite und Sicht
     else if (k === 'handgranate' && x && x.side !== u.side && alive(x) && d >= 1 && d <= P.HANDGR_RNG && !concealed(G, x, u.c, u.r) && hasLOS(G, u.c, u.r, c, r)) out.push([c, r]);   // Punkt 34: Feind daneben oder ein Feld weiter
     else if (k === 'pzgranate' && x && x.side !== u.side && alive(x) && cls(x) === 'walker' && d >= 1 && d <= P.PZG_RNG && hasLOS(G, u.c, u.r, c, r)) out.push([c, r]);   // F80: nur gegen Fahrzeuge und Schreiter
@@ -1785,6 +1789,12 @@ function useAbil(G, u, c, r) {
       if (foes.length) ev.push(...melee(G, u, foes[0]));
     }
     u.ap = 0; u.attacked = true; u.moved = true;
+  }
+  else if (k === 'pzschuss') {   // Punkt 16: Panzergranate – stark gegen schwer gepanzert, mittel gegen leicht gepanzert
+    const d = unitAt(G, c, r), kl = panzerKl(d.type), mul = kl === 'S' ? P.PZS_S : kl === 'L' ? P.PZS_L : P.PZS_U, dm = defMods(G, d, 'front', true, []);
+    ev.push({ t: 'pzschuss', u: u.id, d: d.id, c, r, face: u.face });
+    applyDamage(G, u, d, P.DMG * (T.fs / (TYPES[d.type].def * dm)) * (0.4 + 0.6 * u.str / 10) * mul * (0.85 + G.rng() * 0.3), 'front', ev, { ranged: true });
+    if (alive(d) && cls(d) === 'walker' && G.rng() < P.PZG_PANNE) { d.broken = Math.max(d.broken || 0, P.PANNE_RUNDEN + 1); ev.push({ t: 'breakdown', u: d.id }); }
   }
   else if (k === 'kopfrunter') {   // Punkt 3: kein Schaden – Ziel niedergehalten, Moral −P.KOPF_MOR
     const d = unitAt(G, c, r); if (TYPES[u.type].hidden) u.revealed = 1; ev.push({ t: 'kopfrunter', u: u.id, d: d.id });
@@ -2038,6 +2048,8 @@ function checkEnd(G) {
 // F103 Rollen schärfen (Enrico 2026-11-22 13:35): Texte und Schlagworte zu den neuen Aufgaben (Regeln oben bei COST)
 { const T = TYPES, ers = (t, alt, neu) => { const i = T[t].sp.indexOf(alt); if (i >= 0) T[t].sp[i] = neu; else T[t].sp.push(neu); };
   T.kohorte.can = 'Schützenlinie: schießt 2 Felder weit, hält Zielfelder mit Feuerbereitschaft, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).';
+  if (T.feldkanone.abil === 'pzschuss') { T.feldkanone.can = `Leichte Artillerie, direkter flacher Schuss bis 5 Felder (Standardgranate, gegen Panzerung nur ×${String(P.FK_VS_WALKER).replace('.', ',')}). Panzergranate (Aktion, ${P.PZS_LADUNGEN} Ladungen je Schlacht): gegen Fahrzeuge und Schreiter ×${String(P.PZS_S).replace('.', ',')}, gegen Kampfanzüge ×${P.PZS_L}. Zieht 2 Felder und schießt. Im Nahkampf wehrlos.`;
+    T.feldkanone.sp = T.feldkanone.sp.filter(x => !/×2,5 auf Kolosse/.test(x)); ers('feldkanone', '-', 'Direktschuss 5 Felder'); ers('feldkanone', '-', `Panzergranate (${P.PZS_LADUNGEN}×)`); }
   if (T.scharf.standSchuss) {   // Punkt 3 (2026-11-24): Scharfschützen
     T.scharf.can = `Schießt 4 Felder weit, nur aus dem Stand (nicht nach dem Ziehen); im Nahkampf fast wehrlos. Gezielter Schuss: gegen ungepanzerte Ziele ×${String(P.SCHARF_INF).replace('.', ',')}. Fähigkeit „Kopf runter!“ (Aktion, alle 2 Runden): kein Schaden, Ziel niedergehalten und Moral −${Math.round(P.KOPF_MOR * 10)}.`;
     T.pirsch.can = `Getarnt: nur aus dem Nachbarfeld angreifbar, bis er schießt (dann eine gegnerische Runde sichtbar). Schießt nur aus dem Stand, gegen ungepanzerte Ziele ×${String(P.SCHARF_INF).replace('.', ',')}. Fähigkeit „Kopf runter!“ (Aktion, alle 2 Runden): Ziel niedergehalten, Moral −${Math.round(P.KOPF_MOR * 10)}.`;
@@ -2050,7 +2062,7 @@ function checkEnd(G) {
   T.eingreif.can = 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde). Nahkampf auf eigenen Zielfeldern und in eigenen Gräben ×1,25, beim Vorgehen ins Feindgebiet ×0,85. Panzergranate (Aktion, alle 2 Runden): 1–2 Felder gegen Fahrzeuge und Schreiter.';
   ers('eingreif', 'Gegenstoß auf Zielfelder', 'Gegenstoß: ×1,25 auf eigenen Zielfeldern');
   T.feldkanone.can = 'Direktes Feuer: flache Bahn bis 5 Felder, nur auf Ziele in Sicht, kein Gas, kein Sperrfeuer. Trifft Kolosse und Kampfmaschinen ×2,5. Ohne Protzen: zieht immer 2 Felder und darf danach noch schießen. Im Nahkampf wehrlos.';
-  ers('feldkanone', 'Direktschuss ×2,5 auf Kolosse', 'Direktschuss 5 Felder, ×2,5 auf Kolosse'); ers('feldkanone', 'Aufprotzen', 'Zieht 2 Felder und schießt');
+  if (T.feldkanone.abil !== 'pzschuss') ers('feldkanone', 'Direktschuss ×2,5 auf Kolosse', 'Direktschuss 5 Felder, ×2,5 auf Kolosse'); ers('feldkanone', 'Aufprotzen', 'Zieht 2 Felder und schießt');
   T.haubitze.can = 'Steil- und Sperrfeuer: ' + T.haubitze.can;
   T.panzerk.can = T.panzerk.can.replace('Motorisierte Kampfanzüge.', 'Motorisierte Kampfanzüge für Nahkampf und Draht. Schneidet Draht vom Nachbarfeld aus (Aktion).');
   if (!T.panzerk.sp.includes('Draht schneiden (Nachbarfeld, Aktion)')) T.panzerk.sp.unshift('Draht schneiden (Nachbarfeld, Aktion)');
