@@ -159,14 +159,21 @@ function drawFxs(g, s, up) {
   for (let i = fxs.length - 1; i >= 0; i--) {
     const e = fxs[i]; if (e.delay > 0) { e.delay -= FS; continue; } e.life -= FS;
     if (e.life <= 0) { fxs.splice(i, 1); continue; }
-    const k = 1 - e.life / e.max, x = e.move ? e.x + (e.move[0] - e.x) * Math.min(1, k * 1.15) : e.x, y = e.move ? e.y + (e.move[1] - e.y) * Math.min(1, k * 1.15) : e.y;
+    fxZeichne(g, s, up, e, e.boden ? 'unten' : null);
+  }
+}
+// Punkt 39 (2026-11-24): Boden-Ringe um eine Figur – hintere Hälfte (über der Mittellinie) vor der Figur, nach Tiefe einsortiert (drawTilt, PEND), vordere Hälfte nach den Figuren
+function ringZeichne(g, s, rg, teil) { const k = 1 - rg.life / rg.max; g.save(); bodenClip(g, rg.y, teil); g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = Math.max(0, 1 - k); g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.restore(); }
+function bodenClip(g, cy, teil) { if (!teil) return; g.beginPath(); if (teil === 'oben') g.rect(-1e6, -1e6, 2e6, 1e6 + cy); else g.rect(-1e6, cy, 2e6, 1e6); g.clip(); }
+function fxZeichne(g, s, up, e, teil) {
+  { const k = 1 - e.life / e.max, x = e.move ? e.x + (e.move[0] - e.x) * Math.min(1, k * 1.15) : e.x, y = e.move ? e.y + (e.move[1] - e.y) * Math.min(1, k * 1.15) : e.y;
     if (up) { const f = e.fuss ? (e.move && e.fuss2 ? [e.fuss[0] + (e.fuss2[0] - e.fuss[0]) * Math.min(1, k * 1.15), e.fuss[1] + (e.fuss2[1] - e.fuss[1]) * Math.min(1, k * 1.15)] : e.fuss) : null;
-      if (!(f ? up(f[0], f[1]) : up(x, y))) continue; }   // fuss: Aufsteller am Fußpunkt des Schützen (wie die Figur), sonst sitzt ein hoher Punkt wie die Mündung zu tief (Spieltest Runde 2, Punkt 18)
+      if (!(f ? up(f[0], f[1]) : up(x, y))) return; }   // fuss: Aufsteller am Fußpunkt des Schützen (wie die Figur), sonst sitzt ein hoher Punkt wie die Mündung zu tief (Spieltest Runde 2, Punkt 18)
     let [w, h] = fxDim(e.im, e.b, e.mul * (1 + e.grow * k));
     if (e.len) { const r = e.len / w; w = e.len * (e.lenIn ? Math.min(1, (e.max - e.life) / e.lenIn) : 1); h *= Math.min(1.5, Math.max(0.6, Math.sqrt(r))); }   // Strahl wächst in lenIn Bildern auf volle Länge
     const fo = Math.min(1, e.life / (e.max * e.fadeOut)), fi = e.fadeIn ? Math.min(1, (e.max - e.life) / e.fadeIn) : 1;
     g.save(); g.globalAlpha = e.alpha * fo * fi; if (FX_GLOW.has(e.b)) g.globalCompositeOperation = 'lighter'; if (e.filter) g.filter = e.filter;
-    g.translate(x, y - e.rise * s * k); if (e.ang || e.spin) g.rotate(e.ang + e.spin * k); if (e.flip) g.scale(-1, 1); if (e.flipY) g.scale(1, -1);
+    g.translate(x, y - e.rise * s * k); bodenClip(g, 0, teil); if (e.ang || e.spin) g.rotate(e.ang + e.spin * k); if (e.flip) g.scale(-1, 1); if (e.flipY) g.scale(1, -1);
     const ax = e.anchor === 'links' ? 0 : e.anchor === 'rechts' ? -w : -w / 2, ay = e.anchor === 'unten' ? -h : -h / 2;
     g.drawImage(e.im, ax, ay, w, h); g.restore();
   }
@@ -1089,7 +1096,7 @@ function drawAir(g, s, up) {
     const rg = rings[i]; rg.life -= FS; if (rg.life <= 0) { rings.splice(i, 1); continue; }
     const k = 1 - rg.life / rg.max, im = PJI[rg.img]; if (up && !up(rg.x, rg.y)) continue;
     if (im) { const hh = s * rg.r * (0.7 + 0.5 * k), w = fxw(im, hh); g.globalAlpha = Math.min(1, rg.life / (rg.max * 0.4)); g.drawImage(im, rg.x - w / 2, rg.y - hh / 2 - k * s * 0.5, w, hh); g.globalAlpha = 1; }
-    else { g.beginPath(); gEllipse(g, rg.x, rg.y, s * rg.r * k, s * rg.r * k); g.strokeStyle = rg.col; g.globalAlpha = 1 - k; g.lineWidth = Math.max(2, s * 0.09); g.stroke(); g.globalAlpha = 1; }
+    else ringZeichne(g, s, rg, 'unten');
   }
   drawSchall(g, s, up); drawNimbus(g, s, up); drawHeldAura(g, s, up); drawGlut(g, s, up); drawHeldRinge(g, s, up);   // F82, Helden, F84, F86
   drawFxs(g, s, up);
@@ -1878,7 +1885,11 @@ function drawTilt() {
   // Einheiten als Aufsteller am Fußpunkt; Marken und spätere Marken (MARKQ) behalten ihren Aufsteller
   UBOX.length = 0;
   const ul = unitList(), GP = GBW && gbAn() ? GBW.pieces : null, PEND = []; let gpi = 0;
-  if (flagsTief) { for (const o of OBJECTIVES) PEND.push({ y: center(o.c, o.r)[1] + s * fahneOrt(o)[2], f: () => { drawFlags(g, s, up, o); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; } }); PEND.sort((a, b) => a.y - b.y); }
+  if (flagsTief) { for (const o of OBJECTIVES) PEND.push({ y: center(o.c, o.r)[1] + s * fahneOrt(o)[2], f: () => { drawFlags(g, s, up, o); g.setTransform(1, 0, 0, 1, 0, 0); VIEW.bbK = null; } }); }
+  for (const e of fxs) if (e.boden && !(e.delay > 0)) PEND.push({ y: e.y - 1, f: () => fxZeichne(g, s, up, e, 'oben') });   // Punkt 39: hintere Hälfte der Boden-Ringe vor der Figur
+  for (const rg of rings) if (!PJI[rg.img]) PEND.push({ y: rg.y - 1, f: () => { if (up(rg.x, rg.y)) ringZeichne(g, s, rg, 'oben'); } });
+  if (BW && G) for (const u of G.units) { const T = TYPES[u.type], d = DU.get(u.id), fr = T && T.aura === 'furcht' && E.alive(u) && d && fxIm('faehigkeiten', 4); if (fr) PEND.push({ y: d.y - 1, f: () => { if (up(d.x, d.y)) furchtRing(g, s, u, d, fr, 'oben'); } }); }
+  PEND.sort((a, b) => a.y - b.y);
   if (GP) GBW.setView({ g, proj, F: PJ.F, U: cv.width / 1920, units: ul.map(([, , d]) => [d.x, d.y]) });
   // Geländeteile und einzeln gezeichnete Grabenfiguren (PEND) bis zur Tiefe y, beide nach Tiefe gemischt
   const gbBis = y => { for (;;) { const a = GP && gpi < GP.length ? GP[gpi].y : Infinity, b = PEND.length ? PEND[0].y : Infinity, m = Math.min(a, b); if (m > y || m === Infinity) break;
@@ -2892,12 +2903,12 @@ async function playEvent0(e) {
     case 'heldfall': { const hu = unitById(e.u); playSound('held_fall_horn', 0.6, null, { an: hu }); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
     case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, 'angst', 'steig'); } if (e.by) auraPuls(e.by, 'kalt'); await wait(120); break; }
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
-      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0);   // Runde 2: Sprung mit Krallen
+      const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0, true);   // Runde 2: Sprung mit Krallen
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
       d0.face = x1 >= x0 ? 0 : 3; d0.moving = true;
       if (camOn() && !inView(x1, y1)) await camTo(x1, y1, 260);
       try { for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); d0.x = x0 + (x1 - x0) * k; d0.y = y0 + (y1 - y0) * k - Math.sin(Math.PI * k) * L.s * 0.9; } } finally { d0.moving = false; d0.x = x1; d0.y = y1; }
-      if (WFX()) fx('winter_schnee', 4, x1, y1 + L.s * 0.3, { life: 44, mul: 0.55, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); else fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('loewen_landung', 0.6); playSound('steps', 0.2); shake(3); if (BW && fxIm('faehigkeiten', 2)) fx('faehigkeiten', 2, x1, y1 + L.s * 0.12, { anchor: 'mitte', life: 44, mul: 0.62, grow: 0.45, alpha: 0.9, fadeOut: 0.6 });   /* Landung (Enrico 2026-11-22 15:00), alter Landeton leise darunter */ VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
+      if (WFX()) fx('winter_schnee', 4, x1, y1 + L.s * 0.3, { life: 44, mul: 0.55, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); else fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 36, mul: 0.6, grow: 0.4, alpha: 0.8, fadeOut: 0.6 }); playSound('loewen_landung', 0.6); playSound('steps', 0.2); shake(3); if (BW && fxIm('faehigkeiten', 2)) fx('faehigkeiten', 2, x1, y1 + L.s * 0.02, { anchor: 'mitte', boden: true, life: 44, mul: 0.62, grow: 0.45, alpha: 0.9, fadeOut: 0.6 });   /* Landung (Enrico 2026-11-22 15:00), alter Landeton leise darunter */ VIS.ctrl = { ...G.ctrl }; await wait(120); break; }
     case 'dauerfeuer': { const d0 = DU.get(e.u); if (d0) floater(...headPos(e.u), 'Dauerfeuer!', '#ffb04a', true); kz(e.u, 'feuer', 'steig'); await wait(150); break; }
     case 'faust': {   // Faustsalve: Kamerafahrt zum Knecht, dann beide Fäuste zugleich (je ein Ziel), Treffer folgen als 'hit'
       const a = DU.get(e.u); if (!a) break; const zs = (e.d || []).map(id => [id, ...bodyPos(id)]); pose(e.u, 'faust', 1600);   // Schreiter-Posen: beide Kanonen feuern
@@ -4058,13 +4069,14 @@ function maulPunkt(id) {   // Kreuzschreiter: Löwenmaul = Mündung der Hauptwaf
   const lf = facesLeft(d.face); let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== lf) x0 = -(x0 + w);
   return [d.x + (lf ? x0 + w * 0.15 : x0 + w * 0.85), d.y + y0 + h * 0.16];
 }
-function gebruellFx(id, ziele, stark) {
+function gebruellFx(id, ziele, stark, ohneRing) {
   if (!BW) return; const d = DU.get(id), m = maulPunkt(id); if (!d || !m) return;
   const dir = facesLeft(d.face) ? -1 : 1, n = BW === 1 ? 2 : 3;
   const FB = fxIm('faehigkeiten', 0) && fxIm('faehigkeiten', 1);   // Paket D (2026-11-24): Tintenbogen fx_faehigkeiten – Kegel in Blickrichtung, Staubringe am Boden; die glatten Gold-Bögen entfallen
   if (FB) { const k = stark ? 1.05 : 0.62;
-    fx('faehigkeiten', 0, m[0] + dir * L.s * 0.85 * k, m[1] + L.s * 0.55, { anchor: 'mitte', flip: dir < 0, life: 44 + 10 * stark, mul: k, grow: 0.55, fadeIn: 2, fadeOut: 0.65, fuss: [d.x, d.y] });
-    for (let q = 0; q < (stark ? 2 : 1); q++) fx('faehigkeiten', 1, d.x, d.y + L.s * 0.12, { anchor: 'mitte', delay: q * 9, life: 46, mul: (stark ? 0.75 : 0.5) + q * 0.25, grow: 0.9, alpha: 0.95, fadeOut: 0.7 }); }
+    const dyM = unitById(id) && unitById(id).type === 'kreuz' ? L.s * 0.55 : 0;   // Punkt 41: beim Kreuzschreiter liefert maulPunkt die Kanonenmündung über dem Maul
+    fx('faehigkeiten', 0, m[0] - dir * L.s * 0.04, m[1] + dyM, { anchor: 'links', flip: dir < 0, life: 44 + 10 * stark, mul: k, grow: 0.55, fadeIn: 2, fadeOut: 0.65, fuss: [d.x, d.y] });
+    if (!ohneRing) for (let q = 0; q < (stark ? 2 : 1); q++) fx('faehigkeiten', 1, d.x, d.y + L.s * 0.02, { anchor: 'mitte', boden: true, delay: q * 9, life: 46, mul: (stark ? 0.75 : 0.5) + q * 0.25, grow: 0.9, alpha: 0.95, fadeOut: 0.7 }); }
   else SCHALL.push({ m: [m[0], m[1]], fuss: [d.x, d.y], dir, t0: now, dauer: 1100 + 300 * stark, n: stark ? n : 2, stark });
   if (stark) { shake(BW === 1 ? 3 : 5); for (let q = 0; q < (BW === 1 ? 2 : 4); q++) boom(d.x + dir * L.s * (0.6 + q * 0.35), d.y + (Math.random() - 0.5) * L.s * 0.3, L.s * 0.35, 'dust', q * 5); }
   for (const zid of ziele || []) { const f = DU.get(zid); if (!f) continue; pose(zid, 'getroffen', 380);
@@ -4128,7 +4140,7 @@ function heldTitel(text, art, wer) {
 async function heldTitelErst(ksz, text, art, wer) { const ms = heldTitel(text, art, wer); if (ms && !(ksz && ksz.skip) && speed < INSTANT) await new Promise(r => setTimeout(r, ms)); }
 const HRING = [];   // { x, y, t0, dauer, art, gross }
 function heldRing(x, y, art, gross) {   // Paket D: gemalte Druckwelle (Faust) bzw. Furcht-Ring mit Rauchklauen (Kürassier); glatter Ring nur noch, wenn das Bild fehlt
-  const i = art === 'faust' ? 2 : 4; if (BW && fxIm('faehigkeiten', i)) { fx('faehigkeiten', i, x, y + L.s * 0.12, { anchor: 'mitte', life: gross ? 54 : 46, mul: gross ? 0.95 : 0.6, grow: gross ? 0.55 : 0.4, alpha: 0.95, fadeIn: 1, fadeOut: 0.6 }); if (gross) boom(x, y, L.s * 0.6, 'dust'); return; }
+  const i = art === 'faust' ? 2 : 4; if (BW && fxIm('faehigkeiten', i)) { fx('faehigkeiten', i, x, y + L.s * 0.02, { anchor: 'mitte', boden: true, life: gross ? 54 : 46, mul: gross ? 0.95 : 0.6, grow: gross ? 0.55 : 0.4, alpha: 0.95, fadeIn: 1, fadeOut: 0.6 }); if (gross) boom(x, y, L.s * 0.6, 'dust'); return; }
   HRING.push({ x, y, t0: now, dauer: gross ? 720 : 950, art, gross }); }
 function drawHeldRinge(g, s, up) {
   const amp = BW === 0 ? 0.55 : BW === 1 ? 0.8 : 1;
@@ -4151,7 +4163,7 @@ function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
   const d = DU.get(id); if (!d) return; const b = d.fbx && d.fbx[0], lf = facesLeft(d.face), s = L.s;
   const x = b ? d.x + b[0] + b[2] * (lf ? 0.15 : 0.85) : d.x + (lf ? -1 : 1) * s * 0.4, y = b ? d.y + b[1] + b[3] * 0.5 : d.y - s * 0.6;
   for (let q = 0; q < (BW >= 2 ? 3 : 2); q++) { const e = fx('rauch', null, x + (lf ? -1 : 1) * q * s * 0.12, y, { delay: q * 4, move: [x + (lf ? -1 : 1) * s * (0.3 + q * 0.15), y - s * 0.25], life: 60 + q * 10, mul: 0.22 * st + q * 0.04, grow: 1.1, rise: 0.5, alpha: 0.55, fadeIn: 3, fadeOut: 0.7, flip: lf, filter: 'brightness(2.1) saturate(0.2)' }); if (e) e.dampf = true; }
-  burst(x, y, BW >= 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });
+  if (!(BW && fxIm('faehigkeiten', 3))) burst(x, y, BW >= 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });   // flache weiße Kreise nur noch ohne gemalten Dampfstoß (Punkt 40)
   if (BW && fxIm('faehigkeiten', 3)) fx('faehigkeiten', 3, x + (lf ? -1 : 1) * s * 0.75 * st, y, { anchor: 'mitte', flip: lf, life: 40, mul: 0.3 + 0.32 * st, grow: 0.5, alpha: 0.9, fadeIn: 1, fadeOut: 0.65, fuss: [d.x, d.y] });   // Paket D: gemalter Dampfstoß
 }
 function staubSchleppe(id) { let an = true; (async () => { while (an) { const d = DU.get(id); if (d) boom(d.x, d.y + L.s * 0.12, L.s * 0.24, 'dust'); await wait(70); } })(); return () => { an = false; }; }
@@ -4161,6 +4173,9 @@ async function flugZurueck(id, path) {   // Ziel des Durchbruchs fliegt im Bogen
   for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dur); d.x = x0 + (x1 - x0) * k; d.y = y0 + (y1 - y0) * k; d.lunge = { dx: 0, dy: -Math.sin(Math.PI * k) * L.s * 0.55 }; }
   d.lunge = null; d.x = x1; d.y = y1; playSound('impact', 0.4); shake(5); boom(x1, y1 + L.s * 0.1, L.s * 0.45, 'dust'); fx('truemmer', 2, x1, y1 + L.s * 0.3, { life: 34, mul: 0.5, grow: 0.4, alpha: 0.8, fadeOut: 0.6 });
 }
+function furchtRing(g, s, u, d, fr, teil, bl = 0) {   // Rauchklauen-Ring der Furcht-Aura mittig unter den Füßen (Punkt 39)
+  const p = 0.75 + 0.25 * Math.sin(now / 700 + u.id), amp = BW === 1 ? 0.55 : 1, [w0, h0] = fxDim(fr, 'faehigkeiten', 0.62 * (1 + 0.06 * p + 0.15 * bl));
+  g.save(); bodenClip(g, d.y, teil); g.globalAlpha = Math.min(1, (0.35 + 0.25 * p + 0.4 * bl) * amp); g.drawImage(fr, d.x - w0 / 2, d.y - h0 / 2, w0, h0); g.restore(); }
 function drawHeldAura(g, s, up) {
   if (!BW || !G) return; const amp = BW === 1 ? 0.55 : 1;
   for (const u of G.units) { const T = TYPES[u.type]; if (!T.held || !E.alive(u)) continue; const d = DU.get(u.id); if (!d || (up && !up(d.x, d.y))) continue;
@@ -4170,10 +4185,10 @@ function drawHeldAura(g, s, up) {
     if (warm) { gr.addColorStop(0, `rgba(170,46,20,${(0.24 * p + 0.45 * bl) * amp})`); gr.addColorStop(0.5, `rgba(120,30,14,${(0.14 * p + 0.22 * bl) * amp})`); gr.addColorStop(1, 'rgba(90,20,10,0)'); }   // F84: weicher Schein
     else { gr.addColorStop(0, `rgba(196,212,226,${(0.26 * p + 0.22 * bl) * amp})`); gr.addColorStop(0.6, `rgba(160,178,196,${(0.12 * p + 0.1 * bl) * amp})`); gr.addColorStop(1, 'rgba(160,178,196,0)'); }
     const fr = !warm && fxIm('faehigkeiten', 4);   // Paket D: Furcht-Aura als gemalter Rauchklauen-Ring am Boden (pulsierend) statt kaltem Leuchtkreis; warmer Schein der Faust gedämpft
-    if (fr) { const [w0, h0] = fxDim(fr, 'faehigkeiten', 0.62 * (1 + 0.06 * p + 0.15 * bl)); g.save(); g.globalAlpha = Math.min(1, (0.35 + 0.25 * p + 0.4 * bl) * amp); g.drawImage(fr, d.x - w0 / 2, d.y + s * 0.1 - h0 / 2, w0, h0); g.restore(); }
+    if (fr) furchtRing(g, s, u, d, fr, 'unten', bl);
     else { g.save(); if (warm) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.6; } g.fillStyle = gr; g.beginPath(); gEllipse(g, d.x, d.y, s * (0.95 + 0.4 * bl), s * (0.95 + 0.4 * bl)); g.fill(); g.restore(); }
     if (warm) { if (Math.random() < (BW === 1 ? 0.025 : 0.05) * Math.min(2, FS) * (1 + 3 * bl)) GLUT.push({ id: u.id, t0: now, dauer: 1300 + Math.random() * 900, ox: (Math.random() - 0.5) * 0.35, vx: (Math.random() - 0.5) * 0.25, gr: 0.6 + Math.random() * 0.6 }); }   // F84: Glutfunken aus dem Ofenkern
-    else if (Math.random() < (BW === 1 ? 0.03 : 0.07) * Math.min(2, FS)) { burst(d.x + (Math.random() - 0.5) * s * 0.9, d.y - s * (1.2 + Math.random() * 0.5), 2, ['#cfd3d6', '#9aa0a6', '#e8ecee'], { up: -0.015, spread: 0.03 }); }   // Ascheflocken fallen
+    // Punkt 40 (2026-11-24): die „Ascheflocken“ (flache graue Farbkreise über burst) um den Kürassier entfernt – das waren die grauen Pünktchen
     if (T.aura === 'furcht') for (const o of G.units) { if (o.side === u.side || !E.alive(o) || E.dist(o.c, o.r, u.c, u.r) !== 1 || TYPES[o.type].cls === 'walker') continue; const f = DU.get(o.id); if (!f || (up && !up(f.x, f.y))) continue;
       g.save(); g.beginPath(); gEllipse(g, f.x, f.y, s * 0.62, s * 0.62); g.strokeStyle = `rgba(190,214,236,${0.28 * p * amp})`; g.lineWidth = Math.max(1, s * 0.03); g.stroke(); g.restore(); }   // dünner kalter Schimmer
   }
