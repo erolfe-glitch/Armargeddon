@@ -1,3 +1,41 @@
+## 2026-11-24 – Paket C: Krähenfurt (Punkte 4, 1, 13, 12) (`de32997`)
+
+Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, KI-Partie Krähenfurt bis zum Ende ohne Fehler, Karten-Aufnahmen ohne Seitenfehler.
+
+- **Punkt 4 – Ruckler: Ursache gefunden und behoben.**
+  - **Messung** (KI gegen KI bis zum Ende; Runden 2–3 und ab Runde 11 mit Tempo 1×, dazwischen schnell; `test_ki_partie.mjs` mit neuen Schaltern `SCHNELL_BIS`/`SPAET_1X`):
+    - **vorher:** mittlere Bildzeit Runde 2: 10,7 ms, Runde 3: 16,3 ms, Runde 11–12: **27–28 ms** (95 % unter 32 ms).
+    - **nachher:** Runde 3: 8,7 ms, Runden 11–15: **8,5–12 ms** (95 % unter 18 ms), auch nach Eisbrüchen.
+    - In beiden Läufen gab es kein Einzelbild über 50 ms. Das „Schleifen“ ist also kein einzelner Hänger, sondern das ganze Bild wird langsamer.
+  - **Ursache:** Die Bodenspuren (Trichter, Schneespuren, Blut) wachsen bis Spielende auf ~300. Jede wurde **in jedem Bild** mit einem Canvas-Filter gezeichnet (Schneespur dunkler/kontrastreicher und doppelt, Blut im Winter abgedunkelt). Canvas-Filter sind sehr teuer.
+  - **Behoben:** Jede gefilterte Fassung wird einmal vorberechnet und danach ohne Filter gezeichnet (ui.js `gmBild`). Das Aussehen ist gleich.
+  - Weitere Verdächtige geprüft: Eisloch/Zufrieren (kein Neuaufbau, keine Spitzen), Effekte, Kopfzeichen und Funken (werden aufgeräumt, wenige je Runde), Speicher (80–165 MB, kein Wachstum). Neue Testhilfe `__dbg.zaehler()` (Größen aller Listen).
+- **Punkt 1 – Karte aufräumen.**
+  - **Ursachen:** (a) Die Äcker (Gartenfelder rechts) lagen je Feld in einer anderen Furchenrichtung, manche quer – ein dunkles Streifen-Durcheinander, vor allem oben rechts. (b) Entlang der Straßen lag ein breiter, kräftiger Streifen „zertrampelter“ Schlammschnee. (c) Der Dorfboden war stark fleckig.
+  - **Neu:** Alle Äcker in einer Richtung und blasser, Wegränder schmaler und schwächer, Dorfboden ruhiger. Das gilt nur für Winterkarten, Grauwall und Sankt Ruß bleiben gleich.
+  - **Bilder:** `entwurf/probe/kraehenfurt_c/jetzt/` (vorher) und `…/nachher/`, je Übersicht, `strasse_nah`, `ecke_oben_rechts`, `dorfplatz`.
+  - Zäune und Holzstapel habe ich nicht ausgedünnt; sie gehören zu Gärten und Häusern und wirkten auf den Bildern nicht störend.
+- **Punkt 13 – Zielflaggen:**
+  - Gut ein Viertel größer, herausgezoomt zusätzlich bis ×1,6.
+  - Kräftigere dunkle Kontur an Pfahl, Tuch und Wimpel; Farben satter.
+  - **Neutrale Flaggen ockerbraun** (klar anders als Feldgrau, auf Schnee sichtbar).
+  - Dazu ein **flacher Bodenring** am Fuß: erobert in Fraktionsfarbe, neutral knochenweiß gestrichelt.
+  - Gilt für alle Karten. Vergleich: `entwurf/probe/kraehenfurt_c/flaggen_vorher_nachher.jpg` (Übersicht, oben vorher).
+- **Punkt 12 – Deckung in der Mitte: vorbereitet, aber nicht eingeschaltet.** Getestet mit Granattrichtern (Abwehr ×1,2, im Winter Schneetrichter), je 100 Schlachten:
+  - ohne: Konkordat **41 / 42 %** (Startwert 1/2)
+  - je zwei Trichter in der Mitte (6,7 · 8,8) und auf der Ostseite (14,6 · 14,8): Konkordat **72 / 84 %**
+  - nur Ostseite: **84 %**. Die Felder liegen in der Aufstellungszone der Aschenwacht und bringen ihre Aufstellung/KI aus dem Tritt.
+  - nur Mitte: **34 / 31 %**. Die Mitte nutzt vor allem der Angreifer (Aschenwacht).
+  - → Keine Variante hielt die Siegquote. `MAP.deckung` ist vorbereitet, aber leer. Ausprobieren mit `KF_DECKUNG="6,7;8,8"`.
+  - Grauwall und Sankt Ruß nur angesehen: Grauwall hat in der Mitte Trichter und Gräben, Sankt Ruß Ruinen und Gärten. Dort fehlt Deckung nicht wie in Krähenfurt.
+- **Auffällig:** Krähenfurt steht derzeit bei **Konkordat 41–42 %** (abgeglichen war es am 22.11. auf 52,9 %). Vermutlich hat das die neue Handgranaten-Fähigkeit verschoben (Paket B2, dort nur Grauwall und Sankt Ruß gemessen). Neuabgleich nicht gemacht (Sparregel).
+
+### Fragen an Enrico
+- **Deckung Krähenfurt:** Die Trichter in der Mitte helfen dem Angreifer (Aschenwacht −9 Punkte fürs Konkordat). Variante A: Trichter in der Mitte **und** Ausgleich (z. B. Aufstellungszone der Aschenwacht `zoneD` eine Spalte weiter zurück oder KI-Gewichte), dann neu abgleichen (Messung ca. 10 Minuten). Variante B: Deckung nur als Zier ohne Regelwirkung. Variante C: so lassen.
+- **Krähenfurt-Gleichgewicht:** Soll ich die Karte nach den Handgranaten neu abgleichen (Ziel ~50 %)?
+
+---
+
 ## 2026-11-24 – Paket B2: Meldegänger teurer, Handgranaten als Fähigkeit, Scharfschützen-Läufe (`696ca67`)
 
 Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Partietest fehlerfrei (Konsole sauber). Simulationen je 100 Schlachten, ein Startwert.
