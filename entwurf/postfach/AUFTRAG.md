@@ -13,6 +13,7 @@
 - ✓ **Paket A – Bedienfehler (zuerst, klein):** Fehler 18:30 (Geschütze ohne Ziel abhaken), Spieltest-Punkt 9 (zwei Knöpfe gleichzeitig aktiv), Punkt 22 (Fähigkeit durch Anklicken ausgelöst). *(22:20-Zusatz Tonwahl noch offen → in Paket A2 verschoben)*
 - ✓ **Paket A2 – Ton-Pult „Eigenes Paket“ (Abschnitt 20:30, Punkt 25), direkt nach Paket A.** Zuerst (aus Paket A übrig, wurde dort nicht gemacht): Enricos neuer Pult-Export `entwurf/postfach/tonpult_export_2026-11-23_2217.json` (287 Wahlen, 17 Töne aussortiert, alle 54 Einheiten „fertig“) einbauen: `node tools/tonwahl_bau.mjs`, `node tools/ton_teilen.mjs`, build. Im Bericht: wie viele Wahlen wirken, welche nicht und warum.
 - ✓ **Paket A3 – Chroniken-Texte statt „Im echten Krieg“ (Abschnitt 24.11. 15:20, Punkt 28) + Punkt 29 (Ton-Pult: erstes Kreuz nimmt Werks-Paket mit).**
+- ✓ **Paket A4 – Gelände-Chroniken + Rest (Abschnitt 24.11. 15:30, Punkte 29–31).**
 - **Paket B – schnelle Kleinigkeiten:** Punkte 5 (Spuren nicht auf Straßen), 6 (Zielmarke Knochenweiß am Boden), 15 (Leuchtsignal: Minen sichtbar aufdecken), 20 (Heil-Pluszeichen), 21 (Granaten in Nahkampf-Animation – erst klären), 24 (Kamera zurück), 7 nur Teil 1 (Meldegänger Abklingzeit 2), 8 (Sturmlauf: vorbeidrücken, Minen).
 - **Paket C – Krähenfurt:** Punkte 4 (Ruckler messen + beheben, Langzeitlauf erlaubt, max. 15 Min.), 1 (Karte aufräumen), 12 (Deckung Mitte), 13 (Flaggen sichtbar).
 - **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder).
@@ -20,6 +21,16 @@
 - **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Enrico 2026-11-24 15:30): Gelände-Chroniken, Ton-Pult-Rest, „1 Felder“ <<<
+**Reihenfolge:** Paket A4, eigener `pa`, klein. Keine Regeländerung, keine Simulation.
+
+- [x] **29.** (aus Paket A3 übrig, wurde nicht gemacht) siehe Abschnitt 15:20: erstes Kreuz „+ ins Paket“ nimmt das Werks-Paket automatisch mit.
+- [x] **30. Gelände-Chroniken.** Die Texte stehen in `entwurf/welt/gelaende_chroniken.md` (27 Geländearten, Schlüssel = TERRAIN-Schlüssel, je Quelle + 1 Satz, vom Berater geschrieben). TERRAIN `real` durch `chronik: { quelle, text }` ersetzen (wie bei den Einheiten), Feld-Tooltip zeigt „Aus den Chroniken“ mit `chronikHtml`. Keine Weltkriegsfakten mehr irgendwo im Spiel: grep nach „Im echten Krieg“, `real:`, Somme, Passchendaele, Reims, Verdun, Flandern, Argonnen, Loos, Yser, Lorette, Albert – Funde im Bericht nennen (in Code-Kommentaren und Werkzeugen dürfen sie bleiben, in der Oberfläche nicht). `test_regeln` prüft auch die Gelände-Texte.
+- [x] **31. „1 Felder“:** Reichweite 1 heißt „1 Feld“ (Info-Fenster, Werte-Kasten „Schuss“, Schlagworte wie „Schrotflinte 1 Feld“). Überall, wo Feld/Felder aus einer Zahl gebildet wird, die Einzahl richtig.
+- Hinweis: In der Weltbibel steht jetzt unten „Offizielle Namen im Spiel“ (Valmor = Doppelinsel des Konkordats, Grauwall = befestigte Westgrenze der Aschenwacht). Im Spiel nichts ändern.
+
+Bericht kurz, ein Bild vom Feld-Tooltip (Friedhof Sankt Ruß), im Chat „– pb“.
 
 # >>> JETZT (Enrico 2026-11-24 15:20): Eigene Welt – Chroniken-Texte statt „Im echten Krieg“ <<<
 **Reihenfolge:** Paket A3, eigener `pa`, klein. Keine Regeländerung, keine Simulation.
@@ -35,7 +46,7 @@ Enrico hat entschieden: Armargeddon bekommt ein **eigenes Fantasy-Universum** (e
   - `tools/test_regeln.js` prüft „Text je Einheit“ – anpassen, dass es jetzt den Chroniken-Text verlangt.
   - **CLAUDE.md anpassen:** Die Regel „Jede Einheit hat einen Text ‚Im echten Krieg‘ mit belegbaren Fakten zum Ersten Weltkrieg“ ersetzen durch: „Eigene Welt (Weltbibel `entwurf/welt/weltbibel.md`): jede Einheit hat einen Text ‚Aus den Chroniken‘ (2 Sätze, höchstens 280 Zeichen, mit Quellenzeile), passend zu dem, was sie im Spiel kann. Keine echten Länder-, Orts- oder Personennamen.“ Auch die Zeile „angelehnt an den Ersten Weltkrieg“ im Projektziel entsprechend umformulieren (Grabenkrieg-Stil, eigene Welt).
   - Bild im Bericht: Info-Fenster von Löwenoger und Eisenknecht, 1920 px.
-- [ ] **29. Ton-Pult, Antwort auf die Frage aus Paket A2:** Das erste Kreuz „+ ins Paket“ an einer Stelle, an der noch das Werks-Paket klingt, nimmt **das Werks-Paket automatisch mit** (alle seine Töne angekreuzt, der neue dazu). Ist an der Stelle ein einzelner Ton gewählt, bleibt es wie bisher (er wird der erste im Paket). Test anpassen.
+- [x] **29. Ton-Pult, Antwort auf die Frage aus Paket A2:** Das erste Kreuz „+ ins Paket“ an einer Stelle, an der noch das Werks-Paket klingt, nimmt **das Werks-Paket automatisch mit** (alle seine Töne angekreuzt, der neue dazu). Ist an der Stelle ein einzelner Ton gewählt, bleibt es wie bisher (er wird der erste im Paket). Test anpassen.
 
 Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
 

@@ -1,3 +1,22 @@
+## 2026-11-24 – Paket A4: Gelände-Chroniken, Ton-Pult-Rest, „1 Feld“ (`32be418`)
+
+Gepusht. Tests: `tonpult_test` 93/93, `test_regeln` und `test_kommentare` in Ordnung. Keine Regeländerung, keine Simulation.
+
+- **Punkt 30 – Gelände-Chroniken:** alle 27 Geländearten haben `chronik: { quelle, text }` aus `entwurf/welt/gelaende_chroniken.md` (keine fehlt, keine übrig). Die 17 alten Weltkriegstexte sind weg. Der Feld-Tooltip zeigt „Aus den Chroniken“, darunter die Quelle kursiv, dann den Text. Bild: `entwurf/probe/chronik/feld_friedhof_1920.jpg` (Friedhof Sankt Ruß).
+- **Weitere Weltkriegsreste im Spiel gefunden und entfernt:**
+  - Siegbild: der Kasten „Wie war es im echten Krieg?“ (Cambrai 1917, drei Lernfragen). Er ist ganz raus.
+  - Startmenü-Hinweis „Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918“ → „Eine eigene Welt im Stil des Grabenkriegs.“
+  - Schalter „Kampfmaschinen: Ohne“: „wie im Ersten Weltkrieg“ → „Nur Truppen und Gerät des Grabenkriegs, ohne Kampfmaschinen.“
+  - README (Einleitung „Gedacht auch für den Geschichtsunterricht“, „Lerntexte“) umgeschrieben.
+  - Die Suche nach Somme, Passchendaele, Reims, Verdun, Flandern, Argonnen, Loos, Yser, Lorette und Albert findet im Spiel-Code nichts mehr. Treffer gibt es nur noch in eingebetteten Bild- und Tondaten (zufällige Buchstabenfolgen) und in einem Quelldateinamen eines Tons („adrian_sommer“, CREDITS/sound_bau). Die Kartenzufallszahl 1917 bleibt, sie ist nur ein Startwert und nirgends sichtbar.
+- **Punkt 29 – Ton-Pult:** Das erste „+ ins Paket“ an einer Stelle, an der das Werks-Paket klingt, nimmt alle seine Töne angekreuzt mit, der neue kommt dazu. Ist ein einzelner Ton gewählt, wird er wie bisher der erste. Neue Prüfung im Pult-Test.
+- **Punkt 31 – „1 Feld“:** Die neue Hilfsfunktion `felder(n)` in ui.js wird an 19 Stellen benutzt: Werte-Kasten „Schuss“ im Info-Fenster, Reichweite in der Einheitenkarte, Zweitwaffe, Breitseite, Sicht, Sturmlauf, Sprung, Banner, großer Befehl, Anspannen, „1 Feld“/„1 Feldern“. Die Schlagworte („Schrotflinte 1 Feld“, „Zweitwaffe (Nachbarfeld)“) waren schon richtig. Die Spanne „1–n Felder“ der Panzergranate bleibt so.
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket A3: Chroniken-Texte statt „Im echten Krieg“ (Punkt 28) (`639f648`)
 
 Gepusht. Tests: `test_regeln` in Ordnung (54 Einheiten), `test_kommentare` sauber. Keine Regeländerung, keine Simulation.
