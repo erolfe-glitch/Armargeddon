@@ -192,6 +192,9 @@ function abilPlan(G, u) {
       const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
+    else if (k === 'kopfrunter') {   // Punkt 3 (2026-11-24): MG, Geschütze und Gegner, die eigene Truppen bedrängen, niederhalten; sonst lieber schießen (planUnit)
+      const x = foe(c, r); if (x) { const T = TYPES[x.type], schwer = (T.mg && x.setup) || E.cls(x) === 'art', draengt = G.units.some(o => o.side === u.side && E.alive(o) && o !== u && E.dist(o.c, o.r, x.c, x.r) <= 1) && T.atk >= 3;
+        if (schwer || draengt) v = 1 + (schwer ? 1.8 : 0) + (draengt ? 1.1 : 0) + (G.map[x.c][x.r].obj ? 0.5 : 0) - (E.cls(x) === 'walker' ? 1.5 : 0); } }
     else if (k === 'handgranate') {   // Punkt 34: werfen, wenn der Gegner daneben steht oder in Graben/Haus/Ruine sitzt (dort schützt die Deckung nicht)
       const x = foe(c, r); if (x) { const t = G.map[x.c][x.r].t, deck = ['trench', 'village', 'haus', 'kapelle', 'bunker', 'fabrik', 'schiff', 'turm', 'barrikade'].includes(t) || x.dug, nah = E.dist(u.c, u.r, c, r) === 1;
         if (nah || deck) { const m = E.cls(x) === 'walker' ? 0.4 : TYPES[x.type].suit ? 0.75 : 1, dm = Math.min(E.P.HANDGR_DMG * m, x.str); v = 1 + dm * 1.5 + (deck ? 1 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (G.map[x.c][x.r].obj ? 0.5 : 0) - (E.cls(x) === 'walker' ? 1 : 0); } } }

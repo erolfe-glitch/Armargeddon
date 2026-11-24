@@ -2530,7 +2530,7 @@ async function playEvent(e) {
   const sp = speed; speed = Math.min(1, sp * 1.5);
   try { return await playEvent0(e); } finally { if (speed === Math.min(1, sp * 1.5)) speed = sp; }
 }
-const ANGRIFF_EV = new Set(['fire', 'shell', 'melee', 'counter', 'durchbruch', 'rollen', 'hinrichtung', 'freeblow', 'zweit', 'pzgranate', 'faust', 'strike', 'handgranate']);
+const ANGRIFF_EV = new Set(['fire', 'shell', 'melee', 'counter', 'durchbruch', 'rollen', 'hinrichtung', 'freeblow', 'zweit', 'pzgranate', 'faust', 'strike', 'handgranate', 'kopfrunter']);
 async function playEvent0(e) {
   if (ANGRIFF_EV.has(e.t)) { const aid = e.a != null ? e.a : e.u; if (aid != null) letzterAngreifer = { id: aid, t: performance.now() }; }   // M7
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
@@ -2972,6 +2972,8 @@ async function playEvent0(e) {
       for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
     case 'tunnel': { if (e.u != null) pose(e.u, 'hacke', 1500); playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('stollen_boom', 0.8); playSound('stollen_knall', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
+    case 'kopfrunter': {   // Punkt 3 (2026-11-24): gezielter Schuss ohne Schaden – Ziel duckt sich, wird niedergehalten (Ereignis 'supp' folgt)
+      await playEvent({ t: 'fire', a: e.u, d: e.d, kopf: true }); const dd = DU.get(e.d); if (dd) { pose(e.d, 'getroffen', 500); floater(...headPos(e.d), 'Kopf runter!', '#F0EDE1'); } await wait(200); break; }
     case 'handgranate': {   // F103: Grenadiere werfen vor dem Nahkampf (Ausholen → Loslassen), kleine Explosion am Ziel
       const d = DU.get(e.d); if (!d || !DU.get(e.a)) break; const x2 = d.x, y2 = d.y - L.s * 0.3; await poseWurf(e.a, x2, y2); await wait(200);
       if (!fxImpact(x2, y2 + L.s * 0.25, L.s * 0.45)) boom(x2, y2, L.s * 0.45, 'he'); playSound('grenade', 0.55, null, { von: unitById(e.a) });   /* Wurfton gehört dem Werfer (Ton-Pult) */ shake(3); await wait(160); break; }
@@ -3656,10 +3658,11 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { handgranate: 'Kein Gegner in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 40 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_KEIN = { kopfrunter: 'Kein Ziel in Reichweite und Sicht, das noch nicht niedergehalten ist – oder schon gezogen (nur aus dem Stand) oder Pause nach dem letzten Mal.', handgranate: 'Kein Gegner in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 40 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 // F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
 // Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
 const ABIL_KURZ = {
+  kopfrunter: () => `Gezielter Schuss ohne Schaden: Ziel niedergehalten, Moral −${Math.round(P.KOPF_MOR * 10)}. Nur aus dem Stand, alle 2 Runden.`,
   handgranate: () => `Handgranaten auf einen Gegner bis ${felder(P.HANDGR_RNG)}: etwa ${fmt(P.HANDGR_DMG)} Schaden, Graben und Häuser schützen nicht, Ziel niedergehalten. Alle 2 Runden.`,
   smoke: () => `Nebel auf ein Feld bis 3 Felder und seine Nachbarn, bis zum nächsten eigenen Zug. Ziel im Nebel: Beschuss ${xf(P.NEBEL_IN)}; Schütze im Nebel ${xf(P.NEBEL_AUS)}; keine Sicht hindurch.`,
   tunnel: u => `${TYPES[u.type].ladungen ? `Noch ${TYPES[u.type].ladungen - (u.ladUsed || 0)} von ${TYPES[u.type].ladungen} Ladungen in dieser Schlacht. ` : ''}Stollen unter Graben, Bunker oder Gebäude bis 2 Felder. Nach 2 eigenen Runden fliegt das Feld hoch: etwa ${fmt(P.TUNNEL_DMG)} Schaden, starker Moralverlust, danach Trichter.`,
@@ -3679,7 +3682,7 @@ const ABIL_KURZ = {
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Höchstens alle ${A.cd} Runden.` : ''); }
-const ABIL_SYM = { /* bogen8a (Enrico 2026-11-22): je Fähigkeit ein eigenes Zeichen */ handgranate: 'handgranate', durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', pzgranate: 'panzergranate', rollen: 'sturmrollen', sprung: 'sprung', rush: 'sturmlauf', mark: 'markieren', strike: 'feuerschlag', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { /* bogen8a (Enrico 2026-11-22): je Fähigkeit ein eigenes Zeichen */ kopfrunter: 'niedergehalten', handgranate: 'handgranate', durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', pzgranate: 'panzergranate', rollen: 'sturmrollen', sprung: 'sprung', rush: 'sturmlauf', mark: 'markieren', strike: 'feuerschlag', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen
@@ -4729,6 +4732,7 @@ function noteEvent(e, u) {
     case 'gas': if (e.late) return logAdd(`${N(u)}: Vergiftung`, u && u.side, ...at(u)); return;
     case 'burn': return logAdd(`${N(u)}: im Feuer`, u && u.side, e.c, e.r);
     case 'freeblow': { const fa = G.units.find(x => x.id === e.a); return logAdd(`${N(u)} weicht zurück: Freischlag von ${N(fa)}`, u && u.side, ...at(u)); }
+    case 'kopfrunter': return logAdd(`${N(unitById(e.u))}: Kopf runter! – ${N(unitById(e.d))} niedergehalten`, unitById(e.u) && unitById(e.u).side);
     case 'handgranate': return logAdd(`${N(unitById(e.a))}: Handgranaten`, unitById(e.a) && unitById(e.a).side);
     case 'lanceblast': return logAdd(`${N(unitById(e.a))}: Sprenglanze`, unitById(e.a) && unitById(e.a).side, e.c, e.r);
     case 'tunnelBlow': return logAdd('Stollen gesprengt', null, e.c, e.r, true);
