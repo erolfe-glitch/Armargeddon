@@ -26,6 +26,11 @@ for (const a of Object.keys(T)) for (const d of Object.keys(T)) {
     if (!Number.isFinite(p.dmg) || (p.counter != null && !Number.isFinite(p.counter))) fehler.push(`preview ${art} ${a} → ${d}: dmg ${p.dmg}, counter ${p.counter}`); }
   for (const r of [true, false]) { const f = E.faktor(a, d, r); if (!Number.isFinite(f.f)) fehler.push(`faktor ${a} → ${d} (${r ? 'Fern' : 'Nah'}): ${f.f}`); }
 }
+for (const [k, g] of Object.entries(E.TERRAIN || {})) {   // Gelände-Chroniken (Paket A4)
+  if (!g.chronik || !g.chronik.quelle || !g.chronik.text) fehler.push(`Gelände ${k}: Chroniken-Text (quelle, text) fehlt`);
+  if (g.real) fehler.push(`Gelände ${k}: alter Text „real“ (Weltkrieg) noch vorhanden`);
+}
+if (!E.TERRAIN) fehler.push('E.TERRAIN fehlt – Gelände-Texte nicht prüfbar');
 for (const [k, t] of Object.entries(T)) {
   if (!t.can || !t.chronik || !t.chronik.quelle || !t.chronik.text) fehler.push(`${k}: Text „can“ oder Chroniken-Text (quelle, text) fehlt`);
   else if (t.chronik.text.length > 280) fehler.push(`${k}: Chroniken-Text länger als 280 Zeichen`);
