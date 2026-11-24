@@ -14,6 +14,7 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | pistol | pistol_1 | 581773__hz37__shoot-1-hza-01-08-2021.wav | Freesound / hz37 | CC0 1.0 | <https://freesound.org/s/581773/> |
 | pistol | pistol_2 | dragon-studio-gunshot-511311.mp3 | Pixabay / dragon-studio | Pixabay Content License | – |
 | pistol | pistol_3 | Infantry Guns/freesound_community-darkscape-1911-a1-101298.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
+| dampfpfeife | dampfpfeife_1 | Moving tanks/caboose_canine-steam-locomotive-fouled-5-chime-375193.mp3 | Pixabay / caboose_canine | Pixabay Content License | – |
 | semi | semi_1 | 417148__superphat__slowfiringheavyweapon.wav | Freesound / superphat | CC0 1.0 | <https://freesound.org/s/417148/> |
 | mg | mg_1 | Infantry Guns/freesound_community-1866-ww1-machine-gun-free-sound-fx-cinematic-sound-effects-94651.mp3 | Pixabay / freesound_community | Pixabay Content License | – |
 | mg | mg_2 | 417688__superphat__lightmachinegun1.wav | Freesound / superphat | CC0 1.0 | <https://freesound.org/s/417688/> |

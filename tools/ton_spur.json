@@ -2,7 +2,7 @@
  "erzeugt": "2026-11-23T18:20:29.433Z",
  "ui_hash": "8dc165fc3d6fe9d403ced2d02488cc491a0368fb",
  "tempo": 12,
- "hinweis": "a = Einheit handelt, z = Einheit ist Getroffene; wahl = wie die Pult-Wahl (TONWAHL) die Einheit an dieser Stelle sieht: sp Sprecher, a/z im Ereignis (nicht Ziel/Ziel), ok = nicht im Ereignis, fest = Ton als fester Schlüssel gezogen (Wahl greift nicht)",
+ "hinweis": "a = Einheit handelt, z = Einheit ist Getroffene; wahl = wie die Pult-Wahl (TONWAHL) die Einheit an dieser Stelle sieht: sp Sprecher, a/z im Ereignis (nicht Ziel/Ziel), ok = nicht im Ereignis, fest = Ton als fester Schlüssel gezogen (Wahl greift nicht) · 2026-11-24: koloss, sturmpz aus Teil-Lauf übernommen (Dampfpfeife) · grenadier (Handgranaten-Fähigkeit) aus Teil-Lauf",
  "typen": {
   "hauptA": {
    "a": {
@@ -6788,6 +6788,18 @@
     "whistle": [
      "ankunft"
     ],
+    "dampfpfeife": [
+     "faehigkeit_rollen:grenadier",
+     "faehigkeit_rollen:huenen",
+     "faehigkeit_rollen:lanzeD",
+     "faehigkeit_rollen:sense"
+    ],
+    "held_dampf": [
+     "faehigkeit_rollen:grenadier",
+     "faehigkeit_rollen:huenen",
+     "faehigkeit_rollen:lanzeD",
+     "faehigkeit_rollen:sense"
+    ],
     "aufprall_rollen": [
      "faehigkeit_rollen:grenadier",
      "faehigkeit_rollen:huenen",
@@ -6796,13 +6808,18 @@
     ]
    },
    "z": {
+    "crash": [
+     "ziehen_draht",
+     "panne"
+    ],
+    "steps": [
+     "ziehen_draht",
+     "panne"
+    ],
     "armor": [
      "gegenschlag:grenadier",
      "gegenschlag:huenen",
      "gegenschlag:knecht"
-    ],
-    "grenade": [
-     "gegenschlag:grenadier"
     ],
     "boom": [
      "getroffen:sturmpz",
@@ -6826,12 +6843,6 @@
     ],
     "feuer": [
      "vernichtet:sturmpz"
-    ],
-    "crash": [
-     "panne"
-    ],
-    "steps": [
-     "panne"
     ]
    },
    "stimmen": {
@@ -6907,6 +6918,18 @@
     "draht_ueberrollen": {
      "a1:a": [
       "ziehen_draht"
+     ]
+    },
+    "crash": {
+     "z1:z": [
+      "ziehen_draht",
+      "panne"
+     ]
+    },
+    "steps": {
+     "z1:z": [
+      "ziehen_draht",
+      "panne"
      ]
     },
     "ueberrollen": {
@@ -6987,11 +7010,6 @@
       "gegenschlag:knecht"
      ]
     },
-    "grenade": {
-     "z:z": [
-      "gegenschlag:grenadier"
-     ]
-    },
     "artD": {
      "ok:z": [
       "getroffen:geschuetz"
@@ -7020,16 +7038,6 @@
     "feuer": {
      "z1:z": [
       "vernichtet:sturmpz"
-     ]
-    },
-    "crash": {
-     "z1:z": [
-      "panne"
-     ]
-    },
-    "steps": {
-     "z1:z": [
-      "panne"
      ]
     },
     "impact": {
@@ -7061,6 +7069,22 @@
     "whistle": {
      "a1:a": [
       "ankunft"
+     ]
+    },
+    "dampfpfeife": {
+     "a1:a": [
+      "faehigkeit_rollen:grenadier",
+      "faehigkeit_rollen:huenen",
+      "faehigkeit_rollen:lanzeD",
+      "faehigkeit_rollen:sense"
+     ]
+    },
+    "held_dampf": {
+     "a1:a": [
+      "faehigkeit_rollen:grenadier",
+      "faehigkeit_rollen:huenen",
+      "faehigkeit_rollen:lanzeD",
+      "faehigkeit_rollen:sense"
      ]
     },
     "aufprall_rollen": {
@@ -11931,7 +11955,8 @@
     ],
     "pferd_unruhe": [
      "schuss:reiter",
-     "nahkampf:reiter"
+     "nahkampf:reiter",
+     "faehigkeit_handgranate:reiter"
     ],
     "nahD": [
      "nahkampf:kohorte",
@@ -11954,13 +11979,6 @@
      "nahkampf:reiter",
      "ausgraben"
     ],
-    "grenade": [
-     "nahkampf:kohorte",
-     "nahkampf:stahl",
-     "nahkampf:koloss",
-     "nahkampf:turm",
-     "nahkampf:reiter"
-    ],
     "armor": [
      "nahkampf:koloss"
     ],
@@ -11975,19 +11993,15 @@
     ],
     "whistle": [
      "ankunft"
+    ],
+    "grenade": [
+     "faehigkeit_handgranate:kohorte",
+     "faehigkeit_handgranate:stahl",
+     "faehigkeit_handgranate:reiter",
+     "faehigkeit_handgranate:mahlwerk"
     ]
    },
    "z": {
-    "pain": [
-     "ziehen_draht",
-     "gegenschlag:turm",
-     "getroffen:kohorte",
-     "getroffen:mahlwerk",
-     "getroffen:koloss",
-     "getroffen:turm",
-     "getroffen:haubitze",
-     "freischlag:kohorte"
-    ],
     "grunzen": [
      "nahkampf:kohorte",
      "nahkampf:stahl",
@@ -12003,6 +12017,7 @@
      "vernichtet:kohorte"
     ],
     "gasmaske_2": [
+     "nahkampf:kohorte",
      "nahkampf:stahl",
      "nahkampf:koloss",
      "nahkampf:turm",
@@ -12014,7 +12029,17 @@
      "getroffen:koloss",
      "getroffen:turm",
      "getroffen:haubitze",
-     "feuer"
+     "feuer",
+     "vernichtet:kohorte"
+    ],
+    "pain": [
+     "gegenschlag:turm",
+     "getroffen:kohorte",
+     "getroffen:mahlwerk",
+     "getroffen:koloss",
+     "getroffen:turm",
+     "getroffen:haubitze",
+     "freischlag:kohorte"
     ],
     "medic": [
      "getroffen:kohorte",
@@ -12083,6 +12108,7 @@
     ],
     "stimmen_D|ruf_niedergehalten": [
      "getroffen:mahlwerk",
+     "getroffen:koloss",
      "getroffen:haubitze",
      "moral"
     ],
@@ -12103,6 +12129,12 @@
     ],
     "stimmen_D|ruf_feuerbereit": [
      "feuerbereit"
+    ],
+    "stimmen_D|ruf_granate": [
+     "faehigkeit_handgranate:kohorte",
+     "faehigkeit_handgranate:stahl",
+     "faehigkeit_handgranate:reiter",
+     "faehigkeit_handgranate:mahlwerk"
     ]
    },
    "wahl": {
@@ -12137,18 +12169,6 @@
     "draht_infanterie": {
      "a1:a": [
       "ziehen_draht"
-     ]
-    },
-    "pain": {
-     "sp:z": [
-      "ziehen_draht",
-      "gegenschlag:turm",
-      "getroffen:kohorte",
-      "getroffen:mahlwerk",
-      "getroffen:koloss",
-      "getroffen:turm",
-      "getroffen:haubitze",
-      "freischlag:kohorte"
      ]
     },
     "marsch_schritte": {
@@ -12189,7 +12209,8 @@
     "pferd_unruhe": {
      "ok:a": [
       "schuss:reiter",
-      "nahkampf:reiter"
+      "nahkampf:reiter",
+      "faehigkeit_handgranate:reiter"
      ]
     },
     "nahD": {
@@ -12219,15 +12240,6 @@
       "ausgraben"
      ]
     },
-    "grenade": {
-     "a:a": [
-      "nahkampf:kohorte",
-      "nahkampf:stahl",
-      "nahkampf:koloss",
-      "nahkampf:turm",
-      "nahkampf:reiter"
-     ]
-    },
     "grunzen": {
      "sp:z": [
       "nahkampf:kohorte",
@@ -12246,6 +12258,7 @@
     },
     "gasmaske_2": {
      "sp:z": [
+      "nahkampf:kohorte",
       "nahkampf:stahl",
       "nahkampf:koloss",
       "nahkampf:turm",
@@ -12257,7 +12270,8 @@
       "getroffen:koloss",
       "getroffen:turm",
       "getroffen:haubitze",
-      "feuer"
+      "feuer",
+      "vernichtet:kohorte"
      ]
     },
     "armor": {
@@ -12268,6 +12282,17 @@
     "heavy": {
      "a:a": [
       "nahkampf:turm"
+     ]
+    },
+    "pain": {
+     "sp:z": [
+      "gegenschlag:turm",
+      "getroffen:kohorte",
+      "getroffen:mahlwerk",
+      "getroffen:koloss",
+      "getroffen:turm",
+      "getroffen:haubitze",
+      "freischlag:kohorte"
      ]
     },
     "medic": {
@@ -12328,6 +12353,14 @@
     "whistle": {
      "a1:a": [
       "ankunft"
+     ]
+    },
+    "grenade": {
+     "a1:a": [
+      "faehigkeit_handgranate:kohorte",
+      "faehigkeit_handgranate:stahl",
+      "faehigkeit_handgranate:reiter",
+      "faehigkeit_handgranate:mahlwerk"
      ]
     }
    },
@@ -18024,12 +18057,12 @@
      "schuss:turm",
      "zweitwaffe:stahl"
     ],
-    "pferd_unruhe": [
-     "schuss:reiter"
-    ],
     "neigh": [
      "schuss:reiter",
      "faehigkeit_rollen:reiter"
+    ],
+    "pferd_unruhe": [
+     "schuss:reiter"
     ],
     "mg": [
      "zweitwaffe:kohorte",
@@ -18056,6 +18089,18 @@
     ],
     "whistle": [
      "ankunft"
+    ],
+    "dampfpfeife": [
+     "faehigkeit_rollen:kohorte",
+     "faehigkeit_rollen:stahl",
+     "faehigkeit_rollen:reiter",
+     "faehigkeit_rollen:mahlwerk"
+    ],
+    "held_dampf": [
+     "faehigkeit_rollen:kohorte",
+     "faehigkeit_rollen:stahl",
+     "faehigkeit_rollen:reiter",
+     "faehigkeit_rollen:mahlwerk"
     ],
     "aufprall_rollen": [
      "faehigkeit_rollen:kohorte",
@@ -18257,15 +18302,15 @@
       "zweitwaffe:stahl"
      ]
     },
-    "pferd_unruhe": {
-     "ok:a": [
-      "schuss:reiter"
-     ]
-    },
     "neigh": {
      "ok:a": [
       "schuss:reiter",
       "faehigkeit_rollen:reiter"
+     ]
+    },
+    "pferd_unruhe": {
+     "ok:a": [
+      "schuss:reiter"
      ]
     },
     "mg": {
@@ -18345,6 +18390,22 @@
     "whistle": {
      "a1:a": [
       "ankunft"
+     ]
+    },
+    "dampfpfeife": {
+     "a1:a": [
+      "faehigkeit_rollen:kohorte",
+      "faehigkeit_rollen:stahl",
+      "faehigkeit_rollen:reiter",
+      "faehigkeit_rollen:mahlwerk"
+     ]
+    },
+    "held_dampf": {
+     "a1:a": [
+      "faehigkeit_rollen:kohorte",
+      "faehigkeit_rollen:stahl",
+      "faehigkeit_rollen:reiter",
+      "faehigkeit_rollen:mahlwerk"
      ]
     },
     "aufprall_rollen": {
@@ -22717,6 +22778,7 @@
      "faehigkeit_rollen:sense"
     ],
     "schnee_rennen": [
+     "faehigkeit_rollen:grenadier",
      "faehigkeit_rollen:sense"
     ]
    },
@@ -22737,6 +22799,7 @@
     },
     "schnee_rennen": {
      "ok:a": [
+      "faehigkeit_rollen:grenadier",
       "faehigkeit_rollen:sense"
      ]
     }

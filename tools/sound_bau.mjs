@@ -4,6 +4,7 @@
 //   → Ende bei Stille kürzen, kurz ausblenden → Lautstärke angleichen (lvl, Spitze höchstens −1 dB) → AAC (ADTS) kodieren.
 // Alte Einträge in src/sound.js bleiben erhalten (außer „drop“), neue kommen als <pool>_<n> dazu; SOUND_POOLS ordnet Plätze und Seiten zu.
 // Kopien der neuen Töne: ui-quelle/toene/<schlüssel>.aac. Aufruf: node tools/sound_bau.mjs   (Server: python -m http.server 8765 im Projektordner)
+// Nur einzelne Plätze neu bauen: NUR=dampfpfeife node tools/sound_bau.mjs (übrige Töne bleiben, wie sie sind)
 import { spawn } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -82,6 +83,7 @@ const head = old.slice(0, old.indexOf('(function (root)')).split('\n').filter(l 
 const OLD = {}; for (const t of [old, existsSync(join(ROOT, 'src', 'sound_pult.js')) ? readFileSync(join(ROOT, 'src', 'sound_pult.js'), 'utf8') : '']) for (const m of t.matchAll(/^  ([A-Za-z0-9_]+): '(data:audio\/[^']+)',?$/gm)) OLD[m[1]] = m[2];   // M9: auch die ausgelagerten Pult-Töne
 const drop = new Set(SPEC.drop || []);
 // wiederholbar: Töne aus einem früheren Lauf (<platz>_<n>) werden neu erzeugt, nicht als alt übernommen
+const NUR = process.env.NUR ? new Set(process.env.NUR.split(',')) : null, OLD0 = { ...OLD };   // NUR=platz,… (2026-11-24): nur diese Plätze neu bauen, alle übrigen Töne unverändert übernehmen (statt Neubau aller Töne)
 const POOLNAMES = new Set([...SPEC.eintraege.map(e => e.pool), ...(SPEC.dropPools || [])]); /* dropPools: entfallene Plätze, ihre <platz>_<n> verschwinden */ for (const k of Object.keys(OLD)) { const m = k.match(/^(.+)_(\d+)$/); if (m && POOLNAMES.has(m[1])) delete OLD[k]; }
 const NEW = {}, POOLS = {}, rows = [], cnt = {};
 for (const e of SPEC.eintraege) {
@@ -89,7 +91,8 @@ for (const e of SPEC.eintraege) {
   if (e.leer) { rows.push({ pool: e.pool, key: '–', s: null, f: '(noch leer)', note: e.note }); continue; }   // Platz angelegt, Dateien folgen
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.key || e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);   // key = fester Schlüssel (alten Ton aus der Quelle neu bauen, Name bleibt; 2026-11-21) – zählt nicht mit
-  if (e.raus) { rows.push({ pool: e.pool, key, s: e.s, f: '(entfernt) ' + e.f, note: e.raus }); continue; }   // raus = Ton entfällt, die Nummern der übrigen bleiben (2026-11-18)
+  if (e.raus) { rows.push({ pool: e.pool, key, s: e.s, f: '(entfernt) ' + e.f, note: e.raus }); continue; }
+  if (NUR && !NUR.has(e.pool) && OLD0[key]) { NEW[key] = OLD0[key]; POOLS[e.pool].push(e.w ? [key, e.s || null, e.w] : [key, e.s || null]); rows.push({ pool: e.pool, key, s: e.s, f: e.f, note: e.note }); continue; }   // NUR: vorhandenen Ton übernehmen   // raus = Ton entfällt, die Nummern der übrigen bleiben (2026-11-18)
   const url = BASE + '/sound-quelle/' + e.f.split('/').map(encodeURIComponent).join('/');
   const r = await cmd('Runtime.evaluate', { expression: `(${PROC})(${JSON.stringify(url)}, ${JSON.stringify({ st: e.st || 0, ab: e.ab, max: e.max || 3, fo: e.fo, fi: e.fi, lvl: e.lvl ?? -14, kbps: e.kbps, stereo: !!e.stereo, rate: e.rate, lp: e.lp, hp: e.hp, bass: e.bass, komp: e.komp, mix: (e.mix || []).map(m => ({ ...m, url: BASE + '/sound-quelle/' + m.f.split('/').map(encodeURIComponent).join('/') })) })})`, awaitPromise: true, returnByValue: true });
   const v = r.result?.result?.value; if (v && !v.b64) console.log("Antwort ohne Daten:", JSON.stringify(v).slice(0, 300), JSON.stringify(r).slice(0, 300));

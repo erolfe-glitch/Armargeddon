@@ -533,6 +533,7 @@
     { "pool": "generalhorn", "f": "Ereignisse/trading_nation-low-horn-185556.mp3", "s": "D", "max": 4.0, "note": "Aschenwacht „Generalangriff“" },
     { "pool": "scream", "f": "Voices/763940__shangusburger__crwdbatl_crowd-yells-charge-continues_shanevincent_gsc24_bin-ambeovr.wav", "s": "D", "max": 1.6, "note": "nur Anfang; Tonprobe 2026-11-18: kürzer, am Ende Frauenstimmen" },
     { "pool": "whistle", "f": "aus_spiel/whistle.wav", "s": null, "max": 1.2, "rate": 0.84, "lp": 2600, "lvl": -17, "note": "Pfeife (Nachschub, Ziel markiert, Schlachtbeginn): tiefer (×0,84), Höhen weg (Tiefpass 2,6 kHz); alter Ton whistle aus src/sound.js – Spieltest Runde 2, Paket 6 (2026-11-17)" },
+    { "pool": "dampfpfeife", "f": "Moving tanks/caboose_canine-steam-locomotive-fouled-5-chime-375193.mp3", "s": null, "max": 1.6, "fo": 0.2, "rate": 0.85, "lvl": -17, "note": "Sturmrollen: Dampfpfeife als Ankündigung (Enrico 2026-11-24, Punkt 42; Pixabay caboose_canine, etwas tiefer ×0,85, auf ~1,6 s mit Ausblendung)" },
     { "pool": "march", "alt": "march", "s": null },
     { "pool": "march", "f": "Ereignisse/324539__deleted_user_2104797__whistle-army-old.wav", "s": "A", "max": 3.0, "rate": 0.84, "lp": 2600 },
     { "pool": "march", "f": "Ereignisse/freesound_community-horn-a-37752.mp3", "s": "D", "max": 3.0 },

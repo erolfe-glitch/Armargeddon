@@ -2852,9 +2852,9 @@ async function playEvent0(e) {
       await heldTitelErst(null, NAME[e.k] || '', TYPES[au.type].held ? art : art + ' klein mitte', TYPES[au.type].name); break; }
     case 'rollen': {   // F54 (2026-11-21): Sturmrollen – Anlauf, ein Aufprall mit Kampfszene (Stillstand, Rütteln, Staub, Blut), Panzer bleibt stehen; das Zurückrutschen folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4);
-      { const dir0 = d.x >= a.x ? 1 : -1; playSound('whistle', 0.55, null, { rate: 0.5, noGap: true, von: unitById(e.u) }); playSound('held_dampf', 0.32, null, { noGap: true, von: unitById(e.u) });   // Punkt 14 (2026-11-24): Ankündigung – Dampfpfeife (tief gestimmte Pfeife + Zischen), weißer Dampfstoß über dem Fahrzeug
+      { const dir0 = d.x >= a.x ? 1 : -1; playSound('dampfpfeife', 0.6, null, { noGap: true, von: unitById(e.u) }); playSound('held_dampf', 0.18, null, { noGap: true, von: unitById(e.u) });   // Punkt 14/42 (2026-11-24): Ankündigung – Dampfpfeife (Lok-Akkord, Platz dampfpfeife), leises Zischen darunter, weißer Dampfstoß über dem Fahrzeug
         if (BW) for (let q = 0; q < 2; q++) fx('rauch', null, a.x - dir0 * L.s * 0.2, a.y - L.s * 1.05, { delay: q * 5, move: [a.x - dir0 * L.s * 0.35, a.y - L.s * 1.6], life: 50, mul: 0.3 + q * 0.08, grow: 1.1, rise: 0.4, alpha: 0.7, fadeIn: 2, fadeOut: 0.7, filter: 'brightness(2.2) saturate(0.2)', fuss: [a.x, a.y] });
-        await wait(420); }
+        await wait(700); }
       playSound('tank', 0.5); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 260); }
       a.face = d.x >= a.x ? 0 : 3; const x0 = a.x, y0 = a.y, dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 220 / speed;
       for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.32 * k * k, dy: dy * 0.32 * k * k }; }   // Anlauf: beschleunigt in den Gegner
@@ -2974,7 +2974,7 @@ async function playEvent0(e) {
     case 'tunnelBlow': { const [x, y] = center(e.c, e.r); playSound('stollen_boom', 0.8); playSound('stollen_knall', 0.6); boom(x, y, s * 1.6, 'he'); burst(x, y, 30, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.45, spread: 0.4 }); banner('Stollen gesprengt', ''); await wait(700); break; }
     case 'handgranate': {   // F103: Grenadiere werfen vor dem Nahkampf (Ausholen → Loslassen), kleine Explosion am Ziel
       const d = DU.get(e.d); if (!d || !DU.get(e.a)) break; const x2 = d.x, y2 = d.y - L.s * 0.3; await poseWurf(e.a, x2, y2); await wait(200);
-      if (!fxImpact(x2, y2 + L.s * 0.25, L.s * 0.45)) boom(x2, y2, L.s * 0.45, 'he'); playSound('grenade', 0.55); shake(3); await wait(160); break; }
+      if (!fxImpact(x2, y2 + L.s * 0.25, L.s * 0.45)) boom(x2, y2, L.s * 0.45, 'he'); playSound('grenade', 0.55, null, { von: unitById(e.a) });   /* Wurfton gehört dem Werfer (Ton-Pult) */ shake(3); await wait(160); break; }
     case 'lanceblast': { const [x, y] = center(e.c, e.r); playSound('grenade2', 0.6); boom(x, y - s * 0.2, s * 0.6, 'he'); floater(x, y - s * 0.9, 'Sprenglanze!', '#ffb04a', true); const dd = DU.get(e.a); if (dd) dd.vs.lance = false; await wait(200); break; }
     case 'blast': { const [x, y] = center(e.c, e.r); const ksz = await kampfSzene(x, y - L.s * 0.3); if (e.u != null) pose(e.u, 'ladung', 1500); playSound('tick', 0.5); await wait(450); playSound('blast', 0.8); boom(x, y, s * 1.1, 'he'); burst(x, y, 18, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); await wait(380); await kampfSzeneEnde(ksz); break; }
     case 'mineLaid': { const [x, y] = center(e.c, e.r); if (e.u != null) pose(e.u, 'mine', 1200); playSound('tick', 0.4); playSound('bauen', 0.3); floater(x, y - s * 0.5, `Mine gelegt (${e.left} übrig)`, '#e6d48a'); await wait(220); break; }

@@ -1,7 +1,7 @@
 {
  "werkzeug": "Armargeddon Ton-Pult",
  "stand_toene": "2026-11-24",
- "exportiert": "2026-11-24T14:32:16.591Z",
+ "exportiert": "2026-11-24T18:29:13.174Z",
  "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | pk:[<Tonschlüssel>, …] (eigenes Paket, Zufall) | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
  "aenderungen": [
   {
