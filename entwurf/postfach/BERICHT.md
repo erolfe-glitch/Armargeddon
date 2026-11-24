@@ -1,3 +1,31 @@
+## 2026-11-24 – Paket D, Teil 2 (Zwischenstand): Sturmrollen und Gasgranate (`0f9e557`)
+
+Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Aufnahmen ohne Seitenfehler.
+
+- **Punkt 14 – Sturmrollen (Landkoloss, Sturmpanzer) mit mehr Wucht:** Das ist die gemeinte Fähigkeit (Einblendung „Sturmrollen“).
+  - **(a) Ankündigung:** Dampfpfeife und ein weißer Dampfstoß über dem Fahrzeug, danach erst der Anlauf.
+    - Der Ton ist zusammengesetzt: die alte Armeepfeife (`whistle`) auf halbe Tonhöhe gestimmt, darunter das Dampfzischen der Roten Faust (`held_dampf`).
+    - Einen echten Dampfpfeifen-Ton gibt es in `sound-quelle` nicht. Ein eigener Ton bräuchte den vollen Neubau aller Töne plus Ton-Spur (über 25 Minuten, Sparregel). **Wunsch an den Berater:** eine kurze, tiefe, laute Dampfpfeife (Lok/Fabrik, 1–1,5 s).
+  - **(b) Aufprall:**
+    - kurzer Stillstand im Treffer, stärkeres Rütteln, das Ziel kippt weiter weg;
+    - gemalte Boden-Druckwelle (Bild 3 aus `fx_faehigkeiten`);
+    - Erd- bzw. auf Krähenfurt Schneebrocken an drei Stellen, 3–5 Staubwolken ringsum.
+  - **(c) Nachhall** (etwa 0,4 s): Staub legt sich, dunkler Auspuffrauch steigt auf, leises Kettengeräusch.
+- **Punkt 19 – Gasgranate als Luftzerleger:**
+  - Das Geschoss fliegt zur Mitte des Zielbereichs und **zerplatzt gut ein Feld über dem Boden**: kleiner dumpfer Knall (tief gestimmter Einschlag), graue Hülsensplitter, ein kleiner Gaspuff.
+  - Dann sinken **drei Gasschlieren** im Bogen auf die neuen Wolkenfelder. Erst beim Aufsetzen erscheint die Wolke (Anzeige-Regel VIS). Gilt für alle Gasgeschosse (Haubitze, Mörser).
+  - **Fehlendes Bild:** Für die Schlieren nehme ich vorerst das vorhandene Gaswolken-Bild klein und in Bewegung. **Wunsch an den Berater:** ein Bogen „Gasschliere“ – sinkende, gebogene Gasfahne, 3 Varianten, Tintenstil, Magenta.
+- **Bilder:** `entwurf/probe/effekte_d/teil2_uebersicht.jpg`, Einzelbilder `nachher/e_…` bis `i_…`.
+  - Belegt sind die Druckwelle mit Staubwirbel nach dem Aufprall sowie Gebrüll und Landung des Ogers.
+  - Den Dampfstoß der Pfeife und das Zerplatzen in der Luft haben die festen Aufnahmezeitpunkte **verpasst** (Kamerafahrt und Kampfszene verschieben den Ablauf). Die Effekte sind eingebaut, aber auf den Bildern noch nicht belegt.
+
+**Noch offen in Paket D (nächster Teil):** Liste aller übrigen glatten Kreis-Effekte mit Bild je Effekt (Schritt 1), Bildwünsche (Schritt 4), „Wucht“ mit den Schadenszahlen je Fähigkeit aus der Simulation (Schritt 6) und Aufnahmen, die den Höhepunkt treffen (mit Warten auf das Ereignis statt fester Zeit).
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket D, Teil 1 (Zwischenstand): Fähigkeits-Effekte im Tintenstil (`d135239`)
 
 Gepusht, index.html gebaut. Paket D ist groß; nach Sparregel 5 ist das ein Zwischenstand. Was noch fehlt, steht unten.
