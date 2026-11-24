@@ -1,0 +1,30 @@
+[
+ {
+  "karte": "grauwall",
+  "v": "A",
+  "bilder": 317,
+  "median": 5.7,
+  "p95": 8
+ },
+ {
+  "karte": "grauwall",
+  "v": "B",
+  "bilder": 297,
+  "median": 5.9,
+  "p95": 8.1
+ },
+ {
+  "karte": "grauwall",
+  "v": "C",
+  "bilder": 253,
+  "median": 6.3,
+  "p95": 8.8
+ },
+ {
+  "karte": "grauwall",
+  "v": "D",
+  "bilder": 285,
+  "median": 6,
+  "p95": 8.6
+ }
+]
