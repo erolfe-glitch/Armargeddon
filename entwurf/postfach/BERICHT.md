@@ -1,3 +1,20 @@
+## 2026-11-24 – Paket E, Teil 1 (Zwischenstand): Dampfpfeife (Punkt 42) (`4b7f541`)
+
+Gepusht, index.html, Ton-Pult und Tonprobe gebaut. Tests: `tonpult_test` 93/93 (darin Spiel == Pult für alle 54 Einheiten), `test_kommentare` sauber.
+
+- **Neuer Tonplatz `dampfpfeife`:** Enricos Lok-Pfeife (Pixabay, caboose_canine), etwas tiefer (×0,85), auf 1,6 s mit kurzer Ausblendung, Pegel wie die Pfeife (−17 dB). Im Sturmrollen ersetzt sie den Behelf aus tiefer Pfeife und Zischen; das Dampfzischen bleibt ganz leise darunter. Die Pause bis zum Anlauf ist etwas länger (0,7 s), damit der Akkord ausklingt.
+- **Kein Neubau aller Töne:** `sound_bau.mjs` kann jetzt mit `NUR=dampfpfeife` nur einzelne Plätze bauen (unter 2 Sekunden); alle übrigen Töne werden unverändert übernommen. Geprüft: alle 826 Spieltöne gleich.
+- **Ton-Pult:** neue Zeilen beim Sturmrollen („Dampfpfeife“, „Dampfzischen“), in der Bibliothek unter „Motoren und Ketten“; Tonprobe neu gebaut.
+- **Nebenbei behoben:** Die Pult-Zeile der Aschengrenadiere für Handgranaten hing noch an der alten Regel. Sie heißt jetzt „Handgranaten (Fähigkeit)“, der Wurfton gehört dem Werfer. Die Ton-Spur der Grenadiere (mit neuer Szene) sowie von Landkoloss und Sturmpanzer ist neu gemessen, jeweils als Teil-Lauf von unter 1,5 Minuten. Damit stimmt Spiel == Pult wieder für alle Einheiten.
+- `CREDITS.md` ergänzt, `sound-quelle` per robocopy gesichert.
+
+**Noch offen in Paket E:** Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase). Das sind Regeländerungen mit je eigener Messung. Nach Sparregel 5 kommen sie im nächsten `pa`/`pw`.
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket D, Teil 3 (Abschluss): Korrekturen 39–41, Effektliste, Wucht (`728a22e`)
 
 Gepusht, index.html gebaut. Tests: `test_kommentare` sauber, Aufnahmen ohne Seitenfehler. Vergleich: `entwurf/probe/effekte_d/teil3_vorher_nachher.jpg` (links Teil 1, rechts jetzt; Gebrüll Kreuzschreiter, Sprung Löwenoger, Furcht-Aura, Hinrichtung).

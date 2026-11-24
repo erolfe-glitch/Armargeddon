@@ -20,9 +20,9 @@
 - ✓ **Paket P – Plastik-Probe vorgezogen (Enrico 24.11. 18:23): nur Punkt 27** (Abschnitt 20:30 vom 23.11., nur Bilder, nichts fest einbauen). Danach Paket C2.
 - ✓ **Paket C2 – Krähenfurt-Rest (Abschnitt 24.11. 18:20, Punkte 35–38).**
 - ✓ **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder). **Teil 1 (`d135239`) und Teil 2 (`0f9e557`) erledigt. Im nächsten Teil ZUERST die Korrekturen 39–42 (Abschnitt 24.11. 19:05), dann der Rest.**
-- **Paket E – Regeln (mit Messung):** Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
+- **Paket E – Regeln (mit Messung):** **zuerst Punkt 42 (Dampfpfeife, aus Paket D übrig, Abschnitt 24.11. 19:05)**, dann Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
 - **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
-- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner).
+- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 
 # >>> JETZT (Enrico 2026-11-24 19:05): Korrekturen zu Paket D Teil 1 <<<
@@ -36,10 +36,12 @@
 - [x] **40. Kürassier: graue Pünktchen weg.** In der dritten und vierten Reihe des Vergleichsbilds (Furcht-Aura, Hinrichtung) hängen neben bzw. an dem Kürassier hellgraue Kreise/Punkte (z. B. vorher links neben dem Schwert, nachher rechts an der Rüstung und am Boden). Sieht nach flachen Farbkreisen aus (alte Funken-Kugeln `burst`? Dampf-/Staubpartikel der Aura? Sägen-Funken?). **Ursache suchen und entfernen** bzw. durch einen Effekt aus den Bögen ersetzen. Im Bericht sagen, was es war.
 - [x] **41. Löwenoger-Gebrüll sitzt falsch (Berater, Fehler in der Lage).** Zweite Reihe rechts: Der Schallkegel kommt aus Hüfthöhe statt aus dem Maul, der Staubring liegt links vor der Figur statt unter ihr. Kegel am Maul ansetzen (`maulPunkt` bzw. eigener Punkt je Bogen/Pose, wie MUZ), Ring nach Punkt 39 unter die Füße. Beim Kreuzschreiter prüfen, dass der Kegel direkt am Löwenmaul beginnt (im Bild setzt er etwas rechts davon an).
 
-- [ ] **42. Dampfpfeife fürs Sturmrollen (Wunsch aus Paket D Teil 2, Enrico hat einen Ton gefunden).** Datei: `sound-quelle/Moving tanks/caboose_canine-steam-locomotive-fouled-5-chime-375193.mp3` (Pixabay, Nutzer „caboose_canine“, Pixabay-Inhaltslizenz: frei, auch kommerziell, keine Nennung nötig – trotzdem in `CREDITS.md` eintragen). 1,8 s, mehrstimmiger Lok-Akkord, Grundton um 400–850 Hz, endet bei ~1,7 s.
+- [x] **42. Dampfpfeife fürs Sturmrollen (Wunsch aus Paket D Teil 2, Enrico hat einen Ton gefunden).** Datei: `sound-quelle/Moving tanks/caboose_canine-steam-locomotive-fouled-5-chime-375193.mp3` (Pixabay, Nutzer „caboose_canine“, Pixabay-Inhaltslizenz: frei, auch kommerziell, keine Nennung nötig – trotzdem in `CREDITS.md` eintragen). 1,8 s, mehrstimmiger Lok-Akkord, Grundton um 400–850 Hz, endet bei ~1,7 s.
   - Neuer Tonplatz `dampfpfeife` in `tools/sound_bau.json` (ganz nehmen oder auf ~1,5 s mit kurzer Ausblendung, eher etwas tiefer: `rate` ~0,85; Pegel wie `whistle`). **Nicht** den vollen Neubau aller Töne, falls `sound_bau.mjs` einzelne Plätze bauen kann; sonst im Bericht sagen, wie lange es dauert, und vorher fragen (Sparregel 2).
   - Im Sturmrollen den Behelf (`whistle` halbe Tonhöhe + `held_dampf`) durch `dampfpfeife` ersetzen; das Dampfzischen darf als leise Unterlage bleiben.
   - Danach `sound-quelle` per robocopy sichern (Feste Regeln), Ton-Pult/Tonprobe neu bauen, damit Enrico ihn dort hört.
+
+- [ ] **43. NICHT JETZT – erst beim großen Umbau (Schaden über Modelle, Etappe 3): Löwenmaul-Kanone und Furcht-Aura stärker.** Antwort auf die Frage aus Paket D Teil 3. Enrico (19:19): erst beim Umbau, weil sich dort die Schadensrechnung ohnehin ändert. Laut Bericht zu schwach für den Auftritt: Löwenmaul-Kanone des Kreuzschreiters (2 gegen Grenadiere, 4 gegen Sturmpanzer je Schuss) und Furcht-Aura des Kürassiers (−4 Moral je Runde). Beim Umbau so einstellen, dass die Wirkung zur Inszenierung passt, mit Messung (Sparregel 2). Bis dahin Werte nicht ändern.
 
 # >>> JETZT (Enrico 2026-11-24 18:20): Antworten zu Paket C + Straßenenden (NICHT erledigt) <<<
 **Reihenfolge:** Paket C2, eigener `pa`.
