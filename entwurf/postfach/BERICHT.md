@@ -1,3 +1,32 @@
+## 2026-11-24 – Paket F2: Nachträge vor dem Bauplan, Punkt 50 (`faf0f64`, Aufräumen `145240f`, `1acad4f`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Paket F2 ist abgeschlossen. Als Nächstes kommt der Bauplan für den großen Umbau (eigenes `pa`, Maßstab E1).
+
+### (a) Maßstab E1
+Ist als Ziel-Maßstab für den Bauplan vermerkt.
+
+### (b) Fahrzeuge und Schreiter kleiner – Probe
+- **Bilder:** `entwurf/probe/massstab/vergleich_E1_fahrzeuge_grauwall_nah.jpg` und `vergleich_E1_fahrzeuge_winterdorf_nah.jpg`, jeweils E1 heute, ×0,9 und ×0,85. Einzelbilder: `grauwall_E1f90_nah.jpg`, `grauwall_E1f85_nah.jpg`, dasselbe für winterdorf. Gleiche Gruppe und Kamera wie A–E.
+- **Was schrumpft mit:** alle Kettenfahrzeuge (Landkoloss, Sturmpanzer, Bohrkoloss) und alle Schreiter, auch Kreuzschreiter und Eisenknecht.
+- **Feldgrenzen:** Kein Fahrzeug ragt ins Nachbarfeld. Schon heute begrenzt `FIGW_VEH` die Breite.
+- **Empfehlung: ×0,85.** Der Kreuzschreiter bleibt das größte Modell, erdrückt aber die Nachbarfelder nicht mehr. Der Panzer wirkt weiter klar schwerer als ein Trupp. Bei ×0,9 ist der Schreiter noch etwa so breit wie zwei Trupps.
+- Kosten: keine (Zeichenzeit 5,6–6,2 ms je Bild).
+
+### (c) Schadenszahlen Aschenwacht kräftiger
+- **Neu bei Aschenwacht:**
+  - heller Knochenweiß-Kern (oben fast weiß);
+  - Feldgrau nur im unteren Drittel als Verlauf zum Rand;
+  - dickere dunkle Kontur;
+  - **derselbe helle Stempelrand und Schatten wie bei den roten Zahlen.**
+- **Blaue Legion** ist genauso aufgebaut: heller Kern, Horizontblau zum Rand. Gegengeprüft, gut lesbar.
+- **Bild:** `entwurf/probe/schadenszahlen/vorher_nachher.jpg`, oben vorher, unten nachher, jeweils Schlamm und Schnee bei 2560 px. Unten zeigt −26 am Panzer die Blaue-Legion-Optik. Beide Seiten sind jetzt gleich gut lesbar; −18 und −42 fallen auf Schnee nicht mehr ab.
+
+### Nebenbei
+Der Kommentar-Test meldete eine Zeile im Probe-Werkzeug. Code war nicht verschluckt; der Test hielt nur Gleichheitszeichen im Kommentartext für Code. Ich habe die Zeile umformuliert, der Test ist wieder ohne Meldung.
+
+### Fragen an Enrico
+- Fahrzeuge und Schreiter **×0,85** (Empfehlung) oder ×0,9?
+
 ## 2026-11-24 – Paket F, Teil 4 und Abschluss: Punkte 48, 17, 49 (`dceec61`, `d36fccf`)
 
 Gepusht, **index.html gebaut und eingecheckt – Paket F ist abgeschlossen.** Als Nächstes kommt der Bauplan für den großen Umbau (eigenes `pa`).
