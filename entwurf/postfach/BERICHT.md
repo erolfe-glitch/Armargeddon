@@ -1,3 +1,26 @@
+## 2026-11-24 – Paket C2: Krähenfurt-Rest (Punkte 35–38) (`85812fa`)
+
+Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Karten-Aufnahmen ohne Seitenfehler.
+
+- **Punkt 35 – Straßenenden und Kanten: Ursache gefunden.**
+  - **Ursache:** Die Straßen waren schon durchgehende Bänder, nicht je Feld gelegt. Aber **alle** Straßen wurden in eine gemeinsame Schicht gemalt und erst danach mit der vereinten Straßenform maskiert. Die Matschtextur hat verschneite Ränder mit Grasbüscheln. Wo zwei Straßen nah beieinander liegen (Dorfplatz, Abzweig zur Kapelle), übermalte der helle Rand der zweiten Straße das Matschband der ersten. Das gab eine gerade Kante parallel zur Hauptstraße, die wie ein abgehacktes Ende aussah.
+  - Geprüft und ausgeschlossen: Dorfplatz-Pflaster, Schneekante, Feld-Details, Naht der Textur.
+  - **Behoben:** Jede Straße wird mit ihrer eigenen Maske gezeichnet. Abzweige und Kreuzungen gehen jetzt ohne Kante ineinander über. Straßenenden **innerhalb der Karte** laufen über gut ein halbes Feld weich aus (z. B. der Weg, der unten bei 10,9 endet); am Kartenrand laufen sie wie bisher hinaus.
+  - **Bilder** (gleiche Kamera wie vorher): vorher `entwurf/probe/kraehenfurt_c/nachher/dorfplatz.jpg` und `strasse_nah.jpg`, nachher `entwurf/probe/kraehenfurt_c2/nachher/dorfplatz.jpg` und `strasse_nah.jpg`.
+  - Am Dorfplatz laufen weiterhin zwei Bänder auseinander: Das ist die echte Gabelung (eine Straße zur Kapelle, eine zur Brücke), kein Zerfasern mehr.
+- **Punkt 37 – Äcker auf der Ostseite:** Die Gartenfelder sind jetzt **eine zusammenhängende Ackerfläche**: eine gemeinsame, weich gezeichnete Maske über alle Felder, darin durchgehende Furchen in einer Richtung. Innen gibt es keine Feldgrenzen mehr, nur der Außenrand bleibt leicht unregelmäßig. Die Zäune bleiben.
+  - Bilder: `entwurf/probe/kraehenfurt_c2/uebersicht_vorher_nachher.jpg` und `unten_rechts_vorher_nachher.jpg` (oben vorher, unten nachher).
+  - Zum Vergleich: `window.ACKER_ALT = true`.
+- **Punkt 36 – Krähenfurt neu abgeglichen:** Aufstellungszone der Aschenwacht eine Spalte zurück (`zoneD` 13 → 14). Konkordat **41,5 % → 54 %** (Startwert 1/2: 58 / 50 %, je 100 Schlachten). Gegenprobe „ein Grenadier weniger“: 80,5 %, zu stark. An den Handgranaten nichts geändert. Eintrag in `entwurf/BALANCE.md`.
+- **Punkt 38 – Bildwirkung „sehr stark“:**
+  - Jetzt vierte Stufe im Optionsmenü, gespeichert wie die anderen, Taste B schaltet weiter. Der Standard bleibt „stark“.
+  - Den Boden dieser Stufe habe ich gegenüber der Probe etwas heller gemacht (`brightness 0,78` statt 0,74).
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket P: Plastik-Probe (Punkt 27, nur Bilder) (`44fcd56`)
 
 Gepusht. Nichts fest eingebaut: Die Probestufe „sehr stark“ gibt es nur über `__dbg.bild(3)`, nicht im Optionsmenü, und sie wird nicht gespeichert. Der Standard bleibt „stark“.
