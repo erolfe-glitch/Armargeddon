@@ -1,3 +1,20 @@
+## 2026-11-24 – Paket F, Teil 1: Punkte 46 und 47 (`0459293`, `c6b2a40`)
+
+Gepusht. index.html kommt erst am Ende von Paket F mit.
+
+- **Punkt 46 – Drehknöpfe:** In der Aufstellung zeigen die beiden Drehpfeile jetzt in entgegengesetzte Richtungen. Das Bogensymbol dreht gegen den Uhrzeigersinn; deshalb ist der **rechte** Knopf („Blick nach rechts drehen“) gespiegelt, der linke bleibt wie gemalt. Bild: `entwurf/probe/aufstellung/drehknoepfe.jpg` (MG-Trupp, Knöpfe MG/links/rechts). Das ganze Bild mit Schussfeld liegt in `aufstellung_mg_reichweite.jpg`.
+- **Punkt 47 – Partietest:** Der Fehler „Karte schwarz“ trat heute nicht mehr auf. Ein voller Lauf ohne Änderung bestand alle 19 Kartenprüfungen (Helligkeit 41–46). Schwarz war also ein **vorübergehender Aussetzer des unsichtbaren Chrome**, kein Fehler im Spiel. Am wahrscheinlichsten hat Chrome die Zeichenfläche verloren (Context Loss) oder das Zeichnen gedrosselt, als der Rechner stark belastet war (vorher liefen gleichzeitig Sim-Läufe). Bei Context Loss liefert das Auslesen nur Nullen, also „Helligkeit 0, Streuung 0“. Genau das stand in den Meldungen. Umgebaut:
+  - Chrome startet ohne Hintergrund-Drosselung (`--disable-background-timer-throttling`, `--disable-renderer-backgrounding`, `--disable-backgrounding-occluded-windows`).
+  - Jede Kartenprüfung misst bis zu 3× im Abstand von 1 s. Ein einmaliger Aussetzer zählt nicht, ein bleibend dunkles oder stehendes Bild schon. In der Zeile steht dann „Messungen n“.
+  - Eine verlorene Zeichenfläche wird eigens gemeldet („Zeichenfläche verloren (Context Loss)“), damit der Grund beim nächsten Mal sofort klar ist.
+  - **Gegenprobe:** `GEGENPROBE=schwarz` (Karte wird nach dem Start nur noch leer gezeichnet) und `GEGENPROBE=steht` (Bildschleife angehalten). Der Test endet dann nach der Bildprüfung. **Beide werden als Fehler erkannt** (schwarz: Helligkeit 0; steht: „Bild läuft false“). Laufzeit je Gegenprobe etwa 30 s, voller Lauf etwa 6 min.
+  - Ergebnis voller Lauf: alle Prüfungen ok, Konsole rot-frei.
+
+**Weiter in Paket F:** Abschnitt 17:20 (fehlende Sprachbefehle), 17:10 (Brainstorm und Maßstab-Probebild), Punkt 17 (Schadenszahlen).
+
+### Fragen an Enrico
+- Keine.
+
 ## 2026-11-24 – Paket E, Teil 5 (Abschluss): Aufstellungsphase (Punkt 2) (`041f50f`)
 
 Gepusht, index.html gebaut. Punkte 44 und 45 sind abgehakt (keine Arbeit nötig). **Paket E ist damit abgeschlossen.**
