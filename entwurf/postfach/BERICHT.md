@@ -20,7 +20,7 @@ Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung.
 | Krähenfurt | 61 → **52 %** | 31 | 26 % |
 
   Alle drei Karten rücken näher an 50 %, Runden und Ausfälle bleiben fast gleich. Daher eingebaut; die alte Regel gibt es mit `ENTSETZ_ALT=1`. sim.js zählt die Tests jetzt mit.
-- **Anmerkung:** Im Schnitt fällt jede vierte getestete Einheit durch. Das liegt daran, dass die meisten Tests schon angeschlagene Einheiten treffen. Eine frische Einheit in Deckung fällt nur mit 5–8 % durch. Wenn es seltener sein soll: Grundwert senken (`P.ENTSETZ_BASIS`).
+- **Anmerkung:** Im Schnitt fällt jede vierte getestete Einheit durch. Das liegt daran, dass die meisten Tests schon angeschlagene Einheiten treffen. Eine frische Einheit fällt in guter Deckung (Silber/Gold) mit 5–8 % durch, mit Bronze-Deckung mit 11 %, im Offenen mit 16 %. Wenn es seltener sein soll: Grundwert senken (`P.ENTSETZ_BASIS`).
 - **Vorschlag zum Vereinheitlichen:** Furcht-Aura des Kürassiers und Löwengebrüll könnten denselben Test nutzen (eigener Grundwert, dieselben Einflüsse, gleiche Anzeige). Dann wirkt die Furcht-Aura nicht mehr pauschal −4 Moral, sondern als Test je Runde mit sichtbarem Ergebnis. Das passt zu Punkt 43 (beim großen Umbau).
 
 **Noch offen in Paket E:** Punkt 2 (Aufstellungsphase) – nächster `pa`/`pw`.
