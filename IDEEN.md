@@ -10,6 +10,11 @@ Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hi
 - Kartenbeschreibungen (`desc`) an den Siegpunkt-Modus anpassen (aus CLAUDE.md übernommen).
 
 - Optional: feine helle Umrandung um Figuren als Schalter in den Optionen (2026-11-16, noch nicht bauen).
+- **Gelände-Teile mit Flux angleichen** (2026-11-22, Enrico 18:55, nichts bauen): Nach Krähenfurt die drei Karten vergleichen. Wenn Flux-Teile (Krähenfurt) und Gemini-Teile (Grauwall, Sankt Ruß) nicht zusammenpassen, nur die herausfallenden Teile mit Flux nachmalen, keine ganze Karte neu. Flux: genauer bei Anzahl, Raster, Blickwinkel und Maßstab, PNG 2k; Gemini: detailreicher und düsterer, bessere Bodentexturen. Enrico (19:23): Die Gräben von Grauwall sehen „krakelig“ aus – bei der Überarbeitung zuerst die Grabenteile (Kanten vorn/hinten, Sohle) neu machen. Hat Zeit.
+- **Rollen-Aufstellung als eigenes Paket, zusammen mit der KI-Startphase** (geparkt 2026-11-22, Enrico 18:45):
+  - Gebaut und im Code: `deployZone` in engine.js (beide Seiten nach Rollen: Fußtruppen vorn, Fahrzeuge an Straßen/im Offenen, MG vorn in Deckung, Unterstützung und Geschütze hinten; Plätze bewertet, Mischen nur innerhalb einer Rolle). Abrufbar mit `AUFSTELLUNG_NEU=1`, Standard bleibt die alte Aufstellung.
+  - Messung (Sieg Konkordat, je 4 × 200, fest / gemischt): bisher Grauwall 54,3/60,3, Sankt Ruß 48,9/78,3, Krähenfurt 51,0/91,6; Rollen-Aufstellung (Anführer hinten) 46,1/52,9, 78,8/83,8, 99,4/92,8; Anführer vorn 22,1/62,4, 94,3/79,8, 90,0/93,8; Anführer nah hinter den Trupps 42,9/57,4, 28,9/85,1, 99,9/96,0.
+  - Befund: kleine Änderungen der Anführer-Plätze kippen das Ergebnis um 40–55 Punkte; die Empfindlichkeit liegt auch daran, wie die KI auf die Startlage reagiert. Idee: KI-Startphase (erste 2–3 Runden) mit untersuchen und beides zusammen abgleichen.
 - **Wurfposen für Sturmtruppen und Räumer** (2026-11-19): eigene Wurfposen als Gemini-Bogen (Ausholen, Loslassen), dann den fertigen Wurfablauf `poseWurf` (ui.js, Animation Stufe 1) für ihre Granaten nutzen. Einheiten mit Soldatenbild (Schützenkohorte, Aschengrenadiere) bekommen vorerst keine Handgranaten.
 
 ## Gesamtplan (Stand 2026-11-18)
@@ -133,3 +138,29 @@ Ziel: Erst muss das Grundspiel auf einer Karte (Grauwall) „sitzen", dann mehr 
 - **CREDITS für die neu2_*-Töne (F67):** 85 Quelldateien stehen noch nicht einzeln in CREDITS.md (etwa 45 von Freesound, Lizenz je Datei nachschlagen). Erst nötig, wenn etwas veröffentlicht oder verkauft wird (Enrico 13:25).
 - **Mineure graben kaum Stollen:** die KI kauft sie jetzt (Grauwall 0,13, Sankt Ruß 0,30 je Schlacht), gräbt aber nur 0,01 bzw. 0,03 Stollen je Schlacht – Auslöser in ai.js (abilPlan tunnel, posValue Mineure) prüfen.
 - **test_draht.js** meldet „keine stillen Geländeänderungen“ bei der Straßenzeile von Sankt Ruß (schon vor Paket G Schritt 5) – vermutlich Fehlalarm, Test anpassen.
+
+## Großer Fahrplan danach (Enrico + Berater, 2026-11-22)
+Reihenfolge, damit eins auf dem anderen aufbaut:
+
+1. **Balance: jede Einheit soll zum Tragen kommen.** Enrico ist unzufrieden – viele Einheiten werden kaum eingesetzt, weil man sie „gar nicht eingesetzt kriegt“.
+   - Erst **messen**: aus Simulationen und Enricos Partien je Einheit zählen – wie oft gekauft, wie oft gehandelt, Schaden/Wirkung je Punkt, Überlebensdauer.
+   - Dann je Einheit die Frage „**Wann kaufe ich die?**“ beantworten. Ohne gute Antwort: Nische schärfen, Karten mit passenden Lagen (Gräben, Ruinen, Brücken, Engstellen), oder Einheiten zusammenlegen.
+2. **Leistung und größere Schlachtfelder.** Enrico möchte die Karten später größer haben.
+   - Grundlage: Leistungsmessung aus Prüfliste 2 (Bildrate, was kostet die Zeit: Zeichnen oder KI).
+   - Wenn das Zeichnen bremst: **WebGL-Umbau** (z. B. PixiJS) – Grafikkarte zeichnet Gelände, Figuren, Effekte; Regeln/KI/Töne bleiben. Dazu KI-Rechnen in einen Hintergrund-Rechenkern (Web Worker), damit größere Karten nicht einfrieren.
+   - Optional: eigenes Programmfenster (Electron/Tauri) statt einer 55-MB-HTML-Datei → schnellerer Start, Bilder/Töne als einzelne Dateien.
+3. **Kampagne „wie Total War: Warhammer 3“, nur vom Prinzip her.** Die Schlachten sind schon da; die Kampagne ist die Ebene darüber.
+   - **Stufe 1 – Feldzug light:** Kette von Schlachten mit derselben Armee; Verluste, Medaillen und Helden werden mitgenommen, Nachschub zwischen den Schlachten.
+   - **Stufe 2 – Strategiekarte:** Provinzen, Armeen ziehen, Wirtschaft/Nachschub, Helden als Heerführer.
+   - Erst nach 1 und 2 – eine Kampagne würde unausgewogene Einheiten nur verstärken.
+
+## Brainstorm Spielsystem (Enrico + Berater, 2026-11-23) – noch nichts bauen
+- **Kampagne:** eigenständige KI-Staaten (jeder für sich), der Spieler gehört zu einer Allianz; Bündnisse in den Einstellungen wählbar (mit/ohne). Später einfacher Handel und Eisenbahnlinien. Langfristig Menschen gegen „das Böse“ (eine einzige böse Fraktion, Horde). Offen: von Anfang an Koop oder erst gegeneinander. Idee Berater: Kampagne gleich für Bündnisse bauen, die Aschenwacht spielt zum Testen vorläufig den Feind. „Masse gegen Klasse“: Feind viele billige Armeen, Spieler weniger, aber erfahrene Armeen mit Helden; verbündete KI hält die Front, die Spieler-Armee ist die Speerspitze. Koop am selben PC (Hotseat) denkbar.
+- **Schlachtende:** Kombination wie Total War – Sieg durch Zusammenbruch/Vernichtung, durch Halten aller Zielfelder über eine Zeit oder nach der Rundengrenze nach Punkten. Rundengrenze nach Schlachtgröße (kurz/mittel/lang ≈ 30/45/60 Minuten), höchstens etwa eine Stunde. Kein „schon gewonnen?!“ mitten in der Schlacht.
+- **Moral/Schaden:** Schaden über Modelle statt über Moral – jede Figur ist ein Kämpfer, die Feuerkraft hängt an den lebenden Modellen, schwere Waffen töten mehrere Modelle. Moral steuert nur das Verhalten (niedergehalten, zurückweichen, sammeln, fliehen; Sammeln mehrmals möglich, die Armee bricht erst spät). Vorbild: Radious-Mod (längere Schlachten, fortlaufendes Moralsystem) und Total War: Warhammer 40.000 (jedes Modell eigene Schusslinie, Trupps aus verschiedenen Figuren, Deckung/Stellung entscheidend).
+- **Zerstörung spürbar:** Treffer im Offenen tödlich, Deckung macht den großen Unterschied, schwere Waffen „knallen“ (Splitter, Niederhalten, Figuren fallen sichtbar). Eine Gewehrsalve auf einen ungedeckten Trupp darf nicht wirkungslos wirken.
+- **Armee:** feste Formation je Armee (wie Total War), Schlachtgröße mit Grenze je Einheitentyp (Linientruppen doppelt), Verbände je Fraktion mit Armee-Bonus; **Reserve** statt Nachkaufen (ein Teil der Armee kommt später, ein Balken zeigt die ausstehende Verstärkung). Offen (Enrico denkt nach): Nachschub/„Fleischwolf“.
+- **Maßstab (Entscheidung 2026-11-23):** Linien-Infanterie 10 Figuren je Feld, Reiter 6, Spezialtrupps 4; Soldaten ca. 62 % der heutigen Größe, Fahrzeuge bleiben gleich groß. Fotomontage `entwurf/probe/massstab/massstab_A_10_6.jpg` (gewählt), Probebild im Spiel `entwurf/probe/massstab/` (Paket F).
+- **Zweistufige Tooltips (nicht wichtig, nur Idee):** Beim Verweilen über Gelände, Einheit, Knopf oder Marke erscheint nach ca. 0,6 s ein kleines, gut lesbares Fenster mit Namen und 1–2 kurzen Zeilen (z. B. „Zugefrorenes Wasser – keine Deckung, kann einbrechen“). Länger darauf (ca. 2–3 s) oder eine Taste (Umschalt/i) klappt die ausführliche Erklärung mit den Regeln auf. Touch: langes Drücken = Stufe 1, noch einmal lang = Stufe 2. Darf nie stören (kein Aufpoppen beim normalen Überfahren).
+- **Flieger-Unterstützung (Ausarbeitung später):** Funker/Fliegerleit-Trupp auf beiden Seiten (Umbau Fernsprechtrupp?) ruft einen einmaligen Luftschlag, bezahlt mit **Nachschubpunkten**: **Tiefflieger** (MG-Garbe über eine Linie von 3 Feldern, niederhalten) oder **Bomber** (2–3 schwere Bomben mit Streuung). Das Flugzeug fliegt einmal schräg übers Bild (Schatten, Motordröhnen, Sirene), wirft ab und ist weg. Grenzen: Kosten, Abklingzeit bzw. 1–2× je Schlacht, Streuung/Eigenbeschuss, später Flak. Für die Kampagne: Flugplätze schalten Luftschläge frei.
+- **Stilrichtung:** eigene Fantasy-Welt; Mischung aus Erstem und Zweitem Weltkrieg, Trench Crusade, ein Hauch Mad Max und Warhammer Fantasy; über die Zeit optisch mehr Richtung Zweiter Weltkrieg (Panzer), später Flugzeuge. Weltkriegs-Bezüge („Im echten Krieg“) sind nicht mehr Pflicht.
