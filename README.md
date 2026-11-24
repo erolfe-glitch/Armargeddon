@@ -1,8 +1,8 @@
 # Armargeddon – Die Schlacht am Grauwall
 
-Rundenbasiertes Hexfeld-Strategiespiel im Grabenkrieg. Eigene düstere Welt (Grimdark), aber Waffen,
-Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918. Jede Einheit und jedes Geländefeld
-erklärt, wie es im echten Krieg war. Gedacht auch für den Geschichtsunterricht.
+Rundenbasiertes Hexfeld-Strategiespiel im Stil des Grabenkriegs, in einer eigenen düsteren Welt
+(Welt „Morn“, Kontinent „Varnen“). Jede Einheit und jedes Geländefeld hat einen kurzen Text
+„Aus den Chroniken“ dieser Welt.
 
 ## Spielen
 
@@ -28,7 +28,7 @@ Alle geplanten Stufen sind spielbar:
 - Ab Runde 8 Gegenstoß der Aschenwacht: Sturmbrecher (Stoßtrupps) und Brandwerfer (Flammenwerfer)
 - Gräben, Stacheldraht, Trichter, Schlamm, Ruinen, Totholz, Höhenrücken, Kanal mit Brücke
 - Blickrichtung mit Flanke und Rücken, Moral, Zurückweichen, Flucht, Offiziere
-- Comic-Grafik mit Einheitenbild, Werteleiste unten, Lerntexte „Im echten Krieg“
+- Comic-Grafik mit Einheitenbild, Werteleiste unten, Texte „Aus den Chroniken“
 
 - Nachschub: 1 Punkt pro Runde, 2 je geschlagener Einheit, dazu die Punkte eroberter Zielfelder. Dafür kommen neue Einheiten an den eigenen Rand.
 - Zusätzliche Einheiten im Nachschub: Feldscher/Aschenpfleger (versorgen aktiv einen Nachbarn je Runde), Grabenmörser/Minenwerfer (dürfen ziehen und danach feuern).

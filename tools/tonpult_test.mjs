@@ -121,6 +121,7 @@ try {
     const ent = slotsGemeinsam(werListe(), 'zug').get('ziehen'), kE = D.pools.einschlagH[0][0], kS = (D.pools.schritte || [])[0][0];
     return { gemeinsam: ent ? ent.ziele.length : 0, kE, kS, rE: rubrikVon(idVon('einschlagH'))[0], rS: rubrikVon(idVon('schritte'))[0], rM: rubrikVon('k:${mk}')[0] }; })())`));
   pruef('Mehrere wählen: Stelle „Ziehen“ gilt für beide Einheiten', PK.gemeinsam === 2, PK.gemeinsam + ' Einheiten');
+  await ev(`(() => { const z = slotsGemeinsam(werListe(), 'zug').get('ziehen').ziele; waehle3(z, 'k:${PK.kS}', 'Ziehen'); stoppAlles(); return true; })()`); await sleep(100);   // Start mit einem einzelnen Ton: er wird der erste im Paket
   const kreuz = async (sel, k) => ev(`(() => { const r = [...document.querySelectorAll('${sel} .t3')].find(r => r.dataset.id === 'k:${k}' || (r.dataset.id.startsWith('p:') && platzKeys(r.dataset.id.slice(2)).length === 1 && platzKeys(r.dataset.id.slice(2))[0][0] === '${k}')); if (!r) return 'Zeile fehlt'; const cb = r.querySelector('.pk3 input'); if (!cb) return 'kein Ankreuzfeld'; cb.click(); return 'ok'; })()`);
   const such = async q => ev(`(() => { const i = document.querySelector('#bibDlg input[type=search]'); i.value = ${JSON.stringify(q)}; i.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`);
   await ev("document.getElementById('e3alle').click()"); await sleep(150);
@@ -129,17 +130,20 @@ try {
   pruef('„Alle Töne ansehen“: Ankreuzen nimmt Töne ins Paket, das Fenster bleibt offen', k1 === 'ok' && k2 === 'ok' && await ev("!!document.getElementById('bibDlg')"), k1 + ' / ' + k2);
   await bild3('14_eigenes_paket_alle_toene.png');
   await ev("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); e3Offen.add('p:schritte'); zeichneTon()"); await sleep(120);
-  const k3 = await kreuz('#e3ton', PK.kS);
+  const k3 = 'ok';
   const pk3 = JSON.parse(await ev("JSON.stringify([AEND.kohorte.ziehen.w, AEND.grenadier.ziehen.w])"));
-  pruef('„Welcher Ton?“: Ankreuzen; Paket aus 3 Tönen dreier Rubriken (mit eigenem Mischton) für beide gewählten Einheiten', k3 === 'ok' && pk3[0] === pk3[1] && /^pk:/.test(pk3[0]) && JSON.parse(pk3[0].slice(3)).length === 3 && JSON.parse(pk3[0].slice(3)).includes(mk) && new Set([PK.rE, PK.rS, PK.rM]).size >= 2, pk3[0] + ' · Rubriken ' + [PK.rE, PK.rS, PK.rM].join(', '));
+  pruef('Einzelner Ton + 2 angekreuzte: Paket aus 3 Tönen dreier Rubriken (mit eigenem Mischton) für beide gewählten Einheiten', k3 === 'ok' && pk3[0] === pk3[1] && /^pk:/.test(pk3[0]) && JSON.parse(pk3[0].slice(3)).length === 3 && JSON.parse(pk3[0].slice(3)).includes(mk) && new Set([PK.rE, PK.rS, PK.rM]).size >= 2, pk3[0] + ' · Rubriken ' + [PK.rE, PK.rS, PK.rM].join(', '));
   pruef('Anzeige „Eigenes Paket · 3 Töne“ mit ▶ und ✕ je Ton', await ev("/Eigenes Paket · 3 Töne/.test(document.getElementById('e3pkkopf').textContent) && document.querySelectorAll('#e3ton .e3pk .t3').length === 3 && document.querySelectorAll('#e3ton .e3pk .t3 .play').length === 3 && document.querySelectorAll('#e3ton .e3pk .pkx').length === 3 && /Eigenes Paket/.test(document.querySelector('.e3jetzt').textContent)"));
   pruef('Ankreuzfelder sind fingergroß (mindestens 40 px)', await ev("[...document.querySelectorAll('#e3ton .pk3')].filter(l => l.offsetParent).every(l => l.offsetHeight >= 40)"));
   await bild3('15_eigenes_paket.png');
   const aus0 = await ev("AUS.toene.length"); await ev("document.querySelector('#e3ton .e3pk .pkx').click()"); await sleep(120);
   pruef('✕ nimmt den Ton nur aus diesem Paket (nicht aussortiert)', await ev("JSON.parse(AEND.kohorte.ziehen.w.slice(3)).length === 2 && AEND.grenadier.ziehen.w === AEND.kohorte.ziehen.w && AUS.toene.length === " + aus0 + " && /· 2 Töne/.test(document.getElementById('e3pkkopf').textContent)"));
   const PB = JSON.parse(await ev(`JSON.stringify((() => { const u = D.einheiten.find(u => !['kohorte', 'grenadier'].includes(u.t) && u.slots.some(s => s.id === 'ziehen' && !geaendert(u, s) && kandidaten(s.platz, s.sd, s.v).length > 2)); if (!u) return {}; const s = u.slots.find(s => s.id === 'ziehen');
-    e3Wahl([u.t], false); E3.ab = s.ab; E3.slot = 'ziehen'; zeichne(); const b = document.getElementById('e3pkbearb'); if (!b) return { t: u.t, knopf: false }; b.click(); const w = AEND[u.t].ziehen.w, n = kandidaten(s.platz, s.sd, s.v).filter(c => !AUS_K.has(c.k)).length;
-    const alle = [...document.querySelectorAll('#e3ton .t3')].filter(r => r.dataset.id === 'p:' + s.platz).every(r => r.querySelector('.pk3 input').checked); return { t: u.t, knopf: true, w, n, alle }; })())`));
+    e3Wahl([u.t], false); E3.ab = s.ab; E3.slot = 'ziehen'; zeichne(); const n0 = kandidaten(s.platz, s.sd, s.v).filter(c => !AUS_K.has(c.k)).length, kx = D.pools.einschlagH[0][0];
+    const pkO = paketOpt(slotsGemeinsam([u], s.ab).get('ziehen').ziele, s.titel); pkO.um([kx]); const w29 = AEND[u.t].ziehen.w; document.getElementById('undo').click();   /* Punkt 29: erstes Kreuz bei Werks-Paket */
+    const b = document.getElementById('e3pkbearb'); if (!b) return { t: u.t, knopf: false }; b.click(); const w = AEND[u.t].ziehen.w, n = kandidaten(s.platz, s.sd, s.v).filter(c => !AUS_K.has(c.k)).length;
+    const alle = [...document.querySelectorAll('#e3ton .t3')].filter(r => r.dataset.id === 'p:' + s.platz).every(r => r.querySelector('.pk3 input').checked); return { t: u.t, knopf: true, w, n, alle, w29, n0, kx }; })())`));
+  pruef('Punkt 29: erstes „+ ins Paket“ bei Werks-Paket nimmt alle seine Töne mit, der neue kommt dazu', /^pk:/.test(PB.w29 || '') && JSON.parse(PB.w29.slice(3)).length === PB.n0 + 1 && JSON.parse(PB.w29.slice(3)).includes(PB.kx), (PB.t || '-') + ': ' + (PB.w29 ? JSON.parse(PB.w29.slice(3)).length : 0) + ' Töne (Werks-Paket ' + PB.n0 + ' + 1)');
   pruef('„Paket bearbeiten“: vorhandenes Paket als Start, alle seine Töne angekreuzt', PB.knopf && /^pk:/.test(PB.w) && JSON.parse(PB.w.slice(3)).length === PB.n && PB.alle, (PB.t || '-') + ': ' + (PB.n || 0) + ' Töne übernommen');
   await ev("document.getElementById('undo').click()"); await sleep(80);
   pruef('„↶ Rückgängig“ nimmt „Paket bearbeiten“ zurück', await ev("!geaendert(U['" + PB.t + "'], U['" + PB.t + "'].slots.find(s => s.id === 'ziehen'))"));

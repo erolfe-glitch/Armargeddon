@@ -242,7 +242,7 @@ function paketSetzen(ziele, liste, text) {   // gilt für alle gewählten Einhei
   merke(text, ziele); for (const { u, s } of ziele) setzeRoh(u, s, 'w', liste.length ? pkId(liste) : grund(s).w);
   setzeFertig(ziele, !!liste.length); speichern(); zusatzSpeichern(); zeichne(); meldung(text + ' – „↶ Rückgängig“ nimmt es zurück.'); }
 function paketOpt(ziele, was) { const { u: u0, s } = ziele[0];
-  const basis = () => { const w = wert(u0, s).w; return istPk(w) ? pkKeys(w) : w.startsWith('k:') ? [w.slice(2)] : []; };   // Start: das eigene Paket bzw. der eine gewählte Ton; ein ganzes Werks-Paket übernimmt „Paket bearbeiten“
+  const basis = () => { const w = wert(u0, s).w; return istPk(w) ? pkKeys(w) : w.startsWith('k:') ? [w.slice(2)] : w.startsWith('p:') ? kandidaten(w.slice(2), s.sd, s.v).map(c => c.k).filter(k => !AUS_K.has(k)) : []; };   // Start: das eigene Paket bzw. der eine gewählte Ton; klingt noch ein Werks-Paket, nimmt das erste Kreuz alle seine Töne mit (Punkt 29, Enrico 2026-11-24)
   return { keys: id => (id.startsWith('k:') ? [id.slice(2)] : kandidaten(id.slice(2), s.sd, s.v).map(c => c.k)).filter(k => !AUS_K.has(k) && !(s.mode === 'ruf' && MISCH[k])),
     stand: pk => { const w = wert(u0, s).w; if (!istPk(w)) return 'nein'; const l = pkKeys(w), n = pk.filter(k => l.includes(k)).length; return n === pk.length ? 'ja' : n ? 'teil' : 'nein'; },
     um: pk => { let l = basis(); const drin = istPk(wert(u0, s).w) && pk.every(k => l.includes(k));
@@ -272,7 +272,7 @@ function zeichneTon() {
     if (offen) for (const k of pkNow) { const r = tonReihe('k:' + k, { kind: true, ziel: z0, aus: false }), tr = r.querySelector('.tr');
       tr.append(h('button', { cls: 'kl3 raus pkx', 'aria-label': 'Aus dem Paket nehmen: ' + wahlName('k:' + k), title: 'Nur aus diesem Paket nehmen (nicht aussortieren)', on: e => { e.stopPropagation(); pkO.um([k]); } }, '✕ aus dem Paket')); box.append(r); }
     roll.append(box); }
-  else if (w.w.startsWith('p:') && kandidaten(w.w.slice(2), s.sd, s.v).length > 1) roll.append(h('div', { cls: 'e3pkneu' }, h('button', { id: 'e3pkbearb', title: 'Alle Töne des jetzigen Pakets ankreuzen; danach einzelne abwählen oder aus anderen Rubriken dazunehmen', on: () => paketBearbeiten(ziele, was) }, '✎ Paket bearbeiten'), h('small', {}, ' oder unten bei einzelnen Tönen „+ ins Paket“ ankreuzen')));
+  else if (w.w.startsWith('p:') && kandidaten(w.w.slice(2), s.sd, s.v).length > 1) roll.append(h('div', { cls: 'e3pkneu' }, h('button', { id: 'e3pkbearb', title: 'Alle Töne des jetzigen Pakets ankreuzen; danach einzelne abwählen oder aus anderen Rubriken dazunehmen', on: () => paketBearbeiten(ziele, was) }, '✎ Paket bearbeiten'), h('small', {}, ' oder unten „+ ins Paket“ ankreuzen – das jetzige Paket kommt dann mit')));
   const reg = h('div', { cls: 'e3reg' });
   const regler = (name, feld, max, lies_, schreib) => { const v0 = lies_({ u: u0, s }), r = h('input', { type: 'range', min: feld === 'ton' ? 50 : 0, max, step: feld === 'ton' ? 1 : 5, value: Math.round(v0 * 100), 'aria-label': name }), b = h('b', {}, Math.round(v0 * 100) + ' %');
     r.oninput = () => { merke(`${name} ${r.value} % → ${wer} · ${was}`, ziele, 'e3|' + feld + '|' + s.id); for (const z of ziele) setzeRoh(z.u, z.s, feld, schreib(z, r.value / 100)); speichern(); b.textContent = r.value + ' %'; undoKnopf(); };

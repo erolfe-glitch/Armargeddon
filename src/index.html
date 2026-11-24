@@ -144,7 +144,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .det { display: grid; grid-template-columns: auto 1fr; gap: 14px; text-align: left; align-items: start; }
 .det canvas { width: 120px; height: 120px; border: 3px solid var(--edge-d); border-radius: 8px; }
 .det h3 { margin: 0; font: 700 24px var(--display); letter-spacing: .05em; text-transform: uppercase; }
-.det p { margin: 6px 0 0; font-size: 14px; } .chronik > b { display: block; } .chronik .quelle { display: block; font-size: 0.82em; font-style: italic; opacity: 0.8; margin: 2px 0 3px; } .det .real { color: #d9d2bd; border-top: 2px dashed var(--edge); padding-top: 8px; margin-top: 10px; }
+.det p { margin: 6px 0 0; font-size: 14px; } span.chronik { display: block; margin-top: 6px; font-style: normal; } .chronik > b { display: block; } .chronik .quelle { display: block; font-size: 0.82em; font-style: italic; opacity: 0.8; margin: 2px 0 3px; } .det .real { color: #d9d2bd; border-top: 2px dashed var(--edge); padding-top: 8px; margin-top: 10px; }
 .det b { color: var(--gold); }
 
 @media (max-width: 1000px) { .meter { width: 112px; } .wind span { display: none; } }
@@ -1163,7 +1163,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
       <button class="sm-btn" data-go="opts">Optionen</button>
       <button class="sm-btn" id="smBeenden" hidden data-tip="Schlacht beenden und zum Startbildschirm">Beenden</button>
     </nav>
-    <p class="sm-note">Eine erfundene Welt. Waffen, Gelände und Taktik entsprechen dem Ersten Weltkrieg 1914–1918.</p>
+    <p class="sm-note">Eine eigene Welt im Stil des Grabenkriegs.</p>
   </section>
   <!-- Optionen -->
   <section class="sm-page" data-page="opts">
@@ -1212,7 +1212,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
       </div></div>
       <div class="sm-lbl">Kampfmaschinen</div>
       <div class="sm-pick">
-        <label><input type="radio" name="mechs" value="0" checked><b>Ohne</b><small>Nur Truppen und Gerät wie im Ersten Weltkrieg.</small></label>
+        <label><input type="radio" name="mechs" value="0" checked><b>Ohne</b><small>Nur Truppen und Gerät des Grabenkriegs, ohne Kampfmaschinen.</small></label>
         <label><input type="radio" name="mechs" value="1" id="optMechs"><b>Mit</b><small>Je Seite Mechs und ein Trupp in Kampfanzügen, über Armee oder Nachschub.</small></label>
       </div>
       <div class="sm-lbl">Armee</div>
@@ -1316,11 +1316,6 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
     <div class="stars" id="endStars"></div>
     <p id="endWhy" style="margin:6px 0 0"></p>
     <dl class="endstats" id="endStats"></dl>
-    <div class="history">
-      <h3>Wie war es im echten Krieg?</h3>
-      <p style="margin:0">Jahrelang scheiterten Angriffe an Draht und Maschinengewehren. Bei Cambrai durchbrachen im November 1917 fast 400 britische Panzer die deutsche Stellung an einem Tag. Zehn Tage später holte ein deutscher Gegenangriff mit Stoßtrupps fast alles zurück.</p>
-      <ul><li>Was hat dir geholfen, Draht und MG zu überwinden?</li><li>Warum konnte die Reiterei den Durchbruch kaum nutzen?</li><li>Was hättest du auf der anderen Seite anders gemacht?</li></ul>
-    </div>
     <div class="startrow" style="justify-content:center"><button class="endbtn" id="againBtn">Neue Schlacht</button><button class="tbtn" id="reviewBtn">Schlachtfeld ansehen</button></div>
   </div>
 </div>

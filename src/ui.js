@@ -392,7 +392,7 @@ const STATES = [
   { k: 'poison', sym: 'gas', ring: '#7FA04A', name: 'Vergiftet', on: (u, d) => d.vs.poison > 0 && !d.vs.gassed, text: (u, d) => `Hat Gas abbekommen: verliert noch ${upRunden(d.vs.poison)} Stärke und Moral, als Nächstes Stärke −${fmt(P.GAS_STR * P.POISON_K[Math.min(d.vs.poison, P.POISON_K.length) - 1])} und Moral −${fmt(P.GAS_MOR * P.POISON_K[Math.min(d.vs.poison, P.POISON_K.length) - 1])}. Ein Sanitäter kann die Vergiftung heilen.` },
   { k: 'shaky', sym: 'gebrochen', name: 'Moral wankt', on: (u, d) => !d.vs.rout && d.mor < P.FALLBACK_MOR && TYPES[u.type].cls !== 'art', text: () => `Moral unter ${fmt(P.FALLBACK_MOR)}: Beim nächsten Treffer weicht die Einheit zurück.` },
   { k: 'held', sym: 'nahkampf', name: 'Gebunden', on: u => TYPES[u.type].rng > 0 && !TYPES[u.type].flame && E.active(u) && E.held(G, u), text: () => 'Ein gleich großer Gegner steht daneben: Schießen geht nicht, nur Nahkampf.' },
-  { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${P.LIMBER_MV} Felder, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
+  { k: 'limber', sym: 'aufprotzen', name: 'Aufgeprotzt', on: u => u.limbered, text: () => `Angespannt: zieht ${felder(P.LIMBER_MV)}, feuert aber nicht. Abprotzen bringt das Geschütz in Stellung.` },
   { k: 'mgdown', sym: 'mg_ab', name: 'MG abgebaut', on: (u, d) => TYPES[u.type].mg && !d.vs.setup && E.active(u), text: () => 'Marschbereit: kann ziehen, aber nicht schießen. Aufbauen kostet 1 Aktion, dann feuert es und kann Sperrfeuer geben.' },
   { k: 'mgup', sym: 'mg_auf', name: 'MG aufgebaut', panel: true, on: (u, d) => TYPES[u.type].mg && d.vs.setup && E.active(u), text: () => 'In Stellung: schießt oder gibt Sperrfeuer, kann aber nicht ziehen. Abbauen kostet 1 Aktion.' },   // nur im Panel (Karte: nur „abgebaut“ als Zustand)
   { k: 'kuehl', sym: 'sanduhr', ring: '#9aa3ab', name: 'MG kühlt ab', on: u => TYPES[u.type].dauerfeuer && u.kuehl > 0 && E.alive(u), text: u => u.kuehl > 1 || u.side !== G.side ? 'Nach dem Dauerfeuer: Das MG schießt in der nächsten eigenen Runde nicht. Ziehen und Nahkampf gehen.' : 'Nach dem Dauerfeuer: Das MG schießt in dieser Runde nicht. Ziehen und Nahkampf gehen.' },
@@ -405,7 +405,7 @@ const STATES = [
   { k: 'shields', sym: 'schild', ring: '#9aa3ab', name: 'Schilde vor', on: (u, d) => d.vs.shields && E.active(u), text: () => `Schilde vor: eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ${xf(P.SHIELDS)}.` },
   { k: 'fireFree', sym: 'feuerfrei', ring: '#E2B04A', name: 'Feuer frei', on: (u, d) => d.vs.fireFree && E.alive(u), text: () => `Befehl des Hauptmanns: Fernkampf ${xf(P.FIRE_FREE)} bis zum nächsten eigenen Zug.` },
   { k: 'hold', sym: 'halten', ring: '#C2A461', name: 'Halten um jeden Preis', on: (u, d) => d.vs.hold && E.active(u), text: () => `Befehl des Generals: flieht bis zum nächsten eigenen Zug nicht, Abwehr ${xf(P.HOLD_DEF)}.` },
-  { k: 'planted', sym: 'fahne', ring: '#C2A461', name: 'Banner steht', on: (u, d) => d.vs.planted && E.active(u), text: () => `Aufgepflanzt: wirkt ${P.BANNER_R_PLANTED} Felder weit, dort flieht niemand. Der Träger zieht nicht, bis er das Banner aufnimmt.` },
+  { k: 'planted', sym: 'fahne', ring: '#C2A461', name: 'Banner steht', on: (u, d) => d.vs.planted && E.active(u), text: () => `Aufgepflanzt: wirkt ${felder(P.BANNER_R_PLANTED)} weit, dort flieht niemand. Der Träger zieht nicht, bis er das Banner aufnimmt.` },
   { k: 'hidden', sym: 'durchsickern', name: 'Getarnt', on: u => TYPES[u.type].hidden && !(u.revealed > 0) && E.active(u), text: () => 'Der Gegner sieht die Einheit erst vom Nachbarfeld aus. Nach einem Schuss ist sie eine Runde lang enttarnt.' },
   { k: 'relay', sym: 'fernglas', name: 'Beobachter', panel: true, on: u => TYPES[u.type].relay && E.active(u), text: u => TYPES[u.type].abil === 'strike' ? 'Fordert Feuerschläge auf Felder in Sicht an.' : 'Markiert Ziele für die eigene Artillerie: ohne Streuung, ×1,25, deckt Verstecktes auf.' },
 ];
@@ -2948,7 +2948,7 @@ async function playEvent0(e) {
     case 'ow': kz(e.u, 'auge', 'puls'); await wait(220); break;
     case 'bigorder': {   // großer Befehl: auffällige Ansage, Pfeife (Konkordat) bzw. Horn (Aschenwacht)
       if (e.u != null) pose(e.u, 'grossbefehl', 2200);   // Runde 2: General mit erhobenem Säbel
-      playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   /* Anführer-Fähigkeiten leiser (Spieltest Runde 2) */ banner(e.name + '!', e.kind === 'hold' ? `Einheiten bis ${P.BIG_R} Felder: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug` : `Einheiten bis ${P.BIG_R} Felder: +2 Bewegungspunkte und +1 Aktion`);
+      playSound(e.kind === 'assault' ? 'generalhorn' : 'march', 0.5, e.side);   /* Anführer-Fähigkeiten leiser (Spieltest Runde 2) */ banner(e.name + '!', e.kind === 'hold' ? `Einheiten bis ${felder(P.BIG_R)}: keine Flucht, Abwehr ×1,25 bis zum nächsten Zug` : `Einheiten bis ${felder(P.BIG_R)}: +2 Bewegungspunkte und +1 Aktion`);
       for (const id of e.ids || []) { const dd = DU.get(id); if (!dd) continue; if (e.kind === 'hold') dd.vs.hold = true; rings.push({ x: dd.x, y: dd.y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); }
       floater(...headPos(e.u), e.name + '!', '#E2B04A', true); await wait(900); break; }
     case 'banner': { const dd = DU.get(e.u); if (dd) dd.vs.planted = e.planted; if (e.planted) pose(e.u, 'rammen', 1400); playSound('bauen', e.planted ? 0.32 : 0.22); await wait(260); break; }
@@ -3341,7 +3341,7 @@ function abilDaneben(u, h) {
   const k = feldArt === 'abil' ? T.abil : feldArt;
   if (k === 'rollen' || k === 'durchbruch') return `${name}: ${d > 2 ? 'zu weit – reicht 2 Felder geradeaus' : !x || x.side === u.side ? 'nur gegen einen Gegner' : 'kein gerader, freier Anlauf dorthin'}.`;
   if (k === 'hinrichtung') return `${name}: nur gegen einen angeschlagenen Gegner direkt daneben (unter ${E.P.HINRICHT_STR} Stärke).`;
-  if (k === 'sprung') return `${name}: Gegner bis ${E.P.SPRUNG + 1} Felder, daneben muss ein freies Landefeld ohne Draht sein.`;
+  if (k === 'sprung') return `${name}: Gegner bis ${felder(E.P.SPRUNG + 1)}, daneben muss ein freies Landefeld ohne Draht sein.`;
   return `${name}: kein gültiges Ziel – nur die markierten Felder.`;
 }
 function setWayPt(h) { if (!sel || !h) return false; const k = E.key(h[0], h[1]); if (wayPt && wayPt[0] === h[0] && wayPt[1] === h[1]) { wayPt = null; computeOptions(); updateHud(); return true; }
@@ -3616,14 +3616,14 @@ const ABIL_KURZ = {
   light: () => 'Feld bis 4 Felder in Sicht und seine Nachbarn ausleuchten, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ×1,25, Nebel verschwindet.',
   clear: () => 'Gaswolken auf dem eigenen Feld und den Nachbarfeldern auflösen.',
   ammo: () => 'Ein MG oder Geschütz daneben, das in dieser Runde schon geschossen hat, schießt noch einmal (einmal je Runde und Ziel). Zählt als Aufgabe des Versorgungstrupps.',
-  mark: u => `Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder) markieren, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ${xf(P.GUIDED)} und ohne Streuung; deckt getarnte Gegner und Minen im Feld und daneben auf.`,
-  strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${TYPES[u.type].spot || P.SPOT} Felder): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
-  rush: () => `Aus dem Stand bis ${P.RUSH} Felder geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
+  mark: u => `Feld in Sicht (bis ${felder(TYPES[u.type].spot || P.SPOT)}) markieren, bis zum nächsten eigenen Zug: eigener Beschuss dorthin ${xf(P.GUIDED)} und ohne Streuung; deckt getarnte Gegner und Minen im Feld und daneben auf.`,
+  strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${felder(TYPES[u.type].spot || P.SPOT)}): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
+  rush: () => `Aus dem Stand bis ${felder(P.RUSH)} geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
   pzgranate: () => `Geballte Ladung auf ein Fahrzeug oder einen Schreiter 1–${P.PZG_RNG} Felder entfernt werfen: etwa ${fmt(P.PZG_DMG * 2)} Schaden (weniger bei starker Panzerung), ${Math.round(P.PZG_PANNE * 100)} % Pannengefahr. Nicht gegen Fußtruppen. Kostet die Aktion.`,
   rollen: () => `Ein schwerer Aufprall auf Fußtruppen oder ein Geschütz daneben oder 2 Felder geradeaus (Anlauf aus dem Stand, Draht wird niedergewalzt): etwa ${fmt(P.ROLLEN_DMG)} Schaden, niedergehalten, Moral −${fmt(P.ROLLEN_MOR)}, kein Gegenschlag. Das Ziel rutscht ein Feld zurück; ist dort kein Platz, ${xf(P.ROLLEN_WAND)} Schaden. Kostet die Aktion und alle Bewegung.`,
   durchbruch: () => `Kostet die Aktion und alle Bewegung. In eine Einheit daneben oder – nur aus dem Stand – mit Anlauf bis 2 Felder geradeaus (keine Panzer oder Schreiter): bis ${fmt(P.DURCH_DMG)} Schaden, gegen Gepanzerte weniger, Moral −${fmt(P.DURCH_MOR)}, niedergehalten, ein Feld zurückgeschleudert (an einer Wand ×${xf(P.ROLLEN_WAND).slice(1)}).`,
   hinrichtung: () => `Eine angeschlagene Einheit daneben (unter ${fmt(P.HINRICHT_STR)} Stärke, keine Panzer oder Schreiter) wird sofort vernichtet.`,
-  sprung: () => `Aus dem Stand bis ${P.SPRUNG} Felder neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
+  sprung: () => `Aus dem Stand bis ${felder(P.SPRUNG)} neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Höchstens alle ${A.cd} Runden.` : ''); }
@@ -3692,6 +3692,7 @@ const snName = n => n.replace(SN_FUGE, '$1­');
 // F103 (2026-11-22): Rolle, Stark/Schwach gegen, Kontert man mit – aus den Werten abgeleitet (src/rollen.js), überall dieselben Begriffe
 function rolle(t) { return window.ROLLEN ? ROLLEN.rollenVon(E, t) : null; }
 // Eigene Welt (Paket A3, 2026-11-24): Text „Aus den Chroniken“ mit Quellenzeile (klein, kursiv) statt „Im echten Krieg“
+function felder(n, dativ) { return n === 1 ? '1 Feld' : n + (dativ ? ' Feldern' : ' Felder'); }   // „1 Feld“ statt „1 Felder“ (Punkt 31, 2026-11-24)
 const chronikHtml = (T, tag) => T && T.chronik ? `<${tag} class="real chronik"><b>Aus den Chroniken</b><i class="quelle">${T.chronik.quelle}</i>${T.chronik.text}</${tag}>` : '';
 function rolleHtml(t) { const r = rolle(t); if (!r) return ''; return `<div class="rolle"><div class="rl-n"><b>Rolle:</b> ${r.rolle}</div>${r.stark.length ? `<div class="rl-p">▲ <b>Stark gegen:</b> ${r.stark.join(', ')}</div>` : ''}${r.schwach.length ? `<div class="rl-m">▼ <b>Schwach gegen:</b> ${r.schwach.join(', ')}</div>` : ''}<div class="rl-k"><b>Kontert man mit:</b> ${r.konter.join(', ')}</div></div>`; }
 function snKarte(t) { const T = TYPES[t], r = rolle(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span>${r ? `<span class="rl">${r.rolle}</span>` : ''}<span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
@@ -3795,14 +3796,14 @@ function unitButtons(T, hints) {
     const why = sel.supp ? 'Niedergehalten: kann nicht feuern.' : sel.limbered ? 'Aufgeprotzt: erst abprotzen.' : gezogen ? 'Hat sich bewegt: zieht oder feuert, nicht beides.' : E.held(G, sel) ? 'Gegner direkt daneben: gebunden.' : sel.attacked ? 'Hat diese Runde schon gehandelt.' : sel.ap < c ? 'Aktion schon verbraucht.' : '';
     if (E.canLimber(G, sel)) btns.push(sel.limbered
       ? { act: 'limber', sym: 'abprotzen', name: 'Abprotzen', costTxt: 'alle restlichen Bewegungspunkte', text: 'In Stellung gehen. Ab der nächsten Runde feuerbereit.' }
-      : { act: 'limber', sym: 'aufprotzen', name: 'Aufprotzen', cost: 1, text: `Anspannen: zieht ${P.LIMBER_MV} Felder, feuert aber nicht.` });
+      : { act: 'limber', sym: 'aufprotzen', name: 'Aufprotzen', cost: 1, text: `Anspannen: zieht ${felder(P.LIMBER_MV)}, feuert aber nicht.` });
     btns.push({ act: 'm-he', sym: 'granate_artillerie', name: 'Sprenggranate', cost: c, text: 'Trifft ein Feld mit einem Gegner. Steht er im Draht, geht der Draht mit etwas Glück kaputt (Minenwerfer meist). Leere Drahtfelder kann man nicht beschießen.', on: can && artMode === 'he', off: !can, why });
     const bcd = sel.cdP > 0;   // Sperrfeuer: Abklingzeit P.BARRAGE_CD Runden
     const brest = P.BARRAGE_MAX - (sel.barr || 0), gcd = sel.cdG > 0;   // Paket 8: Sperrfeuer höchstens 2× je Schlacht, Gas alle 3 Runden
     btns.push({ act: 'm-barrage', sym: 'sperrfeuer', name: 'Sperrfeuer', cost: c, cd: sel.cdP, cnt: brest, text: (T.mobile ? 'Ziel und zwei Nachbarfelder: Schaden (etwa ×0,7 eines Einzelschusses), hält nieder.' : 'Ziel und Nachbarfelder: Schaden (etwa ×0,7 eines Einzelschusses), hält nieder.') + ` Höchstens ${P.BARRAGE_MAX}× je Schlacht (noch ${brest}), höchstens alle ${P.BARRAGE_CD} Runden.`, on: can && !bcd && brest > 0 && artMode === 'barrage', off: !can || bcd || brest <= 0, why: brest <= 0 ? `Beide Sperrfeuer verbraucht.` : bcd ? `Wieder in ${upRunden(sel.cdP)}.` : why });
     if (sel.gas > 0 || T.gas > 0) btns.push({ act: 'm-gas', sym: 'gas', name: 'Gasgranate', cost: c, cd: sel.cdG, cnt: sel.gas, text: `Wolke treibt 3 Runden mit dem Wind. Trifft auch eigene Truppen. Höchstens alle ${P.GAS_CD} Runden (noch ${sel.gas || 0} Gasgranaten).`, on: can && !gcd && artMode === 'gas', off: !can || !(sel.gas > 0) || gcd, why: !(sel.gas > 0) ? 'Keine Gasgranaten mehr.' : gcd ? `Wieder in ${upRunden(sel.cdG)}.` : why });
     hints.push(can ? (shellHexes.size ? 'Zielfeld anklicken.' : 'Kein Ziel: Eine eigene Einheit muss es sehen (5 Felder).') : why);
-    if (scoutSet.size) hints.push(`<i>◉ ${scoutSet.size} Felder</i> markiert: keine Streuung, ×1,25.`);
+    if (scoutSet.size) hints.push(`<i>◉ ${felder(scoutSet.size)}</i> markiert: keine Streuung, ×1,25.`);
     fertigKnopf(btns);   // Fehler 18:30: Geschütze hatten keinen „Fertig“-Knopf
     return btns;
   }
@@ -3815,8 +3816,8 @@ function unitButtons(T, hints) {
   }
   if (T.zweit) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG)
     const zt = E.zweitTargets(G, sel), Z = T.zweit;
-    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'kanone_zweit' : 'garbe', name: Z.name, costTxt: 'einmal je Runde zusätzlich, kostet keine Aktion', text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${Z.rng} Felder, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
-      why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${Z.rng} Felder.` });
+    btns.push({ act: 'zweit', sym: Z.flamme ? 'flamme' : Z.kanone ? 'kanone_zweit' : 'garbe', name: Z.name, costTxt: 'einmal je Runde zusätzlich, kostet keine Aktion', text: Z.flamme ? 'Flammenstoß auf ein Nachbarfeld, einmal je Runde zusätzlich zum Bohrer: halb so stark wie ein Flammentrupp, Deckung schützt nicht, das Feld brennt danach.' : Z.kanone ? `Kanone im Löwenmaul: Reichweite ${felder(Z.rng)}, einmal je Runde zusätzlich zum MG, halbe Stärke, gegen Panzerung voll.` : `${Z.seiten ? 'Schießt nur nach links und rechts (nicht nach vorn). ' : ''}Reichweite ${felder(Z.rng)}, einmal je Runde zusätzlich zur Kanone, Schaden etwa halb so stark. Wirkt nicht gegen Panzerung.`, on: abilMode && feldArt === 'zweit', off: !zt.length,
+      why: sel.zw ? 'Hat in dieser Runde schon geschossen.' : sel.supp > 0 ? 'Niedergehalten.' : sel.ap < 1 ? 'Aktion schon verbraucht.' : sel.broken ? 'Festgefahren.' : `Kein Ziel ${Z.seiten ? 'seitlich ' : ''}bis ${felder(Z.rng)}.` });
     if (abilMode && feldArt === 'zweit') hints.push('<i>Messing markiert:</i> Ziel anklicken.');
   }
   if (T.faust) {   // Faustsalve (Eisenknecht, 2026-11-20): einmal je Schlacht, zwei Ziele nacheinander anklicken
@@ -3832,11 +3833,11 @@ function unitButtons(T, hints) {
     const why = T.mg && !sel.setup ? 'MG erst aufbauen.' : !sel.supp && !sel.attacked && E.held(G, sel) ? 'Im Nahkampf gebunden: Schießen geht nicht.' : atkWhy;
     if (T.broadside) {   // Sturmpanzer: Breitseite deutlich (2026-11-17) – zwei Schüsse je Runde auf zwei Ziele, Zähler am Knopf, nach dem ersten Schuss pulsiert er
       const n = (sel.bsT || []).length, zweiter = sel.attacked && n === 1, frei = tg.some(t => t.kind === 'fire' || t.both);
-      btns.push({ act: 'p-fire', sym: 'breitseite', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${T.rng} Felder, danach ein anderes bis 2 Felder (beide Schüsse zusammen die Aktion).`, on: atkPref === 'fire', off: !frei,
+      btns.push({ act: 'p-fire', sym: 'breitseite', name: zweiter ? 'Breitseite: zweiter Schuss' : 'Breitseite', cost: 1, cnt: Math.max(0, 2 - n), pulse: zweiter && frei, text: `Zwei Schüsse in einer Runde auf zwei verschiedene Ziele, je ×0,6 – erst ein Ziel bis ${felder(T.rng)}, danach ein anderes bis 2 Felder (beide Schüsse zusammen die Aktion).`, on: atkPref === 'fire', off: !frei,
         why: n >= 2 ? 'Beide Schüsse der Breitseite sind abgegeben.' : zweiter ? 'Kein zweites Ziel bis 2 Felder.' : why });
       if (zweiter && frei) hints.push('<i>Breitseite:</i> zweites Ziel bis 2 Felder anklicken (×0,6).');
     } else
-    btns.push({ act: 'p-fire', sym, name, cost: 1, text: `Ziel auf der Karte anklicken (Messing, Zielsymbol). Reichweite ${T.rng} Felder.`, on: atkPref === 'fire', off: !tg.some(t => t.kind === 'fire' || t.both), why });
+    btns.push({ act: 'p-fire', sym, name, cost: 1, text: `Ziel auf der Karte anklicken (Messing, Zielsymbol). Reichweite ${felder(T.rng)}.`, on: atkPref === 'fire', off: !tg.some(t => t.kind === 'fire' || t.both), why });
   }
   const nahGesperrt = T.atk > 0 && !E.nahFrei(sel) && !sel.attacked && sel.ap >= 1 && !sel.supp && G.units.some(o => o.side !== sel.side && E.alive(o) && E.dist(o.c, o.r, sel.c, sel.r) === 1);
   if (nahGesperrt) hints.push(`<i>Kein Nahkampf mehr:</i> mehr als die Hälfte der Bewegung verbraucht. Schwert am Zugfeld = von dort geht der Sturm noch.`);
@@ -3859,7 +3860,7 @@ function unitButtons(T, hints) {
     btns.push({ act: 'o-' + k, sym, name, cost: 1, cd, cnt: rest, text: `${tip} Noch ${rest} von ${P.ORDER_MAX} Befehlen in dieser Schlacht (alle Befehle zusammen). Abklingzeit ${E.orderCd(G, sel, k)} Runden.`, off: !E.canOrderKind(G, sel, k), why: rest <= 0 ? `Alle ${P.ORDER_MAX} Befehle verbraucht.` : cd > 0 ? `Wieder in ${upRunden(cd)}.` : 'Nur ein Befehl je Runde.' });
   }
   if (T.cmd === 2) { const B = E.BIG[sel.side], used = G.bigUsed && G.bigUsed[sel.side];   // großer Befehl des Generals: einmal je Schlacht
-    btns.push({ act: 'big', sym: B.k === 'hold' ? 'halten' : 'generalangriff', name: B.name, cost: 1, pulse: E.canBig(G, sel), cnt: used ? 0 : 1, text: B.k === 'hold' ? `Einmal je Schlacht: eigene Einheiten im Umkreis von ${P.BIG_R} Feldern fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.` : `Einmal je Schlacht: eigene Einheiten im Umkreis von ${P.BIG_R} Feldern greifen sofort noch einmal an – +1 Aktion und +${P.GENERAL_BP} Bewegungspunkte, auch wer schon geschossen oder gekämpft hat, Nahkampf auch nach weitem Zug; Niederhalten endet. Nicht für fliehende, liegengebliebene oder festgefahrene Einheiten.`, off: !E.canBig(G, sel), why: used ? 'Verbraucht: nur einmal je Schlacht.' : 'Braucht 1 Aktionspunkt.' }); }
+    btns.push({ act: 'big', sym: B.k === 'hold' ? 'halten' : 'generalangriff', name: B.name, cost: 1, pulse: E.canBig(G, sel), cnt: used ? 0 : 1, text: B.k === 'hold' ? `Einmal je Schlacht: eigene Einheiten im Umkreis von ${felder(P.BIG_R, 1)} fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.` : `Einmal je Schlacht: eigene Einheiten im Umkreis von ${felder(P.BIG_R, 1)} greifen sofort noch einmal an – +1 Aktion und +${P.GENERAL_BP} Bewegungspunkte, auch wer schon geschossen oder gekämpft hat, Nahkampf auch nach weitem Zug; Niederhalten endet. Nicht für fliehende, liegengebliebene oder festgefahrene Einheiten.`, off: !E.canBig(G, sel), why: used ? 'Verbraucht: nur einmal je Schlacht.' : 'Braucht 1 Aktionspunkt.' }); }
   if (sel.dug) btns.push({ act: 'undig', sym: 'schaufel', name: 'Ausgraben', ...(P.AUSGRABEN_AP ? { cost: 1 } : { bp: P.AUSGRABEN_BP }), text: `Aus der Stellung heraus: danach kann die Einheit ziehen, die Deckung ${xf(P.DIG_DEF)} endet. Kostet ${P.AUSGRABEN_AP ? 'die Aktion' : P.AUSGRABEN_BP + ' Bewegungspunkt'}.`, off: !E.canUndig(G, sel), why: P.AUSGRABEN_AP ? 'Aktion schon verbraucht.' : 'Keine Bewegungspunkte mehr.' });   // F36
   if (T.dig && !sel.dug) btns.push({ act: 'dig', sym: 'schaufel', name: 'Eingraben', cost: 1, on: !!sel.dug, text: 'Im offenen Gelände oder Trichter: Abwehr ×1,3, bis die Einheit wieder zieht.', off: !E.canDig(G, sel), why: sel.dug ? 'Ist schon eingegraben.' : !['open', 'crater'].includes(G.map[sel.c][sel.r].t) ? 'Nur im offenen Gelände oder Trichter.' : 'Braucht 1 Aktionspunkt.' });
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
@@ -3908,7 +3909,7 @@ function updateHud() {
     $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10, hpNachV(hn._hn, performance.now())) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
       `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung"><small class="up-wort">Bewegung</small> ${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''}</small></span>` +
       (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><small class="up-wort">Aktion</small> <b class="up-akt${ap ? '' : ' used'}">${ap ? 'frei' : 'verbraucht'}</b><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
-      `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>Felder</small>` : '–'}</span></div>`;
+      `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>${T.rng === 1 ? 'Feld' : 'Felder'}</small>` : '–'}</span></div>`;
     $('btnInfo').hidden = false;
     if (previewT && sel && !targets.has(previewT.id)) previewT = null;   // Vorschau-Ziel ist keins mehr (z. B. nach Eingraben): Vorschau weg statt Absturz
     if (previewT && sel) {
@@ -3927,7 +3928,7 @@ function updateHud() {
       const h = G.map[inspect.hex[0]][inspect.hex[1]], T = TERRAIN[h.t], o = OBJECTIVES.find(x => x.c === inspect.hex[0] && x.r === inspect.hex[1]);
       $('hudName').textContent = (h.river && h.t === 'canal' ? 'Fluss' : T.name) + (h.ridge ? ' auf der Höhe' : '');
       $('hudSub').innerHTML = o ? `Zielfeld: ${o.name} · ${o.pts} Punkte` : 'Gelände';
-      hints.push(`${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${E.smokeAt(G, inspect.hex[0], inspect.hex[1]) ? ' Nebelwand: wer hier steht, wird kaum getroffen (×0,5) und schießt nur schwach heraus (×0,75); durch den Nebel sieht niemand.' : ''}${T.real ? ' <em>Im echten Krieg: ' + T.real + '</em>' : ''}`);
+      hints.push(`${h.river && h.t === 'canal' ? 'Nicht passierbar, nur über Brücken und Furten.' : T.info}${h.road ? ' Hier verläuft eine Straße.' : ''}${h.rail ? ' Hier verläuft die Bahnlinie.' : ''}${h.ridge ? ' Höhe: Fernkampf +1 Reichweite.' : ''}${E.cloudAt(G, inspect.hex[0], inspect.hex[1]) ? ' Gaswolke: schadet jeder Einheit, die hier ihren Zug beginnt.' : ''}${E.smokeAt(G, inspect.hex[0], inspect.hex[1]) ? ' Nebelwand: wer hier steht, wird kaum getroffen (×0,5) und schießt nur schwach heraus (×0,75); durch den Nebel sieht niemand.' : ''}${chronikHtml(T, 'span')}`);
     } else {
       $('hudName').textContent = G.over ? 'Schlacht beendet' : human(G.side) ? SIDES[G.side].name : 'Die KI ist am Zug';
       $('hudSub').innerHTML = `${E.MAP.name} · Runde ${G.turn} · Siegpunkte ${G.vp.A} : ${G.vp.D}, Ziel ${G.goal}`;
@@ -4195,7 +4196,7 @@ function showDetail() {
   { let mb = $('detMed'); if (!mb) { mb = document.createElement('div'); mb.id = 'detMed'; mb.className = 'det-med'; $('detCan').parentElement.after(mb); }   // F66: Stärken und Schwächen in Worten
     const m = E.medaillen(u.type); mb.innerHTML = '<b>Stärken und Schwächen:</b>' + medaillenTexte(u.type).map(t => `<div class="dm">${t.k !== 'klasse' ? `<span class="med ${m[t.k]}">${upSym(t.sym) ? `<img src="${upSym(t.sym)}" alt="">` : ''}</span>` : '<span class="med klasse"></span>'}<span><b>${t.name}</b> – ${t.text}</span></div>`).join(''); }
   $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');
-  $('detStats').innerHTML = pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Moral', T.mor) + pill('Zug', T.mv) + pill('Schuss', T.rng ? `${T.rng} Felder` : '–') + pill('Kosten', '★ ' + (E.COST[u.type] || '–'));
+  $('detStats').innerHTML = pill('Angriff', T.atk || '–') + pill('Abwehr', T.def) + pill('Moral', T.mor) + pill('Zug', T.mv) + pill('Schuss', T.rng ? `${felder(T.rng)}` : '–') + pill('Kosten', '★ ' + (E.COST[u.type] || '–'));
   const cp = E.costParts(u.type);
   $('detCost').innerHTML = `Kosten <b>★ ${cp.total}</b> = Kampfwert ${cp.base}` + cp.abil.map(([n, v]) => ` ${v < 0 ? '−' : '+'} ${n} ${Math.abs(v)}`).join('') + (cp.total !== cp.base + cp.abil.reduce((s, a) => s + a[1], 0) ? ' (gerundet)' : '');
   $('detOff').hidden = !u.officer;

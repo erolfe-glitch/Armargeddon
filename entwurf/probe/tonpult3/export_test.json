@@ -1,7 +1,7 @@
 {
  "werkzeug": "Armargeddon Ton-Pult",
  "stand_toene": "2026-11-24",
- "exportiert": "2026-11-24T14:12:59.648Z",
+ "exportiert": "2026-11-24T14:32:16.591Z",
  "hinweis": "wahl: p:<Tonplatz> | k:<Tonschlüssel> | pk:[<Tonschlüssel>, …] (eigenes Paket, Zufall) | - (kein Ton); lautstaerke wie playSound im Spiel (0–1, vor dem Effekte-Regler); tonhoehe = Faktor auf die Abspielrate",
  "aenderungen": [
   {
@@ -30,11 +30,11 @@
    "titel": "Ziehen (Schritte)",
    "platz_spiel": "schritte",
    "filter": null,
-   "wahl": "pk:[\"einschlagH_1\",\"schritte_1\"]",
+   "wahl": "pk:[\"mix_test_einschlag_mit_erdregen\",\"einschlagH_1\"]",
    "schluessel": null,
    "paket": [
-    "einschlagH_1",
-    "schritte_1"
+    "mix_test_einschlag_mit_erdregen",
+    "einschlagH_1"
    ],
    "datei": null,
    "platz_neu": null,
@@ -51,11 +51,11 @@
    "titel": "Ziehen (Schritte)",
    "platz_spiel": "schritte",
    "filter": null,
-   "wahl": "pk:[\"einschlagH_1\",\"schritte_1\"]",
+   "wahl": "pk:[\"mix_test_einschlag_mit_erdregen\",\"einschlagH_1\"]",
    "schluessel": null,
    "paket": [
-    "einschlagH_1",
-    "schritte_1"
+    "mix_test_einschlag_mit_erdregen",
+    "einschlagH_1"
    ],
    "datei": null,
    "platz_neu": null,
@@ -72,12 +72,12 @@
   },
   "kohorte": {
    "ziehen": {
-    "w": "pk:[\"einschlagH_1\",\"schritte_1\"]"
+    "w": "pk:[\"mix_test_einschlag_mit_erdregen\",\"einschlagH_1\"]"
    }
   },
   "grenadier": {
    "ziehen": {
-    "w": "pk:[\"einschlagH_1\",\"schritte_1\"]"
+    "w": "pk:[\"mix_test_einschlag_mit_erdregen\",\"einschlagH_1\"]"
    }
   }
  },
