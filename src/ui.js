@@ -2343,6 +2343,7 @@ function rufBeiEreignis(e, u) {
     case 'handgranate': if (e.wurf) ruf('granate', sd(e.a)); break;   // Punkt 34: Fähigkeit Handgranaten
     case 'gas': if (!e.late) ruf('gas', u && u.side); break;
     case 'fear': ruf('koloss', u && u.side); break;
+    case 'entsetzen': if (!e.ok) ruf('koloss', u && u.side); break;
     case 'ow': case 'sperr': if (u && TYPES[u.type].cmd) ruf('feuer_befehl', u.side); else ruf('feuerbereit', u && u.side); break;
     case 'hit': if (u && !e.panic && e.str < 3.5 && e.dmg > 0) { if (!ruf('sanitaeter', u.side) && fussTrupp(u) && e.dmg >= 2.5 && !e.freeblow) ruf('sterben_gruppe', u.side); } else if (fussTrupp(u) && e.dmg >= 2.5 && !e.freeblow) ruf('sterben_gruppe', u.side); break;   // schwere Verluste: Verwundete stöhnen leise
     case 'spawn': if (u && TYPES[u.type].held) ruf('held_an', u.side); break;
@@ -2844,6 +2845,7 @@ async function playEvent0(e) {
       kz(e.u, e.late ? 'gift' : 'gas', 'puls'); if (e.late) { const [x, y] = bodyPos(e.u); burst(x, y, 8, ['#8fae4a', '#6d8a34', '#b6c86a'], { up: 0.2 }); } await wait(220); break; }
     case 'wirehurt': { const [x, y] = center(e.c, e.r); playSound('draht_infanterie', 0.55, null, { von: unitById(e.u) });   /* Enrico 2026-11-22: Infanterie im Stacheldraht (vorher drahtlatch + drahtwackeln, im Pult wählbar) */   // Draht klirrt (Holzknacken seit Tonprobe 2026-11-18 im Wald)
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
+    case 'entsetzen': { const dd = DU.get(e.u); if (dd && e.morv != null) dd.mor = e.morv; kz(e.u, e.ok ? 'funkeln' : 'angst', 'steig'); if (!e.ok && dd) floater(...headPos(e.u), 'Entsetzt!', '#F0EDE1'); await wait(e.ok ? 60 : 220); break; }   // Punkt 18: Entsetzenstest beim Angriff eines Fahrzeugs/Schreiters
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
     case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); pose(e.u, 'gebruell', 1800); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
     case 'abilTitel': {   // Enrico 2026-11-22: Titel zuerst, dann Anlauf/Sprung und Schlag (Durchbruch, Sturmrollen, Sprungangriff)
@@ -4736,6 +4738,7 @@ function noteEvent(e, u) {
     case 'burn': return logAdd(`${N(u)}: im Feuer`, u && u.side, e.c, e.r);
     case 'freeblow': { const fa = G.units.find(x => x.id === e.a); return logAdd(`${N(u)} weicht zurück: Freischlag von ${N(fa)}`, u && u.side, ...at(u)); }
     case 'pzschuss': return logAdd(`${N(unitById(e.u))}: Panzergranate auf ${N(unitById(e.d))}`, unitById(e.u) && unitById(e.u).side, e.c, e.r, true);
+    case 'entsetzen': return logAdd(`${N(unitById(e.u))}: Entsetzenstest ${e.ok ? 'bestanden' : 'nicht bestanden – niedergehalten'} (Chance ${Math.round(e.p * 100)} %)`, unitById(e.u) && unitById(e.u).side);
     case 'kopfrunter': return logAdd(`${N(unitById(e.u))}: Kopf runter! – ${N(unitById(e.d))} niedergehalten`, unitById(e.u) && unitById(e.u).side);
     case 'handgranate': return logAdd(`${N(unitById(e.a))}: Handgranaten`, unitById(e.a) && unitById(e.a).side);
     case 'lanceblast': return logAdd(`${N(unitById(e.a))}: Sprenglanze`, unitById(e.a) && unitById(e.a).side, e.c, e.r);

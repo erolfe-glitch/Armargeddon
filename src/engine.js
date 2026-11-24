@@ -58,7 +58,7 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
-  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
+  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, ENTSETZ_BASIS: 0.08, ENTSETZ_MOR: 0.8, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
 };
@@ -961,7 +961,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
   flush();
   ev.push({ t: 'face', u: u.id, face: u.face });
   if (T.cls === 'walker') {
-    if (!opt.keineFurcht) for (const e of G.units) if (e.side !== u.side && active(e) && !e.seenWalker && cls(e) !== 'walker' && dist(e.c, e.r, u.c, u.r) <= 2) {   // Enrico 2026-11-22: Sturmrollen-Anlauf (keineFurcht) löst keine Kolossfurcht aus
+    if (TOG.ENTSETZ_ALT && !opt.keineFurcht) for (const e of G.units) if (e.side !== u.side && active(e) && !e.seenWalker && cls(e) !== 'walker' && dist(e.c, e.r, u.c, u.r) <= 2) {   // Enrico 2026-11-22: Sturmrollen-Anlauf (keineFurcht) löst keine Kolossfurcht aus
       e.seenWalker = true; e.mor = Math.max(0.5, e.mor - P.WALKER_FEAR);
       ev.push({ t: 'fear', u: e.id, morv: e.mor });
     }
@@ -1212,7 +1212,28 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (d.status === 'rout') return;
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
+  if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
   if (d.mor < P.FALLBACK_MOR && cls(d) !== 'art' && !(d.supp > 0 && !TOG.NOSUPP)) fallBack(G, d, a, ev);   // Niedergehaltene bleiben liegen
+}
+// Punkt 18 (2026-11-24): Entsetzenstest – nur wenn ein Fahrzeug/Schreiter angreift (statt Moralverlust beim bloßen Annähern; ENTSETZ_ALT=1 = alte Regel).
+// Immun: Helden, Fahrzeuge/Schreiter, Kampfanzüge. Durchgefallen: niedergehalten, Moral −P.ENTSETZ_MOR, unter 60 Stärke zurückweichen (keine Sofortflucht).
+function entsetzenImmun(t) { const T = TYPES[t]; return !T || !!T.held || T.cls === 'walker' || !!T.suit || !!T.mech; }
+function entsetzenP(G, d) {
+  const T = TYPES[d.type]; let p = P.ENTSETZ_BASIS + (1 - d.str / 10) * 0.25 + Math.max(0, (5 - d.mor) / 10) * 0.3;
+  p += [0.08, 0.03, 0, -0.03][coverOf(G, d).tier];
+  if (T.cls === 'art' || T.mg) p += 0.08; else if (T.cls === 'storm' || T.cls === 'cav') p -= 0.05;
+  if (T.cmd) p -= 0.1;
+  if (G.units.some(o => o !== d && o.side === d.side && alive(o) && (TYPES[o.type].cmd || TYPES[o.type].banner) && dist(o.c, o.r, d.c, d.r) <= (o.planted ? 2 : 1))) p -= 0.1;
+  return Math.max(0.02, Math.min(0.6, p));
+}
+function entsetzen(G, a, d, ev) {
+  if (TOG.ENTSETZ_ALT || !a || !alive(a) || cls(a) !== 'walker' || a.side === d.side || !active(d) || entsetzenImmun(d.type)) return false;
+  const p = entsetzenP(G, d), ok = G.rng() >= p; G.entsetzen = G.entsetzen || { n: 0, fail: 0 }; G.entsetzen.n++;
+  const evE = { t: 'entsetzen', u: d.id, ok, p: +p.toFixed(2) }; ev.push(evE); if (ok) return false; G.entsetzen.fail++;
+  d.mor = Math.max(0.1, d.mor - P.ENTSETZ_MOR); evE.morv = d.mor;
+  if (!d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
+  if (d.str < 6 && cls(d) !== 'art') { fallBack(G, d, a, ev); return true; }
+  return false;
 }
 function credit(G, u) { if (!u.credited) { u.credited = true; G.pts[u.side === 'A' ? 'D' : 'A'] += P.PTS_KILL; } }
 function killUnit(G, u, ev, how) {
