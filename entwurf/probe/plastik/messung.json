@@ -1,0 +1,74 @@
+[
+ {
+  "karte": "a_kraehenfurt",
+  "stufe": 0,
+  "umschalten_ms": 568,
+  "erstes_bild_ms": 599,
+  "ms_mittel": 5.6,
+  "ms_95": 6.1
+ },
+ {
+  "karte": "a_kraehenfurt",
+  "stufe": 2,
+  "umschalten_ms": 582,
+  "erstes_bild_ms": 585,
+  "ms_mittel": 6.6,
+  "ms_95": 8
+ },
+ {
+  "karte": "a_kraehenfurt",
+  "stufe": 3,
+  "umschalten_ms": 827,
+  "erstes_bild_ms": 880,
+  "ms_mittel": 6.6,
+  "ms_95": 7.7
+ },
+ {
+  "karte": "b_sankt_russ",
+  "stufe": 0,
+  "umschalten_ms": 416,
+  "erstes_bild_ms": 454,
+  "ms_mittel": 8.6,
+  "ms_95": 14.1
+ },
+ {
+  "karte": "b_sankt_russ",
+  "stufe": 2,
+  "umschalten_ms": 405,
+  "erstes_bild_ms": 411,
+  "ms_mittel": 12.4,
+  "ms_95": 16.7
+ },
+ {
+  "karte": "b_sankt_russ",
+  "stufe": 3,
+  "umschalten_ms": 604,
+  "erstes_bild_ms": 655,
+  "ms_mittel": 12.2,
+  "ms_95": 16.9
+ },
+ {
+  "karte": "c_stahlgaenger",
+  "stufe": 0,
+  "umschalten_ms": 327,
+  "erstes_bild_ms": 339,
+  "ms_mittel": 5.6,
+  "ms_95": 5.8
+ },
+ {
+  "karte": "c_stahlgaenger",
+  "stufe": 2,
+  "umschalten_ms": 326,
+  "erstes_bild_ms": 328,
+  "ms_mittel": 5.8,
+  "ms_95": 5.9
+ },
+ {
+  "karte": "c_stahlgaenger",
+  "stufe": 3,
+  "umschalten_ms": 548,
+  "erstes_bild_ms": 588,
+  "ms_mittel": 5.7,
+  "ms_95": 5.9
+ }
+]

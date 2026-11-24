@@ -129,7 +129,7 @@ function atem(u) {
 // Schneefall (Enrico 19:40): wenige, langsame Flocken über dem Bild, nur Winterkarten, aus bei Bildwirkung aus (oder window.NOSCHNEEFALL); Böe treibt sie kurz zur Seite
 const SCHNEEFALL = []; let schneeBoeBis = 0;
 function drawSchneefall(g) {
-  if (!(E.MAP && E.MAP.winter) || !BW || window.NOSCHNEEFALL) return; const W = g.canvas.width, H = g.canvas.height, n = BW === 2 ? 110 : 70;
+  if (!(E.MAP && E.MAP.winter) || !BW || window.NOSCHNEEFALL) return; const W = g.canvas.width, H = g.canvas.height, n = BW >= 2 ? 110 : 70;
   while (SCHNEEFALL.length < n) SCHNEEFALL.push({ x: Math.random(), y: Math.random(), v: 0.0006 + Math.random() * 0.0009, r: 0.6 + Math.random() * 1.4, ph: Math.random() * 6.28, a: 0.35 + Math.random() * 0.45 });
   const boe = now < schneeBoeBis ? Math.sin(Math.PI * (1 - (schneeBoeBis - now) / 3500)) : 0, st = STEP;
   g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#eef2f8';
@@ -1440,13 +1440,13 @@ const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];  
 // Figuren: Plastik-Karte aus tools/figur_plastik.py (window.FIGSP, einmal beim Bauen vorberechnet: Klarheit und Metallglanz) wird
 // einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
 // Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
-const BW_NAME = ['aus', 'leicht', 'stark'];
+const BW_NAME = ['aus', 'leicht', 'stark', 'sehr stark (Probe)'];   // Stufe 3 nur über __dbg.bild(3) (Paket P, Punkt 27, 2026-11-24): nicht im Menü, nicht gespeichert
 let BW = 2; try { const v = localStorage.getItem('arm.bildwirkung3');   // F1 (2026-11-20): Standard stark; neuer Schlüssel, damit alte Einstellungen „leicht“ nicht stehen bleiben
   if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
-const BW_KARTE = [0, 0.7, 1.3];                                   // Anteil der Plastik-Karte
-const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
-const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)'];
-const BW_SCH = [1, 1.25, 1.5];                                  // Kontaktschatten unter den Figuren
+const BW_KARTE = [0, 0.7, 1.3, 2.0];                                   // Anteil der Plastik-Karte
+const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }, { sat: 1.16, kon: 1.24 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
+const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)', 'brightness(0.74) saturate(0.62) contrast(1.08)'];
+const BW_SCH = [1, 1.25, 1.5, 1.9];                                  // Kontaktschatten unter den Figuren
 const bwA = a => Math.min(0.95, a * BW_SCH[BW]);
 const BWI = new Map(), BWK = {};
 function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plastik-Karte ja, Kontrast/Sättigung der Figuren nein
@@ -1460,9 +1460,10 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   const id = x.getImageData(0, 0, W, H), p = id.data;
   let kd = null; if (km) { x.clearRect(0, 0, W, H); x.imageSmoothingQuality = 'high'; x.drawImage(km, 0, 0, W, H); kd = x.getImageData(0, 0, W, H).data; }
   const f = BW_KARTE[BW] / 510 * 255, { sat, kon } = nurKarte ? { sat: 1, kon: 1 } : BW_FIG[BW], piv = 0.38 * 255;
+  const licht = BW === 3 ? 40 : 0;   // Probe „sehr stark“: gerichtetes Licht von oben links (heller oben links, dunkler unten rechts)
   for (let i = 0; i < p.length; i += 4) {
     if (!p[i + 3]) continue;
-    const dl = kd ? (kd[i] - 128) * f : 0;
+    let dl = kd ? (kd[i] - 128) * f : 0; if (licht) { const q = i >> 2, px = q % W, py = (q / W) | 0; dl += licht * (0.5 - (px / W) * 0.4 - (py / H) * 0.6); }
     let r = p[i] + dl, gg = p[i + 1] + dl, b = p[i + 2] + dl; const gr = 0.299 * r + 0.587 * gg + 0.114 * b;
     r = gr + (r - gr) * sat; gg = gr + (gg - gr) * sat; b = gr + (b - gr) * sat;
     p[i] = piv + (r - piv) * kon; p[i + 1] = piv + (gg - piv) * kon; p[i + 2] = piv + (b - piv) * kon;   // Uint8ClampedArray begrenzt selbst
@@ -1472,7 +1473,7 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   BWI.set(ck, c); return c;
 }
 function setBildwirkung(v, still) {
-  BW = ((v % 3) + 3) % 3; try { localStorage.setItem('arm.bildwirkung3', String(BW)); } catch (e) {}
+  BW = v === 3 && still ? 3 : ((v % 3) + 3) % 3; if (BW < 3) try { localStorage.setItem('arm.bildwirkung3', String(BW)); } catch (e) {}
   if ($('optBild')) $('optBild').value = String(BW);
   gbKey = ''; if (L && G) renderTerrain();
   if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);
@@ -1848,7 +1849,7 @@ function baumNachfuehren() {   // weich ein- und ausblenden (ca. 0,25 s)
 }
 // Nebel am Kartenrand (Winterdorf, nur Bild): weicher, langsam ziehender Schleier an allen vier Rändern im Weltbild; Bildwirkung „aus“ = kein Nebel
 function randNebel(g, s) {
-  const W = L.W, y0 = L.top - s * 0.3, H = L.H, tz = now / 1000, st = BW === 2 ? 1.15 : 1, band = s * 1.6;
+  const W = L.W, y0 = L.top - s * 0.3, H = L.H, tz = now / 1000, st = BW >= 2 ? 1.15 : 1, band = s * 1.6;
   g.save(); g.globalCompositeOperation = 'source-over';
   const kante = (x0, y0_, x1, y1_, gx0, gy0, gx1, gy1) => { const gr = g.createLinearGradient(gx0, gy0, gx1, gy1); gr.addColorStop(0, `rgba(196,202,208,${0.34 * st})`); gr.addColorStop(1, 'rgba(196,202,208,0)'); g.fillStyle = gr; g.fillRect(x0, y0_, x1 - x0, y1_ - y0_); };
   kante(0, y0, band, H, 0, 0, band, 0); kante(W - band, y0, W, H, W, 0, W - band, 0); kante(0, y0, W, y0 + band, 0, y0, 0, y0 + band); kante(0, H - band, W, H, 0, H, 0, H - band);
@@ -2857,7 +2858,7 @@ async function playEvent0(e) {
       heldFunken(4, d.x, d.y - L.s * 0.35, { mul: 0.8, life: 26 }); heldFunken(6, d.x, d.y - L.s * 0.2, { mul: 0.6, delay: 4, life: 30 });
       playSound('held_fausteinschlag', 0.8); setTimeout(() => { playSound('held_dampfstoss', 0.5); playSound('held_dampf', 0.35); faustDampf(e.u, 0.8); }, 260 / speed); shake(14); heldBlitz(e.u, 'glut'); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Ablauf Enrico: Aufladen → Hydraulik-Boom → Dampfstoß
       stopBis = performance.now() + 70; heldRing(d.x, d.y, 'faust', true);   // Druckwelle am Boden
-      for (let q = 0; q < (BW === 2 ? 7 : 5); q++) { const w = q / (BW === 2 ? 7 : 5) * Math.PI * 2 + Math.random() * 0.4; boom(d.x + Math.cos(w) * L.s * 0.75, d.y + Math.sin(w) * L.s * 0.75 * kAt(d.x, d.y), L.s * 0.32, 'dust', 3 + q); }
+      for (let q = 0; q < (BW >= 2 ? 7 : 5); q++) { const w = q / (BW >= 2 ? 7 : 5) * Math.PI * 2 + Math.random() * 0.4; boom(d.x + Math.cos(w) * L.s * 0.75, d.y + Math.sin(w) * L.s * 0.75 * kAt(d.x, d.y), L.s * 0.32, 'dust', 3 + q); }
       fx('erdfontaene', null, d.x, d.y + L.s * 0.3, { life: 52, mul: 0.55, grow: 0.25, flip: dx < 0, fadeOut: 0.45, filter: 'brightness(0.75) sepia(0.3)' });
       fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 44, mul: 0.95, grow: 0.45, alpha: 0.9, fadeOut: 0.6 }); fx('truemmer', 5, d.x + (dx < 0 ? -1 : 1) * L.s * 0.4, d.y + L.s * 0.25, { delay: 4, life: 40, mul: 0.6, grow: 0.4, alpha: 0.85, fadeOut: 0.6 });
       trefferSpritzer(a.x, a.y, d, 3, istMaschine(unitById(e.d))); FLUG.set(e.d, performance.now());   // das Ziel fliegt im folgenden 'rollstoss' sichtbar zurück
@@ -2868,7 +2869,7 @@ async function playEvent0(e) {
       a.face = d.x >= a.x ? 0 : 3; pose(e.u, 'hieb', 1100); kz(e.d, 'angst', 'steig'); playSound('held_saege_start2', 0.6); playSound('held_ritter_schrei', 0.5); await wait(440); playSound('held_saege_schnitt2', 0.7); playSound(kschwertTon(e.d), 0.55);
       const mx = d.x + (a.x - d.x) * 0.35, my = d.y - L.s * 0.55, masch = istMaschine(unitById(e.d));   // Treffpunkt der Säge
       heldBlitz(e.u, 'kalt'); heldRing(d.x, d.y, 'kalt', false); pose(e.d, 'getroffen', 900); shake(11); heldFunken(2, mx, my, { mul: 0.75, life: 24 }); heldFunken(1, mx, my, { mul: 0.6, flip: d.x < a.x });
-      for (let q = 0; q < (BW === 2 ? 4 : 3); q++) fx('funken', null, mx + (Math.random() - 0.5) * L.s * 0.25, my + (Math.random() - 0.5) * L.s * 0.2, { anchor: 'mitte', delay: q * 3, life: 18 + q * 3, mul: 0.65 + q * 0.12, fadeOut: 0.6, flip: Math.random() < 0.5 });   // Funken von der Kettensäge
+      for (let q = 0; q < (BW >= 2 ? 4 : 3); q++) fx('funken', null, mx + (Math.random() - 0.5) * L.s * 0.25, my + (Math.random() - 0.5) * L.s * 0.2, { anchor: 'mitte', delay: q * 3, life: 18 + q * 3, mul: 0.65 + q * 0.12, fadeOut: 0.6, flip: Math.random() < 0.5 });   // Funken von der Kettensäge
       stopBis = performance.now() + (BW ? 230 : 140); if (!(ksz && ksz.skip)) await wait(220);   // kurzer Stillstand im Treffer
       trefferSpritzer(a.x, a.y, d, 3, masch); if (!masch) { schwerBlut(a.x, a.y, d, 3); schwerBlut(a.x, a.y, d, 3); bodenBlut(d.x + (Math.random() - 0.5) * L.s * 0.3, d.y + L.s * 0.12 * kAt(d.x, d.y), 0.7); }   // schwerer Blutstoß, dann Lache
       if (!(ksz && ksz.skip)) await wait(420); await kampfSzeneEnde(ksz); break; }
@@ -4127,8 +4128,8 @@ function auraPuls(id, art) {   // Aura hat gewirkt: einmal je Held und Runde Rin
 function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
   const d = DU.get(id); if (!d) return; const b = d.fbx && d.fbx[0], lf = facesLeft(d.face), s = L.s;
   const x = b ? d.x + b[0] + b[2] * (lf ? 0.15 : 0.85) : d.x + (lf ? -1 : 1) * s * 0.4, y = b ? d.y + b[1] + b[3] * 0.5 : d.y - s * 0.6;
-  for (let q = 0; q < (BW === 2 ? 3 : 2); q++) { const e = fx('rauch', null, x + (lf ? -1 : 1) * q * s * 0.12, y, { delay: q * 4, move: [x + (lf ? -1 : 1) * s * (0.3 + q * 0.15), y - s * 0.25], life: 60 + q * 10, mul: 0.22 * st + q * 0.04, grow: 1.1, rise: 0.5, alpha: 0.55, fadeIn: 3, fadeOut: 0.7, flip: lf, filter: 'brightness(2.1) saturate(0.2)' }); if (e) e.dampf = true; }
-  burst(x, y, BW === 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });
+  for (let q = 0; q < (BW >= 2 ? 3 : 2); q++) { const e = fx('rauch', null, x + (lf ? -1 : 1) * q * s * 0.12, y, { delay: q * 4, move: [x + (lf ? -1 : 1) * s * (0.3 + q * 0.15), y - s * 0.25], life: 60 + q * 10, mul: 0.22 * st + q * 0.04, grow: 1.1, rise: 0.5, alpha: 0.55, fadeIn: 3, fadeOut: 0.7, flip: lf, filter: 'brightness(2.1) saturate(0.2)' }); if (e) e.dampf = true; }
+  burst(x, y, BW >= 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });
 }
 function staubSchleppe(id) { let an = true; (async () => { while (an) { const d = DU.get(id); if (d) boom(d.x, d.y + L.s * 0.12, L.s * 0.24, 'dust'); await wait(70); } })(); return () => { an = false; }; }
 const FLUG = new Map();   // K7 (2026-11-22): id → Zeitpunkt; nur der direkt folgende Rückstoß fliegt, in startGame geleert

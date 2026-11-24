@@ -19,6 +19,7 @@ const bild = async name => { const r = await cmd('Page.captureScreenshot', { for
 await cmd('Runtime.enable'); await cmd('Page.enable');
 await cmd('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('arm.ton','0')}catch(e){}" });
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+if (process.env.INIT) await cmd('Page.addScriptToEvaluateOnNewDocument', { source: process.env.INIT });   // z. B. INIT="window.NOSCHNEEKANTE=true" (Vergleich einzelner Schichten)
 await cmd('Page.navigate', { url: process.env.URL || 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
 await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)); const click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
   click('neue schlacht'); await W(700); const rb = document.querySelector('input[name=map][value=${KARTE}]'); if (rb) { rb.click(); rb.dispatchEvent(new Event('change', { bubbles: true })); await W(600); }
