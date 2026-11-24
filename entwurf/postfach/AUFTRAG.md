@@ -20,9 +20,9 @@
 - ✓ **Paket P – Plastik-Probe vorgezogen (Enrico 24.11. 18:23): nur Punkt 27** (Abschnitt 20:30 vom 23.11., nur Bilder, nichts fest einbauen). Danach Paket C2.
 - ✓ **Paket C2 – Krähenfurt-Rest (Abschnitt 24.11. 18:20, Punkte 35–38).**
 - ✓ **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder). **Teil 1 (`d135239`) und Teil 2 (`0f9e557`) erledigt. Im nächsten Teil ZUERST die Korrekturen 39–42 (Abschnitt 24.11. 19:05), dann der Rest.**
-- **Paket E – Regeln (mit Messung):** **zuerst Punkt 42 (Dampfpfeife, aus Paket D übrig, Abschnitt 24.11. 19:05)**, dann Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
+- ✓ **Paket E – Regeln (mit Messung):** **zuerst Punkt 42 (Dampfpfeife, aus Paket D übrig, Abschnitt 24.11. 19:05)**, dann Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
 - **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
-- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen).
+- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 
 # >>> JETZT (Enrico 2026-11-24 19:05): Korrekturen zu Paket D Teil 1 <<<
@@ -43,7 +43,9 @@
 
 - [ ] **43. NICHT JETZT – erst beim großen Umbau (Schaden über Modelle, Etappe 3): Löwenmaul-Kanone und Furcht-Aura stärker.** Antwort auf die Frage aus Paket D Teil 3. Enrico (19:19): erst beim Umbau, weil sich dort die Schadensrechnung ohnehin ändert. Laut Bericht zu schwach für den Auftritt: Löwenmaul-Kanone des Kreuzschreiters (2 gegen Grenadiere, 4 gegen Sturmpanzer je Schuss) und Furcht-Aura des Kürassiers (−4 Moral je Runde). Beim Umbau so einstellen, dass die Wirkung zur Inszenierung passt, mit Messung (Sparregel 2). Bis dahin Werte nicht ändern.
 
-- [ ] **44. Antwort zu Paket E Teil 2 (Scharfschützen, Punkt 3): Variante C (Enrico 19:48).** Alte Regel bleibt im Spiel. Die neue Regel (`SCHARF_NEU=1`: nur aus dem Stand, ×1,6 gegen Ungepanzerte, kein `pin`, Fähigkeit „Kopf runter!“) **bleibt im Code und schaltbar**, nicht löschen. Wird beim großen Umbau (Schaden über Modelle, Moral) wieder aufgegriffen und dann zusammen mit den Karten abgeglichen. Jetzt nichts weiter tun, nur abhaken; danach mit Punkt 16 weitermachen.
+- [x] **44. Antwort zu Paket E Teil 2 (Scharfschützen, Punkt 3): Variante C (Enrico 19:48).** Alte Regel bleibt im Spiel. Die neue Regel (`SCHARF_NEU=1`: nur aus dem Stand, ×1,6 gegen Ungepanzerte, kein `pin`, Fähigkeit „Kopf runter!“) **bleibt im Code und schaltbar**, nicht löschen. Wird beim großen Umbau (Schaden über Modelle, Moral) wieder aufgegriffen und dann zusammen mit den Karten abgeglichen. Jetzt nichts weiter tun, nur abhaken; danach mit Punkt 16 weitermachen.
+- [x] **45. Antworten zu Paket E Teil 4 (Entsetzenstest, Enrico 20:45).** (a) Häufigkeit **passt so**, `P.ENTSETZ_BASIS` bleibt; erst im Spieltest nachschärfen. (b) Vorschlag **angenommen, aber erst beim großen Umbau** (zusammen mit Punkt 43): Furcht-Aura des Kürassiers und Löwengebrüll nutzen dann denselben Entsetzenstest (eigener Grundwert, gleiche Einflüsse, gleiche Anzeige) statt pauschalem Moralabzug. Jetzt nichts bauen, nur abhaken.
+- **Hinweis an CC:** Die Scharfschützen-Frage aus Teil 2 ist mit **Punkt 44 beantwortet** (Variante C). Bitte 44 und 45 abhaken und im Bericht nicht mehr als offen führen. Danach Punkt 2 (Aufstellungsphase).
 
 # >>> JETZT (Enrico 2026-11-24 18:20): Antworten zu Paket C + Straßenenden (NICHT erledigt) <<<
 **Reihenfolge:** Paket C2, eigener `pa`.
@@ -133,7 +135,7 @@ Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
 
 ✓ **1. Krähenfurt aufräumen:** Die Karte gefällt Enrico sehr, aber **die Straßen und die Ecke oben rechts wirken „vermüllt“**. Bitte ansehen (Übersicht + nah), Ursache benennen (zu viele Deko-Teile, Trümmer, Überlappungen, Matschstraße mit Flecken/Kanten?) und deutlich ausdünnen bzw. sauberer legen. Straßen sollen klar und ruhig lesbar sein. **Ausdrücklich auch (Enrico 24.11.): die zerstückelten Texturen an Straßenenden** – abgehackte Enden, Kachelbrüche, harte Kanten an Übergängen Straße ↔ Schnee/Feld/Brücke/Kartenrand: sauber auslaufen lassen (weicher Rand/Endstück statt abgeschnittener Kachel). Alle Straßenenden der Karte prüfen, nicht nur eines. Vorher/nachher-Bilder (Übersicht, Straße nah, jedes reparierte Straßenende, Ecke oben rechts).
 
-**2. Aufstellungsphase:**
+✓ **2. Aufstellungsphase:**
 - Alles, was eine Einheit an ihrer **Grundstellung** ändert, soll schon in der Aufstellung gehen, kostenlos: **Aufprotzen/Abprotzen** (Geschütze), **MG auf-/abbauen**, **Ballon aufsteigen/einholen**, Blickrichtung drehen; wenn sinnvoll auch Eingraben als Startzustand (Vorschlag, im Bericht begründen). Keine Aktionen, die schon Wirkung auf den Gegner haben.
 - Beim Antippen einer Einheit in der Aufstellung die **Einheitenkarte mit Fähigkeiten, Rolle und Reichweite** zeigen, dazu beim Halten über einem Feld die Reichweite/den Schussfächer von dort (wie im Spiel), damit man weiß, wen man wo am besten hinstellt.
 

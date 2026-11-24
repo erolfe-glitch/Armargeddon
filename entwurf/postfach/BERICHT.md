@@ -1,3 +1,24 @@
+## 2026-11-24 – Paket E, Teil 5 (Abschluss): Aufstellungsphase (Punkt 2) (`041f50f`)
+
+Gepusht, index.html gebaut. Punkte 44 und 45 sind abgehakt (keine Arbeit nötig). **Paket E ist damit abgeschlossen.**
+
+- **Startzustand in der Aufstellung, kostenlos:**
+  - wie bisher: Geschütz auf-/abgeprotzt, MG auf-/abgebaut;
+  - **neu:** Fesselballon oben/eingeholt;
+  - **neu:** Blickrichtung um 60° nach links/rechts drehen, wichtig für MG-Schussfeld und Fahrzeuge.
+- **Wer wohin:**
+  - Beim Antippen zeigt die Einheitenkarte wie bisher Leben, Moral, Bewegung und Rolle. Neu steht in der Hinweiszeile „Rolle · Reichweite · Fähigkeit · Schlagworte“ (z. B. „Feuerunterstützung (MG) · Reichweite 3 Felder · Sperrfeuer: 2 Schüsse · Erst aufbauen, dann feuern“).
+  - Beim Überfahren bzw. Halten über einem Feld der Startzone erscheinen **Reichweite und Sichtlinie von dort** am Boden (Messing, dezent). Bei MG und Fahrzeugen nur das Schussfeld in Blickrichtung; beim Ziehen gilt das Zielfeld.
+  - Bild: `entwurf/probe/aufstellung/aufstellung_mg_reichweite.jpg`.
+- **Eingraben als Startzustand – Vorschlag: nein.** Eingraben kostet im Spiel die Aktion und hindert am Ziehen. Als kostenloser Startzustand wäre es ein klarer Vorteil für den Verteidiger, und die KI nutzt es beim automatischen Aufstellen nicht. Das verschiebt die Karten-Abgleiche. Besser: so lassen (erste Runde eingraben kostet die Aktion).
+- **Noch nicht schön:** Beide Drehknöpfe haben dasselbe Symbol (Drehpfeil). Ein gespiegeltes Symbol für „links“ wäre ein Wunsch an den Berater.
+- **Test-Hinweis:** Der Partietest (`test_partie.mjs`) meldet bei der Bildprüfung inzwischen „Karte schwarz“ (Helligkeit 0) – **auch für den Stand von Paket B**, bei dem er damals bestanden hat. Das ist also ein Problem der Testumgebung (Chrome auf diesem Rechner), nicht des Spiels. In meinem eigenen Browser-Lauf ist die Karte nach Schlachtbeginn normal gezeichnet. Alle übrigen Prüfungen im Partietest sind ok (Drehen, F88, F97, F100, Paket-A-Prüfungen, Blickrichtung aller 54 Typen).
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket E, Teil 4 (Zwischenstand): Entsetzenstest (Punkt 18) (`00a6778`)
 
 Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung.
