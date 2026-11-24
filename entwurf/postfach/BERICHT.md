@@ -1,3 +1,31 @@
+## 2026-11-24 – Paket A2: Ton-Pult „Eigenes Paket“ (Punkt 25) + Export 23.11. 22:17
+
+Gepusht (Commit siehe unten). Tests: `tonpult_test` 92/92 (darin 10 neue Prüfungen zum eigenen Paket), `test_tonpult3_spiel` 17/17 (3 neue), `test_kommentare` sauber. Keine Regeländerung, keine Simulation, kein Ton-Spur-Volllauf (Sparregel).
+
+### Zuerst: Enricos Export vom 23.11. 22:17 eingebaut
+- `tonwahl_bau` + `ton_teilen` + Bau gelaufen. **285 von 298 Wahlen wirken im Spiel** (298 = 287 aus dem neuen Export plus 11 ältere Einträge, die im neuen fehlen); Abstellkammer 17 Töne, alle 54 Einheiten „fertig“.
+- **Nicht wirksam (13), und warum:**
+  - 7× „Schießen“ bei Einheiten ohne Fernkampf (Feldscher/Heiler, Signal-, Fernsprechtrupp, Meldegänger, Sturmtrupp, Eingreiftrupp): diese Zeile gibt es im Pult seit dem Abgleich Spiel == Pult nicht mehr, weil die Einheit den Ton im Spiel nie spielt. Die Wahl stammt aus älteren Exporten.
+  - 1× Mineur „Stollen sprengen“: liegt jetzt unter „Gelände und Gebäude“ (dort ist eine eigene Wahl von Enrico eingetragen und wirkt).
+  - 5× ohne eigene Wirkung: entweder ist die Wahl gleich dem, was das Spiel ohnehin spielt (Lautstärke/Tonhöhe 100 %), oder zwei Pult-Zeilen fallen im Spiel auf denselben Platz und die zweite überdeckt die erste (z. B. Eingreiftrupp „Schlag“ aus einem alten und dem neuen Export).
+- Umgehängt (wirkt, nur anderer Platz im Spiel): bei allen Einheiten die Zeile „Tod“ (Pult zeigte „-“, das Spiel spielt `aufgerieben`), Mörser/Minenwerfer Sperrfeuer → `sperr_boom`, Gelände Stollen → `stollen_boom`.
+
+### Punkt 25 – Eigenes Paket
+- **„+ ins Paket“** als Ankreuzfeld (≥ 40 px) an jedem Ton in „Welcher Ton?“ und in „Alle Töne ansehen …“. Bei einer Zeile mit mehreren Tönen nimmt das Kreuz alle Töne dieser Zeile auf (halb angekreuzt = ein Teil davon ist drin). Im Dialog bleibt das Fenster beim Ankreuzen offen, man kann also quer durch die Rubriken sammeln (Suche hilft).
+- **Start:** Ist schon ein einzelner Ton gewählt, wird er der erste im Paket; sonst beginnt das Paket leer. **„✎ Paket bearbeiten“** (erscheint, wenn an der Stelle ein Werks-Paket mit mehreren Tönen klingt) übernimmt alle seine Töne angekreuzt; dann einzeln ab- oder dazuwählen.
+- **Anzeige** unter „Jetzt eingestellt“: „Eigenes Paket · n Töne“, aufklappbar, je Ton ▶ und „✕ aus dem Paket“ (nimmt nur aus diesem Paket, sortiert nichts aus). Leer gemacht = wieder wie im Spiel. Alles mit „↶ Rückgängig“.
+- **Mehrere wählen:** das Paket gilt für alle gewählten Einheiten (gleiche Stelle).
+- **Mischtöne** dürfen Mitglied sein (nicht in Ruf-Zeilen – Rufe können im Spiel nicht mischen, wie bisher).
+- **Export:** neuer Wahltyp `pk:["schlüssel", …]`, zusätzlich Feld `paket` (Liste) zum Lesen. Alte Exporte lesen sich unverändert ein (Test mit dem Export vom 22.11.).
+- **Spiel:** `tonwahl_bau` schreibt `pk` in TONWAHL (fehlende Töne fallen mit Hinweis heraus; ein Paket aus nur noch einem Ton wird zum festen Ton). `ui.js`: `pkZiehen` zieht zufällig einen, **nie zweimal hintereinander denselben**; gilt überall, wo die Pult-Wahl wirkt (Waffentöne, Treffer, Töne ohne playSound, Sprüche, Rufe, Schreiter- und Heldenstimmen).
+- Test im Spiel: Paket aus 3 Tönen zweier Rubriken (Einschläge + Treffer auf Stein), 40 Schüsse: Verteilung 13/12/15, 0× derselbe Ton hintereinander.
+- Bilder: `entwurf/probe/tonpult3/15_eigenes_paket.png` (Paket aus Mischton, Einschlag und Schritten für zwei Einheiten), `14_eigenes_paket_alle_toene.png` (Ankreuzen im Dialog).
+
+### Fragen an Enrico
+- Beim ersten Ankreuzen an einer Stelle, an der noch das Werks-Paket klingt, beginnt das eigene Paket **leer** (nur mit dem angekreuzten Ton). Wer das Werks-Paket erweitern will, drückt vorher „✎ Paket bearbeiten“. Passt das so, oder soll das erste Kreuz das Werks-Paket automatisch mitnehmen?
+
+---
+
 ## 2026-11-23 – Paket A: Bedienfehler (18:30, Spieltest-Punkte 9 und 22) (`e2c793c`)
 
 Gepusht. Tests: Partietest Grauwall und Krähenfurt fehlerfrei, darin die drei neuen Prüfungen; test_kommentare sauber. Keine Regeländerung, deshalb keine Simulation.

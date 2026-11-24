@@ -9,16 +9,40 @@
 5. Wenn ein Paket größer wird als gedacht: Zwischenstand committen, im Bericht sagen, was fehlt, aufhören.
 
 **Paket-Reihenfolge (die Abschnitte darunter bleiben die Beschreibung, hier steht nur, was in welches Paket gehört):**
-- **(laufend)** Ton-Pult 3 (16:50) nur noch abschließen: Vergleich, Bericht, abhaken. Keine weiteren Läufe.
-- **Paket A – Bedienfehler (zuerst, klein):** Fehler 18:30 (Geschütze ohne Ziel abhaken), Spieltest-Punkt 9 (zwei Knöpfe gleichzeitig aktiv), Punkt 22 (Fähigkeit durch Anklicken ausgelöst).
+- ✓ Ton-Pult 3 (16:50) abgeschlossen.
+- ✓ **Paket A – Bedienfehler (zuerst, klein):** Fehler 18:30 (Geschütze ohne Ziel abhaken), Spieltest-Punkt 9 (zwei Knöpfe gleichzeitig aktiv), Punkt 22 (Fähigkeit durch Anklicken ausgelöst). *(22:20-Zusatz Tonwahl noch offen → in Paket A2 verschoben)*
+- ✓ **Paket A2 – Ton-Pult „Eigenes Paket“ (Abschnitt 20:30, Punkt 25), direkt nach Paket A.** Zuerst (aus Paket A übrig, wurde dort nicht gemacht): Enricos neuer Pult-Export `entwurf/postfach/tonpult_export_2026-11-23_2217.json` (287 Wahlen, 17 Töne aussortiert, alle 54 Einheiten „fertig“) einbauen: `node tools/tonwahl_bau.mjs`, `node tools/ton_teilen.mjs`, build. Im Bericht: wie viele Wahlen wirken, welche nicht und warum.
 - **Paket B – schnelle Kleinigkeiten:** Punkte 5 (Spuren nicht auf Straßen), 6 (Zielmarke Knochenweiß am Boden), 15 (Leuchtsignal: Minen sichtbar aufdecken), 20 (Heil-Pluszeichen), 21 (Granaten in Nahkampf-Animation – erst klären), 24 (Kamera zurück), 7 nur Teil 1 (Meldegänger Abklingzeit 2), 8 (Sturmlauf: vorbeidrücken, Minen).
 - **Paket C – Krähenfurt:** Punkte 4 (Ruckler messen + beheben, Langzeitlauf erlaubt, max. 15 Min.), 1 (Karte aufräumen), 12 (Deckung Mitte), 13 (Flaggen sichtbar).
-- **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger).
+- **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder).
 - **Paket E – Regeln (mit Messung):** Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
 - **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
+- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 
-# >>> JETZT – FEHLER (Enrico 2026-11-23 18:30): Geschütze ohne Ziel lassen sich nicht abhaken <<<
+# >>> JETZT (Enrico 2026-11-23 20:30, ergänzt 24.11.): Ton-Pult „Eigenes Paket“ + Löwenoger neu + Plastik-Probe <<<
+**Reihenfolge:** Punkt 25 = Paket A2 (direkt nach Paket A, eigener `pa`). Punkt 26 erst zusammen mit der Maßstab-Umstellung A.
+
+- [x] **25. Ton-Pult: eigenes Zufalls-Paket zusammenstellen.** Bisher kann Enrico an einer Stelle nur ein ganzes Paket (Zufall aus allen Tönen) oder genau einen Ton wählen; Aussortieren nimmt Töne raus, die Abstellkammer holt sie zurück. Es fehlt: **beliebige Töne dazunehmen.**
+  - In „Welcher Ton?“ und in „Alle Töne ansehen …“ je Ton ein Ankreuzfeld „+ ins Paket“. Angekreuzte Töne (auch aus verschiedenen Rubriken und Paketen) bilden für diese Stelle ein **eigenes Paket**; im Spiel klingt zufällig einer davon (gleiche Regel wie die bestehenden Pakete, keine Wiederholung direkt hintereinander, wenn das schon so läuft).
+  - Ein vorhandenes Paket als Startpunkt übernehmen können („Paket bearbeiten“: alle seine Töne angekreuzt, dann einzelne ab- oder neue dazuwählen).
+  - Anzeige an der Stelle: „Eigenes Paket · 5 Töne“, aufklappbar, je Ton ▶ und ✕ (nur aus diesem Paket nehmen, nicht aussortieren).
+  - Mehrere Einheiten gewählt („Mehrere wählen“): das eigene Paket gilt für alle gewählten.
+  - Export: neuer Wahltyp (z. B. `pk:[schlüssel, …]`), `tonwahl_bau.mjs` und `playSound` verstehen ihn. Alte Exporte lesen sich weiter ein.
+  - Nicht verwechseln mit „Mischton bauen“ (gleichzeitig übereinander) – beides bleibt getrennt; ein eigener Mischton darf aber Mitglied eines eigenen Pakets sein.
+  - Test: `tonpult_test` + `test_tonpult3_spiel` um einen Fall erweitern (Paket aus 3 Tönen zweier Rubriken klingt im Spiel abwechselnd). Kein Ton-Spur-Volllauf (Sparregel).
+- [ ] **26. Löwenoger: neues, finstereres Modell und kleiner.** Enrico findet das alte Modell kitschig (Stirnband, Bodybuilder, glänzende Krallen). Neuer Bogen (Flux, Entwurf 1, von Enrico gewählt): `ui-quelle/figuren/konkordat_loewenoger_neu.png` (2544×1582, Magenta, 3 Posen wie bisher: Ruhe, Schießen, Nahkampf). Das alte Bild bleibt liegen.
+  - Erst mit der Maßstab-Umstellung A einbauen: wie der alte Bogen schneiden (SPALTEN 3, POSE_SETS), Farbe angleichen, figur_plastik.py; Größe kleiner als heute (heute SH 1,5 → Vorschlag 1,25, im Maßstab-A-Verhältnis prüfen).
+  - Bild vorher/nachher im Bericht.
+
+- [ ] **27. Plastik-Probe: Figuren und Gebäude griffiger (NUR BILDER, nichts fest einbauen).** Enrico findet die Modelle zu flach. Bevor Bögen neu gemalt werden, prüfen, wie weit die vorhandene Bildwirkung trägt.
+  - Probe-Stufe „sehr stark“ (nur über `__dbg`, Standard bleibt): kräftigere Licht-/Schattenkarte aus `figur_plastik.py` (Klarheit, Glanz auf Kanten und Nieten), gerichtetes Licht von oben links, dunklerer Kontaktschatten/AO unter den Füßen. Dasselbe für aufrechte Gelände-Teile (Häuser, Kirche, Mauern, Zäune: `gel_<name>`, `teilFilter`, `ao` in GBau).
+  - Vergleichsbilder je 1920 px, gleicher Ausschnitt, Stufen aus / stark / sehr stark: (a) Krähenfurt mit Häusern und Truppen, (b) Sankt Ruß mit Kirche, (c) Nahansicht Konkordat-Stahlgänger. Dazu (d) der von Enrico überarbeitete Bogen `ui-quelle/figuren/konkordat_stahl_plastisch.jpg` (Gemini, gleiche Posen wie `konkordat_stahl.png`) nur zum Vergleich daneben ins Bild setzen – nicht einbauen.
+  - Bilder nach `entwurf/probe/plastik/`. Im Bericht: was die Stufe kostet (Ladezeit, Bildrate), und ob die Figuren dabei noch im Gelände stehen (nicht aufgeklebt wirken).
+
+Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
+
+# >>> ✓ JETZT – FEHLER (Enrico 2026-11-23 18:30): Geschütze ohne Ziel lassen sich nicht abhaken <<<
 **Reihenfolge:** als Nächstes nach dem gerade laufenden Abschnitt (klein, stört beim Spielen).
 - Konkordat, Krähenfurt: **Feldkanone und Geschütz** könnten noch schießen, haben aber **kein Ziel** – dann gibt es **keinen Fertig-Haken**, die Einheit bleibt offen und „Nächste Einheit“ springt immer wieder hin. (Ähnlich wie früher beim Ballon.)
 - Regel: **Jede eigene Einheit, die noch nicht fertig ist, hat immer „Fertig“ (Taste 5)** – unabhängig davon, ob Ziele da sind. Zusätzlich: Hat eine Einheit keine mögliche Handlung mehr (kein Ziel in Reichweite, nicht bewegbar), automatisch grau/fertig (`bereitGrund` prüfen: „kein Ziel in Reichweite/Sicht“ muss zählen). Für alle Einheitenarten prüfen, nicht nur Geschütze (Mörser, Haubitze, Minenwerfer, Scharfschützen, aufgebaute MG, Ballon).
@@ -50,7 +74,7 @@
 
 **8. Sturmlauf (Stahlgänger u. a., abil `rush`):** Der Sturmlauf soll **nicht von Feindberührung aufgehalten** werden (Panzer oder andere Einheit daneben): die Einheit **drückt sich vorbei**, **ohne Freischlag/Gegenschlag** (`E.freeBlows`) und ohne dass „gebunden“ (`E.held`) oder Feindberührung die restlichen Punkte verfallen lässt. Ziel-/Belegungsregeln bleiben (kein Feld mit Einheit, nicht durch Einheiten hindurch). Wegvorschau entsprechend. sim kurz messen. **Nachtrag (Enrico 18:53):** Ein Sturmlauf der Stahlgänger auf einen Gegner wurde **gar nicht angeboten bzw. ging nicht**, weil im Weg (bzw. aus diesem Winkel) eine **Mine** lag. → Minen (bekannte wie versteckte) dürfen den Sturmlauf **nicht verhindern**: Der Sturmlauf startet, die Einheit läuft auf die Mine, **löst sie aus und bleibt dort stehen** (Schaden wie üblich, Sturmlauf endet). Wegvorschau zeigt bei bekannter Mine das Warndreieck wie beim normalen Ziehen. Gleiches für andere Hindernisse prüfen, die den Sturmlauf heute still sperren (Draht, Gas, Feuer): lieber hineinlaufen und anhalten/Schaden nehmen als gar nicht erlaubt.
 
-**9. FEHLER Bedienung – zwei Aktionsknöpfe gleichzeitig aktiv, Einheit blockiert:** Beispiel Panzer: „Kanone“ gewählt, nicht geschossen, dann „MG“ (Zweitwaffe) gewählt → **beide bleiben aktiv, nichts geht mehr**. Gleiches bei den Stahlgängern: Fähigkeit gewählt (ging nicht), dann „Schießen“ → blockiert. → Es darf immer **nur ein Modus aktiv** sein: neuer Knopf löst den alten ab; nochmal auf den aktiven Knopf, Rechtsklick oder Esc bricht ab; ein Modus, der nicht ausführbar ist, wird sofort zurückgesetzt (mit kurzem Hinweis warum). Für alle Kombinationen prüfen (Schießen, Zweitwaffe, Fähigkeit, Draht schneiden, Befehl, Marsch, Feuerbereitschaft, Sperrfeuer …) und als Test in `test_partie.mjs` aufnehmen. **Hoher Vorrang** (gleich nach dem Fehler 18:30).
+✓ **9. FEHLER Bedienung – zwei Aktionsknöpfe gleichzeitig aktiv, Einheit blockiert:** Beispiel Panzer: „Kanone“ gewählt, nicht geschossen, dann „MG“ (Zweitwaffe) gewählt → **beide bleiben aktiv, nichts geht mehr**. Gleiches bei den Stahlgängern: Fähigkeit gewählt (ging nicht), dann „Schießen“ → blockiert. → Es darf immer **nur ein Modus aktiv** sein: neuer Knopf löst den alten ab; nochmal auf den aktiven Knopf, Rechtsklick oder Esc bricht ab; ein Modus, der nicht ausführbar ist, wird sofort zurückgesetzt (mit kurzem Hinweis warum). Für alle Kombinationen prüfen (Schießen, Zweitwaffe, Fähigkeit, Draht schneiden, Befehl, Marsch, Feuerbereitschaft, Sperrfeuer …) und als Test in `test_partie.mjs` aufnehmen. **Hoher Vorrang** (gleich nach dem Fehler 18:30).
 
 **10. Fähigkeiten-Knöpfe an anderer Stelle (Entwurf, nicht bauen):** Die Fähigkeiten stehen heute mittig unten und wirken verwirrend. Idee Enrico (ähnlich Total War): **Fähigkeiten direkt an der Einheitenkarte** – unten links neben bzw. unter dem Porträt als **runde, eingekreiste Knöpfe**; besonders für Helden- und Schreiter-Fähigkeiten. Bitte 2 Entwürfe als Screenshots (z. B. A: alle Fähigkeiten rund unter dem Porträt, normale Aktionen wie Schießen/Ziehen bleiben in der Leiste; B: nur Sonderfähigkeiten/Heldenfähigkeiten groß am Porträt, Rest wie bisher), nach STYLE.md, Knöpfe ≥ 40 px, bei 1280/1920/2560 px. Enrico wählt.
 
@@ -82,7 +106,7 @@
 - Gewünscht: Granaten-Wurf in der Animation **nur bei Einheiten, die wirklich Granaten/Ladungen haben** (Sturmtruppen, Panzerabwehr, Pioniere mit Ladung usw.).
 - **Ausnahme:** Kämpft **irgendeine Fußtruppe im Nahkampf gegen ein Fahrzeug/Koloss**, darf sie zur Darstellung eine **kleine Granate** werfen (nur Bild/Ton, **kein Zusatzschaden**), dazu wie bisher Kolbenschläge/Hiebe.
 
-**22. FEHLER – Fähigkeit wird durch bloßes Anklicken einer anderen Einheit ausgelöst:** Versorgungstrupp gewählt, dann auf die **eigene Feldkanone geklickt** → sie bekam sofort **Munition** (neue Aktion), obwohl Enrico nur die Kanone auswählen wollte. (Beim Sanitäter wurde das am 22.11. schon behoben – Munition/Reparatur/Befehle/Entgiften/Meldegänger offenbar nicht überall.)
+✓ **22. FEHLER – Fähigkeit wird durch bloßes Anklicken einer anderen Einheit ausgelöst:** Versorgungstrupp gewählt, dann auf die **eigene Feldkanone geklickt** → sie bekam sofort **Munition** (neue Aktion), obwohl Enrico nur die Kanone auswählen wollte. (Beim Sanitäter wurde das am 22.11. schon behoben – Munition/Reparatur/Befehle/Entgiften/Meldegänger offenbar nicht überall.)
 - Regel: **Fähigkeiten nur, wenn vorher der Fähigkeitsknopf gedrückt wurde** (Modus aktiv). Ein Klick auf eine andere **eigene** Einheit ohne aktiven Modus = **diese Einheit auswählen**. Klick auf eine **feindliche** Einheit ohne Modus bleibt wie bisher (Angriff/Vorschau des normalen Schusses) – nur Fähigkeiten dürfen nicht nebenbei ausgelöst werden.
 - Für **alle** Fähigkeiten mit eigenem Ziel prüfen und in `test_partie.mjs` absichern. **Hoher Vorrang** (zusammen mit Punkt 9 und dem Fehler 18:30).
 
