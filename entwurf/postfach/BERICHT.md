@@ -1,3 +1,38 @@
+## 2026-11-24 – Paket B: schnelle Kleinigkeiten (Punkte 5, 6, 7 Teil 1, 8, 15, 20, 21, 24) (`47d616a`, `ef3654e`)
+
+Gepusht, index.html gebaut. Tests: `test_regeln` (mit neuer Prüfung Lichtkreis) und `test_kommentare` in Ordnung; Partietest bis auf eine schwankende Blickrichtungs-Prüfung (siehe unten); Kamera-Probe im Browser ok. Simulationen je 100 Schlachten, Grauwall, ein Startwert.
+
+- **Punkt 7 Teil 1 – Meldegänger:** „Befehl überbringen“ hat jetzt Abklingzeit `P.MELDER_CD` 2 (geht jede zweite eigene Runde), Anzeige am Knopf, Hinweis „Der Meldegänger ist noch unterwegs“. Die KI hält sie über `canSend` ein.
+  - **Messung:** Die Standardarmeen haben keinen Meldegänger, die KI kauft keinen; die Grundmessung ist deshalb unverändert (Konkordat 48 % vorher wie nachher). Mit einem zusätzlichen Meldegänger im Konkordat (`MA_melder=1`): **ohne Abklingzeit 83 %, mit Abklingzeit 72 %.** Ein einzelner Meldegänger war also sehr stark; auch mit Abklingzeit ist er viel wert. Er kostet heute nur 20 Punkte.
+  - Teil 2 (Zusammenlegen mit dem Sanitätstrupp) ist wie vorgegeben nicht gebaut.
+- **Punkt 5 – Spuren:** Winterspuren erscheinen nur noch, wenn Start- und Zielfeld des Schritts Schnee sind: nicht auf Straße, Bahn, Fluss, Eis, Eisloch, Furt, Brücken, Bohlenweg.
+- **Punkt 6 – Zielmarke:** Statt des gelben Visiers liegt jetzt ein flacher, gestrichelter Ring in Knochenweiß am Boden **um** die Figur (Radius wie ein Standring, Striche nur nach außen, ruhiges Pulsieren). Der kurze Ring beim Auslösen ist ebenfalls knochenweiß. Der warme Lichtschein der Leuchtkugel am Boden bleibt.
+  - Weitere gelbe Overlays (nicht geändert, zur Entscheidung): Wirkungsbereich beim Halten eines Fähigkeitsknopfs (Messing-Fläche), Banner-Umkreis, Marschfelder/Rest-BP gelb (Paket 2, so gewünscht), Wegpunkt-Ring, Ringmarken „Sperrfeuer/Feuer frei/Dauerfeuer bereit“, Ring beim großen Befehl, Meldungen „Ziel markiert“/„Feuerschlag!“ (Text).
+- **Punkt 15 – Minen aufdecken:** Die Regel stimmte schon: Die Markierung deckt Minen im Feld und daneben auf. Gezeichnet wurde aber nur ein kleiner Fleck unter den Figuren, daher hat Enrico ihn nie gesehen. **Neu:**
+  - Entdeckte Minen des Gegners tragen das Tellerminen-Zeichen über allem.
+  - Solange die Markierung gilt, deckt ihr Lichtkreis auch **neu gelegte Minen** und **hineinziehende versteckte Einheiten** sofort auf (engine `imLicht`/`lichtAufdecken`, Abschalter `NOLICHT`).
+  - Die Meldung „aufgedeckt: n Minen“ gab es schon.
+  - Prüfung in `test_regeln`.
+- **Punkt 20 – Heilzeichen:** Ist ein Sanitäts- oder Versorgungstrupp gewählt, steigen über jeder Einheit, die er jetzt versorgen kann, drei kleine Pluszeichen auf (Knochenweiß, das mittlere blassrot, dunkle Kontur). Bei Fahrzeugen sind es Schraubenschlüssel. Die Zeichen erscheinen nur, solange der Trupp gewählt ist.
+  - Vorschlag (nicht gebaut): dasselbe für Munition, Entgiften und Befehle (Kiste, Maske, Wimpel).
+- **Punkt 21 – Granaten im Nahkampf: geklärt.** Die Granate der Aschengrenadiere ist **Regel**, nicht nur Bild: `granatSturm` (F103), Nahkampf ×1,25 („Handgranaten“), Schuss ×0,85. Das Ereignis `handgranate` kommt in derselben Nahkampf-Szene und wirkt deshalb wie „am Ende“. Andere Fußtruppen werfen keine Granate. **Nicht geändert** – siehe Frage.
+  - Nicht gebaut: kleine Zier-Granate für jede Fußtruppe im Nahkampf gegen Fahrzeuge (hängt an der Antwort).
+- **Punkt 24 – Kamera zurück:** Nach einem Fernschuss im eigenen Zug (Schuss mit Kamerafahrt, Granatflug, Feuerschlag, Faustsalve) fährt die Kamera nach 0,5 s weich dorthin zurück, wo sie vor der Handlung stand. Im KI-Zug bleibt es wie bisher. Klick, Scrollen, Ziehen oder eine Taste bricht ab.
+  - Option „Kamera nach dem Schuss zurück“ (Standard an, gespeichert).
+  - Probe im Browser: Die Kamera fuhr 277 px zum Ziel und stand danach wieder genau am Ausgangspunkt.
+- **Punkt 8 – Sturmlauf:**
+  - **Ursache:** Minen sperrten den Sturmlauf im Regelkern nie. Er ging aber nur in **geraden Linien**; lag schräg etwas im Weg oder stand der Gegner nicht in einer der sechs Richtungen, gab es kein Ziel.
+  - **Neu:** kürzester Weg bis 3 Felder in jede Richtung, nie durch Einheiten. Feindberührung hält nicht auf, ohne Freischlag. Minen, Draht, Gas und Feuer werden betreten: Auf einer Mine endet der Lauf mit Schaden.
+  - Die Wegvorschau zeigt den Sturmlauf-Weg; bekannte Minen des Gegners bekommen jetzt beim Sturmlauf **und** beim normalen Ziehen das Warndreieck.
+  - **Messung mit Kampfmaschinen (`MECHS=1`):** Sturmläufe je Schlacht (Konkordat) 0,55 → 0,76, Siegquote 48 → 49 %. Abschalter `RUSH_GERADE=1`.
+- **Partietest:** Bei der Prüfung „Blickrichtung aller 54 Typen“ fielen in zwei Läufen jeweils zwei *andere* Typen auf (lanzeD/orden, dann kohorte/mahlwerk); sonst fehlerfrei. Das ist eine Zeitfrage im Test (120 ms nach dem Drehen, Bilder noch nicht neu gezeichnet), keine Folge dieses Pakets. Beim ersten Lauf liefen zudem drei Simulationen parallel.
+
+### Fragen an Enrico
+- **Punkt 21:** Die Granate der Aschengrenadiere ist eine Regel (Handgranaten vor dem Nahkampf, Nahkampf ×1,25, Schuss ×0,85). **Behalten** (dann ist die Granate im Bild richtig), oder **Regel streichen** (dann verschwindet auch die Granate)? Und soll jede Fußtruppe im Nahkampf gegen Fahrzeuge zur Zier eine kleine Granate werfen (ohne Schaden)?
+- **Meldegänger:** Mit Abklingzeit bringt ein Meldegänger dem Konkordat in der Messung immer noch +24 Punkte Siegquote. Preis (20) erhöhen, oder erst mit der Zusammenlegung (Punkt 7 Teil 2) neu ansetzen?
+
+---
+
 ## 2026-11-24 – Paket A4: Gelände-Chroniken, Ton-Pult-Rest, „1 Feld“ (`32be418`)
 
 Gepusht. Tests: `tonpult_test` 93/93, `test_regeln` und `test_kommentare` in Ordnung. Keine Regeländerung, keine Simulation.
