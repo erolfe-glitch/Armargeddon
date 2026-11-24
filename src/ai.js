@@ -192,6 +192,9 @@ function abilPlan(G, u) {
       const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
+    else if (k === 'handgranate') {   // Punkt 34: werfen, wenn der Gegner daneben steht oder in Graben/Haus/Ruine sitzt (dort schützt die Deckung nicht)
+      const x = foe(c, r); if (x) { const t = G.map[x.c][x.r].t, deck = ['trench', 'village', 'haus', 'kapelle', 'bunker', 'fabrik', 'schiff', 'turm', 'barrikade'].includes(t) || x.dug, nah = E.dist(u.c, u.r, c, r) === 1;
+        if (nah || deck) { const m = E.cls(x) === 'walker' ? 0.4 : TYPES[x.type].suit ? 0.75 : 1, dm = Math.min(E.P.HANDGR_DMG * m, x.str); v = 1 + dm * 1.5 + (deck ? 1 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (G.map[x.c][x.r].obj ? 0.5 : 0) - (E.cls(x) === 'walker' ? 1 : 0); } } }
     else if (k === 'pzgranate') { const x = foe(c, r); if (x) { const dm = Math.min(E.pzgDmg(u, x), x.str); v = 1.5 + dm * 0.9 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1 : 0); } }   // F80
     else if (k === 'rollen') {   // F54 Sturmrollen: erwarteter Schaden gegen den des besten Schusses; Ziele in Deckung, MG, Geschütze, Zielfelder bevorzugt
       const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);

@@ -359,7 +359,7 @@ FIGUREN_POSEN = {
     'konkordat_schildwall_posen': dict(n=4, reihen=2, grund='schildwall'),
     'konkordat_schildwall_posen2': dict(n=4, reihen=2, grund='schildwall'),
     'aschenwacht_schwer_posen': dict(n=4, reihen=2, grund='schwer'),
-    'konkordat_scharfschuetze_posen': dict(n=3, reihen=2, grund='scharfschuetze', trenne=[3]),   # Kniend und Fallend berühren sich
+    'konkordat_scharfschuetze_posen': dict(n=3, reihen=2, grund='scharfschuetze', trenne=[3], quer=[3]),   # Kniend und Fallend berühren sich – übereinander, deshalb waagerechte Naht (Punkt 32, 2026-11-24: sonst ging der lange Lauf der knienden Pose an die fallende)
     'aschenwacht_pirschjaeger_posen': dict(n=4, reihen=2, grund='pirschjaeger'),
     'konkordat_melder_posen': dict(n=4, reihen=1, grund='fernsprech', tuch=(3, (142, 43, 34))),
     'aschenwacht_melder_posen': dict(n=4, reihen=2, grund='signal', spiegeln=[1]),   # Adler über ABZEICHEN
@@ -503,8 +503,14 @@ def figuren_posen(name, out):
     for i in big:
         sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0; figs.append(keep_parts(t, not o.get('eins'), o.get('teile_min', 0.15)))
     for j in sorted(o.get('trenne', []), reverse=True):   # zwei sich berührende Figuren: Naht durch die dünnste Stelle
-        f = figs[j - 1]; op = f[..., 3] > 40; xs = seam(op, f.shape[1] // 2, int(f.shape[1] * 0.25)); cols = np.arange(f.shape[1])[None, :]
-        l = f.copy(); l[cols >= xs[:, None], 3] = 0; rr = f.copy(); rr[cols < xs[:, None], 3] = 0; figs[j - 1:j] = [keep_parts(l, True, 0.15), keep_parts(rr, True, 0.15)]
+        f = figs[j - 1]; op = f[..., 3] > 40
+        if j in o.get('quer', []):   # übereinander stehende Figuren: waagerechte Naht, oben zuerst
+            ys = seam(op.T, f.shape[0] // 2, int(f.shape[0] * 0.25)); rows = np.arange(f.shape[0])[:, None]
+            l = f.copy(); l[rows >= ys[None, :], 3] = 0; rr = f.copy(); rr[rows < ys[None, :], 3] = 0
+        else:
+            xs = seam(op, f.shape[1] // 2, int(f.shape[1] * 0.25)); cols = np.arange(f.shape[1])[None, :]
+            l = f.copy(); l[cols >= xs[:, None], 3] = 0; rr = f.copy(); rr[cols < xs[:, None], 3] = 0
+        figs[j - 1:j] = [keep_parts(l, True, 0.15), keep_parts(rr, True, 0.15)]
     hmax = max(f.shape[0] for f in figs)
     grund = sorted(GAME.glob(f"{name.split('_', 1)[0]}_{o['grund']}*.png")); grund = [g for g in grund if '_posen' not in g.stem]
     ref = max(Image.open(g).height for g in grund) if grund else H_OUT

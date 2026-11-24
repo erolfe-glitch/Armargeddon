@@ -28,14 +28,14 @@
     if (A === 'clear' || T.gasSafe) return 'Gasschutz';
     if (T.wireProof) return 'Grabenwacht (schwer)';
     if (T.pin || T.hidden) return 'Scharfschützen';
-    return T.granatSturm ? 'Stoßinfanterie' : 'Schützenlinie';   // F103: Kohorte hält mit Schuss und Feuerbereitschaft, Grenadiere stürmen mit Handgranaten
+    return T.granatSturm || T.abil === 'handgranate' ? 'Stoßinfanterie' : 'Schützenlinie';   // F103: Kohorte hält mit Schuss und Feuerbereitschaft, Grenadiere stürmen mit Handgranaten
   }
   function rollenVon(E, t) {
     const T = E.TYPES[t], m = E.medaillen(t), stark = [], schwach = [];
     if (m.fInf >= 1.5) stark.push(ZIEL.fuss);
     if (m.fPz >= 1.5) stark.push(ZIEL.gep);
     { const fn = E.FAK[E.waffeArt(t, false)]; if (T.atk > 0 && !T.keinNah && fn) { if (fn.S >= 1.5) stark.push(ZIEL.gep); if (fn.U >= 2) stark.push(ZIEL.fuss); } }   // F103: Nahkampfwaffe (Säge, Klaue)
-    if (T.granatSturm || T.gegenstoss) stark.push(ZIEL.nah);
+    if (T.granatSturm || T.abil === 'handgranate' || T.gegenstoss) stark.push(ZIEL.nah);
     if (m.fInf >= 1 && T.cls === 'mg') stark.push(ZIEL.fuss);
     if (!T.keinNah && (m.rolle === 'stark' || (T.atk > 0 && m.fNah >= 1.5))) stark.push(ZIEL.nah);
     if (T.cls === 'cav' || T.cls === 'storm') stark.push(ZIEL.gesch);

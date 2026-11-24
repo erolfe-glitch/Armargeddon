@@ -2320,6 +2320,7 @@ function rufBeiEreignis(e, u) {
     case 'order': if (e.kind === 'rally') ruf('sammeln', u && u.side); else if (e.kind === 'fire') ruf('feuer_befehl', u && u.side); break;
     case 'shell': if (e.strike) ruf('feuer_befehl', sd(e.a)); break;   // Feuerschlag anfordern
     case 'pzgranate': ruf('granate', u && u.side); break;
+    case 'handgranate': if (e.wurf) ruf('granate', sd(e.a)); break;   // Punkt 34: Fähigkeit Handgranaten
     case 'gas': if (!e.late) ruf('gas', u && u.side); break;
     case 'fear': ruf('koloss', u && u.side); break;
     case 'ow': case 'sperr': if (u && TYPES[u.type].cmd) ruf('feuer_befehl', u.side); else ruf('feuerbereit', u && u.side); break;
@@ -2509,7 +2510,7 @@ async function playEvent(e) {
   const sp = speed; speed = Math.min(1, sp * 1.5);
   try { return await playEvent0(e); } finally { if (speed === Math.min(1, sp * 1.5)) speed = sp; }
 }
-const ANGRIFF_EV = new Set(['fire', 'shell', 'melee', 'counter', 'durchbruch', 'rollen', 'hinrichtung', 'freeblow', 'zweit', 'pzgranate', 'faust', 'strike']);
+const ANGRIFF_EV = new Set(['fire', 'shell', 'melee', 'counter', 'durchbruch', 'rollen', 'hinrichtung', 'freeblow', 'zweit', 'pzgranate', 'faust', 'strike', 'handgranate']);
 async function playEvent0(e) {
   if (ANGRIFF_EV.has(e.t)) { const aid = e.a != null ? e.a : e.u; if (aid != null) letzterAngreifer = { id: aid, t: performance.now() }; }   // M7
   { const su = unitById(e.a != null ? e.a : e.u != null ? e.u : e.by); sndSide = su ? su.side : e.side || null; }
@@ -3619,10 +3620,11 @@ const pennant = f => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="htt
 <path d="M2.5 2.5C12 5 22 8 30 10.2L35.5 11.4 33 13.2 38 14.6 31.5 16.6C22 19.5 12 23 2.5 26.5Z" filter="url(#s)"/>
 <path d="${PENN_SYM[f]}" fill="#F0EDE1" stroke="#120D0B" stroke-width="1.1" stroke-linejoin="round"/></g></svg>`);
 const PENNANT = { A: UP.pA || pennant('A'), D: UP.pD || pennant('D'), F: UP.pF || pennant('F') };   // Bild aus ui-quelle/banner/wimpel.png (2026-11-20), sonst gezeichnet; im Spiel nur auf der Zielflagge (drawFahne, UPI.pA/pD/pF)
-const ABIL_KEIN = { durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 40 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
+const ABIL_KEIN = { handgranate: 'Kein Gegner in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', durchbruch: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Durchbruch.', hinrichtung: 'Kein angeschlagener Gegner (unter 40 Stärke) daneben – oder Pause nach der letzten Hinrichtung.', pzgranate: 'Kein Fahrzeug oder Schreiter in 1–2 Feldern in Sicht – oder Pause nach dem letzten Wurf.', rollen: 'Keine Fußtruppe und kein Geschütz daneben oder 2 Felder geradeaus mit freiem Feld dazwischen (Anlauf nur aus dem Stand) – oder Pause nach dem letzten Sturmrollen.', sprung: 'Kein Gegner, neben dem bis 2 Felder entfernt ein freies Landefeld liegt (kein Draht) – oder die Einheit hat sich schon bewegt.', tunnel: 'Kein Graben, Bunker oder Gebäude bis 2 Felder (ohne eigene Einheit, noch ohne Stollen).', mark: 'Kein Feld in Sicht, das noch nicht markiert ist.', strike: 'Kein Feld in Sicht.', smoke: 'Kein Feld bis 3 Felder.', charge: 'Kein Gegner, Bunker, Draht oder keine Barrikade daneben.', mine: 'Kein freies Nachbarfeld.', ammo: 'Kein MG oder Geschütz daneben, das schon geschossen hat.', clear: 'Kein Gas hier oder daneben.' };
 // F19 (2026-11-20): Knopftext je Fähigkeit, kurz und nach den Regeln in engine.js (abilTargets/useAbil), Zahlen aus P; vorher stand hier die ganze
 // Einheitenbeschreibung (T.can), die z. B. bei der Haftladung nicht zur Regel passte. Abklingzeit hängt abilKurz aus ABILS an.
 const ABIL_KURZ = {
+  handgranate: () => `Handgranaten auf einen Gegner bis ${felder(P.HANDGR_RNG)}: etwa ${fmt(P.HANDGR_DMG)} Schaden, Graben und Häuser schützen nicht, Ziel niedergehalten. Alle 2 Runden.`,
   smoke: () => `Nebel auf ein Feld bis 3 Felder und seine Nachbarn, bis zum nächsten eigenen Zug. Ziel im Nebel: Beschuss ${xf(P.NEBEL_IN)}; Schütze im Nebel ${xf(P.NEBEL_AUS)}; keine Sicht hindurch.`,
   tunnel: u => `${TYPES[u.type].ladungen ? `Noch ${TYPES[u.type].ladungen - (u.ladUsed || 0)} von ${TYPES[u.type].ladungen} Ladungen in dieser Schlacht. ` : ''}Stollen unter Graben, Bunker oder Gebäude bis 2 Felder. Nach 2 eigenen Runden fliegt das Feld hoch: etwa ${fmt(P.TUNNEL_DMG)} Schaden, starker Moralverlust, danach Trichter.`,
   charge: () => `Sprengladung an ein Nachbarfeld. Gegner dort: etwa ${fmt(P.CHARGE_DMG)} Schaden (weniger bei schwacher eigener Stärke oder hoher Abwehr des Ziels), gegen Kolosse und Kampfmaschinen doppelt und zu 50 % Panne. Bunker und Barrikaden werden Trichter, Draht wird zerrissen.`,
@@ -3641,7 +3643,7 @@ const ABIL_KURZ = {
 };
 function abilKurz(u) { const k = TYPES[u.type].abil, A = E.ABILS[k], f = ABIL_KURZ[k]; if (!f) return TYPES[u.type].can;
   return f(u) + (A.cd ? ` Höchstens alle ${A.cd} Runden.` : ''); }
-const ABIL_SYM = { /* bogen8a (Enrico 2026-11-22): je Fähigkeit ein eigenes Zeichen */ durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', pzgranate: 'panzergranate', rollen: 'sturmrollen', sprung: 'sprung', rush: 'sturmlauf', mark: 'markieren', strike: 'feuerschlag', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
+const ABIL_SYM = { /* bogen8a (Enrico 2026-11-22): je Fähigkeit ein eigenes Zeichen */ handgranate: 'handgranate', durchbruch: 'durchbruch', hinrichtung: 'hinrichtung', pzgranate: 'panzergranate', rollen: 'sturmrollen', sprung: 'sprung', rush: 'sturmlauf', mark: 'markieren', strike: 'feuerschlag', smoke: 'nebel', tunnel: 'spitzhacke', charge: 'sprengladung', mine: 'tellermine', light: 'scheinwerfer', clear: 'gasmaske', ammo: 'munitionskiste' };
 const upEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const upRunden = n => `${n} Runde${n > 1 ? 'n' : ''}`;
 function hudNachLauf(id) {   // Panel: dunklen Nachlauf-Abschnitt abbauen

@@ -58,7 +58,7 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
-  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
+  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
 };
@@ -230,7 +230,7 @@ Object.assign(TYPES, {
 //   Angriff = stärkere Waffe + 0,4 × schwächere (Feuer = Feuerkraft × (1 + 0,15 je Feld Reichweite über 1), Steilfeuer ×1,3;
 //             Nahkampf = Angriff, Reiter ×1,2, Sturmtruppen ×1,15). Zähigkeit = Abwehr (Kolosse ×1,6, Rüstung ×1,4) + halbe Moral.
 // Dazu Fähigkeiten (ABIL) und ein kleiner Abgleich aus der Simulation (ADJ). Prüfen: node tools/costcheck.js
-const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
+const ABIL = { grenadier: ['Handgranaten', 10], feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: ['Niederhalten', 15], buechse: ['Panzerbrechend', 25],
   signal: ['Ziel markieren', 5], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
   hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
   pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen, Faustsalve', 30], oger: ['Sprungangriff', 15], huenen: ['Dauerfeuer', 10],
@@ -249,8 +249,8 @@ const ABIL = { feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: 
 // Löwenoger und Eiserne Hünen 2026-11-20: Budget-Tausch MISCHEN=1, Grauwall, je 600 Schlachten. Oger statt Kohorten (Konkordat ohne Tausch 36 % / Startwert 5: 41 %):
 // statt 2 → 40 %, statt 3 → 38 % / 35 %, statt 4 → 26 %, 2 Oger statt 6 → 25 %: neutral bei etwa 2,6 Kohorten = 105. Hünen (Feuer 7, Reichweite 3) statt Grenadiere
 // (Aschenwacht ohne Tausch 65 %): statt 3 → 66 %, statt 4 → 57 %; neutral bei 3 Grenadieren = 90 (ADJ −15). Mit Feuer 5/Reichweite 2 waren sie keine 2 Grenadiere wert.
-const ADJ = { kohorte: 5, grenadier: -5, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
-  sturm: 40, knecht: -10, huenen: -15, bohrer: 80, brand: 0, sturmpz: 20, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, ballon: -5, mineur: 10, rauch: -5, melder: -5,
+const ADJ = { kohorte: 5, grenadier: -15, scharf: 5, moerser: -15, minenwerfer: -15, reiter: -10, lanzeD: -15, feldscher: -10, heiler: -10,
+  sturm: 40, knecht: -10, huenen: -15, bohrer: 80, brand: 0, sturmpz: 20, eingreif: 10, klaue: 25, saeger: 20, gasschutz: -10, ballon: -5, mineur: 10, rauch: -5, melder: 15,
   feldkanone: -10, haubitze: -10, flammen: -5, werkstatt: -5, schildwall: -5, mahlwerk: -5, koloss: -10, turm: -10, kreuz: -25, orden: -10,
   schwer: -5, banner: -5, munition: -5, faust: -15, kuerass: -25 };   // Helden vorläufig je 110 (unter den Stufe-3-Schreitern), Abgleich per Simulation
 function costParts(k) {
@@ -295,7 +295,7 @@ Object.assign(TYPES, {
     chronik: { quelle: 'Jagd- und Spähprotokoll, Dunkelwald', text: 'Lautlos pirschen diese kundigen Jäger durch Wälder, Ruinen und Trichterfelder, um den Feind ungesehen aufzuklären. Aus gedeckten Stellungen nehmen sie wertvolle Ziele präzise aufs Korn, ehe sie wieder im Nebel verschwinden.' } }
 });
 // F103 Rollen schärfen (Enrico 2026-11-22 13:35): klarere Aufgaben je Einheit
-Object.assign(TYPES.grenadier, { granatSturm: true });   // Stoßinfanterie: Handgranaten vor dem Nahkampf (×P.GRANAT_NAH), Schuss schwächer (×P.GRANAT_FERN)
+Object.assign(TYPES.grenadier, TOG.NOHANDGRANATE ? { granatSturm: true } : { abil: 'handgranate' });   // Punkt 34 (Enrico 2026-11-24): Handgranaten als Fähigkeit (Aktion, Abklingzeit 2) statt fester Regel; NOHANDGRANATE = alte Regel   // Stoßinfanterie: Handgranaten vor dem Nahkampf (×P.GRANAT_NAH), Schuss schwächer (×P.GRANAT_FERN)
 Object.assign(TYPES.eingreif, { gegenstoss: true });     // Gegenstoß: Nahkampf auf eigenen Zielfeldern und in eigenen Gräben ×P.GEGENSTOSS, sonst ×P.GEGENSTOSS_VOR
 delete TYPES.raeumer.abil;                               // Grabenräumer: billiger Grabenkampf ohne Panzerabwehr (Panzergranate bleibt beim Sturmbrecher)
 Object.assign(TYPES.feldkanone, { direkt: true, fahrbar: true, mv: 2 }); delete TYPES.feldkanone.limber;   // Feldkanone: nur direktes Feuer mit Sicht über ihre ganze Reichweite; ohne Protzen, zieht immer 2 Felder und schießt danach noch (Enrico 2026-11-22 17:40)
@@ -1654,7 +1654,8 @@ const ABILS = {
   rollen: { name: 'Sturmrollen', icon: '⇶', ap: 1, cd: 3, atk: true, all: true },
   durchbruch: { name: 'Durchbruch', icon: '✊', ap: 1, cd: 2, atk: true, all: true },
   hinrichtung: { name: 'Hinrichtung', icon: '⚔', ap: 1, cd: 3, atk: true },
-  pzgranate: { name: 'Panzergranate werfen', icon: '✸', ap: 1, cd: 2, atk: true }
+  pzgranate: { name: 'Panzergranate werfen', icon: '✸', ap: 1, cd: 2, atk: true },
+  handgranate: { name: 'Handgranaten', icon: '✸', ap: 1, cd: 2, atk: true }
 };
 const FORT = ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village', 'schiff', 'turm'];
 function gasSafe(G, u) { return !!TYPES[u.type].gasproof || TYPES[u.type].cls === 'walker' ||   // Kolosse und Maschinen: geschlossen, immun
@@ -1716,6 +1717,7 @@ function abilTargets(G, u) {
     else if (k === 'rollen' && x && d <= 2 && rollenWeg(G, u, x)) out.push([c, r]);
     else if (k === 'durchbruch' && x && d <= 2 && rollenWeg(G, u, x)) out.push([c, r]);   // Held Rote Faust: wie Sturmrollen (geradeaus, keine Panzer/Schreiter)
     else if (k === 'hinrichtung' && x && d === 1 && x.side !== u.side && alive(x) && cls(x) !== 'walker' && x.str < P.HINRICHT_STR) out.push([c, r]);
+    else if (k === 'handgranate' && x && x.side !== u.side && alive(x) && d >= 1 && d <= P.HANDGR_RNG && !concealed(G, x, u.c, u.r) && hasLOS(G, u.c, u.r, c, r)) out.push([c, r]);   // Punkt 34: Feind daneben oder ein Feld weiter
     else if (k === 'pzgranate' && x && x.side !== u.side && alive(x) && cls(x) === 'walker' && d >= 1 && d <= P.PZG_RNG && hasLOS(G, u.c, u.r, c, r)) out.push([c, r]);   // F80: nur gegen Fahrzeuge und Schreiter
     else if ((k === 'mark' || k === 'strike') && !(T.fessel && u.eingeholt) && d >= 1 && d <= (T.spot || P.SPOT) && !smokeAt(G, c, r) && hasLOS(G, u.c, u.r, c, r, luft(u)) && !(k === 'mark' && guided(G, u.side, c, r))) out.push([c, r]);
     else if (k === 'ammo' && !u.task && d === 1 && x && x.side === u.side && active(x) && (TYPES[x.type].mg || TYPES[x.type].cls === 'art') && x.attacked && !x.ammoed) out.push([c, r]);
@@ -1775,6 +1777,11 @@ function useAbil(G, u, c, r) {
       if (foes.length) ev.push(...melee(G, u, foes[0]));
     }
     u.ap = 0; u.attacked = true; u.moved = true;
+  }
+  else if (k === 'handgranate') {   // Punkt 34: Wurf, Schaden P.HANDGR_DMG (Graben/Haus schützen nicht), gegen Panzer schwach, Ziel niedergehalten
+    const d = unitAt(G, c, r); ev.push({ t: 'handgranate', a: u.id, d: d.id, wurf: true });
+    const m = cls(d) === 'walker' ? 0.4 : TYPES[d.type].suit ? 0.75 : 1; applyDamage(G, u, d, P.HANDGR_DMG * m * (0.8 + G.rng() * 0.4), 'front', ev, { ranged: true });
+    if (alive(d) && active(d) && !d.supp && cls(d) !== 'walker') { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
   }
   else if (k === 'pzgranate') {   // F80: Panzergranate – ein kräftiger Treffer am Fahrzeug/Schreiter, wie die Haftladung
     const d = unitAt(G, c, r); ev.push({ t: 'pzgranate', u: u.id, d: d.id, c, r });
@@ -2019,8 +2026,8 @@ function checkEnd(G) {
 // F103 Rollen schärfen (Enrico 2026-11-22 13:35): Texte und Schlagworte zu den neuen Aufgaben (Regeln oben bei COST)
 { const T = TYPES, ers = (t, alt, neu) => { const i = T[t].sp.indexOf(alt); if (i >= 0) T[t].sp[i] = neu; else T[t].sp.push(neu); };
   T.kohorte.can = 'Schützenlinie: schießt 2 Felder weit, hält Zielfelder mit Feuerbereitschaft, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).';
-  T.grenadier.can = 'Stoßinfanterie: wirft vor jedem Nahkampf Handgranaten (Nahkampf ×1,25), schießt dafür schwächer (×0,85, 2 Felder). Schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).';
-  ers('grenadier', 'Schuss 2 Felder', 'Handgranaten vor dem Nahkampf');
+  if (T.grenadier.granatSturm) { T.grenadier.can = 'Stoßinfanterie: wirft vor jedem Nahkampf Handgranaten (Nahkampf ×1,25), schießt dafür schwächer (×0,85, 2 Felder). Schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).'; ers('grenadier', 'Schuss 2 Felder', 'Handgranaten vor dem Nahkampf'); }
+  else { T.grenadier.can = `Stoßinfanterie: schießt 2 Felder weit. Handgranaten (Aktion, alle 2 Runden): Wurf auf einen Gegner bis ${P.HANDGR_RNG} Felder, Graben und Häuser schützen nicht, Ziel niedergehalten; gegen Panzer schwach. Schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).`; ers('grenadier', '-', 'Handgranaten'); }
   T.raeumer.can = 'Billiger Grabenkampf: Nahkämpfer ohne Gewehr und ohne Panzerabwehr. Schneidet Draht vom Nachbarfeld aus (Aktion). Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf.';
   T.raeumer.sp = T.raeumer.sp.filter(x => x !== 'Panzergranate');
   T.sturm.can = 'Sturm und Panzerabwehr: Panzergranate (Aktion, alle 2 Runden) 1–2 Felder gegen Fahrzeuge und Schreiter – sein Kern. Sickert durch: Gegner halten ihn nicht auf. Schneidet Draht vom Nachbarfeld aus (Aktion). Handgranaten heben den Grabenschutz auf.';
