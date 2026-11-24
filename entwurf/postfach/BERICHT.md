@@ -1,3 +1,37 @@
+## 2026-11-24 – Paket E, Teil 2 (Zwischenstand): Scharfschützen – Vorschlag statt Einbau (Punkt 3) (`29a4dc2`)
+
+Gepusht. Tests: `test_regeln`, `test_kommentare` in Ordnung. **Im Spiel gilt weiter die alte Regel**; die neue ist vollständig gebaut, aber nur mit `SCHARF_NEU=1` aktiv.
+
+- **Heute (geprüft):** Scharfschütze (Konkordat) und Pirschjäger (Aschenwacht) dürfen auch nach dem Ziehen schießen, und **jeder Treffer hält nieder** (`pin`).
+- **Gebaute Regel (für beide Seiten gleich):**
+  - Schuss **nur aus dem Stand**.
+  - Gegen ungepanzerte Ziele **×1,6** (Schlagwort „gezielter Schuss ×1,6“ in der Vorschau). Gegen Gepanzerte bleibt es schwach.
+  - **Kein automatisches Niederhalten** mehr.
+  - Neue Fähigkeit **„Kopf runter!“**: Aktion, alle 2 Runden, nur aus dem Stand, auf ein Ziel in Reichweite und Sicht, das noch nicht niedergehalten ist. Kein Schaden, das Ziel ist niedergehalten, Moral −10 (Kampfanzüge und Schreiter −5).
+  - Anzeige: Schuss wie ein Gewehrschuss, das Ziel duckt sich, Meldung „Kopf runter!“. Symbol „niedergehalten“ aus dem Bogen.
+  - KI: hält aufgebaute MG, Geschütze und Gegner nieder, die eigene Truppen bedrängen; sonst schießt sie normal.
+  - Kosten unverändert 45 bzw. 60 (Fähigkeit statt `pin`, gleicher Ansatz in costParts).
+- **Messung** (je 200 Schlachten, ein Startwert; Siegquote Konkordat, Runden, Ausfälle):
+
+| Karte | alte Regel | neue Regel |
+|---|---|---|
+| Grauwall | 43 % · 14,7 Runden · Ausfälle 31/40 % | **63 %** · 15,1 · 33/37 % |
+| Sankt Ruß | 42 % · 14,6 · 43/48 % | **14 %** · 12,8 · 39/40 % |
+| Krähenfurt | 61 % · 14,1 · 38/33 % | **69 %** · 14,2 · 46/31 % |
+
+  - Einsätze „Kopf runter!“ je Schlacht (Konkordat / Aschenwacht): Grauwall 3,4 / 0,2, Sankt Ruß 1,9 / 0,1, Krähenfurt 1,5 / 0,2. Käufe Scharfschütze/Pirschjäger etwa gleich (0,3–0,4 je Schlacht).
+- **Bewertung:** Der Ausschlag ist groß und je Karte gegenläufig (+20, −28, +8). Nach Auftrag also **Vorschlag statt Einbau**.
+  - Wahrscheinliche Ursache für Sankt Ruß: Der Scharfschütze im Kirchturm hielt bisher mit jedem Treffer nieder. Jetzt bremst das nur noch die seltene Fähigkeit.
+  - Auf Grauwall nützt „Kopf runter!“ gegen die MG der Aschenwacht dem Konkordat stark.
+- Nebenbei: In der Vergleichsmessung liegt Krähenfurt (alte Regel) bei 61 %. Der Abgleich aus Paket C2 ergab 54 % mit 100 Schlachten; 200 Schlachten zeigen eher etwas mehr fürs Konkordat.
+
+**Noch offen in Paket E:** Punkte 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase) – nächster `pa`/`pw`.
+
+### Fragen an Enrico
+- **Scharfschützen:** (A) neue Regel einschalten und danach Sankt Ruß und Grauwall neu abgleichen (über Kartendaten/KI). (B) nur einen Teil übernehmen, z. B. „nur aus dem Stand“ und „Kopf runter!“ als Zusatz, aber `pin` behalten. (C) bei der alten Regel bleiben.
+
+---
+
 ## 2026-11-24 – Paket E, Teil 1 (Zwischenstand): Dampfpfeife (Punkt 42) (`4b7f541`)
 
 Gepusht, index.html, Ton-Pult und Tonprobe gebaut. Tests: `tonpult_test` 93/93 (darin Spiel == Pult für alle 54 Einheiten), `test_kommentare` sauber.

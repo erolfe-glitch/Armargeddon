@@ -135,7 +135,7 @@ Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
 - Alles, was eine Einheit an ihrer **Grundstellung** ändert, soll schon in der Aufstellung gehen, kostenlos: **Aufprotzen/Abprotzen** (Geschütze), **MG auf-/abbauen**, **Ballon aufsteigen/einholen**, Blickrichtung drehen; wenn sinnvoll auch Eingraben als Startzustand (Vorschlag, im Bericht begründen). Keine Aktionen, die schon Wirkung auf den Gegner haben.
 - Beim Antippen einer Einheit in der Aufstellung die **Einheitenkarte mit Fähigkeiten, Rolle und Reichweite** zeigen, dazu beim Halten über einem Feld die Reichweite/den Schussfächer von dort (wie im Spiel), damit man weiß, wen man wo am besten hinstellt.
 
-**3. Scharfschützen (Regel-Vorschlag des Beraters, bitte messen und berichten):**
+✓ (Vorschlag, Schalter SCHARF_NEU) **3. Scharfschützen (Regel-Vorschlag des Beraters, bitte messen und berichten):**
 - **Nur aus dem Stand:** Haben sie sich in dieser Runde bewegt, können sie nicht schießen (wie Minenwerfer `noMoveFire`). Erst prüfen, ob das heute schon so ist.
 - **Normaler Schuss:** **ordentlicher Schaden gegen Infanterie** (ungepanzert: sichtbar Figuren weg; gegen gepanzerte Ziele schwach wie bisher), aber **kein automatisches Niederhalten** mehr.
 - **Neue Fähigkeit „Niederhalten“** (Name gern besser, z. B. „Kopf runter!“): ein gezielter Schuss, der das Ziel niederhält und Moral kostet, statt Schaden; **Abklingzeit 2 Runden**; kostet die Aktion; auch nur aus dem Stand. Symbol/Kopfzeichen vorhanden (s_garbe/supp) oder als Wunsch für den Berater melden.
