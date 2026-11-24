@@ -47,7 +47,7 @@ const P = {
   // Drehen auf der Stelle kostet sie 1 Punkt je Runde (danach in derselben Runde frei)
   FZ_FAN: 60, ZWEIT_FAN: 135, DREH_BP: 1,
   // Fahrplan 2, Schritt 1 (2026-11-17): Bewegungspunkte (BP) und eine Aktion (AP) getrennt – Marsch +50 % BP für die Aktion; Nahkampf nur mit höchstens halb verbrauchten BP
-  MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2,
+  MARSCH_BP: 0.5, GENERAL_BP: 2, MELDER_BP: 2, MELDER_CD: 2,
   PANNE_RUNDEN: 3, ORDER_R: 1, ORDER_MAX: 3, BIG_R: 2, GAS_CD: 3, BARRAGE_MAX: 2, BARRAGE_DMG: 0.7, ZWEIT_MUL: 0.5,
   // Gruppe 3 Infanterie und Sturm (2026-11-16): Eingraben Abwehr ×1,3, Schilde vor Beschuss ×0,75 in den Nachbarfeldern, Sturmlauf bis 4 Felder geradeaus
   BALLON_SICHT_UNTEN: 4,   // F70: eingeholter Ballon sieht wie Fußtruppen 4 Felder (Enrico 2026-11-21)
@@ -1365,7 +1365,10 @@ function melee(G, a, d) {
   ev.push(...checkEnd(G));
   return ev;
 }
-function claimObjective(G, u) {
+// Punkt 15 (Enrico 2026-11-23): solange eine Markierung („Ziel markieren“) gilt, deckt ihr Lichtkreis (Feld und Nachbarn) auch neu gelegte Minen und hineinziehende versteckte Einheiten sofort auf
+function imLicht(G, side, c, r) { return (G.marks || []).some(m => m.side !== side && dist(m.c, m.r, c, r) <= 1); }
+function lichtAufdecken(G, u) { if (!u || !alive(u) || TOG.NOLICHT) return; if (TYPES[u.type].hidden && imLicht(G, u.side, u.c, u.r)) u.revealed = Math.max(u.revealed || 0, 1); }
+function claimObjective(G, u) { lichtAufdecken(G, u);
   if (!active(u) || cls(u) === 'art') return;
   const o = hex(G, u.c, u.r).obj;
   if (o && G.ctrl[o] !== u.side) { G.ctrl[o] = u.side; G.pts[u.side] += OBJECTIVES.find(x => x.id === o).pts * P.PTS_OBJ; }
@@ -1540,7 +1543,7 @@ function startTurn(G) {
     u.fireDmg = 0;
     if (u.side === s) {
       u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false;
-      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'kuehl']) if (u[k] > 0) u[k]--;
+      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'cdM', 'kuehl']) if (u[k] > 0) u[k]--;
       u.dfN = 0;
       if (u.revealed > 0) u.revealed--;
       if (TYPES[u.type].counterStrike) u.cready = true;
@@ -1602,8 +1605,8 @@ function canLay(G, u) { return active(u) && !!TYPES[u.type].wirelayer && u.side 
 function layWire(G, u) { if (!canLay(G, u)) return []; const [c, r] = layTarget(G, u); hex(G, c, r).t = 'wire'; u.attacked = true; spend(u, 1); return [{ t: 'terrain', c, r, what: 'Draht gezogen' }]; }
 
 // Meldegänger mit Hund: bringt einer eigenen Einheit bis 3 Felder einen Befehl, sie bekommt +1 Aktionspunkt (einmal je Runde)
-function canSend(G, m, t) { return active(m) && !!TYPES[m.type].courier && m.side === G.side && m.ap >= 1 && !(m.supp > 0) && !m.sent && t && t !== m && t.side === m.side && active(t) && !t.broken && !TYPES[t.type].courier && (t.ap || 0) < 3 && dist(m.c, m.r, t.c, t.r) <= 3; }
-function sendOrder(G, m, t) { if (!canSend(G, m, t)) return []; m.sent = true; spend(m, 1); t.bp = (t.bp || 0) + P.MELDER_BP; t.moved = false; return [{ t: 'sent', u: t.id, by: m.id, bp: t.bp }]; }   // Meldegänger: +2 BP
+function canSend(G, m, t) { return active(m) && !!TYPES[m.type].courier && m.side === G.side && m.ap >= 1 && !(m.supp > 0) && !m.sent && !(m.cdM > 0 && !TOG.NOMELDERCD) && t && t !== m && t.side === m.side && active(t) && !t.broken && !TYPES[t.type].courier && (t.ap || 0) < 3 && dist(m.c, m.r, t.c, t.r) <= 3; }
+function sendOrder(G, m, t) { if (!canSend(G, m, t)) return []; m.sent = true; m.cdM = P.MELDER_CD; spend(m, 1); t.bp = (t.bp || 0) + P.MELDER_BP; t.moved = false; return [{ t: 'sent', u: t.id, by: m.id, bp: t.bp }]; }   // Meldegänger: +2 BP, danach Abklingzeit P.MELDER_CD (Punkt 7, 2026-11-24: jede zweite eigene Runde)
 
 // MG aufbauen (1 Punkt): erst dann feuert es und gibt Reaktionsfeuer. Ziehen baut es wieder ab.
 function canSetup(G, u) { return active(u) && !!TYPES[u.type].mg && u.side === G.side && !u.setup && (u.bp || 0) >= 1 && !u.broken && u.supp <= 0; }   // 1 BP, nimmt alle restlichen BP
@@ -1750,7 +1753,7 @@ function useAbil(G, u, c, r) {
     else if (h.t === 'wire') { h.t = 'open'; ev.push({ t: 'terrain', c, r, what: 'Draht zerrissen' }); }
     ev.push(...checkEnd(G));
   }
-  else if (k === 'mine') { G.mines.push({ c, r, side: u.side }); u.mines--; if (T.wirelayer) u.attacked = true;   // Drahtpioniere: Mine statt Draht
+  else if (k === 'mine') { G.mines.push({ c, r, side: u.side, ...(!TOG.NOLICHT && imLicht(G, u.side, c, r) ? { known: (G.marks.find(m => m.side !== u.side && dist(m.c, m.r, c, r) <= 1) || {}).side } : {}) }); u.mines--; if (T.wirelayer) u.attacked = true;   // Drahtpioniere: Mine statt Draht
     ev.push({ t: 'mineLaid', u: u.id, c, r, left: u.mines }); }
   else if (k === 'light') { for (const [a, b] of area) { G.lit.push({ c: a, r: b, side: u.side }); G.smoke = G.smoke.filter(q => !(q.c === a && q.r === b)); } ev.push({ t: 'light', u: u.id, c, r, cells: area }); }
   else if (k === 'clear') { const n = G.clouds.length; G.clouds = G.clouds.filter(q => dist(q.c, q.r, c, r) > 1); ev.push({ t: 'clear', u: u.id, c, r, n: n - G.clouds.length }); }

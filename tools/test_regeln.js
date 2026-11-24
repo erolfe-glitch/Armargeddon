@@ -38,5 +38,13 @@ for (const [k, t] of Object.entries(T)) {
   const c = E.costParts(k).total; if (!Number.isFinite(c) || c <= 0) fehler.push(`${k}: Preis ${c}`);
   const m = E.medaillen(k); if (!m || !['gold', 'silber', 'bronze', 'keine'].includes(m.nah)) fehler.push(`${k}: Medaillen ${JSON.stringify(m)}`);
 }
+// Punkt 15 (2026-11-24): Lichtkreis einer Markierung deckt neu gelegte Minen und hineinziehende Versteckte auf, ohne Markierung nicht
+{ const G2 = E.newGame({ seed: 3, map: 'grauwall' }); E.startTurn(G2); G2.side = 'D';
+  const D0 = G2.units.find(u => u.side === 'D' && E.alive(u)), p = Object.assign({}, D0, { id: 9801, type: 'pionierD', mines: 2, ap: 1, bp: 3, attacked: false, supp: 0 }); G2.units.push(p);
+  const z = [...E.abilTargets(G2, p)]; if (z.length < 2) fehler.push('Lichtkreis-Test: Drahtpioniere haben keine zwei Minenfelder');
+  else { const [c, r] = z[0]; G2.marks = [{ c, r, side: 'A', by: 1 }]; E.useAbil(G2, p, c, r); const m1 = G2.mines[G2.mines.length - 1];
+    if (!m1 || m1.known !== 'A') fehler.push('Lichtkreis: neu gelegte Mine im markierten Feld nicht aufgedeckt');
+    p.cdA = 0; p.ap = 1; p.attacked = false; G2.marks = []; const [c2, r2] = z.find(([a, b]) => a !== c || b !== r); E.useAbil(G2, p, c2, r2); const m2 = G2.mines[G2.mines.length - 1];
+    if (!m2 || m2.known) fehler.push('Lichtkreis: Mine ohne Markierung fälschlich aufgedeckt'); } }
 if (fehler.length) { console.log(`FEHLER (${fehler.length}):\n  ` + fehler.slice(0, 40).join('\n  ')); process.exit(1); }
 console.log(`Regeln in Ordnung: ${jetzt.length} P-Konstanten, ${paare} Schadensvorschauen, ${Object.keys(T).length} Einheiten.`);

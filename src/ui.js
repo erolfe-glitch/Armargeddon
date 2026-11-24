@@ -109,8 +109,11 @@ const FXN = {};
     for (let i = 0; i < 9; i++) for (const row of [0, 1]) { const px = 18 + i * 34 + row * 17 + (Math.random() - 0.5) * 6, py = 52 + row * 46 + (Math.random() - 0.5) * 8;
       x.fillStyle = 'rgba(70,74,82,0.55)'; x.beginPath(); x.ellipse(px, py, 8, 4.5, (Math.random() - 0.5) * 0.4, 0, 7); x.fill(); x.fillStyle = 'rgba(245,248,252,0.5)'; x.beginPath(); x.ellipse(px - 1, py - 3, 7, 2, 0, 0, 7); x.fill(); }
     const im = new Image(); im.src = c.toDataURL(); FXN.spurschnee.push(im); } }
+const KEIN_SCHNEE = new Set(['eis', 'eisloch', 'furt', 'bridge', 'steinbruecke', 'canal', 'bahn', 'waldweg']);
+function aufSchnee(x, y) { const p = pixToHex(x, y), h = p && G && G.map[p[0]] && G.map[p[0]][p[1]]; return !h || !(h.road || h.rail || h.river || KEIN_SCHNEE.has(h.t)); }
 function spurSchnee(i, x0, y0, x1, y1, o = {}) {   // Spur am Boden zwischen zwei Punkten, in Fahrtrichtung gedreht; höchstens 60 Spuren (älteste fällt weg)
   if (!(E.MAP && E.MAP.winter) || fxN('spurschnee') < 7) return;
+  if (!aufSchnee(x0, y0) || !aufSchnee(x1, y1)) return;   // Punkt 5 (Enrico 2026-11-23): nur auf Schnee – nicht auf Straßen, Wegen, Eis, Furt, Brücken
   let n = 0; for (let k = gmarks.length - 1; k >= 0; k--) if (gmarks[k].b === 'spurschnee' && ++n >= 60) { gmarks.splice(k, 1); break; }
   gmark('spurschnee', i, (x0 + x1) / 2, (y0 + y1) / 2 + L.s * 0.12, Object.assign({ mul: 0.7, alpha: 1, flip: false, ang: Math.atan2(y1 - y0, x1 - x0), turns: 3, filter: 'brightness(0.62) contrast(1.35)', doppelt: true }, o));   // Enrico 20:50: dunkler, auch herausgezoomt erkennbar
 }
@@ -680,6 +683,12 @@ function hpNach(o, cur) {   // o: beliebiges Objekt (Anzeige-Einheit, Panel-Spei
   return hpNachV(h, t);
 }
 const HP_NACH = '#5a1810', hudHN = {};
+function heilZeichen(g, x, y, id, rep) {   // 3 kleine Zeichen steigen nacheinander auf und verblassen (Punkt 20, 2026-11-24)
+  const s = L.s; for (let i = 0; i < 3; i++) { const t = ((now / 1500) + i / 3 + id * 0.13) % 1, a = Math.sin(t * Math.PI), xx = x + s * (i - 1) * 0.22 + Math.sin(t * 6 + i) * s * 0.03, yy = y - t * s * 0.5, R = s * (0.07 + 0.02 * (1 - t));
+    g.save(); g.globalAlpha = a * 0.95;
+    if (rep && UPI.s_schraubenschluessel) drawSym(g, UPI.s_schraubenschluessel, xx, yy, R * 1.5);
+    else { const q = R * 0.36; g.beginPath(); for (const [px, py] of [[-q, -R], [q, -R], [q, -q], [R, -q], [R, q], [q, q], [q, R], [-q, R], [-q, q], [-R, q], [-R, -q], [-q, -q]]) g.lineTo(xx + px, yy + py); g.closePath(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, s * 0.03); g.strokeStyle = 'rgba(20,16,12,0.85)'; g.stroke(); g.fillStyle = i === 1 ? '#B4453A' : `rgb(${BONE})`; g.fill(); }
+    g.restore(); } }
 function hexMark(c, r, o) {
   const g = ctx, s = L.s, pz = 0.5 + 0.5 * Math.sin(now / 320);
   hexPath(g, c, r, 0.9); g.fillStyle = `rgba(${o.rgb},${(o.fill ?? 0.14) + 0.05 * pz})`; g.fill();
@@ -783,6 +792,7 @@ function drawGround(g, s) {
     if (hilfeAn('send')) for (const id of sendSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, dash: true, sym: UPI.s_meldehund }); }
     if (hilfeAn('rec')) for (const id of recSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BRASS, sym: UPI.s_schraubenschluessel }); }
     if (hilfeAn('heal')) for (const id of healSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, sym: UPI.s_sanitaeter }); }
+    if (healSet.size) { const gg = ctx; for (const id of healSet) { if (!DU.get(id)) continue; const [hx, hy] = headPos(id), rep = TYPES[unitById(id).type].cls === 'walker'; MARKQ.push(() => heilZeichen(gg, hx, hy, id, rep)); } }   // Punkt 20: wer jetzt versorgt werden kann – aufsteigende Pluszeichen (Fahrzeuge: Schraubenschlüssel), solange der Sanitäts-/Versorgungstrupp gewählt ist
     for (const [, t] of targets) { const u = unitById(t.id), fire = t.kind === 'fire'; hexMark(u.c, u.r, { rgb: fire ? BRASS : LIFE, fill: 0.2, sym: UPI[fire ? 's_zielen' : 's_nahkampf'] }); }
     // Ziele in Schussreichweite: Messing-Eckklammern um die Figur (obenauf)
     for (const [, t] of targets) if (t.kind === 'fire' || t.both) { const u = unitById(t.id), [x, y] = center(u.c, u.r); MARKQ.push(() => brackets(x, y - s * 0.38, s * 0.6, '#C2A461')); }
@@ -955,12 +965,13 @@ function drawAir(g, s, up) {
     const sch = fxIm('leuchtkugel', 2), gl = fxIm('leuchtkugel', 3 + (k.c + k.r) % 3);
     if (gl) { const [w, h] = fxDim(gl, 'leuchtkugel', 0.55 * pz); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.85; g.drawImage(gl, x + sw - w / 2, fy + s * 0.32 - h / 2, w, h); g.restore(); }
     if (sch) { const [w, h] = fxDim(sch, 'leuchtkugel', 0.75); g.save(); g.globalCompositeOperation = 'lighter'; g.translate(x + sw, fy); g.rotate(Math.sin(now / 900 + k.r) * 0.08); g.drawImage(sch, -w / 2, -h * 0.55, w, h); g.restore(); } }
-  // Markierte Ziele der eigenen Seite: Messing-Zielkreuz am Boden (gilt bis zum nächsten eigenen Zug)
-  for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.75 + 0.25 * Math.sin(now / 260);
-    g.save(); g.globalAlpha = pz; g.strokeStyle = O; g.lineWidth = Math.max(4, s * 0.1); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
-    g.strokeStyle = '#E2B04A'; g.lineWidth = Math.max(2, s * 0.05); g.beginPath(); gEllipse(g, x, y, s * 0.55, s * 0.55); g.stroke();
-    g.beginPath(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.moveTo(x + dx * s * 0.4, y + dy * s * 0.4 * kk); g.lineTo(x + dx * s * 0.75, y + dy * s * 0.75 * kk); } g.stroke(); g.restore(); }
-  for (const q of G.mines || []) if (q.side === mySide || q.known === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke(); }
+  // Markierte Ziele der eigenen Seite: flacher Ring in Knochenweiß am Boden um die Figur, Striche nur nach außen (Punkt 6, Enrico 2026-11-23: nicht gelb, nicht über der Figur; gilt bis zum nächsten eigenen Zug)
+  for (const k of VIS.marks || []) if (k.side === mySide) { const [x, y] = center(k.c, k.r); if (up && !up(x, y)) continue; const kk = kAt(x, y), pz = 0.6 + 0.15 * Math.sin(now / 420), R = s * 0.84;
+    g.save(); g.globalAlpha = pz; g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = Math.max(3, s * 0.07); g.beginPath(); gEllipse(g, x, y, R, R); g.stroke();
+    g.strokeStyle = `rgb(${BONE})`; g.lineWidth = Math.max(1.5, s * 0.03); g.setLineDash([s * 0.16, s * 0.07]); g.beginPath(); gEllipse(g, x, y, R, R); g.stroke(); g.setLineDash([]);
+    g.lineWidth = Math.max(2, s * 0.04); g.beginPath(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.moveTo(x + dx * R, y + dy * R * kk); g.lineTo(x + dx * s * 0.98, y + dy * s * 0.98 * kk); } g.stroke(); g.restore(); }
+  for (const q of G.mines || []) if (q.side === mySide || q.known === mySide) { const [x, y] = center(q.c, q.r); if (up && !up(x, y)) continue; g.beginPath(); g.ellipse(x, y + s * 0.2, s * 0.17, s * 0.1, 0, 0, 7); g.fillStyle = '#5b5434'; g.fill(); g.strokeStyle = '#e6d48a'; g.lineWidth = Math.max(1.5, s * 0.04); g.stroke();
+    if (q.side !== mySide && UPI.s_tellermine) { const gg = ctx, pz = 0.8 + 0.2 * Math.sin(now / 300), yy = y + s * 0.2 * kAt(x, y); MARKQ.push(() => { gg.globalAlpha = pz; drawSym(gg, UPI.s_tellermine, x, yy, s * 0.2, `rgb(${BONE})`); gg.globalAlpha = 1; }); } }   // entdeckte Minen des Gegners (Punkt 15): Tellerminen-Zeichen über allem, sonst verdecken Figuren und Teile sie
   // Gaswolken
   for (const k of VIS.clouds) {
     const [x, y] = center(k.c, k.r), v = (k.c + k.r) % 2 ? 'gas1' : 'gas2', im = FXI[v]; if (up && !up(x, y)) continue;
@@ -2965,7 +2976,7 @@ async function playEvent0(e) {
       if (fx('leuchtkugel', 0, x - s * 0.5, y + s * 0.2, { life: 34, rise: 1.7, mul: 0.75, fadeOut: 0.2 })) { fx('leuchtkugel', 1, x, y - s * 2.1, { delay: 30, life: 20, anchor: 'mitte', grow: 0.5, mul: 0.8 }); await wait(500); }
       visSync('marks'); floater(x, y - s * 1.0, 'Ziel markiert', '#E2B04A', true);
       if (e.rev.length || e.mines) floater(x, y - s * 1.5, `aufgedeckt: ${[e.rev.length ? e.rev.length + ' Trupp' : '', e.mines ? e.mines + ' Mine' + (e.mines > 1 ? 'n' : '') : ''].filter(Boolean).join(', ')}`, '#F0EDE1');
-      rings.push({ x, y, r: 1.2, col: '#E2B04A', life: 40, max: 40 }); await wait(300); break; }
+      rings.push({ x, y, r: 1.2, col: 'rgb(' + BONE + ')', life: 40, max: 40 }); await wait(300); break; }
     case 'march': marschU = e.u; break;   // Marschtritt beim folgenden Zug (statt normaler Schritte)
     case 'retreatmove': kz(e.u, 'zurueck', 'steig'); break;   // F40
     case 'freeblow': { const a = DU.get(e.a), d = DU.get(e.u); if (!a || !d) break; const fl = d.x < a.x; a.face = d.x >= a.x ? 0 : 3;   // Freischlag: kurzer Nahkampf-Effekt am Weichenden
@@ -3866,7 +3877,7 @@ function unitButtons(T, hints) {
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', on: hilfeAn('heal'), cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
-  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', on: hilfeAn('send'), cost: 1, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte.`, off: !sendSet.size, why: 'Keine Einheit in Reichweite.' });
+  if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', on: hilfeAn('send'), cost: 1, cd: sel.cdM, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte. Danach ${P.MELDER_CD} Runden Pause.`, off: !sendSet.size, why: sel.cdM > 0 ? 'Der Meldegänger ist noch unterwegs.' : 'Keine Einheit in Reichweite.' });
   if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', on: hilfeAn('rec'), cost: 1, cd: sel.cdB, text: 'Koloss bzw. Maschine mit Schraubenschlüssel anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
   if (!sel.supp && !sel.broken) {
     const dk = E.drehKosten(sel), dt = T.cls === 'walker' ? `Fahrzeuge und Schreiter: Drehen auf der Stelle kostet ${P.DREH_BP} Bewegungspunkt je 60°. Die Hauptwaffe schießt nur nach vorn (±${P.FZ_FAN}°).` : 'Blickrichtung ändern. Drehen kostet nichts.';
