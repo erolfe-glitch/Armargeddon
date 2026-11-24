@@ -1,3 +1,60 @@
+## 2026-11-24 – Paket D, Teil 3 (Abschluss): Korrekturen 39–41, Effektliste, Wucht (`728a22e`)
+
+Gepusht, index.html gebaut. Tests: `test_kommentare` sauber, Aufnahmen ohne Seitenfehler. Vergleich: `entwurf/probe/effekte_d/teil3_vorher_nachher.jpg` (links Teil 1, rechts jetzt; Gebrüll Kreuzschreiter, Sprung Löwenoger, Furcht-Aura, Hinrichtung).
+
+### Korrekturen
+- **39 – Boden-Ringe:** Alle Ringe am Boden werden jetzt an der Mittellinie geteilt.
+  - Die **hintere Hälfte** wird nach Tiefe vor der Figur gezeichnet und vom Körper verdeckt, die **vordere Hälfte** nach den Figuren (liegt vor den Füßen).
+  - Das gilt für den Staubring des Gebrülls, die Druckwelle (Aufprall, Sprung, Sturmrollen), den Rauchklauen-Ring (Furcht-Aura, Aura-Puls, Hinrichtung) und die glatten Ringe (großer Befehl, Schilde vor, Ziel markieren).
+  - Die Ringe sitzen mittig unter den Füßen.
+- **40 – graue Pünktchen am Kürassier:** Das waren die „Ascheflocken“ der Furcht-Aura, alte flache Farbkreise (`burst` in Grautönen), die zufällig um den Kürassier fielen. Entfernt. Die gleichen flachen Kreise (weiß) beim Dampfstoß der Faust erscheinen nur noch, wenn das gemalte Dampfbild fehlt.
+- **41 – Gebrüll am Maul:**
+  - **Ursache Oger-Kegel:** Die Höhenkorrektur, die ich für den Kreuzschreiter brauchte (dort liefert `maulPunkt` die Kanonenmündung über dem Maul), galt für alle. Beim Oger rutschte der Kegel dadurch auf Hüfthöhe. Jetzt gilt sie nur noch für den Kreuzschreiter.
+  - Der Kegel ist am linken Bildrand verankert: Die Spitze sitzt genau am Maul bzw. an der Mündung der Löwenmaul-Kanone.
+  - **Ursache Oger-Ring:** Er wurde beim Sprung am Absprungort gezeichnet. Jetzt gibt es dort keinen Ring mehr, unter dem Oger liegt nur die Landungs-Druckwelle.
+
+### Schritt 1 – noch glatte Kreise und Leuchtflächen (nicht ersetzt)
+| Effekt | Code | Wie heute | Vorschlag |
+|---|---|---|---|
+| Großer Befehl (Halten / Generalangriff) | `rings` in playEvent `order` | glatter Messingring je Einheit | Bild „Befehlsruf“ (Schallwelle mit Staub, wie Gebrüll-Ring, kleiner) |
+| Schilde vor | `rings` `shields` | grauer Ring | Bild „Schildwall“: Metallfunken/Staub am Boden |
+| Banner aufpflanzen (Umkreis) | Hexflächen gelblich | Fläche | gemalter Fahnen-Bodenring (Stoffstreifen, Staub) |
+| Gasschutz (Entgiften) | `drawNimbus` | grünlicher Verlauf | Bild „Filterdampf“ (grauweiße Dampfschwaden im Tintenstil) |
+| Aura Rote Faust (standhaft) | `drawHeldAura` warm | roter Leuchtschein (jetzt gedämpft) | Glut-/Hitzeflimmern-Ring am Boden |
+| Wirkungsbereich beim Halten eines Knopfs | `drawArea` | Messingfläche je Feld | bleibt (Bedienhilfe, keine Wirkung) |
+| Helden-Aufblitzen | `heldBlitz` | Verlauf | bleibt dezent |
+
+Einzelbilder je Effekt habe ich nach Sparregel 4 nicht gemacht (keine Bilderserie). Die betroffenen Stellen stehen in der Tabelle.
+
+### Schritt 4 – Bildwünsche an den Berater
+1. **Befehlsruf** (Bodenring, Schallwelle mit Staub, kleiner als das Gebrüll).
+2. **Filterdampf** des Gasschutz-Trupps.
+3. **Gasschliere** (sinkende, gebogene Gasfahne, 3 Varianten) – für die Gasgranate (Punkt 19).
+4. **Mündungsdonner der Löwenmaul-Kanone** (Feuerstoß aus dem Löwenmaul, seitlich).
+5. **Faustsalve:** Doppelter Mündungsblitz beider Unterarm-Kanonen.
+6. **Hinrichtungs-Hieb:** Schnittbogen der Kettenklinge (Tinte, kalt).
+7. **Ton:** echte tiefe Dampfpfeife, 1–1,5 s (Sturmrollen).
+
+### Schritt 6 – Wucht: Schaden je Fähigkeit (aus den Regeln, Anzeige ×10)
+| Fähigkeit | Wirkung | passt? |
+|---|---|---|
+| Rote Faust – Durchbruch | 26 Schaden, Moral −15, Ziel fliegt ein Feld zurück | ja, deutlich |
+| Kürassier – Hinrichtung | vernichtet ein Ziel unter 40 Stärke | ja |
+| Kürassier – Furcht | Gegner daneben −4 Moral je Runde | eher schwach für die Inszenierung |
+| Kreuzschreiter – Löwengebrüll | kein Schaden; Moral −20, niedergehalten bis 2 Felder | passt (Schreck, nicht Schaden) |
+| Kreuzschreiter – Löwenmaul-Kanone | gegen Grenadiere 2, gegen Sturmpanzer 4 je Schuss (2 Felder) | **zu schwach für den Auftritt** |
+| Eisenknecht – Faustsalve | 2 Schüsse ×2: je etwa 14 gegen eine Kohorte (gesamt ~28) | ja |
+| Landkoloss/Sturmpanzer – Sturmrollen | 24 Schaden, Moral −15 | ja |
+
+Vorschlag für die Balance-Runde „Fleischwolf“: Die Löwenmaul-Kanone braucht mehr Wucht, sonst wirkt der Effekt größer als die Wirkung. Werte habe ich wie vorgegeben nicht geändert.
+
+**Paket D ist damit abgeschlossen** (Teile 1–3). Offen bleiben nur die Bildwünsche.
+
+### Fragen an Enrico
+- Löwenmaul-Kanone stärker machen (jetzt oder in der Balance-Runde)?
+
+---
+
 ## 2026-11-24 – Paket D, Teil 2 (Zwischenstand): Sturmrollen und Gasgranate (`0f9e557`)
 
 Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Aufnahmen ohne Seitenfehler.
