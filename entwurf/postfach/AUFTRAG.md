@@ -22,7 +22,7 @@
 - ✓ **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder). **Teil 1 (`d135239`) und Teil 2 (`0f9e557`) erledigt. Im nächsten Teil ZUERST die Korrekturen 39–42 (Abschnitt 24.11. 19:05), dann der Rest.**
 - **Paket E – Regeln (mit Messung):** **zuerst Punkt 42 (Dampfpfeife, aus Paket D übrig, Abschnitt 24.11. 19:05)**, dann Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
 - **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
-- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker).
+- **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 
 # >>> JETZT (Enrico 2026-11-24 19:05): Korrekturen zu Paket D Teil 1 <<<
@@ -42,6 +42,8 @@
   - Danach `sound-quelle` per robocopy sichern (Feste Regeln), Ton-Pult/Tonprobe neu bauen, damit Enrico ihn dort hört.
 
 - [ ] **43. NICHT JETZT – erst beim großen Umbau (Schaden über Modelle, Etappe 3): Löwenmaul-Kanone und Furcht-Aura stärker.** Antwort auf die Frage aus Paket D Teil 3. Enrico (19:19): erst beim Umbau, weil sich dort die Schadensrechnung ohnehin ändert. Laut Bericht zu schwach für den Auftritt: Löwenmaul-Kanone des Kreuzschreiters (2 gegen Grenadiere, 4 gegen Sturmpanzer je Schuss) und Furcht-Aura des Kürassiers (−4 Moral je Runde). Beim Umbau so einstellen, dass die Wirkung zur Inszenierung passt, mit Messung (Sparregel 2). Bis dahin Werte nicht ändern.
+
+- [ ] **44. Antwort zu Paket E Teil 2 (Scharfschützen, Punkt 3): Variante C (Enrico 19:48).** Alte Regel bleibt im Spiel. Die neue Regel (`SCHARF_NEU=1`: nur aus dem Stand, ×1,6 gegen Ungepanzerte, kein `pin`, Fähigkeit „Kopf runter!“) **bleibt im Code und schaltbar**, nicht löschen. Wird beim großen Umbau (Schaden über Modelle, Moral) wieder aufgegriffen und dann zusammen mit den Karten abgeglichen. Jetzt nichts weiter tun, nur abhaken; danach mit Punkt 16 weitermachen.
 
 # >>> JETZT (Enrico 2026-11-24 18:20): Antworten zu Paket C + Straßenenden (NICHT erledigt) <<<
 **Reihenfolge:** Paket C2, eigener `pa`.
@@ -166,7 +168,7 @@ Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
 
 ✓ **15. „Ziel markieren“ (Leuchtsignal; Ballonbeobachter, Signaltrupp) deckt Minen/Verstecktes auf – prüfen:** Laut Beschreibung deckt die Markierung versteckte Gegner und **Minen** im Feld und daneben auf (`q.known`). Enrico hat **noch nie gesehen, dass dabei Minen sichtbar werden**. → Prüfen, ob es funktioniert und ob die aufgedeckten Minen/Einheiten auch **gezeichnet** werden (Minen-Marke sichtbar für den Spieler, Hinweis/Kopfzeichen „Mine entdeckt“). Neu: **Solange die Markierung aktiv ist** (bis zum nächsten eigenen Zug), werden im Lichtkreis **auch neu gelegte Minen** und neu hineinziehende versteckte Einheiten sofort aufgedeckt. Lichtkreis sichtbar machen (warmes Leuchten am Boden, kein greller Kreis – vgl. Punkt 6). Test in `test_regeln.js`.
 
-**16. Feldkanone: Sperrfeuer weg, dafür panzerbrechende Granaten:**
+✓ **16. Feldkanone: Sperrfeuer weg, dafür panzerbrechende Granaten:**
 - **Sperrfeuer streichen** (die Feldkanone ist ein Direktschuss-Geschütz).
 - Normaler Schuss = **Standardgranate** (gegen Infanterie/alles), weiter direkt und flach.
 - Neue Fähigkeit **„Panzergranate“** mit **begrenzten Ladungen** (Vorschlag 3 je Schlacht, wie `T.ladungen`/`u.ladUsed` der Mineure): starker Schuss gegen Fahrzeuge, Schreiter und gepanzerte Ziele (Waffenart „schwer/AT“ im Faktor-Dreieck), Zähler am Knopf.

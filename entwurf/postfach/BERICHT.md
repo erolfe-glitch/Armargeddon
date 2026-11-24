@@ -1,3 +1,27 @@
+## 2026-11-24 – Paket E, Teil 3 (Zwischenstand): Feldkanone mit Panzergranate (Punkt 16) (`19a7203`)
+
+Gepusht, index.html und Ton-Pult gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Spiel == Pult für alle Einheiten.
+
+- **Sperrfeuer:** War für die Feldkanone nach den Regeln schon nie möglich (direktes Geschütz → nur Sprenggranate). Es gab aber noch einen grauen Knopf „Sperrfeuer“. Der ist jetzt weg.
+- **Normaler Schuss:** Standardgranate, direkt und flach wie bisher. **Gegen Fahrzeuge und Schreiter nur noch ×1,25** statt ×2,5.
+- **Neue Fähigkeit „Panzergranate“:**
+  - Aktion, **3 Ladungen je Schlacht** (Zähler am Knopf), nur gegen gepanzerte Ziele im direkten Schuss.
+  - Schaden gegen schwer gepanzert (Fahrzeuge, Schreiter) **×3,5**, gegen leicht gepanzert (Kampfanzüge, Löwenoger) **×2**.
+  - Wie bei der geworfenen Panzergranate gibt es eine kleine Chance auf eine Panne.
+  - Anzeige: Kanonenschuss der Feldkanone, Funken und Metalltreffer am Ziel, Meldung „Panzergranate!“.
+  - **Ton/Effekt-Vorschlag:** ein eigener heller, scharfer Abschuss („Peitschenknall“) und ein metallisches Durchschlagen, dazu Funken und glühende Splitter. Bis dahin nutze ich vorhandene Töne (Kanone + `einschlag_panzer`).
+- **KI:** Die Panzergranate kommt nur gegen gepanzerte Ziele, schwere zuerst, bevorzugt angeschlagene oder auf Zielfeldern.
+- **Preis:** bleibt 45 (Rechnung im Info-Fenster: Panzergranate +10, Abgleich −20).
+- Texte und Schlagworte („Direktschuss 5 Felder“, „Panzergranate (3×)“) sowie Ton-Pult-Zeile und Ton-Spur sind ergänzt. Kein Chronik-Text dazu, wie gewünscht.
+- **Messung** (je 200 Schlachten, Siegquote Konkordat vorher → nachher): Grauwall 43 → 44 %, Sankt Ruß 42 → 41 %, Krähenfurt 61 → 61 %. Die Panzergranate wird 0,6–0,8 Mal je Schlacht genutzt (Feldkanone gekauft in 35–49 % der Schlachten). **Praktisch neutral**, daher eingebaut. Abschalter `PZS_ALT=1`.
+
+**Noch offen in Paket E:** Punkte 18 (Entsetzenstest) und 2 (Aufstellungsphase) – nächster `pa`/`pw`.
+
+### Fragen an Enrico
+- Keine neuen (die Frage zu den Scharfschützen aus Teil 2 ist noch offen).
+
+---
+
 ## 2026-11-24 – Paket E, Teil 2 (Zwischenstand): Scharfschützen – Vorschlag statt Einbau (Punkt 3) (`29a4dc2`)
 
 Gepusht. Tests: `test_regeln`, `test_kommentare` in Ordnung. **Im Spiel gilt weiter die alte Regel**; die neue ist vollständig gebaut, aber nur mit `SCHARF_NEU=1` aktiv.
