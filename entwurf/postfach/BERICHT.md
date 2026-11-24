@@ -1,3 +1,31 @@
+## 2026-11-24 – Paket D, Teil 1 (Zwischenstand): Fähigkeits-Effekte im Tintenstil (`d135239`)
+
+Gepusht, index.html gebaut. Paket D ist groß; nach Sparregel 5 ist das ein Zwischenstand. Was noch fehlt, steht unten.
+
+**Erledigt (Abschnitt 17:30, Schritte 2, 3 und 5):**
+- **Bogen geschnitten:** `fx_faehigkeiten` → 6 Teile, die mitgemalten Düsen in Bild 1 und 4 sind entfernt (neue Option `leeren` in fx_cut.py).
+- **Ersetzt:**
+  - **Löwengebrüll:** gemalter Kegel (1) vom Maul in Blickrichtung, dazu Staubringe (2) am Boden. **Weg:** die zwei gelben Ringe (`loewenGebruell`, das war Enricos „gelber Kreis“), die goldenen Schallbögen und das rot-goldene Maul-Glühen.
+  - **Aufprall (Durchbruch der Roten Faust) und Sprung-Landung des Löwenogers:** Boden-Druckwelle (3) statt glattem Ring.
+  - **Rote Faust:** gemalter Dampfstoß (4) zusätzlich zum Rauch; der warme Leuchtschein der Faust-Aura ist gedämpft (60 %).
+  - **Furcht-Aura des Kürassiers:** pulsierender Rauchklauen-Ring (5) am Boden statt des kalten Leuchtkreises; Aura-Puls und Hinrichtung ebenfalls mit diesem Ring.
+  - **Hinrichtung:** Funken und Kettensplitter (6) am Treffpunkt.
+- Glatte Ringe und Bögen werden nur noch gezeichnet, wenn das Bild fehlt. Bei Bildwirkung „aus“ gibt es keine dieser Effekte (wie bisher).
+- **Bilder:** `entwurf/probe/effekte_d/alle_vorher_nachher.jpg` (links vorher, rechts nachher: Gebrüll, Sprung, Furcht-Aura, Hinrichtung), Einzelbilder in `vorher/` und `nachher/`. Werkzeug: `node tools/effekt_bilder.mjs`.
+  - Bei Sprung und Hinrichtung hat die feste Aufnahmezeit den Aufprall noch verpasst. Die Effekte sind eingebaut, aber im Bild noch nicht zu sehen; das hole ich im nächsten Teil nach.
+
+**Noch offen (nächster `pa`/`pw` für Paket D):**
+- Schritt 1: Liste aller glatten Kreis-/Ring-Effekte mit Bild je Effekt (Befehle, großer Befehl, Banner, Gasschutz-Nimbus, Wirkungsbereich).
+- Schritt 4: Vorschläge für fehlende Bilder an den Berater.
+- Schritt 6 „Wucht“: Schaden je Fähigkeit aus der Simulation; fehlende Bilder (Löwenmaul-Mündung, Faustsalve-Doppelschuss).
+- Punkt 14: Sturmrollen mit Dampfpfeife, Trümmer und Nachhall.
+- Punkt 19: Gasgranate als Luftzerleger.
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket C2: Krähenfurt-Rest (Punkte 35–38) (`85812fa`)
 
 Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Karten-Aufnahmen ohne Seitenfehler.
