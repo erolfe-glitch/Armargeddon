@@ -1,3 +1,63 @@
+## 2026-11-24 – Paket F, Teil 2 und 3: Sprachbefehle, Brainstorm, Probebild Maßstab (`5e57aba`, `13a006f`, `09581a5`)
+
+Gepusht. **Paket F ist noch nicht fertig:** Punkt 17 (Schadenszahlen) fehlt noch. index.html wird erst am Ende des Pakets eingecheckt. Ich habe nach Sparregel 5 hier aufgehört.
+
+**Nachtrag zu Punkt 47:** Enrico hat während der Läufe nebenher gespielt. Das erklärt die schwarzen Bilder. Belegt ein Spiel die Grafikkarte, verliert der unsichtbare Chrome seine Zeichenfläche und liefert leere Bilder. Genau das passierte heute noch einmal bei einem Maßstab-Lauf (Grauwall ganz schwarz, Krähenfurt im selben Lauf normal). Der Partietest misst deshalb jetzt dreimal nach und meldet eine verlorene Zeichenfläche eigens.
+
+### Abschnitt 17:20 – fehlende Sprachbefehle (`5e57aba`)
+- **Liste:** `entwurf/postfach/STIMMEN_FEHLEN.md`, je Sprechergruppe eine Tabelle: Moment, wer spricht, heutiger Ton, Satzvorschlag EN/DE, Zahl der Fassungen.
+- **Wichtigster Befund:** `rufBeiEreignis` ruft schon heute 14 Anlässe auf: Vorrücken, Feuer, Sturm, Niedergehalten, Rückzug, Sammeln, Granate, Gas, Koloss, Feuerbereit, Sanitäter, Held kommt, Held fällt, Sieg. Weil dafür aber kein Ton hinterlegt ist, **bleiben sie stumm**. Wirklich klingen nur „Feuer!“ (beim Befehl), Panik und Sterben. Neue Sätze lassen sich ohne neue Abspielstelle einhängen: Tonplatz `ruf_<anlass>` und ein Eintrag in `RUF_STANDARD`.
+- **Weitere Lücken:**
+  - Panzer sprechen nur beim Anklicken.
+  - Schreiter haben 8 Anlässe, aber dieselben Sätze für beide Seiten (keine getrennte Sprache).
+  - Bei Aschenwacht-Befehlen kommt nur Brüllen, kein Wort.
+  - Konkordat-„Sammeln“ nutzt einen alten Ruf.
+- **Stimmproben:** liegen in `entwurf/postfach/stimmproben/`, 14 WAV, je 7–12 s:
+  - Infanterie je Seite 3 Stimmen;
+  - Panzer und Schreiter je Seite 2 Stimmen.
+
+  Quelle sind die **ungefilterten** Suno-Originale. Die Sprechpausen sind gekürzt, damit die Probe dicht ist. Ausgewählt habe ich nach dem Abstand Sprache zu Grundrauschen, also gemessen, nicht gehört. Infanterie, Kampfanzug, Hauptmann und General sind dieselben Sprecher, deshalb gibt es dafür eine gemeinsame Gruppe. Die Proben sind **nicht in git** (26 MB, .gitignore); die Originale sind ja gesichert.
+
+### Abschnitt 17:10 – Brainstorm und Maßstab (`13a006f`, `09581a5`)
+- **IDEEN.md:** neuer Abschnitt „Brainstorm Spielsystem (2026-11-23)“ mit allen Punkten aus dem Auftrag. Die älteren, noch nicht eingecheckten Einträge in IDEEN.md (Flux-Angleich, Rollen-Aufstellung, Großer Fahrplan) sind mit eingecheckt.
+- **Probebild im Spiel:** `node tools/massstab_bilder.mjs [grauwall winterdorf]`. **Das Spiel bleibt unverändert.** Das Werkzeug fängt beim Laden index.html ab und hängt nur im Speicher drei Haken ein: Figurenzahl/-größe, Grabenplätze, Zeitmessung. Gezeigt wird je Karte eine gemischte Gruppe:
+  - 2 Schützenkohorten, 2 Reiter, MG, Landkoloss, Haubitze, Kreuzschreiter, Rote Faust;
+  - 1 Grenadiertrupp der Aschenwacht.
+- **Bilder:**
+  - `entwurf/probe/massstab/vergleich_grauwall_nah.jpg`, `vergleich_winterdorf_nah.jpg` (je A, B, C, D nebeneinander), dazu die `_ganz`-Fassungen;
+  - Zielvariante D einzeln: `grauwall_D_nah.jpg`, `winterdorf_D_nah.jpg`.
+  - Kamera: nah = Zoom 1,5; ganz = ganze Karte.
+- **Varianten:**
+  - A = heute.
+  - B = 8 Schützen / 5 Reiter, Soldat 0,6.
+  - C = 11 / 7, Soldat 0,65, Felder ×1,3. Die größeren Felder sind nur über die Kamera nachgestellt.
+  - **D = 10 Schützen in zwei Reihen, 6 Reiter, Spezialtrupps 4, alle Soldaten 0,58 Feldradien; Fahrzeuge, Schreiter, MG und Geschütze unverändert.**
+- **Was man in D sieht:**
+  - Die Reihen wirken wie eine Linie, die Reiter als Schwadron, und Panzer und Schreiter dominieren deutlich.
+  - Ringe, Balken und Marken bleiben gleich groß und damit antippbar.
+  - Die Figuren bleiben im eigenen Feld.
+- **Was für D fehlt:**
+  1. **Klone:** Schützenkohorte und Grenadiere zeigen in Ruhe alle dasselbe Bild „bereit“ (Posen Stufe 1). Bei 10 Figuren stehen also 10 gleiche Männer da. Nötig ist **eines von beidem**:
+     - mehr Ruheposen, etwa 3–4 Varianten je Fraktion;
+     - oder je Figur gespiegelt und leicht gedreht. Das wäre eine kleine Code-Änderung in `drawNewFigs`, weil heute der ganze Trupp gemeinsam gespiegelt wird.
+
+     Die Reiter haben schon 3 Posen und wirken deshalb besser.
+  2. **Graben:** Die Grabenplätze (`gbPlatz`) gibt es nur für 4 Figuren. In der Probe stehen größere Trupps deshalb auf normalen Reihenplätzen und wirken im Graben nicht abgesenkt. Für D braucht der Graben 10 Plätze entlang der Grabenlinie.
+  3. Die Rote Faust ist als Einzelmodell mit auf 0,58 geschrumpft. Ob Helden mitschrumpfen sollen, ist offen (siehe Fragen).
+- **Leistung:** Zeichenzeit je Bild bei ganzer Karte, beide Armeen, unsichtbarer Chrome:
+
+  | Karte | A | B | C | D |
+  |---|---|---|---|---|
+  | Grauwall (Median / 95 %) | 5,7 / 8,0 ms | 5,9 / 8,1 ms | 6,3 / 8,8 ms | 6,0 / 8,6 ms |
+  | Krähenfurt | 5,3 / 9,2 ms | 5,8 / 9,9 ms | 6,2 / 7,6 ms | 5,9 / 6,7 ms |
+
+  Mehr Figuren kosten kaum etwas: Selbst bei 10 je Trupp bleibt die Zeit unter 10 ms, also weit unter den 16 ms für 60 Bilder je Sekunde. **D geht ohne Grafikumbau.** Einschränkung: Gemessen ist der unsichtbare Chrome, nicht Enricos Rechner mit Bildschirm.
+
+### Fragen an Enrico
+- Klone bei 10 Schützen: lieber **neue Ruheposen malen** (3–4 je Fraktion) oder erst einmal **im Code spiegeln und versetzen**?
+- Sollen **Helden** beim neuen Maßstab mitschrumpfen? In der Probe tun sie es. Fahrzeuge und Schreiter bleiben wie gewünscht gleich groß.
+- Sind die Satzvorschläge in `STIMMEN_FEHLEN.md` im Ton richtig, besonders auf Aschenwacht-Seite?
+
 ## 2026-11-24 – Paket F, Teil 1: Punkte 46 und 47 (`0459293`, `c6b2a40`)
 
 Gepusht. index.html kommt erst am Ende von Paket F mit.
