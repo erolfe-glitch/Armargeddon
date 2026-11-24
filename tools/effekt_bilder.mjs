@@ -26,8 +26,11 @@ const buehne = (tA, tD) => ev(`(async () => { const D = __dbg, G = D.G, E = D.E,
   D.neuDU && D.neuDU(); await new Promise(r => setTimeout(r, 900)); const p = D.du(a.id); D.camSetzen(p.x + 40, p.y - 40, 1.7); await new Promise(r => setTimeout(r, 1200)); return JSON.stringify({ a: a.id, d: d.id, d2: d2.id }); })()`).then(JSON.parse);
 const spiel = (evs, ms) => ev(`(async () => { __dbg.spiel(${evs}); await new Promise(r => setTimeout(r, ${ms})); return true; })()`);
 let b = await buehne('kreuz', 'grenadier'); await spiel(`[{ t: 'roar', u: ${b.a}, d: [${b.d}, ${b.d2}] }]`, 650); await bild('a_gebruell');
-await sleep(2500); b = await buehne('oger', 'grenadier'); await spiel(`[{ t: 'sprung', u: ${b.a}, path: [[5, 4], [6, 4]], d: ${b.d} }]`, 560); await bild('b_sprung_landung');
+await sleep(2500); b = await buehne('oger', 'grenadier'); await spiel(`[{ t: 'sprung', u: ${b.a}, path: [[5, 4], [6, 4]], d: ${b.d} }]`, 900); await bild('b_sprung_landung');
 await sleep(2500); b = await buehne('kohorte', 'kuerass'); await sleep(600); await bild('c_furcht_aura');
-await spiel(`[{ t: 'hinrichtung', u: ${b.d}, d: ${b.a} }]`, 2300); await bild('d_hinrichtung');
+await spiel(`[{ t: 'hinrichtung', u: ${b.d}, d: ${b.a} }]`, 2750); await bild('d_hinrichtung');
+await sleep(2500); b = await buehne('koloss', 'grenadier'); await spiel(`[{ t: 'rollen', u: ${b.a}, d: ${b.d} }]`, 300); await bild('e_rollen_pfeife'); await sleep(560); await bild('f_rollen_aufprall'); await sleep(900); await bild('g_rollen_nachhall');
+await sleep(2500); b = await buehne('haubitze', 'grenadier'); await ev(`(() => { const u = __dbg.G.units.find(x => x.id === ${b.a}); u.c = 3; u.r = 4; __dbg.neuDU && __dbg.neuDU(); return true; })()`); await sleep(500);
+await spiel(`[{ t: 'shell', a: ${b.a}, c: 7, r: 4, mode: 'gas', face: 0 }]`, 1050); await bild('h_gas_luft'); await sleep(300); await bild('i_gas_schlieren');
 console.log(fehler.length ? 'Fehler: ' + fehler.slice(0, 3).join(' | ') : 'keine Seitenfehler');
 ws.close(); ch.kill();

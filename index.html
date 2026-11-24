@@ -9132,7 +9132,8 @@ async function playEvent0(e) {
         fx('rauch', 0, pa[0], pa[1] + s * 0.2, { life: 70, mul: 0.3, grow: 0.6, rise: 0.5, alpha: 0.6, fadeIn: 6, fadeOut: 0.7 }); }
       else if (e.strike) {} else if (PJI.dust) muzzles.push({ img: 'dust', x: x1 + (x2 > x1 ? 1 : -1) * s * 0.4, y: y1 - s * 0.15, ang: x2 > x1 ? -0.6 : Math.PI + 0.6, sz: 0.7, off: 0.15, life: 30, max: 30 }); else boom(x1 + (x2 > x1 ? 1 : -1) * s * 0.7, y1, s * 0.35, 'he');
       const dur = flach ? 12 : 34;   // in 60-Hz-Bildern bei Tempo 1; wait() teilt durch das Tempo wie die Flugbahn; Feldkanone: schnelles Geschoss
-      shells.push({ fxi: e.mode === 'gas' ? 5 : TYPES[ua.type].mobile && !e.strike ? 1 : 0, x1, y1, x2, y2, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4, ...(flach ? { arc: 0.15, fxs: 0.8 } : {}) });
+      const luft = e.mode === 'gas' && BW ? s * 1.5 : 0;   // Punkt 19 (2026-11-24): Gasgranate zerplatzt in der Luft über der Mitte des Zielbereichs
+      shells.push({ fxi: e.mode === 'gas' ? 5 : TYPES[ua.type].mobile && !e.strike ? 1 : 0, x1, y1, x2, y2: y2 - luft, t: 0, dur, col: e.mode === 'gas' ? '#c4d646' : '#2a2a26', img: TYPES[ua.type].mobile && !e.strike ? (PJI.rocket ? 'rocket' : 'shellB') : 'shellA', sz: 0.4, ...(flach ? { arc: 0.15, fxs: 0.8 } : {}) });
       if (camOn() && !inView(x2, y2, 0.12)) { camFern(); camTo(x2, y2, dur * 16.667 * 0.8); }
       await wait(dur * 16.667);
       lastFire = { kind: e.mode === 'gas' ? 'gas' : 'shell', t: performance.now(), a: e.a };   // F64: Einschlag-Ton beim folgenden Treffer
@@ -9142,6 +9143,11 @@ async function playEvent0(e) {
       playSound(e.mode === 'gas' ? 'gas' : e.mode === 'barrage' ? 'barrage' : TYPES[ua.type].mobile && !e.strike ? 'boom' : 'einschlagH', e.mode === 'he' && !(TYPES[ua.type].mobile && !e.strike) ? 0.8 : 0.7);   // Einzelschuss: Einschlag mit mehr Volumen und Tiefe
       if (e.mode === 'he' && G.map[e.c] && G.map[e.c][e.r] && (G.map[e.c][e.r].river || ['canal', 'sumpf', 'furt'].includes(G.map[e.c][e.r].t))) playSound('wasser', 0.6);
       if (e.mode === 'he') { boom(x2, y2, s * 0.95, 'he'); burst(x2, y2, 16, ['#5a4632', '#3d3024', '#8a7a52'], { up: 0.3, spread: 0.3 }); }
+      else if (e.mode === 'gas' && luft) {   // Luftzerleger: kleiner dumpfer Knall, Hülsensplitter, drei Gasschlieren sinken im Bogen auf die betroffenen Felder, Wolke erst beim Aufsetzen
+        const ya = y2 - luft, alt = new Set((VIS.clouds || []).map(k => k.c + ',' + k.r)), neu = (G.clouds || []).filter(k => !alt.has(k.c + ',' + k.r)), ziele = (neu.length ? neu : [{ c: e.c, r: e.r }]).slice(0, 3);
+        boom(x2, ya, s * 0.45, 'gas'); burst(x2, ya, 10, ['#6b6a60', '#8d8b80', '#4a4943'], { up: -0.05, spread: 0.22 }); playSound('einschlag', 0.25, null, { noGap: true, rate: 0.7 });
+        ziele.forEach((k, i) => { const [cx, cy] = center(k.c, k.r); fx('gas', null, x2, ya, { anchor: 'mitte', delay: i * 3, move: [cx, cy], life: 34, mul: 0.35, grow: 0.9, alpha: 0.85, fadeIn: 2, fadeOut: 0.25, flip: cx < x2 }); });
+        await wait(420); visSync('clouds'); ziele.forEach(k => { const [cx, cy] = center(k.c, k.r); boom(cx, cy, s * 0.7, 'gas'); }); }
       else if (e.mode === 'gas') { boom(x2, y2, s * 1.0, 'gas'); visSync('clouds'); }   // Wolke erst beim Einschlag
       else { boom(x2, y2, s * 0.7, 'he'); (e.cells || [[e.c, e.r], ...E.neighbors(e.c, e.r)]).slice(1).forEach(([c, r], i) => { const [bx, by] = center(c, r); boom(bx, by, s * 0.6, i % 2 ? 'dust' : 'he', 3 + i * 3); }); }
       await wait(e.mode === 'barrage' ? 420 : 260); break;
@@ -9319,13 +9325,23 @@ async function playEvent0(e) {
       await heldTitelErst(null, NAME[e.k] || '', TYPES[au.type].held ? art : art + ' klein mitte', TYPES[au.type].name); break; }
     case 'rollen': {   // F54 (2026-11-21): Sturmrollen – Anlauf, ein Aufprall mit Kampfszene (Stillstand, Rütteln, Staub, Blut), Panzer bleibt stehen; das Zurückrutschen folgt als 'rollstoss'
       const a = DU.get(e.u), d = DU.get(e.d); if (!a || !d) break; const ksz = await kampfSzene((a.x + d.x) / 2, (a.y + d.y) / 2 - L.s * 0.4);
+      { const dir0 = d.x >= a.x ? 1 : -1; playSound('whistle', 0.55, null, { rate: 0.5, noGap: true, von: unitById(e.u) }); playSound('held_dampf', 0.32, null, { noGap: true, von: unitById(e.u) });   // Punkt 14 (2026-11-24): Ankündigung – Dampfpfeife (tief gestimmte Pfeife + Zischen), weißer Dampfstoß über dem Fahrzeug
+        if (BW) for (let q = 0; q < 2; q++) fx('rauch', null, a.x - dir0 * L.s * 0.2, a.y - L.s * 1.05, { delay: q * 5, move: [a.x - dir0 * L.s * 0.35, a.y - L.s * 1.6], life: 50, mul: 0.3 + q * 0.08, grow: 1.1, rise: 0.4, alpha: 0.7, fadeIn: 2, fadeOut: 0.7, filter: 'brightness(2.2) saturate(0.2)', fuss: [a.x, a.y] });
+        await wait(420); }
       playSound('tank', 0.5); if (e.path) { a.face = d.x >= a.x ? 0 : 3; await animPath(e.u, e.path, 260); }
       a.face = d.x >= a.x ? 0 : 3; const x0 = a.x, y0 = a.y, dx = d.x - a.x, dy = d.y - a.y, t0 = performance.now(), dauer = 220 / speed;
       for (let k = 0; k < 1;) { await raf(); k = Math.min(1, (performance.now() - t0) / dauer); a.lunge = { dx: dx * 0.32 * k * k, dy: dy * 0.32 * k * k }; }   // Anlauf: beschleunigt in den Gegner
-      playSound('aufprall_rollen', 0.7); playSound('ueberrollen', 0.45); shake(9); pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.25, dy: dy * 0.25 };   // Paket G: Fahrzeug-Aufprall ohne Klingen-„Sching“ (neu_wucht hat Axt-/Schwerttöne)
+      playSound('aufprall_rollen', 0.7); playSound('ueberrollen', 0.45); shake(13); stopBis = performance.now() + 70; pose(e.d, 'getroffen', 800); d.lunge = { dx: dx * 0.32, dy: dy * 0.32 };   // Punkt 14: kräftiger – Stillstand im Treffer, stärkeres Rütteln, Ziel kippt weiter weg   // Paket G: Fahrzeug-Aufprall ohne Klingen-„Sching“ (neu_wucht hat Axt-/Schwerttöne)
       fx('truemmer', 3, d.x, d.y + L.s * 0.3, { life: 40, mul: 0.8, grow: 0.4, alpha: 0.85, fadeOut: 0.6 }); boom(d.x, d.y + L.s * 0.2, L.s * 0.5, 'dust');
+      if (BW) { heldRing((a.x + d.x) / 2 + dx * 0.15, (a.y + d.y) / 2 + dy * 0.15, 'faust', true);   // Punkt 14: gemalte Druckwelle, Brocken (Erde bzw. Schnee) und Staubwolken ringsum
+        for (let q = 0; q < 3; q++) fx(WFX() ? 'winter_schnee' : 'truemmer', WFX() ? 3 : q === 1 ? 0 : 2, d.x + (q - 1) * L.s * 0.45, d.y + L.s * 0.28, { delay: q * 3, life: 38, mul: 0.5, grow: 0.5, alpha: 0.85, fadeOut: 0.6, flip: q === 0 });
+        for (let q = 0; q < (BW >= 2 ? 5 : 3); q++) boom(d.x + Math.cos(q * 1.3) * L.s * 0.6, d.y + Math.sin(q * 1.3) * L.s * 0.3, L.s * 0.32, 'dust', q * 3); }
       trefferSpritzer(x0, y0, d, 3, istMaschine(unitById(e.d))); if (e.wand) floater(...headPos(e.d), 'Eingeklemmt!', '#ffb04a', true);
-      if (!(ksz && ksz.skip)) await wait(260); a.lunge = null; d.lunge = null; await wait(80); await kampfSzeneEnde(ksz); break; }
+      if (!(ksz && ksz.skip)) await wait(260); a.lunge = null; d.lunge = null;
+      if (BW && !(ksz && ksz.skip)) { const dir0 = d.x >= a.x ? 1 : -1; playSound('tank', 0.22, null, { noGap: true, rate: 0.8, von: unitById(e.u) });   // Punkt 14: Nachhall – Staub legt sich, Auspuffrauch, Kettenrasseln
+        fx('rauch', null, a.x - dir0 * L.s * 0.55, a.y - L.s * 0.8, { move: [a.x - dir0 * L.s * 0.9, a.y - L.s * 1.4], life: 70, mul: 0.35, grow: 1.2, rise: 0.4, alpha: 0.6, fadeIn: 3, fadeOut: 0.75, filter: 'brightness(0.6)', fuss: [a.x, a.y] });
+        boom(d.x, d.y + L.s * 0.15, L.s * 0.55, 'dust', 6); await wait(420); }
+      await wait(80); await kampfSzeneEnde(ksz); break; }
     case 'pzgranate': {   // F80: Wurf (Ausholen → Loslassen), Granate fliegt, Explosion am Panzer mit Metallkrach
       const d = DU.get(e.d); if (!d) break; const [x2, y2] = [d.x, d.y - L.s * 0.4]; const ksz = await kampfSzene((DU.get(e.u).x + d.x) / 2, (DU.get(e.u).y + d.y) / 2 - L.s * 0.4);
       await poseWurf(e.u, x2, y2); await wait(280); if (!fxImpact(x2, y2 + L.s * 0.3, L.s * 0.7)) boom(x2, y2, L.s * 0.7, 'he'); playSound('boom', 0.6); playSound('einschlag_panzer', 0.55); shake(6);
