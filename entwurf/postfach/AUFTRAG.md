@@ -22,8 +22,17 @@
 - ✓ **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder). **Teil 1 (`d135239`) und Teil 2 (`0f9e557`) erledigt. Im nächsten Teil ZUERST die Korrekturen 39–42 (Abschnitt 24.11. 19:05), dann der Rest.**
 - ✓ **Paket E – Regeln (mit Messung):** **zuerst Punkt 42 (Dampfpfeife, aus Paket D übrig, Abschnitt 24.11. 19:05)**, dann Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
 - ✓ **Paket F – Kleinkram/Listen:** **zuerst Punkte 46–47 (Abschnitt 24.11. 22:02)**, dann Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen). **Danach (nach Paket F): Bauplan für den großen Umbau schreiben, noch nichts bauen** (Etappe 3/4 in PLAN.md; Punkte 26, 43, 44, 45b einbeziehen).
+- ✓ **Paket F2 – Nachträge vor dem Bauplan (Abschnitt 24.11. 23:12, Punkt 50), klein:** Aschenwacht-Schadenszahlen kräftiger, Maßstab-Probe E1 mit kleineren Panzern/Schreitern. **Danach eigener `pa`: Bauplan für den großen Umbau** (noch nichts bauen; Maßstab E1).
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Enrico 2026-11-24 23:12): Antworten zu Paket F Abschluss – Paket F2 <<<
+**Reihenfolge:** eigener `pa` (Paket F2), danach Bericht und aufhören. Der Bauplan kommt im nächsten `pa`.
+
+- [x] **50. Antworten zu Maßstab und Schadenszahlen.**
+  - **(a) Maßstab: Enrico wählt E1** (Soldat 0,52 Feldradien, 10 Schützen / 6 Reiter / Spezial 4, lockerer verteilt; MG, Geschütze, Reiter und Helden schrumpfen im selben Verhältnis mit). Das gilt jetzt als **Ziel-Maßstab für den Bauplan** (Punkt 48 „Maßstab offen“ ist damit beantwortet, Rest bleibt: Klone erst im Code, Graben 10 Plätze, Liste skaliert/nachziehen).
+  - **(b) Panzer und Schreiter etwas mitschrumpfen** (Enrico: ja, sie wirken in E riesig, besonders der Kreuzschreiter). Erst als **Probe**: E1 mit Fahrzeugen und Schreitern **×0,9** und **×0,85** (Landkoloss, Sturmpanzer, Kreuzschreiter, Eisenknecht, übrige Schreiter), gleiche Gruppe und Kamera. Bild `entwurf/probe/massstab/vergleich_E1_fahrzeuge_grauwall_nah.jpg` (E1 heute / ×0,9 / ×0,85), dasselbe für Winterdorf. Im Bericht Empfehlung, welcher Wert; Enrico entscheidet. Fahrzeuge dürfen nicht ins Nachbarfeld ragen.
+  - **(c) Schadenszahlen der Aschenwacht kräftiger** (Enrico: ja). Heute wirken die grauen Zahlen auf Schlamm und Schnee blass neben den roten. Gewünscht: **heller Knochenweiß-Kern, dickere dunkle Kontur und derselbe Stempelrand/Schatten wie bei den roten**, damit beide Seiten gleich gut lesbar sind; Feldgrau nur als Verlauf zum Rand. Blaue Legion bei der Gelegenheit gegenprüfen. Bild wie `schadenszahlen/uebersicht.jpg` (vorher/nachher). Danach index.html bauen und einchecken (Ende von F2).
 
 # >>> JETZT (Enrico 2026-11-24 22:55): Antworten zu Paket F Teil 2/3 <<<
 **Reihenfolge:** Punkt 48 nur abhaken und in den Bauplan übernehmen; danach Punkt 17 (Schadenszahlen), dann **Punkt 49 (neue Maßstab-Probe E)**, Abschluss Paket F (index.html), dann Bauplan.

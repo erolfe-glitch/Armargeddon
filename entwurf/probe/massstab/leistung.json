@@ -1,44 +1,44 @@
 [
  {
   "karte": "grauwall",
-  "v": "D",
-  "bilder": 298,
-  "median": 6.1,
-  "p95": 9.4
+  "v": "E1",
+  "bilder": 338,
+  "median": 5.9,
+  "p95": 7.5
  },
  {
   "karte": "grauwall",
-  "v": "E1",
-  "bilder": 298,
-  "median": 6,
+  "v": "E1f90",
+  "bilder": 268,
+  "median": 6.2,
   "p95": 9.5
  },
  {
   "karte": "grauwall",
-  "v": "E2",
-  "bilder": 296,
-  "median": 5.9,
-  "p95": 8.7
- },
- {
-  "karte": "winterdorf",
-  "v": "D",
-  "bilder": 400,
-  "median": 5.7,
-  "p95": 6.3
+  "v": "E1f85",
+  "bilder": 279,
+  "median": 6,
+  "p95": 8.8
  },
  {
   "karte": "winterdorf",
   "v": "E1",
-  "bilder": 400,
+  "bilder": 399,
   "median": 5.7,
-  "p95": 6.3
+  "p95": 6.7
  },
  {
   "karte": "winterdorf",
-  "v": "E2",
+  "v": "E1f90",
+  "bilder": 400,
+  "median": 5.7,
+  "p95": 6.6
+ },
+ {
+  "karte": "winterdorf",
+  "v": "E1f85",
   "bilder": 400,
   "median": 5.6,
-  "p95": 6.4
+  "p95": 6.2
  }
 ]
