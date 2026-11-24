@@ -1,3 +1,48 @@
+## 2026-11-24 – Bauplan großer Umbau (Punkt 51 + Bauplan), nur Plan
+
+Gepusht. **Nichts gebaut.** Datei: **`entwurf/BAUPLAN_UMBAU.md`**.
+
+### Kurzfassung
+- **Feste Entscheidungen:**
+  - Maßstab E1: 10 / 6 / 4 Figuren, Soldat 0,52 Feldradien.
+  - MG, Geschütze, Reiter und Helden ×0,65; Fahrzeuge und alle Schreiter ×0,85 (Punkt 51).
+  - Klone zuerst im Code, Ruheposen als Liste vorbereitet.
+  - 10 Grabenplätze.
+  - Ringe, Balken und Marken bleiben gleich groß.
+  - Stimmen klonen erst später.
+- **Liste „skaliert von selbst / muss nachgezogen werden“** mit Aufwand S/M/L.
+  - Von selbst: Mündungen, Trefferpunkt, Kopfzeichen, Schadenszahlen, Leuchtspuren, Schatten, Figurenzahl je Stärke.
+  - Nachziehen: Figurenfaktor für Modelle mit Tiefe, Plätze 10/6/4, Klone, Graben, Absenken, figurennahe Effekte (Mündungsfeuer, Spritzer, Blut), Posen-Versatz, Nahzoom, Klickflächen.
+  - Leistung: kein Grafikumbau nötig.
+- **Etappe 4:**
+  - Schaden über Modelle: Splitter, Deckung stärker, Modelle fallen sichtbar; dazu Punkt 43 und 44.
+  - Mehr Blut, abschaltbar.
+  - Moral in Stufen wie Radious, mit Punkt 45b (Entsetzenstest).
+  - Schlachtende aus Zusammenbruch, Halten über Zeit und Rundengrenze nach Größe.
+- **Modelle:** Löwenoger neu3 (3 oder 4 Modelle, Probebild), dazu die abgenommenen Bögen aus MODELL_LISTE.
+- **Pakete U0–U9** in dieser Reihenfolge:
+  - Tag `vor-umbau`;
+  - Maßstab;
+  - Klone/Graben;
+  - Effekte;
+  - neue Bögen;
+  - Schaden über Modelle;
+  - Blut;
+  - Moral;
+  - Schlachtende;
+  - Karten abgleichen.
+
+  Jedes Paket hat einen Rückweg-Schalter. Zwischendurch messe ich nur grob (sim 100 Schlachten), der genaue Abgleich aller drei Karten kommt einmal am Ende (U9).
+
+### Fragen an Enrico
+Stehen gesammelt am Ende von `BAUPLAN_UMBAU.md`:
+1. Löwenoger 3 oder 4 Modelle?
+2. Gefallene Modelle liegen lassen oder ausblenden?
+3. Schlachtlänge 12/18/24 Runden?
+4. Halten über 2 oder 3 Runden?
+5. Wie lange bleiben die Rückweg-Schalter?
+6. Erst Sichtbares, dann Regeln – passt die Reihenfolge?
+
 ## 2026-11-24 – Paket F2: Nachträge vor dem Bauplan, Punkt 50 (`faf0f64`, Aufräumen `145240f`, `1acad4f`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Paket F2 ist abgeschlossen. Als Nächstes kommt der Bauplan für den großen Umbau (eigenes `pa`, Maßstab E1).

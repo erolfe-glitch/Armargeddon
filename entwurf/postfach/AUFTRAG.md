@@ -26,6 +26,17 @@
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 
+# >>> JETZT (Enrico 2026-11-24 23:20): Antwort zu Paket F2 – dann BAUPLAN <<<
+- [x] **51. Fahrzeuge und Schreiter beim neuen Maßstab ×0,85** (Enrico wählt die Empfehlung). Gilt für alle Kettenfahrzeuge (Landkoloss, Sturmpanzer, Bohrkoloss) und alle Schreiter inkl. Kreuzschreiter und Eisenknecht. Jetzt nichts bauen – in den Bauplan übernehmen.
+- **Nächster `pa` = Bauplan für den großen Umbau** (Etappe 3/4 in PLAN.md). **Nur planen, nichts bauen.** Datei `entwurf/BAUPLAN_UMBAU.md`, im Bericht kurz zusammenfassen. Inhalt mindestens:
+  - Ziel-Maßstab E1 + Fahrzeuge/Schreiter ×0,85, Klone erst im Code (mehrere Ruheposen vorbereiten), Helden schrumpfen mit, Graben 10 Plätze (Punkte 48–51).
+  - Liste „skaliert von selbst / muss nachgezogen werden“ mit grobem Aufwand (Punkt 48).
+  - Schaden über Modelle (Treffer kosten sichtbar Männer), mehr Blut (abschaltbar), Moral sinkt schrittweise, Schlachtende aus Punkten + Moral + Zeitgrenze (Etappe 4).
+  - Aufgehobene Regeln: Löwenmaul-Kanone/Furcht-Aura (43), neue Scharfschützen-Regel `SCHARF_NEU` (44), Furcht/Gebrüll über den Entsetzenstest (45b), Löwenoger 3 oder 4 Modelle (26).
+  - Überarbeitete Figurenbögen aus `MODELL_LISTE.md` einbauen.
+  - **Reihenfolge in Paketen** (je Paket ein `pa`, Sparregeln), was zuerst muss, was voneinander abhängt, wo gemessen wird (sim), welche Karten neu abgeglichen werden müssen, und **Rückweg** (Git-Tag vor dem Umbau).
+  - Offene Fragen an Enrico gesammelt am Ende.
+
 # >>> JETZT (Enrico 2026-11-24 23:12): Antworten zu Paket F Abschluss – Paket F2 <<<
 **Reihenfolge:** eigener `pa` (Paket F2), danach Bericht und aufhören. Der Bauplan kommt im nächsten `pa`.
 
