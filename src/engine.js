@@ -521,6 +521,7 @@ const MAPS = {
       'Wf.E...ff.EE...ggW',   // 10  
       'WWWWWWWWWWEWWWWWWW'],   // 11  Fluss läuft unten hinaus
     deko: { '8,5': 'brunnen', '13,9': 'karren' },
+    deckung: [],   // Punkt 12 (2026-11-24): vorbereitet, aber leer – Trichter in der Mitte (6,7/8,8) senkten das Konkordat von 41,5 auf 32,5 % (2 Startwerte), auf der Ostseite (14,6/14,8, Aufstellungszone der Aschenwacht) stieg es auf 84 %; Probe: KF_DECKUNG="6,7;8,8", ohne: KF_ALT=1
     strasse: [[0, 8], [4, 6], [7, 5], [8, 5], [9, 5], [11, 6], [12, 8], [14, 9], [17, 10]],
     strasse2: [[3, 0], [6, 3], [8, 5], [10, 7], [10, 9]],
     build() {
@@ -528,6 +529,8 @@ const MAPS = {
       this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, GRID_CODE[ch] || 'open')));
       for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
       for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
+      const dk = TOG.KF_DECKUNG != null ? String(TOG.KF_DECKUNG).split(';').filter(Boolean).map(x => x.split(',').map(Number)) : this.deckung;   // Messung: KF_DECKUNG="6,7;8,8"
+      if (!TOG.KF_ALT) for (const [c, r] of dk) if (T.M[c][r].t === 'open' && !T.M[c][r].road) T.M[c][r].t = 'crater';
       this.bauten.forEach((b, i) => { for (const [c, r] of b.felder) T.M[c][r].bau = i; });
       return T.M;
     } },

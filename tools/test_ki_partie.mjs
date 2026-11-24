@@ -58,6 +58,12 @@ const RUNDEN_1X = +(process.env.RUNDEN_1X || 2);   // so viele Runden mit Tempo 
 let ende = false;
 for (let i = 0; i < RUNDEN_1X && !ende; i++) { const r = await ev(zug); console.log(' ', r, JSON.stringify(await stat())); if (r === 'ende') ende = true; if (String(r).startsWith('FEHLER')) { fehler.push(r); ende = true; } }
 await ev(`__dbg.setSpeed(99)`);
+// Paket C Punkt 4 (2026-11-24): SCHNELL_BIS=n – schnell bis Runde n, danach wieder 1× messen (Hänger kommen gegen Ende); je Runde Bildzeiten, Listen und Zeit des KI-Zugs
+const SCHNELL_BIS = +(process.env.SCHNELL_BIS || 0), SPAET_1X = +(process.env.SPAET_1X || 6);
+if (SCHNELL_BIS) { for (let i = 0; i < 60 && !ende; i++) { if (await ev(`__dbg.G.turn`) >= SCHNELL_BIS) break; const r = await ev(zug); if (r === 'ende') ende = true; else if (String(r).startsWith('FEHLER')) { fehler.push(r); ende = true; } }
+  await ev(`(() => { __dbg.setSpeed(1); window._ft.length = 0; })()`);
+  for (let i = 0; i < SPAET_1X && !ende; i++) { const t0 = Date.now(); const r = await ev(zug); const dauer = Math.round((Date.now() - t0) / 1000); console.log(' ', r, dauer + ' s', JSON.stringify(await stat()), JSON.stringify(await ev(`JSON.stringify(__dbg.zaehler())`))); if (r === 'ende') ende = true; if (String(r).startsWith('FEHLER')) { fehler.push(r); ende = true; } }
+  await ev(`__dbg.setSpeed(99)`); }
 for (let i = 0; i < 60 && !ende; i++) { const r = await ev(zug); if (r === 'ende') ende = true; else if (String(r).startsWith('FEHLER')) { fehler.push(r); ende = true; } else if (i % 5 === 0) console.log(' ', r); }
 console.log('Ergebnis', await ev(`JSON.stringify({ over: __dbg.G.over, runde: __dbg.G.turn })`));
 if (!ende) fehler.push('Partie nach 60 Runden nicht zu Ende');

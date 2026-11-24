@@ -1,5 +1,6 @@
 // Aufnahmen einer Karte im unsichtbaren Chrome (2026-11-22): Übersicht (ganz heraus) und nah an der ersten eigenen Einheit im Wald.
 // Aufruf: node tools/karte_bilder.mjs <karte> [ordner=entwurf/probe/<karte>]   (Vorschau-Server auf 127.0.0.1:8765)
+// Paket C (2026-11-24): URL=… andere Seite (z. B. alter Stand), ORTE="name:c,r:zoom;…" weitere Ausschnitte (Feldmitte über __dbg.mitte), NAH=0 ohne Waldbild
 import { spawn } from 'node:child_process';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -18,7 +19,7 @@ const bild = async name => { const r = await cmd('Page.captureScreenshot', { for
 await cmd('Runtime.enable'); await cmd('Page.enable');
 await cmd('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('arm.ton','0')}catch(e){}" });
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
-await cmd('Page.navigate', { url: 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
+await cmd('Page.navigate', { url: process.env.URL || 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
 await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)); const click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
   click('neue schlacht'); await W(700); const rb = document.querySelector('input[name=map][value=${KARTE}]'); if (rb) { rb.click(); rb.dispatchEvent(new Event('change', { bubbles: true })); await W(600); }
   for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); } await W(2500); click('schlacht beginnen'); await W(4000); })()`);
@@ -28,5 +29,7 @@ console.log(await ev(`(async () => { const W = ms => new Promise(r => setTimeout
   const u = G.units.find(x => x.side === 'A' && ['forest', 'wald'].includes(G.map[x.c][x.r].t)) || G.units.find(x => x.side === 'A');
   D.pick(u.id); const d = D.du(u.id); D.camSetzen(d.x, d.y - 60, 1.4); await W(300); return u.type + ' ' + u.c + ',' + u.r + ' ' + G.map[u.c][u.r].t; })()`));
 await sleep(1200); await bild('nah_wald');
+for (const o of (process.env.ORTE || '').split(';').filter(Boolean)) { const [name, cr, z] = o.split(':'); const [c, r] = cr.split(',').map(Number);
+  await ev(`(async () => { const D = __dbg; D.pick && D.pick(null); const [x, y] = D.mitte(${c}, ${r}); D.camSetzen(x, y, ${+z || 1.4}); await new Promise(r => setTimeout(r, 400)); return true; })()`); await sleep(1500); await bild(name); console.log('  Bild', name); }
 console.log(fehler.length ? 'Fehler: ' + fehler.join(' | ') : 'keine Seitenfehler');
 ws.close(); ch.kill();

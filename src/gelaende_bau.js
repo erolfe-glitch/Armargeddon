@@ -152,15 +152,15 @@ function aufbauen(cfg, IM) {
   if (WI && IM.boden_schnee_rein_1) {
     const fass = (c, r) => { const v = hrnd(c, r, 290); return v < 0.125 ? 4 : v < 0.45 ? 2 : v < 0.75 ? 3 : 1; };
     for (const k of [2, 3, 4]) if (IM['boden_schnee_rein_' + k]) schicht('boden_schnee_rein_' + k, ctx => { for (const [c, r] of felder((t, c, r) => fass(c, r) === k)) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.22, 1, 29 * k);
-    schicht('boden_schnee', ctx => { for (const [c, r] of felder(t => ['haus', 'kapelle', 'village', 'steinbruecke'].includes(t))) jitterHex(ctx, ...hexC(c, r), 0.85); }, 0.25, 0.85, 17);
+    schicht('boden_schnee', ctx => { for (const [c, r] of felder(t => ['haus', 'kapelle', 'village', 'steinbruecke'].includes(t))) jitterHex(ctx, ...hexC(c, r), 0.85); }, 0.25, 0.55, 17);   // Punkt 1: Dorfboden weniger fleckig
   }
   if (!WI) schicht('boden_sumpf', ctx => { for (const [c, r] of felder(t => t === 'sumpf' || t === 'mud')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 53);
   // Acker im Schnee: je Feld ein ganzes Stück (gemalte Furchen kacheln nicht sauber), leicht gedreht, manche Felder quer – wie ein Flickenteppich
   if (WI && IM.boden_acker_schnee) for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
     const [x, y] = hexC(c, r), S = Math.ceil(R * 2.6), cv = document.createElement('canvas'); cv.width = cv.height = S; const a = cv.getContext('2d'), im = IM.boden_acker_schnee, k = S * 1.45 / im.width;
-    a.translate(S / 2, S / 2); a.rotate((hrnd(c, r, 260) - 0.5) * 0.7 + (hrnd(c, r, 261) < 0.3 ? Math.PI / 2 : 0)); a.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k);
+    a.translate(S / 2, S / 2); a.rotate(0.12 + (hrnd(c, r, 260) - 0.5) * 0.08); a.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k);   // Paket C Punkt 1 (2026-11-24): alle Äcker in einer Furchenrichtung – vorher je Feld anders gedreht, wirkte unruhig
     a.setTransform(1, 0, 0, 1, 0, 0); a.globalCompositeOperation = 'destination-in'; a.filter = `blur(${R * 0.1}px)`; a.fillStyle = '#fff'; a.translate(S / 2 - x, S / 2 - y); jitterHex(a, x, y, 0.88);
-    w.globalAlpha = 0.9; w.drawImage(cv, x - S / 2, y - S / 2); w.globalAlpha = 1;
+    w.globalAlpha = 0.62; w.drawImage(cv, x - S / 2, y - S / 2); w.globalAlpha = 1;   // blasser (Punkt 1)
   }
   // Großflächige Helligkeitsflecken gegen Kachelwiederholung
   for (let i = 0; i < WW * WH / (R * R) * 0.35; i++) { const x = rnd() * WW, y = rnd() * WH, rr = R * (0.8 + rnd() * 1.8), d = rnd() < 0.55;
@@ -212,7 +212,7 @@ function aufbauen(cfg, IM) {
     m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.09}px)`; m.strokeStyle = '#fff'; strokeLines(m, lines, R * 0.8); m.filter = 'none';
     l.globalCompositeOperation = 'destination-in'; l.drawImage(MK, 0, 0); l.globalCompositeOperation = 'source-over'; w.drawImage(LY, 0, 0);
   }
-  if (ROADS.length && WI && IM.strasse_matsch) { if (IM.boden_schnee_rein_1) schicht('boden_schnee', ctx => strokeLines(ctx, ROADS, R * 1.5), 0.25, 0.8, 11); strasseWinter(ROADS); }   // Wegränder zertrampelt
+  if (ROADS.length && WI && IM.strasse_matsch) { if (IM.boden_schnee_rein_1) schicht('boden_schnee', ctx => strokeLines(ctx, ROADS, R * 1.05), 0.25, 0.45, 11); strasseWinter(ROADS); }   // Wegränder zertrampelt – Punkt 1 (2026-11-24): schmaler und schwächer, Straßen ruhiger lesbar
   else if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.2) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }
   const RIVERS = ketten((c, r) => flags(c, r).river || ['canal', 'bridge', 'furt', 'eis', 'steinbruecke'].includes(terr(c, r))).filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
   if (RIVERS.length) {
