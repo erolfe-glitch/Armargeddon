@@ -1,3 +1,35 @@
+## 2026-11-24 – Paket E, Teil 4 (Zwischenstand): Entsetzenstest (Punkt 18) (`00a6778`)
+
+Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung.
+
+- **Heute (geprüft):** Sobald ein Fahrzeug oder Schreiter auf 2 Felder herankam, verlor jede gegnerische Einheit **einmal je Schlacht** 10 Moral („Fahrzeugfurcht“), ganz ohne Angriff. Das geschah 19–30 Mal je Schlacht.
+- **Neu: Entsetzenstest** – nur, wenn ein Fahrzeug oder Schreiter **angreift** (Schuss, Nahkampf, Sturmrollen, Panzerschuss; also jeder Schaden durch so einen Angreifer).
+  - **Chance durchzufallen** (zwischen 2 % und 60 %):
+    - Grundwert 8 %.
+    - Steigt mit fehlender Stärke (bis +25 %), niedriger Moral (unter 50: bis +15 %), schlechter Deckung (offen +8 %, Bronze +3 %, Gold −3 %), bei Geschützbedienungen und MG (+8 %).
+    - Sinkt bei Sturmtruppen und Reitern (−5 %), wenn die Einheit selbst Anführer ist (−10 %) und mit Anführer oder Banner daneben (−10 %, aufgepflanztes Banner 2 Felder).
+  - **Durchgefallen:** niedergehalten, Moral −8. Unter 60 Stärke weicht die Einheit zusätzlich zurück. Eine Sofortflucht gibt es nicht.
+  - **Immun:** Helden, Fahrzeuge und Schreiter, Kampfanzüge.
+  - **Anzeige:** Bestanden zeigt ein kurzes goldenes Funkeln, durchgefallen die Schreckstriche, „Entsetzt!“ und den Ruf „Koloss“. Im Logbuch steht die Chance in Prozent.
+- **Messung** (je 200 Schlachten; Konkordat alt → neu; Tests je Schlacht; durchgefallen):
+
+| Karte | Siegquote | Tests | durchgefallen |
+|---|---|---|---|
+| Grauwall | 44 → **47 %** | 41 | 25 % |
+| Sankt Ruß | 41 → **46 %** | 46 | 21 % |
+| Krähenfurt | 61 → **52 %** | 31 | 26 % |
+
+  Alle drei Karten rücken näher an 50 %, Runden und Ausfälle bleiben fast gleich. Daher eingebaut; die alte Regel gibt es mit `ENTSETZ_ALT=1`. sim.js zählt die Tests jetzt mit.
+- **Anmerkung:** Im Schnitt fällt jede vierte getestete Einheit durch. Das liegt daran, dass die meisten Tests schon angeschlagene Einheiten treffen. Eine frische Einheit in Deckung fällt nur mit 5–8 % durch. Wenn es seltener sein soll: Grundwert senken (`P.ENTSETZ_BASIS`).
+- **Vorschlag zum Vereinheitlichen:** Furcht-Aura des Kürassiers und Löwengebrüll könnten denselben Test nutzen (eigener Grundwert, dieselben Einflüsse, gleiche Anzeige). Dann wirkt die Furcht-Aura nicht mehr pauschal −4 Moral, sondern als Test je Runde mit sichtbarem Ergebnis. Das passt zu Punkt 43 (beim großen Umbau).
+
+**Noch offen in Paket E:** Punkt 2 (Aufstellungsphase) – nächster `pa`/`pw`.
+
+### Fragen an Enrico
+- Keine neuen (Scharfschützen aus Teil 2 noch offen).
+
+---
+
 ## 2026-11-24 – Paket E, Teil 3 (Zwischenstand): Feldkanone mit Panzergranate (Punkt 16) (`19a7203`)
 
 Gepusht, index.html und Ton-Pult gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Spiel == Pult für alle Einheiten.
