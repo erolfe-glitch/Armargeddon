@@ -28,8 +28,8 @@ Sprache: Konkordat Englisch, Aschenwacht Deutsch. Aschenwacht nüchtern-hart, ke
 | Niedergehalten | getroffener Trupp | keiner | „Heads down!“ · „Pinned! Can't move!“ | „Deckung!“ · „Köpfe runter!“ · „Wir liegen fest!“ | 2–3 |
 | Rückzug / Zurückweichen | weichender Trupp | keiner (nur bei Panik ersatzweise) | „Fall back!“ · „Back, back!“ | „Zurück!“ · „Absetzen!“ | 2–3 |
 | Gas (Wolke trifft) | getroffener Trupp | Husten | „Gas! Gas! Masks on!“ · „Gas!“ | „Gas! Masken auf!“ · „Gasalarm!“ | 2 |
-| Granate (Handgranaten, Panzerknacker-Granate) | Werfer | keiner | „Grenade!“ · „Fire in the hole!“ | „Granate!“ · „Wurf!“ | 2 |
-| Koloss / Entsetzenstest nicht bestanden | erschrockener Trupp | keiner | „Tank! Tank!“ · „It's a walker!“ · „God help us…“ | „Stahl kommt!“ · „Koloss!“ · „Der ist zu groß!“ | 3 |
+| Granate (Handgranaten, Panzerknacker-Granate) | Werfer | keiner | „Grenade!“ · „Fire in the hole!“ | „Granate!“ · „Handgranate!“ | 2 |
+| Koloss / Entsetzenstest nicht bestanden | erschrockener Trupp | keiner | „Tank! Tank!“ · „It's a walker!“ · „God help us…“ | „Panzer!“ · „Koloss!“ · „Der ist zu groß!“ | 3 |
 | Feuerbereitschaft / MG-Sperrfeuer gesetzt | Schütze bzw. MG | keiner (nur mit Anführer `ruf_feuer`) | „Watching the line.“ · „Ready when they come.“ | „Feuerbereit.“ · „Wir warten auf sie.“ | 2 |
 | Schwer verwundet (Stärke unter 35) | Trupp | Sanitäter `medic`/Stöhnen | „Medic!“ · „Stretcher-bearer!“ | „Sanitäter!“ · „Verwundeter hier!“ | 2 |
 | Sieg | siegende Seite | keiner (nur Siegmusik) | „The field is ours!“ · „We held!“ | „Stellung genommen!“ · „Sie weichen!“ | 2 |
