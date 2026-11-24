@@ -1,3 +1,31 @@
+## 2026-11-24 – Paket B2: Meldegänger teurer, Handgranaten als Fähigkeit, Scharfschützen-Läufe (`696ca67`)
+
+Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, Partietest fehlerfrei (Konsole sauber). Simulationen je 100 Schlachten, ein Startwert.
+
+- **Punkt 33 – Meldegänger: 40 statt 20** (Abgleich +15).
+  - Messung: `MA_melder=1` legt den Meldegänger nur zusätzlich in die Armee, der Preis spielt dabei keine Rolle. Deshalb habe ich gegen eine gleich teure Kohorte (40) getauscht, beides mit gemischter Aufstellung (`MISCHEN=1`).
+  - Grundarmee: Konkordat 63 %. Mit „1 Kohorte raus, 1 Meldegänger rein“: **44 %**. Bei 40 ist er also deutlich *weniger* wert als eine Kohorte, nicht mehr zu billig. Weiter anheben habe ich deshalb nicht.
+  - Neu bewertet wird er bei der Zusammenlegung mit dem Sanitätstrupp.
+- **Punkt 34 – Handgranaten (Aschengrenadiere):**
+  - Die feste Regel (Nahkampf ×1,25, Schuss ×0,85) ist ersetzt durch die Fähigkeit **„Handgranaten“**.
+  - **Regel:** Aktion, Abklingzeit 2 (jede zweite eigene Runde). Wurf auf einen Gegner bis 2 Felder in Sicht. Schaden 0,7 (Anzeige 7), Graben und Häuser schützen nicht. Gegen Panzer ×0,4, gegen Kampfanzüge ×0,75. Das Ziel ist niedergehalten.
+  - **Darstellung:** Bild, Ton und Ruf „Granate“ wie bisher (`poseWurf`, Ereignis `handgranate`).
+  - **KI:** wirft auf Gegner daneben oder in Graben, Haus, Ruine, Bunker oder eingegrabene Gegner (MG und Geschütze bevorzugt).
+  - **Texte und Preis:** Kurztext am Knopf, Text in der Einheitenkarte, Schlagwort „Handgranaten“, Rolle bleibt „Stoßinfanterie“. Der Preis bleibt 30 (Handgranaten +10, Abgleich −15). Die Chronik passt („geballte Handgranaten entscheiden den Kampf“).
+  - Abschalter `NOHANDGRANATE=1` = alte Regel.
+  - **Messung, Siegquote Aschenwacht (alt / Schaden 0,6 / 0,8 / gewählt 0,7):** Grauwall 52 / 57 / 58 / **60 %**, Sankt Ruß 64 / 52 / 64 / **59 %**; im Schnitt 58 / 54,5 / 61 / **59,5 %**. Bei 0,7 bleiben die Grenadiere also etwa gleich stark (±1 Punkt, Streuung bei 100 Schlachten etwa ±5). Würfe je Schlacht: Grauwall etwa 9,5, Sankt Ruß etwa 16.
+- **Punkt 32 – Scharfschützen-Läufe:**
+  - **Ursache:** Im Posenbogen berühren sich die kniende Schusspose (oben rechts) und die fallende Pose (unten rechts). Das Schneidewerkzeug trennte sie mit einer **senkrechten** Naht, obwohl sie **übereinander** stehen. Der lange Lauf landete dadurch bei der fallenden Figur; dort sah man oben links ein fremdes Gewehrstück.
+  - **Behoben:** neue Option `quer` in figure_cut.py (waagerechte Naht). Spielbilder neu geschnitten, Plastik-Karte neu gerechnet.
+  - **Bilder:** `entwurf/probe/scharfschuetze/vorher_posen.jpg` und `nachher_posen.jpg` (jede Pose), dazu der Bogen.
+  - Der Grundbogen (liegend, kniend, gehend) war schon vollständig. Die Pirschjäger habe ich mitgeprüft (`pirschjaeger_teile.jpg`): alle Läufe ganz.
+- **Korrektur zum Bericht Paket B:** Der Sturmlauf reicht bis **4** Felder (`P.RUSH` 4), nicht 3.
+
+### Fragen an Enrico
+- Keine.
+
+---
+
 ## 2026-11-24 – Paket B: schnelle Kleinigkeiten (Punkte 5, 6, 7 Teil 1, 8, 15, 20, 21, 24) (`47d616a`, `ef3654e`)
 
 Gepusht, index.html gebaut. Tests: `test_regeln` (mit neuer Prüfung Lichtkreis) und `test_kommentare` in Ordnung; Partietest bis auf eine schwankende Blickrichtungs-Prüfung (siehe unten); Kamera-Probe im Browser ok. Simulationen je 100 Schlachten, Grauwall, ein Startwert.

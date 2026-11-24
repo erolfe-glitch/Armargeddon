@@ -15,6 +15,7 @@
 - ✓ **Paket A3 – Chroniken-Texte statt „Im echten Krieg“ (Abschnitt 24.11. 15:20, Punkt 28) + Punkt 29 (Ton-Pult: erstes Kreuz nimmt Werks-Paket mit).**
 - ✓ **Paket A4 – Gelände-Chroniken + Rest (Abschnitt 24.11. 15:30, Punkte 29–31).**
 - ✓ **Paket B – schnelle Kleinigkeiten:** Punkte 5 (Spuren nicht auf Straßen), 6 (Zielmarke Knochenweiß am Boden), 15 (Leuchtsignal: Minen sichtbar aufdecken), 20 (Heil-Pluszeichen), 21 (Granaten in Nahkampf-Animation – erst klären), 24 (Kamera zurück), 7 nur Teil 1 (Meldegänger Abklingzeit 2), 8 (Sturmlauf: vorbeidrücken, Minen), 32 (Scharfschützen-Läufe abgeschnitten).
+- ✓ **Paket B2 – Rest aus Paket B + Antworten (Abschnitt 24.11. 16:35):** Punkte 32 (Scharfschützen-Läufe, war in Paket B nicht dabei), 33 (Meldegänger teurer), 34 (Handgranaten als Fähigkeit).
 - **Paket C – Krähenfurt:** Punkte 4 (Ruckler messen + beheben, Langzeitlauf erlaubt, max. 15 Min.), 1 (Karte aufräumen), 12 (Deckung Mitte), 13 (Flaggen sichtbar).
 - **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder).
 - **Paket E – Regeln (mit Messung):** Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
@@ -22,9 +23,17 @@
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 
+# >>> JETZT (Enrico 2026-11-24 16:35): Antworten zum Bericht Paket B <<<
+**Reihenfolge:** Paket B2, eigener `pa`. Punkt 32 steht im Abschnitt 16:05 darunter (wurde in Paket B nicht gemacht).
+
+- [x] **33. Meldegänger teurer.** Enrico: Preis jetzt erhöhen. Vorschlag 40 statt 20 (über ADJ). Nachmessen mit `MA_melder=1`, 100 Schlachten, ein Startwert: Ziel ist, dass ein Meldegänger nicht mehr als etwa +10 Punkte Siegquote bringt; sonst weiter anheben (in 5er-Schritten, höchstens 60). Endgültig neu bewertet wird er bei der Zusammenlegung mit dem Sanitätstrupp (Punkt 7 Teil 2).
+- [x] **34. Handgranaten als aktive Fähigkeit statt fester Regel.** Enrico: Die passive Regel `granatSturm` der Aschengrenadiere (Nahkampf ×1,25, Schuss ×0,85) **ersetzen** durch eine Fähigkeit **„Handgranaten“** (Aktion, **Abklingzeit 2 eigene Runden**): auf ein Feindfeld daneben oder bis 1 Feld weit, Schaden etwa wie der bisherige Granaten-Bonus im Nahkampf (Wert so wählen, dass die Grenadiere in der Summe etwa gleich stark bleiben), Ziel niedergehalten. Der Schuss-Malus ×0,85 entfällt. Granatwurf-Bild/Ton wie bisher (`handgranate`, `poseWurf` ist schon gebaut). KI: abilPlan wirft, wenn ein Gegner daneben steht oder im Graben/Haus sitzt. Keine Zier-Granaten für andere Fußtruppen. Text, Schlagwort, Kosten (costParts) und Chroniken-Bezug prüfen. Messung 100 Schlachten Grauwall + Sankt Ruß, ein Startwert, Siegquote vorher/nachher; Sim-Abschalter `NOHANDGRANATE`.
+
+Bericht kurz, im Chat „– pb“.
+
 # >>> JETZT (Enrico 2026-11-24 16:05): Spieltest-Nachtrag, gehört zu Paket B <<<
 
-- [ ] **32. Konkordat-Scharfschützen: Gewehrläufe abgeschnitten (Spieltest 24.11.).** Beim Anlegen/Schießen fehlt im Spiel ein großer Teil des Laufs. Bögen `konkordat_scharfschuetze.png` und `konkordat_scharfschuetze_posen.png` (lange Läufe ragen weit nach rechts, teils über die Nachbarpose). Prüfen, wo der Lauf verloren geht (Nahtschnitt in figure_cut.py, Kastenbreite/FIGW, Beschnitt beim Zeichnen) und so beheben, dass der ganze Lauf bleibt (z. B. wie `UNTEN_LINKS` beim liegenden Schützen oder Naht neu legen). Vorher/Nachher-Bild jeder Pose. Auch die Aschenwacht-Pirschjäger kurz mitprüfen.
+- [x] **32. Konkordat-Scharfschützen: Gewehrläufe abgeschnitten (Spieltest 24.11.).** Beim Anlegen/Schießen fehlt im Spiel ein großer Teil des Laufs. Bögen `konkordat_scharfschuetze.png` und `konkordat_scharfschuetze_posen.png` (lange Läufe ragen weit nach rechts, teils über die Nachbarpose). Prüfen, wo der Lauf verloren geht (Nahtschnitt in figure_cut.py, Kastenbreite/FIGW, Beschnitt beim Zeichnen) und so beheben, dass der ganze Lauf bleibt (z. B. wie `UNTEN_LINKS` beim liegenden Schützen oder Naht neu legen). Vorher/Nachher-Bild jeder Pose. Auch die Aschenwacht-Pirschjäger kurz mitprüfen.
 
 # >>> JETZT (Enrico 2026-11-24 15:30): Gelände-Chroniken, Ton-Pult-Rest, „1 Felder“ <<<
 **Reihenfolge:** Paket A4, eigener `pa`, klein. Keine Regeländerung, keine Simulation.
