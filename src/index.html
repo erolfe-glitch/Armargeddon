@@ -144,7 +144,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .det { display: grid; grid-template-columns: auto 1fr; gap: 14px; text-align: left; align-items: start; }
 .det canvas { width: 120px; height: 120px; border: 3px solid var(--edge-d); border-radius: 8px; }
 .det h3 { margin: 0; font: 700 24px var(--display); letter-spacing: .05em; text-transform: uppercase; }
-.det p { margin: 6px 0 0; font-size: 14px; } .det .real { color: #d9d2bd; border-top: 2px dashed var(--edge); padding-top: 8px; margin-top: 10px; }
+.det p { margin: 6px 0 0; font-size: 14px; } .chronik > b { display: block; } .chronik .quelle { display: block; font-size: 0.82em; font-style: italic; opacity: 0.8; margin: 2px 0 3px; } .det .real { color: #d9d2bd; border-top: 2px dashed var(--edge); padding-top: 8px; margin-top: 10px; }
 .det b { color: var(--gold); }
 
 @media (max-width: 1000px) { .meter { width: 112px; } .wind span { display: none; } }
@@ -1301,7 +1301,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
         <p class="costline" id="detCost"></p>
         <p><b>Kann:</b> <span id="detCan"></span></p>
         <p id="detOff"><b>Anführer:</b> Angriff ×1,15 und weniger Moralverlust für eigene Einheiten bis 2 Felder entfernt. Sammelt Fliehende. Befehle an Truppen im Umkreis von 1 Feld, höchstens 3 je Schlacht: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ bzw. „Sturmbefehl“ (×1,25).</p>
-        <p class="real"><b>Im echten Krieg:</b> <span id="detReal"></span></p>
+        <p class="real chronik"><b>Aus den Chroniken</b><i class="quelle" id="detQuelle"></i><span id="detReal"></span></p>
       </div>
     </div>
     <div class="startrow" style="justify-content:center;margin-top:14px"><button class="tbtn" id="closeDetail">Schließen</button></div>

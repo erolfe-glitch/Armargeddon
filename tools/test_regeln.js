@@ -27,7 +27,9 @@ for (const a of Object.keys(T)) for (const d of Object.keys(T)) {
   for (const r of [true, false]) { const f = E.faktor(a, d, r); if (!Number.isFinite(f.f)) fehler.push(`faktor ${a} → ${d} (${r ? 'Fern' : 'Nah'}): ${f.f}`); }
 }
 for (const [k, t] of Object.entries(T)) {
-  if (!t.can || !t.real) fehler.push(`${k}: Text „can“ oder „real“ fehlt`);
+  if (!t.can || !t.chronik || !t.chronik.quelle || !t.chronik.text) fehler.push(`${k}: Text „can“ oder Chroniken-Text (quelle, text) fehlt`);
+  else if (t.chronik.text.length > 280) fehler.push(`${k}: Chroniken-Text länger als 280 Zeichen`);
+  if (t.real) fehler.push(`${k}: alter Text „real“ (Weltkrieg) noch vorhanden`);
   const c = E.costParts(k).total; if (!Number.isFinite(c) || c <= 0) fehler.push(`${k}: Preis ${c}`);
   const m = E.medaillen(k); if (!m || !['gold', 'silber', 'bronze', 'keine'].includes(m.nah)) fehler.push(`${k}: Medaillen ${JSON.stringify(m)}`);
 }

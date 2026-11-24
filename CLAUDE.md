@@ -1,13 +1,13 @@
 # Armargeddon – Hinweise für die Weiterarbeit
 
 ## Projektziel
-Rundenbasiertes Hexfeld-Strategiespiel im Browser, angelehnt an den Ersten Weltkrieg, aber in einer eigenen Welt. **Reiner Spielspaß, kein Lernspiel.** Die Texte „Im echten Krieg“ sind Beiwerk, keine Lehrinhalte.
+Rundenbasiertes Hexfeld-Strategiespiel im Browser im Stil des Grabenkriegs, in einer eigenen Welt (Weltbibel `entwurf/welt/weltbibel.md`: Welt „Morn“, Kontinent „Varnen“). **Reiner Spielspaß, kein Lernspiel.** Die Texte „Aus den Chroniken“ sind Beiwerk.
 
 ## Feste Regeln
 - **Postfach (seit 2026-11-20):** Enrico tippt Kürzel. **pa** = `entwurf/postfach/AUFTRAG.md` frisch lesen und abarbeiten, **pw** = mit dem nächsten offenen Schritt daraus weitermachen. Teilschritte einzeln committen und pushen; Bericht oben in `entwurf/postfach/BERICHT.md` (mit Commits, Screenshot-Pfaden, „Fragen an Enrico“), im Chat nur „Bericht im Postfach – pb“. AUFTRAG.md nur abhaken, nicht ändern. Einzelheiten: `entwurf/postfach/LIESMICH.md`.
 - **Diese Dateien NIE komplett lesen** (eingebettete Bilder/Töne, mehrere MB): `src/art.js`, `src/fx.js`, `src/sound.js`, `src/uiart.js`, `src/uipanel.js`, `src/titlebg.js`, `src/gelaende.js`, `src/fxneu.js`, `src/figsplastik.js`, `src/fonts.css`. Nur gezielt mit Grep nach Schlüsseln suchen oder mit offset/limit kleine Stücke lesen.
 - Sprache in Spiel und Texten: Deutsch. Sachlicher Ton, Krieg nicht verherrlichen. Blut darf deutlich sein, bleibt aber abschaltbar.
-- Eigene Welt, keine fremden Marken oder Figuren (kein Warhammer o. ä.). Jede Einheit hat einen Text „Im echten Krieg“ mit belegbaren Fakten zum Ersten Weltkrieg.
+- Eigene Welt, keine fremden Marken oder Figuren (kein Warhammer o. ä.). Eigene Welt (Weltbibel `entwurf/welt/weltbibel.md`): jede Einheit hat einen Text „Aus den Chroniken“ (2 Sätze, höchstens 280 Zeichen, mit Quellenzeile; in TYPES `chronik: { quelle, text }`, ui.js `chronikHtml`), passend zu dem, was sie im Spiel kann. Keine echten Länder-, Orts- oder Personennamen.
 - Nur in `src/` ändern, danach `python3 tools/build.py`. `index.html` im Hauptordner ist erzeugt und wird mit eingecheckt (GitHub Pages) – **seit 2026-11-22 (H2) nur am Ende eines Pakets**, Teilschritte ohne `index.html` committen (Git-Ordner war 3,5 GB).
 - Nach jeder Regeländerung `node tools/sim.js 200` laufen lassen und Siegquote, Dauer und Verluste je Typ berichten. Sehr empfindlich: eine Einheit mehr oder weniger verschiebt die Quote um 20–40 Punkte.
 - **Zielgeräte: nur PC und große Touch-Displays (Digitalboards), ab 1280 px Breite.** Handy wird nicht mehr optimiert und nicht mehr getestet; vorhandenen Handy-Code nicht extra ausbauen, nur nicht mehr pflegen.

@@ -16,10 +16,10 @@ const kat = t => { const T = E.TYPES[t];
   if (T.cls === 'art') return 'Artillerie';
   if (['kohorte', 'grenadier', 'mahlwerk', 'sense', 'reiter', 'lanzeD', 'feldscher', 'heiler', 'melder'].includes(t)) return 'Standard';   // Linientruppen
   return 'Spezial'; };
-const shop = E.SHOP.A.map(t => { const T = E.TYPES[t]; return { t, name: T.name, kosten: E.COST[t], kat: kat(t), tags: (T.sp || []).slice(0, 3), text: T.can, real: T.real, bild: bild(t), mech: E.isMech(t),
+const shop = E.SHOP.A.map(t => { const T = E.TYPES[t]; return { t, name: T.name, kosten: E.COST[t], kat: kat(t), tags: (T.sp || []).slice(0, 3), text: T.can, real: T.chronik && T.chronik.text, bild: bild(t), mech: E.isMech(t),
   werte: { Angriff: T.atk, Abwehr: T.def, Moral: T.mor, Zug: T.mv, Reichweite: T.rng } }; });
 const k = E.TYPES.kohorte;
-const einheit = { name: k.name, seite: 'Konkordat', feld: 'Schützengraben', leben: 100, moral: 70, moralMax: 70, ap: 2, zug: k.mv, rng: k.rng, tags: k.sp, text: k.can, real: k.real, bild: bild('kohorte'),
+const einheit = { name: k.name, seite: 'Konkordat', feld: 'Schützengraben', leben: 100, moral: 70, moralMax: 70, ap: 2, zug: k.mv, rng: k.rng, tags: k.sp, text: k.can, real: k.chronik && k.chronik.text, bild: bild('kohorte'),
   werte: { Angriff: k.atk, Abwehr: k.def, Moral: k.mor, Zug: k.mv, Reichweite: k.rng }, deckung: 'Gold (Graben)', zustand: ['bereit'],
   knoepfe: [['zielen', 'Beschuss', 1], ['nahkampf', 'Nahkampf', 2], ['auge', 'Feuerbereitschaft', 2], ['spitzhacke', 'Eingraben', 1], ['drehpfeil', 'Nach links drehen', 0], ['drehpfeil', 'Nach rechts drehen', 0, 1], ['haken', 'Fertig', 0]] };
 const out = `// Erzeugt von tools/entwurf_bedienfeld.js – Daten für entwurf/probe/bedienfeld.html (Entwurf, nicht im Spiel)\nwindow.ENTWURF = ${JSON.stringify({ shop, einheit, punkte: 140 }, null, 1)};\n`;

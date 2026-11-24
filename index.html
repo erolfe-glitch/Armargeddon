@@ -151,7 +151,7 @@ button:focus-visible, label:focus-within { outline: 2px solid var(--gold); outli
 .det { display: grid; grid-template-columns: auto 1fr; gap: 14px; text-align: left; align-items: start; }
 .det canvas { width: 120px; height: 120px; border: 3px solid var(--edge-d); border-radius: 8px; }
 .det h3 { margin: 0; font: 700 24px var(--display); letter-spacing: .05em; text-transform: uppercase; }
-.det p { margin: 6px 0 0; font-size: 14px; } .det .real { color: #d9d2bd; border-top: 2px dashed var(--edge); padding-top: 8px; margin-top: 10px; }
+.det p { margin: 6px 0 0; font-size: 14px; } .chronik > b { display: block; } .chronik .quelle { display: block; font-size: 0.82em; font-style: italic; opacity: 0.8; margin: 2px 0 3px; } .det .real { color: #d9d2bd; border-top: 2px dashed var(--edge); padding-top: 8px; margin-top: 10px; }
 .det b { color: var(--gold); }
 
 @media (max-width: 1000px) { .meter { width: 112px; } .wind span { display: none; } }
@@ -1308,7 +1308,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
         <p class="costline" id="detCost"></p>
         <p><b>Kann:</b> <span id="detCan"></span></p>
         <p id="detOff"><b>Anführer:</b> Angriff ×1,15 und weniger Moralverlust für eigene Einheiten bis 2 Felder entfernt. Sammelt Fliehende. Befehle an Truppen im Umkreis von 1 Feld, höchstens 3 je Schlacht: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ bzw. „Sturmbefehl“ (×1,25).</p>
-        <p class="real"><b>Im echten Krieg:</b> <span id="detReal"></span></p>
+        <p class="real chronik"><b>Aus den Chroniken</b><i class="quelle" id="detQuelle"></i><span id="detReal"></span></p>
       </div>
     </div>
     <div class="startrow" style="justify-content:center;margin-top:14px"><button class="tbtn" id="closeDetail">Schließen</button></div>
@@ -1421,152 +1421,152 @@ const SIDES = {
 const TYPES = {
   kohorte: { side: 'A', name: 'Schützenkohorte', cls: 'inf', dig: true, atk: 4, def: 4, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schießt 2 Felder weit, stürmt Gräben im Nahkampf, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).',
-    real: 'Im Ersten Weltkrieg trugen Infanteristen oft rund 30 kg Ausrüstung in den Angriff, quer durch Schlamm und Trichter.' },
+    chronik: { quelle: 'Feldtagebuch eines Korporals, Grauwall, 115 n. G.', text: 'Wir graben uns tief in den zähen Schlamm, halten den Feind auf mittlere Distanz nieder und zerschneiden im Dunkeln seinen Stacheldraht. Wenn der Pfiff ertönt, bleibt nur der Sprung in den gegnerischen Graben mit aufgepflanztem Bajonett.' } },
   mahlwerk: { side: 'A', name: 'Mahlwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
     can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (Aktion und alle Bewegungspunkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
-    real: 'Maschinengewehre wie das britische Vickers oder das deutsche MG 08 schossen rund 450 bis 500 Schuss pro Minute.' },
+    chronik: { quelle: 'Ausbildungsvorschrift der Kronarmee, Punkt 14', text: 'Das schwere Maschinengewehr beherrscht weite Abschnitte des Niemandslands, doch im Marsch schweigt die Waffe. Erst wenn der Dreifuß fest im Schlamm verankert ist, beginnt das unaufhörliche Hämmern.' } },
   haubitze: { side: 'A', name: 'Donnerrohr-Batterie', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 2,
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas; gegen Fahrzeuge und Schreiter nur ×0,5. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
-    real: 'Artillerie verursachte im Ersten Weltkrieg die meisten Verluste, nach gängigen Schätzungen deutlich mehr als die Hälfte.' },
+    chronik: { quelle: 'Richtlinien für Artilleriebeobachter, Sankt Ruß', text: 'Die Bedienungen der Donnerrohre sehen den Feind nie, sondern feuern in hohem Bogen über die eigenen Gräben hinweg. Solange vorn ein Späher das Ziel meldet, schlagen ihre Granaten erbarmungslos hinter jeder Deckung ein.' } },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', abil: 'rollen', keinNah: true, zweit: { name: 'Seiten-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben. Kanone vorn, Seiten-MG (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus (Aktion und alle Bewegung, höchstens alle 3 Runden). Selten Panne: 3 Runden aus.',
-    real: 'Die ersten Panzer fuhren im September 1916 an der Somme. Sie waren kaum schneller als ein Fußgänger und fielen oft durch Pannen aus.' },
+    chronik: { quelle: 'Verhörprotokoll eines Gefangenen der Aschenwacht', text: 'Gewehrkugeln und MG-Garben prallen funkenschlagend an der dicken Stahlhaut ab, und Giftgas dringt nicht durch die Luken. Unaufhaltsam walzt der Koloss Stacheldraht nieder und überquert selbst breite Gräben unter ohrenbetäubendem Rasseln.' } },
   sturmpz: { side: 'D', name: 'Sturmpanzer', cls: 'walker', abil: 'rollen', keinNah: true, broadside: true, zweit: { name: 'Bord-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben, selten Panne. Breitseite: nach dem ersten Schuss ein zweiter auf ein anderes Ziel bis 2 Felder, beide ×0,6 (eine Aktion). Bord-MG der Bordschützen (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus (Aktion und alle Bewegung, höchstens alle 3 Runden).',
-    real: 'Der deutsche A7V hatte 18 Mann Besatzung, eine Kanone und sechs Maschinengewehre ringsum. Gebaut wurden nur 20 Stück; bei Villers-Bretonneux trafen im April 1918 erstmals Panzer auf Panzer.' },
+    chronik: { quelle: 'Werksbericht der Hochöfen von Karden-Ost', text: 'Gas dringt nicht durch seine Luken, Gewehrkugeln prallen ab, und selbst Stacheldraht oder Gräben halten den Koloss nur selten mit einer Panne auf. Im Gefecht feuert er verheerende Breitseiten gleichzeitig auf zwei Ziele.' } },
   reiter: { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
-    real: 'Die Kavallerie wartete an der Westfront jahrelang auf den Durchbruch. Gegen Maschinengewehre und Stacheldraht war sie fast machtlos.' },
+    chronik: { quelle: 'Brief eines Leutnants aus Krähenfurt', text: 'Wo der Boden trägt, preschen die Schwadronen schneller vor als jede andere Truppe des Westlichen Konvents. Gerät eine feindliche Linie ins Wanken, verwandelt ihr wuchtiger Lanzenangriff den Rückzug in ein Gemetzel.' } },
   grenadier: { side: 'D', name: 'Aschengrenadiere', cls: 'inf', dig: true, atk: 4, def: 4, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schießt 2 Felder weit, hält Gräben und Ruinen, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).',
-    real: 'Gräben verliefen im Zickzack. So konnte ein eingedrungener Gegner nicht den ganzen Graben entlang schießen.' },
+    chronik: { quelle: 'Feldpostbrief aus den Gräben vor Grauwall', text: 'Mit Spaten, Drahtzangen und Gewehren krallen wir uns in zerschossene Gräben und Ruinen fest. Kommt der Feind auf Sprungweite heran, entscheiden geballte Handgranaten den Kampf im Schlamm.' } },
   sense: { side: 'D', name: 'Sensenwerk-Trupp', cls: 'mg', atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 5, mg: true,
     can: 'Maschinengewehr, 3 Felder weit. Wer zieht, schießt nicht. Sperrfeuer (Aktion und alle Bewegungspunkte, aufgebaut und unbewegt): schießt in der gegnerischen Runde bis zu 2-mal auf Gegner, die sich im Schussfeld im Offenen bewegen.',
-    real: 'Am ersten Tag der Somme-Schlacht, dem 1. Juli 1916, hatte die britische Armee rund 57.000 Tote und Verwundete, sehr viele durch MG-Feuer.' },
+    chronik: { quelle: 'Ausbildungsvorschrift der Aschenwacht, Abschnitt 9', text: 'Solange das schwere Sensenwerk-MG geschleppt wird, bleibt sein Lauf kalt und stumm. Erst fest im Dreck verankert, mäht sein Dauerfeuer auf weite Distanz alles nieder.' } },
   geschuetz: { side: 'D', name: 'Grabengeschütz', cls: 'art', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 6, fs: 5, gas: 1,
     can: 'Mittlere Artillerie. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Steilfeuer trifft Fahrzeuge und Schreiter nur ×0,5, der direkte Schuss bis 3 Felder dagegen ×2,5. Aufgeprotzt zieht es 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
-    real: 'Bei Flesquières schossen deutsche Feldgeschütze am 20. November 1917 im direkten Richten zahlreiche britische Panzer ab.' },
+    chronik: { quelle: 'Artillerie-Merkblatt, Frontabschnitt Sankt Ruß', text: 'Hinter der eigenen Linie eingegraben, feuern die Grabengeschütze im Steilfeuer über die Köpfe unserer Truppen hinweg. Sobald ein Späher vorn ein Ziel meldet, schlagen die Granaten ein.' } },
   sturm: { side: 'D', name: 'Sturmbrecher', cls: 'storm', cutter: true, abil: 'pzgranate', atk: 6, def: 5, mor: 9, mv: 3, rng: 0, fs: 0,
     can: 'Sickert durch: Gegner halten ihn nicht auf. Schneidet Draht vom Nachbarfeld aus (Aktion). Handgranaten heben den Grabenschutz auf. Panzergranate (Aktion, alle 2 Runden): 1–2 Felder gegen Fahrzeuge und Schreiter.',
-    real: 'Deutsche Stoßtrupps griffen ab 1916 in kleinen Gruppen mit Handgranaten an und umgingen starke Stellungen.' },
+    chronik: { quelle: 'Tagebuch eines Stoßtruppführers, 115 n. G.', text: 'Wie Schatten sickern die Sturmbrecher durch Lücken in der feindlichen Front und zerschneiden im Rücken der Verteidiger den Draht. Stählerne Kolosse knacken sie aus nächster Nähe mit schweren Panzergranaten.' } },
   brand: { side: 'D', name: 'Brandwerfer', cls: 'flame', atk: 2, def: 3, mor: 7, mv: 2, rng: 2, fs: 7, flame: true,
     can: 'Flammenstrahl bis 2 Felder weit (F81), auch in Feindberührung auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Das Feld brennt bis zum nächsten eigenen Zug: wer dort steht oder hineinzieht, nimmt Feuerschaden, Draht verbrennt. Wird er beschossen, trifft es ihn ×1,5.',
-    real: 'Flammenwerfer setzte die deutsche Armee ab 1915 ein, etwa bei Hooge in Flandern. Sie reichten meist nur rund 20 Meter weit.' }
+    chronik: { quelle: 'Verhörprotokoll eines Gefangenen des Westlichen Konvents', text: 'Ihr brennendes Öl kriecht bis in die tiefsten Unterstände, wo weder Sandsack noch Beton Schutz bieten. Der Gestank verbrannten Fleisches raubt ganzen Zügen sofort den letzten Rest an Kampfmoral.' } }
 };
 
 Object.assign(TYPES, {
   feldscher: { side: 'A', name: 'Feldscher', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
     can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +15 und Moral +10, heilt auch Vergiftung. Kaum Kampfkraft.',
-    real: 'Sanitäter und Krankenträger holten Verwundete oft unter Beschuss aus dem Niemandsland. Viele von ihnen fielen dabei selbst.' },
+    chronik: { quelle: 'Lazarettbericht hinter der Front, 116 n. G.', text: 'Mit blutverschmierter Schürze und Gegengift-Ampullen kriecht der Feldscher von Trichter zu Trichter, statt selbst zur Waffe zu greifen. Er kann sich im Gefecht kaum wehren, rettet aber verätzte und verwundete Kameraden dicht neben sich vor dem sicheren Tod.' } },
   moerser: { side: 'A', name: 'Grabenmörser', cls: 'art', fig: 'mortar', mobile: true, atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
     can: 'Mörser: leichte Steilfeuerwaffe, 4 Felder weit. Sprenggranaten oder Sperrfeuer; gegen Fahrzeuge und Schreiter nur ×0,5. Kann in derselben Runde ziehen und feuern.',
-    real: 'Der britische Stokes-Mörser von 1915 war so leicht, dass ihn wenige Männer in den vordersten Graben tragen konnten.' },
+    chronik: { quelle: 'Soldatenlied aus den Gräben vor Grauwall', text: 'Steil in den grauen Himmel geschossen, fallen die leichten Mörsergranaten auf mittlere Entfernung direkt in feindliche Deckungen. Ob gezielter Sprengschlag oder zermürbendes Sperrfeuer – kein Graben bleibt lange verschont.' } },
   heiler: { side: 'D', name: 'Aschenpfleger', cls: 'medic', atk: 1, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
     can: 'Versorgt statt eines Angriffs eine eigene Nachbareinheit: Stärke +15 und Moral +10, heilt auch Vergiftung. Kaum Kampfkraft.',
-    real: 'Auf den Verbandplätzen direkt hinter der Front wurden Verwundete zuerst versorgt und nach Dringlichkeit sortiert.' },
+    chronik: { quelle: 'Predigt der Grauen Liturgie im Feldlazarett', text: 'Ohne nennenswerte Bewaffnung folgen die Aschenpfleger den Stoßtrupps direkt in den Granathagel. Statt selbst zu kämpfen, verbinden sie Verwundete und spülen Lungen voller Giftgas aus.' } },
   minenwerfer: { side: 'D', name: 'Minenwerfer', cls: 'art', fig: 'mortar', mobile: true, noMoveFire: true, heMul: 1.5, breaker: true, atk: 0, def: 3, mor: 6, mv: 2, rng: 4, fs: 4, gas: 0,
     can: 'Mörser: schwere Wurfminen, 4 Felder weit. Sprenggranaten ×1,5 (gegen Fahrzeuge und Schreiter nur halb) und zerstören Draht und Barrikaden im Zielfeld; auch Sperrfeuer. Ziehen oder feuern, nicht beides in einer Runde.',
-    real: 'Deutsche Minenwerfer schossen schwere Sprengladungen im steilen Bogen in die gegnerischen Gräben.' }
+    chronik: { quelle: 'Grabenlied aus den Trichtern vor Grauwall', text: 'Schwerfällig taumeln die dicken Wurfminen durch den grauen Himmel, ehe sie mit dumpfem Grollen einschlagen. Ihre Druckwelle zerreißt Stacheldraht sowie Barrikaden oder legt ein dichtes Sperrfeuer über das Feld.' } }
 });
 
 // Weitere Truppen für die Armee-Auswahl und den Nachschub
 Object.assign(TYPES, {
   lanzeD: { side: 'D', name: 'Sprenglanzen-Reiter', cls: 'cav', blastLance: true, atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Der erste Nahkampfangriff der Schlacht mit der Sprenglanze ×1,5, danach normale Lanze. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
-    real: 'Sprenglanzen gab es im Ersten Weltkrieg nicht. Die deutsche Kavallerie trug bis Kriegsende Stahlrohrlanzen von rund 3,2 Metern Länge.' },
+    chronik: { quelle: 'Brief eines Rittmeisters, Krähenfurt, 116 n. G.', text: 'Auf gepanzerten Rössern preschen diese Reiter schneller über gefrorenen Boden als jede Infanterie. Beim ersten Aufprall zündet die Sprenglanze an der Spitze und reißt eine blutige Bresche in den Feind.' } },
   scharf: { side: 'A', name: 'Scharfschütze', cls: 'inf', fig: 'sniper', pin: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 4, fs: 3,
     can: 'Schießt 4 Felder weit. Jeder Treffer hält das Ziel nieder. Im Nahkampf fast wehrlos.',
-    real: 'Scharfschützen mit Zielfernrohr lauerten oft stundenlang getarnt. Schon ein kurz über die Grabenkante gehobener Kopf konnte tödlich sein.' },
+    chronik: { quelle: 'Befehl an alle Offiziere im Frontabschnitt', text: 'Aus verborgenen Nestern nimmt der Scharfschütze Ziele auf weite Distanz ins Visier. Schon ein einziger Schuss zwingt ganze Trupps in den Dreck und lässt niemanden mehr den Kopf heben.' } },
   melder: { side: 'A', name: 'Meldegänger mit Hund', cls: 'inf', fig: 'dog', courier: true, atk: 2, def: 2, mor: 7, mv: 5, rng: 0, fs: 0,
     can: 'Schnell (5 Felder). Befehl überbringen: einmal je Runde bekommt eine eigene Einheit bis 3 Felder +2 Bewegungspunkte, zum Beispiel für einen weiteren Zug. Kaum Kampfkraft.',
-    real: 'Weil Telefonleitungen im Trommelfeuer ständig rissen, überbrachten Meldegänger, Brieftauben und Meldehunde die Nachrichten.' },
+    chronik: { quelle: 'Tagesbefehl des Stabs, 114 n. G.', text: 'Wo Feldleitungen im Trommelfeuer zerreißen, rasen Meldegänger und abgerichtete Hunde durch Granattrichter und Rauch. Ihr Eintreffen treibt erschöpfte Einheiten sofort zu einem weiteren Gewaltmarsch an.' } },
   pionier: { side: 'A', name: 'Graben-Pioniere', cls: 'inf', cutter: true, fig: 'sapper', sapper: true, recover: true, abil: 'charge', atk: 4, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Haftladung an ein Nachbarfeld (Aktion, alle 2 Runden): schwerer Schaden, doppelt gegen Kolosse (dazu 50 % Panne); Bunker und Barrikaden werden Trichter, Draht wird zerrissen. Bergt festgefahrene Fahrzeuge.',
-    real: 'Pioniere schnitten nachts Gassen in den Draht, legten Sprengladungen und gruben Stollen unter die gegnerischen Linien.' },
+    chronik: { quelle: 'Aus dem Nachlass eines Pioniers', text: 'Mit schweren Zangen bahnen sie Gassen durch den Stacheldraht, während um sie herum die Erde bebt. Auf Armeslänge pressen sie ihre geballten Haftladungen an Bunkerwände und stählerne Kolosse, bis der Stahl birst.' } },
   raeumer: { side: 'A', name: 'Grabenräumer', cls: 'storm', cutter: true, abil: 'pzgranate', fig: 'raider', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Nahkämpfer ohne Gewehr. Schneidet Draht vom Nachbarfeld aus (Aktion). Sickert durch: Gegner halten ihn nicht auf. Handgranaten heben den Grabenschutz auf. Panzergranate (Aktion, alle 2 Runden): 1–2 Felder gegen Fahrzeuge und Schreiter.',
-    real: 'Für nächtliche Grabenüberfälle nutzten Soldaten Grabendolche, Keulen und geschärfte Spaten, weil Gewehre im engen Graben zu lang waren.' },
+    chronik: { quelle: 'Grabeninschrift in den Ruinen von Sankt Ruß', text: 'In den engen, verwinkelten Gängen taugen lange Gewehre nichts, also tragen diese Männer nur Keulen, Messer und Drahtzangen. Sie schneiden Gassen durch Verhaue und stürzen sich lautlos in den tödlichen Kampf Mann gegen Mann.' } },
   buechse: { side: 'D', name: 'Panzerbüchsen-Trupp', cls: 'inf', fig: 'atr', at: true, atk: 2, def: 3, mor: 7, mv: 2, rng: 3, fs: 3,
     can: 'Schießt 3 Felder weit. Panzerbrechend: gegen Fahrzeuge und Schreiter ×1,5, gegen Fußtruppen nur ×0,5.',
-    real: 'Das deutsche Tankgewehr M1918 war die erste Panzerbüchse der Welt. Es verschoss 13-mm-Geschosse und hatte einen sehr starken Rückstoß.' },
+    chronik: { quelle: 'Schießvorschrift der Panzerjäger-Kompanien', text: 'Gegen einzelne Schützen taugt das überlange, unhandliche Gewehr kaum im Gefecht. Doch auf mittlere Distanz durchschlagen seine schweren Stahlkerngeschosse selbst dicke Panzerplatten und Schreit-Maschinen.' } },
   schwer: { side: 'D', name: 'Schwere Grabenwacht', cls: 'inf', fig: 'heavy', wireProof: true, shieldWall: true, atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
     can: 'Schild und Streitkolben: sehr zäh, langsam, nur Nahkampf. Draht verletzt und hält nicht auf. Schilde vor (Aktion): eigene Nachbarn nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.',
-    real: 'Im Stellungskrieg wurden Stahlschilde und Brustpanzer erprobt, etwa der deutsche Grabenpanzer ab 1916. Sie waren schwer und schützten vor allem gegen Splitter.' },
+    chronik: { quelle: 'Befehl zur Verteidigung von Sankt Ruß', text: 'Langsam, aber zäh wie Ambosse schreiten sie mit eisenbeschlagenen Streitkolben durch Stacheldraht, als wäre er Spinnweb. Im Beschuss verketten sie ihre schweren Turmschilde zu einer Wand, die auch Kameraden daneben deckt.' } },
   signal: { side: 'D', name: 'Signaltrupp', cls: 'inf', fig: 'signal', spot: 6, relay: true, abil: 'mark', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Ziel markieren (Aktion): ein Feld in Sicht (bis 6 Felder) bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar. Anführer bis 3 Felder können ihre Befehle eine Runde früher wieder geben. Kaum Kampfkraft.',
-    real: 'Leuchtpistolen gaben vereinbarte Zeichen an die Artillerie, zum Beispiel für Sperrfeuer. Grabenperiskope erlaubten den Blick über die Brustwehr.' },
+    chronik: { quelle: 'Funk- und Beobachtungsbericht, Abschnitt Mitte', text: 'Grell brennende Leuchtkugeln tauchen das Niemandsland in fahles Licht und entlarven verborgene Schützen wie versteckte Minen. Gleichzeitig weisen die Rauchzeichen der eigenen Artillerie das nächste Ziel.' } },
   saeger: { side: 'D', name: 'Sägeschreiter', cls: 'walker', fig: 'mechA', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Schreitende Kampfmaschine mit Drehlauf-Waffe und Kreissäge. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
-    real: 'Schreitende Kampfmaschinen gab es nie. Deutsche Sturmtruppen nahmen 1918 aber erbeutete britische Panzer in Dienst, weil eigene kaum gebaut wurden.' },
+    chronik: { quelle: 'Schmiedepredigt vor dem Ausrücken, 114 n. G.', text: 'Gewehrfeuer prallt funkend von seiner geweihten Panzerung ab, während die Drehlauf-Waffe den Weg freischießt. Im Nahkampf frisst sich seine kreischende Kreissäge durch Holz, Fleisch und Stahl.' } },
   klaue: { side: 'D', name: 'Klauenschreiter', cls: 'walker', fig: 'mechB', mech: true, gat: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
     can: 'Schreitende Kampfmaschine mit Maschinenwaffe und Greifklaue. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
-    real: 'Der deutsche A7V trug sechs Maschinengewehre und eine 5,7-cm-Kanone. Am 24. April 1918 traf er bei Villers-Bretonneux auf britische Panzer, das erste Panzergefecht.' },
+    chronik: { quelle: 'Werksprotokoll der Eisenhütte Sieben', text: 'Gepanzert gegen Gewehr- und MG-Garben stapft diese Kampfmaschine ungerührt durch das Sperrfeuer der Gräben. Während ihre Maschinenwaffe Deckungen zersiebt, zermalmt die hydraulische Greifklaue jeden Gegner auf Armeslänge.' } },
   turm: { side: 'A', name: 'Turmschreiter', cls: 'walker', zweit: { name: 'Turm-MG', rng: 2 }, fig: 'mechT', mech: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
     can: 'Schreitende Kampfmaschine: Kanone, dazu Turm-MG (2 Felder, einmal je Runde zusätzlich). Gepanzert: Gewehre und MG prallen ab. Selten Panne: 3 Runden aus.',
-    real: 'Britische Panzer gab es als „Male“ mit 6-Pfünder-Kanonen und als „Female“ nur mit Maschinengewehren. Ab 1917 kamen „Hermaphrodites“ mit beidem.' },
+    chronik: { quelle: 'Werkstattprotokoll der Kronkirche, 113 n. G.', text: 'Auf stählernen Beinen stapft der gepanzerte Schreiter durch Trichterfelder, während Gewehr- und MG-Feuer wirkungslos an ihm abprallen. Sein drehbarer Turm bekämpft mit einer schweren Kanone feste Ziele und hält Infanterie mit dem Maschinengewehr nieder.' } },
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
-    real: 'Auch die Briten bauten keine Schreitmaschinen. Ihr erster Panzer, der Mark I von 1916, hatte acht Mann Besatzung und fuhr etwa so schnell wie ein Fußgänger.' },
+    chronik: { quelle: 'Predigt vor dem Ausrücken, Kronkirche', text: 'Geweihte Panzerplatten in Form alter Ritterrüstungen schützen diese Kampfmaschine auf dem Weg direkt in die feindliche Linie. Auf kurze Distanz zersiebt ihre Drehlauf-Waffe jede Deckung, ehe die kreischende Kettensäge im Nahkampf den Rest besorgt.' } },
   kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, roar: true, at: true,   /* Löwenmaul-Kanone panzerbrechend wie die Panzerbüchse (Faktortabelle FAK.at) */ zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 3, rng: 2, fs: 5,
     can: 'Stufe 3, höchstens einer je Schlacht. Panzerjäger: Löwenmaul-Kanone panzerbrechend (Fahrzeuge und Schreiter ×1,5, Fußtruppen nur ×0,5, trifft die Kirche) und Kriegshammer (gegen Fußtruppen im Nahkampf ×1,5); am zähesten von allen, Bewegung 3. Unterarm-Kanone (2 Felder, einmal je Runde zusätzlich, ebenfalls panzerbrechend). Löwengebrüll (einmal je Schlacht, kostenlos): Gegner ohne Panzerung bis 2 Felder Moral −20 und niedergehalten. Selten Panne.',
-    real: 'Panzerbesatzungen trugen Lederhelme und Kettenmasken gegen Splitter, die beim Beschuss innen von der Panzerwand absprangen.' },
+    chronik: { quelle: 'Chronik der 2. Inselgarde, 115 n. G.', text: 'Nur ein einziger dieser gewaltigen Panzerjäger schreitet je aufs Feld, bewaffnet mit der Löwenmaul-Kanone und einem Kriegshammer. Wenn sein metallenes Löwengebrüll über den Schlamm grollt, verlässt selbst abgehärtete Veteranen der Mut.' } },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Motorisierte Kampfanzüge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Stark im Nahkampf.',
-    real: 'Motorisierte Kampfanzüge gab es nie. Käuflich war aber Körperpanzer wie der britische „Dayfield Body Shield“, der gegen Splitter half, gegen Gewehrkugeln kaum.' },
+    chronik: { quelle: 'Bericht eines Überlebenden von Krähenfurt', text: 'Aus dem Rauch tauchen Gestalten in motorisierten Kampfanzügen auf, deren Gasmasken-Gläser unheimlich glühen. Leicht gepanzert, aber erstaunlich beweglich, überrennen sie im schnellen Sturmlauf ganze Grabenabschnitte.' } },
   // Neue Einheiten im Stil Retro-Zukunft (2026-11-20, Bögen ui-quelle/figuren/konkordat_loewenoger.png, aschenwacht_eiserne_huenen.png);
   // fig = alte Ersatzzeichnung (Grabenräumer bzw. Panzerknecht), nur solange die neuen Bilder laden (ui.js FIGMAP)
   oger: { side: 'A', name: 'Löwenoger', cls: 'storm', fig: 'raider', abil: 'sprung', atk: 8, def: 5, mor: 9, mv: 4, rng: 1, fs: 6,
     can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark (Pranken gegen Fußtruppen ×1,5, gegen Panzer ×1). Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Schrotflinte nur auf 1 Feld (gegen Fußtruppen ×1,5, an Panzern wirkungslos). Gegner halten ihn nicht auf. Sprungangriff (Aktion und alle BP, alle 2 Runden, nur aus dem Stand): bis 2 Felder neben einen Gegner, auch über Draht und Gräben, sofort Nahkampf.',
-    real: 'Amerikanische Soldaten nahmen 1918 Vorderschaftrepetierflinten (Winchester M1897, „Grabenflinte“) mit in den Grabenkampf. Deutschland protestierte im September 1918 offiziell gegen diese Waffe.' },
+    chronik: { quelle: 'Geheimakte „Projekt Mähne“, Kronkirche', text: 'In rostige Platten und Ketten geschlagen, setzen diese gezüchteten Bestien mit gewaltigen Sprüngen über Hindernisse hinweg. Aus nächster Nähe fegen ihre schweren Schrotflinten und Klauen ganze Stellungen leer, ehe man sie wieder anketten muss.' } },
   huenen: { side: 'D', name: 'Eiserne Hünen', cls: 'inf', fig: 'suitD', suit: true, mgfire: true, pin: true, dauerfeuer: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 3, fs: 7,
     can: 'Riesen in Rüstung mit schwerem MG aus der Hüfte (3 Felder, kein Aufbauen, jeder Treffer hält nieder). Langsam. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht hält nicht auf. Stark im Nahkampf. Dauerfeuer: eine zweite Salve in derselben Runde, danach eine eigene Runde kein Schuss.',
-    real: 'Das deutsche MG 08 wog mit Schlitten und Kühlwasser rund 60 Kilogramm und brauchte eine Bedienung. MG-Schützen trugen ab 1916 teils Stahlbrustpanzer von etwa zehn Kilogramm. Das leichtere MG 08/15 kam 1917.' },
+    chronik: { quelle: 'Verhörprotokoll eines Gefangenen bei Krähenfurt', text: 'Schwerfällig stampfen die gepanzerten Riesen voran und feuern schwere Maschinengewehre aus der Hüfte, sodass jeder Treffer den Feind niederhält. Nach einer verheerenden Dauerfeuer-Salve müssen die glühenden Läufe erst abkühlen.' } },
   // Helden (2026-11-21): Einzelmodell, höchstens einer je Armee und Schlacht (auch wenn er gefallen ist); Aura, Spezialschlag, klare Schwäche; fällt er, verliert die Seite Moral
   faust: { side: 'A', name: 'Die Rote Faust', cls: 'storm', fig: 'suitA', suit: true, held: true, abil: 'durchbruch', aura: 'standhaft', atk: 9, def: 6, mor: 10, mv: 3, rng: 1, fs: 2,
     can: 'Held, höchstens einer je Armee: Oberst im Kampfanzug mit dampfgetriebener Schlagfaust. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Durchbruch (Aktion und alle BP, alle 2 Runden): stürmt in eine Einheit daneben oder mit Anlauf (nur aus dem Stand) bis 2 Felder geradeaus (keine Panzer oder Schreiter) – bis 26 Schaden, gegen Gepanzerte weniger, Moral −15, niedergehalten, sie wird ein Feld zurückgeschleudert (an einer Wand ×1,5). Standhaft: er selbst und eigene Einheiten neben ihm verlieren unter Beschuss nur halb so viel Moral. Schwäche: kaum Fernkampf (Revolver, 1 Feld). Fällt er, verliert die ganze Seite Moral (−10).',
-    real: 'Offiziere gingen beim Sturm meist vorneweg und trugen dabei oft nur einen Revolver, bei den Briten etwa den Webley Mk VI (ab 1915). Entsprechend hoch waren ihre Verluste.' },
+    chronik: { quelle: 'Tagesbefehl des Westlichen Konvents, 116 n. G.', text: 'Der Oberst schreitet in seinem Kampfanzug voran, während der Rückenofen Dampf in die rot emaillierte Schlagfaust presst. Sein wuchtiger Durchbruch sprengt feindliche Reihen, und Soldaten an seiner Seite weichen keinen Schritt zurück.' } },
   kuerass: { side: 'D', name: 'Der Eiserne Kürassier', cls: 'storm', fig: 'suitD', suit: true, held: true, abil: 'hinrichtung', aura: 'furcht', stecken: true, atk: 10, def: 8, mor: 10, mv: 2, rng: 0, fs: 0,
     can: 'Held, höchstens einer je Armee: riesiger gepanzerter Ritter mit Kettenklinge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Hinrichtung (Aktion, alle 3 Runden): eine angeschlagene Einheit daneben (unter 40 Stärke, keine Panzer oder Schreiter) wird sofort vernichtet. Furcht: Gegner neben ihm (keine Fahrzeuge oder Schreiter) verlieren zu Beginn ihrer Runde Moral (−4), höchstens bis 5; das allein löst keine Flucht aus. Schwäche: langsam (2 Bewegung), kein Fernkampf, bleibt in Schlamm, Sumpf und Gräben leicht stecken (30 %, dann eine Runde fest). Fällt er, verliert die ganze Seite Moral (−10).',
-    real: 'Französische Kürassiere ritten im August 1914 noch mit Brustpanzer ins Feld. Gegen Maschinengewehre half er nicht; ab 1916 kämpften die Kürassiere abgesessen als Infanterie.' },
+    chronik: { quelle: 'Chronik der Grauen Liturgie, 116 n. G.', text: 'In geweihten Hochofenstahl gehüllt, verbreitet er blanke Furcht und richtet geschwächte Feinde mit seiner kreischenden Kettenklinge hin. Doch sein gewaltiges Gewicht lässt ihn in tiefem Schlamm und Gräben immer wieder steckenbleiben.' } },
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Motorisierte Kampfanzüge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Stark im Nahkampf.',
-    real: 'Motorisierte Kampfanzüge gab es nie. Der deutsche Grabenpanzer aus Stahlplatten wog rund zehn Kilogramm und wurde vor allem von Posten und MG-Schützen getragen.' },
+    chronik: { quelle: 'Aus dem Notizbuch eines Zugführers', text: 'Leicht gepanzerte, motorisierte Kampfanzüge verleihen diesen Stoßtruppen die Kraft für schnelle Sturmläufe über das Trichterfeld. Mit schweren Zangen schneiden sie im Lauf Gassen durch den Stacheldraht.' } },
   flammen: { side: 'A', name: 'Flammentrupp', cls: 'flame', fig: 'flamer', atk: 2, def: 3, mor: 7, mv: 2, rng: 2, fs: 7, flame: true,
     can: 'Flammenstrahl bis 2 Felder weit (F81), auch in Feindberührung auf ein Nachbarfeld. Deckung schützt nicht, doppelter Moralverlust. Das Feld brennt bis zum nächsten eigenen Zug: wer dort steht oder hineinzieht, nimmt Feuerschaden, Draht verbrennt. Wird er beschossen, trifft es ihn ×1,5.',
-    real: 'Auch die Briten setzten Flammenwerfer ein. An der Somme wurden 1916 riesige fest eingebaute Livens-Flammenwerfer unter dem Niemandsland vorgeschoben.' },
+    chronik: { quelle: 'Verhörprotokoll nach dem Gefecht, Grauwall', text: 'Unter dem Druck ihrer Rückentanks schießt flüssiges Feuer bis in die hintersten Winkel von Bunkern und Gräben. Keine Deckung schützt vor der Hitze, und die Schreie der Brennenden brechen den Kampfwillen ganzer Kompanien.' } },
   schildwall: { side: 'A', name: 'Schildwall', cls: 'inf', fig: 'shieldA', shieldWall: true, atk: 4, def: 6, mor: 8, mv: 2, rng: 0, fs: 0,
     can: 'Schwer gepanzert und langsam. Gut, um Gräben und Ruinen zu halten, die man genommen hat. Keine Schusswaffe. Schilde vor (Aktion): eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.',
-    real: 'Beide Seiten erprobten Stahlschilde und Körperpanzer. Sie waren schwer und schützten vor allem gegen Splitter, kaum gegen Gewehrkugeln aus der Nähe.' },
+    chronik: { quelle: 'Befehl zur Verteidigung von Sankt Ruß', text: 'Ohne Schusswaffen, aber hinter mannshohen Stahlschilden verschanzt, rücken diese schwer gepanzerten Männer nur langsam vor. Einmal in einem eroberten Graben oder einer Ruine postiert, sind sie kaum noch daraus zu vertreiben.' } },
   feldkanone: { side: 'A', name: 'Feldkanone', cls: 'art', fig: 'fgun', limber: true, atk: 0, def: 3, mor: 6, mv: 1, rng: 5, fs: 5,
     can: 'Leichte Artillerie: 5 Felder Reichweite, kein Gas. Direkter Schuss bis 3 Felder trifft Kolosse und Kampfmaschinen ×2,5. Aufgeprotzt zieht sie 3 Felder. Im Nahkampf wehrlos.',
-    real: 'Die britische 18-Pfünder-Feldkanone war das wichtigste Geschütz der britischen Armee. Bis 1918 verschoss sie rund 100 Millionen Granaten.' },
+    chronik: { quelle: 'Handbuch der leichten Geschützbrigaden', text: 'Die beweglichen Geschütze schießen im direkten Richten auf weite Distanz über das offene Feld. Ihre Wuchtgeschosse durchschlagen selbst die Panzerung anrückender Landkolosse und Schreit-Maschinen.' } },
   fernsprech: { side: 'A', name: 'Fernsprechtrupp', cls: 'inf', fig: 'phone', spot: 6, relay: true, abil: 'strike', atk: 2, def: 2, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Feuerschlag (Aktion und alle BP, alle 3 Runden): wie ein Haubitzenschuss auf ein Feld in Sicht (bis 6 Felder), 25 % Streuung. Anführer bis 3 Felder können ihre Befehle eine Runde früher wieder geben.',
-    real: 'Feldtelefone verbanden die Gräben mit den Batterien. Die Leitungen wurden tief eingegraben, rissen im Trommelfeuer aber trotzdem ständig.' },
+    chronik: { quelle: 'Funk- und Leitungsprotokoll, Abschnitt Nord', text: 'Geduckt im Trichter kurbeln sie ihr Feldtelefon an und geben die Koordinaten jedes Ziels durch, das sie einsehen können. Wenige Augenblicke später verwandelt schweres Hinterland-Feuer den gemeldeten Abschnitt in aufgewühlten Schlamm.' } },
   pionierD: { side: 'D', name: 'Drahtpioniere', cls: 'inf', cutter: true, fig: 'sapperD', sapper: true, recover: true, wirelayer: true, abil: 'mine', mines: 3, atk: 3, def: 3, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Je Runde Draht ziehen (aufs Feld, in das er blickt) oder eine Mine auf ein freies Nachbarfeld (3 Stück): unsichtbar, wer hineinzieht, nimmt Schaden und bleibt stehen. Danach kein Angriff mehr.',
-    real: 'Drahtverhaue wurden meist nachts gebaut. Arbeitstrupps schraubten Eisenpfähle in den Boden und spannten Rollen Stacheldraht dazwischen.' },
+    chronik: { quelle: 'Pionierbefehl für den Abschnitt Grauwall', text: 'Im Schutz der Dunkelheit schneiden sie feindliche Verhaue auf oder spannen neue Rollen rostigen Stacheldrahts vor der eigenen Linie. Ebenso lautlos vergraben sie heimtückische Minen im aufgeweichten Boden.' } },
   banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
     can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr. Banner aufpflanzen (Aktion): wirkt 3 Felder weit, dort flieht niemand; der Träger zieht nicht, bis er es wieder aufnimmt (Aktion).',
-    real: 'Im Ersten Weltkrieg trugen Regimenter ihre Fahnen kaum noch ins Gefecht. Sie waren zu auffällig und wurden ab 1914 meist hinter der Front verwahrt.' },
+    chronik: { quelle: 'Predigt der Schmiedepriester vor der Schlacht', text: 'Wo das geweihte Feldzeichen der Grauen Liturgie über dem Rauch aufragt, wanken umliegende Truppen deutlich seltener im Beschuss. Rammt der Träger die Stange fest in den Schlamm, weicht dort kein Soldat mehr zurück.' } },
   hauptA: { side: 'A', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: bis zu 3 Befehle je Schlacht an Nachbarn: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ (Fernkampf ×1,25 bis zu ihrem nächsten Zug). Truppen in der Nähe verlieren weniger Moral.',
-    real: 'Ein Hauptmann führte eine Kompanie von rund 200 Mann. Die Verluste unter jungen Offizieren waren sehr hoch, weil sie beim Angriff vorangingen.' },
+    chronik: { quelle: 'Aus dem Notizbuch eines Kompaniechefs', text: 'Mit Trillerpfeife und Meldeblock hält der Hauptmann inmitten des Beschusses die Ordnung in seinem Abschnitt aufrecht. Seine knappen Befehle sammeln wankende Nachbartrupps oder peitschen die Schützen zu konzentriertem Feuer an.' } },
   generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
     can: 'Pflicht, genau einer je Armee; schwach im Kampf. Bis zu 3 Befehle je Schlacht an Nachbarn („Sammeln“, „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: Einheiten bis 2 Felder fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.',
-    real: 'Generäle führten meist aus Hauptquartieren weit hinter der Front, verbunden über Telefon und Meldegänger. Trotzdem fielen im Ersten Weltkrieg über 70 britische Generäle.' },
+    chronik: { quelle: 'Stabsbefehl vor der Schlacht bei Grauwall', text: 'Im Kampf kaum wehrhaft, lenkt der oberste Befehlshaber der Armee die Schlacht von einer vorgeschobenen Befehlsstelle aus. Er ordnet die Linien neu und fordert in der höchsten Not das bedingungslose Halten der Stellung um jeden Preis.' } },
   hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: bis zu 3 Befehle je Schlacht an Nachbarn: „Sammeln“ (Moral +15, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde). Truppen in der Nähe verlieren weniger Moral.',
-    real: 'In der deutschen Armee führte ein Hauptmann meist eine Kompanie. Ab 1916 übernahmen oft Leutnants diese Aufgabe, weil zu viele Offiziere gefallen waren.' },
+    chronik: { quelle: 'Tagesbefehl des Regiments, 115 n. G.', text: 'Im vordersten Graben hält der Hauptmann mit seinem Stab die Linie unter eiserner Disziplin zusammen. Mit knappen Rufen sammelt er erschütterte Nachbartrupps oder peitscht sie mit einem Sturmbefehl nach vorn.' } },
   generalD: { side: 'D', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
     can: 'Pflicht, genau einer je Armee; schwach im Kampf. Bis zu 3 Befehle je Schlacht an Nachbarn („Sammeln“, „Sturmbefehl“). Einmal je Schlacht „Generalangriff“: Einheiten bis 2 Felder dürfen sofort noch einmal angreifen (+1 Aktion, +2 BP, auch nach weitem Zug in den Nahkampf), Niederhalten endet.',
-    real: 'Deutsche Divisionen wurden von Generalmajoren geführt. Die Stäbe arbeiteten mit Karten, Telefon und Luftbildern meist mehrere Kilometer hinter der Front.' },
+    chronik: { quelle: 'Stabsprotokoll der Heeresgruppe Mitte', text: 'Im direkten Kampf kaum wehrhaft, lenkt der einzige General der Armee das Gefecht durch harte Befehle zum Sammeln und Stürmen. Einmal pro Schlacht entfesselt er mit einem gellenden Kampfschrei den vernichtenden Generalangriff.' } },
   knecht: { side: 'D', name: 'Eisenknecht', cls: 'walker', stufe3: true, faust: true, fig: 'mech', mech: true, atk: 8, def: 10, mor: 9, mv: 3, rng: 2, fs: 7,
     can: 'Stufe 3, höchstens einer je Schlacht. Doppelte Sturmkanonen an beiden Unterarmen und Hackklinge; gepanzert, Gewehre und MG prallen ab. Faustsalve (einmal je Schlacht, statt des Schusses): zwei Schüsse auf zwei verschiedene Ziele, je ×2. Selten Panne.',
-    real: 'Schreitende Kampfmaschinen gab es nie. Der einzige deutsche Panzer des Krieges, der A7V, wurde nur 20-mal gebaut und hatte 18 Mann Besatzung.' },
+    chronik: { quelle: 'Feldtagebuch eines Pioniers vor Grauwall', text: 'Nur ein einziger dieser gewaltigen Kolosse schreitet je aufs Feld, bewaffnet mit Zwillings-Sturmkanonen und einer schweren Hackklinge. Einmal pro Schlacht entfesselt er eine vernichtende Faustsalve auf zwei Ziele zugleich.' } },
   bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', zweit: { name: 'Flammenstoß', rng: 2, flamme: true }, fig: 'drill', mech: true, atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
     can: 'Kampfmaschine mit Bohrkopf: sehr stark im Nahkampf. Flammenstoß (einmal je Runde zusätzlich) bis 2 Felder: halb so stark wie ein Flammentrupp, das Feld brennt. Selten Panne: 3 Runden aus.',
-    real: 'Unter der Erde tobte ein Minenkrieg. Bei Messines zündeten die Briten am 7. Juni 1917 neunzehn Minen unter den deutschen Stellungen.' }
+    chronik: { quelle: 'Bericht eines Überlebenden aus den Kohlegruben', text: 'Aus den tiefen Kohlegruben an die Front geholt, zermalmt sein rotierender Bohrkopf im Nahkampf jede Befestigung. Ein glühender Flammenstoß aus dem Rumpf setzt zudem das gesamte Vorfeld in Brand.' } }
 });
 // Nachschub: Kosten in Punkten und Angebot je Seite
 // Kosten in Punkten (großer Maßstab, Wunsch des Nutzers): aus Werten und Fähigkeiten berechnet.
@@ -1615,28 +1615,28 @@ const COST = {}; for (const k in TYPES) COST[k] = costParts(k).total;
 Object.assign(TYPES, {
   rauch: { side: 'A', name: 'Rauchwerfer-Trupp', cls: 'inf', fig: 'smoke', abil: 'smoke', atk: 2, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Nebelwand (Aktion, alle 3 Runden): Feld bis 3 Felder und seine Nachbarn bis zur nächsten eigenen Runde im Nebel. Ziel im Nebel: Beschuss ×0,5; Schütze im Nebel ×0,75; keine Sicht hindurch. Vor dem Vorrücken legen.',
-    real: 'Bei Loos legten die Briten im September 1915 neben Gas auch künstlichen Nebel aus Rauchkerzen, um den Angriff zu verschleiern. Später verschossen Stokes-Mörser Nebelgranaten.' },
+    chronik: { quelle: 'Einsatzbericht eines Spähtrupps, 115 n. G.', text: 'Mit schweren Wurfrohren legen diese Trupps dichte, beißende Nebelwände quer über das Niemandsland. Im grauen Dunst verlieren Scharfschützen und Geschütze ihre Sicht, sodass Sturmtruppen ungesehen vorrücken können.' } },
   mineur: { side: 'A', name: 'Mineure (Tunnelgräber)', cls: 'inf', fig: 'miner', abil: 'tunnel', ladungen: 3, sapper: true, atk: 3, def: 3, mor: 7, mv: 3, rng: 0, fs: 0,
     can: 'Stollen graben (Aktion, alle 4 Runden): unter einen Graben, Bunker oder ein Gebäude bis 2 Felder. Zwei eigene Runden später fliegt das Feld in die Luft (schwerer Schaden, wird zum Trichter). Höchstens 3 Ladungen je Schlacht.',
-    real: 'Bei Messines zündeten britische Tunnelbauer am 7. Juni 1917 19 Minen unter den deutschen Stellungen. Die Explosionen waren bis nach London zu hören.' },
+    chronik: { quelle: 'Letzter Brief aus Schacht Vier, Grauwall', text: 'Tagelang wühlen sich die Mineure lautlos durch Lehm und Fels bis direkt unter feindliche Gräben oder Bunker. Sobald die Sprengkammern gezündet werden, reißt die verzögerte Detonation die gesamte Stellung in den Abgrund.' } },
   werkstatt: { side: 'A', name: 'Versorgungstrupp', cls: 'medic', fig: 'wrench', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
     can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, alle 2 Runden), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, alle 2 Runden): ein MG oder Geschütz daneben schießt noch einmal.',
-    real: 'Bei Cambrai 1917 fiel ein großer Teil der britischen Panzer durch Pannen und Festfahren aus. Bergungs- und Werkstattzüge holten sie zurück; Trägertrupps brachten Granaten und Gurte nach vorn.' },
+    chronik: { quelle: 'Schichtbuch der Feldwerkstatt hinter der Linie', text: 'Mit Schweißbrennern, schweren Winden und Munitionskisten folgen diese Mechaniker den Stahlkolossen ins Feuer. Sie flicken zerfetzte Panzerplatten, ziehen festgefahrene Fahrzeuge aus dem Schlamm und füllen leere Magazine auf.' } },
   ballon: { side: 'A', name: 'Ballonbeobachter', cls: 'inf', fig: 'balloon', relay: true, abil: 'mark', aerial: true, fessel: true, spot: 6, atk: 0, def: 1, mor: 4, mv: 2, rng: 0, fs: 0,
     can: 'Fesselballon, wehrlos. Aufgestiegen: sieht 6 Felder über Wald und Häuser, zieht nicht. Einholen (1 Bewegungspunkt): zieht 2 Felder, sieht 4 Felder wie Fußtruppen, kein Markieren. Aufsteigen kostet alle Bewegung, nicht die Aktion. Ziel markieren (Aktion): ein Feld in Sicht bis zu deinem nächsten Zug; eigener Beschuss dorthin ×1,25 ohne Streuung, getarnte Gegner und Minen dort und daneben werden sichtbar.',
-    real: 'Gefesselte Beobachtungsballone standen hinter der Front und lenkten das Artilleriefeuer per Telefon. Als einzige Flieger trugen ihre Beobachter schon früh Fallschirme.' },
+    chronik: { quelle: 'Logbuch einer Fesselballon-Besatzung, 116 n. G.', text: 'Wehrlos im engen Weidenkorb unter der Gasblase schwebend, überblicken die Beobachter Wälder, Ruinen und feindliche Linien. Per Draht melden sie jedes verborgene Ziel nach unten und lenken das Feuer der eigenen Artillerie ins Ziel.' } },
   eingreif: { side: 'D', name: 'Eingreiftrupp', cls: 'storm', fig: 'counter', counterStrike: true, abil: 'pzgranate', atk: 6, def: 4, mor: 8, mv: 3, rng: 0, fs: 0,
     can: 'Gegenstoß: Betritt ein Gegner ein Zielfeld bis 3 Felder entfernt, stürmt der Trupp sofort heran und greift an (einmal je gegnerischer Runde). Panzergranate (Aktion, alle 2 Runden): 1–2 Felder gegen Fahrzeuge und Schreiter.',
-    real: 'Die deutsche Abwehr setzte ab 1917 auf Eingreiftruppen, die eingebrochene Angreifer sofort im Gegenstoß zurückwarfen.' },
+    chronik: { quelle: 'Einsatzbericht aus den Ruinen von Sankt Ruß', text: 'Geduckt hinter Mauerresten warten diese Veteranen, bis ein Feind in den überwachten Abschnitt vorrückt. Dann stürmen sie sofort zum Gegenstoß heran und schleudern geballte Panzergranaten auf Stahl wie Infanterie.' } },
   gasschutz: { side: 'D', name: 'Gasschutz-Trupp', cls: 'inf', fig: 'gasmask', gasproof: true, abil: 'clear', atk: 3, def: 3, mor: 7, mv: 3, rng: 1, fs: 2,
     can: 'Gas schadet ihm und seinen Nachbarn nicht, auch keine Vergiftung. Entgiften (Aktion, alle 2 Runden): löst Gaswolken bis 1 Feld auf.',
-    real: 'Gasschutzoffiziere schulten die Truppe im schnellen Aufsetzen der Masken und prüften die Filter. Nach einem Angriff wurden Unterstände mit Feuer und Chlorkalk entgiftet.' },
+    chronik: { quelle: 'Merkblatt für den Gaskrieg, Aschenwacht', text: 'Mit schweren Filtertornistern und Neutralisations-Zerstäubern trotzen diese Männer jedem Giftgas und schützen auch Kameraden direkt neben sich. Wo sie vorrücken, lösen ihre Geräte selbst dichte Gaswolken rasch auf.' } },
   munition: { side: 'D', name: 'Versorgungstrupp', cls: 'medic', fig: 'ammo', repair: true, recover: true, abil: 'ammo', atk: 2, def: 2, mor: 6, mv: 3, rng: 0, fs: 0,
     can: 'Je Runde eine Aufgabe: Koloss oder Kampfmaschine daneben reparieren (Stärke +25, alle 2 Runden), festgefahrene Fahrzeuge bergen oder Nachladen (Aktion, alle 2 Runden): ein MG oder Geschütz daneben schießt noch einmal.',
-    real: 'Ein MG 08 verschoss rund 500 Schuss in der Minute. Munitionsträger schleppten die schweren Gurtkästen unter Feuer nach vorn; Instandsetzungstrupps flickten liegengebliebene Panzer.' },
+    chronik: { quelle: 'Werkstattbuch der 3. Kolonnen-Kompanie', text: 'Mit Winden, Schweißgerät und schweren Munitionskisten folgen sie den Maschinen bis in die Feuerzone. Sie flicken beschädigte Schreiter, ziehen festgefahrene Kolosse aus dem Dreck und füllen leere Gurte nach.' } },
   pirsch: { side: 'D', name: 'Pirschjäger', cls: 'inf', fig: 'stalker', pin: true, hidden: true, atk: 1, def: 2, mor: 6, mv: 3, rng: 4, fs: 3,
     can: 'Getarnt: nur aus dem Nachbarfeld angreifbar, bis er schießt (dann eine gegnerische Runde sichtbar). Jeder Treffer hält nieder.',
-    real: 'Deutsche Scharfschützen mit Zielfernrohr beherrschten 1915 das Niemandsland. Die Briten richteten daraufhin eigene Scharfschützenschulen ein.' }
+    chronik: { quelle: 'Jagd- und Spähprotokoll, Dunkelwald', text: 'Lautlos pirschen diese kundigen Jäger durch Wälder, Ruinen und Trichterfelder, um den Feind ungesehen aufzuklären. Aus gedeckten Stellungen nehmen sie wertvolle Ziele präzise aufs Korn, ehe sie wieder im Nebel verschwinden.' } }
 });
 // F103 Rollen schärfen (Enrico 2026-11-22 13:35): klarere Aufgaben je Einheit
 Object.assign(TYPES.grenadier, { granatSturm: true });   // Stoßinfanterie: Handgranaten vor dem Nahkampf (×P.GRANAT_NAH), Schuss schwächer (×P.GRANAT_FERN)
@@ -10106,7 +10106,7 @@ function neuKarteMehr(u) {
   if (!u) { m.innerHTML = ''; return; }
   const T = TYPES[u.type];
   m.innerHTML = `<div class="hm-w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', u.limbered ? P.LIMBER_MV : T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div>` +
-    rolleHtml(u.type) + (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` + (T.real ? `<p class="real"><b>Im echten Krieg:</b> ${T.real}</p>` : '');
+    rolleHtml(u.type) + (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` + chronikHtml(T, 'p');
 }
 { const b = document.createElement('button'); b.className = 'neu-mehr'; b.id = 'btnMehr'; b.title = 'Einheitenkarte: kurz oder ausführlich'; $('btnInfo').after(b);
   const set = () => { document.body.classList.toggle('kartelang', kartLang); b.textContent = kartLang ? 'kurz' : 'ausführlich'; }; set();
@@ -10125,11 +10125,13 @@ const SN_FUGE = /(Schützen|Melde|Fernsprech|Scharf|Graben|Lanzen|Flammen|Stahl|
 const snName = n => n.replace(SN_FUGE, '$1­');
 // F103 (2026-11-22): Rolle, Stark/Schwach gegen, Kontert man mit – aus den Werten abgeleitet (src/rollen.js), überall dieselben Begriffe
 function rolle(t) { return window.ROLLEN ? ROLLEN.rollenVon(E, t) : null; }
+// Eigene Welt (Paket A3, 2026-11-24): Text „Aus den Chroniken“ mit Quellenzeile (klein, kursiv) statt „Im echten Krieg“
+const chronikHtml = (T, tag) => T && T.chronik ? `<${tag} class="real chronik"><b>Aus den Chroniken</b><i class="quelle">${T.chronik.quelle}</i>${T.chronik.text}</${tag}>` : '';
 function rolleHtml(t) { const r = rolle(t); if (!r) return ''; return `<div class="rolle"><div class="rl-n"><b>Rolle:</b> ${r.rolle}</div>${r.stark.length ? `<div class="rl-p">▲ <b>Stark gegen:</b> ${r.stark.join(', ')}</div>` : ''}${r.schwach.length ? `<div class="rl-m">▼ <b>Schwach gegen:</b> ${r.schwach.join(', ')}</div>` : ''}<div class="rl-k"><b>Kontert man mit:</b> ${r.konter.join(', ')}</div></div>`; }
 function snKarte(t) { const T = TYPES[t], r = rolle(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span>${r ? `<span class="rl">${r.rolle}</span>` : ''}<span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
 function snZeig(det, el, sheet, w, platz) {   // platz: Element, über das die Details gelegt werden (Armee-Auswahl: Seitenleiste), sonst neben das Fenster
   const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
-  det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${rolleHtml(t)}${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${T.real ? `<div class="real"><b>Im echten Krieg:</b> ${T.real}</div>` : ''}${w ? `<div class="warum">${w}</div>` : ''}`;
+  det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${rolleHtml(t)}${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${chronikHtml(T, 'div')}${w ? `<div class="warum">${w}</div>` : ''}`;
   det.classList.add('zeigen'); const dw = det.offsetWidth, dh = det.offsetHeight;
   if (platz) {   // Punkt 8 (2026-11-21): Armee-Auswahl – direkt neben der Karte (rechts, sonst links, sonst darüber), nie über der Auswahl-Übersicht
     let x = r.right + 10, y = r.top - 10; if (x + dw > innerWidth - 8) x = r.left - dw - 10; if (x < 8) { x = Math.max(8, Math.min(innerWidth - dw - 8, r.left + (r.width - dw) / 2)); y = r.top - dh - 10 < 8 ? r.bottom + 10 : r.top - dh - 10; }
@@ -10622,7 +10624,7 @@ function showDetail() {
   const T = TYPES[u.type];
   drawPortraitLater($('detPortrait'), figOf(T), u.side, u.type);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
-  $('detCan').textContent = T.can; $('detReal').textContent = T.real;
+  $('detCan').textContent = T.can; $('detQuelle').textContent = T.chronik ? T.chronik.quelle : ''; $('detReal').textContent = T.chronik ? T.chronik.text : '';
   { let rb = $('detRolle'); if (!rb) { rb = document.createElement('div'); rb.id = 'detRolle'; $('detCan').parentElement.before(rb); } rb.innerHTML = rolleHtml(u.type); }   // F103
   { let mb = $('detMed'); if (!mb) { mb = document.createElement('div'); mb.id = 'detMed'; mb.className = 'det-med'; $('detCan').parentElement.after(mb); }   // F66: Stärken und Schwächen in Worten
     const m = E.medaillen(u.type); mb.innerHTML = '<b>Stärken und Schwächen:</b>' + medaillenTexte(u.type).map(t => `<div class="dm">${t.k !== 'klasse' ? `<span class="med ${m[t.k]}">${upSym(t.sym) ? `<img src="${upSym(t.sym)}" alt="">` : ''}</span>` : '<span class="med klasse"></span>'}<span><b>${t.name}</b> – ${t.text}</span></div>`).join(''); }
