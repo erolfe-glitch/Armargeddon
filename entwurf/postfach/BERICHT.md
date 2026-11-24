@@ -1,3 +1,36 @@
+## 2026-11-24 – Paket P: Plastik-Probe (Punkt 27, nur Bilder) (`44fcd56`)
+
+Gepusht. Nichts fest eingebaut: Die Probestufe „sehr stark“ gibt es nur über `__dbg.bild(3)`, nicht im Optionsmenü, und sie wird nicht gespeichert. Der Standard bleibt „stark“.
+
+- **Was die Stufe „sehr stark“ macht:**
+  - Plastik-Karte aus `figur_plastik.py` mit ×2,0 statt ×1,3 eingerechnet (Klarheit, Glanz auf Metall).
+  - Figuren mit mehr Kontrast (1,24) und Sättigung.
+  - **Gerichtetes Licht von oben links:** oben links heller, unten rechts dunkler, je Bild einmal eingerechnet.
+  - Kontaktschatten ×1,9 statt ×1,5.
+  - Boden und aufrechte Gelände-Teile etwas dunkler, die Kantenverdeckung (`ao`) eine Stufe stärker.
+- **Bilder (1920 px, je gleicher Ausschnitt; oben aus, Mitte stark, unten sehr stark):**
+  - `entwurf/probe/plastik/a_kraehenfurt_vergleich.jpg` (Häuser und Truppen)
+  - `b_sankt_russ_vergleich.jpg` (Kirche)
+  - `c_stahlgaenger_vergleich.jpg` (Stahlgänger nah)
+  - Einzelbilder `*_aus/_stark/_sehr_stark.jpg`
+  - **(d)** `d_stahl_boegen.jpg`: heutiger Bogen, Enricos plastischer Bogen und das Spielbild „sehr stark“ nebeneinander.
+- **Kosten** (`tools/plastik_bilder.mjs`, `messung.json`):
+  - **Umschalten/Laden:** aus 0,33–0,57 s, stark 0,33–0,58 s, sehr stark **0,55–0,83 s**. Einmalig beim Umschalten bzw. beim ersten Zeichnen eines Bildes, danach zwischengespeichert.
+  - **Bildrate** gleich: Krähenfurt 6,6 ms, Sankt Ruß 12,2 ms, Stahlgänger 5,7 ms je Bild bei stark wie bei sehr stark.
+- **Einschätzung:**
+  - „Sehr stark“ macht Figuren und Häuser kontrastreicher. Durch das Licht von oben links wirken Rüstungen etwas runder.
+  - Die Figuren stehen weiter im Gelände: Die Kontaktschatten sind dunkler, nichts wirkt aufgeklebt.
+  - Der Gewinn gegenüber „stark“ ist aber **mäßig**. Die Nachberechnung kann nur aufhellen und abdunkeln, sie erfindet keine Formen.
+  - Enricos überarbeiteter Bogen (d) ist deutlich plastischer: echte Licht-/Schattenverläufe auf Schulterplatten, Knien und Stiefeln. Das erreicht keine Filterstufe.
+  - **Achtung beim Bogen:** Er enthält **gemalte Bodenschatten auf dem Magenta-Grund**. Beim Freistellen bleibt dort ein dunkler bzw. rosa Saum, oder der Schatten wird mit ausgeschnitten. Neue Bögen besser ohne Bodenschatten malen lassen; den Schatten macht das Spiel selbst.
+
+### Fragen an Enrico
+- **Weg für mehr Plastik:** (A) neue Bögen im Stil von `konkordat_stahl_plastisch.jpg`, ohne gemalten Bodenschatten – stärkster Effekt, Aufwand je Bogen. (B) „sehr stark“ als dritte Menü-Stufe anbieten (billig, Wirkung mäßig). (C) beides.
+
+**Hinweis zu Paket C2:** Vor deinem Stopp hatte ich mit Punkt 35 (Straßenenden) angefangen. Die harte Kante am Dorfplatz kommt weder von der Schneekante noch von den Feld-Details. Die Straßentextur selbst kachelt ohne Naht. Die Suche geht in Paket C2 weiter. Einzige Änderung daran: das Aufnahmewerkzeug `karte_bilder.mjs` kennt jetzt `INIT` (Skript vor dem Laden, für Vergleiche einzelner Schichten).
+
+---
+
 ## 2026-11-24 – Paket C: Krähenfurt (Punkte 4, 1, 13, 12) (`de32997`)
 
 Gepusht, index.html gebaut. Tests: `test_regeln`, `test_kommentare` in Ordnung, KI-Partie Krähenfurt bis zum Ende ohne Fehler, Karten-Aufnahmen ohne Seitenfehler.

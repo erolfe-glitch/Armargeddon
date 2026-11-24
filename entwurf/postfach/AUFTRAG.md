@@ -17,11 +17,27 @@
 - ✓ **Paket B – schnelle Kleinigkeiten:** Punkte 5 (Spuren nicht auf Straßen), 6 (Zielmarke Knochenweiß am Boden), 15 (Leuchtsignal: Minen sichtbar aufdecken), 20 (Heil-Pluszeichen), 21 (Granaten in Nahkampf-Animation – erst klären), 24 (Kamera zurück), 7 nur Teil 1 (Meldegänger Abklingzeit 2), 8 (Sturmlauf: vorbeidrücken, Minen), 32 (Scharfschützen-Läufe abgeschnitten).
 - ✓ **Paket B2 – Rest aus Paket B + Antworten (Abschnitt 24.11. 16:35):** Punkte 32 (Scharfschützen-Läufe, war in Paket B nicht dabei), 33 (Meldegänger teurer), 34 (Handgranaten als Fähigkeit).
 - ✓ **Paket C – Krähenfurt:** Punkte 4 (Ruckler messen + beheben, Langzeitlauf erlaubt, max. 15 Min.), 1 (Karte aufräumen), 12 (Deckung Mitte), 13 (Flaggen sichtbar).
+- ✓ **Paket P – Plastik-Probe vorgezogen (Enrico 24.11. 18:23): nur Punkt 27** (Abschnitt 20:30 vom 23.11., nur Bilder, nichts fest einbauen). Danach Paket C2.
+- **Paket C2 – Krähenfurt-Rest (Abschnitt 24.11. 18:20, Punkte 35–37).**
 - **Paket D – Effekte:** Abschnitt 17:30 (Fähigkeits-Effekte Tintenstil, Wucht) + Punkte 14 (Sturmrollen), 19 (Gasgranate Luftzerleger), 27 (Plastik-Probe, nur Bilder).
 - **Paket E – Regeln (mit Messung):** Punkte 3 (Scharfschützen), 16 (Feldkanone Panzergranate), 18 (Entsetzenstest), 2 (Aufstellungsphase).
 - **Paket F – Kleinkram/Listen:** Abschnitt 17:20 (Liste fehlender Sprachbefehle), 17:10 (Brainstorm in IDEEN.md + Probebild Maßstab), Punkt 17 (Schadenszahlen).
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Enrico 2026-11-24 18:20): Antworten zu Paket C + Straßenenden (NICHT erledigt) <<<
+**Reihenfolge:** Paket C2, eigener `pa`.
+
+- **Deckung Mitte (Punkt 12):** Enrico: **so lassen** (Variante C). `MAP.deckung` bleibt leer.
+- [ ] **35. Straßenenden Krähenfurt – war Teil von Punkt 1, wurde NICHT gemacht.** Enrico sieht auf den Nachher-Bildern weiter abgehackte, zerstückelte braune Straßen. Beispiele in `entwurf/probe/kraehenfurt_c/nachher/`:
+  - `dorfplatz.jpg`: Der Weg von links endet vor dem Brunnen mit einer **geraden, harten Kante** (Feldgrenze); ein zweites Wegstück beginnt/endet unvermittelt; die Straße unter der Fahne zerfasert in mehrere Spuren, die an Feldgrenzen abbrechen.
+  - `strasse_nah.jpg`: Der linke Abzweig hört mitten im Feld mit **gerader Kante** auf (bei x≈430, y≈300); die Abzweigung oben (vom Brunnen) beginnt kantig.
+  - **Ursache vermutlich:** Straßen werden je Feld als Stück gelegt und enden an der Feldgrenze. **Gewünscht:** Straßen als durchgehende Bänder; an Enden (Brunnen, Haus, Kartenrand, Feld ohne Fortsetzung) **weich auslaufen** (Endkappe/Ausblendung über ~½ Feld) statt gerade abgeschnitten; Abzweige und Kreuzungen ohne Kanten verschmelzen; keine einzelnen Straßenfelder ohne Anschluss.
+  - Alle Straßenenden und Abzweige der Karte prüfen. Vorher/nachher je Stelle, dazu `dorfplatz` und `strasse_nah` aus derselben Kamera wie oben.
+- [ ] **37. Äcker/Feldflächen auf der Ostseite (hinter dem Fluss, vor allem unten rechts) wirken zerstückelt.** Enrico: Die Ränder der Felder sind absichtlich „krakelig“ gemacht, damit es natürlich wirkt – aber jedes Feld ist eine eigene Fläche mit ausgefranstem Rand, dadurch wirkt die ganze Seite wie ein Flickenteppich (siehe `entwurf/probe/kraehenfurt_c/nachher/uebersicht.jpg`, rechte Kartenhälfte). **Gewünscht:** zusammenhängende Ackerflächen über mehrere Felder, nur am Außenrand des ganzen Ackers ein (leicht unregelmäßiger, aber ruhiger) Rand, im Inneren keine Feldgrenzen; dazwischen allenfalls ein paar klare Feldwege. Wenn das nicht sauber geht: lieber weniger Ackerfläche. Vorher/nachher: Übersicht und Nahansicht unten rechts.
+- [ ] **36. Krähenfurt neu abgleichen.** Enrico: ja. Nach den Handgranaten (Paket B2) steht das Konkordat bei 41–42 %, Ziel ≈ 50 %. Messen mit 2 Startwerten à 100 Schlachten (max. 15 Minuten), dann nur über Kartendaten/KI-Gewichte (`MAP.ki`, Armee, Aufstellungszone) nachstellen – nicht an den Handgranaten. Ergebnis in BALANCE.md.
+
+Bericht mit Bildern, im Chat „– pb“.
 
 # >>> JETZT (Enrico 2026-11-24 16:35): Antworten zum Bericht Paket B <<<
 **Reihenfolge:** Paket B2, eigener `pa`. Punkt 32 steht im Abschnitt 16:05 darunter (wurde in Paket B nicht gemacht).
@@ -78,7 +94,7 @@ Bericht mit Bildern, „Fragen an Enrico“, im Chat „– pb“.
   - Erst mit der Maßstab-Umstellung A einbauen: wie der alte Bogen schneiden (SPALTEN 3, POSE_SETS), Farbe angleichen, figur_plastik.py; Größe kleiner als heute (heute SH 1,5 → Vorschlag 1,25, im Maßstab-A-Verhältnis prüfen).
   - Bild vorher/nachher im Bericht.
 
-- [ ] **27. Plastik-Probe: Figuren und Gebäude griffiger (NUR BILDER, nichts fest einbauen).** Enrico findet die Modelle zu flach. Bevor Bögen neu gemalt werden, prüfen, wie weit die vorhandene Bildwirkung trägt.
+- [x] **27. Plastik-Probe: Figuren und Gebäude griffiger (NUR BILDER, nichts fest einbauen).** Enrico findet die Modelle zu flach. Bevor Bögen neu gemalt werden, prüfen, wie weit die vorhandene Bildwirkung trägt.
   - Probe-Stufe „sehr stark“ (nur über `__dbg`, Standard bleibt): kräftigere Licht-/Schattenkarte aus `figur_plastik.py` (Klarheit, Glanz auf Kanten und Nieten), gerichtetes Licht von oben links, dunklerer Kontaktschatten/AO unter den Füßen. Dasselbe für aufrechte Gelände-Teile (Häuser, Kirche, Mauern, Zäune: `gel_<name>`, `teilFilter`, `ao` in GBau).
   - Vergleichsbilder je 1920 px, gleicher Ausschnitt, Stufen aus / stark / sehr stark: (a) Krähenfurt mit Häusern und Truppen, (b) Sankt Ruß mit Kirche, (c) Nahansicht Konkordat-Stahlgänger. Dazu (d) der von Enrico überarbeitete Bogen `ui-quelle/figuren/konkordat_stahl_plastisch.jpg` (Gemini, gleiche Posen wie `konkordat_stahl.png`) nur zum Vergleich daneben ins Bild setzen – nicht einbauen.
   - Bilder nach `entwurf/probe/plastik/`. Im Bericht: was die Stufe kostet (Ladezeit, Bildrate), und ob die Figuren dabei noch im Gelände stehen (nicht aufgeklebt wirken).
