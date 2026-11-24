@@ -454,3 +454,15 @@ Budget-Tausch `MISCHEN=1`, Grauwall, je 600 Schlachten (Startwert 1, beim Oger a
 | … statt 4 Grenadiere | 65 % | 57 % (Abwehr 7: 60 %, Bewegung 3: 65 %) |
 
 Löwenoger: Werte wie geplant, Preis **105** (neutral bei etwa 2,6 Kohorten). Eiserne Hünen: schweres MG mit Reichweite 3 und Feuer 7, Bewegung bleibt 2, Preis **90** (ADJ −15). Sprungangriffe in der KI: gut 2–3 je Oger und Schlacht, Dauerfeuer etwa 1 je Hünen-Trupp und Schlacht.
+
+## Krähenfurt – Neuabgleich nach den Handgranaten (2026-11-24, Paket C2 Punkt 36)
+
+Nach Paket B2 (Handgranaten als Fähigkeit der Aschengrenadiere) stand Krähenfurt bei Konkordat 41 / 42 % (Startwerte 1 / 2, je 100 Schlachten). Nachgestellt nur über die Kartendaten, nicht an den Handgranaten:
+
+| Variante | Startwert 1 | Startwert 2 | Schnitt |
+|---|---|---|---|
+| bisher (zoneD 13) | 41 % | 42 % | 41,5 % |
+| **zoneD 14** (Aufstellungszone der Aschenwacht eine Spalte zurück) | 58 % | 50 % | **54 %** |
+| 1 Grenadier weniger (`MD_grenadier=4`) | 81 % | 80 % | 80,5 % |
+
+Übernommen: **zoneD 14**. Die Messung schwankt bei 100 Schlachten etwa ±5 Punkte. Deckung in der Mitte bleibt leer (Enrico 24.11., siehe Paket C).

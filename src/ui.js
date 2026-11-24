@@ -1440,12 +1440,12 @@ const FIG_SLOTS4 = [[-0.36, -0.26], [0.3, -0.34], [-0.24, 0.3], [0.36, 0.22]];  
 // Figuren: Plastik-Karte aus tools/figur_plastik.py (window.FIGSP, einmal beim Bauen vorberechnet: Klarheit und Metallglanz) wird
 // einmal je Bild und Stufe eingerechnet, dazu etwas mehr Kontrast und Sättigung; danach ist es ein fertiges Bild (keine Kosten je Bild).
 // Boden: abgedunkelt und entsättigt (renderTerrain, Gelände-Bausteine), Kontaktschatten und Kantenverdeckung kräftiger (cfg.ao in GBau).
-const BW_NAME = ['aus', 'leicht', 'stark', 'sehr stark (Probe)'];   // Stufe 3 nur über __dbg.bild(3) (Paket P, Punkt 27, 2026-11-24): nicht im Menü, nicht gespeichert
+const BW_NAME = ['aus', 'leicht', 'stark', 'sehr stark'];   // Stufe 3 (Paket P, Punkt 27) seit Punkt 38 (2026-11-24) im Menü und gespeichert; Standard bleibt „stark“
 let BW = 2; try { const v = localStorage.getItem('arm.bildwirkung3');   // F1 (2026-11-20): Standard stark; neuer Schlüssel, damit alte Einstellungen „leicht“ nicht stehen bleiben
-  if (v != null && [0, 1, 2].includes(+v)) BW = +v; } catch (e) {}
+  if (v != null && [0, 1, 2, 3].includes(+v)) BW = +v; } catch (e) {}
 const BW_KARTE = [0, 0.7, 1.3, 2.0];                                   // Anteil der Plastik-Karte
 const BW_FIG = [null, { sat: 1.06, kon: 1.06 }, { sat: 1.13, kon: 1.14 }, { sat: 1.16, kon: 1.24 }];   // Figuren: Sättigung, Kontrast (um Mittelgrau 0,38)
-const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)', 'brightness(0.74) saturate(0.62) contrast(1.08)'];
+const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturate(0.68)', 'brightness(0.78) saturate(0.64) contrast(1.06)'];
 const BW_SCH = [1, 1.25, 1.5, 1.9];                                  // Kontaktschatten unter den Figuren
 const bwA = a => Math.min(0.95, a * BW_SCH[BW]);
 const BWI = new Map(), BWK = {};
@@ -1473,7 +1473,7 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   BWI.set(ck, c); return c;
 }
 function setBildwirkung(v, still) {
-  BW = v === 3 && still ? 3 : ((v % 3) + 3) % 3; if (BW < 3) try { localStorage.setItem('arm.bildwirkung3', String(BW)); } catch (e) {}
+  BW = ((v % 4) + 4) % 4; try { localStorage.setItem('arm.bildwirkung3', String(BW)); } catch (e) {}
   if ($('optBild')) $('optBild').value = String(BW);
   gbKey = ''; if (L && G) renderTerrain();
   if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);

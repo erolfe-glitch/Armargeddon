@@ -147,7 +147,7 @@ function aufbauen(cfg, IM) {
   if (!WI) schicht('boden_truemmer', ctx => {   // Trümmerboden leicht gedämpft (unruhiger als die übrigen)
     for (const [c, r] of felder(t => t === 'village' || t === 'rubble' || t === 'barrikade' || t === 'fabrik' || t === 'kirche' || t === 'schiff' || t === 'turm')) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.14, 0.92, 13, 0.86);
   const PLATZ = felder((t, c, r) => inMap(c, r) && /platz|brunnen/.test(flags(c, r).deko || ''));
-  if (PLATZ.length) schicht('boden_kopfstein', ctx => { for (const [c, r] of PLATZ) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.1, 1, 7, (cfg.hell || 1.2) * 1.05);   // Dorfplatz: Kopfstein
+  if (PLATZ.length && !(typeof window !== 'undefined' && window.NOPLATZ)) schicht('boden_kopfstein', ctx => { for (const [c, r] of PLATZ) jitterHex(ctx, ...hexC(c, r), 1.0); }, 0.1, 1, 7, (cfg.hell || 1.2) * 1.05);   // Dorfplatz: Kopfstein
   // Winter (Enrico 19:15): reine Schneefassungen je Feld gemischt (Felsen-Fassung etwa 1 von 8), die fleckige Kachel nur zertrampelt im Dorf
   if (WI && IM.boden_schnee_rein_1) {
     const fass = (c, r) => { const v = hrnd(c, r, 290); return v < 0.125 ? 4 : v < 0.45 ? 2 : v < 0.75 ? 3 : 1; };
@@ -156,7 +156,14 @@ function aufbauen(cfg, IM) {
   }
   if (!WI) schicht('boden_sumpf', ctx => { for (const [c, r] of felder(t => t === 'sumpf' || t === 'mud')) jitterHex(ctx, ...hexC(c, r), 0.95); }, 0.2, 0.9, 53);
   // Acker im Schnee: je Feld ein ganzes Stück (gemalte Furchen kacheln nicht sauber), leicht gedreht, manche Felder quer – wie ein Flickenteppich
-  if (WI && IM.boden_acker_schnee) for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
+  // Paket C2 Punkt 37 (2026-11-24): Äcker als zusammenhängende Fläche – eine gemeinsame, weich gezeichnete Maske über alle Gartenfelder, darin die Furchen
+  // als durchgehendes Muster in einer Richtung (vorher je Feld ein eigenes Stück mit ausgefranstem Rand: Flickenteppich). Vergleich: window.ACKER_ALT = true
+  if (WI && IM.boden_acker_schnee && !(typeof window !== 'undefined' && window.ACKER_ALT)) { const AF = felder((t, c, r) => inMap(c, r) && t === 'garten'); if (AF.length) {
+    m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.16}px)`; m.fillStyle = '#fff'; for (const [c, r] of AF) jitterHex(m, ...hexC(c, r), 1.04); m.filter = 'none';
+    const im = IM.boden_acker_schnee, pat = l.createPattern(im, 'repeat'); pat.setTransform(new DOMMatrix().rotate(7).scale(R * 3.8 / im.width));
+    l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.fillStyle = pat; l.fillRect(0, 0, WW, WH);
+    l.globalCompositeOperation = 'destination-in'; l.drawImage(MK, 0, 0); l.globalCompositeOperation = 'source-over'; w.globalAlpha = 0.62; w.drawImage(LY, 0, 0); w.globalAlpha = 1; } }
+  else if (WI && IM.boden_acker_schnee) for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
     const [x, y] = hexC(c, r), S = Math.ceil(R * 2.6), cv = document.createElement('canvas'); cv.width = cv.height = S; const a = cv.getContext('2d'), im = IM.boden_acker_schnee, k = S * 1.45 / im.width;
     a.translate(S / 2, S / 2); a.rotate(0.12 + (hrnd(c, r, 260) - 0.5) * 0.08); a.drawImage(im, -im.width * k / 2, -im.height * k / 2, im.width * k, im.height * k);   // Paket C Punkt 1 (2026-11-24): alle Äcker in einer Furchenrichtung – vorher je Feld anders gedreht, wirkte unruhig
     a.setTransform(1, 0, 0, 1, 0, 0); a.globalCompositeOperation = 'destination-in'; a.filter = `blur(${R * 0.1}px)`; a.fillStyle = '#fff'; a.translate(S / 2 - x, S / 2 - y); jitterHex(a, x, y, 0.88);
@@ -203,14 +210,23 @@ function aufbauen(cfg, IM) {
   const ROADS = cfg.strassen ? cfg.strassen.filter(z => z.length > 1).map(z => chaikin(verlaengern(z).pts, 3))
     : ketten((c, r) => flags(c, r).road && terr(c, r) !== 'canal' && terr(c, r) !== 'eis').filter(ch => ch.length > 1).map(ch => chaikin(verlaengern(ch).pts, 2));
   // Winter: Matschstraße mit Radspuren entlang des Wegs gedreht (Textur läuft senkrecht, wird je Stück in Wegrichtung gelegt), Schneeränder laufen in den Boden aus
-  function strasseWinter(lines) {
+  function strasseWinter(lines) {   // Paket C2 Punkt 35 (2026-11-24): jede Straße mit ihrer eigenen Maske – vorher eine gemeinsame Schicht für alle, dann übermalte der verschneite Texturrand der zweiten Straße das Matschband der ersten (gerade Kante entlang der Hauptstraße am Dorfplatz)
     const im = IM.strasse_matsch, B = R * 1.7, k = B / im.width;   // Matschband (gut die Hälfte der Kachel) etwa so breit wie die Maske
-    l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH);
-    for (const p of lines) { let v = 0; for (let i = 0; i < p.length - 1; i++) { const a = p[i], b = p[i + 1], len = Math.hypot(b[0] - a[0], b[1] - a[1]); if (len < 0.5) continue;
-      l.save(); l.translate(a[0], a[1]); l.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.PI / 2);
-      const pat = l.createPattern(im, 'repeat'); pat.setTransform(new DOMMatrix().translate(-B * 0.53, -v).scale(k)); l.fillStyle = pat; l.fillRect(-B / 2, -3, B, len + 6); l.restore(); v += len; } }
-    m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.09}px)`; m.strokeStyle = '#fff'; strokeLines(m, lines, R * 0.8); m.filter = 'none';
-    l.globalCompositeOperation = 'destination-in'; l.drawImage(MK, 0, 0); l.globalCompositeOperation = 'source-over'; w.drawImage(LY, 0, 0);
+    for (const p of lines) {
+      l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH);
+      let v = 0; for (let i = 0; i < p.length - 1; i++) { const a = p[i], b = p[i + 1], len = Math.hypot(b[0] - a[0], b[1] - a[1]); if (len < 0.5) continue;
+        l.save(); l.translate(a[0], a[1]); l.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]) - Math.PI / 2);
+        const pat = l.createPattern(im, 'repeat'); pat.setTransform(new DOMMatrix().translate(-B * 0.53, -v).scale(k)); l.fillStyle = pat; l.fillRect(-B / 2, -3, B, len + 6); l.restore(); v += len; }
+      m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.09}px)`; m.strokeStyle = '#fff'; strokeLines(m, [p], R * 0.8); m.filter = 'none';
+      m.globalCompositeOperation = 'destination-out';   // Enden innerhalb der Karte laufen über gut ein halbes Feld weich aus (statt runder, harter Kappe)
+      for (const [e, f] of [[p[0], p[Math.min(3, p.length - 1)]], [p[p.length - 1], p[Math.max(0, p.length - 4)]]]) {
+        if (!(e[0] > R && e[1] > R && e[0] < WW - R && e[1] < WH - R)) continue;
+        const dx = e[0] - f[0], dy = e[1] - f[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+        const gr = m.createLinearGradient(e[0] - ux * R * 0.75, e[1] - uy * R * 0.75, e[0] + ux * R * 0.2, e[1] + uy * R * 0.2); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,1)');
+        m.fillStyle = gr; m.beginPath(); m.arc(e[0], e[1], R * 1.1, 0, 7); m.fill(); }
+      m.globalCompositeOperation = 'source-over';
+      l.globalCompositeOperation = 'destination-in'; l.drawImage(MK, 0, 0); l.globalCompositeOperation = 'source-over'; w.drawImage(LY, 0, 0);
+    }
   }
   if (ROADS.length && WI && IM.strasse_matsch) { if (IM.boden_schnee_rein_1) schicht('boden_schnee', ctx => strokeLines(ctx, ROADS, R * 1.05), 0.25, 0.45, 11); strasseWinter(ROADS); }   // Wegränder zertrampelt – Punkt 1 (2026-11-24): schmaler und schwächer, Straßen ruhiger lesbar
   else if (ROADS.length) { w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(30,22,15,0.5)'; strokeLines(w, ROADS, R * 0.78); w.restore(); schicht('boden_kopfstein', ctx => strokeLines(ctx, ROADS, R * 0.62), 0.05, 1, 7, (cfg.hell || 1.2) * 1.05); w.save(); w.globalCompositeOperation = 'soft-light'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(255,240,210,0.35)'; strokeLines(w, ROADS, R * 0.5); w.restore(); }

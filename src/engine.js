@@ -493,7 +493,7 @@ const MAPS = {
   // Winterdorf (Arbeitstitel, Enrico 2026-11-22, Plan entwurf/KARTE_WINTERDORF.md, Bauplan entwurf/karte_winterdorf/konzept_flux.png): Dorf am zugefrorenen Fluss,
   // noch fast heil. Konkordat von Westen (Dorfseite), Aschenwacht von Osten (Felder jenseits des Flusses). Eis trägt nur Fußvolk; Fahrzeuge über Steinbrücke oder Furt.
   // Raster: E Eis, H Haus (je eigener Bauzustand), C Kapelle, R Steinbrücke, F Furt, g Feld mit Zaun, W Tannenwald, f lichter Wald
-  winterdorf: { id: 'winterdorf', name: 'Krähenfurt',   /* Name von Enrico (2026-11-22 17:30), intern weiter winterdorf */ size: 'Groß', cols: 18, rows: 12, zoneA: 2, zoneD: 13, band: 5, nebelRand: true, winter: true,   /* Abgleich 2026-11-22: Aschenwacht stellt bis ans Ostufer auf (mit zoneD 15: Konkordat 97 %) */
+  winterdorf: { id: 'winterdorf', name: 'Krähenfurt',   /* Name von Enrico (2026-11-22 17:30), intern weiter winterdorf */ size: 'Groß', cols: 18, rows: 12, zoneA: 2, zoneD: 14,   /* Paket C2 Punkt 36 (2026-11-24): zoneD 13 → 14 nach den Handgranaten (Konkordat 41,5 → 54 %) */ band: 5, nebelRand: true, winter: true,   /* Abgleich 2026-11-22: Aschenwacht stellt bis ans Ostufer auf (mit zoneD 15: Konkordat 97 %) */
     ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },   // wie Sankt Ruß: die Aschenwacht muss über den Fluss vorgehen
     desc: 'Ein verschneites Dorf am zugefrorenen Fluss, noch fast unversehrt. Das Eis trägt Fußtruppen, Fahrzeuge brauchen die Steinbrücke oder die Furt. Um Dorfplatz, Kapelle und Brücke wird gekämpft.',
     armyMax: { A: 24, D: 24 },
