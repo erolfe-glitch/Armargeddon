@@ -1,3 +1,47 @@
+## 2026-11-25 – U2: Klone und Grabenplätze (Punkt 64) (`9bc0b5e`, vorher `29fbd6f`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung, deshalb keinen sim-Lauf. Der PC ist mitten im Paket abgestürzt; es ging nichts verloren, die Arbeit ist danach fertig gestellt.
+
+### Zuerst: Restpunkte Grabenboden
+1. **Pfützen:** Spiegelung und Glanzrand sind kräftiger, dazu ein zweiter schwacher Glanzbogen. Sie bleiben dunkel und glitzern nicht.
+2. **Laufsteg:** Die Kacheln werden jetzt in Originalgröße aneinandergelegt und am Ende sauber abgeschnitten, nicht mehr gestreckt. Das Teil mit gebrochenen Latten (rost_2) liegt nicht mehr im Steg.
+3. **Kaputtes Teil mit Loch:** Das war das Kram-Teil „Einsturz“ (eingestürzte Bretter). Es liegt nicht mehr in Durchgängen.
+4. **Durchgang ohne Steg:** Das war in Wirklichkeit eine lange Feuerbucht (1,9 R), in der zufällig nur ein Rost lag. Lange Buchten bekommen jetzt einen Rost je etwa 0,6 R, mindestens einen.
+- Bilder: `entwurf/probe/u2/boden_nah.jpg`, `boden_mittel.jpg`.
+
+### Grabenplätze
+- Jedes Grabenfeld auf einem Zinnengraben hat jetzt **10 Plätze**. Sie verteilen sich über das Stück des Grabens, das zu diesem Feld gehört.
+- Feuerbuchten werden bevorzugt, Durchgänge etwas weniger, Knicke kaum.
+- In der Bucht stehen die Figuren abwechselnd an der Feindwand und dahinter, im Durchgang abwechselnd links und rechts der Mitte.
+- Trupps mit weniger Figuren verteilen sich gleichmäßig auf die Plätze.
+- Die Tiefensortierung je Figur stimmt, keine Figur steht vor einer Wand, hinter der sie stehen müsste.
+- Sankt Ruß hat noch die alte Grabenform und behält deshalb die bisherigen Plätze.
+- Rückweg zu den Plätzen aus U1: `window.GRABENPLATZ_ALT = true`.
+
+### Klone
+- Jede Figur ist etwas anders: Größe ±6 %, leicht geneigt, leicht versetzt.
+- Steht der Trupp in Ruhe, schaut etwa jede fünfte Figur zur anderen Seite. Beim Schießen und in jeder anderen Pose schauen wieder alle nach vorn.
+- Ruheposen-Liste: Der Code nimmt weiter die vorhandenen Bilder. Sobald der Berater mehrere Ruheposen je Trupp malt, trage ich sie in `POSE_SETS` ein.
+- Rückweg: `window.KLONE_ALT = true`.
+
+### Bilder (`entwurf/probe/u2/`, jeweils links vorher, rechts nachher)
+- `vergleich_grauwall_graben.jpg`
+- `vergleich_grauwall_graben_weit.jpg`
+- `vergleich_sanktruss_feld.jpg` (Klone im offenen Feld)
+
+Erzeugt mit `node tools/u2_bilder.mjs`.
+
+### Tests
+- test_kommentare und test_draht bestanden.
+- Partietest ohne Konsolenfehler.
+
+### Nebenbei
+In G4 und G4b hatten sich die Zeilenenden verstellt (ui.js, CLAUDE.md und BERICHT.md auf CRLF, gelaende_bau.js teils auf LF). Das ist zurückgestellt (`29fbd6f`), Inhalte sind unverändert.
+
+### Fragen an Enrico
+1. Zieht sich ein Graben lang in die Tiefe (Blick von vorn), stehen die Figuren dort zwangsläufig hintereinander und wirken gedrängt (oben in `vergleich_grauwall_graben.jpg`). Reicht das so, oder sollen in solchen Feldern weniger Figuren im Graben zu sehen sein?
+2. Gefällt das Spiegeln jeder fünften Figur in Ruhe, oder lieber ganz ohne?
+
 ## 2026-11-25 – Gelände G4b: Grabentakt + Grabenboden (Punkt 63) (`77f45ba`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung, deshalb keinen sim-Lauf.
