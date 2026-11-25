@@ -25,7 +25,7 @@
 - ✓ **Paket F2 – Nachträge vor dem Bauplan (Abschnitt 24.11. 23:12, Punkt 50), klein:** Aschenwacht-Schadenszahlen kräftiger, Maßstab-Probe E1 mit kleineren Panzern/Schreitern. **Danach eigener `pa`: Bauplan für den großen Umbau** (noch nichts bauen; Maßstab E1).
 - ✓ **Bauplan geschrieben** (`entwurf/BAUPLAN_UMBAU.md`, `37f7b67`).
 - ✓ **Paket BP2 – Bauplan überarbeiten (Abschnitt „24.11. 23:30 bis 25.11. 00:25“, Punkte 52–54), nur Plan, nichts bauen.** Danach Freigabe durch Enrico, dann U0.
-- **Paket U0 + U1 – Umbau beginnt (Abschnitt 25.11. 06:15, Punkt 55).** Je ein `pa` (erst U0, dann U1). Danach Pause für das Gelände-Paket G.
+- ✓ **Paket U0 + U1 – Umbau beginnt (Abschnitt 25.11. 06:15, Punkt 55).** Je ein `pa` (erst U0, dann U1). Danach Pause für das Gelände-Paket G.
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
 

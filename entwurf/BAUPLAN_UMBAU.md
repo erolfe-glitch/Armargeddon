@@ -243,3 +243,10 @@ Verbindliche Begriffe, wie sie künftig in Regeln, Texten und Anzeige heißen.
 
 ## 13. Stand der Pakete
 - **U0 erledigt (2026-11-25):** Git-Tag `vor-umbau` auf dem Stand vor dem ersten Umbau-Commit (gepusht). Rückweg: `git checkout vor-umbau` (nur ansehen) bzw. einzelne Dateien von dort holen. Das Probe-Werkzeug `tools/massstab_bilder.mjs` bleibt als Vergleich (Varianten A–E, E1f90/E1f85).
+- **U1 erledigt (2026-11-25):** Maßstab E1 im Spiel (`src/ui.js` vor `newFigs`: `MASS`, `massNF`, `massSlots`, `grabenPunkt`).
+  - Faktoren: Soldaten/Reiter/Helden/MG/Geschütze ×0,65, Fahrzeuge/Schreiter ×0,85.
+  - Figurenzahl: Linieninfanterie 10, Reiter 6, zwei lockere Reihen.
+  - Absenken im Graben und beim Eingraben mit dem Faktor; Posen-Versatz 25 ms.
+  - Grabenplätze vorläufig: über 4 Figuren gleichmäßig entlang der Grabenpunkte, abwechselnd quer versetzt; die eigentlichen 10 Grabenplätze kommen in U2.
+  - Rückweg: `window.MASSSTAB_ALT = true` bzw. `__dbg.massstab(0)`.
+  - Ballon unverändert.

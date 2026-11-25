@@ -13,7 +13,7 @@ const OUT = 'entwurf/probe/massstab'; mkdirSync(OUT, { recursive: true });
 const KARTEN = process.argv.slice(2).length ? process.argv.slice(2) : ['grauwall', 'winterdorf'];
 const ALLE = { A: null, B: { line: 8, cav: 5, sc: 0.75 }, C: { line: 11, cav: 7, sc: 0.81, zoom: 1.3 }, D: { line: 10, cav: 6, sc: 0.725 },
   E1: { line: 10, cav: 6, sc: 0.65, mit: true, weit: true }, E2: { line: 10, cav: 6, sc: 0.6, mit: true, weit: true },
-  E1f90: { line: 10, cav: 6, sc: 0.65, mit: true, weit: true, fz: 0.9 }, E1f85: { line: 10, cav: 6, sc: 0.65, mit: true, weit: true, fz: 0.85 } };   // Punkt 49/50b: E1f90/E1f85 mit Fahrzeugen und Schreitern ×0,9 bzw. ×0,85; E1 Soldat 0,52, E2 0,48; „mit“ heißt MG/Geschütze im selben Verhältnis, „weit“ lockerer im Feld
+  E1f90: { line: 10, cav: 6, sc: 0.65, mit: true, weit: true, fz: 0.9 }, E1f85: { line: 10, cav: 6, sc: 0.65, mit: true, weit: true, fz: 0.85 }, U1: { spiel: true } };   // U1: das Spiel selbst (eingebauter Maßstab, keine Haken)   // Punkt 49/50b: E1f90/E1f85 mit Fahrzeugen und Schreitern ×0,9 bzw. ×0,85; E1 Soldat 0,52, E2 0,48; „mit“ heißt MG/Geschütze im selben Verhältnis, „weit“ lockerer im Feld
 const VAR = process.env.VARIANTEN ? Object.fromEntries(process.env.VARIANTEN.split(',').map(k => [k, ALLE[k]])) : process.env.NUR ? { [process.env.NUR]: null } : { A: null, B: { line: 8, cav: 5, sc: 0.75 }, C: { line: 11, cav: 7, sc: 0.81, zoom: 1.3 }, D: { line: 10, cav: 6, sc: 0.725 } };   // sc = Soldatenhöhe relativ zu heute (0,8 Feldradien)
 const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armmass-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
@@ -23,9 +23,9 @@ let id = 0; const pend = {}, fehler = []; ws.onmessage = e => { const m = JSON.p
 const cmd = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] = r; ws.send(JSON.stringify({ id: i, method, params })); });
 const ev = async x => { const r = await cmd('Runtime.evaluate', { expression: x, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text); return r.result?.result?.value; };
 let HTML = readFileSync('index.html', 'utf8'); const hk = (a, b) => { if (HTML.split(a).length !== 2) throw new Error('Haken nicht eindeutig: ' + a); HTML = HTML.replace(a, b); };
-hk('function newFigs(u, d) {', 'function newFigs(u, d) { const nf0 = newFigs0(u, d); return window.__massNF ? window.__massNF(u, d, nf0, TYPES) : nf0; } function newFigs0(u, d) {');
+hk('function newFigs0(u, d) {', 'function newFigs0(u, d) { const nf0 = newFigs00(u, d); return window.__massNF ? window.__massNF(u, d, nf0, TYPES) : nf0; } function newFigs00(u, d) {');   // seit U1: Spiel hat den Maßstab selbst; die Probe schaltet ihn mit MASSSTAB_ALT ab und rechnet ihre Varianten vom alten Maßstab
 hk('function gbPlatz(u, d) {', 'function gbPlatz(u, d) { const p0 = gbPlatz0(u, d); return window.__massGP ? window.__massGP(u, d, p0, TYPES) : p0; } function gbPlatz0(u, d) {');
-hk('let h = im.naturalHeight / 320 * FIG_SH * s, w = h * im.naturalWidth / im.naturalHeight;', 'let h = im.naturalHeight / 320 * FIG_SH * s * (nf.tiefSc || 1), w = h * im.naturalWidth / im.naturalHeight;');   // Punkt 49: MG/Geschütze (Modelle mit Tiefe) mitschrumpfen
+// U1: der Faktor nf.tiefSc steckt jetzt im Spiel selbst
 hk('function frame(t) {', 'function frame(t) { const t0 = performance.now(); try { return frame0(t); } finally { const a = window.__massDT || (window.__massDT = []); a.push(performance.now() - t0); if (a.length > 400) a.shift(); } } function frame0(t) {');
 const HTML64 = Buffer.from(HTML, 'utf8').toString('base64');
 ws.addEventListener('message', e => { const m = JSON.parse(e.data); if (m.method === 'Fetch.requestPaused') cmd('Fetch.fulfillRequest', { requestId: m.params.requestId, responseCode: 200, responseHeaders: [{ name: 'Content-Type', value: 'text/html; charset=utf-8' }], body: HTML64 }); });
@@ -33,7 +33,7 @@ await cmd('Fetch.enable', { patterns: [{ urlPattern: '*/index.html*', resourceTy
 await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('arm.ton','0')}catch(e){}" });
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const bild = async name => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 86 }); writeFileSync(join(OUT, name + '.jpg'), Buffer.from(r.result.data, 'base64')); };
-const PATCH = `(() => {
+const PATCH = `(() => { window.MASSSTAB_ALT = true;
   const SL = (n, weit) => { const hin = Math.ceil(n / 2), vor = n - hin, out = [], bx = weit ? 0.64 : 0.56, row = (k, y, off) => { for (let i = 0; i < k; i++) { const x = k === 1 ? 0 : -bx + 2 * bx * i / (k - 1) + off, j = ((i * 37 + Math.round(y * 100)) % 7 - 3) * 0.012; out.push([x + j, y + j]); } };
     row(hin, weit ? -0.3 : -0.22, 0); row(vor, weit ? 0.3 : 0.24, vor < hin ? 0.1 : 0.06); return out; };   // zwei lockere Reihen, Füße im eigenen Feld
   const LINIE = new Set(['kohorte', 'grenadier']), mehr = (u, TYPES) => { const T = TYPES[u.type]; return LINIE.has(u.type) || (T && T.cls === 'cav'); };
@@ -63,7 +63,7 @@ for (const karte of KARTEN) {
     __dbg.neuDU(); const m = __dbg.mitte(best.c, best.r); return { c: best.c, r: best.r, x: m[0], y: m[1], platz }; })())`));
   console.log(karte, 'Mitte', lage.c, lage.r, lage.platz.map(p => p.slice(0, 1).concat(p.slice(4)).join('@')).join(' '));
   for (const [v, V] of Object.entries(VAR)) {
-    await ev(`(() => { window.__massV = ${JSON.stringify(V)}; __dbg.neuDU(); return true; })()`);
+    await ev(`(() => { const V = ${JSON.stringify(V)}; window.__massV = V && V.spiel ? null : V; window.MASSSTAB_ALT = !(V && V.spiel); __dbg.neuDU(); return true; })()`);
     const zn = 1.5 * (V && V.zoom || 1);
     await ev(`(() => { __dbg.camSetzen(${lage.x}, ${lage.y + 10}, ${zn}); return true; })()`); await sleep(1500); await bild(`${karte}_${v}_nah`);
     await ev(`(() => { __dbg.camSetzen(${lage.x}, ${lage.y}, typeof __dbg.ZFIT === 'function' ? __dbg.ZFIT() : __dbg.ZFIT); return true; })()`); await sleep(1200);   // ganze Karte (Passend-Zoom)
