@@ -1,3 +1,57 @@
+## 2026-11-25 – G7b voll, Zwischenstand (Punkte 78, 79) (`93b6504`, `aded42e`)
+
+**Nicht fertig – Zwischenstand nach Sparregel 5.** Das Paket war größer als ein `pa`.
+- Der neue Graben läuft weiterhin **nur in der Probe** (`window.GB_PROBE = { eingegraben: true }`), im Spiel ist er noch nicht.
+- Der Bodenkontakt der Hindernisse (79.3) ist **im Spiel** (Quelltext); index.html habe ich wie vereinbart noch nicht neu eingecheckt, weil das Paket nicht fertig ist.
+
+### Gemacht
+1. **Neue Teile geschnitten und eingebettet:**
+   - G7-3 Seitenwand (Bretter, Flechtwerk, Erde mit Wurzeln)
+   - G7-4 Brustwehr-Wall (ordentlich, abgesackt)
+   - G7-5 Lippen-Ecken (4 Stück)
+   - G7-6 Querwand (Bretter, Flechtwerk, beschädigt)
+   - Die Lippe mit höherer Auflösung.
+2. **Lippe scharf (78.1) und 0,3 R breit (78.2):**
+   - Sie liegt jetzt als eigenes Teil in Bildschirmauflösung auf dem Boden: perspektivisch richtig, scharf aus der Nähe, aus der Ferne über Verkleinerungsstufen ohne Flimmern.
+   - Ihre Farbe ist an den Kartenboden angeglichen, oben läuft sie weich in den Boden aus.
+   - **An den vorderen Kanten** (man sieht dort nicht in die Abbruchkante hinein) nehme ich nur den bröckeligen Bodenteil, umgedreht und schmaler (0,2 R). Mit der Abbruchkante sah es dort aus wie ein Brett.
+3. **Seitenwände (G7-3):** Kanten, an denen der Graben in die Tiefe läuft, bekommen die Seitenwand liegend (0,26 R, unten nachgedunkelt). Die „Platten“ sind damit weg.
+4. **Ferne Wand:** hängend aus G7-2, wie im Test.
+5. **Querwände (G7-6):** hängend, auf Grabenbreite gestaucht (0,36 SH hoch). Der Unterstand bleibt.
+6. **Brustwehr-Wall (G7-4):**
+   - An den Längsstücken liegt er als Sandsackwall. Aufrecht war er dort von der Seite gesehen nur ein Strich.
+   - **Stummel (79.2):** Die kurzen Knick-Stücke, die als eckiger Block über die Kante ragten, sind weg. Der Erdwall darunter läuft an den Enden rund aus.
+7. **Hindernisse mit Bodenkontakt (79.3, auf allen Karten):**
+   - Panzersperren (Igel, Höcker, Pfahlreihen) und Spanische Reiter stehen jetzt auf einem dunkleren Fleck aufgewühlter Erde mit Klumpen.
+   - Ihr unterer Rand läuft weich aus, und sie sind etwas eingesunken.
+   - Rückweg: `window.BODEN_ALT`.
+
+### Bilder
+- `entwurf/probe/gelaende_g7b/`:
+  - `vergleich_nah.jpg`, `vergleich_nah2.jpg`, `vergleich_ganz.jpg`: jeweils G7b-Test | G7b voll | Zielbild.
+  - `vergleich_ausschnitt.jpg`: Test gegen voll vergrößert; darauf sieht man es am besten.
+  - `vergleich_ecke.jpg`: Ecke ganz nah, Test gegen voll.
+- `entwurf/probe/boden_hindernisse/vergleich_nah.jpg` und `vergleich_nah2.jpg`: Hindernisse vorher/nachher.
+
+### Was noch fehlt (nächster `pa`)
+- **Ins Spiel nehmen:** G7 als Standard für die Zinnengräben, Rückweg `window.G7_ALT`.
+- **Lauf- und Sappengräben** auf denselben Aufbau. Heute stehen dort noch die alten Pappwände, siehe Zickzack-Graben links oben in `vergleich_ganz.jpg`.
+- **Lippen-Ecken G7-5:** Sie sind geschnitten, aber noch nicht gesetzt. Die Ecken schließen schon über überlappende Streifen. Die gemalten L-Stücke sind für eine Blickrichtung gemalt; ob sie sich an den Knicken drehen lassen, ohne falsch zu wirken, muss ich noch ausprobieren.
+- **R2** (Gräben als freie gerade Linien), **Bremse 2 und 4** und die **Leistungsmessung** vorher/nachher.
+- **Figuren im Graben:** Wie tief sie neben der neuen Lippe einsinken, habe ich noch nicht geprüft.
+
+### Tests und Hinweise
+- test_kommentare bestanden.
+  - **Wichtig:** Ich habe in diesem Paket viermal selbst Code hinter einen Kommentar geschoben. Der Prüfer hat jedes Mal angeschlagen, aber ich hatte ihn zweimal erst nach dem Probelauf laufen lassen. Ein unsichtbares Teil und ein Fehler beim Kartenaufbau gingen darauf zurück; alles ist vor dem Commit behoben.
+  - Ab jetzt lasse ich den Prüfer vor jedem build.py laufen.
+- **Gefunden und behoben:** Meine neue Hilfsfunktion hieß zuerst `eingesunken`, genau wie die vorhandene Funktion für Figuren im Graben. Sie hat diese überschrieben, und es gab einen Zeichenfehler. Jetzt heißt sie `bodenSink`.
+- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
+- Keine Hänger. Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. Passt die Richtung des Grabens (`vergleich_ausschnitt.jpg`)? Dann nehme ich ihn im nächsten `pa` ins Spiel, mit Lauf- und Sappengräben, R2, Bremsen und Messung.
+2. Reicht der Bodenkontakt der Hindernisse, oder soll der Erdfleck noch deutlicher werden?
+
 ## 2026-11-25 – G7b-Test: Erdlippe und Innenwand (Punkte 76, 77) (`8caaf72`)
 
 Gepusht, index.html eingecheckt. **Im Spiel ist nichts geändert.** Alles läuft nur in der Probe `window.GB_PROBE = { eingegraben: true }`. Mit `{ eingegraben: true, g7test: false }` kommt der G7a-Stand zurück.
