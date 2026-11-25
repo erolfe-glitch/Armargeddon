@@ -1,3 +1,52 @@
+## 2026-11-26 – G7d, Zwischenstand: neuer Graben im Spiel (Punkt 81, Teile 1–4, 6, 8) (`c21b8f8`)
+
+Gepusht. **Zwischenstand nach Sparregel 5:** Ecken (5), R2 und die Bremsen 2 und 4 (7) fehlen noch.
+- Im Quelltext ist der neue Graben jetzt **Standard**. index.html ist aber noch nicht neu eingecheckt, weil das Paket noch offen ist (siehe Frage 1).
+- Rückweg: `window.G7_ALT = true` vor dem Kartenaufbau.
+
+### Gemacht (in der Reihenfolge des Auftrags)
+1. **Querwände** bleiben wie in G7c. Neu: Ihr unteres Drittel läuft weich in die Grabensohle aus.
+2. **Sandsackwall:** in der Mitte zwischen G7b und G7c (Helligkeit 0,64 statt 0,46 bzw. 0,9), etwas breiter (0,24 R).
+   - Die blassen grauen Flecken kamen vom hellen Erdwall-Strich darunter, der in den Lücken zu sehen war. Der Erdwall ist jetzt dunkel.
+3. **Schwarzes Rechteck:** Es war das schwarze Unterende einer hängenden Querwand, nicht die Innenwand. Mit dem weichen Auslauf ist es weg.
+   - Zusätzlich bekommen sehr kurze Kanten (unter 0,55 R) keine hängende Innenwand mehr.
+4. **Ins Spiel:** Der eingegrabene Graben ist Standard für alle Gräben der Karte (Grauwall).
+   - Die Laufgräben liefen schon durch denselben Aufbau: Lippe, liegende Seitenwand und an langen hinteren Kanten die hängende Innenwand. Pappwände gibt es keine mehr.
+   - Sankt Ruß und Krähenfurt haben keine Gräben dieser Art; dort ändert sich nichts.
+6. **Figuren im Graben:** Sie stehen auf der Sohle im Graben und schweben nicht davor (`gelaende_g7d/grauwall_figuren_nah.jpg`). Ihre Füße stehen auf der Sohle; ein extra Einsinken war nicht nötig.
+8. **Leistung (mit Grafikkarte, Grauwall):**
+
+| | Zoom 1 Mittel | Zoom 1 schlechteste 5 % | ganze Karte Mittel | ganze Karte schlechteste 5 % |
+|---|---|---|---|---|
+| vorher (alter Graben) | 5,8 ms | 5,7 ms | 8,7 ms | 11,2 ms |
+| neuer Graben, erster Versuch | 7,2 ms | 11,2 ms | 13,8 ms | 16,8 ms |
+| **neuer Graben, nachgebessert** | **5,7 ms** | **5,7 ms** | **7,4 ms** | **11,2 ms** |
+
+   - Die Bremse lag beim Filter der hängenden Wände, der in jedem Bild neu gerechnet wurde, und bei zu vielen kleinen liegenden Stücken. Den Filter rechne ich jetzt einmal vor, die Stücke sind länger.
+   - Damit ist der neue Graben so schnell wie der alte, auf der ganzen Karte sogar etwas schneller. Bremse 2 ist damit weniger dringend.
+   - Messwerte: `entwurf/probe/leistung_g7d/vorher|nachher/messung.json`. Das Messwerkzeug kann jetzt `OUT=` und `FASS=neu`.
+
+### Noch offen (nächster `pa`)
+- **5. Lippen-Ecken G7-5:** noch nicht ausprobiert. Die Ecken schließen weiter über die überlappenden Streifen.
+- **7. R2** (gerade Gräben), **Bremse 2** (Teile je Tiefenband zwischenspeichern) und **Bremse 4** (voller Neuaufbau seltener).
+- Ganz rechts an der Brustwehr ist in `vergleich_ecke.jpg` noch ein schwacher heller Fleck zu sehen (Ende einer liegenden Seitenwand); das kläre ich mit.
+
+### Bilder (`entwurf/probe/gelaende_g7d/`)
+- `vergleich_nah.jpg`, `vergleich_nah2.jpg`, `vergleich_ganz.jpg`: alter Graben (G7_ALT) | neu | Zielbild.
+- `vergleich_ausschnitt.jpg`: alt | neu vergrößert.
+- `vergleich_ecke.jpg`: G7c | G7d ganz nah.
+- `grauwall_figuren_nah.jpg`: Trupps im Graben.
+
+### Tests
+- test_kommentare vor jedem build.py, bestanden.
+- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
+- Kein sim-Lauf (keine Grabenfelder geändert).
+- Keine Hänger. Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. Soll ich index.html **jetzt schon** einchecken? Dann kannst du den neuen Graben und den Bodenkontakt der Hindernisse sofort im Spiel sehen. Der Rest (Ecken, R2, Bremsen) käme danach.
+2. Passt der Sandsackwall so?
+
 ## 2026-11-25 – G7c: Graben nachgebessert (Punkt 80) (`1b1dc00`)
 
 Gepusht. Weiter **nur in der Probe** (`GB_PROBE { eingegraben: true }`). Der Bodenkontakt der Hindernisse wirkt im Spiel, sobald index.html am Paketende neu eingecheckt ist. Der Prüfer `test_kommentare` lief vor jedem build.py.
