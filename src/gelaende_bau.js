@@ -123,12 +123,15 @@ function gebacken(im, art) {   // G7b voll (2026-11-25): liegende Grabenteile ei
   if (im.complete === false || (im.naturalWidth === 0 && !(im instanceof HTMLCanvasElement))) return null;   // noch nicht geladen: nicht leer vorbereiten und merken
   if (art === 'nah') {   // vordere Kante: Abbruch ist von oben nicht zu sehen – nur der Bodenteil, umgedreht (Krümelrand zum Graben), außen weich in den Boden
     const W0 = im.naturalWidth || im.width, H0 = im.naturalHeight || im.height, h = Math.round(H0 * 0.55), c = document.createElement('canvas'); c.width = W0; c.height = h; const x = c.getContext('2d');
-    x.filter = 'sepia(0.3) saturate(1.05) brightness(0.72) contrast(1.08)'; x.translate(0, h); x.scale(1, -1); x.drawImage(im, 0, 0, W0, h, 0, 0, W0, h); x.setTransform(1, 0, 0, 1, 0, 0); x.filter = 'none';
+    x.filter = 'sepia(0.3) saturate(1.05) brightness(0.76) contrast(1.3)'; x.translate(0, h); x.scale(1, -1); x.drawImage(im, 0, 0, W0, h, 0, 0, W0, h); x.setTransform(1, 0, 0, 1, 0, 0); x.filter = 'none';
+    { const d = x.createLinearGradient(0, h * 0.8, 0, h); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(1, 'rgba(12,8,5,0.6)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, W0, h); }   // G7c: Kante zum Graben dunkler
     const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(0,0,0,0.9)'); g.addColorStop(1, 'rgba(0,0,0,1)'); x.globalCompositeOperation = 'destination-in'; x.fillStyle = g; x.fillRect(0, 0, W0, h);
     const mip = [c]; let q = c; while (q.height > 12) { const n = document.createElement('canvas'); n.width = Math.max(1, Math.round(q.width / 2)); n.height = Math.max(1, Math.round(q.height / 2)); const y = n.getContext('2d'); y.imageSmoothingQuality = 'high'; y.drawImage(q, 0, 0, n.width, n.height); mip.push(n); q = n; }
     C.set(im, mip); return mip; }
   const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext('2d');
-  x.filter = art === 'brust' ? 'brightness(0.9) contrast(1.05)' : 'sepia(0.3) saturate(1.05) brightness(0.72) contrast(1.08)'; x.drawImage(im, 0, 0); x.filter = 'none';   // an den dunkleren Kartenboden angeglichen
+  x.filter = art === 'brust' ? 'sepia(0.5) saturate(0.6) brightness(0.46) contrast(1.15)' : art === 'lippe' ? 'sepia(0.3) saturate(1.05) brightness(0.78) contrast(1.32)' : 'sepia(0.3) saturate(1.05) brightness(0.72) contrast(1.08)'; x.drawImage(im, 0, 0); x.filter = 'none';   /* G7c: Lippe mehr Kontrast, Sandsackwall dunkel und erdig */   // an den dunkleren Kartenboden angeglichen
+  if (art === 'lippe') { const d = x.createLinearGradient(0, c.height * 0.55, 0, c.height); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(0.35, 'rgba(14,9,6,0.35)'); d.addColorStop(1, 'rgba(8,5,3,0.75)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'source-over'; }   // G7c: Bruchkante zum Graben kräftig dunkel
+  if (art === 'brust') { x.globalCompositeOperation = 'source-atop'; for (let k = 0; k < 60; k++) { const px = (k * 97.3 % 1) * c.width, py = c.height * (0.15 + ((k * 0.618) % 1) * 0.8); x.fillStyle = k % 3 ? 'rgba(58,44,32,0.35)' : 'rgba(40,30,22,0.45)'; x.beginPath(); x.ellipse((px * 7.7 + k * 131) % c.width, py, c.height * (0.12 + (k % 5) * 0.05), c.height * (0.05 + (k % 3) * 0.03), 0, 0, 7); x.fill(); } x.globalCompositeOperation = 'source-over'; }   // G7c: Erde und Schmutz über den Säcken
   if (art === 'seite') { const d = x.createLinearGradient(0, c.height * 0.4, 0, c.height); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(1, 'rgba(10,7,5,0.72)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, c.width, c.height); }
   if (art !== 'brust') { const ob = art === 'seite' ? 0.32 : 0.42, g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(ob, 'rgba(0,0,0,0.85)'); g.addColorStop(ob + 0.18, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,1)');
     x.globalCompositeOperation = 'destination-in'; x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); }
@@ -398,7 +401,7 @@ function aufbauen(cfg, IM) {
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
   function wall(im, A, B, hW, o = {}) {   // Wandstück: Bild steht über der Bodenlinie A→B, entlang der Linie gekachelt
     if (!im) return o.u0 || 0;
-    if (o.boden && !window.BODEN_ALT) { bodenFleck([A, B], Math.max(R * 0.22, hW * 0.5)); im = bodenSink(im, 0.16); o = { ...o, sink: (o.sink || 0) + 0.06 * hW }; }   // Punkt 79.3: Bodenkontakt (Spanische Reiter)
+    if (o.boden && !window.BODEN_ALT) { bodenFleck([A, B], Math.max(R * 0.28, hW * 0.65)); im = bodenSink(im, 0.2); o = { ...o, sink: (o.sink || 0) + 0.09 * hW }; }   // Punkt 79.3: Bodenkontakt (Spanische Reiter)
     const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height * (o.stretch || 1), n = Math.max(1, Math.ceil(len / (R * 0.25)));
     let u = o.u0 || 0;
     if (!o.lean && o.mitte && KIPP > 0) o = { ...o, lean: kippen(A, B, o.mitte, hW) };
@@ -445,17 +448,19 @@ function aufbauen(cfg, IM) {
     if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
   }
   function bodenFleck(pts, breit) {   // Punkt 79.3: aufgewühlte, dunklere Erde unter einem Hindernis (Linie bzw. Punkt), weicher Rand, ein paar Erdklumpen
-    SHADOW.push(() => { w.save(); w.lineCap = 'round'; w.lineJoin = 'round'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(34,25,18,0.62)'; w.lineWidth = breit; w.beginPath(); pts.forEach((p, k) => k ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1])); if (pts.length === 1) w.lineTo(pts[0][0] + 0.1, pts[0][1]); w.stroke();
-      w.filter = 'none'; const n = Math.max(4, Math.round(breit / R * 10)); for (let k = 0; k < n * pts.length; k++) { const p = pts[k % pts.length], h1 = hrnd(Math.round(p[0]) + k, Math.round(p[1]), 431), h2 = hrnd(Math.round(p[1]) + k, Math.round(p[0]), 432), a = h1 * 6.283, d = breit * 0.45 * Math.sqrt(h2);
-        w.fillStyle = h1 < 0.5 ? 'rgba(46,34,24,0.7)' : 'rgba(118,96,72,0.55)'; w.beginPath(); w.ellipse(p[0] + Math.cos(a) * d, p[1] + Math.sin(a) * d * 0.7, R * (0.012 + h2 * 0.014), R * (0.008 + h2 * 0.01), a, 0, 7); w.fill(); }
+    SHADOW.push(() => { w.save(); w.lineCap = 'round'; w.lineJoin = 'round'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(28,20,14,0.78)'; w.lineWidth = breit; w.beginPath(); pts.forEach((p, k) => k ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1])); if (pts.length === 1) w.lineTo(pts[0][0] + 0.1, pts[0][1]); w.stroke();
+      w.filter = `blur(${R * 0.015}px)`; w.strokeStyle = 'rgba(10,7,4,0.7)'; w.lineWidth = breit * 0.3; w.stroke();   // G7c: Kontaktschatten direkt unter Füßen und Balken
+      w.filter = 'none'; const n = Math.max(8, Math.round(breit / R * 22)); for (let k = 0; k < n * pts.length; k++) { const p = pts[k % pts.length], h1 = hrnd(Math.round(p[0]) + k, Math.round(p[1]), 431), h2 = hrnd(Math.round(p[1]) + k, Math.round(p[0]), 432), a = h1 * 6.283, d = breit * 0.45 * Math.sqrt(h2);
+        w.fillStyle = h1 < 0.5 ? 'rgba(36,26,18,0.85)' : 'rgba(128,104,78,0.75)'; w.beginPath(); w.ellipse(p[0] + Math.cos(a) * d, p[1] + Math.sin(a) * d * 0.7, R * (0.016 + h2 * 0.022), R * (0.011 + h2 * 0.015), a, 0, 7); w.fill(); }
       w.restore(); }); }
   function liegend(mip, A, B, nx, ny, br, aussen, o = {}) {   // G7b voll (2026-11-25): liegendes Teil in Bildschirmauflösung (wie die Aufsteller, nicht im Weltbild): Streifen entlang A→B, Bildoberkante außen (n), Unterkante innen; aussen = Anteil der Breite außerhalb der Linie
     const quelle = mip; mip = typeof quelle === 'function' ? null : quelle; const im0 = o.mass || o.mass2 || (mip && mip[0]); if (!im0) return o.u0 || 0; const len = Math.hypot(B[0] - A[0], B[1] - A[1]); if (len < 1) return o.u0 || 0;
-    const ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len, ue = o.ue || 0, L = len + 2 * ue, tw = (im0.naturalWidth || im0.width) && (im0.naturalHeight || im0.height) ? (im0.naturalWidth || im0.width) * br / ((im0.naturalHeight || im0.height) * (o.seit || 1)) : br * 6.5 / (o.seit || 1),   /* Bild noch nicht geladen: übliches Seitenverhältnis */ n = Math.max(1, Math.ceil(L / (R * 0.3)));
+    const ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len, ue = o.ue || 0, L = len + 2 * ue, tw = (im0.naturalWidth || im0.width) && (im0.naturalHeight || im0.height) ? (im0.naturalWidth || im0.width) * br / ((im0.naturalHeight || im0.height) * (o.seit || 1)) : br * 6.5 / (o.seit || 1),   /* Bild noch nicht geladen: übliches Seitenverhältnis */ n = Math.max(1, Math.ceil(L / (R * (o.enden ? 0.08 : 0.3))));
     let u = (o.u0 || 0) - ue; const S = [A[0] - ux * ue + nx * br * aussen, A[1] - uy * ue + ny * br * aussen];
     for (let i = 0; i < n; i++) { const s0 = L * i / n, s1 = L * (i + 1) / n, u0 = u + s0, O = [S[0] + ux * s0, S[1] + uy * s0], ln = s1 - s0;
       const yy = Math.max(O[1], O[1] + uy * ln, O[1] - ny * br, O[1] + uy * ln - ny * br), my = O[1] + uy * ln / 2 - ny * br / 2;
       if (o.skip && o.skip(O[0] + ux * ln / 2 - nx * br * (0.5 - aussen), my)) continue;
+      const al = o.enden ? Math.max(0, Math.min(1, Math.min(s0 + ln / 2, L - s0 - ln / 2) / o.enden)) : 0; if (o.enden && al <= 0.02) continue;   // G7c: Enden laufen weich aus
       DRAW.push({ feld: FELD, y: (o.tief === 'mitte' ? my : yy) + (o.bias || 0), f: () => {
         const M = typeof quelle === 'function' ? quelle() : mip; if (!M || !M.length) return;
         const p0 = proj(O[0], O[1]), px = proj(O[0] + ux * ln, O[1] + uy * ln), py = proj(O[0] - nx * br, O[1] - ny * br); if (p0[2] <= 1 || px[2] <= 1 || py[2] <= 1 || offscreen(p0, px)) return;
@@ -463,7 +468,7 @@ function aufbauen(cfg, IM) {
         let a0 = (((u0 % tw) + tw) % tw), rest = ln, x = 0;
         while (rest > 0.01) { const st = Math.min(rest, tw - a0), sx = a0 * f, sw = st * f; if (sw >= 0.3) {
             const t0 = x / ln, t1 = (x + st) / ln, qa = [p0[0] + (px[0] - p0[0]) * t0, p0[1] + (px[1] - p0[1]) * t0], qb = [p0[0] + (px[0] - p0[0]) * t1, p0[1] + (px[1] - p0[1]) * t1];
-            g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, (py[0] - p0[0]) / ih, (py[1] - p0[1]) / ih, qa[0], qa[1]); if (o.alpha) g.globalAlpha = o.alpha;
+            g.save(); g.setTransform((qb[0] - qa[0]) / sw, (qb[1] - qa[1]) / sw, (py[0] - p0[0]) / ih, (py[1] - p0[1]) / ih, qa[0], qa[1]); if (o.alpha) g.globalAlpha = o.alpha; if (o.enden) g.globalAlpha *= al;
             g.drawImage(im, sx, 0, Math.min(sw + 0.5, iw - sx), ih, 0, 0, Math.min(sw + 0.5, iw - sx), ih); g.restore(); }
           rest -= st; x += st; a0 = 0; }
       } }); }
@@ -471,7 +476,7 @@ function aufbauen(cfg, IM) {
   }
   function stand(im, x, y, hW, o = {}) {   // Aufsteller am Fußpunkt (x, y), Höhe hW
     if (!im) return;
-    if (o.boden && !window.BODEN_ALT) { const bw = hW * im.width / im.height; bodenFleck([[x - bw * 0.36, y], [x + bw * 0.36, y]], Math.max(R * 0.2, hW * 0.5)); im = bodenSink(im, 0.16); o = { ...o, sink: (o.sink || 0) + 0.06 * hW }; }   // Punkt 79.3: Bodenkontakt
+    if (o.boden && !window.BODEN_ALT) { const bw = hW * im.width / im.height; bodenFleck([[x - bw * 0.4, y], [x + bw * 0.4, y]], Math.max(R * 0.26, hW * 0.65)); im = bodenSink(im, 0.2); o = { ...o, sink: (o.sink || 0) + 0.09 * hW }; }   // Punkt 79.3: Bodenkontakt
     const baum = BAUMFELD;
     DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
@@ -737,7 +742,10 @@ function aufbauen(cfg, IM) {
             if (G7V && zs && zs.has(i)) continue;   // G7b voll (Enrico 21:20): kein eckiger Stummel am Knick, der über die Kante ragt; der Erdwall läuft dort rund aus
             if (G7V) { const L3 = Math.hypot(B2[0] - A2[0], B2[1] - A2[1]) || 1, ex = R * 0.12 / L3; HUEGEL.push([[A2[0] - (B2[0] - A2[0]) * ex, A2[1] - (B2[1] - A2[1]) * ex], [B2[0] + (B2[0] - A2[0]) * ex, B2[1] + (B2[1] - A2[1]) * ex]]); }
             else if (EG) HUEGEL.push([A2, B2]);   // G7a-Probe: Brustwehr liegt als Wall auf dem Boden
-            if (G7V && BRW.length && sd > 0.3) { const bw = BRW[Math.floor(hrnd(ti, i, 424) * 4) % BRW.length]; LU[ti + ':b'] = liegend(() => gebacken(bw, 'brust'), A2, B2, (mx - cx) / dl, (my - cy) / dl, R * 0.3, 0.5, { mass: bw, u0: LU[ti + ':b'], ue: R * 0.03, tief: 'mitte', bias: R * 0.02, skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) }); continue; }   // G7b voll: Brustwehr an Längsstücken liegend (aufrecht wäre sie von der Seite nur ein Strich)
+            if (G7V && BRW.length && sd > 0.3) {   // G7c: Brustwehr an Längsstücken liegend: Fassung je Abschnitt, manche Abschnitte nur Erdwall, Enden laufen weich aus, schmal und dunkel
+              const h1 = hrnd(ti * 13 + side, i, 426); if (h1 < 0.18) continue; const bw = BRW[h1 < 0.55 ? 1 % BRW.length : 0];
+              liegend(() => gebacken(bw, 'brust'), A2, B2, (mx - cx) / dl, (my - cy) / dl, R * 0.21, 0.5, { mass: bw, u0: h1 * 7 * R, enden: R * 0.22, tief: 'mitte', bias: R * 0.02, skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
+              continue; }
             uu.p = wall(G7V && BRW.length ? BRW[Math.floor(hrnd(ti, i, 424) * 4) % BRW.length] : GT && IM.graben_brustwehr ? IM.graben_brustwehr : IM.graben_kante_vorn, A2, B2, (G7V ? 0.34 : EG ? 0.3 : 0.4) * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
               skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
           } else if (!ZI && ex && sd > 0.3 && Math.sign(mx - cx) === ex) {
@@ -763,7 +771,7 @@ function aufbauen(cfg, IM) {
       STIRN.forEach((st, k) => {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
         if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.weg) { GTEILE.weg = (GTEILE.weg || 0) + 1; return; } else if (st.feind) last.q = im; else last.e = im;
-        if (G7V && QWT.length && im !== IM.graben_unterstand) { const q = QWT[Math.floor(hrnd(st.ti, k, 425) * 3) % QWT.length]; stand(q, st.x, st.y, 0.36 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
+        if (G7V && QWT.length && im !== IM.graben_unterstand) { const QW2 = QWT.length > 1 ? QWT.slice(1) : QWT, q = QW2[Math.floor(hrnd(st.ti, k, 425) * QW2.length)];   /* G7c: Bretter-Fassung wirkte wie eine Kiste – nur Flechtwerk und beschädigt */ stand(q, st.x, st.y, 0.7 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   /* G7c: mehr Höhe in die Tiefe (Erdblock fällt in den Graben) */   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
         stand(im, st.x, st.y, Math.min(st.wd * im.height / im.width, (st.feind ? 0.42 : 0.38) * SH), EG ? { bias: R * 0.02, noShadow: true, haengen: true, filter: 'brightness(0.8)' } : { bias: R * 0.02, shadeK: 0.3 }); });
       BUCHTEN.forEach((b, k) => { if (b.ti < 0) return; const v = hrnd(b.ti, k, 350), t = 0.25 + hrnd(b.ti, k, 351) * 0.5, x = b.a[0] + (b.b[0] - b.a[0]) * t, y = b.a[1] + (b.b[1] - b.a[1]) * t, at = o => [x + b.nx * R * o, y + b.ny * R * o];
         if (v < 0.3 && LEI.length) { const im = nimm(LEI, hrnd(b.ti, k, 352), last.b); last.b = im; stand(im, ...at(GK - 0.12), hoch(im) * 0.9, { noShadow: true }); }
