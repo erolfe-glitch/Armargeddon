@@ -1,3 +1,52 @@
+## 2026-11-25 – G7a: Gräben eingegraben – Probe und Plan (Punkt 70, Teil a) (`72e9e9e`)
+
+Gepusht, index.html eingecheckt. **Im Spiel ist nichts geändert.** Die Probe läuft nur über `window.GB_PROBE = { eingegraben: true }`.
+
+**Plan mit Analyse, Teile-Liste und Aufwand:** `entwurf/GELAENDE_G7_PLAN.md`
+
+### Kurz: Warum es wie Pappe wirkt
+- Beide Grabenwände stehen als aufrechte Streifen **nach oben** auf dem Boden. Die vordere Wand dürfte gar nicht zu sehen sein, die hintere müsste von der Kante **nach unten** laufen.
+- Es gibt keine Erdlippe, nur eine gerade Linie.
+- Die Wandbilder sind für aufrechte Wände gemalt.
+- Die Sandsäcke sind ein Streifen ohne Erdkörper und ohne Schatten.
+- An den Ecken treffen einzelne Streifen stumpf aufeinander.
+
+### Probe (nur Code, heutige Bilder)
+- Die nahe Wand ist weg.
+- Die ferne Wand hängt schräg nach unten und ist abgedunkelt; Querwände und Unterstand hängen ebenfalls.
+- An allen Kanten liegt eine Erdlippe mit Krümeln.
+- Die Brustwehr ist niedriger und liegt auf einem Erdhügel, der Rückwall ist ein flacher Hang.
+- Die Sohle ist dunkler.
+
+**Bilder** (`entwurf/probe/gelaende_g7a/`, jeweils links heute, rechts Probe):
+- `vergleich_ganz.jpg`: Aus der Ferne wirkt der Graben deutlich mehr wie in den Boden geschnitten.
+- `vergleich_nah.jpg` und `vergleich_nah2.jpg`: Die Richtung stimmt, aber die Seitenwände (Nord–Süd) wirken weiter wie Platten, und die Code-Lippe ist nur eine Andeutung.
+- **Mein Fazit:** Mit Code allein kommen wir etwa halb ans Zielbild; den Rest liefern nur Bilder, die von oben in den Graben gemalt sind.
+
+### Teile für den Berater (Tabelle im Plan, Abschnitt 3)
+- **G7-1** Erdlippe (wichtigstes Teil)
+- **G7-2** Innenwand von oben (3 Varianten)
+- **G7-3** Seitenwand
+- **G7-4** Sandsack-Wall mit Körper
+- **G7-5** Lippen-Ecken innen/außen
+- **G7-6** Querwand von oben
+- **G7-7** Rückwall-Hang
+
+Roste, Pfützen, Kram, Leitern, Stahlschilde und der Unterstand bleiben.
+
+### Aufwand
+- **G7b** mit den Bildern: etwa ein ganzes Paket. R2 (freie gerade Gräben) und die Bremsen 2 und 4 passen gut hinein.
+- **Leistung:** wird eher besser, weil Lippe, Wall und Wände flach im Bodenbild liegen statt in jedem Bild nach Tiefe gemischt zu werden.
+- **Grabenplätze:** bleiben gleich; zu prüfen ist nur, wie tief die Figuren einsinken.
+
+### Tests
+- test_kommentare bestanden.
+- Partietest ohne Konsolenfehler (Standard-Ansicht unverändert).
+
+### Fragen an Enrico
+1. Stimmt die Richtung der Probe (nahe Wand weg, ferne Wand hängt, Lippe)?
+2. Alle sieben Teile beim Berater bestellen, oder zuerst nur G7-1 (Lippe) und G7-2 (Innenwand) als Test?
+
 ## 2026-11-25 – R1: Truppstärke 8 / 6 / 3, Feldlinien dezenter (Punkte 72, 73 R1) (`dac0dba`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Der PC ist mitten im Paket abgestürzt; der Code war vollständig erhalten, fehlende Bilder und Tests sind nachgeholt.
