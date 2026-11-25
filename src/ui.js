@@ -1717,6 +1717,28 @@ async function poseWurf(id, x2, y2) {
 }
 // F46 (2026-11-21): liegend bzw. niedrig gemalte Trupps sinken im Graben weniger tief ein (sonst sieht man sie kaum)
 const GRABEN_TIEFE = { buechse: 0.35, pirsch: 0.5, scharf: 0.5 };
+// L1 (2026-11-25, Fable-Bremsen 1 und 3): Canvas-Filter und Farbverläufe nicht mehr in jedem Bild – je Figurenbild und Filter einmal vorrechnen und merken (wie bwBild).
+// Rückweg zum Vergleich: window.LEISTUNG_ALT = true (alles wie vorher in jedem Bild).
+const FILT_C = new WeakMap();
+function filtBild(im, filt) {   // Bild mit fertig eingerechnetem Filter (Leinwand mit naturalWidth/naturalHeight wie bwBild)
+  if (!filt || window.LEISTUNG_ALT || !im) return im; let m = FILT_C.get(im); if (!m) FILT_C.set(im, m = new Map()); let c = m.get(filt); if (c) return c;
+  const w = im.naturalWidth || im.width, h = im.naturalHeight || im.height; if (!w || !h) return im;
+  c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.filter = filt; x.drawImage(im, 0, 0, w, h);
+  c.naturalWidth = w; c.naturalHeight = h; c._key = im._key; m.set(filt, c); return c;
+}
+const SCHATTEN_C = {};
+function kontaktBild() {   // Kontaktschatten (weicher Fleck + Kern) als fertiges Bild je Bildwirkung; Maße relativ: Fleck = ganze Fläche, Kern 0,45/(1+0,12·BW) breit
+  const key = BW + ':' + BW_SCH[BW]; if (SCHATTEN_C[key]) return SCHATTEN_C[key]; const N = 128, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'), m = N / 2, f = BW ? 1 + 0.12 * BW : 1;
+  const sg = x.createRadialGradient(m, m, 0, m, m, m); sg.addColorStop(0, `rgba(6,4,3,${bwA(0.72)})`); sg.addColorStop(0.5, `rgba(6,4,3,${bwA(0.42)})`); sg.addColorStop(1, 'rgba(6,4,3,0)'); x.fillStyle = sg; x.fillRect(0, 0, N, N);
+  x.fillStyle = `rgba(4,3,2,${bwA(0.55)})`; x.beginPath(); x.ellipse(m, m, m * 0.45 / f, m * 0.42 / f, 0, 0, 7); x.fill(); return (SCHATTEN_C[key] = c);
+}
+const KETTE_SCH = new WeakMap();
+function ketteSchatten(im, lp, sh) {   // weicher Schatten unter den Ketten als fertiges Bild je Fahrzeugbild (Maß sh: Verhältnis s zu h, je Bild fest); Bildkoordinaten in Bildbreiten
+  let c = KETTE_SCH.get(im); if (c) return c; const H0 = 256, W0 = H0 * im.naturalWidth / im.naturalHeight, s0 = H0 * sh, pad = Math.ceil(s0 * 0.1) + 4;
+  c = document.createElement('canvas'); c.width = Math.ceil(W0 + 2 * pad); c.height = Math.ceil(H0 + 2 * pad); const x = c.getContext('2d'); x.filter = `blur(${Math.max(1, s0 * 0.022)}px)`; x.fillStyle = 'rgba(4,3,2,0.85)'; x.beginPath();
+  lp.forEach((q, i) => x[i ? 'lineTo' : 'moveTo'](pad + q[0] * W0, pad + q[1] * H0 + s0 * 0.012)); for (let i = lp.length - 1; i >= 0; i--) x.lineTo(pad + lp[i][0] * W0, pad + lp[i][1] * H0 - s0 * 0.13);
+  x.closePath(); x.fill(); c._pad = pad; c._W0 = W0; KETTE_SCH.set(im, c); return c;
+}
 // U2 (2026-11-25): Klone aufbrechen – jede Figur leicht anders: Größe ±6 %, Neigung ±0,035, Versatz ±0,035 Feldradien; in Ruhe (ganzer Trupp ohne Pose,
 // Bild = Ruhepose) schaute bis U2b jede fünfte Figur zur Seite (KLON.spiegel, jetzt 0). Fest je Einheit und Figur. Rückweg window.KLONE_ALT.
 const KLON = { sz: 0.06, rot: 0.035, jit: 0.035, spiegel: 0 }   /* U2b: Spiegeln aus (Enrico 15:10) */, KLON_NULL = { sz: 1, rot: 0, jx: 0, jy: 0, sp: false };
@@ -1763,10 +1785,11 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
         const gr = g.createRadialGradient(0, 0, 0, 0, 0, Math.abs(x1 - x0) / 2 + s * 0.04); gr.addColorStop(0, `rgba(6,4,3,${bwA(0.6)})`); gr.addColorStop(0.7, `rgba(6,4,3,${bwA(0.4)})`); gr.addColorStop(1, 'rgba(6,4,3,0)');
         g.fillStyle = gr; g.beginPath(); g.arc(0, 0, Math.abs(x1 - x0) / 2 + s * 0.04, 0, 7); g.fill(); g.restore();
         const lp = [...lows].sort((p, q) => p[0] - q[0]);
-        g.save(); g.filter = `blur(${Math.max(1, s * 0.022)}px)`; g.fillStyle = 'rgba(4,3,2,0.85)'; g.beginPath();
+        if (!window.LEISTUNG_ALT) { const kc = ketteSchatten(im, lp, s / h), k2 = w / kc._W0; g.save(); if (flip) { g.translate(x, 0); g.scale(-1, 1); g.translate(-x, 0); } g.drawImage(kc, x - w / 2 - kc._pad * k2, top - kc._pad * k2, kc.width * k2, kc.height * k2); g.restore(); }   // L1: fertiges Bild statt blur je Bild
+        else { g.save(); g.filter = `blur(${Math.max(1, s * 0.022)}px)`; g.fillStyle = 'rgba(4,3,2,0.85)'; g.beginPath();
         lp.forEach((q, i) => g[i ? 'lineTo' : 'moveTo'](sx(q[0]), top + q[1] * h + s * 0.012));
         for (let i = lp.length - 1; i >= 0; i--) g.lineTo(sx(lp[i][0]), top + lp[i][1] * h - s * 0.13);
-        g.closePath(); g.fill(); g.restore();
+        g.closePath(); g.fill(); g.restore(); }
       } else {
       // breite flache Ellipse von vorn bis hinten, weich auslaufend
       g.save(); g.translate(cx, cy); g.scale(1, ry / rx);
@@ -1782,9 +1805,9 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       g.fillStyle = `rgba(6,4,3,${bwA(0.45)})`; g.beginPath(); g.ellipse(x, fy, w * 0.45, s * 0.15 * k, 0, 0, 7); g.fill();
     }
     const filt = [nf.kette ? (KETTE_FILTER[nf.key] || 'brightness(0.84) contrast(0.92) saturate(0.8) sepia(0.1)') : '', done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : ''].filter(Boolean).join(' ');   // Panzer: Farbstimmung der Umgebung
-    if (done) g.globalAlpha = A0 * 0.85; if (filt) g.filter = filt;
+    if (done) g.globalAlpha = A0 * 0.85; const vorF = !!filt && !window.LEISTUNG_ALT; if (filt && !vorF) g.filter = filt;   // L1: Filter im Bild vorgerechnet
     g.save(); if (sink) { g.beginPath(); g.rect(x - w, top - h, w * 2, fy - top + h + sink * 0.2); g.clip(); }
-    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore(); d.bildLinks = !!flip !== !!nf.links;   // F83: gezeigte Blickrichtung (Test); F89: nach links gemalte Bilder
+    g.translate(x, top + sink * 0.8); if (flip) g.scale(-1, 1); g.drawImage(vorF ? filtBild(nf.kette ? schlammrand(im, env) : im, filt) : nf.kette ? schlammrand(im, env) : im, -w / 2, 0, w, h); g.restore(); d.bildLinks = !!flip !== !!nf.links;   // F83: gezeigte Blickrichtung (Test); F89: nach links gemalte Bilder
     d.fbx = [[x - w / 2 - d.x, top + sink * 0.8 - d.y, w, h, flipL]];
     { const mz = MUZ[nf.key]; if (mz) d.muz = [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flipL]; }   // Laufmündung (neue Ansicht)
     { const mz = MUZ2[nf.key]; d.muz2 = mz ? [(flip ? -1 : 1) * (mz[0] - 0.5) * w + x - d.x, top + sink * 0.8 + mz[1] * h - d.y, flip] : null; }   // Mündung der Zweitwaffe
@@ -1802,7 +1825,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
     const sw = Math.min(w * (nf.vehicle ? 0.5 : 0.36), s * (nf.vehicle ? 1.35 : 0.34)), sk = sw * 0.34 * Math.max(0.55, k);
-    const kontakt = (k2 = 1) => { const ww = sw * (BW ? 1 + 0.12 * BW : 1) * k2; g.save(); g.translate(fx, fy); g.scale(1, sk / sw);
+    const kontakt = (k2 = 1) => { const ww = sw * (BW ? 1 + 0.12 * BW : 1) * k2; if (!window.LEISTUNG_ALT) { g.drawImage(kontaktBild(), fx - ww, fy - ww * sk / sw, ww * 2, ww * 2 * sk / sw); return; }   // L1: fertiges Bild statt Farbverlauf je Figur
+      g.save(); g.translate(fx, fy); g.scale(1, sk / sw);
       const sg = g.createRadialGradient(0, 0, 0, 0, 0, ww); sg.addColorStop(0, `rgba(6,4,3,${bwA(0.72)})`); sg.addColorStop(0.5, `rgba(6,4,3,${bwA(0.42)})`); sg.addColorStop(1, 'rgba(6,4,3,0)');
       g.fillStyle = sg; g.beginPath(); g.arc(0, 0, ww, 0, 7); g.fill(); g.restore();
       g.fillStyle = `rgba(4,3,2,${bwA(0.55)})`; g.beginPath(); g.ellipse(fx, fy, sw * 0.45 * k2, sk * 0.42, 0, 0, 7); g.fill(); };
@@ -1810,14 +1834,15 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const back = nf.trupp && f.oy < -0.1;
     const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : '', back ? 'brightness(0.86)' : ''].filter(Boolean).join(' ');
     if (done) g.globalAlpha = A0 * 0.85;
-    if (filt) g.filter = filt;
-    const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
+    const vorF = !!filt && !window.LEISTUNG_ALT, imF = vorF ? filtBild(f.im, filt) : f.im;   // L1: Filter (hintere Reihe, grau, dunkles Feld) einmal je Bild vorgerechnet
+    if (filt && !vorF) g.filter = filt;
+    const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = (!vorF && fl) || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
         if (BW) { const gl = g.globalAlpha; g.globalAlpha = gl * 0.75; kontakt(1.1); g.globalAlpha = gl; }   // Bildwirkung: Schatten auf der Grabensohle
-        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
+        const e = GBau.eingesunken(imF, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
       } else {
         if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
-        g.translate(fx, fy + h * 0.012 + sink); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
+        g.translate(fx, fy + h * 0.012 + sink); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(imF, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip, MUZ_FIG[f.im && f.im._key] || MUZ[f.im && f.im._key] || null]);   // M3 (2026-11-22): Helden/Generäle (Einzelmodelle über diesen Weg) lesen auch MUZ   // 6.: Mündung aus dem Bild (MUZ_FIG)
@@ -2137,7 +2162,9 @@ function tonWecken() { const ac = tonNetz(); if (ac && ac.state === 'suspended')
 function anBus(a, bus, hall) {   // Element in den Weg hängen (einmal je Element); hall: 'A' | 'B' = zusätzlich in den Nachhall
   if (!a || a._bus) return a; const ac = tonNetz(); if (!ac) return a;
   try { if (ac.state === 'suspended') ac.resume(); const src = ac.createMediaElementSource(a); src.connect(TBUS[bus] || TBUS.e); if (hall && TBUS['hall' + hall]) src.connect(TBUS['hall' + hall]); a._bus = bus; a._src = src;
-    if (!a.loop) a.addEventListener('ended', () => { try { src.disconnect(); } catch (e) {} }, { once: true }); } catch (e) {}
+    const weg = () => { if (a._weg) return; try { src.disconnect(); } catch (e) {} a._weg = true; };   // L1: auch nach pause() (Einzelschuss mit dur, Getümmel-Schleife) vom Tonweg trennen; beim nächsten play() wieder anhängen
+    a.addEventListener('ended', weg); a.addEventListener('pause', weg);
+    a.addEventListener('play', () => { if (!a._weg) return; a._weg = false; try { src.connect(TBUS[bus] || TBUS.e); if (hall && TBUS['hall' + hall]) src.connect(TBUS['hall' + hall]); } catch (e) {} }); } catch (e) {}
   return a; }
 function stimmVolSetzen(v) { stimmVol = v; if (TBUS) TBUS.s.gain.value = v; try { localStorage.setItem('arm.stimmvol', v); } catch (e) {} }
 // Zielmischung (Bericht Paket I, Tabelle F95): Faktor auf die bisherige Spiel-Lautstärke je Ton, Schlüssel = Anfang des Tonnamens
