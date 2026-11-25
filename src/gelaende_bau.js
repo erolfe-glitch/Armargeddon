@@ -135,6 +135,13 @@ function gebacken(im, art) {   // G7b voll (2026-11-25): liegende Grabenteile ei
   const mip = [c]; let q = c; while (q.height > 12) { const n = document.createElement('canvas'); n.width = Math.max(1, Math.round(q.width / 2)); n.height = Math.max(1, Math.round(q.height / 2)); const y = n.getContext('2d'); y.imageSmoothingQuality = 'high'; y.drawImage(q, 0, 0, n.width, n.height); mip.push(n); q = n; }
   C.set(im, mip); return mip;   // Stufen zum Verkleinern (aus der Ferne kein Flimmern)
 }
+function bodenSink(im, anteil = 0.1) {   // Punkt 79.3 (2026-11-25): Hindernisse sitzen im Boden – unterster Rand läuft weich aus (Füße eingesunken statt aufgeklebt)
+  if (!im) return im; if (!KLEIN.has('sink')) KLEIN.set('sink', new Map()); const C = KLEIN.get('sink'); if (C.has(im)) return C.get(im);
+  if (im.complete === false || (im.naturalWidth === 0 && !(im instanceof HTMLCanvasElement))) return im;
+  const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+  const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1 - anteil, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0.05)');
+  x.globalCompositeOperation = 'destination-in'; x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); C.set(im, c); return c;   // ganze Fläche (destination-in löscht alles außerhalb)
+}
 const TEILF = new Map();
 function teileGefiltert(IM, flt) {
   if (!flt) return IM;
@@ -391,6 +398,7 @@ function aufbauen(cfg, IM) {
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
   function wall(im, A, B, hW, o = {}) {   // Wandstück: Bild steht über der Bodenlinie A→B, entlang der Linie gekachelt
     if (!im) return o.u0 || 0;
+    if (o.boden && !window.BODEN_ALT) { bodenFleck([A, B], Math.max(R * 0.22, hW * 0.5)); im = bodenSink(im, 0.16); o = { ...o, sink: (o.sink || 0) + 0.06 * hW }; }   // Punkt 79.3: Bodenkontakt (Spanische Reiter)
     const len = Math.hypot(B[0] - A[0], B[1] - A[1]), iwW = hW * im.width / im.height * (o.stretch || 1), n = Math.max(1, Math.ceil(len / (R * 0.25)));
     let u = o.u0 || 0;
     if (!o.lean && o.mitte && KIPP > 0) o = { ...o, lean: kippen(A, B, o.mitte, hW) };
@@ -436,6 +444,11 @@ function aufbauen(cfg, IM) {
     }
     if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.strokeStyle = '#E2B04A'; g.lineWidth = 2 * U; g.beginPath(); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); g.stroke(); g.restore(); }
   }
+  function bodenFleck(pts, breit) {   // Punkt 79.3: aufgewühlte, dunklere Erde unter einem Hindernis (Linie bzw. Punkt), weicher Rand, ein paar Erdklumpen
+    SHADOW.push(() => { w.save(); w.lineCap = 'round'; w.lineJoin = 'round'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(34,25,18,0.62)'; w.lineWidth = breit; w.beginPath(); pts.forEach((p, k) => k ? w.lineTo(p[0], p[1]) : w.moveTo(p[0], p[1])); if (pts.length === 1) w.lineTo(pts[0][0] + 0.1, pts[0][1]); w.stroke();
+      w.filter = 'none'; const n = Math.max(4, Math.round(breit / R * 10)); for (let k = 0; k < n * pts.length; k++) { const p = pts[k % pts.length], h1 = hrnd(Math.round(p[0]) + k, Math.round(p[1]), 431), h2 = hrnd(Math.round(p[1]) + k, Math.round(p[0]), 432), a = h1 * 6.283, d = breit * 0.45 * Math.sqrt(h2);
+        w.fillStyle = h1 < 0.5 ? 'rgba(46,34,24,0.7)' : 'rgba(118,96,72,0.55)'; w.beginPath(); w.ellipse(p[0] + Math.cos(a) * d, p[1] + Math.sin(a) * d * 0.7, R * (0.012 + h2 * 0.014), R * (0.008 + h2 * 0.01), a, 0, 7); w.fill(); }
+      w.restore(); }); }
   function liegend(mip, A, B, nx, ny, br, aussen, o = {}) {   // G7b voll (2026-11-25): liegendes Teil in Bildschirmauflösung (wie die Aufsteller, nicht im Weltbild): Streifen entlang A→B, Bildoberkante außen (n), Unterkante innen; aussen = Anteil der Breite außerhalb der Linie
     const quelle = mip; mip = typeof quelle === 'function' ? null : quelle; const im0 = o.mass || o.mass2 || (mip && mip[0]); if (!im0) return o.u0 || 0; const len = Math.hypot(B[0] - A[0], B[1] - A[1]); if (len < 1) return o.u0 || 0;
     const ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len, ue = o.ue || 0, L = len + 2 * ue, tw = (im0.naturalWidth || im0.width) && (im0.naturalHeight || im0.height) ? (im0.naturalWidth || im0.width) * br / ((im0.naturalHeight || im0.height) * (o.seit || 1)) : br * 6.5 / (o.seit || 1),   /* Bild noch nicht geladen: übliches Seitenverhältnis */ n = Math.max(1, Math.ceil(L / (R * 0.3)));
@@ -458,12 +471,13 @@ function aufbauen(cfg, IM) {
   }
   function stand(im, x, y, hW, o = {}) {   // Aufsteller am Fußpunkt (x, y), Höhe hW
     if (!im) return;
+    if (o.boden && !window.BODEN_ALT) { const bw = hW * im.width / im.height; bodenFleck([[x - bw * 0.36, y], [x + bw * 0.36, y]], Math.max(R * 0.2, hW * 0.5)); im = bodenSink(im, 0.16); o = { ...o, sink: (o.sink || 0) + 0.06 * hW }; }   // Punkt 79.3: Bodenkontakt
     const baum = BAUMFELD;
     DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = o.breite ? o.breite * sc : h * im.width / im.height;   // breite: feste Breite (G7b: Querwand auf Grabenbreite)
       g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (!o.fest && hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = o.durch || 0.45;   /* fest: nie durchsichtig (Brückenbrüstung) */ if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
-      g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
+      g.translate(px, py + h * 0.015 + (o.sink ? o.sink * sc : 0)); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, o.haengen ? -h * 0.08 : -h, wd, h); g.restore();   // G7a-Probe: haengen = Oberkante an der Bodenkante, Teil reicht in den Graben
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
     } });
@@ -864,7 +878,7 @@ function aufbauen(cfg, IM) {
       wall(IM.wald_unterholz, corner(c, r, 2, 0.88), corner(c, r, 1, 0.88), 0.3 * SH, { u0: q(90) * 4, shade: 0.35 });
       if (q(91) < 0.6) stand(STUEMPFE[Math.floor(q(92) * STUEMPFE.length)], ...corner(c, r, 3, 0.45), 0.6 * SH, { flip: flipR(c, r, 93) });
     } else if (t === 'sperre') {   // Panzersperren: zwei Teile je Feld, quer verteilt
-      for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) });
+      for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(SPERREN[Math.floor(q(k) * SPERREN.length)], ...corner(c, r, e, kk), 0.8 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8), boden: true });
     } else if (t === 'bunker') {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
     } else if (t === 'wire') {   // Drahtfeld (DRAHTFELD: Felder mit gezeichnetem Draht, für den Test Bild = Regel): 1–2 ganze Drahtverhau-Stücke (nicht zerschnitten), versetzt und gespiegelt, nach Tiefe mit den Figuren; nichts auf Straßen
@@ -884,7 +898,7 @@ function aufbauen(cfg, IM) {
         stand(DRAHT[i], x, y, 0.8 * SH * (0.85 + q(k * 7 + 5) * 0.25), { flip: flipR(c, r, k * 7 + 6), shadeK: 0.45 }); DRAHTFELD.add(c + ',' + r);
       } }
     } else if (t === 'barrikade') {
-      const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });
+      const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3, boden: true });
     } else if (t === 'bridge') {   // Brücke: Bohlen quer über das Wasser
       const rv = RIVERS.find(p => distTo([hx, hy], p) < R * 0.6); let ang = Math.PI / 2;
       if (rv) { let bi = 0, bd = 1e9; rv.forEach((p, i) => { const d = Math.hypot(p[0] - hx, p[1] - hy); if (d < bd) { bd = d; bi = i; } }); const a = rv[Math.max(0, bi - 1)], b = rv[Math.min(rv.length - 1, bi + 1)]; ang = Math.atan2(b[1] - a[1], b[0] - a[0]); }
@@ -981,8 +995,8 @@ function aufbauen(cfg, IM) {
     stand(BUNKER[0], bx, by, 0.95 * SH, { flip: ex < 0, shadeK: 0.45 });
     // Sandsackwall als Haken um den Bunker: vorn quer, an der Außenseite schräg nach hinten (kurze Stücke, keine frei stehenden Blöcke)
     const P0 = [bx + ex * R * 0.02, by + R * 0.34], P1 = [bx + ex * R * 0.5, by + R * 0.3], P2 = [bx + ex * R * 0.92, by + R * 0.02];
-    const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45, mitte: [bx, by] });
-    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45, mitte: [bx, by] });
+    const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45, mitte: [bx, by], boden: true });
+    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45, mitte: [bx, by], boden: true });
   }
   // Festung (Vorschlag, cfg.festung, nur Testseite): Teile an Feldkoordinaten { k: 1–9, c, r, dx, dy (in R), h (SH), flip }
   // 1 Mauer mit Zinnen, 2 Ecke, 3 Mauer glatt, 4 Tor klein, 5 Tor groß, 6 Tor zerstört, 7 Bunker heil, 8 Bunker zerstört, 9 Turm
