@@ -129,7 +129,7 @@ function gebacken(im, art) {   // G7b voll (2026-11-25): liegende Grabenteile ei
     const mip = [c]; let q = c; while (q.height > 12) { const n = document.createElement('canvas'); n.width = Math.max(1, Math.round(q.width / 2)); n.height = Math.max(1, Math.round(q.height / 2)); const y = n.getContext('2d'); y.imageSmoothingQuality = 'high'; y.drawImage(q, 0, 0, n.width, n.height); mip.push(n); q = n; }
     C.set(im, mip); return mip; }
   const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext('2d');
-  x.filter = art === 'brust' ? 'sepia(0.45) saturate(0.75) brightness(0.64) contrast(1.15)' : art === 'lippe' ? 'sepia(0.3) saturate(1.05) brightness(0.78) contrast(1.32)' : 'sepia(0.3) saturate(1.0) brightness(0.64) contrast(1.1)';   /* G7e: Seitenwand dunkler (heller Fleck am Bodenstreifen) */ x.drawImage(im, 0, 0); x.filter = 'none';   /* G7c: Lippe mehr Kontrast, Sandsackwall dunkel und erdig */   // an den dunkleren Kartenboden angeglichen
+  x.filter = art === 'brust' ? 'sepia(0.45) saturate(0.75) brightness(0.64) contrast(1.15)' : art === 'lippe' ? 'sepia(0.5) saturate(0.95) brightness(0.74) contrast(1.28)' : 'sepia(0.3) saturate(1.0) brightness(0.64) contrast(1.1)';   /* G7e: Seitenwand dunkler (heller Fleck am Bodenstreifen) */ x.drawImage(im, 0, 0); x.filter = 'none';   /* G7c: Lippe mehr Kontrast, Sandsackwall dunkel und erdig */   // an den dunkleren Kartenboden angeglichen
   if (art === 'lippe') { const d = x.createLinearGradient(0, c.height * 0.55, 0, c.height); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(0.35, 'rgba(14,9,6,0.35)'); d.addColorStop(1, 'rgba(8,5,3,0.75)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'source-over'; }   // G7c: Bruchkante zum Graben kräftig dunkel
   if (art === 'brust') { x.globalCompositeOperation = 'source-atop'; for (let k = 0; k < 60; k++) { const px = (k * 97.3 % 1) * c.width, py = c.height * (0.15 + ((k * 0.618) % 1) * 0.8); x.fillStyle = k % 3 ? 'rgba(58,44,32,0.35)' : 'rgba(40,30,22,0.45)'; x.beginPath(); x.ellipse((px * 7.7 + k * 131) % c.width, py, c.height * (0.12 + (k % 5) * 0.05), c.height * (0.05 + (k % 3) * 0.03), 0, 0, 7); x.fill(); } x.globalCompositeOperation = 'source-over'; }   // G7c: Erde und Schmutz über den Säcken
   if (art === 'seite') { const d = x.createLinearGradient(0, c.height * 0.4, 0, c.height); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(1, 'rgba(10,7,5,0.72)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, c.width, c.height); }
@@ -542,7 +542,8 @@ function aufbauen(cfg, IM) {
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
   // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
-  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', ZI = BU && !cfg.zinnenAlt, G4B = ZI && !cfg.g4bAlt, GW = ZI ? 0.6 : BU ? 0.85 : 1.3, GK = ZI ? 0.3 : BU ? 0.42 : 0.5;   // G4 (2026-11-25): Zinnenverlauf – schmaler Graben, Bucht und Durchgang überlappen nicht mehr (Rückweg window.ZINNEN_ALT)   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
+  const G7G = cfg.grabenForm === 'buchten' && !cfg.zinnenAlt && !!(cfg.eingegraben ?? !window.G7_ALT) && !window.G7G_ALT && cfg.g7g !== false;   // G7g (2026-11-26): breiter Graben (0,95 R), flache Buchten (0,45 R) im Takt von etwa zwei Feldern, gerade Laufgräben (Rückweg window.G7G_ALT)
+  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', ZI = BU && !cfg.zinnenAlt, G4B = ZI && !cfg.g4bAlt, GW = ZI ? (G7G ? 0.95 : 0.6) : BU ? 0.85 : 1.3, GK = ZI ? (G7G ? 0.48 : 0.3) : BU ? 0.42 : 0.5;   // G4 (2026-11-25): Zinnenverlauf – schmaler Graben, Bucht und Durchgang überlappen nicht mehr (Rückweg window.ZINNEN_ALT)   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
   const EGW = ZI && !!(cfg.eingegraben ?? !window.G7_ALT);   // G7f: eingegrabener Graben, auch für Grabenplätze (gleiche Bedingung wie EG unten)
   function zickzack(pts) {
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
@@ -559,7 +560,7 @@ function aufbauen(cfg, IM) {
   // vorgezogen) und Durchgang hinter einer Querwand (Traverse); Längen leicht unregelmäßig, Ecken nicht geglättet.
   const BUCHTEN = [], DURCH = [], GTEILE = { an: false, stirn: 0 };   // G2b: Zähler für Tests (__dbg.gbTeile)
   function buchten(pts, ch, ti) {
-    const GB = cfg.grabenBuchten || {}, A = R * (GB.tief ?? (ZI ? 0.9 : 0.6)), own = cfg.grabenSeite && ch ? cfg.grabenSeite(...ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 1;
+    const GB = cfg.grabenBuchten || {}, A = R * (GB.tief ?? (G7G ? 0.45 : ZI ? 0.9 : 0.6)), own = cfg.grabenSeite && ch ? cfg.grabenSeite(...ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 1;
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const at = s => { let i = 0; while (i < segL.length - 1 && s > segL[i]) { s -= segL[i]; i++; } const a = pts[i], b = pts[i + 1], t = segL[i] ? s / segL[i] : 0, dx = (b[0] - a[0]) / (segL[i] || 1), dy = (b[1] - a[1]) / (segL[i] || 1);
       let nx = -dy, ny = dx; if (Math.sign(nx || 1) !== ex) { nx = -nx; ny = -ny; } return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, nx, ny]; };
@@ -568,8 +569,8 @@ function aufbauen(cfg, IM) {
     let s = 0, k = 0, bucht = hrnd(pts.length, ch ? ch[0][0] : 0, 301) < 0.5; put(0, 0);
     const tk = 7 + 11 * (ti + 2) + (ch ? ch[0][0] * 3 + ch[0][1] * 5 : 0);   // G4b: Takt je Graben eigen (vorher liefen alle Gräben im gleichen Takt)
     const lang = (b, k) => { if (!G4B) return R * (b ? (GB.bucht ?? (ZI ? 0.95 : 0.85)) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? (ZI ? 0.9 : 0.45)) + hrnd(k, 7, 303) * (ZI ? 0.25 : 0.15));
-      const v = hrnd(k, tk, b ? 302 : 303), x = hrnd(k, tk, 305); return R * (b ? (x < 0.15 ? 1.75 + v * 0.45 : 0.72 + v * 0.85) : (x < 0.12 ? 1.6 + v * 0.3 : 0.85 + v * 0.6)); };   // G4b: Bucht 0,72–1,57 R, selten 1,75–2,2; Durchgang 0,85–1,45 R, selten bis 1,9
-    while (s < L) { const len = G4B && k === 0 ? Math.min(R * 0.9, lang(bucht, k)) : lang(bucht, k), o =   // G4b: erster Abschnitt kurz, damit das Feld am Grabenanfang eine Bucht nah hat
+      const v = hrnd(k, tk, b ? 302 : 303), x = hrnd(k, tk, 305); if (G7G) return R * (b ? 2.0 + v * 0.9 : 0.8 + v * 0.35);   /* G7g: lange Bucht, kurzer Erdblock – ein Block etwa alle zwei Felder */ return R * (b ? (x < 0.15 ? 1.75 + v * 0.45 : 0.72 + v * 0.85) : (x < 0.12 ? 1.6 + v * 0.3 : 0.85 + v * 0.6)); };   // G4b: Bucht 0,72–1,57 R, selten 1,75–2,2; Durchgang 0,85–1,45 R, selten bis 1,9
+    while (s < L) { const len = G4B && k === 0 ? Math.min(R * (G7G ? 1.4 : 0.9), lang(bucht, k)) : lang(bucht, k), o =   // G4b: erster Abschnitt kurz, damit das Feld am Grabenanfang eine Bucht nah hat
       (bucht ? A / 2 : -A / 2) * (G4B ? 0.85 + hrnd(k, tk, 304) * 0.3 : 1);   // G4b: Tiefe je Bucht leicht verschieden
       const e = Math.min(L, s + len); if (e - s < R * 0.12) break; put(s, o); put(e, o); merk(s, e, o); s = e; bucht = !bucht; k++; }
     put(L, 0);
@@ -580,7 +581,12 @@ function aufbauen(cfg, IM) {
     const nv = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); return l < 1e-6 ? null : [-dy / l, dx / l]; };
     const nA = i > 0 ? nv(pts[i - 1], p) : null, nB = i < pts.length - 1 ? nv(p, pts[i + 1]) : null, a = nA || nB, b = nB || nA; if (!a) return [p[0], p[1]];
     const k = 1 + a[0] * b[0] + a[1] * b[1]; const m = k < 0.3 ? b : [(a[0] + b[0]) / k, (a[1] + b[1]) / k]; return [p[0] + m[0] * d, p[1] + m[1] * d]; });
-  const TRENCH = cfg.graeben ? cfg.graeben.map((g, gi) => { const v = verlaengern(g.linie); const pts = g.art === 'feuer' && BU ? buchten(v.pts, g.linie, gi) : v.pts; return { ...v, ch: g.linie, art: g.art, linie: v.pts, pts, stufen: pts.stufen, off: pts.off }; })   // G2a: Gräben als Linien je Karte (MAP.graeben)
+  const gerade = pts => {   // G7g: Ost–West-Läufe (Schritte von Spalte zu Spalte) als gerade Linie auf der Mittellinie der Reihe statt V-Zickzack über die Feldmitten
+    const out = pts.map(p => [p[0], p[1]]); let i = 0;
+    while (i < out.length - 1) { if (Math.abs(out[i + 1][0] - out[i][0]) < R * 1.0) { i++; continue; } let j = i; while (j < out.length - 1 && Math.abs(out[j + 1][0] - out[j][0]) >= R * 1.0) j++;
+      const ys = out.slice(i, j + 1).map(p => p[1]), m = (Math.min(...ys) + Math.max(...ys)) / 2; for (let k = i; k <= j; k++) out[k][1] = m; i = j; }
+    return out.filter((p, k) => k === 0 || k === out.length - 1 || !(Math.abs(p[1] - out[k - 1][1]) < 0.5 && Math.abs(p[1] - out[k + 1][1]) < 0.5)); };   // Zwischenpunkte auf der Geraden entfallen
+  const TRENCH = cfg.graeben ? cfg.graeben.map((g, gi) => { const v = verlaengern(g.linie); const pts = g.art === 'feuer' && BU ? buchten(v.pts, g.linie, gi) : G7G ? gerade(v.pts) : v.pts; return { ...v, ch: g.linie, art: g.art, linie: v.pts, pts, stufen: pts.stufen, off: pts.off }; })   // G2a: Gräben als Linien je Karte (MAP.graeben)
     : cfg.trench ? cfg.trench.map(z => ({ pts: z.map(p => atW(...p)), ends: [false, false] }))
     : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: BU ? (ch.length >= 4 ? buchten(v.pts, ch, -1) : v.pts) : cfg.zickzack ? zickzack(v.pts) : v.pts }; });
   const TR = TRENCH.map(z => chaikin(z.pts, cfg.grabenForm === 'buchten' ? 0 : cfg.zickzack && z.ch ? 1 : 3));
@@ -623,7 +629,7 @@ function aufbauen(cfg, IM) {
       }
       w.setTransform(1, 0, 0, 1, 0, 0);
     };
-    const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? (ZI ? 0.9 : 0.6)), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
+    const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? (G7G ? 0.45 : ZI ? 0.9 : 0.6)), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
     const EG = ZI && !!(cfg.eingegraben ?? !window.G7_ALT),   /* G7d (2026-11-25): eingegrabener Graben ist Standard; Rückweg window.G7_ALT (vor dem Kartenaufbau) bzw. Probe { eingegraben: false } */ LIPPE = [], HUEGEL = [], RUECK = [];
     const G7T = EG && cfg.g7test !== false && !!IM.graben_lippe_1 && !!IM.graben_wand_innen_1;
     const G7V = G7T && cfg.g7voll !== false && !!IM.graben_wand_seite_1;   // G7b voll (2026-11-25): Lippe und Seitenwand liegend in Bildschirmauflösung, Querwände hängend aus G7-6, Brustwehr-Wall G7-4 (Probe { g7voll: false } = G7b-Test)
@@ -646,7 +652,7 @@ function aufbauen(cfg, IM) {
       pts.forEach((p, i) => { const x = p[0] + ex * R * (GK + 0.2); i ? w.lineTo(x, p[1]) : w.moveTo(x, p[1]); }); w.stroke(); w.restore(); });
     for (const p of TR) sohleAlong(p);
     for (const p of TR) sohleAlong(p, [SOHLE.height * 0.33, SOHLE.height * 0.67]);
-    if (EG) { w.save(); w.globalCompositeOperation = 'multiply'; w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(92,80,70,1)'; strokeLines(w, TR, R * GW * 1.05); w.restore(); }   // G7a-Probe: Sohle tiefer (dunkler)
+    if (EG) { w.save(); w.globalCompositeOperation = 'multiply'; w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = G7G ? 'rgba(150,136,122,1)' : 'rgba(92,80,70,1)'; strokeLines(w, TR, R * GW * 1.05);   /* G7g: Sohle weniger abgedunkelt, Laufrost erkennbar */ w.restore(); }   // G7a-Probe: Sohle tiefer (dunkler)
     if (GT && IM.graben_sohle_rost_1) {   // G2b: Lattenrost in Stücken, dazwischen Schlamm und Pfützen (statt des durchgehenden Mittelrosts)
       const ROST = [1, 2, 3, 4].map(k => IM['graben_sohle_rost_' + k]).filter(Boolean), PF = [1, 2, 3].map(k => IM['graben_pfuetze_' + k]).filter(Boolean);
       w.save(); w.strokeStyle = pattern(w, IM.boden_schlamm, 0, 0, 0.5); strokeLines(w, TR, R * GW * 0.42); w.globalCompositeOperation = 'multiply'; w.filter = `blur(${R * 0.03}px)`;
@@ -734,7 +740,7 @@ function aufbauen(cfg, IM) {
           if (G7V) KANTEN.push({ ti, side, i, a: off[i], b: off[i + 1], nx: (mx - cx) / dl, ny: (my - cy) / dl, art: Math.abs(inY) < 0.55 ? 'seite' : back ? 'hinten' : 'vorn' });   // G7e: für die Lippen-Ecken
           if (G7V) { const nxo = (mx - cx) / dl, nyo = (my - cy) / dl, sk = (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.04));   // G7b voll: Seitenkanten (Graben läuft in die Tiefe) = liegende Seitenwand G7-3; sonst liegende Lippe, hinten dazu die hängende Innenwand
             if (Math.abs(inY) < 0.55) LU[lk + 's'] = (sv => liegend(() => gebacken(SEITR[sv], 'seite'), off[i], off[i + 1], nxo, nyo, R * 0.26, 0.45, { mass: SEITR[sv], u0: LU[lk + 's'], ue: R * 0.04, skip: sk, tief: 'mitte' }))(Math.floor(hrnd(ti * 7 + side, abschn, 423) * 3));
-            else { LU[lk + 'l'] = (lv => liegend(() => gebacken(LIPR[lv], back ? 'lippe' : 'nah'), off[i], off[i + 1], nxo, nyo, R * (back ? 0.3 : 0.2), back ? 0.85 : 0.88, { mass: back ? LIPR[lv] : null, seit: back ? 0 : 0.55, mass2: LIPR[lv], u0: LU[lk + 'l'], ue: R * 0.05, skip: sk, bias: back ? R * 0.012 : 0 }))(lipVar(ti, side, abschn));
+            else { LU[lk + 'l'] = (lv => liegend(() => gebacken(LIPR[lv], back ? 'lippe' : 'nah'), off[i], off[i + 1], nxo, nyo, R * (back ? (G7G ? 0.24 : 0.3) : (G7G ? 0.17 : 0.2)), back ? 0.85 : 0.88, { mass: back ? LIPR[lv] : null, seit: back ? 0 : 0.55, mass2: LIPR[lv], u0: LU[lk + 'l'], ue: R * 0.05, skip: sk, bias: back ? R * 0.012 : 0 }))(lipVar(ti, side, abschn));
               if (back && (inY > 0.82 || window.SCHRAEG_ALT) && Math.hypot(off[i + 1][0] - off[i][0], off[i + 1][1] - off[i][1]) > R * 0.55) uu[key] = wall(vorgefiltert(WIN[wandVar(ti, side, abschn)], 'brightness(0.72) contrast(1.08)'), off[i], off[i + 1], 0.35 * SH, { u0: uu[key], shade: 0, ab: { nx: (cx - mx) / dl, ny: (cy - my) / dl }, skip: sk }); }
           } else {
           if (EG) LIPPE.push({ a: off[i], b: off[i + 1], nx: (mx - cx) / dl, ny: (my - cy) / dl, ti, s0: l0, v: lipVar(ti, side, abschn) });   // G7a-Probe: Erdlippe an jeder Kante
@@ -787,8 +793,8 @@ function aufbauen(cfg, IM) {
       STIRN.forEach((st, k) => {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
         if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.weg) { GTEILE.weg = (GTEILE.weg || 0) + 1; return; } else if (st.feind) last.q = im; else last.e = im;
-        if (EG) { st.D = R * (G7V && QWT.length && im !== IM.graben_unterstand ? 0.62 : 0.36); }   // G7e: Tiefe des hängenden Blocks (Grabenplätze dort frei halten)
-        if (G7V && QWT.length && im !== IM.graben_unterstand) { const QW2 = QWT.length > 1 ? QWT.slice(1) : QWT, q = bodenSink(QW2[Math.floor(hrnd(st.ti, k, 425) * QW2.length)], 0.35);   /* G7d: unteres Drittel läuft weich in die Sohle aus (schwarzes Rechteck) */   /* G7c: Bretter-Fassung wirkte wie eine Kiste – nur Flechtwerk und beschädigt */ stand(q, st.x, st.y, 0.7 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   /* G7c: mehr Höhe in die Tiefe (Erdblock fällt in den Graben) */   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
+        if (EG) { st.D = R * (G7V && QWT.length && im !== IM.graben_unterstand ? (G7G ? 0.36 : 0.62) : 0.36); }   // G7e: Tiefe des hängenden Blocks (Grabenplätze dort frei halten)
+        if (G7V && QWT.length && im !== IM.graben_unterstand) { const QW2 = QWT.length > 1 ? QWT.slice(1) : QWT, q = bodenSink(QW2[Math.floor(hrnd(st.ti, k, 425) * QW2.length)], 0.35);   /* G7d: unteres Drittel läuft weich in die Sohle aus (schwarzes Rechteck) */   /* G7c: Bretter-Fassung wirkte wie eine Kiste – nur Flechtwerk und beschädigt */ stand(q, st.x, st.y, (G7G ? 0.38 : 0.7) * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   /* G7c: mehr Höhe in die Tiefe (Erdblock fällt in den Graben) */   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
         stand(im, st.x, st.y, Math.min(st.wd * im.height / im.width, (st.feind ? 0.42 : 0.38) * SH), EG ? { bias: R * 0.02, noShadow: true, haengen: true, filter: 'brightness(0.8)' } : { bias: R * 0.02, shadeK: 0.3 }); });
       BUCHTEN.forEach((b, k) => { if (b.ti < 0) return; const v = hrnd(b.ti, k, 350), t = 0.25 + hrnd(b.ti, k, 351) * 0.5, x = b.a[0] + (b.b[0] - b.a[0]) * t, y = b.a[1] + (b.b[1] - b.a[1]) * t, at = o => [x + b.nx * R * o, y + b.ny * R * o];
         if (v < 0.3 && LEI.length) { const im = nimm(LEI, hrnd(b.ti, k, 352), last.b); last.b = im; stand(im, ...at(GK - 0.12), hoch(im) * 0.9, { noShadow: true }); }
@@ -1058,7 +1064,7 @@ function aufbauen(cfg, IM) {
     if (!cfg.zickzackAlt && y1 - y0 > 1.3 * (Math.max(...xs) - Math.min(...xs))) {   // U2b (2026-11-25): Graben läuft in die Tiefe – gleichmäßig über die ganze Tiefe des Abschnitts, abwechselnd an die linke und rechte Wand (Knicke und Buchtenden mitbenutzt)
       const out = [], rnd = hrnd(c * 31 + r, 1, 392) < 0.5 ? 1 : -1; for (let j = 0; j < n; j++) { const yt = y0 + (y1 - y0) * (j + 0.5) / n, links = (j % 2 ? 1 : -1) * rnd < 0, h = hrnd(c * 31 + r, j, 393);
         let K = P.filter(p => Math.abs(p.y - yt) < R * 0.05); if (!K.length) { let b = P[0]; for (const p of P) if (Math.abs(p.y - yt) < Math.abs(b.y - yt)) b = p; K = [b]; }
-        const p = K.reduce((a, q) => links ? (q.x < a.x ? q : a) : (q.x > a.x ? q : a)); out.push([p.x + (EGW ? (hrnd(c * 31 + r, j, 394) < 0.5 ? -1 : 1) * R * (0.02 + h * 0.06) : (links ? -1 : 1) * R * (0.14 + h * 0.04)), p.y + (h - 0.5) * R * 0.03, p.art]); }   /* G7f: höchstens 0,08 R neben der Mitte, keine zwei Reihen */
+        const p = K.reduce((a, q) => links ? (q.x < a.x ? q : a) : (q.x > a.x ? q : a)); const fw = G7G && p.art === 'bucht' && (p.nx || p.ny), fq = R * [0.24, 0.02, 0.13][j % 3] + (h - 0.5) * R * 0.06; out.push([p.x + (fw ? p.nx * fq : EGW ? (hrnd(c * 31 + r, j, 394) < 0.5 ? -1 : 1) * R * (0.02 + h * 0.06) : (links ? -1 : 1) * R * (0.14 + h * 0.04)), p.y + (fw ? p.ny * fq : 0) + (h - 0.5) * R * 0.03, p.art]); }   /* G7g: in der Bucht über die Breite verteilt (Feindwand, Mitte, dazwischen), sonst entlang der Mitte */   /* G7f: höchstens 0,08 R neben der Mitte, keine zwei Reihen */
       return out; }
     const cum = [0]; for (const p of P) cum.push(cum[cum.length - 1] + GP_W[p.art]); const S = cum[cum.length - 1], out = [];
     for (let j = 0; j < n; j++) { const ziel = S * (j + 0.5) / n; let i = 0; while (i < P.length - 1 && cum[i + 1] < ziel) i++; const p = P[i], h = hrnd(c * 31 + r, j, 390);
