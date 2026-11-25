@@ -1,3 +1,59 @@
+## 2026-11-26 – G7g: Grabenform breiter, flache Buchten, gerade Laufgräben (Punkt 85, Teil 2) (`05ae696`)
+
+Gepusht, **index.html eingecheckt**. Rückweg: `window.G7G_ALT = true` vor dem Kartenaufbau.
+
+### Gemacht
+- **Breite:** Der Graben ist 0,95 R breit statt 0,6 R. Abzüglich der liegenden Seitenwände bleibt eine freie Sohle von etwa 0,7 R.
+- **Buchten:**
+  - Der Versatz ist halb so tief (0,45 R statt 0,9 R).
+  - Die Buchten sind lang (2,0–2,9 R), die Erdblöcke kurz (0,8–1,15 R). Damit kommt etwa alle zwei Felder ein Block.
+  - Querwände gibt es nur an diesen Blöcken, und sie sind halb so hoch (0,38 SH statt 0,7 SH). Die „gestapelten Kisten“ sind weg.
+- **Laufgräben:**
+  - Ost–West verlaufen sie als gerade Linie auf der Mittellinie der Reihe, das V-Zickzack ist weg.
+  - Nord–Süd laufen sie wie bisher durch die Feldmitten.
+  - Die Linie wird aus `MAP.graeben` berechnet. Die Grabenfelder bleiben gleich, deshalb kein sim-Lauf.
+- **Einmündung:** Der gerade Laufgraben endet jetzt innerhalb des breiten Feuergrabens, Lippe und Wände schließen dort an (`vergleich_nah2.jpg` rechts).
+- **Plätze:**
+  - In Gräben, die in die Tiefe laufen, stehen die Figuren entlang der Mittellinie.
+  - In der Bucht verteilen sie sich über die Breite: ein Drittel an der Feindwand, ein Drittel in der Mitte, ein Drittel dazwischen.
+  - Ein erster Versuch mit allen an der Feindwand ergab eine Schlange entlang der Wand und ist verworfen.
+- **Licht:** Die Sohle ist weniger abgedunkelt, der Laufrost ist zu erkennen. Die Lippe ist schmaler (0,24 R statt 0,3 R) und erdiger.
+
+### Noch offen bzw. nicht gemacht
+- **Prüfung „85 % der Grabenfläche in Grabenfeldern“:** nicht gemessen, nur im Bild geprüft. Breiterer Graben und gerade Laufgräben bleiben dort sichtbar in ihren Feldern.
+- **Ende des Sandsackwalls unregelmäßig:** noch nicht. Es bleibt gerade abgeschnitten, aber ohne Geisterstücke.
+- **Scharfschützen liegend im Graben:** nicht eigens geprüft. Mit der breiten Sohle haben sie jetzt Platz; ein Bild gibt es dazu nicht.
+- **Bild mit Panzer im Graben:** Die Probe setzt einen Koloss auf (2,6), der liegt aber außerhalb des Nahbilds. In `grauwall_neu_ganz.jpg` ist er zu klein, um etwas zu beurteilen.
+
+### Leistung (Grauwall, mit Grafikkarte, gleicher Stand, alte Form | neue Form)
+| | Zoom 1 Mittel | ganze Karte Mittel | ganze Karte schlechteste 5 % |
+|---|---|---|---|
+| alte Grabenform (G7G_ALT) | 6,0 ms | 7,8 ms | 16,7 ms |
+| **neue Grabenform** | **6,2 ms** | **7,6 ms** | **16,6 ms** |
+
+- Die neue Form kostet nichts.
+- **Gegenüber G7e (6,9 / 11,2 ms) ist der ganze Stand aber langsamer geworden.** Das kommt nicht aus G7g (die beiden Formen messen gleich), sondern vermutlich aus G7f: flache Teile vorweg, Leisten der Grabeneinheiten und Umrisslinien über die späte Liste.
+- Ich habe das nicht weiter eingegrenzt. Das wäre ein Punkt für Paket SP bzw. die nächste Leistungsprüfung.
+
+### Bilder (`entwurf/probe/gelaende_g7g/`, jeweils links alte Form, rechts neu)
+- `vergleich_nah.jpg`: vorderer Graben mit Trupps und Hauptmann.
+- `vergleich_nah2.jpg`: Laufgraben und Einmündung.
+- `vergleich_ganz.jpg`: ganze Karte.
+
+### Bilder für den Berater (G7h)
+In `entwurf/GELAENDE_G7H_BILDER.md`:
+- Seitenwand für den breiten Graben **ohne senkrechte Pfosten** (die wirkten wie Säulen).
+- Querwand als Erdblock mit sichtbarer Oberseite.
+- Wahlweise eine schmalere Lippe.
+
+### Tests
+- test_kommentare vor jedem build.py, bestanden.
+- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
+- Keine Hänger. Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. Soll ich die Verlangsamung seit G7f gleich als kleinen `pa` eingrenzen, oder kommt das in Paket SP?
+
 ## 2026-11-26 – G7f: Reparatur Graben nach dem Fable-Check (Punkt 85, Teil 1) (`b7bf1f1`)
 
 Gepusht, **index.html eingecheckt**. Rückweg für die Zeichenreihenfolge: `window.FLACH_ALT = true` vor dem Kartenaufbau.
