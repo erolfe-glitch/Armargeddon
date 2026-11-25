@@ -1,3 +1,53 @@
+## 2026-11-25 – L1: Leistung (Punkt 71, Teil L1) (`9102fdc`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Keine Regeländerung.
+
+### Was geändert ist
+1. **Bremse 1 – Canvas-Filter:** Die Filter für hintere Reihe, graue (fertige) Einheiten, dunkle Felder und die Kettenfarbe der Fahrzeuge werden je Figurenbild einmal vorgerechnet und gemerkt (`filtBild`, wie `bwBild`). Der weiche Kettenschatten (vorher `blur` in jedem Bild) ist ein fertiges Bild je Fahrzeug.
+2. **Bremse 3 – Kontaktschatten:** Fleck und Kern sind ein fertiges Bild je Bildwirkungs-Stufe, statt je Figur einen neuen Farbverlauf zu bauen. Ein Trupp-Zwischenbild für die Übersicht habe ich nicht gebaut; nach den Zahlen unten ist es nicht nötig.
+3. **Ton:** `anBus` trennt einen Ton jetzt auch nach `pause()` vom Tonweg, z. B. Einzelschuss mit `dur` oder die Getümmel-Schleife. Beim nächsten `play()` hängt er ihn wieder an, damit Schleifen, die später weiterlaufen, nicht stumm werden.
+- Rückweg und Vergleich: `window.LEISTUNG_ALT = true` (alles wie vorher in jedem Bild).
+
+### Messung
+- **Werkzeug:** `node tools/leistung_messen.mjs`, nach Fables Art: unsichtbarer Chrome, 1920 × 1080, Abstand zwischen zwei Bildern. Gemessen wurde je 5 s direkt nach dem Schlachtstart, alt und neu im selben Stand.
+- **Ergebnis** (ms je Bild, Mittel / schlechteste 5 %):
+
+| Ansicht | alt | neu |
+|---|---|---|
+| Grauwall, Zoom 1 | 6,9 / 11,2 | 5,8 / 5,7 |
+| Grauwall, ganze Karte | 11,7 / **22,2** | 9,5 / **16,6** |
+| Sankt Ruß, Zoom 1 | 6,0 / 11,0 | 5,7 / 5,7 |
+| Sankt Ruß, ganze Karte | 10,0 / 16,6 | 8,2 / 11,2 |
+
+- Das Ziel „ganze Karte, schlechteste 5 % deutlich unter 20 ms“ ist erreicht.
+- Die alten Werte liegen etwas unter Fables Messung. Fable ließ den Profiler mitlaufen und hat in Runde 5 gemessen, ich direkt nach dem Start.
+- Rohdaten: `entwurf/probe/leistung_l1/messung.json`.
+
+### Vergleichsbild
+- Bilder (`entwurf/probe/leistung_l1/`, jeweils links alt, rechts neu):
+  - `vergleich_grauwall_ganz.jpg`, `vergleich_grauwall_nah.jpg`
+  - `vergleich_sanktruss_ganz.jpg`, `vergleich_sanktruss_nah.jpg`
+- Kein sichtbarer Unterschied: Im Mittel weichen die Bildpunkte um 1–3 Helligkeitsstufen ab, das kommt von Regen und Figurenbewegung. Unter 0,3 % der Bildpunkte weichen deutlich ab.
+
+### Offener Punkt Sankt Ruß (erste Sekunden nach dem Start)
+- Im unsichtbaren Chrome gemessen, Bilder je Sekunde in den ersten 10 s:
+  - Sankt Ruß neu: **17**, dann 151–178;
+  - Sankt Ruß alt: 106–128, ab Sekunde 7 rund 170;
+  - Grauwall neu: 162–173 von Anfang an.
+- Eine Zehn-Sekunden-Lücke wie bei Fable sehe ich nicht; nur die erste Sekunde ist langsam. In dieser Sekunde werden einmalig die Bildfassungen vorgerechnet und die Plastik-Karten der Gelände-Teile aufgebaut.
+- Im sichtbaren Browser habe ich das nicht nachgestellt.
+
+### Tests
+- test_ton (keine Seitenfehler, alle Plätze belegt) bestanden.
+- test_kommentare bestanden.
+- Partietest ohne Konsolenfehler.
+
+### Noch offen aus Punkt 71
+Bremsen 2 und 4 kommen in G7b, Bremse 5 vor dem Teilen des Spiels. Den Haken an Punkt 71 setze ich deshalb erst dann.
+
+### Fragen an Enrico
+Keine. Als Nächstes kommt G7a (Gräben eingegraben, Probe und Plan).
+
 ## 2026-11-25 – G5b: Drahtgürtel aus gemalten Stücken (Punkt 69) (`c6d9357`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung und keinen sim-Lauf. Lage und Spanischer Reiter bleiben wie in G5.
