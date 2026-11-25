@@ -34,7 +34,7 @@ const LISTE = {
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k), ...['schraeg_1', 'schraeg_2', 'schraeg_3', 'kaputt', 'tiefe', 'ende', 'quer_1', 'quer_2'].map(n => 'drahtguertel_' + n), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k), ...['schraeg_1', 'schraeg_2', 'schraeg_3', 'kaputt', 'tiefe', 'ende', 'quer_1', 'quer_2'].map(n => 'drahtguertel_' + n), ...[1, 2, 3, 4].map(k => 'sperre_weg_' + k), 'muehle_heil', 'muehle_kaputt', 'muehle_heil_schnee', 'muehle_kaputt_schnee', 'wrack_1', 'wrack_2', 'wrack_schnee_1', 'wrack_schnee_2', ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
     'kirchturm_1', 'kirchturm_2', ...['kirche_innen', 'friedhof', 'dorf_aufsteller'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     // Krähenfurt (2026-11-22, Flux): Winter-Bausteine, nur mit cfg.winter benutzt
     ...[1, 2, 3, 4].map(k => 'haus_heil_' + k), 'kapelle', 'kapelle_ruine', 'haus_ruine_schnee_1', 'haus_ruine_schnee_2', ...[1, 2, 3, 4].map(k => 'tanne_schnee_' + k),
@@ -713,6 +713,11 @@ function aufbauen(cfg, IM) {
     const t = terr(c, r), [hx, hy] = hexC(c, r), q = k => hrnd(c, r, k); FELD = c + ',' + r; BAUMFELD = t === 'forest' || t === 'wald' ? c + ',' + r : null;
     if (BAUFELD.has(c + ',' + r)) return;   // große Gebäude: eigener Aufbau weiter unten
     const deko = flags(c, r).deko || '';
+    if (t === 'muehle' || t === 'muehle_weg' || t === 'wrack' || t === 'sperre_weg') {   // G6 (2026-11-25): besondere Orte und gesprengte Panzersperren (Bild mit gemaltem Bodenfleck, Schlamm bzw. Schnee)
+      const sn = WI && IM.muehle_heil_schnee ? '_schnee' : '';
+      if (t === 'sperre_weg') { const W2 = pool('sperre_weg'); for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(W2[Math.floor(q(k) * W2.length)], ...corner(c, r, e, kk), 0.62 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) }); return; }   // gleiche Stellen wie die Sperre
+      const im = t === 'wrack' ? IM[(sn ? 'wrack_schnee_' : 'wrack_') + (q(90) < 0.5 ? 1 : 2)] : IM[(t === 'muehle' ? 'muehle_heil' : 'muehle_kaputt') + sn];
+      if (im) stand(im, hx, hy + R * (t === 'wrack' ? 0.5 : 0.62), breit(im, t === 'wrack' ? 1.9 : 2.4), { noShadow: true, shadeK: 0.3 }); return; }
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
     if (deko === 'wegkreuz') stand(IM.dorf_aufsteller_2, hx + R * 0.55, hy - R * 0.45, px(IM.dorf_aufsteller_2), { shadeK: 0.3, flip: q(201) < 0.5 });
     if (deko === 'karren' || (deko === 'platz' && q(202) < 0.5)) stand(IM.dorf_aufsteller_3, hx - R * 0.55, hy - R * 0.5, px(IM.dorf_aufsteller_3), { flip: q(203) < 0.5 });

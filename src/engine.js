@@ -32,7 +32,7 @@ const P = {
   // Turm +1 Reichweite und +1 Sicht; Bauzustand KIRCHE_HP, jeder Treffer schwerer Waffen (Artillerie, Mörser, Kanonen der Kolosse) −1 (Minenwerfer −2);
   // bei 0 Einsturz: Kirche und Turm werden Ruine, wer drin ist, nimmt EINSTURZ_DMG Schaden und wird niedergehalten. GARTEN_DEF: Garten-/Friedhofsmauer gegen Beschuss
   EISBRUCH_DMG: 2.0, EISBRUCH_RUNDEN: 2, EISBRUCH_SPERR: 0.5,   /* Eis bricht ein (Enrico 2026-11-22 20:50): Schaden, Runden offen, Chance beim Sperrfeuer (Zielfeld) */
-  KIRCHE_DEF: 1.8, KIRCHE_HP: 6, HAUS_DEF: 1.6, HAUS_HP: 3, KAPELLE_HP: 4,   /* Winterdorf (2026-11-22): heile Häuser und Kapelle mit Bauzustand */ EINSTURZ_DMG: 2.5, TURM_RNG: 1, TURM_SPOT: 1, GARTEN_DEF: 1.2,
+  KIRCHE_DEF: 1.8, KIRCHE_HP: 6, HAUS_DEF: 1.6, HAUS_HP: 3, KAPELLE_HP: 4, MUEHLE_HP: 3, SPERRE_DEF: 1.2,   /* G6 (2026-11-25): Windmühle, Panzersperre */   /* Winterdorf (2026-11-22): heile Häuser und Kapelle mit Bauzustand */ EINSTURZ_DMG: 2.5, TURM_RNG: 1, TURM_SPOT: 1, GARTEN_DEF: 1.2,
   OW_DMG: 0.8, MINE_DMG: 2.6, TUNNEL_DMG: 6, CHARGE_DMG: 3.2, HEAL_CD: 2, RALLY_CD: 3, STORM_CD: 2, RECOVER_CD: 2,
   // Gelände-Gefahren (2026-11-16): Stacheldraht kostet Stärke beim Betreten, Gas wirkt nach (vergiftet: ½, dann ¼ des Gasschadens), Sperrfeuer mit Abklingzeit
   WIRE_DMG: 1.0, POISON_TURNS: 2, POISON_K: [0.25, 0.5], BARRAGE_CD: 2,
@@ -381,8 +381,17 @@ const TERRAIN = {
   acker:   { name: 'Acker', cost: 1, info: 'Gepflügter Acker unter Schnee, an den Rändern Hecken und Feldraine: Abwehr ×1,2 gegen Beschuss.',   // G4 (2026-11-25): Krähenfurt, gleiche Regel wie Garten
              chronik: { quelle: 'Bauernkalender von Krähenfurt, Winter 116 n. G.', text: 'Die Furchen sind gefroren und die Hecken kahl, doch wer sich an den Feldrain duckt, wird von den Kugeln eher übersehen als vom Frost.' } }
 };
-const KIRCHE = new Set(['schiff', 'turm', 'haus', 'kapelle']);   // große Gebäude: nur Fußtruppen und Anführer, Sicht gesperrt, halber Moralverlust (Winterdorf: auch Häuser und Kapelle)
-const gebDef = t => t === 'haus' || t === 'kapelle' ? P.HAUS_DEF : P.KIRCHE_DEF;
+Object.assign(TERRAIN, {   // G6 (2026-11-25): Panzersperre, Windmühle, Koloss-Wrack (Rückweg ORTE_ALT: Karten ohne diese Felder)
+  sperre:  { name: 'Panzersperre', cost: 99, info: 'Niemand kommt hindurch, auch kein Koloss. Fußtruppen daneben sind gegen Beschuss über die Sperre geschützt (×1,2). Nur Graben-Pioniere können sie sprengen. Die Sicht bleibt frei.',
+             chronik: { quelle: 'Pionierbefehl, Abschnitt Grauwall', text: 'Stahl und Beton halten keinen Mann auf, aber jeden Koloss – und wo der Koloss nicht weiterkommt, hält bald auch der Mann.' } },
+  muehle:  { name: 'Windmühle', cost: 1, info: 'Nur Fußtruppen und Anführer. Abwehr ×1,6, halber Moralverlust. Wer oben steht, schießt und sieht 1 Feld weiter. Versperrt die Sicht. Schwere Treffer bringen sie zum Einsturz.',
+             chronik: { quelle: 'Meldung eines Beobachtungspostens', text: 'Die Flügel sind längst zerschossen, doch vom Mahlboden sieht man bis zu den feindlichen Gräben – deshalb steht die Mühle noch, und deshalb wird sie fallen.' } },
+  wrack:   { name: 'Koloss-Wrack', cost: 2, info: 'Ausgebrannter Landkoloss. Fußtruppen finden Deckung (×1,5). Fahrzeuge, Reiter und Geschütze kommen nicht durch. Versperrt die Sicht.',
+             chronik: { quelle: 'Bericht einer Bergungsmannschaft', text: 'Der Koloss brannte zwei Tage; seitdem liegt er da wie ein toter Berg aus Eisen, und jeder Spähtrupp kriecht in seinen Schatten.' } },
+});
+const KIRCHE = new Set(['schiff', 'turm', 'haus', 'kapelle', 'muehle']);
+const orteAlt = () => !!(TOG.ORTE_ALT || (typeof window !== 'undefined' && window.ORTE_ALT));   // G6: Karten ohne Panzersperren und besondere Orte   // große Gebäude: nur Fußtruppen und Anführer, Sicht gesperrt, halber Moralverlust (Winterdorf: auch Häuser und Kapelle)
+const gebDef = t => t === 'haus' || t === 'kapelle' || t === 'muehle' ? P.HAUS_DEF : P.KIRCHE_DEF;
 const RUINE = new Set(['village', 'fabrik', 'kirche']);   // F79 (2026-11-21): Trümmer – Fahrzeuge/Schreiter: Bewegung endet dort, Gefahr festzufahren
 
 function mulberry32(a) {
@@ -426,7 +435,7 @@ function mapTools(cols, rows, seed) {
 const GRID_CODE = { '.': 'open', ',': 'mud', o: 'crater', f: 'forest', W: 'wald', '=': 'trench', x: 'wire', U: 'bunker', '~': 'canal', B: 'bridge', F: 'furt', s: 'sumpf', V: 'village', K: 'fabrik', '+': 'kirche', '#': 'barrikade', '-': 'bahn',
   S: 'schiff', t: 'turm', h: 'friedhof', g: 'garten', E: 'eis', H: 'haus', C: 'kapelle', R: 'steinbruecke' };
 const MAPS = {
-  grauwall: { id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 7,
+  grauwall: { get bauten() { return orteAlt() ? [] : [{ art: 'muehle', name: 'Windmühle', felder: [[5, 6]] }]; },   /* G6: Bauzustand der Windmühle */ id: 'grauwall', name: 'Der Grauwall', size: 'Klassisch', cols: 16, rows: 10, zoneA: 2, zoneD: 7,
     desc: 'Die erste Schlacht: Niemandsland, zwei Grabenlinien, Kanal mit Brücke.',
     armyMax: { A: 22, D: 18 },
     objectives: [
@@ -466,6 +475,7 @@ const MAPS = {
       T.line(14, 6, 9, 'canal'); T.set(14, 8, 'bridge');
       T.many([[15, 7], [15, 8]], 'village');
       T.path([[0, 4], [12, 4], [14, 8], [15, 8]], 'road');   // alte Landstraße nach Veskar und über die Marnbrücke
+      if (!orteAlt()) { T.set(5, 6, 'muehle'); T.M[5][6].bau = 0; T.many([[3, 2], [3, 4], [8, 3], [8, 5]], 'sperre'); }   // G6: Windmühle im Niemandsland; Panzersperren beiderseits der Landstraße vor den Gräben (Fahrzeuge auf die Straße gelenkt)
       return T.M;
     } },
   // Sankt Ruß (2026-11-19, Plan entwurf/KARTE_SANKT_RUSS.md): Dorf in der Mitte, beide Seiten aus ihren Gräben am Dorfrand (Konkordat West, Aschenwacht Ost).
@@ -543,7 +553,8 @@ const MAPS = {
     strasse2: [[3, 0], [6, 3], [8, 5], [10, 7], [10, 9]],
     build() {
       const T = mapTools(18, 12, 1);
-      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, ch === 'g' ? 'acker' : GRID_CODE[ch] || 'open')));   // G4 (2026-11-25): 'g' ist hier Acker (gleiche Regel wie Garten)
+      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, ch === 'g' ? 'acker' : GRID_CODE[ch] || 'open')));
+      if (!orteAlt()) { const w = TOG.KF_WRACK ? String(TOG.KF_WRACK).split(',').map(Number) : [6, 10]; T.set(w[0], w[1], 'wrack'); }   /* Messung: KF_WRACK=c,r; (8,8) vor der Brücke kostete das Konkordat 16 Punkte, (6,10) am Teich +4 */   // G6: ausgebranntes Koloss-Wrack westlich der Steinbrücke   // G4 (2026-11-25): 'g' ist hier Acker (gleiche Regel wie Garten)
       for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['acker', 'garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
       for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
       const dk = TOG.KF_DECKUNG != null ? String(TOG.KF_DECKUNG).split(';').filter(Boolean).map(x => x.split(',').map(Number)) : this.deckung;   // Messung: KF_DECKUNG="6,7;8,8"
@@ -694,7 +705,7 @@ function deployZone(G, side, list, lead, free) {
   const role = t => { const T = TYPES[t]; return T.cmd ? 'back' /* Anführer hinten (stabilste Fassung: fest/gemischt höchstens 7 Punkte auseinander; vorn bzw. nah an der Front schwankte es um 40–55 Punkte) */ : T.cls === 'art' && !T.mobile ? 'art' : T.cls === 'walker' ? 'fz' : (T.cls === 'medic' || T.relay || T.mobile || T.spot || T.cls === 'cav' || T.abil === 'mark' || T.abil === 'smoke' || T.courier) ? 'back' : T.mg ? 'mg' : 'inf'; };
   const RANG = { inf: 0, fz: 1, fuehrung: 2, mg: 3, back: 4, art: 5 };
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
-  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, acker: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
+  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, muehle: 3.2, wrack: 2.6, garten: 0.8, acker: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = dOf(c);
     let v = rl === 'fz' ? (h.road ? 2 : ['open', 'crater', 'grass'].includes(h.t) ? 1 : -1.5) : (DECK[h.t] || 0);   // Fahrzeuge: Straße und Offenes statt Deckung
@@ -724,7 +735,7 @@ function deployD(G, list, lead, free) {
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
-    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, acker: 0.8, friedhof: 0.8 }[h.t] || 0;
+    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, muehle: 3.2, wrack: 2.6, garten: 0.8, acker: 0.8, friedhof: 0.8 }[h.t] || 0;
     if (h.ridge) v += 1;
     for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v -= 50; else if (dd === 1) v += 1.2; }
     if (rl !== 'art' && rl !== 'back') v += (1 - d) * 2;   // Kampftruppen vorn im Band
@@ -772,7 +783,7 @@ function newGame(opts) {
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
-    bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
+    bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
   G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
@@ -821,8 +832,9 @@ function arcOf(G, d, ac, ar) {
 function canMarch(u) { const k = cls(u); return k !== 'art' && k !== 'walker' && !u.limbered; }
 function cost(G, u, c, r) {
   const t = hex(G, c, r).t, k = cls(u);
-  if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt', 'eis'].includes(t) && k !== 'cav') return 1;   // Straße
-  if (t === 'canal' || t === 'eisloch') return 99;
+  if (!TOG.NOROAD && hex(G, c, r).road && TERRAIN[t].cost > 1 && !['wire', 'canal', 'trench', 'wald', 'sumpf', 'furt', 'eis', 'sperre', 'wrack'].includes(t) && k !== 'cav') return 1;   // Straße
+  if (t === 'canal' || t === 'eisloch' || t === 'sperre') return 99;   // G6: Panzersperre – niemand kommt hinein
+  if (t === 'wrack' && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // G6: Wrack nur für Fußtruppen
   if (t === 'eis' && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // Winterdorf: Eis trägt nur Fußvolk (auch nicht über eine Straße)
   if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art' || TYPES[u.type].held)) return 99;   // Kirche: nur Fußtruppen und Anführer; K11 (Enrico 2026-11-22): Helden nicht ins Schiff und nicht auf den Turm
   if ((t === 'garten' || t === 'acker' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
@@ -1022,7 +1034,7 @@ function cutWire(G, u, c, r) {
 function rangeOf(G, a, tc, tr) {
   let rng = TYPES[a.type].rng || 0;
   if (rng > 1 && hex(G, a.c, a.r).ridge && !hex(G, tc, tr).ridge) rng += 1;
-  if (rng >= 1 && hex(G, a.c, a.r).t === 'turm') rng += P.TURM_RNG;   // Kirchturm: weiter schießen
+  if (rng >= 1 && (hex(G, a.c, a.r).t === 'turm' || hex(G, a.c, a.r).t === 'muehle')) rng += P.TURM_RNG;   // G6: Windmühle wie Kirchturm   // Kirchturm: weiter schießen
   return rng;
 }
 function smokeAt(G, c, r) { return !!(G.smoke && G.smoke.some(k => k.c === c && k.r === r)); }
@@ -1039,7 +1051,7 @@ function hasLOS(G, c1, r1, c2, r2, aerial) {
     if (aerial) continue;
     if (!inMap(c, r)) continue;
     const t = hex(G, c, r).t;
-    if (t === 'forest' || t === 'village' || t === 'wald' || t === 'fabrik' || t === 'kirche' || KIRCHE.has(t)) return false;
+    if (t === 'forest' || t === 'village' || t === 'wald' || t === 'fabrik' || t === 'kirche' || t === 'wrack' || KIRCHE.has(t)) return false;
   }
   return true;
 }
@@ -1133,15 +1145,19 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
   if (t === 'bunker') { if (lob) tags.push('Bogenwurf: kein Bunkerschutz'); else { m *= 2; tags.push('Bunker ×2'); } }
   if (t === 'fabrik') { m *= wk ? 0.7 : 1.7; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Fabrik ×1,7'); }
   if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
-  if (KIRCHE.has(t)) { m *= gebDef(t); tags.push(`${t === 'turm' ? 'Kirchturm' : t === 'haus' ? 'Haus' : t === 'kapelle' ? 'Kapelle' : 'Kirche'} ×${String(gebDef(t)).replace('.', ',')}`); }
+  if (KIRCHE.has(t)) { m *= gebDef(t); tags.push(`${t === 'turm' ? 'Kirchturm' : t === 'muehle' ? 'Windmühle' : t === 'haus' ? 'Haus' : t === 'kapelle' ? 'Kapelle' : 'Kirche'} ×${String(gebDef(t)).replace('.', ',')}`); }
   if ((t === 'garten' || t === 'acker' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'acker' ? 'Hecke/Feldrain' : t === 'garten' ? 'Gartenmauer' : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
   if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
+  if (t === 'wrack') { if (wk) { m *= 0.7; tags.push('Koloss am Wrack ×0,7'); } else { m *= P.VILLAGE_DEF; tags.push('Wrack ×1,5'); } }   // G6
   if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
   if (d.holdB) { m *= P.HOLD_DEF; tags.push('Halten um jeden Preis ×1,25'); }
   if (d.dug) { m *= P.DIG_DEF; tags.push('eingegraben ×1,3'); }
   return m;
 }
 // Deckung durch das Gelände für die Anzeige (Schild Bronze/Silber/Gold): Faktor gegen Beschuss von vorn; Stufe 0–3
+function hinterSperre(G, ac, ar, d) {   // G6: Fußtruppen (nicht Fahrzeuge/Schreiter) neben einer Panzersperre, die in der Schusslinie liegt
+  if (!d || cls(d) === 'walker' || ac == null) return false;
+  return line(ac, ar, d.c, d.r).some(([c, r]) => inMap(c, r) && dist(c, r, d.c, d.r) === 1 && hex(G, c, r).t === 'sperre'); }
 function coverOf(G, u) { const f = defMods(G, u, 'front', true, []); return { f, tier: f >= 1.7 ? 3 : f >= 1.35 ? 2 : f >= 1.15 ? 1 : 0 }; }
 function hexDef(G, c, r, isWalker) {
   const t = hex(G, c, r).t;
@@ -1187,6 +1203,7 @@ function preview(G, a, d, kind, o) {
   let dm = 1;
   if (flame) tags.push('Flammen: Deckung schützt nicht');
   else dm = defMods(G, d, geo, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
+  if (ranged && !flame && !(A.lob) && hinterSperre(G, ac, ar, d)) { m /= P.SPERRE_DEF; tags.push('hinter Panzersperre ×1,2'); }   // G6: Schusslinie läuft durch eine Sperre neben dem Ziel
   if (ranged && litAt(G, d.c, d.r, a.side)) { m *= 1.25; tags.push('ausgeleuchtet ×1,25'); }
   if (ranged && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }
   if (ranged && smokeAt(G, ac, ar)) { m *= P.NEBEL_AUS; tags.push('aus dem Nebel ×0,75'); }
@@ -1423,7 +1440,7 @@ function spotted(G, side, c, r) {
   if (smokeAt(G, c, r)) return false;   // in den Nebel hinein sieht kein Beobachter (Artillerie, Feuerschlag, Markieren)
   return G.units.some(u => u.side === side && active(u) && cls(u) !== 'art' && dist(u.c, u.r, c, r) <= sichtOf(G, u) && hasLOS(G, u.c, u.r, c, r, luft(u)));
 }
-function sichtOf(G, u) { if (TYPES[u.type].fessel && u.eingeholt) return P.BALLON_SICHT_UNTEN; const t = hex(G, u.c, u.r).t; return Math.max(TYPES[u.type].spot || P.SPOT, t === 'kirche' ? 6 : 0) + (t === 'turm' || t === 'kapelle' ? P.TURM_SPOT : 0); }   /* Kapelle mit Türmchen: +1 Sicht, keine Reichweite (Enrico 2026-11-22 17:30) */   // alter Kirchturm 6 Felder, Sankt Ruß +1
+function sichtOf(G, u) { if (TYPES[u.type].fessel && u.eingeholt) return P.BALLON_SICHT_UNTEN; const t = hex(G, u.c, u.r).t; return Math.max(TYPES[u.type].spot || P.SPOT, t === 'kirche' ? 6 : 0) + (t === 'turm' || t === 'kapelle' || t === 'muehle' ? P.TURM_SPOT : 0); }   /* Kapelle mit Türmchen: +1 Sicht, keine Reichweite (Enrico 2026-11-22 17:30) */   // alter Kirchturm 6 Felder, Sankt Ruß +1
 // ---------- Große Gebäude (Kirche von Sankt Ruß) ----------
 function bauAt(G, c, r) { const i = inMap(c, r) ? hex(G, c, r).bau : null; return i != null && G.bauten && G.bauten[i] && !G.bauten[i].kaputt ? G.bauten[i] : null; }
 const schwereWaffe = a => { const T = a && TYPES[a.type]; return !!T && (T.cls === 'art' || (T.cls === 'walker' && !T.gat && !T.mgfire && T.rng >= 2)); };
@@ -1754,7 +1771,7 @@ function abilTargets(G, u) {
     const d = dist(u.c, u.r, c, r), t = hex(G, c, r).t, x = unitAt(G, c, r);
     if (k === 'smoke' && d >= 1 && d <= 3) out.push([c, r]);
     else if (k === 'tunnel' && d >= 1 && d <= 2 && FORT.includes(t) && !(x && x.side === u.side) && !G.tunnels.some(q => q.c === c && q.r === r)) out.push([c, r]);
-    else if (k === 'charge' && d === 1 && (foe(c, r) || (!x && ['bunker', 'barrikade', 'wire'].includes(t)))) out.push([c, r]);
+    else if (k === 'charge' && d === 1 && (foe(c, r) || (!x && ['bunker', 'barrikade', 'wire', 'sperre'].includes(t)))) out.push([c, r]);
     else if (k === 'mine' && !(T.wirelayer && u.attacked) && d === 1 && (u.mines || 0) > 0 && !x && !hex(G, c, r).obj && cost(G, { type: 'grenadier', side: u.side }, c, r) < 99 && !G.mines.some(q => q.c === c && q.r === r)) out.push([c, r]);
     else if (k === 'light' && d >= 1 && d <= 4 && hasLOS(G, u.c, u.r, c, r)) out.push([c, r]);
     else if (k === 'clear' && d === 0 && G.clouds.some(q => dist(q.c, q.r, c, r) <= 1)) out.push([c, r]);
@@ -1807,6 +1824,7 @@ function useAbil(G, u, c, r) {
     }
     const h = hex(G, c, r);
     if (h.t === 'bunker' || h.t === 'barrikade') { h.t = 'crater'; ev.push({ t: 'terrain', c, r, what: 'gesprengt' }); }
+    else if (h.t === 'sperre') { h.t = 'crater'; h.gesprengt = true; ev.push({ t: 'terrain', c, r, what: 'Panzersperre gesprengt' }); }   // G6: Trümmer im Trichter
     else if (h.t === 'wire') { h.t = 'open'; ev.push({ t: 'terrain', c, r, what: 'Draht zerrissen' }); }
     ev.push(...checkEnd(G));
   }

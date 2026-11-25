@@ -270,6 +270,8 @@ const gbWinter = () => !!(E.MAP.winter && window.GELAENDE && window.GELAENDE.bod
 function gbTerr(c, r) {
   const h = G.map[c][r], b = h.bau != null && G.bauten ? G.bauten[h.bau] : null;
   if (b && (b.art === 'haus' || b.art === 'kapelle') && h.t === 'village' && !bauSicht()[h.bau]) return gbWinter() ? b.art : 'village';
+  if (b && b.art === 'muehle') return bauSicht()[h.bau] ? 'muehle_weg' : 'muehle';   // G6: Windmühle, zerstört erst beim Abspielen des Einsturzes
+  if (h.gesprengt && h.t === 'crater') return 'sperre_weg';   // G6: gesprengte Panzersperre
   const t = h.t === 'eisloch' ? 'eis' : h.t === 'acker' ? 'garten' : h.t;   // G4: Acker (Krähenfurt) zeichnet GBau wie bisher über die Gartenfelder   // Eisloch: Boden bleibt Eis, das Loch ist eine Bodenspur (erscheint beim Abspielen von „eisbruch“)
   return gbWinter() ? t : (GB_PLATZHALTER[t] || t);
 }
@@ -3162,9 +3164,9 @@ async function playEvent0(e) {
       await new Promise(r => setTimeout(r, speed >= INSTANT ? 0 : 1150)); shake(10);   // feste Zeit, nicht nach Tempo: der Ton läuft auch nicht schneller
       pts.forEach(([x, y], i) => { fx('truemmer', 4, x, y + s * 0.4, { delay: i * 5, life: 100, mul: 1.4, grow: 0.35, rise: 0.35, fadeOut: 0.5 }); fx('truemmer', [0, 1][i % 2], x + s * 0.3, y + s * 0.2, { delay: 8 + i * 5, life: 90, mul: 1, grow: 0.3 }); fxImpact(x, y - s * 0.2, s * 0.9, { delay: i * 6, alt: true }); });
       const bauArt = G.bauten && G.bauten[e.bau] ? G.bauten[e.bau].art : 'kirche';   // Krähenfurt: auch Häuser und Kapelle (dort keine Glocke im Haus)
-      setTimeout(() => playSound('boomH', 0.45, null, { noGap: true }), 120); if (bauArt !== 'haus') setTimeout(() => playSound('glocke_fall', 0.6, null, { noGap: true, rate: 1 }), 1500);
+      setTimeout(() => playSound('boomH', 0.45, null, { noGap: true }), 120); if (bauArt !== 'haus' && bauArt !== 'muehle') setTimeout(() => playSound('glocke_fall', 0.6, null, { noGap: true, rate: 1 }), 1500);
       await wait(380); bauSicht()[e.bau] = true; renderTerrain();
-      { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, bauArt === 'haus' ? 'Das Haus stürzt ein!' : bauArt === 'kapelle' ? 'Die Kapelle stürzt ein!' : 'Die Kirche stürzt ein!', '#f0c070', true); }
+      { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, bauArt === 'haus' ? 'Das Haus stürzt ein!' : bauArt === 'kapelle' ? 'Die Kapelle stürzt ein!' : bauArt === 'muehle' ? 'Die Windmühle stürzt ein!' : 'Die Kirche stürzt ein!', '#f0c070', true); }
       await wait(700); break; }
   }
 }
