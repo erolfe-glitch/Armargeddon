@@ -1,3 +1,42 @@
+## 2026-11-25 – G6b: Nachbesserung G6 (Punkt 75) (`0cd3d13`)
+
+Gepusht, index.html eingecheckt. Rückweg für die Bilder: `window.G6B_ALT = true` (vor dem Kartenaufbau).
+
+### Was geändert ist
+1. **Windmühle 1,5× größer**, heil und eingestürzt gleich.
+   - Ganz ohne Verdecken geht es nicht: Schon die alte Größe ragte über die Figuren im Feld dahinter.
+   - Deshalb wird die Mühle durchsichtiger, sobald Figuren dahinter stehen (30 % statt sonst 45 % Deckkraft). Die Figuren bleiben dann gut zu erkennen (Bild `grauwall_mit_einheiten_nah.jpg`).
+2. **Einsturzmeldung:** Jetzt steht dort „Die Windmühle stürzt ein!“, und zwar direkt an der Mühle.
+   - Ursache: Die Meldung las die Gebäudeart erst beim Abspielen; das Ereignis bringt sie jetzt selbst mit.
+   - Die Meldung saß bei Flagge 1, weil sie für den hohen Kirchturm weit nach oben versetzt war. Für Mühle, Haus und Kapelle sitzt sie jetzt tiefer.
+   - Auch die Schadensmeldung („Kirche 67 %“) nennt jetzt das richtige Gebäude.
+   - Die Simulation zählt Einstürze getrennt je Gebäudeart („Windmühle: …“, „Kirche: …“, „Häuser: …“). Turm und Schiff werden nur noch bei der Kirche gezählt.
+3. **Koloss-Wrack im Schnee:**
+   - Das Wrack bekommt Schneekappen auf allen Oberkanten, die gemalten Schneeflecken werden breiter, dazu leichter Reif.
+   - Tannen und tote Bäume, die vor dem Wrack stünden, rücken zur Seite; wo das nicht reicht, fallen sie weg.
+   - Felder und Lage (6,10) sind unverändert. Deshalb gab es keinen sim-Lauf.
+4. **Betonhöcker** sind dunkler und erdig wie verschmutzter Beton, unten mit mehr Erde. Das gilt für beide Höcker-Bilder.
+5. **Sankt Ruß:** keine Panzersperren, wie gewünscht (es gab dort auch keine).
+6. **Grauwall-Gleichgewicht:** Stand weiter **Konkordat 35 %** (Messung aus G6). Nicht ausgeglichen, das kommt in Paket S.
+
+### Bilder (`entwurf/probe/gelaende_g6b/`, jeweils links vorher, rechts nachher)
+- `vergleich_muehle_nah.jpg`, `vergleich_muehle_ganz.jpg`: Mühle vorher/nachher.
+- `grauwall_mit_einheiten_nah.jpg`: Mühle mit Figuren ringsum.
+- `grauwall_zerstoert_nah.jpg`: Einsturz mit Meldung. Die Meldung steht dort doppelt, weil die Probe den Einsturz zweimal abspielt; im Spiel kommt sie nur einmal.
+- `vergleich_wrack_nah.jpg`: Wrack im Schnee.
+- `vergleich_hoecker_nah.jpg`: Betonhöcker, unten im Bild.
+
+### Tests
+- test_regeln und test_kommentare bestanden.
+- Kurzer sim-Lauf zur Prüfung der neuen Zeilen: Grauwall 20 Schlachten, Sankt Ruß 5 Schlachten. Beide Zeilen laufen; die Siegquoten daraus sind nicht aussagekräftig.
+- **Partietest ohne Grafikkarte:** Nach 10 Minuten abgebrochen, bis in Runde 2 gekommen. Alle Fenstergrößen waren in Ordnung, das Bild lief weiter. Ich habe nur das Ende der Ausgabe gesehen; dort gab es keine Fehler.
+- **Nebenbei gefunden:** `test_kommentare` prüft `gelaende_bau.js` nicht. Dort hatte ich zwischendurch selbst einen Kommentar, der Code verschluckte. Den habe ich gefunden und behoben, bevor ich committet habe.
+- Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. Passt die Mühle in dieser Größe? Ohne die Durchsicht dürfte sie höchstens etwa so groß sein wie vorher, sonst verdeckt sie das Feld dahinter.
+2. G7b-Test: Die Teile G7-1/G7-2 liegen noch nicht da. Ich höre deshalb hier auf.
+
 ## 2026-11-25 – G6: Panzersperren und besondere Orte (Punkt 68) (`1c7bc1c`, Werkzeuge `0d96e82`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Rückweg für alles: `ORTE_ALT=1` (Simulation) bzw. `window.ORTE_ALT = true` vor dem Schlachtstart.
