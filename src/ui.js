@@ -293,6 +293,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
     const geht = feld.every((col, c) => col.every((t, r) => { const a = gbFeld[c] && gbFeld[c][r]; if (a === t) return true;
       if ((a === 'haus' || a === 'kapelle') && t === 'village' && GBW.feldNeu) { bau.push([c, r]); return true; }   // Krähenfurt: Haus/Kapelle → Ruine, nur das Feld neu
+      if (!window.NEUBAU_ALT && GBW.feldNeu && ((a === 'sperre' && t === 'sperre_weg') || (a === 'muehle' && t === 'muehle_weg'))) { bau.push([c, r]); neu.push([c, r]); return true; }   // G7e Bremse 4: gesprengte Sperre, eingestürzte Mühle – nur das Feld neu (vorher voller Neuaufbau, 0,4–0,6 s); Rückweg NEUBAU_ALT
       if (WEGBAR.has(a) && (t === 'open' || t === 'crater')) { weg.push([c, r]); if (t === 'crater') neu.push([c, r]); return true; }
       if (FLACH.has(a) && t === 'crater') { neu.push([c, r]); return true; } return false; }));
     if (geht) { for (const [c, r] of weg) GBW.feldWeg(c, r); for (const [c, r] of bau) GBW.feldNeu(c, r); for (const [c, r] of neu) { GBW.flachNeu(c, r); gbTcvNeu.push([c, r]); } gbKey = key; gbFeld = feld; return 'inkr'; } }
