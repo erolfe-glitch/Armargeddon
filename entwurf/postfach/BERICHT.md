@@ -1,3 +1,32 @@
+## 2026-11-25 – R1: Truppstärke 8 / 6 / 3, Feldlinien dezenter (Punkte 72, 73 R1) (`dac0dba`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Der PC ist mitten im Paket abgestürzt; der Code war vollständig erhalten, fehlende Bilder und Tests sind nachgeholt.
+
+### Was geändert ist
+- **Linieninfanterie** (Schützenkohorte, Grenadiere): 8 statt 10 Figuren. Im offenen Feld stehen sie **3-2-3 versetzt**: Die mittlere Reihe steht in den Lücken, die vordere und hintere Reihe sind leicht gegeneinander verschoben. Niemand ragt aus dem Feld.
+- **Reiter:** wie bisher 6.
+- **Spezialtrupps:** 3 statt 4 (einer hinten, zwei vorn). Trupps mit weniger Figuren, etwa Löwenoger mit 2, bleiben, wie sie sind.
+- **Graben:** 8 Plätze je Feld, mit derselben Verteilung wie in U2/U2b.
+- **Klone und Größenstreuung** bleiben.
+- **Feldlinien dezenter:** Deckkraft 0,06 statt 0,09. Die Kanten liegen doppelt, sichtbar sind also etwa 0,12 statt 0,17.
+- **Rückwege:** `window.STAERKE_ALT = true` (10 / 6 / 4) und `window.RASTER_ALT = true` (alte Linien).
+- **Messung:** Die Figurenzahl ist reine Anzeige; Stärke und Schaden rechnen die Regeln nicht über Figuren. Deshalb gab es keinen sim-Lauf.
+
+### Bilder (`entwurf/probe/r1/`, jeweils links vorher, rechts nachher)
+- `vergleich_sanktruss_feld.jpg` (offenes Feld)
+- `vergleich_grauwall_graben.jpg`
+- `vergleich_grauwall_graben_weit.jpg`
+
+### Tests
+- test_kommentare bestanden.
+- Partietest ohne Konsolenfehler.
+
+### Nebenbei
+`tools/u2_bilder.mjs` wartet jetzt vor jeder Aufnahme, bis das Bild aufgebaut ist; vorher war die Aufnahme von Sankt Ruß schwarz.
+
+### Fragen an Enrico
+Keine. Als Nächstes kommt G7a (Gräben eingegraben, Probe und Plan).
+
 ## 2026-11-25 – L1: Leistung (Punkt 71, Teil L1) (`9102fdc`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Keine Regeländerung.
