@@ -433,18 +433,29 @@ const MAPS = {
       { id: 'suedgraben', name: 'Südgraben', c: 7, r: 7, pts: 2 },
       { id: 'schanze', name: 'Die Schanze', c: 10, r: 5, pts: 2 },
       { id: 'veskar', name: 'Veskar', c: 12, r: 4, pts: 1 }],
+    // G2a (Enrico 2026-11-25): Gräben als Linien (Bild = Regel) – Feuergräben mit Buchten, Laufgräben zum Hinterland bzw. zwischen den Linien, Sappen nach vorn;
+    // die Grabenfelder der Regeln sind genau die Felder der Linien. Rückweg: GRAEBEN_ALT=1 (bzw. window.GRAEBEN_ALT) = alte drei durchgehenden Linien.
+    graeben: [
+      { art: 'feuer', linie: [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8], [2, 9]] },
+      { art: 'feuer', linie: [[7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7], [7, 8], [7, 9]] },
+      { art: 'feuer', linie: [[10, 1], [10, 2], [10, 3], [10, 4], [10, 5], [10, 6], [10, 7], [10, 8], [10, 9]] },   // endet im Norden (Abgleich 2026-11-25: Ende im Süden 23 %, durchgehend 39 %, Ende im Norden 47 % mit einer Sappe)
+      { art: 'lauf', linie: [[2, 3], [1, 3], [0, 3]] }, { art: 'lauf', linie: [[2, 7], [1, 7], [0, 7]] },   // Konkordat: Annäherungsgräben aus dem Hinterland
+      { art: 'lauf', linie: [[7, 2], [8, 2], [9, 2], [10, 2]] }, { art: 'lauf', linie: [[7, 6], [8, 6], [9, 6], [10, 6]] },   // Aschenwacht: Verbindungsgräben zwischen den Linien
+      { art: 'sappe', linie: [[7, 8], [6, 8]] }],   // Sappe der Aschenwacht nach vorn (eine Konkordat-Sappe bei (3,5) hob die Quote auf 63 %)
     ki: { A: { artRunden: 5 }, D: { artRunden: 4 } },   /* F94-Abgleich (2026-11-22): Geschütze ziehen erst nach 5 bzw. 4 Runden ohne Ziel nach – feste Aufstellung 54,3 % (8 × 200) */
     army: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 1, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, rauch: 1, generalA: 1, hauptA: 1 },   // F94 (Enrico 2026-11-22 13:35): gemischte Startarmeen, höchstens 5 vom selben Typ
       D: { grenadier: 5, gasschutz: 2, banner: 1, sense: 3, geschuetz: 2, sturm: 1, sturmpz: 1, minenwerfer: 1, signal: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* Abgleich nach F103 (je 8 × 200): feste Aufstellung 46,5 %, gemischt 57,1 % */   // vorher A: 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter; D: 8 Grenadiere, 5 Sensenwerk, 2 Geschütze, 2 Sturmbrecher   // F66/F54/F80 (2026-11-21): +2 Sturmbrecher (Panzergranate gegen die Kolosse), 8 statt 10 Grenadiere (Sim 52 %)
     build: () => {
       const T = mapTools(16, 10, 1917);
-      T.line(2, 0, 9, 'trench');
+      const alt = TOG.GRAEBEN_ALT || (typeof window !== 'undefined' && window.GRAEBEN_ALT);
+      if (alt) T.line(2, 0, 9, 'trench');
       T.field(3, 4, 0, 9, [['crater', 0.3], ['mud', 0.16]]);
       T.line(5, 0, 9, 'wire', [2, 7]); T.line(6, 0, 9, 'wire', [4, 8]);
-      T.line(7, 0, 9, 'trench');
+      if (alt) T.line(7, 0, 9, 'trench');
       T.field(8, 8, 0, 9, [['crater', 0.25]]);
       T.line(9, 0, 9, 'wire', [1, 5, 8]);
-      T.line(10, 0, 9, 'trench');
+      if (alt) T.line(10, 0, 9, 'trench');
+      else for (const g of MAPS.grauwall.graeben) for (const [c, r] of g.linie) T.set(c, r, 'trench');   // G2a: Grabenfelder aus den Linien
       T.ridge(11, 13, 3, 5);
       T.many([[12, 4], [12, 3], [13, 4]], 'village');
       T.many([[13, 0], [14, 0], [14, 1], [15, 1], [13, 1]], 'forest');

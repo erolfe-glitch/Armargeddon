@@ -105,3 +105,31 @@ Machart wie `ui-quelle/gelaende/`: Magenta-Hintergrund, Ansicht schräg von vorn
 3. **Acker:** A (Empfehlung) oder B?
 4. **Deckung:** Soll die Hecke Deckung geben (Vorschlag ×1,2 wie Garten)? Heuhaufen keine?
 5. Soll der Berater F-1 (gemalter Acker) überhaupt machen, oder reicht der Code-Acker?
+
+## 6. Stand G2a + G3a (2026-11-25, ohne neue Bilder)
+- **Gräben Grauwall:**
+  - Form `buchten` als Standard (Feuerbuchten/Querwände, Rückwall, Pfützen; Längen und Tiefen mit Zufall).
+  - Gräben als Linien in `MAP.graeben` (engine.js, Grauwall); die Grabenfelder werden daraus abgeleitet.
+  - GBau gibt `buchtenJeFeld` zurück (Mitte, Richtung, Länge je Feuerbucht, `__dbg.buchten()`), die Grundlage für U2.
+  - Rückweg: `GRAEBEN_ALT=1` bzw. `window.GRAEBEN_ALT`.
+- **Linien Grauwall (abgeglichen):**
+  - Feuergräben Spalte 2, 7 und 10; **Graben 10 endet im Norden** (beginnt bei Zeile 1).
+  - Laufgräben: Konkordat aus dem Hinterland (Zeilen 3 und 7), Aschenwacht zwischen den Linien (Zeilen 2 und 6).
+  - Sappe der Aschenwacht (7,8)→(6,8).
+  - Messung: Konkordat 48,0 % (4 × 200; vorher 46,5 %).
+  - Wie empfindlich das ist (je 4 × 100):
+
+    | Graben 10 / Sappen | Konkordat |
+    |---|---|
+    | endet im Süden | 23 % |
+    | durchgehend | 39 % |
+    | endet im Norden, mit Konkordat-Sappe | 63 % |
+    | endet im Norden, ohne Konkordat-Sappe | 47 % |
+
+- **Felder Krähenfurt:**
+  - Acker A als Standard, Furchenrichtung je zusammenhängendem Acker (±25°).
+  - Hecken an etwa 40 % der Ackerränder (Ersatzbild Unterholz bis `hecke_schnee_*`); die Deckung kommt über die Feldart Garten (×1,2 gegen Beschuss), also keine Regeländerung.
+  - Heuhaufen, Vogelscheuche und Pflug erscheinen, sobald die Bilder in `GELAENDE` sind.
+  - Rückweg: `window.ACKER_C2` (Acker vom 24.11.).
+  - Messung unverändert: 59 % (4 × 200, wie der eingefrorene alte Stand).
+- **Offen:** die gemalten Teile G-1…G-10 und F-3…F-6 einbauen, sobald sie geliefert sind; danach U2 (10 Grabenplätze an den Feuerbuchten).

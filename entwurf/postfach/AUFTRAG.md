@@ -26,8 +26,50 @@
 - ✓ **Bauplan geschrieben** (`entwurf/BAUPLAN_UMBAU.md`, `37f7b67`).
 - ✓ **Paket BP2 – Bauplan überarbeiten (Abschnitt „24.11. 23:30 bis 25.11. 00:25“, Punkte 52–54), nur Plan, nichts bauen.** Danach Freigabe durch Enrico, dann U0.
 - ✓ **Paket U0 + U1 – Umbau beginnt (Abschnitt 25.11. 06:15, Punkt 55).** Je ein `pa` (erst U0, dann U1). Danach Pause für das Gelände-Paket G.
+- ✓ G1 erledigt (Probe+Plan). **Paket G – Gelände (Abschnitt 25.11. 07:00, Punkte 56–57).** Erst **G1 = Probe + Plan** (ein `pa`, Bilder, Liste der Bausteine, die der Berater malen soll), dann nach Enricos Blick **G2 Gräben** und **G3 Felder** bauen. Danach U2.
+- **Paket G2a + G3a – ohne neue Bilder (Abschnitt 25.11. 08:35, Punkt 58).** Ein `pa`. Die gemalten Teile (G-1…G-10, F-3…F-6) baut CC ein, sobald der Berater sie geliefert hat (eigener Schritt).
+- **Paket G2b + G3b – gemalte Teile einbauen (Abschnitt 25.11. 10:15, Punkt 59).** Eigener `pa` nach G2a/G3a. Bilder liegen fertig in `ui-quelle/gelaende/neu_g/`.
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Berater 2026-11-25 10:15): Gelände-Teile sind gemalt – G2b/G3b <<<
+**Reihenfolge:** erst G2a + G3a fertig machen (Punkt 58), **dann eigener `pa` für G2b + G3b**: die neuen Bilder einbauen. CC-Stufe: Mittel.
+
+- [ ] **59. Neue Gelände-Teile einbauen.** Alle 14 Teile aus `GELAENDE_G_PLAN.md` Abschnitt 3 (ohne F-1/F-2) liegen in **`ui-quelle/gelaende/neu_g/`**, Zuordnung und Hinweise in `neu_g/LIESMICH.md`. Übersicht: `entwurf/probe/gelaende_g1/teile_uebersicht.jpg` (falls nicht da: die Bilder selbst).
+  - Mit `tools/gelaende_cut.py` freistellen wie die bisherigen Teile (Höhen in `TEILE` nach Plan-Tabelle; Streifen G-2/G-3/F-3 nahtlos machen), Plastizität mit `figur_plastik.py` (`gel_<name>`), einbetten.
+  - **Beachten:** In `hecke_schnee.png` hat das Bildmodell oben Brücke/Brunnen/Holzstapel aus der Vorlage kopiert → **nur die zwei Heckenstreifen unten** nehmen. In `heuhaufen_schnee.png` den „Pilz auf der Stange“ (oben Mitte) weglassen. `graben_ecken.png` sind eher Außenecken/Stirnseiten – prüfen, wo sie passen; wenn echte Innenecken fehlen, im Bericht sagen, der Berater malt nach. `pflug_schnee.png` hat einen gemalten weichen Schneefleck – mitnehmen, wenn er sich in den Schnee fügt, sonst wegschneiden.
+  - Verteilung wie im Plan (nie zwei gleiche nebeneinander), Bilder vorher/nachher nah + ganz für Grauwall und Krähenfurt. Gefällt etwas nicht oder fehlt ein Teil: im Bericht unter „Fragen an Enrico“ mit Bild, der Berater malt nach.
+
+# >>> JETZT (Enrico 2026-11-25 08:35): Antworten zu G1 – jetzt G2a + G3a <<<
+**Reihenfolge:** nächster `pa` = G2a + G3a (alles, was **ohne** neue Bilder geht). Danach Bericht mit Bildern und Messung, dann warten auf die gemalten Teile vom Berater. **U2 erst, wenn die Grabenform steht** (Feuerbuchten für die 10 Grabenplätze). CC-Stufe: Mittel.
+
+- [x] **58. Antworten zu `GELAENDE_G_PLAN.md` (Enrico 08:35).**
+  1. **Gräben: Richtung V2** (Feuerbuchten + Querwände + Rückwall + Pfützen) **mit gemalten Teilen** – der Berater malt G-1…G-10 (zuerst G-1, G-2, G-4).
+  2. **Verbindungs-/Laufgräben und Sappen als eigene Linien je Karte** (`MAP.graeben`, Bild = Regel) – ja. Grauwall-Raster darf sich ändern; danach **Balance messen** (4 Startwerte gemittelt, Ziel ~50 %, nicht unter ±7 feilen).
+  3. **Acker A** als Standard für Krähenfurt (Richtung je Acker, Feldrain im Code).
+  4. **Hecke gibt Deckung ×1,2** gegen Beschuss (wie Garten), **Heuhaufen, Vogelscheuche, Pflug nur Schmuck**. Krähenfurt danach kurz messen.
+  5. **Gemalter Acker (F-1) und Feldrain (F-2): vorerst nicht** – der Code-Acker reicht; nur falls Enrico später unzufrieden ist.
+- **G2a jetzt:** Form `buchten` als Standard (Zufall in Länge/Tiefe der Buchten), `MAP.graeben` mit Feuer-/Lauf-/Sappenlinien für Grauwall (2 Laufgräben je Seite, 1–2 Sappen, eine Linie endet oder teilt sich), Grabenfelder daraus ableiten, Rückwall und Pfützen vorerst im Code, Balance messen. GBau soll die Feuerbuchten je Grabenfeld zurückgeben (für U2). Bis die gemalten Teile da sind, die heutigen Teile als Ersatz.
+- **G3a jetzt:** Acker A Standard (`ACKER_ALT` bleibt), Furchenrichtung je Acker (±25°), Hecke als Feldart/Deko mit Deckung ×1,2 (vorerst gezeichneter Ersatz oder vorhandener Zaun), Platzhalter für Heuhaufen/Vogelscheuche/Pflug (erscheinen, sobald Bilder da), Krähenfurt messen.
+- **Bilder:** vorher/nachher je Karte, nah + ganz.
+
+# >>> JETZT (Enrico 2026-11-25 07:00): Gelände-Paket G – Gräben Grauwall, Felder Krähenfurt <<<
+**Reihenfolge:** nächster `pa` = **G1: nur Probe und Plan**, nichts fest einbauen. Bilder + kurzer Plan im Bericht, dazu eine **Liste der Gelände-Bausteine, die neu gemalt werden müssen** (der Berater macht sie mit ComfyUI/Gemini, Machart wie `ui-quelle/gelaende/`, Magenta, keine gemalten Schatten). Danach entscheidet Enrico, dann G2/G3. Grundlage: `entwurf/probe/massstab/grauwall_U1_ganz.jpg`, `winterdorf_U1_ganz.jpg`. Regeln: STYLE.md „Gelände-Bausteine“. CC-Stufe für G1: hoch (Gestaltung + Plan).
+
+- [ ] **56. Gräben auf Grauwall (Enrico: alle vier Punkte stören).**
+  1. **Form:** heute gleichmäßig gewellte Bänder „wie Schlangen/Flüsse“. Gewünscht: **Zickzack mit Ecken und Querwänden** (Schulterwehren/Traversen, Feuerbuchten), wie echte Schützengräben – eckig, gebrochen, nicht weich geschwungen.
+  2. **Rand:** aufgeworfener **Erdwall/Brustwehr** auf der Feindseite, **Sandsäcke**, auf der Rückseite niedriger Wall; Schlamm, Pfützen.
+  3. **Abwechslung:** nicht überall dieselbe Wand und Sohle. Einzelteile: **Unterstand-Eingang** (Balken, Plane), **Leitern**, **Holzstege/Lattenroste** (gibt es teils), Stützbalken, eingestürzte Stelle, Schießscharte/Stahlschild, Drahtrolle am Rand, Kiste, Kanister.
+  4. **Verlauf:** nicht drei gerade Parallelen. **Verbindungsgräben** (Laufgräben) zwischen den Linien, **Vorsprünge/Sappen** nach vorn, Knicke, eine Linie darf enden oder sich teilen. Kartendaten (Raster) ändern ist erlaubt; danach **Balance messen** (Grauwall, 4 Startwerte gemittelt, Ziel ~50 %, nicht unter ±7 feilen).
+  - Prüfen, wie weit `gelaende_bau.js` (GBau) Zickzack innerhalb des Hexrasters kann (z. B. Graben-Mittellinie mit Knickpunkten statt Kurve, Traversen als aufrechte Teile).
+  - **Die 10 Grabenplätze (U2) hängen an der neuen Form** – Plätze an Feuerbuchten denken.
+  - Probe G1: 2–3 Varianten auf einem Kartenausschnitt (Nahbild + ganz), vorher/nachher.
+- [ ] **57. Felder auf Krähenfurt (Enrico: alle vier Punkte stören).**
+  1. **Kaum erkennbar:** heute nur graue Streifen. Es muss sofort als **Acker unter Schnee** lesbar sein: dunkle Erde schaut in den Furchen durch, Schneereste auf den Kämmen.
+  2. **Zu künstlich:** Furchen nicht als gleichmäßiges Streifenmuster, sondern unregelmäßig (Breite, Helligkeit, leichte Krümmung, Lücken).
+  3. **Ränder:** weicher, natürlicher Übergang zum Schnee (Feldrain, Schneewehe), kein ausgefranster oder harter Rand.
+  4. **Mehr Leben:** Zaunreihen/Weidezaun, Hecke, Heuhaufen/Strohmieten, Feldweg mit Spuren, Vogelscheuche, ggf. liegengebliebener Pflug/Karren (als `deko` oder aufrechte Teile; Regeln unverändert, außer Deckung durch Hecke/Heuhaufen – dann messen).
+  - Probe G1: Nahbild + ganz, vorher/nachher.
 
 # >>> JETZT (Enrico 2026-11-25 06:15): Freigabe Umbau U0 + U1, Antworten Bauplan Abschnitt 12 <<<
 **Reihenfolge:** Punkt 55 in `BAUPLAN_UMBAU.md` eintragen (Abschnitt 12 als beantwortet), dann **U0** bauen (eigener `pa`), danach **U1** (eigener `pa`). **Nach U1 anhalten:** als Nächstes kommt das Gelände-Paket G, das der Berater mit Enrico noch bespricht – nicht selbst anfangen. CC-Stufe beim Bauen: Mittel.

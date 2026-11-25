@@ -35,6 +35,7 @@ function freeNear(G, u) { return E.neighbors(u.c, u.r).find(([c, r]) => E.inMap(
 { // Minenwerfer räumt Draht immer
   const G = game('D'), a = G.units.find(x => x.side === 'D' && x.type === 'grenadier'); a.type = 'minenwerfer'; a.ap = 2; a.attacked = false; a.mvd = 0;
   const d = target(G, a, 3);
+  if (d && !E.unitAt(G, d.c, d.r)) { const f = G.units.find(x => x.side !== a.side && E.alive(x)); f.c = d.c; f.r = d.r; }   // F38: Sprenggranate nicht auf leeren Draht – Ziel besetzen (vorher hing der Test an der Startlage; seit G2a ist das Feld leer)
   if (d) { E.hex(G, d.c, d.r).t = 'wire'; G.marks.push({ c: d.c, r: d.r, side: 'D' }); const ev = E.shell(G, a, d.c, d.r, 'he'); ok('Minenwerfer', E.hex(G, d.c, d.r).t !== 'wire' && redraws(ev, d.c, d.r), JSON.stringify(ev.map(e => e.t))); }
   else ok('Minenwerfer', false, 'kein Ziel');
 }
