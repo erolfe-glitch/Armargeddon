@@ -1,3 +1,37 @@
+## 2026-11-25 – Gelände G4b: Grabentakt + Grabenboden (Punkt 63) (`77f45ba`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung, deshalb keinen sim-Lauf.
+
+### Takt
+- Jeder Graben hat jetzt seinen eigenen Takt. Vorher liefen alle Gräben im selben Takt, das war ein Hauptgrund für das Muster.
+- Buchten sind 0,72–1,57 R lang, gelegentlich 1,75–2,2 R. Durchgänge sind 0,85–1,45 R lang, gelegentlich bis 1,9 R.
+- Die Tiefe jeder Bucht schwankt um ±15 %.
+- Alles ist zufällig, aber fest je Karte.
+- `buchtenJeFeld` gibt jetzt jedem Feld eines Feuergrabens mindestens eine Bucht. Auf Grauwall sind es alle 29 von 29; vorher hatten mit dem neuen Takt einige Felder keine.
+
+### Grabenboden
+- **Durchgänge:** Hier liegt ein durchgehender Laufsteg von Ende zu Ende, die Latten quer zur Laufrichtung.
+- **Buchten:** Hier liegen ein oder zwei einzelne Roste, sonst Schlamm.
+- Die Roste sind schmaler als die Sohle (78 %), halten Abstand zu den Enden und sind kaum gedreht. Nichts ragt mehr in die Wände.
+- Das Kram-Teil „Balken“ ist ganz raus, das war das schräge Brett in der Wand.
+- Die Roste sind kräftiger (mehr Kontrast) und werfen einen eigenen kleinen Schatten.
+- Die Pfützen sind jetzt im Code gezeichnet: dunkles Braungrau mit nassem Rand, schwacher Spiegelung und schmalem Glanzbogen, kein weißer Fleck mehr.
+- Es gibt weniger Pfützen. Sie liegen nur in Buchten ohne Rost und gelegentlich an einem Knick, nie auf einem Rost.
+- Rückweg zum Stand von G4: `window.G4B_ALT = true`.
+
+### Bilder (`entwurf/probe/gelaende_g4b/`, jeweils links vorher, rechts nachher)
+- `vergleich_ganz.jpg`: Aus der Ferne wirken die Gräben jetzt deutlich unregelmäßiger.
+- `vergleich_nah.jpg`
+- `vergleich_boden.jpg`: nur der Grabenboden, ganz nah.
+
+### Tests
+- test_kommentare und test_draht bestanden.
+- Partietest ohne Konsolenfehler.
+- Gelände-Probe ohne Seitenfehler, Aufbau Grauwall 583 ms.
+
+### Fragen an Enrico
+1. Die Pfützen sind jetzt eher unauffällig (dunkel, wenig Glanz). Sollen sie mehr glänzen?
+
 ## 2026-11-25 – Gelände G4: Zinnenverlauf + Acker (Punkt 61) (`3225c4d`)
 
 Gepusht, **index.html gebaut und eingecheckt.**
