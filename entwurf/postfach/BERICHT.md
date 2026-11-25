@@ -1,3 +1,54 @@
+## 2026-11-25 – G5: Stacheldraht mit Plan (Punkt 65) (`81e86bd`)
+
+Gepusht, **index.html gebaut und eingecheckt.**
+
+### Bild
+- Drahtfelder, die höchstens 3,6 R vor einem Graben liegen, bekommen 2–3 versetzte Pfahlreihen, parallel zur Linie der Grabenfelder. Feuergräben zählen dabei vor Lauf- und Sappengräben.
+- Für die Pfähle nehme ich die gemalten Einzelpfähle `draht_pfahl_1–4`; sie sind wieder eingebettet.
+- Zwischen den Pfählen ist der Draht im Code gespannt: drei Stränge mit leichtem Durchhang, darunter eine Drahtrolle aus unregelmäßigen Schlingen, dazu eine Schattenlinie am Boden.
+- Die Reihen laufen bis an den Feldrand, damit benachbarte Drahtfelder einen durchgehenden Gürtel bilden.
+- Gelegentlich liegt ein loses Drahtstück daneben. Auf Straßen bleibt eine Lücke.
+- Fern von Gräben (Niemandsland) bleibt der Draht wie bisher hingeworfen.
+- Die Gräben auf Sankt Ruß sind Zickzack-Gräben. Damit die Reihen dort nicht schräg stehen, folgen sie der Linie durch die Grabenfelder und nicht dem Zickzack.
+- **Bild = Regel:** test_draht und test_draht_bild bestanden (jedes Drahtfeld zeigt Draht, kein anderes Feld).
+
+### Lage
+- **Grauwall:**
+  - Der äußere Gürtel vor dem vorderen Aschenwacht-Graben läuft jetzt im Zickzack zwischen Spalte 4 und 5, mit Gassen in Zeile 2 und 7.
+  - Auf der Landstraße bei (5,4) steht ein Spanischer Reiter (Barrikade) statt Draht.
+  - Der innere Gürtel ein Feld vor dem Graben bleibt (Gassen in Zeile 4 und 8).
+  - Der Gürtel vor dem hinteren Graben (Spalte 9) hat seine Gassen jetzt genau vor den drei Sensenwerken (10,0 / 11,4 / 10,7). Wer durch eine Gasse kommt, läuft ins MG-Feuer.
+  - Die Zahl der Drahtfelder bleibt fast gleich: 20 plus 1 Spanischer Reiter statt 21.
+- **Sankt Ruß:** Die Lage bleibt. Dort liegen schon zwei punktsymmetrische Gürtel ein Feld vor den Gräben, mit Gassen vor den MG-Feldern; nur das Bild ist neu.
+- **Krähenfurt:** Dort liegt kein Draht.
+- Rückweg für Bild und Lage: `DRAHT_ALT=1` (Simulation) bzw. `window.DRAHT_ALT = true` vor dem Schlachtstart.
+
+### Messung (Grauwall, `sim.js 100`, gleicher Startwert)
+
+| | Konkordat | Runden Ø | Ausfälle Konkordat / Aschenwacht |
+|---|---|---|---|
+| vorher | 48 % | 15,0 | 32 % / 42 % |
+| nachher | **40 %** | 14,2 | 30 % / 36 % |
+
+- Die Quote ändert sich um **8 Punkte**, genau an der Grenze. Wie gewünscht gleiche ich nichts aus; der Abgleich kommt in U9.
+- Vermutlich wirkt am stärksten, dass die Gassen jetzt vor den MGs liegen: Sensenwerke verlieren 54 % statt 68 %, Grabenräumer fallen zu 94 % statt 46 %. Auch der Spanische Reiter auf der Straße könnte mitwirken.
+- Bei 100 Schlachten liegt die Streuung bei etwa ±5 Punkten.
+- Verluste je Typ: siehe Messausgabe, auffällig außerdem Haubitze 20 → 1 %, Flammenwerfer 74 → 38 %, Grabengeschütz 45 → 12 %.
+
+### Bilder (`entwurf/probe/gelaende_g5/`, jeweils links vorher, rechts nachher)
+- `vergleich_grauwall_ganz.jpg`
+- `vergleich_grauwall_nah.jpg`
+- `vergleich_sanktruss_ganz.jpg`
+- `vergleich_sanktruss_nah.jpg`
+
+### Tests
+- test_regeln, test_draht, test_draht_bild und test_kommentare bestanden.
+- Partietest ohne Konsolenfehler.
+
+### Fragen an Enrico
+1. Aus der Ferne sind die neuen Gürtel feine Reihen und unauffälliger als die alten Einzelstücke (`vergleich_grauwall_ganz.jpg`). Reicht das, oder sollen Pfähle und Draht kräftiger werden, zum Beispiel mit dickeren Schlingen oder mehr losen Drahtrollen?
+2. Soll der Spanische Reiter auf der Landstraße bleiben? Er ist eine Barrikade, also Deckung, und Geschütze und Reiter kommen dort nicht durch.
+
 ## 2026-11-25 – U2b: Grabenplätze im Zickzack, Klone ohne Spiegeln (Punkt 67) (`2951635`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung, deshalb keinen sim-Lauf.
