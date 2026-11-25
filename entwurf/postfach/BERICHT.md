@@ -1,3 +1,59 @@
+## 2026-11-25 – G6: Panzersperren und besondere Orte (Punkt 68) (`1c7bc1c`, Werkzeuge `0d96e82`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Rückweg für alles: `ORTE_ALT=1` (Simulation) bzw. `window.ORTE_ALT = true` vor dem Schlachtstart.
+
+### Regeln
+- **Panzersperre** (`sperre`):
+  - Niemand kommt hinein, auch kein Koloss. Sie wirkt auch auf der Straße und kann nicht überrollt werden; die Sicht bleibt frei.
+  - Fußtruppen neben einer Sperre bekommen ×1,2 gegen Beschuss, wenn die Schusslinie durch die Sperre läuft („hinter Panzersperre ×1,2“ in der Vorschau; Bogenwurf zählt nicht).
+  - Nur Graben-Pioniere (Sprengladung) können sie vom Nachbarfeld sprengen. Danach ist das Feld ein Trichter mit den zerrissenen Sperren aus dem neuen Bogen.
+  - KI: Sie umgeht Sperren von selbst. Pioniere sprengen eine Sperre, wenn eigene Fahrzeuge da sind.
+- **Windmühle** (`muehle`):
+  - Nur Fußtruppen und Anführer, Abwehr ×1,6 wie ein Haus, halber Moralverlust, sperrt die Sicht.
+  - Wer oben steht, sieht und schießt 1 Feld weiter, wie im Kirchturm.
+  - Bauzustand 3: Schwere Treffer bringen sie zum Einsturz. Danach ist sie Ruine, der Vorteil ist weg, das Bild zeigt die zerstörte Mühle. Meldung „Die Windmühle stürzt ein!“, ohne Kirchenglocke.
+- **Koloss-Wrack** (`wrack`): Fußtruppen ×1,5 (wie Ruine), Fahrzeuge, Reiter und Geschütze kommen nicht hinein, sperrt die Sicht.
+- Infofenster-Texte und Chroniken für alle drei Felder habe ich sachlich selbst geschrieben.
+- Neue Konstanten `P.SPERRE_DEF` 1,2 und `P.MUEHLE_HP` 3 (test_regeln mit `--neu` aufgenommen).
+
+### Lage
+- **Grauwall:**
+  - Windmühle im Niemandsland bei (5,6).
+  - Panzersperren seitlich der Landstraße vor beiden Gräben: (3,2)/(3,4) vor dem Konkordat, (8,3)/(8,5) vor dem hinteren Aschenwacht-Graben. Fahrzeuge werden damit auf die Straße gelenkt. Die Straße selbst bleibt offen, dort steht weiter der Spanische Reiter aus G5.
+- **Krähenfurt:** Koloss-Wrack am Waldrand beim Teich (6,10). Erster Versuch war (8,8) vor der Steinbrücke; das kostete das Konkordat 16 Punkte, weil die Fahrzeuge dort nicht mehr zur Brücke kamen. (14,6) auf der Ostseite gab Konkordat 96 %.
+- **Sankt Ruß:** unverändert (kein besonderer Ort verlangt). Sperren dort wären möglich, habe ich aber nicht gesetzt.
+
+### Messung (`sim.js 100`, gleicher Startwert, vorher = ORTE_ALT)
+
+| Karte | Konkordat vorher | nachher | Runden Ø | Koloss / Sturmpanzer verloren |
+|---|---|---|---|---|
+| Grauwall | 40 % | **35 %** (−5) | 14,2 → 15,5 | Koloss 36 → 28 %, Sturmpanzer 14 → 23 % |
+| Krähenfurt (Wrack bei 6,10) | 52 % | **56 %** (+4) | – | – |
+
+- Keine Änderung über 8 Punkte.
+- Auf Grauwall sprengen die Pioniere des Konkordats im Schnitt 1,6-mal je Schlacht (vorher 0,9).
+- Die Windmühle stürzte in 2 % der Schlachten ein. Die Zeile meldet die Simulation noch als „Kirche“.
+
+### Bilder (`entwurf/probe/gelaende_g6/`)
+- `vergleich_grauwall_nachher_ganz.jpg`, `vergleich_grauwall_nachher_nah.jpg`: vorher/nachher.
+- `vergleich_muehle_ganz.jpg`: Mühle heil / eingestürzt.
+- `vergleich_grauwall_gesprengt_nah2.jpg`: Sperren vor/nach dem Sprengen.
+- `vergleich_winterdorf_nachher_nah.jpg`, `vergleich_winterdorf_nachher_ganz.jpg`: Wrack im Schnee.
+
+### Tests
+- test_regeln, test_draht, test_belegung (20), test_kommentare bestanden.
+- Eigene Regelprobe bestanden: Kosten, Sprengen, Deckung hinter der Sperre, Reichweite in der Mühle.
+- **Partietest:** Ohne Grafikkarte ist der unsichtbare Chrome so langsam, dass in 10 Minuten nur Runde 1 bis 3 durchlaufen. Bis dorthin gab es keine Konsolenfehler, alle Fenstergrößen waren in Ordnung, und die Karte lief weiter.
+
+### Nebenbei (Sparregel 7)
+- Alle 27 Browser-Werkzeuge starten den unsichtbaren Chrome jetzt mit `--disable-gpu` und Software-Zeichnung. Rückweg: `MIT_GPU=1`.
+- Bildzeit-Messungen sind so nicht aussagekräftig; ich habe keine gemacht.
+- Die Ereignis-Auswertung liegt in `entwurf/postfach/ereignisse_2511.txt` (nicht eingecheckt).
+
+### Fragen an Enrico
+1. Sollen auf Sankt Ruß auch Panzersperren an die Straße?
+2. Die Mühle ist mit 2,4 Feldradien Breite eher klein. Soll sie als Landmarke größer werden?
+
 ## 2026-11-25 – G7a: Gräben eingegraben – Probe und Plan (Punkt 70, Teil a) (`72e9e9e`)
 
 Gepusht, index.html eingecheckt. **Im Spiel ist nichts geändert.** Die Probe läuft nur über `window.GB_PROBE = { eingegraben: true }`.
