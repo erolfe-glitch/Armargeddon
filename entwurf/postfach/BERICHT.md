@@ -1,3 +1,54 @@
+## 2026-11-25 – Gelände G2b + G3b: gemalte Teile eingebaut (Punkte 59, 60) (`024c127`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Alle 14 Teile aus `neu_g/` sind geschnitten, mit Plastizität versehen und im Spiel. Es gibt keine Regeländerung, deshalb kein sim-Lauf; Krähenfurt gleiche ich wie gewünscht erst in U9 ab.
+
+### Was eingebaut ist
+- **Querwände (G-1)** stehen an jedem Knick auf der Feindseite: der Erdblock vor dem Durchgang zeigt seine Front in die Bucht. Gezeigt wird nur, was zum Betrachter schaut.
+- **Eckstücke (G-4)** passen tatsächlich als Stirnseiten. Sie stehen an den Knicken auf der Rückseite (Block hinter der Bucht). Echte Innenecken habe ich nicht gebraucht.
+- **Unterstand (G-8):** einmal je Feuergraben anstelle eines Eckstücks. Das kleine Holzstück davor bleibt dran.
+- **Brustwehr (G-2)** als Sandsackreihe auf der Feindseite, **Rückwall (G-3)** als gemalter Erdwall hinter der Linie.
+- **Sohle:** Über dem durchgehenden Mittelrost liegt jetzt ein Schlammband. Darauf liegen einzelne Lattenroste (G-5) und Pfützen (G-6); die Knicke bleiben Schlamm, sonst sah es wieder nach Leitersprossen aus.
+- **Ausstattung:**
+  - in den Buchten Leitern (G-7), Stahlschilde (G-9) und Drahtrollen;
+  - in den Durchgängen Kisten, Kanister, Eimer, Spaten, Einsturz und Balken (G-10);
+  - nie zweimal dasselbe Teil hintereinander.
+- **Krähenfurt:**
+  - Hecke aus beiden Streifen (F-3), nur die unteren Streifen des Bogens, je Acker gemischt.
+  - Heuhaufen in 5 Fassungen (F-4, der Pilz ist aussortiert).
+  - Vogelscheuche (F-5).
+  - Pflug (F-6) mit seinem Schneefleck; der fügt sich in den Schnee ein und bleibt.
+- **Punkt 60:** Auf Krähenfurt heißt die Deckung „Hecke/Feldrain ×1,2“, auf Sankt Ruß weiter „Gartenmauer“. Die Regel ist unverändert.
+- **Rückweg:** `window.GTEILE_ALT = true` holt den Stand von G2a/G3a zurück. Test: `__dbg.gbTeile()` (65 Stirnseiten auf Grauwall).
+
+### Bilder (`entwurf/probe/gelaende_g2b/`)
+- Grauwall nah: `grauwall_vorher_nah.jpg` / `grauwall_nachher_nah.jpg`, zweiter Ausschnitt Westgraben `…_nah2.jpg`.
+- Grauwall ganz: `grauwall_vorher_ganz.jpg` / `grauwall_nachher_ganz.jpg`.
+- Krähenfurt: `winterdorf_vorher_nah.jpg` / `winterdorf_nachher_nah.jpg` und `…_ganz.jpg`.
+- Probe tiefere Buchten: `vergleich_zinnen_ganz.jpg`.
+
+### Einschätzung „Leiter“ und zinnenförmiger Verlauf (Punkt 60)
+- **Nah** wirkt der Graben jetzt deutlich wie ein Schützengraben, mit Querwänden, Unterständen, Kram und Schlamm.
+- **Aus der Ferne** liest sich jeder Feuergraben noch als gerades Band mit regelmäßigen Sprossen.
+  - Ursache: Bucht und Durchgang liegen nur 0,6 R auseinander, der Graben ist aber 0,84 R breit, die beiden Streifen überlappen also. Dazu laufen Brustwehr und Rückwall gerade durch und bilden die Außenkanten des Bandes.
+  - Tiefere Buchten allein helfen nicht, das Band wird nur breiter (`vergleich_zinnen_ganz.jpg`, rechts).
+- **Echter Zinnenverlauf** (Buchten wirklich nach vorn versetzt, Brustwehr knickt mit):
+  - Aufwand etwa ein halbes Paket, nur Darstellung:
+    - die Grabenkanten folgen dem Rechteckumriss statt der versetzten Mittellinie;
+    - die Brustwehr läuft nur vor den Buchten und knickt mit;
+    - der Rückwall springt hinter den Durchgängen zurück;
+    - der Graben selbst wird schmaler (etwa 0,6 R statt 0,84 R).
+  - Regeln und Grabenfelder bleiben gleich. Die Feuerbuchten für U2 liefert GBau weiter (`buchtenJeFeld`).
+  - Am besten vor U2 entscheiden, weil die 10 Grabenplätze an den Buchten hängen.
+
+### Tests
+- test_kommentare, test_regeln, test_draht, test_belegung: in Ordnung.
+- Partietest: Konsole frei, keine Fehler.
+
+### Fragen an Enrico
+1. Gefällt dir der Graben nah (`grauwall_nachher_nah.jpg`)? Soll ich danach den echten Zinnenverlauf bauen (etwa ein halbes Paket, vor U2), oder reicht der jetzige Stand?
+2. Querwände und Eckstücke erscheinen sehr regelmäßig, an jedem Knick. Soll ich an manchen Knicken eins weglassen (z. B. 20 %), damit es weniger gleichförmig wirkt?
+3. Auf Krähenfurt heißt das Feld im Infofenster weiter „Garten“ (mit dem Text „Niedrige Gartenmauern“). Soll es dort „Acker“ heißen, mit eigenem Text und Chronik?
+
 ## 2026-11-25 – Gelände G2a + G3a: Gräben als Linien, Acker A (Punkt 58) (`5c1ea2c`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Alles, was ohne neue Bilder geht, ist eingebaut. Ich warte jetzt auf die gemalten Teile vom Berater; **U2 kommt erst, wenn die Grabenform mit den gemalten Teilen steht.**
