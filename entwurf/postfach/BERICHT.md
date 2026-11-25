@@ -1,3 +1,39 @@
+## 2026-11-25 – Gelände G4: Zinnenverlauf + Acker (Punkt 61) (`3225c4d`)
+
+Gepusht, **index.html gebaut und eingecheckt.**
+
+### 1. Zinnenverlauf (nur Darstellung, Regeln und Grabenfelder gleich)
+- Der Graben ist schmaler (0,6 R statt 0,85 R). Bucht und Durchgang liegen 0,9 R auseinander und überlappen nicht mehr. Dazwischen steht ein Erdblock (Querwand).
+- Die Grabenkanten folgen dem Rechteckumriss mit scharfen Ecken (Versatz mit Gehrung). Vorher waren die Ecken abgeschrägt.
+- Die Brustwehr steht nur vor den Buchten und knickt an deren Enden ein kurzes Stück (0,4 R) mit.
+- Der Rückwall folgt der Rückseite und springt hinter den Durchgängen zurück.
+- Roste und Pfützen sind passend zum schmalen Graben kleiner.
+- `buchtenJeFeld` liefert weiter die Feuerbuchten je Grabenfeld (Grauwall: 23 Felder), damit ist U2 vorbereitet.
+- Rückweg zum Stand von G2b: `window.ZINNEN_ALT = true`.
+
+### 2. Knicke ohne Teile
+An etwa 20 % der Knicke stehen weder Querwand noch Eckstück; die Auswahl ist fest je Karte. Auf Grauwall bleiben 8 von 45 Knicken leer. Der Unterstand fällt nie weg.
+
+### 3. Feldart „Acker“ auf Krähenfurt
+- Eigene Feldart `acker`, nur auf Krähenfurt (dort wird das Rasterzeichen `g` zum Acker).
+- Die Regel ist dieselbe wie beim Garten: ×1,2 gegen Beschuss, Fahrzeuge und Geschütze zahlen 2 BP. Die Deckung heißt „Hecke/Feldrain ×1,2“; auf Sankt Ruß bleibt es „Gartenmauer“.
+- Kurztext und Chronik wie vorgegeben, im Browser im Infofenster geprüft. Die Zeile `acker` steht in `entwurf/welt/gelaende_chroniken.md`.
+- Das Bild bleibt gleich: Der Acker wird weiter mit den Acker-Teilen gezeichnet.
+- Messung `MAP=winterdorf node tools/sim.js 100` mit gleichem Startwert, vorher und nachher: Konkordat je **52 %**. Die Änderung wirkt also nicht auf die Regeln. Die 59 % aus dem Bericht zu G2a/G3a waren ein Mittel über vier Startwerte. Der Abgleich folgt wie gewünscht in U9.
+
+### Bilder (`entwurf/probe/gelaende_g4/`)
+- `vergleich_ganz.jpg`: links vorher, rechts nachher, ganze Karte. Die Grabenränder springen jetzt sichtbar mit, das Band liest sich weniger wie eine Leiter. Ganz unregelmäßig wirkt es aus der Ferne aber noch nicht, weil sich Buchten und Durchgänge in festem Takt abwechseln.
+- `vergleich_nah.jpg` sowie `grauwall_*_nah.jpg` / `_nah2.jpg`: nah sieht es jetzt aus wie ein echter Graben mit Querwänden.
+
+### Tests
+- test_kommentare, test_regeln, test_draht und test_belegung (20) bestanden.
+- test_partie ohne Konsolenfehler.
+- Gelände-Probe ohne Seitenfehler, Aufbau Grauwall 575 ms.
+
+### Fragen an Enrico
+1. Gefällt der Zinnenverlauf aus der Ferne, oder sollen die Längen von Bucht und Durchgang stärker schwanken? Dann wäre der Takt unregelmäßiger, etwa 15 Minuten Arbeit.
+2. Kann U2 als Nächstes kommen? Die Grabenplätze würden an den neuen, weiter vorn liegenden Buchten sitzen.
+
 ## 2026-11-25 – Gelände G2b + G3b: gemalte Teile eingebaut (Punkte 59, 60) (`024c127`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Alle 14 Teile aus `neu_g/` sind geschnitten, mit Plastizität versehen und im Spiel. Es gibt keine Regeländerung, deshalb kein sim-Lauf; Krähenfurt gleiche ich wie gewünscht erst in U9 ab.
