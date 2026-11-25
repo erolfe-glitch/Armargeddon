@@ -1,0 +1,132 @@
+{
+ "grauwall": {
+  "teile": 974,
+  "g7alt": false,
+  "zoom1": {
+   "n": 757,
+   "mittel": 6.62,
+   "p95": 13.3,
+   "max": 36.2,
+   "ue33": 1,
+   "ue50": 0
+  },
+  "ganz": {
+   "n": 479,
+   "mittel": 10.48,
+   "p95": 20,
+   "max": 42,
+   "ue33": 2,
+   "ue50": 0
+  },
+  "nahGraben": {
+   "n": 989,
+   "mittel": 4.05,
+   "p95": 8.7,
+   "max": 22.7,
+   "ue33": 0,
+   "ue50": 0
+  },
+  "ziehen": {
+   "n": 1391,
+   "mittel": 4.32,
+   "p95": 8.6,
+   "max": 34.7,
+   "ue33": 1,
+   "ue50": 0
+  },
+  "sperrfeuerWas": "moerser -> 4,4 (1 Ereignisse)",
+  "sperrfeuer": {
+   "n": 1158,
+   "mittel": 6.06,
+   "p95": 12.7,
+   "max": 34.5,
+   "ue33": 1,
+   "ue50": 0
+  }
+ },
+ "grauwall:g7alt": {
+  "teile": 1710,
+  "g7alt": true,
+  "zoom1": {
+   "n": 655,
+   "mittel": 7.67,
+   "p95": 14.6,
+   "max": 44.5,
+   "ue33": 3,
+   "ue50": 0
+  },
+  "ganz": {
+   "n": 417,
+   "mittel": 12.04,
+   "p95": 25.5,
+   "max": 58.5,
+   "ue33": 13,
+   "ue50": 1
+  },
+  "nahGraben": {
+   "n": 938,
+   "mittel": 4.28,
+   "p95": 9.3,
+   "max": 27.4,
+   "ue33": 0,
+   "ue50": 0
+  },
+  "ziehen": {
+   "n": 1169,
+   "mittel": 5.14,
+   "p95": 10.7,
+   "max": 22.5,
+   "ue33": 0,
+   "ue50": 0
+  },
+  "sperrfeuerWas": "moerser -> 4,4 (1 Ereignisse)",
+  "sperrfeuer": {
+   "n": 865,
+   "mittel": 8.11,
+   "p95": 15.5,
+   "max": 31.5,
+   "ue33": 0,
+   "ue50": 0
+  }
+ },
+ "sanktruss": {
+  "teile": 1242,
+  "g7alt": false,
+  "zoom1": {
+   "n": 164,
+   "mittel": 30.57,
+   "p95": 32,
+   "max": 32.4,
+   "ue33": 0,
+   "ue50": 0
+  },
+  "ganz": {
+   "n": 163,
+   "mittel": 30.53,
+   "p95": 32,
+   "max": 32.7,
+   "ue33": 0,
+   "ue50": 0
+  }
+ },
+ "winterdorf": {
+  "teile": 517,
+  "g7alt": false,
+  "zoom1": {
+   "n": 1313,
+   "mittel": 3.81,
+   "p95": 7.9,
+   "max": 23.3,
+   "ue33": 0,
+   "ue50": 0
+  },
+  "ganz": {
+   "n": 727,
+   "mittel": 6.9,
+   "p95": 11.8,
+   "max": 38.4,
+   "ue33": 1,
+   "ue50": 0
+  }
+ }
+}
