@@ -452,10 +452,12 @@ const MAPS = {
       const alt = TOG.GRAEBEN_ALT || (typeof window !== 'undefined' && window.GRAEBEN_ALT);
       if (alt) T.line(2, 0, 9, 'trench');
       T.field(3, 4, 0, 9, [['crater', 0.3], ['mud', 0.16]]);
-      T.line(5, 0, 9, 'wire', [2, 7]); T.line(6, 0, 9, 'wire', [4, 8]);
+      const drahtAlt = TOG.DRAHT_ALT || (typeof window !== 'undefined' && window.DRAHT_ALT);   // G5 (2026-11-25): Draht als Gürtel mit Plan; Rückweg DRAHT_ALT
+      if (drahtAlt) { T.line(5, 0, 9, 'wire', [2, 7]); T.line(6, 0, 9, 'wire', [4, 8]); }
+      else { T.many([[4, 0], [4, 1], [5, 3], [4, 5], [4, 6], [5, 8], [5, 9]], 'wire'); T.set(5, 4, 'barrikade'); T.line(6, 0, 9, 'wire', [4, 8]); }   // Spanischer Reiter auf der Landstraße (5,4); äußerer Gürtel im Zickzack (Gassen bei Zeile 2 und 7), innerer Gürtel ein Feld vor dem Graben (Gassen 4 und 8)
       if (alt) T.line(7, 0, 9, 'trench');
       T.field(8, 8, 0, 9, [['crater', 0.25]]);
-      T.line(9, 0, 9, 'wire', [1, 5, 8]);
+      if (drahtAlt) T.line(9, 0, 9, 'wire', [1, 5, 8]); else T.line(9, 0, 9, 'wire', [0, 4, 7]);   // G5: Gassen vor den MG-Stellungen des hinteren Grabens (Sensenwerke 10,0 / 11,4 / 10,7) – Angreifer laufen ins Schussfeld
       if (alt) T.line(10, 0, 9, 'trench');
       else for (const g of MAPS.grauwall.graeben) for (const [c, r] of g.linie) T.set(c, r, 'trench');   // G2a: Grabenfelder aus den Linien
       T.ridge(11, 13, 3, 5);

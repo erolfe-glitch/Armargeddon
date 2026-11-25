@@ -34,7 +34,7 @@ const LISTE = {
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
     'kirchturm_1', 'kirchturm_2', ...['kirche_innen', 'friedhof', 'dorf_aufsteller'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     // Krähenfurt (2026-11-22, Flux): Winter-Bausteine, nur mit cfg.winter benutzt
     ...[1, 2, 3, 4].map(k => 'haus_heil_' + k), 'kapelle', 'kapelle_ruine', 'haus_ruine_schnee_1', 'haus_ruine_schnee_2', ...[1, 2, 3, 4].map(k => 'tanne_schnee_' + k),
@@ -104,7 +104,7 @@ function aufbauen(cfg, IM) {
   const KIPP = cfg.kipp ?? 1;   // schräge Wandstücke kippen (Stärke, 0 = aus)
   const AO = cfg.ao || 0;   // Kantenverdeckung: dunkler, weicher Saum, wo Graben, Wälle und Befestigungen auf den flachen Boden treffen
   const pool = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean);
-  const DRAHT = pool('draht_stuecke'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
+  const PFAEHLE = pool('draht_pfahl'), DRAHT = pool('draht_stuecke'), SPERREN = pool('panzersperren'), STAEMME = pool('wald_staemme'), STUEMPFE = pool('stuempfe'), TRUEMMER = pool('truemmer'), BUNKER = [IM.bunker_1, IM.bunker_2];
   // Ansicht (setView): wird erst beim Zeichnen gebraucht
   let g = null, proj = null, F = 1, U = 1, UNITS = [];
   const Fk = () => F;
@@ -392,6 +392,35 @@ function aufbauen(cfg, IM) {
     if (!o.noShadow) SHADOW.push(() => { const rr = hW * im.width / im.height * (o.shadeK || 0.42) * (1 + 0.08 * AO); const gr = w.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, `rgba(8,6,4,${0.55 + 0.12 * AO})`); gr.addColorStop(1, 'rgba(8,6,4,0)'); w.save(); w.translate(x, y); w.scale(1, 0.5); w.translate(-x, -y); w.fillStyle = gr; w.beginPath(); w.arc(x, y, rr, 0, 7); w.fill(); w.restore(); });
   }
   const flipR = (c, r, k) => hrnd(c, r, k) < 0.5;
+  // G5 (2026-11-25): Stacheldraht mit Plan – Richtung des nächsten Grabens (Feuergräben zählen voll, Lauf-/Sappengräben erst ab 1,5-fachem Abstand)
+  function grabenRichtung(x, y) { let best = null;
+    TRENCH.forEach((z, ti) => { const L = z.ch && z.ch.length > 1 ? z.ch.map(([c, r]) => hexC(c, r)) : z.linie || TR[ti], k =   /* Linie durch die Grabenfelder: Zickzack- und Buchtenform zählen nicht */ z.art && z.art !== 'feuer' ? 1.5 : 1; for (let i = 0; i < L.length - 1; i++) { const a = L[i], b = L[i + 1], d = distTo([x, y], [a, b]) * k;
+      if (!best || d < best.d) { const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; best = { d, t: [(b[0] - a[0]) / l, (b[1] - a[1]) / l] }; } } });
+    return best; }
+  // Gespannter Draht zwischen zwei Pfählen: drei Stränge mit leichtem Durchhang, darunter eine Drahtrolle (Schlingen), Schattenlinie am Boden
+  function drahtSpann(P1, P2, hW, sd) {
+    DRAW.push({ feld: FELD, y: Math.max(P1[1], P2[1]) - R * 0.01, f: () => {
+      const a = proj(P1[0], P1[1]), b = proj(P2[0], P2[1]); if (a[2] <= 1 || b[2] <= 1 || offscreen(a, b)) return;
+      const sa = Fk() / a[2], sb = Fk() / b[2], ha = hW * sa, hb = hW * sb, lw = Math.max(1, R * 0.011 * (sa + sb));
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.lineCap = 'round'; g.strokeStyle = 'rgba(34,24,18,0.95)'; g.lineWidth = lw;
+      for (const f of [0.35, 0.65, 0.92]) { g.beginPath(); g.moveTo(a[0], a[1] - ha * f); g.quadraticCurveTo((a[0] + b[0]) / 2, (a[1] - ha * f + b[1] - hb * f) / 2 + (ha + hb) * 0.035, b[0], b[1] - hb * f); g.stroke(); }
+      const dx = b[0] - a[0], dy = b[1] - a[1], sl = Math.hypot(dx, dy), n = Math.max(3, Math.round(sl / Math.max(4, (ha + hb) * 0.16)));   // Drahtrolle: Schlingen entlang der unteren Hälfte
+      g.strokeStyle = 'rgba(92,62,44,0.92)'; g.lineWidth = lw * 0.9;
+      for (let i = 0; i < n; i++) { const t = (i + 0.5) / n, h = ha + (hb - ha) * t, k = 0.8 + hrnd(sd, i, 396) * 0.4, cx = a[0] + dx * t + (hrnd(sd, i, 397) - 0.5) * h * 0.1, cy = a[1] + dy * t - h * (0.27 + hrnd(sd, i, 398) * 0.08); g.beginPath(); g.ellipse(cx, cy, Math.max(h * 0.22, sl / n * 0.75) * k, h * 0.29 * k, (hrnd(sd, i, 395) - 0.5) * 0.5, 0, 7); g.stroke(); }
+      g.restore(); } });
+    SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.03}px)`; w.strokeStyle = 'rgba(8,6,4,0.4)'; w.lineWidth = R * 0.07; w.beginPath(); w.moveTo(P1[0], P1[1] + R * 0.02); w.lineTo(P2[0], P2[1] + R * 0.02); w.stroke(); w.restore(); });
+  }
+  // 2–3 Pfahlreihen parallel zum Graben durch das Feld, versetzt; gespannt bis zum Feldrand, damit Nachbarfelder einen durchgehenden Gürtel bilden; Lücke auf Straßen
+  function drahtReihen(c, r, hx, hy, t, q, aufWeg) {
+    const n = [-t[1], t[0]], reihen = q(40) < 0.5 ? 2 : 3, D = R * 0.42, L = R * 0.92, hW = 0.45 * SH;
+    for (let k = 0; k < reihen; k++) { const o = (k - (reihen - 1) / 2) * R * 0.34, st = (k * 0.47 + q(41 + k) * 0.2) % 1 * D; let prev = null;
+      for (let s = -L + st; s <= L; s += D) { const x = hx + t[0] * s + n[0] * o, y = hy + t[1] * s + n[1] * o;
+        if (Math.hypot(x - hx, (y - hy) * 1.1) > R * 0.93 || aufWeg(x, y)) { prev = null; continue; }
+        const i = Math.floor(q(50 + k * 13 + Math.round(s / D + 9)) * PFAEHLE.length); stand(PFAEHLE[i], x, y, hW * (0.9 + q(60 + k * 7 + Math.round(s / D + 9)) * 0.2), { rot: (q(70 + k * 7 + Math.round(s / D + 9)) - 0.5) * 0.14, shadeK: 0.5 });
+        if (prev) drahtSpann(prev, [x, y], hW * 0.95, c * 97 + r * 13 + k); prev = [x, y]; } }
+    if (q(42) < 0.3 && DRAHT.length) { const so = (q(43) - 0.5) * R * 0.8, oo = (reihen / 2 + 0.4) * R * 0.34 * (q(44) < 0.5 ? -1 : 1), x = hx + t[0] * so + n[0] * oo, y = hy + t[1] * so + n[1] * oo;   // wenig loser Draht
+      if (!aufWeg(x, y)) stand(DRAHT[1 + Math.floor(q(45) * 2) % DRAHT.length], x, y, 0.55 * SH, { flip: flipR(c, r, 46), shadeK: 0.4 }); }
+  }
 
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
@@ -687,6 +716,8 @@ function aufbauen(cfg, IM) {
       stand(BUNKER[q(1) < 0.5 ? 0 : 1], hx, hy + R * 0.25, 1.15 * SH, { flip: flipR(c, r, 2), shadeK: 0.45 });
     } else if (t === 'wire') {   // Drahtfeld (DRAHTFELD: Felder mit gezeichnetem Draht, für den Test Bild = Regel): 1–2 ganze Drahtverhau-Stücke (nicht zerschnitten), versetzt und gespiegelt, nach Tiefe mit den Figuren; nichts auf Straßen
       const aufWeg = (x, y) => ROADS.some(rd => distTo([x, y], rd) < R * 0.45);
+      const gr = !cfg.drahtAlt && PFAEHLE.length ? grabenRichtung(hx, hy) : null;
+      if (gr && gr.d < R * 3.6) { drahtReihen(c, r, hx, hy, gr.t, q, aufWeg); DRAHTFELD.add(c + ',' + r); } else {   // G5 (2026-11-25): vor einem Graben Pfahlreihen parallel zum Graben; sonst (Niemandsland) wie bisher hingeworfene Stücke
       const n = q(1) < 0.4 ? 1 : 2, used = [];
       for (let k = 0; k < n; k++) {
         let x = hx + (q(k * 7 + 2) - 0.5) * R * (n === 1 ? 0.5 : 0.8), y = hy + (n === 1 ? (q(k * 7 + 3) - 0.5) * 0.4 : (k ? 0.32 : -0.3) + (q(k * 7 + 3) - 0.5) * 0.16) * R;
@@ -698,7 +729,7 @@ function aufbauen(cfg, IM) {
         }
         let i = Math.floor(q(k * 7 + 4) * DRAHT.length); if (used.some(u => u.i === i)) i = (i + 1) % DRAHT.length; used.push({ i, x, y });
         stand(DRAHT[i], x, y, 0.8 * SH * (0.85 + q(k * 7 + 5) * 0.25), { flip: flipR(c, r, k * 7 + 6), shadeK: 0.45 }); DRAHTFELD.add(c + ',' + r);
-      }
+      } }
     } else if (t === 'barrikade') {
       const ang = (q(1) - 0.5) * 0.5; wall(IM.barrikade, [hx - Math.cos(ang) * R * 0.75, hy - Math.sin(ang) * R * 0.75 - R * 0.15], [hx + Math.cos(ang) * R * 0.75, hy + Math.sin(ang) * R * 0.75 - R * 0.15], 0.55 * SH, { u0: q(2) * 3 });
     } else if (t === 'bridge') {   // Brücke: Bohlen quer über das Wasser

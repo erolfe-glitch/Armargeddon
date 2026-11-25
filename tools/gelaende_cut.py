@@ -530,7 +530,7 @@ def einbetten():
     for f in sorted(PROBE.glob('g_*.webp')):
         n = f.stem[2:]
         if any(n.startswith(w) for w in weg): continue
-        if n == 'draht' or n.startswith('draht_pfahl'): continue   # alter Draht (Streifen, Einzelpfähle) wird nicht mehr benutzt
+        if n == 'draht': continue   # alter Drahtstreifen wird nicht mehr benutzt; Einzelpfähle seit G5 (2026-11-25) wieder für die Pfahlreihen
         teile.append(f'"{n}": "data:image/webp;base64,{base64.b64encode(f.read_bytes()).decode()}"')
     out = ROOT / 'src' / 'gelaende.js'
     kopf = ('// ===== ARMARGEDDON GELÄNDE-BAUSTEINE (neue Ansicht) =====' + NL +
