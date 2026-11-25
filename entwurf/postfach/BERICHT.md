@@ -1,3 +1,34 @@
+## 2026-11-25 – Gelände-Paket G1: Probe und Plan (Punkte 56/57)
+
+Gepusht. **Nur Probe und Plan, nichts fest eingebaut.** Die Probe-Schalter sind im Code, aber nur aktiv mit `window.GB_PROBE` bzw. `__dbg.gbProbe({...})`. Ohne den Schalter sieht das Spiel aus wie vorher; der Partietest ist ok. Plan und Bausteinliste: **`entwurf/GELAENDE_G_PLAN.md`**.
+
+### Bilder (`entwurf/probe/gelaende_g1/`)
+- `vergleich_graeben_nah.jpg`, `vergleich_graeben_ganz.jpg`: vorher, V1, V2, V3.
+- `vergleich_acker_nah.jpg`, `vergleich_acker_ganz.jpg`: vorher, A, B, A auf der ganzen Karte.
+- Neu erzeugen: `node tools/gelaende_probe.mjs` (Einheiten ausgeblendet; `NUR_K=`, `NUR_V=`).
+
+### Gräben Grauwall
+- **Ursache der „Schlangen“:** ein geglättetes Dreiecks-Zickzack, überall dieselbe Wand und Sohle, drei Parallelen aus den Rasterketten.
+- **V1** (Feuerbuchten + Querwände): Die Mittellinie ist eine Rechteck-Welle (Feuerbucht 0,6 R zur Feindseite vorgezogen, dazwischen Durchgang hinter einer Querwand), ungeglättet, mit schmalerer Sohle. Der Graben wirkt **eckig und gebrochen**.
+- **V2:** dazu ein niedriger Erdwall auf der Rückseite und Schlammpfützen.
+- **V3:** dazu ein Verbindungsgraben, eine Sappe und ein Graben, der vor dem Rand endet. Das zeigt eine Grenze: Über Rasterfelder werden Verbindungsgräben zum „X“. **Plan:** Gräben als eigene Linien je Karte (`MAP.graeben` mit Feuer-, Lauf- und Sappen-Linien), die Grabenfelder der Regeln werden daraus abgeleitet (Bild = Regel). Danach Balance messen.
+- **Was fehlt, sind Bilder:** Querwände, Ecken und Brustwehr nutzen heute alle dasselbe Wandstück. Das wiederholt sich und wirkt an den Ecken wie Stückwerk. Deshalb gibt es eine **Liste mit 10 Grabenteilen** zum Malen (Querwand, Brustwehr, Rückwall, Ecken, Lattenrost-Stücke, Pfützen, Leiter, Unterstand, Stahlschild, Kleinkram).
+- **10 Grabenplätze (U2):** Die Figuren sollen in den Feuerbuchten auf der Schützenstufe stehen (2–3 je Bucht).
+
+### Felder Krähenfurt
+- **Ursache:** eine gekachelte Furchen-Textur mit 62 % Deckkraft, also gleichmäßige graue Streifen.
+- **Acker A (Empfehlung):** Furchen im Code gezeichnet, je Furche eine dunkle Erdrinne und darüber ein heller Schneekamm. Unregelmäßig in Abstand, Breite, Helligkeit, Krümmung und Lücken; leichter Erdton; Feldrain als weiche Schneewehe. Das liest sich als gepflügter Acker unter Schnee.
+- **Acker B:** wie A, kräftiger. Wirkt eher wie aufgetauter Boden.
+- **Mehr Leben:** Hecke, Heuhaufen, Vogelscheuche, Pflug, Feldweg mit Wagenspuren. Dafür 6 Teile auf der Malliste, davon 2 nur bei Bedarf (gemalter Acker, Feldrain).
+
+### Fragen an Enrico
+Stehen auch am Ende von `GELAENDE_G_PLAN.md`:
+1. Gräben in Richtung V2, mit gemalten Teilen?
+2. Lauf- und Sappengräben als eigene Linien je Karte – das ändert das Raster von Grauwall, die Balance messe ich neu?
+3. Acker A oder B?
+4. Hecke mit Deckung ×1,2, Heuhaufen ohne?
+5. Gemalter Acker (F-1) nötig oder reicht der Code-Acker?
+
 ## 2026-11-25 – Umbau U1: Maßstab E1 im Spiel (`efeeb18`)
 
 Gepusht, **index.html gebaut und eingecheckt.** U1 ist fertig. **Hier halte ich an:** Als Nächstes kommt das Gelände-Paket G (Berater mit Enrico).

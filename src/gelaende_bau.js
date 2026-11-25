@@ -158,7 +158,27 @@ function aufbauen(cfg, IM) {
   // Acker im Schnee: je Feld ein ganzes Stück (gemalte Furchen kacheln nicht sauber), leicht gedreht, manche Felder quer – wie ein Flickenteppich
   // Paket C2 Punkt 37 (2026-11-24): Äcker als zusammenhängende Fläche – eine gemeinsame, weich gezeichnete Maske über alle Gartenfelder, darin die Furchen
   // als durchgehendes Muster in einer Richtung (vorher je Feld ein eigenes Stück mit ausgefranstem Rand: Flickenteppich). Vergleich: window.ACKER_ALT = true
-  if (WI && IM.boden_acker_schnee && !(typeof window !== 'undefined' && window.ACKER_ALT)) { const AF = felder((t, c, r) => inMap(c, r) && t === 'garten'); if (AF.length) {
+  // G1-Probe (2026-11-25, nur mit cfg.ackerNeu): Acker unter Schnee aus gezeichneten Furchen – dunkle Erde in unregelmäßigen, leicht gebogenen,
+  // unterbrochenen Furchen, Schnee auf den Kämmen dazwischen, Erdkrümel; weicher Feldrain mit Schneewehe statt ausgefranstem Rand
+  if (WI && cfg.ackerNeu) { const AF = felder((t, c, r) => inMap(c, r) && t === 'garten'); if (AF.length) {
+    const A = cfg.ackerNeu === true ? {} : cfg.ackerNeu;
+    w.save(); w.filter = `blur(${R * 0.3}px)`; w.fillStyle = `rgba(246,248,250,${A.rain ?? 0.35})`; for (const [c, r] of AF) jitterHex(w, ...hexC(c, r), 1.12); w.restore();   // Schneewehe am Feldrain
+    m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.22}px)`; m.fillStyle = '#fff'; for (const [c, r] of AF) jitterHex(m, ...hexC(c, r), 0.92); m.filter = 'none';
+    l.globalCompositeOperation = 'source-over'; l.setTransform(1, 0, 0, 1, 0, 0); l.clearRect(0, 0, WW, WH);
+    const P = AF.map(f => hexC(...f)), x0 = Math.min(...P.map(q => q[0])) - R * 1.5, x1 = Math.max(...P.map(q => q[0])) + R * 1.5, y0 = Math.min(...P.map(q => q[1])) - R * 1.5, y1 = Math.max(...P.map(q => q[1])) + R * 1.5;
+    const D = Math.hypot(x1 - x0, y1 - y0) / 2; let sd = 4711; const rr = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    l.save(); l.translate((x0 + x1) / 2, (y0 + y1) / 2); l.rotate(A.winkel ?? 0.12); l.lineCap = 'round'; l.lineJoin = 'round';
+    l.fillStyle = `rgba(96,84,72,${A.grund ?? 0.22})`; l.fillRect(-D, -D, 2 * D, 2 * D);   // leichter Erdton unter dem ganzen Acker
+    for (let v = -D; v < D; v += R * (A.abstand ?? 0.1) * (0.88 + rr() * 0.24)) {   // Furchen: fast parallel, Abstand ±12 %, Breite/Helligkeit/Lücken unregelmäßig
+      const ph = rr() * 6.28, amp = R * (0.015 + rr() * 0.025), per = R * (3 + rr() * 3); let u = -D;
+      while (u < D) { const len = R * (0.4 + rr() * 1.4), gap = rr() < 0.4 ? R * (0.04 + rr() * 0.18) : 0, e = Math.min(D, u + len), lw = R * (0.028 + rr() * 0.022) * (A.breite ?? 1), da = (A.dunkel ?? 1) * (0.5 + rr() * 0.4);
+        const linie = (dy, farbe, wd) => { l.beginPath(); let first = true; for (let t = u; t <= e + 1e-6; t += R * 0.12) { const yy = v + dy + Math.sin(t / per * 6.28 + ph) * amp; if (first) { l.moveTo(t, yy); first = false; } else l.lineTo(t, yy); } l.lineWidth = wd; l.strokeStyle = farbe; l.stroke(); };
+        linie(0, `rgba(${42 + rr() * 16 | 0},${33 + rr() * 10 | 0},${25 + rr() * 8 | 0},${da})`, lw);   // Erdrinne
+        linie(-lw * 0.9, `rgba(250,251,252,${0.28 + rr() * 0.22})`, lw * 0.7);   // Schnee auf dem Kamm darüber (Licht von oben)
+        u = e + gap; } }
+    for (let i = 0; i < AF.length * 70; i++) { l.fillStyle = `rgba(50,40,30,${0.2 + rr() * 0.3})`; l.beginPath(); l.arc((rr() - 0.5) * 2 * D, (rr() - 0.5) * 2 * D, R * (0.006 + rr() * 0.016), 0, 7); l.fill(); }   // Erdkrümel
+    l.restore(); l.globalCompositeOperation = 'destination-in'; l.drawImage(MK, 0, 0); l.globalCompositeOperation = 'source-over'; w.drawImage(LY, 0, 0); } }
+  else if (WI && IM.boden_acker_schnee && !(typeof window !== 'undefined' && window.ACKER_ALT)) { const AF = felder((t, c, r) => inMap(c, r) && t === 'garten'); if (AF.length) {
     m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, WW, WH); m.filter = `blur(${R * 0.16}px)`; m.fillStyle = '#fff'; for (const [c, r] of AF) jitterHex(m, ...hexC(c, r), 1.04); m.filter = 'none';
     const im = IM.boden_acker_schnee, pat = l.createPattern(im, 'repeat'); pat.setTransform(new DOMMatrix().rotate(7).scale(R * 3.8 / im.width));
     l.globalCompositeOperation = 'source-over'; l.clearRect(0, 0, WW, WH); l.fillStyle = pat; l.fillRect(0, 0, WW, WH);
@@ -370,7 +390,7 @@ function aufbauen(cfg, IM) {
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
   // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
-  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, GW = 1.3, GK = 0.5;   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
+  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', GW = BU ? 0.85 : 1.3, GK = BU ? 0.42 : 0.5;   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
   function zickzack(pts) {
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const n = Math.max(2, Math.round(L / ZZ_STEP)), out = [];
@@ -382,9 +402,22 @@ function aufbauen(cfg, IM) {
     }
     return out;
   }
+  // G1-Probe (2026-11-25, nur mit cfg.grabenForm === 'buchten'): eckiger Graben wie echte Schützengräben – abwechselnd Feuerbucht (zur Feindseite
+  // vorgezogen) und Durchgang hinter einer Querwand (Traverse); Längen leicht unregelmäßig, Ecken nicht geglättet.
+  function buchten(pts, ch) {
+    const GB = cfg.grabenBuchten || {}, A = R * (GB.tief ?? 0.6), own = cfg.grabenSeite && ch ? cfg.grabenSeite(...ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 1;
+    const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
+    const at = s => { let i = 0; while (i < segL.length - 1 && s > segL[i]) { s -= segL[i]; i++; } const a = pts[i], b = pts[i + 1], t = segL[i] ? s / segL[i] : 0, dx = (b[0] - a[0]) / (segL[i] || 1), dy = (b[1] - a[1]) / (segL[i] || 1);
+      let nx = -dy, ny = dx; if (Math.sign(nx || 1) !== ex) { nx = -nx; ny = -ny; } return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, nx, ny]; };
+    const out = [], put = (s, o) => { const [x, y, nx, ny] = at(Math.max(0, Math.min(L, s))); out.push([x + nx * o, y + ny * o]); };
+    let s = 0, k = 0, bucht = hrnd(pts.length, ch ? ch[0][0] : 0, 301) < 0.5; put(0, 0);
+    while (s < L) { const len = R * (bucht ? (GB.bucht ?? 0.85) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? 0.45) + hrnd(k, 7, 303) * 0.15), o = bucht ? A / 2 : -A / 2;
+      const e = Math.min(L, s + len); if (e - s < R * 0.12) break; put(s, o); put(e, o); s = e; bucht = !bucht; k++; }
+    put(L, 0); return out;
+  }
   const TRENCH = cfg.trench ? cfg.trench.map(z => ({ pts: z.map(p => atW(...p)), ends: [false, false] }))
-    : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: cfg.zickzack ? zickzack(v.pts) : v.pts }; });
-  const TR = TRENCH.map(z => chaikin(z.pts, cfg.zickzack && z.ch ? 1 : 3));
+    : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: BU ? (ch.length >= 4 ? buchten(v.pts, ch) : v.pts) : cfg.zickzack ? zickzack(v.pts) : v.pts }; });
+  const TR = TRENCH.map(z => chaikin(z.pts, cfg.grabenForm === 'buchten' ? 0 : cfg.zickzack && z.ch ? 1 : 3));
   if (TR.length && IM.graben_sohle) {
     const TW = GW * R, SOHLE = IM.graben_sohle;
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * (GW + 0.15)); w.restore();
@@ -422,8 +455,17 @@ function aufbauen(cfg, IM) {
       }
       w.setTransform(1, 0, 0, 1, 0, 0);
     };
+    if (cfg.grabenRueckwall) TR.forEach((pts, ti) => {   // G1-Probe: niedriger aufgeworfener Erdwall auf der Rückseite (flach, dunkler Erdstreifen)
+      const own = cfg.grabenSeite && TRENCH[ti].ch ? cfg.grabenSeite(...TRENCH[ti].ch[0]) : null, ex = own === 'A' ? -1 : own === 'D' ? 1 : 0; if (!ex) return;
+      w.save(); w.filter = `blur(${R * 0.07}px)`; w.strokeStyle = 'rgba(58,44,30,0.75)'; w.lineWidth = R * 0.2; w.lineJoin = 'round'; w.beginPath();
+      pts.forEach((p, i) => { const x = p[0] + ex * R * (GK + 0.2); i ? w.lineTo(x, p[1]) : w.moveTo(x, p[1]); }); w.stroke(); w.restore(); });
     for (const p of TR) sohleAlong(p);
     for (const p of TR) sohleAlong(p, [SOHLE.height * 0.33, SOHLE.height * 0.67]);
+    if (cfg.grabenPfuetzen) TR.forEach((pts, ti) => {   // G1-Probe: Schlammpfützen auf der Sohle (dunkel, nasser Glanz)
+      for (let i = 1; i < pts.length - 1; i++) { if (hrnd(ti, i, 310) > 0.45) continue; const [x, y] = pts[i], rx = R * (0.12 + hrnd(ti, i, 311) * 0.12), ry = rx * 0.45;
+        const g2 = w.createRadialGradient(x, y, 0, x, y, rx); g2.addColorStop(0, 'rgba(28,24,20,0.85)'); g2.addColorStop(0.7, 'rgba(34,28,22,0.6)'); g2.addColorStop(1, 'rgba(34,28,22,0)');
+        w.save(); w.translate(x, y); w.scale(1, ry / rx); w.translate(-x, -y); w.fillStyle = g2; w.beginPath(); w.arc(x, y, rx, 0, 7); w.fill();
+        w.strokeStyle = 'rgba(170,160,140,0.22)'; w.lineWidth = R * 0.012; w.beginPath(); w.arc(x - rx * 0.15, y - rx * 0.1, rx * 0.55, 3.6, 4.6); w.stroke(); w.restore(); } });
     TRENCH.forEach((z, ti) => [0, 1].forEach(e => {   // offenes Ende (nicht am Kartenrand, nicht am Abzweig): Erdwall
       const p = TR[ti], pt = e ? p[p.length - 1] : p[0];
       if (z.ends[e] || TR.some((q, j) => j !== ti && distTo(pt, q) < R * (GK + 0.1))) return;
