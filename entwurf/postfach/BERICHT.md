@@ -1,3 +1,44 @@
+## 2026-11-25 – G5b: Drahtgürtel aus gemalten Stücken (Punkt 69) (`c6d9357`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung und keinen sim-Lauf. Lage und Spanischer Reiter bleiben wie in G5.
+
+### Schnitt
+- Alle Stücke aus `ui-quelle/gelaende/neu_draht/` sind nach der Liste im LIESMICH dort geschnitten.
+- Der automatische Bogenschnitt hat Stücke vermischt: Ein Ausschnitt enthielt zwei Teile, heiles und beschädigtes Querstück waren vertauscht. Deshalb gibt es in `gelaende_cut.py` die neue Schnittart `stueck`:
+  - fester Ausschnitt je Teil;
+  - nur das größte Teil, dazu lose Drahtreste, die höchstens 25 px entfernt liegen;
+  - gemeinsamer Maßstab.
+- Rosa Säume sind entfernt. Plastik-Karten sind gerechnet, die Teile eingebettet.
+- Die unteren Stücke von `drahtguertel_b` sind wie empfohlen nicht dabei.
+
+### Welches Stück wo
+- **Gürtel nach Norden/Süden** (alle Gürtel auf Grauwall und Sankt Ruß): Das Tiefenstück läuft über das ganze Feld, die Felder schließen zu durchgehenden Gürteln aneinander.
+- **Diagonal angrenzende Drahtfelder:** ein schräges Stück, gespiegelt je Richtung.
+- **Ost–West:** Querstück, selten beschädigt.
+- **An Gassen** (der Gürtel endet nach Norden oder Süden): Endstück mit loser Rolle.
+- Selten liegt das kurze beschädigte Stück daneben.
+- Unter dem Gürtel ist der Boden dunkler und zertrampelt.
+- Der hingeworfene Draht fern von Gräben bleibt.
+- Rückweg zum Code-Draht aus G5: `window.GUERTEL_ALT = true`.
+
+### Bilder (`entwurf/probe/gelaende_g5b/`, jeweils links vorher = G5, rechts nachher)
+- `vergleich_grauwall_nah.jpg`
+- `vergleich_grauwall_ganz.jpg` (auch aus der Ferne klar als Drahtgürtel zu erkennen)
+- `vergleich_sanktruss_nah.jpg`
+- `vergleich_sanktruss_ganz.jpg`
+
+### Tests
+- test_draht und test_draht_bild bestanden („Bild = Regel“: jedes Drahtfeld zeigt Draht, kein anderes Feld).
+- test_kommentare bestanden.
+- Partietest ohne Konsolenfehler.
+
+### Hinweis
+- Steht eine Einheit auf oder hinter einem Drahtfeld, wird das hohe Tiefenstück halb durchsichtig, wie Häuser und Bäume.
+- Ob das Tiefenstück bei steilerer Kamera (stark herausgezoomt) noch gut sitzt, zeigt das Ganz-Bild: Es passt.
+
+### Fragen an Enrico
+Keine. Als Nächstes kommt L1 (Leistung).
+
 ## 2026-11-25 – G5: Stacheldraht mit Plan (Punkt 65) (`81e86bd`)
 
 Gepusht, **index.html gebaut und eingecheckt.**
