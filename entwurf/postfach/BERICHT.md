@@ -1,3 +1,36 @@
+## 2026-11-25 – Umbau U1: Maßstab E1 im Spiel (`efeeb18`)
+
+Gepusht, **index.html gebaut und eingecheckt.** U1 ist fertig. **Hier halte ich an:** Als Nächstes kommt das Gelände-Paket G (Berater mit Enrico).
+
+### Was jetzt im Spiel ist
+- **Größen:**
+  - Soldaten, Reiter (Pferd samt Reiter), Helden, Anführer, MG und Geschütze (auch das Gespann): ×0,65, Soldat damit 0,52 Feldradien.
+  - Landkoloss, Sturmpanzer, Bohrkoloss und alle Schreiter: ×0,85.
+  - Der Fesselballon bleibt unverändert.
+- **Figurenzahl:** Schützenkohorte und Grenadiere 10 Figuren, Reiter 6, Spezialtrupps wie bisher. Bei 10 Figuren fällt je 10 % Stärke eine Figur weg; das macht der vorhandene Code von selbst.
+- **Aufstellung:** zwei lockere Reihen, so breit wie in der Probe E1. Kein Modell ragt ins Nachbarfeld.
+- **Graben:** Grabenplätze gibt es bisher nur für 4 Figuren. Bis U2 verteilt das Spiel größere Trupps gleichmäßig entlang der Grabenlinie, abwechselnd quer versetzt. Das ist noch dicht; die richtigen 10 Grabenplätze kommen in U2, nach dem Gelände-Paket.
+- **Absenken:** Im Graben und beim Eingraben sinken die Figuren im neuen Maßstab entsprechend weniger tief ein.
+- **Posen-Versatz:** 25 ms je Figur statt 60, sonst dauert eine Salve von 10 Figuren 0,6 s.
+- **Rückweg:** `window.MASSSTAB_ALT = true` in der Konsole oder `__dbg.massstab(0)`, zurück mit `__dbg.massstab(1)`. Der Git-Tag `vor-umbau` bleibt ebenfalls.
+
+### Bilder
+- `entwurf/probe/massstab/u1_vorher_nachher.jpg`: Grauwall und Krähenfurt, oben vorher, unten U1. Gleiche Gruppe und Kamera wie die Proben.
+- Einzeln: `grauwall_U1_nah.jpg`, `winterdorf_U1_nah.jpg`, `*_U1_ganz.jpg`.
+- Das Probe-Werkzeug kennt jetzt die Variante `U1` (Spiel ohne Haken); die alten Varianten rechnet es vom alten Maßstab aus (`MASSSTAB_ALT`).
+
+### Tests
+- Partietest: alle 19 Kartenprüfungen ok, Konsole rot-frei. Geprüft wurden auch 1280, 2560 und Vollbild.
+- `test_kommentare` ok.
+- Zeichenzeit unverändert: Grauwall Median 5,9–6,0 ms, Krähenfurt 5,6 ms je Bild.
+
+### Noch nicht in U1 (wie geplant)
+- **U2:** Klone (10 gleiche Schützen in Ruhe).
+- **U3:** Mündungsfeuer bei 10 Figuren (heute blitzt jede Figur), Treffer-Spritzer, Nahzoom, Klickflächen.
+
+### Fragen an Enrico
+- Keine. Bitte einmal im Spiel ansehen: Wirken Reiter und Geschütze im neuen Maßstab richtig?
+
 ## 2026-11-25 – Umbau U0: Rückweg gesetzt (Punkt 55)
 
 Gepusht. **U0 ist fertig**, als Nächstes kommt **U1 Maßstab** (eigener `pa`), danach halte ich für das Gelände-Paket G an.
