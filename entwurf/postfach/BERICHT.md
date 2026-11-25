@@ -1,3 +1,25 @@
+## 2026-11-25 – U2b: Grabenplätze im Zickzack, Klone ohne Spiegeln (Punkt 67) (`2951635`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung, deshalb keinen sim-Lauf.
+
+### Was sich geändert hat
+- **Gräben, die in die Tiefe laufen:** Sie werden erkannt, wenn das Grabenstück des Felds mehr als 1,3-mal so tief wie breit ist. Dort bleiben alle 10 Plätze, verteilen sich aber gleichmäßig über die ganze Tiefe des Abschnitts. Die Figuren stehen abwechselnd an der linken und an der rechten Wand, jeweils am äußersten Grabenstück in dieser Tiefe; Knicke und Buchtenden werden mitbenutzt. Statt einer Warteschlange stehen jetzt zwei versetzte Reihen.
+- **Waagerechte Gräben** bleiben wie in U2.
+- **Klone:** Es wird nicht mehr gespiegelt. Größe, Neigung und Versatz bleiben.
+- Rückweg für die Zickzack-Plätze: `window.ZICKZACK_ALT = true`.
+
+### Bilder (`entwurf/probe/u2b/`, links vorher, rechts nachher)
+- `vergleich_grauwall_graben.jpg`
+- `vergleich_grauwall_graben_weit.jpg`
+
+Im „Vorher“-Bild ist das Spiegeln schon aus; der Vergleich zeigt also nur die neuen Plätze.
+
+### Tests
+Partietest ohne Konsolenfehler.
+
+### Fragen an Enrico
+Keine. Als Nächstes kommt dein Leistungs-Check mit Fable, danach G5.
+
 ## 2026-11-25 – U2: Klone und Grabenplätze (Punkt 64) (`9bc0b5e`, vorher `29fbd6f`)
 
 Gepusht, **index.html gebaut und eingecheckt.** Es gibt keine Regeländerung, deshalb keinen sim-Lauf. Der PC ist mitten im Paket abgestürzt; es ging nichts verloren, die Arbeit ist danach fertig gestellt.
