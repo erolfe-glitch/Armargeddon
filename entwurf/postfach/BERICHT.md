@@ -1,3 +1,49 @@
+## 2026-11-26 – G7e: Rest von G7d (Punkt 82) (`30d8196`, `9d794aa`)
+
+Gepusht, **index.html zweimal eingecheckt**: zuerst sofort der Stand G7d (`30d8196`), am Ende der Stand G7e (`9d794aa`). Der neue Graben und der Bodenkontakt der Hindernisse sind damit im Spiel.
+
+### Gemacht
+1. **index.html sofort** eingecheckt (Stand G7d).
+2. **Sandsackwall** nicht verändert. Nur die Geisterstücke sind weg (siehe 6).
+3. **Figuren gegen Querwände:** Grabenplätze, die in einer hängenden Querwand liegen, fallen weg; die Figuren verteilen sich auf die übrigen Plätze in Bucht und Durchgang.
+   - Vorher/nachher: `entwurf/probe/gelaende_g7e/vergleich_figuren.jpg`. Unten links stehen die Soldaten jetzt neben dem Block statt darauf.
+   - Oben steht noch ein Soldat knapp vor der Kante eines Blocks.
+   - Rückweg: `window.QUERPLATZ_ALT`.
+4. **Lippen-Ecken G7-5:** ausprobiert an den hinteren Innenecken, ungedreht wie gemalt.
+   - Sie wirkten wie Regalbretter, die seitlich über die Grabenkante hinausstehen (`vergleich_ecken_ausschnitt.jpg`, rechts).
+   - Wie vereinbart bleibe ich bei den überlappenden Streifen. Die Ecken sind ausgeschaltet und lassen sich mit `window.ECKEN_AN` zum Ansehen einschalten.
+5. **R2, Bremse 2 und 4:**
+   - **Bremse 4: gebaut.** Ein voller Neuaufbau (0,5 s Stocken) passierte noch beim Sprengen einer Panzersperre und beim Einsturz der Windmühle. Beides wird jetzt nur feldweise nachgebaut. Gemessen: Sprengen 0 ms statt 543 ms. Rückweg: `window.NEUBAU_ALT`.
+   - **Bremse 2: weggelassen.** Nach der Messung bringt sie nichts mehr (Zahlen unten).
+   - **R2 (gerade Gräben): noch nicht gemacht.** Das ist ein Umbau der Grabengeometrie auf der Karte und braucht einen eigenen `pa` mit sim-Lauf.
+6. **Heller Fleck an der Brustwehr:** Es waren halbdurchsichtige Geisterstücke. Das weiche Auslaufen der Enden wirkte an jedem Abschnitt des Walls statt nur am echten Ende.
+   - Jetzt ohne Ausblenden; am echten Ende läuft der runde Erdwall darunter weiter (`vergleich_fleck.jpg`).
+   - Die Seitenwand habe ich dazu etwas dunkler gemacht.
+- **Nebenbei:** Hängende Innenwände kommen nur noch an fast waagerechte hintere Kanten. An steileren Schrägen wirkten sie wie Platten.
+
+### Leistung (Grauwall, mit Grafikkarte)
+| | Zoom 1 Mittel | ganze Karte Mittel | ganze Karte schlechteste 5 % |
+|---|---|---|---|
+| alter Graben (vor G7d) | 5,8 ms | 8,7 ms | 11,2 ms |
+| G7d | 5,7 ms | 7,4 ms | 11,2 ms |
+| **G7e** | **5,6 ms** | **6,9 ms** | **11,2 ms** |
+
+### Bilder (`entwurf/probe/gelaende_g7e/`)
+- `vergleich_figuren.jpg`: Trupps im Graben, vorher/nachher.
+- `vergleich_ecken_ausschnitt.jpg`: links ohne, rechts mit den gemalten Ecken (verworfen).
+- `vergleich_fleck.jpg`: Ende des Sandsackwalls, G7d | G7e.
+- `vergleich_laufgraben.jpg`: Laufgraben, G7d | G7e.
+- `grauwall_neu_*.jpg`: Stand G7e.
+
+### Tests
+- test_kommentare vor jedem build.py, bestanden.
+- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
+- Kein sim-Lauf (R2 nicht gebaut, keine Grabenfelder geändert).
+- Keine Hänger. Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. R2 (gerade Gräben) als eigenes Paket angehen, oder erst den Fable-Check 1?
+
 ## 2026-11-26 – G7d, Zwischenstand: neuer Graben im Spiel (Punkt 81, Teile 1–4, 6, 8) (`c21b8f8`)
 
 Gepusht. **Zwischenstand nach Sparregel 5:** Ecken (5), R2 und die Bremsen 2 und 4 (7) fehlen noch.
