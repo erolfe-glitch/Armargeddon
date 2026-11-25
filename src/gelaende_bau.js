@@ -831,6 +831,12 @@ function aufbauen(cfg, IM) {
         for (let s = 0; s < l; s += R * 0.05) { const x = a[0] + dx * s / l, y = a[1] + dy * s / l; let best = null, bd = 1e9; for (const f of TF) { const d = Math.hypot(f[2] - x, f[3] - y); if (d < bd) { bd = d; best = f; } }
           if (!best || bd > R * 0.95) continue; const k = best[0] + ',' + best[1], L0 = (GPL[k] = GPL[k] || {}), Lz = (L0[ti] = L0[ti] || []); Lz.push({ x, y, art, nx, ny, dx: dx / l, dy: dy / l }); } } }); }
   function grabenPlaetze(c, r, n = 10) { if (!GPL) grabenProben(); const L0 = GPL[c + ',' + r]; if (!L0) return null; let P = null; for (const k in L0) if (!P || L0[k].length > P.length) P = L0[k]; if (!P || P.length < 4) return null;
+    const xs = P.map(p => p.x), ys = P.map(p => p.y), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    if (!cfg.zickzackAlt && y1 - y0 > 1.3 * (Math.max(...xs) - Math.min(...xs))) {   // U2b (2026-11-25): Graben läuft in die Tiefe – gleichmäßig über die ganze Tiefe des Abschnitts, abwechselnd an die linke und rechte Wand (Knicke und Buchtenden mitbenutzt)
+      const out = [], rnd = hrnd(c * 31 + r, 1, 392) < 0.5 ? 1 : -1; for (let j = 0; j < n; j++) { const yt = y0 + (y1 - y0) * (j + 0.5) / n, links = (j % 2 ? 1 : -1) * rnd < 0, h = hrnd(c * 31 + r, j, 393);
+        let K = P.filter(p => Math.abs(p.y - yt) < R * 0.05); if (!K.length) { let b = P[0]; for (const p of P) if (Math.abs(p.y - yt) < Math.abs(b.y - yt)) b = p; K = [b]; }
+        const p = K.reduce((a, q) => links ? (q.x < a.x ? q : a) : (q.x > a.x ? q : a)); out.push([p.x + (links ? -1 : 1) * R * (0.14 + h * 0.04), p.y + (h - 0.5) * R * 0.03, p.art]); }
+      return out; }
     const cum = [0]; for (const p of P) cum.push(cum[cum.length - 1] + GP_W[p.art]); const S = cum[cum.length - 1], out = [];
     for (let j = 0; j < n; j++) { const ziel = S * (j + 0.5) / n; let i = 0; while (i < P.length - 1 && cum[i + 1] < ziel) i++; const p = P[i], h = hrnd(c * 31 + r, j, 390);
       const q = p.art === 'bucht' ? R * (j % 2 ? 0.1 : -0.02 + h * 0.03) : (j % 2 ? 1 : -1) * R * (0.03 + h * 0.03), ql = (hrnd(c * 31 + r, j, 391) - 0.5) * R * 0.04;   // Bucht: abwechselnd an der Feindwand und dahinter; sonst abwechselnd links/rechts der Mitte

@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const OUT = 'entwurf/probe/u2', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const OUT = process.env.OUT || 'entwurf/probe/u2', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 mkdirSync(OUT, { recursive: true });
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armu2-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
@@ -21,7 +21,7 @@ const KARTEN = {
   grauwall: { ziele: [['graben', 2, 5, 2.4], ['graben_weit', 2, 5, 1.3]] },
   sanktruss: { ziele: [['feld', null, null, 2.2]] },
 };
-const VAR = { vorher: 'window.KLONE_ALT = true; window.GRABENPLATZ_ALT = true', nachher: '' };
+const VAR = process.env.U2B ? { vorher: 'window.ZICKZACK_ALT = true', nachher: '' } : { vorher: 'window.KLONE_ALT = true; window.GRABENPLATZ_ALT = true', nachher: '' };
 for (const [karte, K] of Object.entries(KARTEN)) for (const [v, js] of Object.entries(VAR)) {
   await cmd('Page.navigate', { url: 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
   await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
