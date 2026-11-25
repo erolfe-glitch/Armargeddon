@@ -285,7 +285,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + (window.ZICKZACK_ALT ? ':zz' : '') + (window.DRAHT_ALT ? ':da' : '') + (window.GUERTEL_ALT ? ':ga' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + (window.ZICKZACK_ALT ? ':zz' : '') + (window.DRAHT_ALT ? ':da' : '') + (window.STAERKE_ALT ? ':st' : '') + (window.RASTER_ALT ? ':ra' : '') + (window.GUERTEL_ALT ? ':ga' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
   // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
   if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
@@ -305,7 +305,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     ...(E.MAP.graeben && !window.GRAEBEN_ALT ? { graeben: E.MAP.graeben, grabenForm: 'buchten', grabenRueckwall: true, grabenPfuetzen: true } : {}),   /* G2a (2026-11-25): Gräben als Linien mit Feuerbuchten; Rückweg window.GRAEBEN_ALT */
     ackerNeu: !window.ACKER_C2 && !window.ACKER_ALT,   /* G3a: Acker A (gezeichnete Furchen); window.ACKER_C2 = Acker vom 24.11. */
-    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT, plaetzeAlt: !!window.GRABENPLATZ_ALT, zickzackAlt: !!window.ZICKZACK_ALT, drahtAlt: !!window.DRAHT_ALT, guertelAlt: !!window.GUERTEL_ALT,   /* G5b: window.GUERTEL_ALT = Code-Draht aus G5 */   /* G5: window.DRAHT_ALT = Draht wie vorher (Bild und, vor dem Schlachtstart gesetzt, Lage) */   /* U2: window.GRABENPLATZ_ALT = vorläufige Grabenplätze aus U1 */   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
+    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT, plaetzeAlt: !!window.GRABENPLATZ_ALT, plaetze: window.STAERKE_ALT ? 10 : 8, rasterAlt: !!window.RASTER_ALT,   /* R1: 8 Grabenplätze, Feldlinien dezenter (RASTER_ALT) */ zickzackAlt: !!window.ZICKZACK_ALT, drahtAlt: !!window.DRAHT_ALT, guertelAlt: !!window.GUERTEL_ALT,   /* G5b: window.GUERTEL_ALT = Code-Draht aus G5 */   /* G5: window.DRAHT_ALT = Draht wie vorher (Bild und, vor dem Schlachtstart gesetzt, Lage) */   /* U2: window.GRABENPLATZ_ALT = vorläufige Grabenplätze aus U1 */   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW], ...(window.GB_PROBE || {}) }, IMB);   /* G1-Probe (2026-11-25): window.GB_PROBE = { grabenForm: 'buchten', grabenRueckwall, grabenPfuetzen, ackerNeu } bzw. __dbg.gbProbe(o); ohne GB_PROBE alles wie bisher */   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
@@ -1536,8 +1536,13 @@ function figImg(key) {
 const BILD_LINKS = new Set(['konkordat_moerser', 'konkordat_rauchwerfer', 'aschenwacht_minenwerfer']);
 // U1 Maßstab E1 (Bauplan, 2026-11-25): Linieninfanterie 10 Figuren, Reiter 6, Spezialtrupps wie bisher; Soldaten, Reiter, Helden, MG und Geschütze ×0,65
 // (Soldat 0,52 statt 0,8 Feldradien), Kettenfahrzeuge und Schreiter ×0,85; Trupps lockerer in zwei Reihen. Rückweg: window.MASSSTAB_ALT = true (bzw. __dbg.massstab(0)).
-const MASS = { fig: 0.65, fz: 0.85, line: 10, cav: 6, versatz: 25 }, MASS_LINIE = new Set(['kohorte', 'grenadier']), MASS_SL = {};
+const MASS = { fig: 0.65, fz: 0.85, line: 10, cav: 6, spez: 4, versatz: 25 },   /* R1 (2026-11-25): Linie 8, Reiter 6, Spezialtrupps 3 über massZahl(); window.STAERKE_ALT = 10/6/4 */ MASS_LINIE = new Set(['kohorte', 'grenadier']), MASS_SL = {};
 const massAn = () => !window.MASSSTAB_ALT;
+const massZahl = () => window.STAERKE_ALT ? { line: 10, cav: 6, spez: 4 } : { line: 8, cav: 6, spez: 3 };
+function massSlots3(n) {   // R1: Linie 8 = 3-2-3 versetzt (die mittlere Reihe steht in den Lücken), Spezialtrupp 3 = einer hinten, zwei vorn; Füße sicher im eigenen Feld
+  const k = 's' + n; if (MASS_SL[k]) return MASS_SL[k];
+  const out = n === 8 ? [[-0.46, -0.34], [0.04, -0.36], [0.52, -0.32], [-0.22, -0.02], [0.28, 0.0], [-0.52, 0.3], [-0.02, 0.32], [0.48, 0.3]] : n === 3 ? [[0.06, -0.24], [-0.34, 0.2], [0.36, 0.16]] : null;
+  return (MASS_SL[k] = out || massSlots(n)); }
 function massSlots(n, reiter) {   // zwei lockere Reihen, Füße im eigenen Feld (Probe E1: hinten −0,3, vorn +0,3, Breite ±0,64 Feldradien)
   const k = n + (reiter ? 'r' : ''); if (MASS_SL[k]) return MASS_SL[k];
   const hin = Math.ceil(n / 2), vor = n - hin, out = [], row = (m, y, off) => { for (let i = 0; i < m; i++) { const x = m === 1 ? 0 : -0.64 + 1.28 * i / (m - 1) + off, j = ((i * 37 + Math.round(y * 100)) % 7 - 3) * 0.012; out.push([x + j, (y + j) * (reiter ? 1.15 : 1)]); } };
@@ -1548,8 +1553,10 @@ function massNF(u, nf) {
   const o = Object.assign({}, nf), T = TYPES[u.type], gross = nf.kette || nf.gross || /schreiter|eisenknecht/.test(nf.key);
   if (nf.deep) { o.tiefSc = o.massF = gross ? MASS.fz : MASS.fig; return o; }   // MG, Geschütze, Gespanne ×0,65; Fahrzeuge/Schreiter ×0,85
   o.sc = nf.sc * MASS.fig; o.massF = MASS.fig;
-  if (nf.trupp && MASS_LINIE.has(u.type)) { o.max = MASS.line; o.slots = massSlots(MASS.line); }
-  else if (nf.trupp && T && T.cls === 'cav') { o.max = MASS.cav; o.slots = massSlots(MASS.cav, true); }
+  const Z = massZahl();
+  if (nf.trupp && MASS_LINIE.has(u.type)) { o.max = Z.line; o.slots = Z.line === 10 ? massSlots(10) : massSlots3(Z.line); }
+  else if (nf.trupp && T && T.cls === 'cav') { o.max = Z.cav; o.slots = massSlots(Z.cav, true); }
+  else if (nf.trupp && nf.max > Z.spez) { o.max = Z.spez; o.slots = massSlots3(Z.spez); }   // R1: Spezialtrupps 3 statt 4
   return o;
 }
 // Grabenplätze (vorläufig bis U2): mehr als 4 Figuren gleichmäßig entlang der Grabenpunkte, abwechselnd etwas vor/zurück

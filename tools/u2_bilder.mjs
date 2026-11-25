@@ -21,7 +21,7 @@ const KARTEN = {
   grauwall: { ziele: [['graben', 2, 5, 2.4], ['graben_weit', 2, 5, 1.3]] },
   sanktruss: { ziele: [['feld', null, null, 2.2]] },
 };
-const VAR = process.env.U2B ? { vorher: 'window.ZICKZACK_ALT = true', nachher: '' } : { vorher: 'window.KLONE_ALT = true; window.GRABENPLATZ_ALT = true', nachher: '' };
+const VAR = process.env.R1 ? { vorher: 'window.STAERKE_ALT = true; window.RASTER_ALT = true', nachher: '' } : process.env.U2B ? { vorher: 'window.ZICKZACK_ALT = true', nachher: '' } : { vorher: 'window.KLONE_ALT = true; window.GRABENPLATZ_ALT = true', nachher: '' };
 for (const [karte, K] of Object.entries(KARTEN)) for (const [v, js] of Object.entries(VAR)) {
   await cmd('Page.navigate', { url: 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
   await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
@@ -31,7 +31,7 @@ for (const [karte, K] of Object.entries(KARTEN)) for (const [v, js] of Object.en
   await sleep(2500); for (let i = 0; i < 40 && (await hell()) < 12; i++) await sleep(500);
   for (const [n, c0, r0, z] of K.ziele) {
     let c = c0, r = r0; if (c == null) { const u = JSON.parse(await ev(`JSON.stringify((() => { const u = __dbg.G.units.find(u => u.type === 'kohorte' && u.status !== 'dead') || __dbg.G.units[0]; return [u.c, u.r]; })())`)); [c, r] = u; }
-    const m = await ev(`__dbg.mitte(${c}, ${r})`); await ev(`(() => { __dbg.camSetzen(${m[0]}, ${m[1]} - 40, ${z}); return true; })()`); await sleep(1500); await bild(`${karte}_${v}_${n}`);
+    const m = await ev(`__dbg.mitte(${c}, ${r})`); await ev(`(() => { __dbg.camSetzen(${m[0]}, ${m[1]} - 40, ${z}); return true; })()`); await sleep(1500); for (let i = 0; i < 40 && (await hell()) < 12; i++) await sleep(500); await bild(`${karte}_${v}_${n}`);
   }
   console.log(karte, v, 'ok');
 }
