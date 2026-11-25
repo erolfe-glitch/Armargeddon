@@ -285,7 +285,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
   // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
   if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
@@ -305,7 +305,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     ...(E.MAP.graeben && !window.GRAEBEN_ALT ? { graeben: E.MAP.graeben, grabenForm: 'buchten', grabenRueckwall: true, grabenPfuetzen: true } : {}),   /* G2a (2026-11-25): Gräben als Linien mit Feuerbuchten; Rückweg window.GRAEBEN_ALT */
     ackerNeu: !window.ACKER_C2 && !window.ACKER_ALT,   /* G3a: Acker A (gezeichnete Furchen); window.ACKER_C2 = Acker vom 24.11. */
-    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT,   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
+    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT, plaetzeAlt: !!window.GRABENPLATZ_ALT,   /* U2: window.GRABENPLATZ_ALT = vorläufige Grabenplätze aus U1 */   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW], ...(window.GB_PROBE || {}) }, IMB);   /* G1-Probe (2026-11-25): window.GB_PROBE = { grabenForm: 'buchten', grabenRueckwall, grabenPfuetzen, ackerNeu } bzw. __dbg.gbProbe(o); ohne GB_PROBE alles wie bisher */   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
@@ -1681,7 +1681,7 @@ const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c
 // F99 (2026-11-22): in Feuerbereitschaft statt Ruhe die Zielpose (kniend, wo es eine gibt), solange die Bereitschaft gilt
 const wachArt = (u, PB) => u.ow && E.alive(u) ? (PB.knien ? 'knien' : PB.anlegen ? 'anlegen' : null) : null;
 function poseFigur(u, d, j, fallback) {
-  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', wa = wachArt(u, PB), ruhe = { im: figImg(pre + (wa ? PB[wa] : PB.bereit)) || figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
+  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', wa = wachArt(u, PB), ruhe = { im: figImg(pre + (wa ? PB[wa] : PB.bereit)) || figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0, ruhe: !wa };   // U2: ruhe = Figur darf als Klon-Abwechslung gespiegelt werden
   const P0 = d.pose; if (!P0) return ruhe;
   const vs = P0.gleich ? 0 : j * (massAn() ? MASS.versatz : POSE_VERSATZ) + ((u.id * 37 + j * 53) % 41), el = (now - P0.t0) * speed - vs;
   if (j === 0 && (now - P0.t0) * speed > P0.dauer + 400) { d.pose = null; return ruhe; }
@@ -1717,6 +1717,14 @@ async function poseWurf(id, x2, y2) {
 }
 // F46 (2026-11-21): liegend bzw. niedrig gemalte Trupps sinken im Graben weniger tief ein (sonst sieht man sie kaum)
 const GRABEN_TIEFE = { buechse: 0.35, pirsch: 0.5, scharf: 0.5 };
+// U2 (2026-11-25): Klone aufbrechen – jede Figur leicht anders: Größe ±6 %, Neigung ±0,035, Versatz ±0,035 Feldradien; in Ruhe (ganzer Trupp ohne Pose,
+// Bild = Ruhepose) schaut etwa jede fünfte Figur zur Seite (gespiegelt). Fest je Einheit und Figur. Rückweg window.KLONE_ALT.
+const KLON = { sz: 0.06, rot: 0.035, jit: 0.035, spiegel: 0.2 }, KLON_NULL = { sz: 1, rot: 0, jx: 0, jy: 0, sp: false };
+function klonVar(u, d, i, pa) {
+  if (window.KLONE_ALT) return KLON_NULL; const h = k => { const v = Math.sin((u.id * 12.9898 + i * 78.233 + k * 37.719) * 43758.5453); return v - Math.floor(v); };
+  const ruhig = !d.pose && !(d.vs && (d.vs.supp > 0 || d.vs.flee)) && (pa ? pa.ruhe : posenAn(u) === false);
+  return { sz: 1 + (h(1) - 0.5) * 2 * KLON.sz, rot: (h(2) - 0.5) * 2 * KLON.rot, jx: (h(3) - 0.5) * 2 * KLON.jit, jy: (h(4) - 0.5) * 2 * KLON.jit * 0.6, sp: ruhig && !!pa && h(5) < KLON.spiegel };
+}
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const flipL = flip; if (nf.links) flip = flip ? 0 : 1;   // F89: flip = tatsächlich gespiegelt, flipL = Blick nach links (für Kästen/Mündung)
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
@@ -1726,9 +1734,10 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) {
       const pa = posenAn(u) ? poseFigur(u, d, i, nf.ims[0]) : null, im = pa ? pa.im : nf.ims[(u.id * 3 + i) % nf.ims.length];   // Posenwechsel (Stufe 1)
-      if (pl && pl.pts) { const q = n > 4 ? grabenPunkt(pl.pts, i, n, s) : pl.pts[[1, 2, 0, 3][i]];   // U1: mehr als 4 Figuren entlang der Grabenlinie
-        list.push({ im, pa, ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
-      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
+      const kv = klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
+      if (pl && pl.pts) { const q = pl.reihe ? pl.pts[Math.min(pl.pts.length - 1, Math.floor((i + 0.5) * pl.pts.length / n))] : n > 4 ? grabenPunkt(pl.pts, i, n, s) : pl.pts[[1, 2, 0, 3][i]];   // U2: zehn Grabenplätze (bei weniger Figuren gleichmäßig verteilt); U1-Fassung als Rückweg
+        list.push({ im, pa, kv, ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
+      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, kv, ox: slot[0] + kv.jx, oy: slot[1] * (pl && pl.sy || 1) + kv.jy });
     }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s * (nf.massF || 1) * (GRABEN_TIEFE[u.type] || 1) : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 * (nf.massF || 1) : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
@@ -1787,6 +1796,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const pa = f.pa, vor = flip ? -1 : 1, fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s + (pa ? pa.dx * vor * s : 0), fy = y + f.oy * s * k + duck + (pa ? pa.dy * s : 0), prot = pa ? pa.rot : 0;
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
+    if (f.kv) { h *= f.kv.sz; w *= f.kv.sz; }   // U2: Klone – Größe je Figur
+    const prot2 = prot + (f.kv ? f.kv.rot : 0), flipF = !!flip !== !!(f.kv && f.kv.sp);
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
@@ -1803,10 +1814,10 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
         if (BW) { const gl = g.globalAlpha; g.globalAlpha = gl * 0.75; kontakt(1.1); g.globalAlpha = gl; }   // Bildwirkung: Schatten auf der Grabensohle
-        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (!!flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
+        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
       } else {
         if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
-        g.translate(fx, fy + h * 0.012 + sink); if (!!flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
+        g.translate(fx, fy + h * 0.012 + sink); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip, MUZ_FIG[f.im && f.im._key] || MUZ[f.im && f.im._key] || null]);   // M3 (2026-11-22): Helden/Generäle (Einzelmodelle über diesen Weg) lesen auch MUZ   // 6.: Mündung aus dem Bild (MUZ_FIG)

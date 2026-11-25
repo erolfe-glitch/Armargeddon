@@ -250,3 +250,4 @@ Verbindliche Begriffe, wie sie künftig in Regeln, Texten und Anzeige heißen.
   - Grabenplätze vorläufig: über 4 Figuren gleichmäßig entlang der Grabenpunkte, abwechselnd quer versetzt; die eigentlichen 10 Grabenplätze kommen in U2.
   - Rückweg: `window.MASSSTAB_ALT = true` bzw. `__dbg.massstab(0)`.
   - Ballon unverändert.
+- **U2 erledigt (2026-11-25):** zehn Grabenplätze auf den Zinnengräben (GBau grabenPlaetze, Feuerbuchten bevorzugt), Klone je Figur verschieden (ui.js klonVar, in Ruhe jede fünfte Figur gespiegelt). Ruheposen-Liste: der Code nimmt weiter die vorhandenen Bilder; sobald der Berater mehrere Ruheposen je Trupp malt, kommen sie in POSE_SETS. Rückwege window.GRABENPLATZ_ALT, window.KLONE_ALT. Bilder entwurf/probe/u2/.

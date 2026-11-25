@@ -5578,21 +5578,23 @@ function aufbauen(cfg, IM) {
           for (let q = 0; q < 3; q++) { const ox = (hrnd(sd, q, 371) - 0.5) * rx * 0.7, oy = (hrnd(sd, q, 372) - 0.5) * ry * 0.6, f = 0.6 + hrnd(sd, q, 373) * 0.4; w.moveTo(x + ox + rx * f, y + oy); w.ellipse(x + ox, y + oy, rx * f, ry * f, 0, 0, 7); }
           w.fillStyle = 'rgba(58,46,34,0.75)'; w.save(); w.filter = `blur(${R * 0.012}px)`; w.lineWidth = R * 0.03; w.strokeStyle = 'rgba(58,46,34,0.6)'; w.stroke(); w.restore();   // nasser Schlammrand
           w.fillStyle = 'rgba(30,27,25,0.94)'; w.fill(); w.clip();
-          const gl = w.createLinearGradient(x - rx, y - ry, x + rx * 0.3, y + ry); gl.addColorStop(0, 'rgba(120,128,134,0.42)'); gl.addColorStop(0.45, 'rgba(70,74,78,0.18)'); gl.addColorStop(1, 'rgba(20,18,16,0)'); w.fillStyle = gl; w.fillRect(x - rx * 2, y - ry * 2, rx * 4, ry * 4);   // Spiegelung des Himmels
-          w.restore(); w.save(); w.strokeStyle = 'rgba(190,196,198,0.4)'; w.lineWidth = R * 0.008; w.beginPath(); w.ellipse(x - rx * 0.12, y - ry * 0.1, rx * 0.62, ry * 0.5, 0, 3.5, 4.5); w.stroke(); w.restore(); };   // schmaler Glanz
-        const QUER = R * GW * 0.78, RAND = R * 0.05;
+          const gl = w.createLinearGradient(x - rx, y - ry, x + rx * 0.3, y + ry); gl.addColorStop(0, 'rgba(138,146,152,0.6)'); gl.addColorStop(0.45, 'rgba(78,84,90,0.28)'); gl.addColorStop(1, 'rgba(20,18,16,0)'); w.fillStyle = gl; w.fillRect(x - rx * 2, y - ry * 2, rx * 4, ry * 4);   // Spiegelung des Himmels
+          w.restore(); w.save(); w.strokeStyle = 'rgba(200,206,208,0.62)'; w.lineWidth = R * 0.011; w.beginPath(); w.ellipse(x - rx * 0.12, y - ry * 0.1, rx * 0.62, ry * 0.5, 0, 3.4, 4.7); w.stroke(); w.strokeStyle = 'rgba(160,168,172,0.35)'; w.lineWidth = R * 0.007; w.beginPath(); w.ellipse(x + rx * 0.1, y + ry * 0.05, rx * 0.7, ry * 0.62, 0, 0.2, 1.1); w.stroke(); w.restore(); };   // schmaler Glanz
+        const QUER = R * GW * 0.78, RAND = R * 0.05, STEG = [1, 4, 3].map(k => IM['graben_sohle_rost_' + k]).filter(Boolean);   // Laufsteg ohne das Stück mit gebrochenen Latten (rost_2)
         TR.forEach((pts, ti) => { const z = TRENCH[ti], o = z.off; if (!o) return; let last = null;
           for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < R * 0.3) continue;
             let rot = Math.atan2(dy, dx) - Math.PI / 2; if (rot > Math.PI / 2) rot -= Math.PI; else if (rot < -Math.PI / 2) rot += Math.PI;
-            const P = t => [a[0] + dx * t, a[1] + dy * t], sd = ti * 131 + i;
+            const P = t => [a[0] + dx * t, a[1] + dy * t], sd = ti * 131 + i; (GTEILE.boden = GTEILE.boden || []).push({ ti, i, l: +(l / R).toFixed(2), o0: +(o[i] / R).toFixed(2), o1: +(o[i + 1] / R).toFixed(2), knick: !!(z.stufen && z.stufen.has(i)), x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 });   // Test: Abschnitte des Grabenbodens
             if (z.stufen && z.stufen.has(i)) { if (hrnd(sd, 1, 374) < 0.25) pfuetze(...P(0.5), R * (0.09 + hrnd(sd, 2, 375) * 0.05), sd); continue; }   // Knick: Schlamm, manchmal eine Pfütze
             if (o[i] < 0 && o[i + 1] < 0) {   // Durchgang: Laufsteg von Ende zu Ende
-              const nutz = l - 2 * RAND, n = Math.max(1, Math.round(nutz / (R * 0.36))), st = nutz / n;
-              for (let j = 0; j < n; j++) { const im = nimm(ROST, hrnd(sd, j, 376), last); last = im; rost(im, ...P((RAND + st * (j + 0.5)) / l), rot + (hrnd(sd, j, 377) - 0.5) * 0.03, QUER, st * 1.08); }
+              const ux = dx / l, uy = dy / l, nx = -uy, ny = ux, q0 = [a[0] + ux * RAND, a[1] + uy * RAND], q1 = [b[0] - ux * RAND, b[1] - uy * RAND], hq = QUER * 0.6;   // U2-Rest: Kacheln in Originalgröße wiederholt, am Ende abgeschnitten (nie gestreckt)
+              w.save(); w.beginPath(); w.moveTo(q0[0] + nx * hq, q0[1] + ny * hq); w.lineTo(q1[0] + nx * hq, q1[1] + ny * hq); w.lineTo(q1[0] - nx * hq, q1[1] - ny * hq); w.lineTo(q0[0] - nx * hq, q0[1] - ny * hq); w.closePath(); w.clip();
+              let s0 = RAND, j = 0; while (s0 < l - RAND - R * 0.02 && j < 40) { const im = nimm(STEG, hrnd(sd, j, 376), last); last = im; const lg = im.height * QUER / im.width; rost(im, ...P((s0 + lg / 2) / l), rot, QUER, lg); s0 += lg * 0.94; j++; }
+              w.restore();
             } else if (o[i] > 0 && o[i + 1] > 0) {   // Bucht: ein oder zwei einzelne Roste, sonst Schlamm mit Pfütze
-              const n = l > R * 1.3 ? 2 : 1; let frei = null;
-              for (let j = 0; j < n; j++) { const t0 = (j + 0.5) / n, t = Math.max((RAND + R * 0.2) / l, Math.min(1 - (RAND + R * 0.2) / l, t0 + (hrnd(sd, j, 378) - 0.5) * 0.15));
-                if (hrnd(sd, j, 379) < 0.6) { const im = nimm(ROST, hrnd(sd, j, 380), last); last = im; const k = QUER * 0.92 / im.width; rost(im, ...P(t), rot + (hrnd(sd, j, 381) - 0.5) * 0.06, QUER * 0.92, Math.min(im.height * k, l / n - R * 0.06)); } else frei = t; }
+              const n = Math.max(1, Math.round(l / (R * 0.62))); let frei = null, gelegt = 0;   // U2-Rest: lange Buchten bekommen mehr Roste (eine 1,9-R-Bucht sah aus wie ein Durchgang ohne Steg)
+              for (let j = 0; j < n; j++) { const t0 = (j + 0.5) / n, t = Math.max((RAND + R * 0.2) / l, Math.min(1 - (RAND + R * 0.2) / l, t0 + (hrnd(sd, j, 378) - 0.5) * 0.1));
+                if (hrnd(sd, j, 379) < 0.7 || (j === n - 1 && !gelegt)) { gelegt++; const im = nimm(ROST, hrnd(sd, j, 380), last); last = im; const k = QUER * 0.92 / im.width; rost(im, ...P(t), rot + (hrnd(sd, j, 381) - 0.5) * 0.06, QUER * 0.92, Math.min(im.height * k, l / n - R * 0.06)); } else frei = t; }
               if (frei != null && hrnd(sd, 3, 382) < 0.6) pfuetze(...P(frei), R * (0.1 + hrnd(sd, 4, 383) * 0.06), sd + 7);
             } } });
       } else TR.forEach((pts, ti) => { let last = null;
@@ -5649,7 +5651,7 @@ function aufbauen(cfg, IM) {
         if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * kd, y: C[1] - n[1] * R * GK + tb[1] * kd, wd: ln + R * 0.1, feind: false, weg }); } });
     if (GT) {   // G2b: Querwände und Stirnseiten an den Knicken (Unterstand einmal je Feuergraben), in den Buchten Leitern, Stahlschilde, Drahtrollen; Kram in den Durchgängen
       const P = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean), QW = P('graben_querwand_'), EK = P('graben_ecke_'), LEI = P('graben_leiter_'), SCH = P('graben_stahlschild_');
-      const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', 'einsturz', ...(G4B ? [] : ['balken'])].map(n => IM['graben_' + n]).filter(Boolean), last = {};   // G4b: ohne Balken (lag schräg halb in der Wand)
+      const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', ...(G4B ? [] : ['einsturz', 'balken'])].map(n => IM['graben_' + n]).filter(Boolean), last = {};   // G4b: ohne Balken (lag schräg halb in der Wand)
       const unter = {}; for (const ti of new Set(STIRN.map(st => st.ti))) { const st = STIRN.filter(q => !q.feind && q.ti === ti && !q.weg); if (st.length) unter[ti] = st[Math.floor(hrnd(ti, 5, 340) * st.length)]; }
       STIRN.forEach((st, k) => {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
@@ -5895,8 +5897,24 @@ function aufbauen(cfg, IM) {
   DRAW.sort((a, b) => a.y - b.y);
 
   // Wie stehen Trupps im Feld? Graben: vier Weltpunkte auf der Grabenlinie, entlang ihrer Richtung, Absenkung 0,32 SH. Ruine: Tiefe × 0,85.
+  // U2 (2026-11-25): zehn Grabenplätze je Feld – Proben alle 0,05 R entlang der Grabenzüge, jede Probe gehört zum nächsten Grabenfeld;
+  // je Feld der Zug mit den meisten Proben. Feuerbuchten zählen voll, Durchgänge etwas, Knicke kaum; in der Bucht steht man an der Feindwand.
+  let GPL = null; const GP_W = { bucht: 1, lauf: 1, durch: 0.8, ende: 0.5, knick: 0.3 };
+  function grabenProben() { GPL = {}; const TF = []; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (terr(c, r) === 'trench') TF.push([c, r, ...hexC(c, r)]); if (!TF.length) return;
+    TR.forEach((pts, ti) => { const z = TRENCH[ti], o = z.off, fs = ZI && o ? feindSeite(ti) : 0;
+      for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < 1e-6) continue;
+        const art = !o ? 'lauf' : z.stufen && z.stufen.has(i) ? 'knick' : o[i] > 0 && o[i + 1] > 0 ? 'bucht' : o[i] < 0 && o[i + 1] < 0 ? 'durch' : 'ende', nx = -dy / l * (fs || 0), ny = dx / l * (fs || 0);
+        for (let s = 0; s < l; s += R * 0.05) { const x = a[0] + dx * s / l, y = a[1] + dy * s / l; let best = null, bd = 1e9; for (const f of TF) { const d = Math.hypot(f[2] - x, f[3] - y); if (d < bd) { bd = d; best = f; } }
+          if (!best || bd > R * 0.95) continue; const k = best[0] + ',' + best[1], L0 = (GPL[k] = GPL[k] || {}), Lz = (L0[ti] = L0[ti] || []); Lz.push({ x, y, art, nx, ny, dx: dx / l, dy: dy / l }); } } }); }
+  function grabenPlaetze(c, r, n = 10) { if (!GPL) grabenProben(); const L0 = GPL[c + ',' + r]; if (!L0) return null; let P = null; for (const k in L0) if (!P || L0[k].length > P.length) P = L0[k]; if (!P || P.length < 4) return null;
+    const cum = [0]; for (const p of P) cum.push(cum[cum.length - 1] + GP_W[p.art]); const S = cum[cum.length - 1], out = [];
+    for (let j = 0; j < n; j++) { const ziel = S * (j + 0.5) / n; let i = 0; while (i < P.length - 1 && cum[i + 1] < ziel) i++; const p = P[i], h = hrnd(c * 31 + r, j, 390);
+      const q = p.art === 'bucht' ? R * (j % 2 ? 0.1 : -0.02 + h * 0.03) : (j % 2 ? 1 : -1) * R * (0.03 + h * 0.03), ql = (hrnd(c * 31 + r, j, 391) - 0.5) * R * 0.04;   // Bucht: abwechselnd an der Feindwand und dahinter; sonst abwechselnd links/rechts der Mitte
+      out.push([p.x + (p.art === 'bucht' && (p.nx || p.ny) ? p.nx * q : -p.dy * q) + p.dx * ql, p.y + (p.art === 'bucht' && (p.nx || p.ny) ? p.ny * q : p.dx * q) + p.dy * ql, p.art]); }
+    return out; }
   function platz(c, r) {
     const t = terr(c, r), [hx, hy] = hexC(c, r);
+    if (t === 'trench' && TR.length && ZI && !cfg.plaetzeAlt) { const pts = grabenPlaetze(c, r); if (pts) return { pts, reihe: true, sink: 0.32, cut: EINSINK }; }   // U2: zehn Plätze (Rückweg window.GRABENPLATZ_ALT)
     if (t === 'trench' && TR.length) {
       let best = null; for (const p of TR) p.forEach((pt, i) => { const d = Math.hypot(pt[0] - hx, pt[1] - hy); if (!best || d < best.d) best = { d, p, i }; });
       if (!best || best.d > R * 0.9) return null;
@@ -7051,7 +7069,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
   // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
   if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
@@ -7071,7 +7089,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     ...(E.MAP.graeben && !window.GRAEBEN_ALT ? { graeben: E.MAP.graeben, grabenForm: 'buchten', grabenRueckwall: true, grabenPfuetzen: true } : {}),   /* G2a (2026-11-25): Gräben als Linien mit Feuerbuchten; Rückweg window.GRAEBEN_ALT */
     ackerNeu: !window.ACKER_C2 && !window.ACKER_ALT,   /* G3a: Acker A (gezeichnete Furchen); window.ACKER_C2 = Acker vom 24.11. */
-    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT,   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
+    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT, plaetzeAlt: !!window.GRABENPLATZ_ALT,   /* U2: window.GRABENPLATZ_ALT = vorläufige Grabenplätze aus U1 */   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW], ...(window.GB_PROBE || {}) }, IMB);   /* G1-Probe (2026-11-25): window.GB_PROBE = { grabenForm: 'buchten', grabenRueckwall, grabenPfuetzen, ackerNeu } bzw. __dbg.gbProbe(o); ohne GB_PROBE alles wie bisher */   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
@@ -8447,7 +8465,7 @@ const poseSchiessen = u => { const d = DU.get(u.id), h = G.map[u.c] && G.map[u.c
 // F99 (2026-11-22): in Feuerbereitschaft statt Ruhe die Zielpose (kniend, wo es eine gibt), solange die Bereitschaft gilt
 const wachArt = (u, PB) => u.ow && E.alive(u) ? (PB.knien ? 'knien' : PB.anlegen ? 'anlegen' : null) : null;
 function poseFigur(u, d, j, fallback) {
-  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', wa = wachArt(u, PB), ruhe = { im: figImg(pre + (wa ? PB[wa] : PB.bereit)) || figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0 };
+  const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_', wa = wachArt(u, PB), ruhe = { im: figImg(pre + (wa ? PB[wa] : PB.bereit)) || figImg(pre + PB.bereit) || fallback, dx: 0, dy: 0, rot: 0, ruhe: !wa };   // U2: ruhe = Figur darf als Klon-Abwechslung gespiegelt werden
   const P0 = d.pose; if (!P0) return ruhe;
   const vs = P0.gleich ? 0 : j * (massAn() ? MASS.versatz : POSE_VERSATZ) + ((u.id * 37 + j * 53) % 41), el = (now - P0.t0) * speed - vs;
   if (j === 0 && (now - P0.t0) * speed > P0.dauer + 400) { d.pose = null; return ruhe; }
@@ -8483,6 +8501,14 @@ async function poseWurf(id, x2, y2) {
 }
 // F46 (2026-11-21): liegend bzw. niedrig gemalte Trupps sinken im Graben weniger tief ein (sonst sieht man sie kaum)
 const GRABEN_TIEFE = { buechse: 0.35, pirsch: 0.5, scharf: 0.5 };
+// U2 (2026-11-25): Klone aufbrechen – jede Figur leicht anders: Größe ±6 %, Neigung ±0,035, Versatz ±0,035 Feldradien; in Ruhe (ganzer Trupp ohne Pose,
+// Bild = Ruhepose) schaut etwa jede fünfte Figur zur Seite (gespiegelt). Fest je Einheit und Figur. Rückweg window.KLONE_ALT.
+const KLON = { sz: 0.06, rot: 0.035, jit: 0.035, spiegel: 0.2 }, KLON_NULL = { sz: 1, rot: 0, jx: 0, jy: 0, sp: false };
+function klonVar(u, d, i, pa) {
+  if (window.KLONE_ALT) return KLON_NULL; const h = k => { const v = Math.sin((u.id * 12.9898 + i * 78.233 + k * 37.719) * 43758.5453); return v - Math.floor(v); };
+  const ruhig = !d.pose && !(d.vs && (d.vs.supp > 0 || d.vs.flee)) && (pa ? pa.ruhe : posenAn(u) === false);
+  return { sz: 1 + (h(1) - 0.5) * 2 * KLON.sz, rot: (h(2) - 0.5) * 2 * KLON.rot, jx: (h(3) - 0.5) * 2 * KLON.jit, jy: (h(4) - 0.5) * 2 * KLON.jit * 0.6, sp: ruhig && !!pa && h(5) < KLON.spiegel };
+}
 function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const flipL = flip; if (nf.links) flip = flip ? 0 : 1;   // F89: flip = tatsächlich gespiegelt, flipL = Blick nach links (für Kästen/Mündung)
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
@@ -8492,9 +8518,10 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     for (let i = 0; i < n; i++) {
       const pa = posenAn(u) ? poseFigur(u, d, i, nf.ims[0]) : null, im = pa ? pa.im : nf.ims[(u.id * 3 + i) % nf.ims.length];   // Posenwechsel (Stufe 1)
-      if (pl && pl.pts) { const q = n > 4 ? grabenPunkt(pl.pts, i, n, s) : pl.pts[[1, 2, 0, 3][i]];   // U1: mehr als 4 Figuren entlang der Grabenlinie
-        list.push({ im, pa, ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
-      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, ox: slot[0], oy: slot[1] * (pl && pl.sy || 1) });
+      const kv = klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
+      if (pl && pl.pts) { const q = pl.reihe ? pl.pts[Math.min(pl.pts.length - 1, Math.floor((i + 0.5) * pl.pts.length / n))] : n > 4 ? grabenPunkt(pl.pts, i, n, s) : pl.pts[[1, 2, 0, 3][i]];   // U2: zehn Grabenplätze (bei weniger Figuren gleichmäßig verteilt); U1-Fassung als Rückweg
+        list.push({ im, pa, kv, ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
+      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, kv, ox: slot[0] + kv.jx, oy: slot[1] * (pl && pl.sy || 1) + kv.jy });
     }
   } else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s * (nf.massF || 1) * (GRABEN_TIEFE[u.type] || 1) : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 * (nf.massF || 1) : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
@@ -8553,6 +8580,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const pa = f.pa, vor = flip ? -1 : 1, fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s + (pa ? pa.dx * vor * s : 0), fy = y + f.oy * s * k + duck + (pa ? pa.dy * s : 0), prot = pa ? pa.rot : 0;
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
+    if (f.kv) { h *= f.kv.sz; w *= f.kv.sz; }   // U2: Klone – Größe je Figur
+    const prot2 = prot + (f.kv ? f.kv.rot : 0), flipF = !!flip !== !!(f.kv && f.kv.sp);
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
@@ -8569,10 +8598,10 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = fl || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung
         if (BW) { const gl = g.globalAlpha; g.globalAlpha = gl * 0.75; kontakt(1.1); g.globalAlpha = gl; }   // Bildwirkung: Schatten auf der Grabensohle
-        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (!!flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
+        const e = GBau.eingesunken(f.im, pl.cut), hh = h * e.frac; g.translate(fx, fy); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(e.cv, -w * 0.5, -hh + h * 0.02, w, hh);
       } else {
         if (sink) { g.beginPath(); g.rect(fx - w, fy - h * 2, w * 2, h * 2 + sink * 0.25); g.clip(); }
-        g.translate(fx, fy + h * 0.012 + sink); if (!!flip !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot) g.rotate(pa && pa.spiegel ? -prot : prot); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
+        g.translate(fx, fy + h * 0.012 + sink); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(f.im, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip, MUZ_FIG[f.im && f.im._key] || MUZ[f.im && f.im._key] || null]);   // M3 (2026-11-22): Helden/Generäle (Einzelmodelle über diesen Weg) lesen auch MUZ   // 6.: Mündung aus dem Bild (MUZ_FIG)
