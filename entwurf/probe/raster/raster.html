@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Raster-Studie – Probe</title>
+<style>html,body{margin:0;background:#14100c}canvas{display:block}</style></head><body>
+<canvas id="cv" width="1920" height="900"></canvas>
+<script src="../../../src/figs.js"></script>
+<script src="../../../src/gelaende.js"></script>
+<script>
+// Raster-Studie (2026-11-25): nur Probebild, nicht spielbar. Aufruf: raster.html?v=hex | hexfrei | quad  (&reich=1 = Zugweite zeigen)
+// Gleicher Grauwall-Ausschnitt, gleiche Ansicht, gleiche Zeichenweise – nur das Raster wechselt.
+const Q = new URLSearchParams(location.search), V = Q.get('v') || 'hex', REICH = Q.get('reich') === '1';
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const RP = 108, TILT = 0.62, X0 = 0.6, Y0 = 2.5, LINKS = 42, OBEN = 120, SQ3 = Math.sqrt(3), S = 1.61;   // S = Quadratseite bei gleicher Feldfläche wie das Sechseck
+const sx = x => LINKS + (x - X0) * RP, sy = y => OBEN + (y - Y0) * RP * TILT;
+const boden = () => g.setTransform(RP, 0, 0, RP * TILT, LINKS - X0 * RP, OBEN - Y0 * RP * TILT), schirm = () => g.setTransform(1, 0, 0, 1, 0, 0);
+let seed = 1917; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const QUAD = V === 'quad', FREI = V !== 'hex';
+// ---- Raster ----
+const hexM = (c, r) => [1.5 * c, SQ3 * (r + 0.5 * (c & 1))];
+const quadM = (i, j) => [(i + 0.5) * S + 0.585, (j + 0.5) * S - 0.56];
+const M = (c, r) => QUAD ? quadM(c, r) : hexM(c, r);
+function feldPfad(c, r) { const [x, y] = M(c, r); g.beginPath();
+  if (QUAD) g.rect(x - S / 2, y - S / 2, S, S); else { for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; g[k ? 'lineTo' : 'moveTo'](x + Math.cos(a), y + Math.sin(a)); } g.closePath(); } }
+const COLS = QUAD ? 11 : 12, ROWS = QUAD ? 9 : 9;
+// ---- Lage (Grauwall, Spalten 0–11) ----
+const L = QUAD ? {
+  feuer: [{ c: 1, feind: 1 }, { c: 6, feind: -1 }, { c: 9, feind: -1 }],
+  lauf: [[[1, 3], [0, 3], [-1, 3]], [[6, 6], [7, 6], [8, 6], [9, 6]]],
+  draht: [[4, 2], [3, 5], [3, 6], [5, 2], [5, 3], [5, 5], [5, 6], [5, 7], [8, 2], [8, 3], [8, 5], [8, 6]],
+  offen: [2, 5], grabenK: [1, 7], grabenA: [6, 5], koloss: [[3, 3], [2, 3]], mauer: [[2, 5, 'O']]
+} : {
+  feuer: [{ c: 2, feind: 1 }, { c: 7, feind: -1 }, { c: 10, feind: -1 }],
+  lauf: [[[2, 3], [1, 3], [0, 3]], [[7, 6], [8, 6], [9, 6], [10, 6]]],
+  draht: [[4, 5], [4, 6], [5, 3], [6, 2], [6, 3], [6, 5], [6, 6], [6, 7], [9, 2], [9, 3], [9, 5], [9, 6]],
+  offen: [3, 5], grabenK: [2, 7], grabenA: [7, 5], koloss: FREI ? [[4, 3], [3, 3]] : [[4, 3]], mauer: FREI ? [[3, 5, 0], [3, 5, 5]] : []
+};
+// ---- Feuergraben: Rechteck-Welle (Feuerbuchten zur Feindseite, Durchgänge zurück) – gleich in allen Varianten ----
+const GW = 0.56, BUCHT = QUAD ? 0.36 : 0.42;
+function welle(xc, feind, y0, y1) { const seg = []; let y = y0, b = rnd() < 0.5;
+  while (y < y1) { const l = b ? 0.95 + rnd() * 0.5 : 0.8 + rnd() * 0.35; seg.push({ a: y, b: Math.min(y1, y + l), x: xc + (b ? feind * BUCHT : -feind * 0.1), bucht: b }); y += l; b = !b; } return seg; }
+const linieVon = seg => { const p = []; for (const s of seg) { p.push([s.x, s.a], [s.x, s.b]); } return p; };
+const xBei = (seg, y) => (seg.find(s => y >= s.a && y <= s.b) || seg[0]).x;
+const graeben = [];
+for (const f of L.feuer) { const xc = M(f.c, 0)[0]; const seg = welle(xc, f.feind, 1.2, 15); graeben.push({ art: 'feuer', seg, pkt: linieVon(seg), feind: f.feind, c: f.c }); }
+for (const l of L.lauf) { let pkt;
+  if (QUAD) pkt = l.map(([c, r]) => M(c, r));
+  else if (FREI) { const [xa, ya] = M(...l[0]), [xb] = M(...l[l.length - 1]); const y = ya + (l[0][0] & 1 ? -1 : 1) * SQ3 / 4; pkt = [[xa, y], [xb + (xb < xa ? -0.7 : 0), y]]; }   // freie Linie: gerade, eine Viertelhöhe neben den Feldmitten – läuft durch dieselbe Feldkette
+  else pkt = l.map(([c, r]) => M(c, r));
+  graeben.push({ art: 'lauf', pkt, felder: l }); }
+// ---- Bilder ----
+const img = {}; const lade = (o, k) => new Promise(r => { const i = new Image(); i.onload = () => { img[k] = i; r(); }; i.onerror = r; i.src = o[k]; });
+const BRAUCHT = [[FIGS, 'konkordat_soldat_1'], [FIGS, 'konkordat_soldat_2'], [FIGS, 'konkordat_soldat_3'], [FIGS, 'konkordat_soldat_4'], [FIGS, 'aschenwacht_soldat_1'], [FIGS, 'aschenwacht_soldat_2'], [FIGS, 'aschenwacht_soldat_3'], [FIGS, 'aschenwacht_soldat_4'], [FIGS, 'konkordat_koloss'],
+  [GELAENDE, 'boden_schlamm'], [GELAENDE, 'drahtguertel_tiefe'], [GELAENDE, 'graben_sohle_rost_1']];
+Promise.all(BRAUCHT.map(([o, k]) => lade(o, k))).then(zeichne);
+
+function strich(pkt, w, farbe, alpha, dash) { g.beginPath(); pkt.forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](x, y)); g.lineWidth = w; g.strokeStyle = farbe; g.globalAlpha = alpha == null ? 1 : alpha; g.lineJoin = 'miter'; g.lineCap = 'butt'; g.setLineDash(dash || []); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+function sandsack(x, y, k) { const rx = 0.14 * RP * (k || 1), ry = 0.08 * RP * (k || 1); const gr = g.createLinearGradient(0, y - ry, 0, y + ry); gr.addColorStop(0, '#b3a382'); gr.addColorStop(1, '#5b4f3b');
+  g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, 7); g.fillStyle = gr; g.fill(); g.lineWidth = 1.4; g.strokeStyle = '#231a12'; g.stroke(); }
+function wall(x1, y1, x2, y2) { // Sandsackwall zwischen zwei Bodenpunkten: Schatten, zwei Lagen
+  const n = Math.max(2, Math.round(Math.hypot((x2 - x1) * RP, (y2 - y1) * RP * TILT) / (0.22 * RP)));
+  schirm(); g.globalAlpha = 0.45; g.fillStyle = '#000'; for (let i = 0; i <= n; i++) { const t = i / n; g.beginPath(); g.ellipse(sx(x1 + (x2 - x1) * t) + 5, sy(y1 + (y2 - y1) * t) + 7, 0.17 * RP, 0.09 * RP, 0, 0, 7); g.fill(); } g.globalAlpha = 1;
+  for (let i = 0; i <= n; i++) { const t = i / n; sandsack(sx(x1 + (x2 - x1) * t), sy(y1 + (y2 - y1) * t)); }
+  for (let i = 0; i < n; i++) { const t = (i + 0.5) / n; sandsack(sx(x1 + (x2 - x1) * t), sy(y1 + (y2 - y1) * t) - 0.1 * RP, 0.92); } }
+function schild(x, y) { schirm(); g.beginPath(); g.moveTo(x - 9, y - 10); g.lineTo(x + 9, y - 10); g.lineTo(x + 9, y + 1); g.quadraticCurveTo(x + 8, y + 9, x, y + 13); g.quadraticCurveTo(x - 8, y + 9, x - 9, y + 1); g.closePath();
+  g.fillStyle = '#c9ccd0'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#1b1612'; g.stroke(); }
+function schrift(t, x, y, gross) { schirm(); g.font = (gross ? 'bold 26px ' : '17px ') + 'Georgia, serif'; const w = g.measureText(t).width + 22, h = gross ? 40 : 28;
+  g.fillStyle = 'rgba(18,14,10,.82)'; g.strokeStyle = '#8a7446'; g.lineWidth = 1.5; g.beginPath(); g.roundRect(x, y - h + 8, w, h, 5); g.fill(); g.stroke(); g.fillStyle = gross ? '#e8d9a8' : '#ddd3bd'; g.fillText(t, x + 11, y); }
+function pfeil(x1, y1, x2, y2) { schirm(); g.strokeStyle = '#e8d9a8'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); g.beginPath(); g.arc(x2, y2, 3.5, 0, 7); g.fillStyle = '#e8d9a8'; g.fill(); }
+
+function zeichne() {
+  // Boden
+  boden(); const pat = g.createPattern(img.boden_schlamm, 'repeat'); pat.setTransform(new DOMMatrix().scale(4 / 768)); g.fillStyle = pat; g.fillRect(X0 - 1, Y0 - 2, 20, 16);
+  g.fillStyle = 'rgba(20,14,8,.28)'; g.fillRect(X0 - 1, Y0 - 2, 20, 16);
+  // Grabenfelder leicht getönt (das Feld zählt in den Regeln als Graben)
+  const gfeld = new Set(); for (const f of L.feuer) for (let r = 0; r < ROWS + 1; r++) gfeld.add(f.c + ',' + r); for (const l of L.lauf) for (const [c, r] of l) gfeld.add(c + ',' + r);
+  for (const k of gfeld) { const [c, r] = k.split(',').map(Number); feldPfad(c, r); g.fillStyle = 'rgba(232,200,120,.07)'; g.fill(); }
+  // Zugweite (2 Bewegungspunkte, freies Gelände) vom Trupp im offenen Feld
+  if (REICH) { const [oc, orr] = L.offen;
+    for (let c = -1; c <= COLS; c++) for (let r = 0; r <= ROWS; r++) { let k;
+      if (QUAD) { const dx = Math.abs(c - oc), dy = Math.abs(r - orr); k = Math.max(dx, dy) + 0.5 * Math.min(dx, dy); }
+      else { const ax = (c, r) => [c, r - (c - (c & 1)) / 2], [q1, a1] = ax(c, r), [q2, a2] = ax(oc, orr); k = Math.max(Math.abs(q1 - q2), Math.abs(a1 - a2), Math.abs(q1 - q2 + a1 - a2)); }
+      if (k > 0 && k <= 3) { feldPfad(c, r); g.fillStyle = k <= 2 ? 'rgba(120,200,110,.30)' : 'rgba(230,200,70,.22)'; g.fill(); } } }
+  // Rasterlinien, dezent
+  for (let c = -1; c <= COLS; c++) for (let r = 0; r <= ROWS; r++) { feldPfad(c, r); g.lineWidth = 0.022; g.strokeStyle = 'rgba(10,8,6,.42)'; g.stroke(); }
+  // Gräben: Erdlippe, dunkle Kante, Wand hinten, Sohle (per Maske um die Wandhöhe nach unten versetzt)
+  for (const gr of graeben) { const w = gr.art === 'feuer' ? GW : 0.42;
+    strich(gr.pkt, w + 0.34, '#6b573c', 0.55); strich(gr.pkt, w + 0.2, '#7a6646', 0.5, [0.13, 0.07]); strich(gr.pkt, w + 0.08, '#1d1610'); strich(gr.pkt, w, '#5a452d'); strich(gr.pkt, w, '#2e2216', 0.55, [0.05, 0.09]); }
+  schirm(); const A = document.createElement('canvas'), B = document.createElement('canvas'); A.width = B.width = cv.width; A.height = B.height = cv.height;
+  const ga = A.getContext('2d'), gb = B.getContext('2d'), tief = 17;
+  for (const gr of graeben) { const w = gr.art === 'feuer' ? GW : 0.42; for (const [c2, dy, col, d] of [[ga, 0, '#fff'], [gb, tief, '#120e0a'], [gb, tief, '#4b3a26', [0.07, 0.1]]]) {
+    c2.setTransform(RP, 0, 0, RP * TILT, LINKS - X0 * RP, OBEN - Y0 * RP * TILT + dy); c2.beginPath(); gr.pkt.forEach(([x, y], i) => c2[i ? 'lineTo' : 'moveTo'](x, y)); c2.lineJoin = 'miter'; c2.lineWidth = d ? w * 0.5 : w; c2.strokeStyle = col; c2.setLineDash(d || []); c2.globalAlpha = d ? 0.45 : 1; c2.stroke(); } }
+  gb.setTransform(1, 0, 0, 1, 0, 0); gb.globalCompositeOperation = 'destination-in'; gb.drawImage(A, 0, 0); g.drawImage(B, 0, 0);
+  // Brustwehr (Sandsäcke) an den Feuerbuchten, Feindseite. Quadrate: liegt genau auf der Feldkante.
+  for (const gr of graeben) if (gr.art === 'feuer') for (const s of gr.seg) if (s.bucht && s.b > Y0 - 0.5 && s.a < Y0 + 12) { const x = QUAD ? M(gr.c, 0)[0] + gr.feind * S / 2 : s.x + gr.feind * (GW / 2 + 0.14); wall(x, s.a + 0.08, x, s.b - 0.08); }
+  // Deckung an Feldkanten im offenen Gelände (Varianten 1b und 2)
+  const kanten = [];
+  for (const [c, r, k] of L.mauer) { const [x, y] = M(c, r); let p;
+    if (QUAD) p = [x + S / 2, y - S / 2 + 0.1, x + S / 2, y + S / 2 - 0.1]; else { const a1 = k * Math.PI / 3, a2 = (k + 1) * Math.PI / 3; p = [x + Math.cos(a1), y + Math.sin(a1), x + Math.cos(a2), y + Math.sin(a2)]; if (p[1] > p[3]) p = [p[2], p[3], p[0], p[1]]; }
+    kanten.push(p); }
+  // Aufrechtes nach Tiefe: Draht, Figuren, Koloss
+  const teile = [];
+  for (const [c, r] of L.draht) { const [x, y] = M(c, r), hoehe = (QUAD ? S : SQ3) * RP * TILT * 1.22, im = img.drahtguertel_tiefe; teile.push({ y: y + 0.4, z: () => { schirm(); const w = hoehe * im.width / im.height; g.drawImage(im, sx(x) - w / 2, sy(y) - hoehe * 0.56, w, hoehe); } }); }
+  const mann = (x, y, seite, i, sink) => teile.push({ y, z: () => { schirm(); const im = img[(seite === 'A' ? 'konkordat' : 'aschenwacht') + '_soldat_' + (1 + i % 4)], h = 0.62 * RP * (0.96 + (i * 7 % 5) * 0.02), w = h * im.width / im.height, px = sx(x), py = sy(y);
+    if (!sink) { g.globalAlpha = 0.4; g.fillStyle = '#000'; g.beginPath(); g.ellipse(px, py, w * 0.3, w * 0.11, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+    g.save(); g.translate(px, py + (sink ? tief * 0.8 : 0)); if (seite === 'D') g.scale(-1, 1); const zeig = sink ? 0.7 : 1; g.drawImage(im, 0, 0, im.width, im.height * zeig, -w / 2, -h, w, h * zeig); g.restore(); } });
+  { const [x, y] = M(...L.offen); [[-0.46, -0.4], [0, -0.4], [0.46, -0.4], [-0.23, 0.02], [0.23, 0.02], [-0.46, 0.44], [0, 0.44], [0.46, 0.44]].forEach(([dx, dy], i) => mann(x + dx + ((i * 13) % 5 - 2) * 0.012, y + dy, 'A', i)); }
+  for (const [feld, seite, gi] of [[L.grabenK, 'A', 0], [L.grabenA, 'D', 1]]) { const [, y] = M(...feld), gr = graeben[gi], hh = (QUAD ? S : SQ3) / 2 - 0.12;
+    for (let i = 0; i < 8; i++) { const yy = y - hh + (2 * hh) * i / 7, xx = xBei(gr.seg, yy) + gr.feind * (i % 2 ? 0.13 : -0.1); mann(xx, yy, seite, i, true); } }
+  { const fe = L.koloss.map(f => M(...f)), mx = fe.reduce((a, p) => a + p[0], 0) / fe.length, my = fe.reduce((a, p) => a + p[1], 0) / fe.length, im = img.konkordat_koloss, w = (fe.length > 1 ? 3.0 : 2.0) * RP, h = w * im.height / im.width;
+    teile.push({ y: my + 0.3, z: () => { schirm(); g.globalAlpha = 0.42; g.fillStyle = '#000'; g.beginPath(); g.ellipse(sx(mx), sy(my) + 4, w * 0.46, w * 0.13, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.drawImage(im, sx(mx) - w / 2, sy(my) - h * 0.8, w, h); } }); }
+  // belegte Felder des Kolosses und des offenen Trupps hervorheben (vor den Figuren)
+  boden(); for (const f of L.koloss) { feldPfad(...f); g.fillStyle = 'rgba(214,170,70,.16)'; g.fill(); g.lineWidth = 0.045; g.strokeStyle = 'rgba(232,196,96,.9)'; g.stroke(); }
+  if (QUAD) { const [x, y] = M(7, 2); g.setLineDash([0.14, 0.1]); g.lineWidth = 0.04; g.strokeStyle = 'rgba(232,196,96,.8)'; g.strokeRect(x - S / 2, y - S / 2, 2 * S, 2 * S); g.setLineDash([]); }
+  for (const p of kanten) teile.push({ y: Math.max(p[1], p[3]) - 0.3, z: () => { wall(...p); schild(sx((p[0] + p[2]) / 2) + 20, sy((p[1] + p[3]) / 2) - 16); } });
+  teile.sort((a, b) => a.y - b.y).forEach(t => t.z());
+  // Schilde an der Brustwehr (Quadrate: Deckung gilt für die Kante)
+  if (QUAD) for (const gr of graeben) if (gr.art === 'feuer') { const [x, y] = M(gr.c, 5); schild(sx(x + gr.feind * S / 2) + gr.feind * 16, sy(y) - 22); }
+  // Rand abdunkeln, Beschriftung
+  schirm(); const vg = g.createLinearGradient(0, 0, 0, 100); vg.addColorStop(0, 'rgba(20,16,12,1)'); vg.addColorStop(1, 'rgba(20,16,12,0)'); g.fillStyle = vg; g.fillRect(0, 0, 1920, 100);
+  g.fillStyle = '#14100c'; g.fillRect(0, 840, 1920, 60);
+  const titel = { hex: 'Variante 1 – Sechsecke wie heute (Koloss auf 1 Feld)', hexfrei: 'Variante 1b – Sechsecke bleiben: Graben als freie Linie, Deckung an Feldkanten, Koloss über 2 Felder', quad: 'Variante 2 – Quadrate: Deckung an Feldkanten, Koloss über 2 Felder (2×1)' }[V];
+  schrift(titel + (REICH ? ' – Zugweite' : ''), 30, 44, true);
+  const lf = graeben[graeben.length - 1].pkt, lm = [(lf[0][0] + lf[lf.length - 1][0]) / 2 - (QUAD ? 0.4 : 0), lf[QUAD || FREI ? 0 : 1][1]];
+  const txt = { hex: 'Laufgraben quer: springt von Feldmitte zu Feldmitte (Zickzack)', hexfrei: 'Laufgraben quer: gerade Linie durch dieselben Felder', quad: 'Laufgraben quer: gerade' }[V];
+  pfeil(sx(lm[0]), sy(lm[1]) + 70, sx(lm[0]), sy(lm[1]) + 12); schrift(txt, sx(lm[0]) - 200, sy(lm[1]) + 96);
+  { const fe = L.koloss.map(f => M(...f)), mx = fe.reduce((a, p) => a + p[0], 0) / fe.length, my = fe.reduce((a, p) => a + p[1], 0) / fe.length;
+    schrift(V === 'hex' ? 'Koloss: 1 Feld, ragt über den Rand' : V === 'hexfrei' ? 'Koloss: 2 Felder (schräg hintereinander)' : 'Koloss: 2 Felder nebeneinander', sx(mx) - 150, sy(my) - 150); }
+  { const [x, y] = M(...L.offen); schrift('Trupp 8 Mann (3-2-3)' + (FREI ? ', Sandsäcke an der Feldkante' : ''), sx(x) - 150, sy(y) + 96); pfeil(sx(x) - 30, sy(y) + 72, sx(x) - 10, sy(y) + 48); }
+  { const [x, y] = M(...L.grabenA); schrift('8 Mann im Graben', sx(x) + 60, sy(y) - 70); pfeil(sx(x) + 62, sy(y) - 66, sx(x) + 24, sy(y) - 30); }
+  if (QUAD) { const [x, y] = M(7, 2); schrift('2×2 Felder (Größe zum Vergleich)', sx(x) - 40, sy(y) + 10); }
+  if (REICH) schrift(QUAD ? 'grün: 2 Bewegungspunkte (schräg kostet 1,5) – 12 Felder · gelb: 3 Punkte – 28 Felder' : 'grün: 2 Bewegungspunkte – 18 Felder · gelb: 3 Punkte – 36 Felder', 30, 876);
+  else schrift('Probebild der Raster-Studie – gleiche Ansicht, gleicher Ausschnitt (Grauwall), Zeichnung vereinfacht', 30, 876);
+  document.title = 'fertig';
+}
+</script></body></html>
