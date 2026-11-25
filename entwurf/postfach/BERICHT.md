@@ -1,3 +1,39 @@
+## 2026-11-26 – G7f: Reparatur Graben nach dem Fable-Check (Punkt 85, Teil 1) (`b7bf1f1`)
+
+Gepusht, **index.html eingecheckt**. Rückweg für die Zeichenreihenfolge: `window.FLACH_ALT = true` vor dem Kartenaufbau.
+
+### Gemacht (Fables Punkte 1–5)
+1. **Flach liegende Stücke** (Lippe, Seitenwand, Sandsackwall) haben eine eigene Liste. Sie werden direkt nach dem Boden und vor allen Einheiten gezeichnet, nicht mehr nach Tiefe gemischt.
+2. **Fahrzeuge im Graben** kommen erst nach allen Teilen ihres Felds (Schreiter, Kolosse, Panzer).
+   - **Leisten und Punkte** jeder Einheit auf einem Grabenfeld kommen jetzt ganz obenauf. Im Bild sind die Stärkeleisten der Trupps im Graben wieder ganz zu sehen.
+3. **Figuren nicht mehr an der Hüfte abgeschnitten:** Im eingegrabenen Graben stehen die Füße auf der Sohle, ohne Abschneiden und ohne Absenken.
+4. **Grabenplätze zur Mitte:**
+   - In Gräben, die in die Tiefe laufen, stehen die Figuren höchstens 0,08 R neben der Mittellinie; die Seite ist zufällig, nicht mehr in zwei Reihen.
+   - In Buchten an der Feindwand höchstens 0,07 R.
+   - Zu den Querwänden bleibt etwas mehr Abstand (aus Punkt 83).
+5. **Umriss von Zone und Zugbereich:** Auf Grabenfeldern wird der Umriss nach den Geländeteilen noch einmal als Linie gezeichnet. Das gilt für alle Feldmarken (Aufstellungszone, Wahl, Ziel) und für den Zugbereich (hell bzw. gelb gestrichelt beim Marsch).
+6. **Fables Kleinkram:**
+   - **Kisten in der Seitenwand: behoben.** Der Kram steht im eingegrabenen Graben nahe der Mitte.
+   - **Ende des Sandsackwalls: noch gerade.** Unregelmäßig enden lassen ohne Geisterstücke braucht die Kenntnis, wo ein Wallzug wirklich endet. Das baue ich in G7g mit der neuen Grabenform.
+   - **Scharfschützen auf den Lippen: nicht angefasst.** Liegende Figuren sind länger als die Sohle breit ist; das löst erst der breitere Graben in G7g.
+
+### Bilder (`entwurf/probe/gelaende_g7f/`, jeweils links vorher = FLACH_ALT, rechts nachher)
+- `vergleich_nah.jpg` und `vergleich_nah2.jpg`: Trupps im vorderen Konkordat-Graben, Hauptmann gewählt, Zugbereich sichtbar.
+- **Ein Fahrzeug war in der Standardarmee nicht dabei.** Den Panzer im Graben konnte ich deshalb nur im Code prüfen, nicht im Bild.
+- Die Aufstellungsphase habe ich nicht eigens nachgestellt; dort gilt derselbe Weg (`hexMark`).
+
+### Was weiter auffällt
+- Im schmalen Graben stehen die Figuren jetzt fast in einer Reihe hintereinander und überdecken sich stark.
+- Das gehört zur Grabenform: Mit dem breiteren Graben in G7g (0,9–1,0 R, freie Sohle mindestens 0,6 R) bekommen sie Platz.
+
+### Tests
+- test_kommentare vor jedem build.py, bestanden.
+- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
+- Keine Hänger. Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+- Keine. Nächster `pa`: G7g (Grabenform).
+
 ## 2026-11-26 – G7e: Rest von G7d (Punkt 82) (`30d8196`, `9d794aa`)
 
 Gepusht, **index.html zweimal eingecheckt**: zuerst sofort der Stand G7d (`30d8196`), am Ende der Stand G7e (`9d794aa`). Der neue Graben und der Bodenkontakt der Hindernisse sind damit im Spiel.
