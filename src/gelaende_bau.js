@@ -79,6 +79,30 @@ function schneeKante(im, anteil, minPx = 2) {
       if (tief < k) { const f = 0.88 * Math.pow(1 - tief / k, 0.6); d[i] += (226 - d[i]) * f; d[i + 1] += (231 - d[i + 1]) * f; d[i + 2] += (238 - d[i + 2]) * f; } tief++; } }
   x.putImageData(id, 0, 0); SCHNEE.set(key, c); return c;
 }
+const MUEHLE_GROSS = 1.5;   // G6b: Windmühle als Landmarke 1,5× (heil und eingestürzt gleich; verdeckt sie Figuren dahinter, wird sie durchsichtig wie andere hohe Teile)
+function schneeAuflage(im) {   // G6b (2026-11-25): Koloss-Wrack im Schnee – Schneekappen auf allen Oberkanten, gemalte Schneeflecken verbreitert, leichter Reif
+  if (!im) return im; const key = 'auflage'; if (!SCHNEE.has(key)) SCHNEE.set(key, new Map()); const C = SCHNEE.get(key); if (C.has(im)) return C.get(im);
+  const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.drawImage(im, 0, 0); const id = x.getImageData(0, 0, W, H), d = id.data, f = new Float32Array(W * H), k0 = Math.max(3, H * 0.035);
+  for (let i = 0; i < W * H; i++) { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; if (d[i * 4 + 3] > 90 && r + g + b > 480 && Math.max(r, g, b) - Math.min(r, g, b) < 40) f[i] = 1; }   // gemalter Schnee
+  const g2 = new Float32Array(f); for (let py = 0; py < H; py++) for (let px = 0; px < W; px++) { const i = py * W + px; if (!f[i]) continue; for (let dy = -2; dy <= 3; dy++) for (let dx = -4; dx <= 4; dx++) { const j = (py + dy) * W + px + dx; if (py + dy >= 0 && py + dy < H && px + dx >= 0 && px + dx < W) g2[j] = Math.max(g2[j], 0.85 - 0.08 * (Math.abs(dx) + Math.max(0, dy) * 1.5)); } }
+  for (let px = 0; px < W; px++) { const k = k0 * (0.6 + 0.4 * Math.abs(Math.sin(px * 0.13) * Math.sin(px * 0.041 + 1))); let tief = 99;
+    for (let py = 0; py < H; py++) { const i = py * W + px; if (d[i * 4 + 3] < 90) { tief = 0; continue; }
+      const lum = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, oben = py > 2 && (d[((py - 3) * W + px) * 4] + d[((py - 3) * W + px) * 4 + 1] + d[((py - 3) * W + px) * 4 + 2]) / 3 < lum - 45 ? 0.7 : 0;   // Kante dunkel → hell = Oberseite eines Blechs
+      if (tief < k) g2[i] = Math.max(g2[i], 0.92 * Math.pow(1 - tief / k, 0.6)); g2[i] = Math.max(g2[i], oben); tief++; } }
+  for (let i = 0; i < W * H; i++) { if (d[i * 4 + 3] < 90) continue; const s = Math.min(1, g2[i]), lum = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, ziel = [222, 228, 236].map(v => v * (0.82 + 0.18 * lum / 255));
+    for (let q = 0; q < 3; q++) { let v = d[i * 4 + q]; v += (ziel[q] - v) * s; v += ([200, 206, 216][q] - v) * 0.12 * (1 - s); d[i * 4 + q] = v; } }   // Rest: leichter Reif
+  x.putImageData(id, 0, 0); C.set(im, c); return c;
+}
+function erdig(im) {   // G6b (2026-11-25): Betonhöcker dunkler und erdiger (graue, helle Flächen wie verschmutzter Beton, unten mehr Erde)
+  if (!im) return im; const key = 'erdig'; if (!SCHNEE.has(key)) SCHNEE.set(key, new Map()); const C = SCHNEE.get(key); if (C.has(im)) return C.get(im);
+  const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.drawImage(im, 0, 0); const id = x.getImageData(0, 0, W, H), d = id.data;
+  for (let py = 0; py < H; py++) { const unten = Math.max(0, (py / H - 0.45) / 0.55); for (let px = 0; px < W; px++) { const i = (py * W + px) * 4; if (d[i + 3] < 10) continue;
+    const r = d[i], g = d[i + 1], b = d[i + 2], grau = 1 - Math.min(1, (Math.max(r, g, b) - Math.min(r, g, b)) / 110), m = 0.5 - 0.1 * unten, w = 0.35 + 0.65 * grau;
+    d[i] = r + (r * m * 1.1 + 8 - r) * w; d[i + 1] = g + (g * m * 0.98 + 4 - g) * w; d[i + 2] = b + (b * m * 0.78 - b) * w; } }
+  x.putImageData(id, 0, 0); C.set(im, c); return c;
+}
 const TEILF = new Map();
 function teileGefiltert(IM, flt) {
   if (!flt) return IM;
@@ -98,6 +122,7 @@ function aufbauen(cfg, IM) {
   // Winterkarten (Krähenfurt, 2026-11-22): Schneeboden statt Schlamm/Gras/Waldboden, Eis statt Wasser, verschneite Zäune, Unterholz, Brunnen und Karren;
   // Häuser, Kapelle, Tannen, Steinbrücke, Ufer und Acker eigene Zweige (winterFeld). Fehlt der Schneeboden, bleibt alles wie bisher.
   const WI = !!cfg.winter && !!IM.boden_schnee;
+  if (!window.ORTE_ALT && !window.G6B_ALT) { IM = { ...IM }; for (const n of ['panzersperren_2', 'panzersperren_b_2']) if (IM[n]) IM[n] = erdig(IM[n]); if (WI) for (const n of ['wrack_schnee_1', 'wrack_schnee_2']) if (IM[n]) IM[n] = schneeAuflage(IM[n]); }   // G6b: Betonhöcker erdig, Wrack verschneit (Rückweg G6B_ALT)
   if (WI) { const ali = { boden_schlamm: IM.boden_schnee_rein_1 ? 'boden_schnee_rein_1' : 'boden_schnee', boden_wasser: 'boden_eis', wald_unterholz: 'unterholz_schnee', zaun: 'zaun_schnee', dorf_aufsteller_1: 'brunnen_schnee', dorf_aufsteller_3: 'karren_schnee' };
     IM = { ...IM }; for (const k in ali) if (IM[ali[k]]) IM[k] = IM[ali[k]];
     if (cfg.schneeKante !== false) { for (const [n, a, mp] of [['graben_kante_vorn', 0.14], ['graben_kante_hinten', 0.12], ['barrikade', 0.1], ['bunker_1', 0.05], ['bunker_2', 0.05], ...[1, 2, 3, 4].map(k => ['draht_stuecke_' + k, 0.012, 2]), ...[1, 2, 3, 4].map(k => ['panzersperren_' + k, 0.05])]) if (IM[n]) IM[n] = schneeKante(IM[n], a, mp); } }
@@ -385,7 +410,7 @@ function aufbauen(cfg, IM) {
     DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = h * im.width / im.height;
-      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (!o.fest && hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = 0.45;   /* fest: nie durchsichtig (Brückenbrüstung) */ if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (!o.fest && hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = o.durch || 0.45;   /* fest: nie durchsichtig (Brückenbrüstung) */ if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
       g.translate(px, py + h * 0.015); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, o.haengen ? -h * 0.08 : -h, wd, h); g.restore();   // G7a-Probe: haengen = Oberkante an der Bodenkante, Teil reicht in den Graben
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
@@ -670,6 +695,13 @@ function aufbauen(cfg, IM) {
   const breit = (im, wR) => im ? wR * R * im.height / im.width : 0;
   const WASSER = new Set(['eis', 'canal', 'bridge', 'furt', 'steinbruecke', 'out']);
   const pick = (arr, v) => arr[Math.min(arr.length - 1, Math.floor(v * arr.length))];
+  let WRACKS = null;   // G6b (2026-11-25): Tannen vor dem Koloss-Wrack zur Seite rücken oder weglassen, damit man es sieht
+  function wrackFrei(x, y) { if (window.G6B_ALT) return [x, y];
+    if (!WRACKS) { WRACKS = []; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (terr(c, r) === 'wrack') { const [wx, wy] = hexC(c, r); WRACKS.push([wx, wy + R * 0.5]); } }
+    const deckt = (a, b) => WRACKS.some(([wx, wy]) => b > wy - R * 0.35 && b - wy < R * 2.4 && Math.abs(a - wx) < R * 1.2);
+    if (!deckt(x, y)) return [x, y];
+    for (const w of WRACKS) { const sx = x + Math.sign(x - w[0] || 1) * R * 0.7; if (!deckt(sx, y)) return [sx, y]; }
+    return null; }
   function winterFeld(c, r, t, hx, hy, q) {
     if (t === 'haus' && HAEUSER.length) {
       stand(pick(HAEUSER, q(300)), hx + (q(301) - 0.5) * R * 0.12, hy - R * 0.04, breit(HAEUSER[0], 2.0), { shadeK: 0.5 });
@@ -684,14 +716,14 @@ function aufbauen(cfg, IM) {
     }
     if (t === 'wald' && TANNEN.length) {   // verschneite Tannen an den hinteren Ecken, Unterholz an der vorderen Kante
       const ecken = [[4, 0.82], [5, 0.82], ...(q(60) < 0.6 ? [[q(61) < 0.5 ? 3 : 0, 0.78]] : [])];
-      for (const [e, k] of ecken) stand(pick(TANNEN, q(e + 62)), ...corner(c, r, e, k), 2.0 * SH * (0.82 + q(e + 70) * 0.3), { flip: flipR(c, r, e + 80), shadeK: 0.3 });
+      for (const [e, k] of ecken) { const pt = wrackFrei(...corner(c, r, e, k)); if (pt) stand(pick(TANNEN, q(e + 62)), ...pt, 2.0 * SH * (0.82 + q(e + 70) * 0.3), { flip: flipR(c, r, e + 80), shadeK: 0.3 }); }
       wall(IM.wald_unterholz, corner(c, r, 2, 0.88), corner(c, r, 1, 0.88), 0.34 * SH, { u0: q(90) * 4, shade: 0.3 });
       return true;
     }
     if (t === 'forest' && (IM.baum_tot_schnee_1 || TANNEN.length)) {   // lichter Winterwald: toter Baum hinten, Stumpf, manchmal eine junge Tanne
-      if (IM.baum_tot_schnee_1) stand(IM.baum_tot_schnee_1, ...corner(c, r, q(50) < 0.5 ? 4 : 5, 0.62), 1.7 * SH * (0.85 + q(51) * 0.25), { flip: flipR(c, r, 52), shadeK: 0.3 });
+      { const pt = wrackFrei(...corner(c, r, q(50) < 0.5 ? 4 : 5, 0.62)); if (IM.baum_tot_schnee_1 && pt) stand(IM.baum_tot_schnee_1, ...pt, 1.7 * SH * (0.85 + q(51) * 0.25), { flip: flipR(c, r, 52), shadeK: 0.3 }); }
       if (IM.baum_tot_schnee_2) stand(IM.baum_tot_schnee_2, ...corner(c, r, q(53) < 0.5 ? 3 : 0, 0.55), 0.95 * SH * (0.85 + q(54) * 0.3), { flip: flipR(c, r, 55) });
-      if (TANNEN.length && q(56) < 0.5) stand(pick(TANNEN, q(57)), ...corner(c, r, q(58) < 0.5 ? 2 : 1, 0.45), 1.45 * SH * (0.85 + q(59) * 0.25), { flip: flipR(c, r, 59), shadeK: 0.3 });
+      { const pt = wrackFrei(...corner(c, r, q(58) < 0.5 ? 2 : 1, 0.45)); if (TANNEN.length && q(56) < 0.5 && pt) stand(pick(TANNEN, q(57)), ...pt, 1.45 * SH * (0.85 + q(59) * 0.25), { flip: flipR(c, r, 59), shadeK: 0.3 }); }
       return true;
     }
     if (t === 'steinbruecke' && IM.bruecke_stein_hinten) {   // Steinbrücke: hinten (Brüstung, Fahrbahn) hinter den Figuren, vorn (Brüstung, Bogen) davor; gemalt von links oben nach rechts unten
@@ -717,7 +749,7 @@ function aufbauen(cfg, IM) {
       const sn = WI && IM.muehle_heil_schnee ? '_schnee' : '';
       if (t === 'sperre_weg') { const W2 = pool('sperre_weg'); for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(W2[Math.floor(q(k) * W2.length)], ...corner(c, r, e, kk), 0.62 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) }); return; }   // gleiche Stellen wie die Sperre
       const im = t === 'wrack' ? IM[(sn ? 'wrack_schnee_' : 'wrack_') + (q(90) < 0.5 ? 1 : 2)] : IM[(t === 'muehle' ? 'muehle_heil' : 'muehle_kaputt') + sn];
-      if (im) stand(im, hx, hy + R * (t === 'wrack' ? 0.5 : 0.62), breit(im, t === 'wrack' ? 1.9 : 2.4), { noShadow: true, shadeK: 0.3 }); return; }
+      if (im) stand(im, hx, hy + R * (t === 'wrack' ? 0.5 : 0.62), breit(im, t === 'wrack' ? 1.9 : 2.4 * (window.G6B_ALT ? 1 : MUEHLE_GROSS)), { noShadow: true, shadeK: 0.3, durch: t !== 'wrack' && !window.G6B_ALT ? 0.3 : 0 }); return; }   // G6b: große Mühle durchsichtiger, wenn Figuren dahinter stehen
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
     if (deko === 'wegkreuz') stand(IM.dorf_aufsteller_2, hx + R * 0.55, hy - R * 0.45, px(IM.dorf_aufsteller_2), { shadeK: 0.3, flip: q(201) < 0.5 });
     if (deko === 'karren' || (deko === 'platz' && q(202) < 0.5)) stand(IM.dorf_aufsteller_3, hx - R * 0.55, hy - R * 0.5, px(IM.dorf_aufsteller_3), { flip: q(203) < 0.5 });

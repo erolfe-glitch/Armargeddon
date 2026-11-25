@@ -1447,7 +1447,7 @@ const schwereWaffe = a => { const T = a && TYPES[a.type]; return !!T && (T.cls =
 // Treffer schwerer Waffen auf ein Kirchenfeld ziehen den Bauzustand herunter; bei 0 stürzt die Kirche ein
 function kircheTreffer(G, a, c, r, ev, n = 1) {
   const b = bauAt(G, c, r); if (!b || !schwereWaffe(a) || TOG.NOEINSTURZ) return;
-  b.hp = Math.max(0, b.hp - n); ev.push({ t: 'bauschaden', bau: G.bauten.indexOf(b), hp: b.hp, max: b.max, c, r });
+  b.hp = Math.max(0, b.hp - n); ev.push({ t: 'bauschaden', bau: G.bauten.indexOf(b), art: b.art || 'kirche', hp: b.hp, max: b.max, c, r });
   if (b.hp <= 0) einsturz(G, b, ev);
 }
 // F79 (2026-11-21): Rammen – Fahrzeug/Schreiter gegen ein intaktes großes Gebäude im Nachbarfeld (Aktion): Bauschaden bis zum Einsturz, eigener Schaden, Pannengefahr; Truppen im Gebäude werden niedergehalten
@@ -1457,7 +1457,7 @@ function rammen(G, u, c, r) {
   if (!rammZiele(G, u).some(([a, b]) => a === c && b === r)) return [];
   const b = bauAt(G, c, r), ev = []; spend(u, 1); u.attacked = true; u.bp = 0; u.moved = true; u.face = faceToward(u.face, u.c, u.r, c, r);
   ev.push({ t: 'rammen', u: u.id, c, r });
-  b.hp = Math.max(0, b.hp - P.RAMM_BAU); ev.push({ t: 'bauschaden', bau: G.bauten.indexOf(b), hp: b.hp, max: b.max, c, r });
+  b.hp = Math.max(0, b.hp - P.RAMM_BAU); ev.push({ t: 'bauschaden', bau: G.bauten.indexOf(b), art: b.art || 'kirche', hp: b.hp, max: b.max, c, r });
   for (const [a, q] of [...b.felder, ...(b.turm ? [b.turm] : [])]) { const x = unitAt(G, a, q); if (x && active(x) && !x.supp) { x.supp = 1; ev.push({ t: 'supp', u: x.id }); } }
   if (b.hp <= 0) einsturz(G, b, ev);
   applyDamage(G, null, u, P.RAMM_SELBST * (0.8 + G.rng() * 0.4), 'front', ev, { morMul: 0.3 });
@@ -1467,7 +1467,7 @@ function rammen(G, u, c, r) {
 function einsturz(G, b, ev) {
   b.kaputt = true; const i = G.bauten.indexOf(b), felder = [...b.felder, ...(b.turm ? [b.turm] : [])];
   for (const [c, r] of felder) hex(G, c, r).t = 'village';   // Kirche und Turm werden Ruine (Abwehr ×1,5), Turmvorteil weg
-  ev.push({ t: 'einsturz', bau: i, c: b.turm ? b.turm[0] : felder[0][0], r: b.turm ? b.turm[1] : felder[0][1], felder });
+  ev.push({ t: 'einsturz', bau: i, art: b.art || 'kirche', c: b.turm ? b.turm[0] : felder[0][0], r: b.turm ? b.turm[1] : felder[0][1], felder });
   for (const [c, r] of felder) { const u = unitAt(G, c, r); if (!u || !alive(u)) continue;
     applyDamage(G, null, u, P.EINSTURZ_DMG * (0.8 + G.rng() * 0.4), 'front', ev, {});
     if (active(u) && !u.supp) { u.supp = 1; ev.push({ t: 'supp', u: u.id }); } }

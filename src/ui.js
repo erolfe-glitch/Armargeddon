@@ -2565,6 +2565,8 @@ const meldWichtig = (text, big, hold) => hold || big || /^\+\d|fällt|aufgeriebe
 // Schadenszahlen in drei Stufen (Enrico 2026-11-20): nach Anteil an der vollen Stärke 100 – gelb unter 15, hellrot 15–29, kräftiges Rot (groß) ab 30
 const SCHADEN_STUFE = [[3, '#E8241C', true], [1.5, '#FF8A6E', false], [0, '#F2CF4A', false]];
 function schadenStufe(dmg) { const z = SCHADEN_STUFE.find(q => dmg >= q[0]); return { col: z[1], big: z[2] }; }
+const BAU_NAME = { kirche: 'Kirche', muehle: 'Windmühle', haus: 'Haus', kapelle: 'Kapelle' };   // G6b: Gebäudeart aus dem Ereignis, sonst aus G.bauten, sonst aus dem Feld
+function bauArtVon(e) { if (e.art) return e.art; const b = G && G.bauten && G.bauten[e.bau]; if (b && b.art) return b.art; const t = G && G.map[e.c] && G.map[e.c][e.r] && G.map[e.c][e.r].t; return t === 'muehle' || t === 'haus' || t === 'kapelle' ? t : 'kirche'; }
 function floater(x, y, text, col, big, hold) {
   const life = hold ? 210 : 60 / speed + 22, f = { x, y, text, col, life, max: life, big, hold };
   if (meldArt !== 'text' && !meldWichtig(text, big, hold)) {
@@ -3155,7 +3157,7 @@ async function playEvent0(e) {
     case 'gascloud': visSync('clouds'); break;
     case 'bauschaden': {   // Treffer auf die Kirche: Steinsplitter, Staub, Meldung mit Bauzustand
       const [x, y] = center(e.c, e.r); fx('truemmer', [0, 1, 4][Math.floor(Math.random() * 3)], x, y + s * 0.3, { life: 60, mul: 0.8, grow: 0.2, rise: 0.15, fadeOut: 0.5 });
-      playSound('impact', 0.6); floater(x, y - s * 0.9, `Kirche ${Math.round(e.hp / e.max * 100)} %`, e.hp <= 2 ? '#e8a060' : '#e6e9ec'); await wait(200); break; }
+      playSound('impact', 0.6); floater(x, y - s * 0.9, `${BAU_NAME[bauArtVon(e)] || 'Kirche'} ${Math.round(e.hp / e.max * 100)} %`, e.hp <= 2 ? '#e8a060' : '#e6e9ec'); await wait(200); break; }
     case 'einsturz': {   // Kirche stürzt ein: Staub und Trümmer über alle Felder, dumpfer Einsturz, dann steht nur noch die Ruine
       const pts = (e.felder || [[e.c, e.r]]).map(([c, r]) => center(c, r));
       // Ton (2026-11-19): rollt ca. 1,2 s an (Knirschen, Ächzen), dann das Krachen, rieselnder Schutt; zuletzt schlägt die Glocke auf. Bild folgt dem Ton.
@@ -3163,10 +3165,10 @@ async function playEvent0(e) {
       pts.forEach(([x, y], i) => fx('truemmer', 2, x, y + s * 0.4, { delay: i * 4, life: 70, mul: 0.7, grow: 0.2, rise: 0.1, alpha: 0.6 }));   // erster Staub aus den Fugen
       await new Promise(r => setTimeout(r, speed >= INSTANT ? 0 : 1150)); shake(10);   // feste Zeit, nicht nach Tempo: der Ton läuft auch nicht schneller
       pts.forEach(([x, y], i) => { fx('truemmer', 4, x, y + s * 0.4, { delay: i * 5, life: 100, mul: 1.4, grow: 0.35, rise: 0.35, fadeOut: 0.5 }); fx('truemmer', [0, 1][i % 2], x + s * 0.3, y + s * 0.2, { delay: 8 + i * 5, life: 90, mul: 1, grow: 0.3 }); fxImpact(x, y - s * 0.2, s * 0.9, { delay: i * 6, alt: true }); });
-      const bauArt = G.bauten && G.bauten[e.bau] ? G.bauten[e.bau].art : 'kirche';   // Krähenfurt: auch Häuser und Kapelle (dort keine Glocke im Haus)
+      const bauArt = bauArtVon(e);   // G6b: Art aus dem Ereignis (Windmühle meldete sich als Kirche); Krähenfurt: auch Häuser und Kapelle (dort keine Glocke im Haus)
       setTimeout(() => playSound('boomH', 0.45, null, { noGap: true }), 120); if (bauArt !== 'haus' && bauArt !== 'muehle') setTimeout(() => playSound('glocke_fall', 0.6, null, { noGap: true, rate: 1 }), 1500);
       await wait(380); bauSicht()[e.bau] = true; renderTerrain();
-      { const [x, y] = center(e.c, e.r); floater(x, y - s * 1.6, bauArt === 'haus' ? 'Das Haus stürzt ein!' : bauArt === 'kapelle' ? 'Die Kapelle stürzt ein!' : bauArt === 'muehle' ? 'Die Windmühle stürzt ein!' : 'Die Kirche stürzt ein!', '#f0c070', true); }
+      { const [x, y] = center(e.c, e.r); floater(x, y - s * (bauArt === 'kirche' ? 1.6 : 0.45), bauArt === 'haus' ? 'Das Haus stürzt ein!' : bauArt === 'kapelle' ? 'Die Kapelle stürzt ein!' : bauArt === 'muehle' ? 'Die Windmühle stürzt ein!' : 'Die Kirche stürzt ein!', '#f0c070', true); }
       await wait(700); break; }
   }
 }
