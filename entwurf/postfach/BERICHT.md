@@ -1,3 +1,39 @@
+## 2026-11-25 – Paket BP2: Bauplan überarbeitet (Punkte 52–54), nur Plan
+
+Gepusht. **Nichts gebaut.** Datei: **`entwurf/BAUPLAN_UMBAU.md`** (Fassung 2). U0 erst nach eurer Freigabe.
+
+### Was sich geändert hat
+- **Antworten eingetragen (52):**
+  - Liegende Modelle verblassen, abschaltbar.
+  - Schlachtlänge 12/18/24 Runden, je Karte anpassbar.
+  - Halten 2 Runden.
+  - Schalter bis nach dem Spieltest.
+  - Reihenfolge Mittelweg: **U0 → U1 → G (Gelände-Paket des Beraters) → U2 → U5 → U3 → U4 → U6 → U7 → U8 → S (Scharfschützen allein) → U9.** U3 stimmt Spritzer und Mündungsfeuer auf die fallenden Modelle ab.
+- **Ordner je Fraktion (53)** stehen in U4: zuerst umziehen, dann die neuen Bögen. Prüfung: `figs.js` vorher und nachher gleich, Partietest ok. Punkt 53 bleibt im Auftrag offen, weil er erst in U4 gebaut wird.
+- **Fremde Prüfungen (54)** als neue Abschnitte 7–11:
+  - **Begriffe:** Hauptaktion, Hauptangriff, Mehrfach-Angriff, Zusatzwaffe, Reaktion, kostenlose Fähigkeit, Befehl. Dazu, wie Breitseite, Dauerfeuer, Faustsalve, Seiten-MG, Sturmrollen, Generalangriff, Feuerbereitschaft und Sperrfeuer heute zählen, und eine Kampfprognose vor dem Angriff.
+  - **Feuerkraft:** weich statt in harten Stufen; in U5 werden zwei Fassungen gemessen.
+  - **Pannen:** 1 Runde, schwere Panne 2.
+  - **Nachschub-Schneeball:** messen; Vorschlag Abschuss 10–15 und kein Nachschub auf umkämpften Zielfeldern.
+  - **Halten der Zielfelder:** Ein umkämpftes Feld hält den Zähler an, ein Besitzerwechsel setzt ihn zurück.
+  - **Risiko-Anzeige** für Freischlag, Entsetzenschance, Panne/Festfahren.
+  - **Zwischenmessungen** nach U5, U7 und U8 mit Siegart, Nachschub-Verlauf und gespiegelten Läufen; nicht unter etwa 7 Punkten feilen.
+  - **Preise in U9:** nur ändern, wo die Messung es trägt.
+- **Antworten aus dem Code (54.8):**
+  - **Relais:** Abklingzeit −1, die Grenze bleibt 3 Befehle; die Befehle kommen also schneller, aber nicht häufiger.
+  - **Zusammenbruch:** gezählt wird die aktuelle Armee mit Verstärkungen; 0,55/0,64 sind Abgleichwerte. Vorschlag: gleiche Schwelle, ausgleichen über Armeen.
+  - **MG:** darf im selben Zug aufbauen und schießen (das Aufbauen kostet BP, keine Aktion).
+  - **Ziehen nach dem Schuss:** ja, mit klaren Ausnahmen (Nahkampf, Minenwerfer, aufgebautes MG, „alle BP“-Aktionen).
+  - **Entsetzenstest:** heute bei jedem Treffer; Vorschlag höchstens einmal je Runde.
+
+### Fragen an Enrico
+Stehen am Ende des Bauplans (Abschnitt 12):
+1. Feuerkraft als weiche Kurve oder an Waffenträger gekoppelt?
+2. Gleiche Zusammenbruch-Schwelle für beide Seiten?
+3. Umkämpftes Zielfeld: anhalten oder zurücksetzen?
+4. Pannen 1/2 Runden?
+5. Kein Nachschub auf umkämpften Zielfeldern?
+
 ## 2026-11-24 – Bauplan großer Umbau (Punkt 51 + Bauplan), nur Plan
 
 Gepusht. **Nichts gebaut.** Datei: **`entwurf/BAUPLAN_UMBAU.md`**.
