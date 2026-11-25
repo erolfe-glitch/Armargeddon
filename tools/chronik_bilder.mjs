@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'; import { join, dirname } from 'node:path'; imp
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..'), AUS = join(ROOT, 'entwurf', 'probe', 'chronik'), URL_ = process.env.URL || pathToFileURL(join(ROOT, 'index.html')).href;
 mkdirSync(AUS, { recursive: true }); const TYPEN = process.argv.slice(2).length ? process.argv.slice(2) : ['oger', 'knecht'];
 const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
-const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', ...(process.env.MIT_GPU ? [] : ['--disable-gpu', '--use-angle=swiftshader']), `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armchr-'))}`, '--no-first-run', '--mute-audio', '--allow-file-access-from-files', '--window-size=1920,1080', 'about:blank']);
+const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', ...(process.env.OHNE_GPU ? ['--disable-gpu', '--use-angle=swiftshader'] : []), `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armchr-'))}`, '--no-first-run', '--mute-audio', '--allow-file-access-from-files', '--window-size=1920,1080', 'about:blank']);
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pend = {}, fehler = [];

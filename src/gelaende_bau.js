@@ -29,7 +29,7 @@ const LISTE = {
   tex: [...['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n), 'boden_schnee', 'boden_acker_schnee', 'strasse_matsch', 'boden_eis', ...[1, 2, 3, 4].map(k => 'boden_schnee_rein_' + k)],
   flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), ...[1, 2, 3, 4].map(k => 'graben_sohle_rost_' + k), ...[1, 2, 3].map(k => 'graben_pfuetze_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee', 'ufer_flach_1', 'ufer_flach_2', 'ufer_flach_3'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
-    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee', 'graben_brustwehr', 'graben_rueckwall', 'hecke_schnee_1', 'hecke_schnee_2'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
+    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee', 'graben_brustwehr', 'graben_rueckwall', 'hecke_schnee_1', 'hecke_schnee_2', ...[1, 2, 3].map(k => 'graben_lippe_' + k), ...[1, 2, 3].map(k => 'graben_wand_innen_' + k)],   /* G7b-Test: Erdlippe und Innenwand */   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
@@ -102,6 +102,21 @@ function erdig(im) {   // G6b (2026-11-25): Betonhöcker dunkler und erdiger (gr
     const r = d[i], g = d[i + 1], b = d[i + 2], grau = 1 - Math.min(1, (Math.max(r, g, b) - Math.min(r, g, b)) / 110), m = 0.5 - 0.1 * unten, w = 0.35 + 0.65 * grau;
     d[i] = r + (r * m * 1.1 + 8 - r) * w; d[i + 1] = g + (g * m * 0.98 + 4 - g) * w; d[i + 2] = b + (b * m * 0.78 - b) * w; } }
   x.putImageData(id, 0, 0); C.set(im, c); return c;
+}
+const KLEIN = new Map();
+function verkleinert(im, h) {   // G7b-Test (2026-11-25): stufenweise halbieren bis knapp über Zielhöhe (sonst flimmert ein flach ins Weltbild gelegter Streifen grau)
+  if (!im) return im; const H0 = im.naturalHeight || im.height; if (H0 <= h * 1.5) return im;
+  if (!KLEIN.has(im)) KLEIN.set(im, new Map()); const C = KLEIN.get(im), hk = Math.round(h); if (C.has(hk)) return C.get(hk);
+  let src = im, w0 = im.naturalWidth || im.width, h0 = H0;
+  while (h0 / 2 >= h) { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w0 / 2)); c.height = Math.max(1, Math.round(h0 / 2)); const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(src, 0, 0, c.width, c.height); src = c; w0 = c.width; h0 = c.height; }
+  C.set(hk, src); return src;
+}
+function lippeBild(im, h) {   // G7b-Test: Erdlippe – verkleinert, Farbe an den Kartenboden angewärmt, oberer Bodenteil läuft weich aus (Boden der Karte scheint durch)
+  const v = verkleinert(im, h); if (!v) return v; if (!KLEIN.has('lippe')) KLEIN.set('lippe', new Map()); const C = KLEIN.get('lippe'); if (C.has(v)) return C.get(v);
+  const c = document.createElement('canvas'); c.width = v.width || v.naturalWidth; c.height = v.height || v.naturalHeight; const x = c.getContext('2d');
+  x.filter = 'sepia(0.45) saturate(1.25) brightness(1.05)'; x.drawImage(v, 0, 0); x.filter = 'none';
+  const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.42, 'rgba(0,0,0,0.85)'); g.addColorStop(0.6, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,1)');
+  x.globalCompositeOperation = 'destination-in'; x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); C.set(v, c); return c;
 }
 const TEILF = new Map();
 function teileGefiltert(IM, flt) {
@@ -547,7 +562,12 @@ function aufbauen(cfg, IM) {
       w.setTransform(1, 0, 0, 1, 0, 0);
     };
     const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? (ZI ? 0.9 : 0.6)), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
-    const EG = ZI && !!cfg.eingegraben, LIPPE = [], HUEGEL = [], RUECK = [];   // G7a-Probe (2026-11-25): Graben eingegraben statt aufrechter Pappen (nur über GB_PROBE { eingegraben: true })
+    const EG = ZI && !!cfg.eingegraben, LIPPE = [], HUEGEL = [], RUECK = [];
+    const G7T = EG && cfg.g7test !== false && !!IM.graben_lippe_1 && !!IM.graben_wand_innen_1;   // G7b-Test (2026-11-25): gemalte Erdlippe und Innenwand (Probe { eingegraben: true, g7test: false } = G7a)
+    const LIP = [1, 2, 3].map(k => IM['graben_lippe_' + k]), WIN = [1, 2, 3].map(k => IM['graben_wand_innen_' + k]);
+    const lipVar = (ti, side, j) => { const h = hrnd(ti * 3 + side + 7, j, 421); return h < 0.45 ? 0 : h < 0.85 ? 1 : 2; };   // Wurzeln (3) seltener
+    const wandVar = (ti, side, j) => { const h = hrnd(ti * 5 + side + 3, j, 422); return h < 0.4 ? 1 : h < 0.8 ? 0 : 2; };   // Flechtwerk und Bretter häufiger als Sandsäcke
+    const LAUF = {};   // Länge entlang jeder Kante (Graben, Seite): Varianten wechseln etwa alle 2 R   // G7a-Probe (2026-11-25): Graben eingegraben statt aufrechter Pappen (nur über GB_PROBE { eingegraben: true })
     const nimm = (arr, v, last) => { let i = Math.min(arr.length - 1, Math.floor(v * arr.length)); if (arr.length > 1 && arr[i] === last) i = (i + 1) % arr.length; return arr[i]; };   // nie zweimal dasselbe Teil hintereinander
     if (cfg.grabenRueckwall && GT && IM.graben_rueckwall) TRENCH.forEach((z, ti) => {   // G2b: gemalter Erdwall auf der Rückseite, entlang der geraden Grabenlinie hinter den Durchgängen
       if (z.art && z.art !== 'feuer') return; const own = cfg.grabenSeite && z.ch ? cfg.grabenSeite(...z.ch[0]) : null, ex = own === 'A' ? -1 : own === 'D' ? 1 : 0; if (!ex) return;
@@ -618,6 +638,12 @@ function aufbauen(cfg, IM) {
         w.save(); w.lineCap = 'round'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(8,6,4,0.5)'; w.lineWidth = R * 0.34; w.beginPath(); w.moveTo(A[0] + R * 0.05, A[1] + R * 0.07); w.lineTo(B[0] + R * 0.05, B[1] + R * 0.07); w.stroke();
         w.strokeStyle = 'rgba(96,78,58,0.85)'; w.lineWidth = R * 0.28; w.beginPath(); w.moveTo(A[0], A[1]); w.lineTo(B[0], B[1]); w.stroke();
         w.strokeStyle = 'rgba(150,128,100,0.45)'; w.lineWidth = R * 0.1; w.beginPath(); w.moveTo(A[0] - R * 0.03, A[1] - R * 0.04); w.lineTo(B[0] - R * 0.03, B[1] - R * 0.04); w.stroke(); w.restore(); }
+      if (G7T) { const BR = R * 0.25, UE = R * 0.05;   // G7b-Test: gemalte Lippe flach auf der Kante, Oberkante (Boden) außen, Abbruchkante am Graben; Kachel in Originalseitenverhältnis, an den Enden etwas überlappend (Ecken geschlossen)
+        for (const { a, b, nx, ny, s0, v } of LIPPE) { const L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1) continue; const im = lippeBild(LIP[v] || LIP[0], BR * 1.5), ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, tw = im.width * BR / im.height;
+          w.save(); w.translate(a[0] + nx * (BR - UE * 0.4), a[1] + ny * (BR - UE * 0.4)); w.transform(ux, uy, -nx, -ny, 0, 0);   // x entlang der Kante, y von außen zum Graben
+          let x = -UE; while (x < L + UE) { const u = ((s0 + x) % tw + tw) % tw, n = Math.min(tw - u, L + UE - x); w.drawImage(im, u / tw * im.width, 0, n / tw * im.width, im.height, x, 0, n, BR); x += n; }
+          w.restore(); }
+        return; }
       for (const { a, b, nx, ny, ti } of LIPPE) { const L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1) continue; const n = Math.max(2, Math.ceil(L / (R * 0.05))), au = [], inn = [];
         for (let k = 0; k <= n; k++) { const t = k / n, x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t, hv = hrnd(Math.round(x), Math.round(y), 401), hv2 = hrnd(Math.round(y), Math.round(x), 404), o = R * (0.035 + hv * 0.045 + (hv2 < 0.12 ? 0.03 : 0)); inn.push([x - nx * R * 0.015, y - ny * R * 0.015]); au.push([x + nx * o, y + ny * o]); }
         w.save(); w.filter = `blur(${R * 0.06}px)`; w.strokeStyle = 'rgba(104,86,66,0.35)'; w.lineWidth = R * 0.16; w.beginPath(); w.moveTo(a[0] + nx * R * 0.14, a[1] + ny * R * 0.14); w.lineTo(b[0] + nx * R * 0.14, b[1] + ny * R * 0.14); w.stroke(); w.filter = 'none';   // aufgeworfene Erde hinter der Lippe (heller)
@@ -638,9 +664,10 @@ function aufbauen(cfg, IM) {
           const mx = (off[i][0] + off[i + 1][0]) / 2, my = (off[i][1] + off[i + 1][1]) / 2, cx = (pts[i][0] + pts[i + 1][0]) / 2, cy = (pts[i][1] + pts[i + 1][1]) / 2;
           const dl = Math.hypot(cx - mx, cy - my) || 1, inY = (cy - my) / dl, back = inY > -0.5, key = back ? 'h' : 'v';
           const sd = Math.max(0, 1 - Math.abs(inY) / 0.85), lean = sd > 0.05 ? { nx: (mx - cx) / dl, ny: (my - cy) / dl, L: 0.9 * sd, U: 1 - 0.35 * sd } : null;
-          if (EG) LIPPE.push({ a: off[i], b: off[i + 1], nx: (mx - cx) / dl, ny: (my - cy) / dl, ti });   // G7a-Probe: Erdlippe an jeder Kante
+          const lk = ti + ':' + side, l0 = LAUF[lk] || 0; LAUF[lk] = l0 + Math.hypot(off[i + 1][0] - off[i][0], off[i + 1][1] - off[i][1]); const abschn = Math.floor(l0 / (R * 2));
+          if (EG) LIPPE.push({ a: off[i], b: off[i + 1], nx: (mx - cx) / dl, ny: (my - cy) / dl, ti, s0: l0, v: lipVar(ti, side, abschn) });   // G7a-Probe: Erdlippe an jeder Kante
           if (EG && !back) continue;   // G7a-Probe: nahe Wand verschwindet hinter der Lippe
-          uu[key] = EG ? wall(IM.graben_kante_hinten, off[i], off[i + 1], 0.3 * SH, { u0: uu[key], shade: 0, ab: { nx: (cx - mx) / dl, ny: (cy - my) / dl }, filter: 'brightness(0.78) contrast(1.05)',
+          uu[key] = EG ? wall(G7T ? WIN[wandVar(ti, side, abschn)] : IM.graben_kante_hinten, off[i], off[i + 1], (G7T ? 0.35 : 0.3) * SH, { u0: uu[key], shade: 0, ab: { nx: (cx - mx) / dl, ny: (cy - my) / dl }, filter: G7T ? 'brightness(0.72) contrast(1.08)' : 'brightness(0.78) contrast(1.05)',
             skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.04)) }) : wall(back ? IM.graben_kante_hinten : IM.graben_kante_vorn, off[i], off[i + 1], (back ? 0.28 : 0.32) * SH, { u0: uu[key], shade: 0.4, shadeW: 0.1, lean,
             skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.04)) });
           // Stücke, die in die Tiefe laufen: auf der Feindseite zusätzlich eine aufrechte Brustwehr aus Sandsäcken, etwas weiter außen

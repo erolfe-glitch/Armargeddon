@@ -16,7 +16,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const HP = 8800 + Math.floor(Math.random() * 150), port = 9500 + Math.floor(Math.random() * 300), TEMPO = +(process.env.TEMPO || 12), BLOCK = +(process.env.BLOCK || 6);
 const PY = join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python312', 'python.exe');
 const srv = spawn(PY, ['-m', 'http.server', String(HP), '--bind', '127.0.0.1'], { cwd: ROOT, stdio: 'ignore' });
-const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', ...(process.env.MIT_GPU ? [] : ['--disable-gpu', '--use-angle=swiftshader']), `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armspur-'))}`, '--no-first-run', '--mute-audio', '--autoplay-policy=no-user-gesture-required', '--window-size=1600,900', 'about:blank'], { stdio: 'ignore' });
+const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', ...(process.env.OHNE_GPU ? ['--disable-gpu', '--use-angle=swiftshader'] : []), `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armspur-'))}`, '--no-first-run', '--mute-audio', '--autoplay-policy=no-user-gesture-required', '--window-size=1600,900', 'about:blank'], { stdio: 'ignore' });
 const ende = code => { try { ch.kill(); } catch (e) {} try { srv.kill(); } catch (e) {} process.exit(code); };
 let tabs; for (let i = 0; i < 60; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);

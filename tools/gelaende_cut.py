@@ -31,7 +31,7 @@ PX_SH, PX_R = 320, 400
 def quelle(name):   # G2b (2026-11-25): neue Bögen des Beraters liegen in ui-quelle/gelaende/neu_g/
     p = SRC / f'{name}.png'
     if p.exists(): return p
-    for d in ('neu_g', 'neu_draht', 'neu_poi'):   # G6 (2026-11-25): besondere Orte und gesprengte Sperren in neu_poi/   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
+    for d in ('neu_g', 'neu_draht', 'neu_poi', 'neu_g7'):   # G7b-Test (2026-11-25): Erdlippe und Innenwand in neu_g7/   # G6 (2026-11-25): besondere Orte und gesprengte Sperren in neu_poi/   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
         if (SRC / d / f'{name}.png').exists(): return SRC / d / f'{name}.png'
     return SRC / 'neu_g' / f'{name}.png'
 
@@ -163,6 +163,13 @@ TEILE = {
     'heuhaufen_schnee':    ('bogen', ('gemeinsam', 0.75), {'namen': ['heuhaufen_schnee_1', 'heuhaufen_pilz', 'heuhaufen_schnee_2', 'heuhaufen_schnee_3', 'heuhaufen_schnee_4', 'heuhaufen_schnee_5']}),   # F-4 (Pilz auf der Stange nicht benutzt)
     'vogelscheuche_schnee': ('einzel', 1.1),                                    # F-5
     'pflug_schnee':        ('einzel', 0.55),                                    # F-6 mit gemaltem Schneefleck
+    # G7b-Test (2026-11-25): Bögen des Beraters (neu_g7/, je drei Streifen untereinander, Zeilen laut LIESMICH.md); Lippe liegt flach, Höhe hier nur Auflösung
+    'graben_lippe_1':      ('wand', 0.4, {'quelle': ('graben_lippe_bogen', (0, 46, 2752, 498))}),         # trocken, krümelig
+    'graben_lippe_2':      ('wand', 0.4, {'quelle': ('graben_lippe_bogen', (0, 553, 2752, 1008))}),       # nasser Schlamm
+    'graben_lippe_3':      ('wand', 0.4, {'quelle': ('graben_lippe_bogen', (0, 1064, 2752, 1528))}),      # Wurzeln, Splitter (selten)
+    'graben_wand_innen_1': ('wand', 0.5, {'quelle': ('graben_wand_innen_bogen', (0, 45, 2752, 492))}),    # Bretter
+    'graben_wand_innen_2': ('wand', 0.5, {'quelle': ('graben_wand_innen_bogen', (0, 561, 2752, 1016))}),  # Flechtwerk
+    'graben_wand_innen_3': ('wand', 0.5, {'quelle': ('graben_wand_innen_bogen', (0, 1082, 2752, 1532))}), # Sandsäcke
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
@@ -171,7 +178,7 @@ TEX_PX, TEX_PROBE = 1024, 768
 ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller',
            'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen',
            'hecke_schnee', 'heuhaufen_schnee', 'vogelscheuche_schnee', 'pflug_schnee',
-           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b', 'panzersperren_gesprengt', 'windmuehle_bogen', 'koloss_wrack_bogen'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
+           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b', 'graben_lippe_bogen', 'graben_wand_innen_bogen', 'panzersperren_gesprengt', 'windmuehle_bogen', 'koloss_wrack_bogen'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
 
 
 def entrosa(q):
