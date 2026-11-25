@@ -34,7 +34,7 @@ const LISTE = {
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
-    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
+    ...[1, 2, 3, 4].map(k => 'panzersperren_' + k), 'panzersperren_b_4', ...[1, 2, 3, 4].map(k => 'draht_stuecke_' + k), ...[1, 2, 3, 4].map(k => 'draht_pfahl_' + k), ...['schraeg_1', 'schraeg_2', 'schraeg_3', 'kaputt', 'tiefe', 'ende', 'quer_1', 'quer_2'].map(n => 'drahtguertel_' + n), ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => 'festung_' + k),
     'kirchturm_1', 'kirchturm_2', ...['kirche_innen', 'friedhof', 'dorf_aufsteller'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     // Krähenfurt (2026-11-22, Flux): Winter-Bausteine, nur mit cfg.winter benutzt
     ...[1, 2, 3, 4].map(k => 'haus_heil_' + k), 'kapelle', 'kapelle_ruine', 'haus_ruine_schnee_1', 'haus_ruine_schnee_2', ...[1, 2, 3, 4].map(k => 'tanne_schnee_' + k),
@@ -410,6 +410,21 @@ function aufbauen(cfg, IM) {
       g.restore(); } });
     SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.03}px)`; w.strokeStyle = 'rgba(8,6,4,0.4)'; w.lineWidth = R * 0.07; w.beginPath(); w.moveTo(P1[0], P1[1] + R * 0.02); w.lineTo(P2[0], P2[1] + R * 0.02); w.stroke(); w.restore(); });
   }
+  // G5b (2026-11-25): Drahtgürtel aus gemalten Stücken. Läuft der Gürtel nach Norden/Süden weiter (oder liegt er parallel zu einem Nord-Süd-Graben): Tiefenstück
+  // über das ganze Feld; bei diagonalen Nachbarn das schräge Stück (gespiegelt für die andere Schräge); Ost-West: Querstück. Endstück an der Gasse, selten beschädigt.
+  function drahtGuertel(c, r, hx, hy, t, q) {
+    const nb = [0, 1, 2, 3, 4, 5].map(e => nbE(c, r, e)).filter(([nc, nr]) => terr(nc, nr) === 'wire').map(([nc, nr]) => { const [x, y] = hexC(nc, nr), l = Math.hypot(x - hx, y - hy) || 1; return [(x - hx) / l, (y - hy) / l]; });
+    const senk = nb.filter(d => Math.abs(d[0]) < 0.3), schraeg = nb.filter(d => Math.abs(d[0]) >= 0.3);
+    const tiefe = senk.length || (!nb.length && Math.abs(t[1]) > 0.6), Q = k => IM['drahtguertel_' + k];
+    SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(30,22,16,0.45)'; w.lineWidth = R * 0.5; w.lineCap = 'round'; w.beginPath();   // Boden unter dem Gürtel zertrampelt und dunkler
+      if (tiefe) { w.moveTo(hx, hy - R * 0.8); w.lineTo(hx, hy + R * 0.8); } else { const d = schraeg[0] || [1, 0]; w.moveTo(hx - d[0] * R * 0.8, hy - d[1] * R * 0.8); w.lineTo(hx + d[0] * R * 0.8, hy + d[1] * R * 0.8); } w.stroke(); w.restore(); });
+    if (tiefe) { const im = Q('tiefe'); stand(im, hx + (q(80) - 0.5) * R * 0.08, hy + R * 0.84, 1.9 * SH, { flip: q(81) < 0.5, noShadow: true });
+      for (const [dy, fehlt] of [[1, !senk.some(d => d[1] > 0)], [-1, !senk.some(d => d[1] < 0)]]) if (fehlt && nb.length) stand(Q('ende'), hx + (q(82) - 0.5) * R * 0.2, hy + dy * R * 0.72, 0.62 * SH, { flip: dy < 0, shadeK: 0.35 });   // Gasse: Endstück mit loser Rolle
+    } else if (schraeg.length) { const d = schraeg[0], auf = (d[0] > 0) === (d[1] < 0), im = Q(['schraeg_1', 'schraeg_2', 'schraeg_3'][Math.floor(q(83) * 3)]);   // auf: Gürtel steigt nach rechts oben (wie gemalt)
+      stand(im, hx, hy + R * 0.42, 1.9 * R * im.height / im.width, { flip: !auf, noShadow: true });
+    } else { const im = Q(q(84) < 0.8 ? 'quer_1' : 'quer_2'); stand(im, hx, hy + R * 0.12, 1.8 * R * im.height / im.width, { flip: q(85) < 0.5, noShadow: true }); }
+    if (q(86) < 0.12 && Q('kaputt')) stand(Q('kaputt'), hx + (q(87) < 0.5 ? -1 : 1) * R * 0.45, hy + (q(88) - 0.5) * R * 0.6, 0.6 * SH, { flip: q(89) < 0.5, shadeK: 0.35 });   // selten ein beschädigtes Stück daneben
+  }
   // 2–3 Pfahlreihen parallel zum Graben durch das Feld, versetzt; gespannt bis zum Feldrand, damit Nachbarfelder einen durchgehenden Gürtel bilden; Lücke auf Straßen
   function drahtReihen(c, r, hx, hy, t, q, aufWeg) {
     const n = [-t[1], t[0]], reihen = q(40) < 0.5 ? 2 : 3, D = R * 0.42, L = R * 0.92, hW = 0.45 * SH;
@@ -717,7 +732,7 @@ function aufbauen(cfg, IM) {
     } else if (t === 'wire') {   // Drahtfeld (DRAHTFELD: Felder mit gezeichnetem Draht, für den Test Bild = Regel): 1–2 ganze Drahtverhau-Stücke (nicht zerschnitten), versetzt und gespiegelt, nach Tiefe mit den Figuren; nichts auf Straßen
       const aufWeg = (x, y) => ROADS.some(rd => distTo([x, y], rd) < R * 0.45);
       const gr = !cfg.drahtAlt && PFAEHLE.length ? grabenRichtung(hx, hy) : null;
-      if (gr && gr.d < R * 3.6) { drahtReihen(c, r, hx, hy, gr.t, q, aufWeg); DRAHTFELD.add(c + ',' + r); } else {   // G5 (2026-11-25): vor einem Graben Pfahlreihen parallel zum Graben; sonst (Niemandsland) wie bisher hingeworfene Stücke
+      if (gr && gr.d < R * 3.6) { if (IM.drahtguertel_tiefe && !cfg.guertelAlt) drahtGuertel(c, r, hx, hy, gr.t, q); else drahtReihen(c, r, hx, hy, gr.t, q, aufWeg); DRAHTFELD.add(c + ',' + r); } else {   // G5b: gemalte Gürtelstücke (Rückweg window.GUERTEL_ALT = Code-Draht aus G5)   // G5 (2026-11-25): vor einem Graben Pfahlreihen parallel zum Graben; sonst (Niemandsland) wie bisher hingeworfene Stücke
       const n = q(1) < 0.4 ? 1 : 2, used = [];
       for (let k = 0; k < n; k++) {
         let x = hx + (q(k * 7 + 2) - 0.5) * R * (n === 1 ? 0.5 : 0.8), y = hy + (n === 1 ? (q(k * 7 + 3) - 0.5) * 0.4 : (k ? 0.32 : -0.3) + (q(k * 7 + 3) - 0.5) * 0.16) * R;

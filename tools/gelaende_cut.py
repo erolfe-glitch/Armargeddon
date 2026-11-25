@@ -30,7 +30,10 @@ PX_SH, PX_R = 320, 400
 
 def quelle(name):   # G2b (2026-11-25): neue Bögen des Beraters liegen in ui-quelle/gelaende/neu_g/
     p = SRC / f'{name}.png'
-    return p if p.exists() else SRC / 'neu_g' / f'{name}.png'
+    if p.exists(): return p
+    for d in ('neu_g', 'neu_draht'):   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
+        if (SRC / d / f'{name}.png').exists(): return SRC / d / f'{name}.png'
+    return SRC / 'neu_g' / f'{name}.png'
 
 # name: (Art, Höhe in SH bzw. Liste je Teil). Teile auf Bögen von oben links nach unten rechts.
 TEILE = {
@@ -142,6 +145,15 @@ TEILE = {
     'graben_leiter':       ('bogen', ('gemeinsam', 0.5), {'namen': ['graben_leiter_1', 'graben_leiter_2']}),   # G-7
     'graben_unterstand':   ('einzel', 0.55),                                    # G-8 (kleines Holzstück davor fällt weg)
     'graben_stahlschild':  ('bogen', ('gemeinsam', 0.28), {'namen': ['graben_stahlschild_1', 'graben_stahlschild_2']}),   # G-9
+    # G5b (2026-11-25): Drahtgürtel des Beraters (neu_draht/), je Stück ein fester Ausschnitt, gemeinsamer Maßstab 0,7 (Tiefenstück ≈ 560 px)
+    'drahtguertel_schraeg_1': ('stueck', 0.7, {'quelle': ('drahtguertel_a', (30, 50, 1000, 760))}),     # schräg, links unten → rechts oben
+    'drahtguertel_kaputt':    ('stueck', 0.7, {'quelle': ('drahtguertel_a', (1030, 170, 1670, 730))}),   # kurz, beschädigt
+    'drahtguertel_tiefe':     ('stueck', 0.7, {'quelle': ('drahtguertel_a', (1600, 140, 2020, 1010))}),  # in die Tiefe
+    'drahtguertel_schraeg_2': ('stueck', 0.7, {'quelle': ('drahtguertel_a', (20, 1090, 1010, 1870))}),
+    'drahtguertel_schraeg_3': ('stueck', 0.7, {'quelle': ('drahtguertel_a', (670, 1180, 1570, 1990))}),
+    'drahtguertel_ende':      ('stueck', 0.7, {'quelle': ('drahtguertel_a', (1390, 1410, 1950, 1930))}),  # Endstück mit loser Rolle
+    'drahtguertel_quer_1':    ('stueck', 0.7, {'quelle': ('drahtguertel_b', (0, 30, 2048, 480))}),     # quer, heil
+    'drahtguertel_quer_2':    ('stueck', 0.7, {'quelle': ('drahtguertel_b', (0, 490, 2048, 940))}),    # quer, beschädigt
     'graben_kram':         ('bogen', ('gemeinsam', 0.32), {'namen': ['graben_kiste', 'graben_kisten', 'graben_kanister', 'graben_balken', 'graben_drahtrolle', 'graben_einsturz', 'graben_eimer', 'graben_spaten']}),   # G-10
     'hecke_schnee_1':      ('wand', 0.6, {'quelle': ('hecke_schnee', (0, 740, 2496, 990)), 'weich_unten': 14}),    # F-3: nur die zwei Streifen unten (oben Brücke/Brunnen/Holz aus der Vorlage)
     'hecke_schnee_2':      ('wand', 0.6, {'quelle': ('hecke_schnee', (0, 1212, 2496, 1464)), 'weich_unten': 14}),
@@ -156,7 +168,7 @@ TEX_PX, TEX_PROBE = 1024, 768
 ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller',
            'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen',
            'hecke_schnee', 'heuhaufen_schnee', 'vogelscheuche_schnee', 'pflug_schnee',
-           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram'}   # Krähenfurt (Flux)
+           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
 
 
 def entrosa(q):
@@ -424,6 +436,20 @@ def flach(name, groessen):
         speichern(t, f'{name}_{k}', t.shape[0] * f, t.shape[1] * f)
 
 
+def stueck(name, k, opt):   # G5b (2026-11-25): ein Teil per festem Ausschnitt aus einem Bogen; nur das größte Teil samt anhängenden Resten in seinem Umriss, Maßstab k (Ausgabe-px je Quell-px)
+    b, (x0, y0, x1, y1) = opt['quelle']
+    q = freistellen(quelle(b))[y0:y1, x0:x1].copy()
+    al = ndimage.binary_closing(q[..., 3] > 60, iterations=4)
+    lab, n = ndimage.label(al); sizes = ndimage.sum(al, lab, range(1, n + 1)); g = int(np.argmax(sizes)) + 1
+    fo = ndimage.find_objects(lab)[g - 1]; keep = np.zeros(n + 1, bool); keep[g] = True
+    nah = ndimage.binary_dilation(lab == g, iterations=25)   # Reste (lose Drahtenden) nur, wenn sie das Hauptteil fast berühren (höchstens 25 px)
+    for i in set(np.unique(lab[nah])) - {0, g}: keep[i] = True
+    m = ndimage.binary_dilation(keep[lab], iterations=3); q[~m, 3] = 0
+    ys, xs = np.nonzero(q[..., 3] > 8); q = q[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    if opt.get('spiegeln'): q = q[:, ::-1].copy()
+    speichern(q, name, q.shape[0] * k)
+
+
 def einzel(name, h):
     t = teile_finden(freistellen(quelle(name)))[0]
     speichern(t, name, PX_SH * h)
@@ -525,7 +551,7 @@ def einbetten():
     import base64, re
     NL = chr(10)
     js = (ROOT / 'src' / 'gelaende_bau.js').read_text(encoding='utf8')
-    weg = ('heuhaufen_pilz', 'ruine_paar_aufsteller', 'ruinen_test_weiss', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
+    weg = ('drahtguertel_x_', 'heuhaufen_pilz', 'ruine_paar_aufsteller', 'ruinen_test_weiss', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
     teile = []
     for f in sorted(PROBE.glob('g_*.webp')):
         n = f.stem[2:]
@@ -551,6 +577,8 @@ if __name__ == '__main__':
         if art == 'bogen':
             bogen(name, h, opt[0] if opt else None)
             if name == 'dorf_objekte_schnee_bogen': bruecke_teilen()
+        elif art == 'stueck':
+            stueck(name, h, opt[0])
         elif art == 'flach':
             flach(name, h)
         elif art == 'einzel':

@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const OUT = process.env.G5 ? 'entwurf/probe/gelaende_g5' : process.env.G4B ? 'entwurf/probe/gelaende_g4b' : process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const OUT = process.env.G5B ? 'entwurf/probe/gelaende_g5b' : process.env.G5 ? 'entwurf/probe/gelaende_g5' : process.env.G4B ? 'entwurf/probe/gelaende_g4b' : process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armgel-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
@@ -15,7 +15,10 @@ await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScript
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const bild = async n => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, n + '.jpg'), Buffer.from(r.result.data, 'base64')); };
 const hell = () => ev("(() => { const c = document.getElementById('map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let s = 0, n = 0; for (let i = 0; i < d.length; i += 4 * 997) { s += d[i] + d[i + 1] + d[i + 2]; n++; } return s / n / 3; })()");
-const KARTEN = process.env.G5 ? {   // G5 (2026-11-25): vorher Draht wie bisher (window.DRAHT_ALT, Bild und Lage), nachher Pfahlreihen und neue Lage
+const KARTEN = process.env.G5B ? {   // G5b (2026-11-25): vorher Code-Draht aus G5 (window.GUERTEL_ALT), nachher gemalte Gürtelstücke
+  grauwall: { nah: [5, 4.5, 1.6], var: { vorher: { _js: 'window.GUERTEL_ALT = true' }, nachher: null } },
+  sanktruss: { nah: [4, 4, 1.6], var: { vorher: { _js: 'window.GUERTEL_ALT = true' }, nachher: null } },
+} : process.env.G5 ? {   // G5 (2026-11-25): vorher Draht wie bisher (window.DRAHT_ALT, Bild und Lage), nachher Pfahlreihen und neue Lage
   grauwall: { nah: [5, 4.5, 1.6], var: { vorher: { _js: 'window.DRAHT_ALT = true' }, nachher: null } },
   sanktruss: { nah: [4, 4, 1.6], var: { vorher: { _js: 'window.DRAHT_ALT = true' }, nachher: null } },
 } : process.env.G4B ? {   // G4b (2026-11-25): vorher Stand G4 (window.G4B_ALT), nachher unregelmäßiger Takt und Grabenboden; zweites Nahbild zeigt den Grabenboden ganz nah
