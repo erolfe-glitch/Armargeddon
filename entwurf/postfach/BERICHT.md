@@ -1,3 +1,60 @@
+## 2026-11-25 – G7b-Test: Erdlippe und Innenwand (Punkte 76, 77) (`8caaf72`)
+
+Gepusht, index.html eingecheckt. **Im Spiel ist nichts geändert.** Alles läuft nur in der Probe `window.GB_PROBE = { eingegraben: true }`. Mit `{ eingegraben: true, g7test: false }` kommt der G7a-Stand zurück.
+
+### Gemacht
+- **Schnitt:** Beide Bögen sind mit gelaende_cut.py als nahtlose Kachelstreifen geschnitten, je drei Fassungen: `graben_lippe_1–3` und `graben_wand_innen_1–3`.
+  - Die Streifen hatten etwas Rosa am Rand; das ist entfärbt.
+  - Übersicht der Streifen im Bericht-Ordner: `entwurf/probe/gelaende/g_graben_lippe_*.webp` und `g_graben_wand_innen_*.webp`.
+- **Erdlippe:** Sie ersetzt die im Code gezeichnete Lippe und liegt flach auf allen Grabenkanten, die Abbruchkante zeigt zum Graben.
+  - Breite 0,25 R, die Kachel bleibt im Originalseitenverhältnis.
+  - Die Fassung wechselt etwa alle 2 R; Wurzeln kommen seltener.
+  - An den Enden überlappen die Stücke etwas, damit die Ecken geschlossen sind.
+  - Der Bodenteil oben läuft weich in den Kartenboden aus, die Farbe ist etwas wärmer gemacht.
+- **Innenwand:** Sie ersetzt `graben_kante_hinten` an der fernen, hängenden Wand.
+  - Höhe 0,35 SH, Abdunklung und Stauchung bleiben im Code.
+  - Flechtwerk und Bretter kommen häufiger als Sandsäcke.
+
+### Bilder (`entwurf/probe/gelaende_g7b_test/`)
+- `vergleich_nah.jpg`, `vergleich_nah2.jpg`, `vergleich_ganz.jpg`: jeweils G7a-Probe | G7b-Test | Zielbild.
+- `vergleich_ausschnitt.jpg`: G7a | G7b vergrößert. Darauf sieht man es am besten.
+- `grauwall_ecke_nah.jpg`: eine Ecke ganz nah.
+
+### Was passt, was nicht
+- **Innenwand: passt gut.**
+  - Flechtwerk und Bretter wirken wie eine echte Grabenwand statt wie die alte Pappe.
+  - Der Maßstab 0,35 SH passt.
+  - **Die Bilder taugen für die Tiefe.** Die frontale Malweise fällt durch das Hängen und Stauchen kaum auf; ein Neumalen mit stärkerer Verkürzung ist nicht nötig.
+- **Erdlippe: passt halb.**
+  - Aus mittlerer Nähe gibt sie die gewünschte bröckelige Kante, und die Ecken schließen.
+  - Ganz nah wird sie unscharf. Sie liegt im flachen Weltbild, und dessen Auflösung ist pro Feld begrenzt; das ist dieselbe Grenze wie beim Boden.
+  - Ohne Verkleinern flimmerte sie grau. Jetzt rechne ich sie stufenweise auf die Zielgröße herunter.
+  - Eine wirklich scharfe Lippe bräuchte in G7b voll eine andere Zeichenart: als liegendes Teil in Bildschirmauflösung (wie die aufrechten Teile) statt im Weltbild.
+  - Der Maßstab 0,25 R wirkt eher etwas zu schmal; 0,3 R würde mehr nach Zielbild aussehen. Ich habe das nicht umgestellt.
+- **Was noch nach Pappe aussieht:** Die Seitenwände (Nord–Süd-Stücke) stehen weiter als dunkle Platten, und die Querwände sind die alten. Das sind G7-3 bis G7-7.
+
+### Wünsche für G7-3 bis G7-7
+1. **Seitenwand** schräg von oben gesehen (stark verkürzt), damit die in die Tiefe laufenden Grabenstücke nicht mehr wie Platten stehen. Das ist das Wichtigste.
+2. **Eckstücke** (innen und außen) im gleichen Stil wie die Lippe, damit die Knicke keine Naht zeigen.
+3. **Querwand/Traverse** von oben als Erdblock mit Lippe statt als aufrechtes Brett.
+4. **Brustwehr** als Sandsackwall mit Volumen, von oben links beleuchtet, Unterkante mit Schatten und loser Erde.
+5. Die Farben möglichst wie die Lippe 1 (trocken). Den nassen Streifen 2 nehme ich nur zur Abwechslung.
+
+### Nebenbei
+- **Punkt 77.3:** `test_kommentare` prüfte `gelaende_bau.js` schon die ganze Zeit. Mit einer eingebauten Testzeile habe ich nachgeprüft, dass er einen Fall wie den aus G6b meldet.
+  - Meine Aussage im G6b-Bericht war falsch: Ich hatte den Test nur genau in dem Moment nicht laufen lassen.
+  - Diesmal hat er zwei solche Stellen gefunden, beide von mir eingebaut und behoben, bevor ich committet habe.
+- **Sparregel 7 gelockert:** Alle Browser-Werkzeuge starten wieder mit Grafikkarte; ohne geht es über `OHNE_GPU=1`.
+
+### Tests
+- test_kommentare bestanden.
+- Partietest ohne Grafikkarte, kurz (5 Minuten): Runde 1 durchgespielt, keine Fehler, kein Einfrieren.
+- Keine Hänger während der Arbeit. Den Chrome im Hintergrund habe ich beendet, eine sichtbare Vorschau war nicht offen; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. Soll die Lippe in G7b voll als liegendes Teil in Bildschirmauflösung gezeichnet werden (mehr Aufwand, dafür scharf aus der Nähe)?
+2. Lippe auf 0,3 R verbreitern?
+
 ## 2026-11-25 – G6b: Nachbesserung G6 (Punkt 75) (`0cd3d13`)
 
 Gepusht, index.html eingecheckt. Rückweg für die Bilder: `window.G6B_ALT = true` (vor dem Kartenaufbau).
