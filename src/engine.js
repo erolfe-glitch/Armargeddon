@@ -1130,7 +1130,7 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
   if (t === 'fabrik') { m *= wk ? 0.7 : 1.7; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Fabrik ×1,7'); }
   if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
   if (KIRCHE.has(t)) { m *= gebDef(t); tags.push(`${t === 'turm' ? 'Kirchturm' : t === 'haus' ? 'Haus' : t === 'kapelle' ? 'Kapelle' : 'Kirche'} ×${String(gebDef(t)).replace('.', ',')}`); }
-  if ((t === 'garten' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'garten' ? 'Gartenmauer' : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
+  if ((t === 'garten' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'garten' ? (MAP.winter ? 'Hecke/Feldrain' : 'Gartenmauer') : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
   if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
   if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
   if (d.holdB) { m *= P.HOLD_DEF; tags.push('Halten um jeden Preis ×1,25'); }

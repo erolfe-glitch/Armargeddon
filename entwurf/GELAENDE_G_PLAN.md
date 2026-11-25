@@ -133,3 +133,17 @@ Machart wie `ui-quelle/gelaende/`: Magenta-Hintergrund, Ansicht schräg von vorn
   - Rückweg: `window.ACKER_C2` (Acker vom 24.11.).
   - Messung unverändert: 59 % (4 × 200, wie der eingefrorene alte Stand).
 - **Offen:** die gemalten Teile G-1…G-10 und F-3…F-6 einbauen, sobald sie geliefert sind; danach U2 (10 Grabenplätze an den Feuerbuchten).
+
+## 7. Stand G2b + G3b (2026-11-25, gemalte Teile eingebaut)
+- **Schnitt:** `tools/gelaende_cut.py` liest jetzt auch `ui-quelle/gelaende/neu_g/` (Funktion `quelle`). Die 15 Bögen stehen in `TEILE` und werden rosa entfärbt. Plastizität: `figur_plastik.py` (`gel_graben_*`, Hecke, Heuhaufen, Vogelscheuche, Pflug).
+- **Gräben (nur Feuergräben mit Buchten, `GT` in GBau):**
+  - An jedem Knick ist die sichtbare Stirnseite (Blick nach Süden) aus der Grabenform bestimmt: der Block vor dem Durchgang bekommt eine Querwand (G-1, 6 Fassungen), der Block hinter der Bucht ein Eckstück als Stirnseite (G-4, 4 Fassungen). Einmal je Feuergraben steht dort statt eines Eckstücks der Unterstand (G-8).
+  - Brustwehr (G-2) als Sandsackreihe auf der Feindseite, Rückwall (G-3) als gemalter Erdwall hinter der geraden Grabenlinie.
+  - Sohle: Schlammband über dem Mittelrost, darauf einzelne Lattenroste (G-5) und Pfützen (G-6); die Knicke bleiben Schlamm.
+  - In den Buchten Leitern (G-7), Stahlschilde (G-9) und Drahtrollen; in den Durchgängen Kisten, Kanister, Eimer, Spaten, Einsturz und Balken (G-10). Nie zweimal dasselbe Teil hintereinander.
+- **Krähenfurt:**
+  - Hecke aus zwei Streifen (F-3), je Acker gemischt.
+  - Heuhaufen (5 Fassungen, ohne den Pilz), Vogelscheuche, Pflug mit Schneefleck (er fügt sich ein).
+  - Deckungsname auf Winterkarten „Hecke/Feldrain ×1,2“ (Regel unverändert).
+- **Rückweg:** `window.GTEILE_ALT = true` (Stand G2a/G3a). Test: `__dbg.gbTeile()`.
+- **Bilder:** `entwurf/probe/gelaende_g2b/`, vorher/nachher nah + ganz; dazu `vergleich_zinnen_ganz.jpg` (Probe mit tieferen Buchten).

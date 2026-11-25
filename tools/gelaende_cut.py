@@ -27,6 +27,11 @@ OUT = ROOT / 'ui-quelle' / 'teile' / 'gelaende'
 PROBE = ROOT / 'entwurf' / 'probe' / 'gelaende'
 PX_SH, PX_R = 320, 400
 
+
+def quelle(name):   # G2b (2026-11-25): neue Bögen des Beraters liegen in ui-quelle/gelaende/neu_g/
+    p = SRC / f'{name}.png'
+    return p if p.exists() else SRC / 'neu_g' / f'{name}.png'
+
 # name: (Art, Höhe in SH bzw. Liste je Teil). Teile auf Bögen von oben links nach unten rechts.
 TEILE = {
     'graben_sohle':        ('sohle', None),
@@ -126,13 +131,32 @@ TEILE = {
     'zaun_schnee':         ('wand', 0.8, {'quelle': ('streifen_schnee_bogen', (0, 103, 2896, 355)), 'weich_unten': 30}),
     'ufer_schnee':         ('wand', 0.4, {'quelle': ('streifen_schnee_bogen', (0, 640, 2896, 845)), 'weich_unten': 6}),
     'unterholz_schnee':    ('wand', 0.45, {'quelle': ('streifen_schnee_bogen', (0, 1104, 2896, 1300)), 'weich_unten': 60}),
+    # G2b/G3b (2026-11-25, Berater, ComfyUI Qwen Image Edit, ui-quelle/gelaende/neu_g/): Grabenteile und Feldteile (Plan GELAENDE_G_PLAN.md Abschnitt 3)
+    'graben_querwand_a':   ('bogen', ('gemeinsam', 0.5), {'namen': ['graben_querwand_1', 'graben_querwand_2', 'graben_querwand_3']}),   # G-1 Querwand (Traverse), von vorn
+    'graben_querwand_b':   ('bogen', ('gemeinsam', 0.5), {'namen': ['graben_querwand_4', 'graben_querwand_5', 'graben_querwand_6']}),
+    'graben_brustwehr':    ('wand', 0.4),                                       # G-2 Brustwehr Feindseite, Erde + Sandsäcke
+    'graben_rueckwall':    ('wand', 0.22),                                      # G-3 niedriger Erdwall der Rückseite
+    'graben_ecken':        ('bogen', ('gemeinsam', 0.42), {'namen': ['graben_ecke_1', 'graben_ecke_2', 'graben_ecke_3', 'graben_ecke_4']}),   # G-4: eher Stirnseiten → Rückseite der Buchten
+    'graben_sohle_rost':   ('flach', [0.8, 0.75, 0.75, 0.8]),                   # G-5 Lattenroste einzeln
+    'graben_pfuetze':      ('flach', [0.5, 0.45, 0.4]),                         # G-6
+    'graben_leiter':       ('bogen', ('gemeinsam', 0.5), {'namen': ['graben_leiter_1', 'graben_leiter_2']}),   # G-7
+    'graben_unterstand':   ('einzel', 0.55),                                    # G-8 (kleines Holzstück davor fällt weg)
+    'graben_stahlschild':  ('bogen', ('gemeinsam', 0.28), {'namen': ['graben_stahlschild_1', 'graben_stahlschild_2']}),   # G-9
+    'graben_kram':         ('bogen', ('gemeinsam', 0.32), {'namen': ['graben_kiste', 'graben_kisten', 'graben_kanister', 'graben_balken', 'graben_drahtrolle', 'graben_einsturz', 'graben_eimer', 'graben_spaten']}),   # G-10
+    'hecke_schnee_1':      ('wand', 0.6, {'quelle': ('hecke_schnee', (0, 740, 2496, 990)), 'weich_unten': 14}),    # F-3: nur die zwei Streifen unten (oben Brücke/Brunnen/Holz aus der Vorlage)
+    'hecke_schnee_2':      ('wand', 0.6, {'quelle': ('hecke_schnee', (0, 1212, 2496, 1464)), 'weich_unten': 14}),
+    'heuhaufen_schnee':    ('bogen', ('gemeinsam', 0.75), {'namen': ['heuhaufen_schnee_1', 'heuhaufen_pilz', 'heuhaufen_schnee_2', 'heuhaufen_schnee_3', 'heuhaufen_schnee_4', 'heuhaufen_schnee_5']}),   # F-4 (Pilz auf der Stange nicht benutzt)
+    'vogelscheuche_schnee': ('einzel', 1.1),                                    # F-5
+    'pflug_schnee':        ('einzel', 0.55),                                    # F-6 mit gemaltem Schneefleck
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
 
 # Bögen aus JPG (Sankt Ruß): rosa Reste in Glasscherben und Säumen (Magenta schimmert durch) → neutrales Grau
 ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller',
-           'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen'}   # Krähenfurt (Flux)
+           'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen',
+           'hecke_schnee', 'heuhaufen_schnee', 'vogelscheuche_schnee', 'pflug_schnee',
+           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram'}   # Krähenfurt (Flux)
 
 
 def entrosa(q):
@@ -226,9 +250,9 @@ def streifen(name, art, sh, opt=None):
     opt = opt or {}
     if 'quelle' in opt:   # Ausschnitt aus einem gemeinsamen Bogen (Krähenfurt: drei Streifen untereinander)
         b, (x0, y0, x1, y1) = opt['quelle']
-        q = freistellen(SRC / f'{b}.png')[y0:y1, x0:x1].copy()
+        q = freistellen(quelle(b))[y0:y1, x0:x1].copy()
     else:
-        q = freistellen(SRC / f'{name}.png')
+        q = freistellen(quelle(name))
     if opt.get('weich_unten'):   # gemalter Boden unter dem Streifen: nur der aufrechte Teil bleibt, die untersten Zeilen laufen weich aus
         n = opt['weich_unten']; q[-n:, :, 3] *= np.linspace(1, 0, n)[:, None] ** 1.5
     if 'schnitt' in opt:   # Kachel von Hand: genau von x0 bis x1, die nächsten ow Spalten hinter x1 werden in den Anfang überblendet
@@ -392,7 +416,7 @@ def teile_finden(q, n_min=0.08, reihen=2):
 
 
 def flach(name, groessen):
-    stuecke = teile_finden(freistellen(SRC / f'{name}.png'), 0.05)
+    stuecke = teile_finden(freistellen(quelle(name)), 0.05)
     if len(stuecke) != len(groessen):
         print(f'  WARNUNG: {len(stuecke)} Teile gefunden, {len(groessen)} erwartet')
     for k, (t, g) in enumerate(zip(stuecke, groessen), 1):
@@ -401,14 +425,14 @@ def flach(name, groessen):
 
 
 def einzel(name, h):
-    t = teile_finden(freistellen(SRC / f'{name}.png'))[0]
+    t = teile_finden(freistellen(quelle(name)))[0]
     speichern(t, name, PX_SH * h)
 
 
 def bogen(name, hoehen, opt=None):
     opt = opt or {}
     if isinstance(hoehen, tuple):   # ein Maßstab für den ganzen Bogen
-        stuecke = teile_finden(freistellen(SRC / f'{name}.png'), reihen=hoehen[2] if len(hoehen) > 2 else 2)
+        stuecke = teile_finden(freistellen(quelle(name)), reihen=hoehen[2] if len(hoehen) > 2 else 2)
         f = hoehen[1] * PX_SH / max(t.shape[0] for t in stuecke)
         namen = opt.get('namen') or [f'{name}_{k}' for k in range(1, len(stuecke) + 1)]
         if len(namen) != len(stuecke): print(f'  WARNUNG: {len(stuecke)} Teile gefunden, {len(namen)} erwartet')
@@ -417,7 +441,7 @@ def bogen(name, hoehen, opt=None):
             speichern(t, n, t.shape[0] * f)
         print(f'  {len(stuecke)} Teile, gemeinsamer Maßstab')
         return
-    q = freistellen(SRC / f'{name}.png')
+    q = freistellen(quelle(name))
     al = ndimage.binary_closing(q[..., 3] > 60, iterations=6)
     lab, n = ndimage.label(al)
     sizes = ndimage.sum(al, lab, range(1, n + 1))
@@ -501,7 +525,7 @@ def einbetten():
     import base64, re
     NL = chr(10)
     js = (ROOT / 'src' / 'gelaende_bau.js').read_text(encoding='utf8')
-    weg = ('ruine_paar_aufsteller', 'ruinen_test_weiss', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
+    weg = ('heuhaufen_pilz', 'ruine_paar_aufsteller', 'ruinen_test_weiss', 'wald_stamm_', 'trichter_schwarz', 'details_schwarz')
     teile = []
     for f in sorted(PROBE.glob('g_*.webp')):
         n = f.stem[2:]

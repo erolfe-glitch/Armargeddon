@@ -27,9 +27,9 @@ const load = src => new Promise(r => { const i = new Image(); i.onload = () => r
 const SQ3 = Math.sqrt(3);
 const LISTE = {
   tex: [...['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n), 'boden_schnee', 'boden_acker_schnee', 'strasse_matsch', 'boden_eis', ...[1, 2, 3, 4].map(k => 'boden_schnee_rein_' + k)],
-  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee', 'ufer_flach_1', 'ufer_flach_2', 'ufer_flach_3'],
+  flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), ...[1, 2, 3, 4].map(k => 'graben_sohle_rost_' + k), ...[1, 2, 3].map(k => 'graben_pfuetze_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee', 'ufer_flach_1', 'ufer_flach_2', 'ufer_flach_3'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
-    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
+    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee', 'graben_brustwehr', 'graben_rueckwall', 'hecke_schnee_1', 'hecke_schnee_2'],   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
   stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
@@ -39,7 +39,9 @@ const LISTE = {
     // Krähenfurt (2026-11-22, Flux): Winter-Bausteine, nur mit cfg.winter benutzt
     ...[1, 2, 3, 4].map(k => 'haus_heil_' + k), 'kapelle', 'kapelle_ruine', 'haus_ruine_schnee_1', 'haus_ruine_schnee_2', ...[1, 2, 3, 4].map(k => 'tanne_schnee_' + k),
     'baum_tot_schnee_1', 'baum_tot_schnee_2', 'bruecke_stein_hinten', 'bruecke_stein_vorn', 'brunnen_schnee', 'holzstapel_1', 'holzstapel_2', 'karren_schnee', 'schilf',
-    'hecke_schnee_1', 'hecke_schnee_2', 'heuhaufen_schnee_1', 'heuhaufen_schnee_2', 'heuhaufen_schnee_3', 'vogelscheuche_schnee', 'pflug_schnee'],   // G3a (2026-11-25): Feldteile – erscheinen, sobald der Berater sie geliefert hat   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
+    ...[1, 2, 3, 4, 5].map(k => 'heuhaufen_schnee_' + k), 'vogelscheuche_schnee', 'pflug_schnee',   // G3b (2026-11-25): Feldteile des Beraters (Hecke steht bei den Wandstücken)
+    ...[1, 2, 3, 4, 5, 6].map(k => 'graben_querwand_' + k), ...[1, 2, 3, 4].map(k => 'graben_ecke_' + k), 'graben_leiter_1', 'graben_leiter_2', 'graben_unterstand', 'graben_stahlschild_1', 'graben_stahlschild_2',
+    ...['kiste', 'kisten', 'kanister', 'balken', 'drahtrolle', 'einsturz', 'eimer', 'spaten'].map(n => 'graben_' + n)],   // G2b (2026-11-25): Grabenteile des Beraters (nur Feuergräben mit Buchten)   // G3a (2026-11-25): Feldteile – erscheinen, sobald der Berater sie geliefert hat   // Draht nur noch aus ganzen Stücken (2026-11-16)   // panzersperren_b_1–3 sind gleich wie panzersperren_1–3
 };
 const NAMEN = [...LISTE.tex, ...LISTE.flach, ...LISTE.wand, ...LISTE.stand];
 
@@ -92,6 +94,7 @@ function teileGefiltert(IM, flt) {
 }
 function aufbauen(cfg, IM) {
   IM = teileGefiltert(IM, cfg.teilFilter);
+  if (cfg.teileAlt) { IM = { ...IM }; for (const n of NAMEN) if (/^(graben_(querwand|ecke|leiter|unterstand|stahlschild|kiste|kanister|balken|drahtrolle|einsturz|eimer|spaten|brustwehr|rueckwall|sohle_rost|pfuetze)|hecke_schnee|heuhaufen|vogelscheuche|pflug)/.test(n)) IM[n] = null; }   // G2b/G3b-Rückweg (window.GTEILE_ALT): Stand ohne die gemalten Teile vom 25.11.
   // Winterkarten (Krähenfurt, 2026-11-22): Schneeboden statt Schlamm/Gras/Waldboden, Eis statt Wasser, verschneite Zäune, Unterholz, Brunnen und Karren;
   // Häuser, Kapelle, Tannen, Steinbrücke, Ufer und Acker eigene Zweige (winterFeld). Fehlt der Schneeboden, bleibt alles wie bisher.
   const WI = !!cfg.winter && !!IM.boden_schnee;
@@ -407,22 +410,24 @@ function aufbauen(cfg, IM) {
   }
   // G1-Probe (2026-11-25, nur mit cfg.grabenForm === 'buchten'): eckiger Graben wie echte Schützengräben – abwechselnd Feuerbucht (zur Feindseite
   // vorgezogen) und Durchgang hinter einer Querwand (Traverse); Längen leicht unregelmäßig, Ecken nicht geglättet.
-  const BUCHTEN = [];
-  function buchten(pts, ch) {
+  const BUCHTEN = [], DURCH = [], GTEILE = { an: false, stirn: 0 };   // G2b: Zähler für Tests (__dbg.gbTeile)
+  function buchten(pts, ch, ti) {
     const GB = cfg.grabenBuchten || {}, A = R * (GB.tief ?? 0.6), own = cfg.grabenSeite && ch ? cfg.grabenSeite(...ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 1;
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const at = s => { let i = 0; while (i < segL.length - 1 && s > segL[i]) { s -= segL[i]; i++; } const a = pts[i], b = pts[i + 1], t = segL[i] ? s / segL[i] : 0, dx = (b[0] - a[0]) / (segL[i] || 1), dy = (b[1] - a[1]) / (segL[i] || 1);
       let nx = -dy, ny = dx; if (Math.sign(nx || 1) !== ex) { nx = -nx; ny = -ny; } return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, nx, ny]; };
-    const out = [], put = (s, o) => { const [x, y, nx, ny] = at(Math.max(0, Math.min(L, s))); out.push([x + nx * o, y + ny * o]); };
-    const merk = (s0, s1, o) => { const [x0, y0, nx, ny] = at((s0 + s1) / 2), [xa, ya] = at(s0), [xb, yb] = at(s1); BUCHTEN.push({ x: x0 + nx * o, y: y0 + ny * o, nx, ny, len: Math.hypot(xb - xa, yb - ya), a: [xa + nx * o, ya + ny * o], b: [xb + nx * o, yb + ny * o] }); };   // G2a: Feuerbucht für die Grabenplätze (U2)
+    const out = [], sA = [], oA = [], put = (s, o) => { const [x, y, nx, ny] = at(Math.max(0, Math.min(L, s))); out.push([x + nx * o, y + ny * o]); sA.push(s); oA.push(o); };
+    const merk = (s0, s1, o) => { const [x0, y0, nx, ny] = at((s0 + s1) / 2), [xa, ya] = at(s0), [xb, yb] = at(s1); (o > 0 ? BUCHTEN : DURCH).push({ ti, x: x0 + nx * o, y: y0 + ny * o, nx, ny, len: Math.hypot(xb - xa, yb - ya), a: [xa + nx * o, ya + ny * o], b: [xb + nx * o, yb + ny * o] }); };   // G2a: Feuerbucht für die Grabenplätze (U2)
     let s = 0, k = 0, bucht = hrnd(pts.length, ch ? ch[0][0] : 0, 301) < 0.5; put(0, 0);
     while (s < L) { const len = R * (bucht ? (GB.bucht ?? 0.85) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? 0.45) + hrnd(k, 7, 303) * 0.15), o = bucht ? A / 2 : -A / 2;
-      const e = Math.min(L, s + len); if (e - s < R * 0.12) break; put(s, o); put(e, o); if (bucht) merk(s, e, o); s = e; bucht = !bucht; k++; }
-    put(L, 0); return out;
+      const e = Math.min(L, s + len); if (e - s < R * 0.12) break; put(s, o); put(e, o); merk(s, e, o); s = e; bucht = !bucht; k++; }
+    put(L, 0);
+    out.stufen = new Set(); out.off = oA; for (let j = 0; j < out.length - 1; j++) if (Math.abs(sA[j] - sA[j + 1]) < 1e-6 && oA[j] && oA[j + 1] && oA[j] !== oA[j + 1]) out.stufen.add(j);   // G2b: Knick zwischen Bucht und Durchgang (Querwand)
+    return out;
   }
-  const TRENCH = cfg.graeben ? cfg.graeben.map(g => { const v = verlaengern(g.linie); return { ...v, ch: g.linie, art: g.art, pts: g.art === 'feuer' && BU ? buchten(v.pts, g.linie) : v.pts }; })   // G2a: Gräben als Linien je Karte (MAP.graeben)
+  const TRENCH = cfg.graeben ? cfg.graeben.map((g, gi) => { const v = verlaengern(g.linie); const pts = g.art === 'feuer' && BU ? buchten(v.pts, g.linie, gi) : v.pts; return { ...v, ch: g.linie, art: g.art, linie: v.pts, pts, stufen: pts.stufen, off: pts.off }; })   // G2a: Gräben als Linien je Karte (MAP.graeben)
     : cfg.trench ? cfg.trench.map(z => ({ pts: z.map(p => atW(...p)), ends: [false, false] }))
-    : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: BU ? (ch.length >= 4 ? buchten(v.pts, ch) : v.pts) : cfg.zickzack ? zickzack(v.pts) : v.pts }; });
+    : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: BU ? (ch.length >= 4 ? buchten(v.pts, ch, -1) : v.pts) : cfg.zickzack ? zickzack(v.pts) : v.pts }; });
   const TR = TRENCH.map(z => chaikin(z.pts, cfg.grabenForm === 'buchten' ? 0 : cfg.zickzack && z.ch ? 1 : 3));
   if (TR.length && IM.graben_sohle) {
     const TW = GW * R, SOHLE = IM.graben_sohle;
@@ -461,13 +466,30 @@ function aufbauen(cfg, IM) {
       }
       w.setTransform(1, 0, 0, 1, 0, 0);
     };
-    if (cfg.grabenRueckwall) TR.forEach((pts, ti) => {   // G1-Probe: niedriger aufgeworfener Erdwall auf der Rückseite (flach, dunkler Erdstreifen)
+    const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? 0.6), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
+    const nimm = (arr, v, last) => { let i = Math.min(arr.length - 1, Math.floor(v * arr.length)); if (arr.length > 1 && arr[i] === last) i = (i + 1) % arr.length; return arr[i]; };   // nie zweimal dasselbe Teil hintereinander
+    if (cfg.grabenRueckwall && GT && IM.graben_rueckwall) TRENCH.forEach((z, ti) => {   // G2b: gemalter Erdwall auf der Rückseite, entlang der geraden Grabenlinie hinter den Durchgängen
+      if (z.art && z.art !== 'feuer') return; const own = cfg.grabenSeite && z.ch ? cfg.grabenSeite(...z.ch[0]) : null, ex = own === 'A' ? -1 : own === 'D' ? 1 : 0; if (!ex) return;
+      const L0 = z.linie || TR[ti], o = A_T / 2 + R * (GK + 0.16), q = L0.map(p => [p[0] + ex * o, p[1]]); let u = hrnd(ti, 1, 320);
+      for (let i = 0; i < q.length - 1; i++) u = wall(IM.graben_rueckwall, q[i], q[i + 1], 0.22 * SH, { u0: u, shade: 0.3, shadeW: 0.12, mitte: [L0[i][0], L0[i][1]],
+        skip: (x, y) => TR.some((t, j) => j !== ti && distTo([x, y], t) < R * (GK + 0.1)) }); });
+    else if (cfg.grabenRueckwall) TR.forEach((pts, ti) => {   // G1-Probe: niedriger aufgeworfener Erdwall auf der Rückseite (flach, dunkler Erdstreifen)
       const own = cfg.grabenSeite && TRENCH[ti].ch ? cfg.grabenSeite(...TRENCH[ti].ch[0]) : null, ex = own === 'A' ? -1 : own === 'D' ? 1 : 0; if (!ex) return;
       w.save(); w.filter = `blur(${R * 0.07}px)`; w.strokeStyle = 'rgba(58,44,30,0.75)'; w.lineWidth = R * 0.2; w.lineJoin = 'round'; w.beginPath();
       pts.forEach((p, i) => { const x = p[0] + ex * R * (GK + 0.2); i ? w.lineTo(x, p[1]) : w.moveTo(x, p[1]); }); w.stroke(); w.restore(); });
     for (const p of TR) sohleAlong(p);
     for (const p of TR) sohleAlong(p, [SOHLE.height * 0.33, SOHLE.height * 0.67]);
-    if (cfg.grabenPfuetzen) TR.forEach((pts, ti) => {   // G1-Probe: Schlammpfützen auf der Sohle (dunkel, nasser Glanz)
+    if (GT && IM.graben_sohle_rost_1) {   // G2b: Lattenrost in Stücken, dazwischen Schlamm und Pfützen (statt des durchgehenden Mittelrosts)
+      const ROST = [1, 2, 3, 4].map(k => IM['graben_sohle_rost_' + k]).filter(Boolean), PF = [1, 2, 3].map(k => IM['graben_pfuetze_' + k]).filter(Boolean);
+      w.save(); w.strokeStyle = pattern(w, IM.boden_schlamm, 0, 0, 0.5); strokeLines(w, TR, R * GW * 0.42); w.globalCompositeOperation = 'multiply'; w.filter = `blur(${R * 0.03}px)`;
+      w.strokeStyle = 'rgba(92,74,56,1)'; strokeLines(w, TR, R * GW * 0.42); w.restore();
+      TR.forEach((pts, ti) => { let last = null;
+        for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < R * 0.3 || (TRENCH[ti].stufen && TRENCH[ti].stufen.has(i))) continue;   // Knicke bleiben Schlamm
+          const n = Math.max(1, Math.round(l / (R * 0.62))), rot = Math.atan2(dy, dx) - Math.PI / 2;
+          for (let j = 0; j < n; j++) { const t = (j + 0.5) / n, x = a[0] + dx * t, y = a[1] + dy * t, v = hrnd(ti * 31 + i, j, 330);
+            if (v < 0.62) { const im = nimm(ROST, hrnd(ti * 31 + i, j, 331), last); last = im; flach(im, x, y, 0.52 + hrnd(ti, i * 7 + j, 332) * 0.08, rot + (hrnd(ti, i * 7 + j, 333) - 0.5) * 0.12); }
+            else if (v < 0.86 && PF.length) { const im = nimm(PF, hrnd(ti * 31 + i, j, 334), last); last = im; flach(im, x, y, 0.4 + hrnd(ti, i * 7 + j, 335) * 0.12, rot + Math.PI / 2, 0.9); } } } });
+    } else if (cfg.grabenPfuetzen) TR.forEach((pts, ti) => {   // G1-Probe: Schlammpfützen auf der Sohle (dunkel, nasser Glanz)
       for (let i = 1; i < pts.length - 1; i++) { if (hrnd(ti, i, 310) > 0.45) continue; const [x, y] = pts[i], rx = R * (0.12 + hrnd(ti, i, 311) * 0.12), ry = rx * 0.45;
         const g2 = w.createRadialGradient(x, y, 0, x, y, rx); g2.addColorStop(0, 'rgba(28,24,20,0.85)'); g2.addColorStop(0.7, 'rgba(34,28,22,0.6)'); g2.addColorStop(1, 'rgba(34,28,22,0)');
         w.save(); w.translate(x, y); w.scale(1, ry / rx); w.translate(-x, -y); w.fillStyle = g2; w.beginPath(); w.arc(x, y, rx, 0, 7); w.fill();
@@ -478,6 +500,7 @@ function aufbauen(cfg, IM) {
       const gr = w.createRadialGradient(pt[0], pt[1], 0, pt[0], pt[1], R * (GW * 0.45)); gr.addColorStop(0, 'rgba(48,37,26,1)'); gr.addColorStop(0.55, 'rgba(48,37,26,0.8)'); gr.addColorStop(1, 'rgba(48,37,26,0)');
       w.fillStyle = gr; w.beginPath(); w.arc(pt[0], pt[1], R * (GW * 0.45), 0, 7); w.fill();
     }));
+    if (GT) GTEILE.an = true; const STIRN = GTEILE.st = [];   // G2b: sichtbare Stirnseiten an den Knicken (Querwand bzw. Rückseite der Bucht)
     const TRIM = TR.map((pts, ti) => TR.map((q, j) => j === ti ? [] : q.filter(pt => distTo(pt, pts) > R * (GK - 0.02))));
     TR.forEach((pts, ti) => {
       for (const side of [-1, 1]) {
@@ -494,12 +517,35 @@ function aufbauen(cfg, IM) {
           // Stücke, die in die Tiefe laufen: auf der Feindseite zusätzlich eine aufrechte Brustwehr aus Sandsäcken, etwas weiter außen
           if (ex && sd > 0.3 && Math.sign(mx - cx) === ex) {
             const nx = (mx - cx) / dl, ny = (my - cy) / dl, o2 = R * 0.24, A2 = [off[i][0] + nx * o2, off[i][1] + ny * o2], B2 = [off[i + 1][0] + nx * o2, off[i + 1][1] + ny * o2];
-            uu.p = wall(IM.graben_kante_vorn, A2, B2, 0.4 * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
+            uu.p = wall(GT && IM.graben_brustwehr ? IM.graben_brustwehr : IM.graben_kante_vorn, A2, B2, 0.4 * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
               skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
           }
         }
       }
     });
+    if (GT) TR.forEach((pts, ti) => { const z = TRENCH[ti]; if (!z.stufen) return;   // Stirnseiten an jedem Knick: der Erdblock vor dem Durchgang (Feindseite, Querwand) schaut in die Bucht,
+      for (const i of z.stufen) {                                                        // der Block hinter der Bucht (Rückseite) in den Durchgang; sichtbar nur, was zum Betrachter (Süden) schaut
+        const b = z.off[i] > 0 ? i : i + 1, d = b === i ? i + 1 : i, P0 = pts[b], Q0 = pts[d], C = [(P0[0] + Q0[0]) / 2, (P0[1] + Q0[1]) / 2], ln = Math.hypot(P0[0] - Q0[0], P0[1] - Q0[1]) || 1;
+        const n = [(P0[0] - Q0[0]) / ln, (P0[1] - Q0[1]) / ln], nb = b === i ? pts[Math.max(0, i - 1)] : pts[Math.min(pts.length - 1, i + 2)], lb = Math.hypot(nb[0] - P0[0], nb[1] - P0[1]) || 1, tb = [(nb[0] - P0[0]) / lb, (nb[1] - P0[1]) / lb];   // n: zum Feind, tb: zur Bucht
+        if (tb[1] > 0.3) STIRN.push({ ti, x: C[0] + n[0] * R * GK - tb[0] * R * 0.08, y: C[1] + n[1] * R * GK - tb[1] * R * 0.08, wd: ln + R * 0.1, feind: true });
+        if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * R * 0.08, y: C[1] - n[1] * R * GK + tb[1] * R * 0.08, wd: ln + R * 0.1, feind: false }); } });
+    if (GT) {   // G2b: Querwände und Stirnseiten an den Knicken (Unterstand einmal je Feuergraben), in den Buchten Leitern, Stahlschilde, Drahtrollen; Kram in den Durchgängen
+      const P = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean), QW = P('graben_querwand_'), EK = P('graben_ecke_'), LEI = P('graben_leiter_'), SCH = P('graben_stahlschild_');
+      const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', 'einsturz', 'balken'].map(n => IM['graben_' + n]).filter(Boolean), last = {};
+      const unter = {}; for (const ti of new Set(STIRN.map(st => st.ti))) { const st = STIRN.filter(q => !q.feind && q.ti === ti); if (st.length) unter[ti] = st[Math.floor(hrnd(ti, 5, 340) * st.length)]; }
+      STIRN.forEach((st, k) => {
+        let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
+        if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.feind) last.q = im; else last.e = im;
+        stand(im, st.x, st.y, Math.min(st.wd * im.height / im.width, (st.feind ? 0.42 : 0.38) * SH), { bias: R * 0.02, shadeK: 0.3 }); });
+      BUCHTEN.forEach((b, k) => { if (b.ti < 0) return; const v = hrnd(b.ti, k, 350), t = 0.25 + hrnd(b.ti, k, 351) * 0.5, x = b.a[0] + (b.b[0] - b.a[0]) * t, y = b.a[1] + (b.b[1] - b.a[1]) * t, at = o => [x + b.nx * R * o, y + b.ny * R * o];
+        if (v < 0.3 && LEI.length) { const im = nimm(LEI, hrnd(b.ti, k, 352), last.b); last.b = im; stand(im, ...at(GK - 0.12), hoch(im) * 0.9, { noShadow: true }); }
+        else if (v < 0.55 && SCH.length) { const im = nimm(SCH, hrnd(b.ti, k, 353), last.b); last.b = im; stand(im, ...at(GK + 0.3), hoch(im)); }
+        else if (v < 0.65 && IM.graben_drahtrolle && last.b !== IM.graben_drahtrolle) { last.b = IM.graben_drahtrolle; stand(IM.graben_drahtrolle, ...at(GK + 0.55), hoch(IM.graben_drahtrolle)); }
+        else last.b = null; });
+      DURCH.forEach((d, k) => { if (d.ti < 0 || hrnd(d.ti, k, 360) > 0.55 || !KRAM.length) return; const im = nimm(KRAM, hrnd(d.ti, k, 361), last.k); last.k = im;
+        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * 0.3;   // Einsturz und Balken an der hinteren Wand
+        stand(im, d.a[0] + (d.b[0] - d.a[0]) * t + d.nx * R * wand, d.a[1] + (d.b[1] - d.a[1]) * t + d.ny * R * wand, hoch(im), { flip: hrnd(d.ti, k, 364) < 0.5 }); });
+    }
   }
 
   // Felder mit aufrechten Teilen
@@ -691,13 +737,13 @@ function aufbauen(cfg, IM) {
       const mitZaun = !!IM.zaun && (WI || hrnd(c, r, 252) < 0.55), mitHecke = WI && hrnd(c, r, 253) < 0.4;   // Winter: Koppelzaun um die Äcker, an manchen Äckern Hecke (G3a)
       for (const e of [4, hrnd(c, r, 250) < 0.5 ? 3 : 5, ...(hrnd(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (terr(nc, nr) === 'garten' || BAUFELD.has(nc + ',' + nr) || terr(nc, nr) === 'friedhof') continue;
         (e >= 3 && mitHecke ? hecke : e >= 3 && mitZaun ? zaun : WI ? [] : mauer).push({ c, r, e }); }
-      if (WI) { const [x, y] = hexC(c, r), v = hrnd(c, r, 255), HEU = [IM.heuhaufen_schnee_1, IM.heuhaufen_schnee_2, IM.heuhaufen_schnee_3].filter(Boolean);   // G3a: Schmuck im Acker (ohne Regelwirkung), sobald die Bilder da sind
+      if (WI) { const [x, y] = hexC(c, r), v = hrnd(c, r, 255), HEU = [1, 2, 3, 4, 5].map(k => IM['heuhaufen_schnee_' + k]).filter(Boolean);   // G3a: Schmuck im Acker (ohne Regelwirkung), sobald die Bilder da sind
         if (v < 0.22 && HEU.length) stand(pick(HEU, hrnd(c, r, 256)), x + (hrnd(c, r, 257) - 0.5) * R * 0.8, y + (hrnd(c, r, 258) - 0.5) * R * 0.6, 0.7 * SH);
         else if (v < 0.27 && IM.vogelscheuche_schnee) stand(IM.vogelscheuche_schnee, x, y, 1.1 * SH);
-        else if (v < 0.31 && IM.pflug_schnee) stand(IM.pflug_schnee, x + R * 0.3, y + R * 0.2, 0.4 * SH); } }
+        else if (v < 0.31 && IM.pflug_schnee) stand(IM.pflug_schnee, x + R * 0.3, y + R * 0.2, 0.5 * SH, { noShadow: true }); } }
     mauerzug(mauer, IM.mauer_niedrig, 0.45 * SH, { k: 0.9, seed: 19, wall: { shade: 0.45 } });
     mauerzug(zaun, IM.zaun, (WI ? 0.7 : 1.0) * SH, { k: 0.9, seed: 23, wall: { shade: 0.35, shadeW: 0.1 } });
-    mauerzug(hecke, IM.hecke_schnee_1 || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 0.9, seed: 29, wall: { shade: 0.35, shadeW: 0.1 } }); }   // G3a: Hecke (Ersatz Unterholz, bis hecke_schnee geliefert ist); Deckung über die Feldart garten ×1,2
+    for (const v of [1, 2]) mauerzug(IM.hecke_schnee_2 ? hecke.filter(h => (hrnd(h.c, h.r, 254) < 0.5) === (v === 1)) : v === 1 ? hecke : [], IM['hecke_schnee_' + v] || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 0.9, seed: 29 + v, wall: { shade: 0.35, shadeW: 0.1 } }); }   // G3a/G3b: Hecke (zwei gemalte Streifen je Acker gemischt, Ersatz Unterholz); Deckung über die Feldart garten ×1,2
 
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
   // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).
@@ -758,7 +804,7 @@ function aufbauen(cfg, IM) {
   // aufrechte Teile eines Felds neu aufbauen (Krähenfurt: Haus/Kapelle eingestürzt → Ruine), ohne die ganze Welt neu zu bauen; Bodenschatten bleiben
   function feldNeu(c, r) { feldWeg(c, r); try { feldTeile(c, r); } finally { FELD = null; BAUMFELD = null; } DRAW.sort((a, b) => a.y - b.y); }
   const buchtenJeFeld = {}; for (const b of BUCHTEN) { let best = null, bd = 1e9; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (terr(c, r) !== 'trench') continue; const [x, y] = hexC(c, r), d = Math.hypot(x - b.x, y - b.y); if (d < bd) { bd = d; best = c + ',' + r; } } if (best && bd < R * 1.2) (buchtenJeFeld[best] = buchtenJeFeld[best] || []).push(b); }   // G2a: Feuerbuchten je Grabenfeld (für U2)
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, buchtenJeFeld, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu, UFER,
+  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, buchtenJeFeld, gteile: GTEILE, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu, UFER,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 
