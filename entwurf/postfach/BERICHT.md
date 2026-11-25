@@ -35,7 +35,7 @@ Gepusht, index.html eingecheckt. Rückweg für die Bilder: `window.G6B_ALT = tru
 
 ### Fragen an Enrico
 1. Passt die Mühle in dieser Größe? Ohne die Durchsicht dürfte sie höchstens etwa so groß sein wie vorher, sonst verdeckt sie das Feld dahinter.
-2. G7b-Test: Die Teile G7-1/G7-2 liegen noch nicht da. Ich höre deshalb hier auf.
+2. G7b-Test: Die Teile G7-1/G7-2 liegen schon in `ui-quelle/gelaende/neu_g7/`. Nach der Sparregel mache ich sie erst beim nächsten `pa`.
 
 ## 2026-11-25 – G6: Panzersperren und besondere Orte (Punkt 68) (`1c7bc1c`, Werkzeuge `0d96e82`)
 
