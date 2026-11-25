@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const OUT = 'entwurf/probe/leistung_l1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const OUT = process.env.OUT || 'entwurf/probe/leistung_l1',   /* G7d: OUT=… und FASS=neu (nur eine Fassung) */ sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 mkdirSync(OUT, { recursive: true });
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', ...(process.env.OHNE_GPU ? ['--disable-gpu', '--use-angle=swiftshader'] : []), `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armlst-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
@@ -18,7 +18,7 @@ await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScript
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const bild = async n => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, n + '.jpg'), Buffer.from(r.result.data, 'base64')); };
 const messen = ms => ev(`new Promise(res => { const t = []; let l = performance.now(); const e = l + ${ms}; const f = n => { t.push(n - l); l = n; if (n < e) requestAnimationFrame(f); else { t.shift(); t.sort((a, b) => a - b); const m = t.reduce((a, b) => a + b, 0) / t.length; res({ n: t.length, mittel: +m.toFixed(1), p95: +t[Math.floor(t.length * 0.95)].toFixed(1), max: +t[t.length - 1].toFixed(1) }); } }; requestAnimationFrame(f); })`);
-const KARTEN = (process.env.KARTEN || 'grauwall,sanktruss').split(','), FASS = { alt: 'window.LEISTUNG_ALT = true', neu: '' }, erg = {};
+const KARTEN = (process.env.KARTEN || 'grauwall,sanktruss').split(','), FASS = process.env.FASS === 'neu' ? { neu: '' } : { alt: 'window.LEISTUNG_ALT = true', neu: '' }, erg = {};
 for (const karte of KARTEN) for (const [v, js] of Object.entries(FASS)) {
   await cmd('Page.navigate', { url: 'http://127.0.0.1:8765/index.html' }); await sleep(5000); if (js) await ev(`(() => { ${js}; return true; })()`);
   await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };

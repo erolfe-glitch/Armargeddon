@@ -129,7 +129,7 @@ function gebacken(im, art) {   // G7b voll (2026-11-25): liegende Grabenteile ei
     const mip = [c]; let q = c; while (q.height > 12) { const n = document.createElement('canvas'); n.width = Math.max(1, Math.round(q.width / 2)); n.height = Math.max(1, Math.round(q.height / 2)); const y = n.getContext('2d'); y.imageSmoothingQuality = 'high'; y.drawImage(q, 0, 0, n.width, n.height); mip.push(n); q = n; }
     C.set(im, mip); return mip; }
   const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext('2d');
-  x.filter = art === 'brust' ? 'sepia(0.5) saturate(0.6) brightness(0.46) contrast(1.15)' : art === 'lippe' ? 'sepia(0.3) saturate(1.05) brightness(0.78) contrast(1.32)' : 'sepia(0.3) saturate(1.05) brightness(0.72) contrast(1.08)'; x.drawImage(im, 0, 0); x.filter = 'none';   /* G7c: Lippe mehr Kontrast, Sandsackwall dunkel und erdig */   // an den dunkleren Kartenboden angeglichen
+  x.filter = art === 'brust' ? 'sepia(0.45) saturate(0.75) brightness(0.64) contrast(1.15)' : art === 'lippe' ? 'sepia(0.3) saturate(1.05) brightness(0.78) contrast(1.32)' : 'sepia(0.3) saturate(1.05) brightness(0.72) contrast(1.08)'; x.drawImage(im, 0, 0); x.filter = 'none';   /* G7c: Lippe mehr Kontrast, Sandsackwall dunkel und erdig */   // an den dunkleren Kartenboden angeglichen
   if (art === 'lippe') { const d = x.createLinearGradient(0, c.height * 0.55, 0, c.height); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(0.35, 'rgba(14,9,6,0.35)'); d.addColorStop(1, 'rgba(8,5,3,0.75)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, c.width, c.height); x.globalCompositeOperation = 'source-over'; }   // G7c: Bruchkante zum Graben kräftig dunkel
   if (art === 'brust') { x.globalCompositeOperation = 'source-atop'; for (let k = 0; k < 60; k++) { const px = (k * 97.3 % 1) * c.width, py = c.height * (0.15 + ((k * 0.618) % 1) * 0.8); x.fillStyle = k % 3 ? 'rgba(58,44,32,0.35)' : 'rgba(40,30,22,0.45)'; x.beginPath(); x.ellipse((px * 7.7 + k * 131) % c.width, py, c.height * (0.12 + (k % 5) * 0.05), c.height * (0.05 + (k % 3) * 0.03), 0, 0, 7); x.fill(); } x.globalCompositeOperation = 'source-over'; }   // G7c: Erde und Schmutz über den Säcken
   if (art === 'seite') { const d = x.createLinearGradient(0, c.height * 0.4, 0, c.height); d.addColorStop(0, 'rgba(0,0,0,0)'); d.addColorStop(1, 'rgba(10,7,5,0.72)'); x.globalCompositeOperation = 'source-atop'; x.fillStyle = d; x.fillRect(0, 0, c.width, c.height); }
@@ -144,6 +144,11 @@ function bodenSink(im, anteil = 0.1) {   // Punkt 79.3 (2026-11-25): Hindernisse
   const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext('2d'); x.drawImage(im, 0, 0);
   const g = x.createLinearGradient(0, 0, 0, c.height); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1 - anteil, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0.05)');
   x.globalCompositeOperation = 'destination-in'; x.fillStyle = g; x.fillRect(0, 0, c.width, c.height); C.set(im, c); return c;   // ganze Fläche (destination-in löscht alles außerhalb)
+}
+function vorgefiltert(im, flt) {   // G7d (Leistung): Canvas-Filter einmal vorrechnen statt bei jedem Bild
+  if (!im) return im; const k = 'f:' + flt; if (!KLEIN.has(k)) KLEIN.set(k, new Map()); const C = KLEIN.get(k); if (C.has(im)) return C.get(im);
+  if (im.complete === false || (im.naturalWidth === 0 && !(im instanceof HTMLCanvasElement))) return im;
+  const c = document.createElement('canvas'); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext('2d'); x.filter = flt; x.drawImage(im, 0, 0); C.set(im, c); return c;
 }
 const TEILF = new Map();
 function teileGefiltert(IM, flt) {
@@ -455,7 +460,7 @@ function aufbauen(cfg, IM) {
       w.restore(); }); }
   function liegend(mip, A, B, nx, ny, br, aussen, o = {}) {   // G7b voll (2026-11-25): liegendes Teil in Bildschirmauflösung (wie die Aufsteller, nicht im Weltbild): Streifen entlang A→B, Bildoberkante außen (n), Unterkante innen; aussen = Anteil der Breite außerhalb der Linie
     const quelle = mip; mip = typeof quelle === 'function' ? null : quelle; const im0 = o.mass || o.mass2 || (mip && mip[0]); if (!im0) return o.u0 || 0; const len = Math.hypot(B[0] - A[0], B[1] - A[1]); if (len < 1) return o.u0 || 0;
-    const ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len, ue = o.ue || 0, L = len + 2 * ue, tw = (im0.naturalWidth || im0.width) && (im0.naturalHeight || im0.height) ? (im0.naturalWidth || im0.width) * br / ((im0.naturalHeight || im0.height) * (o.seit || 1)) : br * 6.5 / (o.seit || 1),   /* Bild noch nicht geladen: übliches Seitenverhältnis */ n = Math.max(1, Math.ceil(L / (R * (o.enden ? 0.08 : 0.3))));
+    const ux = (B[0] - A[0]) / len, uy = (B[1] - A[1]) / len, ue = o.ue || 0, L = len + 2 * ue, tw = (im0.naturalWidth || im0.width) && (im0.naturalHeight || im0.height) ? (im0.naturalWidth || im0.width) * br / ((im0.naturalHeight || im0.height) * (o.seit || 1)) : br * 6.5 / (o.seit || 1),   /* Bild noch nicht geladen: übliches Seitenverhältnis */ n = Math.max(1, Math.ceil(L / (R * (o.enden ? 0.14 : 0.45))));   /* G7d: weniger Stücke (Leistung) */
     let u = (o.u0 || 0) - ue; const S = [A[0] - ux * ue + nx * br * aussen, A[1] - uy * ue + ny * br * aussen];
     for (let i = 0; i < n; i++) { const s0 = L * i / n, s1 = L * (i + 1) / n, u0 = u + s0, O = [S[0] + ux * s0, S[1] + uy * s0], ln = s1 - s0;
       const yy = Math.max(O[1], O[1] + uy * ln, O[1] - ny * br, O[1] + uy * ln - ny * br), my = O[1] + uy * ln / 2 - ny * br / 2;
@@ -618,7 +623,7 @@ function aufbauen(cfg, IM) {
       w.setTransform(1, 0, 0, 1, 0, 0);
     };
     const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? (ZI ? 0.9 : 0.6)), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
-    const EG = ZI && !!cfg.eingegraben, LIPPE = [], HUEGEL = [], RUECK = [];
+    const EG = ZI && !!(cfg.eingegraben ?? !window.G7_ALT),   /* G7d (2026-11-25): eingegrabener Graben ist Standard; Rückweg window.G7_ALT (vor dem Kartenaufbau) bzw. Probe { eingegraben: false } */ LIPPE = [], HUEGEL = [], RUECK = [];
     const G7T = EG && cfg.g7test !== false && !!IM.graben_lippe_1 && !!IM.graben_wand_innen_1;
     const G7V = G7T && cfg.g7voll !== false && !!IM.graben_wand_seite_1;   // G7b voll (2026-11-25): Lippe und Seitenwand liegend in Bildschirmauflösung, Querwände hängend aus G7-6, Brustwehr-Wall G7-4 (Probe { g7voll: false } = G7b-Test)
     const LIPR = [1, 2, 3].map(k => IM['graben_lippe_' + k]), SEITR = [1, 2, 3].map(k => IM['graben_wand_seite_' + k]), BRW = [1, 2].map(k => IM['graben_brustwehr_wall_' + k]).filter(Boolean), QWT = [1, 2, 3].map(k => IM['graben_querwand_tief_' + k]).filter(Boolean);
@@ -695,8 +700,8 @@ function aufbauen(cfg, IM) {
         w.strokeStyle = 'rgba(88,72,54,0.5)'; w.lineWidth = R * 0.24; w.beginPath(); w.moveTo(A[0], A[1]); w.lineTo(B[0], B[1]); w.stroke(); w.strokeStyle = 'rgba(140,118,92,0.4)'; w.lineWidth = R * 0.12; w.beginPath(); w.moveTo(A[0] - R * 0.04, A[1] - R * 0.05); w.lineTo(B[0] - R * 0.04, B[1] - R * 0.05); w.stroke(); w.restore(); }
       for (const [A, B] of HUEGEL) { const L = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1, nx = -(B[1] - A[1]) / L, ny = (B[0] - A[0]) / L;
         w.save(); w.lineCap = 'round'; w.filter = `blur(${R * 0.05}px)`; w.strokeStyle = 'rgba(8,6,4,0.5)'; w.lineWidth = R * 0.34; w.beginPath(); w.moveTo(A[0] + R * 0.05, A[1] + R * 0.07); w.lineTo(B[0] + R * 0.05, B[1] + R * 0.07); w.stroke();
-        w.strokeStyle = 'rgba(96,78,58,0.85)'; w.lineWidth = R * 0.28; w.beginPath(); w.moveTo(A[0], A[1]); w.lineTo(B[0], B[1]); w.stroke();
-        w.strokeStyle = 'rgba(150,128,100,0.45)'; w.lineWidth = R * 0.1; w.beginPath(); w.moveTo(A[0] - R * 0.03, A[1] - R * 0.04); w.lineTo(B[0] - R * 0.03, B[1] - R * 0.04); w.stroke(); w.restore(); }
+        w.strokeStyle = G7V ? 'rgba(58,46,34,0.6)' : 'rgba(96,78,58,0.85)'; w.lineWidth = R * (G7V ? 0.24 : 0.28);   /* G7d: Erdwall unter dem Sandsackwall dunkel (sonst blasse graue Flecken in den Lücken) */ w.beginPath(); w.moveTo(A[0], A[1]); w.lineTo(B[0], B[1]); w.stroke();
+        w.strokeStyle = G7V ? 'rgba(92,76,58,0.25)' : 'rgba(150,128,100,0.45)'; w.lineWidth = R * 0.1; w.beginPath(); w.moveTo(A[0] - R * 0.03, A[1] - R * 0.04); w.lineTo(B[0] - R * 0.03, B[1] - R * 0.04); w.stroke(); w.restore(); }
       if (G7V) return;   // G7b voll: Lippe liegt als eigenes Teil in Bildschirmauflösung
       if (G7T) { const BR = R * 0.25, UE = R * 0.05;   // G7b-Test: gemalte Lippe flach auf der Kante, Oberkante (Boden) außen, Abbruchkante am Graben; Kachel in Originalseitenverhältnis, an den Enden etwas überlappend (Ecken geschlossen)
         for (const { a, b, nx, ny, s0, v } of LIPPE) { const L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1) continue; const im = lippeBild(LIP[v] || LIP[0], BR * 1.5), ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L, tw = im.width * BR / im.height;
@@ -728,7 +733,7 @@ function aufbauen(cfg, IM) {
           if (G7V) { const nxo = (mx - cx) / dl, nyo = (my - cy) / dl, sk = (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.04));   // G7b voll: Seitenkanten (Graben läuft in die Tiefe) = liegende Seitenwand G7-3; sonst liegende Lippe, hinten dazu die hängende Innenwand
             if (Math.abs(inY) < 0.55) LU[lk + 's'] = (sv => liegend(() => gebacken(SEITR[sv], 'seite'), off[i], off[i + 1], nxo, nyo, R * 0.26, 0.45, { mass: SEITR[sv], u0: LU[lk + 's'], ue: R * 0.04, skip: sk, tief: 'mitte' }))(Math.floor(hrnd(ti * 7 + side, abschn, 423) * 3));
             else { LU[lk + 'l'] = (lv => liegend(() => gebacken(LIPR[lv], back ? 'lippe' : 'nah'), off[i], off[i + 1], nxo, nyo, R * (back ? 0.3 : 0.2), back ? 0.85 : 0.88, { mass: back ? LIPR[lv] : null, seit: back ? 0 : 0.55, mass2: LIPR[lv], u0: LU[lk + 'l'], ue: R * 0.05, skip: sk, bias: back ? R * 0.012 : 0 }))(lipVar(ti, side, abschn));
-              if (back) uu[key] = wall(WIN[wandVar(ti, side, abschn)], off[i], off[i + 1], 0.35 * SH, { u0: uu[key], shade: 0, ab: { nx: (cx - mx) / dl, ny: (cy - my) / dl }, filter: 'brightness(0.72) contrast(1.08)', skip: sk }); }
+              if (back && Math.hypot(off[i + 1][0] - off[i][0], off[i + 1][1] - off[i][1]) > R * 0.55) uu[key] = wall(vorgefiltert(WIN[wandVar(ti, side, abschn)], 'brightness(0.72) contrast(1.08)'), off[i], off[i + 1], 0.35 * SH, { u0: uu[key], shade: 0, ab: { nx: (cx - mx) / dl, ny: (cy - my) / dl }, skip: sk }); }
           } else {
           if (EG) LIPPE.push({ a: off[i], b: off[i + 1], nx: (mx - cx) / dl, ny: (my - cy) / dl, ti, s0: l0, v: lipVar(ti, side, abschn) });   // G7a-Probe: Erdlippe an jeder Kante
           if (EG && !back) continue;   // G7a-Probe: nahe Wand verschwindet hinter der Lippe
@@ -744,7 +749,7 @@ function aufbauen(cfg, IM) {
             else if (EG) HUEGEL.push([A2, B2]);   // G7a-Probe: Brustwehr liegt als Wall auf dem Boden
             if (G7V && BRW.length && sd > 0.3) {   // G7c: Brustwehr an Längsstücken liegend: Fassung je Abschnitt, manche Abschnitte nur Erdwall, Enden laufen weich aus, schmal und dunkel
               const h1 = hrnd(ti * 13 + side, i, 426); if (h1 < 0.18) continue; const bw = BRW[h1 < 0.55 ? 1 % BRW.length : 0];
-              liegend(() => gebacken(bw, 'brust'), A2, B2, (mx - cx) / dl, (my - cy) / dl, R * 0.21, 0.5, { mass: bw, u0: h1 * 7 * R, enden: R * 0.22, tief: 'mitte', bias: R * 0.02, skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
+              liegend(() => gebacken(bw, 'brust'), A2, B2, (mx - cx) / dl, (my - cy) / dl, R * 0.24, 0.5, { mass: bw, u0: h1 * 7 * R, enden: R * 0.22, tief: 'mitte', bias: R * 0.02, skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
               continue; }
             uu.p = wall(G7V && BRW.length ? BRW[Math.floor(hrnd(ti, i, 424) * 4) % BRW.length] : GT && IM.graben_brustwehr ? IM.graben_brustwehr : IM.graben_kante_vorn, A2, B2, (G7V ? 0.34 : EG ? 0.3 : 0.4) * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
               skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
@@ -771,7 +776,7 @@ function aufbauen(cfg, IM) {
       STIRN.forEach((st, k) => {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
         if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.weg) { GTEILE.weg = (GTEILE.weg || 0) + 1; return; } else if (st.feind) last.q = im; else last.e = im;
-        if (G7V && QWT.length && im !== IM.graben_unterstand) { const QW2 = QWT.length > 1 ? QWT.slice(1) : QWT, q = QW2[Math.floor(hrnd(st.ti, k, 425) * QW2.length)];   /* G7c: Bretter-Fassung wirkte wie eine Kiste – nur Flechtwerk und beschädigt */ stand(q, st.x, st.y, 0.7 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   /* G7c: mehr Höhe in die Tiefe (Erdblock fällt in den Graben) */   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
+        if (G7V && QWT.length && im !== IM.graben_unterstand) { const QW2 = QWT.length > 1 ? QWT.slice(1) : QWT, q = bodenSink(QW2[Math.floor(hrnd(st.ti, k, 425) * QW2.length)], 0.35);   /* G7d: unteres Drittel läuft weich in die Sohle aus (schwarzes Rechteck) */   /* G7c: Bretter-Fassung wirkte wie eine Kiste – nur Flechtwerk und beschädigt */ stand(q, st.x, st.y, 0.7 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   /* G7c: mehr Höhe in die Tiefe (Erdblock fällt in den Graben) */   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
         stand(im, st.x, st.y, Math.min(st.wd * im.height / im.width, (st.feind ? 0.42 : 0.38) * SH), EG ? { bias: R * 0.02, noShadow: true, haengen: true, filter: 'brightness(0.8)' } : { bias: R * 0.02, shadeK: 0.3 }); });
       BUCHTEN.forEach((b, k) => { if (b.ti < 0) return; const v = hrnd(b.ti, k, 350), t = 0.25 + hrnd(b.ti, k, 351) * 0.5, x = b.a[0] + (b.b[0] - b.a[0]) * t, y = b.a[1] + (b.b[1] - b.a[1]) * t, at = o => [x + b.nx * R * o, y + b.ny * R * o];
         if (v < 0.3 && LEI.length) { const im = nimm(LEI, hrnd(b.ti, k, 352), last.b); last.b = im; stand(im, ...at(GK - 0.12), hoch(im) * 0.9, { noShadow: true }); }
