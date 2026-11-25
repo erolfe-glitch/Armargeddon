@@ -400,7 +400,7 @@ function aufbauen(cfg, IM) {
   for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) flachDetail(c, r);
 
   // ---------- 3. Aufrechte Teile (gezeichnet erst mit setView) ----------
-  const DRAW = [], SHADOW = []; let FELD = null, BAUMFELD = null;   // BAUMFELD: Feld, dessen Bäume gerade entstehen (cfg.baumAlpha macht sie durchsichtig, Enrico 2026-11-22)   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
+  const DRAW = [], SHADOW = [], FLAT = [];   /* G7f: FLAT = flach liegende Stücke (Lippe, Seitenwand, Sandsackwall), vor allen Einheiten gezeichnet */ let FELD = null, BAUMFELD = null;   // BAUMFELD: Feld, dessen Bäume gerade entstehen (cfg.baumAlpha macht sie durchsichtig, Enrico 2026-11-22)   // FELD: Drahtfeld, dessen Teile gerade entstehen (drahtWeg nimmt sie ohne Neuaufbau heraus, F12 2026-11-20)
   // Durchsichtig nur, wenn eine Einheit wirklich dahinter steht: seitlich innerhalb der Teilbreite, nicht bloß daneben (2026-11-16)
   const hides = (x, y, hb = R * 0.45, hW = SH) => UNITS.some(([hx, hy]) => hy < y - R * 0.2 && y - hy < hW * 1.3 + R * 0.3 && Math.abs(hx - x) < hb * 0.75);
   const offscreen = (p, q) => { const W = g.canvas.width, H = g.canvas.height, m = W * 0.15; return (p[0] < -m && q[0] < -m) || (p[0] > W + m && q[0] > W + m) || (p[1] < -m && q[1] < -m) || (p[1] > H + m * 3 && q[1] > H + m * 3); };
@@ -466,7 +466,7 @@ function aufbauen(cfg, IM) {
       const yy = Math.max(O[1], O[1] + uy * ln, O[1] - ny * br, O[1] + uy * ln - ny * br), my = O[1] + uy * ln / 2 - ny * br / 2;
       if (o.skip && o.skip(O[0] + ux * ln / 2 - nx * br * (0.5 - aussen), my)) continue;
       const al = o.enden ? Math.max(0, Math.min(1, Math.min(s0 + ln / 2, L - s0 - ln / 2) / o.enden)) : 0; if (o.enden && al <= 0.02) continue;   // G7c: Enden laufen weich aus
-      DRAW.push({ feld: FELD, y: (o.tief === 'mitte' ? my : yy) + (o.bias || 0), f: () => {
+      (window.FLACH_ALT ? DRAW : FLAT).push({ feld: FELD, y: (o.tief === 'mitte' ? my : yy) + (o.bias || 0), f: () => {
         const M = typeof quelle === 'function' ? quelle() : mip; if (!M || !M.length) return;
         const p0 = proj(O[0], O[1]), px = proj(O[0] + ux * ln, O[1] + uy * ln), py = proj(O[0] - nx * br, O[1] - ny * br); if (p0[2] <= 1 || px[2] <= 1 || py[2] <= 1 || offscreen(p0, px)) return;
         const hS = Math.hypot(py[0] - p0[0], py[1] - p0[1]); let k = 0; while (k + 1 < M.length && M[k + 1].height >= hS * 1.15) k++; const im = M[k], ih = im.height, iw = im.width, f = iw / tw;
@@ -543,6 +543,7 @@ function aufbauen(cfg, IM) {
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
   // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
   const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', ZI = BU && !cfg.zinnenAlt, G4B = ZI && !cfg.g4bAlt, GW = ZI ? 0.6 : BU ? 0.85 : 1.3, GK = ZI ? 0.3 : BU ? 0.42 : 0.5;   // G4 (2026-11-25): Zinnenverlauf – schmaler Graben, Bucht und Durchgang überlappen nicht mehr (Rückweg window.ZINNEN_ALT)   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
+  const EGW = ZI && !!(cfg.eingegraben ?? !window.G7_ALT);   // G7f: eingegrabener Graben, auch für Grabenplätze (gleiche Bedingung wie EG unten)
   function zickzack(pts) {
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const n = Math.max(2, Math.round(L / ZZ_STEP)), out = [];
@@ -795,7 +796,7 @@ function aufbauen(cfg, IM) {
         else if (v < 0.65 && IM.graben_drahtrolle && last.b !== IM.graben_drahtrolle) { last.b = IM.graben_drahtrolle; stand(IM.graben_drahtrolle, ...at(GK + 0.55), hoch(IM.graben_drahtrolle)); }
         else last.b = null; });
       DURCH.forEach((d, k) => { if (d.ti < 0 || hrnd(d.ti, k, 360) > 0.55 || !KRAM.length) return; const im = nimm(KRAM, hrnd(d.ti, k, 361), last.k); last.k = im;
-        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * 0.3;   // Einsturz und Balken an der hinteren Wand
+        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * (EGW ? 0.08 : 0.3);   // Einsturz und Balken an der hinteren Wand; G7f: im eingegrabenen Graben Kram nahe der Mitte (stand halb in der Seitenwand)
         stand(im, d.a[0] + (d.b[0] - d.a[0]) * t + d.nx * R * wand, d.a[1] + (d.b[1] - d.a[1]) * t + d.ny * R * wand, hoch(im), { flip: hrnd(d.ti, k, 364) < 0.5 }); });
     }
   }
@@ -1051,22 +1052,22 @@ function aufbauen(cfg, IM) {
       for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < 1e-6) continue;
         const art = !o ? 'lauf' : z.stufen && z.stufen.has(i) ? 'knick' : o[i] > 0 && o[i + 1] > 0 ? 'bucht' : o[i] < 0 && o[i + 1] < 0 ? 'durch' : 'ende', nx = -dy / l * (fs || 0), ny = dx / l * (fs || 0);
         for (let s = 0; s < l; s += R * 0.05) { const x = a[0] + dx * s / l, y = a[1] + dy * s / l; let best = null, bd = 1e9; for (const f of TF) { const d = Math.hypot(f[2] - x, f[3] - y); if (d < bd) { bd = d; best = f; } }
-          if (!best || bd > R * 0.95) continue; if (!window.QUERPLATZ_ALT && (GTEILE.st || []).some(st => st.D && Math.abs(x - st.x) < st.wd * 0.55 + R * 0.04 && y > st.y - R * 0.06 && y < st.y + st.D)) continue;   /* G7e: keine Grabenplätze in einer hängenden Querwand (Rückweg QUERPLATZ_ALT) */ const k = best[0] + ',' + best[1], L0 = (GPL[k] = GPL[k] || {}), Lz = (L0[ti] = L0[ti] || []); Lz.push({ x, y, art, nx, ny, dx: dx / l, dy: dy / l }); } } }); }
+          if (!best || bd > R * 0.95) continue; if (!window.QUERPLATZ_ALT && (GTEILE.st || []).some(st => st.D && Math.abs(x - st.x) < st.wd * 0.55 + R * 0.1 && y > st.y - R * 0.12 && y < st.y + st.D + R * 0.04)) continue;   /* G7e: keine Grabenplätze in einer hängenden Querwand (Rückweg QUERPLATZ_ALT) */ const k = best[0] + ',' + best[1], L0 = (GPL[k] = GPL[k] || {}), Lz = (L0[ti] = L0[ti] || []); Lz.push({ x, y, art, nx, ny, dx: dx / l, dy: dy / l }); } } }); }
   function grabenPlaetze(c, r, n = cfg.plaetze || 10) { if (!GPL) grabenProben(); const L0 = GPL[c + ',' + r]; if (!L0) return null; let P = null; for (const k in L0) if (!P || L0[k].length > P.length) P = L0[k]; if (!P || P.length < 4) return null;
     const xs = P.map(p => p.x), ys = P.map(p => p.y), y0 = Math.min(...ys), y1 = Math.max(...ys);
     if (!cfg.zickzackAlt && y1 - y0 > 1.3 * (Math.max(...xs) - Math.min(...xs))) {   // U2b (2026-11-25): Graben läuft in die Tiefe – gleichmäßig über die ganze Tiefe des Abschnitts, abwechselnd an die linke und rechte Wand (Knicke und Buchtenden mitbenutzt)
       const out = [], rnd = hrnd(c * 31 + r, 1, 392) < 0.5 ? 1 : -1; for (let j = 0; j < n; j++) { const yt = y0 + (y1 - y0) * (j + 0.5) / n, links = (j % 2 ? 1 : -1) * rnd < 0, h = hrnd(c * 31 + r, j, 393);
         let K = P.filter(p => Math.abs(p.y - yt) < R * 0.05); if (!K.length) { let b = P[0]; for (const p of P) if (Math.abs(p.y - yt) < Math.abs(b.y - yt)) b = p; K = [b]; }
-        const p = K.reduce((a, q) => links ? (q.x < a.x ? q : a) : (q.x > a.x ? q : a)); out.push([p.x + (links ? -1 : 1) * R * (0.14 + h * 0.04), p.y + (h - 0.5) * R * 0.03, p.art]); }
+        const p = K.reduce((a, q) => links ? (q.x < a.x ? q : a) : (q.x > a.x ? q : a)); out.push([p.x + (EGW ? (hrnd(c * 31 + r, j, 394) < 0.5 ? -1 : 1) * R * (0.02 + h * 0.06) : (links ? -1 : 1) * R * (0.14 + h * 0.04)), p.y + (h - 0.5) * R * 0.03, p.art]); }   /* G7f: höchstens 0,08 R neben der Mitte, keine zwei Reihen */
       return out; }
     const cum = [0]; for (const p of P) cum.push(cum[cum.length - 1] + GP_W[p.art]); const S = cum[cum.length - 1], out = [];
     for (let j = 0; j < n; j++) { const ziel = S * (j + 0.5) / n; let i = 0; while (i < P.length - 1 && cum[i + 1] < ziel) i++; const p = P[i], h = hrnd(c * 31 + r, j, 390);
-      const q = p.art === 'bucht' ? R * (j % 2 ? 0.1 : -0.02 + h * 0.03) : (j % 2 ? 1 : -1) * R * (0.03 + h * 0.03), ql = (hrnd(c * 31 + r, j, 391) - 0.5) * R * 0.04;   // Bucht: abwechselnd an der Feindwand und dahinter; sonst abwechselnd links/rechts der Mitte
+      const q = p.art === 'bucht' ? R * (j % 2 ? (EGW ? 0.07 : 0.1) : -0.02 + h * 0.03) : (j % 2 ? 1 : -1) * R * (0.03 + h * 0.03), ql = (hrnd(c * 31 + r, j, 391) - 0.5) * R * 0.04;   // Bucht: abwechselnd an der Feindwand und dahinter; sonst abwechselnd links/rechts der Mitte
       out.push([p.x + (p.art === 'bucht' && (p.nx || p.ny) ? p.nx * q : -p.dy * q) + p.dx * ql, p.y + (p.art === 'bucht' && (p.nx || p.ny) ? p.ny * q : p.dx * q) + p.dy * ql, p.art]); }
     return out; }
   function platz(c, r) {
     const t = terr(c, r), [hx, hy] = hexC(c, r);
-    if (t === 'trench' && TR.length && ZI && !cfg.plaetzeAlt) { const pts = grabenPlaetze(c, r); if (pts) return { pts, reihe: true, sink: 0.32, cut: EINSINK }; }   // U2: zehn Plätze (Rückweg window.GRABENPLATZ_ALT)
+    if (t === 'trench' && TR.length && ZI && !cfg.plaetzeAlt) { const pts = grabenPlaetze(c, r); if (pts) return EGW ? { pts, reihe: true, sink: 0, cut: null } : { pts, reihe: true, sink: 0.32, cut: EINSINK }; }   /* G7f: im eingegrabenen Graben stehen die Füße auf der Sohle, kein Abschneiden an der Hüfte */   // U2: zehn Plätze (Rückweg window.GRABENPLATZ_ALT)
     if (t === 'trench' && TR.length) {
       let best = null; for (const p of TR) p.forEach((pt, i) => { const d = Math.hypot(pt[0] - hx, pt[1] - hy); if (!best || d < best.d) best = { d, p, i }; });
       if (!best || best.d > R * 0.9) return null;
@@ -1088,13 +1089,13 @@ function aufbauen(cfg, IM) {
   // Einzelfeld ohne Neuaufbau (2026-11-22): flache Details eines Felds nachzeichnen (z. B. neuer Trichter) – ins Weltbild oder in ein anderes Ziel (gefiltertes Bodenbild)
   function flachNeu(c, r, ziel) { FZ = ziel || null; try { flachDetail(c, r); } finally { FZ = null; } }
   // aufrechte Teile eines Felds herausnehmen (zerstörte Barrikade, Bunker, Draht); Schatten im Boden bleiben schwach stehen
-  function feldWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
+  function feldWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); for (let i = FLAT.length - 1; i >= 0; i--) if (FLAT[i].feld === k) FLAT.splice(i, 1); DRAHTFELD.delete(k); }
   // aufrechte Teile eines Felds neu aufbauen (Krähenfurt: Haus/Kapelle eingestürzt → Ruine), ohne die ganze Welt neu zu bauen; Bodenschatten bleiben
   function feldNeu(c, r) { feldWeg(c, r); try { feldTeile(c, r); } finally { FELD = null; BAUMFELD = null; } DRAW.sort((a, b) => a.y - b.y); }
   const buchtenJeFeld = {}; for (const b of BUCHTEN) { let best = null, bd = 1e9; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (terr(c, r) !== 'trench') continue; const [x, y] = hexC(c, r), d = Math.hypot(x - b.x, y - b.y); if (d < bd) { bd = d; best = c + ',' + r; } } if (best && bd < R * 1.2) (buchtenJeFeld[best] = buchtenJeFeld[best] || []).push(b); }
   if (cfg.graeben) for (const g of cfg.graeben) if (g.art === 'feuer') for (const [c, r] of g.linie) { const k = c + ',' + r; if (buchtenJeFeld[k] || terr(c, r) !== 'trench') continue;   // G4b: jedes Feld eines Feuergrabens bekommt mindestens eine Bucht (die nächste, auch wenn sie schon einem Nachbarfeld gehört)
     const p = hexC(c, r); let best = null, bd = 1e9; for (const b of BUCHTEN) { const d = distTo(p, [b.a, b.b]); if (d < bd) { bd = d; best = b; } } if (best && bd < R * 1.2) buchtenJeFeld[k] = [best]; }   // G2a: Feuerbuchten je Grabenfeld (für U2)
-  return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, buchtenJeFeld, gteile: GTEILE, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu, UFER,
+  return { ground: WCV, pieces: DRAW, flach: FLAT, platz, hexC, R, SH, WW, WH, TR, terr, buchtenJeFeld, gteile: GTEILE, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu, UFER,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }
 

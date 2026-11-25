@@ -287,7 +287,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.G7_ALT ? ':g7alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + (window.ZICKZACK_ALT ? ':zz' : '') + (window.DRAHT_ALT ? ':da' : '') + (window.STAERKE_ALT ? ':st' : '') + (window.RASTER_ALT ? ':ra' : '') + (window.GUERTEL_ALT ? ':ga' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.G7_ALT ? ':g7alt' : '') + (window.FLACH_ALT ? ':flalt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + (window.ZICKZACK_ALT ? ':zz' : '') + (window.DRAHT_ALT ? ':da' : '') + (window.STAERKE_ALT ? ':st' : '') + (window.RASTER_ALT ? ':ra' : '') + (window.GUERTEL_ALT ? ':ga' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
   // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
   if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
@@ -602,6 +602,7 @@ function drawUnit(u, d) {
   if (ready && OPT.strag && readyN <= 3 && !isSel) { const ty = Math.max(topY - s * 0.22, L.top + s * 0.2) + Math.sin(now / 300) * s * 0.04; MARKQ.push(() => chevron(x, ty, s * 0.17)); }
   if (!E.alive(u)) return;
   if (isSel || hoverU === u || marksAll()) MARKQ.push(() => drawMarks(u, d, x, y, own, done, acc));   // gewählt, überfahren oder „Alle Marken“: obenauf
+  else if (GBW && gbAn() && !window.FLACH_ALT && G.map[u.c] && G.map[u.c][u.r] && G.map[u.c][u.r].t === 'trench') MARKQ.push(() => drawMarks(u, d, x, y, own, done, acc));   // G7f: im Graben Leisten und Punkte nach den Geländeteilen (sonst überdeckt)
   else drawMarks(u, d, x, y, own, done, acc);   // Marken gleich nach der eigenen Figur (Tiefenreihenfolge): Figuren davor dürfen sie verdecken, sie malen nie über fremde
 }
 function drawPlanted(g, s, u, x, y) {
@@ -707,7 +708,14 @@ function heilZeichen(g, x, y, id, rep) {   // 3 kleine Zeichen steigen nacheinan
     if (rep && UPI.s_schraubenschluessel) drawSym(g, UPI.s_schraubenschluessel, xx, yy, R * 1.5);
     else { const q = R * 0.36; g.beginPath(); for (const [px, py] of [[-q, -R], [q, -R], [q, -q], [R, -q], [R, q], [q, q], [q, R], [-q, R], [-q, q], [-R, q], [-R, -q], [-q, -q]]) g.lineTo(xx + px, yy + py); g.closePath(); g.lineJoin = 'round'; g.lineWidth = Math.max(2, s * 0.03); g.strokeStyle = 'rgba(20,16,12,0.85)'; g.stroke(); g.fillStyle = i === 1 ? '#B4453A' : `rgb(${BONE})`; g.fill(); }
     g.restore(); } }
+function grabenUmriss(c, r, rgba, lw, dash) {   // G7f (Fable 5): auf Grabenfeldern Umriss von Zone/Zugbereich nach den Geländeteilen noch einmal als Linie (sonst zerstückelt)
+  if (window.FLACH_ALT || !GBW || !gbAn() || !G.map[c] || !G.map[c][r] || G.map[c][r].t !== 'trench') return;
+  const [x, y] = center(c, r), pts = []; for (let i = 0; i < 6; i++) pts.push(hexCorner(x, y, i, 0.9));
+  MARKQ.push(() => { const g = ctx, P = pts.map(([a, b]) => proj(a, b)); if (P.some(q => q[2] <= 1)) return; g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.beginPath(); P.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
+    g.strokeStyle = rgba; g.lineWidth = lw * (cv.width / 1920); if (dash) g.setLineDash(dash.map(v => v * (cv.width / 1920))); g.stroke(); g.restore(); });
+}
 function hexMark(c, r, o) {
+  grabenUmriss(c, r, `rgba(${o.rgb},${o.soft ? 0.6 : 0.95})`, o.soft ? 2 : 3, o.dash ? [10, 7] : null);
   const g = ctx, s = L.s, pz = 0.5 + 0.5 * Math.sin(now / 320);
   hexPath(g, c, r, 0.9); g.fillStyle = `rgba(${o.rgb},${(o.fill ?? 0.14) + 0.05 * pz})`; g.fill();
   if (o.hatch) { g.save(); hexPath(g, c, r, 0.9); g.clip(); const [cx, cy] = center(c, r); g.strokeStyle = `rgba(${o.rgb},0.28)`; g.lineWidth = Math.max(1, s * 0.03); g.beginPath();
@@ -775,7 +783,7 @@ function drawGround(g, s) {
   if (sel && human(G.side) && !busy) {
     // Bewegungsfelder dezent (Wunsch des Nutzers): halbdurchsichtige Fläche, Gelände bleibt sichtbar. Ziehen = Knochenweiß, Marsch/Rückzug = Messing.
     // Paket 2: Marschfelder (nur mit Marsch erreichbar, danach keine Aktion) deutlich in leichtem Gelb/Messing mit gestrichelter Kante
-    if (!abilArea(areaAct)) for (const [, n] of reach) { hexPath(g, n.c, n.r, 0.9); const far = n.march || n.retreat; g.fillStyle = far ? 'rgba(226,190,90,0.24)' : 'rgba(240,237,225,0.13)'; g.fill();
+    if (!abilArea(areaAct)) for (const [, n] of reach) { grabenUmriss(n.c, n.r, n.march || n.retreat ? 'rgba(236,200,100,0.9)' : 'rgba(240,237,225,0.6)', 2, n.march || n.retreat ? [10, 7] : null); hexPath(g, n.c, n.r, 0.9); const far = n.march || n.retreat; g.fillStyle = far ? 'rgba(226,190,90,0.24)' : 'rgba(240,237,225,0.13)'; g.fill();
       if (far) { g.strokeStyle = 'rgba(18,13,11,0.55)'; g.lineWidth = Math.max(2, s * 0.05); g.stroke(); g.setLineDash([s * 0.11, s * 0.08]); g.strokeStyle = 'rgba(236,200,100,0.9)'; g.lineWidth = Math.max(1.5, s * 0.03); g.stroke(); g.setLineDash([]); }
       else { g.strokeStyle = 'rgba(240,237,225,0.4)'; g.lineWidth = Math.max(1, s * 0.025); g.stroke(); }
       if (G.map[n.c][n.r].t === 'wire') { hexPath(g, n.c, n.r, 0.8); g.strokeStyle = 'rgba(142,43,34,0.75)'; g.setLineDash([s * 0.08, s * 0.08]); g.lineWidth = Math.max(1.5, s * 0.035); g.stroke(); g.setLineDash([]); }
@@ -2006,13 +2014,15 @@ function drawTilt() {
   if (BW && G) for (const u of G.units) { const T = TYPES[u.type], d = DU.get(u.id), fr = T && T.aura === 'furcht' && E.alive(u) && d && fxIm('faehigkeiten', 4); if (fr) PEND.push({ y: d.y - 1, f: () => { if (up(d.x, d.y)) furchtRing(g, s, u, d, fr, 'oben'); } }); }
   PEND.sort((a, b) => a.y - b.y);
   if (GP) GBW.setView({ g, proj, F: PJ.F, U: cv.width / 1920, units: ul.map(([, , d]) => [d.x, d.y]) });
+  if (GP && GBW.flach) for (const fp of GBW.flach) { g.setTransform(1, 0, 0, 1, 0, 0); fp.f(); }   // G7f: flach liegende Grabenteile vor allen Einheiten (nicht nach Tiefe gemischt; Rückweg window.FLACH_ALT vor dem Kartenaufbau)
   // Geländeteile und einzeln gezeichnete Grabenfiguren (PEND) bis zur Tiefe y, beide nach Tiefe gemischt
   const gbBis = y => { for (;;) { const a = GP && gpi < GP.length ? GP[gpi].y : Infinity, b = PEND.length ? PEND[0].y : Infinity, m = Math.min(a, b); if (m > y || m === Infinity) break;
     g.setTransform(1, 0, 0, 1, 0, 0); if (b <= a) PEND.shift().f(); else GP[gpi++].f(); } };
   for (const [, u, d] of ul) {
     const tief = GP && TYPES[u.type] && gbPlatz(u, d);   // Trupp im Graben: Figuren werden einzeln einsortiert (hintere Wand → Figur → vordere Wand)
-    gbBis(tief && tief.pts ? d.y - L.s * 0.75 : d.y);
-    FIGQ = tief && tief.pts ? [] : null;
+    const fzG = TYPES[u.type] && TYPES[u.type].cls === 'walker' && !window.FLACH_ALT, imGr = G.map[u.c] && G.map[u.c][u.r] && G.map[u.c][u.r].t === 'trench';   // G7f: Fahrzeuge im Graben erst nach den Teilen ihres Felds
+    gbBis(tief && tief.pts && !fzG ? d.y - L.s * 0.75 : fzG && imGr ? d.y + L.s * 0.9 : d.y);
+    FIGQ = tief && tief.pts && !fzG ? [] : null;
     const bb = bbAt(d.x, d.y); if (!bb || bb.px < -PJ.W * 0.2 || bb.px > PJ.W * 1.2 || bb.py < -PJ.H * 0.2 || bb.py > PJ.H * 1.5) continue;
     const tf = new DOMMatrix([bb.sc, 0, 0, bb.sc, bb.px - bb.sc * d.x, bb.py - bb.sc * d.y]);
     g.setTransform(tf); VIEW.bbK = bb.k;
