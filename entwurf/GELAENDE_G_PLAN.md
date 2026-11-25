@@ -147,3 +147,9 @@ Machart wie `ui-quelle/gelaende/`: Magenta-Hintergrund, Ansicht schräg von vorn
   - Deckungsname auf Winterkarten „Hecke/Feldrain ×1,2“ (Regel unverändert).
 - **Rückweg:** `window.GTEILE_ALT = true` (Stand G2a/G3a). Test: `__dbg.gbTeile()`.
 - **Bilder:** `entwurf/probe/gelaende_g2b/`, vorher/nachher nah + ganz; dazu `vergleich_zinnen_ganz.jpg` (Probe mit tieferen Buchten).
+
+## 8. Stand G4 (2026-11-25, Zinnenverlauf + Acker)
+- Graben schmaler (0,6 R), Bucht und Durchgang um 0,9 R versetzt und nicht mehr überlappend; Kanten folgen dem Rechteckumriss mit scharfen Ecken.
+- Brustwehr nur vor den Buchten, knickt an deren Enden ein Stück mit; Rückwall folgt der Rückseite und springt hinter den Durchgängen zurück.
+- An ~20 % der Knicke keine Querwand/kein Eckstück (fest je Karte; Grauwall 8 von 45).
+- Krähenfurt: eigene Feldart „Acker“ (Regel wie Garten). Rückweg Gräben: window.ZINNEN_ALT. Bilder: entwurf/probe/gelaende_g4/.

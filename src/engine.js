@@ -377,7 +377,9 @@ const TERRAIN = {
   friedhof: { name: 'Friedhof', cost: 1, info: 'Gräber und niedrige Mauer: Abwehr ×1,2 gegen Beschuss.',
              chronik: { quelle: 'Feldtagebuch, Sankt Ruß', text: 'Wir lagen hinter den Grabsteinen und hofften, dass die Toten uns ihren Platz noch eine Weile leihen.' } },
   garten:  { name: 'Garten', cost: 1, info: 'Niedrige Gartenmauern: Abwehr ×1,2 gegen Beschuss.',
-             chronik: { quelle: 'Brief nach Hause, Sankt Ruß', text: 'Die Gartenmauern sind kaum kniehoch, aber im Kugelhagel ist jeder Stein ein Freund.' } }
+             chronik: { quelle: 'Brief nach Hause, Sankt Ruß', text: 'Die Gartenmauern sind kaum kniehoch, aber im Kugelhagel ist jeder Stein ein Freund.' } },
+  acker:   { name: 'Acker', cost: 1, info: 'Gepflügter Acker unter Schnee, an den Rändern Hecken und Feldraine: Abwehr ×1,2 gegen Beschuss.',   // G4 (2026-11-25): Krähenfurt, gleiche Regel wie Garten
+             chronik: { quelle: 'Bauernkalender von Krähenfurt, Winter 116 n. G.', text: 'Die Furchen sind gefroren und die Hecken kahl, doch wer sich an den Feldrain duckt, wird von den Kugeln eher übersehen als vom Frost.' } }
 };
 const KIRCHE = new Set(['schiff', 'turm', 'haus', 'kapelle']);   // große Gebäude: nur Fußtruppen und Anführer, Sicht gesperrt, halber Moralverlust (Winterdorf: auch Häuser und Kapelle)
 const gebDef = t => t === 'haus' || t === 'kapelle' ? P.HAUS_DEF : P.KIRCHE_DEF;
@@ -539,8 +541,8 @@ const MAPS = {
     strasse2: [[3, 0], [6, 3], [8, 5], [10, 7], [10, 9]],
     build() {
       const T = mapTools(18, 12, 1);
-      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, GRID_CODE[ch] || 'open')));
-      for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
+      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, ch === 'g' ? 'acker' : GRID_CODE[ch] || 'open')));   // G4 (2026-11-25): 'g' ist hier Acker (gleiche Regel wie Garten)
+      for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['acker', 'garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
       for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
       const dk = TOG.KF_DECKUNG != null ? String(TOG.KF_DECKUNG).split(';').filter(Boolean).map(x => x.split(',').map(Number)) : this.deckung;   // Messung: KF_DECKUNG="6,7;8,8"
       if (!TOG.KF_ALT) for (const [c, r] of dk) if (T.M[c][r].t === 'open' && !T.M[c][r].road) T.M[c][r].t = 'crater';
@@ -690,7 +692,7 @@ function deployZone(G, side, list, lead, free) {
   const role = t => { const T = TYPES[t]; return T.cmd ? 'back' /* Anführer hinten (stabilste Fassung: fest/gemischt höchstens 7 Punkte auseinander; vorn bzw. nah an der Front schwankte es um 40–55 Punkte) */ : T.cls === 'art' && !T.mobile ? 'art' : T.cls === 'walker' ? 'fz' : (T.cls === 'medic' || T.relay || T.mobile || T.spot || T.cls === 'cav' || T.abil === 'mark' || T.abil === 'smoke' || T.courier) ? 'back' : T.mg ? 'mg' : 'inf'; };
   const RANG = { inf: 0, fz: 1, fuehrung: 2, mg: 3, back: 4, art: 5 };
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
-  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
+  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, acker: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = dOf(c);
     let v = rl === 'fz' ? (h.road ? 2 : ['open', 'crater', 'grass'].includes(h.t) ? 1 : -1.5) : (DECK[h.t] || 0);   // Fahrzeuge: Straße und Offenes statt Deckung
@@ -720,7 +722,7 @@ function deployD(G, list, lead, free) {
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
-    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, friedhof: 0.8 }[h.t] || 0;
+    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, acker: 0.8, friedhof: 0.8 }[h.t] || 0;
     if (h.ridge) v += 1;
     for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v -= 50; else if (dd === 1) v += 1.2; }
     if (rl !== 'art' && rl !== 'back') v += (1 - d) * 2;   // Kampftruppen vorn im Band
@@ -821,7 +823,7 @@ function cost(G, u, c, r) {
   if (t === 'canal' || t === 'eisloch') return 99;
   if (t === 'eis' && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // Winterdorf: Eis trägt nur Fußvolk (auch nicht über eine Straße)
   if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art' || TYPES[u.type].held)) return 99;   // Kirche: nur Fußtruppen und Anführer; K11 (Enrico 2026-11-22): Helden nicht ins Schiff und nicht auf den Turm
-  if ((t === 'garten' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
+  if ((t === 'garten' || t === 'acker' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
   if (k === 'cav') { if (['wire', 'forest', 'wald', 'barrikade', 'fabrik'].includes(t)) return 99; if (t === 'crater' || t === 'trench') return 3; }
   if (k === 'walker') { const sch = fahrzeugArt(u) === 'schreiter';   // Fahrplan 2: Graben/Trichter teurer, Schreiter kommen durch Wald (3)
     if (t === 'bridge') return 99; if (t === 'forest' || t === 'wald') return sch ? 3 : 99; if (t === 'trench') return 2; if (t === 'crater') return sch ? 2 : 1;
@@ -1130,7 +1132,7 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
   if (t === 'fabrik') { m *= wk ? 0.7 : 1.7; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Fabrik ×1,7'); }
   if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
   if (KIRCHE.has(t)) { m *= gebDef(t); tags.push(`${t === 'turm' ? 'Kirchturm' : t === 'haus' ? 'Haus' : t === 'kapelle' ? 'Kapelle' : 'Kirche'} ×${String(gebDef(t)).replace('.', ',')}`); }
-  if ((t === 'garten' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'garten' ? (MAP.winter ? 'Hecke/Feldrain' : 'Gartenmauer') : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
+  if ((t === 'garten' || t === 'acker' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'acker' ? 'Hecke/Feldrain' : t === 'garten' ? 'Gartenmauer' : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
   if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
   if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
   if (d.holdB) { m *= P.HOLD_DEF; tags.push('Halten um jeden Preis ×1,25'); }

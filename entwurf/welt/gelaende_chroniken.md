@@ -31,3 +31,4 @@ Ersetzen die alten Gelände-Texte „Im echten Krieg“ (TERRAIN `real` in engin
 | `turm` | Logbuch eines Beobachters, Sankt Ruß | Wer den Kirchturm hält, sieht das ganze Tal; deshalb zielen beide Seiten zuerst auf ihn. |
 | `friedhof` | Feldtagebuch, Sankt Ruß | Wir lagen hinter den Grabsteinen und hofften, dass die Toten uns ihren Platz noch eine Weile leihen. |
 | `garten` | Brief nach Hause, Sankt Ruß | Die Gartenmauern sind kaum kniehoch, aber im Kugelhagel ist jeder Stein ein Freund. |
+| `acker` | Bauernkalender von Krähenfurt, Winter 116 n. G. | Die Furchen sind gefroren und die Hecken kahl, doch wer sich an den Feldrain duckt, wird von den Kugeln eher übersehen als vom Frost. |

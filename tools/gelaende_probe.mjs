@@ -1,10 +1,10 @@
 // G1-Probe Gelände (2026-11-25): Gräben Grauwall und Äcker Krähenfurt in Varianten, ohne Einheiten, nah + ganze Karte.
-// Nur über window.GB_PROBE (Spiel unverändert). Aufruf: node tools/gelaende_probe.mjs   (G2=1 bzw. G2B=1 für vorher/nachher; Vorschau-Server auf 127.0.0.1:8765)
+// Nur über window.GB_PROBE (Spiel unverändert). Aufruf: node tools/gelaende_probe.mjs   (G2=1, G2B=1 bzw. G4=1 für vorher/nachher; Vorschau-Server auf 127.0.0.1:8765)
 import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const OUT = process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const OUT = process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armgel-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
@@ -15,7 +15,9 @@ await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScript
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const bild = async n => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, n + '.jpg'), Buffer.from(r.result.data, 'base64')); };
 const hell = () => ev("(() => { const c = document.getElementById('map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let s = 0, n = 0; for (let i = 0; i < d.length; i += 4 * 997) { s += d[i] + d[i + 1] + d[i + 2]; n++; } return s / n / 3; })()");
-const KARTEN = process.env.G2B ? {   // G2b/G3b (2026-11-25): vorher = ohne die gemalten Teile (window.GTEILE_ALT), nachher = mit
+const KARTEN = process.env.G4 ? {   // G4 (2026-11-25): vorher = Buchten im breiten Band (window.ZINNEN_ALT), nachher = Zinnenverlauf
+  grauwall: { nah: [8.5, 4.5, 1.5], nah2: [2, 4.5, 1.5], var: { vorher: { _js: 'window.ZINNEN_ALT = true' }, nachher: null } },
+} : process.env.G2B ? {   // G2b/G3b (2026-11-25): vorher = ohne die gemalten Teile (window.GTEILE_ALT), nachher = mit
   grauwall: { nah: [8.5, 4.5, 1.5], nah2: [2, 4.5, 1.5], var: { vorher: { _js: 'window.GTEILE_ALT = true' }, nachher: null, probe_zinnen: { grabenBuchten: { tief: 1.1, bucht: 0.9, quer: 0.7 } } } },
   winterdorf: { nah: null, var: { vorher: { _js: 'window.GTEILE_ALT = true' }, nachher: null } },
 } : process.env.G2 ? {   // G2a/G3a (2026-11-25): vorher = alter Stand über Schalter, nachher = neuer Standard
@@ -37,7 +39,7 @@ for (const [karte, K] of Object.entries(KARTEN)) { if (NUR_K && !NUR_K.includes(
     for (let i = 0; i < 40 && (await hell()) < 12; i++) await sleep(500);
     // Einheiten ausblenden (nur Probe): Gelände frei sichtbar
     await ev(`(() => { for (const u of __dbg.G.units) { u._st = u.status; u.status = 'probe'; } __dbg.neuDU(); return true; })()`);
-    if (!nah) nah = JSON.parse(await ev(`JSON.stringify((() => { const G = __dbg.G, f = []; for (let c = 0; c < G.map.length; c++) for (let r = 0; r < G.map[0].length; r++) if (G.map[c][r].t === 'garten') f.push([c, r]); const c = f.reduce((a, q) => a + q[0], 0) / f.length, r = f.reduce((a, q) => a + q[1], 0) / f.length; return [Math.round(c), Math.round(r), 1.4]; })())`));
+    if (!nah) nah = JSON.parse(await ev(`JSON.stringify((() => { const G = __dbg.G, f = []; for (let c = 0; c < G.map.length; c++) for (let r = 0; r < G.map[0].length; r++) if ((G.map[c][r].t === 'garten' || G.map[c][r].t === 'acker')) f.push([c, r]); const c = f.reduce((a, q) => a + q[0], 0) / f.length, r = f.reduce((a, q) => a + q[1], 0) / f.length; return [Math.round(c), Math.round(r), 1.4]; })())`));
     const P = o && Object.keys(o).some(k => !k.startsWith('_')) ? Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith('_'))) : null;
     if (o && o._js) await ev(`(() => { ${o._js}; return true; })()`);   // nach dem Start noch einmal (der Start setzt die Seite neu auf)
     await ev(`(() => { const G = __dbg.G; if (!window.__rasterOrig) window.__rasterOrig = G.map.map(col => col.map(h => h.t)); G.map.forEach((col, c) => col.forEach((h, r) => h.t = window.__rasterOrig[c][r]));

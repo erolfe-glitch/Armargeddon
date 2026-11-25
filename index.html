@@ -1716,7 +1716,9 @@ const TERRAIN = {
   friedhof: { name: 'Friedhof', cost: 1, info: 'Gräber und niedrige Mauer: Abwehr ×1,2 gegen Beschuss.',
              chronik: { quelle: 'Feldtagebuch, Sankt Ruß', text: 'Wir lagen hinter den Grabsteinen und hofften, dass die Toten uns ihren Platz noch eine Weile leihen.' } },
   garten:  { name: 'Garten', cost: 1, info: 'Niedrige Gartenmauern: Abwehr ×1,2 gegen Beschuss.',
-             chronik: { quelle: 'Brief nach Hause, Sankt Ruß', text: 'Die Gartenmauern sind kaum kniehoch, aber im Kugelhagel ist jeder Stein ein Freund.' } }
+             chronik: { quelle: 'Brief nach Hause, Sankt Ruß', text: 'Die Gartenmauern sind kaum kniehoch, aber im Kugelhagel ist jeder Stein ein Freund.' } },
+  acker:   { name: 'Acker', cost: 1, info: 'Gepflügter Acker unter Schnee, an den Rändern Hecken und Feldraine: Abwehr ×1,2 gegen Beschuss.',   // G4 (2026-11-25): Krähenfurt, gleiche Regel wie Garten
+             chronik: { quelle: 'Bauernkalender von Krähenfurt, Winter 116 n. G.', text: 'Die Furchen sind gefroren und die Hecken kahl, doch wer sich an den Feldrain duckt, wird von den Kugeln eher übersehen als vom Frost.' } }
 };
 const KIRCHE = new Set(['schiff', 'turm', 'haus', 'kapelle']);   // große Gebäude: nur Fußtruppen und Anführer, Sicht gesperrt, halber Moralverlust (Winterdorf: auch Häuser und Kapelle)
 const gebDef = t => t === 'haus' || t === 'kapelle' ? P.HAUS_DEF : P.KIRCHE_DEF;
@@ -1878,8 +1880,8 @@ const MAPS = {
     strasse2: [[3, 0], [6, 3], [8, 5], [10, 7], [10, 9]],
     build() {
       const T = mapTools(18, 12, 1);
-      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, GRID_CODE[ch] || 'open')));
-      for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
+      this.grid.forEach((row, r) => [...row].forEach((ch, c) => T.set(c, r, ch === 'g' ? 'acker' : GRID_CODE[ch] || 'open')));   // G4 (2026-11-25): 'g' ist hier Acker (gleiche Regel wie Garten)
+      for (const w of [this.strasse, this.strasse2]) for (const [c, r] of T.path(w, 'road')) if (T.M[c] && T.M[c][r] && ['acker', 'garten', 'forest', 'wald'].includes(T.M[c][r].t)) T.M[c][r].t = 'open';   // Straßen frei halten
       for (const k in this.deko) { const [c, r] = k.split(',').map(Number); T.M[c][r].deko = this.deko[k]; }
       const dk = TOG.KF_DECKUNG != null ? String(TOG.KF_DECKUNG).split(';').filter(Boolean).map(x => x.split(',').map(Number)) : this.deckung;   // Messung: KF_DECKUNG="6,7;8,8"
       if (!TOG.KF_ALT) for (const [c, r] of dk) if (T.M[c][r].t === 'open' && !T.M[c][r].road) T.M[c][r].t = 'crater';
@@ -2029,7 +2031,7 @@ function deployZone(G, side, list, lead, free) {
   const role = t => { const T = TYPES[t]; return T.cmd ? 'back' /* Anführer hinten (stabilste Fassung: fest/gemischt höchstens 7 Punkte auseinander; vorn bzw. nah an der Front schwankte es um 40–55 Punkte) */ : T.cls === 'art' && !T.mobile ? 'art' : T.cls === 'walker' ? 'fz' : (T.cls === 'medic' || T.relay || T.mobile || T.spot || T.cls === 'cav' || T.abil === 'mark' || T.abil === 'smoke' || T.courier) ? 'back' : T.mg ? 'mg' : 'inf'; };
   const RANG = { inf: 0, fz: 1, fuehrung: 2, mg: 3, back: 4, art: 5 };
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
-  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
+  const DECK = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, acker: 0.8, friedhof: 0.8, haus: 3.2, kapelle: 3.2, eis: -2, steinbruecke: 0.5 };
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = dOf(c);
     let v = rl === 'fz' ? (h.road ? 2 : ['open', 'crater', 'grass'].includes(h.t) ? 1 : -1.5) : (DECK[h.t] || 0);   // Fahrzeuge: Straße und Offenes statt Deckung
@@ -2059,7 +2061,7 @@ function deployD(G, list, lead, free) {
   const objs = OBJECTIVES.slice().sort((a, b) => b.pts - a.pts || a.c - b.c);
   const score = (t, c, r) => {
     const h = G.map[c][r], rl = role(t), d = (c - zD) / depth;
-    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, friedhof: 0.8 }[h.t] || 0;
+    let v = { trench: 3, village: 2.6, forest: 2, crater: 0.6, open: 0, mud: -1, wire: -4, bridge: 1, bunker: 3.6, fabrik: 3, kirche: 2.8, barrikade: 2.8, wald: 2.2, waldweg: 0.8, bahn: 1, furt: -2, sumpf: -2, schiff: 3.4, turm: 3.4, garten: 0.8, acker: 0.8, friedhof: 0.8 }[h.t] || 0;
     if (h.ridge) v += 1;
     for (const o of objs) { const dd = dist(c, r, o.c, o.r); if (dd === 0) v -= 50; else if (dd === 1) v += 1.2; }
     if (rl !== 'art' && rl !== 'back') v += (1 - d) * 2;   // Kampftruppen vorn im Band
@@ -2160,7 +2162,7 @@ function cost(G, u, c, r) {
   if (t === 'canal' || t === 'eisloch') return 99;
   if (t === 'eis' && (k === 'cav' || k === 'walker' || k === 'art')) return 99;   // Winterdorf: Eis trägt nur Fußvolk (auch nicht über eine Straße)
   if (KIRCHE.has(t) && (k === 'cav' || k === 'walker' || k === 'art' || TYPES[u.type].held)) return 99;   // Kirche: nur Fußtruppen und Anführer; K11 (Enrico 2026-11-22): Helden nicht ins Schiff und nicht auf den Turm
-  if ((t === 'garten' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
+  if ((t === 'garten' || t === 'acker' || t === 'friedhof') && (k === 'walker' || k === 'art')) return 2;   // niedrige Mauern
   if (k === 'cav') { if (['wire', 'forest', 'wald', 'barrikade', 'fabrik'].includes(t)) return 99; if (t === 'crater' || t === 'trench') return 3; }
   if (k === 'walker') { const sch = fahrzeugArt(u) === 'schreiter';   // Fahrplan 2: Graben/Trichter teurer, Schreiter kommen durch Wald (3)
     if (t === 'bridge') return 99; if (t === 'forest' || t === 'wald') return sch ? 3 : 99; if (t === 'trench') return 2; if (t === 'crater') return sch ? 2 : 1;
@@ -2469,7 +2471,7 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
   if (t === 'fabrik') { m *= wk ? 0.7 : 1.7; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Fabrik ×1,7'); }
   if (t === 'kirche') { m *= wk ? 0.7 : 1.5; tags.push(wk ? 'Koloss in Ruinen ×0,7' : 'Kirche ×1,5'); }
   if (KIRCHE.has(t)) { m *= gebDef(t); tags.push(`${t === 'turm' ? 'Kirchturm' : t === 'haus' ? 'Haus' : t === 'kapelle' ? 'Kapelle' : 'Kirche'} ×${String(gebDef(t)).replace('.', ',')}`); }
-  if ((t === 'garten' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'garten' ? (MAP.winter ? 'Hecke/Feldrain' : 'Gartenmauer') : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
+  if ((t === 'garten' || t === 'acker' || t === 'friedhof') && ranged) { m *= P.GARTEN_DEF; tags.push(`${t === 'acker' ? 'Hecke/Feldrain' : t === 'garten' ? 'Gartenmauer' : 'Friedhofsmauer'} ×${String(P.GARTEN_DEF).replace('.', ',')}`); }
   if (t === 'barrikade') { m *= 1.6; tags.push('Barrikade ×1,6'); }
   if (t === 'bahn' && ranged) { m *= 1.3; tags.push('Bahndamm ×1,3'); }
   if (d.holdB) { m *= P.HOLD_DEF; tags.push('Halten um jeden Preis ×1,25'); }
@@ -5470,7 +5472,7 @@ function aufbauen(cfg, IM) {
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
   // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
-  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', GW = BU ? 0.85 : 1.3, GK = BU ? 0.42 : 0.5;   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
+  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', ZI = BU && !cfg.zinnenAlt, GW = ZI ? 0.6 : BU ? 0.85 : 1.3, GK = ZI ? 0.3 : BU ? 0.42 : 0.5;   // G4 (2026-11-25): Zinnenverlauf – schmaler Graben, Bucht und Durchgang überlappen nicht mehr (Rückweg window.ZINNEN_ALT)   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
   function zickzack(pts) {
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const n = Math.max(2, Math.round(L / ZZ_STEP)), out = [];
@@ -5486,23 +5488,29 @@ function aufbauen(cfg, IM) {
   // vorgezogen) und Durchgang hinter einer Querwand (Traverse); Längen leicht unregelmäßig, Ecken nicht geglättet.
   const BUCHTEN = [], DURCH = [], GTEILE = { an: false, stirn: 0 };   // G2b: Zähler für Tests (__dbg.gbTeile)
   function buchten(pts, ch, ti) {
-    const GB = cfg.grabenBuchten || {}, A = R * (GB.tief ?? 0.6), own = cfg.grabenSeite && ch ? cfg.grabenSeite(...ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 1;
+    const GB = cfg.grabenBuchten || {}, A = R * (GB.tief ?? (ZI ? 0.9 : 0.6)), own = cfg.grabenSeite && ch ? cfg.grabenSeite(...ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 1;
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const at = s => { let i = 0; while (i < segL.length - 1 && s > segL[i]) { s -= segL[i]; i++; } const a = pts[i], b = pts[i + 1], t = segL[i] ? s / segL[i] : 0, dx = (b[0] - a[0]) / (segL[i] || 1), dy = (b[1] - a[1]) / (segL[i] || 1);
       let nx = -dy, ny = dx; if (Math.sign(nx || 1) !== ex) { nx = -nx; ny = -ny; } return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, nx, ny]; };
     const out = [], sA = [], oA = [], put = (s, o) => { const [x, y, nx, ny] = at(Math.max(0, Math.min(L, s))); out.push([x + nx * o, y + ny * o]); sA.push(s); oA.push(o); };
     const merk = (s0, s1, o) => { const [x0, y0, nx, ny] = at((s0 + s1) / 2), [xa, ya] = at(s0), [xb, yb] = at(s1); (o > 0 ? BUCHTEN : DURCH).push({ ti, x: x0 + nx * o, y: y0 + ny * o, nx, ny, len: Math.hypot(xb - xa, yb - ya), a: [xa + nx * o, ya + ny * o], b: [xb + nx * o, yb + ny * o] }); };   // G2a: Feuerbucht für die Grabenplätze (U2)
     let s = 0, k = 0, bucht = hrnd(pts.length, ch ? ch[0][0] : 0, 301) < 0.5; put(0, 0);
-    while (s < L) { const len = R * (bucht ? (GB.bucht ?? 0.85) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? 0.45) + hrnd(k, 7, 303) * 0.15), o = bucht ? A / 2 : -A / 2;
+    while (s < L) { const len = R * (bucht ? (GB.bucht ?? (ZI ? 0.95 : 0.85)) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? (ZI ? 0.9 : 0.45)) + hrnd(k, 7, 303) * (ZI ? 0.25 : 0.15)), o = bucht ? A / 2 : -A / 2;
       const e = Math.min(L, s + len); if (e - s < R * 0.12) break; put(s, o); put(e, o); merk(s, e, o); s = e; bucht = !bucht; k++; }
     put(L, 0);
     out.stufen = new Set(); out.off = oA; for (let j = 0; j < out.length - 1; j++) if (Math.abs(sA[j] - sA[j + 1]) < 1e-6 && oA[j] && oA[j + 1] && oA[j] !== oA[j + 1]) out.stufen.add(j);   // G2b: Knick zwischen Bucht und Durchgang (Querwand)
     return out;
   }
+  const versatz = (pts, d) => pts.map((p, i) => {   // G4: Versatz um d (links der Laufrichtung) mit Gehrung – rechte Winkel bleiben scharf
+    const nv = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); return l < 1e-6 ? null : [-dy / l, dx / l]; };
+    const nA = i > 0 ? nv(pts[i - 1], p) : null, nB = i < pts.length - 1 ? nv(p, pts[i + 1]) : null, a = nA || nB, b = nB || nA; if (!a) return [p[0], p[1]];
+    const k = 1 + a[0] * b[0] + a[1] * b[1]; const m = k < 0.3 ? b : [(a[0] + b[0]) / k, (a[1] + b[1]) / k]; return [p[0] + m[0] * d, p[1] + m[1] * d]; });
   const TRENCH = cfg.graeben ? cfg.graeben.map((g, gi) => { const v = verlaengern(g.linie); const pts = g.art === 'feuer' && BU ? buchten(v.pts, g.linie, gi) : v.pts; return { ...v, ch: g.linie, art: g.art, linie: v.pts, pts, stufen: pts.stufen, off: pts.off }; })   // G2a: Gräben als Linien je Karte (MAP.graeben)
     : cfg.trench ? cfg.trench.map(z => ({ pts: z.map(p => atW(...p)), ends: [false, false] }))
     : ketten((c, r) => terr(c, r) === 'trench').filter(ch => ch.length > 1).map(ch => { const v = verlaengern(ch); return { ...v, ch, pts: BU ? (ch.length >= 4 ? buchten(v.pts, ch, -1) : v.pts) : cfg.zickzack ? zickzack(v.pts) : v.pts }; });
   const TR = TRENCH.map(z => chaikin(z.pts, cfg.grabenForm === 'buchten' ? 0 : cfg.zickzack && z.ch ? 1 : 3));
+  const feindSeite = ti => { const z = TRENCH[ti], p = TR[ti], own = cfg.grabenSeite && z.ch ? cfg.grabenSeite(...z.ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 0; if (!ex || !z.off) return 0;   // G4: welche Seite (links/rechts der Laufrichtung) zum Feind schaut
+    for (let j = 0; j < p.length - 1; j++) if (z.off[j] > 0 && z.off[j + 1] > 0) { const dy = p[j + 1][1] - p[j][1]; if (Math.abs(dy) > R * 0.1) return Math.sign(-dy) === ex ? 1 : -1; } return 0; };
   if (TR.length && IM.graben_sohle) {
     const TW = GW * R, SOHLE = IM.graben_sohle;
     w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(70,56,40,0.7)'; strokeLines(w, TR, R * (GW + 0.15)); w.restore();
@@ -5540,11 +5548,11 @@ function aufbauen(cfg, IM) {
       }
       w.setTransform(1, 0, 0, 1, 0, 0);
     };
-    const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? 0.6), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
+    const GT = BU && !!IM.graben_querwand_1, A_T = R * ((cfg.grabenBuchten || {}).tief ?? (ZI ? 0.9 : 0.6)), hoch = im => im.height / 320 * SH;   // G2b (2026-11-25): gemalte Grabenteile vorhanden
     const nimm = (arr, v, last) => { let i = Math.min(arr.length - 1, Math.floor(v * arr.length)); if (arr.length > 1 && arr[i] === last) i = (i + 1) % arr.length; return arr[i]; };   // nie zweimal dasselbe Teil hintereinander
     if (cfg.grabenRueckwall && GT && IM.graben_rueckwall) TRENCH.forEach((z, ti) => {   // G2b: gemalter Erdwall auf der Rückseite, entlang der geraden Grabenlinie hinter den Durchgängen
       if (z.art && z.art !== 'feuer') return; const own = cfg.grabenSeite && z.ch ? cfg.grabenSeite(...z.ch[0]) : null, ex = own === 'A' ? -1 : own === 'D' ? 1 : 0; if (!ex) return;
-      const L0 = z.linie || TR[ti], o = A_T / 2 + R * (GK + 0.16), q = L0.map(p => [p[0] + ex * o, p[1]]); let u = hrnd(ti, 1, 320);
+      const L0 = ZI ? TR[ti] : z.linie || TR[ti], o = A_T / 2 + R * (GK + 0.16), fs = ZI ? feindSeite(ti) : 0, q = ZI ? (fs ? versatz(L0, -fs * R * (GK + 0.16)) : []) : L0.map(p => [p[0] + ex * o, p[1]]); let u = hrnd(ti, 1, 320);   // G4: Rückwall folgt der Rückseite (springt hinter den Durchgängen zurück)
       for (let i = 0; i < q.length - 1; i++) u = wall(IM.graben_rueckwall, q[i], q[i + 1], 0.22 * SH, { u0: u, shade: 0.3, shadeW: 0.12, mitte: [L0[i][0], L0[i][1]],
         skip: (x, y) => TR.some((t, j) => j !== ti && distTo([x, y], t) < R * (GK + 0.1)) }); });
     else if (cfg.grabenRueckwall) TR.forEach((pts, ti) => {   // G1-Probe: niedriger aufgeworfener Erdwall auf der Rückseite (flach, dunkler Erdstreifen)
@@ -5559,10 +5567,10 @@ function aufbauen(cfg, IM) {
       w.strokeStyle = 'rgba(92,74,56,1)'; strokeLines(w, TR, R * GW * 0.42); w.restore();
       TR.forEach((pts, ti) => { let last = null;
         for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < R * 0.3 || (TRENCH[ti].stufen && TRENCH[ti].stufen.has(i))) continue;   // Knicke bleiben Schlamm
-          const n = Math.max(1, Math.round(l / (R * 0.62))), rot = Math.atan2(dy, dx) - Math.PI / 2;
+          const n = Math.max(1, Math.round(l / (R * (ZI ? 0.46 : 0.62)))), rot = Math.atan2(dy, dx) - Math.PI / 2;
           for (let j = 0; j < n; j++) { const t = (j + 0.5) / n, x = a[0] + dx * t, y = a[1] + dy * t, v = hrnd(ti * 31 + i, j, 330);
-            if (v < 0.62) { const im = nimm(ROST, hrnd(ti * 31 + i, j, 331), last); last = im; flach(im, x, y, 0.52 + hrnd(ti, i * 7 + j, 332) * 0.08, rot + (hrnd(ti, i * 7 + j, 333) - 0.5) * 0.12); }
-            else if (v < 0.86 && PF.length) { const im = nimm(PF, hrnd(ti * 31 + i, j, 334), last); last = im; flach(im, x, y, 0.4 + hrnd(ti, i * 7 + j, 335) * 0.12, rot + Math.PI / 2, 0.9); } } } });
+            if (v < 0.62) { const im = nimm(ROST, hrnd(ti * 31 + i, j, 331), last); last = im; flach(im, x, y, (0.52 + hrnd(ti, i * 7 + j, 332) * 0.08) * (ZI ? 0.72 : 1), rot + (hrnd(ti, i * 7 + j, 333) - 0.5) * 0.12); }
+            else if (v < 0.86 && PF.length) { const im = nimm(PF, hrnd(ti * 31 + i, j, 334), last); last = im; flach(im, x, y, (0.4 + hrnd(ti, i * 7 + j, 335) * 0.12) * (ZI ? 0.75 : 1), rot + Math.PI / 2, 0.9); } } } });
     } else if (cfg.grabenPfuetzen) TR.forEach((pts, ti) => {   // G1-Probe: Schlammpfützen auf der Sohle (dunkel, nasser Glanz)
       for (let i = 1; i < pts.length - 1; i++) { if (hrnd(ti, i, 310) > 0.45) continue; const [x, y] = pts[i], rx = R * (0.12 + hrnd(ti, i, 311) * 0.12), ry = rx * 0.45;
         const g2 = w.createRadialGradient(x, y, 0, x, y, rx); g2.addColorStop(0, 'rgba(28,24,20,0.85)'); g2.addColorStop(0.7, 'rgba(34,28,22,0.6)'); g2.addColorStop(1, 'rgba(34,28,22,0)');
@@ -5578,7 +5586,8 @@ function aufbauen(cfg, IM) {
     const TRIM = TR.map((pts, ti) => TR.map((q, j) => j === ti ? [] : q.filter(pt => distTo(pt, pts) > R * (GK - 0.02))));
     TR.forEach((pts, ti) => {
       for (const side of [-1, 1]) {
-        const off = pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1; return [p[0] - dy / ln * side * R * GK, p[1] + dx / ln * side * R * GK]; });
+        const fs = ZI ? feindSeite(ti) : 0, brust = ZI && fs === side ? versatz(pts, side * R * (GK + 0.24)) : null, zo = TRENCH[ti].off, zs = TRENCH[ti].stufen;   // G4: Brustwehr nur vor den Buchten, knickt an den Querwänden mit
+        const off = ZI ? versatz(pts, side * R * GK) : pts.map((p, i) => { const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], ln = Math.hypot(dx, dy) || 1; return [p[0] - dy / ln * side * R * GK, p[1] + dx / ln * side * R * GK]; });
         const uu = { v: hrnd(ti, side, 4), h: hrnd(ti, side, 5), p: hrnd(ti, side, 6) };
         // Feindseite des Grabens (cfg.grabenSeite: wem gehört der Graben): Konkordat schaut nach Osten (+x), Aschenwacht nach Westen
         const own = cfg.grabenSeite && TRENCH[ti].ch ? cfg.grabenSeite(...TRENCH[ti].ch[0]) : null, ex = own === 'A' ? 1 : own === 'D' ? -1 : 0;
@@ -5589,7 +5598,11 @@ function aufbauen(cfg, IM) {
           uu[key] = wall(back ? IM.graben_kante_hinten : IM.graben_kante_vorn, off[i], off[i + 1], (back ? 0.28 : 0.32) * SH, { u0: uu[key], shade: 0.4, shadeW: 0.1, lean,
             skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.04)) });
           // Stücke, die in die Tiefe laufen: auf der Feindseite zusätzlich eine aufrechte Brustwehr aus Sandsäcken, etwas weiter außen
-          if (ex && sd > 0.3 && Math.sign(mx - cx) === ex) {
+          if (brust && zo && (zo[i] > 0 && zo[i + 1] > 0 && sd > 0.3 || zs && zs.has(i))) {   // G4: vor der Bucht und als kurzer Knick an ihren Enden
+            let A2 = brust[i], B2 = brust[i + 1]; if (zs && zs.has(i)) { const L2 = Math.hypot(B2[0] - A2[0], B2[1] - A2[1]) || 1, f = Math.min(1, R * 0.4 / L2); if (zo[i] > 0) B2 = [A2[0] + (B2[0] - A2[0]) * f, A2[1] + (B2[1] - A2[1]) * f]; else A2 = [B2[0] + (A2[0] - B2[0]) * f, B2[1] + (A2[1] - B2[1]) * f]; }
+            uu.p = wall(GT && IM.graben_brustwehr ? IM.graben_brustwehr : IM.graben_kante_vorn, A2, B2, 0.4 * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
+              skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
+          } else if (!ZI && ex && sd > 0.3 && Math.sign(mx - cx) === ex) {
             const nx = (mx - cx) / dl, ny = (my - cy) / dl, o2 = R * 0.24, A2 = [off[i][0] + nx * o2, off[i][1] + ny * o2], B2 = [off[i + 1][0] + nx * o2, off[i + 1][1] + ny * o2];
             uu.p = wall(GT && IM.graben_brustwehr ? IM.graben_brustwehr : IM.graben_kante_vorn, A2, B2, 0.4 * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
               skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
@@ -5601,15 +5614,16 @@ function aufbauen(cfg, IM) {
       for (const i of z.stufen) {                                                        // der Block hinter der Bucht (Rückseite) in den Durchgang; sichtbar nur, was zum Betrachter (Süden) schaut
         const b = z.off[i] > 0 ? i : i + 1, d = b === i ? i + 1 : i, P0 = pts[b], Q0 = pts[d], C = [(P0[0] + Q0[0]) / 2, (P0[1] + Q0[1]) / 2], ln = Math.hypot(P0[0] - Q0[0], P0[1] - Q0[1]) || 1;
         const n = [(P0[0] - Q0[0]) / ln, (P0[1] - Q0[1]) / ln], nb = b === i ? pts[Math.max(0, i - 1)] : pts[Math.min(pts.length - 1, i + 2)], lb = Math.hypot(nb[0] - P0[0], nb[1] - P0[1]) || 1, tb = [(nb[0] - P0[0]) / lb, (nb[1] - P0[1]) / lb];   // n: zum Feind, tb: zur Bucht
-        if (tb[1] > 0.3) STIRN.push({ ti, x: C[0] + n[0] * R * GK - tb[0] * R * 0.08, y: C[1] + n[1] * R * GK - tb[1] * R * 0.08, wd: ln + R * 0.1, feind: true });
-        if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * R * 0.08, y: C[1] - n[1] * R * GK + tb[1] * R * 0.08, wd: ln + R * 0.1, feind: false }); } });
+        const kd = R * (ZI ? GK : 0.08), weg = ZI && hrnd(ti * 17 + i, 3, 344) < 0.2;   // G4: Stirnseite an der Grabenkante; an ~20 % der Knicke keine (fest je Karte)
+        if (tb[1] > 0.3) STIRN.push({ ti, x: C[0] + n[0] * R * GK - tb[0] * kd, y: C[1] + n[1] * R * GK - tb[1] * kd, wd: ln + R * 0.1, feind: true, weg });
+        if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * kd, y: C[1] - n[1] * R * GK + tb[1] * kd, wd: ln + R * 0.1, feind: false, weg }); } });
     if (GT) {   // G2b: Querwände und Stirnseiten an den Knicken (Unterstand einmal je Feuergraben), in den Buchten Leitern, Stahlschilde, Drahtrollen; Kram in den Durchgängen
       const P = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean), QW = P('graben_querwand_'), EK = P('graben_ecke_'), LEI = P('graben_leiter_'), SCH = P('graben_stahlschild_');
       const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', 'einsturz', 'balken'].map(n => IM['graben_' + n]).filter(Boolean), last = {};
-      const unter = {}; for (const ti of new Set(STIRN.map(st => st.ti))) { const st = STIRN.filter(q => !q.feind && q.ti === ti); if (st.length) unter[ti] = st[Math.floor(hrnd(ti, 5, 340) * st.length)]; }
+      const unter = {}; for (const ti of new Set(STIRN.map(st => st.ti))) { const st = STIRN.filter(q => !q.feind && q.ti === ti && !q.weg); if (st.length) unter[ti] = st[Math.floor(hrnd(ti, 5, 340) * st.length)]; }
       STIRN.forEach((st, k) => {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
-        if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.feind) last.q = im; else last.e = im;
+        if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.weg) { GTEILE.weg = (GTEILE.weg || 0) + 1; return; } else if (st.feind) last.q = im; else last.e = im;
         stand(im, st.x, st.y, Math.min(st.wd * im.height / im.width, (st.feind ? 0.42 : 0.38) * SH), { bias: R * 0.02, shadeK: 0.3 }); });
       BUCHTEN.forEach((b, k) => { if (b.ti < 0) return; const v = hrnd(b.ti, k, 350), t = 0.25 + hrnd(b.ti, k, 351) * 0.5, x = b.a[0] + (b.b[0] - b.a[0]) * t, y = b.a[1] + (b.b[1] - b.a[1]) * t, at = o => [x + b.nx * R * o, y + b.ny * R * o];
         if (v < 0.3 && LEI.length) { const im = nimm(LEI, hrnd(b.ti, k, 352), last.b); last.b = im; stand(im, ...at(GK - 0.12), hoch(im) * 0.9, { noShadow: true }); }
@@ -5993,7 +6007,7 @@ const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerse
 const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
-  schiff: 1.3, turm: 1.3, garten: 0.3, friedhof: 0.3, haus: 1.2, kapelle: 1.2, eis: -0.4, steinbruecke: 0 };
+  schiff: 1.3, turm: 1.3, garten: 0.3, acker: 0.3, friedhof: 0.3, haus: 1.2, kapelle: 1.2, eis: -0.4, steinbruecke: 0 };
 // Kirche von Sankt Ruß (KI 2026-11-19): Turm besetzen (Schützen, W_TURM), Kirche als Ziel (Deckung oben), Einsturz nutzen (Artillerie/Kanonen auf
 // Gegner in der Kirche, W_EINSTURZ je Gegner, der beim Einsturz drin wäre), eigene Truppen aus einer fast eingestürzten Kirche heraus (W_KRISS)
 const W_TURM = envZahl('W_TURM', 1.4), W_EINSTURZ = envZahl('W_EINSTURZ', 2.2), W_KRISS = envZahl('W_KRISS', 1.2);
@@ -6059,7 +6073,7 @@ const thKapp = (th, voll) => th <= voll ? th : voll + (th - voll) * W_TH_REST;
 const W_STURM = ENVW.W_STURM != null ? +ENVW.W_STURM : 0.8, W_OBJSTURM = ENVW.W_OBJSTURM != null ? +ENVW.W_OBJSTURM : 1.6, W_VERTEIL = ENVW.W_VERTEIL != null ? +ENVW.W_VERTEIL : 0.3;
 function threatAt(G, u, c, r) {
   const t = E.hex(G, c, r).t, D = TYPES[u.type];
-  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, friedhof: 1.1, haus: P.HAUS_DEF, kapelle: P.HAUS_DEF, eis: 1, steinbruecke: 1 };
+  const DM = { trench: 1.6, village: 1.5, kirche: 1.5, fabrik: 1.7, forest: 1.4, crater: 1.2, wire: 0.6, bunker: 2, wald: 1.5, waldweg: 1.2, barrikade: 1.6, bahn: 1.3, furt: 0.8, schiff: P.KIRCHE_DEF, turm: P.KIRCHE_DEF, garten: 1.1, acker: 1.1, friedhof: 1.1, haus: P.HAUS_DEF, kapelle: P.HAUS_DEF, eis: 1, steinbruecke: 1 };
   const defm = (t === 'village' || t === 'kirche' || t === 'fabrik') && D.cls === 'walker' ? 0.7 : DM[t] || 1;
   let th = 0;
   for (const o of G.units) {
@@ -6990,7 +7004,7 @@ const gbWinter = () => !!(E.MAP.winter && window.GELAENDE && window.GELAENDE.bod
 function gbTerr(c, r) {
   const h = G.map[c][r], b = h.bau != null && G.bauten ? G.bauten[h.bau] : null;
   if (b && (b.art === 'haus' || b.art === 'kapelle') && h.t === 'village' && !bauSicht()[h.bau]) return gbWinter() ? b.art : 'village';
-  const t = h.t === 'eisloch' ? 'eis' : h.t;   // Eisloch: Boden bleibt Eis, das Loch ist eine Bodenspur (erscheint beim Abspielen von „eisbruch“)
+  const t = h.t === 'eisloch' ? 'eis' : h.t === 'acker' ? 'garten' : h.t;   // G4: Acker (Krähenfurt) zeichnet GBau wie bisher über die Gartenfelder   // Eisloch: Boden bleibt Eis, das Loch ist eine Bodenspur (erscheint beim Abspielen von „eisbruch“)
   return gbWinter() ? t : (GB_PLATZHALTER[t] || t);
 }
 // Große Gebäude: gezeigter Zustand (eingestürzt erst, wenn das Ereignis abgespielt wird – die Regeln ändern G vorher)
@@ -7005,7 +7019,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
   if (!gbAn() || !L || !G) return false;
   if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
-  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
+  const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
   // Einschläge ohne Neuaufbau (Enrico 2026-11-22 17:32, vorher 0,5–0,7 s Bildpause je Trichter): neuer Trichter = nur das Feld nachzeichnen; zerstörte Barrikade/Bunker/Draht = deren Teile herausnehmen
   if (GBW && GBW.flachNeu && gbFeld && gbKey.startsWith(basis + ':')) { const neu = [], weg = [], bau = [], FLACH = new Set(['open', 'grass', 'mud', 'crater']), WEGBAR = new Set(['wire', 'barrikade', 'bunker']);
@@ -7025,7 +7039,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     bauten: (G.bauten || []).map((b, i) => ({ art: b.art, felder: b.felder, turm: b.turm, kaputt: bauSicht()[i] })).filter(b => b.art === 'kirche'),   // Häuser/Kapelle: noch Platzhalter (Ruinen)
     ...(E.MAP.graeben && !window.GRAEBEN_ALT ? { graeben: E.MAP.graeben, grabenForm: 'buchten', grabenRueckwall: true, grabenPfuetzen: true } : {}),   /* G2a (2026-11-25): Gräben als Linien mit Feuerbuchten; Rückweg window.GRAEBEN_ALT */
     ackerNeu: !window.ACKER_C2 && !window.ACKER_ALT,   /* G3a: Acker A (gezeichnete Furchen); window.ACKER_C2 = Acker vom 24.11. */
-    teileAlt: !!window.GTEILE_ALT,   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
+    teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT,   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW], ...(window.GB_PROBE || {}) }, IMB);   /* G1-Probe (2026-11-25): window.GB_PROBE = { grabenForm: 'buchten', grabenRueckwall, grabenPfuetzen, ackerNeu } bzw. __dbg.gbProbe(o); ohne GB_PROBE alles wie bisher */   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
@@ -11189,7 +11203,7 @@ function armyKeep() { if (armySide === feindSeite() && !feindSelbst[armySide]) {
 // ---------- Kartenwahl ----------
 const TCOL = { open: '#6d6250', mud: '#4f4433', crater: '#5c5141', trench: '#2e271e', wire: '#7a6e5c', village: '#8a7e66', forest: '#3f4a2c', canal: '#355260', bridge: '#9a8a6a',
   furt: '#4f7480', sumpf: '#4b5a36', wald: '#24331c', waldweg: '#6b6a44', bunker: '#a7a59a', fabrik: '#8a5a44', kirche: '#c2bba8', barrikade: '#7a5a3a', bahn: '#56524a',
-  schiff: '#c2bba8', turm: '#d8d0bc', friedhof: '#6f7258', garten: '#66704a', eis: '#9fb4bf', haus: '#7a6a58', kapelle: '#b8b0a0', steinbruecke: '#a49a88' };
+  schiff: '#c2bba8', turm: '#d8d0bc', friedhof: '#6f7258', garten: '#66704a', acker: '#8a8a7a', eis: '#9fb4bf', haus: '#7a6a58', kapelle: '#b8b0a0', steinbruecke: '#a49a88' };
 function drawMapPreview(cvs, id) {
   const prev = mapSel; setMap(id); const M = E.buildMap(), m = E.MAP; setMap(prev);
   const W = cvs.clientWidth || 180, H = cvs.clientHeight || 120, dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -11571,7 +11585,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { buchten: () => GBW && GBW.buchtenJeFeld, gbTeile: () => GBW && GBW.gteile && { an: GBW.gteile.an, stirn: (GBW.gteile.st || []).length, feind: (GBW.gteile.st || []).filter(q => q.feind).length },   /* G2b: gemalte Grabenteile aktiv? */   /* G2a: Feuerbuchten je Grabenfeld (für U2) */ gbProbe: o => { window.GB_PROBE = o || null; renderTerrain(); return true; },   /* G1: Gelände-Probe neu aufbauen */ massstab: an => { window.MASSSTAB_ALT = !an; return !window.MASSSTAB_ALT; },   /* U1: 1 = Maßstab E1, 0 = alter Maßstab */ schaden: (id, dmg, krit, seite) => { const u = unitById(id), st = schadenStufe(dmg), f = floater(...headPos(id), '−' + fmt(dmg), st.col, st.big, true); if (f && u) { f.seite = seite || fac(u.side); f.krit = !!krit; } return !!f; },   /* Punkt 17: Schadenszahl zeigen */ mitte: (c, r) => center(c, r), zaehler: () => ({ fxs: fxs.length, gmarks: gmarks.length, particles: particles.length, floaters: floaters.length, decals: decals.length, tracers: tracers.length, booms: booms.length, flames: flames.length, rings: rings.length, du: DU.size, wolken: (G.clouds || []).length, nebel: (G.smoke || []).length, feuer: (G.fires || []).length, eisloch: G.map.flat().filter(h => h.t === 'eisloch').length }),   /* Paket C Punkt 4: Größen der Listen je Runde */ modus: () => aktModus(), zielDa: id => zielDa(unitById(id)), knoepfe: () => [...document.querySelectorAll('[data-act]')].filter(b => b.offsetParent).map(b => b.dataset.act), spur: (i, c0, r0, c1, r1, o) => { const [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1); spurSchnee(i, x0, y0, x1, y1, o || {}); }, spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { buchten: () => GBW && GBW.buchtenJeFeld, gbTeile: () => GBW && GBW.gteile && { an: GBW.gteile.an, stirn: (GBW.gteile.st || []).length, feind: (GBW.gteile.st || []).filter(q => q.feind).length, weg: GBW.gteile.weg || 0 },   /* G2b: gemalte Grabenteile aktiv? */   /* G2a: Feuerbuchten je Grabenfeld (für U2) */ gbProbe: o => { window.GB_PROBE = o || null; renderTerrain(); return true; },   /* G1: Gelände-Probe neu aufbauen */ massstab: an => { window.MASSSTAB_ALT = !an; return !window.MASSSTAB_ALT; },   /* U1: 1 = Maßstab E1, 0 = alter Maßstab */ schaden: (id, dmg, krit, seite) => { const u = unitById(id), st = schadenStufe(dmg), f = floater(...headPos(id), '−' + fmt(dmg), st.col, st.big, true); if (f && u) { f.seite = seite || fac(u.side); f.krit = !!krit; } return !!f; },   /* Punkt 17: Schadenszahl zeigen */ mitte: (c, r) => center(c, r), zaehler: () => ({ fxs: fxs.length, gmarks: gmarks.length, particles: particles.length, floaters: floaters.length, decals: decals.length, tracers: tracers.length, booms: booms.length, flames: flames.length, rings: rings.length, du: DU.size, wolken: (G.clouds || []).length, nebel: (G.smoke || []).length, feuer: (G.fires || []).length, eisloch: G.map.flat().filter(h => h.t === 'eisloch').length }),   /* Paket C Punkt 4: Größen der Listen je Runde */ modus: () => aktModus(), zielDa: id => zielDa(unitById(id)), knoepfe: () => [...document.querySelectorAll('[data-act]')].filter(b => b.offsetParent).map(b => b.dataset.act), spur: (i, c0, r0, c1, r1, o) => { const [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1); spurSchnee(i, x0, y0, x1, y1, o || {}); }, spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, heldRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; heldAnwahl = 1; return heldRuf(unitById(id), an); }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; }, ruf: (ev, sd) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; return ruf(ev, sd); }, rufWahl, schreiterRuf: (id, an) => { rufBis = 0; for (const k in RUF_SPERRE) delete RUF_SPERRE[k]; sstAnwahl = 2; return schreiterRuf(unitById(id), an); }, istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
