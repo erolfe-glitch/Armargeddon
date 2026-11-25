@@ -31,7 +31,7 @@ PX_SH, PX_R = 320, 400
 def quelle(name):   # G2b (2026-11-25): neue Bögen des Beraters liegen in ui-quelle/gelaende/neu_g/
     p = SRC / f'{name}.png'
     if p.exists(): return p
-    for d in ('neu_g', 'neu_draht'):   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
+    for d in ('neu_g', 'neu_draht', 'neu_poi'):   # G6 (2026-11-25): besondere Orte und gesprengte Sperren in neu_poi/   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
         if (SRC / d / f'{name}.png').exists(): return SRC / d / f'{name}.png'
     return SRC / 'neu_g' / f'{name}.png'
 
@@ -145,6 +145,9 @@ TEILE = {
     'graben_leiter':       ('bogen', ('gemeinsam', 0.5), {'namen': ['graben_leiter_1', 'graben_leiter_2']}),   # G-7
     'graben_unterstand':   ('einzel', 0.55),                                    # G-8 (kleines Holzstück davor fällt weg)
     'graben_stahlschild':  ('bogen', ('gemeinsam', 0.28), {'namen': ['graben_stahlschild_1', 'graben_stahlschild_2']}),   # G-9
+    'panzersperren_gesprengt': ('bogen', ('gemeinsam', 0.7), {'namen': ['sperre_weg_1', 'sperre_weg_2', 'sperre_weg_3', 'sperre_weg_4']}),   # G6: gleiche Anordnung wie panzersperren_1–4, gesprengt
+    'windmuehle_bogen':    ('bogen', ('gemeinsam', 2.2), {'namen': ['muehle_heil', 'muehle_kaputt', 'muehle_heil_schnee', 'muehle_kaputt_schnee']}),   # G6: Windmühle beschädigt / zerstört, Schlamm / Schnee
+    'koloss_wrack_bogen':  ('bogen', ('gemeinsam', 1.3), {'namen': ['wrack_1', 'wrack_2', 'wrack_schnee_1', 'wrack_schnee_2']}),   # G6: ausgebrannter Landkoloss, von vorn links / hinten rechts
     # G5b (2026-11-25): Drahtgürtel des Beraters (neu_draht/), je Stück ein fester Ausschnitt, gemeinsamer Maßstab 0,7 (Tiefenstück ≈ 560 px)
     'drahtguertel_schraeg_1': ('stueck', 0.7, {'quelle': ('drahtguertel_a', (30, 50, 1000, 760))}),     # schräg, links unten → rechts oben
     'drahtguertel_kaputt':    ('stueck', 0.7, {'quelle': ('drahtguertel_a', (1030, 170, 1670, 730))}),   # kurz, beschädigt
@@ -168,7 +171,7 @@ TEX_PX, TEX_PROBE = 1024, 768
 ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller',
            'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen',
            'hecke_schnee', 'heuhaufen_schnee', 'vogelscheuche_schnee', 'pflug_schnee',
-           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
+           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b', 'panzersperren_gesprengt', 'windmuehle_bogen', 'koloss_wrack_bogen'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
 
 
 def entrosa(q):

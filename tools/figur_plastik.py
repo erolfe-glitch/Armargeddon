@@ -22,7 +22,7 @@ GEL_TEILE = ('zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm
              'karren_schnee', 'schilf', 'ufer_schnee', 'unterholz_schnee',
              'graben_querwand_', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecke_', 'graben_leiter_', 'graben_unterstand', 'graben_stahlschild_',
              'graben_kiste', 'graben_kanister', 'graben_balken', 'graben_drahtrolle', 'graben_einsturz', 'graben_eimer', 'graben_spaten',
-             'hecke_schnee_', 'heuhaufen_schnee_', 'vogelscheuche_schnee', 'pflug_schnee', 'drahtguertel_')   # G2b/G3b (2026-11-25): neue Graben- und Feldteile   # Krähenfurt (2026-11-22, Flux); zaun deckt zaun_schnee mit ab
+             'hecke_schnee_', 'heuhaufen_schnee_', 'vogelscheuche_schnee', 'pflug_schnee', 'drahtguertel_', 'sperre_weg_', 'muehle_', 'wrack_')   # G2b/G3b (2026-11-25): neue Graben- und Feldteile   # Krähenfurt (2026-11-22, Flux); zaun deckt zaun_schnee mit ab
 GEL_WAND = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee', 'graben_brustwehr', 'graben_rueckwall', 'hecke_schnee_1', 'hecke_schnee_2'}
 SKALA = 510   # Grauwert = 128 + Δ · SKALA  (Δ höchstens ±0,25)
 # Stärken für „stark“ (Bildhöhe 320 px = 1 Soldat; Radien in px dieser Größe, bei größeren Bildern mit der Bildhöhe/320 skaliert)

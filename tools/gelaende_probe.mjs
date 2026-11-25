@@ -4,8 +4,8 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const OUT = process.env.G7 ? 'entwurf/probe/gelaende_g7a' : process.env.G5B ? 'entwurf/probe/gelaende_g5b' : process.env.G5 ? 'entwurf/probe/gelaende_g5' : process.env.G4B ? 'entwurf/probe/gelaende_g4b' : process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
-const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armgel-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
+const OUT = process.env.G6 ? 'entwurf/probe/gelaende_g6' : process.env.G7 ? 'entwurf/probe/gelaende_g7a' : process.env.G5B ? 'entwurf/probe/gelaende_g5b' : process.env.G5 ? 'entwurf/probe/gelaende_g5' : process.env.G4B ? 'entwurf/probe/gelaende_g4b' : process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', ...(process.env.MIT_GPU ? [] : ['--disable-gpu', '--use-angle=swiftshader']), `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armgel-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
 let id = 0; const pend = {}, fehler = []; ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pend[m.id]) { pend[m.id](m); delete pend[m.id]; return; } if (m.method === 'Runtime.exceptionThrown') fehler.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text); if (m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') fehler.push(m.params.args.map(a => a.value ?? a.description).join(' ').slice(0, 200)); };
@@ -15,7 +15,10 @@ await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScript
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const bild = async n => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, n + '.jpg'), Buffer.from(r.result.data, 'base64')); };
 const hell = () => ev("(() => { const c = document.getElementById('map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let s = 0, n = 0; for (let i = 0; i < d.length; i += 4 * 997) { s += d[i] + d[i + 1] + d[i + 2]; n++; } return s / n / 3; })()");
-const KARTEN = process.env.G7 ? {   // G7a (2026-11-25): Probe Graben eingegraben (nur über GB_PROBE), vorher heutiger Stand
+const KARTEN = process.env.G6 ? {   // G6 (2026-11-25): vorher ohne besondere Orte (window.ORTE_ALT vor dem Start), nachher mit; dazu gesprengte Sperre und eingestürzte Mühle
+  grauwall: { nah: [6, 4.5, 1.5], nah2: [3, 3, 2.2], var: { vorher: { _js: 'window.ORTE_ALT = true' }, nachher: null, gesprengt: { _gesprengt: [[8, 3], [3, 2]] }, zerstoert: { _js: "if (window.__dbg && __dbg.G && __dbg.G.bauten && __dbg.G.bauten[0]) { __dbg.G.bauten[0].kaputt = true; __dbg.G.map[5][6].t = 'village'; __dbg.play([{ t: 'einsturz', bau: 0, c: 5, r: 6, felder: [[5, 6]] }]); }" } } },
+  winterdorf: { nah: [6, 9.5, 1.8], var: { vorher: { _js: 'window.ORTE_ALT = true' }, nachher: null } },
+} : process.env.G7 ? {   // G7a (2026-11-25): Probe Graben eingegraben (nur über GB_PROBE), vorher heutiger Stand
   grauwall: { nah: [2, 4.5, 2.4], nah2: [2, 4.5, 1.4], var: { vorher: null, eingegraben: { eingegraben: true } } },
 } : process.env.G5B ? {   // G5b (2026-11-25): vorher Code-Draht aus G5 (window.GUERTEL_ALT), nachher gemalte Gürtelstücke
   grauwall: { nah: [5, 4.5, 1.6], var: { vorher: { _js: 'window.GUERTEL_ALT = true' }, nachher: null } },
@@ -53,7 +56,7 @@ for (const [karte, K] of Object.entries(KARTEN)) { if (NUR_K && !NUR_K.includes(
     const P = o && Object.keys(o).some(k => !k.startsWith('_')) ? Object.fromEntries(Object.entries(o).filter(([k]) => !k.startsWith('_'))) : null;
     if (o && o._js) await ev(`(() => { ${o._js}; return true; })()`);   // nach dem Start noch einmal (der Start setzt die Seite neu auf)
     await ev(`(() => { const G = __dbg.G; if (!window.__rasterOrig) window.__rasterOrig = G.map.map(col => col.map(h => h.t)); G.map.forEach((col, c) => col.forEach((h, r) => h.t = window.__rasterOrig[c][r]));
-      for (const [c, r, t] of ${JSON.stringify((o && o._raster) || [])}) G.map[c][r].t = t; __dbg.gbProbe(${JSON.stringify(P)}); return true; })()`);
+      for (const [c, r, t] of ${JSON.stringify((o && o._raster) || [])}) G.map[c][r].t = t; for (const [c, r] of ${JSON.stringify((o && o._gesprengt) || [])}) { G.map[c][r].t = 'crater'; G.map[c][r].gesprengt = true; } __dbg.gbProbe(${JSON.stringify(P)}); return true; })()`);
     await sleep(2500); for (let i = 0; i < 40 && (await hell()) < 12; i++) await sleep(500);   // Neuaufbau mit Plastik-Karten dauert headless länger
     const m = await ev(`__dbg.mitte(${nah[0]}, ${nah[1]})`); await ev(`(() => { __dbg.camSetzen(${m[0]}, ${m[1]}, ${nah[2]}); return true; })()`); await sleep(1500); await bild(`${karte}_${v}_nah`);
     if (K.nah2) { const m2 = await ev(`__dbg.mitte(${K.nah2[0]}, ${K.nah2[1]})`); await ev(`(() => { __dbg.camSetzen(${m2[0]}, ${m2[1]}, ${K.nah2[2]}); return true; })()`); await sleep(1500); await bild(`${karte}_${v}_nah2`); }
