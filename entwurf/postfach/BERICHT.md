@@ -1,3 +1,48 @@
+## 2026-11-25 – G7c: Graben nachgebessert (Punkt 80) (`1b1dc00`)
+
+Gepusht. Weiter **nur in der Probe** (`GB_PROBE { eingegraben: true }`). Der Bodenkontakt der Hindernisse wirkt im Spiel, sobald index.html am Paketende neu eingecheckt ist. Der Prüfer `test_kommentare` lief vor jedem build.py.
+
+### Gemacht
+1. **Querwände:**
+   - Sie hängen jetzt fast doppelt so tief (0,7 SH statt 0,36 SH): oben die Sandsackkrone, darunter fällt die Front in den dunklen Graben.
+   - Die Bretter-Fassung habe ich herausgenommen, sie sah weiter wie eine Kiste aus. Flechtwerk und „beschädigt“ wirken als Erdblock deutlich besser.
+   - Ganz überzeugend sind sie aber noch nicht, siehe Frage 1.
+2. **Sandsackwall:**
+   - Er ist jetzt dunkel und erdig (Helligkeit und Sättigung deutlich runter, Erdflecken über den Säcken) und schmaler (0,21 R statt 0,3 R).
+   - Die Fassung wechselt je Abschnitt; etwa jeder fünfte Abschnitt ist nur Erdwall.
+   - Die Enden laufen weich aus.
+   - Er begleitet den Graben jetzt und ist nicht mehr das Hellste im Bild (`vergleich_sandsack.jpg`).
+   - Ein erster Versuch mit vielen kurzen, versetzten Stücken gab harte, rechteckige Schnitte mitten durch die Säcke; den habe ich verworfen.
+3. **Lippe:**
+   - Mehr Kontrast, und die Bruchkante zum Graben hin ist kräftig dunkel.
+   - An den vorderen Kanten ist der Rand zum Graben dunkler, damit die Kante sichtbar wird.
+4. **Bodenkontakt der Hindernisse:**
+   - Der Erdfleck ist dunkler und größer, mit deutlich mehr und größeren Klumpen.
+   - Dazu kommt ein schmaler Kontaktschatten direkt unter Füßen und Balken.
+   - Die Füße sind tiefer eingesunken (Rand läuft über ein Fünftel der Höhe aus).
+   - Im Vorher/nachher-Bild ist der Unterschied jetzt klar zu sehen.
+
+### Bilder
+- `entwurf/probe/gelaende_g7c/`:
+  - `vergleich_ausschnitt.jpg` und `vergleich_sandsack.jpg`: G7b-Zwischenstand | neu.
+  - `vergleich_ecke.jpg`: Ecke ganz nah, G7b | neu.
+  - `vergleich_nah.jpg`, `vergleich_nah2.jpg`, `vergleich_ganz.jpg`: G7b | neu | Zielbild.
+- `entwurf/probe/boden_hindernisse/vergleich_ausschnitt.jpg`, `vergleich_nah.jpg`, `vergleich_nah2.jpg`: Hindernisse vorher/nachher.
+
+### Was mir noch auffällt
+- An einem kurzen Knick der Bucht hängt ein schwarzes Rechteck: das Stück hängende Innenwand an einer sehr kurzen Kante (in `vergleich_ecke.jpg` rechts, unter der Kiste). Das räume ich in G7d auf.
+- Ganz nah ist der Sandsackwall jetzt eher zu unauffällig. Wenn er dir zu schwach ist, drehe ich die Helligkeit etwas zurück.
+
+### Tests
+- test_kommentare bestanden.
+- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
+- Keine Hänger. Den Chrome im Hintergrund habe ich beendet; der Vorschau-Server läuft weiter.
+
+### Fragen an Enrico
+1. **Querwände:** So lassen (hängend, Flechtwerk bzw. beschädigt), oder doch die alten aufrechten Querwände aus dem Test?
+2. Passt der Sandsackwall in dieser Stärke?
+3. Wenn das so passt: Nächster `pa` ist G7d (ins Spiel, Lauf- und Sappengräben, Ecken G7-5, R2, Bremsen 2 und 4, Leistung, Figuren-Einsinken).
+
 ## 2026-11-25 – G7b voll, Zwischenstand (Punkte 78, 79) (`93b6504`, `aded42e`)
 
 **Nicht fertig – Zwischenstand nach Sparregel 5.** Das Paket war größer als ein `pa`.
