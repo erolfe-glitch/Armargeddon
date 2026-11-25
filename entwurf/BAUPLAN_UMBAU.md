@@ -1,4 +1,4 @@
-# Bauplan großer Umbau (Etappe 3 und 4) – Stand 2026-11-25 (Fassung 2)
+# Bauplan großer Umbau (Etappe 3 und 4) – Stand 2026-11-25 (Fassung 2, Antworten 25.11. 06:15)
 
 **Nur Plan, nichts gebaut.** Enrico und der Berater prüfen; **U0 erst nach Freigabe.** Je Paket ein `pa`, Stufe Mittel, Sparregeln gelten: keine Hilfs-Agenten, keine Läufe über 10 Minuten ohne Rückfrage, Zwischenstände committen. Nach jedem U-Paket kommt ein Bericht mit Bildern; Enrico schaut ihn an.
 
@@ -232,9 +232,14 @@ Verbindliche Begriffe, wie sie künftig in Regeln, Texten und Anzeige heißen.
      - die Feldkanone schießt nach dem Abprotzen noch.
 5. **Entsetzenstest:** heute bei **jedem** Schadenstreffer eines Fahrzeugs oder Schreiters, auch Fernkampf, Zusatzwaffe und Sturmrollen, also auch mehrmals je Runde. Vorschlag in U7: höchstens einmal je Einheit und gegnerischer Runde.
 
-## 12. Offene Fragen an Enrico
-1. **Feuerkraft:** weiche Kurve über alle Modelle oder an Waffenträger gekoppelt (MG-Schütze, Flammenwerfer)? In U5 messe ich beides, Enrico entscheidet am Ergebnis.
-2. **Zusammenbruch:** gleiche Schwelle für beide Seiten (Vorschlag) oder die heutige Asymmetrie behalten?
-3. **Umkämpftes Zielfeld:** Zähler **anhalten** (Vorschlag) oder **zurücksetzen**?
-4. **Pannen:** 1 Runde, schwere Panne 2 – passt das?
-5. **Nachschub auf umkämpften Zielfeldern** verbieten (Vorschlag), auch wenn die Messung keinen Schneeball zeigt?
+## 12. Fragen aus Fassung 2 – beantwortet (Enrico 2026-11-25 06:15, Punkt 55)
+**Umbau freigegeben für U0 und U1.** Nach U1 anhalten; das Gelände-Paket G schreibt der Berater.
+1. **Feuerkraft:** in U5 beide Fassungen messen (weiche Kurve / Waffenträger), Enrico entscheidet am Ergebnis.
+2. **Zusammenbruch: gleiche Schwelle für beide Seiten**, ausgleichen über die Armeen – U8/U9.
+3. **Umkämpftes Zielfeld: Zähler anhalten**, Besitzerwechsel setzt zurück – U8.
+4. **Pannen/Festfahren: 1 Runde, schwere Panne 2** – U8 (oder früher, wo es passt, z. B. U5).
+5. **Kein Nachschub auf umkämpften Zielfeldern** – U8/U9.
+6. **Entsetzenstest höchstens einmal je Einheit und Runde** – U7.
+
+## 13. Stand der Pakete
+- **U0 erledigt (2026-11-25):** Git-Tag `vor-umbau` auf dem Stand vor dem ersten Umbau-Commit (gepusht). Rückweg: `git checkout vor-umbau` (nur ansehen) bzw. einzelne Dateien von dort holen. Das Probe-Werkzeug `tools/massstab_bilder.mjs` bleibt als Vergleich (Varianten A–E, E1f90/E1f85).

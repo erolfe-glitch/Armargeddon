@@ -1,3 +1,16 @@
+## 2026-11-25 – Umbau U0: Rückweg gesetzt (Punkt 55)
+
+Gepusht. **U0 ist fertig**, als Nächstes kommt **U1 Maßstab** (eigener `pa`), danach halte ich für das Gelände-Paket G an.
+
+- **Git-Tag `vor-umbau`** zeigt auf `7240128` (Bauplan Fassung 2, letzter Stand vor dem ersten Umbau-Commit). Er ist auf GitHub gepusht.
+  - Ansehen ohne etwas zu ändern: `git checkout vor-umbau`, zurück mit `git checkout main`.
+  - Eine einzelne Datei zurückholen: `git checkout vor-umbau -- src/ui.js`.
+- **Bauplan:** Abschnitt 12 ist jetzt „beantwortet“ (deine sechs Antworten mit Paketzuordnung). Neu ist Abschnitt 13 „Stand der Pakete“.
+- Das Probe-Werkzeug `tools/massstab_bilder.mjs` bleibt als Vergleich (A–E, E1f90/E1f85).
+
+### Fragen an Enrico
+- Keine.
+
 ## 2026-11-25 – Paket BP2: Bauplan überarbeitet (Punkte 52–54), nur Plan
 
 Gepusht. **Nichts gebaut.** Datei: **`entwurf/BAUPLAN_UMBAU.md`** (Fassung 2). U0 erst nach eurer Freigabe.

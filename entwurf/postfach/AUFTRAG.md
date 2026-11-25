@@ -25,8 +25,21 @@
 - ✓ **Paket F2 – Nachträge vor dem Bauplan (Abschnitt 24.11. 23:12, Punkt 50), klein:** Aschenwacht-Schadenszahlen kräftiger, Maßstab-Probe E1 mit kleineren Panzern/Schreitern. **Danach eigener `pa`: Bauplan für den großen Umbau** (noch nichts bauen; Maßstab E1).
 - ✓ **Bauplan geschrieben** (`entwurf/BAUPLAN_UMBAU.md`, `37f7b67`).
 - ✓ **Paket BP2 – Bauplan überarbeiten (Abschnitt „24.11. 23:30 bis 25.11. 00:25“, Punkte 52–54), nur Plan, nichts bauen.** Danach Freigabe durch Enrico, dann U0.
+- **Paket U0 + U1 – Umbau beginnt (Abschnitt 25.11. 06:15, Punkt 55).** Je ein `pa` (erst U0, dann U1). Danach Pause für das Gelände-Paket G.
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Enrico 2026-11-25 06:15): Freigabe Umbau U0 + U1, Antworten Bauplan Abschnitt 12 <<<
+**Reihenfolge:** Punkt 55 in `BAUPLAN_UMBAU.md` eintragen (Abschnitt 12 als beantwortet), dann **U0** bauen (eigener `pa`), danach **U1** (eigener `pa`). **Nach U1 anhalten:** als Nächstes kommt das Gelände-Paket G, das der Berater mit Enrico noch bespricht – nicht selbst anfangen. CC-Stufe beim Bauen: Mittel.
+
+- [x] **55. Freigabe und Antworten (Enrico 25.11. 06:15).**
+  - **Umbau freigegeben für U0 und U1.**
+  - 1. Feuerkraft: wie vorgeschlagen in U5 beide Fassungen messen, Enrico entscheidet am Ergebnis.
+  - 2. **Zusammenbruch: gleiche Schwelle für beide Seiten** (ausgleichen über die Armeen) – in U8/U9.
+  - 3. **Umkämpftes Zielfeld: Zähler anhalten**, Besitzerwechsel setzt zurück – in U8.
+  - 4. **Pannen/Festfahren: 1 Runde, schwere Panne 2** – in U8 (oder früher, wo es passt).
+  - 5. **Kein Nachschub auf umkämpften Zielfeldern** – in U8/U9.
+  - 6. **Entsetzenstest höchstens einmal je Einheit und Runde** (CC-Vorschlag angenommen) – in U7.
 
 # >>> JETZT (Enrico 2026-11-24 23:30 bis 25.11. 00:25): Antworten zum Bauplan + zwei fremde Prüfungen <<<
 **Reihenfolge:** nächster `pa` = **nur `entwurf/BAUPLAN_UMBAU.md` überarbeiten** mit den Punkten 52–54 (Abschnitt 6 beantwortet, Abschnitt 5 neue Reihenfolge, neue Abschnitte aus den Prüfungen), committen, Bericht mit kurzer Zusammenfassung der Änderungen – **noch nichts bauen**. Enrico und Berater prüfen den überarbeiteten Plan; **U0 erst nach Freigabe**.
