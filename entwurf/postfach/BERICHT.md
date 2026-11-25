@@ -1,3 +1,52 @@
+## 2026-11-25 – Gelände G2a + G3a: Gräben als Linien, Acker A (Punkt 58) (`5c1ea2c`)
+
+Gepusht, **index.html gebaut und eingecheckt.** Alles, was ohne neue Bilder geht, ist eingebaut. Ich warte jetzt auf die gemalten Teile vom Berater; **U2 kommt erst, wenn die Grabenform mit den gemalten Teilen steht.**
+
+### Gräben Grauwall (G2a)
+- **Form:** Feuergräben mit Feuerbuchten und Querwänden (eckig, Länge und Tiefe mit Zufall), dazu Rückwall und Pfützen. Bis G-1…G-10 geliefert sind, stehen die heutigen Teile als Ersatz.
+- **Gräben als Linien** in `MAP.graeben` (engine.js): `feuer`, `lauf`, `sappe`. Die Grabenfelder der Regeln sind genau die Felder der Linien (Bild = Regel).
+- **Grauwall:**
+  - Feuergräben in Spalte 2, 7 und 10; **Graben 10 endet im Norden**.
+  - Je 2 Laufgräben: Konkordat aus dem Hinterland, Aschenwacht zwischen ihren Linien.
+  - 1 Sappe der Aschenwacht nach vorn.
+- **Feuerbuchten für U2:** Der Gelände-Aufbau gibt sie je Grabenfeld zurück (`buchtenJeFeld`, Test `__dbg.buchten()`).
+- **Rückweg:** `GRAEBEN_ALT=1` bzw. `window.GRAEBEN_ALT = true`.
+
+### Balance Grauwall
+**Sehr empfindlich.** Mein erster Entwurf (Graben 10 endet im Süden, 2 Sappen) fiel auf **23 %** für das Konkordat. Die Varianten (je 4 × 100 oder 2 × 100):
+
+| Variante | Konkordat |
+|---|---|
+| ohne Laufgräben/Sappe der Aschenwacht, Graben 10 durchgehend | 44 % |
+| alles, Graben 10 durchgehend | 39 % |
+| Graben 10 endet im Norden, mit Konkordat-Sappe | 63 % |
+| Graben 10 endet im Norden, **ohne Konkordat-Sappe** | **47 %** |
+
+**Gewählt** ist die letzte Variante. **Endmessung 4 × 200: 45 / 48 / 52 / 47 → 48,0 %** (vorher 46,5 %), Runden Ø 15,0, Ausfälle Konkordat 32 %, Aschenwacht 43 %.
+
+### Felder Krähenfurt (G3a)
+- **Acker A** ist Standard; jeder zusammenhängende Acker hat seine eigene Furchenrichtung (±25°).
+- **Hecken** an etwa 40 % der Ackerränder, bis `hecke_schnee` kommt mit dem Unterholz als Ersatzbild.
+  - **Deckung:** Die Äcker sind schon Feldart Garten (×1,2 gegen Beschuss), die Hecke steht an deren Rand. Damit gibt es keine neue Regel, und die Messung bleibt gleich.
+  - Hinweis: In der Vorschau steht dafür heute „Gartenmauer ×1,2“. Auf Krähenfurt könnte das „Hecke/Feldrain“ heißen, wenn du willst.
+- **Heuhaufen, Vogelscheuche, Pflug** sind als Platzhalter eingebaut und erscheinen, sobald die Bilder da sind. Noch nicht gelieferte Bilder lädt das Spiel gar nicht erst.
+- **Rückweg:** `window.ACKER_C2 = true` (Acker vom 24.11.).
+- **Messung Krähenfurt 4 × 200:** 52 / 59 / 64 / 61 → **59 %**. Das ist genau wie der eingefrorene alte Stand (keine Regeländerung). Es liegt aber über dem Abgleich vom 22.11. (52,9 %); die Verschiebung stammt aus den Regelpaketen seitdem (D–F), nicht aus G3a.
+
+### Bilder (`entwurf/probe/gelaende_g2/`)
+- `g2_grauwall_nah.jpg`: Aschenwacht- und Konkordat-Seite, vorher/nachher.
+- `g2_g3_ganz.jpg`: beide Karten ganz, vorher/nachher.
+- `g3_kraehenfurt_nah.jpg`: Acker vorher/nachher.
+- Neu erzeugen: `G2=1 node tools/gelaende_probe.mjs`.
+
+### Tests
+- `test_regeln`, `test_belegung`, `test_kommentare` ok; Partietest rot-frei.
+- **`test_draht` angepasst:** Die Prüfung „Minenwerfer räumt Draht“ hing an der Startlage. Seit F38 darf die Sprenggranate nicht auf leeren Draht schießen, und mit dem neuen Raster war das Zielfeld leer. Jetzt stellt der Test einen Gegner hinein. Alle Prüfungen bestanden.
+
+### Fragen an Enrico
+- Krähenfurt liegt bei 59 % für das Konkordat, seit den Regelpaketen D–F. Jetzt abgleichen oder erst in U9 (Karten abgleichen nach dem Umbau)? Mein Vorschlag: U9.
+- Soll die Deckungsanzeige auf Krähenfurt „Hecke/Feldrain“ statt „Gartenmauer“ heißen?
+
 ## 2026-11-25 – Gelände-Paket G1: Probe und Plan (Punkte 56/57)
 
 Gepusht. **Nur Probe und Plan, nichts fest eingebaut.** Die Probe-Schalter sind im Code, aber nur aktiv mit `window.GB_PROBE` bzw. `__dbg.gbProbe({...})`. Ohne den Schalter sieht das Spiel aus wie vorher; der Partietest ist ok. Plan und Bausteinliste: **`entwurf/GELAENDE_G_PLAN.md`**.
