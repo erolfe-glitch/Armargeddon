@@ -396,7 +396,7 @@ function aufbauen(cfg, IM) {
   // Graben
   // Zickzack wie echte Gräben (Schulterwehren): der Zug wird alle ZZ_STEP neu gesetzt und abwechselnd um ±ZZ_A seitlich versetzt.
   // Nur Darstellung innerhalb der Grabenfelder – die Regeln (welches Feld Graben ist) bleiben gleich.
-  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', ZI = BU && !cfg.zinnenAlt, GW = ZI ? 0.6 : BU ? 0.85 : 1.3, GK = ZI ? 0.3 : BU ? 0.42 : 0.5;   // G4 (2026-11-25): Zinnenverlauf – schmaler Graben, Bucht und Durchgang überlappen nicht mehr (Rückweg window.ZINNEN_ALT)   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
+  const ZZ_A = R * 0.3, ZZ_STEP = R * 0.866, BU = cfg.grabenForm === 'buchten', ZI = BU && !cfg.zinnenAlt, G4B = ZI && !cfg.g4bAlt, GW = ZI ? 0.6 : BU ? 0.85 : 1.3, GK = ZI ? 0.3 : BU ? 0.42 : 0.5;   // G4 (2026-11-25): Zinnenverlauf – schmaler Graben, Bucht und Durchgang überlappen nicht mehr (Rückweg window.ZINNEN_ALT)   // G1-Probe: bei Buchten schmalere Sohle, damit die eckige Form im Boden sichtbar wird   // GW: Grabenbreite (Sohlenstreifen) in R, GK: Abstand der Kanten von der Linie in R
   function zickzack(pts) {
     const segL = []; let L = 0; for (let i = 0; i < pts.length - 1; i++) { const d = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); segL.push(d); L += d; }
     const n = Math.max(2, Math.round(L / ZZ_STEP)), out = [];
@@ -419,7 +419,11 @@ function aufbauen(cfg, IM) {
     const out = [], sA = [], oA = [], put = (s, o) => { const [x, y, nx, ny] = at(Math.max(0, Math.min(L, s))); out.push([x + nx * o, y + ny * o]); sA.push(s); oA.push(o); };
     const merk = (s0, s1, o) => { const [x0, y0, nx, ny] = at((s0 + s1) / 2), [xa, ya] = at(s0), [xb, yb] = at(s1); (o > 0 ? BUCHTEN : DURCH).push({ ti, x: x0 + nx * o, y: y0 + ny * o, nx, ny, len: Math.hypot(xb - xa, yb - ya), a: [xa + nx * o, ya + ny * o], b: [xb + nx * o, yb + ny * o] }); };   // G2a: Feuerbucht für die Grabenplätze (U2)
     let s = 0, k = 0, bucht = hrnd(pts.length, ch ? ch[0][0] : 0, 301) < 0.5; put(0, 0);
-    while (s < L) { const len = R * (bucht ? (GB.bucht ?? (ZI ? 0.95 : 0.85)) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? (ZI ? 0.9 : 0.45)) + hrnd(k, 7, 303) * (ZI ? 0.25 : 0.15)), o = bucht ? A / 2 : -A / 2;
+    const tk = 7 + 11 * (ti + 2) + (ch ? ch[0][0] * 3 + ch[0][1] * 5 : 0);   // G4b: Takt je Graben eigen (vorher liefen alle Gräben im gleichen Takt)
+    const lang = (b, k) => { if (!G4B) return R * (b ? (GB.bucht ?? (ZI ? 0.95 : 0.85)) + hrnd(k, 7, 302) * 0.3 : (GB.quer ?? (ZI ? 0.9 : 0.45)) + hrnd(k, 7, 303) * (ZI ? 0.25 : 0.15));
+      const v = hrnd(k, tk, b ? 302 : 303), x = hrnd(k, tk, 305); return R * (b ? (x < 0.15 ? 1.75 + v * 0.45 : 0.72 + v * 0.85) : (x < 0.12 ? 1.6 + v * 0.3 : 0.85 + v * 0.6)); };   // G4b: Bucht 0,72–1,57 R, selten 1,75–2,2; Durchgang 0,85–1,45 R, selten bis 1,9
+    while (s < L) { const len = G4B && k === 0 ? Math.min(R * 0.9, lang(bucht, k)) : lang(bucht, k), o =   // G4b: erster Abschnitt kurz, damit das Feld am Grabenanfang eine Bucht nah hat
+      (bucht ? A / 2 : -A / 2) * (G4B ? 0.85 + hrnd(k, tk, 304) * 0.3 : 1);   // G4b: Tiefe je Bucht leicht verschieden
       const e = Math.min(L, s + len); if (e - s < R * 0.12) break; put(s, o); put(e, o); merk(s, e, o); s = e; bucht = !bucht; k++; }
     put(L, 0);
     out.stufen = new Set(); out.off = oA; for (let j = 0; j < out.length - 1; j++) if (Math.abs(sA[j] - sA[j + 1]) < 1e-6 && oA[j] && oA[j + 1] && oA[j] !== oA[j + 1]) out.stufen.add(j);   // G2b: Knick zwischen Bucht und Durchgang (Querwand)
@@ -489,7 +493,33 @@ function aufbauen(cfg, IM) {
       const ROST = [1, 2, 3, 4].map(k => IM['graben_sohle_rost_' + k]).filter(Boolean), PF = [1, 2, 3].map(k => IM['graben_pfuetze_' + k]).filter(Boolean);
       w.save(); w.strokeStyle = pattern(w, IM.boden_schlamm, 0, 0, 0.5); strokeLines(w, TR, R * GW * 0.42); w.globalCompositeOperation = 'multiply'; w.filter = `blur(${R * 0.03}px)`;
       w.strokeStyle = 'rgba(92,74,56,1)'; strokeLines(w, TR, R * GW * 0.42); w.restore();
-      TR.forEach((pts, ti) => { let last = null;
+      if (G4B) {   // G4b (2026-11-25): Durchgänge mit durchgehendem Laufsteg, Buchten mit einzelnen Rosten, dunkle Wasserpfützen; nichts ragt in die Wände
+        const KR = new Map(), kraeftig = im => { if (KR.has(im)) return KR.get(im); const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d');
+          x.filter = 'contrast(1.4) saturate(1.15) brightness(0.9)'; x.drawImage(im, 0, 0); KR.set(im, c); return c; };
+        const rost = (im, x, y, rot, quer, laengs) => { const c = kraeftig(im); w.save(); w.shadowColor = 'rgba(12,9,6,0.6)'; w.shadowBlur = R * 0.035; w.shadowOffsetY = R * 0.018;
+          w.translate(x, y); w.rotate(rot); w.drawImage(c, -quer / 2, -laengs / 2, quer, laengs); w.restore(); };
+        const pfuetze = (x, y, rx, sd) => { const ry = rx * 0.7; w.save(); w.beginPath();
+          for (let q = 0; q < 3; q++) { const ox = (hrnd(sd, q, 371) - 0.5) * rx * 0.7, oy = (hrnd(sd, q, 372) - 0.5) * ry * 0.6, f = 0.6 + hrnd(sd, q, 373) * 0.4; w.moveTo(x + ox + rx * f, y + oy); w.ellipse(x + ox, y + oy, rx * f, ry * f, 0, 0, 7); }
+          w.fillStyle = 'rgba(58,46,34,0.75)'; w.save(); w.filter = `blur(${R * 0.012}px)`; w.lineWidth = R * 0.03; w.strokeStyle = 'rgba(58,46,34,0.6)'; w.stroke(); w.restore();   // nasser Schlammrand
+          w.fillStyle = 'rgba(30,27,25,0.94)'; w.fill(); w.clip();
+          const gl = w.createLinearGradient(x - rx, y - ry, x + rx * 0.3, y + ry); gl.addColorStop(0, 'rgba(120,128,134,0.42)'); gl.addColorStop(0.45, 'rgba(70,74,78,0.18)'); gl.addColorStop(1, 'rgba(20,18,16,0)'); w.fillStyle = gl; w.fillRect(x - rx * 2, y - ry * 2, rx * 4, ry * 4);   // Spiegelung des Himmels
+          w.restore(); w.save(); w.strokeStyle = 'rgba(190,196,198,0.4)'; w.lineWidth = R * 0.008; w.beginPath(); w.ellipse(x - rx * 0.12, y - ry * 0.1, rx * 0.62, ry * 0.5, 0, 3.5, 4.5); w.stroke(); w.restore(); };   // schmaler Glanz
+        const QUER = R * GW * 0.78, RAND = R * 0.05;
+        TR.forEach((pts, ti) => { const z = TRENCH[ti], o = z.off; if (!o) return; let last = null;
+          for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < R * 0.3) continue;
+            let rot = Math.atan2(dy, dx) - Math.PI / 2; if (rot > Math.PI / 2) rot -= Math.PI; else if (rot < -Math.PI / 2) rot += Math.PI;
+            const P = t => [a[0] + dx * t, a[1] + dy * t], sd = ti * 131 + i;
+            if (z.stufen && z.stufen.has(i)) { if (hrnd(sd, 1, 374) < 0.25) pfuetze(...P(0.5), R * (0.09 + hrnd(sd, 2, 375) * 0.05), sd); continue; }   // Knick: Schlamm, manchmal eine Pfütze
+            if (o[i] < 0 && o[i + 1] < 0) {   // Durchgang: Laufsteg von Ende zu Ende
+              const nutz = l - 2 * RAND, n = Math.max(1, Math.round(nutz / (R * 0.36))), st = nutz / n;
+              for (let j = 0; j < n; j++) { const im = nimm(ROST, hrnd(sd, j, 376), last); last = im; rost(im, ...P((RAND + st * (j + 0.5)) / l), rot + (hrnd(sd, j, 377) - 0.5) * 0.03, QUER, st * 1.08); }
+            } else if (o[i] > 0 && o[i + 1] > 0) {   // Bucht: ein oder zwei einzelne Roste, sonst Schlamm mit Pfütze
+              const n = l > R * 1.3 ? 2 : 1; let frei = null;
+              for (let j = 0; j < n; j++) { const t0 = (j + 0.5) / n, t = Math.max((RAND + R * 0.2) / l, Math.min(1 - (RAND + R * 0.2) / l, t0 + (hrnd(sd, j, 378) - 0.5) * 0.15));
+                if (hrnd(sd, j, 379) < 0.6) { const im = nimm(ROST, hrnd(sd, j, 380), last); last = im; const k = QUER * 0.92 / im.width; rost(im, ...P(t), rot + (hrnd(sd, j, 381) - 0.5) * 0.06, QUER * 0.92, Math.min(im.height * k, l / n - R * 0.06)); } else frei = t; }
+              if (frei != null && hrnd(sd, 3, 382) < 0.6) pfuetze(...P(frei), R * (0.1 + hrnd(sd, 4, 383) * 0.06), sd + 7);
+            } } });
+      } else TR.forEach((pts, ti) => { let last = null;
         for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy); if (l < R * 0.3 || (TRENCH[ti].stufen && TRENCH[ti].stufen.has(i))) continue;   // Knicke bleiben Schlamm
           const n = Math.max(1, Math.round(l / (R * (ZI ? 0.46 : 0.62)))), rot = Math.atan2(dy, dx) - Math.PI / 2;
           for (let j = 0; j < n; j++) { const t = (j + 0.5) / n, x = a[0] + dx * t, y = a[1] + dy * t, v = hrnd(ti * 31 + i, j, 330);
@@ -543,7 +573,7 @@ function aufbauen(cfg, IM) {
         if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * kd, y: C[1] - n[1] * R * GK + tb[1] * kd, wd: ln + R * 0.1, feind: false, weg }); } });
     if (GT) {   // G2b: Querwände und Stirnseiten an den Knicken (Unterstand einmal je Feuergraben), in den Buchten Leitern, Stahlschilde, Drahtrollen; Kram in den Durchgängen
       const P = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean), QW = P('graben_querwand_'), EK = P('graben_ecke_'), LEI = P('graben_leiter_'), SCH = P('graben_stahlschild_');
-      const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', 'einsturz', 'balken'].map(n => IM['graben_' + n]).filter(Boolean), last = {};
+      const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', 'einsturz', ...(G4B ? [] : ['balken'])].map(n => IM['graben_' + n]).filter(Boolean), last = {};   // G4b: ohne Balken (lag schräg halb in der Wand)
       const unter = {}; for (const ti of new Set(STIRN.map(st => st.ti))) { const st = STIRN.filter(q => !q.feind && q.ti === ti && !q.weg); if (st.length) unter[ti] = st[Math.floor(hrnd(ti, 5, 340) * st.length)]; }
       STIRN.forEach((st, k) => {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
@@ -815,7 +845,9 @@ function aufbauen(cfg, IM) {
   function feldWeg(c, r) { const k = c + ',' + r; for (let i = DRAW.length - 1; i >= 0; i--) if (DRAW[i].feld === k) DRAW.splice(i, 1); DRAHTFELD.delete(k); }
   // aufrechte Teile eines Felds neu aufbauen (Krähenfurt: Haus/Kapelle eingestürzt → Ruine), ohne die ganze Welt neu zu bauen; Bodenschatten bleiben
   function feldNeu(c, r) { feldWeg(c, r); try { feldTeile(c, r); } finally { FELD = null; BAUMFELD = null; } DRAW.sort((a, b) => a.y - b.y); }
-  const buchtenJeFeld = {}; for (const b of BUCHTEN) { let best = null, bd = 1e9; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (terr(c, r) !== 'trench') continue; const [x, y] = hexC(c, r), d = Math.hypot(x - b.x, y - b.y); if (d < bd) { bd = d; best = c + ',' + r; } } if (best && bd < R * 1.2) (buchtenJeFeld[best] = buchtenJeFeld[best] || []).push(b); }   // G2a: Feuerbuchten je Grabenfeld (für U2)
+  const buchtenJeFeld = {}; for (const b of BUCHTEN) { let best = null, bd = 1e9; for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { if (terr(c, r) !== 'trench') continue; const [x, y] = hexC(c, r), d = Math.hypot(x - b.x, y - b.y); if (d < bd) { bd = d; best = c + ',' + r; } } if (best && bd < R * 1.2) (buchtenJeFeld[best] = buchtenJeFeld[best] || []).push(b); }
+  if (cfg.graeben) for (const g of cfg.graeben) if (g.art === 'feuer') for (const [c, r] of g.linie) { const k = c + ',' + r; if (buchtenJeFeld[k] || terr(c, r) !== 'trench') continue;   // G4b: jedes Feld eines Feuergrabens bekommt mindestens eine Bucht (die nächste, auch wenn sie schon einem Nachbarfeld gehört)
+    const p = hexC(c, r); let best = null, bd = 1e9; for (const b of BUCHTEN) { const d = distTo(p, [b.a, b.b]); if (d < bd) { bd = d; best = b; } } if (best && bd < R * 1.2) buchtenJeFeld[k] = [best]; }   // G2a: Feuerbuchten je Grabenfeld (für U2)
   return { ground: WCV, pieces: DRAW, platz, hexC, R, SH, WW, WH, TR, terr, buchtenJeFeld, gteile: GTEILE, drahtFelder: DRAHTFELD, drahtWeg, flachNeu, feldWeg, feldNeu, UFER,
     setView(v) { g = v.g; proj = v.proj; F = v.F; U = v.U || 1; UNITS = v.units || []; } };
 }

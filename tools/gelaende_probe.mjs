@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-const OUT = process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const OUT = process.env.G4B ? 'entwurf/probe/gelaende_g4b' : process.env.G4 ? 'entwurf/probe/gelaende_g4' : process.env.G2B ? 'entwurf/probe/gelaende_g2b' : process.env.G2 ? 'entwurf/probe/gelaende_g2' : 'entwurf/probe/gelaende_g1', sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
 const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armgel-'))}`, '--no-first-run', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', 'about:blank'], { stdio: 'ignore' });
 let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
 const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
@@ -15,7 +15,9 @@ await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScript
 await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 const bild = async n => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, n + '.jpg'), Buffer.from(r.result.data, 'base64')); };
 const hell = () => ev("(() => { const c = document.getElementById('map'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let s = 0, n = 0; for (let i = 0; i < d.length; i += 4 * 997) { s += d[i] + d[i + 1] + d[i + 2]; n++; } return s / n / 3; })()");
-const KARTEN = process.env.G4 ? {   // G4 (2026-11-25): vorher = Buchten im breiten Band (window.ZINNEN_ALT), nachher = Zinnenverlauf
+const KARTEN = process.env.G4B ? {   // G4b (2026-11-25): vorher Stand G4 (window.G4B_ALT), nachher unregelmäßiger Takt und Grabenboden; zweites Nahbild zeigt den Grabenboden ganz nah
+  grauwall: { nah: [8.5, 4.5, 1.5], nah2: [2, 4.5, 3.2], var: { vorher: { _js: 'window.G4B_ALT = true' }, nachher: null } },
+} : process.env.G4 ? {   // G4 (2026-11-25): vorher = Buchten im breiten Band (window.ZINNEN_ALT), nachher = Zinnenverlauf
   grauwall: { nah: [8.5, 4.5, 1.5], nah2: [2, 4.5, 1.5], var: { vorher: { _js: 'window.ZINNEN_ALT = true' }, nachher: null } },
 } : process.env.G2B ? {   // G2b/G3b (2026-11-25): vorher = ohne die gemalten Teile (window.GTEILE_ALT), nachher = mit
   grauwall: { nah: [8.5, 4.5, 1.5], nah2: [2, 4.5, 1.5], var: { vorher: { _js: 'window.GTEILE_ALT = true' }, nachher: null, probe_zinnen: { grabenBuchten: { tief: 1.1, bucht: 0.9, quer: 0.7 } } } },

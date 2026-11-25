@@ -153,3 +153,7 @@ Machart wie `ui-quelle/gelaende/`: Magenta-Hintergrund, Ansicht schräg von vorn
 - Brustwehr nur vor den Buchten, knickt an deren Enden ein Stück mit; Rückwall folgt der Rückseite und springt hinter den Durchgängen zurück.
 - An ~20 % der Knicke keine Querwand/kein Eckstück (fest je Karte; Grauwall 8 von 45).
 - Krähenfurt: eigene Feldart „Acker“ (Regel wie Garten). Rückweg Gräben: window.ZINNEN_ALT. Bilder: entwurf/probe/gelaende_g4/.
+
+## 9. Stand G4b (2026-11-25, Takt + Grabenboden)
+- Takt je Graben eigen und stärker schwankend, Buchttiefe leicht verschieden; jedes Feuergrabenfeld hat mindestens eine Bucht (Grauwall 29 von 29).
+- Durchgänge: durchgehender Laufsteg; Buchten: einzelne Roste; Roste kräftiger mit Schatten; Pfützen dunkel mit Glanz, nie auf Rosten. Rückweg window.G4B_ALT. Bilder: entwurf/probe/gelaende_g4b/.
