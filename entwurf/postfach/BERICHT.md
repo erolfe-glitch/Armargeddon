@@ -1,3 +1,71 @@
+## 2026-11-26 – R4 Regel-Paket, Zwischenstand: Schritte 0, 1 und 2 (Regeln) (`a7763bc`, `dabbae6`, `07dda01` mit index.html)
+
+Gepusht. **Zwischenstand nach Sparregel 5:** Schritt 2 ohne die neuen Bögen, Schritt 3 (Stahlreiter) noch nicht begonnen.
+- **Hänger:** keine. Partietest ohne Fehler, keine Seitenfehler, kein Chrome offen.
+- **sim:** alle Läufe nacheinander, **kein Absturz**.
+- **Download:** Den Download der Pferdetöne habe ich vorher bei dir bestätigt. Du hast ihn einmal unterbrochen; 7 der 12 Dateien lagen da schon (18:11), die übrigen 5 habe ich nachgeladen. Alle 12 sind gültige, verschiedene MP3s.
+
+### Schritt 0 – Punkt 101 Pferdetöne (`a7763bc`)
+- 12 Dateien in `sound-quelle/stahlreiter/` (ohne `dampf1`), gesichert nach OneDrive, eingetragen in `CREDITS.md`.
+- Plätze `stahlreiter_<name>` in `sound_bau.json`. Im Ton-Pult unter **Pferde und Gespann → „Stahlreiter (gepanzertes Pferd)“**.
+- **Vorläufig bei den Lanzenreitern:**
+  - Anklicken = Schnauben durch Vox-Gitter (`maske_schnauben2`);
+  - Ziehen = Galopp 1;
+  - Getroffen „Wiehern“ = Wiehern 1.
+- **Was nicht greift:**
+  - „Pferd unruhig“ (Getroffen): Dort steht deine eigene Wahl aus dem Pult (`pferd_unruhe_2`), die habe ich nicht überschrieben. Aufbäumen ist auswählbar.
+  - Eine eigene Zeile „Angriff“ hat der Reiter nicht (beim Schlag klingt der Säbel), deshalb ist Wiehern beim Angriff noch nicht zugeordnet.
+- Die Zuordnung steckt in `entwurf/postfach/tonpult_export_2026-11-26_1830_stahlreiter.json`. Die Datei ist absichtlich älter datiert, damit dein neuester Export maßgeblich bleibt.
+
+### Schritt 1 – Punkt 103 Nacharbeit R3 (`dabbae6`, Rückweg `BILDKANTE_ALT`)
+- **Krähenfurt:** Die Sandsäcke am Gehöft (14,3) sind weg.
+- **Bild = Regel:**
+  - Gartenmauern und Friedhofsmauer in Sankt Ruß und der Sandsackhaken an der Schanze in Grauwall sind echte Kantendeckung (Mauer ×1,7, Sandsäcke ×1,5).
+  - Die Regel rechnet sie genau so aus wie vorher die Zeichnung, und GBau zeichnet sie jetzt aus der Regel. Bild und Regel können so nicht auseinanderlaufen.
+  - Die Lage ist unverändert: Vergleich `entwurf/probe/p103/vorher/` und `…/sanktruss_uebersicht.jpg`.
+  - Gartenzäune geben keine Deckung (Latten).
+  - Sankt Ruß hat jetzt 26 Mauerkanten mehr, Grauwall 2 Sandsackkanten mehr.
+- Werte unverändert. Sommerhecke: Auf Grauwall und Sankt Ruß stehen keine Hecken.
+
+| Siegquote Konkordat (Startwert 1, fest / gemischt) | nach R3 | nach Punkt 103 |
+|---|---|---|
+| Grauwall | 47 / 64 (Startwert 2: 47 / 54) | 48 / 62 (Startwert 2: 44 / 49) |
+| Sankt Ruß | 41 / 70 | 41 / 73 |
+| Krähenfurt | 46 / 89 | 46 / 91 |
+
+Krähenfurt bleibt fest bei 46 %. Die Sandsäcke am Gehöft waren also nicht die Ursache für das Minus aus R3; eher die Hecken bzw. die Mauer am Dorfplatz.
+
+### Schritt 2 – Punkte 94 und 96, Regeln (`07dda01`)
+- **Sturmbrecher (94):**
+  - Hat jetzt zusätzlich den **Gegenstoß** des Eingreiftrupps.
+  - Den Nahkampf-Faktor des Eingreiftrupps (×1,25 auf eigenen Zielfeldern, ×0,85 beim Vorgehen) habe ich bewusst nicht übernommen, weil der Sturmbrecher angreift.
+  - Preis 100 → **120** (Gegenstoß +20, Rechnung im Info-Fenster). 6 Modelle wie seit U5c.
+- **Grabenräumer (96):** Hat jetzt zusätzlich **Schilde vor**. Preis 50 → **65**.
+- **Eingreiftrupp und Schildwall sind gestrichen:** aus Nachschub, KI-Wunschlisten, Preisen, Schlagworten und Einheitenliste. In den Kartenarmeen standen sie nicht.
+- **Texte:** Einheitentexte, Schlagworte („Gegenstoß auf Zielfelder“, „Schilde vor“) und Chronik beider Einheiten angepasst.
+- **Ton-Pult:**
+  - Eingreiftrupp → Sturmbrecher: nichts übertragen, der Sturmbrecher hatte für alle Zeilen schon eine eigene Wahl.
+  - Schildwall → Grabenräumer: „Schilde vor“ = `neu2_metall_1`.
+  - Ton-Spur beider Einheiten neu gemessen, `tonpult_test` 93/93.
+  - Die stummen Ereignis-Plätze `ev_*` aus SP-3 prüft der Vergleich jetzt nicht mehr je Einheit, weil sie unter „Gelände und Gebäude“ stehen.
+
+| Siegquote Konkordat (Startwert 1) | gemischt vorher → nachher | fest vorher → nachher |
+|---|---|---|
+| Grauwall | 62 → 63 | 48 → 50 |
+| Sankt Ruß | 73 → 72 | 41 → 50 |
+| Krähenfurt | 91 → 87 | 46 → 48 |
+
+Verluste (Grauwall gemischt): Grabenräumer 85 %, Sturmbrecher 76 %. „Schilde vor“ setzt die KI etwa 0,4-mal je Schlacht ein.
+
+### Was fehlt (nächster `pa`)
+- **Schritt 2, Bilder:** Die neuen Bögen (`aschenwacht_sturm_reskin.png`, `konkordat_sturm_reskin.png`) über `figure_cut.py` einbauen. Bis dahin zeigen beide Einheiten ihre alten Bögen, mit 6 Figuren.
+- **Schritt 3:** Stahlreiter (Punkt 97) mit Bogen `konkordat_stahlreiter_reskin.png`, Messung, dazu der Vorschlag „öfter zuschlagen/schießen“ mit Zahlen.
+
+### Fragen an Enrico
+1. Sturmbrecher: Gegenstoß ohne den Zielfeld-Faktor ×1,25 / ×0,85 – richtig so?
+2. Preise 120 (Sturmbrecher) und 65 (Grabenräumer) – passt der Aufschlag?
+3. Pferdetöne: Soll ich für den Reiter eine eigene Pult-Zeile „Angriff (Ruf des Pferds)“ bauen, damit Wiehern beim Angriff klingt?
+
 ## 2026-11-26 – Nachträge 98–100 und R3: Deckung an der Feldkante (`9b1c272`, `805e7b1` mit index.html)
 
 Gepusht. Lief ohne Hänger: Partietest ohne Fehler, keine Seitenfehler in den Bildläufen, kein Chrome offen. Alle sim-Läufe nacheinander, **kein Absturz**. Dein `pa` kam während des Pakets; im Auftrag stand nichts Neues, deshalb habe ich R3 zu Ende gemacht.
