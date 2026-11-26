@@ -1,3 +1,68 @@
+## 2026-11-26 – V3 Teil 2: neue Stimmen im Spiel (Punkt 112) (`4e8d8d0`, `c7d733e`, `4ee7443` mit index.html)
+
+Gepusht. **Die neuen Stimmen klingen jetzt im Spiel**, die alten Sprüche sind still.
+- **Hänger:** keine.
+- **Tests:**
+  - Partietest ohne Konsolenfehler.
+  - Ton-Pult-Test 93/93.
+  - `test_tonplaetze`: Spiel = Pult für alle 50 Einheiten.
+- **Ton-Spur:** alle Einheiten neu, in vier Teilen zu je 5–6 Minuten nacheinander, kein Absturz.
+- **Vorschau:** zum Prüfen kurz offen, dann geschlossen.
+
+**1. Heldensprüche:**
+- 30 neu geladen (`A_held_kuerass_*`, `K_held_faust_getroffen_1/2`). Die alten Fassungen liegen aufgehoben in `sound-quelle/Voices/eigene/el/alt_vor_nach1/`.
+- Gefiltert (`helm`), gesichert (robocopy Code 1).
+- Längenprüfung wiederholt: **jetzt unauffällig** („Der Kürassier hört.“ 1,68 s, „Hit.“ 0,39 s). Nur „Sprich.“ ist mit 0,84 s etwas gedehnt, klingt aber nach einem Wort.
+
+**4./6. Einbau:**
+- **Tonplätze:** `st_<gruppe>_<anlass>` (155 Plätze, 641 Sprüche, Seite A/D = Sprache).
+  - `st_erscheinen_<typ>`, `st_held_faust_*` / `st_held_kuerass_*`.
+  - Hünen `st_huenen_*` (ihre Sturm-Zeilen mit Maschinenfilter). Der Löwenoger brüllt nur.
+- **Spielcode** (ui.js `stimme()` / `stimmeBeiEreignis`): löst Anklick-Sprüche, alte Truppenrufe, Schreiter- und Heldenstimmen ab.
+  - Still sind die alten gesprochenen Rufe: Sanitäter `medic`, Panik `panic`, `forward`, `stand`, Brüllen `roar` bei Befehlen, `charge`, `comeon`.
+  - Kampfschrei (`cry`), Schmerzlaute, Husten und Atmen bleiben (keine Worte).
+- **Abstände:**
+  - Höchstens ein Ruf zugleich.
+  - Je Einheit und Anlass höchstens alle 7 s, je Einheit mindestens 2,5 s Pause.
+  - **Not-Rufe** (verwundet, Rückzug, Panik, Tod) haben Vorrang und dürfen über einen laufenden Ruf.
+- **Anwählen:** wie bisher; nie zweimal hintereinander derselbe Spruch, Motor bzw. Pferd darunter.
+- **„Befehl bestätigt“:** bei eigenen Zügen jedes zweite Mal, die KI selten (30 % bei längeren Zügen).
+- **Neue Abspielstellen:**
+  - Erscheinen (Nachschub; beim Schlachtbeginn der eigene General).
+  - Zielfeld genommen.
+  - Schilde vor, Gegenstoß, Dauerfeuer.
+  - Panzer getroffen und Panne/festgefahren.
+  - Koloss gesichtet / Entsetzen.
+  - Anführer-Befehle (Sammeln, Feuer frei, Sturm), großer Befehl, Banner.
+- Die Schreiter sagen „Feind gesichtet“, wenn ein Feindgerät bis 6 Felder nah ist (höchstens alle 30 s).
+- **Rückweg:** `window.STIMMEN_ALT = true` vor dem Laden (alles wie vorher). Für das Pult `STIMMEN_ALT=1 node tools/tonpult_bau.mjs`. Alte Dateien bleiben liegen.
+
+**Ton-Pult:**
+- Die Stimmzeilen je Einheit kommen jetzt aus der gemessenen Ton-Spur (`st_*`), unter „Anwählen“ bzw. „Rufe (Stimmen)“.
+- Die alten Tabs „Stimmen Konkordat/Aschenwacht“, „Schreiter“ und „Held …“ sowie die Spruch-, Sanitäter- und Panikzeilen sind weg.
+- Bibliothek: neue Rubrik **„Neue Stimmen (V3, Schlachtfunk)“**, nach Gruppen, mit der Hörprobe.
+- 69 alte Pult-Wahlen greifen dadurch nicht mehr:
+  - 22 Anklick-Sprüche, 19 Sanitäter-, 10 Panik-, 4 Befehls-, 2 Sammeln-Rufe, 1 Sturmlauf-Ruf.
+  - Dazu 11 alte Reste ohne Bezug zu diesem Paket (gestrichene Einheiten, Einheiten ohne Schuss).
+
+**Nebenbei behoben:**
+- Das Pult rechnete noch mit dem gestrichenen Stahlgänger als gepanzertem Ziel (Zeile „Abpraller“ bei 14 Aschenwacht-Einheiten). Jetzt zählen nur kaufbare Gegner ohne Helden.
+- Die Ordensschreiter-Zeile „Streifschuss“ hängt jetzt an der Spur.
+- Der Spezialangriff der Helden (Durchbruch/Hinrichtung) bekam zuerst keinen Ruf; ist ergänzt.
+
+**In den Spur-Szenen nicht ausgelöst** (der Code ist da, die Testszenen spielen es nicht durch):
+- Sammeln (Moral zurück), Zielfeld genommen, Koloss gesichtet (Linie).
+- „Feind gesichtet“ (Schreiter), Gegner vernichtet (Helden).
+- Dauerfeuer/Gegenstoß/Granate der Hünen.
+- Im Spiel sollten sie kommen. Bitte beim Spielen darauf achten.
+
+**Größe:** Die Spieltöne wachsen von 31 auf 46 MB (die alten Stimmen bleiben für den Rückweg drin). Sie werden nach dem Start nachgeladen.
+
+**Fragen an Enrico:**
+1. Wie wirkt das im Spiel: zu häufig, zu selten, zu laut?
+   - Stellschrauben: Abstand je Einheit (2,5 s), je Anlass (7 s), „Befehl bestätigt“ jedes zweite Mal, Lautstärke 0,5.
+2. Sollen die alten Stimmdateien später ganz aus `sound.js` (spart etwa 10 MB) und der Rückweg `STIMMEN_ALT` wegfallen, sobald die neuen passen?
+3. Fehlt dir eine Stelle, an der jemand etwas sagen sollte?
 ## 2026-11-26 – V3 Teil 1: Stimmen geladen, geprüft, gefiltert, Hörprobe (Punkt 111) (`44f4ee9`)
 
 Gepusht. **Zwischenstand nach Sparregel 5:** Schritte 1–4 und 7 sind erledigt; der Einbau ins Spiel (Schritte 5, 6 und 8) ist der nächste `pa`. Grund: über 600 Sprüche mit neuen Tonplätzen und Abspielstellen sind ein eigener großer Brocken, und du wolltest den Filter vorher hören.
