@@ -1,0 +1,24 @@
+{
+ "grauwall": {
+  "liegende": 10,
+  "mittel": 2.3,
+  "p95": 3,
+  "gelaende": "trench",
+  "200_liegende_zoom_1.6": {
+   "mittel": 2.9,
+   "p95": 3.9
+  },
+  "0_liegende_zoom_1.6": {
+   "mittel": 2.5,
+   "p95": 3
+  },
+  "200_liegende_zoom_0.5": {
+   "mittel": 6.2,
+   "p95": 10.8
+  },
+  "0_liegende_zoom_0.5": {
+   "mittel": 4.7,
+   "p95": 6
+  }
+ }
+}

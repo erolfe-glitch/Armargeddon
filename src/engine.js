@@ -1167,7 +1167,7 @@ function hexDef(G, c, r, isWalker) {
 
 // U5a (2026-11-26): Schaden über Modelle. Rückweg MODELLSCHADEN_ALT (Node: Umgebung, Browser: window). Feuerkraft-Fassung KRAFT=traeger (sonst weiche Stufen).
 const u5aus = () => !!(TOG.MODELLSCHADEN_ALT || (typeof window !== 'undefined' && window.MODELLSCHADEN_ALT));
-const kraftArt = () => TOG.KRAFT || (typeof window !== 'undefined' && window.KRAFT) || 'stufen';
+const kraftArt = () => TOG.KRAFT || 'stufen';   // Fassung 2 nur für Messungen (Enrico 16:00), im Spiel nicht erreichbar
 function modelle(t) { const T = TYPES[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
 const modelleDa = u => Math.max(0, Math.ceil(u.str / 10 * modelle(u.type) - 1e-6));
 // Feuerkraft nach Stärke. Alt: 0,4 + 0,6 × Anteil. Stufen: 100–70 voll, 69–40 → 75 %, unter 40 → 50 %, Übergänge weich (etwa ±3 Stärke um 67 und 37).

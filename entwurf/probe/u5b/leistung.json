@@ -1,0 +1,20 @@
+{
+ "sanktruss": {
+  "liegende": 19,
+  "mittel": 5.8,
+  "p95": 10.7,
+  "gelaende": "open"
+ },
+ "grauwall": {
+  "liegende": 10,
+  "mittel": 5.7,
+  "p95": 11.7,
+  "gelaende": "trench"
+ },
+ "winterdorf": {
+  "liegende": 14,
+  "mittel": 5.8,
+  "p95": 11.3,
+  "gelaende": "eis"
+ }
+}
