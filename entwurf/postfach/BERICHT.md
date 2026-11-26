@@ -1,3 +1,44 @@
+## 2026-11-26 – V1b Stimmen-Plan nach der Hörprobe (Punkt 109) (`2c7bf3e`)
+
+Gepusht. Nur Text, nichts gebaut, keine Browser- oder sim-Läufe. Keine Hänger.
+
+- **`entwurf/STIMMEN_PLAN.md` neu:**
+  - Alle alten Sprüche werden ersetzt.
+  - Konkordat Englisch (auch Blaue Legion), Aschenwacht Deutsch.
+  - **5 Sprecher je Seite** über die K1-Kategorien:
+    - Konkordat: K1 Brian, K2 Daniel, K3 Callum, K4 George, K5 Bill.
+    - Aschenwacht: A1 Charlie, A2 Callum, A3 Bill (schroff), A4 Will, A5 Liam.
+  - Eigene Tabelle Einheit (TYPES-Schlüssel) → Sprecher.
+  - Anlass-Tabelle (heute / Abspielstelle / ruhig oder ruf).
+  - Filter „Schlachtfunk“ mit der ganzen Kette festgehalten (gebaut wird er in V3).
+  - Vorschlag für Helden (K5/A5 mit Helm-Filter) und Schreiter (K5/A5 plus Maschinenfilter, je Seite eigene Texte).
+- **`entwurf/stimmen_texte.csv`:**
+  - 552 Zeilen, Spalten `id; fraktion; sprecher; anlass; einheit; ton; text`.
+  - Konkordat-Texte jetzt Englisch, Aschenwacht-Texte bleiben. Neu: eine Unterstützungs-Gruppe je Seite mit eigenen Rufen.
+  - Erzeugt mit `python tools/stimmen_plan.py` (`--md` druckt die Tabellen).
+
+**Zeilen je Sprecher und Zeichen (Kosten auf fal, ca. 0,10 $ je 1000 Zeichen):**
+
+| Sprecher | Zeilen | davon ruf | Zeichen |
+|---|---|---|---|
+| K1 Brian | 50 | 18 | 602 |
+| K2 Daniel | 62 | 15 | 979 |
+| K3 Callum | 35 | 9 | 477 |
+| K4 George | 26 | 9 | 339 |
+| K5 Bill | 99 | 27 | 1437 |
+| A1 Charlie | 49 | 18 | 636 |
+| A2 Callum | 58 | 15 | 889 |
+| A3 Bill | 41 | 9 | 606 |
+| A4 Will | 26 | 9 | 355 |
+| A5 Liam | 106 | 27 | 1510 |
+| **gesamt** | **552** | **156** | **7830** |
+
+Etwa **0,80 $** für einen Durchgang, mit Nachgenerieren eher 1,50–2,50 $.
+
+**Fragen an Enrico:**
+1. **Eiserne Hünen:** laut deiner Tabelle Sturm (A3 Bill). Heute sprechen sie mit der Maschinenstimme. Sollen sie menschlich (A3 mit Schlachtfunk) werden oder Maschine bleiben?
+2. **Löwenoger:** Er steht bei K3, brüllt aber weiter. Brauchen er oder die Hünen trotzdem Worte?
+3. **Helden:** Rote Faust mit K5 Bill und Kürassier mit A5 Liam neu sprechen, als eigener kleiner Auftrag?
 ## 2026-11-26 – R4d (Punkt 108) und V1 Stimmen-Plan (Punkt 102) (`52046c7` mit index.html, `8cedd29`)
 
 Gepusht.
