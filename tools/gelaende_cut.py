@@ -31,7 +31,7 @@ PX_SH, PX_R = 320, 400
 def quelle(name):   # G2b (2026-11-25): neue Bögen des Beraters liegen in ui-quelle/gelaende/neu_g/
     p = SRC / f'{name}.png'
     if p.exists(): return p
-    for d in ('neu_g', 'neu_draht', 'neu_poi', 'neu_g7'):   # G7b-Test (2026-11-25): Erdlippe und Innenwand in neu_g7/   # G6 (2026-11-25): besondere Orte und gesprengte Sperren in neu_poi/   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
+    for d in ('neu_g', 'neu_draht', 'neu_poi', 'neu_g7', 'neu_g7h'):   # G7b-Test (2026-11-25): Erdlippe und Innenwand in neu_g7/   # G6 (2026-11-25): besondere Orte und gesprengte Sperren in neu_poi/   # G5b (2026-11-25): Drahtgürtel des Beraters in neu_draht/
         if (SRC / d / f'{name}.png').exists(): return SRC / d / f'{name}.png'
     return SRC / 'neu_g' / f'{name}.png'
 
@@ -180,7 +180,15 @@ TEILE = {
     'graben_lippe_ecke_2': ('stueck', 0.42, {'quelle': ('graben_lippe_ecken_bogen', (1467, 46, 2622, 743))}),    # oben rechts
     'graben_lippe_ecke_3': ('stueck', 0.42, {'quelle': ('graben_lippe_ecken_bogen', (144, 804, 1314, 1516))}),   # unten links
     'graben_lippe_ecke_4': ('stueck', 0.42, {'quelle': ('graben_lippe_ecken_bogen', (1501, 816, 2622, 1527))}),  # unten rechts
-    'graben_querwand_tief_1': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', (29, 76, 924, 1498))}),   # Bretter
+    # G7h (2026-11-26): breite Seitenwand ohne Pfosten (G7-3b), Querwand als Erdblock (G7-6b), neu_g7h/
+    'graben_wand_seite_breit_1': ('wand', 0.6, {'quelle': ('graben_wand_seite_breit_bogen', (0, 42, 2752, 524))}),     # Bretter waagerecht
+    'graben_wand_seite_breit_2': ('wand', 0.6, {'quelle': ('graben_wand_seite_breit_bogen', (0, 554, 2752, 1041))}),   # Flechtwerk
+    'graben_wand_seite_breit_3': ('wand', 0.6, {'quelle': ('graben_wand_seite_breit_bogen', (0, 1065, 2752, 1536))}),  # Erde mit Wurzeln
+    'graben_querwand_block_1': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (102, 124, 1327, 741))}),    # Bretter
+    'graben_querwand_block_2': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (1436, 124, 2652, 740))}),   # Flechtwerk
+    'graben_querwand_block_3': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (96, 801, 1336, 1406))}),    # Bretter, Variante
+    'graben_querwand_block_4': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (1433, 790, 2666, 1423))}),  # zerschossen
+    'graben_querwand_tief_1': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', 'graben_wand_seite_breit_bogen', 'graben_querwand_block_bogen', (29, 76, 924, 1498))}),   # Bretter
     'graben_querwand_tief_2': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', (957, 76, 1824, 1498))}), # Flechtwerk
     'graben_querwand_tief_3': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', (1877, 76, 2722, 1498))}),# beschädigt
 }
