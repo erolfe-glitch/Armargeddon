@@ -1212,9 +1212,9 @@ function feldWirkung(u, c, r) {
     if (wk) out.push({ gut: true, kurz: 'walzt Draht nieder', lang: 'Fahrzeuge und Schreiter walzen den Draht nieder, das Feld wird frei.' });
     else if (E.wireProof(T)) out.push({ gut: true, kurz: 'Draht: unverletzt', lang: 'Gepanzerte Infanterie geht unverletzt und ohne Halt durch den Draht.' });
     else out.push({ gut: false, kurz: `Draht −${fmt(P.WIRE_DMG)}, Halt`, lang: `Stacheldraht: etwa −${fmt(P.WIRE_DMG)} Stärke, die Bewegung endet. Wer drinsteht, nimmt doppeltes MG-Feuer.` }); }
-  if (wk && E.RUINE.has(h.t)) out.push({ gut: false, kurz: `Trümmer: Zug endet · Festfahren ${Math.round(P.RUINE_FEST * 100)} %`, lang: `${E.TERRAIN[h.t].name}: Fahrzeuge und Schreiter brauchen alle restliche Bewegung, ${Math.round(P.RUINE_FEST * 100)} % Gefahr, sich festzufahren (${P.PANNE_RUNDEN} Runden aus).` });   // F79
+  if (wk && E.RUINE.has(h.t)) out.push({ gut: false, kurz: `Trümmer: Zug endet · Festfahren ${Math.round(P.RUINE_FEST * 100)} %`, lang: `${E.TERRAIN[h.t].name}: Fahrzeuge und Schreiter brauchen alle restliche Bewegung, ${Math.round(P.RUINE_FEST * 100)} % Gefahr, sich festzufahren (${E.u5aus && !E.u5aus() ? '1–2' : P.PANNE_RUNDEN} Runden aus).` });   // F79
   if (wk && (h.t === 'mud' || h.t === 'sumpf')) { const q = Math.round(P.STUCK * (h.t === 'sumpf' ? 2 : 1) * 100);
-    out.push({ gut: false, kurz: `Festfahren ${q} %`, lang: `${E.TERRAIN[h.t].name}: ${q} % Gefahr, sich festzufahren (${P.PANNE_RUNDEN} Runden aus).` }); }
+    out.push({ gut: false, kurz: `Festfahren ${q} %`, lang: `${E.TERRAIN[h.t].name}: ${q} % Gefahr, sich festzufahren (${E.u5aus && !E.u5aus() ? '1–2' : P.PANNE_RUNDEN} Runden aus).` }); }
   if ((VIS.fires || []).some(k => k.c === c && k.r === r)) { const d = P.FIRE_DMG * (wk ? P.FIRE_WALKER : 1);
     out.push({ gut: false, kurz: `Feuer −${fmt(d)}`, lang: `Brennendes Feld: etwa −${fmt(d)} Stärke beim Betreten und zu Beginn des eigenen Zugs.` }); }
   if ((VIS.clouds || []).some(k => k.c === c && k.r === r)) out.push(E.gasSafe(G, u) ? { gut: true, kurz: 'gasfest', lang: 'Gaswolke: diese Einheit ist geschützt.' }
@@ -3113,7 +3113,7 @@ async function playEvent0(e) {
       for (let q = 0; q < 3; q++) { const fl = Math.random() < 0.5; fx('erdfontaene', null, d0.x + (q - 1) * s * 0.5, d0.y + s * 0.32, { delay: q * 6, life: 40, mul: 0.2, grow: 0.15, flip: fl, fadeOut: 0.45, filter: 'brightness(0.62) sepia(0.35)' }); }
       gmark('bodenspuren', 4, d0.x, d0.y + s * 0.1, { mul: 0.85 }); if (PJI.mudsplash) muzzles.push({ img: 'mudsplash', x: d0.x, y: d0.y + s * 0.42, center: true, up: 0.85, sz: 1.1, life: 50, max: 50 }); }
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
-      playSound('crash', 0.7, null, { an: unitById(e.u) }); playSound('steps', 0.6, null, { an: unitById(e.u) }); kz(e.u, 'panne', 'puls'); toast(`${nm(u)} hat sich festgefahren und fällt ${P.PANNE_RUNDEN} Runden aus.`); await wait(350); break;
+      playSound('crash', 0.7, null, { an: unitById(e.u) }); playSound('steps', 0.6, null, { an: unitById(e.u) }); kz(e.u, 'panne', 'puls'); toast(`${nm(u)} hat sich festgefahren und fällt ${E.u5aus && !E.u5aus() ? '1–2' : P.PANNE_RUNDEN} Runden aus.`); await wait(350); break;
     case 'repaired': playSound('ev_wieder_flott', 0.45); DU.get(e.u).vs.broken = 0; kz(e.u, 'funkeln', 'steig'); await wait(200); break;
     case 'smoke': { const rohr = u && (u.type === 'rauch' || u.type === 'moerser'); if (rohr) playSound('werfer', 0.55); playSound(rohr ? 'gas' : 'rauch', 0.5);   // Rauchgeschoss: gas_1, geworfen: rauch_1 (Tonprobe 2026-11-18)
       if (u && fxIm('geschosse', 4)) { const du = DU.get(u.id); for (const [c, r] of e.cells) { const [x, y] = center(c, r); shells.push({ fxi: 4, fxs: 0.8, x1: du.x, y1: du.y - s * 0.6, x2: x, y2: y, t: 0, dur: 18, arc: 1.4, spin: true, sz: 0.3 }); } await wait(18 * 16.667); }
@@ -4439,7 +4439,7 @@ function showDetail() {
   drawPortraitLater($('detPortrait'), figOf(T), u.side, u.type);
   $('detName').textContent = T.name; $('detSide').textContent = SIDES[u.side].name;
   $('detCan').textContent = T.can; $('detQuelle').textContent = T.chronik ? T.chronik.quelle : ''; $('detReal').textContent = T.chronik ? T.chronik.text : '';
-  { let rb = $('detRolle'); if (!rb) { rb = document.createElement('div'); rb.id = 'detRolle'; $('detCan').parentElement.before(rb); } rb.innerHTML = rolleHtml(u.type); }   // F103
+  { let rb = $('detRolle'); if (!rb) { rb = document.createElement('div'); rb.id = 'detRolle'; $('detCan').parentElement.before(rb); } rb.innerHTML = rolleHtml(u.type) + (E.kraftText ? '<div class="detKraft" style="margin-top:4px;opacity:.85">' + E.kraftText(u.type) + (E.modelle && E.modelle(u.type) > 1 ? ' ' + E.modelle(u.type) + ' Modelle, je ' + Math.round(100 / E.modelle(u.type)) + ' Stärke eines.' : '') + '</div>' : ''); }   // F103; U5a: Feuerkraft-Kurve im Info-Fenster
   { let mb = $('detMed'); if (!mb) { mb = document.createElement('div'); mb.id = 'detMed'; mb.className = 'det-med'; $('detCan').parentElement.after(mb); }   // F66: Stärken und Schwächen in Worten
     const m = E.medaillen(u.type); mb.innerHTML = '<b>Stärken und Schwächen:</b>' + medaillenTexte(u.type).map(t => `<div class="dm">${t.k !== 'klasse' ? `<span class="med ${m[t.k]}">${upSym(t.sym) ? `<img src="${upSym(t.sym)}" alt="">` : ''}</span>` : '<span class="med klasse"></span>'}<span><b>${t.name}</b> – ${t.text}</span></div>`).join(''); }
   $('detSp').innerHTML = (T.sp || []).map(x => `<span class="sp">${x}</span>`).join('');

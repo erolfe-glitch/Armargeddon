@@ -54,7 +54,9 @@ const P = {
   RAMM_BAU: 1, RAMM_SELBST: 0.6, RAMM_PANNE: 0.15, RUINE_FEST: 0.12,   // F79 Rammen (Bauschaden, eigener Schaden, Pannengefahr) und Trümmer (Festfahr-Gefahr)
   PZG_DMG: 1.8, PZG_RNG: 2, PZG_PANNE: 0.15,   // F80 Panzergranate: Schaden (gegen den Landkoloss etwa 20, wie früher die geballte Ladung), Reichweite, Pannengefahr
   ROLLEN_DMG: 2.4, ROLLEN_MOR: 1.5, ROLLEN_WAND: 1.5,   // F54 Sturmrollen (×10 in der Anzeige: 24 Schaden, Moral −15)
-  ROLLEN_GRABEN: 0.3,   // SP-2 84.4: Sturmrollen gegen Graben/Bunker/eingegraben – Schaden ×0,3, kein Wegstoßen, niedergehalten
+  ROLLEN_GRABEN: 0.3,
+  // U5a (2026-11-26) Schaden über Modelle, Rückweg MODELLSCHADEN_ALT: Feuerkraft-Kurve (kraft), ungedeckt ×OFFEN_MUL, Deckung über 1 ×DECK_STARK verstärkt, Splitter schwerer Waffen gegen Trupps im Offenen, Löwenmaul gegen Panzer, Furcht-Aura, Pannen 1 (schwer 2) Runden
+  OFFEN_MUL: 1.4, DECK_STARK: 1.5, SPLITTER: 1.3, LOEWE_PZ: 2.2, FURCHT_MOR_U5: 1, PANNE_KURZ: 1, PANNE_LANG: 2, PANNE_SCHWER: 0.25, TRAEGER_WEG: 0.45, TRAEGER_SCHUETZE: 0.15,   // SP-2 84.4: Sturmrollen gegen Graben/Bunker/eingegraben – Schaden ×0,3, kein Wegstoßen, niedergehalten
   // Helden (2026-11-21, Vorschlag): Durchbruch der Roten Faust (Schaden, Moral, an der Wand ×ROLLEN_WAND), Standhaft-Aura (Moralverlust durch Beschuss ×FAUST_AURA neben ihr),
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
@@ -86,7 +88,7 @@ const TYPES = {
     can: 'Mittlere Artillerie, kein direkter Schuss. Schießt über eigene Truppen hinweg, wenn eine eigene Einheit das Ziel sieht. Sprenggranaten, Sperrfeuer oder Gas; gegen Fahrzeuge und Schreiter nur ×0,5. Aufgeprotzt zieht sie 3 Felder, kann dann aber nicht feuern. Im Nahkampf wehrlos.',
     chronik: { quelle: 'Richtlinien für Artilleriebeobachter, Sankt Ruß', text: 'Die Bedienungen der Donnerrohre sehen den Feind nie, sondern feuern in hohem Bogen über die eigenen Gräben hinweg. Solange vorn ein Späher das Ziel meldet, schlagen ihre Granaten erbarmungslos hinter jeder Deckung ein.' } },
   koloss: { side: 'A', name: 'Landkoloss', cls: 'walker', abil: 'rollen', keinNah: true, zweit: { name: 'Seiten-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
-    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben. Kanone vorn, Seiten-MG (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus; im Graben nur Schock, kein Wegstoßen (Aktion und alle Bewegung, höchstens alle 3 Runden). Selten Panne: 3 Runden aus.',
+    can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben. Kanone vorn, Seiten-MG (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus; im Graben nur Schock, kein Wegstoßen (Aktion und alle Bewegung, höchstens alle 3 Runden). Selten Panne: 1 Runde aus (schwer 2).',
     chronik: { quelle: 'Verhörprotokoll eines Gefangenen der Aschenwacht', text: 'Gewehrkugeln und MG-Garben prallen funkenschlagend an der dicken Stahlhaut ab, und Giftgas dringt nicht durch die Luken. Unaufhaltsam walzt der Koloss Stacheldraht nieder und überquert selbst breite Gräben unter ohrenbetäubendem Rasseln.' } },
   sturmpz: { side: 'D', name: 'Sturmpanzer', cls: 'walker', abil: 'rollen', keinNah: true, broadside: true, zweit: { name: 'Bord-MG', rng: 2, seiten: true }, atk: 6, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Gepanzert: Gewehre und MG prallen ab, kein Gas. Walzt Draht nieder, überquert Gräben, selten Panne. Breitseite: nach dem ersten Schuss ein zweiter auf ein anderes Ziel bis 2 Felder, beide ×0,6 (eine Aktion). Bord-MG der Bordschützen (2 Felder, einmal je Runde zusätzlich) nach links und rechts. Kein Nahkampf, dafür Sturmrollen: ein schwerer Aufprall auf Fußtruppen oder Geschütz daneben oder 2 Felder geradeaus; im Graben nur Schock, kein Wegstoßen (Aktion und alle Bewegung, höchstens alle 3 Runden).',
@@ -159,7 +161,7 @@ Object.assign(TYPES, {
     can: 'Schreitende Kampfmaschine mit Maschinenwaffe und Greifklaue. Gepanzert wie ein Landkoloss: Gewehre und MG prallen ab. Bleibt manchmal mit einer Panne liegen.',
     chronik: { quelle: 'Werksprotokoll der Eisenhütte Sieben', text: 'Gepanzert gegen Gewehr- und MG-Garben stapft diese Kampfmaschine ungerührt durch das Sperrfeuer der Gräben. Während ihre Maschinenwaffe Deckungen zersiebt, zermalmt die hydraulische Greifklaue jeden Gegner auf Armeslänge.' } },
   turm: { side: 'A', name: 'Turmschreiter', cls: 'walker', zweit: { name: 'Turm-MG', rng: 2 }, fig: 'mechT', mech: true, atk: 6, def: 7, mor: 8, mv: 2, rng: 3, fs: 4,
-    can: 'Schreitende Kampfmaschine: Kanone, dazu Turm-MG (2 Felder, einmal je Runde zusätzlich). Gepanzert: Gewehre und MG prallen ab. Selten Panne: 3 Runden aus.',
+    can: 'Schreitende Kampfmaschine: Kanone, dazu Turm-MG (2 Felder, einmal je Runde zusätzlich). Gepanzert: Gewehre und MG prallen ab. Selten Panne: 1 Runde aus (schwer 2).',
     chronik: { quelle: 'Werkstattprotokoll der Kronkirche, 113 n. G.', text: 'Auf stählernen Beinen stapft der gepanzerte Schreiter durch Trichterfelder, während Gewehr- und MG-Feuer wirkungslos an ihm abprallen. Sein drehbarer Turm bekämpft mit einer schweren Kanone feste Ziele und hält Infanterie mit dem Maschinengewehr nieder.' } },
   orden: { side: 'A', name: 'Ordensschreiter', cls: 'walker', fig: 'mechK', mech: true, gat: true, atk: 7, def: 7, mor: 8, mv: 2, rng: 2, fs: 4,
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
@@ -222,7 +224,7 @@ Object.assign(TYPES, {
     can: 'Stufe 3, höchstens einer je Schlacht. Doppelte Sturmkanonen an beiden Unterarmen und Hackklinge; gepanzert, Gewehre und MG prallen ab. Faustsalve (einmal je Schlacht, statt des Schusses): zwei Schüsse auf zwei verschiedene Ziele, je ×2. Selten Panne.',
     chronik: { quelle: 'Feldtagebuch eines Pioniers vor Grauwall', text: 'Nur ein einziger dieser gewaltigen Kolosse schreitet je aufs Feld, bewaffnet mit Zwillings-Sturmkanonen und einer schweren Hackklinge. Einmal pro Schlacht entfesselt er eine vernichtende Faustsalve auf zwei Ziele zugleich.' } },
   bohrer: { side: 'D', name: 'Bohrkoloss', cls: 'walker', zweit: { name: 'Flammenstoß', rng: 2, flamme: true }, fig: 'drill', mech: true, atk: 8, def: 7, mor: 8, mv: 2, rng: 0, fs: 0,
-    can: 'Kampfmaschine mit Bohrkopf: sehr stark im Nahkampf. Flammenstoß (einmal je Runde zusätzlich) bis 2 Felder: halb so stark wie ein Flammentrupp, das Feld brennt. Selten Panne: 3 Runden aus.',
+    can: 'Kampfmaschine mit Bohrkopf: sehr stark im Nahkampf. Flammenstoß (einmal je Runde zusätzlich) bis 2 Felder: halb so stark wie ein Flammentrupp, das Feld brennt. Selten Panne: 1 Runde aus (schwer 2).',
     chronik: { quelle: 'Bericht eines Überlebenden aus den Kohlegruben', text: 'Aus den tiefen Kohlegruben an die Front geholt, zermalmt sein rotierender Bohrkopf im Nahkampf jede Befestigung. Ein glühender Flammenstoß aus dem Rumpf setzt zudem das gesamte Vorfeld in Brand.' } }
 });
 // Nachschub: Kosten in Punkten und Angebot je Seite
@@ -953,7 +955,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
     if (T.cls === 'walker' && h.t === 'wire') { h.t = 'open'; flush(); ev.push({ t: 'crush', u: u.id, c: nc, r: nr }); }
     if (fireAt(G, nc, nr)) { flush(); burn(G, u, ev); if (!alive(u) || u.status !== 'ok') { claimObjective(G, u); ev.push(...checkEnd(G)); return ev; } }   // durch Feuer
     if (h.t === 'wire' && T.cls !== 'walker' && !wireProof(T)) u.bp = 0;   // Draht: Halt, restliche BP verfallen
-    if (T.cls === 'walker' && RUINE.has(h.t) && !TOG.NORUINE) { u.bp = 0; if (G.rng() < P.RUINE_FEST) { flush(); u.stuck = P.PANNE_RUNDEN + 1; ev.push({ t: 'stuck', u: u.id, truemmer: true }); break; } }   // F79: Trümmer kosten alle restliche Bewegung, Festfahr-Gefahr
+    if (T.cls === 'walker' && RUINE.has(h.t) && !TOG.NORUINE) { u.bp = 0; if (G.rng() < P.RUINE_FEST) { flush(); u.stuck = panneDauer(G); ev.push({ t: 'stuck', u: u.id, truemmer: true }); break; } }   // F79: Trümmer kosten alle restliche Bewegung, Festfahr-Gefahr
     if (h.t === 'wire' && T.cls !== 'walker' && !wireProof(T) && !TOG.NOWIREDMG) {   // Stacheldraht: Schnitte und Hängenbleiben kosten Stärke
       flush(); ev.push({ t: 'wirehurt', u: u.id, c: nc, r: nr });
       const n0 = ev.length; applyDamage(G, null, u, P.WIRE_DMG * (0.8 + G.rng() * 0.4), 'front', ev, { morMul: 0.5 });
@@ -961,7 +963,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
       if (!alive(u) || u.status !== 'ok') { claimObjective(G, u); ev.push(...checkEnd(G)); return ev; }
     }
     claimObjective(G, u);
-    if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); u.stuck = P.PANNE_RUNDEN + 1; u.bp = 0; ev.push({ t: 'stuck', u: u.id }); break; }
+    if (T.cls === 'walker' && (h.t === 'mud' || h.t === 'sumpf') && G.rng() < P.STUCK * (h.t === 'sumpf' ? 2 : 1)) { flush(); u.stuck = panneDauer(G); u.bp = 0; ev.push({ t: 'stuck', u: u.id }); break; }
     if (T.stecken && ['mud', 'sumpf', 'trench'].includes(h.t) && G.rng() < P.STECKEN) { flush(); u.stuck = 2; u.bp = 0; ev.push({ t: 'stuck', u: u.id }); break; }   // Held Kürassier: eine eigene Runde fest
     if (T.cls !== 'walker' && openGround(G, nc, nr)) {
       const mg = !concealed(G, u, -99, -99) && G.units.find(m => m.side !== u.side && active(m) && TYPES[m.type].mg && m.sperr > 0 && m.setup && !m.supp && !m.fellBack && !held(G, m) &&
@@ -990,7 +992,7 @@ function moveUnit(G, u, c, r, forced) {   // forced: fester Weg (Sturmlauf), ohn
       e.seenWalker = true; e.mor = Math.max(0.5, e.mor - P.WALKER_FEAR);
       ev.push({ t: 'fear', u: e.id, morv: e.mor });
     }
-    if (G.rng() < P.BREAKDOWN) { u.broken = P.PANNE_RUNDEN + 1; u.attacked = true; ev.push({ t: 'breakdown', u: u.id }); }   // fällt die nächsten 3 eigenen Runden aus
+    if (G.rng() < P.BREAKDOWN) { u.broken = panneDauer(G); u.attacked = true; ev.push({ t: 'breakdown', u: u.id }); }   // fällt die nächsten 3 eigenen Runden aus
   }
   if (P.ZOC_STOP && T.cls !== 'storm' && T.cls !== 'walker' && isZOC(G, u.c, u.r, u.side)) { u.zocStop = true; u.bp = 0; }   // Feindberührung beendet die Bewegung für die Runde
   ev.push(...checkEnd(G));
@@ -1163,6 +1165,36 @@ function hexDef(G, c, r, isWalker) {
     : t === 'furt' ? 0.8 : t === 'wald' ? 1.5 : t === 'waldweg' ? 1.2 : t === 'bunker' ? 2 : t === 'barrikade' ? 1.6 : 1;
 }
 
+// U5a (2026-11-26): Schaden über Modelle. Rückweg MODELLSCHADEN_ALT (Node: Umgebung, Browser: window). Feuerkraft-Fassung KRAFT=traeger (sonst weiche Stufen).
+const u5aus = () => !!(TOG.MODELLSCHADEN_ALT || (typeof window !== 'undefined' && window.MODELLSCHADEN_ALT));
+const kraftArt = () => TOG.KRAFT || (typeof window !== 'undefined' && window.KRAFT) || 'stufen';
+function modelle(t) { const T = TYPES[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
+const modelleDa = u => Math.max(0, Math.ceil(u.str / 10 * modelle(u.type) - 1e-6));
+// Feuerkraft nach Stärke. Alt: 0,4 + 0,6 × Anteil. Stufen: 100–70 voll, 69–40 → 75 %, unter 40 → 50 %, Übergänge weich (etwa ±3 Stärke um 67 und 37).
+// Waffenträger: Linie/Reiter 0,5 + 0,5 × Anteil lebender Modelle; Spezialtrupps (3 Modelle) je gefallenem Schützen −TRAEGER_SCHUETZE, fällt der Waffenträger: TRAEGER_WEG; Einzelmodelle wie Stufen.
+function kraft(u) {
+  const s = Math.max(0, Math.min(1, u.str / 10));
+  if (u5aus()) return 0.4 + 0.6 * s;
+  const n = modelle(u.type);
+  if (kraftArt() === 'traeger' && n > 1) { const k = modelleDa(u); if (n === 3) return u.traegerWeg ? P.TRAEGER_WEG : Math.max(P.TRAEGER_WEG, 1 - P.TRAEGER_SCHUETZE * (n - k)); return 0.5 + 0.5 * k / n; }
+  const sig = x => 1 / (1 + Math.exp(-x / 0.015));
+  return 0.5 + 0.25 * sig(s - 0.67) + 0.25 * sig(s - 0.37);
+}
+function kraftText(t) { if (u5aus()) return 'Feuerkraft sinkt mit der Stärke: 0,4 + 0,6 × Stärke.'; const n = modelle(t);
+  if (kraftArt() === 'traeger' && n === 3) return 'Feuerkraft: voll, je gefallenem Schützen −' + Math.round(P.TRAEGER_SCHUETZE * 100) + ' %; fällt der Waffenträger, nur noch ' + Math.round(P.TRAEGER_WEG * 100) + ' %.';
+  if (kraftArt() === 'traeger' && n > 1) return 'Feuerkraft: 50 % + 50 % × Anteil der stehenden Modelle.';
+  return 'Feuerkraft: Stärke 100–70 voll, 69–40 → 75 %, unter 40 → 50 %.'; }
+// Deckung stärker (U5a): Beschuss auf Fußtruppen und Geschütze – Deckung über 1 wirkt ×DECK_STARK stärker, ungedeckt (Faktor ≤ 1) Schaden ×OFFEN_MUL.
+function deckU5(G, d, dm, tags) {
+  if (u5aus() || cls(d) === 'walker') return dm;
+  if (dm > 1.05) { const n = 1 + (dm - 1) * P.DECK_STARK; tags.push('Deckung verstärkt ×' + String(+(n / dm).toFixed(2)).replace('.', ',')); return n; }
+  if (dm <= 1) { tags.push('ungedeckt ×' + String(P.OFFEN_MUL).replace('.', ',')); return dm / P.OFFEN_MUL; }
+  return dm;
+}
+const splitterWaffe = t => { const T = TYPES[t]; return T.cls === 'art' || !!T.flame || T.cls === 'flame' || t === 'kreuz'; };   // Geschütze, Mörser, Minenwerfer, Flammenwerfer, Löwenmaul-Kanone
+function splitterU5(G, a, d, dm, tags) { if (u5aus() || !splitterWaffe(a.type) || modelle(d.type) < 2 || dm > 1) return 1; tags.push('Splitter ×' + String(P.SPLITTER).replace('.', ',')); return P.SPLITTER; }
+function panneDauer(G) { return u5aus() ? P.PANNE_RUNDEN + 1 : (G.rng() < P.PANNE_SCHWER ? P.PANNE_LANG : P.PANNE_KURZ) + 1; }   // +1: zählt zu Beginn der eigenen Runde herunter
+
 // Schaden ohne Zufall, für Vorschau und KI. kind: 'melee' | 'fire'
 function preview(G, a, d, kind, o) {
   o = o || {};
@@ -1201,11 +1233,13 @@ function preview(G, a, d, kind, o) {
   let dm = 1;
   if (flame) tags.push('Flammen: Deckung schützt nicht');
   else dm = defMods(G, d, geo, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
+  if (ranged) { m *= splitterU5(G, a, d, dm, tags); if (!flame) dm = deckU5(G, d, dm, tags); }   // U5a
+  if (ranged && a.type === 'kreuz' && cls(d) === 'walker' && !u5aus()) { m *= P.LOEWE_PZ; tags.push('Löwenmaul gegen Panzer ×' + String(P.LOEWE_PZ).replace('.', ',')); }   // Punkt 43
   if (ranged && !flame && !(A.lob) && hinterSperre(G, ac, ar, d)) { m /= P.SPERRE_DEF; tags.push('hinter Panzersperre ×1,2'); }   // G6: Schusslinie läuft durch eine Sperre neben dem Ziel
   if (ranged && litAt(G, d.c, d.r, a.side)) { m *= 1.25; tags.push('ausgeleuchtet ×1,25'); }
   if (ranged && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }
   if (ranged && smokeAt(G, ac, ar)) { m *= P.NEBEL_AUS; tags.push('aus dem Nebel ×0,75'); }
-  const dmg = P.DMG * ((ranged ? A.fs : A.atk) / (D.def * dm)) * (0.4 + 0.6 * a.str / 10) * m;
+  const dmg = P.DMG * ((ranged ? A.fs : A.atk) / (D.def * dm)) * kraft(a) * m;
   let counter = 0;
   if (!ranged && d.status === 'ok' && D.atk > 0) counter = counterDmg(G, d, a, ac, ar, arc, Math.max(0, d.str - dmg));
   return { dmg, counter, arc, tags };
@@ -1217,13 +1251,15 @@ function counterDmg(G, d, a, ac, ar, arc, dStr) {
   let m = P.COUNTER[arc];
   m *= faktor(d.type, a.type, false).f;   // F66: Nahkampfwaffe des Verteidigers gegen die Panzerklasse des Angreifers
   { const r = nahRolle(d.type); if (r === 'schwach') m *= 0.5; else if (r === 'stark') m *= 1.25; }
-  return P.DMG * (D.atk / (A.def * hexDef(G, ac, ar, A.cls === 'walker'))) * (0.4 + 0.6 * dStr / 10) * m;
+  return P.DMG * (D.atk / (A.def * hexDef(G, ac, ar, A.cls === 'walker'))) * kraft({ type: d.type, str: dStr, traegerWeg: d.traegerWeg }) * m;
 }
 
 function applyDamage(G, a, d, dmg, arc, ev, o) {
   o = o || {};
-  const t = hex(G, d.c, d.r).t;
+  const t = hex(G, d.c, d.r).t, k0 = modelleDa(d);
   d.str = Math.max(0, d.str - dmg);
+  const fall = Math.max(0, k0 - modelleDa(d));   // U5a: gefallene Modelle (Anzeige in U5b)
+  if (fall && !u5aus() && kraftArt() === 'traeger' && modelle(d.type) === 3) for (let j = 0; j < fall && !d.traegerWeg; j++) if (G.rng() < 1 / Math.max(1, k0 - j)) d.traegerWeg = true;   // der Waffenträger fällt mit der Chance 1 / stehende Modelle
   if (o.ranged && d.status === 'ok' && cls(d) !== 'walker') {
     d.fireDmg += dmg;
     if ((d.fireDmg >= P.SUPP || (dmg > 0 && a && TYPES[a.type] && TYPES[a.type].pin)) && !d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
@@ -1237,7 +1273,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (bannerAt(G, d.side, d.c, d.r)) ml *= 0.75;
   const standH = o.ranged && G.units.find(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1); if (standH) ml *= P.FAUST_AURA;   // Held Rote Faust
   d.mor = Math.max(0, d.mor - ml);
-  ev.push(standH ? { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, stand: standH.id } : { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor });   // stand: Aura hat gewirkt (F86, nur Anzeige)
+  ev.push(standH ? { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, stand: standH.id, fall } : { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, fall });   // stand: Aura hat gewirkt (F86, nur Anzeige)
   if (d.str < 0.3) { killUnit(G, d, ev, 'destroyed'); return; }
   if (d.status === 'rout') return;
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
@@ -1459,7 +1495,7 @@ function rammen(G, u, c, r) {
   for (const [a, q] of [...b.felder, ...(b.turm ? [b.turm] : [])]) { const x = unitAt(G, a, q); if (x && active(x) && !x.supp) { x.supp = 1; ev.push({ t: 'supp', u: x.id }); } }
   if (b.hp <= 0) einsturz(G, b, ev);
   applyDamage(G, null, u, P.RAMM_SELBST * (0.8 + G.rng() * 0.4), 'front', ev, { morMul: 0.3 });
-  if (alive(u) && G.rng() < P.RAMM_PANNE) { u.broken = Math.max(u.broken || 0, P.PANNE_RUNDEN + 1); ev.push({ t: 'breakdown', u: u.id }); }
+  if (alive(u) && G.rng() < P.RAMM_PANNE) { u.broken = Math.max(u.broken || 0, panneDauer(G)); ev.push({ t: 'breakdown', u: u.id }); }
   ev.push(...checkEnd(G)); return ev;
 }
 function einsturz(G, b, ev) {
@@ -1498,8 +1534,9 @@ function shellDmg(G, a, d, direct, tags) {
   else if (cls(d) === 'walker') { m *= FAK.explosiv.S; tags.push('Sprenggranate gegen schwer gepanzert ×0,5'); }   // F66
   if (direct && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }   // direkter Schuss in den Nebel
   if (cls(d) === 'flame') m *= P.FLAME_HIT;
-  const dm = defMods(G, d, 'front', true, tags);
-  return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * (0.4 + 0.6 * a.str / 10) * m;
+  let dm = defMods(G, d, 'front', true, tags);
+  m *= splitterU5(G, a, d, dm, tags); dm = deckU5(G, d, dm, tags);   // U5a
+  return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * kraft(a) * m;
 }
 function gasCells(G, c, r) {
   const out = [[c, r]];
@@ -1608,7 +1645,7 @@ function startTurn(G) {
       if (TYPES[u.type].counterStrike) u.cready = true;
       if (u.stuck > 0) { u.stuck--; if (!u.stuck) ev.push({ t: 'unstuck', u: u.id }); }
       if (u.status === 'ok' && cls(u) !== 'walker') { const fh = G.units.find(h => h.side !== u.side && alive(h) && TYPES[h.type].aura === 'furcht' && dist(h.c, h.r, u.c, u.r) <= 1);   // Held Kürassier: Furcht
-        if (fh) { u.mor = Math.max(0.5, u.mor - P.FURCHT_MOR); ev.push({ t: 'furcht', u: u.id, by: fh.id, mor: u.mor }); } }
+        if (fh) { u.mor = Math.max(0.5, u.mor - (u5aus() ? P.FURCHT_MOR : P.FURCHT_MOR_U5)); ev.push({ t: 'furcht', u: u.id, by: fh.id, mor: u.mor }); } }
     }
   }
   for (const u of G.units.filter(x => x.side === s && alive(x))) {
@@ -1758,9 +1795,9 @@ function rollenWeg(G, u, d) {
     const p2 = step(p1[0], p1[1], f); if (p2[0] === d.c && p2[1] === d.r) return { mitte: p1, richtung: f }; }
   return null;
 }
-const pzgDmg = (u, d) => P.PZG_DMG * 2 * (0.4 + 0.6 * u.str / 10) / Math.max(1, TYPES[d.type].def / 4);   // wie die Haftladung gegen Kolosse
+const pzgDmg = (u, d) => P.PZG_DMG * 2 * kraft(u) / Math.max(1, TYPES[d.type].def / 4);   // wie die Haftladung gegen Kolosse
 const rollenGraben = (G, d) => !TOG.NOROLLGRABEN && (d.dug || ['trench', 'bunker'].includes(hex(G, d.c, d.r).t));   // SP-2 84.4: der Graben schützt (Sim-Abschalter NOROLLGRABEN)
-function rollenDmg(G, u, d, wand) { const gr = rollenGraben(G, d); return P.ROLLEN_DMG * (0.4 + 0.6 * u.str / 10) * (TYPES[d.type].suit ? 0.5 : 1) * (gr ? P.ROLLEN_GRABEN : wand ? P.ROLLEN_WAND : 1) / Math.max(1, TYPES[d.type].def / 4); }
+function rollenDmg(G, u, d, wand) { const gr = rollenGraben(G, d); return P.ROLLEN_DMG * kraft(u) * (TYPES[d.type].suit ? 0.5 : 1) * (gr ? P.ROLLEN_GRABEN : wand ? P.ROLLEN_WAND : 1) / Math.max(1, TYPES[d.type].def / 4); }
 function abilTargets(G, u) {
   const T = TYPES[u.type], k = T.abil, A = ABILS[k];
   if (T.ladungen && (u.ladUsed || 0) >= T.ladungen) return [];   // F78 (2026-11-21): Sprengladungen der Mineure, höchstens T.ladungen je Trupp und Schlacht
@@ -1817,7 +1854,7 @@ function useAbil(G, u, c, r) {
   else if (k === 'charge') {
     const d = unitAt(G, c, r); ev.push({ t: 'blast', u: u.id, c, r });
     if (d && d.side !== u.side) {
-      const wk = cls(d) === 'walker', dmg = P.CHARGE_DMG * (wk ? 2 : 1) * (0.4 + 0.6 * u.str / 10) * (0.8 + G.rng() * 0.4) / Math.max(1, TYPES[d.type].def / 4);
+      const wk = cls(d) === 'walker', dmg = P.CHARGE_DMG * (wk ? 2 : 1) * kraft(u) * (0.8 + G.rng() * 0.4) / Math.max(1, TYPES[d.type].def / 4);
       applyDamage(G, u, d, dmg, 'front', ev);
       if (alive(d) && wk && G.rng() < 0.5) { d.broken = Math.max(d.broken || 0, 1); ev.push({ t: 'breakdown', u: d.id }); }
     }
@@ -1846,8 +1883,8 @@ function useAbil(G, u, c, r) {
   else if (k === 'pzschuss') {   // Punkt 16: Panzergranate – stark gegen schwer gepanzert, mittel gegen leicht gepanzert
     const d = unitAt(G, c, r), kl = panzerKl(d.type), mul = kl === 'S' ? P.PZS_S : kl === 'L' ? P.PZS_L : P.PZS_U, dm = defMods(G, d, 'front', true, []);
     ev.push({ t: 'pzschuss', u: u.id, d: d.id, c, r, face: u.face });
-    applyDamage(G, u, d, P.DMG * (T.fs / (TYPES[d.type].def * dm)) * (0.4 + 0.6 * u.str / 10) * mul * (0.85 + G.rng() * 0.3), 'front', ev, { ranged: true });
-    if (alive(d) && cls(d) === 'walker' && G.rng() < P.PZG_PANNE) { d.broken = Math.max(d.broken || 0, P.PANNE_RUNDEN + 1); ev.push({ t: 'breakdown', u: d.id }); }
+    applyDamage(G, u, d, P.DMG * (T.fs / (TYPES[d.type].def * dm)) * kraft(u) * mul * (0.85 + G.rng() * 0.3), 'front', ev, { ranged: true });
+    if (alive(d) && cls(d) === 'walker' && G.rng() < P.PZG_PANNE) { d.broken = Math.max(d.broken || 0, panneDauer(G)); ev.push({ t: 'breakdown', u: d.id }); }
   }
   else if (k === 'kopfrunter') {   // Punkt 3: kein Schaden – Ziel niedergehalten, Moral −P.KOPF_MOR
     const d = unitAt(G, c, r); if (TYPES[u.type].hidden) u.revealed = 1; ev.push({ t: 'kopfrunter', u: u.id, d: d.id });
@@ -1861,7 +1898,7 @@ function useAbil(G, u, c, r) {
   else if (k === 'pzgranate') {   // F80: Panzergranate – ein kräftiger Treffer am Fahrzeug/Schreiter, wie die Haftladung
     const d = unitAt(G, c, r); ev.push({ t: 'pzgranate', u: u.id, d: d.id, c, r });
     applyDamage(G, u, d, pzgDmg(u, d) * (0.8 + G.rng() * 0.4), 'front', ev, { ranged: true });
-    if (alive(d) && G.rng() < P.PZG_PANNE) { d.broken = Math.max(d.broken || 0, P.PANNE_RUNDEN + 1); ev.push({ t: 'breakdown', u: d.id }); }
+    if (alive(d) && G.rng() < P.PZG_PANNE) { d.broken = Math.max(d.broken || 0, panneDauer(G)); ev.push({ t: 'breakdown', u: d.id }); }
   }
   else if (k === 'rollen' && rw) {   // F54 Sturmrollen: Anlauf, ein Aufprall, Ziel rutscht zurück
     const d = unitAt(G, c, r);
@@ -1878,7 +1915,7 @@ function useAbil(G, u, c, r) {
     if (rw.mitte && !anlauf(G, u, rw.mitte, ev)) { u.ap = 0; u.bp = 0; u.attacked = true; u.moved = true; ev.push(...checkEnd(G)); return ev; }   // K4
     const ziel = step(d.c, d.r, rw.richtung), frei = inMap(ziel[0], ziel[1]) && !unitAt(G, ziel[0], ziel[1]) && cost(G, d, ziel[0], ziel[1]) < 99 && hex(G, ziel[0], ziel[1]).t !== 'wire';
     ev.push({ t: 'durchbruch', u: u.id, d: d.id, path: null, wand: !frei });   // K4: Anlauf schon als normaler Zug
-    const dc = d.c, dr = d.r, dmg = P.DURCH_DMG * (0.4 + 0.6 * u.str / 10) * (TYPES[d.type].suit ? 0.5 : 1) * (frei ? 1 : P.ROLLEN_WAND) / Math.max(1, TYPES[d.type].def / 4);
+    const dc = d.c, dr = d.r, dmg = P.DURCH_DMG * kraft(u) * (TYPES[d.type].suit ? 0.5 : 1) * (frei ? 1 : P.ROLLEN_WAND) / Math.max(1, TYPES[d.type].def / 4);
     applyDamage(G, u, d, dmg * (0.8 + G.rng() * 0.4), 'front', ev, { morPlus: P.DURCH_MOR });
     if (alive(d) && d.status === 'ok') { if (!d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
       if (frei && d.c === dc && d.r === dr) { d.c = ziel[0]; d.r = ziel[1]; d.dug = false; ev.push({ t: 'rollstoss', u: d.id, path: [[dc, dr], ziel] }); rueckstossFolgen(G, d, ev); } }
@@ -2128,7 +2165,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

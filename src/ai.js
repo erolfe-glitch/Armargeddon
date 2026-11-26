@@ -103,7 +103,7 @@ function threatAt(G, u, c, r) {
       let f = T.fs;
       if (T.mg && (t === 'wire' || D.cls === 'cav')) f *= 2;
       if (D.cls === 'flame') f *= 1.5;
-      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * (0.4 + 0.6 * o.str / 10) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen
+      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * E.kraft(o) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen
     }
     if (d <= T.mv + 1 && T.atk >= 4) {
       const mm = D.cls === 'walker' ? (T.cls === 'storm' ? 1.5 : T.cls === 'walker' ? 1 : 0.4) : 1;
@@ -207,7 +207,7 @@ function abilPlan(G, u) {
     }
     else if (k === 'durchbruch') {   // Held Rote Faust (2026-11-21): Aufprall mit Rückstoß – schwache Gegner, MG, Geschütze, Gegner auf Zielfeldern (werden heruntergeschleudert)
       const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
-      if (rw) { const dm = Math.min(P.DURCH_DMG * (0.4 + 0.6 * u.str / 10) * (TYPES[x.type].suit ? 0.5 : 1) / Math.max(1, TYPES[x.type].def / 4), x.str);
+      if (rw) { const dm = Math.min(P.DURCH_DMG * E.kraft(u) * (TYPES[x.type].suit ? 0.5 : 1) / Math.max(1, TYPES[x.type].def / 4), x.str);
         v = 1.5 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 2 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.4 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0); }
     }
     else if (k === 'hinrichtung') { const x = foe(c, r); if (x) v = 6 + (G.map[x.c][x.r].obj ? 2 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1 : 0) + x.str * 0.3; }   // Held Kürassier: sicherer Abschuss

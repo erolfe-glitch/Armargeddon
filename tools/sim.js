@@ -41,6 +41,7 @@ function schrittName(G, u, s, ev) {
   return s.k;
 }
 let errors = 0;
+const U5 = { flucht: { A: 0, D: 0 }, panne: { A: 0, D: 0 }, fest: { A: 0, D: 0 }, schaden: {}, handelt: { A: 0, D: 0 }, da: { A: 0, D: 0 }, verdient: { A: {}, D: {} } };   // U5a-Zähler (Bauplan 10a)
 for (let g = 0; g < N; g++) {
   const parse = v => v ? Object.fromEntries(v.split(',').map(x => { const [t, n] = x.split(':'); return [t, +n]; })) : null;
   const army = { A: parse(process.env.ARMY_A), D: parse(process.env.ARMY_D) };
@@ -54,16 +55,19 @@ for (let g = 0; g < N; g++) {
   if (noA.length) G.units = G.units.filter(u => !(u.side === 'A' && noA.includes(E.cls(u))));
   for (const [t, n] of Object.entries(drop)) for (let i = 0; i < n; i++) { const x = G.units.findIndex(u => u.type === t); if (x >= 0) G.units.splice(x, 1); }
   E.startTurn(G);
-  let guard = 0;
+  let guard = 0; const ausg = { A: 0, D: 0 }, tat = new Set(); let tk = '';
   try {
     let bk = '';
     while (!G.over && guard++ < 8000) {
-      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; const bev = AI.buy(G) || []; if (process.env.HELD_STR) for (const e of bev) { const nu = e.t === 'spawn' && G.units.find(x => x.id === e.u); if (nu && E.TYPES[nu.type].held) nu.str = +process.env.HELD_STR; }   /* M6: Heldenfall gezielt prüfen (Held mit wenig Stärke) */ for (const e of bev) if (e.t === 'spawn') { const u = G.units.find(x => x.id === e.u); zaehl(u.side, 'Nachschub' + (E.OBJECTIVES.some(o => E.dist(o.c, o.r, u.c, u.r) <= 1) ? ' an Zielfeld' : ' am Rand')); zaehl(u.side, 'Kauf ' + u.type); } }
+      if (!process.env.NOBUY && bk !== G.turn + G.side) { bk = G.turn + G.side; const bev = AI.buy(G) || []; for (const e of bev) { const nu = e.t === 'spawn' && G.units.find(x => x.id === e.u); if (nu) ausg[nu.side] += E.costParts(nu.type).total; } if (process.env.HELD_STR) for (const e of bev) { const nu = e.t === 'spawn' && G.units.find(x => x.id === e.u); if (nu && E.TYPES[nu.type].held) nu.str = +process.env.HELD_STR; }   /* M6: Heldenfall gezielt prüfen (Held mit wenig Stärke) */ for (const e of bev) if (e.t === 'spawn') { const u = G.units.find(x => x.id === e.u); zaehl(u.side, 'Nachschub' + (E.OBJECTIVES.some(o => E.dist(o.c, o.r, u.c, u.r) <= 1) ? ' an Zielfeld' : ' am Rand')); zaehl(u.side, 'Kauf ' + u.type); } }
+      if (tk !== G.turn + G.side) { tk = G.turn + G.side; for (const x of [5, 10, 15, 20]) if (G.turn === x && G.side === 'A') for (const sd of ['A', 'D']) (U5.verdient[sd][x] = U5.verdient[sd][x] || []).push(G.pts[sd] + ausg[sd]); }
       const act = AI.next(G);
       if (!act) { const b = G.bauten && G.bauten.find(x => !x.art || x.art === 'kirche'); if (b) { const tu = b.turm && !b.kaputt && E.unitAt(G, b.turm[0], b.turm[1]); KI.zuege++; if (tu) KI.turm[tu.side]++;
           for (const [c, r] of b.felder) { const x = !b.kaputt && E.unitAt(G, c, r); if (x) KI.schiff[x.side]++; } }
+        { const sd = G.side; for (const x of G.units) if (x.side === sd && E.active(x)) { U5.da[sd]++; if (tat.has(x.id)) U5.handelt[sd]++; } tat.clear(); }
         E.endTurn(G); continue; }
-      for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || [];
+      for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || []; if (ev.length) tat.add(act.u);
+        for (const e of ev) { const z = e.u && G.units.find(x => x.id === e.u); if (!z) continue; if (e.t === 'rout') U5.flucht[z.side]++; if (e.t === 'breakdown') U5.panne[z.side]++; if (e.t === 'stuck') U5.fest[z.side]++; if (e.t === 'hit' && u && z.side !== u.side) U5.schaden[u.type] = (U5.schaden[u.type] || 0) + (e.dmg || 0); }
         for (const e of ev) { if (e.t === 'eisbruch') { KI.eis = (KI.eis || 0) + 1; if (e.u) KI.eisU = (KI.eisU || 0) + 1; } if (e.t === 'heldfall') KI.heldfall = (KI.heldfall || 0) + 1; if (e.t === 'entsetzen') { KI.ent = (KI.ent || 0) + 1; if (!e.ok) KI.entF = (KI.entF || 0) + 1; } if (e.t === 'fear') KI.fear = (KI.fear || 0) + 1; if (e.t === 'stuck' && u && E.TYPES[u.type].stecken) KI.stecken = (KI.stecken || 0) + 1; }   // M6: Heldenfall, Kürassier steckt fest
         if (u && ev.length) { for (const e of ev) if (e.t === 'einsturz') { const art = e.art || (G.bauten[e.bau] && G.bauten[e.bau].art) || 'kirche', k = KI.art[art] = KI.art[art] || { n: 0, runde: [], durch: { A: 0, D: 0 }, typ: {}, sl: -1 }; if (k.sl !== g) { k.sl = g; k.n++; } k.runde.push(G.turn); k.durch[sd]++; k.typ[u.type] = (k.typ[u.type] || 0) + 1; }   /* G6b: Einsturz je Gebäudeart (Kirche, Windmühle, Haus, Kapelle), je Schlacht höchstens einmal gezählt */ zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); if (e.t === 'sprung') zaehl(sd, 'Sprungangriff (Löwenoger)'); if (e.t === 'dauerfeuer') zaehl(sd, 'Dauerfeuer (Hünen, 2. Salve)'); } }
         if (G.over) break; }
@@ -91,6 +95,9 @@ console.log(`Entsetzenstests: ${KI.ent || 0} (je Schlacht ${((KI.ent || 0) / N).
 console.log(`Helden: gefallen ${KI.heldfall || 0} (je Schlacht ${((KI.heldfall || 0) / N).toFixed(2)}), Kürassier steckt fest ${KI.stecken || 0}×`);
 console.log(`Runden Ø ${avg(turns).toFixed(1)}  Punkte Ø ${avg(pts).toFixed(1)}  Ausfälle Ø Konkordat ${(100 * avg(loss.A)).toFixed(0)} %  Aschenwacht ${(100 * avg(loss.D)).toFixed(0)} %`);
 console.log('Zielfelder beim Konkordat:', JSON.stringify(Object.fromEntries(E.OBJECTIVES.map(o => [o.id, pc(objHeld[o.id] || 0)]))));
+console.log(`U5a: Flucht je Schlacht ${(U5.flucht.A / N).toFixed(2)} / ${(U5.flucht.D / N).toFixed(2)}, Panne ${(U5.panne.A / N).toFixed(2)} / ${(U5.panne.D / N).toFixed(2)}, Festfahren ${(U5.fest.A / N).toFixed(2)} / ${(U5.fest.D / N).toFixed(2)}, handelt ${(100 * U5.handelt.A / Math.max(1, U5.da.A)).toFixed(0)} % / ${(100 * U5.handelt.D / Math.max(1, U5.da.D)).toFixed(0)} % (Konkordat / Aschenwacht)`);
+console.log('U5a Nachschubpunkte verdient (Runde: Konkordat/Aschenwacht):', [5, 10, 15, 20].map(x => x + ': ' + Math.round(avg(U5.verdient.A[x] || [])) + '/' + Math.round(avg(U5.verdient.D[x] || [])) + ' (' + (U5.verdient.A[x] || []).length + ')').join(', '));
+console.log('U5a Schaden je Typ und Schlacht (×10):', JSON.stringify(Object.fromEntries(Object.entries(U5.schaden).sort((a, b) => b[1] - a[1]).map(([t, v]) => [t, Math.round(v * 10 / N)]))));
 console.log('Verluste je Typ:', JSON.stringify(Object.fromEntries(Object.keys(typeLoss).map(t => [t, (100 * typeLoss[t] / typeCount[t]).toFixed(0) + ' %']))));
 if (!process.env.KURZ) {
   const alle = [...new Set([...Object.keys(nutz.A), ...Object.keys(nutz.D)])].sort();
