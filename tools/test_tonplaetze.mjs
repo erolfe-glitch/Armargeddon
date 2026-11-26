@@ -62,7 +62,7 @@ const kurzSz = l => [...new Set(l)].slice(0, 5).join(', ') + (new Set(l).size > 
 for (const u of D.einheiten) { const t = u.t, sp = S.typen[t]; if (!sp || (nur.length && !nur.includes(t))) continue;
   const rows = zeilen(t), pult = plaetze(t), aus = [];
   // (a) fehlt im Pult
-  for (const p of Object.keys(sp.wahl)) { if (pult.has(p) || ALLGEMEIN[p] || GELAENDE[p] || istSchluesselVon(t, p)) continue; const e = eigene(sp, p), keys = Object.keys(e); if (!keys.length) continue;
+  for (const p of Object.keys(sp.wahl)) { if (pult.has(p) || ALLGEMEIN[p] || GELAENDE[p] || /^ev_/.test(p) || istSchluesselVon(t, p)) continue;   /* SP-3: stumme Ereignis-Plätze ev_* stehen unter „Gelände und Gebäude“, nicht je Einheit */ const e = eigene(sp, p), keys = Object.keys(e); if (!keys.length) continue;
     const eimer = [...new Set(keys.map(k => (k.endsWith(':a') ? 'handelt' : 'getroffen')))].join('+');
     aus.push(['fehlt', `fehlt im Pult: ${p} (${eimer}; ${keys.map(k => WIE[basis(k)]).filter((x, i, l) => l.indexOf(x) === i).join(' / ')}; Szenen: ${kurzSz(keys.flatMap(k => e[k]))})`, `fehlt im Pult: ${p} (${eimer})`]); summe.fehlt++; }
   // (b) zu viel, (c) Rolle

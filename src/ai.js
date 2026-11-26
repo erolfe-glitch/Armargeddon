@@ -20,8 +20,8 @@ function wOf(side) {
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 // Prüfliste 2.23 (2026-11-21): neue Einheiten in die Wunschliste aufgenommen (Mineure, Schildwall, Löwenoger, Versorgung; Hünen, Gasschutz, Versorgung);
 // alte Liste mit KAUF_ALT=1. Dazu Lage-Käufe (kaufNachLage), die bei klarem Bedarf vorgehen.
-const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'mineur', 'schildwall', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'kuerass', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
-const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
+const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'mineur', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'kuerass', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
+const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
   schiff: 1.3, turm: 1.3, muehle: 1.2, wrack: 1.0, garten: 0.3, acker: 0.3, friedhof: 0.3, haus: 1.2, kapelle: 1.2, eis: -0.4, steinbruecke: 0 };
@@ -486,7 +486,7 @@ function order(G, side) {
 // Abschalter NOLAGE_abwehr / NOLAGE_aufkl. Erste Fassungen (Kauf ganz nach Punktwerten) verschoben die Balance zu stark (Grauwall 6 % bzw. 13 % fürs
 // Konkordat), deshalb bleibt die Wunschliste das Rückgrat. Lage-Käufe für Sanitäter (3 Verwundete) und Gasschutz (2 Vergiftete) wieder entfernt:
 // Grauwall fiel damit auf 45 %; Sanitäter und Gasschutz kommen über die Liste.
-const PANZERABWEHR = new Set(['raeumer', 'pionier', 'feldkanone', 'kreuz', 'buechse', 'sturm', 'eingreif', 'geschuetz']), AUFKL = new Set(['ballon', 'signal', 'fernsprech']);
+const PANZERABWEHR = new Set(['raeumer', 'pionier', 'feldkanone', 'kreuz', 'buechse', 'sturm', 'geschuetz']), AUFKL = new Set(['ballon', 'signal', 'fernsprech']);
 const LAGE_KAUF = { A: { abwehr: 'pionier', aufkl: 'ballon' }, D: { abwehr: 'buechse', aufkl: 'signal' } };
 function kaufNachLage(G, side) {
   const eig = G.units.filter(u => u.side === side && E.active(u)), fe = G.units.filter(u => u.side !== side && E.active(u)), pz = u => TYPES[u.type].cls === 'walker', K = LAGE_KAUF[side];

@@ -1,0 +1,8 @@
+{
+ "werkzeug": "Claude (Punkte 94/96: Wahlen der gestrichenen Einheiten übertragen, wo dem Ziel eine Wahl fehlt)",
+ "exportiert": "2026-11-24T00:00:01",
+ "hinweis": "Schildwall → Grabenräumer: Schilde vor = neu2_metall_1. Eingreiftrupp → Sturmbrecher: nichts zu übertragen, alle Zeilen haben schon eine eigene Wahl. Absichtlich älter datiert, damit Enricos neuester Export maßgeblich bleibt.",
+ "aenderungen": [
+  { "einheit": "raeumer", "platz_id": "schilde", "wahl": "k:neu2_metall_1", "lautstaerke": 0.5, "tonhoehe": 1 }
+ ]
+}

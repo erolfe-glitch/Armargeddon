@@ -42,6 +42,7 @@
 // neue Töne als <platz>_<n> (AAC). Übersicht: entwurf/TONPLAETZE.md, Quellen und Lizenzen: CREDITS.md.
 // Spieltöne. Nur im Ton-Pult/in der Tonprobe wählbare Töne liegen in src/sound_pult.js (tools/ton_teilen.mjs, M9 2026-11-22).
 // Spieltöne. Nur im Ton-Pult/in der Tonprobe wählbare Töne liegen in src/sound_pult.js (tools/ton_teilen.mjs, M9 2026-11-22).
+// Spieltöne. Nur im Ton-Pult/in der Tonprobe wählbare Töne liegen in src/sound_pult.js (tools/ton_teilen.mjs, M9 2026-11-22).
 (function (root) {
 'use strict';
 root.SOUNDS = Object.assign(root.SOUNDS || {}, {
