@@ -20,8 +20,8 @@ function wOf(side) {
 const ORDER = { art: 0, mg: 1, walker: 2, storm: 3, flame: 3, inf: 4, cav: 5, medic: 6 };
 // Prüfliste 2.23 (2026-11-21): neue Einheiten in die Wunschliste aufgenommen (Mineure, Schildwall, Löwenoger, Versorgung; Hünen, Gasschutz, Versorgung);
 // alte Liste mit KAUF_ALT=1. Dazu Lage-Käufe (kaufNachLage), die bei klarem Bedarf vorgehen.
-const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch', 'mineur', 'schildwall', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'kuerass', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
-const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'rauch'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
+const WISH = { A: ['koloss', 'kohorte', 'faust', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone', 'mineur', 'schildwall', 'oger', 'werkstatt'], D: ['sturm', 'grenadier', 'kuerass', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch', 'huenen', 'gasschutz', 'munition'] };
+const WISH_ALT = { A: ['koloss', 'kohorte', 'feldscher', 'pionier', 'moerser', 'scharf', 'flammen', 'feldkanone'], D: ['sturm', 'grenadier', 'minenwerfer', 'buechse', 'heiler', 'schwer', 'banner', 'lanzeD', 'sturmpz', 'eingreif', 'pirsch'] };
 
 const COVER = { trench: 1, village: 0.9, forest: 0.7, crater: 0.4, wire: -1.6, bunker: 1.3, fabrik: 1.1, kirche: 0.9, barrikade: 1, wald: 0.9, waldweg: 0.3, bahn: 0.4, furt: -0.6, sumpf: -0.4,
   schiff: 1.3, turm: 1.3, muehle: 1.2, wrack: 1.0, garten: 0.3, acker: 0.3, friedhof: 0.3, haus: 1.2, kapelle: 1.2, eis: -0.4, steinbruecke: 0 };
@@ -203,7 +203,7 @@ function abilPlan(G, u) {
     else if (k === 'rollen') {   // F54 Sturmrollen: erwarteter Schaden gegen den des besten Schusses; Ziele in Deckung, MG, Geschütze, Zielfelder bevorzugt
       const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
       if (rw) { const dm = Math.min(E.rollenDmg(G, u, x, false), x.str), sch = G.units.filter(z => z.side !== u.side && E.canFire(G, u, z)).reduce((m, z) => Math.max(m, Math.min(E.preview(G, u, z, 'fire').dmg, z.str)), 0);
-        v = dm > sch * 1.3 ?   /* Prüfliste 2.20: nur, wenn der Aufprall deutlich mehr bringt als der Schuss */ 1 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + E.coverOf(G, x).tier * 0.5 - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0) : 0; }
+        v = dm > sch * 1.3 ?   /* Prüfliste 2.20: nur, wenn der Aufprall deutlich mehr bringt als der Schuss */ 1 + dm * 0.7 + (dm >= x.str - 0.3 ? 3 : 0) + (G.map[x.c][x.r].obj && !E.rollenGraben(G, x) ? 1.5 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 1.2 : 0) + (E.rollenGraben(G, x) ? 0 : E.coverOf(G, x).tier * 0.5) - (rw.mitte ? threatAt(G, u, rw.mitte[0], rw.mitte[1]) : 0) : 0; }
     }
     else if (k === 'durchbruch') {   // Held Rote Faust (2026-11-21): Aufprall mit Rückstoß – schwache Gegner, MG, Geschütze, Gegner auf Zielfeldern (werden heruntergeschleudert)
       const x = foe(c, r), rw = x && E.rollenWeg(G, u, x);
@@ -233,6 +233,7 @@ function abilPlan(G, u) {
     else if (k === 'clear') { for (const [a, b] of area(c, r)) { const x = E.unitAt(G, a, b); if (x && x.side === u.side) v += 1; } }
     if (v > bv) { bv = v; best = [c, r]; }
   }
+  if (best && k === 'smoke' && E.cls(u) === 'art') { const pa = planArt(G, u); if (pa && pa.v > bv * 1.5) return null; }   // SP-2 84.7: Mörser legt Rauch nur, wenn der Nebel mehr bringt als sein Schuss
   if (!best) return null;
   const A = E.ABILS[k];
   return { only: !!A.all, step: { k: 'abil', c: best[0], r: best[1] } };
@@ -259,7 +260,7 @@ const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
 function posValue0(G, u, c, r) {
-  const w = wOf(u.side), h = E.hex(G, c, r), k = TYPES[u.type].relay || TYPES[u.type].abil === 'smoke' ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
+  const w = wOf(u.side), h = E.hex(G, c, r), k = TYPES[u.type].relay || (TYPES[u.type].abil === 'smoke' && E.cls(u) !== 'art') ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
   const th = threatAt(G, u, c, r);
   let v;
   if (k === 'medic') {
@@ -475,7 +476,7 @@ function planUnit(G, u) {
 function order(G, side) {
   const us = G.units.filter(u => u.side === side && E.active(u) && !u.attacked && !u.broken && u.ap >= 1);
   const dir = E.SIDES[side].dir;
-  const ord = u => TYPES[u.type].abil === 'mark' || TYPES[u.type].abil === 'smoke' ? -1 : ORDER[E.cls(u)];   // Beobachter markieren vor der Artillerie; Rauch vor dem Vorrücken
+  const ord = u => TYPES[u.type].abil === 'mark' || (TYPES[u.type].abil === 'smoke' && E.cls(u) !== 'art') ? -1 : ORDER[E.cls(u)];   // Beobachter markieren vor der Artillerie; Rauch vor dem Vorrücken
   return us.sort((a, b) => (ord(a) - ord(b)) || (b.c - a.c) * dir);
 }
 

@@ -8,7 +8,7 @@
     if (T.held) return 'Held';
     if (T.cmd) return T.cmd === 2 ? 'Führung (General)' : 'Führung';
     if (T.cls === 'medic') return T.repair || A === 'ammo' ? 'Versorgung' : 'Sanität';
-    if (T.cls === 'art') return T.direkt ? 'Direktes Feuer' : T.mobile ? 'Steilfeuer' : 'Steil- und Sperrfeuer';   // F103: Feldkanone flache Bahn, Donnerrohr/Grabengeschütz Steil- und Sperrfeuer
+    if (T.cls === 'art') return T.direkt ? 'Direktes Feuer' : T.mobile ? (A === 'smoke' ? 'Steilfeuer und Nebel' : 'Steilfeuer') : 'Steil- und Sperrfeuer';   // F103: Feldkanone flache Bahn, Donnerrohr/Grabengeschütz Steil- und Sperrfeuer
     if (A === 'strike') return 'Feuerleitung';   // F103: Fernsprechtrupp ruft Feuer, Ballon und Signaltrupp klären auf
     if (A === 'mark' || T.relay || T.spot) return 'Aufklärung';
     if (T.courier) return 'Unterstützung (Meldegänger)';
@@ -41,7 +41,7 @@
     if (T.cls === 'cav' || T.cls === 'storm') stark.push(ZIEL.gesch);
     if (T.cls === 'art' || T.flame || T.cls === 'flame' || T.breaker || T.abil === 'charge' || (T.cls === 'walker' && !T.gat)) stark.push(ZIEL.stell);
     if (T.cls === 'mg' || T.pin) stark.push(ZIEL.reiter);
-    const hilfe = T.cmd || T.cls === 'medic' || ['mark', 'strike', 'smoke', 'ammo'].includes(T.abil) || T.relay || T.spot || T.banner || T.courier;   // Führung und Unterstützung: kein „stark gegen“ nur aus der Grundwaffe
+    const hilfe = T.cmd || T.cls === 'medic' || (['mark', 'strike', 'ammo'].includes(T.abil) || (T.abil === 'smoke' && T.cls !== 'art')) || T.relay || T.spot || T.banner || T.courier;   // Führung und Unterstützung: kein „stark gegen“ nur aus der Grundwaffe
     if (m.fInf >= 1 && !hilfe && (!stark.length || T.cls === 'inf' || T.cls === 'mg')) stark.push(ZIEL.fuss);
     const fern = T.rng > 0 || T.cls === 'art';
     if (T.direkt) stark.push(ZIEL.gep);   // Feldkanone: direkter Schuss gegen Kolosse

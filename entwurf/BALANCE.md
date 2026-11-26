@@ -466,3 +466,13 @@ Nach Paket B2 (Handgranaten als Fähigkeit der Aschengrenadiere) stand Krähenfu
 | 1 Grenadier weniger (`MD_grenadier=4`) | 81 % | 80 % | 80,5 % |
 
 Übernommen: **zoneD 14**. Die Messung schwankt bei 100 Schlachten etwa ±5 Punkte. Deckung in der Mitte bleibt leer (Enrico 24.11., siehe Paket C).
+
+## SP-2: Sturmrollen gegen Graben, Rauchwerfer gestrichen (2026-11-26)
+`sim.js 100`, Siegquote Konkordat, vorher (HEAD vor SP-2) → nachher:
+- Grauwall Startwerte 1–4: 38/39/50/44 (Ø 42,8) → 48/62/56/50 (Ø 54,0)
+- Sankt Ruß Startwerte 1/2: 42/44 → mit 3 Mahlwerken 70/71, mit 2 Mahlwerken (übernommen) 54/61 (Ø 57,5)
+- Krähenfurt Startwert 1: 56 → 49
+- Gemischte Aufstellung (MISCHEN=1, Startwert 1): Sankt Ruß 75 → 77, Grauwall 58 → 60 – die Regeln selbst sind fast neutral, der Ausschlag kommt von der festen Aufstellung (eine Einheit weniger verschiebt die Reihenfolge).
+- Nur Graben-Schutz aus (NOROLLGRABEN=1): Grauwall 66/78, Sankt Ruß 66 – der Schutz kostet das Konkordat rund 15 Punkte.
+- Versuche Sankt Ruß: Kohorten 4 → 43/47, Kohorten 4 + Sanitäter 2 → 29/33.
+Mörser: Preis 25 → 40 (Rauchmunition 15), Nebelwände je Schlacht Grauwall 2,5 → 3,5.

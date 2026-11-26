@@ -4298,9 +4298,6 @@
     "einschlag_panzer": [
      "granate:huenen"
     ],
-    "launch_1": [
-     "sperrfeuer:grenadier"
-    ],
     "sperr_boom": [
      "sperrfeuer:grenadier"
     ],
@@ -4314,12 +4311,15 @@
     ],
     "whistle": [
      "ankunft"
+    ],
+    "werfer": [
+     "faehigkeit_smoke:grenadier"
+    ],
+    "gas": [
+     "faehigkeit_smoke:grenadier"
     ]
    },
    "z": {
-    "grenade": [
-     "gegenschlag:grenadier"
-    ],
     "boom": [
      "getroffen:sturmpz",
      "getroffen:knecht"
@@ -4350,6 +4350,14 @@
     "stimmen_A|ruf_vorruecken": [
      "ziehen_offen"
     ],
+    "stimmen_A|ruf_niedergehalten": [
+     "sperrfeuer:grenadier",
+     "gegenschlag:knecht",
+     "getroffen:sense",
+     "getroffen:knecht",
+     "getroffen:geschuetz",
+     "moral"
+    ],
     "stimmen_A|ruf_sterben_gruppe": [
      "gegenschlag:knecht",
      "getroffen:grenadier",
@@ -4357,6 +4365,11 @@
      "getroffen:sturmpz",
      "getroffen:knecht",
      "getroffen:geschuetz"
+    ],
+    "stimmen_A|ruf_koloss": [
+     "gegenschlag:knecht",
+     "getroffen:knecht",
+     "moral"
     ],
     "stimmen_A|ruf_sanitaeter": [
      "getroffen:grenadier",
@@ -4366,17 +4379,8 @@
      "getroffen:geschuetz",
      "vernichtet:grenadier"
     ],
-    "stimmen_A|ruf_niedergehalten": [
-     "getroffen:sense",
-     "getroffen:knecht",
-     "getroffen:geschuetz",
-     "moral"
-    ],
     "stimmen_A|ruf_gas": [
      "im_gas"
-    ],
-    "stimmen_A|ruf_koloss": [
-     "moral"
     ],
     "stimmen_A|ruf_panik_einzeln": [
      "moral"
@@ -4415,6 +4419,9 @@
       "granate:huenen",
       "sperrfeuer:grenadier",
       "granate_wasser"
+     ],
+     "fest:a": [
+      "sperrfeuer:grenadier"
      ]
     },
     "boom": {
@@ -4444,11 +4451,6 @@
       "granate:huenen"
      ]
     },
-    "launch_1": {
-     "fest:a": [
-      "sperrfeuer:grenadier"
-     ]
-    },
     "sperr_boom": {
      "a1:a": [
       "sperrfeuer:grenadier"
@@ -4464,11 +4466,6 @@
       "gegenschlag:grenadier",
       "gegenschlag:huenen",
       "gegenschlag:knecht"
-     ]
-    },
-    "grenade": {
-     "z:z": [
-      "gegenschlag:grenadier"
      ]
     },
     "artD": {
@@ -4504,6 +4501,16 @@
     "whistle": {
      "a1:a": [
       "ankunft"
+     ]
+    },
+    "werfer": {
+     "a1:a": [
+      "faehigkeit_smoke:grenadier"
+     ]
+    },
+    "gas": {
+     "a1:a": [
+      "faehigkeit_smoke:grenadier"
      ]
     }
    },
@@ -8908,391 +8915,6 @@
      "grund": "gegen Gas immun (Regel)"
     }
    ]
-  },
-  "rauch": {
-   "a": {
-    "sv_inf_A": [
-     "anwaehlen"
-    ],
-    "schritte": [
-     "ziehen_offen",
-     "ziehen_draht",
-     "ziehen_barrikade",
-     "ziehen_feindmaschine"
-    ],
-    "steps": [
-     "ziehen_schlamm"
-    ],
-    "stepsWald": [
-     "ziehen_totholz"
-    ],
-    "holzknacken": [
-     "ziehen_totholz"
-    ],
-    "draht_infanterie": [
-     "ziehen_draht"
-    ],
-    "marsch_schritte": [
-     "ziehen_marsch"
-    ],
-    "nahA": [
-     "nahkampf:grenadier",
-     "nahkampf:huenen",
-     "nahkampf:sturmpz",
-     "nahkampf:knecht",
-     "nahkampf:lanzeD",
-     "gegenschlag:grenadier",
-     "gegenschlag:huenen",
-     "gegenschlag:knecht"
-    ],
-    "cry": [
-     "nahkampf:grenadier"
-    ],
-    "schaufel": [
-     "nahkampf:grenadier",
-     "nahkampf:huenen",
-     "nahkampf:sturmpz",
-     "nahkampf:knecht",
-     "nahkampf:lanzeD"
-    ],
-    "armor": [
-     "nahkampf:sturmpz"
-    ],
-    "heavy": [
-     "nahkampf:knecht"
-    ],
-    "pferd_unruhe": [
-     "nahkampf:lanzeD"
-    ],
-    "neigh": [
-     "nahkampf:lanzeD"
-    ],
-    "whistle": [
-     "ankunft"
-    ],
-    "werfer": [
-     "faehigkeit_smoke:grenadier"
-    ],
-    "gas": [
-     "faehigkeit_smoke:grenadier"
-    ]
-   },
-   "z": {
-    "grunzen": [
-     "nahkampf:grenadier",
-     "nahkampf:huenen",
-     "nahkampf:lanzeD",
-     "getroffen:grenadier",
-     "getroffen:sturmpz",
-     "getroffen:knecht",
-     "getroffen:geschuetz",
-     "feuer",
-     "vernichtet:grenadier"
-    ],
-    "gasmaske_2": [
-     "nahkampf:grenadier",
-     "nahkampf:huenen",
-     "nahkampf:lanzeD",
-     "getroffen:grenadier",
-     "getroffen:sense",
-     "getroffen:sturmpz",
-     "getroffen:knecht",
-     "getroffen:geschuetz"
-    ],
-    "pain": [
-     "nahkampf:sturmpz",
-     "nahkampf:knecht",
-     "gegenschlag:grenadier",
-     "gegenschlag:huenen",
-     "gegenschlag:knecht",
-     "getroffen:grenadier",
-     "getroffen:sense",
-     "getroffen:sturmpz",
-     "getroffen:knecht",
-     "getroffen:geschuetz",
-     "freischlag:grenadier"
-    ],
-    "grenade": [
-     "gegenschlag:grenadier"
-    ],
-    "medic": [
-     "getroffen:grenadier",
-     "getroffen:sense",
-     "getroffen:sturmpz",
-     "getroffen:knecht",
-     "getroffen:geschuetz"
-    ],
-    "boom": [
-     "getroffen:sturmpz",
-     "getroffen:knecht"
-    ],
-    "artD": [
-     "getroffen:geschuetz"
-    ],
-    "einschlagH": [
-     "getroffen:geschuetz"
-    ],
-    "husten": [
-     "im_gas"
-    ],
-    "panic": [
-     "moral"
-    ],
-    "nahD": [
-     "freischlag:grenadier"
-    ],
-    "aufgerieben": [
-     "vernichtet:grenadier"
-    ]
-   },
-   "stimmen": {
-    "stimmen_A|ruf_auswahl": [
-     "anwaehlen"
-    ],
-    "stimmen_A|ruf_vorruecken": [
-     "ziehen_offen",
-     "ziehen_marsch"
-    ],
-    "stimmen_A|ruf_sturm": [
-     "nahkampf:grenadier",
-     "nahkampf:huenen",
-     "nahkampf:sturmpz",
-     "nahkampf:knecht",
-     "nahkampf:lanzeD"
-    ],
-    "stimmen_A|ruf_sterben_gruppe": [
-     "gegenschlag:knecht",
-     "getroffen:grenadier",
-     "getroffen:sense",
-     "getroffen:sturmpz",
-     "getroffen:knecht",
-     "getroffen:geschuetz"
-    ],
-    "stimmen_A|ruf_sanitaeter": [
-     "getroffen:grenadier",
-     "getroffen:sense",
-     "getroffen:sturmpz",
-     "getroffen:knecht",
-     "getroffen:geschuetz",
-     "vernichtet:grenadier"
-    ],
-    "stimmen_A|ruf_niedergehalten": [
-     "getroffen:sense",
-     "getroffen:knecht",
-     "getroffen:geschuetz",
-     "moral"
-    ],
-    "stimmen_A|ruf_gas": [
-     "im_gas"
-    ],
-    "stimmen_A|ruf_koloss": [
-     "moral"
-    ],
-    "stimmen_A|ruf_panik_einzeln": [
-     "moral"
-    ],
-    "stimmen_A|ruf_panik_gruppe": [
-     "moral"
-    ],
-    "stimmen_A|ruf_rueckzug": [
-     "moral"
-    ],
-    "stimmen_A|ruf_sterben_einzeln": [
-     "vernichtet:grenadier"
-    ]
-   },
-   "wahl": {
-    "sv_inf_A": {
-     "a1:a": [
-      "anwaehlen"
-     ]
-    },
-    "schritte": {
-     "a1:a": [
-      "ziehen_offen",
-      "ziehen_draht",
-      "ziehen_barrikade",
-      "ziehen_feindmaschine"
-     ]
-    },
-    "steps": {
-     "a1:a": [
-      "ziehen_schlamm"
-     ]
-    },
-    "stepsWald": {
-     "a1:a": [
-      "ziehen_totholz"
-     ]
-    },
-    "holzknacken": {
-     "a1:a": [
-      "ziehen_totholz"
-     ]
-    },
-    "draht_infanterie": {
-     "a1:a": [
-      "ziehen_draht"
-     ]
-    },
-    "marsch_schritte": {
-     "a1:a": [
-      "ziehen_marsch"
-     ]
-    },
-    "nahA": {
-     "a1:a": [
-      "nahkampf:grenadier",
-      "nahkampf:huenen",
-      "nahkampf:sturmpz",
-      "nahkampf:knecht",
-      "nahkampf:lanzeD",
-      "gegenschlag:grenadier",
-      "gegenschlag:huenen",
-      "gegenschlag:knecht"
-     ]
-    },
-    "cry": {
-     "a1:a": [
-      "nahkampf:grenadier"
-     ]
-    },
-    "schaufel": {
-     "a1:a": [
-      "nahkampf:grenadier",
-      "nahkampf:huenen",
-      "nahkampf:sturmpz",
-      "nahkampf:knecht",
-      "nahkampf:lanzeD"
-     ]
-    },
-    "grunzen": {
-     "sp:z": [
-      "nahkampf:grenadier",
-      "nahkampf:huenen",
-      "nahkampf:lanzeD",
-      "getroffen:grenadier",
-      "getroffen:sturmpz",
-      "getroffen:knecht",
-      "getroffen:geschuetz",
-      "feuer",
-      "vernichtet:grenadier"
-     ]
-    },
-    "gasmaske_2": {
-     "sp:z": [
-      "nahkampf:grenadier",
-      "nahkampf:huenen",
-      "nahkampf:lanzeD",
-      "getroffen:grenadier",
-      "getroffen:sense",
-      "getroffen:sturmpz",
-      "getroffen:knecht",
-      "getroffen:geschuetz"
-     ]
-    },
-    "armor": {
-     "a:a": [
-      "nahkampf:sturmpz"
-     ]
-    },
-    "pain": {
-     "sp:z": [
-      "nahkampf:sturmpz",
-      "nahkampf:knecht",
-      "gegenschlag:grenadier",
-      "gegenschlag:huenen",
-      "gegenschlag:knecht",
-      "getroffen:grenadier",
-      "getroffen:sense",
-      "getroffen:sturmpz",
-      "getroffen:knecht",
-      "getroffen:geschuetz",
-      "freischlag:grenadier"
-     ]
-    },
-    "heavy": {
-     "a:a": [
-      "nahkampf:knecht"
-     ]
-    },
-    "pferd_unruhe": {
-     "ok:a": [
-      "nahkampf:lanzeD"
-     ]
-    },
-    "neigh": {
-     "ok:a": [
-      "nahkampf:lanzeD"
-     ]
-    },
-    "grenade": {
-     "z:z": [
-      "gegenschlag:grenadier"
-     ]
-    },
-    "medic": {
-     "sp:z": [
-      "getroffen:grenadier",
-      "getroffen:sense",
-      "getroffen:sturmpz",
-      "getroffen:knecht",
-      "getroffen:geschuetz"
-     ]
-    },
-    "boom": {
-     "z:z": [
-      "getroffen:sturmpz",
-      "getroffen:knecht"
-     ]
-    },
-    "artD": {
-     "ok:z": [
-      "getroffen:geschuetz"
-     ]
-    },
-    "einschlagH": {
-     "ok:z": [
-      "getroffen:geschuetz"
-     ]
-    },
-    "husten": {
-     "z1:z": [
-      "im_gas"
-     ]
-    },
-    "panic": {
-     "sp:z": [
-      "moral"
-     ]
-    },
-    "nahD": {
-     "z:z": [
-      "freischlag:grenadier"
-     ]
-    },
-    "aufgerieben": {
-     "sp:z": [
-      "vernichtet:grenadier"
-     ]
-    },
-    "whistle": {
-     "a1:a": [
-      "ankunft"
-     ]
-    },
-    "werfer": {
-     "a1:a": [
-      "faehigkeit_smoke:grenadier"
-     ]
-    },
-    "gas": {
-     "a1:a": [
-      "faehigkeit_smoke:grenadier"
-     ]
-    }
-   },
-   "nicht_ausgeloest": []
   },
   "mineur": {
    "a": {

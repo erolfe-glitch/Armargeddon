@@ -3110,7 +3110,7 @@ async function playEvent0(e) {
       if (TYPES[u.type].fig) { const d0 = DU.get(e.u); muzzles.push({ img: 'bolt', x: d0.x - s * 0.5, y: d0.y - s * 0.7, ang: -0.25, sz: 0.55, off: 0.1, life: 34, max: 34 }); }
       playSound('crash', 0.7, null, { an: unitById(e.u) }); playSound('steps', 0.6, null, { an: unitById(e.u) }); kz(e.u, 'panne', 'puls'); toast(`${nm(u)} hat sich festgefahren und fällt ${P.PANNE_RUNDEN} Runden aus.`); await wait(350); break;
     case 'repaired': DU.get(e.u).vs.broken = 0; kz(e.u, 'funkeln', 'steig'); await wait(200); break;
-    case 'smoke': { if (u && u.type === 'rauch') playSound('werfer', 0.55); playSound(u && u.type === 'rauch' ? 'gas' : 'rauch', 0.5);   // Rauchgeschoss: gas_1, geworfen: rauch_1 (Tonprobe 2026-11-18)
+    case 'smoke': { const rohr = u && (u.type === 'rauch' || u.type === 'moerser'); if (rohr) playSound('werfer', 0.55); playSound(rohr ? 'gas' : 'rauch', 0.5);   // Rauchgeschoss: gas_1, geworfen: rauch_1 (Tonprobe 2026-11-18)
       if (u && fxIm('geschosse', 4)) { const du = DU.get(u.id); for (const [c, r] of e.cells) { const [x, y] = center(c, r); shells.push({ fxi: 4, fxs: 0.8, x1: du.x, y1: du.y - s * 0.6, x2: x, y2: y, t: 0, dur: 18, arc: 1.4, spin: true, sz: 0.3 }); } await wait(18 * 16.667); }
       for (const [c, r] of e.cells) { const [x, y] = center(c, r); boom(x, y, s * 0.7, 'dust', Math.random() * 8); } visSync('smoke'); floater(...headPos(e.u), 'Nebelwand', '#e6e6e0'); await wait(450); break; }
     case 'tunnel': { if (e.u != null) pose(e.u, 'hacke', 1500); playSound('tick', 0.45); playSound('bauen', 0.3); const [x, y] = center(e.c, e.r); floater(x, y - s * 0.6, 'Stollen: 2 Runden', '#ffb86a', true); await wait(300); break; }
@@ -3842,7 +3842,7 @@ const ABIL_KURZ = {
   strike: u => `Feuerschlag auf ein Feld in Sicht (bis ${felder(TYPES[u.type].spot || P.SPOT)}): wie ein Haubitzenschuss, ${Math.round(P.STRIKE_SCATTER * 100)} % Streuung; auf markierten Feldern keine Streuung und ${xf(P.GUIDED)}.`,
   rush: () => `Aus dem Stand bis ${felder(P.RUSH)} geradeaus, Draht hält nicht auf; danach Nahkampf gegen den schwächsten Gegner daneben.`,
   pzgranate: () => `Geballte Ladung auf ein Fahrzeug oder einen Schreiter 1–${P.PZG_RNG} Felder entfernt werfen: etwa ${fmt(P.PZG_DMG * 2)} Schaden (weniger bei starker Panzerung), ${Math.round(P.PZG_PANNE * 100)} % Pannengefahr. Nicht gegen Fußtruppen. Kostet die Aktion.`,
-  rollen: () => `Ein schwerer Aufprall auf Fußtruppen oder ein Geschütz daneben oder 2 Felder geradeaus (Anlauf aus dem Stand, Draht wird niedergewalzt): etwa ${fmt(P.ROLLEN_DMG)} Schaden, niedergehalten, Moral −${fmt(P.ROLLEN_MOR)}, kein Gegenschlag. Das Ziel rutscht ein Feld zurück; ist dort kein Platz, ${xf(P.ROLLEN_WAND)} Schaden. Kostet die Aktion und alle Bewegung.`,
+  rollen: () => `Ein schwerer Aufprall auf Fußtruppen oder ein Geschütz daneben oder 2 Felder geradeaus (Anlauf aus dem Stand, Draht wird niedergewalzt): etwa ${fmt(P.ROLLEN_DMG)} Schaden, niedergehalten, Moral −${fmt(P.ROLLEN_MOR)}, kein Gegenschlag. Das Ziel rutscht ein Feld zurück; ist dort kein Platz, ${xf(P.ROLLEN_WAND)} Schaden. Im Graben, Bunker oder eingegraben schützt die Deckung: kein Wegstoßen, nur ${xf(P.ROLLEN_GRABEN)} Schaden, aber niedergehalten. Kostet die Aktion und alle Bewegung.`,
   durchbruch: () => `Kostet die Aktion und alle Bewegung. In eine Einheit daneben oder – nur aus dem Stand – mit Anlauf bis 2 Felder geradeaus (keine Panzer oder Schreiter): bis ${fmt(P.DURCH_DMG)} Schaden, gegen Gepanzerte weniger, Moral −${fmt(P.DURCH_MOR)}, niedergehalten, ein Feld zurückgeschleudert (an einer Wand ×${xf(P.ROLLEN_WAND).slice(1)}).`,
   hinrichtung: () => `Eine angeschlagene Einheit daneben (unter ${fmt(P.HINRICHT_STR)} Stärke, keine Panzer oder Schreiter) wird sofort vernichtet.`,
   sprung: () => `Aus dem Stand bis ${felder(P.SPRUNG)} neben einen Gegner springen, auch über Draht und Gräben (Landefeld ohne Draht), dann sofort Nahkampf.`,
@@ -4891,7 +4891,7 @@ function noteEvent(e, u) {
     case 'hit': if (e.panic) return; { const big = e.dmg >= 2;
       logAdd(`${N(u)}: −${fmt(e.dmg)} Stärke, noch ${fmt(e.str)}`, u.side, ...at(u), big);
       if (big) headline(`Schwerer Treffer: ${N(u)} −${fmt(e.dmg)}`, u.side); } return;
-    case 'rollen': return logAdd(`${N(u)}: Sturmrollen`, u && u.side, ...at(u), true);
+    case 'rollen': return logAdd(`${N(u)}: Sturmrollen${e.graben ? ' – der Graben schützt' : ''}`, u && u.side, ...at(u), true);
     case 'pzgranate': return logAdd(`${N(u)}: Panzergranate`, u && u.side, ...at(u), true);
     case 'rammen': return logAdd(`${N(u)}: rammt das Gebäude`, u && u.side, ...at(u), true);
     case 'sprung': return logAdd(`${N(u)}: Sprungangriff`, u && u.side, ...at(u), true);
