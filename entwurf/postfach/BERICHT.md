@@ -1,3 +1,61 @@
+## 2026-11-26 – U5c: Truppgrößen in sieben Gruppen (Punkt 90) + Punkt 93 Gefallene (`a8ffb5b`, `11fa6e5` mit index.html)
+
+Gepusht. Lief ohne Hänger: Partietest ohne Fehler, keine Seitenfehler in den Bildläufen, kein Chrome offen. Die sim-Läufe habe ich nacheinander gestartet; **diesmal kein Absturz**.
+
+### 1. Punkt 93: Gefallene nicht mehr flach gedrückt (`a8ffb5b`, Rückweg `GEFALLEN_QUETSCH`)
+- Die **Getroffen-Pose** der Einheit wird um 80–90° auf die Seite gedreht, je Figur zufällig links/rechts und leicht verschieden. Sie ist dunkler und etwas entsättigt, hat einen kleinen Schatten und wird nicht gestaucht.
+- Im Graben ist sie wie die stehenden Figuren unten abgeschnitten und gegen die Wand gesunken. So ragt sie nicht über die Grabenkante (das tat sie im ersten Versuch).
+- Bilder vorher/nachher in `entwurf/probe/p93/vorher/` und `…/nachher/`, je `*_3_liegen`, `*_4_noch_mehr`, `*_5_viele` für Offen (Sankt Ruß), Graben (Grauwall) und Schnee (Krähenfurt).
+
+### 2. U5c: Truppgrößen (`11fa6e5`, Rückweg `TRUPP_ALT`)
+- Eine Tabelle `TRUPP` in engine.js gilt für Regel (`modelle()`) und Anzeige.
+- **Anzeige:** Trupps zeigen so viele Figuren wie Modelle. Fehlen Posen, wiederholen sich die vorhandenen (Klone).
+- **Aufstellung im Feld:**
+  - 6er neu 3-3, 4er neu 2-2, beide kompakt, Füße im eigenen Feld.
+  - 8er und 3er wie bisher.
+  - Beim ersten Versuch standen die 4er zu breit und ragten ins Nachbarfeld; das ist behoben.
+- **Bilder:** `entwurf/probe/u5c/<typ>_vorher|nachher.jpg` (Sturmbrecher, Grabenräumer, Pioniere, Signaltrupp, Gasschutz, Feldscher, Scharfschütze, Flammentrupp, Bannerträger).
+  - Schwere Grabenwacht, Stahlgänger und Versorgungstrupp stehen in keiner Startarmee, deshalb fehlen ihre Bilder.
+  - Am besten: `sturm_nachher.jpg`, `signal_nachher.jpg`, `pionier_nachher.jpg` (im Graben).
+
+**Vollständige Zuordnung** (Figuren = Modelle der Regel):
+
+| Gruppe | Modelle | Einheiten | Anzeige heute |
+|---|---|---|---|
+| Linie | 8 | Schützenkohorte, Aschengrenadiere | 8 |
+| Sturm/Nahkampf | 6 | Grabenräumer, Sturmbrecher, Eingreiftrupp, Schildwall, Schwere Grabenwacht | 6 (vorher 3) |
+| Waffentrupp | 3 | Mahlwerk, Sensenwerk, Panzerbüchse, Flammentrupp, Brandwerfer | Flammen 3; **MG und Panzerbüchse bleiben ein Bild** (Waffe mit Bedienung) bis U4 |
+| Fachtrupp | 4 | Graben-/Drahtpioniere, Mineure, Gasschutz, Signal-, Fernsprechtrupp, Pirschjäger | 4 (vorher 2–3, Posen wiederholt) |
+| Kleine Gruppe | 2 | Feldscher, Aschenpfleger, beide Versorgungstrupps, Scharfschütze, Bannerträger | 2 |
+| Kleine Gruppe | 2 | Meldegänger mit Hund | **1 Bild** (Mann und Hund zusammen) |
+| Kleine Gruppe | 3 | Hauptmann und General (beide Seiten) | **1 Bild** (Offizier mit Stab) bis U4 |
+| Gepanzerte Infanterie | 2 | Stahlgänger, Panzerknechte, Hünen, Löwenoger | 2 |
+| Einzelmodell | 1 | alle Geschütze, Mörser, Minenwerfer, Feldkanone, Fahrzeuge, Schreiter, Helden, Fesselballon | 1 |
+| Reiter | 6 | Lanzenreiter, Sprenglanzen-Reiter | 6 |
+
+Beiwerk (Trage, Karren, Kiste, Feldtelefon) zählt nicht als Modell; Bilder dafür kommen in U4.
+
+### 3. Messung (`sim.js 100` Grauwall, Startwerte 1/2, nacheinander)
+| | vorher (`TRUPP_ALT`) | nachher |
+|---|---|---|
+| fest | 57 / 54 % | 57 / 54 % |
+| gemischt | 52 / 54 % | 52 / 54 % |
+| Ø Runden | 14,8 / 14,3 | gleich |
+
+- Die Werte sind **genau gleich**. Die Modellzahl wirkt in der Regel nur noch an drei Stellen:
+  - **Splitter ab 2 Modellen:** betrifft neu nur Stahlgänger und Panzerknechte; die stehen nicht in der Grauwall-Armee.
+  - **Waffenträger-Fassung:** nicht im Spiel.
+  - **Gefallene in der Anzeige.**
+- Die Feuerkraft (weiche Stufen) hängt nur an der Stärke, nicht an der Modellzahl. Ein Mann im 6er-Trupp ist 16,7 Stärke, ändert aber nichts am Schaden.
+
+### Fragen an Enrico
+1. **Meldegänger:** Regel 2 Modelle (Mann + Hund), im Bild bleibt es 1 Bild mit beiden. Oder soll der Hund Beiwerk sein und der Meldegänger 1 Modell haben?
+2. **Hauptmann/General 3 Modelle:** Das Bild ist eine Gruppe in einem Bild. Fallen einzelne Figuren erst mit eigenen Bildern in U4 – einverstanden?
+3. **Gepanzerte Infanterie:** Ich habe 2 genommen (so viele Figuren zeigen die Bögen heute). Soll eine davon 3 haben (Hünen? Stahlgänger?)?
+4. **MG und Panzerbüchse:** Regel 3 Mann. Das Bild bleibt bis U4 ein Geschütz mit 2 Mann Bedienung.
+
+Nächster Schritt laut Plan: R3 (Deckung an der Feldkante).
+
 ## 2026-11-26 – U5b: Gefallene Modelle sichtbar (`fe24c8c` mit index.html)
 
 Gepusht. Lief ohne Hänger: Partietest ohne Fehler, keine Seitenfehler in den Bildläufen, kein Chrome offen. In diesem Paket liefen keine sim-Läufe, also auch keine Abstürze.
