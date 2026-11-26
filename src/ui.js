@@ -1790,7 +1790,8 @@ function leicheNeu(u, d, i, alle) {
   const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 4000 ? DU.get(letzterAngreifer.id) : null;
   let dir = la && Math.abs(la.x - f.wx) > 1 ? (la.x < f.wx ? 1 : -1) : (Math.random() < 0.5 ? -1 : 1);
   if (Math.abs(f.wx + dir * f.h * 0.9 - d.x) > L.s * 0.8) dir = -dir;   // liegend nicht ins Nachbarfeld
-  LEICHEN.push({ uid: u.id, im: f.im, wx: f.wx, wy: f.wy, w: f.w, h: f.h, flip: f.flip, dir, t0: performance.now() + (alle ? Math.random() * 260 : Math.random() * 90), runde: G.turn, rot: (Math.random() - 0.5) * 0.22, graben: f.abs });
+  const PB = posenAn(u) && (POSE_SETS[u.type] || POSE_BILD), gim = !window.GEFALLEN_QUETSCH && PB && PB.getroffen && figImg((u.side === 'A' ? 'konkordat_' : 'aschenwacht_') + PB.getroffen);   // Punkt 93: die Getroffen-Pose liegt auf der Seite
+  LEICHEN.push({ uid: u.id, im: gim || f.im, wx: f.wx, winkel: (80 + Math.random() * 10) * Math.PI / 180, wy: f.wy, w: f.w, h: f.h, flip: f.flip, dir, t0: performance.now() + (alle ? Math.random() * 260 : Math.random() * 90), runde: G.turn, rot: (Math.random() - 0.5) * 0.22, graben: f.abs, cut: f.cut });
   if (LEICHEN.length > LEICHE_MAX) LEICHEN.shift();
 }
 function alleFallen(u, d) {   // aufgerieben: die letzten stehenden Figuren fallen alle
@@ -1809,8 +1810,12 @@ function leicheZeichne(g, s, c, a) {
   const ks = 1 - e * (1 - Math.max(0.35, k * 0.75));   // liegend von oben gesehen: Dicke verkürzt
   g.save(); g.globalAlpha = a;
   if (e > 0.5 && !c.graben) { const ww = c.h * 0.62, sk = 0.32 * Math.max(0.55, k); g.globalAlpha = a * Math.min(1, (e - 0.5) * 2) * 0.75; g.drawImage(kontaktBild(), c.wx + c.dir * c.h * 0.45 - ww, c.wy - ww * sk, ww * 2, ww * 2 * sk); g.globalAlpha = a; }   // Schatten unter dem Liegenden
-  if (c.graben) { g.translate(c.wx, c.wy + e * c.h * 0.12); g.scale(1, 1 - 0.55 * e); g.rotate(c.dir * e * 0.45 + c.rot * e); }   // im Graben: sackt auf der Sohle zusammen, die vordere Wand verdeckt den Rest
-  else { g.translate(c.wx, c.wy - e * c.w * 0.18 * ks); g.scale(1, ks); g.rotate(c.dir * e * (Math.PI / 2 - 0.1) + c.rot * e); }
+  if (window.GEFALLEN_QUETSCH) {   // Rückweg: U5b-Fassung (flach gedrückt)
+    if (c.graben) { g.translate(c.wx, c.wy + e * c.h * 0.12); g.scale(1, 1 - 0.55 * e); g.rotate(c.dir * e * 0.45 + c.rot * e); }
+    else { g.translate(c.wx, c.wy - e * c.w * 0.18 * ks); g.scale(1, ks); g.rotate(c.dir * e * (Math.PI / 2 - 0.1) + c.rot * e); } }
+  else if (c.graben && c.cut && window.GBau) { const ei = GBau.eingesunken(filtBild(c.im, 'brightness(0.74) saturate(0.82)'), c.cut), hh = c.h * ei.frac; g.translate(c.wx, c.wy + e * c.h * 0.1); g.rotate(c.dir * e * 0.7 + c.rot * e); if (c.flip) g.scale(-1, 1); g.drawImage(ei.cv, -c.w * 0.5, -hh + c.h * 0.02, c.w, hh); g.restore(); return; }   // Punkt 93: im Graben wie die Stehenden unten abgeschnitten, gegen die Wand gesunken
+  else if (c.graben) { g.translate(c.wx, c.wy + e * c.h * 0.22); g.rotate(c.dir * e * 0.95 + c.rot * e); }
+  else { g.translate(c.wx, c.wy - e * c.w * 0.3); g.rotate(c.dir * e * c.winkel + c.rot * e * 0.5); }   // Punkt 93: Getroffen-Pose 80–90° auf die Seite, nicht flach gedrückt
   if (c.flip) g.scale(-1, 1);
   g.drawImage(filtBild(c.im, 'brightness(0.74) saturate(0.82)'), -c.w * 0.5, -c.h, c.w, c.h);
   g.restore();
@@ -1917,7 +1922,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
         g.translate(fx, fy + h * 0.012 + sink); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(imF, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
-    if (d.figIm && f.i != null) d.figIm[f.i] = { im: f.im, wx: fx, wy: y + f.oy * s, w, h, flip: flipF, abs: !!f.abs };   // U5b: letzte Lage je Figur (für die Gefallenen)
+    if (d.figIm && f.i != null) d.figIm[f.i] = { im: f.im, wx: fx, wy: y + f.oy * s, w, h, flip: flipF, abs: !!f.abs, cut: f.abs && pl ? pl.cut : null };   // U5b: letzte Lage je Figur (für die Gefallenen)
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip, MUZ_FIG[f.im && f.im._key] || MUZ[f.im && f.im._key] || null]);   // M3 (2026-11-22): Helden/Generäle (Einzelmodelle über diesen Weg) lesen auch MUZ   // 6.: Mündung aus dem Bild (MUZ_FIG)
     if (!(pa && pa.spiegel)) d.bildLinks = !!flip;   // F83: gezeigte Blickrichtung (Test; Getroffen-Spiegelung zählt nicht)
     if (FIGQ && f.abs) { const tf = g.getTransform(), al = g.globalAlpha, fl = filt; FIGQ.push({ y: y + f.oy * s, f: () => zeichne(tf, al, fl) }); }   // Graben: später nach Tiefe

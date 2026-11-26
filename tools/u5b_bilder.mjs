@@ -26,6 +26,7 @@ for (const [karte, art, typ] of FAELLE) {
   await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
     click('neue schlacht'); await W(700); const rb = document.querySelector('input[name=map][value=${karte}]'); if (rb) { rb.click(); rb.dispatchEvent(new Event('change', { bubbles: true })); await W(400); }
     for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); } await W(2500); click('schlacht beginnen'); await W(4000); return true; })()`);
+  if (process.env.JS) await ev(`(() => { ${process.env.JS}; return true; })()`);   // Variante, z. B. JS='window.GEFALLEN_QUETSCH = true'
   await sleep(2500); for (let i = 0; i < 40 && (await hell()) < 12; i++) await sleep(500);
   // Ziel: Trupp des Typs; im Graben einer auf einem Grabenfeld, sonst einer auf offenem Feld
   const z = JSON.parse(await ev(`JSON.stringify((() => { const G = __dbg.G, us = G.units.filter(u => u.type === '${typ}' && u.status === 'ok'); const t = u => G.map[u.c][u.r].t;

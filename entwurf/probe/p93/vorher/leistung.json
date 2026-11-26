@@ -1,0 +1,68 @@
+{
+ "sanktruss": {
+  "liegende": 19,
+  "mittel": 5.5,
+  "p95": 6,
+  "gelaende": "open",
+  "200_liegende_zoom_1.6": {
+   "mittel": 5.5,
+   "p95": 5.8
+  },
+  "0_liegende_zoom_1.6": {
+   "mittel": 5.5,
+   "p95": 5.8
+  },
+  "200_liegende_zoom_0.5": {
+   "mittel": 7.5,
+   "p95": 11.8
+  },
+  "0_liegende_zoom_0.5": {
+   "mittel": 5.9,
+   "p95": 10.2
+  }
+ },
+ "grauwall": {
+  "liegende": 10,
+  "mittel": 5.5,
+  "p95": 5.8,
+  "gelaende": "trench",
+  "200_liegende_zoom_1.6": {
+   "mittel": 5.5,
+   "p95": 5.8
+  },
+  "0_liegende_zoom_1.6": {
+   "mittel": 5.6,
+   "p95": 5.8
+  },
+  "200_liegende_zoom_0.5": {
+   "mittel": 5.8,
+   "p95": 7.7
+  },
+  "0_liegende_zoom_0.5": {
+   "mittel": 5.7,
+   "p95": 6.9
+  }
+ },
+ "winterdorf": {
+  "liegende": 14,
+  "mittel": 5.5,
+  "p95": 6.2,
+  "gelaende": "eis",
+  "200_liegende_zoom_1.6": {
+   "mittel": 5.6,
+   "p95": 6.2
+  },
+  "0_liegende_zoom_1.6": {
+   "mittel": 5.6,
+   "p95": 5.8
+  },
+  "200_liegende_zoom_0.5": {
+   "mittel": 5.8,
+   "p95": 7.3
+  },
+  "0_liegende_zoom_0.5": {
+   "mittel": 5.7,
+   "p95": 7
+  }
+ }
+}
