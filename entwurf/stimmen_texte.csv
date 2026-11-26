@@ -1,0 +1,478 @@
+﻿id;fraktion;sprecher;anlass;einheit;text
+K_fuss_anwahl_1;Konkordat;K1;anwahl;fuss;Bereit.
+K_fuss_anwahl_2;Konkordat;K1;anwahl;fuss;Zu Befehl.
+K_fuss_anwahl_3;Konkordat;K1;anwahl;fuss;Hier.
+K_fuss_anwahl_4;Konkordat;K1;anwahl;fuss;Wartet auf Befehl.
+K_fuss_befehl_1;Konkordat;K1;befehl;fuss;Verstanden.
+K_fuss_befehl_2;Konkordat;K1;befehl;fuss;Rücken vor.
+K_fuss_befehl_3;Konkordat;K1;befehl;fuss;Wird gemacht.
+K_fuss_befehl_4;Konkordat;K1;befehl;fuss;Unterwegs.
+K_fuss_angriff_1;Konkordat;K1;angriff;fuss;Feuer frei!
+K_fuss_angriff_2;Konkordat;K1;angriff;fuss;Auf sie!
+K_fuss_angriff_3;Konkordat;K1;angriff;fuss;Bajonett vor!
+K_fuss_angriff_4;Konkordat;K1;angriff;fuss;Los, Männer!
+K_fuss_rueckzug_1;Konkordat;K1;rueckzug;fuss;Zurück! Zurück!
+K_fuss_rueckzug_2;Konkordat;K1;rueckzug;fuss;Absetzen!
+K_fuss_rueckzug_3;Konkordat;K1;rueckzug;fuss;Zurück zur Linie!
+K_fuss_panik_1;Konkordat;K1;panik;fuss;Raus hier!
+K_fuss_panik_2;Konkordat;K1;panik;fuss;Wir halten nicht!
+K_fuss_panik_3;Konkordat;K1;panik;fuss;Lauft!
+K_fuss_verwundet_1;Konkordat;K1;verwundet;fuss;Sanitäter!
+K_fuss_verwundet_2;Konkordat;K1;verwundet;fuss;Mann am Boden!
+K_fuss_verwundet_3;Konkordat;K1;verwundet;fuss;Brauchen Hilfe!
+K_fuss_sammeln_1;Konkordat;K1;sammeln;fuss;Wir stehen wieder.
+K_fuss_sammeln_2;Konkordat;K1;sammeln;fuss;Linie hält.
+K_fuss_sammeln_3;Konkordat;K1;sammeln;fuss;Ordnung, Männer!
+K_fuss_tod_1;Konkordat;K1;tod;fuss;Wir fallen…
+K_fuss_tod_2;Konkordat;K1;tod;fuss;Keiner mehr…
+K_fuss_tod_3;Konkordat;K1;tod;fuss;Linie gebrochen…
+K_fuss_niedergehalten_1;Konkordat;K1;niedergehalten;fuss;Köpfe runter!
+K_fuss_niedergehalten_2;Konkordat;K1;niedergehalten;fuss;Wir liegen fest!
+K_fuss_niedergehalten_3;Konkordat;K1;niedergehalten;fuss;Deckung!
+K_fuss_gas_1;Konkordat;K1;gas;fuss;Gas! Masken dicht!
+K_fuss_gas_2;Konkordat;K1;gas;fuss;Gas, Gas!
+K_fuss_gas_3;Konkordat;K1;gas;fuss;Gasalarm!
+K_fuss_granate_1;Konkordat;K1;granate;fuss;Granate!
+K_fuss_granate_2;Konkordat;K1;granate;fuss;Wurf!
+K_fuss_granate_3;Konkordat;K1;granate;fuss;Achtung, Wurf!
+K_fuss_feuerbereit_1;Konkordat;K1;feuerbereit;fuss;Feuerbereit.
+K_fuss_feuerbereit_2;Konkordat;K1;feuerbereit;fuss;Wir warten.
+K_fuss_feuerbereit_3;Konkordat;K1;feuerbereit;fuss;Linie bewacht.
+K_fuss_feuer_1;Konkordat;K1;feuer;fuss;Feuer!
+K_fuss_feuer_2;Konkordat;K1;feuer;fuss;Salve!
+K_fuss_feuer_3;Konkordat;K1;feuer;fuss;Ziel erfasst.
+K_fuss_zielfeld_1;Konkordat;K1;zielfeld;fuss;Stellung genommen.
+K_fuss_zielfeld_2;Konkordat;K1;zielfeld;fuss;Feld gehalten.
+K_fuss_zielfeld_3;Konkordat;K1;zielfeld;fuss;Fahne steht.
+K_fuss_koloss_1;Konkordat;K1;koloss;fuss;Koloss voraus!
+K_fuss_koloss_2;Konkordat;K1;koloss;fuss;Stahl kommt!
+K_fuss_koloss_3;Konkordat;K1;koloss;fuss;Panzer, Panzer!
+K_sturm_anwahl_1;Konkordat;K2;anwahl;sturm;Bereit zum Räumen.
+K_sturm_anwahl_2;Konkordat;K2;anwahl;sturm;Schilde stehen.
+K_sturm_anwahl_3;Konkordat;K2;anwahl;sturm;Sagt an.
+K_sturm_befehl_1;Konkordat;K2;befehl;sturm;Vorwärts.
+K_sturm_befehl_2;Konkordat;K2;befehl;sturm;Bestätigt.
+K_sturm_befehl_3;Konkordat;K2;befehl;sturm;Wir gehen rein.
+K_sturm_angriff_1;Konkordat;K2;angriff;sturm;Rein in den Graben!
+K_sturm_angriff_2;Konkordat;K2;angriff;sturm;Räumen!
+K_sturm_angriff_3;Konkordat;K2;angriff;sturm;Schilde vor, drauf!
+K_sturm_rueckzug_1;Konkordat;K2;rueckzug;sturm;Raus, raus!
+K_sturm_rueckzug_2;Konkordat;K2;rueckzug;sturm;Hinter die Schilde!
+K_sturm_rueckzug_3;Konkordat;K2;rueckzug;sturm;Absetzen!
+K_sturm_panik_1;Konkordat;K2;panik;sturm;Das ist zu viel!
+K_sturm_panik_2;Konkordat;K2;panik;sturm;Weg hier!
+K_sturm_panik_3;Konkordat;K2;panik;sturm;Schilde weg, lauft!
+K_sturm_verwundet_1;Konkordat;K2;verwundet;sturm;Sanitäter, schnell!
+K_sturm_verwundet_2;Konkordat;K2;verwundet;sturm;Zwei Mann verletzt!
+K_sturm_verwundet_3;Konkordat;K2;verwundet;sturm;Wir sind angeschlagen!
+K_sturm_sammeln_1;Konkordat;K2;sammeln;sturm;Schilde wieder hoch.
+K_sturm_sammeln_2;Konkordat;K2;sammeln;sturm;Wir stehen.
+K_sturm_sammeln_3;Konkordat;K2;sammeln;sturm;Neu formieren.
+K_sturm_tod_1;Konkordat;K2;tod;sturm;Graben… nicht geräumt…
+K_sturm_tod_2;Konkordat;K2;tod;sturm;Wir sind durch…
+K_sturm_tod_3;Konkordat;K2;tod;sturm;Schilde… gefallen…
+K_sturm_granate_1;Konkordat;K2;granate;sturm;Granate in den Graben!
+K_sturm_granate_2;Konkordat;K2;granate;sturm;Wurf!
+K_sturm_granate_3;Konkordat;K2;granate;sturm;Ladung rein!
+K_sturm_schilde_1;Konkordat;K2;schilde;sturm;Schilde vor!
+K_sturm_schilde_2;Konkordat;K2;schilde;sturm;Wand schließen!
+K_sturm_schilde_3;Konkordat;K2;schilde;sturm;Schild an Schild!
+K_sturm_zielfeld_1;Konkordat;K2;zielfeld;sturm;Graben geräumt.
+K_sturm_zielfeld_2;Konkordat;K2;zielfeld;sturm;Abschnitt sauber.
+K_sturm_zielfeld_3;Konkordat;K2;zielfeld;sturm;Gehört uns.
+K_reiter_anwahl_1;Konkordat;K2;anwahl;reiter;Schwadron bereit.
+K_reiter_anwahl_2;Konkordat;K2;anwahl;reiter;Pferde unter Dampf.
+K_reiter_anwahl_3;Konkordat;K2;anwahl;reiter;Aufgesessen.
+K_reiter_befehl_1;Konkordat;K2;befehl;reiter;Im Trab.
+K_reiter_befehl_2;Konkordat;K2;befehl;reiter;Schwadron, vor.
+K_reiter_befehl_3;Konkordat;K2;befehl;reiter;Verstanden, wir reiten.
+K_reiter_angriff_1;Konkordat;K2;angriff;reiter;Attacke!
+K_reiter_angriff_2;Konkordat;K2;angriff;reiter;Klingen hoch!
+K_reiter_angriff_3;Konkordat;K2;angriff;reiter;Durchbrechen!
+K_reiter_rueckzug_1;Konkordat;K2;rueckzug;reiter;Abdrehen!
+K_reiter_rueckzug_2;Konkordat;K2;rueckzug;reiter;Wenden, zurück!
+K_reiter_rueckzug_3;Konkordat;K2;rueckzug;reiter;Abschwenken!
+K_reiter_panik_1;Konkordat;K2;panik;reiter;Die Pferde scheuen!
+K_reiter_panik_2;Konkordat;K2;panik;reiter;Weg, nur weg!
+K_reiter_panik_3;Konkordat;K2;panik;reiter;Nicht zu halten!
+K_reiter_verwundet_1;Konkordat;K2;verwundet;reiter;Reiter am Boden!
+K_reiter_verwundet_2;Konkordat;K2;verwundet;reiter;Pferd getroffen!
+K_reiter_verwundet_3;Konkordat;K2;verwundet;reiter;Wir verlieren Dampf!
+K_reiter_sammeln_1;Konkordat;K2;sammeln;reiter;Schwadron, sammeln.
+K_reiter_sammeln_2;Konkordat;K2;sammeln;reiter;Wieder in Reihe.
+K_reiter_sammeln_3;Konkordat;K2;sammeln;reiter;Pferde ruhig.
+K_reiter_tod_1;Konkordat;K2;tod;reiter;Schwadron… gefallen…
+K_reiter_tod_2;Konkordat;K2;tod;reiter;Kein Reiter mehr…
+K_reiter_tod_3;Konkordat;K2;tod;reiter;Dampf… erloschen…
+K_panzer_anwahl_1;Konkordat;K3;anwahl;panzer;Koloss bereit.
+K_panzer_anwahl_2;Konkordat;K3;anwahl;panzer;Motor läuft.
+K_panzer_anwahl_3;Konkordat;K3;anwahl;panzer;Besatzung hört.
+K_panzer_befehl_1;Konkordat;K3;befehl;panzer;Fahrer, vor.
+K_panzer_befehl_2;Konkordat;K3;befehl;panzer;Rollen an.
+K_panzer_befehl_3;Konkordat;K3;befehl;panzer;Kurs bestätigt.
+K_panzer_angriff_1;Konkordat;K3;angriff;panzer;Richtschütze, Feuer!
+K_panzer_angriff_2;Konkordat;K3;angriff;panzer;Schuss!
+K_panzer_angriff_3;Konkordat;K3;angriff;panzer;Ziel aufgefasst.
+K_panzer_getroffen_1;Konkordat;K3;getroffen;panzer;Treffer am Rumpf!
+K_panzer_getroffen_2;Konkordat;K3;getroffen;panzer;Panzerung hält!
+K_panzer_getroffen_3;Konkordat;K3;getroffen;panzer;Einschlag vorn!
+K_panzer_panne_1;Konkordat;K3;panne;panzer;Kette gerissen!
+K_panzer_panne_2;Konkordat;K3;panne;panzer;Wir sitzen fest!
+K_panzer_panne_3;Konkordat;K3;panne;panzer;Motor setzt aus!
+K_panzer_rueckzug_1;Konkordat;K3;rueckzug;panzer;Rückwärts, rückwärts!
+K_panzer_rueckzug_2;Konkordat;K3;rueckzug;panzer;Absetzen!
+K_panzer_rueckzug_3;Konkordat;K3;rueckzug;panzer;Aus der Linie!
+K_panzer_panik_1;Konkordat;K3;panik;panzer;Raus aus dem Ding!
+K_panzer_panik_2;Konkordat;K3;panik;panzer;Wir brennen!
+K_panzer_panik_3;Konkordat;K3;panik;panzer;Aussteigen!
+K_panzer_verwundet_1;Konkordat;K3;verwundet;panzer;Schwer beschädigt!
+K_panzer_verwundet_2;Konkordat;K3;verwundet;panzer;Feuer im Motorraum!
+K_panzer_verwundet_3;Konkordat;K3;verwundet;panzer;Wir verlieren Druck!
+K_panzer_sammeln_1;Konkordat;K3;sammeln;panzer;Besatzung ruhig.
+K_panzer_sammeln_2;Konkordat;K3;sammeln;panzer;Wieder einsatzbereit.
+K_panzer_sammeln_3;Konkordat;K3;sammeln;panzer;Systeme stehen.
+K_panzer_tod_1;Konkordat;K3;tod;panzer;Aussteigen, aussteigen!
+K_panzer_tod_2;Konkordat;K3;tod;panzer;Koloss verloren…
+K_panzer_tod_3;Konkordat;K3;tod;panzer;Funk… tot…
+K_fuehrer_anwahl_1;Konkordat;K3;anwahl;fuehrer;Ich höre.
+K_fuehrer_anwahl_2;Konkordat;K3;anwahl;fuehrer;Lage?
+K_fuehrer_anwahl_3;Konkordat;K3;anwahl;fuehrer;Sprechen Sie.
+K_fuehrer_befehl_1;Konkordat;K3;befehl;fuehrer;Ausführen.
+K_fuehrer_befehl_2;Konkordat;K3;befehl;fuehrer;So sei es.
+K_fuehrer_befehl_3;Konkordat;K3;befehl;fuehrer;Gut. Vorwärts.
+K_fuehrer_angriff_1;Konkordat;K3;angriff;fuehrer;Feuer frei!
+K_fuehrer_angriff_2;Konkordat;K3;angriff;fuehrer;Gebt es ihnen!
+K_fuehrer_angriff_3;Konkordat;K3;angriff;fuehrer;Zielen – Feuer!
+K_fuehrer_befehl_sammeln_1;Konkordat;K3;befehl_sammeln;fuehrer;Sammeln bei mir!
+K_fuehrer_befehl_sammeln_2;Konkordat;K3;befehl_sammeln;fuehrer;Ruhig, Männer!
+K_fuehrer_befehl_sammeln_3;Konkordat;K3;befehl_sammeln;fuehrer;Haltet die Linie!
+K_fuehrer_befehl_feuerfrei_1;Konkordat;K3;befehl_feuerfrei;fuehrer;Feuer nach Belieben!
+K_fuehrer_befehl_feuerfrei_2;Konkordat;K3;befehl_feuerfrei;fuehrer;Freies Feuer!
+K_fuehrer_befehl_feuerfrei_3;Konkordat;K3;befehl_feuerfrei;fuehrer;Lasst sie kommen – Feuer!
+K_fuehrer_grossbefehl_1;Konkordat;K3;grossbefehl;fuehrer;Keinen Schritt zurück!
+K_fuehrer_grossbefehl_2;Konkordat;K3;grossbefehl;fuehrer;Diese Linie hält!
+K_fuehrer_grossbefehl_3;Konkordat;K3;grossbefehl;fuehrer;Wir halten hier!
+K_fuehrer_rueckzug_1;Konkordat;K3;rueckzug;fuehrer;Zurück in die Stellung!
+K_fuehrer_rueckzug_2;Konkordat;K3;rueckzug;fuehrer;Geordnet absetzen!
+K_fuehrer_rueckzug_3;Konkordat;K3;rueckzug;fuehrer;Rückzug, in Ordnung!
+K_fuehrer_panik_1;Konkordat;K3;panik;fuehrer;Stab zieht ab!
+K_fuehrer_panik_2;Konkordat;K3;panik;fuehrer;Wir müssen weg!
+K_fuehrer_panik_3;Konkordat;K3;panik;fuehrer;Rette sich, wer kann!
+K_fuehrer_verwundet_1;Konkordat;K3;verwundet;fuehrer;Stab getroffen!
+K_fuehrer_verwundet_2;Konkordat;K3;verwundet;fuehrer;Sanitäter zum Stab!
+K_fuehrer_verwundet_3;Konkordat;K3;verwundet;fuehrer;Ich bin verwundet!
+K_fuehrer_sammeln_1;Konkordat;K3;sammeln;fuehrer;Stab wieder bereit.
+K_fuehrer_sammeln_2;Konkordat;K3;sammeln;fuehrer;Ordnung hergestellt.
+K_fuehrer_sammeln_3;Konkordat;K3;sammeln;fuehrer;Weiter.
+K_fuehrer_tod_1;Konkordat;K3;tod;fuehrer;Führung… gefallen…
+K_fuehrer_tod_2;Konkordat;K3;tod;fuehrer;Übernehmt… ihr…
+K_fuehrer_tod_3;Konkordat;K3;tod;fuehrer;Stab ausgefallen…
+K_schreiter_anwahl_1;Konkordat;KM;anwahl;schreiter;Einheit bereit.
+K_schreiter_anwahl_2;Konkordat;KM;anwahl;schreiter;Kessel unter Druck.
+K_schreiter_anwahl_3;Konkordat;KM;anwahl;schreiter;Erwarte Befehl.
+K_schreiter_befehl_1;Konkordat;KM;befehl;schreiter;Schreite vor.
+K_schreiter_befehl_2;Konkordat;KM;befehl;schreiter;Kurs bestätigt.
+K_schreiter_befehl_3;Konkordat;KM;befehl;schreiter;Bewegung.
+K_schreiter_angriff_1;Konkordat;KM;angriff;schreiter;Ziel bekämpft.
+K_schreiter_angriff_2;Konkordat;KM;angriff;schreiter;Feuer.
+K_schreiter_angriff_3;Konkordat;KM;angriff;schreiter;Ziel im Visier.
+K_schreiter_nahkampf_1;Konkordat;KM;nahkampf;schreiter;Nahkampf.
+K_schreiter_nahkampf_2;Konkordat;KM;nahkampf;schreiter;Zerschmettern.
+K_schreiter_nahkampf_3;Konkordat;KM;nahkampf;schreiter;Kontakt.
+K_schreiter_getroffen_1;Konkordat;KM;getroffen;schreiter;Schaden gemeldet.
+K_schreiter_getroffen_2;Konkordat;KM;getroffen;schreiter;Panzerung beschädigt.
+K_schreiter_getroffen_3;Konkordat;KM;getroffen;schreiter;Treffer.
+K_schreiter_schwer_1;Konkordat;KM;schwer;schreiter;Systeme versagen.
+K_schreiter_schwer_2;Konkordat;KM;schwer;schreiter;Druck kritisch.
+K_schreiter_schwer_3;Konkordat;KM;schwer;schreiter;Kessel undicht.
+K_schreiter_feind_1;Konkordat;KM;feind;schreiter;Feind erkannt.
+K_schreiter_feind_2;Konkordat;KM;feind;schreiter;Ziel im Blick.
+K_schreiter_feind_3;Konkordat;KM;feind;schreiter;Gegner voraus.
+K_schreiter_tod_1;Konkordat;KM;tod;schreiter;Abschaltung…
+K_schreiter_tod_2;Konkordat;KM;tod;schreiter;Kessel… erloschen…
+K_schreiter_tod_3;Konkordat;KM;tod;schreiter;Ende…
+K_erscheinen_hauptA_1;Konkordat;K3;erscheinen;hauptA;Hauptmann zur Stelle.
+K_erscheinen_hauptA_2;Konkordat;K3;erscheinen;hauptA;Stab ist da – Befehle?
+K_erscheinen_generalA_1;Konkordat;K3;erscheinen;generalA;Der General ist im Feld.
+K_erscheinen_generalA_2;Konkordat;K3;erscheinen;generalA;Oberkommando übernimmt.
+K_erscheinen_kohorte_1;Konkordat;K1;erscheinen;kohorte;Schützenkohorte, zur Stelle!
+K_erscheinen_kohorte_2;Konkordat;K1;erscheinen;kohorte;Kohorte meldet sich.
+K_erscheinen_melder_1;Konkordat;K1;erscheinen;melder;Meldegänger bereit.
+K_erscheinen_melder_2;Konkordat;K1;erscheinen;melder;Melder und Hund, zur Stelle.
+K_erscheinen_fernsprech_1;Konkordat;K1;erscheinen;fernsprech;Fernsprechtrupp, Leitung steht.
+K_erscheinen_fernsprech_2;Konkordat;K1;erscheinen;fernsprech;Fernsprecher meldet sich.
+K_erscheinen_feldscher_1;Konkordat;K1;erscheinen;feldscher;Sanitäter zur Stelle.
+K_erscheinen_feldscher_2;Konkordat;K1;erscheinen;feldscher;Feldscher bereit, Verband frei.
+K_erscheinen_pionier_1;Konkordat;K1;erscheinen;pionier;Grabenpioniere, zur Stelle!
+K_erscheinen_pionier_2;Konkordat;K1;erscheinen;pionier;Pioniere bereit, Spaten frei.
+K_erscheinen_scharf_1;Konkordat;K1;erscheinen;scharf;Scharfschützen in Stellung.
+K_erscheinen_scharf_2;Konkordat;K1;erscheinen;scharf;Zwei Augen auf die Linie.
+K_erscheinen_mahlwerk_1;Konkordat;K1;erscheinen;mahlwerk;Mahlwerk-Trupp, zur Stelle!
+K_erscheinen_mahlwerk_2;Konkordat;K1;erscheinen;mahlwerk;MG bereit zum Aufbau.
+K_erscheinen_moerser_1;Konkordat;K1;erscheinen;moerser;Grabenmörser bereit.
+K_erscheinen_moerser_2;Konkordat;K1;erscheinen;moerser;Mörsertrupp meldet sich.
+K_erscheinen_flammen_1;Konkordat;K1;erscheinen;flammen;Flammentrupp, zur Stelle!
+K_erscheinen_flammen_2;Konkordat;K1;erscheinen;flammen;Brenner gezündet.
+K_erscheinen_feldkanone_1;Konkordat;K1;erscheinen;feldkanone;Feldkanone, zur Stelle!
+K_erscheinen_feldkanone_2;Konkordat;K1;erscheinen;feldkanone;Geschütz bereit.
+K_erscheinen_haubitze_1;Konkordat;K1;erscheinen;haubitze;Donnerrohr-Batterie, zur Stelle!
+K_erscheinen_haubitze_2;Konkordat;K1;erscheinen;haubitze;Batterie meldet sich.
+K_erscheinen_mineur_1;Konkordat;K1;erscheinen;mineur;Mineure, zur Stelle!
+K_erscheinen_mineur_2;Konkordat;K1;erscheinen;mineur;Stollenbauer bereit.
+K_erscheinen_werkstatt_1;Konkordat;K1;erscheinen;werkstatt;Versorgungstrupp, zur Stelle!
+K_erscheinen_werkstatt_2;Konkordat;K1;erscheinen;werkstatt;Werkzeug und Munition da.
+K_erscheinen_ballon_1;Konkordat;K1;erscheinen;ballon;Ballonbeobachter, steigen auf.
+K_erscheinen_ballon_2;Konkordat;K1;erscheinen;ballon;Ballon bereit, Sicht frei.
+K_erscheinen_raeumer_1;Konkordat;K2;erscheinen;raeumer;Grabenräumer, zur Stelle!
+K_erscheinen_raeumer_2;Konkordat;K2;erscheinen;raeumer;Räumer und Schilde bereit.
+K_erscheinen_reiter_1;Konkordat;K2;erscheinen;reiter;Stahlreiter, zur Stelle!
+K_erscheinen_reiter_2;Konkordat;K2;erscheinen;reiter;Schwadron unter Dampf.
+K_erscheinen_koloss_1;Konkordat;K3;erscheinen;koloss;Landkoloss rollt an.
+K_erscheinen_koloss_2;Konkordat;K3;erscheinen;koloss;Koloss einsatzbereit.
+K_erscheinen_turm_1;Konkordat;KM;erscheinen;turm;Turmschreiter, betriebsbereit.
+K_erscheinen_turm_2;Konkordat;KM;erscheinen;turm;Turm erhebt sich.
+K_erscheinen_orden_1;Konkordat;KM;erscheinen;orden;Ordensschreiter, betriebsbereit.
+K_erscheinen_orden_2;Konkordat;KM;erscheinen;orden;Orden marschiert.
+K_erscheinen_kreuz_1;Konkordat;KM;erscheinen;kreuz;Kreuzschreiter, betriebsbereit.
+K_erscheinen_kreuz_2;Konkordat;KM;erscheinen;kreuz;Der Löwe schreitet.
+A_fuss_anwahl_1;Aschenwacht;A1;anwahl;fuss;Bereit.
+A_fuss_anwahl_2;Aschenwacht;A1;anwahl;fuss;Hier.
+A_fuss_anwahl_3;Aschenwacht;A1;anwahl;fuss;Befehl?
+A_fuss_anwahl_4;Aschenwacht;A1;anwahl;fuss;Gruppe hört.
+A_fuss_befehl_1;Aschenwacht;A1;befehl;fuss;Bestätigt.
+A_fuss_befehl_2;Aschenwacht;A1;befehl;fuss;Vorrücken.
+A_fuss_befehl_3;Aschenwacht;A1;befehl;fuss;Ausgeführt.
+A_fuss_befehl_4;Aschenwacht;A1;befehl;fuss;Aufschließen.
+A_fuss_angriff_1;Aschenwacht;A1;angriff;fuss;Feuer!
+A_fuss_angriff_2;Aschenwacht;A1;angriff;fuss;Ran an sie!
+A_fuss_angriff_3;Aschenwacht;A1;angriff;fuss;Drauf!
+A_fuss_rueckzug_1;Aschenwacht;A1;rueckzug;fuss;Zurück!
+A_fuss_rueckzug_2;Aschenwacht;A1;rueckzug;fuss;Absetzen, sofort!
+A_fuss_rueckzug_3;Aschenwacht;A1;rueckzug;fuss;Zurück in den Graben!
+A_fuss_panik_1;Aschenwacht;A1;panik;fuss;Weg hier!
+A_fuss_panik_2;Aschenwacht;A1;panik;fuss;Nicht zu halten!
+A_fuss_panik_3;Aschenwacht;A1;panik;fuss;Alles zurück!
+A_fuss_verwundet_1;Aschenwacht;A1;verwundet;fuss;Sanitäter!
+A_fuss_verwundet_2;Aschenwacht;A1;verwundet;fuss;Verwundete hier!
+A_fuss_verwundet_3;Aschenwacht;A1;verwundet;fuss;Wir brauchen Hilfe!
+A_fuss_sammeln_1;Aschenwacht;A1;sammeln;fuss;Gruppe steht.
+A_fuss_sammeln_2;Aschenwacht;A1;sammeln;fuss;Wieder in Ordnung.
+A_fuss_sammeln_3;Aschenwacht;A1;sammeln;fuss;Formiert.
+A_fuss_tod_1;Aschenwacht;A1;tod;fuss;Gruppe… aufgerieben…
+A_fuss_tod_2;Aschenwacht;A1;tod;fuss;Keiner mehr…
+A_fuss_tod_3;Aschenwacht;A1;tod;fuss;Stellung… verloren…
+A_fuss_niedergehalten_1;Aschenwacht;A1;niedergehalten;fuss;Deckung!
+A_fuss_niedergehalten_2;Aschenwacht;A1;niedergehalten;fuss;Köpfe runter!
+A_fuss_niedergehalten_3;Aschenwacht;A1;niedergehalten;fuss;Wir liegen fest!
+A_fuss_gas_1;Aschenwacht;A1;gas;fuss;Gas! Masken dicht!
+A_fuss_gas_2;Aschenwacht;A1;gas;fuss;Gasalarm!
+A_fuss_gas_3;Aschenwacht;A1;gas;fuss;Gas, Gas!
+A_fuss_granate_1;Aschenwacht;A1;granate;fuss;Granate!
+A_fuss_granate_2;Aschenwacht;A1;granate;fuss;Handgranate!
+A_fuss_granate_3;Aschenwacht;A1;granate;fuss;Wurf!
+A_fuss_feuerbereit_1;Aschenwacht;A1;feuerbereit;fuss;Feuerbereit.
+A_fuss_feuerbereit_2;Aschenwacht;A1;feuerbereit;fuss;Wir warten auf sie.
+A_fuss_feuerbereit_3;Aschenwacht;A1;feuerbereit;fuss;Abschnitt gesichert.
+A_fuss_feuer_1;Aschenwacht;A1;feuer;fuss;Feuer!
+A_fuss_feuer_2;Aschenwacht;A1;feuer;fuss;Schießen!
+A_fuss_feuer_3;Aschenwacht;A1;feuer;fuss;Ziel erfasst – Feuer!
+A_fuss_zielfeld_1;Aschenwacht;A1;zielfeld;fuss;Stellung genommen.
+A_fuss_zielfeld_2;Aschenwacht;A1;zielfeld;fuss;Gehört uns.
+A_fuss_zielfeld_3;Aschenwacht;A1;zielfeld;fuss;Abschnitt gehalten.
+A_fuss_koloss_1;Aschenwacht;A1;koloss;fuss;Koloss!
+A_fuss_koloss_2;Aschenwacht;A1;koloss;fuss;Panzer voraus!
+A_fuss_koloss_3;Aschenwacht;A1;koloss;fuss;Stahlungetüm!
+A_sturm_anwahl_1;Aschenwacht;A2;anwahl;sturm;Stoßtrupp bereit.
+A_sturm_anwahl_2;Aschenwacht;A2;anwahl;sturm;Wir warten.
+A_sturm_anwahl_3;Aschenwacht;A2;anwahl;sturm;Befehl.
+A_sturm_befehl_1;Aschenwacht;A2;befehl;sturm;Durchstoßen.
+A_sturm_befehl_2;Aschenwacht;A2;befehl;sturm;Bestätigt. Vor.
+A_sturm_befehl_3;Aschenwacht;A2;befehl;sturm;Wir gehen.
+A_sturm_angriff_1;Aschenwacht;A2;angriff;sturm;Zum Sturm!
+A_sturm_angriff_2;Aschenwacht;A2;angriff;sturm;Durch!
+A_sturm_angriff_3;Aschenwacht;A2;angriff;sturm;Brecht sie!
+A_sturm_rueckzug_1;Aschenwacht;A2;rueckzug;sturm;Absetzen!
+A_sturm_rueckzug_2;Aschenwacht;A2;rueckzug;sturm;Zurück, geschlossen!
+A_sturm_rueckzug_3;Aschenwacht;A2;rueckzug;sturm;Raus aus dem Feuer!
+A_sturm_panik_1;Aschenwacht;A2;panik;sturm;Zu stark!
+A_sturm_panik_2;Aschenwacht;A2;panik;sturm;Weg, weg!
+A_sturm_panik_3;Aschenwacht;A2;panik;sturm;Nicht halten!
+A_sturm_verwundet_1;Aschenwacht;A2;verwundet;sturm;Ausfälle!
+A_sturm_verwundet_2;Aschenwacht;A2;verwundet;sturm;Sanitäter nach vorn!
+A_sturm_verwundet_3;Aschenwacht;A2;verwundet;sturm;Schwer getroffen!
+A_sturm_sammeln_1;Aschenwacht;A2;sammeln;sturm;Neu formieren.
+A_sturm_sammeln_2;Aschenwacht;A2;sammeln;sturm;Trupp steht.
+A_sturm_sammeln_3;Aschenwacht;A2;sammeln;sturm;Weiter.
+A_sturm_tod_1;Aschenwacht;A2;tod;sturm;Stoßtrupp… gefallen…
+A_sturm_tod_2;Aschenwacht;A2;tod;sturm;Durchbruch… gescheitert…
+A_sturm_tod_3;Aschenwacht;A2;tod;sturm;Keiner… mehr…
+A_sturm_granate_1;Aschenwacht;A2;granate;sturm;Bündel!
+A_sturm_granate_2;Aschenwacht;A2;granate;sturm;Ladung wirft!
+A_sturm_granate_3;Aschenwacht;A2;granate;sturm;Granate rein!
+A_sturm_gegenstoss_1;Aschenwacht;A2;gegenstoss;sturm;Gegenstoß!
+A_sturm_gegenstoss_2;Aschenwacht;A2;gegenstoss;sturm;Zurückwerfen!
+A_sturm_gegenstoss_3;Aschenwacht;A2;gegenstoss;sturm;Nachsetzen!
+A_reiter_anwahl_1;Aschenwacht;A2;anwahl;reiter;Reiter bereit.
+A_reiter_anwahl_2;Aschenwacht;A2;anwahl;reiter;Aufgesessen.
+A_reiter_anwahl_3;Aschenwacht;A2;anwahl;reiter;Lanzen scharf.
+A_reiter_befehl_1;Aschenwacht;A2;befehl;reiter;Im Galopp.
+A_reiter_befehl_2;Aschenwacht;A2;befehl;reiter;Reiten an.
+A_reiter_befehl_3;Aschenwacht;A2;befehl;reiter;Bestätigt.
+A_reiter_angriff_1;Aschenwacht;A2;angriff;reiter;Lanzen vor!
+A_reiter_angriff_2;Aschenwacht;A2;angriff;reiter;Attacke!
+A_reiter_angriff_3;Aschenwacht;A2;angriff;reiter;Durchreiten!
+A_reiter_rueckzug_1;Aschenwacht;A2;rueckzug;reiter;Abschwenken!
+A_reiter_rueckzug_2;Aschenwacht;A2;rueckzug;reiter;Wenden, zurück!
+A_reiter_rueckzug_3;Aschenwacht;A2;rueckzug;reiter;Absetzen!
+A_reiter_panik_1;Aschenwacht;A2;panik;reiter;Pferde gehen durch!
+A_reiter_panik_2;Aschenwacht;A2;panik;reiter;Weg hier!
+A_reiter_panik_3;Aschenwacht;A2;panik;reiter;Nicht zu halten!
+A_reiter_verwundet_1;Aschenwacht;A2;verwundet;reiter;Reiter gestürzt!
+A_reiter_verwundet_2;Aschenwacht;A2;verwundet;reiter;Pferd verletzt!
+A_reiter_verwundet_3;Aschenwacht;A2;verwundet;reiter;Ausfälle!
+A_reiter_sammeln_1;Aschenwacht;A2;sammeln;reiter;Sammeln, Reiter.
+A_reiter_sammeln_2;Aschenwacht;A2;sammeln;reiter;In Reihe.
+A_reiter_sammeln_3;Aschenwacht;A2;sammeln;reiter;Ruhig.
+A_reiter_tod_1;Aschenwacht;A2;tod;reiter;Schwadron… verloren…
+A_reiter_tod_2;Aschenwacht;A2;tod;reiter;Kein Reiter… mehr…
+A_reiter_tod_3;Aschenwacht;A2;tod;reiter;Lanzen… gebrochen…
+A_panzer_anwahl_1;Aschenwacht;A3;anwahl;panzer;Panzer bereit.
+A_panzer_anwahl_2;Aschenwacht;A3;anwahl;panzer;Motor warm.
+A_panzer_anwahl_3;Aschenwacht;A3;anwahl;panzer;Besatzung hört.
+A_panzer_befehl_1;Aschenwacht;A3;befehl;panzer;Fahrer, vor.
+A_panzer_befehl_2;Aschenwacht;A3;befehl;panzer;Rollen an.
+A_panzer_befehl_3;Aschenwacht;A3;befehl;panzer;Kurs liegt an.
+A_panzer_angriff_1;Aschenwacht;A3;angriff;panzer;Richtschütze – Feuer!
+A_panzer_angriff_2;Aschenwacht;A3;angriff;panzer;Schuss!
+A_panzer_angriff_3;Aschenwacht;A3;angriff;panzer;Breitseite!
+A_panzer_getroffen_1;Aschenwacht;A3;getroffen;panzer;Treffer am Rumpf!
+A_panzer_getroffen_2;Aschenwacht;A3;getroffen;panzer;Panzerung hält!
+A_panzer_getroffen_3;Aschenwacht;A3;getroffen;panzer;Einschlag!
+A_panzer_panne_1;Aschenwacht;A3;panne;panzer;Kette gerissen!
+A_panzer_panne_2;Aschenwacht;A3;panne;panzer;Wir sitzen fest!
+A_panzer_panne_3;Aschenwacht;A3;panne;panzer;Motor aus!
+A_panzer_rueckzug_1;Aschenwacht;A3;rueckzug;panzer;Rückwärts!
+A_panzer_rueckzug_2;Aschenwacht;A3;rueckzug;panzer;Absetzen!
+A_panzer_rueckzug_3;Aschenwacht;A3;rueckzug;panzer;Aus dem Feuer!
+A_panzer_panik_1;Aschenwacht;A3;panik;panzer;Aussteigen!
+A_panzer_panik_2;Aschenwacht;A3;panik;panzer;Wir brennen!
+A_panzer_panik_3;Aschenwacht;A3;panik;panzer;Raus, raus!
+A_panzer_verwundet_1;Aschenwacht;A3;verwundet;panzer;Schwer beschädigt!
+A_panzer_verwundet_2;Aschenwacht;A3;verwundet;panzer;Brand im Heck!
+A_panzer_verwundet_3;Aschenwacht;A3;verwundet;panzer;Druck fällt!
+A_panzer_sammeln_1;Aschenwacht;A3;sammeln;panzer;Wieder klar.
+A_panzer_sammeln_2;Aschenwacht;A3;sammeln;panzer;Systeme stehen.
+A_panzer_sammeln_3;Aschenwacht;A3;sammeln;panzer;Einsatzbereit.
+A_panzer_tod_1;Aschenwacht;A3;tod;panzer;Panzer… verloren…
+A_panzer_tod_2;Aschenwacht;A3;tod;panzer;Aussteigen… zu spät…
+A_panzer_tod_3;Aschenwacht;A3;tod;panzer;Funk… aus…
+A_fuehrer_anwahl_1;Aschenwacht;A3;anwahl;fuehrer;Ich höre.
+A_fuehrer_anwahl_2;Aschenwacht;A3;anwahl;fuehrer;Lage?
+A_fuehrer_anwahl_3;Aschenwacht;A3;anwahl;fuehrer;Befehl?
+A_fuehrer_befehl_1;Aschenwacht;A3;befehl;fuehrer;Ausführen.
+A_fuehrer_befehl_2;Aschenwacht;A3;befehl;fuehrer;So wird es gemacht.
+A_fuehrer_befehl_3;Aschenwacht;A3;befehl;fuehrer;Vorwärts.
+A_fuehrer_angriff_1;Aschenwacht;A3;angriff;fuehrer;Feuer!
+A_fuehrer_angriff_2;Aschenwacht;A3;angriff;fuehrer;Angriff!
+A_fuehrer_angriff_3;Aschenwacht;A3;angriff;fuehrer;Drauf!
+A_fuehrer_befehl_sammeln_1;Aschenwacht;A3;befehl_sammeln;fuehrer;Sammeln!
+A_fuehrer_befehl_sammeln_2;Aschenwacht;A3;befehl_sammeln;fuehrer;Ruhig, Männer!
+A_fuehrer_befehl_sammeln_3;Aschenwacht;A3;befehl_sammeln;fuehrer;Linie halten!
+A_fuehrer_befehl_sturm_1;Aschenwacht;A3;befehl_sturm;fuehrer;Zum Sturm!
+A_fuehrer_befehl_sturm_2;Aschenwacht;A3;befehl_sturm;fuehrer;Angriff!
+A_fuehrer_befehl_sturm_3;Aschenwacht;A3;befehl_sturm;fuehrer;Vorwärts, drauf!
+A_fuehrer_grossbefehl_1;Aschenwacht;A3;grossbefehl;fuehrer;Alle Mann – Angriff!
+A_fuehrer_grossbefehl_2;Aschenwacht;A3;grossbefehl;fuehrer;Ganze Linie vor!
+A_fuehrer_grossbefehl_3;Aschenwacht;A3;grossbefehl;fuehrer;Jetzt alle!
+A_fuehrer_rueckzug_1;Aschenwacht;A3;rueckzug;fuehrer;Zurück in die Stellung!
+A_fuehrer_rueckzug_2;Aschenwacht;A3;rueckzug;fuehrer;Geordnet absetzen!
+A_fuehrer_rueckzug_3;Aschenwacht;A3;rueckzug;fuehrer;Rückzug!
+A_fuehrer_panik_1;Aschenwacht;A3;panik;fuehrer;Stab zieht ab!
+A_fuehrer_panik_2;Aschenwacht;A3;panik;fuehrer;Wir müssen weg!
+A_fuehrer_panik_3;Aschenwacht;A3;panik;fuehrer;Alles verloren!
+A_fuehrer_verwundet_1;Aschenwacht;A3;verwundet;fuehrer;Stab getroffen!
+A_fuehrer_verwundet_2;Aschenwacht;A3;verwundet;fuehrer;Sanitäter zum Stab!
+A_fuehrer_verwundet_3;Aschenwacht;A3;verwundet;fuehrer;Ich bin verwundet!
+A_fuehrer_sammeln_1;Aschenwacht;A3;sammeln;fuehrer;Ordnung hergestellt.
+A_fuehrer_sammeln_2;Aschenwacht;A3;sammeln;fuehrer;Stab bereit.
+A_fuehrer_sammeln_3;Aschenwacht;A3;sammeln;fuehrer;Weiter.
+A_fuehrer_tod_1;Aschenwacht;A3;tod;fuehrer;Führung… fällt…
+A_fuehrer_tod_2;Aschenwacht;A3;tod;fuehrer;Übernehmt…
+A_fuehrer_tod_3;Aschenwacht;A3;tod;fuehrer;Stab… ausgefallen…
+A_schreiter_anwahl_1;Aschenwacht;AM;anwahl;schreiter;Bereit.
+A_schreiter_anwahl_2;Aschenwacht;AM;anwahl;schreiter;Antrieb läuft.
+A_schreiter_anwahl_3;Aschenwacht;AM;anwahl;schreiter;Erwarte Befehl.
+A_schreiter_befehl_1;Aschenwacht;AM;befehl;schreiter;Marschiere.
+A_schreiter_befehl_2;Aschenwacht;AM;befehl;schreiter;Bewegung bestätigt.
+A_schreiter_befehl_3;Aschenwacht;AM;befehl;schreiter;Vorwärts.
+A_schreiter_angriff_1;Aschenwacht;AM;angriff;schreiter;Ziel bekämpft.
+A_schreiter_angriff_2;Aschenwacht;AM;angriff;schreiter;Vernichten.
+A_schreiter_angriff_3;Aschenwacht;AM;angriff;schreiter;Feuer.
+A_schreiter_nahkampf_1;Aschenwacht;AM;nahkampf;schreiter;Nahkampf.
+A_schreiter_nahkampf_2;Aschenwacht;AM;nahkampf;schreiter;Zerschlagen.
+A_schreiter_nahkampf_3;Aschenwacht;AM;nahkampf;schreiter;Kontakt.
+A_schreiter_getroffen_1;Aschenwacht;AM;getroffen;schreiter;Schaden gemeldet.
+A_schreiter_getroffen_2;Aschenwacht;AM;getroffen;schreiter;Treffer registriert.
+A_schreiter_getroffen_3;Aschenwacht;AM;getroffen;schreiter;Panzerung beschädigt.
+A_schreiter_schwer_1;Aschenwacht;AM;schwer;schreiter;Systeme versagen.
+A_schreiter_schwer_2;Aschenwacht;AM;schwer;schreiter;Kritischer Schaden.
+A_schreiter_schwer_3;Aschenwacht;AM;schwer;schreiter;Druck fällt.
+A_schreiter_feind_1;Aschenwacht;AM;feind;schreiter;Feind erkannt.
+A_schreiter_feind_2;Aschenwacht;AM;feind;schreiter;Ziel erfasst.
+A_schreiter_feind_3;Aschenwacht;AM;feind;schreiter;Gegner voraus.
+A_schreiter_tod_1;Aschenwacht;AM;tod;schreiter;Abschaltung…
+A_schreiter_tod_2;Aschenwacht;AM;tod;schreiter;Ende…
+A_schreiter_tod_3;Aschenwacht;AM;tod;schreiter;Antrieb… aus…
+A_schreiter_dauerfeuer_1;Aschenwacht;AM;dauerfeuer;schreiter;Dauerfeuer.
+A_schreiter_dauerfeuer_2;Aschenwacht;AM;dauerfeuer;schreiter;Feuer hält an.
+A_schreiter_dauerfeuer_3;Aschenwacht;AM;dauerfeuer;schreiter;Nicht nachlassen.
+A_erscheinen_hauptD_1;Aschenwacht;A3;erscheinen;hauptD;Hauptmann zur Stelle.
+A_erscheinen_hauptD_2;Aschenwacht;A3;erscheinen;hauptD;Stab eingetroffen.
+A_erscheinen_generalD_1;Aschenwacht;A3;erscheinen;generalD;Der General führt.
+A_erscheinen_generalD_2;Aschenwacht;A3;erscheinen;generalD;Oberkommando im Feld.
+A_erscheinen_grenadier_1;Aschenwacht;A1;erscheinen;grenadier;Aschengrenadiere, zur Stelle!
+A_erscheinen_grenadier_2;Aschenwacht;A1;erscheinen;grenadier;Grenadiere melden sich.
+A_erscheinen_signal_1;Aschenwacht;A1;erscheinen;signal;Signaltrupp, zur Stelle!
+A_erscheinen_signal_2;Aschenwacht;A1;erscheinen;signal;Leuchtzeichen bereit.
+A_erscheinen_heiler_1;Aschenwacht;A1;erscheinen;heiler;Sanitäter zur Stelle.
+A_erscheinen_heiler_2;Aschenwacht;A1;erscheinen;heiler;Verbandsplatz steht.
+A_erscheinen_pionierD_1;Aschenwacht;A1;erscheinen;pionierD;Drahtpioniere, zur Stelle!
+A_erscheinen_pionierD_2;Aschenwacht;A1;erscheinen;pionierD;Draht und Minen bereit.
+A_erscheinen_banner_1;Aschenwacht;A1;erscheinen;banner;Bannerträger, zur Stelle!
+A_erscheinen_banner_2;Aschenwacht;A1;erscheinen;banner;Das Banner ist da.
+A_erscheinen_buechse_1;Aschenwacht;A1;erscheinen;buechse;Panzerbüchse, zur Stelle!
+A_erscheinen_buechse_2;Aschenwacht;A1;erscheinen;buechse;Büchse geladen.
+A_erscheinen_sense_1;Aschenwacht;A1;erscheinen;sense;Sensenwerk, zur Stelle!
+A_erscheinen_sense_2;Aschenwacht;A1;erscheinen;sense;MG bereit.
+A_erscheinen_minenwerfer_1;Aschenwacht;A1;erscheinen;minenwerfer;Minenwerfer, zur Stelle!
+A_erscheinen_minenwerfer_2;Aschenwacht;A1;erscheinen;minenwerfer;Werfer bereit.
+A_erscheinen_brand_1;Aschenwacht;A1;erscheinen;brand;Brandtrupp, zur Stelle!
+A_erscheinen_brand_2;Aschenwacht;A1;erscheinen;brand;Brenner gezündet.
+A_erscheinen_geschuetz_1;Aschenwacht;A1;erscheinen;geschuetz;Geschütz, zur Stelle!
+A_erscheinen_geschuetz_2;Aschenwacht;A1;erscheinen;geschuetz;Batterie bereit.
+A_erscheinen_gasschutz_1;Aschenwacht;A1;erscheinen;gasschutz;Gasschutztrupp, zur Stelle!
+A_erscheinen_gasschutz_2;Aschenwacht;A1;erscheinen;gasschutz;Entgiftung bereit.
+A_erscheinen_munition_1;Aschenwacht;A1;erscheinen;munition;Munitionstrupp, zur Stelle!
+A_erscheinen_munition_2;Aschenwacht;A1;erscheinen;munition;Nachschub ist da.
+A_erscheinen_pirsch_1;Aschenwacht;A1;erscheinen;pirsch;Pirschjäger, zur Stelle.
+A_erscheinen_pirsch_2;Aschenwacht;A1;erscheinen;pirsch;Wir sind schon da.
+A_erscheinen_sturm_1;Aschenwacht;A2;erscheinen;sturm;Sturmbrecher, zur Stelle!
+A_erscheinen_sturm_2;Aschenwacht;A2;erscheinen;sturm;Stoßtrupp bereit.
+A_erscheinen_schwer_1;Aschenwacht;A2;erscheinen;schwer;Schwere Grabenwacht, zur Stelle!
+A_erscheinen_schwer_2;Aschenwacht;A2;erscheinen;schwer;Schilde geschlossen.
+A_erscheinen_panzerk_1;Aschenwacht;A2;erscheinen;panzerk;Panzerknechte, zur Stelle!
+A_erscheinen_panzerk_2;Aschenwacht;A2;erscheinen;panzerk;Anzüge unter Druck.
+A_erscheinen_huenen_1;Aschenwacht;AM;erscheinen;huenen;Eiserne Hünen, zur Stelle.
+A_erscheinen_huenen_2;Aschenwacht;AM;erscheinen;huenen;Hünen marschieren.
+A_erscheinen_lanzeD_1;Aschenwacht;A2;erscheinen;lanzeD;Sprenglanzen-Reiter, zur Stelle!
+A_erscheinen_lanzeD_2;Aschenwacht;A2;erscheinen;lanzeD;Lanzen geladen.
+A_erscheinen_sturmpz_1;Aschenwacht;A3;erscheinen;sturmpz;Sturmpanzer rollt an.
+A_erscheinen_sturmpz_2;Aschenwacht;A3;erscheinen;sturmpz;Panzer einsatzbereit.
+A_erscheinen_knecht_1;Aschenwacht;AM;erscheinen;knecht;Eisenknecht, betriebsbereit.
+A_erscheinen_knecht_2;Aschenwacht;AM;erscheinen;knecht;Eisenknecht marschiert.
+A_erscheinen_bohrer_1;Aschenwacht;AM;erscheinen;bohrer;Bohrkoloss, betriebsbereit.
+A_erscheinen_bohrer_2;Aschenwacht;AM;erscheinen;bohrer;Bohrer läuft an.
+A_erscheinen_saeger_1;Aschenwacht;AM;erscheinen;saeger;Sägeschreiter, betriebsbereit.
+A_erscheinen_saeger_2;Aschenwacht;AM;erscheinen;saeger;Säge läuft.
+A_erscheinen_klaue_1;Aschenwacht;AM;erscheinen;klaue;Klauenschreiter, betriebsbereit.
+A_erscheinen_klaue_2;Aschenwacht;AM;erscheinen;klaue;Klauen frei.
