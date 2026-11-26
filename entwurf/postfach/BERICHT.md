@@ -1,3 +1,57 @@
+## 2026-11-26 – V3 Teil 1: Stimmen geladen, geprüft, gefiltert, Hörprobe (Punkt 111) (`44f4ee9`)
+
+Gepusht. **Zwischenstand nach Sparregel 5:** Schritte 1–4 und 7 sind erledigt; der Einbau ins Spiel (Schritte 5, 6 und 8) ist der nächste `pa`. Grund: über 600 Sprüche mit neuen Tonplätzen und Abspielstellen sind ein eigener großer Brocken, und du wolltest den Filter vorher hören.
+- **Hänger:** keine.
+- **Vorschau:** Tonprobe kurz offen, dann geschlossen.
+- **sim:** keine Läufe nötig.
+
+**1. Herunterladen:**
+- Alle **608 Dateien** liegen in `sound-quelle/Voices/eigene/el/konkordat|aschenwacht/<id>.mp3`: 300 Konkordat, 308 Aschenwacht, 17 MB, kein Fehler.
+- Zweimal per robocopy nach OneDrive gesichert (Code 1 = Dateien kopiert).
+
+**2. Prüfung Datei gegen Text:**
+- **Kein Spracherkenner installiert** (whisper, ffmpeg fehlen). Nachinstallieren wäre ein großer Download; das habe ich nicht gemacht.
+- **Stattdessen:** reine Sprechdauer (Stille abgeschnitten) gegen die Silbenzahl des Texts. Fast alles passt.
+- **Auffällig, bitte vom Berater prüfen bzw. neu erzeugen:**
+  - Sprache **zu kurz** für den Text:
+    - `A_held_kuerass_auswahl_2` „Der Kürassier hört.“ (0,51 s)
+    - `K_held_faust_getroffen_2` „Barely felt it.“ (0,36 s)
+    - `A_held_kuerass_gegner_erledigt_1` „Einer weniger.“ (0,70 s)
+  - Sprache **zu lang** für ein Wort, vermutlich vertauscht:
+    - `A_held_kuerass_auswahl_1` „Sprich.“ (1,59 s)
+    - `A_held_kuerass_getroffen_3` „Nichts.“ (1,45 s)
+    - `A_held_kuerass_angriff_1` „Fallt.“ (1,28 s)
+    - `A_held_kuerass_angriff_3` „Ende.“ (1,63 s)
+    - `A_held_kuerass_auswahl_3` „Wen?“ (0,95 s)
+    - `K_held_faust_getroffen_1` „Hit.“ (1,06 s)
+  - Das Muster spricht dafür, dass beim **Kürassier** mehrere Zeilen vertauscht sind (auswahl_1 ↔ auswahl_2 passt fast genau). Die übrigen 590 Zeilen sind unauffällig.
+  - Lang, aber wohl nur gerufen: `A_fuehrer_befehl_sturm_2` / `A_fuehrer_angriff_2` „Angriff!“ (2,2 / 1,8 s).
+- Hören kannst du sie in der Tonprobe (Gruppe „Neue Stimmen V3“, Helm) bzw. direkt im Ordner.
+
+**3. Textänderung:** `K_held_faust_angriff_3` = „Push forward.“ in `tools/stimmen_plan.py` und in der CSV.
+
+**4. Filter (`tools/schlachtfunk.py`, Kette aus 109.5):**
+- `funk`: Tonhöhe ×0,86, Hochpass 260 Hz, Low-Shelf +4 dB, Glocke 1100 Hz +7 dB, tanh 5,5, Tiefpass 2900 Hz, Kompressor −28 dB 8:1, Kamm 6 ms, Funkrauschen + Klick.
+- `bordfunk`: wie funk, Rauschen 7 dB lauter.
+- `maschine`: Maschine wie `_mr`, darüber leichter Schlachtfunk.
+- `helm`: Kamm halb so stark, dazu hohle Helmresonanz (650 Hz, kurzer 1,6-ms-Kamm).
+- **Alle Dateien:** Ruhe vorn und hinten weg, Lautstärke angeglichen (RMS −17 dB).
+- **Ergebnis:** 641 gefilterte Dateien in `sound-quelle/Voices/eigene/el/filter/` (608 + 33 Maschinen-Fassungen `A_sturm_*_mx` für die Hünen).
+- Neu: `tools/el_wav.mjs` dekodiert die MP3s im stummen Chrome.
+
+**7. Hörprobe:** `tonprobe.html`, ganz oben die Gruppe **„Neue Stimmen V3“**:
+- Je Sprecher (K1–K5, A1–A5) 6 Sprüche: Anwählen, Befehl, Angriff, Rückzug, verwundet, Erscheinen. Jeweils **mit Schlachtfunk und roh**.
+- Dazu Bordfunk, Maschine (Schreiter), Helm (Helden) und die Hünen mit Maschinenfilter.
+- Online nach dem Push über GitHub Pages.
+
+**Nebenbei:**
+- `ton_teilen.mjs` hängte bei jedem Lauf eine Kopfzeile an `src/sound.js` an (stand 23-mal drin). Behoben, sie steht jetzt einmal.
+- Der Pferde-Angriffsruf `stahlreiter_wiehern1` liegt jetzt richtig in den Spieltönen (vorher nur im Pult).
+
+**Fragen an Enrico:**
+1. **Filter nach dem Hören:** passt so, oder stärker/schwächer? Mögliche Stellschrauben: tiefer (×0,86), Rauschen, metallischer Kamm, Sättigung, Helmklang.
+2. Die Kürassier-Zeilen (und `K_held_faust_getroffen_1/2`) vom Berater neu erzeugen lassen?
+3. Danach Teil 2 (Einbau): alle alten Sprüche raus (Rückweg `STIMMEN_ALT`), neue Abspielstellen wie im Plan. Einverstanden, dass „Befehl bestätigt“ nur etwa jedes zweite Ziehen ruft und Anwählen wie heute über den Beutel ohne Wiederholung läuft?
 ## 2026-11-26 – V1c Helden, Schreiter, Hünen in den Stimmen-Plan (Punkt 110) (`1704fb4`)
 
 Gepusht. Nur Text, nichts gebaut. Keine Browser- oder sim-Läufe, keine Hänger.
