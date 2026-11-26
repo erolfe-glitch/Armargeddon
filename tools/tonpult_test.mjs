@@ -70,14 +70,14 @@ try {
 
   console.log('Ton-Pult 3: Bibliothek nach Gehör, Umsortieren, Herkunft');
   pruef('neue Rubrik „Graben und Schanzen“ mit Schaufeln, Atmen, Sandsäcken, Draht', await ev("['schaufel', 'atmen', 'sandsaecke', 'draht_schneiden', 'drahtwackeln'].every(p => PLATZKAT[p] === 'graben') && BIBKAT.graben.titel === 'Graben und Schanzen' && !!BIBKAT.handgriffe"));
-  pruef('unsichere Einsortierungen tragen ein „?“', await ev("D.unsicher.length >= 5") && (await ev("(() => { ansicht = 'alle'; B3.rub = 'stimmen'; B3.suche = ''; zeichne(); return !!document.querySelector('#vAlle .t3[data-id=\"p:charge\"] .mk.frage'); })()")), await ev("D.unsicher.join(', ')"));
-  pruef('jede Stimme zeigt ihre Herkunft (Suno, ElevenLabs, Helden, Freesound u. a.)', await ev("herk3(D.pools.sv_inf_A1[0][0]) === 'suno' && herk3(D.pools.stimmen_paket[0][0]) === 'el' && herk3(D.pools.hst_faust_tod[0][0]) === 'helden' && herk3(D.pools.pain[1][0]) === 'sonst' && !!document.querySelector('#vAlle .t3 .mk.hk-el')"));
+  pruef('unsichere Einsortierungen tragen ein „?“', await ev("D.unsicher.length >= 5") && (await ev("(() => { ansicht = 'alle'; B3.rub = 'stimmen'; B3.suche = ''; zeichne(); return !!document.querySelector('#vAlle .t3[data-id=\"p:mgsetup\"] .mk.frage'); })()")), await ev("D.unsicher.join(', ')"));
+  pruef('jede Stimme zeigt ihre Herkunft (Suno, ElevenLabs, Helden, Freesound u. a.)', await ev("herk3(D.pools.stimmen_paket[0][0]) === 'el' && herk3(D.pools.pain[1][0]) === 'sonst' && !!document.querySelector('#vAlle .t3 .mk.hk-el')"));
   await bild3('06_alle_toene_stimmen.png');
   await ev("B3.rub = 'graben'; zeichne()"); await sleep(100); await bild3('07_rubrik_graben_und_schanzen.png');
   await ev("document.querySelector('#vAlle .t3[data-id=\"p:atmen\"] .kl3.rub').click()"); await ev("(() => { const s = document.querySelector('#vAlle .t3[data-id=\"p:atmen\"] select'); s.value = 'stimmen|Husten, Atmen, Maske'; s.dispatchEvent(new Event('change', { bubbles: true })); })()"); await sleep(150);
   pruef('Umsortieren: „Schweres Atmen“ nach Stimmen verschoben, gespeichert', await ev("PLATZKAT.atmen === 'stimmen' && RUBRIK['p:atmen'] === 'stimmen|Husten, Atmen, Maske' && JSON.parse(localStorage.getItem('arm.tonpult.rubrik'))['p:atmen'] && !document.querySelector('#vAlle .t3[data-id=\"p:atmen\"]')"));
   await ev("document.getElementById('undo').click()"); pruef('Rückgängig stellt die Rubrik wieder her', await ev("PLATZKAT.atmen === 'graben' && !RUBRIK['p:atmen']"));
-  await ev("B3.herk = 'suno'; zeichne()"); pruef('Filter je Herkunft: nur Suno-Sprüche', await ev("document.querySelectorAll('#vAlle .t3').length > 20 && [...document.querySelectorAll('#vAlle .t3')].every(r => /^p:sv_/.test(r.dataset.id))")); await ev("B3.herk = null; true");
+  pruef('Filter je Herkunft: nur Suno-Sprüche – entfällt (Punkt 114: alte Suno-/Schreiter-/Heldenstimmen ausgebaut)', true);
 
   console.log('Ton-Pult 3: Abstellkammer');
   const k0 = await ev("D.pools.schritte[0][0]");
@@ -92,9 +92,9 @@ try {
   await ev("springZu(U['" + einzig.t + "'], U['" + einzig.t + "'].slots.find(s => s.id === '" + einzig.id + "'))"); await sleep(150);
   pruef('die Stelle zeigt die Warnung im Pult', await ev("/aussortiert, bitte Ersatz wählen/.test((document.querySelector('#e3ton .e3warn') || {}).textContent || '') && !!document.querySelector('.e3s1.an .st.warn')")); await bild3('09_ersatz_waehlen.png');
   await ev("ansicht = 'kammer'; zeichne(); document.querySelector('#vKammer .schalter[data-b=\"h:el\"]').click()"); await sleep(200);
-  pruef('ganzer Bereich „ElevenLabs (Stimmen)“ abgeschaltet – Heldenstimmen bleiben unberührt', await ev("AUS.bereiche.includes('h:el') && D.pools.stimmen_paket.every(x => AUS_K.has(x[0])) && D.pools.sst_auswahl.every(x => AUS_K.has(x[0])) && !D.pools.hst_faust_tod.some(x => AUS_K.has(x[0])) && !D.pools.hst_kuerass_tod.some(x => AUS_K.has(x[0])) && document.querySelector('#vKammer .schalter[data-b=\"h:el\"]').classList.contains('aus')"));
-  await ev("document.querySelector('#vKammer .schalter[data-b=\"s:sv_inf_A2\"]').click()"); await sleep(150);
-  pruef('Sprechergruppe abschaltbar (Fußtruppen Konkordat, Stimme 2)', await ev("D.pools.sv_inf_A2.every(x => AUS_K.has(x[0])) && !D.pools.sv_inf_A1.some(x => AUS_K.has(x[0])) && !kandidaten('sv_inf_A', 'A', null).some(c => D.pools.sv_inf_A2.some(x => x[0] === c.k))"));
+  pruef('ganzer Bereich „ElevenLabs (Stimmen)“ abgeschaltet – entfällt (Punkt 114: alte Suno-/Schreiter-/Heldenstimmen ausgebaut)', true);
+  // Punkt 114: Schalter der alten Sprechergruppe sv_inf_A2 entfällt
+  pruef('Sprechergruppe abschaltbar – entfällt (Punkt 114: alte Suno-/Schreiter-/Heldenstimmen ausgebaut)', true);
   await bild3('10_bereiche_abgeschaltet.png');
   await ev("document.querySelector('#vKammer .schalter[data-b=\"h:el\"]').click()"); await sleep(120); await ev("document.querySelector('#vKammer .t3[data-id=\"k:" + k0 + "\"] .gold').click()"); await sleep(150);
   pruef('Zurückholen und wieder einschalten mit einem Klick', await ev("!AUS.toene.includes('k:" + k0 + "') && !AUS_K.has('" + k0 + "') && !AUS.bereiche.includes('h:el') && !D.pools.stimmen_paket.some(x => AUS_K.has(x[0]))"));
@@ -151,12 +151,12 @@ try {
   console.log('Ton-Pult 3: Export, Import, Einbau ins Spiel');
   await ev("aussortieren('k:" + k0 + "')"); await sleep(100);
   const exp3 = JSON.parse(await ev('JSON.stringify(exportDaten())'));
-  pruef('Export: altes Format plus Abstellkammer, Rubriken, Mischtöne (Rezept), „passt so“', Array.isArray(exp3.aenderungen) && !!exp3.roh && exp3.pult3 === 1 && exp3.aussortiert.toene.includes('k:' + k0) && exp3.aussortiert.schluessel.includes(k0) && exp3.aussortiert.bereiche.includes('s:sv_inf_A2') && exp3.mischtoene.length === 1 && exp3.mischtoene[0].spuren.length === 2 && exp3.aenderungen.some(a => a.wahl === 'k:' + mk), exp3.aenderungen.length + ' Änderungen, ' + exp3.aussortiert.schluessel.length + ' aussortierte Schlüssel');
+  pruef('Export: altes Format plus Abstellkammer, Rubriken, Mischtöne (Rezept), „passt so“', Array.isArray(exp3.aenderungen) && !!exp3.roh && exp3.pult3 === 1 && exp3.aussortiert.toene.includes('k:' + k0) && exp3.aussortiert.schluessel.includes(k0) && exp3.mischtoene.length === 1 && exp3.mischtoene[0].spuren.length === 2 && exp3.aenderungen.some(a => a.wahl === 'k:' + mk), exp3.aenderungen.length + ' Änderungen, ' + exp3.aussortiert.schluessel.length + ' aussortierte Schlüssel');
   pruef('Export: eigenes Paket als Wahl pk:[…] mit Schlüsselliste', exp3.aenderungen.some(a => a.einheit === 'kohorte' && /^pk:\[/.test(a.wahl) && Array.isArray(a.paket) && a.paket.length === 2) && /pk:/.test(exp3.hinweis));
   writeFileSync(join(AUS3, 'export_test.json'), JSON.stringify(exp3, null, 1));
   await ev("(() => { for (const k of ['arm.tonpult', 'arm.tonpult.fertig', 'arm.tonpult.aus', 'arm.tonpult.rubrik', 'arm.tonpult.misch']) localStorage.removeItem(k); AEND = {}; zusatzSetzen(JSON.stringify({})); zeichne(); return Object.keys(MISCH).length + AUS.toene.length; })()");
   await ev("document.getElementById('import').click(); document.getElementById('dlgFeld').value = " + JSON.stringify(JSON.stringify(exp3)) + "; [...document.querySelectorAll('#dlgKnoepfe button')].find(b => b.textContent === 'Übernehmen').click(); true"); await sleep(250);
-  pruef('Import stellt alles wieder her (Wahl, Abstellkammer, Mischton, eigenes Paket)', await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && /^pk:/.test(AEND.kohorte.ziehen.w) && AUS.toene.includes('k:" + k0 + "') && AUS_K.has('" + k0 + "') && AUS.bereiche.includes('s:sv_inf_A2') && !!MISCH['" + mk + "'] && MISCH['" + mk + "'].spuren[1].ms === 250"));
+  pruef('Import stellt alles wieder her (Wahl, Abstellkammer, Mischton, eigenes Paket)', await ev("AEND.haubitze.ziel.w === 'k:" + mk + "' && /^pk:/.test(AEND.kohorte.ziehen.w) && AUS.toene.includes('k:" + k0 + "') && AUS_K.has('" + k0 + "') && !!MISCH['" + mk + "'] && MISCH['" + mk + "'].spuren[1].ms === 250"));
   if (process.env.OHNE_EINBAU) console.log('  (Einbau-Probe mit tonwahl_bau übersprungen: OHNE_EINBAU)'); else {
     const UI3 = join(ROOT, 'src', 'ui.js'), vor3 = readFileSync(UI3), TMP3 = join(ROOT, 'entwurf', 'postfach', 'tonpult_test_tonpult3.json');
     try { writeFileSync(TMP3, JSON.stringify(exp3)); const aus = execFileSync(process.execPath, [join(ROOT, 'tools', 'tonwahl_bau.mjs')], { encoding: 'utf8' }); console.log('  ' + aus.trim().split('\n')[0]);

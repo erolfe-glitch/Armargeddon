@@ -16,11 +16,11 @@ VAR = {'gm': lambda x, r: maske(x, STUFEN['leicht'], r), 'gs': lambda x, r: mask
        'bf': lambda x, r: funk(x, FUNK['stark'], r), 'mr': lambda x, r: roboter(x, ROBOTER['mittel'], r)}
 NAME = {'gm': 'Gasmaske leicht', 'gs': 'Gasmaske mittel (Kampfanzug)', 'bf': 'Bordfunk stark (Panzer)', 'mr': 'Maschine mittel (Schreiter/Eisenknecht)'}
 # Welche Sprecher einen Platz rufen können (siehe ui.js): nur diese Varianten werden gerechnet
-PLAN = {
-    'pain': ['gm', 'gs'], 'medic': ['gm', 'gs'], 'cry': ['gm', 'gs'], 'scream': ['gm', 'gs'],   # Treffer/Nahkampf: nur Fußtruppen
-    'panic': ['gm', 'gs', 'bf', 'mr'],                                                          # Flucht: jede Einheit
-    'forward': ['gm', 'gs'], 'roar': ['gm', 'gs'], 'stand': ['gm'], 'charge': ['gm', 'gs'],     # Sturmlauf, Gegenstoß; Befehle der Offiziere bleiben ohne Filter
-    'comeon': ['gm'], 'husten': ['gm'], 'robot': ['mr'], 'grunzen': ['gm', 'gs'],   # leichte Verletzung (seit 2026-11-18)
+PLAN = {   # V3 (Punkt 114): gesprochene Rufe (medic, panic, forward, roar, stand, charge, comeon) sind durch die neuen Stimmen ersetzt
+    'pain': ['gm', 'gs'], 'cry': ['gm', 'gs'], 'scream': ['gm', 'gs'],   # Treffer/Nahkampf: nur Fußtruppen
+                                                             # Flucht: jede Einheit
+        # Sturmlauf, Gegenstoß; Befehle der Offiziere bleiben ohne Filter
+    'husten': ['gm'], 'robot': ['mr'], 'grunzen': ['gm', 'gs'],   # leichte Verletzung (seit 2026-11-18)
     'atmen': ['gm', 'gs'],   # schweres Atmen beim Eingraben (2026-11-18)
     'loewe': ['mr'],   # Löwengebrüll des Kreuzschreiters (Test-Fähigkeit, 2026-11-18)
 }

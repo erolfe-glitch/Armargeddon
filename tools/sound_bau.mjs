@@ -84,10 +84,10 @@ const OLD = {}; for (const t of [old, existsSync(join(ROOT, 'src', 'sound_pult.j
 const drop = new Set(SPEC.drop || []);
 // wiederholbar: Töne aus einem früheren Lauf (<platz>_<n>) werden neu erzeugt, nicht als alt übernommen
 const NUR = process.env.NUR ? new Set(process.env.NUR.split(',')) : null, OLD0 = { ...OLD };   // NUR=platz,… (2026-11-24): nur diese Plätze neu bauen, alle übrigen Töne unverändert übernehmen (statt Neubau aller Töne)
-const POOLNAMES = new Set([...SPEC.eintraege.map(e => e.pool), ...(SPEC.dropPools || [])]); /* dropPools: entfallene Plätze, ihre <platz>_<n> verschwinden */ for (const k of Object.keys(OLD)) { const m = k.match(/^(.+)_(\d+)$/); if (m && POOLNAMES.has(m[1])) delete OLD[k]; }
+const POOLNAMES = new Set([...SPEC.eintraege.map(e => e.pool), ...(SPEC.dropPools || [])]); /* dropPools: entfallene Plätze, ihre <platz>_<n> verschwinden */ for (const k of Object.keys(OLD)) { const m = k.match(/^(.+)_(\d+)$/); if (m && POOLNAMES.has(m[1])) delete OLD[k]; } for (const k of SPEC.dropKeys || []) delete OLD[k];   /* dropKeys (Punkt 114): alte Einzeltöne ohne Quelle streichen */
 const NEW = {}, POOLS = {}, rows = [], cnt = {};
 for (const e of SPEC.eintraege) {
-  POOLS[e.pool] = POOLS[e.pool] || [];
+  if (!e.raus) POOLS[e.pool] = POOLS[e.pool] || [];   // Punkt 114: Plätze, deren Einträge alle raus sind, entfallen
   if (e.leer) { rows.push({ pool: e.pool, key: '–', s: null, f: '(noch leer)', note: e.note }); continue; }   // Platz angelegt, Dateien folgen
   if (e.alt) { if (!OLD[e.alt]) { console.log('fehlt alt:', e.alt); continue; } POOLS[e.pool].push([e.alt, e.s || null]); rows.push({ pool: e.pool, key: e.alt, s: e.s, f: '(vorhanden) ' + e.alt }); continue; }
   const key = e.key || e.pool + '_' + (cnt[e.pool] = (cnt[e.pool] || 0) + 1);   // key = fester Schlüssel (alten Ton aus der Quelle neu bauen, Name bleibt; 2026-11-21) – zählt nicht mit
