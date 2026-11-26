@@ -192,6 +192,7 @@ def fahne_umfaerben(a, name, alpha):
 #   orden (cx, cy, r, sx, sy, sr): Kreuz übermalen und runde Medaille von (sx, sy) einsetzen
 #   spitze (x0, y0, x1, y1, px0, px1, sy): Kreuz an der Fahnenspitze durch Stangenstück ersetzen (Rest Hintergrund)
 ABZEICHEN = {
+    'aschenwacht_soldat': [('platte', 1367, 312, 24)],   # U4a: Wappen-Rest unter dem Arm (Reskin-Bogen, oben rechts)
     'aschenwacht_panzerknecht': [('platte', 106, 236, 50), ('platte', 619, 264, 46), ('platte', 1205, 294, 52)],
     'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15),
                             ('platte', 595, 273, 34), ('platte', 447, 451, 13), ('platte', 605, 458, 13), ('platte', 517, 692, 22)],   # Pflicht-Übermalung 2026-11-21: Helmemblem, Totenköpfe an den Schulterkordeln, Totenkopf-Schnalle
@@ -334,7 +335,7 @@ def rauch_weg(a, name):
 
 
 # Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
-ENTROSA = {'konkordat_stahlreiter_reskin', 'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
+ENTROSA = {'konkordat_soldat', 'konkordat_soldat_posen', 'aschenwacht_soldat', 'aschenwacht_soldat_posen', 'aschenwacht_koloss', 'konkordat_stahlreiter_reskin', 'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
 
 
 def entrosa(q):
@@ -425,8 +426,13 @@ FIGUREN_POSEN = {
 RESKIN = SRC / 'reskin'
 
 
+ERSETZT = {'konkordat_soldat': 'konkordat_soldat_reskin', 'konkordat_soldat_posen': 'konkordat_soldat_posen_reskin', 'aschenwacht_soldat': 'aschenwacht_soldat_reskin',
+           'aschenwacht_soldat_posen': 'aschenwacht_soldat_posen_reskin', 'aschenwacht_schwer_posen': 'aschenwacht_schwer_reskin', 'aschenwacht_koloss': 'aschenwacht_panzer_neu'}   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
+
+
 def quelle(name):
-    """Bogen in ui-quelle/figuren/, sonst in reskin/ (R4, 2026-11-26)."""
+    """Bogen in ui-quelle/figuren/, sonst in reskin/ (R4, 2026-11-26); U4a: ERSETZT nimmt den neuen Bogen unter altem Namen."""
+    if name in ERSETZT: return RESKIN / f'{ERSETZT[name]}.png'
     p = SRC / f'{name}.png'
     return p if p.exists() else RESKIN / f'{name}.png'
 
@@ -653,6 +659,7 @@ def cut(name, out=OUT):
         s = ref * f / poses[nr - 1][1].shape[0]
     out.mkdir(parents=True, exist_ok=True)
     for i, q, fl in poses:
+        if name in ENTROSA: q = entrosa(q.astype(np.float64))   # U4a: rosa Säume der Reskin-Bögen
         im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
         im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
         im.save(out / f'{name}_{i}.png')
