@@ -1171,8 +1171,8 @@ const kraftArt = () => TOG.KRAFT || 'stufen';   // Fassung 2 nur für Messungen 
 // U5c (Punkt 90, Enrico 2026-11-26): Truppgrößen in sieben Gruppen – Linie 8, Sturm/Nahkampf 6, Waffentrupp 3 Mann (+ Waffe), Fachtrupp 4,
 // kleine Gruppe 2–3 (+ Beiwerk: Trage, Karren, Kiste zählen nicht), gepanzerte Infanterie 2, Einzelmodell 1, Reiter 6. Rückweg TRUPP_ALT (Node: Umgebung, Browser: window).
 const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, eingreif: 6, schildwall: 6, schwer: 6, mahlwerk: 3, sense: 3, buechse: 3, flammen: 3, brand: 3,
-  pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 2, banner: 2,
-  hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, stahl: 2, panzerk: 2, huenen: 2, oger: 2, ballon: 1 };
+  pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 1, banner: 2,   /* Punkt 99: Hund ist Beiwerk */
+  hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
 const truppAlt = () => !!(TOG.TRUPP_ALT || (typeof window !== 'undefined' && window.TRUPP_ALT));
 function modelle(t) { const T = TYPES[t]; if (!truppAlt() && TRUPP[t] != null) return TRUPP[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
 const modelleDa = u => Math.max(0, Math.ceil(u.str / 10 * modelle(u.type) - 1e-6));

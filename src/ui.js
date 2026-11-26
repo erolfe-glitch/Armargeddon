@@ -1787,7 +1787,7 @@ const LEICHEN = [], LEICHE_RUNDEN = 3, LEICHE_MAX = 220, FALL_MS = 460;
 function stehende(u, d, max, n) {
   const weg = d.weg || (d.weg = new Set());
   while (weg.size > max - n) { const a = [...weg]; weg.delete(a[Math.floor(Math.random() * a.length)]); }   // Stärke gestiegen: eine steht wieder
-  while (weg.size < max - n) { const frei = []; for (let i = 0; i < max; i++) if (!weg.has(i)) frei.push(i); const i = frei[Math.floor(Math.random() * frei.length)]; weg.add(i); leicheNeu(u, d, i, false); }
+  while (weg.size < max - n) { const frei = []; for (let i = 0; i < max; i++) if (!weg.has(i)) frei.push(i); const i = frei[Math.floor(Math.random() * frei.length)]; weg.add(i); if (window.GEFALLEN_AN) leicheNeu(u, d, i, false); }   // Punkt 98 (Enrico 17:30): Gefallene standardmäßig aus – der Mann verschwindet einfach
   const out = []; for (let i = 0; i < max; i++) if (!weg.has(i)) out.push(i); return out;
 }
 function leicheNeu(u, d, i, alle) {
@@ -1800,7 +1800,7 @@ function leicheNeu(u, d, i, alle) {
   if (LEICHEN.length > LEICHE_MAX) LEICHEN.shift();
 }
 function alleFallen(u, d) {   // aufgerieben: die letzten stehenden Figuren fallen alle
-  if (window.FALLEN_ALT || !d || !d.figIm || TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') return false;
+  if (!window.GEFALLEN_AN || window.FALLEN_ALT || !d || !d.figIm || TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') return false;
   let n = 0; for (let i = 0; i < d.figIm.length; i++) if (d.figIm[i] && !(d.weg && d.weg.has(i))) { leicheNeu(u, d, i, true); n++; }
   return n > 0;
 }

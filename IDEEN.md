@@ -3,6 +3,7 @@
 Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hier hinein (kurz, mit Datum), erledigte werden gestrichen oder mit Verweis auf den Commit abgehakt.
 
 ## Offen
+- **Gefallene liegen lassen (2026-11-26, Punkt 98):** Der Code aus U5b/Punkt 93 ist da, aber abgeschaltet (`window.GEFALLEN_AN`). Enrico gefällt der gemalte Bogen `ui-quelle/figuren/reskin/gefallene_bogen.png` (3 Gefallene je Seite) – **nicht löschen**, vielleicht später statt der gedrehten Getroffen-Pose einbauen, wenn das Bild ruhig genug bleibt.
 
 - **Schussfeld-Anzeige** (2026-11-15): erst nach Klick auf „Schießen“ zeigen oder immer bei Auswahl? Später ausprobieren.
 - Ordner Units/Russia ansehen (aus CLAUDE.md übernommen).
