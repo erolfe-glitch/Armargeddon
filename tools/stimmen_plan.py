@@ -1,6 +1,7 @@
 # Stimmen-Plan V1b (Punkt 109, 2026-11-26): erzeugt entwurf/stimmen_texte.csv aus den Texten unten.
 # Aufruf: python tools/stimmen_plan.py [--md]   (nur Text, keine Töne; --md druckt die Tabellen für STIMMEN_PLAN.md)
-# Spalten: id, fraktion, sprecher, anlass, einheit, ton, text. Konkordat Englisch (auch Blaue Legion), Aschenwacht Deutsch.
+# Spalten: id, fraktion, sprecher, anlass, einheit, ton, filter, text (V1c: filter = funk | maschine | helm | bordfunk).
+# V1c (Punkt 110): bestehende Zeilen nie umbenennen/umtexten (Dateiname = id) – Neues nur anhängen (HELDEN am Ende). Konkordat Englisch (auch Blaue Legion), Aschenwacht Deutsch.
 # 5 Sprecher je Seite über die K1-Kategorien: 1 Linie, 2 Unterstützung, 3 Sturm/Elite, 4 Reiter, 5 Anführer + Panzer (+ Schreiter mit Maschinenfilter).
 import csv, sys
 from pathlib import Path
@@ -11,7 +12,13 @@ STIMME = {'K': {1: 'Brian', 2: 'Daniel', 3: 'Callum', 4: 'George', 5: 'Bill'},
           'A': {1: 'Charlie', 2: 'Callum', 3: 'Bill (schroff)', 4: 'Will', 5: 'Liam'}}
 GRUPPE_SPRECHER = {'linie': 1, 'unterst': 2, 'sturm': 3, 'reiter': 4, 'fuehrer': 5, 'panzer': 5, 'schreiter': 5}
 # Not-Anlässe werden gerufen (Spalte ton = ruf), alles andere ruhig, tief, abgehackt
-RUF = {'rueckzug', 'panik', 'verwundet', 'niedergehalten', 'gas', 'koloss', 'getroffen', 'panne'}
+RUF = {'rueckzug', 'panik', 'verwundet', 'niedergehalten', 'gas', 'koloss', 'getroffen', 'panne', 'schwer_verwundet'}
+MASCHINE = {'huenen'}   # V1c: Eiserne Hünen sprechen A3, im Spiel Maschinenfilter
+BORDFUNK = {'koloss', 'sturmpz', 'bohrer'}
+def filt(gruppe, typ=None):
+    if gruppe == 'schreiter' or typ in MASCHINE: return 'maschine'
+    if gruppe == 'panzer' or typ in BORDFUNK: return 'bordfunk'
+    return 'funk'
 
 # Einheit (TYPES-Schlüssel) → Gruppe; Kommentar = Besonderheit
 EINHEIT = {
@@ -245,6 +252,30 @@ ERSCHEINEN = {
        'klaue': ['Klauenschreiter, betriebsbereit.', 'Klauen frei.']},
 }
 
+# V1c (Punkt 110): Helden neu gesprochen – Rote Faust K5 Bill (EN), Eiserner Kürassier A5 Liam (DE), Filter helm; Anlässe wie HELD_ST in ui.js (spezial = Durchbruch bzw. Hinrichtung)
+HELDEN = {
+ 'K': ('faust', 5, {
+   'auswahl': ['The Fist is ready.', 'Speak.', 'Point me at them.', "Steam's up."],
+   'bewegen': ['Moving.', 'Clear the way.', 'On my way.', 'Forward.'],
+   'angriff': ['Down you go.', 'Break!', 'Hit them hard.'],
+   'spezial': ['Through them!', 'Breaking through!', 'Out of my way!'],
+   'getroffen': ['Hit.', 'Barely felt it.', 'Plating holds.'],
+   'gegner_erledigt': ['One less.', "That's done.", 'Next.'],
+   'schwer_verwundet': ['Pressure failing!', 'Fist is damaged!', 'Need repairs!'],
+   'tod': ['The fire… goes out…', 'Hold… without me…', 'Steam… gone…'],
+   'erscheinen': ['The Red Fist is here.', 'Stand behind me.'] }),
+ 'A': ('kuerass', 5, {
+   'auswahl': ['Sprich.', 'Der Kürassier hört.', 'Wen?', 'Bereit.'],
+   'bewegen': ['Ich gehe.', 'Vorwärts.', 'Platz da.', 'Weiter.'],
+   'angriff': ['Fallt.', 'Ihr seid erledigt.', 'Ende.'],
+   'spezial': ['Urteil.', 'Es endet hier.', 'Hinrichten.'],
+   'getroffen': ['Kratzer.', 'Rüstung hält.', 'Nichts.'],
+   'gegner_erledigt': ['Einer weniger.', 'Erledigt.', 'Der Nächste.'],
+   'schwer_verwundet': ['Rüstung bricht!', 'Schwer getroffen!', 'Säge stockt!'],
+   'tod': ['Der Stahl… fällt…', 'Haltet… stand…', 'Es… endet…'],
+   'erscheinen': ['Der Eiserne Kürassier ist da.', 'Weicht oder fallt.'] }),
+}
+
 
 def sprecher(fr, gruppe): return f'{fr}{GRUPPE_SPRECHER[gruppe]}'
 
@@ -255,10 +286,14 @@ def zeilen():
         for gr, anl in gruppen.items():
             for an, texte in anl.items():
                 for i, t in enumerate(texte, 1):
-                    rows.append((f'{fr}_{gr}_{an}_{i}', FRAKTION[fr], sprecher(fr, gr), an, gr, 'ruf' if an in RUF else 'ruhig', t))
+                    rows.append((f'{fr}_{gr}_{an}_{i}', FRAKTION[fr], sprecher(fr, gr), an, gr, 'ruf' if an in RUF else 'ruhig', filt(gr), t))
         for typ, texte in ERSCHEINEN[fr].items():
             for i, t in enumerate(texte, 1):
-                rows.append((f'{fr}_erscheinen_{typ}_{i}', FRAKTION[fr], sprecher(fr, EINHEIT[fr][typ]), 'erscheinen', typ, 'ruhig', t))
+                rows.append((f'{fr}_erscheinen_{typ}_{i}', FRAKTION[fr], sprecher(fr, EINHEIT[fr][typ]), 'erscheinen', typ, 'ruhig', filt(EINHEIT[fr][typ], typ), t))
+    for fr, (held, n, anl) in HELDEN.items():   # V1c: angehängt
+        for an, texte in anl.items():
+            for i, t in enumerate(texte, 1):
+                rows.append((f'{fr}_held_{held}_{an}_{i}', FRAKTION[fr], f'{fr}{n}', an, held, 'ruf' if an == 'schwer_verwundet' else 'ruhig', 'helm', t))   # Helden rufen nur schwer verwundet
     return rows
 
 
@@ -267,16 +302,16 @@ def main():
     out = ROOT / 'entwurf' / 'stimmen_texte.csv'
     with open(out, 'w', newline='', encoding='utf-8-sig') as f:
         w = csv.writer(f, delimiter=';')
-        w.writerow(['id', 'fraktion', 'sprecher', 'anlass', 'einheit', 'ton', 'text'])
+        w.writerow(['id', 'fraktion', 'sprecher', 'anlass', 'einheit', 'ton', 'filter', 'text'])
         w.writerows(rows)
-    lang = [r for r in rows if len(r[6].replace('–', ' ').split()) > 5]
-    print(out, len(rows), 'Zeilen,', sum(len(r[6]) for r in rows), 'Zeichen', '| zu lang:', [r[0] for r in lang])
+    lang = [r for r in rows if len(r[7].replace('–', ' ').split()) > 5]
+    print(out, len(rows), 'Zeilen,', sum(len(r[7]) for r in rows), 'Zeichen', '| zu lang:', [r[0] for r in lang])
     if '--md' in sys.argv:
         print('\n| Sprecher | Stimme | Zeilen | davon ruf | Zeichen |\n|---|---|---|---|---|')
         for fr in RUFE:
             for n in range(1, 6):
                 sp = f'{fr}{n}'; rs = [r for r in rows if r[2] == sp]
-                print(f'| {sp} | {STIMME[fr][n]} | {len(rs)} | {sum(r[5] == "ruf" for r in rs)} | {sum(len(r[6]) for r in rs)} |')
+                print(f'| {sp} | {STIMME[fr][n]} | {len(rs)} | {sum(r[5] == "ruf" for r in rs)} | {sum(len(r[7]) for r in rs)} |')
         print('\n| Fraktion | Sprecher | Einheiten (TYPES-Schlüssel) |\n|---|---|---|')
         for fr in RUFE:
             for n in range(1, 6):

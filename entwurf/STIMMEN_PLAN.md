@@ -1,4 +1,11 @@
-# Stimmen-Plan V1b (Punkt 109, 2026-11-26) – nur Plan und Texte, nichts gebaut
+# Stimmen-Plan V1b/V1c (Punkte 109/110, 2026-11-26) – nur Plan und Texte, nichts gebaut
+
+**V1c (21:10):**
+- Spalte `filter` dazu.
+- Helden (Rote Faust K5 Bill, Eiserner Kürassier A5 Liam, Filter `helm`) als 56 neue Zeilen **angehängt**.
+- Eiserne Hünen bleiben Maschine.
+- Löwenoger nur Brüllen.
+- Die ersten 552 Zeilen sind unverändert (ids, Reihenfolge, Texte; der Berater erzeugt sie schon).
 
 Stand nach Enricos Hörprobe 3/4 (20:55). Ersetzt die erste Fassung V1 (3 Sprecher, alles Deutsch).
 
@@ -10,9 +17,10 @@ Stand nach Enricos Hörprobe 3/4 (20:55). Ersetzt die erste Fassung V1 (3 Sprech
 - **Filter „Schlachtfunk“** für alle Einheiten beider Seiten (Abschnitt 5).
 
 **Texte:** `entwurf/stimmen_texte.csv`:
-- 552 Zeilen, Semikolon, UTF-8.
-- Spalten `id; fraktion; sprecher; anlass; einheit; ton; text`.
+- 608 Zeilen (552 + 56 Helden), Semikolon, UTF-8.
+- Spalten `id; fraktion; sprecher; anlass; einheit; ton; filter; text`.
 - `ton` = `ruhig` oder `ruf`.
+- `filter` = `funk` (Standard), `bordfunk` (Panzer/Kolosse), `maschine` (Schreiter, Hünen), `helm` (Helden).
 - Erzeugt mit `python tools/stimmen_plan.py` (mit `--md` druckt das Skript die Tabellen unten). Texte nur dort ändern, nicht in der CSV.
 
 ## 1. Sprecher
@@ -31,7 +39,7 @@ Stand nach Enricos Hörprobe 3/4 (20:55). Ersetzt die erste Fassung V1 (3 Sprech
 |---|---|---|
 | Konkordat | K1 Brian | `kohorte` |
 | Konkordat | K2 Daniel | `melder`, `fernsprech`, `feldscher`, `pionier`, `scharf`, `mahlwerk`, `moerser`, `flammen`, `mineur`, `werkstatt`, `feldkanone`, `haubitze`, `ballon` |
-| Konkordat | K3 Callum | `raeumer`, `oger` (der Löwenoger brüllt weiter, Worte nur falls gewünscht) |
+| Konkordat | K3 Callum | `raeumer` (der Löwenoger `oger` brüllt nur, keine Zeilen) |
 | Konkordat | K4 George | `reiter` |
 | Konkordat | K5 Bill | `hauptA`, `generalA`, `koloss` (Bordfunk), `turm`, `orden`, `kreuz` (Schreiter, Maschinenfilter) |
 | Aschenwacht | A1 Charlie | `grenadier` |
@@ -42,19 +50,17 @@ Stand nach Enricos Hörprobe 3/4 (20:55). Ersetzt die erste Fassung V1 (3 Sprech
 
 **Bannerträger** (`banner`) spricht mit Sprecher 5, wie Enrico es in der Tabelle vorgesehen hat. Seine Rufe stehen in der Gruppe Anführer, dazu „Banner hoch!“.
 
-**Eiserne Hünen:**
-- Sie sprechen heute mit der Maschinenstimme (Sprecher Schreiter, Filter `_mr`).
-- Laut Enricos Tabelle gehören sie zu Sturm/Elite, also künftig A3 mit Schlachtfunk. Ihr „Dauerfeuer!“ steht in der Sturm-Gruppe.
-- Falls sie Maschine bleiben sollen: in `tools/stimmen_plan.py` `huenen` auf `schreiter` stellen.
+**Eiserne Hünen (V1c):** Sie sprechen die Sturm-Zeilen von A3 Bill, bekommen im Spiel aber den **Maschinenfilter** (wie heute `_mr`, darüber leichter Schlachtfunk). Weil die Sturm-Zeilen (`A_sturm_*`) auch Sturmbrecher, Grabenwacht und Panzerknechte nutzen, stehen sie in der CSV auf `funk`. Den Maschinenfilter setzt V3 je Einheit; die Hünen-Erscheinen-Zeilen stehen schon auf `maschine`. Ihr „Dauerfeuer!“ ist `A_sturm_dauerfeuer_*`.
 
-### Vorschlag Helden und Schreiter (bleiben eigene Gruppen)
+### Helden und Schreiter (V1c: beschlossen)
 
-- **Helden** (`hst_faust_*`, `hst_kuerass_*`):
-  - Vorschlag: Rote Faust mit K5 Bill, Eiserner Kürassier mit A5 Liam neu sprechen. Der Helm-Filter bleibt, darüber kommt der Schlachtfunk.
-  - Die Heldentexte (heute je Anlass) wären ein eigener kleiner Auftrag, nicht in dieser CSV.
-- **Schreiter** (`sst_*`):
-  - Heute sprechen beide Seiten dieselben 2 Fassungen.
-  - Vorschlag: neu mit K5 bzw. A5 und danach dem Maschinenfilter (`roboter`), je Seite eigene Texte. Sie stehen in der CSV als Gruppe `schreiter`: Anwählen, Bewegen, Angriff, Nahkampf, Getroffen, schwer beschädigt, Feind gesichtet, zerstört.
+- **Helden** (`HELD_ST`, heute `hst_faust_*`, `hst_kuerass_*`):
+  - Rote Faust = K5 Bill (Englisch), Eiserner Kürassier = A5 Liam (Deutsch), Filter `helm`.
+  - Ids `K_held_faust_<anlass>_<n>` / `A_held_kuerass_<anlass>_<n>`.
+  - Anlässe wie heute: auswahl, bewegen, angriff, spezial (Durchbruch bzw. Hinrichtung), getroffen, gegner_erledigt, schwer_verwundet (ruf), tod, dazu erscheinen 2.
+- **Schreiter** (`SST`, heute `sst_*` für beide Seiten gleich):
+  - Kreuz-, Turm- und Ordensschreiter = K5 Bill, Eisenknecht, Säge- und Klauenschreiter = A5 Liam, Filter `maschine`.
+  - Die Zeilen gab es schon in V1b (`K_schreiter_*`, `A_schreiter_*`). Zuordnung zu den heutigen Plätzen: anwahl → `sst_auswahl`, befehl → `sst_bewegen`, angriff, nahkampf, getroffen, schwer → `sst_schwer_beschaedigt`, feind → `sst_feind_gesichtet`, tod → `sst_zerstoert`.
 
 ## 2. Anlässe – heute und neu
 
@@ -98,7 +104,15 @@ Stand nach Enricos Hörprobe 3/4 (20:55). Ersetzt die erste Fassung V1 (3 Sprech
 | A5 | Liam | 106 | 27 | 1510 |
 | **gesamt** | | **552** | **156** | **7830** |
 
-Grob 8 000 Zeichen, also **etwa 0,80 $** für einen Durchgang. Mit Nachgenerierungen (Ausschuss, zweite Versuche) eher 1,50–2,50 $.
+Dazu V1c, nur Helden (angehängt):
+
+| Sprecher | Zeilen | davon ruf | Zeichen |
+|---|---|---|---|
+| K5 Bill (Rote Faust) | 28 | 3 | ≈ 357 |
+| A5 Liam (Kürassier) | 28 | 3 | ≈ 327 |
+| **neu gesamt** | **56** | **6** | **684** |
+
+Zusammen 608 Zeilen und 8514 Zeichen, also **etwa 0,85 $** für einen Durchgang. Mit Nachgenerierungen eher 1,50–2,50 $.
 
 ## 4. Beispiele (vollständig in der CSV)
 
