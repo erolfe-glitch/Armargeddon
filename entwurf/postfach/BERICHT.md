@@ -1,3 +1,65 @@
+## 2026-11-26 – R4c Bilder, Elite-Messung (107), Krähenfurt-Check (105) (`7d9eece` mit index.html)
+
+Gepusht.
+- **Hänger:** keine. Partietest ohne Fehler, Regeltest ok.
+- **Vorschau:** kurz offen, dann geschlossen. Kein Chrome offen.
+- **sim:** 22 Läufe, höchstens zwei gleichzeitig, **kein Absturz**.
+
+### 1. R4b-Rest: neue Bilder
+- **Stahlreiter (106.4):** Der neue Bogen ist geschnitten (massivere Pferde), gleiche Posen und Größe.
+  - Damit sie im Spiel nicht röter oder greller wirken, bekommen die Stahlreiter-Bilder keine zusätzliche Sättigung und keinen Kontrast mehr (ui.js `BW_FARBTREU`). Die Plastik-Karte (Licht/Schatten) bleibt.
+  - Vorher/Nachher: `entwurf/probe/r4c/stahlreiter_vorher_nachher.jpg` (links der alte Bogen im Spiel, rechts der neue).
+  - Schnitt: `entwurf/probe/r4c/schnitt_stahlreiter_alt_neu_und_grabenraeumer_getroffen.jpg`.
+- **Grabenräumer (106.6):** `konkordat_sturm_getroffen.png` ist geschnitten. Die Größe richtet sich nach der Schild-Pose des Grabenräumers.
+  - **Getroffen:** zufällig mit Schild oder mit Keule.
+  - **Schilde vor:** neu die geduckte Pose hinter dem Schild.
+  - Die vierte Figur (zweite Getroffen-Variante) ist geschnitten, aber noch nicht zugeordnet. Das Spiel kennt bisher nur zwei Fassungen je Pose.
+  - Im Spiel: `entwurf/probe/r4c/raeumer_nachher.jpg`.
+
+### 2. Punkt 107: Elite günstiger (nur gemessen, nicht übernommen)
+- **Messung:** `MISCHEN=1`, je 100 Schlachten, gleiche Startwerte wie die Basis. Siegquote Konkordat:
+
+| Karte | Basis | alle Elite −5 | alle Elite −10 |
+|---|---|---|---|
+| Grauwall | 51 % | 50 % | 51 % |
+| Sankt Ruß | 50 % | 51 % | 49 % |
+| Krähenfurt | 90 % | 89 % | 89 % |
+
+- **Je Typ −10 auf Grauwall:** Stahlreiter, Grabenräumer, Löwenoger, Sturmbrecher, Schwere Grabenwacht und Hünen liegen alle bei 51 %.
+- **Ergebnis:** Der Preis der Elite ändert im KI-gegen-KI-Spiel nichts.
+  - Elite je Schlacht bleibt bei 3,4–3,7 (Grenze 3 plus Ersatz), die Verluste bleiben bei 47–51 %.
+  - Es bindet die Obergrenze, nicht der Preis.
+  - Wirken würde der Abschlag nur in der Armee-Auswahl des Spielers: dort bleiben mehr Punkte für Linie und Unterstützung.
+- **Vorschlag:** Elite je −5 (Stahlreiter 55, Grabenräumer 60, Sturmbrecher 115, Löwenoger 110, Grabenwacht 30, Hünen 85) als Ausgleich für die knappen Plätze. Die Balance der Karten bleibt dabei unverändert.
+
+### 3. Punkt 105: Krähenfurt
+- **Messung:** `MISCHEN=1`, je 100 Schlachten. Siegquote Konkordat, Basis 90 %:
+
+| Änderung | Konkordat |
+|---|---|
+| Hecke (7,4) weg | 88 % |
+| Hecke (10,6) weg | 90 % |
+| Mauer am Dorfplatz (8,5) weg | 90 % |
+| alle drei weg | 88 % |
+| Aufstellung Aschenwacht ab Spalte 13 statt 14 | 83 % |
+| Dorfplatz 2 statt 3, Gehöft 2 statt 1 | 72 % |
+| dazu Aufstellung ab 13 | 72 % |
+| Kapelle 1, Gehöft 2 | 78 % |
+| Dorfplatz 2, Kapelle 1, Gehöft 2 | 79 % |
+| **Dorfplatz 2, Gehöft 3** | **59 %** |
+
+- **Ursache liegt bei den Zielfeldern, nicht bei den Kanten.**
+  - Teich, Dorfplatz und Kapelle (zusammen 6 von 9 Siegpunkten) liegen auf der Dorfseite des Konkordats.
+  - Am Ende hält das Konkordat Kapelle 96 %, Dorfplatz 85 %, Brücke 79 %, die Aschenwacht nur das Gehöft (66 %).
+  - Die Hecken und die Mauer machen höchstens 2 Punkte aus und können bleiben.
+- **Vorschlag:** Dorfplatz 3 → 2 und Gehöft am Ostufer 1 → 3. Damit kommt Krähenfurt auf **59 %**, die Schlachten werden etwas länger (13,4 → 14,3 Runden).
+- Die Kanten (Hecken, Mauer) bleiben, wie sie sind.
+
+**Fragen an Enrico:**
+1. Krähenfurt: Zielwerte Dorfplatz 2 / Gehöft 3 übernehmen? Alternative Dorfplatz 2 / Gehöft 2 (72 %).
+2. Elite je −5 übernehmen, obwohl es in der Messung neutral ist? Oder Preise lassen?
+3. Stahlreiter: Gefallen dir die Farben jetzt (Vorher/Nachher-Bild)?
+4. Die vierte Grabenräumer-Figur (zweite Getroffen-Variante) später als dritte Fassung einbauen?
 ## 2026-11-26 – R4b (Punkt 106) und K1 Einheitenkategorien (Punkt 104) (`04f6b2f`, `431a645` mit index.html)
 
 Gepusht.
