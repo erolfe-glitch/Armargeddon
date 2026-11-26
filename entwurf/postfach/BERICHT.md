@@ -1,3 +1,60 @@
+## 2026-11-26 – SP-3: Töne (84.3, 84.10), Pult-Export, Salve ruhiger (`0dbe5c3`, index.html im Folge-Commit)
+
+Gepusht. Alles lief ohne Hänger. Die Vorschau war nicht offen, kein Browser blieb offen, nur der Server läuft. Kein Hilfs-Agent, kein Lauf über 10 Minuten. Keine Regel geändert, deshalb kein sim-Lauf.
+
+### Gemacht
+1. **Zielfeld erobern war wirklich stumm – behoben (84.3).**
+   - Ursache: Der Ton war seit Langem im Code, kam aber nie an. Beim Ziehen (und beim Sprungangriff) wurde der neue Besitzer still in die Anzeige übernommen; die Stelle mit dem Ton fand danach keinen Unterschied mehr.
+   - Jetzt läuft jeder Besitzwechsel über eine Stelle (`ctrlSync`), mit Ton.
+   - Im Browser geprüft: Konkordat nimmt ein Feld → `erobert_2` (Win Point 2); Aschenwacht → `erobert_1` (Trommel). Nimmt die KI dir ein Feld weg, klingt wie bisher `verloren`.
+   - Im Ton-Pult unter „Gelände und Gebäude“ gibt es dafür neue Zeilen: „Zielfeld erobert: Konkordat“, „Zielfeld erobert: Aschenwacht“, „Eigenes Zielfeld geht verloren“, dazu „Rundenschild: eigener Zug“ und „Zug des Gegners“.
+2. **Ordensschreiter mit Kettenschwert-Tönen (84.10).**
+   - Der letzte, harte Schlag hat zwei eigene Plätze: gegen Fußtruppen `orden_fleisch`, gegen Gepanzerte `orden_metall`.
+   - Eingestellt wie beim Sägeschreiter: Fleisch = `held_kschwert_metall_3`, Metall = `held_kschwert_metall_4`. Das ist eine Vorgabe aus dem Auftrag; sobald du im Pult selbst wählst, gilt deine Wahl.
+   - Im Browser geprüft: gegen Grenadiere `held_kschwert_metall_3`, gegen den Eisenknecht `held_kschwert_metall_4`.
+   - Im schnellen Schlagabtausch davor klingt weiter `heavy3` (Pult-Zeile „Schlag“), wie beim Sägeschreiter.
+   - Zwei Pult-Zeilen „Kettenschwert-Hieb gegen Fußtruppen / gegen Gepanzerte“. Ton-Spur des Ordensschreiters neu gemessen.
+3. **Pult-Export vom 24.11. eingebaut** (`tonwahl_bau`, `ton_teilen`, build).
+   - Er enthält dieselben 287 Wahlen wie der vom 23.11. Anders ist nur der Titel der Handgranaten-Zeile der Aschengrenadiere; deren Wahl (`grenade2_1`) war schon im Spiel.
+   - 300 Wahlen aus allen Exporten zusammengeführt, **286 wirken**.
+   - 14 wirken nicht: 8 Zeilen gibt es im Pult nicht mehr (7× „Schuss“ bei Einheiten, die nie schießen; Stollen beim Mineur, liegt jetzt unter „Gelände und Gebäude“), 1 gehört zum gestrichenen Rauchwerfer, 5 sind gleich dem Standard.
+4. **Salve ruhiger (Punkt 4):** Abstände 0,15–0,3 s, in der Mitte weiter 1–2 Schüsse dicht hintereinander (0,06–0,12 s). Rückweg `SALVE_KURZ`.
+
+| Dauer der Salve (Mittel über 20 000 gewürfelte Salven) | SP-2 | jetzt |
+|---|---|---|
+| voller Trupp (8 Figuren) | 1,0 s | 1,4 s |
+| halber Trupp (4 Figuren) | 0,4 s | 0,5 s |
+
+### Liste: Ereignisse ohne Ton (84.3)
+Ich habe alle 89 Ereignisarten der Regeln gegen die Abspielstellen geprüft. Für die neun Fälle unten gibt es jetzt je eine Zeile im Pult unter „Gelände und Gebäude“. Sie sind **stumm, bis du dort einen Ton wählst**; die Wahl gilt dann für alle Einheiten. Der Vorschlag steht auch im Hinweis der Zeile.
+
+| Ereignis | Vorschlag |
+|---|---|
+| Siegpunkte werden gezählt (Rundenbeginn, „+3“ über den Feldern) | `neu2_punkt` oder `tick` |
+| Hauptmann oder General fällt | `held_fall_horn` leise oder `generalhorn` |
+| Fliehender Trupp wird gesammelt (Rundenbeginn) | Ruf `stand` oder die Pfeife `march` |
+| Entsetzenstest misslingt („Entsetzt!“) | `panik_einzeln` |
+| Furcht-Aura des Kürassiers wirkt | `held_ruestung` leise oder `panik_einzeln` |
+| Feuerbereitschaft eingenommen | `neu_nachladen` oder `mgladen` (Durchladen) |
+| Panne behoben / wieder freigefahren | `reparieren` oder kurzer Motor `motor_auswahl` |
+| Trupp steht im brennenden Feld | `feuer` oder Schmerzlaut `pain` |
+| Der Wind dreht | `wind` (kurze Böe) |
+
+Ohne Ton gelassen, weil gleich danach ein anderer Ton kommt oder das Ereignis nur ein Zeichen zeigt: Dauerfeuer-Ansage (das MG folgt), „hält stand“, Moralverlust durch Furcht vor Kolossen (nur Blitz-Zeichen), Feuer erlischt, Zurückweichen (Schritte folgen). Sag Bescheid, wenn eines davon auch eine Zeile bekommen soll.
+
+**Unpassend aufgefallen:** Erobert die Aschenwacht ein Feld, klingt dieselbe Trommel wie beim Rundenschild „eigener Zug“. Das lässt sich jetzt im Pult trennen.
+
+### Tests
+- Pult-Test 93/93, „Spiel == Pult“ für 53 Einheiten ohne Abweichung, Partietest ohne Fehler, Regeltest in Ordnung.
+- Kleine Änderung an der Prüfung „Spiel == Pult“: Eine Zeile gilt jetzt auch als gespielt, wenn sie nur in den Szenen der Winterkarte klang. Anlass: Der „Streifschuss“ des Ordensschreiters fiel diesmal nur dort (hängt vom Würfel ab). Der Ordensschreiter hat dafür eine Zeile bekommen.
+
+### Fragen an Enrico
+1. **Salve:** Mit genau 0,15–0,3 s kommt der volle Trupp auf 1,4 s, weil ich die dichten Schüsse in der Mitte etwas auseinandergezogen habe (0,06–0,12 s statt 0,03–0,06 s). Passt das so, oder sollen die beiden mittleren wieder enger?
+2. **Streifschuss bei MG-Einheiten:** Der Ton „Streifschuss / daneben“ kann bei jeder schießenden Einheit fallen, im Pult haben ihn aber nur Gewehr-Einheiten und jetzt der Ordensschreiter. Um das für alle sauber nachzuziehen, müsste die ganze Ton-Spur neu laufen (etwa 25 Minuten, also über der 10-Minuten-Grenze). Soll ich das bei Gelegenheit machen?
+3. **Ordensschreiter:** Soll vor dem Kettenschwert noch ein kurzer Einschlag kommen wie beim Sägeschreiter (dort Einschlag, dann Säge), oder reicht der eine Ton?
+
+Nächster Schritt laut Plan: U5.
+
 ## 2026-11-26 – SP-2 Nachtrag: Salve je Figur einmal (Antwort 1 von 13:50) (`0bd6d5b` mit index.html)
 
 Deinen Abschnitt von 13:50 habe ich erst nach dem SP-2-Lauf gelesen. Sturmrollen und Rauchwerfer waren da schon fertig (Bericht darunter). Jetzt kam nur noch die Salve dazu. Alles lief ohne Hänger, Partietest ohne Fehler; die Vorschau war nicht offen.
@@ -206,55 +263,4 @@ Gepusht. Damit ist **G7h fertig**, index.html ist eingecheckt.
 1. **Hausruinen über Eck:** Passen sie neben den übrigen Bausteinen (`vergleich_sanktruss_ruinen.jpg`)? Wenn nicht: `window.RUINE_ALT` schaltet zurück, oder der Berater malt sie gerade von vorn neu.
 2. **Lattenroste:** Hell genug? Ich habe sie dunkel gehalten wie den Grabenboden. Von weitem wirken sie wie ein Gleis.
 3. **Draht-Module:** 3 je Feld oder dichter (4) bzw. lockerer (2)?
-
-## 2026-11-26 – G7h-1: Graben mit den neuen Bildern + Zielfeld 1 (Punkte 85 Teil 3, 87, 89) (`37b0985`, `9058ac0`)
-
-Gepusht. **Paket geteilt** wie erlaubt: Das hier ist **G7h-1** (Graben). **G7h-2** (Draht-Module, Ruinen, Punkt 88) folgt mit dem nächsten `pa`. **index.html ist noch nicht eingecheckt**, das kommt am Ende von G7h-2.
-
-### Gemacht
-1. **Seitenwand breit (G7-3b)** geschnitten und eingebaut: 0,22 R breit, ohne Pfosten. Die „Säulen“ an den Längskanten sind weg.
-2. **Querwand als Erdblock (G7-6b)** geschnitten und eingebaut.
-   - Sie geht über die volle Grabenbreite (0,95 R), die Oberseite mit der Sandsackreihe ist zu sehen.
-   - Sie ist auf 0,42 SH gestaucht, ihr unterer Rand läuft weich in die Sohle aus.
-   - **Noch nicht ganz richtig:** An manchen Knicken sitzt der Block halb neben dem Graben. Er ist auf die Mitte zwischen Bucht und Durchgang gesetzt, und die liegen 0,45 R versetzt (`gelaende_g7h/grauwall_leer_nah.jpg`, Block oben links). Das korrigiere ich in G7h-2.
-3. **Laufsteg (87.1):** ein durchgehender, gerader Steg in der Grabenmitte, auch durch die Buchten, mit kurzem geradem Versatz am Buchtknick.
-   - Die gemalten Rost-Stücke sind selbst schräg gezeichnet und ergaben ein Fischgrät-Muster. Der Steg ist jetzt im Code aus geraden Planken gezeichnet: zwei Längsbalken, Planken quer zur Laufrichtung, nur gedreht, nie geschert, selten fehlt eine Planke.
-4. **Zwei versetzte Reihen (87.3):** In Gräben, die in die Tiefe laufen, stehen die Figuren im Wechsel etwa 0,12–0,18 R links und rechts der Mitte. In Buchten bleibt die Verteilung über die Breite aus G7g.
-5. **Geschütz (87.4):** Einzelmodelle (Geschütze, Mörser) auf einem Grabenfeld stehen jetzt auf dem nächsten Grabenplatz auf der Sohle, nicht mehr auf der Feldmitte halb auf der Lippe. Fahrzeuge bleiben auf der Feldmitte.
-6. **Zielfeld 1 (Punkt 89):**
-   - **Ursache:** Auf dem Vorposten (3,4) **selbst** stand eine Panzersperre. Das Feld war damit für alle unbetretbar.
-   - Die Sperre steht jetzt auf (3,5); Rückweg `SPERRE_ALT`.
-   - **Neuer Test** `node tools/test_zielfelder.js`: für jede Karte, jede Seite und jedes Zielfeld eine Wegsuche mit einem Linientrupp von der Aufstellungszone, ohne Räumen. Das Zielfeld muss betretbar sein und mindestens zwei erreichbare Nachbarfelder haben.
-     - Vorher schlug er auf Grauwall zweimal an (beide Seiten, Vorposten), jetzt ist er grün.
-     - Er ist ein eigenes Werkzeug, nicht in test_regeln eingebaut.
-   - **sim.js 100 Grauwall, vier Startwerte:**
-
-| | Startwert 1 | 2 | 3 | 4 | **Mittel** |
-|---|---|---|---|---|---|
-| vorher (Sperre auf dem Vorposten) | 35 % | 33 % | 34 % | 30 % | **33 %** |
-| nachher (Sperre auf 3,5) | 38 % | 39 % | 50 % | 44 % | **43 %** |
-
-   - Das Konkordat gewinnt 10 Punkte, weil es den Vorposten jetzt halten kann.
-   - Nicht ausgeglichen (gehört in Paket S).
-   - Für Fahrzeuge ist der Weg an der Straße bei (3,3) damit etwas weniger zugestellt.
-
-### Nicht gemacht (kommt in G7h-2 oder ist offen)
-- Ende des Sandsackwalls unregelmäßig.
-- Scharfschützen liegend im Graben, Bild.
-- Messung „85 % der Grabenfläche in Grabenfeldern“.
-- **Bild mit Panzer im Graben:** Die Probe setzt den Koloss auf (2,6), er ist in `vergleich_nah2.jpg` aber nicht zu sehen. Vermutlich findet die Probe ihn nicht unter den Einheiten; das prüfe ich in G7h-2.
-- Punkt 84.12 (Warnsymbole am Weg, Mauszeiger): nicht geprüft.
-
-### Bilder (`entwurf/probe/gelaende_g7h/`)
-- `vergleich_nah.jpg`, `vergleich_nah2.jpg`, `vergleich_ganz.jpg`: links G7H_ALT, rechts neu, jeweils mit Trupps im Graben und gewähltem Hauptmann.
-- `grauwall_leer_nah.jpg`: Graben ohne Einheiten, darauf sieht man Laufsteg, Seitenwand und Querwand am besten.
-
-### Tests
-- test_kommentare vor jedem build.py, bestanden. Einmal ein Fehlalarm in einem Werkzeug-Kommentar, umformuliert.
-- test_regeln und test_zielfelder bestanden.
-- Partietest mit Grafikkarte, 5 Minuten: Runden 1–3, keine Fehler.
-- Keine Hänger. Den Chrome im Hintergrund habe ich beendet. Der Vorschau-Server war ausgefallen; ich habe ihn ohne sichtbare Vorschau neu gestartet, er läuft weiter.
-
-### Fragen an Enrico
-1. Passt der Laufsteg aus geraden Planken, oder lieber wieder gemalte Roste, sobald der Berater gerade Stücke malt?
 
