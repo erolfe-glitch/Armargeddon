@@ -3569,10 +3569,14 @@ async function doBuy(c, r) {
 }
 
 // ---------- Rundenablauf ----------
+// SP-1 (84.5): warten, bis keine Leuchtspur, Granate oder verzögerter Schuss mehr unterwegs ist (höchstens 2,5 s), damit nach dem Rundenende nichts mehr feuert
+let schussBis = 0;
+async function ruhe() { if (window.RUHE_ALT) return; const t0 = performance.now(); while (performance.now() - t0 < 2500 && (tracers.length || shells.length || performance.now() < schussBis)) await new Promise(r => setTimeout(r, 50)); }
 async function endTurn() {
   if (busy || G.over || G.aufstellung) return;
   placing = null; spawnSet = new Set();
   select(null); busy = true;
+  await ruhe();   // SP-1 (84.5): erst die letzte Garbe/Salve zu Ende zeigen, dann wechselt die Runde
   const ev = E.endTurn(G);
   updateUI();
   await play(ev);
@@ -3603,6 +3607,7 @@ async function aiTurnLauf() {
     await wait(250);   // Absatz zwischen zwei Einheiten
   }
   if (G.over) { busy = false; return; }
+  await ruhe();   // SP-1 (84.5)
   await play(E.endTurn(G));
   busy = false; activeU = null; updateUI(); rundenSchild();
   camHome();   // Rundenbeginn: zurück zur eigenen Einheit bzw. Front
@@ -3627,7 +3632,23 @@ function siegWarnung() {
     const sub = `${name} hat ${G.vp[sd]} von ${G.goal} Siegpunkten und bekommt ${siegEinnahme(sd)} je Runde` + (wir || !ich ? '' : ' – nehmt ihm Zielfelder ab!');
     setTimeout(() => { banner(titel, sub); playSound(wir ? 'zug_eigen' : 'horn', 0.5, null, { noGap: true }); }, 900); } }
 }
+// SP-1 (84.1): Posenbilder (mit Plastik-Karte, bwBild ≈ 50–150 ms je Bild) nicht erst im Nahkampf aufbereiten – das ließ das Bild beim ersten Hieb kurz stehen.
+// Einmal je Zugwechsel im Leerlauf nacheinander vorrechnen (je Leerlauf-Fenster ein Bild). Rückweg window.VORWAERM_ALT
+const VORW = new Set(); let vorwLauf = false;
+function posenVorwaermen() {
+  if (window.VORWAERM_ALT || !G) return;
+  for (const u of G.units) { if (!E.alive(u) || !POSE_TYPEN.has(u.type)) continue; const PB = POSE_SETS[u.type] || POSE_BILD, pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
+    for (const v of Object.values(PB)) if (typeof v === 'string' && !VORW.has(pre + v + ':' + BW)) VORW.add(pre + v + ':' + BW + '?'); }
+  if (vorwLauf) return; vorwLauf = true;
+  const ric = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 20 }), 200));
+  const schritt = () => { const k = [...VORW].find(x => x.endsWith('?')); if (!k) { vorwLauf = false; return; }
+    if (busy) { setTimeout(() => ric(schritt, { timeout: 4000 }), 400); return; }   // nicht während einer Handlung
+    const key = k.slice(0, k.lastIndexOf(':')), im = figImg(key); if (im || !(window.FIGS && window.FIGS[key])) { VORW.delete(k); VORW.add(k.slice(0, -1)); }
+    ric(schritt, { timeout: 4000 }); };
+  ric(schritt, { timeout: 4000 });
+}
 function rundenSchild() {
+  try { posenVorwaermen(); } catch (err) { }
   if (!G || G.over) return; const el = $('rundenSchild'), sd = G.side, eigen = human(sd) || mode === 'hot';
   el.innerHTML = `<b>Runde ${G.turn}</b><span class="rs-w">${crest(sd)}</span><span class="rs-t">${sd === 'A' ? SIDES.A.name : SIDES[sd].short} ist am Zug</span>`;
   el.className = 'rs ' + sd; void el.offsetWidth; el.classList.add('an'); clearTimeout(rundenT); rundenT = setTimeout(() => el.classList.remove('an'), 2300);
