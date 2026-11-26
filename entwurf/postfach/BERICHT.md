@@ -1,3 +1,60 @@
+## 2026-11-26 – Nachträge 98–100 und R3: Deckung an der Feldkante (`9b1c272`, `805e7b1` mit index.html)
+
+Gepusht. Lief ohne Hänger: Partietest ohne Fehler, keine Seitenfehler in den Bildläufen, kein Chrome offen. Alle sim-Läufe nacheinander, **kein Absturz**. Dein `pa` kam während des Pakets; im Auftrag stand nichts Neues, deshalb habe ich R3 zu Ende gemacht.
+
+### 1. Nachträge (`9b1c272`)
+- **98:** Gefallene sind abgeschaltet. Fällt ein Mann, verschwindet er einfach, ohne Bodenspur. Der Code bleibt; einschalten mit `window.GEFALLEN_AN = true`. Der Bogen `gefallene_bogen.png` bleibt liegen und ist in IDEEN.md vorgemerkt.
+- **99:** Meldegänger 1 Modell, der Hund ist Beiwerk.
+- **100:** Panzerknechte, Hünen, Löwenoger (und die Stahlgänger, bis Punkt 97 sie ablöst) haben 3 Modelle.
+- `sim.js 100` Grauwall Startwert 1: Konkordat 57 %, 14,8 Runden (unverändert).
+
+### 2. R3 Deckung an der Feldkante (`805e7b1`, Rückweg `KANTE_ALT`)
+- **Regel:**
+  - Sandsackwall (×1,5), Mauer (×1,7) oder Hecke (×1,25) liegt auf der Kante zwischen zwei Feldern und schützt beide Seiten.
+  - Sie wirkt aber **nur gegen Beschuss, der über diese Kante kommt**: Maßgebend ist die Richtung vom Ziel zum Schützen. Kommt der Schuss genau über eine Ecke, zählt die bessere der beiden Kanten.
+  - Nicht gegen Steilfeuer, Bogenwurf und Flammen; Fahrzeuge und Schreiter ragen darüber.
+  - Sie wird wie andere Deckung durch U5a verstärkt.
+  - **Umgehen geht:** Wer von der Seite oder von hinten schießt, hat keinen Nachteil.
+  - Probe: Grenadiere auf dem Vorposten (Sandsäcke nach Osten) nehmen von Osten 1,7 Schaden, von Westen oder Norden 4,3.
+- **Anzeige:**
+  - Die Teile stehen auf der Kante; GBau zeichnet sie wie die Gartenmauern: Sandsäcke mit dem Barrikaden-Bild der Schanze, Mauer `mauer_niedrig`, Hecke die Winterhecke.
+  - Die Vorschau zeigt „Sandsäcke an der Kante ×1,5“.
+  - Der Geländehinweis zeigt z. B. „▲ Sandsäcke an der Kante (17/17 Schützen)“: Gegen so viele feindliche Schützen schützt das Feld gerade.
+  - Das Deckungsschild am Standring zählt die Kante zum nächsten feindlichen Schützen mit.
+- **KI:** Die Bedrohung eines Felds rechnet die Kante zu jedem Schützen ein, so sucht die KI gedeckte Felder in der richtigen Richtung.
+- **Wo die Teile stehen (Vorschlag):**
+
+| Karte | Kanten |
+|---|---|
+| Grauwall | Vorposten (3,4) Sandsäcke nach Osten; Niemandsland (5,2) Mauer und (5,7) Sandsäcke nach Osten (für den Angreifer); (9,4) und (9,7) Sandsäcke nach Westen (vorgeschobene Aschenwacht) |
+| Sankt Ruß | Dorfplatz (8,7) Sandsäcke Ost; (9,2) Mauer Ost; (11,4) und (11,7) Sandsäcke West (für die angreifende Aschenwacht) |
+| Krähenfurt | Teich (4,7) Sandsäcke Ost; Gehöft (14,3) Sandsäcke West; Hecken (7,4) und (10,6) nach Osten; Dorfplatz (8,5) Mauer nach Westen |
+
+- **Bilder:** `entwurf/probe/r3/<karte>_<c>_<r>_<art>.jpg` und `<karte>_uebersicht.jpg`; Hinweistexte in `hinweise.json`. Am besten: `grauwall_3_4_sandsack.jpg`, `winterdorf_7_4_hecke.jpg`.
+
+### Messung (`sim.js 100`, Siegquote Konkordat, nacheinander)
+| Karte | ohne Kanten fest / gemischt | mit Kanten fest / gemischt |
+|---|---|---|
+| Grauwall Startwert 1 | 57 / 52 | 47 / 64 |
+| Grauwall Startwert 2 | 54 / 54 | 47 / 54 |
+| Sankt Ruß Startwert 1 | 44 / 78 | 41 / 70 |
+| Krähenfurt Startwert 1 | 65 / 86 | 46 / 89 |
+
+- **Runden:** kaum verändert (Grauwall 14,8 → 14,7, Krähenfurt 13,9 → 14,1).
+- **Bei fester Aufstellung** verliert das Konkordat:
+  - Grauwall etwa −8;
+  - Krähenfurt −19, das ist deutlich. Dort sitzt die Aschenwacht im Gehöft hinter Sandsäcken und der Teich nützt dem Konkordat wenig.
+- **Bei gemischter Aufstellung** ist es uneinheitlich (Grauwall +6, Sankt Ruß −8).
+- Den Abgleich lasse ich wie vereinbart für U9.
+
+### Fragen an Enrico
+1. **Standorte:** Passen die Kanten so, oder willst du sie anders (mehr für den Angreifer im Niemandsland, weniger an den Zielfeldern)? Krähenfurt kippt mit dieser Lage um 19 Punkte.
+2. **Werte:** Sandsäcke ×1,5, Mauer ×1,7, Hecke ×1,25 – so lassen?
+3. **Gartenmauern** (Sankt Ruß) und die Sandsäcke an der Schanze (Grauwall) sind heute nur Bild, die Deckung kommt aus dem Feld (Garten ×1,2). Sollen sie auch Kantendeckung werden („Bild = Regel“)?
+4. **Hecke** gibt es nur als Winterbild. Für Grauwall/Sankt Ruß bräuchte es eine Sommerhecke vom Berater.
+
+Nächster Schritt laut Plan: U3 (figurennahe Effekte) – bzw. vorher der Regel-`pa` für 94/96/97, wenn du das so willst.
+
 ## 2026-11-26 – U5c: Truppgrößen in sieben Gruppen (Punkt 90) + Punkt 93 Gefallene (`a8ffb5b`, `11fa6e5` mit index.html)
 
 Gepusht. Lief ohne Hänger: Partietest ohne Fehler, keine Seitenfehler in den Bildläufen, kein Chrome offen. Die sim-Läufe habe ich nacheinander gestartet; **diesmal kein Absturz**.
