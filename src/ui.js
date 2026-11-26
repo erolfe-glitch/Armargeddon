@@ -2719,7 +2719,7 @@ async function playEvent0(e) {
           for (let q = 0; q < figN; q++) { if (q) t += 400 + Math.random() * 200; const tq = t; setTimeout(() => playSound(key, 0.6, au && au.side, { noGap: true, rate: 0.95 + Math.random() * 0.1, dur: 650 }), tq / speed);
             const p = fxMuzzle(e.a, q % figN); if (p) { fxFlash(5, p, x2, y2, { delay: tq / 16.667, mul: 0.85 }); fxTracer(5, p, x2, y2, { delay: tq / 16.667 }); pulverDampf(p, 0.16, tq / 16.667 + 3); } }
           salveT = t + 150; if (a.pose && a.pose.t0 != null) { a.pose.dauer = Math.max(900, t + 650); } }
-        if (salve) { const n = figN, m = n + Math.round(n * (0.5 + Math.random() * 0.5));   // F28 (2026-11-20): je Figur 1–2 Schüsse, zusammen 2–3 s
+        if (salve) { const n = figN, m = window.SALVE_DOPPELT || window.SALVE_ALT ? n + Math.round(n * (0.5 + Math.random() * 0.5)) : n;   /* SP-2 (Enrico 13:50): jede stehende Figur schießt genau einmal (Rückweg SALVE_DOPPELT) */   // F28 (2026-11-20): je Figur 1–2 Schüsse, zusammen 2–3 s
           const key = waffenTon('rifle', au);   // F30: fest je Seite und Typ   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
           // unregelmäßig wie eine Gruppe, die fast gleichzeitig feuert: „pam – pam-pam – pam“. Abstände zufällig 0–0,25 s, manchmal zwei fast zugleich;
           // jeder Schuss kurz (ohne Nachhall), nur der letzte klingt voll aus (Spieltest 2026-11-17, gilt für beide Seiten)
@@ -2727,7 +2727,8 @@ async function playEvent0(e) {
           const plan = []; if (GEWEHR_ART === 'B') { for (let f = 0; f < n; f++) { const z = [1, 1, 2, 2, 4][Math.floor(Math.random() * 5)]; let tt = Math.random() * 650; for (let q = 0; q < z; q++) { plan.push([tt, f]); tt += z === 4 ? 110 + Math.random() * 120 : 220 + Math.random() * 380; } } plan.sort((x, y) => x[0] - y[0]); }
           else if (window.SALVE_ALT) { let tt = 0; for (let q = 0; q < m; q++) { if (q) tt += Math.random() < 0.25 ? 50 + Math.random() * 80 : 150 + Math.random() * 300; plan.push([tt, q % n]); } }   // F72: dichter gestaffelt (Rückweg SALVE_ALT)
           else { const mi = Math.floor(m / 2), dop = new Set([mi, ...(m >= 6 && Math.random() < 0.6 ? [mi + 2] : [])]); let tt = 0;   // SP-1 (84.6): gleiche Zahl Schüsse, kürzere Abstände (0,11–0,23 s), in der Mitte 1–2 halb überlappend (0,03–0,06 s)
-            for (let q = 0; q < m; q++) { if (q) tt += dop.has(q) ? 30 + Math.random() * 30 : 110 + Math.random() * 120; plan.push([tt, q % n]); } }
+            const reihe = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [reihe[i], reihe[j]] = [reihe[j], reihe[i]]; }   // Figuren in zufälliger Folge, jede einmal
+            for (let q = 0; q < m; q++) { if (q) tt += dop.has(q) ? 30 + Math.random() * 30 : 110 + Math.random() * 120; plan.push([tt, m === n ? reihe[q] : q % n]); } }
           let t = 0; const schuss = []; for (const [tq, f] of plan) { t = tq; schuss.push(t);
             setTimeout(() => playSound(key, (GEWEHR_ART === 'B' ? 0.5 : 0.42) * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, hall: GEWEHR_ART }), t / speed);
             const p = fxMuzzle(e.a, f); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 1.05 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } }
