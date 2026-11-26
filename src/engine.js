@@ -475,7 +475,7 @@ const MAPS = {
       T.line(14, 6, 9, 'canal'); T.set(14, 8, 'bridge');
       T.many([[15, 7], [15, 8]], 'village');
       T.path([[0, 4], [12, 4], [14, 8], [15, 8]], 'road');   // alte Landstraße nach Veskar und über die Marnbrücke
-      if (!orteAlt()) { T.set(5, 6, 'muehle'); T.M[5][6].bau = 0; T.many([[3, 2], [3, 4], [8, 3], [8, 5]], 'sperre'); }   // G6: Windmühle im Niemandsland; Panzersperren beiderseits der Landstraße vor den Gräben (Fahrzeuge auf die Straße gelenkt)
+      if (!orteAlt()) { T.set(5, 6, 'muehle'); T.M[5][6].bau = 0; T.many([[3, 2], (typeof process !== 'undefined' && process.env && process.env.SPERRE_ALT) || (typeof window !== 'undefined' && window.SPERRE_ALT) ? [3, 4] : [3, 5], [8, 3], [8, 5]], 'sperre'); }   // Punkt 89 (2026-11-26): Sperre stand auf dem Vorposten (3,4) und sperrte das Zielfeld ganz – jetzt (3,5) (Rückweg SPERRE_ALT); G6: Windmühle im Niemandsland; Panzersperren beiderseits der Landstraße vor den Gräben (Fahrzeuge auf die Straße gelenkt)
       return T.M;
     } },
   // Sankt Ruß (2026-11-19, Plan entwurf/KARTE_SANKT_RUSS.md): Dorf in der Mitte, beide Seiten aus ihren Gräben am Dorfrand (Konkordat West, Aschenwacht Ost).
