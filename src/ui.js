@@ -1835,7 +1835,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const flipL = flip; if (nf.links) flip = flip ? 0 : 1;   // F89: flip = tatsächlich gespiegelt, flipL = Blick nach links (für Kästen/Mündung)
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
-  const pl = gbPlatz(u, d), [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
+  const pl0 = gbPlatz(u, d), reiter = TYPES[u.type] && TYPES[u.type].cls === 'cav' && !window.REITER_GRABEN_ALT, pl = reiter && pl0 && pl0.pts ? null : pl0, [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Punkt 108: Reiter nie auf die Grabenplätze (standen am Grabenrand ein Feld zu hoch), Rückweg REITER_GRABEN_ALT   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     const fest = !window.FALLEN_ALT, nP = fest ? nf.max : n, idx = fest ? stehende(u, d, nf.max, n) : [...Array(n).keys()];   // U5b: jede Figur behält ihren Platz, gefallene fehlen (Rückweg FALLEN_ALT)

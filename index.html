@@ -1360,7 +1360,7 @@ const P = {
   FALLBACK_MOR: 3, ROUT_STR: 1.5,
   BREAK: { A: 0.55, D: 0.64 },   // D höher seit Aktionspunkten und Marsch (Angreifer kommt schneller heran)
   TRENCH_DEF: 1.6, CRATER_FIRE: 1.2, VILLAGE_DEF: 1.5, FOREST_DEF: 1.4, WIRE_DEF: 0.6,
-  MG_VS_WIRE: 2, MG_VS_CAV: 2, KAT_LINIE: 0.333, KAT_UNTERST_JE: 2, KAT_ELITE: 3, KAT_GERAET: 3, /* K1: Linie mind. ein Drittel, 1 Unterstützung je 2 Linie, Elite/Gerät höchstens 3 */
+  MG_VS_WIRE: 2, MG_VS_CAV: 2, KAT_LINIE: 0.333, KAT_UNTERST_JE: 2, KAT_ELITE: 3, KAT_GERAET: 3, ELITE_ABSCHLAG: 5, /* K1: Linie mind. ein Drittel, 1 Unterstützung je 2 Linie, Elite/Gerät höchstens 3 */
   AP: 1, ZOC_STOP: 1, GUIDED: 1.25, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
@@ -1609,7 +1609,9 @@ function costParts(k) {
   const base = 6 * A + 5 * Z + 5 * t.mv - 45, abil = [];
   if (ABIL[k]) abil.push(ABIL[k]);
   if (t.zweiSchlag) abil.push(['Zwei Schläge', 10]);   // Punkt 106
-  if (TOG.ELITE_RABATT && ['reiter', 'raeumer', 'oger', 'sturm', 'schwer', 'huenen', 'panzerk', 'stahl'].includes(k) && (!TOG.ELITE_TYP || TOG.ELITE_TYP.split(',').includes(k))) abil.push(['Elite-Abschlag (Messung)', -TOG.ELITE_RABATT]);   // Punkt 107: nur Sim-Messung, nicht eingebaut
+  const elite = ['reiter', 'raeumer', 'oger', 'sturm', 'schwer', 'huenen', 'panzerk', 'stahl'].includes(k);   // wie KAT_TAB 'elite'
+  if (elite && !TOG.KAT_ALT) abil.push(['Elite-Abschlag', -P.ELITE_ABSCHLAG]);   // Punkt 108: Elite je −5 (knappe Plätze)
+  if (TOG.ELITE_RABATT && elite && (!TOG.ELITE_TYP || TOG.ELITE_TYP.split(',').includes(k))) abil.push(['Elite-Abschlag (Messung)', -TOG.ELITE_RABATT]);   // Punkt 107: Mess-Schalter
   if (c === 'walker') abil.push(['Pannen', -10]);
   if (ADJ[k]) abil.push(['Abgleich', ADJ[k]]);
   const total = Math.max(15, Math.round((base + abil.reduce((n, a) => n + a[1], 0)) / 5) * 5);
@@ -1871,10 +1873,10 @@ const MAPS = {
     armyMax: { A: 24, D: 24 },
     objectives: [
       { id: 'teich', name: 'Teichufer', c: 4, r: 7, pts: 1 },
-      { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 5, pts: 3 },
+      { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 5, pts: 2 },   // Punkt 108: 3 → 2 (Krähenfurt-Check 105: Konkordat gemischt 90 % → 59 %)
       { id: 'kapelle', name: 'Kapelle', c: 11, r: 5, pts: 2 },
       { id: 'bruecke', name: 'Steinbrücke', c: 12, r: 8, pts: 2 },
-      { id: 'gehoeft', name: 'Gehöft am Ostufer', c: 14, r: 3, pts: 1 }],
+      { id: 'gehoeft', name: 'Gehöft am Ostufer', c: 14, r: 3, pts: 3 }],   // Punkt 108: 1 → 3
     get bauten() { const out = []; this.grid.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'C') out.push({ art: 'kapelle', name: 'Kapelle', felder: [[c, r]] }); else if (ch === 'H') out.push({ art: 'haus', name: 'Haus', felder: [[c, r]] }); })); return out; },   // jedes H ein Haus, C die Kapelle
     army: { A: { kohorte: 10, mahlwerk: 3, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
     armyAlt: { A: { kohorte: 5, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },
@@ -1990,16 +1992,6 @@ function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgeba
 }
 // ---------- Armee-Auswahl ----------
 // Jede Seite darf vor der Schlacht für den Wert der Standardarmee selbst Truppen wählen.
-function defaultArmy(side) { return Object.assign({}, katAlt() && MAP.armyAlt ? MAP.armyAlt[side] : MAP.army[side]); }   // K1: armyAlt = Armee vor den Kategorien (Rückweg)
-function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
-function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
-const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
-function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost((MAP.armyAlt || MAP.army)[sd]); ARMY_MAX[sd] = Math.max(MAP.armyMax[sd], ...[MAP.army, MAP.armyAlt].filter(Boolean).map(a => Object.values(a[sd]).reduce((x, y) => x + y, 0) + 2)); }   /* K1: Budget bleibt der Wert der Armee vor den Kategorien */ ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; for (const sd of ['A', 'D']) for (const t in MAP.army[sd]) ARMY_CAP = Math.max(ARMY_CAP, MAP.army[sd][t]); ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
-let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
-const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
-armySync();
-function useMapArmy(id) { useMap(id); armySync(); return MAP; }
-const isMech = t => !!TYPES[t] && !!TYPES[t].mech;
 // K1 (Punkt 104, 2026-11-26): Einheitenkategorien und Rückgrat-Regel (entwurf/ARMEEAUFBAU_IDEEN.md); Rückweg KAT_ALT (Node) bzw. window.KAT_ALT
 const KAT_TAB = { kohorte: 'linie', grenadier: 'linie',
   reiter: 'elite', raeumer: 'elite', oger: 'elite', sturm: 'elite', schwer: 'elite', huenen: 'elite', panzerk: 'elite', stahl: 'elite',
@@ -2024,6 +2016,16 @@ function katWarum(army, t) {   // warum t nicht noch dazukommen darf ('' = geht)
   if (k !== 'linie' && z.linie < z.n * P.KAT_LINIE) return `Erst mehr Linie: mindestens ein Drittel der Trupps (jetzt ${z.linie} von ${z.n}).`;
   return ''; }
 function armeeImFeld(G, side) { const a = {}; for (const u of G.units) if (u.side === side && alive(u)) a[u.type] = (a[u.type] || 0) + 1; return a; }
+function defaultArmy(side) { return Object.assign({}, katAlt() && MAP.armyAlt ? MAP.armyAlt[side] : MAP.army[side]); }   // K1: armyAlt = Armee vor den Kategorien (Rückweg)
+function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
+function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
+const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
+function armySync() { for (const sd of ['A', 'D']) { { const aa = (MAP.armyAlt || MAP.army)[sd]; ARMY_BUDGET[sd] = armyCost(aa) + (katAlt() ? 0 : Object.keys(aa).reduce((n, t) => n + (katOf(t) === 'elite' ? aa[t] * P.ELITE_ABSCHLAG : 0), 0)); }   /* Punkt 108: Budget ohne Elite-Abschlag, damit der Nachlass beim Spieler ankommt */ ARMY_MAX[sd] = Math.max(MAP.armyMax[sd], ...[MAP.army, MAP.armyAlt].filter(Boolean).map(a => Object.values(a[sd]).reduce((x, y) => x + y, 0) + 2)); }   /* K1: Budget bleibt der Wert der Armee vor den Kategorien */ ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; for (const sd of ['A', 'D']) for (const t in MAP.army[sd]) ARMY_CAP = Math.max(ARMY_CAP, MAP.army[sd][t]); ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
+let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
+const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
+armySync();
+function useMapArmy(id) { useMap(id); armySync(); return MAP; }
+const isMech = t => !!TYPES[t] && !!TYPES[t].mech;
 function armyOk(side, army, mechs) {
   for (const t in army) if (!ROSTER[side].includes(t) || (army[t] > 0 && isMech(t) && !mechs) || !(army[t] >= 0) || army[t] !== Math.floor(army[t])) return false;
   const n = armyCount(army); let walkers = 0;
@@ -9172,7 +9174,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const flipL = flip; if (nf.links) flip = flip ? 0 : 1;   // F89: flip = tatsächlich gespiegelt, flipL = Blick nach links (für Kästen/Mündung)
   if (VIEW.figFade) A0 *= 1 - 0.35 * VIEW.figFade;   // Strategie-Marken eingeblendet: Figuren treten zurück
   const s = L.s, k = kAt(x, y), duck = d.vs.supp > 0 ? s * 0.08 : 0, list = [];
-  const pl = gbPlatz(u, d), [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
+  const pl0 = gbPlatz(u, d), reiter = TYPES[u.type] && TYPES[u.type].cls === 'cav' && !window.REITER_GRABEN_ALT, pl = reiter && pl0 && pl0.pts ? null : pl0, [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Punkt 108: Reiter nie auf die Grabenplätze (standen am Grabenrand ein Feld zu hoch), Rückweg REITER_GRABEN_ALT   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
     const fest = !window.FALLEN_ALT, nP = fest ? nf.max : n, idx = fest ? stehende(u, d, nf.max, n) : [...Array(n).keys()];   // U5b: jede Figur behält ihren Platz, gefallene fehlen (Rückweg FALLEN_ALT)
