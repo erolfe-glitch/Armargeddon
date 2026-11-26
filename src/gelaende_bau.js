@@ -1041,12 +1041,12 @@ function aufbauen(cfg, IM) {
     }
   }
   // Friedhofsmauer (außen um alle Friedhofsfelder, nicht an Gebäuden) und Gartenmauern (hinten, oft eine Seite dazu)
-  mauerzug(aussenKanten(felder((t, c, r) => inMap(c, r) && t === 'friedhof'), (c, r) => terr(c, r) === 'friedhof' || BAUFELD.has(c + ',' + r)), IM.mauer_niedrig, 0.5 * SH, { k: 0.97, seed: 17, wall: { shade: 0.45 } });
+  if (!cfg.kantenRegel) mauerzug(aussenKanten(felder((t, c, r) => inMap(c, r) && t === 'friedhof'), (c, r) => terr(c, r) === 'friedhof' || BAUFELD.has(c + ',' + r)), IM.mauer_niedrig, 0.5 * SH, { k: 0.97, seed: 17, wall: { shade: 0.45 } });
   // Gärten: hinten (Kanten 3–5) je Garten entweder zerschossener Zaun (1 SH, Latten durchsichtig, nur hinten erlaubt) oder Bruchsteinmauer, vorn nur die Mauer
   { const mauer = [], zaun = [], hecke = []; for (const [c, r] of felder((t, c, r) => inMap(c, r) && t === 'garten')) {
       const mitZaun = !!IM.zaun && (WI || hrnd(c, r, 252) < 0.55), mitHecke = WI && hrnd(c, r, 253) < 0.4;   // Winter: Koppelzaun um die Äcker, an manchen Äckern Hecke (G3a)
       for (const e of [4, hrnd(c, r, 250) < 0.5 ? 3 : 5, ...(hrnd(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (terr(nc, nr) === 'garten' || BAUFELD.has(nc + ',' + nr) || terr(nc, nr) === 'friedhof') continue;
-        (e >= 3 && mitHecke ? hecke : e >= 3 && mitZaun ? zaun : WI ? [] : mauer).push({ c, r, e }); }
+        (e >= 3 && mitHecke ? hecke : e >= 3 && mitZaun ? zaun : WI || cfg.kantenRegel ? [] : mauer).push({ c, r, e }); }   // Punkt 103: Mauern kommen dann aus cfg.kanten (Regel)
       if (WI) { const [x, y] = hexC(c, r), v = hrnd(c, r, 255), HEU = [1, 2, 3, 4, 5].map(k => IM['heuhaufen_schnee_' + k]).filter(Boolean);   // G3a: Schmuck im Acker (ohne Regelwirkung), sobald die Bilder da sind
         if (v < 0.22 && HEU.length) stand(pick(HEU, hrnd(c, r, 256)), x + (hrnd(c, r, 257) - 0.5) * R * 0.8, y + (hrnd(c, r, 258) - 0.5) * R * 0.6, 0.7 * SH);
         else if (v < 0.27 && IM.vogelscheuche_schnee) stand(IM.vogelscheuche_schnee, x, y, 1.1 * SH);
@@ -1059,7 +1059,7 @@ function aufbauen(cfg, IM) {
   if (cfg.kanten && cfg.kanten.length) { const gr = { sandsack: [], mauer: [], hecke: [] };
     for (const { a, b, art } of cfg.kanten) for (let e = 0; e < 6; e++) { const [nc, nr] = nbE(a[0], a[1], e); if (nc === b[0] && nr === b[1]) { (gr[art] || gr.mauer).push({ c: a[0], r: a[1], e }); break; } }
     mauerzug(gr.sandsack, IM.barrikade || IM.graben_brustwehr, 0.38 * SH, { k: 1, seed: 41, wall: { shade: 0.5, boden: true } });
-    mauerzug(gr.mauer, IM.mauer_niedrig, 0.5 * SH, { k: 1, seed: 43, wall: { shade: 0.45 } });
+    mauerzug(gr.mauer, IM.mauer_niedrig, 0.45 * SH, { k: 0.95, seed: 43, wall: { shade: 0.45 } });
     mauerzug(gr.hecke, IM.hecke_schnee_1 || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 1, seed: 47, wall: { shade: 0.35, shadeW: 0.1 } }); }
 
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
@@ -1070,8 +1070,8 @@ function aufbauen(cfg, IM) {
     stand(BUNKER[0], bx, by, 0.95 * SH, { flip: ex < 0, shadeK: 0.45 });
     // Sandsackwall als Haken um den Bunker: vorn quer, an der Außenseite schräg nach hinten (kurze Stücke, keine frei stehenden Blöcke)
     const P0 = [bx + ex * R * 0.02, by + R * 0.34], P1 = [bx + ex * R * 0.5, by + R * 0.3], P2 = [bx + ex * R * 0.92, by + R * 0.02];
-    const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45, mitte: [bx, by], boden: true });
-    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45, mitte: [bx, by], boden: true });
+    if (!cfg.kantenRegel) { const u1 = wall(IM.barrikade, P0, P1, 0.36 * SH, { u0: q(1) * 3, shade: 0.45, mitte: [bx, by], boden: true });
+    wall(IM.barrikade, P1, P2, 0.36 * SH, { u0: u1, shade: 0.45, mitte: [bx, by], boden: true }); }   // Punkt 103: Sandsäcke kommen dann aus cfg.kanten (Regel)
   }
   // Festung (Vorschlag, cfg.festung, nur Testseite): Teile an Feldkoordinaten { k: 1–9, c, r, dx, dy (in R), h (SH), flip }
   // 1 Mauer mit Zinnen, 2 Ecke, 3 Mauer glatt, 4 Tor klein, 5 Tor groß, 6 Tor zerstört, 7 Bunker heil, 8 Bunker zerstört, 9 Turm

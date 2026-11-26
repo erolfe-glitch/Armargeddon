@@ -784,10 +784,11 @@ function newGame(opts) {
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
-    kanten: kantenBau(MAP.id),   // R3: Deckung an Feldkanten
+    kanten: null,   // R3: Deckung an Feldkanten (unten aus Karte und Gelände)
     bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
+  G.kanten = { ...kantenGelaende(G.map), ...kantenBau(MAP.id) };   // Punkt 103: Gelände-Kanten (Bild = Regel) und die gesetzten Kanten der Karte
   G.vp = { A: 0, D: 0 }; G.goal = +(TOG.M_goal || 0) || MAP.goal || Math.round(OBJECTIVES.reduce((n, o) => n + o.pts, 0) * P.GOAL_K);
   G.armee = {};
   for (const side of ['A', 'D']) {
@@ -1213,10 +1214,28 @@ const KANTE_ART = { sandsack: { name: 'Sandsäcke', p: 'KANTE_SANDSACK' }, mauer
 const KANTEN_KARTE = {
   grauwall: [[3, 4, 'ost', 'sandsack'], [5, 2, 'ost', 'mauer'], [5, 7, 'ost', 'sandsack'], [9, 4, 'west', 'sandsack'], [9, 7, 'west', 'sandsack']],
   sanktruss: [[8, 7, 'ost', 'sandsack'], [9, 2, 'ost', 'mauer'], [11, 4, 'west', 'sandsack'], [11, 7, 'west', 'sandsack']],
-  winterdorf: [[4, 7, 'ost', 'sandsack'], [14, 3, 'west', 'sandsack'], [7, 4, 'ost', 'hecke'], [10, 6, 'ost', 'hecke'], [8, 5, 'west', 'mauer']],
+  winterdorf: [[4, 7, 'ost', 'sandsack'], [7, 4, 'ost', 'hecke'],   /* Punkt 103: Gehöft (14,3) ohne Sandsäcke */ [10, 6, 'ost', 'hecke'], [8, 5, 'west', 'mauer']],
 };
 const kanteAus = () => !!(TOG.KANTE_ALT || TOG.NOKANTE || (typeof window !== 'undefined' && window.KANTE_ALT));
 const kKey = (c1, r1, c2, r2) => (c1 < c2 || (c1 === c2 && r1 < r2)) ? c1 + ',' + r1 + '|' + c2 + ',' + r2 : c2 + ',' + r2 + '|' + c1 + ',' + r1;
+// Punkt 103 (Bild = Regel): Gartenmauern, Friedhofsmauer und die Sandsäcke an der Schanze, die GBau früher nur zeichnete, sind echte Kantendeckung.
+// Dieselbe Rechnung wie früher in GBau (Kantenindex e wie GBau nbE, Zufall hrnd mit Startwert 1917); GBau zeichnet sie jetzt aus G.kanten (cfg.kantenRegel). Rückweg BILDKANTE_ALT.
+const nbE = (c, r, e) => { const o = c & 1; return [[c + 1, r + o], [c, r + 1], [c - 1, r + o], [c - 1, r - 1 + o], [c, r - 1], [c + 1, r - 1 + o]][e]; };
+const hrndK = (c, r, k) => { let s = (c * 73856093) ^ (r * 19349663) ^ (k * 83492791) ^ 1917; s = (s ^ (s >>> 13)) * 1274126177; return ((s ^ (s >>> 16)) >>> 0) / 4294967296; };
+const bildKanteAus = () => !!(TOG.BILDKANTE_ALT || (typeof window !== 'undefined' && window.BILDKANTE_ALT));
+function kantenGelaende(map) {
+  const out = {}; if (bildKanteAus()) return out;
+  const t = (c, r) => inMap(c, r) ? map[c][r].t : 'out', WI = !!MAP.winter, BAU = new Set();
+  for (const b of MAP.bauten || []) if (!b.art || b.art === 'kirche') for (const f of [...b.felder, ...(b.turm ? [b.turm] : [])]) BAU.add(f[0] + ',' + f[1]);
+  for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+    if (t(c, r) === 'friedhof') for (let e = 0; e < 6; e++) { const [nc, nr] = nbE(c, r, e); if (t(nc, nr) !== 'friedhof' && !BAU.has(nc + ',' + nr)) out[kKey(c, r, nc, nr)] = 'mauer'; }   // Friedhofsmauer außen herum
+    if (t(c, r) === 'garten' && !WI) { const mitZaun = hrndK(c, r, 252) < 0.55;   // Gärten: hinten Zaun (ohne Deckung) oder Bruchsteinmauer, vorn nur die Mauer
+      for (const e of [4, hrndK(c, r, 250) < 0.5 ? 3 : 5, ...(hrndK(c, r, 251) < 0.35 ? [1] : [])]) { const [nc, nr] = nbE(c, r, e); if (t(nc, nr) === 'garten' || BAU.has(nc + ',' + nr) || t(nc, nr) === 'friedhof') continue; if (!(e >= 3 && mitZaun)) out[kKey(c, r, nc, nr)] = 'mauer'; } }
+  }
+  for (const o of OBJECTIVES) if (/schanze/i.test(o.id)) { const ex = o.c <= (MAP.zoneA ?? 2) ? 2 : 0, [n1c, n1r] = nbE(o.c, o.r, ex), [n2c, n2r] = nbE(n1c, n1r, 4);   // Sandsackhaken am Bunker: vordere Kante zur eigenen Seite und die Oberkante des Nachbarfelds
+    out[kKey(o.c, o.r, n1c, n1r)] = 'sandsack'; out[kKey(n1c, n1r, n2c, n2r)] = 'sandsack'; }
+  return out;
+}
 function kantenBau(id) { const out = {}; for (const [c, r, seite, art] of KANTEN_KARTE[id] || []) for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); if (!inMap(nc, nr) || (seite === 'ost' ? nc !== c + 1 : nc !== c - 1)) continue; out[kKey(c, r, nc, nr)] = art; } return out; }
 function kanteAt(G, c1, r1, c2, r2) { return (!kanteAus() && G.kanten && G.kanten[kKey(c1, r1, c2, r2)]) || null; }
 function kantenVon(G, c, r) { const out = []; if (kanteAus() || !G.kanten) return out; for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); const a = inMap(nc, nr) && kanteAt(G, c, r, nc, nr); if (a) out.push({ k, c: nc, r: nr, art: a }); } return out; }

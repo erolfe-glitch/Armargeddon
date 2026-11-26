@@ -25,7 +25,8 @@ for (const karte of ['grauwall', 'sanktruss', 'winterdorf']) {
     click('neue schlacht'); await W(700); const rb = document.querySelector('input[name=map][value=${karte}]'); if (rb) { rb.click(); rb.dispatchEvent(new Event('change', { bubbles: true })); await W(400); }
     for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); } await W(2500); click('schlacht beginnen'); await W(4000); return true; })()`);
   await sleep(2500); for (let i = 0; i < 40 && (await hell()) < 12; i++) await sleep(500);
-  const liste = await ev(`E.KANTEN_KARTE['${karte}'] || []`);
+  const schanze = await ev(`(E.OBJECTIVES || []).filter(o => /schanze|gutshof|friedhof/.test(o.id)).map(o => [o.c, o.r, 'ziel', o.id])`);
+  const liste = [...await ev(`E.KANTEN_KARTE['${karte}'] || []`), ...schanze];
   for (const [c, r, seite, art] of liste) {
     const m = await ev(`__dbg.mitte(${c}, ${r})`); await ev(`(() => { __dbg.camSetzen(${m[0]}, ${m[1]} - 20, 2.4); return true; })()`); await sleep(1400); await bild(`${karte}_${c}_${r}_${art}`);
     hinweise[`${karte} ${c},${r}`] = await ev(`(() => { const u = __dbg.G.units.find(u => u.type === 'kohorte') || __dbg.G.units[0]; return (__dbg.feldWirkung ? __dbg.feldWirkung(u, ${c}, ${r}) : []).map(x => (x.gut ? '▲ ' : '▼ ') + x.kurz + ' – ' + x.lang); })()`);
