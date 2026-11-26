@@ -93,13 +93,14 @@ POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97), 'sturm_posen': ('sturm', 4, 0
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
-SPALTEN = {'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
+SPALTEN = {'konkordat_stahlreiter_reskin': 3,   # R4 (Punkt 97): Stahlreiter, Trab | Galopp mit erhobenem Schwert | aufbäumend (Schwerter berühren sich, Naht)
+           'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
            'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4,
            'loewenoger': 3, 'eiserne_huenen': 3}   # 2026-11-20: Löwenoger, Eiserne Hünen (Ruhe/vorrücken, Schießen, Nahkampf)   # Schlüssel: Art oder ganzer Bogenname (geht vor)
 # Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.5, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+SH_REIHE = {'konkordat_stahlreiter_reskin': 1.85, 'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.5, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
 # Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
 SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_eisenknecht_neu', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
 
@@ -333,7 +334,7 @@ def rauch_weg(a, name):
 
 
 # Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
-ENTROSA = {'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
+ENTROSA = {'konkordat_stahlreiter_reskin', 'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
 
 
 def entrosa(q):
@@ -416,7 +417,17 @@ FIGUREN_POSEN = {
     'aschenwacht_held_posen': dict(n=2, reihen=1, grund='held_1', massvon='aschenwacht_held'),   # Ausholen, Hinrichtungsschlag; das verblassende zweite Schwert fällt weg
     'aschenwacht_held_posen2': dict(n=2, reihen=1, grund='held_1', massvon='aschenwacht_held'),   # Querhieb, Getroffen kniend
     'aschenwacht_held_portrait': dict(n=1, reihen=1, grund='held_1'),
+    # R4 (2026-11-26): zusammengelegte Trupps, Bögen in ui-quelle/figuren/reskin/ (Quelle über quelle()); hoehe = höchste Pose in px (320 = 1 SH), blitz = Mündungsfeuer weg
+    'aschenwacht_sturm_reskin': dict(n=4, reihen=2, grund='sturm', hoehe=350, blitz=[2]),   # Sturmbrecher: Granatwurf, MG hüfthoch feuernd, Spaten, Getroffen
+    'konkordat_sturm_reskin': dict(n=4, reihen=2, grund='sturm', hoehe=320),   # Grabenräumer: Keule, Granatwurf, mit Sturmschild vorstoßend, hinter dem Schild mit Revolver
 }
+RESKIN = SRC / 'reskin'
+
+
+def quelle(name):
+    """Bogen in ui-quelle/figuren/, sonst in reskin/ (R4, 2026-11-26)."""
+    p = SRC / f'{name}.png'
+    return p if p.exists() else RESKIN / f'{name}.png'
 
 
 def helm_gold_weg(q, hmax):
@@ -475,7 +486,7 @@ def begleiter_setzen(im, bg, halten):
 
 
 def figuren_posen(name, out):
-    o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB')); H, W = a.shape[:2]
+    o = FIGUREN_POSEN[name]; a = np.asarray(Image.open(quelle(name)).convert('RGB')); H, W = a.shape[:2]
     a = abzeichen_uebermalen(a, name)
     a = rauch_weg(a, name)   # gemalter Rauch über den Rohren (Eisenknecht-Posen, 2026-11-22)
     if o.get('leeren'):   # feste Kästen auf Hintergrund setzen (dunkler Rauch, den rauch_weg nicht erkennt; Ordensschreiter 2026-11-22)
@@ -516,6 +527,7 @@ def figuren_posen(name, out):
     ref = max(Image.open(g).height for g in grund) if grund else H_OUT
     s = ref * o.get('f', 1.0) / hmax; out.mkdir(parents=True, exist_ok=True)
     if o.get('refpose'): s = ref * o.get('f', 1.0) / figs[o['refpose'] - 1].shape[0]   # Helden (2026-11-21): diese Pose bekommt die Grundgröße
+    if o.get('hoehe'): s = o['hoehe'] / hmax   # R4: feste Höhe der höchsten Pose
     if o.get('massvon'):
         if o['massvon'] not in MASS: sys.exit(f"{name}: erst {o['massvon']} im selben Lauf schneiden (Maßstab)")
         s = MASS[o['massvon']]
@@ -526,6 +538,7 @@ def figuren_posen(name, out):
     for j, q in enumerate(figs, 1):
         if o.get('nimm') and j not in o['nimm']: print(f'{name}_{j}: ausgelassen'); continue
         q = entrosa(q.astype(np.float64))
+        if j in o.get('blitz', []): q, fl_ = remove_flash(q); print(f'  Mündungsfeuer entfernt: {fl_} px'); q = keep_parts(q, True, 0.15)
         if o.get('helm'): q = helm_gold_weg(q, hmax)
         if o.get('tuch') and o['tuch'][0] == j:
             rgb = q[..., :3]; lum = rgb @ [0.3, 0.59, 0.11]; sat = rgb.max(2) - rgb.min(2); m = (q[..., 3] > 100) & (lum > 120) & (sat < 60)
@@ -543,7 +556,7 @@ def figuren_posen(name, out):
 
 def cut(name, out=OUT):
     if name in FIGUREN_POSEN: return figuren_posen(name, out)
-    a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
+    a = np.asarray(Image.open(quelle(name)).convert('RGB'))
     a = rauch_weg(a, name)
     a = abzeichen_uebermalen(a, name)
     if name in SPIEGELN: a = np.ascontiguousarray(a[:, ::-1])
@@ -577,7 +590,8 @@ def cut(name, out=OUT):
                 yb = int(H * UNTEN_LINKS[name]); rows = np.arange(H)[:, None] >= yb
                 if j == 0 and len(seams) > 1: m |= rows & (cols >= seams[0][:, None]) & (cols < seams[1][:, None])
                 if j == 1: m &= ~rows
-            t = k.copy(); t[~m, 3] = 0; poses.append(keep_parts(t, True, 0.12))   # Krümel der Nachbarpose weg
+            t = k.copy(); t[~m, 3] = 0; t = keep_parts(t, True, 0.12)   # Krümel der Nachbarpose weg
+            poses.append(entrosa(t.astype(np.float64)) if name in ENTROSA else t)
         s = H_OUT * wert(SH_REIHE, name, kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)
         for j, q in enumerate(poses, 1):
             im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
@@ -685,7 +699,7 @@ def embed():
 if __name__ == '__main__':
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     game = '--game' in sys.argv   # Spielbilder nach ui-quelle/teile/figuren/ und src/figs.js
-    names = args or sorted(p.stem for p in SRC.glob('*.png'))
+    names = args or sorted(p.stem for p in SRC.glob('*.png')) + sorted(n for n in list(FIGUREN_POSEN) + list(SPALTEN) if (RESKIN / f'{n}.png').exists())   # R4: Reskin-Bögen gehören dazu
     for n in names:
         cut(n, GAME if game else OUT)
     if game and '--angleichen' in sys.argv:
