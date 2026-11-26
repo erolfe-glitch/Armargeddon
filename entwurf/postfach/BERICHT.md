@@ -1,3 +1,28 @@
+## 2026-11-26 – V1c Helden, Schreiter, Hünen in den Stimmen-Plan (Punkt 110) (`1704fb4`)
+
+Gepusht. Nur Text, nichts gebaut. Keine Browser- oder sim-Läufe, keine Hänger.
+
+- **Die bestehenden 552 Zeilen sind unverändert.** Geprüft gegen den vorigen Stand: gleiche Reihenfolge, ids, Texte, Sprecher und `ton`. Neu ist nur die Spalte `filter` (zwischen `ton` und `text`).
+- **Spalte `filter`:**
+  - `funk` 424 Zeilen
+  - `bordfunk` 66 (Panzer/Kolosse)
+  - `maschine` 62 (Schreiter und Erscheinen der Hünen)
+  - `helm` 56 (Helden)
+- **Eiserne Hünen:** Sie sprechen die Sturm-Zeilen von A3 Bill (`A_sturm_*`, auch „Dauerfeuer!“). Weil Sturmbrecher, Grabenwacht und Panzerknechte dieselben Zeilen nutzen, stehen diese auf `funk`; den Maschinenfilter für die Hünen setzt V3 je Einheit.
+- **Löwenoger:** nur Brüllen, keine Zeilen.
+- **Schreiter:** Die Zeilen gab es schon (`K_schreiter_*` K5 Bill, `A_schreiter_*` A5 Liam), jetzt mit Filter `maschine`. Die Zuordnung zu den heutigen `sst_*`-Plätzen steht im Plan. Keine neuen Zeilen nötig.
+- **Helden, 56 neue Zeilen angehängt:**
+  - Je Held die Anlässe wie heute in `HELD_ST`: auswahl 4, bewegen 4, angriff 3, spezial 3 (Durchbruch bzw. Hinrichtung), getroffen 3, gegner_erledigt 3, schwer_verwundet 3 (`ruf`), tod 3, erscheinen 2.
+  - Rote Faust Englisch (K5 Bill), Kürassier Deutsch (A5 Liam), Filter `helm`.
+  - Zeichen: Rote Faust 357, Kürassier 327, **neu zusammen 684 Zeichen (≈ 0,07 $)**. Gesamt jetzt 608 Zeilen, 8514 Zeichen.
+- **Neue ids** (je Anlass fortlaufend `_1` … `_n`):
+  - `K_held_faust_auswahl_1–4`, `_bewegen_1–4`, `_angriff_1–3`, `_spezial_1–3`, `_getroffen_1–3`, `_gegner_erledigt_1–3`, `_schwer_verwundet_1–3`, `_tod_1–3`, `_erscheinen_1–2`
+  - `A_held_kuerass_auswahl_1–4`, `_bewegen_1–4`, `_angriff_1–3`, `_spezial_1–3`, `_getroffen_1–3`, `_gegner_erledigt_1–3`, `_schwer_verwundet_1–3`, `_tod_1–3`, `_erscheinen_1–2`
+- **Beispiele:**
+  - Rote Faust: „Point me at them.“ · „Breaking through!“ · „Plating holds.“ · „Hold… without me…“
+  - Kürassier: „Der Kürassier hört.“ · „Es endet hier.“ · „Rüstung hält.“ · „Weicht oder fallt.“
+
+**Fragen an Enrico:** keine. V3 wartet auf `entwurf/postfach/stimmen_urls.csv` vom Berater.
 ## 2026-11-26 – V1b Stimmen-Plan nach der Hörprobe (Punkt 109) (`2c7bf3e`)
 
 Gepusht. Nur Text, nichts gebaut, keine Browser- oder sim-Läufe. Keine Hänger.
