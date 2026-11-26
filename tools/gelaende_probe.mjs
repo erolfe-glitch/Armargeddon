@@ -28,6 +28,7 @@ const KARTEN = process.env.G7H2 ? {   // G7h-2 (2026-11-26): Laufsteg aus Latten
     draht_neu: { modulNeu: 1, _nah: [6, 1.8, 2.0] },
     ruine_alt: { _js: 'window.RUINE_ALT = true', ruineAlt: 1, _nah: [12.5, 3.8, 1.8] },
     ruine_alt_nokipp: { _js: 'window.RUINE_ALT = true; window.NOKIPP = true', ruineAltNk: 1, _nah: [12.5, 3.8, 1.8] } } },
+  sanktruss: { nah: [6, 4, 1.6], nah2: [9, 8, 1.8], var: { ruine_alt: { _js: 'window.RUINE_ALT = true', ruineAlt: 1 }, ruine_neu: { ruineNeu: 1 }, mit_einheiten: { ruineEh: 1, _einheiten: [[6, 4], [5, 3], [6, 6], [7, 2], [10, 6], [9, 8]] } } },
 } : process.env.G7H ? {   // G7h-1 (2026-11-26): Seitenwand breit, Querwand als Erdblock, Laufsteg, zwei Reihen, Geschütz; Variante alt mit G7H_ALT, Koloss im Graben
   grauwall: { nah: [2.2, 4.4, 2.4], nah2: [2.2, 6.2, 2.4], var: { alt: { _js: 'window.G7H_ALT = true', g7hAlt: true, _einheiten: [[2, 3], [2, 4], [2, 5], [2, 7]], _fz: [2, 6], _waehle: true }, neu: { _einheiten: [[2, 3], [2, 4], [2, 5], [2, 7]], _fz: [2, 6], _waehle: true }, leer: null } },
 } : process.env.G7G ? {   // G7g (2026-11-26): Grabenform alt (G7G_ALT) gegen neu, Trupps und Koloss im Graben, Laufgraben

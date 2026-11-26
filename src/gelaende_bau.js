@@ -486,7 +486,7 @@ function aufbauen(cfg, IM) {
     DRAW.push({ feld: FELD, y: y + (o.bias || 0), f: () => {
       const p = proj(x, y), [px, py, zc] = p; if (zc <= 1 || offscreen(p, p)) return;
       const sc = Fk() / zc, h = hW * sc, wd = o.breite ? o.breite * sc : h * im.width / im.height;   // breite: feste Breite (G7b: Querwand auf Grabenbreite)
-      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (!o.fest && hW > 0.6 * SH && hides(x, y, hW * im.width / im.height / 2, hW)) g.globalAlpha = o.durch || 0.45;   /* fest: nie durchsichtig (Brückenbrüstung) */ if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0); if (!o.fest && hW > 0.6 * SH && hides(x, y + (o.bias || 0), hW * im.width / im.height / 2, hW)) g.globalAlpha = o.durch || 0.45;   /* fest: nie durchsichtig (Brückenbrüstung) */ if (baum && cfg.baumAlpha) g.globalAlpha = Math.min(g.globalAlpha, cfg.baumAlpha(baum));
       g.translate(px, py + h * 0.015 + (o.sink ? o.sink * sc : 0)); if (o.rot) g.rotate(o.rot); if (o.flip) g.scale(-1, 1); if (o.filter) g.filter = o.filter;
       g.drawImage(im, -wd * 0.5, o.haengen ? -h * 0.08 : -h, wd, h); g.restore();   // G7a-Probe: haengen = Oberkante an der Bodenkante, Teil reicht in den Graben
       if (cfg.punkte) { g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = '#E2B04A'; g.beginPath(); g.arc(px, py, 4 * U, 0, 7); g.fill(); g.restore(); }
@@ -922,7 +922,7 @@ function aufbauen(cfg, IM) {
     }
     const RH = [1, 2, 3, 4].map(k => IM['ruine_haus_' + k]);
     if (t === 'village' && RH[0] && !window.RUINE_ALT) {   // G7h-2 (Punkt 88.1): eine ganze Hausruine auf Fundament je Feld (über Eck gemalt, nicht gespiegelt – Licht von links); Rückweg window.RUINE_ALT = Wandstreifen
-      const im = vorgefiltert(RH[Math.floor(q(260) * 4)], 'brightness(0.8) saturate(0.88)'); stand(im, hx + (q(261) - 0.5) * R * 0.08, hy + R * 0.6, breit(im, 1.62), { noShadow: true, durch: 0.35 });
+      const im = vorgefiltert(RH[Math.floor(q(260) * 4)], 'brightness(0.8) saturate(0.88)'); stand(im, hx + (q(261) - 0.5) * R * 0.08, hy + R * 0.6, breit(im, 1.62), { noShadow: true, durch: 0.5, bias: window.RUINE_VOR ? 0 : -R * 0.75 }); /* Figuren im eigenen Feld stehen vor der Ruine (sonst wurde sie bei jeder Einheit im Feld durchsichtig) */
     } else if (t === 'village') {   // Ruine zweiteilig: Mauern hinten, Mauerrest vorn (weiter innen), Ecken auf den Stößen
       const k = 0.86, kv = 0.66; let u = q(1) * 3;
       for (const e of [3, 4, 5]) u = wall(IM.ruine_hinten, corner(c, r, e, k), corner(c, r, (e + 1) % 6, k), 1.2 * SH, { u0: u, mitte: [hx, hy] });
