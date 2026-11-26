@@ -1,3 +1,46 @@
+## 2026-11-26 – U5b: Gefallene Modelle sichtbar (`fe24c8c` mit index.html)
+
+Gepusht. Lief ohne Hänger: Partietest ohne Fehler, keine Seitenfehler in den Bildläufen, kein Chrome offen. In diesem Paket liefen keine sim-Läufe, also auch keine Abstürze.
+
+### Gemacht (Rückweg `window.FALLEN_ALT`)
+1. **Feste Plätze:** Jede Figur eines Trupps behält ihren Platz, auch im Graben. Fällt eine, bleibt dort eine Lücke; die anderen rücken nicht um. Welche fällt, ist zufällig.
+2. **Fallen:**
+   - Sinkt die gezeigte Stärke unter die Schwelle eines Modells (beim Abspielen des Treffers, also nicht zu früh), kippt eine Figur in knapp ½ s um, weg vom Angreifer.
+   - Liegt sie dann am Feldrand, kippt sie zur anderen Seite, damit sie nicht ins Nachbarfeld ragt.
+   - Sie bleibt abgedunkelt mit Schatten liegen. Die Getroffen-Pose spielt vorher wie bisher.
+3. **Im Graben** kippt niemand über die Kante: Die Gefallenen sacken auf der Sohle zusammen, die vordere Grabenwand verdeckt sie teilweise (nach Tiefe einsortiert).
+4. **Liegen bleiben:**
+   - 3 Runden, danach verblassen sie in 2,5 s.
+   - **Blut aus:** Die Figur fällt und verblasst gleich danach (1,2 s).
+5. **Aufgerieben:** Statt den ganzen Trupp auszublenden, fallen die letzten Figuren alle und bleiben liegen.
+6. **Versorgen / mehr Stärke:** Eine Gefallene steht wieder auf (ohne Bild).
+7. **Was nicht fällt:** Fahrzeuge, Schreiter, Geschütze und andere Einzelmodelle fallen nicht (wie gewünscht: kommt in U8 bzw. als Wrack).
+8. Feuerkraft-Fassung 2 (`KRAFT=traeger`) ist nur noch für Messungen da, im Spiel nicht erreichbar.
+
+### Bilder (`entwurf/probe/u5b/`)
+- Je Lage vier Bilder: `_1_vorher`, `_2_faellt` (0,23 s nach dem Treffer), `_3_liegen`, `_4_noch_mehr` (Stärke 100 → 60 → 25):
+  - im Offenen: `sanktruss_offen_*`
+  - im Graben: `grauwall_graben_*`
+  - im Schnee: `winterdorf_schnee_*`
+- `_5_viele`: weiter weg, alle Trupps auf halber Stärke.
+- `grauwall_graben_6_200_liegende_zoom_*`: Belastungsprobe.
+- Am besten: `sanktruss_offen_3_liegen.jpg`, `winterdorf_schnee_3_liegen.jpg`, `grauwall_graben_4_noch_mehr.jpg`.
+
+### Leistung (Grauwall, ohne Bildratenbremse; `leistung_200.json`)
+| Ansicht | ohne Liegende | mit 200 Liegenden |
+|---|---|---|
+| Zoom 1,6 | 2,5 ms (5 %: 3,0) | 2,9 ms (5 %: 3,9) |
+| ganze Karte | 4,7 ms (6,0) | 6,2 ms (10,8) |
+
+200 Liegende auf einmal kommen im Spiel kaum vor (sie verschwinden nach 3 Runden). Ein Spiel hat etwa 10–30 gleichzeitig.
+
+### Fragen an Enrico
+1. **Wie sie liegen:** Die Liegenden sind die gedrehte, abgedunkelte Figur (seitlich, von oben verkürzt). Passt das, oder soll der Berater eigene „gefallen“-Posen malen (je Fraktion 2–3 Liegende)? Die würden besser aussehen, vor allem im Graben.
+2. **3 Runden liegen bleiben:** passt die Dauer?
+3. **Blut:** Blutflecken unter den Gefallenen habe ich bewusst weggelassen, das gehört zu U6 (Mehr Blut). Richtig so?
+
+Nächster Schritt laut Plan: U3 (figurennahe Effekte).
+
 ## 2026-11-26 – U5a: Schaden über Modelle – Regeln und Messung (`9924675` mit index.html)
 
 Gepusht. U5 habe ich wie erlaubt geteilt: **U5a = Regeln und Messung** (dieser Teil), **U5b = Darstellung** (fallende, liegende Modelle) im nächsten `pa`.
