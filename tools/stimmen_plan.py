@@ -1,99 +1,130 @@
-# V1 Stimmen-Plan (Punkt 102, 2026-11-26): erzeugt entwurf/stimmen_texte.csv aus den Texten unten.
-# Aufruf: python tools/stimmen_plan.py   (nur Text, keine Töne)
-# Spalten: id, fraktion, sprecher, anlass, einheit, text. Blaue Legion = Konkordat-Stimmen.
-import csv
+# Stimmen-Plan V1b (Punkt 109, 2026-11-26): erzeugt entwurf/stimmen_texte.csv aus den Texten unten.
+# Aufruf: python tools/stimmen_plan.py [--md]   (nur Text, keine Töne; --md druckt die Tabellen für STIMMEN_PLAN.md)
+# Spalten: id, fraktion, sprecher, anlass, einheit, ton, text. Konkordat Englisch (auch Blaue Legion), Aschenwacht Deutsch.
+# 5 Sprecher je Seite über die K1-Kategorien: 1 Linie, 2 Unterstützung, 3 Sturm/Elite, 4 Reiter, 5 Anführer + Panzer (+ Schreiter mit Maschinenfilter).
+import csv, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-
-# Sprecher je Gruppe (Vorschlag, siehe entwurf/STIMMEN_PLAN.md)
-SPRECHER = {
-    'K': {'fuss': 'K1', 'sturm': 'K2', 'reiter': 'K2', 'panzer': 'K3', 'fuehrer': 'K3', 'schreiter': 'KM'},
-    'A': {'fuss': 'A1', 'sturm': 'A2', 'reiter': 'A2', 'panzer': 'A3', 'fuehrer': 'A3', 'schreiter': 'AM'},
-}
 FRAKTION = {'K': 'Konkordat', 'A': 'Aschenwacht'}
+STIMME = {'K': {1: 'Brian', 2: 'Daniel', 3: 'Callum', 4: 'George', 5: 'Bill'},
+          'A': {1: 'Charlie', 2: 'Callum', 3: 'Bill (schroff)', 4: 'Will', 5: 'Liam'}}
+GRUPPE_SPRECHER = {'linie': 1, 'unterst': 2, 'sturm': 3, 'reiter': 4, 'fuehrer': 5, 'panzer': 5, 'schreiter': 5}
+# Not-Anlässe werden gerufen (Spalte ton = ruf), alles andere ruhig, tief, abgehackt
+RUF = {'rueckzug', 'panik', 'verwundet', 'niedergehalten', 'gas', 'koloss', 'getroffen', 'panne'}
 
-# Rufe je Fraktion, Gruppe und Anlass (3–4 Fassungen, 1–5 Wörter)
+# Einheit (TYPES-Schlüssel) → Gruppe; Kommentar = Besonderheit
+EINHEIT = {
+ 'K': {'kohorte': 'linie',
+       'melder': 'unterst', 'fernsprech': 'unterst', 'feldscher': 'unterst', 'pionier': 'unterst', 'scharf': 'unterst', 'mahlwerk': 'unterst', 'moerser': 'unterst',
+       'flammen': 'unterst', 'mineur': 'unterst', 'werkstatt': 'unterst', 'feldkanone': 'unterst', 'haubitze': 'unterst', 'ballon': 'unterst',
+       'raeumer': 'sturm', 'oger': 'sturm',
+       'reiter': 'reiter',
+       'hauptA': 'fuehrer', 'generalA': 'fuehrer', 'koloss': 'panzer',
+       'turm': 'schreiter', 'orden': 'schreiter', 'kreuz': 'schreiter'},
+ 'A': {'grenadier': 'linie',
+       'signal': 'unterst', 'heiler': 'unterst', 'pionierD': 'unterst', 'buechse': 'unterst', 'sense': 'unterst', 'minenwerfer': 'unterst', 'brand': 'unterst',
+       'gasschutz': 'unterst', 'munition': 'unterst', 'pirsch': 'unterst', 'geschuetz': 'unterst',
+       'sturm': 'sturm', 'schwer': 'sturm', 'huenen': 'sturm', 'panzerk': 'sturm',
+       'lanzeD': 'reiter',
+       'hauptD': 'fuehrer', 'generalD': 'fuehrer', 'banner': 'fuehrer', 'sturmpz': 'panzer', 'bohrer': 'panzer',
+       'knecht': 'schreiter', 'saeger': 'schreiter', 'klaue': 'schreiter'},
+}
+
 RUFE = {
  'K': {
-  'fuss': {
-   'anwahl': ['Bereit.', 'Zu Befehl.', 'Hier.', 'Wartet auf Befehl.'],
-   'befehl': ['Verstanden.', 'Rücken vor.', 'Wird gemacht.', 'Unterwegs.'],
-   'angriff': ['Feuer frei!', 'Auf sie!', 'Bajonett vor!', 'Los, Männer!'],
-   'rueckzug': ['Zurück! Zurück!', 'Absetzen!', 'Zurück zur Linie!'],
-   'panik': ['Raus hier!', 'Wir halten nicht!', 'Lauft!'],
-   'verwundet': ['Sanitäter!', 'Mann am Boden!', 'Brauchen Hilfe!'],
-   'sammeln': ['Wir stehen wieder.', 'Linie hält.', 'Ordnung, Männer!'],
-   'tod': ['Wir fallen…', 'Keiner mehr…', 'Linie gebrochen…'],
-   'niedergehalten': ['Köpfe runter!', 'Wir liegen fest!', 'Deckung!'],
-   'gas': ['Gas! Masken dicht!', 'Gas, Gas!', 'Gasalarm!'],
-   'granate': ['Granate!', 'Wurf!', 'Achtung, Wurf!'],
-   'feuerbereit': ['Feuerbereit.', 'Wir warten.', 'Linie bewacht.'],
-   'feuer': ['Feuer!', 'Salve!', 'Ziel erfasst.'],
-   'zielfeld': ['Stellung genommen.', 'Feld gehalten.', 'Fahne steht.'],
-   'koloss': ['Koloss voraus!', 'Stahl kommt!', 'Panzer, Panzer!'],
+  'linie': {
+   'anwahl': ['Ready.', 'Sir?', 'Standing by.', 'Orders?'],
+   'befehl': ['Understood.', 'Moving out.', 'On our way.', 'Right away.'],
+   'angriff': ['Open fire!', 'At them!', 'Fix bayonets!', 'For the Crown!'],
+   'rueckzug': ['Fall back! Fall back!', 'Pull back!', 'Back to the line!'],
+   'panik': ['Get out of here!', "We can't hold!", 'Run!'],
+   'verwundet': ['Medic!', 'Man down!', 'Need help here!'],
+   'sammeln': ["We're steady.", 'Line holds.', 'Form up, lads.'],
+   'tod': ["We're done…", 'No one left…', "Line's broken…"],
+   'niedergehalten': ['Heads down!', "We're pinned!", 'Take cover!'],
+   'gas': ['Gas! Masks on!', 'Gas, gas!', 'Gas attack!'],
+   'granate': ['Grenade!', 'Throwing!', 'Fire in the hole!'],
+   'feuerbereit': ['Watching the line.', 'Ready when they come.', 'Sector covered.'],
+   'feuer': ['Fire!', 'Volley!', 'Target sighted.'],
+   'zielfeld': ['Position taken.', 'Ground held.', "Flag's ours."],
+   'koloss': ['Walker ahead!', 'Steel coming!', 'Tank! Tank!'],
+  },
+  'unterst': {
+   'anwahl': ['Crew ready.', 'Standing by.', "What's the job?"],
+   'befehl': ['Moving the kit.', 'Understood.', 'Relocating.'],
+   'angriff': ['Firing!', 'Rounds away!', 'On target!'],
+   'rueckzug': ['Pack up, fall back!', 'Leave the kit, go!', 'Pulling back!'],
+   'panik': ["We're overrun!", 'Get out!', 'Run for it!'],
+   'verwundet': ['Medic, now!', 'Crew hit!', "We're hurt!"],
+   'sammeln': ['Crew steady.', 'Back in position.', 'Carry on.'],
+   'tod': ["Crew's gone…", 'Nobody left…', "Gun's silent…"],
+   'niedergehalten': ['Keep down!', 'Pinned at the gun!', "Can't move!"],
+   'gas': ['Gas! Masks!', 'Gas on the crew!', 'Gas, gas!'],
+   'feuerbereit': ["Gun's up.", 'Covering.', 'Ready to fire.'],
+   'feuer': ['Shot out!', 'Fire!', 'Rounds on the way!'],
   },
   'sturm': {
-   'anwahl': ['Bereit zum Räumen.', 'Schilde stehen.', 'Sagt an.'],
-   'befehl': ['Vorwärts.', 'Bestätigt.', 'Wir gehen rein.'],
-   'angriff': ['Rein in den Graben!', 'Räumen!', 'Schilde vor, drauf!'],
-   'rueckzug': ['Raus, raus!', 'Hinter die Schilde!', 'Absetzen!'],
-   'panik': ['Das ist zu viel!', 'Weg hier!', 'Schilde weg, lauft!'],
-   'verwundet': ['Sanitäter, schnell!', 'Zwei Mann verletzt!', 'Wir sind angeschlagen!'],
-   'sammeln': ['Schilde wieder hoch.', 'Wir stehen.', 'Neu formieren.'],
-   'tod': ['Graben… nicht geräumt…', 'Wir sind durch…', 'Schilde… gefallen…'],
-   'granate': ['Granate in den Graben!', 'Wurf!', 'Ladung rein!'],
-   'schilde': ['Schilde vor!', 'Wand schließen!', 'Schild an Schild!'],
-   'zielfeld': ['Graben geräumt.', 'Abschnitt sauber.', 'Gehört uns.'],
+   'anwahl': ['Clearers ready.', 'Shields up.', 'Say the word.'],
+   'befehl': ['Moving in.', 'Confirmed.', 'Going in.'],
+   'angriff': ['Into the trench!', 'Clear it!', 'Shields, push!'],
+   'rueckzug': ['Out, out!', 'Behind the shields!', 'Fall back!'],
+   'panik': ['Too much!', 'Get out!', 'Drop the shields, run!'],
+   'verwundet': ['Medic, quick!', 'Two men hit!', "We're hurt bad!"],
+   'sammeln': ['Shields up again.', 'We stand.', 'Reform.'],
+   'tod': ['Trench… not cleared…', "We're finished…", 'Shields… down…'],
+   'granate': ['Grenade in!', 'Throwing!', 'Charge in!'],
+   'schilde': ['Shields forward!', 'Close the wall!', 'Shield to shield!'],
+   'zielfeld': ['Trench cleared.', 'Section clean.', "It's ours."],
   },
   'reiter': {
-   'anwahl': ['Schwadron bereit.', 'Pferde unter Dampf.', 'Aufgesessen.'],
-   'befehl': ['Im Trab.', 'Schwadron, vor.', 'Verstanden, wir reiten.'],
-   'angriff': ['Attacke!', 'Klingen hoch!', 'Durchbrechen!'],
-   'rueckzug': ['Abdrehen!', 'Wenden, zurück!', 'Abschwenken!'],
-   'panik': ['Die Pferde scheuen!', 'Weg, nur weg!', 'Nicht zu halten!'],
-   'verwundet': ['Reiter am Boden!', 'Pferd getroffen!', 'Wir verlieren Dampf!'],
-   'sammeln': ['Schwadron, sammeln.', 'Wieder in Reihe.', 'Pferde ruhig.'],
-   'tod': ['Schwadron… gefallen…', 'Kein Reiter mehr…', 'Dampf… erloschen…'],
+   'anwahl': ['Squadron ready.', "Steam's up.", 'Mounted.'],
+   'befehl': ['At the trot.', 'Squadron, forward.', 'Riding.'],
+   'angriff': ['Charge!', 'Blades up!', 'Break through!'],
+   'rueckzug': ['Wheel away!', 'Turn back!', 'Break off!'],
+   'panik': ['Horses are bolting!', 'Away, away!', "Can't hold them!"],
+   'verwundet': ['Rider down!', 'Horse hit!', 'Losing steam!'],
+   'sammeln': ['Squadron, rally.', 'Back in line.', 'Easy now.'],
+   'tod': ['Squadron… lost…', 'No riders left…', "Steam's… out…"],
   },
   'panzer': {
-   'anwahl': ['Koloss bereit.', 'Motor läuft.', 'Besatzung hört.'],
-   'befehl': ['Fahrer, vor.', 'Rollen an.', 'Kurs bestätigt.'],
-   'angriff': ['Richtschütze, Feuer!', 'Schuss!', 'Ziel aufgefasst.'],
-   'getroffen': ['Treffer am Rumpf!', 'Panzerung hält!', 'Einschlag vorn!'],
-   'panne': ['Kette gerissen!', 'Wir sitzen fest!', 'Motor setzt aus!'],
-   'rueckzug': ['Rückwärts, rückwärts!', 'Absetzen!', 'Aus der Linie!'],
-   'panik': ['Raus aus dem Ding!', 'Wir brennen!', 'Aussteigen!'],
-   'verwundet': ['Schwer beschädigt!', 'Feuer im Motorraum!', 'Wir verlieren Druck!'],
-   'sammeln': ['Besatzung ruhig.', 'Wieder einsatzbereit.', 'Systeme stehen.'],
-   'tod': ['Aussteigen, aussteigen!', 'Koloss verloren…', 'Funk… tot…'],
+   'anwahl': ['Colossus ready.', 'Engine running.', 'Crew listening.'],
+   'befehl': ['Driver, advance.', 'Rolling.', 'Course confirmed.'],
+   'angriff': ['Gunner, fire!', 'On the way!', 'Target acquired.'],
+   'getroffen': ["We're hit!", 'Armour holding!', 'Hit up front!'],
+   'panne': ["Track's gone!", "We're stuck!", "Engine's dead!"],
+   'rueckzug': ['Reverse, reverse!', 'Pull back!', 'Out of the line!'],
+   'panik': ['Get out of this thing!', "We're burning!", 'Bail out!'],
+   'verwundet': ['Badly damaged!', 'Engine fire!', 'Losing pressure!'],
+   'sammeln': ['Crew steady.', 'Back in action.', 'Systems up.'],
+   'tod': ['Bail out, bail out!', 'Colossus lost…', 'Radio… dead…'],
   },
   'fuehrer': {
-   'anwahl': ['Ich höre.', 'Lage?', 'Sprechen Sie.'],
-   'befehl': ['Ausführen.', 'So sei es.', 'Gut. Vorwärts.'],
-   'angriff': ['Feuer frei!', 'Gebt es ihnen!', 'Zielen – Feuer!'],
-   'befehl_sammeln': ['Sammeln bei mir!', 'Ruhig, Männer!', 'Haltet die Linie!'],
-   'befehl_feuerfrei': ['Feuer nach Belieben!', 'Freies Feuer!', 'Lasst sie kommen – Feuer!'],
-   'grossbefehl': ['Keinen Schritt zurück!', 'Diese Linie hält!', 'Wir halten hier!'],
-   'rueckzug': ['Zurück in die Stellung!', 'Geordnet absetzen!', 'Rückzug, in Ordnung!'],
-   'panik': ['Stab zieht ab!', 'Wir müssen weg!', 'Rette sich, wer kann!'],
-   'verwundet': ['Stab getroffen!', 'Sanitäter zum Stab!', 'Ich bin verwundet!'],
-   'sammeln': ['Stab wieder bereit.', 'Ordnung hergestellt.', 'Weiter.'],
-   'tod': ['Führung… gefallen…', 'Übernehmt… ihr…', 'Stab ausgefallen…'],
+   'anwahl': ['Go ahead.', 'Report.', "I'm listening."],
+   'befehl': ['Carry on.', 'Make it so.', 'Good. Forward.'],
+   'angriff': ['Open fire!', 'Give them hell!', 'Aim… fire!'],
+   'befehl_sammeln': ['Rally on me!', 'Steady, men!', 'Hold the line!'],
+   'befehl_feuerfrei': ['Fire at will!', 'Free fire!', 'Let them come – fire!'],
+   'grossbefehl': ['Not one step back!', 'This line holds!', 'We hold here!'],
+   'rueckzug': ['Back to the trench!', 'Orderly withdrawal!', 'Fall back, in order!'],
+   'panik': ['Staff is pulling out!', 'We have to go!', 'Every man for himself!'],
+   'verwundet': ['Staff hit!', 'Medic to the staff!', "I'm wounded!"],
+   'sammeln': ['Staff ready.', 'Order restored.', 'Carry on.'],
+   'tod': ['Command… is down…', 'Take over…', 'Staff… lost…'],
   },
   'schreiter': {
-   'anwahl': ['Einheit bereit.', 'Kessel unter Druck.', 'Erwarte Befehl.'],
-   'befehl': ['Schreite vor.', 'Kurs bestätigt.', 'Bewegung.'],
-   'angriff': ['Ziel bekämpft.', 'Feuer.', 'Ziel im Visier.'],
-   'nahkampf': ['Nahkampf.', 'Zerschmettern.', 'Kontakt.'],
-   'getroffen': ['Schaden gemeldet.', 'Panzerung beschädigt.', 'Treffer.'],
-   'schwer': ['Systeme versagen.', 'Druck kritisch.', 'Kessel undicht.'],
-   'feind': ['Feind erkannt.', 'Ziel im Blick.', 'Gegner voraus.'],
-   'tod': ['Abschaltung…', 'Kessel… erloschen…', 'Ende…'],
+   'anwahl': ['Unit ready.', 'Boiler pressurised.', 'Awaiting orders.'],
+   'befehl': ['Advancing.', 'Course confirmed.', 'Moving.'],
+   'angriff': ['Target engaged.', 'Firing.', 'Target in sight.'],
+   'nahkampf': ['Close combat.', 'Crushing.', 'Contact.'],
+   'getroffen': ['Damage reported.', 'Armour damaged.', 'Hit.'],
+   'schwer': ['Systems failing.', 'Pressure critical.', 'Boiler breached.'],
+   'feind': ['Enemy detected.', 'Target sighted.', 'Hostiles ahead.'],
+   'tod': ['Shutting down…', 'Boiler… out…', 'End…'],
   },
  },
  'A': {
-  'fuss': {
+  'linie': {
    'anwahl': ['Bereit.', 'Hier.', 'Befehl?', 'Gruppe hört.'],
    'befehl': ['Bestätigt.', 'Vorrücken.', 'Ausgeführt.', 'Aufschließen.'],
    'angriff': ['Feuer!', 'Ran an sie!', 'Drauf!'],
@@ -110,6 +141,20 @@ RUFE = {
    'zielfeld': ['Stellung genommen.', 'Gehört uns.', 'Abschnitt gehalten.'],
    'koloss': ['Koloss!', 'Panzer voraus!', 'Stahlungetüm!'],
   },
+  'unterst': {
+   'anwahl': ['Trupp bereit.', 'Bereit.', 'Auftrag?'],
+   'befehl': ['Verlegen.', 'Bestätigt.', 'Stellungswechsel.'],
+   'angriff': ['Feuer!', 'Schuss raus!', 'Im Ziel!'],
+   'rueckzug': ['Abbauen, zurück!', 'Gerät liegen lassen!', 'Absetzen!'],
+   'panik': ['Überrannt!', 'Raus hier!', 'Weg, weg!'],
+   'verwundet': ['Sanitäter, schnell!', 'Bedienung getroffen!', 'Verwundete!'],
+   'sammeln': ['Trupp steht.', 'Wieder in Stellung.', 'Weitermachen.'],
+   'tod': ['Trupp… gefallen…', 'Keiner mehr…', 'Gerät… verloren…'],
+   'niedergehalten': ['Unten bleiben!', 'Liegen fest!', 'Kein Durchkommen!'],
+   'gas': ['Gas! Masken!', 'Gas am Gerät!', 'Gasalarm!'],
+   'feuerbereit': ['Gerät steht.', 'Sichern.', 'Feuerbereit.'],
+   'feuer': ['Schuss!', 'Feuer!', 'Raus damit!'],
+  },
   'sturm': {
    'anwahl': ['Stoßtrupp bereit.', 'Wir warten.', 'Befehl.'],
    'befehl': ['Durchstoßen.', 'Bestätigt. Vor.', 'Wir gehen.'],
@@ -121,6 +166,7 @@ RUFE = {
    'tod': ['Stoßtrupp… gefallen…', 'Durchbruch… gescheitert…', 'Keiner… mehr…'],
    'granate': ['Bündel!', 'Ladung wirft!', 'Granate rein!'],
    'gegenstoss': ['Gegenstoß!', 'Zurückwerfen!', 'Nachsetzen!'],
+   'dauerfeuer': ['Dauerfeuer!', 'Nicht nachlassen!', 'Weiter feuern!'],
   },
   'reiter': {
    'anwahl': ['Reiter bereit.', 'Aufgesessen.', 'Lanzen scharf.'],
@@ -151,6 +197,7 @@ RUFE = {
    'befehl_sammeln': ['Sammeln!', 'Ruhig, Männer!', 'Linie halten!'],
    'befehl_sturm': ['Zum Sturm!', 'Angriff!', 'Vorwärts, drauf!'],
    'grossbefehl': ['Alle Mann – Angriff!', 'Ganze Linie vor!', 'Jetzt alle!'],
+   'banner': ['Banner hoch!', 'Banner steht!', 'Banner auf, weiter!'],
    'rueckzug': ['Zurück in die Stellung!', 'Geordnet absetzen!', 'Rückzug!'],
    'panik': ['Stab zieht ab!', 'Wir müssen weg!', 'Alles verloren!'],
    'verwundet': ['Stab getroffen!', 'Sanitäter zum Stab!', 'Ich bin verwundet!'],
@@ -166,88 +213,75 @@ RUFE = {
    'schwer': ['Systeme versagen.', 'Kritischer Schaden.', 'Druck fällt.'],
    'feind': ['Feind erkannt.', 'Ziel erfasst.', 'Gegner voraus.'],
    'tod': ['Abschaltung…', 'Ende…', 'Antrieb… aus…'],
-   'dauerfeuer': ['Dauerfeuer.', 'Feuer hält an.', 'Nicht nachlassen.'],   # Eiserne Hünen
   },
  },
 }
 
-# Erscheinen (Nachschub/Aufstellung): je Einheit 2 Fassungen; Gruppe bestimmt den Sprecher
+# Erscheinen (Nachschub/Aufstellung): je Einheit 2 Fassungen; Sprecher über EINHEIT
 ERSCHEINEN = {
- 'K': [
-  ('hauptA', 'fuehrer', ['Hauptmann zur Stelle.', 'Stab ist da – Befehle?']),
-  ('generalA', 'fuehrer', ['Der General ist im Feld.', 'Oberkommando übernimmt.']),
-  ('kohorte', 'fuss', ['Schützenkohorte, zur Stelle!', 'Kohorte meldet sich.']),
-  ('melder', 'fuss', ['Meldegänger bereit.', 'Melder und Hund, zur Stelle.']),
-  ('fernsprech', 'fuss', ['Fernsprechtrupp, Leitung steht.', 'Fernsprecher meldet sich.']),
-  ('feldscher', 'fuss', ['Sanitäter zur Stelle.', 'Feldscher bereit, Verband frei.']),
-  ('pionier', 'fuss', ['Grabenpioniere, zur Stelle!', 'Pioniere bereit, Spaten frei.']),
-  ('scharf', 'fuss', ['Scharfschützen in Stellung.', 'Zwei Augen auf die Linie.']),
-  ('mahlwerk', 'fuss', ['Mahlwerk-Trupp, zur Stelle!', 'MG bereit zum Aufbau.']),
-  ('moerser', 'fuss', ['Grabenmörser bereit.', 'Mörsertrupp meldet sich.']),
-  ('flammen', 'fuss', ['Flammentrupp, zur Stelle!', 'Brenner gezündet.']),
-  ('feldkanone', 'fuss', ['Feldkanone, zur Stelle!', 'Geschütz bereit.']),
-  ('haubitze', 'fuss', ['Donnerrohr-Batterie, zur Stelle!', 'Batterie meldet sich.']),
-  ('mineur', 'fuss', ['Mineure, zur Stelle!', 'Stollenbauer bereit.']),
-  ('werkstatt', 'fuss', ['Versorgungstrupp, zur Stelle!', 'Werkzeug und Munition da.']),
-  ('ballon', 'fuss', ['Ballonbeobachter, steigen auf.', 'Ballon bereit, Sicht frei.']),
-  ('raeumer', 'sturm', ['Grabenräumer, zur Stelle!', 'Räumer und Schilde bereit.']),
-  ('reiter', 'reiter', ['Stahlreiter, zur Stelle!', 'Schwadron unter Dampf.']),
-  ('koloss', 'panzer', ['Landkoloss rollt an.', 'Koloss einsatzbereit.']),
-  ('turm', 'schreiter', ['Turmschreiter, betriebsbereit.', 'Turm erhebt sich.']),
-  ('orden', 'schreiter', ['Ordensschreiter, betriebsbereit.', 'Orden marschiert.']),
-  ('kreuz', 'schreiter', ['Kreuzschreiter, betriebsbereit.', 'Der Löwe schreitet.']),
- ],
- 'A': [
-  ('hauptD', 'fuehrer', ['Hauptmann zur Stelle.', 'Stab eingetroffen.']),
-  ('generalD', 'fuehrer', ['Der General führt.', 'Oberkommando im Feld.']),
-  ('grenadier', 'fuss', ['Aschengrenadiere, zur Stelle!', 'Grenadiere melden sich.']),
-  ('signal', 'fuss', ['Signaltrupp, zur Stelle!', 'Leuchtzeichen bereit.']),
-  ('heiler', 'fuss', ['Sanitäter zur Stelle.', 'Verbandsplatz steht.']),
-  ('pionierD', 'fuss', ['Drahtpioniere, zur Stelle!', 'Draht und Minen bereit.']),
-  ('banner', 'fuss', ['Bannerträger, zur Stelle!', 'Das Banner ist da.']),
-  ('buechse', 'fuss', ['Panzerbüchse, zur Stelle!', 'Büchse geladen.']),
-  ('sense', 'fuss', ['Sensenwerk, zur Stelle!', 'MG bereit.']),
-  ('minenwerfer', 'fuss', ['Minenwerfer, zur Stelle!', 'Werfer bereit.']),
-  ('brand', 'fuss', ['Brandtrupp, zur Stelle!', 'Brenner gezündet.']),
-  ('geschuetz', 'fuss', ['Geschütz, zur Stelle!', 'Batterie bereit.']),
-  ('gasschutz', 'fuss', ['Gasschutztrupp, zur Stelle!', 'Entgiftung bereit.']),
-  ('munition', 'fuss', ['Munitionstrupp, zur Stelle!', 'Nachschub ist da.']),
-  ('pirsch', 'fuss', ['Pirschjäger, zur Stelle.', 'Wir sind schon da.']),
-  ('sturm', 'sturm', ['Sturmbrecher, zur Stelle!', 'Stoßtrupp bereit.']),
-  ('schwer', 'sturm', ['Schwere Grabenwacht, zur Stelle!', 'Schilde geschlossen.']),
-  ('panzerk', 'sturm', ['Panzerknechte, zur Stelle!', 'Anzüge unter Druck.']),
-  ('huenen', 'schreiter', ['Eiserne Hünen, zur Stelle.', 'Hünen marschieren.']),
-  ('lanzeD', 'reiter', ['Sprenglanzen-Reiter, zur Stelle!', 'Lanzen geladen.']),
-  ('sturmpz', 'panzer', ['Sturmpanzer rollt an.', 'Panzer einsatzbereit.']),
-  ('knecht', 'schreiter', ['Eisenknecht, betriebsbereit.', 'Eisenknecht marschiert.']),
-  ('bohrer', 'schreiter', ['Bohrkoloss, betriebsbereit.', 'Bohrer läuft an.']),
-  ('saeger', 'schreiter', ['Sägeschreiter, betriebsbereit.', 'Säge läuft.']),
-  ('klaue', 'schreiter', ['Klauenschreiter, betriebsbereit.', 'Klauen frei.']),
- ],
+ 'K': {'hauptA': ['Captain reporting.', "Staff's here – orders?"], 'generalA': ['The General has the field.', 'High command takes over.'],
+       'kohorte': ['Rifle cohort, reporting!', 'Cohort ready.'], 'melder': ['Runner ready.', 'Runner and dog, reporting.'],
+       'fernsprech': ["Signals team, line's up.", 'Telephone section reporting.'], 'feldscher': ['Medic reporting.', 'Field surgeon ready.'],
+       'pionier': ['Trench sappers, reporting!', 'Sappers ready, spades out.'], 'scharf': ['Snipers in position.', 'Eyes on the line.'],
+       'mahlwerk': ['Grinder team, reporting!', 'Gun ready to set up.'], 'moerser': ['Trench mortar ready.', 'Mortar team reporting.'],
+       'flammen': ['Flame team, reporting!', 'Burners lit.'], 'feldkanone': ['Field gun, reporting!', 'Gun ready.'],
+       'haubitze': ['Thunder battery, reporting!', 'Battery standing by.'], 'mineur': ['Miners, reporting!', 'Tunnellers ready.'],
+       'werkstatt': ['Supply team, reporting!', 'Tools and rounds here.'], 'ballon': ['Balloon observer, going up.', 'Balloon ready, clear view.'],
+       'raeumer': ['Trench clearers, reporting!', 'Clearers and shields ready.'], 'reiter': ['Steel riders, reporting!', 'Squadron under steam.'],
+       'koloss': ['Land colossus rolling in.', 'Colossus ready.'], 'turm': ['Tower walker, operational.', 'Tower rising.'],
+       'orden': ['Order walker, operational.', 'The Order marches.'], 'kreuz': ['Cross walker, operational.', 'The Lion walks.']},
+ 'A': {'hauptD': ['Hauptmann zur Stelle.', 'Stab eingetroffen.'], 'generalD': ['Der General führt.', 'Oberkommando im Feld.'],
+       'grenadier': ['Aschengrenadiere, zur Stelle!', 'Grenadiere melden sich.'], 'signal': ['Signaltrupp, zur Stelle!', 'Leuchtzeichen bereit.'],
+       'heiler': ['Sanitäter zur Stelle.', 'Verbandsplatz steht.'], 'pionierD': ['Drahtpioniere, zur Stelle!', 'Draht und Minen bereit.'],
+       'banner': ['Bannerträger, zur Stelle!', 'Das Banner ist da.'], 'buechse': ['Panzerbüchse, zur Stelle!', 'Büchse geladen.'],
+       'sense': ['Sensenwerk, zur Stelle!', 'MG bereit.'], 'minenwerfer': ['Minenwerfer, zur Stelle!', 'Werfer bereit.'],
+       'brand': ['Brandtrupp, zur Stelle!', 'Brenner gezündet.'], 'geschuetz': ['Geschütz, zur Stelle!', 'Batterie bereit.'],
+       'gasschutz': ['Gasschutztrupp, zur Stelle!', 'Entgiftung bereit.'], 'munition': ['Munitionstrupp, zur Stelle!', 'Nachschub ist da.'],
+       'pirsch': ['Pirschjäger, zur Stelle.', 'Wir sind schon da.'], 'sturm': ['Sturmbrecher, zur Stelle!', 'Stoßtrupp bereit.'],
+       'schwer': ['Schwere Grabenwacht, zur Stelle!', 'Schilde geschlossen.'], 'panzerk': ['Panzerknechte, zur Stelle!', 'Anzüge unter Druck.'],
+       'huenen': ['Eiserne Hünen, zur Stelle!', 'Hünen marschieren.'], 'lanzeD': ['Sprenglanzen-Reiter, zur Stelle!', 'Lanzen geladen.'],
+       'sturmpz': ['Sturmpanzer rollt an.', 'Panzer einsatzbereit.'], 'bohrer': ['Bohrkoloss rollt an.', 'Bohrer läuft an.'],
+       'knecht': ['Eisenknecht, betriebsbereit.', 'Eisenknecht marschiert.'], 'saeger': ['Sägeschreiter, betriebsbereit.', 'Säge läuft.'],
+       'klaue': ['Klauenschreiter, betriebsbereit.', 'Klauen frei.']},
 }
 
 
-def main():
+def sprecher(fr, gruppe): return f'{fr}{GRUPPE_SPRECHER[gruppe]}'
+
+
+def zeilen():
     rows = []
     for fr, gruppen in RUFE.items():
         for gr, anl in gruppen.items():
             for an, texte in anl.items():
                 for i, t in enumerate(texte, 1):
-                    rows.append((f'{fr}_{gr}_{an}_{i}', FRAKTION[fr], SPRECHER[fr][gr], an, gr, t))
-        for typ, gr, texte in ERSCHEINEN[fr]:
+                    rows.append((f'{fr}_{gr}_{an}_{i}', FRAKTION[fr], sprecher(fr, gr), an, gr, 'ruf' if an in RUF else 'ruhig', t))
+        for typ, texte in ERSCHEINEN[fr].items():
             for i, t in enumerate(texte, 1):
-                rows.append((f'{fr}_erscheinen_{typ}_{i}', FRAKTION[fr], SPRECHER[fr][gr], 'erscheinen', typ, t))
+                rows.append((f'{fr}_erscheinen_{typ}_{i}', FRAKTION[fr], sprecher(fr, EINHEIT[fr][typ]), 'erscheinen', typ, 'ruhig', t))
+    return rows
+
+
+def main():
+    rows = zeilen()
     out = ROOT / 'entwurf' / 'stimmen_texte.csv'
     with open(out, 'w', newline='', encoding='utf-8-sig') as f:
         w = csv.writer(f, delimiter=';')
-        w.writerow(['id', 'fraktion', 'sprecher', 'anlass', 'einheit', 'text'])
+        w.writerow(['id', 'fraktion', 'sprecher', 'anlass', 'einheit', 'ton', 'text'])
         w.writerows(rows)
-    print(out, len(rows), 'Zeilen')
-    for fr in RUFE:
-        n = {}
-        for r in rows:
-            if r[1] == FRAKTION[fr]: n[r[2]] = n.get(r[2], 0) + 1
-        print(FRAKTION[fr], n)
+    lang = [r for r in rows if len(r[6].replace('–', ' ').split()) > 5]
+    print(out, len(rows), 'Zeilen,', sum(len(r[6]) for r in rows), 'Zeichen', '| zu lang:', [r[0] for r in lang])
+    if '--md' in sys.argv:
+        print('\n| Sprecher | Stimme | Zeilen | davon ruf | Zeichen |\n|---|---|---|---|---|')
+        for fr in RUFE:
+            for n in range(1, 6):
+                sp = f'{fr}{n}'; rs = [r for r in rows if r[2] == sp]
+                print(f'| {sp} | {STIMME[fr][n]} | {len(rs)} | {sum(r[5] == "ruf" for r in rs)} | {sum(len(r[6]) for r in rs)} |')
+        print('\n| Fraktion | Sprecher | Einheiten (TYPES-Schlüssel) |\n|---|---|---|')
+        for fr in RUFE:
+            for n in range(1, 6):
+                ts = [t for t, g in EINHEIT[fr].items() if GRUPPE_SPRECHER[g] == n]
+                print(f'| {FRAKTION[fr]} | {fr}{n} {STIMME[fr][n]} | ' + ', '.join(f'`{t}`' + (' (Schreiter, Maschinenfilter)' if EINHEIT[fr][t] == 'schreiter' else ' (Bordfunk)' if EINHEIT[fr][t] == 'panzer' else '') for t in ts) + ' |')
 
 
 if __name__ == '__main__':

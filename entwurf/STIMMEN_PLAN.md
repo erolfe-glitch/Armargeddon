@@ -1,85 +1,145 @@
-# Stimmen-Plan V1 (Punkt 102, 2026-11-26) – nur Liste und Texte, nichts gebaut
+# Stimmen-Plan V1b (Punkt 109, 2026-11-26) – nur Plan und Texte, nichts gebaut
 
-Ziel (Enrico 17:58/18:08): Alle menschlichen Einheiten klingen wie durch **Gasmaske und Funk** („Vox“). Je Fraktion wenige feste Sprecher, damit es wie aus einem Guss klingt. Kurze, disziplinierte Rufe wie militärische Bestätigungen, gleichmäßiges Tempo, wenig Gefühl. **Ausnahme Not** (Rückzug, Panik, schwer verwundet, Gas, niedergehalten, Tod): lauter und gehetzter, derselbe Funk-Klang. Maschinen behalten ihre Maschinenstimme.
+Stand nach Enricos Hörprobe 3/4 (20:55). Ersetzt die erste Fassung V1 (3 Sprecher, alles Deutsch).
 
-**Sprache:** jetzt für **beide Seiten Deutsch** (der Plan aus Paket F, `entwurf/postfach/STIMMEN_FEHLEN.md`, hatte das Konkordat noch englisch). Blaue Legion = Konkordat-Stimmen. Helden behalten ihre eigenen Stimmen (`HELD_ST`), der Löwenoger brüllt (keine Worte).
+**Entscheidungen:**
+- **Alle alten Sprüche werden ersetzt** (Suno-Sprüche `sv_*`, frühere ElevenLabs-Rufe `panik_*`, `sterben_*`, `ruf_feuer`, Schmerz/Sanitäter-Rufe). Keine Mischung alt/neu.
+- **Konkordat spricht Englisch** (auch die Blaue Legion, sie nutzt die Konkordat-Stimmen), **Aschenwacht Deutsch**.
+- **5 feste Sprecher je Seite**, zugeordnet über die K1-Kategorien.
+- **Sprechweise:** tief, rau, abgehackt, wenig Gefühl (Richtung StarCraft 2 / Command & Conquer / Dawn of War 1), nicht „gespielt“. Gerufen wird nur in Not.
+- **Filter „Schlachtfunk“** für alle Einheiten beider Seiten (Abschnitt 5).
 
-**Texte zum Abarbeiten:** `entwurf/stimmen_texte.csv` (477 Zeilen, Semikolon, UTF-8; Spalten id, fraktion, sprecher, anlass, einheit, text). Erzeugt mit `python tools/stimmen_plan.py` – Texte dort ändern, nicht in der CSV.
+**Texte:** `entwurf/stimmen_texte.csv`:
+- 552 Zeilen, Semikolon, UTF-8.
+- Spalten `id; fraktion; sprecher; anlass; einheit; ton; text`.
+- `ton` = `ruhig` oder `ruf`.
+- Erzeugt mit `python tools/stimmen_plan.py` (mit `--md` druckt das Skript die Tabellen unten). Texte nur dort ändern, nicht in der CSV.
 
-## 1. Sprecher (Vorschlag)
+## 1. Sprecher
 
-| Kürzel | Fraktion | Stimme | spricht für | Filter im Spiel (V3) |
-|---|---|---|---|---|
-| **K1** | Konkordat | Mann um 35, mittlere Lage, ruhig, leicht rau | Fußtruppen: Linie und Unterstützung (Kohorte, MG, Mörser, Pioniere, Sanitäter, Fernsprech, Melder, Flammen, Scharfschützen, Mineure, Versorgung, Ballon, Geschützbedienung) | Funk-Gasmaske leicht |
-| **K2** | Konkordat | Mann um 30, tiefer, gepresst, kantig | Grabenräumer, Stahlreiter | mittel |
-| **K3** | Konkordat | Mann um 50, tief, klar, befehlsgewohnt | Hauptmann, General; Besatzung Landkoloss | leicht (Anführer) bzw. Bordfunk (Koloss) |
-| **KM** | Konkordat | vorhandene Maschinenstimme (`sst_*`, Filter Maschine) | Turm-, Ordens-, Kreuzschreiter | Maschine |
-| **A1** | Aschenwacht | Mann um 40, mittlere Lage, trocken, knapp | Fußtruppen: Grenadiere und Unterstützung (Sensenwerk, Minenwerfer, Pioniere, Sanitäter, Signal, Banner, Panzerbüchse, Brand, Gasschutz, Munition, Pirschjäger, Geschützbedienung) | Funk-Gasmaske leicht |
-| **A2** | Aschenwacht | Mann um 30, tief, hart | Sturmbrecher, Schwere Grabenwacht, Panzerknechte, Sprenglanzen-Reiter | mittel |
-| **A3** | Aschenwacht | Mann um 55, tief, langsam, kalt | Hauptmann, General; Besatzung Sturmpanzer | leicht bzw. Bordfunk |
-| **AM** | Aschenwacht | vorhandene Maschinenstimme | Eisenknecht, Säge-, Klauen-, Bohrschreiter, Eiserne Hünen | Maschine |
-
-Damit hat jede Fraktion **drei menschliche Sprecher** und die Maschinenstimme. Für V2: K1/A1 brauchen die meisten Zeilen (je etwa 75), K2/A2 und K3/A3 je 60–70, Maschine je 30–35.
-
-## 2. Anlässe – was es heute gibt, was fehlt
-
-Heute = Tonplatz im Spiel (aus `RUF_STANDARD`, `rufBeiEreignis`, `selectVoice`, `TONWAHL`, `SST`). „Stelle“ = gibt es schon eine Abspielstelle in ui.js? Not-Anlässe sind **fett**.
-
-| Anlass (`anlass` in der CSV) | heute | Stelle | Gruppen mit neuen Texten |
+| Sprecher | Gruppe (K1-Kategorie) | Konkordat (EN) | Aschenwacht (DE) |
 |---|---|---|---|
-| anwahl (Anklicken) | Sprüche `sv_inf/anzug/fuehrer/panzer/schreiter_*` (Suno, alte Sätze) | ja (`selectVoice`) | alle – ersetzt die alten Sprüche |
-| befehl (Ziehen / Befehl bestätigt) | stumm (`ruf('vorruecken')` nur ab 3 Feldern, ohne Ton) | teils | alle |
-| angriff (Schuss bzw. Nahkampf beginnt) | Kampfschrei `cry` (kein Wort), `ruf_feuer` nur bei Anführer-Befehl | ja (`feuer`, `sturm`) | alle |
-| **rueckzug** | stumm | ja (`rueckzug`) | alle |
-| **panik** (Flucht) | `panik_einzeln/_gruppe` (ElevenLabs, alte Sprecher) | ja | alle – mit den festen Sprechern neu |
-| **verwundet** (schwer, Stärke unter 35) | `medic`/Stöhnen | ja (`sanitaeter`) | alle |
-| sammeln (Moral zurück) | stumm | ja (`sammeln`) | alle |
-| **tod** (aufgerieben) | `sterben_einzeln/_gruppe` (alte Sprecher) | ja | alle |
-| erscheinen (Nachschub, Aufstellung) | **keiner** | **nein – neue Abspielstelle in V3** (Ereignis `buy` bzw. Ende der Aufstellung) | je Einheit 2 Fassungen |
-| **niedergehalten** | stumm | ja | Fußtruppen |
-| **gas** | Husten | ja | Fußtruppen |
-| granate | stumm | ja | Fußtruppen, Sturm |
-| feuerbereit (Feuerbereitschaft, MG-Sperrfeuer) | stumm | ja | Fußtruppen |
-| feuer (eigener Schuss) | stumm | ja | Fußtruppen |
-| zielfeld (genommen) | stumm | nein (neue Stelle in `ctrlSync`) | Fußtruppen, Sturm |
-| koloss (Entsetzenstest, Feindgerät) | stumm | ja (`koloss`) | Fußtruppen |
-| schilde („Schilde vor“) | stumm | nein (Ereignis `shields`) | Grabenräumer |
-| gegenstoss | stumm | nein (Ereignis `counterstrike`) | Sturmbrecher |
-| dauerfeuer | stumm | nein (Ereignis `dauerfeuer`) | Eiserne Hünen (Maschinenstimme AM) |
-| getroffen, panne | Motor/Krach | nein | Panzer |
-| befehl_sammeln, befehl_feuerfrei / befehl_sturm, grossbefehl | Konkordat `stand`/`forward`, Aschenwacht Brüllen `roar` | ja (Befehls-Ereignisse) | Anführer |
-| nahkampf, schwer, feind (Schreiter) | `sst_*` – **beide Seiten dieselben** 2 Fassungen | ja (`schreiterRuf`) | Schreiter, jetzt je Seite eigene Texte |
+| 1 | Linie (Rückgrat) | **K1 Brian** | **A1 Charlie** |
+| 2 | Unterstützung: MG, Artillerie, Mörser, Pioniere, Sanitäter, Versorgung, Beobachter, Ballon, Fachtrupps | **K2 Daniel** | **A2 Callum** |
+| 3 | Sturm/Elite: Grabenräumer, Sturmbrecher, Schwere Grabenwacht, Hünen, Panzerknechte (Oger) | **K3 Callum** | **A3 Bill, schroff** |
+| 4 | Reiter: Stahlreiter, Sprenglanzen-Reiter | **K4 George** | **A4 Will** |
+| 5 | Anführer + Panzer: Hauptmann, General, Bannerträger; Landkoloss, Sturmpanzer, Bohrkoloss (Bordfunk) | **K5 Bill** | **A5 Liam** |
 
-**Was heute ganz fehlt:** Erscheinen (alle Einheiten), Ziehen bestätigt, Rückzug, Sammeln, Niedergehalten, Granate, Zielfeld, alle Panzer-Rufe außer Anklicken, Schreiter-Texte getrennt nach Seite. **Was ersetzt wird:** Anklicken-Sprüche (Suno), Panik und Sterben (alte ElevenLabs-Sprecher) – damit alle Rufe von denselben festen Sprechern kommen.
+### Einheit → Sprecher
 
-## 3. Gruppen × Anlass (Anzahl Fassungen in der CSV)
+| Fraktion | Sprecher | Einheiten (TYPES-Schlüssel) |
+|---|---|---|
+| Konkordat | K1 Brian | `kohorte` |
+| Konkordat | K2 Daniel | `melder`, `fernsprech`, `feldscher`, `pionier`, `scharf`, `mahlwerk`, `moerser`, `flammen`, `mineur`, `werkstatt`, `feldkanone`, `haubitze`, `ballon` |
+| Konkordat | K3 Callum | `raeumer`, `oger` (der Löwenoger brüllt weiter, Worte nur falls gewünscht) |
+| Konkordat | K4 George | `reiter` |
+| Konkordat | K5 Bill | `hauptA`, `generalA`, `koloss` (Bordfunk), `turm`, `orden`, `kreuz` (Schreiter, Maschinenfilter) |
+| Aschenwacht | A1 Charlie | `grenadier` |
+| Aschenwacht | A2 Callum | `signal`, `heiler`, `pionierD`, `buechse`, `sense`, `minenwerfer`, `brand`, `gasschutz`, `munition`, `pirsch`, `geschuetz` |
+| Aschenwacht | A3 Bill (schroff) | `sturm`, `schwer`, `huenen`, `panzerk` |
+| Aschenwacht | A4 Will | `lanzeD` |
+| Aschenwacht | A5 Liam | `hauptD`, `generalD`, `banner`, `sturmpz` (Bordfunk), `bohrer` (Bordfunk), `knecht`, `saeger`, `klaue` (Schreiter, Maschinenfilter) |
 
-| Gruppe | anwahl | befehl | angriff | rueckzug | panik | verwundet | sammeln | tod | weitere |
-|---|---|---|---|---|---|---|---|---|---|
-| Fußtruppen (fuss) | 4 | 4 | 4 / 3 | 3 | 3 | 3 | 3 | 3 | niedergehalten, gas, granate, feuerbereit, feuer, zielfeld, koloss je 3 |
-| Sturm/Elite zu Fuß (sturm) | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | Konkordat: granate, schilde, zielfeld; Aschenwacht: granate, gegenstoss |
-| Reiter (reiter) | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | – |
-| Panzerbesatzung (panzer) | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | getroffen, panne |
-| Anführer (fuehrer) | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | befehl_sammeln, befehl_feuerfrei bzw. befehl_sturm, grossbefehl |
-| Schreiter (schreiter, Maschine) | 3 | 3 | 3 | – | – | – | – | 3 | nahkampf, getroffen, schwer, feind; Aschenwacht dazu dauerfeuer (Hünen) |
-| Erscheinen | je Einheit 2 (22 Konkordat-, 25 Aschenwacht-Einheiten) | | | | | | | | |
+**Bannerträger** (`banner`) spricht mit Sprecher 5, wie Enrico es in der Tabelle vorgesehen hat. Seine Rufe stehen in der Gruppe Anführer, dazu „Banner hoch!“.
+
+**Eiserne Hünen:**
+- Sie sprechen heute mit der Maschinenstimme (Sprecher Schreiter, Filter `_mr`).
+- Laut Enricos Tabelle gehören sie zu Sturm/Elite, also künftig A3 mit Schlachtfunk. Ihr „Dauerfeuer!“ steht in der Sturm-Gruppe.
+- Falls sie Maschine bleiben sollen: in `tools/stimmen_plan.py` `huenen` auf `schreiter` stellen.
+
+### Vorschlag Helden und Schreiter (bleiben eigene Gruppen)
+
+- **Helden** (`hst_faust_*`, `hst_kuerass_*`):
+  - Vorschlag: Rote Faust mit K5 Bill, Eiserner Kürassier mit A5 Liam neu sprechen. Der Helm-Filter bleibt, darüber kommt der Schlachtfunk.
+  - Die Heldentexte (heute je Anlass) wären ein eigener kleiner Auftrag, nicht in dieser CSV.
+- **Schreiter** (`sst_*`):
+  - Heute sprechen beide Seiten dieselben 2 Fassungen.
+  - Vorschlag: neu mit K5 bzw. A5 und danach dem Maschinenfilter (`roboter`), je Seite eigene Texte. Sie stehen in der CSV als Gruppe `schreiter`: Anwählen, Bewegen, Angriff, Nahkampf, Getroffen, schwer beschädigt, Feind gesichtet, zerstört.
+
+## 2. Anlässe – heute und neu
+
+| Anlass (`anlass`) | heute | Abspielstelle in ui.js | `ton` | Gruppen |
+|---|---|---|---|---|
+| anwahl | Sprüche `sv_*` (Suno) | ja (`selectVoice`) | ruhig | alle |
+| befehl (Ziehen/Befehl bestätigt) | stumm | teils (`ruf('vorruecken')`) | ruhig | alle |
+| angriff | Kampfschrei `cry`, `ruf_feuer` | ja (`feuer`, `sturm`) | ruhig | alle |
+| rueckzug | stumm | ja | **ruf** | alle |
+| panik | `panik_*` (alt) | ja | **ruf** | alle |
+| verwundet (Sanitäter, Hilfe) | `medic`/Stöhnen | ja (`sanitaeter`) | **ruf** | alle |
+| sammeln | stumm | ja | ruhig | alle |
+| tod (aufgerieben) | `sterben_*` (alt) | ja | ruhig (verlöschend „…“) | alle |
+| erscheinen (Nachschub, Aufstellung) | keiner | **neu** (Ereignis `buy`, Ende der Aufstellung) | ruhig | je Einheit 2 |
+| niedergehalten (unter Beschuss) | stumm | ja | **ruf** | Linie, Unterstützung |
+| gas | Husten | ja | **ruf** | Linie, Unterstützung |
+| koloss (Feindgerät, Entsetzen) | stumm | ja | **ruf** | Linie |
+| granate | stumm | ja | ruhig | Linie, Sturm |
+| feuerbereit, feuer | stumm | ja | ruhig | Linie, Unterstützung |
+| zielfeld (genommen) | stumm | neu (`ctrlSync`) | ruhig | Linie, Sturm (Konkordat) |
+| schilde, gegenstoss, dauerfeuer | stumm | neu (Ereignisse `shields`, `counterstrike`, `dauerfeuer`) | ruhig | Sturm |
+| getroffen, panne | Motor/Krach | neu | **ruf** | Panzer |
+| befehl_sammeln, befehl_feuerfrei / befehl_sturm, grossbefehl, banner | `stand`/`forward`/Brüllen `roar` | ja (Befehls-Ereignisse) | ruhig | Anführer |
+| nahkampf, schwer, feind | `sst_*` (beide Seiten gleich) | ja (`schreiterRuf`) | ruhig | Schreiter |
+
+**Ruf-Anlässe** (`ton = ruf`): Rückzug, Panik, verwundet/Sanitäter, niedergehalten (unter Beschuss), Gas, Koloss, Panzer getroffen/Panne. Alles andere ruhig, tief, abgehackt.
+
+## 3. Umfang je Sprecher (für die Kosten auf fal, ca. 0,10 $ je 1000 Zeichen)
+
+| Sprecher | Stimme | Zeilen | davon ruf | Zeichen |
+|---|---|---|---|---|
+| K1 | Brian | 50 | 18 | 602 |
+| K2 | Daniel | 62 | 15 | 979 |
+| K3 | Callum | 35 | 9 | 477 |
+| K4 | George | 26 | 9 | 339 |
+| K5 | Bill | 99 | 27 | 1437 |
+| A1 | Charlie | 49 | 18 | 636 |
+| A2 | Callum | 58 | 15 | 889 |
+| A3 | Bill (schroff) | 41 | 9 | 606 |
+| A4 | Will | 26 | 9 | 355 |
+| A5 | Liam | 106 | 27 | 1510 |
+| **gesamt** | | **552** | **156** | **7830** |
+
+Grob 8 000 Zeichen, also **etwa 0,80 $** für einen Durchgang. Mit Nachgenerierungen (Ausschuss, zweite Versuche) eher 1,50–2,50 $.
 
 ## 4. Beispiele (vollständig in der CSV)
 
-| Anlass | Konkordat | Aschenwacht |
+| Anlass | Konkordat (EN) | Aschenwacht (DE) |
 |---|---|---|
-| anwahl (Fuß) | „Bereit.“ · „Zu Befehl.“ · „Hier.“ · „Wartet auf Befehl.“ | „Bereit.“ · „Hier.“ · „Befehl?“ · „Gruppe hört.“ |
-| befehl (Fuß) | „Verstanden.“ · „Rücken vor.“ · „Wird gemacht.“ | „Bestätigt.“ · „Vorrücken.“ · „Ausgeführt.“ |
-| angriff (Sturm) | „Rein in den Graben!“ · „Räumen!“ · „Schilde vor, drauf!“ | „Zum Sturm!“ · „Durch!“ · „Brecht sie!“ |
-| **rueckzug** (Reiter) | „Abdrehen!“ · „Wenden, zurück!“ | „Abschwenken!“ · „Wenden, zurück!“ |
-| **verwundet** (Panzer) | „Schwer beschädigt!“ · „Feuer im Motorraum!“ | „Schwer beschädigt!“ · „Brand im Heck!“ |
-| grossbefehl | „Keinen Schritt zurück!“ · „Diese Linie hält!“ | „Alle Mann – Angriff!“ · „Ganze Linie vor!“ |
-| erscheinen | „Grabenräumer, zur Stelle!“ · „Räumer und Schilde bereit.“ | „Sturmbrecher, zur Stelle!“ · „Stoßtrupp bereit.“ |
+| anwahl (Linie) | „Ready.“ · „Sir?“ · „Standing by.“ · „Orders?“ | „Bereit.“ · „Hier.“ · „Befehl?“ · „Gruppe hört.“ |
+| befehl (Unterstützung) | „Moving the kit.“ · „Relocating.“ | „Verlegen.“ · „Stellungswechsel.“ |
+| angriff (Sturm) | „Into the trench!“ · „Shields, push!“ | „Zum Sturm!“ · „Brecht sie!“ |
+| rueckzug (Reiter), ruf | „Wheel away!“ · „Break off!“ | „Abschwenken!“ · „Wenden, zurück!“ |
+| grossbefehl | „Not one step back!“ · „This line holds!“ | „Alle Mann – Angriff!“ · „Ganze Linie vor!“ |
+| erscheinen | „Steel riders, reporting!“ · „Squadron under steam.“ | „Sturmbrecher, zur Stelle!“ · „Stoßtrupp bereit.“ |
 
-Ton: sachlich, keine Verherrlichung, keine Formeln echter Armeen; die Aschenwacht nüchtern-hart, das Konkordat etwas ruhiger und förmlicher.
+Ton: sachlich, keine Verherrlichung. Keine echten Länder-, Orts- oder Truppennamen; „For the Crown!“ ist als einziger Pathos-Ruf drin (Enrico: ok).
 
-## 5. Hinweise für V2 (Berater, fal.ai) und V3 (CC)
+## 5. Filter „Schlachtfunk“ (wird in V3 gebaut)
 
-- **V2:** Je Sprecher zuerst die Hörprobe (3–4 Rufe, z. B. `*_anwahl_1`, `*_befehl_2`, `*_rueckzug_1`, `*_tod_1`), Enrico entscheidet, dann der Rest. Not-Anlässe (fett oben) mit „gerufen, gehetzt“ anweisen (Eleven v3 Sprach-Tags), die übrigen „ruhig, knapp, wie über Funk“. Ablage `sound-quelle/Voices/eigene/el/<fraktion>/<id>.mp3` – Dateiname = `id` aus der CSV.
-- **V3:** neue Tonplätze `ruf_<anlass>_<gruppe>_<A|D>` (Pools mit den Fassungen), `RUF_STANDARD` erweitern, neue Abspielstellen für erscheinen, zielfeld, schilde, gegenstoss, dauerfeuer, panzer getroffen/panne; Sprecher je Einheit über die Gruppe (Tabelle 1), Filter „Funk-Gasmaske“ ersetzt `_gm/_gs/_bf`, Rückweg-Schalter. Danach `slotsVon`, Ton-Spur, Pult-Bibliothek (`HOER`).
-- Häufigkeit im Spiel (Vorschlag): Anwählen wie heute über `selectVoice` (Beutel ohne Wiederholung), Befehl bestätigt höchstens jedes zweite Mal, Not-Rufe immer, sonst wie die heutige Seltenheit in `ruf()`.
+- **Ersetzt:** die leichte Funk-Gasmaske und die Stimmfilter `_gm/_gs/_bf/_mr` (tools/stimmfilter.py); Rückweg-Schalter.
+- **Gilt für:** alle Einheiten beider Seiten.
+- **Kette** nach der Hörprobe des Beraters (WebAudio-Vorlage, in V3 in Python nachbauen):
+  1. Tonhöhe ×0,86 (tiefer und langsamer)
+  2. Hochpass 260 Hz
+  3. Low-Shelf 300 Hz +4 dB
+  4. Glocke 1100 Hz, Q 1,4, +7 dB
+  5. Sättigung tanh, k = 5,5
+  6. Tiefpass 2900 Hz
+  7. Kompressor −28 dB, 8:1, Attack 3 ms, Release 120 ms
+  8. Kammfilter: Verzögerung 6 ms, Rückkopplung 0,45, Anteil 0,5 (metallischer Klang)
+  9. Funkrauschen (Bandpass 2200 Hz, leise) über die ganze Länge, dazu ein kurzer Rauschklick (60 ms) am Anfang
+- **Panzer/Kolosse (Bordfunk):** etwas mehr Rauschen.
+- **Schreiter:** Schlachtfunk und danach der Maschinenfilter `roboter`.
+- **Helden:** Helm-Filter, dann Schlachtfunk (Vorschlag).
+
+## 6. V2 und V3
+
+- **V2 (Berater, fal.ai Eleven v3):**
+  - Roh erzeugen, ohne Filter.
+  - Ablage `sound-quelle/Voices/eigene/el/<konkordat|aschenwacht>/<id>.mp3`, `id` wie in der CSV.
+  - `ton = ruf` → Schrei-Hinweis setzen; `ruhig` → tief, abgehackt, wie über Funk.
+- **V3 (CC):**
+  - Schlachtfunk-Filter in stimmfilter.py/sound_bau.
+  - Neue Tonplätze `ruf_<anlass>_<gruppe>_<A|D>` (Pools mit den Fassungen); Sprecher je Einheit über die Tabelle in Abschnitt 1.
+  - Neue Abspielstellen: erscheinen, zielfeld, schilde, gegenstoss, dauerfeuer, Panzer getroffen/Panne.
+  - Alte Plätze (`sv_*`, `panik_*`, `sterben_*` …) aus dem Spiel nehmen; die Dateien bleiben liegen.
+  - Danach `slotsVon`, Pult-Bibliothek (`HOER`), Ton-Spur, Hörprobe vorher/nachher in `tonprobe.html`.
