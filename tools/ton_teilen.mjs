@@ -21,7 +21,7 @@ const benutzt = new Set(), keys = new Set();
 const besucht = new Set(), nimm = p => { if (besucht.has(p)) return; besucht.add(p); if (SND_VAR[p]) for (const q of SND_VAR[p]) nimm(q); if (POOLS[p]) benutzt.add(p); };   // SND_VAR darf auf sich selbst zeigen (cry → cry, scream)
 for (const p of Object.keys(POOLS)) {
   const basis = p.replace(/_(gm|gs|bf|mr)$/, '');
-  if (lit.has(p) || lit.has(basis) || p.startsWith('sv_') || /^(ambient|musik|kulisse|wind|kraehe|glocke)/.test(p)) nimm(p);
+  if (lit.has(p) || lit.has(basis) || p.startsWith('sv_') || p.startsWith('st_') || /^(ambient|musik|kulisse|wind|kraehe|glocke)/.test(p)) nimm(p);
 }
 for (const p of Object.keys(SND_VAR)) if (lit.has(p)) nimm(p);
 for (const o of Object.values(TW)) for (const w of Object.values(o)) { if (w.p) nimm(w.p); if (w.k) keys.add(w.k); }

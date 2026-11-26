@@ -365,7 +365,8 @@ function visSync(what) { if (!G) return; const cp = a => (a || []).map(k => ({ .
 function ctrlSync() { if (!G) return; const old = VIS.ctrl || {};
     for (const o of OBJECTIVES) { const a = old[o.id], b = (G.ctrl || {})[o.id]; if (a === b || !b) continue;
       const me = human('A') && !human('D') ? 'A' : human('D') && !human('A') ? 'D' : null;   // gegen die KI: Verlust der eigenen Seite eigens hörbar
-      if (me && a === me && b !== me) { playSound('verloren', 0.55); verlorenT = performance.now(); } else playSound(b === 'D' ? 'erobert_aschenwacht' : 'erobert_konkordat', 0.55, b); }   /* SP-3 (84.3): je Seite ein eigener Tonplatz, im Ton-Pult unter „Gelände und Gebäude“ wählbar */
+      if (me && a === me && b !== me) { playSound('verloren', 0.55); verlorenT = performance.now(); } else playSound(b === 'D' ? 'erobert_aschenwacht' : 'erobert_konkordat', 0.55, b);
+      if (stimmenNeu()) { const cu = G.units.find(x => x.side === b && x.c === o.c && x.r === o.r && E.alive(x)); if (cu) setTimeout(() => stimme(cu, 'zielfeld'), 450); } }   // V3: Zielfeld genommen   /* SP-3 (84.3): je Seite ein eigener Tonplatz, im Ton-Pult unter „Gelände und Gebäude“ wählbar */
     VIS.ctrl = { ...(G.ctrl || {}) }; }
 function addDU(u) { const [x, y] = L ? center(u.c, u.r) : [0, 0]; DU.set(u.id, { x, y, face: u.face, str: u.str, mor: u.mor, alpha: 1, shake: 0, lunge: null, vs: vsOf(u) }); }
 function syncAll() {
@@ -2524,7 +2525,71 @@ function heldBeiEreignis(e, u) {   // true = Ereignis gehört einem Helden mit e
 }
 const fussTrupp = u => !!(u && TYPES[u.type] && !['walker', 'cav'].includes(TYPES[u.type].cls) && !TYPES[u.type].aerial);
 let rufRoutT = 0, rufSterbenN = 0;
+// ---------- V3 (Punkt 112, 2026-11-26): neue Stimmen – 5 Sprecher je Seite, Schlachtfunk (entwurf/STIMMEN_PLAN.md, Texte entwurf/stimmen_texte.csv) ----------
+// Plätze st_<gruppe>_<anlass> (Seite A/D = Sprache), Erscheinen st_erscheinen_<typ>, Helden st_held_<faust|kuerass>_<anlass>, Hünen st_huenen_<anlass> (Maschine).
+// Ablösung der alten Sprüche (sv_*, ruf_*, panik_*, sterben_*, sst_*, hst_*, medic/panic/forward/stand/roar/charge/comeon); Rückweg window.STIMMEN_ALT (vor dem Laden setzen).
+const stimmenNeu = () => !window.STIMMEN_ALT;
+const ST_GRUPPE = { kohorte: 'linie', grenadier: 'linie',
+  melder: 'unterst', fernsprech: 'unterst', feldscher: 'unterst', pionier: 'unterst', scharf: 'unterst', mahlwerk: 'unterst', moerser: 'unterst', flammen: 'unterst', mineur: 'unterst', werkstatt: 'unterst', feldkanone: 'unterst', haubitze: 'unterst', ballon: 'unterst',
+  signal: 'unterst', heiler: 'unterst', pionierD: 'unterst', buechse: 'unterst', sense: 'unterst', minenwerfer: 'unterst', brand: 'unterst', gasschutz: 'unterst', munition: 'unterst', pirsch: 'unterst', geschuetz: 'unterst',
+  raeumer: 'sturm', sturm: 'sturm', schwer: 'sturm', panzerk: 'sturm', stahl: 'sturm', huenen: 'huenen', reiter: 'reiter', lanzeD: 'reiter',
+  hauptA: 'fuehrer', generalA: 'fuehrer', hauptD: 'fuehrer', generalD: 'fuehrer', banner: 'fuehrer', koloss: 'panzer', sturmpz: 'panzer', bohrer: 'panzer',
+  turm: 'schreiter', orden: 'schreiter', kreuz: 'schreiter', knecht: 'schreiter', saeger: 'schreiter', klaue: 'schreiter', faust: 'held_faust', kuerass: 'held_kuerass' };   // Löwenoger: nur Brüllen
+const ST_ALT = new Set(['medic', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon']);   // alte gesprochene Rufe – mit den neuen Stimmen still
+const ST_NOT = new Set(['verwundet', 'rueckzug', 'panik', 'tod', 'schwer_verwundet', 'schwer']);   // Not: Vorrang, darf über einen laufenden Ruf
+const ST_SPERRE = new Map(); let stBis = 0, stBefehlZ = 0, stTodZ = 0;
+function stPlatz(u, anlass) { const g = u && ST_GRUPPE[u.type]; if (!g) return null; const p = anlass === 'erscheinen' && !g.startsWith('held_') ? 'st_erscheinen_' + u.type : 'st_' + g + '_' + anlass; return SND_POOLS && SND_POOLS[p] ? p : null; }
+function stimme(u, anlass, o = {}) {
+  const p = stPlatz(u, anlass); if (!p) return false;
+  const t = performance.now(), not = ST_NOT.has(anlass), sk = u.id + ':' + anlass;
+  if (!not && !o.immer && t < stBis) return false;   // höchstens ein Ruf zugleich
+  if (t - (ST_SPERRE.get(sk) || -1e9) < (o.sperre != null ? o.sperre : 7000)) return false;   // je Einheit und Anlass
+  if (!not && t - (ST_SPERRE.get(u.id) || -1e9) < (o.abstand != null ? o.abstand : 2500)) return false;   // je Einheit Abstand
+  ST_SPERRE.set(sk, t); ST_SPERRE.set(u.id, t); stBis = t + (o.lang || 1800);
+  playSound(p, o.vol || 0.5, u.side, { von: u, noGap: true, rate: 1 }); return true;
+}
+const stHeld = u => !!(u && HELD_ST[u.type]);
+function stimmeBeiEreignis(e, u) {
+  const ua = unitById(e.a != null ? e.a : e.u);
+  switch (e.t) {
+    case 'move': if (!u) break;
+      if (istSchreiter(u)) { if (!stimme(u, 'befehl')) { const feind = G.units.find(o => o.side !== u.side && E.alive(o) && TYPES[o.type].cls === 'walker' && E.dist(o.c, o.r, u.c, u.r) <= 6); if (feind && performance.now() - sstFeindT[u.side] > 30000 && stimme(u, 'feind')) sstFeindT[u.side] = performance.now(); } break; }
+      if (stHeld(u)) { stimme(u, 'bewegen'); break; }
+      if (human(u.side) ? (++stBefehlZ % 2 === 0) : (e.path && e.path.length > 2 && Math.random() < 0.3)) stimme(u, 'befehl'); break;   // Befehl bestätigt: eigene Züge etwa jedes zweite Mal (Enrico 22:45), KI selten
+    case 'fire': if (e.reaction || !ua) break; if (!stimme(ua, 'feuer')) stimme(ua, 'angriff'); break;
+    case 'zweit': case 'faust': if (ua) stimme(ua, 'angriff'); break;
+    case 'melee': if (!ua) break; if (istSchreiter(ua)) stimme(ua, 'nahkampf'); else stimme(ua, 'angriff'); break;
+    case 'supp': if (u) stimme(u, 'niedergehalten'); break;
+    case 'retreat': if (u) stimme(u, 'rueckzug'); break;
+    case 'rout': if (u && !stimme(u, 'panik')) stimme(u, 'rueckzug'); break;
+    case 'hit': if (!u || !(e.dmg > 0) || e.freeblow) break;
+      if (stHeld(u)) { if (e.str < 3.5 && !u._stSchwer) { u._stSchwer = true; stimme(u, 'schwer_verwundet'); } else stimme(u, 'getroffen', { sperre: 8000 }); break; }
+      if (istSchreiter(u)) { if (e.str < 3.5 && !u._stSchwer) { u._stSchwer = true; stimme(u, 'schwer'); } else stimme(u, 'getroffen', { sperre: 8000 }); break; }
+      if (ST_GRUPPE[u.type] === 'panzer') { if (e.str < 3.5 && !u._stSchwer) { u._stSchwer = true; stimme(u, 'verwundet'); } else stimme(u, 'getroffen', { sperre: 9000 }); break; }
+      if (e.str < 3.5 && !u._stSchwer) { u._stSchwer = true; stimme(u, 'verwundet'); } break;
+    case 'destroyed': { const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 4000 ? unitById(letzterAngreifer.id) : null; if (stHeld(la) && u && la.side !== u.side) stimme(la, 'gegner_erledigt');
+      if (!u) break; if (istSchreiter(u) || ST_GRUPPE[u.type] === 'panzer' || TYPES[u.type].cmd) stimme(u, 'tod', { immer: true }); else if (++stTodZ % 2 === 0) stimme(u, 'tod'); break; }
+    case 'heldfall': if (stHeld(u)) stimme(u, 'tod', { immer: true }); break;
+    case 'order': if (!u) break; stimme(u, e.kind === 'rally' ? 'befehl_sammeln' : e.kind === 'fire' ? 'befehl_feuerfrei' : 'befehl_sturm', { immer: true, sperre: 3000 }); break;
+    case 'bigorder': if (u) stimme(u, 'grossbefehl', { immer: true, sperre: 0 }); break;
+    case 'banner': if (u) stimme(u, 'banner', { immer: true }); break;
+    case 'rally': if (u) stimme(u, 'sammeln'); break;
+    case 'shell': if (e.strike && ua) stimme(ua, 'feuer'); break;   // Feuerschlag anfordern
+    case 'pzgranate': if (u && !stimme(u, 'granate')) stimme(u, 'angriff'); break;
+    case 'handgranate': if (e.wurf && ua && !stimme(ua, 'granate')) stimme(ua, 'angriff'); break;
+    case 'gas': if (!e.late && u) stimme(u, 'gas'); break;
+    case 'fear': if (u) stimme(u, 'koloss'); break;
+    case 'entsetzen': if (!e.ok && u) stimme(u, 'koloss'); break;
+    case 'ow': case 'sperr': if (u) stimme(u, 'feuerbereit'); break;
+    case 'shields': if (u) stimme(u, 'schilde', { immer: true }); break;
+    case 'counterstrike': if (u) stimme(u, 'gegenstoss', { immer: true }); break;
+    case 'dauerfeuer': if (u) stimme(u, 'dauerfeuer', { immer: true }); break;
+    case 'breakdown': case 'stuck': if (u) stimme(u, 'panne'); break;
+    case 'spawn': if (u) stimme(u, 'erscheinen', { immer: true, sperre: 0 }); break;   // Nachschub
+  }
+}
 function rufBeiEreignis(e, u) {
+  if (stimmenNeu()) { stimmeBeiEreignis(e, u); return; }   // V3: neue Stimmen
   const sd = x => { const v = x != null && unitById(x); return v ? v.side : null; };
   if (schreiterBeiEreignis(e, u) || heldBeiEreignis(e, u)) return;
   switch (e.t) {
@@ -2566,19 +2631,20 @@ function tonWahl0(platz, u, von, an) { const tz = x => (x && TONWAHL[x.type] ? [
   return null; }
 function tonPick(platz, u, side) { if (window.__tonSpur) window.__tonSpur({ ps: platz, u: null, k: [], z: null, von: u ? u.id : null });   // Ton ziehen, der nicht über playSound läuft (Schleifen, Motor, Sperrfeuer-Abschüsse): Pult-Wahl der Einheit zuerst
   const tw = tonWahl(platz, null, u); return tw && tw.aus ? null : tw && tw.k && SND[tw.k] ? tw.k : sndPick(tw && tw.p ? tw.p : platz, side || (u && u.side)); }
-function playSound(name, vol = 0.6, side, opt) {   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
+function playSound(name, vol = 0.6, side, opt) {   // V3: alte gesprochene Rufe sind mit den neuen Stimmen still (ST_ALT, vor der Ton-Spur)   // opt: { noGap, rate, dur, u (Sprecher → Stimmfilter), v (Filter fest) } – Salven: kein Mindestabstand, eigene Tonhöhe; dur: nach so vielen ms kurz ausblenden (Einzelschuss ohne Nachhall)
+  if (ST_ALT.has(name) && stimmenNeu()) return;
   const wt = WAFFE_TOK[name] || null; if (wt) { name = wt.pool; opt = { ...(opt || {}), von: wt.u }; }   // Waffenton: Platz und Schütze aus der Marke
   if (window.__tonSpur && !(opt && opt.gezogen)) window.__tonSpur({ ps: name, u: opt && opt.u ? opt.u.id : null, k: tonKontext.map(x => x.id), z: tonZiel ? tonZiel.id : null, von: opt && opt.von ? opt.von.id : null, an: opt && opt.an ? opt.an.id : null });   // Ton-Spur (tools/ton_spur.mjs): Platz, Sprecher, Einheiten des Ereignisses – vor Pult-Wahl und allen Abbrüchen
   const tw = opt && opt.spur ? null : tonWahl(name, opt && opt.u, opt && opt.von, opt && opt.an); if (tw) { if (tw.aus) return; if (tw.vf) vol *= tw.vf; if (tw.rate) opt = { ...(opt || {}), rate: (opt && opt.rate || 0.94 + Math.random() * 0.12) * tw.rate }; }   // F91
   let gapKey = name; name = tw && tw.k ? tw.k : wt ? waffeFest(tw && tw.p ? tw.p : name, wt.u) : sndPick(tw && tw.p ? tw.p : name, side || (opt && opt.u && opt.u.side), opt && (opt.v || stimmVar(opt.u))) || (tw && tw.p) || name; if (wt) gapKey = name;
-  if (opt && opt.u && opt.u.type && E.MAP && E.MAP.winter && /^(sv_|pain|medic|cry|scream|panic|forward|roar|stand|charge|comeon|husten|ruf_|panik_|sterben_|stimme)/.test(gapKey)) try { atem(opt.u); } catch (e) {}   // Atemwolke bei Stimmen (Winter)
+  if (opt && opt.u && opt.u.type && E.MAP && E.MAP.winter && /^(sv_|st_|pain|medic|cry|scream|panic|forward|roar|stand|charge|comeon|husten|ruf_|panik_|sterben_|stimme)/.test(gapKey)) try { atem(opt.u); } catch (e) {}   // Atemwolke bei Stimmen (Winter)
   if (MISCHTON[name] && !(opt && opt.spur)) { if (soundOn && !(speed >= INSTANT && qRunning)) for (const [k, v, ms, r] of MISCHTON[name]) setTimeout(() => playSound(k, vol * v, side, { ...(opt || {}), noGap: true, spur: true, rate: (opt && opt.rate || 0.94 + Math.random() * 0.12) * r }), ms); return; }   // eigener Mischton aus dem Ton-Pult: Spuren versetzt übereinander
   if (!soundOn || !SND[name] || (speed >= INSTANT && qRunning)) return;
   if (gapKey === 'whistle' && performance.now() - verlorenT < 4000) return;
   const t = performance.now(); if (!(opt && opt.noGap)) { if (lastSnd[gapKey] != null && t - lastSnd[gapKey] < (SND_GAP[gapKey] || SND_GAP[name] || 100)) return; lastSnd[gapKey] = t; }   // nicht mehrfach im selben Augenblick
   window.__sndBy = window.__sndBy || {}; window.__sndBy[name] = (window.__sndBy[name] || 0) + 1;
   window.__snd = (window.__snd || 0) + 1;
-  const stimme = STIMM_PL.has(gapKey), fz = DUCK_PL.has(gapKey); if (stimme) vol *= STIMM_VOL;
+  const stimme = STIMM_PL.has(gapKey) || gapKey.startsWith('st_'), fz = DUCK_PL.has(gapKey); if (stimme) vol *= STIMM_VOL;
   try { const a = SND[name].cloneNode(); vol = Math.min(1, vol * (stimme ? 1 : effektVol) * mischF(name, side || sndSide)); a.volume = fz ? vol * duckF() : vol; anBus(a, stimme ? 's' : 'e', opt && opt.hall); a.playbackRate = opt && opt.rate ? opt.rate : 0.94 + Math.random() * 0.12; const p = a.play(); if (p && p.catch) p.catch(() => {});
     if (fz) duckLauf.push({ a, vol }); if (stimme) duckStimme(a);
     if (opt && opt.dur) { let k = 0; setTimeout(function fade() { k++; try { a.volume = Math.max(0, vol * (1 - k / 5)); } catch (e) {} if (k < 5) setTimeout(fade, 12); else a.pause(); }, opt.dur); }   // ca. 60 ms ausblenden
@@ -3482,6 +3548,10 @@ function stimmZiehen(pool) {   // Beutel: alle Sprüche der Stimme gemischt, nac
 }
 function klickStimme(u) { refreshSpent(); if (spent.has(u.id)) playSound('klick', 0.2, null, { noGap: true }); else selectVoice(u); }   // ausgegraut (fertig): kein Spruch
 function selectVoice(u) {
+  if (stimmenNeu() && u && u.type !== 'oger') { if (!soundOn || speed >= INSTANT) return;   // V3: Anwählen mit den neuen Stimmen (Motor bzw. Pferd wie bisher darunter)
+    if (PANZER.includes(u.type)) { const mk = tonPick('motor_auswahl', u); if (mk) motorRev(mk, { vol: 0.13, dauer: 0.7 }); }
+    if (TYPES[u.type].cls === 'cav') playSound('pferd_auswahl', 0.26, u.side, { noGap: true, von: u });
+    stimme(u, stHeld(u) ? 'auswahl' : 'anwahl', { immer: true, sperre: 900, abstand: 0, vol: 0.55 }); return; }
   if (u && HELD_ST[u.type] ? heldRuf(u, 'auswahl') : u && istSchreiter(u) ? schreiterRuf(u, 'auswahl') : u && ruf('auswahl', u.side)) return;   // Helden: eigene Stimme (etwa jede zweite Auswahl)   // Schreiter: Roboterstimme statt Truppenruf   // Ruf „Auswahl“ aus dem Ton-Pult (jede dritte Auswahl) statt des Spruchs
   if (window.__tonSpur && u) window.__tonSpur({ sel: u.type === 'oger' ? null : 'sv_' + stimmSatz(u) + '_' + u.side, u: u.id });   // Ton-Spur: Spruch beim Anklicken (läuft nicht über playSound)
   if (!soundOn || speed >= INSTANT) return;
@@ -4696,6 +4766,7 @@ function aufstellFertig() {
   if (!G || !G.aufstellung) return; aufstellWahl = null; aufstellZiel = null;
   if (aufstellSeiten.length) { G.aufstellung = aufstellSeiten.shift(); camHome(true); aufstellAnzeige(); return; }
   G.aufstellung = null; aufstellAnzeige(); E.startTurn(G); syncAll(); updateUI(); playSound('whistle', 0.5); setTimeout(rundenSchild, 500);   // Rundenschild auch für Runde 1
+  if (stimmenNeu()) setTimeout(() => { const gu = G.units.find(x => human(x.side) && TYPES[x.type].cmd === 2); if (gu) stimme(gu, 'erscheinen', { immer: true, sperre: 0 }); }, 2200);   // V3: Erscheinen beim Schlachtbeginn (General)
   banner(E.MAP.name, `Zielfelder besetzen und halten · wer zuerst ${G.goal} Siegpunkte hat, gewinnt`);
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
