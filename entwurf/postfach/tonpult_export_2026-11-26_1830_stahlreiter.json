@@ -1,0 +1,11 @@
+{
+ "werkzeug": "Claude (Punkt 101, vorläufige Zuordnung für die Lanzenreiter, bis Enrico im Pult wählt)",
+ "exportiert": "2026-11-24T00:00:00",
+ "hinweis": "Stahlreiter-Pferdetöne den Lanzenreitern zugeordnet: Anwählen Schnauben durch Vox-Gitter, Ziehen Galopp, Getroffen Aufbäumen bzw. Wiehern. Absichtlich älter datiert, damit Enricos neuester Export der maßgebliche bleibt.",
+ "aenderungen": [
+  { "einheit": "reiter", "platz_id": "pferd", "wahl": "p:stahlreiter_maske_schnauben2", "lautstaerke": 0.26, "tonhoehe": 1 },
+  { "einheit": "reiter", "platz_id": "ziehen", "wahl": "p:stahlreiter_galopp1", "lautstaerke": 0.55, "tonhoehe": 1 },
+  { "einheit": "reiter", "platz_id": "unruhe", "wahl": "p:stahlreiter_aufbaeumen1", "lautstaerke": 0.5, "tonhoehe": 1 },
+  { "einheit": "reiter", "platz_id": "wiehern", "wahl": "p:stahlreiter_wiehern1", "lautstaerke": 0.35, "tonhoehe": 1 }
+ ]
+}
