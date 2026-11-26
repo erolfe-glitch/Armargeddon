@@ -1,3 +1,46 @@
+## 2026-11-26 – R4d (Punkt 108) und V1 Stimmen-Plan (Punkt 102) (`52046c7` mit index.html, `8cedd29`)
+
+Gepusht.
+- **Hänger:** keine. Partietest ohne Fehler, Regeltest ok.
+- **Vorschau:** kurz offen, dann geschlossen.
+- **sim:** 3 Läufe nacheinander, **kein Absturz**.
+
+### R4d
+1. **Stahlreiter zu hoch:**
+   - **Ursache:** Seit K1 steht der Stahlreiter in Grauwall auf dem Grabenfeld (1,7). Dort liegt der Graben am oberen Feldrand. Die Reiter wurden wie Fußtruppen auf die Grabenplätze gestellt und standen deshalb ein Feld zu hoch.
+   - Das war kein Fehler des neuen Bogens. Mit dem alten Bogen war es genauso; vorher stand der Reiter nur im offenen Feld.
+   - **Behoben:** Reiter nehmen nie die Grabenplätze und stehen immer auf ihren drei Feldplätzen im eigenen Ring (Rückweg `REITER_GRABEN_ALT`).
+   - Bilder: `entwurf/probe/r4d/stahlreiter_graben_vorher.jpg` / `_nachher.jpg`. Im offenen Feld war es schon richtig: `entwurf/probe/r4/reiter_nachher.jpg`.
+2. **Farbe Stahlreiter:** bleibt so.
+3. **Krähenfurt:** Dorfplatz 2, Gehöft 3.
+4. **Elite je −5:**
+   - Neue Preise: Stahlreiter 55, Grabenräumer 60, Sturmbrecher 115, Löwenoger 110, Schwere Grabenwacht 30, Hünen 85, Panzerknechte 60. Im Info-Fenster steht die Zeile „Elite-Abschlag −5“ (`P.ELITE_ABSCHLAG`).
+   - **Budget:** Das Armee-Budget rechnet ohne den Abschlag. Es bleibt also wie vorher (z. B. Grauwall 945/885), und die gesparten Punkte kommen beim Spieler an.
+5. **Vierte Grabenräumer-Figur:** in U4, jetzt nicht.
+
+- **Gegenmessung** (`MISCHEN=1`, je 100 Schlachten), Siegquote Konkordat:
+  - **Krähenfurt 59 %** (vorher 90 %, 14,3 Runden)
+  - Grauwall 50 %
+  - Sankt Ruß 51 %
+
+### V1 Stimmen-Plan (nur Text, nichts gebaut)
+- **`entwurf/STIMMEN_PLAN.md`:**
+  - Sprecher-Vorschlag: je Fraktion 3 menschliche Sprecher (Fußtruppen / Sturm und Reiter / Anführer und Panzerbesatzung) plus die vorhandene Maschinenstimme.
+  - Tabelle aller Anlässe: was heute klingt, was fehlt, ob es schon eine Abspielstelle gibt.
+  - Übersicht Gruppe × Anlass, Beispiele.
+  - Hinweise für V2 (Hörprobe zuerst, Dateiname = id) und V3 (neue Plätze, neue Abspielstellen für Erscheinen, Zielfeld, Schilde, Gegenstoß, Dauerfeuer, Panzer getroffen/Panne).
+- **`entwurf/stimmen_texte.csv`:**
+  - 477 Zeilen, Semikolon, UTF-8.
+  - Spalten id, fraktion, sprecher, anlass, einheit, text.
+  - Je Anlass 3–4 Fassungen, Erscheinen je Einheit 2 (22 Konkordat-, 25 Aschenwacht-Einheiten).
+  - Alles Deutsch, auch das Konkordat, 1–5 Wörter.
+  - Erzeugt mit `python tools/stimmen_plan.py`; Texte dort ändern.
+- **Ausgenommen:** Helden (eigene Stimmen) und der Löwenoger (Brüllen).
+
+**Fragen an Enrico:**
+1. Sprecher-Aufteilung so? (Tabelle 1 im Plan)
+2. Sollen die heutigen Anklicken-Sprüche (Suno) sowie Panik und Sterben ganz durch die neuen festen Sprecher ersetzt werden? Das ist mein Vorschlag, damit alles aus einem Guss klingt.
+3. Texte durchsehen: Gibt es Rufe, die dir nicht gefallen? Dann ändere ich sie in `tools/stimmen_plan.py`.
 ## 2026-11-26 – R4c Bilder, Elite-Messung (107), Krähenfurt-Check (105) (`7d9eece` mit index.html)
 
 Gepusht.
