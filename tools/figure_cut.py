@@ -420,6 +420,7 @@ FIGUREN_POSEN = {
     # R4 (2026-11-26): zusammengelegte Trupps, Bögen in ui-quelle/figuren/reskin/ (Quelle über quelle()); hoehe = höchste Pose in px (320 = 1 SH), blitz = Mündungsfeuer weg
     'aschenwacht_sturm_reskin': dict(n=4, reihen=2, grund='sturm', hoehe=350, blitz=[2]),   # Sturmbrecher: Granatwurf, MG hüfthoch feuernd, Spaten, Getroffen
     'konkordat_sturm_reskin': dict(n=4, reihen=2, grund='sturm', hoehe=320),   # Grabenräumer: Keule, Granatwurf, mit Sturmschild vorstoßend, hinter dem Schild mit Revolver
+    'konkordat_sturm_getroffen': dict(n=4, reihen=2, grund='sturm', posehoehe=(3, 'konkordat_sturm_reskin_3')),   # R4c (106.6): Getroffen mit Schild, Getroffen mit Keule, geduckt hinter dem Schild (Schilde vor), Getroffen 2; Maß: Schild-Pose = Schild-Pose des Grabenräumers
 }
 RESKIN = SRC / 'reskin'
 
@@ -528,6 +529,7 @@ def figuren_posen(name, out):
     s = ref * o.get('f', 1.0) / hmax; out.mkdir(parents=True, exist_ok=True)
     if o.get('refpose'): s = ref * o.get('f', 1.0) / figs[o['refpose'] - 1].shape[0]   # Helden (2026-11-21): diese Pose bekommt die Grundgröße
     if o.get('hoehe'): s = o['hoehe'] / hmax   # R4: feste Höhe der höchsten Pose
+    if o.get('posehoehe'): j_, ref_ = o['posehoehe']; s = Image.open(GAME / f'{ref_}.png').height / figs[j_ - 1].shape[0]   # R4c: Pose j so hoch wie ein fertiges Spielbild
     if o.get('massvon'):
         if o['massvon'] not in MASS: sys.exit(f"{name}: erst {o['massvon']} im selben Lauf schneiden (Maßstab)")
         s = MASS[o['massvon']]

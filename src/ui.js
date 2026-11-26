@@ -1521,6 +1521,7 @@ const BW_BODEN = ['', 'brightness(0.9) saturate(0.84)', 'brightness(0.8) saturat
 const BW_SCH = [1, 1.25, 1.5, 1.9];                                  // Kontaktschatten unter den Figuren
 const bwA = a => Math.min(0.95, a * BW_SCH[BW]);
 const BWI = new Map(), BWK = {};
+const BW_FARBTREU = /stahlreiter_reskin/;   // R4c (106.4): Stahlreiter wie gemalt – Plastik-Karte ja, keine zusätzliche Sättigung/Kontrast (wirkten sonst grell rot)
 function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plastik-Karte ja, Kontrast/Sättigung der Figuren nein
   if (!BW) return im;
   const ck = key + ':' + BW; if (BWI.has(ck)) return BWI.get(ck);
@@ -1531,7 +1532,7 @@ function bwBild(key, im, nurKarte) {   // nurKarte: Gelände-Bausteine – Plast
   const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0);
   const id = x.getImageData(0, 0, W, H), p = id.data;
   let kd = null; if (km) { x.clearRect(0, 0, W, H); x.imageSmoothingQuality = 'high'; x.drawImage(km, 0, 0, W, H); kd = x.getImageData(0, 0, W, H).data; }
-  const f = BW_KARTE[BW] / 510 * 255, { sat, kon } = nurKarte ? { sat: 1, kon: 1 } : BW_FIG[BW], piv = 0.38 * 255;
+  const f = BW_KARTE[BW] / 510 * 255, { sat, kon } = nurKarte || BW_FARBTREU.test(key) ? { sat: 1, kon: 1 } : BW_FIG[BW], piv = 0.38 * 255;
   const licht = BW === 3 ? 40 : 0;   // Probe „sehr stark“: gerichtetes Licht von oben links (heller oben links, dunkler unten rechts)
   for (let i = 0; i < p.length; i += 4) {
     if (!p[i + 3]) continue;
@@ -1668,7 +1669,7 @@ const POSE_SETS = { /* Stufe-3-Schreiter (Enrico 2026-11-22): Einzelmodelle mit 
   // Posenbögen 2026-11-20 (Grundbogen + <bogen>_posen: Ausholen, Loslassen, Graben, Getroffen bzw. Draht schneiden, Haftladung, Graben, Getroffen).
   // Grundbögen sind unterschiedlich geordnet: Konkordat-Sturm 1 Ruhe, 3 kniend zielen, 4 Keule; Aschenwacht-Sturm 1 Spaten, 2 Keule, 4 Ruhe; Pioniere 1 Ruhe, 2 Schaufel, 3 kniend (Ladung/Mine)
   // R4 (2026-11-26): neue Bögen der zusammengelegten Trupps (reskin), Ruhe je Figur aus FIGMAP ruhe; Konkordat-Getroffen noch aus dem alten Posenbogen (kein neues Bild)
-  raeumer: { kolben: 'sturm_reskin_1', ausholen: 'sturm_reskin_2', loslassen: 'sturm_reskin_2', halten: 'sturm_reskin_3', lauf: 'sturm_reskin_3', getroffen: 'sturm_posen_4' },
+  raeumer: { kolben: 'sturm_reskin_1', ausholen: 'sturm_reskin_2', loslassen: 'sturm_reskin_2', halten: 'sturm_getroffen_3', lauf: 'sturm_reskin_3', getroffen: 'sturm_getroffen_1', getroffen2: 'sturm_getroffen_2' },   // R4c (106.6): Getroffen mit Schild bzw. mit Keule (zufällig), Schilde vor = geduckt hinter dem Schild
   sturm: { kolben: 'sturm_reskin_3', ausholen: 'sturm_reskin_1', loslassen: 'sturm_reskin_1', anlegen: 'sturm_reskin_2', knien: 'sturm_reskin_2', graben: 'sturm_reskin_3', getroffen: 'sturm_reskin_4' },
   pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen; Nahkampf weiter mit der Schaufel
   pionierD: { bereit: 'pionier_1', kolben: 'pionier_posen2_4', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen, Nahkampf-Vorstoß mit Gewehr

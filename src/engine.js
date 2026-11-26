@@ -264,6 +264,7 @@ function costParts(k) {
   const base = 6 * A + 5 * Z + 5 * t.mv - 45, abil = [];
   if (ABIL[k]) abil.push(ABIL[k]);
   if (t.zweiSchlag) abil.push(['Zwei Schläge', 10]);   // Punkt 106
+  if (TOG.ELITE_RABATT && ['reiter', 'raeumer', 'oger', 'sturm', 'schwer', 'huenen', 'panzerk', 'stahl'].includes(k) && (!TOG.ELITE_TYP || TOG.ELITE_TYP.split(',').includes(k))) abil.push(['Elite-Abschlag (Messung)', -TOG.ELITE_RABATT]);   // Punkt 107: nur Sim-Messung, nicht eingebaut
   if (c === 'walker') abil.push(['Pannen', -10]);
   if (ADJ[k]) abil.push(['Abgleich', ADJ[k]]);
   const total = Math.max(15, Math.round((base + abil.reduce((n, a) => n + a[1], 0)) / 5) * 5);
@@ -1260,7 +1261,8 @@ function kantenGelaende(map) {
     out[kKey(o.c, o.r, n1c, n1r)] = 'sandsack'; out[kKey(n1c, n1r, n2c, n2r)] = 'sandsack'; }
   return out;
 }
-function kantenBau(id) { const out = {}; for (const [c, r, seite, art] of KANTEN_KARTE[id] || []) for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); if (!inMap(nc, nr) || (seite === 'ost' ? nc !== c + 1 : nc !== c - 1)) continue; out[kKey(c, r, nc, nr)] = art; } return out; }
+function kantenBau(id) { const out = {}, ohne = (TOG.KANTE_OHNE || '').split(';');   /* Punkt 105: Messung, einzelne Kanten aus (KANTE_OHNE="7,4;8,5") */
+  for (const [c, r, seite, art] of KANTEN_KARTE[id] || []) if (!ohne.includes(c + ',' + r)) for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); if (!inMap(nc, nr) || (seite === 'ost' ? nc !== c + 1 : nc !== c - 1)) continue; out[kKey(c, r, nc, nr)] = art; } return out; }
 function kanteAt(G, c1, r1, c2, r2) { return (!kanteAus() && G.kanten && G.kanten[kKey(c1, r1, c2, r2)]) || null; }
 function kantenVon(G, c, r) { const out = []; if (kanteAus() || !G.kanten) return out; for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); const a = inMap(nc, nr) && kanteAt(G, c, r, nc, nr); if (a) out.push({ k, c: nc, r: nr, art: a }); } return out; }
 const axXY = (c, r) => { const [q, a] = toAx(c, r); return [1.5 * q, Math.sqrt(3) * (a + q / 2)]; };
