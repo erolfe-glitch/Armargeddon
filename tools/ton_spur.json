@@ -1,6 +1,6 @@
 {
-  "erzeugt": "2026-11-26T22:10:31.120Z",
-  "ui_hash": "58dd59e28554dfc9be2418cd43513d34fd9ab553",
+  "erzeugt": "2026-11-26T22:23:04.864Z",
+  "ui_hash": "7e5448e904119e3e2896e505b20556c92d512b77",
   "tempo": 12,
   "hinweis": "a = Einheit handelt, z = Einheit ist Getroffene; wahl = wie die Pult-Wahl (TONWAHL) die Einheit an dieser Stelle sieht: sp Sprecher, a/z im Ereignis (nicht Ziel/Ziel), ok = nicht im Ereignis, fest = Ton als fester Schlüssel gezogen (Wahl greift nicht) · 2026-11-24: koloss, sturmpz aus Teil-Lauf übernommen (Dampfpfeife) · grenadier (Handgranaten-Fähigkeit) aus Teil-Lauf · feldkanone (Panzergranate) aus Teil-Lauf Ordensschreiter neu gemessen 2026-11-26 (SP-3).",
   "typen": {
@@ -10098,11 +10098,7 @@
           "ziehen_draht",
           "ziehen_barrikade",
           "ziehen_marsch",
-          "ziehen_feindmaschine",
-          "faehigkeit_durchbruch:grenadier",
-          "faehigkeit_durchbruch:huenen",
-          "faehigkeit_durchbruch:lanzeD",
-          "faehigkeit_durchbruch:sense"
+          "ziehen_feindmaschine"
         ],
         "schritte": [
           "ziehen_offen",
@@ -10119,8 +10115,6 @@
         ],
         "held_dampfstoss": [
           "ziehen_offen",
-          "ziehen_marsch",
-          "ziehen_feindmaschine",
           "nahkampf:grenadier",
           "nahkampf:huenen",
           "nahkampf:sturmpz",
@@ -10159,12 +10153,12 @@
         "einschlag_abpraller": [
           "schuss_nur_aus_turm:huenen"
         ],
-        "neigh": [
+        "pferd_unruhe": [
           "schuss_nur_aus_turm:lanzeD",
           "nahkampf:lanzeD",
           "faehigkeit_durchbruch:lanzeD"
         ],
-        "pferd_unruhe": [
+        "neigh": [
           "schuss_nur_aus_turm:lanzeD",
           "nahkampf:lanzeD",
           "faehigkeit_durchbruch:lanzeD"
@@ -10235,6 +10229,12 @@
         "whistle": [
           "ankunft"
         ],
+        "st_held_faust_spezial": [
+          "faehigkeit_durchbruch:grenadier",
+          "faehigkeit_durchbruch:huenen",
+          "faehigkeit_durchbruch:lanzeD",
+          "faehigkeit_durchbruch:sense"
+        ],
         "held_dampf": [
           "faehigkeit_durchbruch:grenadier",
           "faehigkeit_durchbruch:huenen",
@@ -10267,17 +10267,8 @@
           "freischlag:grenadier",
           "vernichtet:grenadier"
         ],
-        "gasmaske_2": [
-          "nahkampf:sturmpz",
-          "nahkampf:knecht",
-          "gegenschlag:knecht",
-          "getroffen:grenadier",
-          "getroffen:sense",
-          "getroffen:sturmpz",
-          "getroffen:knecht",
-          "getroffen:geschuetz"
-        ],
         "grunzen": [
+          "nahkampf:sturmpz",
           "nahkampf:knecht",
           "gegenschlag:knecht",
           "getroffen:grenadier",
@@ -10286,6 +10277,15 @@
           "getroffen:knecht",
           "getroffen:geschuetz",
           "feuer"
+        ],
+        "gasmaske_2": [
+          "nahkampf:knecht",
+          "gegenschlag:knecht",
+          "getroffen:grenadier",
+          "getroffen:sense",
+          "getroffen:sturmpz",
+          "getroffen:knecht",
+          "getroffen:geschuetz"
         ],
         "pain": [
           "getroffen:grenadier",
@@ -10336,11 +10336,7 @@
             "ziehen_draht",
             "ziehen_barrikade",
             "ziehen_marsch",
-            "ziehen_feindmaschine",
-            "faehigkeit_durchbruch:grenadier",
-            "faehigkeit_durchbruch:huenen",
-            "faehigkeit_durchbruch:lanzeD",
-            "faehigkeit_durchbruch:sense"
+            "ziehen_feindmaschine"
           ]
         },
         "schritte": {
@@ -10361,8 +10357,6 @@
         "held_dampfstoss": {
           "a1:a": [
             "ziehen_offen",
-            "ziehen_marsch",
-            "ziehen_feindmaschine",
             "nahkampf:grenadier",
             "nahkampf:huenen",
             "nahkampf:sturmpz",
@@ -10414,14 +10408,14 @@
             "schuss_nur_aus_turm:huenen"
           ]
         },
-        "neigh": {
+        "pferd_unruhe": {
           "ok:a": [
             "schuss_nur_aus_turm:lanzeD",
             "nahkampf:lanzeD",
             "faehigkeit_durchbruch:lanzeD"
           ]
         },
-        "pferd_unruhe": {
+        "neigh": {
           "ok:a": [
             "schuss_nur_aus_turm:lanzeD",
             "nahkampf:lanzeD",
@@ -10500,7 +10494,7 @@
             "nahkampf:sturmpz"
           ]
         },
-        "gasmaske_2": {
+        "grunzen": {
           "sp:z": [
             "nahkampf:sturmpz",
             "nahkampf:knecht",
@@ -10509,7 +10503,8 @@
             "getroffen:sense",
             "getroffen:sturmpz",
             "getroffen:knecht",
-            "getroffen:geschuetz"
+            "getroffen:geschuetz",
+            "feuer"
           ]
         },
         "heavy": {
@@ -10517,7 +10512,7 @@
             "nahkampf:knecht"
           ]
         },
-        "grunzen": {
+        "gasmaske_2": {
           "sp:z": [
             "nahkampf:knecht",
             "gegenschlag:knecht",
@@ -10525,8 +10520,7 @@
             "getroffen:sense",
             "getroffen:sturmpz",
             "getroffen:knecht",
-            "getroffen:geschuetz",
-            "feuer"
+            "getroffen:geschuetz"
           ]
         },
         "pain": {
@@ -10609,6 +10603,14 @@
         "whistle": {
           "a1:a": [
             "ankunft"
+          ]
+        },
+        "st_held_faust_spezial": {
+          "a1:a": [
+            "faehigkeit_durchbruch:grenadier",
+            "faehigkeit_durchbruch:huenen",
+            "faehigkeit_durchbruch:lanzeD",
+            "faehigkeit_durchbruch:sense"
           ]
         },
         "held_dampf": {
@@ -21666,6 +21668,10 @@
           "moral",
           "panne"
         ],
+        "held_ruestung": [
+          "ziehen_schlamm",
+          "panne"
+        ],
         "st_held_kuerass_angriff": [
           "nahkampf:kohorte",
           "nahkampf:koloss",
@@ -21759,14 +21765,16 @@
         "st_held_kuerass_tod": [
           "vernichtet:kohorte"
         ],
-        "held_ruestung": [
-          "panne"
-        ],
         "st_held_kuerass_erscheinen": [
           "ankunft"
         ],
         "whistle": [
           "ankunft"
+        ],
+        "st_held_kuerass_spezial": [
+          "faehigkeit_hinrichtung:kohorte",
+          "faehigkeit_hinrichtung:reiter",
+          "faehigkeit_hinrichtung:mahlwerk"
         ]
       },
       "z": {
@@ -21786,19 +21794,18 @@
           "freischlag:kohorte",
           "vernichtet:kohorte"
         ],
-        "gasmaske_2": [
-          "nahkampf:turm",
+        "grunzen": [
           "gegenschlag:turm",
           "getroffen:kohorte",
-          "getroffen:mahlwerk",
           "getroffen:koloss",
           "getroffen:turm",
           "getroffen:haubitze",
           "feuer"
         ],
-        "grunzen": [
+        "gasmaske_2": [
           "gegenschlag:turm",
           "getroffen:kohorte",
+          "getroffen:mahlwerk",
           "getroffen:koloss",
           "getroffen:turm",
           "getroffen:haubitze"
@@ -21868,6 +21875,28 @@
             "gegner_vernichtet:kohorte",
             "moral",
             "panne"
+          ]
+        },
+        "held_ruestung": {
+          "a1:a": [
+            "ziehen_schlamm",
+            "panne"
+          ],
+          "z1:z": [
+            "nahkampf:kohorte",
+            "nahkampf:koloss",
+            "nahkampf:turm",
+            "nahkampf:reiter",
+            "gegenschlag:kohorte",
+            "gegenschlag:turm",
+            "getroffen:kohorte",
+            "getroffen:mahlwerk",
+            "getroffen:koloss",
+            "getroffen:turm",
+            "getroffen:haubitze",
+            "feuer",
+            "freischlag:kohorte",
+            "vernichtet:kohorte"
           ]
         },
         "st_held_kuerass_angriff": {
@@ -21949,27 +21978,6 @@
             "gegner_vernichtet:kohorte"
           ]
         },
-        "held_ruestung": {
-          "z1:z": [
-            "nahkampf:kohorte",
-            "nahkampf:koloss",
-            "nahkampf:turm",
-            "nahkampf:reiter",
-            "gegenschlag:kohorte",
-            "gegenschlag:turm",
-            "getroffen:kohorte",
-            "getroffen:mahlwerk",
-            "getroffen:koloss",
-            "getroffen:turm",
-            "getroffen:haubitze",
-            "feuer",
-            "freischlag:kohorte",
-            "vernichtet:kohorte"
-          ],
-          "a1:a": [
-            "panne"
-          ]
-        },
         "held_kschwert_metall": {
           "a1:a": [
             "nahkampf:koloss",
@@ -21984,18 +21992,6 @@
         "heavy": {
           "a:a": [
             "nahkampf:turm"
-          ]
-        },
-        "gasmaske_2": {
-          "sp:z": [
-            "nahkampf:turm",
-            "gegenschlag:turm",
-            "getroffen:kohorte",
-            "getroffen:mahlwerk",
-            "getroffen:koloss",
-            "getroffen:turm",
-            "getroffen:haubitze",
-            "feuer"
           ]
         },
         "pferd_unruhe": {
@@ -22013,6 +22009,17 @@
           "sp:z": [
             "gegenschlag:turm",
             "getroffen:kohorte",
+            "getroffen:koloss",
+            "getroffen:turm",
+            "getroffen:haubitze",
+            "feuer"
+          ]
+        },
+        "gasmaske_2": {
+          "sp:z": [
+            "gegenschlag:turm",
+            "getroffen:kohorte",
+            "getroffen:mahlwerk",
             "getroffen:koloss",
             "getroffen:turm",
             "getroffen:haubitze"
@@ -22098,6 +22105,13 @@
         "whistle": {
           "a1:a": [
             "ankunft"
+          ]
+        },
+        "st_held_kuerass_spezial": {
+          "a1:a": [
+            "faehigkeit_hinrichtung:kohorte",
+            "faehigkeit_hinrichtung:reiter",
+            "faehigkeit_hinrichtung:mahlwerk"
           ]
         }
       },
@@ -24642,29 +24656,26 @@
   "allgemein": {
     "kraehe": [
       "winterdorf: anwaehlen",
-      "winterdorf: ziehen_feindmaschine",
-      "winterdorf: faehigkeit_sprung",
-      "winterdorf: ziehen_draht",
-      "winterdorf: moral",
-      "winterdorf: ziehen_offen",
       "winterdorf: ziehen_totholz",
-      "winterdorf: nahkampf"
+      "winterdorf: ziehen_eis",
+      "winterdorf: schuss",
+      "winterdorf: faehigkeit_durchbruch",
+      "winterdorf: vernichtet",
+      "winterdorf: ziehen_offen",
+      "winterdorf: rueckzug"
     ],
     "winterwind_stark": [
-      "winterdorf: nahkampf",
-      "winterdorf: faehigkeit_sprung",
-      "winterdorf: ziehen_draht",
-      "winterdorf: vernichtet",
       "winterdorf: ziehen_barrikade",
-      "winterdorf: schuss",
-      "winterdorf: panne"
+      "winterdorf: nahkampf",
+      "winterdorf: faehigkeit_durchbruch",
+      "winterdorf: ziehen_marsch",
+      "winterdorf: vernichtet"
     ],
     "winterwind": [
       "winterdorf: ankunft"
     ],
     "getuemmel": [
-      "grauwall: nahkampf",
-      "grauwall: faehigkeit_sprung"
+      "grauwall: nahkampf"
     ]
   }
 }

@@ -2570,6 +2570,8 @@ function stimmeBeiEreignis(e, u) {
     case 'destroyed': { const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 4000 ? unitById(letzterAngreifer.id) : null; if (stHeld(la) && u && la.side !== u.side) stimme(la, 'gegner_erledigt');
       if (!u) break; if (istSchreiter(u) || ST_GRUPPE[u.type] === 'panzer' || TYPES[u.type].cmd) stimme(u, 'tod', { immer: true }); else if (++stTodZ % 2 === 0) stimme(u, 'tod'); break; }
     case 'heldfall': if (stHeld(u)) stimme(u, 'tod', { immer: true }); break;
+    case 'abilTitel': if (stHeld(u) && e.k === 'durchbruch') stimme(u, 'spezial', { immer: true }); break;   // Durchbruch-Ruf beim Anlauf
+    case 'hinrichtung': if (stHeld(u)) stimme(u, 'spezial', { immer: true }); break;   // vor dem Säge-Schnitt
     case 'order': if (!u) break; stimme(u, e.kind === 'rally' ? 'befehl_sammeln' : e.kind === 'fire' ? 'befehl_feuerfrei' : 'befehl_sturm', { immer: true, sperre: 3000 }); break;
     case 'bigorder': if (u) stimme(u, 'grossbefehl', { immer: true, sperre: 0 }); break;
     case 'banner': if (u) stimme(u, 'banner', { immer: true }); break;
