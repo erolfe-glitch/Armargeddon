@@ -1394,6 +1394,7 @@ const P = {
   PZG_DMG: 1.8, PZG_RNG: 2, PZG_PANNE: 0.15,   // F80 Panzergranate: Schaden (gegen den Landkoloss etwa 20, wie früher die geballte Ladung), Reichweite, Pannengefahr
   ROLLEN_DMG: 2.4, ROLLEN_MOR: 1.5, ROLLEN_WAND: 1.5,   // F54 Sturmrollen (×10 in der Anzeige: 24 Schaden, Moral −15)
   ROLLEN_GRABEN: 0.3,
+  KANTE_SANDSACK: 1.5, KANTE_MAUER: 1.7, KANTE_HECKE: 1.25,   // R3 (2026-11-26): Deckung an der Feldkante – nur gegen Beschuss über diese Kante (Rückweg KANTE_ALT)
   // U5a (2026-11-26) Schaden über Modelle, Rückweg MODELLSCHADEN_ALT: Feuerkraft-Kurve (kraft), ungedeckt ×OFFEN_MUL, Deckung über 1 ×DECK_STARK verstärkt, Splitter schwerer Waffen gegen Trupps im Offenen, Löwenmaul gegen Panzer, Furcht-Aura, Pannen 1 (schwer 2) Runden
   OFFEN_MUL: 1.4, DECK_STARK: 1.5, SPLITTER: 1.3, LOEWE_PZ: 2.2, FURCHT_MOR_U5: 1, PANNE_KURZ: 1, PANNE_LANG: 2, PANNE_SCHWER: 0.25, TRAEGER_WEG: 0.45, TRAEGER_SCHUETZE: 0.15,   // SP-2 84.4: Sturmrollen gegen Graben/Bunker/eingegraben – Schaden ×0,3, kein Wegstoßen, niedergehalten
   // Helden (2026-11-21, Vorschlag): Durchbruch der Roten Faust (Schaden, Moral, an der Wand ×ROLLEN_WAND), Standhaft-Aura (Moralverlust durch Beschuss ×FAUST_AURA neben ihr),
@@ -2122,6 +2123,7 @@ function newGame(opts) {
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
+    kanten: kantenBau(MAP.id),   // R3: Deckung an Feldkanten
     bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
@@ -2497,7 +2499,9 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
 function hinterSperre(G, ac, ar, d) {   // G6: Fußtruppen (nicht Fahrzeuge/Schreiter) neben einer Panzersperre, die in der Schusslinie liegt
   if (!d || cls(d) === 'walker' || ac == null) return false;
   return line(ac, ar, d.c, d.r).some(([c, r]) => inMap(c, r) && dist(c, r, d.c, d.r) === 1 && hex(G, c, r).t === 'sperre'); }
-function coverOf(G, u) { const f = defMods(G, u, 'front', true, []); return { f, tier: f >= 1.7 ? 3 : f >= 1.35 ? 2 : f >= 1.15 ? 1 : 0 }; }
+function coverOf(G, u) { let f = defMods(G, u, 'front', true, []);
+  if (G.kanten && !kanteAus() && cls(u) !== 'walker') { let e = null, dmin = 99; for (const o of G.units) if (o.side !== u.side && active(o) && TYPES[o.type].rng > 0) { const dd = dist(o.c, o.r, u.c, u.r); if (dd < dmin) { dmin = dd; e = o; } } if (e) f *= kanteDeck(G, u.c, u.r, e.c, e.r).f; }   // R3: Kante zum nächsten feindlichen Schützen zählt fürs Schild
+  return { f, tier: f >= 1.7 ? 3 : f >= 1.35 ? 2 : f >= 1.15 ? 1 : 0 }; }
 function hexDef(G, c, r, isWalker) {
   const t = hex(G, c, r).t;
   return KIRCHE.has(t) ? gebDef(t) : t === 'village' || t === 'kirche' ? (isWalker ? 0.7 : P.VILLAGE_DEF) : t === 'fabrik' ? (isWalker ? 0.7 : 1.7) : t === 'forest' ? P.FOREST_DEF : t === 'wire' ? P.WIRE_DEF
@@ -2510,8 +2514,8 @@ const kraftArt = () => TOG.KRAFT || 'stufen';   // Fassung 2 nur für Messungen 
 // U5c (Punkt 90, Enrico 2026-11-26): Truppgrößen in sieben Gruppen – Linie 8, Sturm/Nahkampf 6, Waffentrupp 3 Mann (+ Waffe), Fachtrupp 4,
 // kleine Gruppe 2–3 (+ Beiwerk: Trage, Karren, Kiste zählen nicht), gepanzerte Infanterie 2, Einzelmodell 1, Reiter 6. Rückweg TRUPP_ALT (Node: Umgebung, Browser: window).
 const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, eingreif: 6, schildwall: 6, schwer: 6, mahlwerk: 3, sense: 3, buechse: 3, flammen: 3, brand: 3,
-  pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 2, banner: 2,
-  hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, stahl: 2, panzerk: 2, huenen: 2, oger: 2, ballon: 1 };
+  pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 1, banner: 2,   /* Punkt 99: Hund ist Beiwerk */
+  hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
 const truppAlt = () => !!(TOG.TRUPP_ALT || (typeof window !== 'undefined' && window.TRUPP_ALT));
 function modelle(t) { const T = TYPES[t]; if (!truppAlt() && TRUPP[t] != null) return TRUPP[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
 const modelleDa = u => Math.max(0, Math.ceil(u.str / 10 * modelle(u.type) - 1e-6));
@@ -2539,6 +2543,34 @@ function deckU5(G, d, dm, tags) {
 const splitterWaffe = t => { const T = TYPES[t]; return T.cls === 'art' || !!T.flame || T.cls === 'flame' || t === 'kreuz'; };   // Geschütze, Mörser, Minenwerfer, Flammenwerfer, Löwenmaul-Kanone
 function splitterU5(G, a, d, dm, tags) { if (u5aus() || !splitterWaffe(a.type) || modelle(d.type) < 2 || dm > 1) return 1; tags.push('Splitter ×' + String(P.SPLITTER).replace('.', ',')); return P.SPLITTER; }
 function panneDauer(G) { return u5aus() ? P.PANNE_RUNDEN + 1 : (G.rng() < P.PANNE_SCHWER ? P.PANNE_LANG : P.PANNE_KURZ) + 1; }   // +1: zählt zu Beginn der eigenen Runde herunter
+
+// R3 (2026-11-26): Deckung an der Feldkante. Sandsackwall, Mauer oder Hecke liegen auf der Kante zwischen zwei Feldern und schützen beide Seiten,
+// aber nur gegen Beschuss, der über diese Kante kommt (Schussrichtung zum Schützen; genau über eine Ecke: die bessere der beiden Kanten).
+// Nicht gegen Steilfeuer, Bogenwurf, Flammen; Fahrzeuge und Schreiter ragen darüber. Karten: KANTEN_KARTE [Feld c, r, Seite 'ost'|'west', Art]
+// → beide Nachbarn auf dieser Seite. Rückweg KANTE_ALT (Node: Umgebung, Browser: window), Sim-Abschalter NOKANTE.
+const KANTE_ART = { sandsack: { name: 'Sandsäcke', p: 'KANTE_SANDSACK' }, mauer: { name: 'Mauer', p: 'KANTE_MAUER' }, hecke: { name: 'Hecke', p: 'KANTE_HECKE' } };
+const KANTEN_KARTE = {
+  grauwall: [[3, 4, 'ost', 'sandsack'], [5, 2, 'ost', 'mauer'], [5, 7, 'ost', 'sandsack'], [9, 4, 'west', 'sandsack'], [9, 7, 'west', 'sandsack']],
+  sanktruss: [[8, 7, 'ost', 'sandsack'], [9, 2, 'ost', 'mauer'], [11, 4, 'west', 'sandsack'], [11, 7, 'west', 'sandsack']],
+  winterdorf: [[4, 7, 'ost', 'sandsack'], [14, 3, 'west', 'sandsack'], [7, 4, 'ost', 'hecke'], [10, 6, 'ost', 'hecke'], [8, 5, 'west', 'mauer']],
+};
+const kanteAus = () => !!(TOG.KANTE_ALT || TOG.NOKANTE || (typeof window !== 'undefined' && window.KANTE_ALT));
+const kKey = (c1, r1, c2, r2) => (c1 < c2 || (c1 === c2 && r1 < r2)) ? c1 + ',' + r1 + '|' + c2 + ',' + r2 : c2 + ',' + r2 + '|' + c1 + ',' + r1;
+function kantenBau(id) { const out = {}; for (const [c, r, seite, art] of KANTEN_KARTE[id] || []) for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); if (!inMap(nc, nr) || (seite === 'ost' ? nc !== c + 1 : nc !== c - 1)) continue; out[kKey(c, r, nc, nr)] = art; } return out; }
+function kanteAt(G, c1, r1, c2, r2) { return (!kanteAus() && G.kanten && G.kanten[kKey(c1, r1, c2, r2)]) || null; }
+function kantenVon(G, c, r) { const out = []; if (kanteAus() || !G.kanten) return out; for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); const a = inMap(nc, nr) && kanteAt(G, c, r, nc, nr); if (a) out.push({ k, c: nc, r: nr, art: a }); } return out; }
+const axXY = (c, r) => { const [q, a] = toAx(c, r); return [1.5 * q, Math.sqrt(3) * (a + q / 2)]; };
+// Kante, über die ein Schuss von (ac, ar) ins Feld (c, r) kommt: Faktor und Art (1 = keine)
+function kanteDeck(G, c, r, ac, ar) {
+  if (ac == null || (ac === c && ar === r) || kanteAus() || !G.kanten) return { f: 1, art: null };
+  const [x0, y0] = axXY(c, r), [x1, y1] = axXY(ac, ar), dl = Math.hypot(x1 - x0, y1 - y0) || 1, dx = (x1 - x0) / dl, dy = (y1 - y0) / dl;
+  const w = []; for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k), [nx, ny] = axXY(nc, nr), l = Math.hypot(nx - x0, ny - y0) || 1; w.push({ k, nc, nr, dot: ((nx - x0) * dx + (ny - y0) * dy) / l }); }
+  w.sort((a, b) => b.dot - a.dot);
+  let best = { f: 1, art: null };
+  for (const e of w.slice(0, w[0].dot - w[1].dot < 0.02 ? 2 : 1)) { const art = inMap(e.nc, e.nr) && kanteAt(G, c, r, e.nc, e.nr); if (art && P[KANTE_ART[art].p] > best.f) best = { f: P[KANTE_ART[art].p], art }; }
+  return best;
+}
+function kanteFaktor(G, d, ac, ar, tags) { if (!d || cls(d) === 'walker') return 1; const kd = kanteDeck(G, d.c, d.r, ac, ar); if (kd.f > 1 && tags) tags.push(KANTE_ART[kd.art].name + ' an der Kante ×' + String(kd.f).replace('.', ',')); return kd.f; }
 
 // Schaden ohne Zufall, für Vorschau und KI. kind: 'melee' | 'fire'
 function preview(G, a, d, kind, o) {
@@ -2578,6 +2610,7 @@ function preview(G, a, d, kind, o) {
   let dm = 1;
   if (flame) tags.push('Flammen: Deckung schützt nicht');
   else dm = defMods(G, d, geo, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
+  if (ranged && !flame && !A.lob) dm *= kanteFaktor(G, d, ac, ar, tags);   // R3: Deckung an der Kante, über die der Schuss kommt
   if (ranged) { m *= splitterU5(G, a, d, dm, tags); if (!flame) dm = deckU5(G, d, dm, tags); }   // U5a
   if (ranged && a.type === 'kreuz' && cls(d) === 'walker' && !u5aus()) { m *= P.LOEWE_PZ; tags.push('Löwenmaul gegen Panzer ×' + String(P.LOEWE_PZ).replace('.', ',')); }   // Punkt 43
   if (ranged && !flame && !(A.lob) && hinterSperre(G, ac, ar, d)) { m /= P.SPERRE_DEF; tags.push('hinter Panzersperre ×1,2'); }   // G6: Schusslinie läuft durch eine Sperre neben dem Ziel
@@ -2880,6 +2913,7 @@ function shellDmg(G, a, d, direct, tags) {
   if (direct && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }   // direkter Schuss in den Nebel
   if (cls(d) === 'flame') m *= P.FLAME_HIT;
   let dm = defMods(G, d, 'front', true, tags);
+  if (direct) dm *= kanteFaktor(G, d, a.c, a.r, tags);   // R3: nur der direkte Schuss, Steilfeuer fällt von oben
   m *= splitterU5(G, a, d, dm, tags); dm = deckU5(G, d, dm, tags);   // U5a
   return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * kraft(a) * m;
 }
@@ -3510,7 +3544,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
@@ -6276,6 +6310,13 @@ function aufbauen(cfg, IM) {
     mauerzug(zaun, IM.zaun, (WI ? 0.7 : 1.0) * SH, { k: 0.9, seed: 23, wall: { shade: 0.35, shadeW: 0.1 } });
     for (const v of [1, 2]) mauerzug(IM.hecke_schnee_2 ? hecke.filter(h => (hrnd(h.c, h.r, 254) < 0.5) === (v === 1)) : v === 1 ? hecke : [], IM['hecke_schnee_' + v] || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 0.9, seed: 29 + v, wall: { shade: 0.35, shadeW: 0.1 } }); }   // G3a/G3b: Hecke (zwei gemalte Streifen je Acker gemischt, Ersatz Unterholz); Deckung über die Feldart garten ×1,2
 
+  // R3 (2026-11-26): Deckung an Feldkanten (cfg.kanten: { a: [c, r], b: [c, r], art }) – Sandsäcke (Barrikaden-Bild), Mauer, Hecke auf der gemeinsamen Kante
+  if (cfg.kanten && cfg.kanten.length) { const gr = { sandsack: [], mauer: [], hecke: [] };
+    for (const { a, b, art } of cfg.kanten) for (let e = 0; e < 6; e++) { const [nc, nr] = nbE(a[0], a[1], e); if (nc === b[0] && nr === b[1]) { (gr[art] || gr.mauer).push({ c: a[0], r: a[1], e }); break; } }
+    mauerzug(gr.sandsack, IM.barrikade || IM.graben_brustwehr, 0.38 * SH, { k: 1, seed: 41, wall: { shade: 0.5, boden: true } });
+    mauerzug(gr.mauer, IM.mauer_niedrig, 0.5 * SH, { k: 1, seed: 43, wall: { shade: 0.45 } });
+    mauerzug(gr.hecke, IM.hecke_schnee_1 || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 1, seed: 47, wall: { shade: 0.35, shadeW: 0.1 } }); }
+
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
   // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).
   for (const [c, r] of cfg.schanzen || []) {
@@ -6555,7 +6596,7 @@ function threatAt(G, u, c, r) {
       let f = T.fs;
       if (T.mg && (t === 'wire' || D.cls === 'cav')) f *= 2;
       if (D.cls === 'flame') f *= 1.5;
-      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * E.kraft(o) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen
+      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm * (T.lob || D.cls === 'walker' ? 1 : E.kanteDeck(G, c, r, o.c, o.r).f))) * E.kraft(o) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen; R3: Deckung an der Kante zum Schützen
     }
     if (d <= T.mv + 1 && T.atk >= 4) {
       const mm = D.cls === 'walker' ? (T.cls === 'storm' ? 1.5 : T.cls === 'walker' ? 1 : 0.4) : 1;
@@ -7513,6 +7554,7 @@ function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfal
     ...(E.MAP.graeben && !window.GRAEBEN_ALT ? { graeben: E.MAP.graeben, grabenForm: 'buchten', grabenRueckwall: true, grabenPfuetzen: true } : {}),   /* G2a (2026-11-25): Gräben als Linien mit Feuerbuchten; Rückweg window.GRAEBEN_ALT */
     ackerNeu: !window.ACKER_C2 && !window.ACKER_ALT,   /* G3a: Acker A (gezeichnete Furchen); window.ACKER_C2 = Acker vom 24.11. */
     teileAlt: !!window.GTEILE_ALT, zinnenAlt: !!window.ZINNEN_ALT, g4bAlt: !!window.G4B_ALT, plaetzeAlt: !!window.GRABENPLATZ_ALT, plaetze: window.STAERKE_ALT ? 10 : 8, rasterAlt: !!window.RASTER_ALT,   /* R1: 8 Grabenplätze, Feldlinien dezenter (RASTER_ALT) */ zickzackAlt: !!window.ZICKZACK_ALT, drahtAlt: !!window.DRAHT_ALT, guertelAlt: !!window.GUERTEL_ALT,   /* G5b: window.GUERTEL_ALT = Code-Draht aus G5 */   /* G5: window.DRAHT_ALT = Draht wie vorher (Bild und, vor dem Schlachtstart gesetzt, Lage) */   /* U2: window.GRABENPLATZ_ALT = vorläufige Grabenplätze aus U1 */   /* G4b: window.G4B_ALT = Takt und Grabenboden wie G4 */   /* G4 (2026-11-25): window.ZINNEN_ALT = Gräben wie G2b (Buchten im breiten Band) */   /* G2b/G3b (2026-11-25): window.GTEILE_ALT = ohne die gemalten Graben- und Feldteile */
+    kanten: E.kanteAus() || !G.kanten ? [] : Object.entries(G.kanten).map(([k, art]) => { const [a, b] = k.split('|').map(t => t.split(',').map(Number)); return { a, b, art }; }),   // R3: Deckung an Feldkanten
     zickzack: true, kipp: gbKipp(), grabenSeite: c => c <= (E.MAP.zoneA ?? 2) ? 'A' : 'D', seed: 1917,
     baumAlpha: k => BAUM_A.has(k) ? BAUM_A.get(k) : 1,   // Bäume durchsichtig (Enrico 2026-11-22)
     schanzen: (E.MAP.objectives || []).filter(o => /schanze/i.test(o.id)).map(o => [o.c, o.r]), ao: BW, teilFilter: BW_BODEN[BW], ...(window.GB_PROBE || {}) }, IMB);   /* G1-Probe (2026-11-25): window.GB_PROBE = { grabenForm: 'buchten', grabenRueckwall, grabenPfuetzen, ackerNeu } bzw. __dbg.gbProbe(o); ohne GB_PROBE alles wie bisher */   // Bildwirkung: Kantenverdeckung, aufrechte Teile wie der Boden   // Schanze = Bunker + Sandsäcke
@@ -8409,7 +8451,9 @@ function feldWirkung(u, c, r) {
   for (const tg of tags) { const m = /×(\d+)(?:,(\d+))?/.exec(tg); if (!m || (wk && h.t === 'wire')) continue;   // Fahrzeuge walzen den Draht nieder: kein Abzug
     const f = parseFloat(m[1] + '.' + (m[2] || '0'));
     out.push({ gut: f > 1, kurz: tg.replace(/^im /, ''), lang: `Abwehr ${f > 1 ? 'besser' : 'schlechter'}: ${tg} gegen Beschuss von vorn${h.t === 'crater' || h.t === 'bahn' ? '' : ' und Nahkampf'}.` }); }
-  if (f0 === 1 && (h.t === 'open' || h.t === 'mud')) out.push({ gut: false, kurz: 'keine Deckung', lang: 'Offenes Gelände: keine Deckung. MG-Sperrfeuer trifft hier.' });
+  const kv = wk ? [] : E.kantenVon(G, c, r); if (kv.length) { const arten = [...new Set(kv.map(k => k.art))], feinde = G.units.filter(a => a.side !== u.side && E.active(a) && TYPES[a.type].rng > 0), gegen = feinde.filter(a => E.kanteDeck(G, c, r, a.c, a.r).f > 1).length;   // R3: Deckung an der Feldkante
+    out.push({ gut: true, kurz: arten.map(a => E.KANTE_ART[a].name).join(', ') + ' an der Kante' + (feinde.length ? ` (${gegen}/${feinde.length} Schützen)` : ''), lang: arten.map(a => `${E.KANTE_ART[a].name} ${xf(P[E.KANTE_ART[a].p])}`).join(', ') + ` – nur gegen Beschuss, der über diese Kante kommt (nicht gegen Steilfeuer, Bogenwurf, Flammen). Von ${gegen} der ${feinde.length} feindlichen Schützen geschützt.` }); }
+  if (f0 === 1 && !kv.length && (h.t === 'open' || h.t === 'mud')) out.push({ gut: false, kurz: 'keine Deckung', lang: 'Offenes Gelände: keine Deckung. MG-Sperrfeuer trifft hier.' });
   if (h.t === 'eis' && G.units.some(a => a.side !== u.side && E.alive(a) && E.eisSchwer(G, a))) out.push({ gut: false, kurz: 'Eis kann brechen', lang: 'Schwerer Beschuss (Haubitze, Minenwerfer, Feuerschlag, Sperrfeuer) bricht das Eis auf: Schaden, die Einheit rettet sich ans Ufer, 2 Runden offenes Wasser.' });   // Enrico 20:50
   if ((h.t === 'trench' || h.t === 'bunker') && !wk) out.push({ gut: true, kurz: 'halber Moralverlust', lang: 'Graben und Bunker: nur halber Moralverlust bei Treffern (nicht gegen Flammen).' });
   if (h.t === 'wire') {
@@ -8991,7 +9035,7 @@ const LEICHEN = [], LEICHE_RUNDEN = 3, LEICHE_MAX = 220, FALL_MS = 460;
 function stehende(u, d, max, n) {
   const weg = d.weg || (d.weg = new Set());
   while (weg.size > max - n) { const a = [...weg]; weg.delete(a[Math.floor(Math.random() * a.length)]); }   // Stärke gestiegen: eine steht wieder
-  while (weg.size < max - n) { const frei = []; for (let i = 0; i < max; i++) if (!weg.has(i)) frei.push(i); const i = frei[Math.floor(Math.random() * frei.length)]; weg.add(i); leicheNeu(u, d, i, false); }
+  while (weg.size < max - n) { const frei = []; for (let i = 0; i < max; i++) if (!weg.has(i)) frei.push(i); const i = frei[Math.floor(Math.random() * frei.length)]; weg.add(i); if (window.GEFALLEN_AN) leicheNeu(u, d, i, false); }   // Punkt 98 (Enrico 17:30): Gefallene standardmäßig aus – der Mann verschwindet einfach
   const out = []; for (let i = 0; i < max; i++) if (!weg.has(i)) out.push(i); return out;
 }
 function leicheNeu(u, d, i, alle) {
@@ -9004,7 +9048,7 @@ function leicheNeu(u, d, i, alle) {
   if (LEICHEN.length > LEICHE_MAX) LEICHEN.shift();
 }
 function alleFallen(u, d) {   // aufgerieben: die letzten stehenden Figuren fallen alle
-  if (window.FALLEN_ALT || !d || !d.figIm || TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') return false;
+  if (!window.GEFALLEN_AN || window.FALLEN_ALT || !d || !d.figIm || TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') return false;
   let n = 0; for (let i = 0; i < d.figIm.length; i++) if (d.figIm[i] && !(d.weg && d.weg.has(i))) { leicheNeu(u, d, i, true); n++; }
   return n > 0;
 }

@@ -55,6 +55,7 @@ const P = {
   PZG_DMG: 1.8, PZG_RNG: 2, PZG_PANNE: 0.15,   // F80 Panzergranate: Schaden (gegen den Landkoloss etwa 20, wie früher die geballte Ladung), Reichweite, Pannengefahr
   ROLLEN_DMG: 2.4, ROLLEN_MOR: 1.5, ROLLEN_WAND: 1.5,   // F54 Sturmrollen (×10 in der Anzeige: 24 Schaden, Moral −15)
   ROLLEN_GRABEN: 0.3,
+  KANTE_SANDSACK: 1.5, KANTE_MAUER: 1.7, KANTE_HECKE: 1.25,   // R3 (2026-11-26): Deckung an der Feldkante – nur gegen Beschuss über diese Kante (Rückweg KANTE_ALT)
   // U5a (2026-11-26) Schaden über Modelle, Rückweg MODELLSCHADEN_ALT: Feuerkraft-Kurve (kraft), ungedeckt ×OFFEN_MUL, Deckung über 1 ×DECK_STARK verstärkt, Splitter schwerer Waffen gegen Trupps im Offenen, Löwenmaul gegen Panzer, Furcht-Aura, Pannen 1 (schwer 2) Runden
   OFFEN_MUL: 1.4, DECK_STARK: 1.5, SPLITTER: 1.3, LOEWE_PZ: 2.2, FURCHT_MOR_U5: 1, PANNE_KURZ: 1, PANNE_LANG: 2, PANNE_SCHWER: 0.25, TRAEGER_WEG: 0.45, TRAEGER_SCHUETZE: 0.15,   // SP-2 84.4: Sturmrollen gegen Graben/Bunker/eingegraben – Schaden ×0,3, kein Wegstoßen, niedergehalten
   // Helden (2026-11-21, Vorschlag): Durchbruch der Roten Faust (Schaden, Moral, an der Wand ×ROLLEN_WAND), Standhaft-Aura (Moralverlust durch Beschuss ×FAUST_AURA neben ihr),
@@ -783,6 +784,7 @@ function newGame(opts) {
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
+    kanten: kantenBau(MAP.id),   // R3: Deckung an Feldkanten
     bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
   };
   for (const o of OBJECTIVES) G.ctrl[o.id] = null;   // Zielfelder sind zu Beginn neutral (Wunsch des Nutzers)
@@ -1158,7 +1160,9 @@ function defMods(G, d, arc, ranged, tags, noTrench, lob) {
 function hinterSperre(G, ac, ar, d) {   // G6: Fußtruppen (nicht Fahrzeuge/Schreiter) neben einer Panzersperre, die in der Schusslinie liegt
   if (!d || cls(d) === 'walker' || ac == null) return false;
   return line(ac, ar, d.c, d.r).some(([c, r]) => inMap(c, r) && dist(c, r, d.c, d.r) === 1 && hex(G, c, r).t === 'sperre'); }
-function coverOf(G, u) { const f = defMods(G, u, 'front', true, []); return { f, tier: f >= 1.7 ? 3 : f >= 1.35 ? 2 : f >= 1.15 ? 1 : 0 }; }
+function coverOf(G, u) { let f = defMods(G, u, 'front', true, []);
+  if (G.kanten && !kanteAus() && cls(u) !== 'walker') { let e = null, dmin = 99; for (const o of G.units) if (o.side !== u.side && active(o) && TYPES[o.type].rng > 0) { const dd = dist(o.c, o.r, u.c, u.r); if (dd < dmin) { dmin = dd; e = o; } } if (e) f *= kanteDeck(G, u.c, u.r, e.c, e.r).f; }   // R3: Kante zum nächsten feindlichen Schützen zählt fürs Schild
+  return { f, tier: f >= 1.7 ? 3 : f >= 1.35 ? 2 : f >= 1.15 ? 1 : 0 }; }
 function hexDef(G, c, r, isWalker) {
   const t = hex(G, c, r).t;
   return KIRCHE.has(t) ? gebDef(t) : t === 'village' || t === 'kirche' ? (isWalker ? 0.7 : P.VILLAGE_DEF) : t === 'fabrik' ? (isWalker ? 0.7 : 1.7) : t === 'forest' ? P.FOREST_DEF : t === 'wire' ? P.WIRE_DEF
@@ -1201,6 +1205,34 @@ const splitterWaffe = t => { const T = TYPES[t]; return T.cls === 'art' || !!T.f
 function splitterU5(G, a, d, dm, tags) { if (u5aus() || !splitterWaffe(a.type) || modelle(d.type) < 2 || dm > 1) return 1; tags.push('Splitter ×' + String(P.SPLITTER).replace('.', ',')); return P.SPLITTER; }
 function panneDauer(G) { return u5aus() ? P.PANNE_RUNDEN + 1 : (G.rng() < P.PANNE_SCHWER ? P.PANNE_LANG : P.PANNE_KURZ) + 1; }   // +1: zählt zu Beginn der eigenen Runde herunter
 
+// R3 (2026-11-26): Deckung an der Feldkante. Sandsackwall, Mauer oder Hecke liegen auf der Kante zwischen zwei Feldern und schützen beide Seiten,
+// aber nur gegen Beschuss, der über diese Kante kommt (Schussrichtung zum Schützen; genau über eine Ecke: die bessere der beiden Kanten).
+// Nicht gegen Steilfeuer, Bogenwurf, Flammen; Fahrzeuge und Schreiter ragen darüber. Karten: KANTEN_KARTE [Feld c, r, Seite 'ost'|'west', Art]
+// → beide Nachbarn auf dieser Seite. Rückweg KANTE_ALT (Node: Umgebung, Browser: window), Sim-Abschalter NOKANTE.
+const KANTE_ART = { sandsack: { name: 'Sandsäcke', p: 'KANTE_SANDSACK' }, mauer: { name: 'Mauer', p: 'KANTE_MAUER' }, hecke: { name: 'Hecke', p: 'KANTE_HECKE' } };
+const KANTEN_KARTE = {
+  grauwall: [[3, 4, 'ost', 'sandsack'], [5, 2, 'ost', 'mauer'], [5, 7, 'ost', 'sandsack'], [9, 4, 'west', 'sandsack'], [9, 7, 'west', 'sandsack']],
+  sanktruss: [[8, 7, 'ost', 'sandsack'], [9, 2, 'ost', 'mauer'], [11, 4, 'west', 'sandsack'], [11, 7, 'west', 'sandsack']],
+  winterdorf: [[4, 7, 'ost', 'sandsack'], [14, 3, 'west', 'sandsack'], [7, 4, 'ost', 'hecke'], [10, 6, 'ost', 'hecke'], [8, 5, 'west', 'mauer']],
+};
+const kanteAus = () => !!(TOG.KANTE_ALT || TOG.NOKANTE || (typeof window !== 'undefined' && window.KANTE_ALT));
+const kKey = (c1, r1, c2, r2) => (c1 < c2 || (c1 === c2 && r1 < r2)) ? c1 + ',' + r1 + '|' + c2 + ',' + r2 : c2 + ',' + r2 + '|' + c1 + ',' + r1;
+function kantenBau(id) { const out = {}; for (const [c, r, seite, art] of KANTEN_KARTE[id] || []) for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); if (!inMap(nc, nr) || (seite === 'ost' ? nc !== c + 1 : nc !== c - 1)) continue; out[kKey(c, r, nc, nr)] = art; } return out; }
+function kanteAt(G, c1, r1, c2, r2) { return (!kanteAus() && G.kanten && G.kanten[kKey(c1, r1, c2, r2)]) || null; }
+function kantenVon(G, c, r) { const out = []; if (kanteAus() || !G.kanten) return out; for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k); const a = inMap(nc, nr) && kanteAt(G, c, r, nc, nr); if (a) out.push({ k, c: nc, r: nr, art: a }); } return out; }
+const axXY = (c, r) => { const [q, a] = toAx(c, r); return [1.5 * q, Math.sqrt(3) * (a + q / 2)]; };
+// Kante, über die ein Schuss von (ac, ar) ins Feld (c, r) kommt: Faktor und Art (1 = keine)
+function kanteDeck(G, c, r, ac, ar) {
+  if (ac == null || (ac === c && ar === r) || kanteAus() || !G.kanten) return { f: 1, art: null };
+  const [x0, y0] = axXY(c, r), [x1, y1] = axXY(ac, ar), dl = Math.hypot(x1 - x0, y1 - y0) || 1, dx = (x1 - x0) / dl, dy = (y1 - y0) / dl;
+  const w = []; for (let k = 0; k < 6; k++) { const [nc, nr] = step(c, r, k), [nx, ny] = axXY(nc, nr), l = Math.hypot(nx - x0, ny - y0) || 1; w.push({ k, nc, nr, dot: ((nx - x0) * dx + (ny - y0) * dy) / l }); }
+  w.sort((a, b) => b.dot - a.dot);
+  let best = { f: 1, art: null };
+  for (const e of w.slice(0, w[0].dot - w[1].dot < 0.02 ? 2 : 1)) { const art = inMap(e.nc, e.nr) && kanteAt(G, c, r, e.nc, e.nr); if (art && P[KANTE_ART[art].p] > best.f) best = { f: P[KANTE_ART[art].p], art }; }
+  return best;
+}
+function kanteFaktor(G, d, ac, ar, tags) { if (!d || cls(d) === 'walker') return 1; const kd = kanteDeck(G, d.c, d.r, ac, ar); if (kd.f > 1 && tags) tags.push(KANTE_ART[kd.art].name + ' an der Kante ×' + String(kd.f).replace('.', ',')); return kd.f; }
+
 // Schaden ohne Zufall, für Vorschau und KI. kind: 'melee' | 'fire'
 function preview(G, a, d, kind, o) {
   o = o || {};
@@ -1239,6 +1271,7 @@ function preview(G, a, d, kind, o) {
   let dm = 1;
   if (flame) tags.push('Flammen: Deckung schützt nicht');
   else dm = defMods(G, d, geo, ranged, tags, (!ranged && A.cls === 'storm') || (ranged && A.lob), ranged && A.lob);
+  if (ranged && !flame && !A.lob) dm *= kanteFaktor(G, d, ac, ar, tags);   // R3: Deckung an der Kante, über die der Schuss kommt
   if (ranged) { m *= splitterU5(G, a, d, dm, tags); if (!flame) dm = deckU5(G, d, dm, tags); }   // U5a
   if (ranged && a.type === 'kreuz' && cls(d) === 'walker' && !u5aus()) { m *= P.LOEWE_PZ; tags.push('Löwenmaul gegen Panzer ×' + String(P.LOEWE_PZ).replace('.', ',')); }   // Punkt 43
   if (ranged && !flame && !(A.lob) && hinterSperre(G, ac, ar, d)) { m /= P.SPERRE_DEF; tags.push('hinter Panzersperre ×1,2'); }   // G6: Schusslinie läuft durch eine Sperre neben dem Ziel
@@ -1541,6 +1574,7 @@ function shellDmg(G, a, d, direct, tags) {
   if (direct && smokeAt(G, d.c, d.r)) { m *= P.NEBEL_IN; tags.push('Ziel im Nebel ×0,5'); }   // direkter Schuss in den Nebel
   if (cls(d) === 'flame') m *= P.FLAME_HIT;
   let dm = defMods(G, d, 'front', true, tags);
+  if (direct) dm *= kanteFaktor(G, d, a.c, a.r, tags);   // R3: nur der direkte Schuss, Steilfeuer fällt von oben
   m *= splitterU5(G, a, d, dm, tags); dm = deckU5(G, d, dm, tags);   // U5a
   return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * kraft(a) * m;
 }
@@ -2171,7 +2205,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

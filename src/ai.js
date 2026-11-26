@@ -103,7 +103,7 @@ function threatAt(G, u, c, r) {
       let f = T.fs;
       if (T.mg && (t === 'wire' || D.cls === 'cav')) f *= 2;
       if (D.cls === 'flame') f *= 1.5;
-      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm)) * E.kraft(o) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen
+      th += sp * P.DMG * f / (D.def * (T.flame ? 1 : defm * (T.lob || D.cls === 'walker' ? 1 : E.kanteDeck(G, c, r, o.c, o.r).f))) * E.kraft(o) * (E.smokeAt(G, c, r) ? P.NEBEL_IN : 1);   // im Nebel kaum getroffen; R3: Deckung an der Kante zum Schützen
     }
     if (d <= T.mv + 1 && T.atk >= 4) {
       const mm = D.cls === 'walker' ? (T.cls === 'storm' ? 1.5 : T.cls === 'walker' ? 1 : 0.4) : 1;

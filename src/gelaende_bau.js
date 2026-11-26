@@ -1055,6 +1055,13 @@ function aufbauen(cfg, IM) {
     mauerzug(zaun, IM.zaun, (WI ? 0.7 : 1.0) * SH, { k: 0.9, seed: 23, wall: { shade: 0.35, shadeW: 0.1 } });
     for (const v of [1, 2]) mauerzug(IM.hecke_schnee_2 ? hecke.filter(h => (hrnd(h.c, h.r, 254) < 0.5) === (v === 1)) : v === 1 ? hecke : [], IM['hecke_schnee_' + v] || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 0.9, seed: 29 + v, wall: { shade: 0.35, shadeW: 0.1 } }); }   // G3a/G3b: Hecke (zwei gemalte Streifen je Acker gemischt, Ersatz Unterholz); Deckung über die Feldart garten ×1,2
 
+  // R3 (2026-11-26): Deckung an Feldkanten (cfg.kanten: { a: [c, r], b: [c, r], art }) – Sandsäcke (Barrikaden-Bild), Mauer, Hecke auf der gemeinsamen Kante
+  if (cfg.kanten && cfg.kanten.length) { const gr = { sandsack: [], mauer: [], hecke: [] };
+    for (const { a, b, art } of cfg.kanten) for (let e = 0; e < 6; e++) { const [nc, nr] = nbE(a[0], a[1], e); if (nc === b[0] && nr === b[1]) { (gr[art] || gr.mauer).push({ c: a[0], r: a[1], e }); break; } }
+    mauerzug(gr.sandsack, IM.barrikade || IM.graben_brustwehr, 0.38 * SH, { k: 1, seed: 41, wall: { shade: 0.5, boden: true } });
+    mauerzug(gr.mauer, IM.mauer_niedrig, 0.5 * SH, { k: 1, seed: 43, wall: { shade: 0.45 } });
+    mauerzug(gr.hecke, IM.hecke_schnee_1 || IM.unterholz_schnee || IM.zaun, 0.6 * SH, { k: 1, seed: 47, wall: { shade: 0.35, shadeW: 0.1 } }); }
+
   // Schanze (cfg.schanzen: Feldkoordinaten [c, r]): Bunker hinter dem Graben auf der eigenen Seite, davor und daneben Sandsack-Barrikaden.
   // Ersetzt die Festungsteile (zu hoch, Zinnen wirken mittelalterlich – 2026-11-16).
   for (const [c, r] of cfg.schanzen || []) {
