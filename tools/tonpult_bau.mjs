@@ -18,6 +18,11 @@ const TYPES = E.TYPES;
 const src = readFileSync(join(ROOT, 'src', 'sound.js'), 'utf8');
 const ctx = {}; vm.createContext(ctx); vm.runInContext(src, ctx); if (existsSync(join(ROOT, 'src', 'sound_pult.js'))) vm.runInContext(readFileSync(join(ROOT, 'src', 'sound_pult.js'), 'utf8'), ctx);   // M9: ausgelagerte Pult-Töne
 const POOLS = ctx.SOUND_POOLS, KEYS = Object.keys(ctx.SOUNDS);
+// V3 (Punkt 112, 2026-11-26): neue Stimmen st_* – alte Sprüche/Rufe (sv_*, Stimmen-, Schreiter-, Helden-Tabs, medic/panic/forward/stand/roar/charge/comeon) fallen weg; Rückweg STIMMEN_ALT=1
+const NEU = !process.env.STIMMEN_ALT, ST_ALT = new Set(['medic', 'panic', 'forward', 'stand', 'roar', 'charge', 'comeon']);
+const SPUR = existsSync(join(ROOT, 'tools', 'ton_spur.json')) ? JSON.parse(readFileSync(join(ROOT, 'tools', 'ton_spur.json'), 'utf8')) : {};   // Stimmzeilen je Einheit = was die Ton-Spur im Spiel gemessen hat
+const ST_TITEL = { anwahl: 'Anwählen', auswahl: 'Anwählen', befehl: 'Befehl bestätigt (Ziehen, etwa jedes zweite Mal)', bewegen: 'Ziehen', angriff: 'Angriff', feuer: 'Feuer (eigener Schuss)', nahkampf: 'Nahkampf', rueckzug: 'Rückzug (Not)', panik: 'Panik / Flucht (Not)', verwundet: 'Schwer verwundet / Sanitäter (Not)', sammeln: 'Gesammelt', tod: 'Aufgerieben / zerstört', niedergehalten: 'Niedergehalten (Not)', gas: 'Gas (Not)', granate: 'Granate', feuerbereit: 'Feuerbereitschaft / Sperrfeuer', zielfeld: 'Zielfeld genommen', koloss: 'Koloss gesichtet / Entsetzen (Not)', erscheinen: 'Erscheinen (Nachschub, Schlachtbeginn)', schilde: 'Schilde vor', gegenstoss: 'Gegenstoß', dauerfeuer: 'Dauerfeuer', getroffen: 'Getroffen', panne: 'Panne / festgefahren', schwer: 'Schwer beschädigt', schwer_verwundet: 'Schwer verwundet', feind: 'Feind gesichtet', spezial: 'Spezialangriff', gegner_erledigt: 'Gegner vernichtet', befehl_sammeln: 'Befehl Sammeln', befehl_feuerfrei: 'Befehl Feuer frei', befehl_sturm: 'Befehl Sturm', grossbefehl: 'Großer Befehl', banner: 'Banner aufpflanzen' };
+const stAnlass = pl => pl.startsWith('st_erscheinen_') ? 'erscheinen' : pl.slice((pl.startsWith('st_held_') ? pl.split('_').slice(0, 3) : pl.split('_').slice(0, 2)).join('_').length + 1);
 const rows = JSON.parse(readFileSync(join(ROOT, 'entwurf', 'tonplaetze.json'), 'utf8'));
 const DATEI = {}; for (const r of rows) if (r.key && r.key !== '–' && r.f && !r.f.startsWith('(') && !DATEI[r.key]) DATEI[r.key] = r.f;
 const BILDER = existsSync(join(ROOT, 'tools', 'tonpult_bilder.json')) ? JSON.parse(readFileSync(join(ROOT, 'tools', 'tonpult_bilder.json'), 'utf8')) : {};
@@ -37,6 +42,7 @@ const fireKind = T => T.mg ? 'mg' : T.flame ? 'flame' : T.gat ? 'minigun' : T.mg
 
 // Gruppen für die Auswahlliste (passende Alternativen); Stimm-Gruppen nehmen den Filter des Sprechers mit
 const GRUPPEN = {
+  stimme_neu: Object.keys(POOLS).filter(p => p.startsWith('st_')),   // V3: neue Stimmen
   winter: ['schnee_einzeln', 'schnee_gruppe', 'schnee_rennen', 'stampfen_schnee', 'panzerketten_schnee', 'pferde_schnee', 'eis_knackt', 'eis_bricht', 'winterwind', 'winterwind_stark', 'kraehe', 'wind'],   // Wintertöne (Enrico 2026-11-22 17:05)
   stimmen: ['hst_faust_auswahl', 'hst_faust_bewegen', 'hst_faust_angriff', 'hst_faust_durchbruch', 'hst_faust_getroffen', 'hst_faust_gegner_erledigt', 'hst_faust_schwer_verwundet', 'hst_faust_tod', 'hst_kuerass_auswahl', 'hst_kuerass_bewegen', 'hst_kuerass_angriff', 'hst_kuerass_hinrichtung', 'hst_kuerass_getroffen', 'hst_kuerass_gegner_erledigt', 'hst_kuerass_schwer_verwundet', 'hst_kuerass_tod', 'ruf_feuer', 'panik_einzeln', 'panik_gruppe', 'sterben_einzeln', 'sterben_gruppe', 'sst_auswahl', 'sst_bewegen', 'sst_angriff', 'sst_nahkampf', 'sst_getroffen', 'sst_schwer_beschaedigt', 'sst_feind_gesichtet', 'sst_zerstoert', 'stimmen_paket', 'medic'],   // Stimmenpaket (Enrico 2026-11-22): Kandidaten für die Rufe je Ereignis
   schritte_schwer: ['schreiter_schritte', 'kampfanzug_schritte', 'mech', 'held_schritt_ritter2', 'neu_schritte_schwer'],
@@ -109,7 +115,7 @@ function slotsVon(t) {
     if (fuss && !T.wireProof && !T.suit) S('zug', 'draht1', 'Im Stacheldraht (Stärkeverlust)', 'draht_infanterie', 0.55, { gruppe: 'draht', hin: 'Zufällig aus drei Fassungen, nie zweimal dieselbe hintereinander.' });
   }
   // Schuss und Einschlag (fire, shell)
-  const gepZiele = Object.keys(TYPES).filter(z => TYPES[z].side !== sd && (TYPES[z].cls === 'walker' || TYPES[z].suit) && (k === 'art' || !E.immune(T, TYPES[z])));   // gepanzerte Ziele, auf die diese Einheit schießen darf
+  const gepZiele = Object.keys(TYPES).filter(z => TYPES[z].side !== sd && E.ROSTER[TYPES[z].side].includes(z) && !TYPES[z].held && (TYPES[z].cls === 'walker' || TYPES[z].suit) && (k === 'art' || !E.immune(T, TYPES[z])));   // gepanzerte Ziele, auf die diese Einheit schießen darf
   const wirkt = gepZiele.some(z => E.faktor(t, z, true).f >= 1), prallt = gepZiele.some(z => E.faktor(t, z, true).f < 1);   // wie ui.js einschlagArt
   const PZ = () => { if (wirkt) S('ziel', k === 'walker' ? 'zielpanzer' : 'panzer', 'Treffer auf Panzerung (Waffe wirkt)', 'einschlag_panzer', 0.5, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug, und die Waffe wirkt dagegen (F64).' });
     if (prallt) S('ziel', 'abpraller', 'Treffer auf Panzerung (Abpraller)', 'einschlag_abpraller', 0.3, { gruppe: 'einschlag', hin: 'Ziel ist ein Fahrzeug, Schreiter oder Kampfanzug; die Waffe prallt ab (F64).' }); };
@@ -135,7 +141,7 @@ function slotsVon(t) {
       PZ();
     } else if (fk === 'mg' || fk === 'minigun') {
       if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'mg', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.83, hin: 'Tiefer gestimmt (0,80–0,86). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
-      else if (t === 'orden' || t === 'klaue') { S('schuss', 'schuss', 'MG am Arm (schweres MG)', 'neu4_mg_schwer', 0.55, { gruppe: 'mg', kette: 'schuss', hin: 'Standard 2026-11-22 (Enrico 15:26), vorher Drehlauf.' }); if (t === 'orden') S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.4, { gruppe: 'einschlag', hin: 'Wenn die Garbe nur niederhält und nicht trifft (Ton-Spur SP-3).' }); }
+      else if (t === 'orden' || t === 'klaue') { S('schuss', 'schuss', 'MG am Arm (schweres MG)', 'neu4_mg_schwer', 0.55, { gruppe: 'mg', kette: 'schuss', hin: 'Standard 2026-11-22 (Enrico 15:26), vorher Drehlauf.' }); if (t === 'orden' && ['a', 'z'].some(r => SPUR.typen && SPUR.typen.orden && SPUR.typen.orden[r] && SPUR.typen.orden[r].vorbei)) S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.4, { gruppe: 'einschlag', hin: 'Wenn die Garbe nur niederhält und nicht trifft (Ton-Spur SP-3).' }); }
       else S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
       S('ziel', 'ziel', 'Einschlag in den Körper (dumpf)', 'einschlag', 0.22, { gruppe: 'einschlag', rate: 0.82, dur: 260, kette: 'ziel', hin: 'Tiefer gestimmt (0,78–0,86) und nach 0,26 s ausgeblendet.' });
       PZ();   // „Daneben“ gibt es beim MG nicht: jeder Treffer klingt als dumpfer Einschlag (Ton-Spur 2026-11-23)
@@ -235,6 +241,11 @@ function slotsVon(t) {
   // Ankunft
   S('ankunft', 'nachschub', 'Nachschub trifft ein', 'whistle', 0.5, { gruppe: 'signal' });
   { const ids = out.map(z => z.id), dopp = ids.filter((x, i) => ids.indexOf(x) !== i); if (dopp.length) throw new Error('doppelte Zeilen-Kennung bei ' + t + ': ' + dopp.join(', ')); }   // jede Zeile braucht eine eigene Kennung (Speicher je Einheit und Zeile)
+  if (NEU) {   // V3: alte Sprüche raus, neue Stimmzeilen aus der Ton-Spur
+    for (let i = out.length - 1; i >= 0; i--) if (/^sv_/.test(out[i].platz) || ST_ALT.has(out[i].platz)) out.splice(i, 1);
+    const sp = SPUR.typen && SPUR.typen[t], ps = new Set(sp ? [...Object.keys(sp.a || {}), ...Object.keys(sp.z || {})].filter(q => q.startsWith('st_') && POOLS[q]) : []);
+    for (const pl of [...ps].sort()) { const an = stAnlass(pl); S(an === 'anwahl' || an === 'auswahl' ? 'anw' : 'stimme', 'st_' + an, ST_TITEL[an] || an, pl, 0.5, { gruppe: 'stimme_neu', hin: 'Neue Stimme (V3, Schlachtfunk). Höchstens ein Ruf zugleich, je Einheit und Anlass höchstens alle 7 s; Not-Rufe haben Vorrang.' }); }
+  }
   return out;
 }
 
@@ -247,15 +258,15 @@ const RUFE = [['auswahl', 'Auswahl / Bestätigung (etwa jede dritte Auswahl)'], 
   ['feuer_befehl', 'Feuer-Befehl (Hauptmann/General: Feuer frei, Feuerschlag, Feuerbereitschaft)', 'ruf_feuer'], ['panik_einzeln', 'Panik, einzeln (kleiner Trupp flieht)', 'panik_einzeln'], ['panik_gruppe', 'Panik, Gruppe (großer Trupp oder mehrere fliehen)', 'panik_gruppe'],
   ['sterben_einzeln', 'Sterben, einzeln (etwa jede dritte Vernichtung, nach 5 s ausgeblendet)', 'sterben_einzeln'], ['sterben_gruppe', 'Sterben, Gruppe (schwere Verluste, leise)', 'sterben_gruppe']];   // dritter Wert = Standard-Platz (Enrico 2026-11-22 14:50)
 const SST_RUFE = [['auswahl', 'Auswahl (jede dritte)'], ['bewegen', 'Bewegen'], ['angriff', 'Angriff (Fernkampf)'], ['nahkampf', 'Nahkampf'], ['getroffen', 'Getroffen'], ['schwer_beschaedigt', 'Schwer beschädigt (einmal je Schreiter)'], ['feind_gesichtet', 'Feindliche Maschine gesichtet'], ['zerstoert', 'Zerstört']];
-for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_' + sd, name: sd === 'A' ? 'Stimmen Konkordat' : 'Stimmen Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
+if (!NEU) for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_' + sd, name: sd === 'A' ? 'Stimmen Konkordat' : 'Stimmen Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
   slots: RUFE.filter(([id]) => id !== 'held_faellt' && !(id === 'granate' && sd === 'A')).map(([id, titel, std]) => ({   // Held fällt: die Heldenstimme übernimmt; Granate: nur die Aschenwacht hat Panzergranaten (Ton-Spur 2026-11-23)
      ab: 'stimme', id: 'ruf_' + id, titel, platz: std || '-', vol: 0.5, v: null, gruppe: 'stimmen', mode: 'ruf', rate: null, dur: 0, hin: 'Höchstens ein Ruf gleichzeitig, je Ereignis höchstens alle 7 s. Filter und Stärke gelten für diese Zeile.', kette: null, sd, auch: [] })) });
 // Schreiter-Stimmen (Enrico 2026-11-22 14:40): Gruppe „Schreiter“ unter Stimmen, Roboter-Filter je Zeile
-for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_schreiter_' + sd, name: sd === 'A' ? 'Schreiter Konkordat' : 'Schreiter Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
+if (!NEU) for (const sd of ['A', 'D']) einheiten.push({ t: 'stimmen_schreiter_' + sd, name: sd === 'A' ? 'Schreiter Konkordat' : 'Schreiter Aschenwacht', sd, kat: 'Stimmen', mech: false, img: '', stimme: '',
   slots: SST_RUFE.map(([id, titel]) => ({ ab: 'stimme', id: 'ruf_' + id, titel, platz: 'sst_' + id, vol: 0.55, v: null, gruppe: 'stimmen', mode: 'ruf', filt: 'roboter', fst: sd === 'D' ? 0.7 : 0.45, rate: null, dur: 0, hin: 'Gilt für alle Schreiter (Säge, Klaue, Turm, Orden, Kreuz, Eisenknecht). Höchstens ein Ruf gleichzeitig, je Anlass höchstens alle 7 s.', kette: null, sd, auch: [] })) });
 // Heldenstimmen (Enrico 2026-11-22 15:58/16:08): Gruppen „Held Rote Faust“ und „Held Eiserner Kürassier“
 const HELD_RUFE = [['auswahl', 'Auswahl (etwa jede zweite)'], ['bewegen', 'Ziehen'], ['angriff', 'Angriff (Nahkampf)'], ['spezial', null], ['getroffen', 'Getroffen (höchstens alle 8 s)'], ['gegner_erledigt', 'Gegner vernichtet'], ['schwer_verwundet', 'Schwer verwundet (einmal je Schlacht)'], ['tod', 'Tod']];
-for (const [t, name, sd, filt, fst, spezial, pre] of [['stimmen_held_faust', 'Held Rote Faust', 'A', 'roh', 0, ['durchbruch', 'Durchbruch (beim Anlauf)'], 'hst_faust_'], ['stimmen_held_kuerass', 'Held Eiserner Kürassier', 'D', 'helm', 0.6, ['hinrichtung', 'Hinrichtung (vor dem Säge-Schnitt)'], 'hst_kuerass_']])
+if (!NEU) for (const [t, name, sd, filt, fst, spezial, pre] of [['stimmen_held_faust', 'Held Rote Faust', 'A', 'roh', 0, ['durchbruch', 'Durchbruch (beim Anlauf)'], 'hst_faust_'], ['stimmen_held_kuerass', 'Held Eiserner Kürassier', 'D', 'helm', 0.6, ['hinrichtung', 'Hinrichtung (vor dem Säge-Schnitt)'], 'hst_kuerass_']])
   einheiten.push({ t, name, sd, kat: 'Stimmen', mech: false, img: '', stimme: '', slots: HELD_RUFE.map(([id, titel]) => ({ ab: 'stimme', id: 'ruf_' + id, titel: titel || spezial[1], platz: pre + (id === 'spezial' ? spezial[0] : id), vol: 0.6, v: null, gruppe: 'stimmen', mode: 'ruf', filt, fst, rate: null, dur: 0,
     hin: (t.endsWith('kuerass') ? 'Stimme Ragnar mit Helm-Filter, im Spiel tiefer (0,92); je Anlass zwei Fassungen im Wechsel. ' : 'Ohne Filter. ') + 'Höchstens ein Ruf gleichzeitig, je Anlass höchstens alle 7 s.', kette: null, sd, auch: [] })) });
 // Winter (Karte) (Enrico 2026-11-22 17:05): alle Wintertöne an einer Stelle; eine Wahl hier gilt im Spiel auf Winterkarten (ui.js tonWahl → TONWAHL.winter)
@@ -298,7 +309,9 @@ for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') cont
 // Bibliothek nach dem, was man hört (ersetzt in der Auswahl die Code-Gruppen GRUPPEN, die intern bleiben). Je Rubrik Unterüberschriften mit Tonplätzen;
 // „x_*“ nimmt alle Plätze mit diesem Anfang. Ein Platz darf in zwei Rubriken stehen (Schritte im Schnee: Schritte und Winter). Neue Plätze hier eintragen –
 // was fehlt, landet in „Übrige Töne“ und wird beim Bauen gemeldet.
-const HOER = [   // Ton-Pult 3 (Enrico 2026-11-23): nach Inhalt statt Dateiname, jeder Platz nur noch an EINER Stelle; „?“ hinter dem Namen = Einsortierung unsicher (Enrico prüft beim Hören, kann im Pult umsortieren)
+const HOER = [
+  ['stimmen_neu', 'Neue Stimmen (V3, Schlachtfunk)', [['Linie', 'st_linie_*'], ['Unterstützung', 'st_unterst_*'], ['Sturm und Elite', 'st_sturm_*'], ['Eiserne Hünen (Maschine)', 'st_huenen_*'], ['Reiter', 'st_reiter_*'], ['Anführer', 'st_fuehrer_*'], ['Panzer (Bordfunk)', 'st_panzer_*'], ['Schreiter (Maschine)', 'st_schreiter_*'], ['Helden (Helm)', 'st_held_*'], ['Erscheinen', 'st_erscheinen_*'], ['Hörprobe V3', 'probe_*']]],   // V3 (Punkt 112)
+  // Ton-Pult 3 (Enrico 2026-11-23): nach Inhalt statt Dateiname, jeder Platz nur noch an EINER Stelle; „?“ hinter dem Namen = Einsortierung unsicher (Enrico prüft beim Hören, kann im Pult umsortieren)
   ['stimmen', 'Stimmen und Rufe', [['Rufe und Befehle', 'forward stand roar charge? comeon cry scream ruf_feuer mgsetup?'], ['Schmerz, Panik, Sterben', 'pain medic panic panik_einzeln panik_gruppe sterben_einzeln sterben_gruppe neu2_schrei'],
     ['Husten, Atmen, Maske', 'husten grunzen gasmaske selGas neu2_maske'], ['Stimmenpaket und Gefechtsrufe', 'stimmen_paket neu2_stimme'], ['Helden', 'hst_faust_* hst_kuerass_* held_ritter_schrei'], ['Schreiter-Stimmen', 'sst_*'],
     ['Brüllen und Bestien', 'loewe oger_bruell tiger neu3_loewe neu3_loewe2 neu3_bestie neu_tiger_mech'], ['Monster (später Dämonen)', 'neu2_monster'], ['Sprüche beim Anklicken', 'sv_*']]],
