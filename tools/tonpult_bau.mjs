@@ -135,7 +135,7 @@ function slotsVon(t) {
       PZ();
     } else if (fk === 'mg' || fk === 'minigun') {
       if (T.dauerfeuer) { S('schuss', 'schuss', 'Schweres MG aus der Hüfte', 'mg', 0.62, { gruppe: 'mg', kette: 'schuss', rate: 0.83, hin: 'Tiefer gestimmt (0,80–0,86). Dauerfeuer: dieselbe Salve ein zweites Mal.' }); }
-      else if (t === 'orden' || t === 'klaue') S('schuss', 'schuss', 'MG am Arm (schweres MG)', 'neu4_mg_schwer', 0.55, { gruppe: 'mg', kette: 'schuss', hin: 'Standard 2026-11-22 (Enrico 15:26), vorher Drehlauf.' });
+      else if (t === 'orden' || t === 'klaue') { S('schuss', 'schuss', 'MG am Arm (schweres MG)', 'neu4_mg_schwer', 0.55, { gruppe: 'mg', kette: 'schuss', hin: 'Standard 2026-11-22 (Enrico 15:26), vorher Drehlauf.' }); if (t === 'orden') S('ziel', 'vorbei', 'Streifschuss / daneben', 'vorbei', 0.4, { gruppe: 'einschlag', hin: 'Wenn die Garbe nur niederhält und nicht trifft (Ton-Spur SP-3).' }); }
       else S('schuss', 'schuss', fk === 'mg' ? 'MG-Feuer' : 'Drehlauf', fk, 0.55, { gruppe: 'mg', kette: 'schuss' });
       S('ziel', 'ziel', 'Einschlag in den Körper (dumpf)', 'einschlag', 0.22, { gruppe: 'einschlag', rate: 0.82, dur: 260, kette: 'ziel', hin: 'Tiefer gestimmt (0,78–0,86) und nach 0,26 s ausgeblendet.' });
       PZ();   // „Daneben“ gibt es beim MG nicht: jeder Treffer klingt als dumpfer Einschlag (Ton-Spur 2026-11-23)
@@ -224,7 +224,7 @@ function slotsVon(t) {
   if (T.banner) S('abil', 'banner', 'Banner aufpflanzen', 'bauen', 0.32, { gruppe: 'handgriff', hin: 'Aufnehmen: 0,22.' });
   if (T.cutter) S('abil', 'schneiden', 'Draht schneiden', 'draht_schneiden', 0.7, { gruppe: 'draht' });
   if (t === 'saeger') { S('nah', 'saege_ein', 'Sägehieb: Einschlag (Fußtruppen)', 'saege_einschlag', 0.6, { gruppe: 'saege' }); S('nah', 'saege_fl', 'Sägehieb: Sägen (Fußtruppen, danach)', 'saege_fleisch', 0.45, { gruppe: 'saege' }); S('nah', 'saege_me', 'Sägehieb gegen Gepanzerte', 'saege_metall', 0.6, { gruppe: 'saege' }); }
-  if (t === 'orden') S('nah', 'kettensaege_me', 'Kettensäge gegen Gepanzerte', 'held_kschwert_metall', 0.5, { gruppe: 'saege' });
+  if (t === 'orden') { S('nah', 'kettensaege_fl', 'Kettenschwert-Hieb gegen Fußtruppen', 'saege_fleisch', 0.55, { gruppe: 'saege', spiel: 'orden_fleisch', hin: 'Der letzte, harte Schlag. Eigener Tonplatz (SP-3, 84.10).' }); S('nah', 'kettensaege_me', 'Kettenschwert-Hieb gegen Gepanzerte', 'held_kschwert_metall', 0.55, { gruppe: 'saege', spiel: 'orden_metall', hin: 'Der letzte, harte Schlag. Eigener Tonplatz (SP-3, 84.10).' }); }
   if (T.limber) { S('abil', 'auf', 'Aufprotzen', 'geschuetz_aufprotzen', 0.6, { gruppe: 'handgriff' }); S('abil', 'ab', 'Abprotzen', 'geschuetz_abprotzen', 0.6, { gruppe: 'handgriff' }); }
   if (T.roar) S('abil', 'loewe', 'Löwengebrüll', 'loewe', 0.6, { gruppe: 'ruf' });
   if (T.blastLance) S('abil', 'lanze', 'Sprenglanze', 'grenade2', 0.6, { gruppe: 'einschlag' });
@@ -269,12 +269,26 @@ for (const [t, name, sd, filt, fst, spezial, pre] of [['stimmen_held_faust', 'He
     W('zug', 'eis_knackt', 'Eis knackt (Fußtruppen auf Eis)', 'eis_knackt', 0.5, 'Nur der Anfang (1,5 s). Ganzer Ton mit Einbrechen: Platz eis_bricht, nur im Pult.'),
     W('ankunft', 'winterwind_stark', 'Böe (selten, Kulisse)', 'winterwind_stark', 0.12, 'Grundschleife: winterwind (0,13, zwei Spuren mit Überblendung).') ] }); }
 // Gelände und Gebäude (2026-11-23): Töne ohne Einheit; eine Wahl hier gilt im Spiel immer (ui.js tonWahl → TONWAHL.gelaende)
-{ const W = (ab, id, titel, platz, vol, hin, spiel) => ({ ab, id, titel, platz, vol, v: null, gruppe: 'einschlag', mode: null, rate: null, dur: 0, hin, kette: null, sd: null, spiel: spiel || null, auch: [] });
+{ const W = (ab, id, titel, platz, vol, hin, spiel, gruppe, sd) => ({ ab, id, titel, platz, vol, v: null, gruppe: gruppe || 'einschlag', mode: null, rate: null, dur: 0, hin, kette: null, sd: sd || null, spiel: spiel || null, auch: [] });
   einheiten.push({ t: 'gelaende', name: 'Gelände und Gebäude', sd: null, kat: 'Stimmen', mech: false, img: '', stimme: '', slots: [
     W('tod', 'einsturz', 'Gebäude stürzt ein', 'einsturz', 0.95, 'Kirche, Haus, Kapelle; auch nach Rammen und Sprengen.'),
     W('tod', 'stollenboom', 'Stollen wird gesprengt: Explosion', 'boom2', 0.8, 'Zu Rundenbeginn, zwei Runden nach dem Graben. Eigener Tonplatz im Spiel.', 'stollen_boom'),
     W('tod', 'stollenknall', 'Stollen wird gesprengt: Nachknall', 'grenade2', 0.6, 'Zusammen mit der Explosion.', 'stollen_knall'),
-    W('tod', 'stollenblast', 'Stollen wird gesprengt: Erdreich bricht ein', 'blast', 0.8, 'Gleich danach, zusammen mit dem Einsturz-Ton.', 'stollen_blast') ] }); }
+    W('tod', 'stollenblast', 'Stollen wird gesprengt: Erdreich bricht ein', 'blast', 0.8, 'Gleich danach, zusammen mit dem Einsturz-Ton.', 'stollen_blast'),
+    W('abil', 'erobert_a', 'Zielfeld erobert: Konkordat', 'erobert', 0.55, 'Sobald ein Trupp des Konkordats ein Zielfeld nimmt (SP-3, 84.3). Eigener Tonplatz im Spiel.', 'erobert_konkordat', 'signal', 'A'),
+    W('abil', 'erobert_d', 'Zielfeld erobert: Aschenwacht', 'erobert', 0.55, 'Sobald ein Trupp der Aschenwacht ein Zielfeld nimmt. Eigener Tonplatz im Spiel.', 'erobert_aschenwacht', 'signal', 'D'),
+    W('abil', 'verloren', 'Eigenes Zielfeld geht verloren (gegen die KI)', 'verloren', 0.55, 'Statt des Erobert-Tons, wenn der Gegner ein Feld des Spielers nimmt.', null, 'signal'),
+    W('abil', 'zug_eigen', 'Rundenschild: eigener Zug', 'zug_eigen', 0.35, 'Trommelwirbel beim Zugwechsel.', null, 'signal'),
+    W('abil', 'zug_gegner', 'Rundenschild: Zug des Gegners', 'zug_gegner', 0.35, 'Wirbel mit tiefem Horn.', null, 'signal'),
+    W('abil', 'ev_punkte', 'Siegpunkte werden gezählt (Rundenbeginn)', '-', 0.4, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: neu2_punkt oder tick.', 'ev_punkte', 'signal'),
+    W('abil', 'ev_anfuehrer', 'Hauptmann oder General fällt', '-', 0.5, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: held_fall_horn (leise) oder generalhorn.', 'ev_anfuehrer_faellt', 'signal'),
+    W('abil', 'ev_sammeln', 'Fliehender Trupp wird gesammelt (Rundenbeginn)', '-', 0.45, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: stand (Ruf) oder die Pfeife march.', 'ev_sammeln', 'ruf'),
+    W('abil', 'ev_entsetzen', 'Entsetzenstest misslingt („Entsetzt!“)', '-', 0.4, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: panik_einzeln.', 'ev_entsetzen', 'ruf'),
+    W('abil', 'ev_furcht', 'Furcht-Aura des Kürassiers wirkt', '-', 0.35, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: held_ruestung leise oder panik_einzeln.', 'ev_furcht', 'ruf'),
+    W('abil', 'ev_feuerbereit', 'Feuerbereitschaft eingenommen', '-', 0.4, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: neu_nachladen oder mgladen (Durchladen).', 'ev_feuerbereit', 'handgriff'),
+    W('abil', 'ev_flott', 'Panne behoben / wieder freigefahren', '-', 0.45, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: reparieren oder ein kurzer Motor (motor_auswahl).', 'ev_wieder_flott', 'fahrzeug'),
+    W('abil', 'ev_brennt', 'Trupp steht im brennenden Feld', '-', 0.4, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: feuer oder ein Schmerzlaut (pain).', 'ev_brennt', 'flamme'),
+    W('abil', 'ev_wind', 'Der Wind dreht', '-', 0.4, 'Im Spiel bisher ohne Ton (SP-3, 84.3). Vorschlag: wind (kurze Böe).', 'ev_wind', 'einschlag') ] }); }
 // Wer nutzt welchen Platz (gleiche Seite, gleicher Filter): Hinweis „gilt im Spiel auch für“
 const nutzer = {};
 for (const u of einheiten) for (const s of u.slots) { if (s.mode === 'ruf') continue; const key = s.platz + '|' + (s.platz.startsWith('sv_') ? '' : s.sd) + '|' + (s.v || ''); (nutzer[key] = nutzer[key] || new Set()).add(u.name); }

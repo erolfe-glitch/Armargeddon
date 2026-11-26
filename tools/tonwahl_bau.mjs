@@ -26,6 +26,10 @@ const alleKeys = new Set([...echteKeys, ...Object.keys(MISCHTON)]);
 const TON_AUS = p3 ? ((p3.j.aussortiert && p3.j.aussortiert.schluessel) || []).filter(k => echteKeys.has(k)).sort() : [];
 // Ton-Spur 2026-11-23: „Stollen sprengen“ stand beim Mineur, klingt aber zu Rundenbeginn ohne Einheit → Zeile unter „Gelände und Gebäude“; alte Wahl dorthin
 if (wahl.has('mineur|stollenboom') && !wahl.has('gelaende|stollenboom')) { const e = wahl.get('mineur|stollenboom'); wahl.set('gelaende|stollenboom', { ...e, einheit: 'gelaende', verlegt: 1 }); wahl.delete('mineur|stollenboom'); bericht.push('mineur|stollenboom: Wahl nach „Gelände und Gebäude“ verlegt'); }
+// Vorgaben aus dem Auftrag (SP-3, 84.10): gelten, solange kein Export für diese Zeile eine eigene Wahl enthält
+const VORGABE = [['orden', 'kettensaege_fl', 'k:held_kschwert_metall_3'], ['orden', 'kettensaege_me', 'k:held_kschwert_metall_4']];
+for (const [t, id, w] of VORGABE) { const z = (D.einheiten.find(x => x.t === t) || { slots: [] }).slots.find(y => y.id === id);
+  if (z && !wahl.has(t + '|' + id)) { wahl.set(t + '|' + id, { einheit: t, platz_id: id, wahl: w, lautstaerke: z.vol, tonhoehe: 1, verlegt: 1, quelle: 'Vorgabe' }); bericht.push(`${t}|${id}: Vorgabe aus dem Auftrag (${w.slice(2)})`); } }
 // Zeilen, die bis 21:00 im Spiel denselben Platz hatten und jetzt einen eigenen bekommen (spiel): bisherige Wahl auf die Schwester-Zeile übertragen, wenn dort keine eigene steht
 for (const u of D.einheiten) { const gruppen = {}; for (const z of u.slots) if (z.mode !== 'ruf' && z.platz && z.platz !== '-') (gruppen[z.platz] = gruppen[z.platz] || []).push(z);
   for (const zs of Object.values(gruppen)) { if (zs.length < 2 || new Set(zs.map(z => z.spiel || z.platz)).size < 2) continue;

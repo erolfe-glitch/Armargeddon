@@ -2,7 +2,7 @@
  "erzeugt": "2026-11-23T18:20:29.433Z",
  "ui_hash": "8dc165fc3d6fe9d403ced2d02488cc491a0368fb",
  "tempo": 12,
- "hinweis": "a = Einheit handelt, z = Einheit ist Getroffene; wahl = wie die Pult-Wahl (TONWAHL) die Einheit an dieser Stelle sieht: sp Sprecher, a/z im Ereignis (nicht Ziel/Ziel), ok = nicht im Ereignis, fest = Ton als fester Schlüssel gezogen (Wahl greift nicht) · 2026-11-24: koloss, sturmpz aus Teil-Lauf übernommen (Dampfpfeife) · grenadier (Handgranaten-Fähigkeit) aus Teil-Lauf · feldkanone (Panzergranate) aus Teil-Lauf",
+ "hinweis": "a = Einheit handelt, z = Einheit ist Getroffene; wahl = wie die Pult-Wahl (TONWAHL) die Einheit an dieser Stelle sieht: sp Sprecher, a/z im Ereignis (nicht Ziel/Ziel), ok = nicht im Ereignis, fest = Ton als fester Schlüssel gezogen (Wahl greift nicht) · 2026-11-24: koloss, sturmpz aus Teil-Lauf übernommen (Dampfpfeife) · grenadier (Handgranaten-Fähigkeit) aus Teil-Lauf · feldkanone (Panzergranate) aus Teil-Lauf Ordensschreiter neu gemessen 2026-11-26 (SP-3).",
  "typen": {
   "hauptA": {
    "a": {
@@ -8051,11 +8051,11 @@
     "einschlag_abpraller": [
      "schuss:huenen"
     ],
-    "neigh": [
+    "pferd_unruhe": [
      "schuss:lanzeD",
      "nahkampf:lanzeD"
     ],
-    "pferd_unruhe": [
+    "neigh": [
      "schuss:lanzeD",
      "nahkampf:lanzeD"
     ],
@@ -8069,7 +8069,11 @@
      "gegenschlag:huenen",
      "gegenschlag:knecht"
     ],
-    "held_kschwert_metall": [
+    "orden_fleisch": [
+     "nahkampf:grenadier",
+     "nahkampf:lanzeD"
+    ],
+    "orden_metall": [
      "nahkampf:huenen",
      "nahkampf:sturmpz",
      "nahkampf:knecht"
@@ -8123,9 +8127,6 @@
      "gegenschlag:grenadier",
      "gegenschlag:huenen",
      "gegenschlag:knecht"
-    ],
-    "grenade": [
-     "gegenschlag:grenadier"
     ],
     "boom": [
      "getroffen:sturmpz",
@@ -8272,13 +8273,13 @@
       "schuss:huenen"
      ]
     },
-    "neigh": {
+    "pferd_unruhe": {
      "ok:a": [
       "schuss:lanzeD",
       "nahkampf:lanzeD"
      ]
     },
-    "pferd_unruhe": {
+    "neigh": {
      "ok:a": [
       "schuss:lanzeD",
       "nahkampf:lanzeD"
@@ -8304,6 +8305,12 @@
       "gegenschlag:knecht"
      ]
     },
+    "orden_fleisch": {
+     "a1:a": [
+      "nahkampf:grenadier",
+      "nahkampf:lanzeD"
+     ]
+    },
     "robot": {
      "sp:z": [
       "nahkampf:grenadier",
@@ -8325,7 +8332,7 @@
       "gebaeude_rammen_einsturz"
      ]
     },
-    "held_kschwert_metall": {
+    "orden_metall": {
      "a1:a": [
       "nahkampf:huenen",
       "nahkampf:sturmpz",
@@ -8335,11 +8342,6 @@
     "armor": {
      "a:a": [
       "nahkampf:sturmpz"
-     ]
-    },
-    "grenade": {
-     "z:z": [
-      "gegenschlag:grenadier"
      ]
     },
     "boom": {
@@ -22555,6 +22557,9 @@
      "ziehen_feindmaschine",
      "rueckzug",
      "moral"
+    ],
+    "vorbei": [
+     "schuss:grenadier"
     ]
    },
    "z": {},
@@ -22569,6 +22574,11 @@
       "ziehen_feindmaschine",
       "rueckzug",
       "moral"
+     ]
+    },
+    "vorbei": {
+     "a1:a": [
+      "schuss:grenadier"
      ]
     }
    },

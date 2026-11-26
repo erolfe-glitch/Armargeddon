@@ -67,6 +67,7 @@ for (const u of D.einheiten) { const t = u.t, sp = S.typen[t]; if (!sp || (nur.l
     aus.push(['fehlt', `fehlt im Pult: ${p} (${eimer}; ${keys.map(k => WIE[basis(k)]).filter((x, i, l) => l.indexOf(x) === i).join(' / ')}; Szenen: ${kurzSz(keys.flatMap(k => e[k]))})`, `fehlt im Pult: ${p} (${eimer})`]); summe.fehlt++; }
   // (b) zu viel, (c) Rolle
   for (const z of rows) { const p = platzVon(z), r = rolleVon(z), e = eigene(sp, p), keys = Object.keys(e), wie = [...new Set(keys.map(basis))];
+    if (!keys.length && S.winter && S.winter[t] && Object.keys(eigene(S.winter[t], p)).length) continue;   // SP-3: Zeile klingt nur in den Szenen der Winterkarte (z. B. Streifschuss, hängt vom Würfel ab) – nicht „zu viel“
     if (!keys.length) { const fremd = Object.values(sp.wahl[p] || {}).flat();
       aus.push(['zuviel', `zu viel im Pult: „${z.titel}“ (${z.id}, Platz ${p}) – in keiner Szene von dieser Einheit gespielt` + (fremd.length ? ` (klingt nur als Ton der Gegenseite: ${kurzSz(fremd)})` : ''), `zu viel im Pult: „${z.titel}“ (${z.id}, Platz ${p})`]); summe.zuviel++; continue; }
     const greift = wie.includes('sp') || wie.includes(r), stoert = wie.filter(w => w !== 'sp' && w !== r);
