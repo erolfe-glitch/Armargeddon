@@ -1558,10 +1558,12 @@ const BILD_LINKS = new Set(['konkordat_moerser', 'konkordat_rauchwerfer', 'asche
 // (Soldat 0,52 statt 0,8 Feldradien), Kettenfahrzeuge und Schreiter ×0,85; Trupps lockerer in zwei Reihen. Rückweg: window.MASSSTAB_ALT = true (bzw. __dbg.massstab(0)).
 const MASS = { fig: 0.65, fz: 0.85, line: 10, cav: 6, spez: 4, versatz: 25 },   /* R1 (2026-11-25): Linie 8, Reiter 6, Spezialtrupps 3 über massZahl(); window.STAERKE_ALT = 10/6/4 */ MASS_LINIE = new Set(['kohorte', 'grenadier']), MASS_SL = {};
 const massAn = () => !window.MASSSTAB_ALT;
+const BEIWERK_BILD = new Set(['melder']);   // U5c: Bild zeigt schon die ganze Gruppe (Meldegänger mit Hund) – nicht vervielfachen
 const massZahl = () => window.STAERKE_ALT ? { line: 10, cav: 6, spez: 4 } : { line: 8, cav: 6, spez: 3 };
 function massSlots3(n) {   // R1: Linie 8 = 3-2-3 versetzt (die mittlere Reihe steht in den Lücken), Spezialtrupp 3 = einer hinten, zwei vorn; Füße sicher im eigenen Feld
   const k = 's' + n; if (MASS_SL[k]) return MASS_SL[k];
-  const out = n === 8 ? [[-0.46, -0.34], [0.04, -0.36], [0.52, -0.32], [-0.22, -0.02], [0.28, 0.0], [-0.52, 0.3], [-0.02, 0.32], [0.48, 0.3]] : n === 3 ? [[0.06, -0.24], [-0.34, 0.2], [0.36, 0.16]] : null;
+  const out = n === 8 ? [[-0.46, -0.34], [0.04, -0.36], [0.52, -0.32], [-0.22, -0.02], [0.28, 0.0], [-0.52, 0.3], [-0.02, 0.32], [0.48, 0.3]] : n === 3 ? [[0.06, -0.24], [-0.34, 0.2], [0.36, 0.16]]
+    : n === 6 ? [[-0.42, -0.3], [0.04, -0.33], [0.46, -0.28], [-0.4, 0.24], [0.02, 0.3], [0.44, 0.22]] : n === 4 ? [[-0.28, -0.28], [0.3, -0.24], [-0.32, 0.22], [0.26, 0.28]] : null;   // U5c: 6er-Sturmtrupp 3-3, 4er-Fachtrupp 2-2, Füße im eigenen Feld
   return (MASS_SL[k] = out || massSlots(n)); }
 function massSlots(n, reiter) {   // zwei lockere Reihen, Füße im eigenen Feld (Probe E1: hinten −0,3, vorn +0,3, Breite ±0,64 Feldradien)
   const k = n + (reiter ? 'r' : ''); if (MASS_SL[k]) return MASS_SL[k];
@@ -1574,6 +1576,9 @@ function massNF(u, nf) {
   if (nf.deep) { o.tiefSc = o.massF = gross ? MASS.fz : MASS.fig; return o; }   // MG, Geschütze, Gespanne ×0,65; Fahrzeuge/Schreiter ×0,85
   o.sc = nf.sc * MASS.fig; o.massF = MASS.fig;
   const Z = massZahl();
+  if (nf.trupp && !window.STAERKE_ALT && !E.truppAlt() && E.TRUPP[u.type] != null && T.cls !== 'cav') {   // U5c (Punkt 90): so viele Figuren wie Modelle in der Regel, fehlende Posen wiederholen sich (Klone)
+    const n = BEIWERK_BILD.has(u.type) ? Math.min(nf.max, E.modelle(u.type)) : E.modelle(u.type); o.max = n;
+    o.slots = [8, 6, 4, 3].includes(n) ? massSlots3(n) : n <= 2 && nf.slots && nf.slots.length >= n ? nf.slots : massSlots(n); return o; }
   if (nf.trupp && MASS_LINIE.has(u.type)) { o.max = Z.line; o.slots = Z.line === 10 ? massSlots(10) : massSlots3(Z.line); }
   else if (nf.trupp && T && T.cls === 'cav') { o.max = Z.cav; o.slots = massSlots(Z.cav, true); }
   else if (nf.trupp && nf.max > Z.spez) { o.max = Z.spez; o.slots = massSlots3(Z.spez); }   // R1: Spezialtrupps 3 statt 4

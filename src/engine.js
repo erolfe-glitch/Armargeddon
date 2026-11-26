@@ -1168,7 +1168,13 @@ function hexDef(G, c, r, isWalker) {
 // U5a (2026-11-26): Schaden über Modelle. Rückweg MODELLSCHADEN_ALT (Node: Umgebung, Browser: window). Feuerkraft-Fassung KRAFT=traeger (sonst weiche Stufen).
 const u5aus = () => !!(TOG.MODELLSCHADEN_ALT || (typeof window !== 'undefined' && window.MODELLSCHADEN_ALT));
 const kraftArt = () => TOG.KRAFT || 'stufen';   // Fassung 2 nur für Messungen (Enrico 16:00), im Spiel nicht erreichbar
-function modelle(t) { const T = TYPES[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
+// U5c (Punkt 90, Enrico 2026-11-26): Truppgrößen in sieben Gruppen – Linie 8, Sturm/Nahkampf 6, Waffentrupp 3 Mann (+ Waffe), Fachtrupp 4,
+// kleine Gruppe 2–3 (+ Beiwerk: Trage, Karren, Kiste zählen nicht), gepanzerte Infanterie 2, Einzelmodell 1, Reiter 6. Rückweg TRUPP_ALT (Node: Umgebung, Browser: window).
+const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, eingreif: 6, schildwall: 6, schwer: 6, mahlwerk: 3, sense: 3, buechse: 3, flammen: 3, brand: 3,
+  pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 2, banner: 2,
+  hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, stahl: 2, panzerk: 2, huenen: 2, oger: 2, ballon: 1 };
+const truppAlt = () => !!(TOG.TRUPP_ALT || (typeof window !== 'undefined' && window.TRUPP_ALT));
+function modelle(t) { const T = TYPES[t]; if (!truppAlt() && TRUPP[t] != null) return TRUPP[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
 const modelleDa = u => Math.max(0, Math.ceil(u.str / 10 * modelle(u.type) - 1e-6));
 // Feuerkraft nach Stärke. Alt: 0,4 + 0,6 × Anteil. Stufen: 100–70 voll, 69–40 → 75 %, unter 40 → 50 %, Übergänge weich (etwa ±3 Stärke um 67 und 37).
 // Waffenträger: Linie/Reiter 0,5 + 0,5 × Anteil lebender Modelle; Spezialtrupps (3 Modelle) je gefallenem Schützen −TRAEGER_SCHUETZE, fällt der Waffenträger: TRAEGER_WEG; Einzelmodelle wie Stufen.
@@ -2165,7 +2171,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
