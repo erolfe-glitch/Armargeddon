@@ -39,3 +39,15 @@ Gemalt mit Nano Banana 2.1 Edit (fal.ai). Format 2752 × 1536, Hintergrund Magen
 - Die Wände stehen senkrecht auf dem Fundament, es fächert nichts auf.
 - Gedacht als **ein ganzes Modell je Dorf- bzw. Ruinenfeld** statt der aufgestellten Wandstreifen (`ruine_vorn`/`ruine_hinten`).
 - Ob die Eckansicht neben den übrigen Bausteinen passt, entscheidet Enrico am Probebild.
+
+## `graben_laufsteg_bogen.png` = gerade Lattenroste (26.11. 10:00, Enricos Frage zu G7h-1)
+- Vier waagerechte Streifen, jeweils mit Längsbalken oben und unten und Latten genau quer dazu, dunkel und nass:
+  - Zeilen 41–369 sauber;
+  - Zeilen 423–752 schlammig;
+  - Zeilen 806–1131 mit Pfütze;
+  - Zeilen 1186–1511 mit zwei fehlenden Latten.
+- Über die ganze Bildbreite, kachelbar machen.
+- **Im Spiel:**
+  - Den Steg auf etwa 0,35 R Breite skalieren und entlang der Grabenmitte kacheln, nur drehen und nie scheren (in Gräben, die in die Tiefe laufen, um 90° gedreht und in der Tiefe verkürzt).
+  - Die Streifen zufällig mischen, den mit Lücke selten nehmen.
+  - Er ersetzt den Code-Steg aus G7h-1. Der bleibt als Rückweg.

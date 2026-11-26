@@ -1776,7 +1776,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       const pa = posenAn(u) ? poseFigur(u, d, i, nf.ims[0]) : null, im = pa ? pa.im : nf.ims[(u.id * 3 + i) % nf.ims.length];   // Posenwechsel (Stufe 1)
       const kv = klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
       if (pl && pl.pts) { const q = pl.reihe ? pl.pts[Math.min(pl.pts.length - 1, Math.floor((i + 0.5) * pl.pts.length / n))] : n > 4 ? grabenPunkt(pl.pts, i, n, s) : pl.pts[[1, 2, 0, 3][i]];   // U2: zehn Grabenplätze (bei weniger Figuren gleichmäßig verteilt); U1-Fassung als Rückweg
-        list.push({ im, pa, kv, ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
+        const lieg = pl.reihe && !window.LIEGEND_ALT && TYPES[u.type].fig === 'sniper', mx = lieg ? pl.pts.reduce((a, t) => a + t[0], 0) / pl.pts.length : q[0];   // G7h-2: liegende Scharfschützen (lange Gewehre) auf die Grabenmitte statt in zwei Reihen; Rückweg LIEGEND_ALT
+        list.push({ im, pa, kv, ox: (mx - pcx) / s, oy: (q[1] - pcy) / s, abs: true }); continue; }
       const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, kv, ox: slot[0] + kv.jx, oy: slot[1] * (pl && pl.sy || 1) + kv.jy });
     }
   } else if (pl && pl.pts && pl.reihe && !nf.vehicle && !window.G7H_ALT) { let q = pl.pts[0]; for (const t of pl.pts) if (Math.hypot(t[0] - pcx, t[1] - pcy - s * 0.15) < Math.hypot(q[0] - pcx, q[1] - pcy - s * 0.15)) q = t; list.push({ im: nf.ims[0], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s }); }   // G7h (87.4): Einzelmodell (Geschütz) im Graben auf die Sohle, nicht halb auf der Lippe

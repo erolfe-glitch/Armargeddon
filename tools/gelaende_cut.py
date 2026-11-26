@@ -188,9 +188,24 @@ TEILE = {
     'graben_querwand_block_2': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (1436, 124, 2652, 740))}),   # Flechtwerk
     'graben_querwand_block_3': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (96, 801, 1336, 1406))}),    # Bretter, Variante
     'graben_querwand_block_4': ('stueck', 0.3, {'quelle': ('graben_querwand_block_bogen', (1433, 790, 2666, 1423))}),  # zerschossen
-    'graben_querwand_tief_1': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', 'graben_wand_seite_breit_bogen', 'graben_querwand_block_bogen', (29, 76, 924, 1498))}),   # Bretter
+    'graben_querwand_tief_1': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', (29, 76, 924, 1498))}),   # Bretter
     'graben_querwand_tief_2': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', (957, 76, 1824, 1498))}), # Flechtwerk
     'graben_querwand_tief_3': ('stueck', 0.3, {'quelle': ('graben_querwand_tief_bogen', (1877, 76, 2722, 1498))}),# beschädigt
+    # G7h-2 (2026-11-26): gerade Lattenroste, Drahtgürtel-Module (Querschnitt, Punkt 88.2), ganze Hausruinen (Punkt 88.1), neu_g7h/
+    'graben_laufsteg_1': ('wand', 0.5, {'quelle': ('graben_laufsteg_bogen', (0, 41, 2752, 369))}),      # sauber
+    'graben_laufsteg_2': ('wand', 0.5, {'quelle': ('graben_laufsteg_bogen', (0, 423, 2752, 752))}),     # schlammig
+    'graben_laufsteg_3': ('wand', 0.5, {'quelle': ('graben_laufsteg_bogen', (0, 806, 2752, 1131))}),    # mit Pfütze
+    'graben_laufsteg_4': ('wand', 0.5, {'quelle': ('graben_laufsteg_bogen', (0, 1186, 2752, 1511))}),   # zwei Latten fehlen
+    'draht_modul_1': ('stueck', 0.36, {'quelle': ('drahtguertel_tiefe_module_bogen', (45, 80, 874, 537))}),
+    'draht_modul_2': ('stueck', 0.36, {'quelle': ('drahtguertel_tiefe_module_bogen', (960, 80, 1790, 537))}),
+    'draht_modul_3': ('stueck', 0.36, {'quelle': ('drahtguertel_tiefe_module_bogen', (1876, 82, 2707, 537))}),
+    'draht_modul_4': ('stueck', 0.36, {'quelle': ('drahtguertel_tiefe_module_bogen', (44, 1004, 875, 1458))}),
+    'draht_modul_kaputt': ('stueck', 0.36, {'quelle': ('drahtguertel_tiefe_module_bogen', (968, 1004, 1791, 1489))}),
+    'draht_modul_reste': ('stueck', 0.36, {'quelle': ('drahtguertel_tiefe_module_bogen', (1899, 1003, 2703, 1492))}),
+    'ruine_haus_1': ('stueck', 0.4, {'quelle': ('ruinen_haus_bogen', (182, 6, 1251, 784))}),
+    'ruine_haus_2': ('stueck', 0.4, {'quelle': ('ruinen_haus_bogen', (1476, 87, 2582, 779))}),
+    'ruine_haus_3': ('stueck', 0.4, {'quelle': ('ruinen_haus_bogen', (161, 784, 1254, 1522))}),
+    'ruine_haus_4': ('stueck', 0.4, {'quelle': ('ruinen_haus_bogen', (1480, 921, 2586, 1514))}),
 }
 TEX_PX, TEX_PROBE = 1024, 768
 
@@ -199,7 +214,7 @@ TEX_PX, TEX_PROBE = 1024, 768
 ENTROSA = {'zaun', 'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'kirchturm', 'kirche_innen', 'friedhof', 'dorf_aufsteller',
            'haus_heil_bogen', 'kapelle_ruinen_bogen', 'baeume_schnee_bogen', 'dorf_objekte_schnee_bogen', 'streifen_schnee_bogen', 'furt_krater_schnee_bogen',
            'hecke_schnee', 'heuhaufen_schnee', 'vogelscheuche_schnee', 'pflug_schnee',
-           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b', 'graben_lippe_bogen', 'graben_wand_innen_bogen', 'graben_wand_seite_bogen', 'graben_brustwehr_wall_bogen', 'graben_lippe_ecken_bogen', 'graben_querwand_tief_bogen', 'panzersperren_gesprengt', 'windmuehle_bogen', 'koloss_wrack_bogen'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
+           'graben_querwand_a', 'graben_querwand_b', 'graben_brustwehr', 'graben_rueckwall', 'graben_ecken', 'graben_sohle_rost', 'graben_pfuetze', 'graben_leiter', 'graben_unterstand', 'graben_stahlschild', 'graben_kram', 'drahtguertel_a', 'drahtguertel_b', 'graben_lippe_bogen', 'graben_wand_innen_bogen', 'graben_wand_seite_bogen', 'graben_brustwehr_wall_bogen', 'graben_lippe_ecken_bogen', 'graben_querwand_tief_bogen', 'panzersperren_gesprengt', 'windmuehle_bogen', 'koloss_wrack_bogen', 'graben_wand_seite_breit_bogen', 'graben_querwand_block_bogen', 'graben_laufsteg_bogen', 'drahtguertel_tiefe_module_bogen', 'ruinen_haus_bogen'} | {n for n in ('schraeg_1', 'kaputt', 'tiefe', 'schraeg_2', 'schraeg_3', 'ende', 'quer_1', 'quer_2') for n in ['drahtguertel_' + n]}   # Krähenfurt (Flux)
 
 
 def entrosa(q):

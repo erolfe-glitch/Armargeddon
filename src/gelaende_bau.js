@@ -29,8 +29,8 @@ const LISTE = {
   tex: [...['schlamm', 'gras', 'waldboden', 'truemmer', 'sumpf', 'wasser', 'kopfstein'].map(n => 'boden_' + n), 'boden_schnee', 'boden_acker_schnee', 'strasse_matsch', 'boden_eis', ...[1, 2, 3, 4].map(k => 'boden_schnee_rein_' + k)],
   flach: [...[1, 2, 3, 4, 5, 6, 7, 8].map(k => 'flach_details_' + k), ...[1, 2, 3, 4].map(k => 'graben_sohle_rost_' + k), ...[1, 2, 3].map(k => 'graben_pfuetze_' + k), 'trichter_gross_1', 'furt_schnee', 'krater_schnee_1', 'krater_schnee_2', 'brand_schnee', 'ufer_flach_1', 'ufer_flach_2', 'ufer_flach_3'],
   wand: ['graben_sohle', 'graben_kante_vorn', 'graben_kante_hinten', 'ruine_hinten', 'ruine_vorn', 'barrikade', 'wald_unterholz',
-    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee', 'graben_brustwehr', 'graben_rueckwall', 'hecke_schnee_1', 'hecke_schnee_2', ...[1, 2, 3].map(k => 'graben_lippe_' + k), ...[1, 2, 3].map(k => 'graben_wand_innen_' + k), ...[1, 2, 3].map(k => 'graben_wand_seite_' + k), ...[1, 2, 3].map(k => 'graben_wand_seite_breit_' + k), 'graben_brustwehr_wall_1', 'graben_brustwehr_wall_2'],   /* G7b-Test: Erdlippe und Innenwand */   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
-  stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), ...[1, 2, 3].map(k => 'graben_querwand_tief_' + k), ...[1, 2, 3, 4].map(k => 'graben_querwand_block_' + k), ...[1, 2, 3, 4].map(k => 'graben_lippe_ecke_' + k), 'bunker_1', 'bunker_2',
+    'kirche_hinten', 'kirche_vorn', 'mauer_niedrig', 'zaun', 'zaun_schnee', 'ufer_schnee', 'unterholz_schnee', 'graben_brustwehr', 'graben_rueckwall', 'hecke_schnee_1', 'hecke_schnee_2', ...[1, 2, 3].map(k => 'graben_lippe_' + k), ...[1, 2, 3].map(k => 'graben_wand_innen_' + k), ...[1, 2, 3].map(k => 'graben_wand_seite_' + k), ...[1, 2, 3].map(k => 'graben_wand_seite_breit_' + k), 'graben_brustwehr_wall_1', 'graben_brustwehr_wall_2', ...[1, 2, 3, 4].map(k => 'graben_laufsteg_' + k)],   /* G7b-Test: Erdlippe und Innenwand */   // Sankt Ruß (2026-11-19): Kirchenmauer hoch/niedrig, Bruchsteinmauer (Friedhof, Gärten)
+  stand: [...[1, 2, 3, 4].map(k => 'ruine_ecken_' + k), ...['1', '2', '3', '4', 'kaputt', 'reste'].map(k => 'draht_modul_' + k), ...[1, 2, 3, 4].map(k => 'ruine_haus_' + k), ...[1, 2, 3].map(k => 'graben_querwand_tief_' + k), ...[1, 2, 3, 4].map(k => 'graben_querwand_block_' + k), ...[1, 2, 3, 4].map(k => 'graben_lippe_ecke_' + k), 'bunker_1', 'bunker_2',
     ...['wald_staemme', 'wald_staemme_b'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['stuempfe', 'stuempfe_b', 'stuempfe_c'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
     ...['truemmer', 'truemmer_b', 'truemmer_c', 'truemmer_d'].flatMap(b => [1, 2, 3, 4].map(k => `${b}_${k}`)),
@@ -520,7 +520,20 @@ function aufbauen(cfg, IM) {
     const tiefe = senk.length || (!nb.length && Math.abs(t[1]) > 0.6), Q = k => IM['drahtguertel_' + k];
     SHADOW.push(() => { w.save(); w.filter = `blur(${R * 0.08}px)`; w.strokeStyle = 'rgba(30,22,16,0.45)'; w.lineWidth = R * 0.5; w.lineCap = 'round'; w.beginPath();   // Boden unter dem Gürtel zertrampelt und dunkler
       if (tiefe) { w.moveTo(hx, hy - R * 0.8); w.lineTo(hx, hy + R * 0.8); } else { const d = schraeg[0] || [1, 0]; w.moveTo(hx - d[0] * R * 0.8, hy - d[1] * R * 0.8); w.lineTo(hx + d[0] * R * 0.8, hy + d[1] * R * 0.8); } w.stroke(); w.restore(); });
-    if (tiefe) { const im = Q('tiefe'); stand(im, hx + (q(80) - 0.5) * R * 0.08, hy + R * 0.84, 1.9 * SH, { flip: q(81) < 0.5, noShadow: true });
+    const MOD = ['1', '2', '3', '4', 'kaputt', 'reste'].map(k => IM['draht_modul_' + k]);
+    if (tiefe && MOD[0] && !window.MODUL_ALT) {   // G7h-2 (Punkt 88.2): Gürtel in die Tiefe aus Querschnitt-Modulen hintereinander (von hinten nach vorn), gleiche Breite, gleicher Abstand – die Pfahlreihen bleiben parallel; selten ein kaputtes; Rückweg window.MODUL_ALT = gemaltes Tiefenstück
+      const BR = R * 0.82, N = 3, ox = hx + (q(80) - 0.5) * R * 0.06; let prev = null;
+      for (let k = 0; k < N; k++) { const y = hy - R * 0.6 + k * R * 0.6, h = q(90 + k), im = MOD[h < 0.08 ? 4 : h < 0.13 ? 5 : Math.floor(q(96 + k) * 4)], hW = BR * im.height / im.width, x = ox + (q(100 + k) - 0.5) * R * 0.03;
+        stand(im, x, y, hW, { breite: BR, flip: q(104 + k) < 0.5, noShadow: true });
+        const kopf = [[x - BR * 0.36, y, hW * 0.9], [x + BR * 0.36, y, hW * 0.9]];
+        if (prev && h >= 0.08) { const P = prev; DRAW.push({ feld: FELD, y: y - R * 0.02, f: () => {   // eine Drahtlinie von Pfahlkopf zu Pfahlkopf
+          g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.strokeStyle = 'rgba(38,27,20,0.9)'; g.lineCap = 'round';
+          for (let i = 0; i < 2; i++) { const a = proj(P[i][0], P[i][1]), b = proj(kopf[i][0], kopf[i][1]); if (a[2] <= 1 || b[2] <= 1 || offscreen(a, b)) continue; const sa = Fk() / a[2], sb = Fk() / b[2];
+            g.lineWidth = Math.max(1, R * 0.01 * (sa + sb)); g.beginPath(); g.moveTo(a[0], a[1] - P[i][2] * sa); g.quadraticCurveTo((a[0] + b[0]) / 2, (a[1] - P[i][2] * sa + b[1] - kopf[i][2] * sb) / 2 + R * 0.02 * sb, b[0], b[1] - kopf[i][2] * sb); g.stroke(); }
+          g.restore(); } }); }
+        prev = kopf; }
+      for (const [dy, fehlt] of [[1, !senk.some(d => d[1] > 0)], [-1, !senk.some(d => d[1] < 0)]]) if (fehlt && nb.length) stand(Q('ende'), hx + (q(82) - 0.5) * R * 0.2, hy + dy * R * 0.72, 0.62 * SH, { flip: dy < 0, shadeK: 0.35 });
+    } else if (tiefe) { const im = Q('tiefe'); stand(im, hx + (q(80) - 0.5) * R * 0.08, hy + R * 0.84, 1.9 * SH, { flip: q(81) < 0.5, noShadow: true });
       for (const [dy, fehlt] of [[1, !senk.some(d => d[1] > 0)], [-1, !senk.some(d => d[1] < 0)]]) if (fehlt && nb.length) stand(Q('ende'), hx + (q(82) - 0.5) * R * 0.2, hy + dy * R * 0.72, 0.62 * SH, { flip: dy < 0, shadeK: 0.35 });   // Gasse: Endstück mit loser Rolle
     } else if (schraeg.length) { const d = schraeg[0], auf = (d[0] > 0) === (d[1] < 0), im = Q(['schraeg_1', 'schraeg_2', 'schraeg_3'][Math.floor(q(83) * 3)]);   // auf: Gürtel steigt nach rechts oben (wie gemalt)
       stand(im, hx, hy + R * 0.42, 1.9 * R * im.height / im.width, { flip: !auf, noShadow: true });
@@ -676,6 +689,12 @@ function aufbauen(cfg, IM) {
             if (G7G && !window.G7H_ALT) {   // G7h (Punkt 87.1): ein durchgehender gerader Laufsteg in der Grabenmitte, auch durch die Buchten; am Buchtversatz ein kurzer gerader Versatz, Kacheln nur gedreht, nie geschert
               const Q2 = R * 0.4, ux = dx / l, uy = dy / l, nx = -uy, ny = ux, knick = z.stufen && z.stufen.has(i), e0 = knick ? -Q2 / 2 : 0, e1 = knick ? -Q2 / 2 : 0, q0 = [a[0] - ux * e0, a[1] - uy * e0], q1 = [b[0] + ux * e1, b[1] + uy * e1], ll = l + e0 + e1, hq = Q2 * 0.55;
               if (ll < R * 0.06) continue;
+              const LS = [1, 2, 3, 4].map(k => IM['graben_laufsteg_' + k]).filter(Boolean);
+              if (LS.length === 4 && !window.STEG_ALT) {   // G7h-2: gemalte gerade Lattenroste (0,35 R breit), entlang der Mitte gekachelt, nur gedreht; Streifen 4 (fehlende Latten) selten; Rückweg window.STEG_ALT = Code-Steg aus G7h-1
+                const QS = R * 0.35, hs = QS / 2; w.save(); w.beginPath(); w.moveTo(q0[0] + nx * hs, q0[1] + ny * hs); w.lineTo(q1[0] + nx * hs, q1[1] + ny * hs); w.lineTo(q1[0] - nx * hs, q1[1] - ny * hs); w.lineTo(q0[0] - nx * hs, q0[1] - ny * hs); w.closePath(); w.clip();
+                w.translate(q0[0], q0[1]); w.rotate(Math.atan2(uy, ux)); w.shadowColor = 'rgba(10,7,5,0.6)'; w.shadowBlur = R * 0.03; w.shadowOffsetY = R * 0.012;
+                let s0 = -hrnd(sd, 0, 386) * R * 1.5, j = 0; while (s0 < ll && j < 12) { const h = hrnd(sd, j, 384), im = vorgefiltert(LS[h < 0.07 ? 3 : Math.floor(hrnd(sd, j, 385) * 3)], 'brightness(0.74) saturate(0.85) contrast(1.08)'), lg = (im.width || 1) * QS / (im.height || 1); w.drawImage(im, s0, -hs, lg, QS); s0 += lg; j++; }
+                w.restore(); continue; }
               w.save(); w.beginPath(); w.moveTo(q0[0] + nx * hq, q0[1] + ny * hq); w.lineTo(q1[0] + nx * hq, q1[1] + ny * hq); w.lineTo(q1[0] - nx * hq, q1[1] - ny * hq); w.lineTo(q0[0] - nx * hq, q0[1] - ny * hq); w.closePath(); w.clip();
               w.save(); w.translate(q0[0], q0[1]); w.rotate(Math.atan2(uy, ux)); w.shadowColor = 'rgba(12,9,6,0.55)'; w.shadowBlur = R * 0.03; w.shadowOffsetY = R * 0.015;   // gerade Planken quer zur Laufrichtung, zwei Längsbalken darunter
               w.fillStyle = '#2c2117'; w.fillRect(0, -Q2 * 0.36, ll, Q2 * 0.08); w.fillRect(0, Q2 * 0.28, ll, Q2 * 0.08); w.shadowColor = 'transparent';
@@ -769,6 +788,9 @@ function aufbauen(cfg, IM) {
             if (G7V && BRW.length && sd > 0.3) {   // G7c: Brustwehr an Längsstücken liegend: Fassung je Abschnitt, manche Abschnitte nur Erdwall, Enden laufen weich aus, schmal und dunkel
               const h1 = hrnd(ti * 13 + side, i, 426); if (h1 < 0.18) continue; const bw = BRW[h1 < 0.55 ? 1 % BRW.length : 0];
               liegend(() => gebacken(bw, 'brust'), A2, B2, (mx - cx) / dl, (my - cy) / dl, R * 0.24, 0.5, { mass: bw, u0: h1 * 7 * R, tief: 'mitte', bias: R * 0.02, skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
+              if (!window.BRUSTENDE_ALT) { const L4 = Math.hypot(B2[0] - A2[0], B2[1] - A2[1]) || 1, ux4 = (B2[0] - A2[0]) / L4, uy4 = (B2[1] - A2[1]) / L4;   // G7h-2: unregelmäßiges Ende – eine schmalere, kurze Lage Säcke ragt über das Ende hinaus (Stufe statt gerader Schnitt); Rückweg BRUSTENDE_ALT
+                for (const [P4, sg, kk] of [[A2, -1, 1], [B2, 1, 2]]) { const e4 = R * (0.07 + hrnd(ti * 13 + side, i * 3 + kk, 427) * 0.13), Q4 = [P4[0] + ux4 * sg * e4, P4[1] + uy4 * sg * e4], o4 = (hrnd(ti * 13 + side, i * 3 + kk, 429) - 0.5) * 0.3;
+                  liegend(() => gebacken(bw, 'brust'), sg < 0 ? Q4 : P4, sg < 0 ? P4 : Q4, (mx - cx) / dl, (my - cy) / dl, R * 0.15, 0.5 + o4, { mass: bw, u0: (h1 * 7 + kk) * R, tief: 'mitte', bias: R * 0.02, skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) }); } }
               continue; }
             uu.p = wall(G7V && BRW.length ? BRW[Math.floor(hrnd(ti, i, 424) * 4) % BRW.length] : GT && IM.graben_brustwehr ? IM.graben_brustwehr : IM.graben_kante_vorn, A2, B2, (G7V ? 0.34 : EG ? 0.3 : 0.4) * SH, { u0: uu.p, shade: 0.45, shadeW: 0.14, bias: R * 0.02,
               skip: (x, y) => TRIM[ti].some(q => q.length > 1 && distTo([x, y], q) < R * (GK + 0.17)) });
@@ -795,8 +817,8 @@ function aufbauen(cfg, IM) {
         const b = z.off[i] > 0 ? i : i + 1, d = b === i ? i + 1 : i, P0 = pts[b], Q0 = pts[d], C = [(P0[0] + Q0[0]) / 2, (P0[1] + Q0[1]) / 2], ln = Math.hypot(P0[0] - Q0[0], P0[1] - Q0[1]) || 1;
         const n = [(P0[0] - Q0[0]) / ln, (P0[1] - Q0[1]) / ln], nb = b === i ? pts[Math.max(0, i - 1)] : pts[Math.min(pts.length - 1, i + 2)], lb = Math.hypot(nb[0] - P0[0], nb[1] - P0[1]) || 1, tb = [(nb[0] - P0[0]) / lb, (nb[1] - P0[1]) / lb];   // n: zum Feind, tb: zur Bucht
         const kd = R * (ZI ? GK : 0.08), weg = ZI && hrnd(ti * 17 + i, 3, 344) < 0.2;   // G4: Stirnseite an der Grabenkante; an ~20 % der Knicke keine (fest je Karte)
-        if (tb[1] > 0.3) STIRN.push({ ti, x: C[0] + n[0] * R * GK - tb[0] * kd, y: C[1] + n[1] * R * GK - tb[1] * kd, wd: ln + R * 0.1, feind: true, weg });
-        if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * kd, y: C[1] - n[1] * R * GK + tb[1] * kd, wd: ln + R * 0.1, feind: false, weg }); } });
+        if (tb[1] > 0.3) STIRN.push({ ti, x: C[0] + n[0] * R * GK - tb[0] * kd, y: C[1] + n[1] * R * GK - tb[1] * kd, wd: ln + R * 0.1, feind: true, weg, mx: C[0] + n[0] * (ln / 2 + R * GK) / 2 - tb[0] * kd, my: C[1] + n[1] * (ln / 2 + R * GK) / 2 - tb[1] * kd });
+        if (tb[1] < -0.3) STIRN.push({ ti, x: C[0] - n[0] * R * GK + tb[0] * kd, y: C[1] - n[1] * R * GK + tb[1] * kd, wd: ln + R * 0.1, feind: false, weg, mx: C[0] - n[0] * (ln / 2 + R * GK) / 2 + tb[0] * kd, my: C[1] - n[1] * (ln / 2 + R * GK) / 2 + tb[1] * kd }); } });
     if (GT) {   // G2b: Querwände und Stirnseiten an den Knicken (Unterstand einmal je Feuergraben), in den Buchten Leitern, Stahlschilde, Drahtrollen; Kram in den Durchgängen
       const P = pre => LISTE.stand.filter(n => n.startsWith(pre)).map(n => IM[n]).filter(Boolean), QW = P('graben_querwand_').filter(im => !QWT.includes(im) && !QWB.includes(im)), EK = P('graben_ecke_'), LEI = P('graben_leiter_'), SCH = P('graben_stahlschild_');
       const KRAM = ['kiste', 'kisten', 'kanister', 'eimer', 'spaten', 'kiste', ...(G4B ? [] : ['einsturz', 'balken'])].map(n => IM['graben_' + n]).filter(Boolean), last = {};   // G4b: ohne Balken (lag schräg halb in der Wand)
@@ -805,7 +827,7 @@ function aufbauen(cfg, IM) {
         let im = st.feind ? nimm(QW, hrnd(st.ti, k, 341), last.q) : nimm(EK, hrnd(st.ti, k, 342), last.e); if (!im) return;
         if (!st.feind && IM.graben_unterstand && unter[st.ti] === st) im = IM.graben_unterstand; else if (st.weg) { GTEILE.weg = (GTEILE.weg || 0) + 1; return; } else if (st.feind) last.q = im; else last.e = im;
         if (EG) { st.D = R * (G7V && QWT.length && im !== IM.graben_unterstand ? (G7G ? 0.36 : 0.62) : 0.36); }   // G7e: Tiefe des hängenden Blocks (Grabenplätze dort frei halten)
-        if (G7V && QWB.length && im !== IM.graben_unterstand) { const q = bodenSink(QWB[Math.floor(hrnd(st.ti, k, 428) * QWB.length)], 0.25); st.D = R * 0.3; stand(q, st.x, st.y, 0.42 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: R * GW * 1.04 }); return; }   // G7h: Erdblock, Oberseite sichtbar, volle Grabenbreite
+        if (G7V && QWB.length && im !== IM.graben_unterstand) { const q = bodenSink(QWB[Math.floor(hrnd(st.ti, k, 428) * QWB.length)], 0.25); st.D = R * 0.3; const QM = !window.QWMITTE_ALT && st.mx != null; if (QM) { st.x = st.mx; st.y = st.my; } stand(q, st.x, st.y, 0.42 * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: R * (QM ? 0.8 : GW * 1.04) }); return; }   /* G7h-2: Block mittig auf der Mittellinie des Grabenstücks, das er abschließt (vorher Mitte auf der Grabenkante, halb daneben); Rückweg QWMITTE_ALT */   // G7h: Erdblock, Oberseite sichtbar, volle Grabenbreite
         if (G7V && QWT.length && im !== IM.graben_unterstand) { const QW2 = QWT.length > 1 ? QWT.slice(1) : QWT, q = bodenSink(QW2[Math.floor(hrnd(st.ti, k, 425) * QW2.length)], 0.35);   /* G7d: unteres Drittel läuft weich in die Sohle aus (schwarzes Rechteck) */   /* G7c: Bretter-Fassung wirkte wie eine Kiste – nur Flechtwerk und beschädigt */ stand(q, st.x, st.y, (G7G ? 0.38 : 0.7) * SH, { bias: R * 0.02, noShadow: true, haengen: true, breite: st.wd * 1.05 }); return; }   /* G7c: mehr Höhe in die Tiefe (Erdblock fällt in den Graben) */   // G7b voll: Querwand G7-6 hängend, auf Grabenbreite
         stand(im, st.x, st.y, Math.min(st.wd * im.height / im.width, (st.feind ? 0.42 : 0.38) * SH), EG ? { bias: R * 0.02, noShadow: true, haengen: true, filter: 'brightness(0.8)' } : { bias: R * 0.02, shadeK: 0.3 }); });
       BUCHTEN.forEach((b, k) => { if (b.ti < 0) return; const v = hrnd(b.ti, k, 350), t = 0.25 + hrnd(b.ti, k, 351) * 0.5, x = b.a[0] + (b.b[0] - b.a[0]) * t, y = b.a[1] + (b.b[1] - b.a[1]) * t, at = o => [x + b.nx * R * o, y + b.ny * R * o];
@@ -898,7 +920,10 @@ function aufbauen(cfg, IM) {
       if (q(241) < 0.7) stand(STUEMPFE[Math.floor(q(242) * STUEMPFE.length)], ...corner(c, r, q(243) < 0.5 ? 4 : 5, 0.55), 0.8 * SH * (0.8 + q(244) * 0.3), { flip: q(245) < 0.5 });
       else stand(IM.dorf_aufsteller_3, ...corner(c, r, 3, 0.5), px(IM.dorf_aufsteller_3), { flip: q(246) < 0.5 });
     }
-    if (t === 'village') {   // Ruine zweiteilig: Mauern hinten, Mauerrest vorn (weiter innen), Ecken auf den Stößen
+    const RH = [1, 2, 3, 4].map(k => IM['ruine_haus_' + k]);
+    if (t === 'village' && RH[0] && !window.RUINE_ALT) {   // G7h-2 (Punkt 88.1): eine ganze Hausruine auf Fundament je Feld (über Eck gemalt, nicht gespiegelt – Licht von links); Rückweg window.RUINE_ALT = Wandstreifen
+      const im = vorgefiltert(RH[Math.floor(q(260) * 4)], 'brightness(0.8) saturate(0.88)'); stand(im, hx + (q(261) - 0.5) * R * 0.08, hy + R * 0.6, breit(im, 1.62), { noShadow: true, durch: 0.35 });
+    } else if (t === 'village') {   // Ruine zweiteilig: Mauern hinten, Mauerrest vorn (weiter innen), Ecken auf den Stößen
       const k = 0.86, kv = 0.66; let u = q(1) * 3;
       for (const e of [3, 4, 5]) u = wall(IM.ruine_hinten, corner(c, r, e, k), corner(c, r, (e + 1) % 6, k), 1.2 * SH, { u0: u, mitte: [hx, hy] });
       wall(IM.ruine_vorn, corner(c, r, 2, kv), corner(c, r, 1, kv), 0.45 * SH, { u0: q(2) * 3, shade: 0.45, filter: 'brightness(0.85)', mitte: [hx, hy] });
