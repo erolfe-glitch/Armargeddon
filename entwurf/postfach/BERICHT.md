@@ -1,3 +1,50 @@
+## 2026-11-27 – Nachtrag 114 (alte Stimmen raus) und U4a (neue Figuren) (`763dcf7`, `38e3f8f` mit index.html)
+
+Gepusht.
+- **Hänger:** keine.
+- **Tests:**
+  - Partietest ohne Fehler.
+  - Ton-Pult-Test 93/93.
+  - `test_tonplaetze`: Spiel = Pult.
+- Kein sim nötig (keine Regeländerung).
+- **Danach fährt der PC herunter** (Enricos Wunsch).
+
+### 114 – alte Stimmen raus
+- **Woher der alte Sanitäter-Ruf kam:** aus **Pult-Wahlen**. Bei Drahtpionieren, Bannerträger, Panzerbüchse und Sturmbrecher stand die Zeile „Schwer getroffen“ (`pain`) fest auf dem alten Ton `medic_3` („Sanitäter!“).
+  - Meine Stummschaltung griff nur beim Platz `medic`, nicht bei einer Wahl auf einem anderen Platz.
+  - Beim Konkordat gab es so eine Wahl nicht.
+  - Ebenso standen viele „Aufgerieben“-Zeilen auf den alten Sterberufen `sterben_gruppe_*`.
+  - Alle diese Wahlen fallen jetzt weg, weil die alten Töne entfernt sind. Keine Pult-Wahl zeigt mehr auf eine alte Stimme (geprüft).
+- **Entfernt aus `src/sound.js` / `sound_pult.js`:**
+  - Suno-Anklicken (`sv_*`), alte Rufe (`ruf_feuer`, `panik_*`, `sterben_*`), Schreiter `sst_*`, Helden `hst_*`.
+  - `medic`, `panic`, `forward`, `stand`, `roar`, `charge`, `comeon` samt Filterfassungen.
+  - Spieltöne 46 → 37 MB.
+  - Die Quelldateien in `sound-quelle/` bleiben liegen.
+- **Kampfschrei, Schmerzlaute, Husten, Atmen bleiben.**
+- **Code:**
+  - Rückweg `STIMMEN_ALT` und die alten Rufwege (Truppen-, Schreiter-, Heldenrufe, alte Anwahl) sind ausgebaut.
+  - Die direkten Aufrufe bei Flucht, Melder, Befehl, Gegenstoß und Sturmlauf sind raus.
+  - `stimmfilter.py` rechnet die alten Rufe nicht mehr.
+  - `sound_bau` lässt ganz entfernte Plätze weg und kennt `dropKeys`.
+- **Pult-Test:** vier Prüfungen, die ausdrücklich an den alten Suno-, Schreiter- und Sprechergruppen-Tönen hingen, sind mit Begründung ausgesetzt.
+  - `tools/test_ton.mjs` ruft noch die alten Funktionen `ruf`/`schreiterRuf`/`heldRuf` auf. Den Test müsste man bei Gelegenheit auf `stimme()` umschreiben; er gehört nicht zur Paketprüfung.
+
+### U4a – neue Figuren
+- **Linie beider Seiten** (Kohorte, Aschengrenadiere, Punkt 92): neue Grund- und Posenbögen unter den alten Namen (figure_cut `ERSETZT`).
+  - Rosa Säume weg (`ENTROSA`). Den Wappen-Rest unter dem Arm (Aschenwacht, oben rechts) habe ich übermalt.
+  - Klone für 8 Figuren wie bisher.
+- **Schwere Grabenwacht:** jetzt der neue Bogen mit Kürassierhelm und Stahlmaske. Die Ruhe zeigt die neue Pose „Schilde geschlossen“, vorher das alte Grundbild.
+- **Sturmbrecher:** war schon die Kürassierhelm-Fassung (geprüft).
+- **Grabenräumer:** die vierte Figur ist die dritte Getroffen-Fassung. Getroffen wählt jetzt zufällig aus drei.
+- **Neuer Panzer** `aschenwacht_panzer_neu.png`: geschnitten als `aschenwacht_koloss`. **Aber:** Die Aschenwacht hat im Spiel keinen Landkoloss, `koloss` ist nur Konkordat. Das Bild ist deshalb derzeit nirgends zu sehen.
+- **Bilder:**
+  - Figuren alt/neu: `entwurf/probe/u4a_vorher_nachher.jpg`.
+  - Im Spiel: `entwurf/probe/u4a/kohorte_nachher.jpg` und `grenadier_nachher.jpg` (Feld und Graben).
+  - Die Grabenwacht steht in keiner Kartenarmee, deshalb gibt es von ihr kein Spielbild.
+
+**Fragen an Enrico:**
+1. Der neue Aschenwacht-Panzer: Soll er den **Sturmpanzer** (`sturmpz`, Bild `aschenwacht_panzer`) ersetzen? Oder soll die Aschenwacht einen eigenen Landkoloss bekommen?
+2. Am neuen Panzer ist vorn ein rot-weißer Streifen. Ist das so gemalt, oder soll er weg?
 ## 2026-11-26 – V3 Teil 2: neue Stimmen im Spiel (Punkt 112) (`4e8d8d0`, `c7d733e`, `4ee7443` mit index.html)
 
 Gepusht. **Die neuen Stimmen klingen jetzt im Spiel**, die alten Sprüche sind still.
