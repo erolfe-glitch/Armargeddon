@@ -1014,7 +1014,7 @@ function canLimber(G, u) {
 }
 function limber(G, u) {
   if (!canLimber(G, u)) return [];
-  if (u.limbered) { u.limbered = false; u.bp = 0; if (!TYPES[u.type].direkt) u.attacked = true; u.moved = u.ap <= 0; }   // F103: Feldkanone schnell abgeprotzt, darf noch schießen
+  if (u.limbered) { u.limbered = false; u.bp = 0; if (!TYPES[u.type].direkt) { u.attacked = true; u.abgeprotzt = true; } u.moved = u.ap <= 0; }   // F103: Feldkanone schnell abgeprotzt, darf noch schießen
   else { u.limbered = true; u.attacked = true; u.bp = Math.max(0, P.LIMBER_MV - 1); u.bpUsed = 0; }
   return [{ t: 'limber', u: u.id, on: u.limbered }];
 }
@@ -1603,7 +1603,7 @@ function startTurn(G) {
   for (const u of G.units) {
     u.fireDmg = 0;
     if (u.side === s) {
-      u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false;
+      u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false; u.abgeprotzt = false;
       for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'cdM', 'kuehl']) if (u[k] > 0) u[k]--;
       u.dfN = 0;
       if (u.revealed > 0) u.revealed--;

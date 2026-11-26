@@ -522,14 +522,14 @@ function aufbauen(cfg, IM) {
       if (tiefe) { w.moveTo(hx, hy - R * 0.8); w.lineTo(hx, hy + R * 0.8); } else { const d = schraeg[0] || [1, 0]; w.moveTo(hx - d[0] * R * 0.8, hy - d[1] * R * 0.8); w.lineTo(hx + d[0] * R * 0.8, hy + d[1] * R * 0.8); } w.stroke(); w.restore(); });
     const MOD = ['1', '2', '3', '4', 'kaputt', 'reste'].map(k => IM['draht_modul_' + k]);
     if (tiefe && MOD[0] && !window.MODUL_ALT) {   // G7h-2 (Punkt 88.2): Gürtel in die Tiefe aus Querschnitt-Modulen hintereinander (von hinten nach vorn), gleiche Breite, gleicher Abstand – die Pfahlreihen bleiben parallel; selten ein kaputtes; Rückweg window.MODUL_ALT = gemaltes Tiefenstück
-      const BR = R * 0.82, N = 3, ox = hx + (q(80) - 0.5) * R * 0.06; let prev = null;
-      for (let k = 0; k < N; k++) { const y = hy - R * 0.6 + k * R * 0.6, h = q(90 + k), im = MOD[h < 0.08 ? 4 : h < 0.13 ? 5 : Math.floor(q(96 + k) * 4)], hW = BR * im.height / im.width, x = ox + (q(100 + k) - 0.5) * R * 0.03;
+      const BR = R * 0.82, N = window.MODUL3 ? 3 : 6, ox = hx + (q(80) - 0.5) * R * 0.06; let prev = null;
+      for (let k = 0; k < N; k++) { const y = hy - R * 0.75 + k * R * (N > 3 ? 0.3 : 0.6), h = q(90 + k), im = MOD[h < 0.08 ? 4 : h < 0.13 ? 5 : Math.floor(q(96 + k) * 4)], hW = BR * im.height / im.width, x = ox + (q(100 + k) - 0.5) * R * 0.03;
         stand(im, x, y, hW, { breite: BR, flip: q(104 + k) < 0.5, noShadow: true });
         const kopf = [[x - BR * 0.36, y, hW * 0.9], [x + BR * 0.36, y, hW * 0.9]];
         if (prev && h >= 0.08) { const P = prev; DRAW.push({ feld: FELD, y: y - R * 0.02, f: () => {   // eine Drahtlinie von Pfahlkopf zu Pfahlkopf
           g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.strokeStyle = 'rgba(38,27,20,0.9)'; g.lineCap = 'round';
-          for (let i = 0; i < 2; i++) { const a = proj(P[i][0], P[i][1]), b = proj(kopf[i][0], kopf[i][1]); if (a[2] <= 1 || b[2] <= 1 || offscreen(a, b)) continue; const sa = Fk() / a[2], sb = Fk() / b[2];
-            g.lineWidth = Math.max(1, R * 0.01 * (sa + sb)); g.beginPath(); g.moveTo(a[0], a[1] - P[i][2] * sa); g.quadraticCurveTo((a[0] + b[0]) / 2, (a[1] - P[i][2] * sa + b[1] - kopf[i][2] * sb) / 2 + R * 0.02 * sb, b[0], b[1] - kopf[i][2] * sb); g.stroke(); }
+          for (let i = 0; i < 2; i++) for (const f of window.MODUL3 ? [1] : [1, 0.62, 0.3]) { const a = proj(P[i][0], P[i][1]), b = proj(kopf[i][0], kopf[i][1]); if (a[2] <= 1 || b[2] <= 1 || offscreen(a, b)) continue; const sa = Fk() / a[2], sb = Fk() / b[2];   /* SP-1: drei Drähte je Pfahlreihe statt einem */
+            g.lineWidth = Math.max(1, R * 0.01 * (sa + sb)); g.beginPath(); g.moveTo(a[0], a[1] - P[i][2] * sa * f); g.quadraticCurveTo((a[0] + b[0]) / 2, (a[1] - P[i][2] * sa * f + b[1] - kopf[i][2] * sb * f) / 2 + R * 0.02 * sb, b[0], b[1] - kopf[i][2] * sb * f); g.stroke(); }
           g.restore(); } }); }
         prev = kopf; }
       for (const [dy, fehlt] of [[1, !senk.some(d => d[1] > 0)], [-1, !senk.some(d => d[1] < 0)]]) if (fehlt && nb.length) stand(Q('ende'), hx + (q(82) - 0.5) * R * 0.2, hy + dy * R * 0.72, 0.62 * SH, { flip: dy < 0, shadeK: 0.35 });
@@ -693,7 +693,7 @@ function aufbauen(cfg, IM) {
               if (LS.length === 4 && !window.STEG_ALT) {   // G7h-2: gemalte gerade Lattenroste (0,35 R breit), entlang der Mitte gekachelt, nur gedreht; Streifen 4 (fehlende Latten) selten; Rückweg window.STEG_ALT = Code-Steg aus G7h-1
                 const QS = R * 0.35, hs = QS / 2; w.save(); w.beginPath(); w.moveTo(q0[0] + nx * hs, q0[1] + ny * hs); w.lineTo(q1[0] + nx * hs, q1[1] + ny * hs); w.lineTo(q1[0] - nx * hs, q1[1] - ny * hs); w.lineTo(q0[0] - nx * hs, q0[1] - ny * hs); w.closePath(); w.clip();
                 w.translate(q0[0], q0[1]); w.rotate(Math.atan2(uy, ux)); w.shadowColor = 'rgba(10,7,5,0.6)'; w.shadowBlur = R * 0.03; w.shadowOffsetY = R * 0.012;
-                let s0 = -hrnd(sd, 0, 386) * R * 1.5, j = 0; while (s0 < ll && j < 12) { const h = hrnd(sd, j, 384), im = vorgefiltert(LS[h < 0.07 ? 3 : Math.floor(hrnd(sd, j, 385) * 3)], 'brightness(0.74) saturate(0.85) contrast(1.08)'), lg = (im.width || 1) * QS / (im.height || 1); w.drawImage(im, s0, -hs, lg, QS); s0 += lg; j++; }
+                let s0 = -hrnd(sd, 0, 386) * R * 1.5, j = 0; while (s0 < ll && j < 12) { const h = hrnd(sd, j, 384), im = vorgefiltert(LS[h < 0.07 ? 3 : Math.floor(hrnd(sd, j, 385) * 3)], window.STEG_KALT ? 'brightness(0.74) saturate(0.85) contrast(1.08)' : 'sepia(0.5) saturate(1.05) brightness(0.76) contrast(1.08) hue-rotate(-6deg)'), lg = (im.width || 1) * QS / (im.height || 1); w.drawImage(im, s0, -hs, lg, QS); s0 += lg; j++; }
                 w.restore(); continue; }
               w.save(); w.beginPath(); w.moveTo(q0[0] + nx * hq, q0[1] + ny * hq); w.lineTo(q1[0] + nx * hq, q1[1] + ny * hq); w.lineTo(q1[0] - nx * hq, q1[1] - ny * hq); w.lineTo(q0[0] - nx * hq, q0[1] - ny * hq); w.closePath(); w.clip();
               w.save(); w.translate(q0[0], q0[1]); w.rotate(Math.atan2(uy, ux)); w.shadowColor = 'rgba(12,9,6,0.55)'; w.shadowBlur = R * 0.03; w.shadowOffsetY = R * 0.015;   // gerade Planken quer zur Laufrichtung, zwei Längsbalken darunter
