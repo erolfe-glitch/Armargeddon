@@ -1,6 +1,6 @@
 {
-  "erzeugt": "2026-11-23T18:20:29.433Z",
-  "ui_hash": "8dc165fc3d6fe9d403ced2d02488cc491a0368fb",
+  "erzeugt": "2026-11-26T18:31:25.071Z",
+  "ui_hash": "20d102ce9c0904361a0a5a01c266c54852d5bc5a",
   "tempo": 12,
   "hinweis": "a = Einheit handelt, z = Einheit ist Getroffene; wahl = wie die Pult-Wahl (TONWAHL) die Einheit an dieser Stelle sieht: sp Sprecher, a/z im Ereignis (nicht Ziel/Ziel), ok = nicht im Ereignis, fest = Ton als fester Schlüssel gezogen (Wahl greift nicht) · 2026-11-24: koloss, sturmpz aus Teil-Lauf übernommen (Dampfpfeife) · grenadier (Handgranaten-Fähigkeit) aus Teil-Lauf · feldkanone (Panzergranate) aus Teil-Lauf Ordensschreiter neu gemessen 2026-11-26 (SP-3).",
   "typen": {
@@ -4245,15 +4245,16 @@
         "armor": [
           "nahkampf:sturmpz"
         ],
+        "ev_entsetzen": [
+          "nahkampf:sturmpz",
+          "nahkampf:knecht",
+          "gegenschlag:knecht"
+        ],
         "heavy": [
           "nahkampf:knecht"
         ],
         "neigh": [
           "nahkampf:lanzeD"
-        ],
-        "ev_entsetzen": [
-          "gegenschlag:knecht",
-          "getroffen:knecht"
         ],
         "whistle": [
           "ankunft"
@@ -4278,7 +4279,6 @@
           "getroffen:knecht",
           "getroffen:geschuetz",
           "moral",
-          "feuer",
           "freischlag:grenadier",
           "vernichtet:grenadier"
         ],
@@ -4295,7 +4295,9 @@
           "getroffen:sense",
           "getroffen:sturmpz",
           "getroffen:knecht",
-          "getroffen:geschuetz"
+          "getroffen:geschuetz",
+          "feuer",
+          "vernichtet:grenadier"
         ],
         "boom": [
           "getroffen:sturmpz",
@@ -4340,13 +4342,16 @@
           "nahkampf:lanzeD"
         ],
         "stimmen_A|ruf_koloss": [
+          "nahkampf:sturmpz",
+          "nahkampf:knecht",
           "gegenschlag:knecht",
-          "getroffen:knecht",
           "moral"
         ],
         "stimmen_A|ruf_niedergehalten": [
+          "nahkampf:sturmpz",
+          "nahkampf:knecht",
           "gegenschlag:knecht",
-          "getroffen:sense",
+          "getroffen:sturmpz",
           "getroffen:knecht",
           "getroffen:geschuetz",
           "moral"
@@ -4408,7 +4413,6 @@
             "getroffen:knecht",
             "getroffen:geschuetz",
             "moral",
-            "feuer",
             "freischlag:grenadier",
             "vernichtet:grenadier"
           ],
@@ -4451,7 +4455,9 @@
             "getroffen:sense",
             "getroffen:sturmpz",
             "getroffen:knecht",
-            "getroffen:geschuetz"
+            "getroffen:geschuetz",
+            "feuer",
+            "vernichtet:grenadier"
           ],
           "ok:a": [
             "nahkampf:lanzeD"
@@ -4462,15 +4468,16 @@
             "nahkampf:sturmpz"
           ]
         },
+        "ev_entsetzen": {
+          "a1:a": [
+            "nahkampf:sturmpz",
+            "nahkampf:knecht",
+            "gegenschlag:knecht"
+          ]
+        },
         "heavy": {
           "a:a": [
             "nahkampf:knecht"
-          ]
-        },
-        "ev_entsetzen": {
-          "a1:a": [
-            "gegenschlag:knecht",
-            "getroffen:knecht"
           ]
         },
         "boom": {
@@ -5009,11 +5016,11 @@
         "einschlag_panzer": [
           "schuss_nur_aus_turm:huenen"
         ],
-        "pferd_unruhe": [
+        "neigh": [
           "schuss_nur_aus_turm:lanzeD",
           "nahkampf:lanzeD"
         ],
-        "neigh": [
+        "pferd_unruhe": [
           "schuss_nur_aus_turm:lanzeD",
           "nahkampf:lanzeD",
           "faehigkeit_sprung:lanzeD"
@@ -5079,18 +5086,9 @@
         ]
       },
       "z": {
-        "pain": [
-          "ziehen_draht",
-          "getroffen:grenadier",
-          "getroffen:sense",
-          "getroffen:sturmpz",
-          "getroffen:knecht",
-          "getroffen:geschuetz"
-        ],
         "neu3_loewe": [
           "nahkampf:sturmpz",
           "nahkampf:knecht",
-          "gegenschlag:grenadier",
           "gegenschlag:huenen",
           "gegenschlag:knecht",
           "getroffen:grenadier",
@@ -5101,8 +5099,12 @@
           "feuer",
           "freischlag:grenadier"
         ],
-        "grenade": [
-          "gegenschlag:grenadier"
+        "pain": [
+          "getroffen:grenadier",
+          "getroffen:sense",
+          "getroffen:sturmpz",
+          "getroffen:knecht",
+          "getroffen:geschuetz"
         ],
         "medic": [
           "getroffen:grenadier",
@@ -5126,6 +5128,9 @@
         ],
         "panic": [
           "moral"
+        ],
+        "ev_brennt": [
+          "feuer"
         ],
         "nahD": [
           "freischlag:grenadier"
@@ -5182,9 +5187,6 @@
           "im_gas"
         ],
         "stimmen_A|ruf_koloss": [
-          "moral"
-        ],
-        "stimmen_A|ruf_panik_einzeln": [
           "moral"
         ],
         "stimmen_A|ruf_panik_gruppe": [
@@ -5246,16 +5248,6 @@
             "ziehen_draht"
           ]
         },
-        "pain": {
-          "sp:z": [
-            "ziehen_draht",
-            "getroffen:grenadier",
-            "getroffen:sense",
-            "getroffen:sturmpz",
-            "getroffen:knecht",
-            "getroffen:geschuetz"
-          ]
-        },
         "marsch_schritte": {
           "a1:a": [
             "ziehen_marsch"
@@ -5285,13 +5277,13 @@
             "schuss_nur_aus_turm:huenen"
           ]
         },
-        "pferd_unruhe": {
+        "neigh": {
           "ok:a": [
             "schuss_nur_aus_turm:lanzeD",
             "nahkampf:lanzeD"
           ]
         },
-        "neigh": {
+        "pferd_unruhe": {
           "ok:a": [
             "schuss_nur_aus_turm:lanzeD",
             "nahkampf:lanzeD",
@@ -5353,7 +5345,6 @@
           "z1:z": [
             "nahkampf:sturmpz",
             "nahkampf:knecht",
-            "gegenschlag:grenadier",
             "gegenschlag:huenen",
             "gegenschlag:knecht",
             "getroffen:grenadier",
@@ -5370,9 +5361,13 @@
             "nahkampf:knecht"
           ]
         },
-        "grenade": {
-          "z:z": [
-            "gegenschlag:grenadier"
+        "pain": {
+          "sp:z": [
+            "getroffen:grenadier",
+            "getroffen:sense",
+            "getroffen:sturmpz",
+            "getroffen:knecht",
+            "getroffen:geschuetz"
           ]
         },
         "medic": {
@@ -5408,6 +5403,11 @@
         "panic": {
           "sp:z": [
             "moral"
+          ]
+        },
+        "ev_brennt": {
+          "z1:z": [
+            "feuer"
           ]
         },
         "nahD": {
@@ -15509,10 +15509,6 @@
         "armor": [
           "nahkampf:koloss"
         ],
-        "ev_entsetzen": [
-          "nahkampf:koloss",
-          "getroffen:koloss"
-        ],
         "heavy": [
           "nahkampf:turm"
         ],
@@ -15545,28 +15541,18 @@
         ]
       },
       "z": {
-        "pain": [
-          "ziehen_draht",
-          "gegenschlag:turm",
+        "grunzen": [
+          "nahkampf:koloss",
+          "nahkampf:turm",
+          "nahkampf:reiter",
+          "gegenschlag:kohorte",
           "getroffen:kohorte",
           "getroffen:mahlwerk",
           "getroffen:koloss",
           "getroffen:turm",
           "getroffen:haubitze",
-          "freischlag:kohorte"
-        ],
-        "grunzen": [
-          "nahkampf:kohorte",
-          "nahkampf:koloss",
-          "nahkampf:turm",
-          "nahkampf:reiter",
-          "gegenschlag:kohorte",
-          "gegenschlag:turm",
-          "getroffen:kohorte",
-          "getroffen:koloss",
-          "getroffen:turm",
-          "getroffen:haubitze",
-          "feuer"
+          "feuer",
+          "vernichtet:kohorte"
         ],
         "gasmaske_2": [
           "nahkampf:koloss",
@@ -15577,8 +15563,16 @@
           "getroffen:mahlwerk",
           "getroffen:koloss",
           "getroffen:turm",
+          "getroffen:haubitze"
+        ],
+        "pain": [
+          "gegenschlag:turm",
+          "getroffen:kohorte",
+          "getroffen:mahlwerk",
+          "getroffen:koloss",
+          "getroffen:turm",
           "getroffen:haubitze",
-          "vernichtet:kohorte"
+          "freischlag:kohorte"
         ],
         "medic": [
           "getroffen:kohorte",
@@ -15627,18 +15621,6 @@
           "nahkampf:turm",
           "nahkampf:reiter"
         ],
-        "stimmen_D|ruf_koloss": [
-          "nahkampf:koloss",
-          "getroffen:koloss",
-          "moral"
-        ],
-        "stimmen_D|ruf_niedergehalten": [
-          "nahkampf:koloss",
-          "getroffen:mahlwerk",
-          "getroffen:koloss",
-          "getroffen:haubitze",
-          "moral"
-        ],
         "stimmen_D|ruf_sterben_gruppe": [
           "getroffen:kohorte",
           "getroffen:mahlwerk",
@@ -15654,8 +15636,18 @@
           "getroffen:haubitze",
           "vernichtet:kohorte"
         ],
+        "stimmen_D|ruf_niedergehalten": [
+          "getroffen:mahlwerk",
+          "getroffen:koloss",
+          "getroffen:turm",
+          "getroffen:haubitze",
+          "moral"
+        ],
         "stimmen_D|ruf_gas": [
           "im_gas"
+        ],
+        "stimmen_D|ruf_koloss": [
+          "moral"
         ],
         "stimmen_D|ruf_panik_gruppe": [
           "moral"
@@ -15705,18 +15697,6 @@
             "ziehen_draht"
           ]
         },
-        "pain": {
-          "sp:z": [
-            "ziehen_draht",
-            "gegenschlag:turm",
-            "getroffen:kohorte",
-            "getroffen:mahlwerk",
-            "getroffen:koloss",
-            "getroffen:turm",
-            "getroffen:haubitze",
-            "freischlag:kohorte"
-          ]
-        },
         "marsch_schritte": {
           "a1:a": [
             "ziehen_marsch"
@@ -15748,30 +15728,24 @@
             "nahkampf:reiter"
           ]
         },
-        "grunzen": {
-          "sp:z": [
-            "nahkampf:kohorte",
-            "nahkampf:koloss",
-            "nahkampf:turm",
-            "nahkampf:reiter",
-            "gegenschlag:kohorte",
-            "gegenschlag:turm",
-            "getroffen:kohorte",
-            "getroffen:koloss",
-            "getroffen:turm",
-            "getroffen:haubitze",
-            "feuer"
-          ]
-        },
         "armor": {
           "a:a": [
             "nahkampf:koloss"
           ]
         },
-        "ev_entsetzen": {
-          "a1:a": [
+        "grunzen": {
+          "sp:z": [
             "nahkampf:koloss",
-            "getroffen:koloss"
+            "nahkampf:turm",
+            "nahkampf:reiter",
+            "gegenschlag:kohorte",
+            "getroffen:kohorte",
+            "getroffen:mahlwerk",
+            "getroffen:koloss",
+            "getroffen:turm",
+            "getroffen:haubitze",
+            "feuer",
+            "vernichtet:kohorte"
           ]
         },
         "gasmaske_2": {
@@ -15784,8 +15758,7 @@
             "getroffen:mahlwerk",
             "getroffen:koloss",
             "getroffen:turm",
-            "getroffen:haubitze",
-            "vernichtet:kohorte"
+            "getroffen:haubitze"
           ]
         },
         "heavy": {
@@ -15801,6 +15774,17 @@
         "neigh": {
           "ok:a": [
             "nahkampf:reiter"
+          ]
+        },
+        "pain": {
+          "sp:z": [
+            "gegenschlag:turm",
+            "getroffen:kohorte",
+            "getroffen:mahlwerk",
+            "getroffen:koloss",
+            "getroffen:turm",
+            "getroffen:haubitze",
+            "freischlag:kohorte"
           ]
         },
         "medic": {
@@ -21497,7 +21481,8 @@
         ],
         "schnee_rennen": [
           "ziehen_marsch",
-          "rueckzug"
+          "rueckzug",
+          "faehigkeit_sprung:sense"
         ]
       },
       "z": {},
@@ -21521,6 +21506,9 @@
           "a1:a": [
             "ziehen_marsch",
             "rueckzug"
+          ],
+          "ok:a": [
+            "faehigkeit_sprung:sense"
           ]
         }
       },

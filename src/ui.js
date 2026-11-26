@@ -1492,7 +1492,7 @@ const FIGMAP = {
   brand: ['flammen', 1], raeumer: ['sturm_reskin', 1, 4, { ruhe: [3, 1, 4, 2, 3, 1] }],   /* R4 (Punkt 96): Grabenräumer mit Sturmschilden – in Ruhe 2× Schild, Revolver hinter dem Schild, 2× Keule, Granate */
   pionier: ['pionier', 1], mineur: ['mineur', 1, 2],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['feldkanone'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
-  grenadier: ['soldat', 1], sturm: ['sturm_reskin', 1, 4, { ruhe: [1, 2, 1, 3, 1, 1] }], eingreif: ['eingreif', 1],   /* R4 (Punkt 94): Sturmbrecher – ein Mann mit MG hüfthoch, einer mit Spaten, sonst Granatwurf */
+  grenadier: ['soldat', 1], sturm: ['sturm_reskin', 1, 4, { ruhe: [2, 3, 1, 3, 2, 3] }], eingreif: ['eingreif', 1],   /* Punkt 106: Sturmbrecher in Ruhe 2× MG hüfthoch, 3× Spaten (ruhigste Pose), 1× Granatwurf */
   pionierD: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
   stahl: ['stahl', 1, 2, ANZUG], panzerk: ['panzerknecht', 1, 2, ANZUG],
@@ -1669,7 +1669,7 @@ const POSE_SETS = { /* Stufe-3-Schreiter (Enrico 2026-11-22): Einzelmodelle mit 
   // Grundbögen sind unterschiedlich geordnet: Konkordat-Sturm 1 Ruhe, 3 kniend zielen, 4 Keule; Aschenwacht-Sturm 1 Spaten, 2 Keule, 4 Ruhe; Pioniere 1 Ruhe, 2 Schaufel, 3 kniend (Ladung/Mine)
   // R4 (2026-11-26): neue Bögen der zusammengelegten Trupps (reskin), Ruhe je Figur aus FIGMAP ruhe; Konkordat-Getroffen noch aus dem alten Posenbogen (kein neues Bild)
   raeumer: { kolben: 'sturm_reskin_1', ausholen: 'sturm_reskin_2', loslassen: 'sturm_reskin_2', halten: 'sturm_reskin_3', lauf: 'sturm_reskin_3', getroffen: 'sturm_posen_4' },
-  sturm: { kolben: 'sturm_reskin_1', ausholen: 'sturm_reskin_1', loslassen: 'sturm_reskin_1', anlegen: 'sturm_reskin_2', knien: 'sturm_reskin_2', graben: 'sturm_reskin_3', getroffen: 'sturm_reskin_4' },
+  sturm: { kolben: 'sturm_reskin_3', ausholen: 'sturm_reskin_1', loslassen: 'sturm_reskin_1', anlegen: 'sturm_reskin_2', knien: 'sturm_reskin_2', graben: 'sturm_reskin_3', getroffen: 'sturm_reskin_4' },
   pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen; Nahkampf weiter mit der Schaufel
   pionierD: { bereit: 'pionier_1', kolben: 'pionier_posen2_4', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen, Nahkampf-Vorstoß mit Gewehr
   // weitere Posenbögen (2026-11-20, frei verteilte Figuren, figure_cut.py FIGUREN_POSEN); lauf = beim Ziehen
@@ -3195,6 +3195,8 @@ async function playEvent0(e) {
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
     case 'clear': { visSync('clouds'); pose(e.u, 'spruehen', 1500); gasschutzFx(e.u); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
     case 'ammo': { if (e.by != null) pose(e.by, 'nachladen', 1400); playSound('nachladen', 0.55); kz(e.u, 'munition', 'steig'); await wait(260); break; }
+    case 'zweischlag': { const au = unitById(e.a); if (!au || !DU.get(e.a)) break; pose(e.a, au.type === 'oger' ? 'kolben' : 'hieb', 520); await wait(160);   /* Punkt 106: zweiter Schlag sichtbar und hörbar, danach folgt der Treffer */
+      playSound(au.type === 'oger' ? 'neu3_fleisch' : 'saebel', 0.5, null, { von: au });   /* gleiche Plätze wie der erste Schlag (Pult-Zeile „Schlag“) */ await wait(200); break; }
     case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); if (hs.length) playSound('ev_punkte', 0.4, e.side);   /* SP-3 (84.3): stumm, bis im Ton-Pult („Gelände und Gebäude“) ein Ton gewählt ist – wie alle ev_-Plätze */ for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': playSound('ev_wieder_flott', 0.45); DU.get(e.u).vs.stuck = 0; kz(e.u, 'funkeln', 'steig'); await wait(150); break;
