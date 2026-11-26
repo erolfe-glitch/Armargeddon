@@ -3985,7 +3985,10 @@ function rolle(t) { return window.ROLLEN ? ROLLEN.rollenVon(E, t) : null; }
 function felder(n, dativ) { return n === 1 ? '1 Feld' : n + (dativ ? ' Feldern' : ' Felder'); }   // „1 Feld“ statt „1 Felder“ (Punkt 31, 2026-11-24)
 const chronikHtml = (T, tag) => T && T.chronik ? `<${tag} class="real chronik"><b>Aus den Chroniken</b><i class="quelle">${T.chronik.quelle}</i>${T.chronik.text}</${tag}>` : '';
 function rolleHtml(t) { const r = rolle(t); if (!r) return ''; return `<div class="rolle"><div class="rl-n"><b>Rolle:</b> ${r.rolle}</div>${r.stark.length ? `<div class="rl-p">▲ <b>Stark gegen:</b> ${r.stark.join(', ')}</div>` : ''}${r.schwach.length ? `<div class="rl-m">▼ <b>Schwach gegen:</b> ${r.schwach.join(', ')}</div>` : ''}<div class="rl-k"><b>Kontert man mit:</b> ${r.konter.join(', ')}</div></div>`; }
-function snKarte(t) { const T = TYPES[t], r = rolle(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span>${r ? `<span class="rl">${r.rolle}</span>` : ''}<span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+function snKarte(t) { const T = TYPES[t], r = rolle(t), k = E.katOf(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span><span class="rl">${E.katAlt() ? '' : `<span class="kt kt-${k}" title="Kategorie">${E.KAT_NAME[k]}</span>`}${r ? r.rolle : ''}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+// K1 (Punkt 104): belegte/freie Plätze je Kategorie (Armee-Auswahl und Nachschub)
+function katLeiste(army) { if (E.katAlt()) return ''; const z = E.katZahl(army), m = E.katMax(z), f = (k, n, mx) => `<span class="kt kt-${k}${mx != null && n >= mx ? ' voll' : ''}" title="${k === 'linie' ? 'Linie: mindestens ein Drittel der Trupps' : k === 'unterst' ? 'Unterstützung: je ' + P.KAT_UNTERST_JE + ' Linientrupps ein Platz' : 'Höchstens ' + mx}">${E.KAT_NAME[k]} <b>${n}${mx != null ? '/' + mx : ''}</b></span>`;
+  return f('linie', z.linie) + f('unterst', z.unterst, m.unterst) + f('elite', z.elite, m.elite) + f('geraet', z.geraet, m.geraet); }
 function snZeig(det, el, sheet, w, platz) {   // platz: Element, über das die Details gelegt werden (Armee-Auswahl: Seitenleiste), sonst neben das Fenster
   const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
   det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${rolleHtml(t)}${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${chronikHtml(T, 'div')}${w ? `<div class="warum">${w}</div>` : ''}`;
@@ -4016,8 +4019,8 @@ addEventListener('resize', () => { const sh = $('shop') && $('shop').querySelect
 function openShopNeu() {
   const sd = G.side, list = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)), inKat = k => snInKat(list, k);
   if (!inKat(shopKat).length) shopKat = SN_REITER.find(k => inKat(k).length);
-  const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : TYPES[t].held ? 'Held: nur einer je Schlacht, auch nach seinem Fall.' : TYPES[t].stufe3 ? 'Stufe 3: nur einer je Schlacht, auch nach seinem Fall.' : 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
-  $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div>
+  const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : TYPES[t].held ? 'Held: nur einer je Schlacht, auch nach seinem Fall.' : TYPES[t].stufe3 ? 'Stufe 3: nur einer je Schlacht, auch nach seinem Fall.' : E.katWarum(E.armeeImFeld(G, sd), t) || 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
+  $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div><div class="kat-leiste">${katLeiste(E.armeeImFeld(G, sd))}</div>
     <div class="sn-reiter">${SN_REITER.filter(k => inKat(k).length).map(k => { const n = inKat(k).filter(t => !warum(t)).length; return `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}${n ? ' leistbar' : ''}" title="${n ? n + ' davon jetzt aufstellbar' : 'Nichts davon gerade aufstellbar'}">${k}<small>${inKat(k).length}</small></button>`; }).join('')}</div>
     <div class="sn-liste">${inKat(shopKat).map(t => `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}">${snKarte(t)}</button>`).join('')}</div>
     <div class="sn-fuss"><span>${lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick stellt auf' : 'Antippen zeigt alle Werte, nochmal antippen stellt auf'} – am eigenen Rand oder an eigenen Zielfeldern. Neue Einheiten handeln ab der nächsten Runde.</span><button class="tbtn" id="shopZu">Schließen</button></div>`;
@@ -4579,7 +4582,7 @@ function armyWarum(t) {   // warum diese Einheit nicht noch einmal dazukommen ka
   if (T.cls === 'walker' && Object.keys(armyDraft).reduce((k, x) => k + (TYPES[x].cls === 'walker' ? armyDraft[x] : 0), 0) >= E.ARMY_WALKERS) return `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.`;
   if (T.stufe3 && Object.keys(armyDraft).some(x => TYPES[x].stufe3 && armyDraft[x] > 0)) return 'Stufe 3: höchstens einer je Schlacht.';
   if (T.held && Object.keys(armyDraft).some(x => TYPES[x].held && armyDraft[x] > 0)) return 'Held: höchstens einer je Armee.';   // M2 (2026-11-22)
-  return '';
+  return E.katWarum(armyDraft, t);   // K1
 }
 function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
@@ -4622,7 +4625,8 @@ function armyRefresh() {
   $('armyWahl').querySelectorAll('button').forEach(b => b.onclick = () => { const t = b.dataset.t; if (armyKat !== 'Alle') armyKat = shopKatOf(t); armyListe(); const el = $('armyList').querySelector(`.sn-k[data-t="${t}"]`); if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.add('offen'); setTimeout(() => el.classList.remove('offen'), 900); } });
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
-    : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
+    : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : E.katFehler(armyDraft) ? E.katFehler(armyDraft) : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
+  $('armyKat').innerHTML = katLeiste(armyDraft);   // K1
   $('armyMsg').textContent = msg; $('armyOk').disabled = !((sd === feindSeite() && !feindSelbst[sd]) || E.armyOk(sd, armyDraft, mechsOn()));
   $('armyFussText').textContent = (lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick nimmt eine dazu' : 'Antippen zeigt alle Werte, nochmal antippen nimmt eine dazu') + ', −/+ ändert die Anzahl. Ein General ist immer dabei.';
 }

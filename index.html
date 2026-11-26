@@ -931,6 +931,12 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 :is(#shopNeu, #armyNeu) .sn-k canvas { width: 92px; height: 88px; border: 3px solid var(--s-ink); box-shadow: inset 0 0 0 2px #6b5236; background: #1d1612; }
 :is(#shopNeu, #armyNeu) .sn-k .nm { display: block; padding-right: 54px; font: 400 17px/1.15 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
 :is(#shopNeu, #armyNeu) .sn-k .ko { position: absolute; right: 8px; top: 6px; font: 400 18px var(--s-num); color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
+/* K1 (Punkt 104): Kategorie-Schild auf der Karte und Plätze je Kategorie */
+:is(#shopNeu, #armyNeu) .sn-k .kt { margin-right: 6px; padding: 0 5px; font-size: 11px; vertical-align: 1px; }
+.kt { display: inline-block; padding: 1px 6px; border: 1px solid currentColor; border-radius: 3px; font: 400 12px/1.3 var(--s-head); letter-spacing: .04em; text-transform: uppercase; background: rgba(20,14,8,.55); }
+.kt-linie { color: #b9b29a; } .kt-unterst { color: #9fb3bd; } .kt-elite { color: #e2b04a; } .kt-geraet { color: #a9aeb4; } .kt-selten { color: #d9776c; }
+.kat-leiste { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+.kat-leiste .kt { font-size: 14px; padding: 2px 8px; } .kat-leiste .kt b { font: 400 15px var(--s-num); color: #ffe2a0; } .kat-leiste .kt.voll b { color: #ff8f6a; }
 :is(#shopNeu, #armyNeu) .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 :is(#shopNeu, #armyNeu) .chips span, :is(#shopDet, #armyDet) .chips span { font: 700 12px var(--s-body); color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
 :is(#shopNeu, #armyNeu) .sn-fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 600 13px var(--s-body); color: #cbbfa6; }
@@ -1274,7 +1280,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
         </div>
         <aside class="an-seite">
           <h3>Gewählte Armee</h3>
-          <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em></div>
+          <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em><div id="armyKat" class="kat-leiste"></div></div>
           <div class="an-wahl" id="armyWahl"></div>
           <div id="armyFeind" hidden><button class="tbtn" data-f="ki">KI stellt selbst zusammen</button><button class="tbtn" data-f="ich">Ich stelle zusammen</button></div>
           <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
@@ -1354,7 +1360,7 @@ const P = {
   FALLBACK_MOR: 3, ROUT_STR: 1.5,
   BREAK: { A: 0.55, D: 0.64 },   // D höher seit Aktionspunkten und Marsch (Angreifer kommt schneller heran)
   TRENCH_DEF: 1.6, CRATER_FIRE: 1.2, VILLAGE_DEF: 1.5, FOREST_DEF: 1.4, WIRE_DEF: 0.6,
-  MG_VS_WIRE: 2, MG_VS_CAV: 2,
+  MG_VS_WIRE: 2, MG_VS_CAV: 2, KAT_LINIE: 0.333, KAT_UNTERST_JE: 2, KAT_ELITE: 3, KAT_GERAET: 3, /* K1: Linie mind. ein Drittel, 1 Unterstützung je 2 Linie, Elite/Gerät höchstens 3 */
   AP: 1, ZOC_STOP: 1, GUIDED: 1.25, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
@@ -1401,7 +1407,7 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
-  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, ENTSETZ_BASIS: 0.08, ENTSETZ_MOR: 0.8, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
+  DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, ZWEISCHLAG: 0.6, /* Punkt 106: zweiter Nahkampfschlag (Stahlreiter, Löwenoger) */ GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, ENTSETZ_BASIS: 0.08, ENTSETZ_MOR: 0.8, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
 };
@@ -1435,8 +1441,8 @@ const TYPES = {
     chronik: { quelle: 'Werksbericht der Hochöfen von Karden-Ost', text: 'Gas dringt nicht durch seine Luken, Gewehrkugeln prallen ab, und selbst Stacheldraht oder Gräben halten den Koloss nur selten mit einer Panne auf. Im Gefecht feuert er verheerende Breitseiten gleichzeitig auf zwei Ziele.' } },
   reiter: TOG.REITER_ALT ? { side: 'A', name: 'Lanzenreiter', cls: 'cav', atk: 5, def: 2, mor: 7, mv: 4, rng: 0, fs: 0,
     can: 'Sehr schnell. Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Kommt nicht durch Draht und Totholz. MG-Feuer trifft doppelt.',
-    chronik: { quelle: 'Brief eines Leutnants aus Krähenfurt', text: 'Wo der Boden trägt, preschen die Schwadronen schneller vor als jede andere Truppe des Westlichen Konvents. Gerät eine feindliche Linie ins Wanken, verwandelt ihr wuchtiger Lanzenangriff den Rückzug in ein Gemetzel.' } } : { side: 'A', name: 'Stahlreiter', cls: 'cav', gepanzert: true, abil: 'rush', atk: 5, def: 3, mor: 8, mv: 4, rng: 0, fs: 0,   /* R4 (Punkt 97): Lanzenreiter und Stahlgänger zusammengelegt, 3 Modelle; Rückweg REITER_ALT (nur Node) */
-    can: 'Schwere Reiter in Dampfpanzerung. Sehr schnell, Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5 (MG gegen Reiter weiter ×2), panzerbrechende Waffen ×1,5. Sturmlauf (Aktion und alle BP): bis 4 Felder, dann sofort Nahkampf. Kommt nicht durch Draht und Totholz.',
+    chronik: { quelle: 'Brief eines Leutnants aus Krähenfurt', text: 'Wo der Boden trägt, preschen die Schwadronen schneller vor als jede andere Truppe des Westlichen Konvents. Gerät eine feindliche Linie ins Wanken, verwandelt ihr wuchtiger Lanzenangriff den Rückzug in ein Gemetzel.' } } : { side: 'A', name: 'Stahlreiter', cls: 'cav', gepanzert: true, zweiSchlag: true, abil: 'rush', atk: 5, def: 3, mor: 8, mv: 4, rng: 0, fs: 0,   /* R4 (Punkt 97): Lanzenreiter und Stahlgänger zusammengelegt, 3 Modelle; Rückweg REITER_ALT (nur Node) */
+    can: 'Schwere Reiter in Dampfpanzerung. Sehr schnell, Ansturm nach 3 Feldern ×1,5, gegen Fliehende ×2. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Zwei Schläge: steht der Gegner nach dem ersten noch, folgt ein zweiter ×0,6. Sturmlauf (Aktion und alle BP): bis 4 Felder, dann sofort Nahkampf. Kommt nicht durch Draht und Totholz.',
     chronik: { quelle: 'Meldung eines Fernsprechers aus Grauwall', text: 'Aus dem Gasnebel kommen sie, Reiter und Pferd in genietetem Stahl, Dampf zischt aus den Rückenrohren. Gewehrkugeln prallen an ihnen ab, doch Draht und Granattrichter halten sie so sicher auf wie jede andere Schwadron.' } },
   grenadier: { side: 'D', name: 'Aschengrenadiere', cls: 'inf', dig: true, atk: 4, def: 4, mor: 7, mv: 3, rng: 2, fs: 2,
     can: 'Schießt 2 Felder weit, hält Gräben und Ruinen, schneidet Draht. Eingraben (Aktion, im offenen Gelände oder Trichter): Abwehr ×1,3; zum Ziehen erst ausgraben (Aktion).',
@@ -1516,8 +1522,8 @@ Object.assign(TYPES, {
     chronik: { quelle: 'Bericht eines Überlebenden von Krähenfurt', text: 'Aus dem Rauch tauchen Gestalten in motorisierten Kampfanzügen auf, deren Gasmasken-Gläser unheimlich glühen. Leicht gepanzert, aber erstaunlich beweglich, überrennen sie im schnellen Sturmlauf ganze Grabenabschnitte.' } },
   // Neue Einheiten im Stil Retro-Zukunft (2026-11-20, Bögen ui-quelle/figuren/konkordat_loewenoger.png, aschenwacht_eiserne_huenen.png);
   // fig = alte Ersatzzeichnung (Grabenräumer bzw. Panzerknecht), nur solange die neuen Bilder laden (ui.js FIGMAP)
-  oger: { side: 'A', name: 'Löwenoger', cls: 'storm', fig: 'raider', abil: 'sprung', atk: 8, def: 5, mor: 9, mv: 4, rng: 1, fs: 6,
-    can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark (Pranken gegen Fußtruppen ×1,5, gegen Panzer ×1). Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Schrotflinte nur auf 1 Feld (gegen Fußtruppen ×1,5, an Panzern wirkungslos). Gegner halten ihn nicht auf. Sprungangriff (Aktion und alle BP, alle 2 Runden, nur aus dem Stand): bis 2 Felder neben einen Gegner, auch über Draht und Gräben, sofort Nahkampf.',
+  oger: { side: 'A', name: 'Löwenoger', cls: 'storm', fig: 'raider', abil: 'sprung', zweiSchlag: true, atk: 8, def: 5, mor: 9, mv: 4, rng: 1, fs: 6,
+    can: 'Riesige Krieger mit Löwenköpfen: schnell, im Nahkampf sehr stark (Pranken gegen Fußtruppen ×1,5, gegen Panzer ×1). Zwei Schläge: steht der Gegner nach dem ersten noch, folgt ein zweiter ×0,6. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Schrotflinte nur auf 1 Feld (gegen Fußtruppen ×1,5, an Panzern wirkungslos). Gegner halten ihn nicht auf. Sprungangriff (Aktion und alle BP, alle 2 Runden, nur aus dem Stand): bis 2 Felder neben einen Gegner, auch über Draht und Gräben, sofort Nahkampf.',
     chronik: { quelle: 'Geheimakte „Projekt Mähne“, Kronkirche', text: 'In rostige Platten und Ketten geschlagen, setzen diese gezüchteten Bestien mit gewaltigen Sprüngen über Hindernisse hinweg. Aus nächster Nähe fegen ihre schweren Schrotflinten und Klauen ganze Stellungen leer, ehe man sie wieder anketten muss.' } },
   huenen: { side: 'D', name: 'Eiserne Hünen', cls: 'inf', fig: 'suitD', suit: true, mgfire: true, pin: true, dauerfeuer: true, atk: 5, def: 6, mor: 9, mv: 2, rng: 3, fs: 7,
     can: 'Riesen in Rüstung mit schwerem MG aus der Hüfte (3 Felder, kein Aufbauen, jeder Treffer hält nieder). Langsam. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht hält nicht auf. Stark im Nahkampf. Dauerfeuer: eine zweite Salve in derselben Runde, danach eine eigene Runde kein Schuss.',
@@ -1602,6 +1608,7 @@ function costParts(k) {
   const Z = t.def * (c === 'walker' ? 1.6 : t.suit || t.gepanzert ? 1.4 : 1) + 0.5 * t.mor;
   const base = 6 * A + 5 * Z + 5 * t.mv - 45, abil = [];
   if (ABIL[k]) abil.push(ABIL[k]);
+  if (t.zweiSchlag) abil.push(['Zwei Schläge', 10]);   // Punkt 106
   if (c === 'walker') abil.push(['Pannen', -10]);
   if (ADJ[k]) abil.push(['Abgleich', ADJ[k]]);
   const total = Math.max(15, Math.round((base + abil.reduce((n, a) => n + a[1], 0)) / 5) * 5);
@@ -1638,7 +1645,7 @@ Object.assign(TYPES.feldkanone, { direkt: true, fahrbar: true, mv: 2 }); delete 
 if (!TOG.PZS_ALT) Object.assign(TYPES.feldkanone, { abil: 'pzschuss', ladungen: P.PZS_LADUNGEN });   // Punkt 16 (2026-11-24): Panzergranate mit begrenzten Ladungen; normaler Schuss gegen Panzer schwächer (P.FK_VS_WALKER); PZS_ALT=1 = vorher   // Feldkanone: nur direktes Feuer mit Sicht über ihre ganze Reichweite; ohne Protzen, zieht immer 2 Felder und schießt danach noch (Enrico 2026-11-22 17:40)
 Object.assign(TYPES.panzerk, { cutter: true });          // Panzerknechte: Nahkampf und Draht
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Bord-MG", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "reiter": TOG.REITER_ALT ? ["Ansturm ×1,5", "Kein Draht, kein Totholz"] : ["Ansturm ×1,5", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Sturmlauf", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "Panzergranate", "Gegenstoß auf Zielfelder"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder", "Rauchmunition: Nebelwand"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionier": ["Draht schneiden und angreifen", "Haftladung gegen Panzer"], "raeumer": ["Sickert durch", "Handgranaten", "Panzergranate", "Schilde vor"], "buechse": ["Schuss 3 Felder", "Panzer ×1,5, Fußtruppen ×0,5"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Feuer frei"], "hauptD": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Sturmbefehl"], "generalA": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Generalangriff (zweiter Angriff)", "Höchstens einer"], "panzerk": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"], "oger": ["Sprungangriff (alle 2 Runden)", "Schrotflinte 1 Feld", "Sickert durch"], "faust": ["Held", "Durchbruch: 2 Felder, schleudert zurück", "Standhaft-Aura", "Leicht gepanzert", "Kaum Fernkampf"], "kuerass": ["Held", "Hinrichtung unter 40 %", "Furcht-Aura", "Leicht gepanzert", "Langsam, bleibt stecken"], "huenen": ["Dauerfeuer: 2 Salven, dann abkühlen", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Hält nieder", "Draht hält nicht auf"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Bord-MG", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "reiter": TOG.REITER_ALT ? ["Ansturm ×1,5", "Kein Draht, kein Totholz"] : ["Ansturm ×1,5", "Zwei Schläge", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Sturmlauf", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "Panzergranate", "Gegenstoß auf Zielfelder"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder", "Rauchmunition: Nebelwand"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionier": ["Draht schneiden und angreifen", "Haftladung gegen Panzer"], "raeumer": ["Sickert durch", "Handgranaten", "Panzergranate", "Schilde vor"], "buechse": ["Schuss 3 Felder", "Panzer ×1,5, Fußtruppen ×0,5"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Feuer frei"], "hauptD": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Sturmbefehl"], "generalA": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Generalangriff (zweiter Angriff)", "Höchstens einer"], "panzerk": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"], "oger": ["Sprungangriff (alle 2 Runden)", "Zwei Schläge", "Schrotflinte 1 Feld", "Sickert durch"], "faust": ["Held", "Durchbruch: 2 Felder, schleudert zurück", "Standhaft-Aura", "Leicht gepanzert", "Kaum Fernkampf"], "kuerass": ["Held", "Hinrichtung unter 40 %", "Furcht-Aura", "Leicht gepanzert", "Langsam, bleibt stecken"], "huenen": ["Dauerfeuer: 2 Salven, dann abkühlen", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Hält nieder", "Draht hält nicht auf"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
 Object.assign(SPECIALS, { turm: ["Gepanzert", "Geschützturm", "Schuss 3 Felder", "Panne möglich"], orden: ["Gepanzert", "Drehlauf", "Kettensäge", "Panne möglich"], kreuz: ["Stufe 3: einmal je Schlacht", "Schwer gepanzert", "Panzerjäger: Panzer ×1,5, Fußtruppen ×0,5", "Kriegshammer", "Löwengebrüll: einmal je Schlacht", "Panne möglich"] });
 // Paket 1: Schlagworte für neue Regeln
@@ -1789,7 +1796,8 @@ const MAPS = {
       { art: 'lauf', linie: [[7, 2], [8, 2], [9, 2], [10, 2]] }, { art: 'lauf', linie: [[7, 6], [8, 6], [9, 6], [10, 6]] },   // Aschenwacht: Verbindungsgräben zwischen den Linien
       { art: 'sappe', linie: [[7, 8], [6, 8]] }],   // Sappe der Aschenwacht nach vorn (eine Konkordat-Sappe bei (3,5) hob die Quote auf 63 %)
     ki: { A: { artRunden: 5 }, D: { artRunden: 4 } },   /* F94-Abgleich (2026-11-22): Geschütze ziehen erst nach 5 bzw. 4 Runden ohne Ziel nach – feste Aufstellung 54,3 % (8 × 200) */
-    army: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 1, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },   // F94 (Enrico 2026-11-22 13:35): gemischte Startarmeen, höchstens 5 vom selben Typ
+    army: { A: { kohorte: 9, mahlwerk: 2, moerser: 1, pionier: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, sense: 2, minenwerfer: 1, signal: 1, geschuetz: 2, sturmpz: 1, sturm: 1, generalD: 1, hauptD: 1 } },   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
+    armyAlt: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 1, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },   // F94 (Enrico 2026-11-22 13:35): gemischte Startarmeen, höchstens 5 vom selben Typ
       D: { grenadier: 5, gasschutz: 2, banner: 1, sense: 3, geschuetz: 2, sturm: 1, sturmpz: 1, minenwerfer: 1, signal: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* Abgleich nach F103 (je 8 × 200): feste Aufstellung 46,5 %, gemischt 57,1 % */   // vorher A: 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter; D: 8 Grenadiere, 5 Sensenwerk, 2 Geschütze, 2 Sturmbrecher   // F66/F54/F80 (2026-11-21): +2 Sturmbrecher (Panzergranate gegen die Kolosse), 8 statt 10 Grenadiere (Sim 52 %)
     build: () => {
       const T = mapTools(16, 10, 1917);
@@ -1829,7 +1837,8 @@ const MAPS = {
     bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[8, 5], [9, 5]], turm: [9, 4] }],
     ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },
     // Beide Seiten greifen an: Aschenwacht etwa gleich viel wert wie das Konkordat (940 zu 910 – ein Grenadier-Trupp mehr gleicht den ersten Zug aus), ohne Reserve zur Mitte der Schlacht
-    army: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },   /* F94 (2026-11-22): gemischte Startarmeen, höchstens 5 vom selben Typ; vorher 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter, 2 Pioniere */
+    army: { A: { kohorte: 10, mahlwerk: 2, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
+    armyAlt: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },   /* F94 (2026-11-22): gemischte Startarmeen, höchstens 5 vom selben Typ; vorher 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter, 2 Pioniere */
       D: { grenadier: 5, pionierD: 2, gasschutz: 2, sense: 2, geschuetz: 2, sturmpz: 2, sturm: 1, minenwerfer: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* vorher 11 Grenadiere, 3 Sensenwerk, 2 Geschütze, 2 Sturmpanzer, 2 Sprenglanzen, 1 Minenwerfer; Abgleich: feste Aufstellung 49,4 %, gemischt 77,5 % */
     grid: [
       '...=xg.gVg.x=f..',
@@ -1866,7 +1875,8 @@ const MAPS = {
       { id: 'bruecke', name: 'Steinbrücke', c: 12, r: 8, pts: 2 },
       { id: 'gehoeft', name: 'Gehöft am Ostufer', c: 14, r: 3, pts: 1 }],
     get bauten() { const out = []; this.grid.forEach((row, r) => [...row].forEach((ch, c) => { if (ch === 'C') out.push({ art: 'kapelle', name: 'Kapelle', felder: [[c, r]] }); else if (ch === 'H') out.push({ art: 'haus', name: 'Haus', felder: [[c, r]] }); })); return out; },   // jedes H ein Haus, C die Kapelle
-    army: { A: { kohorte: 5, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },
+    army: { A: { kohorte: 10, mahlwerk: 3, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
+    armyAlt: { A: { kohorte: 5, mahlwerk: 3, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },
       D: { grenadier: 5, pionierD: 2, gasschutz: 2, sense: 2, geschuetz: 2, sturmpz: 2, sturm: 1, minenwerfer: 1, heiler: 1, generalD: 1, hauptD: 1 } },
     //         012345678901234567
     grid: [
@@ -1979,16 +1989,40 @@ function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgeba
 }
 // ---------- Armee-Auswahl ----------
 // Jede Seite darf vor der Schlacht für den Wert der Standardarmee selbst Truppen wählen.
-function defaultArmy(side) { return Object.assign({}, MAP.army[side]); }
+function defaultArmy(side) { return Object.assign({}, katAlt() && MAP.armyAlt ? MAP.armyAlt[side] : MAP.army[side]); }   // K1: armyAlt = Armee vor den Kategorien (Rückweg)
 function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
 function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
 const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
-function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost(defaultArmy(sd)); ARMY_MAX[sd] = Math.max(MAP.armyMax[sd], Object.values(MAP.army[sd]).reduce((a, b) => a + b, 0) + 2); } ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; for (const sd of ['A', 'D']) for (const t in MAP.army[sd]) ARMY_CAP = Math.max(ARMY_CAP, MAP.army[sd][t]); ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
+function armySync() { for (const sd of ['A', 'D']) { ARMY_BUDGET[sd] = armyCost((MAP.armyAlt || MAP.army)[sd]); ARMY_MAX[sd] = Math.max(MAP.armyMax[sd], ...[MAP.army, MAP.armyAlt].filter(Boolean).map(a => Object.values(a[sd]).reduce((x, y) => x + y, 0) + 2)); }   /* K1: Budget bleibt der Wert der Armee vor den Kategorien */ ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; for (const sd of ['A', 'D']) for (const t in MAP.army[sd]) ARMY_CAP = Math.max(ARMY_CAP, MAP.army[sd][t]); ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
 let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
 const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
 armySync();
 function useMapArmy(id) { useMap(id); armySync(); return MAP; }
 const isMech = t => !!TYPES[t] && !!TYPES[t].mech;
+// K1 (Punkt 104, 2026-11-26): Einheitenkategorien und Rückgrat-Regel (entwurf/ARMEEAUFBAU_IDEEN.md); Rückweg KAT_ALT (Node) bzw. window.KAT_ALT
+const KAT_TAB = { kohorte: 'linie', grenadier: 'linie',
+  reiter: 'elite', raeumer: 'elite', oger: 'elite', sturm: 'elite', schwer: 'elite', huenen: 'elite', panzerk: 'elite', stahl: 'elite',
+  feldkanone: 'geraet', haubitze: 'geraet', koloss: 'geraet', turm: 'geraet', orden: 'geraet', ballon: 'geraet', geschuetz: 'geraet', sturmpz: 'geraet', bohrer: 'geraet', saeger: 'geraet', klaue: 'geraet',
+  hauptA: 'selten', hauptD: 'selten', generalA: 'selten', generalD: 'selten', kreuz: 'selten', knecht: 'selten', faust: 'selten', kuerass: 'selten' };   // alle übrigen: Unterstützung
+const KAT_NAME = { linie: 'Linie', unterst: 'Unterstützung', elite: 'Elite', geraet: 'Gerät', selten: 'Selten' };
+const katAlt = () => !!(TOG.KAT_ALT || (typeof window !== 'undefined' && window.KAT_ALT));
+function katOf(t) { return KAT_TAB[t] || 'unterst'; }
+function katZahl(army) { const z = { linie: 0, unterst: 0, elite: 0, geraet: 0, selten: 0 }; for (const t in army) z[katOf(t)] += army[t] || 0; z.n = z.linie + z.unterst + z.elite + z.geraet; return z; }   // n = Trupps ohne Selten (Anführer, Helden, Stufe 3)
+function katMax(z) { return { unterst: Math.floor(z.linie / P.KAT_UNTERST_JE), elite: P.KAT_ELITE, geraet: P.KAT_GERAET }; }
+function katFehler(army) { if (katAlt()) return ''; const z = katZahl(army), m = katMax(z);
+  if (z.unterst > m.unterst) return `Unterstützung ${z.unterst}/${m.unterst}: je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
+  if (z.elite > m.elite) return `Elite höchstens ${m.elite}.`;
+  if (z.geraet > m.geraet) return `Gerät höchstens ${m.geraet}.`;
+  if (z.linie < z.n * P.KAT_LINIE) return `Linie mindestens ein Drittel der Trupps (${z.linie} von ${z.n}).`;
+  return ''; }
+function katWarum(army, t) {   // warum t nicht noch dazukommen darf ('' = geht)
+  if (katAlt() || katOf(t) === 'selten') return ''; const a = Object.assign({}, army); a[t] = (a[t] || 0) + 1; const z = katZahl(a), m = katMax(z), k = katOf(t);
+  if (k === 'unterst' && z.unterst > m.unterst) return `Unterstützung voll (${z.unterst - 1}/${m.unterst}): je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
+  if (k === 'elite' && z.elite > m.elite) return `Elite voll: höchstens ${m.elite}.`;
+  if (k === 'geraet' && z.geraet > m.geraet) return `Gerät voll: höchstens ${m.geraet}.`;
+  if (k !== 'linie' && z.linie < z.n * P.KAT_LINIE) return `Erst mehr Linie: mindestens ein Drittel der Trupps (jetzt ${z.linie} von ${z.n}).`;
+  return ''; }
+function armeeImFeld(G, side) { const a = {}; for (const u of G.units) if (u.side === side && alive(u)) a[u.type] = (a[u.type] || 0) + 1; return a; }
 function armyOk(side, army, mechs) {
   for (const t in army) if (!ROSTER[side].includes(t) || (army[t] > 0 && isMech(t) && !mechs) || !(army[t] >= 0) || army[t] !== Math.floor(army[t])) return false;
   const n = armyCount(army); let walkers = 0;
@@ -1997,6 +2031,7 @@ function armyOk(side, army, mechs) {
   if (Object.keys(army).reduce((n, t) => n + (TYPES[t].stufe3 ? army[t] : 0), 0) > 1) return false;   // Stufe-3-Schreiter: höchstens einer je Armee
   if (Object.keys(army).reduce((n, t) => n + (TYPES[t].held ? army[t] : 0), 0) > 1) return false;   // Helden: höchstens einer je Armee
   if ((army.generalA || 0) + (army.generalD || 0) !== 1 || (army.hauptA || 0) + (army.hauptD || 0) > 3) return false;   // genau ein General je Armee (Pflicht, Spieltest 2026-11-17)
+  if (katFehler(army)) return false;   // K1
   return armyCost(army) <= ARMY_BUDGET[side] && n >= ARMY_MIN[side] && n <= ARMY_MAX[side];
 }
 function rowsOut() { const m = Math.floor(ROWS / 2), out = [m]; for (let k = 2; out.length < ROWS; k += 2) { for (const r of [m - k, m + k]) if (r >= 0 && r < ROWS) out.push(r); if (k > ROWS) break; } for (let r = 0; r < ROWS; r++) if (!out.includes(r)) out.push(r); return out; }
@@ -2436,7 +2471,7 @@ function medaillen(t) { const T = TYPES[t], fern = T.rng > 0 || T.cls === 'art';
   const stufe = f => f >= 1.5 ? 'gold' : f >= 1 ? 'silber' : 'bronze';
   const inf = fern ? FAK[waffeArt(t, true)].U : 0;
   const pz = Math.max(fern ? FAK[waffeArt(t, true)].S : 0, T.abil === 'pzgranate' || T.abil === 'charge' ? 1.5 : 0, t === 'oger' ? FAK.schwer.S : 0);   // Panzergranate bzw. Haftladung
-  const r = nahRolle(t), nah = r === 'schwach' ? 0.5 : r === 'stark' ? 1.5 : FAK[waffeArt(t, false)].U;
+  const r = nahRolle(t), nah = (r === 'schwach' ? 0.5 : r === 'stark' ? 1.5 : FAK[waffeArt(t, false)].U) * (T.zweiSchlag ? 1 + P.ZWEISCHLAG : 1);   // Punkt 106: zwei Schläge heben die Nahkampf-Medaille
   return { inf: fern ? stufe(inf) : 'keine', panzer: pz > 0 ? stufe(pz) : 'keine', nah: T.atk > 0 ? stufe(nah) : 'keine', fInf: fern ? inf : 0, fPz: pz, fNah: nah, rolle: r, klasse: panzerKl(t), waffe: fern ? waffeArt(t, true) : null }; }
 function immune(A, D) { return D.cls === 'walker' && !A.at && (A.cls === 'inf' || A.cls === 'mg' || A.cls === 'cav' || A.cls === 'storm' || !!A.gat); }   // F66: auch Drehlauf-Schreiter (Gewehr/MG) prallen an Panzerung ab
 function nahFrei(a) { const T = TYPES[a.type]; return T.cls === 'cav' || T.cls === 'storm' || !!T.suit || !!T.nahSchreiter || !!a.sturmlauf || (a.bpUsed || 0) <= bpMax(a) / 2; }
@@ -2605,9 +2640,10 @@ function preview(G, a, d, kind, o) {
   if (!ranged && nahRolle(d.type) === 'schwach') { m *= 1.5; tags.push('schwach im Nahkampf ×1,5'); }   // F66: MG, Geschütze, Beobachter … sehen im Nahkampf alt aus
   if (ranged && A.mg) {
     if (hex(G, d.c, d.r).t === 'wire') { m *= P.MG_VS_WIRE; tags.push('MG gegen Draht ×2'); }
-    if (D.cls === 'cav') { m *= P.MG_VS_CAV; tags.push('MG gegen Reiter ×2'); }
+    if (D.cls === 'cav' && !D.gepanzert) { m *= P.MG_VS_CAV; tags.push('MG gegen Reiter ×2'); }   // Punkt 106: nicht gegen gepanzerte Stahlreiter
   }
   if (!ranged && A.cls === 'cav' && run >= P.CHARGE_MIN) { m *= P.CHARGE; tags.push('Ansturm ×1,5'); }
+  if (!ranged && zweiSchlag(a.type)) tags.push('dazu 2. Schlag ×0,6, wenn der Gegner steht');   // Punkt 106: nur Hinweis, der Schaden oben ist der erste Schlag
   if (!ranged && hex(G, ac, ar).t === 'wire') { m *= 0.7; tags.push('aus dem Draht ×0,7'); }
   if (ranged && D.cls === 'flame') { m *= P.FLAME_HIT; tags.push('Brandtank getroffen ×1,5'); }
   if (officerAt(G, a.side, ac, ar)) { m *= P.OFFICER_ATK; tags.push('Offizier ×1,15'); }
@@ -2822,6 +2858,7 @@ function fire(G, a, d) {
   return ev;
 }
 let nkZahl = 0;   // F63 (2026-11-20): alle Ereignisse eines Nahkampfs tragen dieselbe Nummer nk – die Anzeige spielt sie zusammen in einer Szene ab
+function zweiSchlag(t) { return !!(TYPES[t] && TYPES[t].zweiSchlag && !TOG.NOZWEISCHLAG) || !!(TOG.ZWEISCHLAG && TOG.ZWEISCHLAG.split(',').includes(t)); }
 function melee(G, a, d) {
   if (!canMelee(G, a, d)) return [];
   const ev = [], nk = ++nkZahl;
@@ -2834,7 +2871,7 @@ function melee(G, a, d) {
   const dmg = p.dmg * (0.75 + G.rng() * 0.5);
   const dc = d.c, dr = d.r;
   applyDamage(G, a, d, dmg, p.arc, ev);
-  if (TOG.ZWEISCHLAG && TOG.ZWEISCHLAG.split(',').includes(a.type) && alive(d) && d.c === dc && d.r === dr) applyDamage(G, a, d, p.dmg * (+TOG.ZWEISCHLAG_MUL || 0.6) * (0.75 + G.rng() * 0.5), p.arc, ev);   // R4-Prüfauftrag „öfter zuschlagen“: nur Messung (Sim-Schalter), nicht eingebaut
+  if (zweiSchlag(a.type) && alive(d) && d.c === dc && d.r === dr) { ev.push({ t: 'zweischlag', a: a.id, d: d.id }); applyDamage(G, a, d, p.dmg * (+TOG.ZWEISCHLAG_MUL || P.ZWEISCHLAG) * (0.75 + G.rng() * 0.5), p.arc, ev); }   // Punkt 106: zweiter Schlag ×0,6, wenn der Gegner noch steht (Sim: NOZWEISCHLAG, Messung ZWEISCHLAG=typ)
   if (alive(d) && (!hasFlanks(TYPES[d.type]) || fahrzeugArt(d) === 'schreiter')) d.face = faceToward(d.face, d.c, d.r, a.c, a.r);   // F76 (Enrico 2026-11-21): Verteidiger wendet sich zum Angreifer und bleibt so (Flankenbonus galt nur für diesen Angriff; Einkesseln lohnt sich) – Fußtruppen, Reiter und Schreiter ohne Drehkosten; Panzer/Kettenfahrzeuge drehen sich nicht
   if (d.status === 'ok' && d.c === dc && d.r === dr && p.arc !== 'rear' && TYPES[d.type].atk > 0) {
     const cd = counterDmg(G, d, a, a.c, a.r, p.arc, d.str) * (0.75 + G.rng() * 0.5);
@@ -3458,7 +3495,7 @@ function spawnHexes(G, side, type) {
   for (const o of OBJECTIVES) if (G.ctrl[o.id] === side) for (const [c, r] of [[o.c, o.r], ...neighbors(o.c, o.r)]) if (inMap(c, r) && (side === 'A' ? c <= o.c : c >= o.c) && !isZOC(G, c, r, side)) add(c, r);   // Paket 8: nie hinter der Flagge Richtung Gegner
   return out;
 }
-function canBuy(G, side, type) { return !G.over && !(TYPES[type].stufe3 && G.units.some(u => u.side === side && TYPES[u.type].stufe3)) && !(TYPES[type].held && G.units.some(u => u.side === side && TYPES[u.type].held)) && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type]; }
+function canBuy(G, side, type) { return !G.over && !(TYPES[type].stufe3 && G.units.some(u => u.side === side && TYPES[u.type].stufe3)) && !(TYPES[type].held && G.units.some(u => u.side === side && TYPES[u.type].held)) && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type] && !katWarum(armeeImFeld(G, side), type); }   // K1: Kategorien-Grenzen auch im Nachschub
 function buy(G, side, type, c, r) {
   if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
   G.pts[side] -= COST[type];
@@ -3557,7 +3594,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  KAT_TAB, KAT_NAME, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
@@ -7039,9 +7076,10 @@ function buy(G) {
   const ENVX = typeof process !== 'undefined' && process.env || {};
   for (let guard = 0; guard < 6; guard++) {
     const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', ...(ENVX.REITER_ALT ? ['stahl'] : [])] : ['knecht', 'saeger', 'panzerk']) : W[side];
-    const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null, type = lage || wl[G._wish[side] % wl.length];
+    const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null; let type = lage || wl[G._wish[side] % wl.length], ersatz = false;
     if (type && ENVX.OHNEHELD && TYPES[type].held) { G._wish[side]++; continue; }   // Sim: ohne Helden (NOHELD ist schon der Abschalter für „gebunden im Nahkampf“)
     if (type && !lage && einmalGesperrt(G, side, type)) { G._wish[side]++; continue; }   // M1 (2026-11-22): Held/Stufe 3/General gibt es nur einmal je Schlacht – überspringen, sonst bleibt die Liste daran hängen und die KI kauft nichts mehr
+    if (type && E.katWarum(E.armeeImFeld(G, side), type)) { type = side === 'A' ? 'kohorte' : 'grenadier'; ersatz = true; }   // K1: Kategorie voll – erst Linie (Rückgrat), der Wunsch bleibt stehen
     if (!type || !E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
     if (!hs.length) break;
@@ -7051,7 +7089,7 @@ function buy(G) {
     hs.sort((p, q) => (Math.abs(p[1] - row) - Math.abs(q[1] - row)) || (side === 'A' ? q[0] - p[0] : p[0] - q[0]));
     const e = E.buy(G, side, type, hs[0][0], hs[0][1]);
     if (!e.length) break;
-    ev.push(...e); if (!lage) G._wish[side]++; G._kauf[side][type] = (G._kauf[side][type] || 0) + 1;
+    ev.push(...e); if (!lage && !ersatz) G._wish[side]++; G._kauf[side][type] = (G._kauf[side][type] || 0) + 1;
   }
   return ev;
 }
@@ -8781,7 +8819,7 @@ const FIGMAP = {
   brand: ['flammen', 1], raeumer: ['sturm_reskin', 1, 4, { ruhe: [3, 1, 4, 2, 3, 1] }],   /* R4 (Punkt 96): Grabenräumer mit Sturmschilden – in Ruhe 2× Schild, Revolver hinter dem Schild, 2× Keule, Granate */
   pionier: ['pionier', 1], mineur: ['mineur', 1, 2],
   mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['feldkanone'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
-  grenadier: ['soldat', 1], sturm: ['sturm_reskin', 1, 4, { ruhe: [1, 2, 1, 3, 1, 1] }], eingreif: ['eingreif', 1],   /* R4 (Punkt 94): Sturmbrecher – ein Mann mit MG hüfthoch, einer mit Spaten, sonst Granatwurf */
+  grenadier: ['soldat', 1], sturm: ['sturm_reskin', 1, 4, { ruhe: [2, 3, 1, 3, 2, 3] }], eingreif: ['eingreif', 1],   /* Punkt 106: Sturmbrecher in Ruhe 2× MG hüfthoch, 3× Spaten (ruhigste Pose), 1× Granatwurf */
   pionierD: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: ['moerser'], minenwerfer: ['minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
   stahl: ['stahl', 1, 2, ANZUG], panzerk: ['panzerknecht', 1, 2, ANZUG],
@@ -8958,7 +8996,7 @@ const POSE_SETS = { /* Stufe-3-Schreiter (Enrico 2026-11-22): Einzelmodelle mit 
   // Grundbögen sind unterschiedlich geordnet: Konkordat-Sturm 1 Ruhe, 3 kniend zielen, 4 Keule; Aschenwacht-Sturm 1 Spaten, 2 Keule, 4 Ruhe; Pioniere 1 Ruhe, 2 Schaufel, 3 kniend (Ladung/Mine)
   // R4 (2026-11-26): neue Bögen der zusammengelegten Trupps (reskin), Ruhe je Figur aus FIGMAP ruhe; Konkordat-Getroffen noch aus dem alten Posenbogen (kein neues Bild)
   raeumer: { kolben: 'sturm_reskin_1', ausholen: 'sturm_reskin_2', loslassen: 'sturm_reskin_2', halten: 'sturm_reskin_3', lauf: 'sturm_reskin_3', getroffen: 'sturm_posen_4' },
-  sturm: { kolben: 'sturm_reskin_1', ausholen: 'sturm_reskin_1', loslassen: 'sturm_reskin_1', anlegen: 'sturm_reskin_2', knien: 'sturm_reskin_2', graben: 'sturm_reskin_3', getroffen: 'sturm_reskin_4' },
+  sturm: { kolben: 'sturm_reskin_3', ausholen: 'sturm_reskin_1', loslassen: 'sturm_reskin_1', anlegen: 'sturm_reskin_2', knien: 'sturm_reskin_2', graben: 'sturm_reskin_3', getroffen: 'sturm_reskin_4' },
   pionier: { bereit: 'pionier_1', kolben: 'pionier_2', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen; Nahkampf weiter mit der Schaufel
   pionierD: { bereit: 'pionier_1', kolben: 'pionier_posen2_4', schneiden: 'pionier_posen_1', ladung: 'pionier_posen_2', mine: 'pionier_3', graben: 'pionier_posen_3', getroffen: 'pionier_posen_4', anlegen: 'pionier_posen2_1', knien: 'pionier_posen2_2', lauf: 'pionier_posen2_3' },   // Runde 2: Schuss-Posen, Nahkampf-Vorstoß mit Gewehr
   // weitere Posenbögen (2026-11-20, frei verteilte Figuren, figure_cut.py FIGUREN_POSEN); lauf = beim Ziehen
@@ -10484,6 +10522,8 @@ async function playEvent0(e) {
     case 'light': { visSync('lit'); playSound('ui', 0.5); await wait(260); break; }
     case 'clear': { visSync('clouds'); pose(e.u, 'spruehen', 1500); gasschutzFx(e.u); playSound('gasmaske_1', 0.5); if (e.n) kz(e.u, 'kreuz', 'steig'); await wait(260); break; }
     case 'ammo': { if (e.by != null) pose(e.by, 'nachladen', 1400); playSound('nachladen', 0.55); kz(e.u, 'munition', 'steig'); await wait(260); break; }
+    case 'zweischlag': { const au = unitById(e.a); if (!au || !DU.get(e.a)) break; pose(e.a, au.type === 'oger' ? 'kolben' : 'hieb', 520); await wait(160);   /* Punkt 106: zweiter Schlag sichtbar und hörbar, danach folgt der Treffer */
+      playSound(au.type === 'oger' ? 'neu3_fleisch' : 'saebel', 0.5, null, { von: au });   /* gleiche Plätze wie der erste Schlag (Pult-Zeile „Schlag“) */ await wait(200); break; }
     case 'counterstrike': { playSound('charge', 0.6, null, { u: unitById(e.u) }); kz(e.u, 'wut', 'steig'); await wait(250); break; }
     case 'score': { const hs = OBJECTIVES.filter(o => G.ctrl[o.id] === e.side); if (hs.length) playSound('ev_punkte', 0.4, e.side);   /* SP-3 (84.3): stumm, bis im Ton-Pult („Gelände und Gebäude“) ein Ton gewählt ist – wie alle ev_-Plätze */ for (const o of hs) { const [x, y] = center(o.c, o.r); floater(x, y - s * 1.5, '+' + o.pts, sideCol(e.side), true); } await wait(350); updateUI(); break; }
     case 'unstuck': playSound('ev_wieder_flott', 0.45); DU.get(e.u).vs.stuck = 0; kz(e.u, 'funkeln', 'steig'); await wait(150); break;
@@ -11272,7 +11312,10 @@ function rolle(t) { return window.ROLLEN ? ROLLEN.rollenVon(E, t) : null; }
 function felder(n, dativ) { return n === 1 ? '1 Feld' : n + (dativ ? ' Feldern' : ' Felder'); }   // „1 Feld“ statt „1 Felder“ (Punkt 31, 2026-11-24)
 const chronikHtml = (T, tag) => T && T.chronik ? `<${tag} class="real chronik"><b>Aus den Chroniken</b><i class="quelle">${T.chronik.quelle}</i>${T.chronik.text}</${tag}>` : '';
 function rolleHtml(t) { const r = rolle(t); if (!r) return ''; return `<div class="rolle"><div class="rl-n"><b>Rolle:</b> ${r.rolle}</div>${r.stark.length ? `<div class="rl-p">▲ <b>Stark gegen:</b> ${r.stark.join(', ')}</div>` : ''}${r.schwach.length ? `<div class="rl-m">▼ <b>Schwach gegen:</b> ${r.schwach.join(', ')}</div>` : ''}<div class="rl-k"><b>Kontert man mit:</b> ${r.konter.join(', ')}</div></div>`; }
-function snKarte(t) { const T = TYPES[t], r = rolle(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span>${r ? `<span class="rl">${r.rolle}</span>` : ''}<span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+function snKarte(t) { const T = TYPES[t], r = rolle(t), k = E.katOf(t); return `<canvas data-k="${figOf(T)}" data-t="${t}"></canvas><span><span class="nm">${snName(T.name)}</span><span class="rl">${E.katAlt() ? '' : `<span class="kt kt-${k}" title="Kategorie">${E.KAT_NAME[k]}</span>`}${r ? r.rolle : ''}</span><span class="ko">★ ${E.COST[t]}</span><span class="chips">${(T.sp || []).slice(0, 3).map(x => `<span>${x}</span>`).join('')}</span></span>`; }
+// K1 (Punkt 104): belegte/freie Plätze je Kategorie (Armee-Auswahl und Nachschub)
+function katLeiste(army) { if (E.katAlt()) return ''; const z = E.katZahl(army), m = E.katMax(z), f = (k, n, mx) => `<span class="kt kt-${k}${mx != null && n >= mx ? ' voll' : ''}" title="${k === 'linie' ? 'Linie: mindestens ein Drittel der Trupps' : k === 'unterst' ? 'Unterstützung: je ' + P.KAT_UNTERST_JE + ' Linientrupps ein Platz' : 'Höchstens ' + mx}">${E.KAT_NAME[k]} <b>${n}${mx != null ? '/' + mx : ''}</b></span>`;
+  return f('linie', z.linie) + f('unterst', z.unterst, m.unterst) + f('elite', z.elite, m.elite) + f('geraet', z.geraet, m.geraet); }
 function snZeig(det, el, sheet, w, platz) {   // platz: Element, über das die Details gelegt werden (Armee-Auswahl: Seitenleiste), sonst neben das Fenster
   const t = el.dataset.t, T = TYPES[t], r = el.getBoundingClientRect(), sh = sheet.getBoundingClientRect();
   det.innerHTML = `<h3>${T.name}<span>★ ${E.COST[t]}</span></h3>${rolleHtml(t)}${T.sp && T.sp.length ? `<div class="chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : ''}<div class="w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div><div>${T.can}</div>${chronikHtml(T, 'div')}${w ? `<div class="warum">${w}</div>` : ''}`;
@@ -11303,8 +11346,8 @@ addEventListener('resize', () => { const sh = $('shop') && $('shop').querySelect
 function openShopNeu() {
   const sd = G.side, list = E.SHOP[sd].filter(t => G.mechs || !E.isMech(t)), inKat = k => snInKat(list, k);
   if (!inKat(shopKat).length) shopKat = SN_REITER.find(k => inKat(k).length);
-  const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : TYPES[t].held ? 'Held: nur einer je Schlacht, auch nach seinem Fall.' : TYPES[t].stufe3 ? 'Stufe 3: nur einer je Schlacht, auch nach seinem Fall.' : 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
-  $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div>
+  const warum = t => G.pts[sd] < E.COST[t] ? `Zu wenig Punkte: ★ ${E.COST[t]} nötig.` : !E.canBuy(G, sd, t) ? (TYPES[t].cmd === 2 ? 'Es gibt schon einen General.' : TYPES[t].held ? 'Held: nur einer je Schlacht, auch nach seinem Fall.' : TYPES[t].stufe3 ? 'Stufe 3: nur einer je Schlacht, auch nach seinem Fall.' : E.katWarum(E.armeeImFeld(G, sd), t) || 'Gerade nicht möglich.') : !E.spawnHexes(G, sd, t).length ? 'Kein freies Aufstellungsfeld.' : '';
+  $('shopNeu').innerHTML = `<div class="sn-titel"><b>Nachschub anfordern</b><span>★ ${G.pts[sd]}</span></div><div class="kat-leiste">${katLeiste(E.armeeImFeld(G, sd))}</div>
     <div class="sn-reiter">${SN_REITER.filter(k => inKat(k).length).map(k => { const n = inKat(k).filter(t => !warum(t)).length; return `<button data-kat="${k}" class="${k === shopKat ? 'an' : ''}${n ? ' leistbar' : ''}" title="${n ? n + ' davon jetzt aufstellbar' : 'Nichts davon gerade aufstellbar'}">${k}<small>${inKat(k).length}</small></button>`; }).join('')}</div>
     <div class="sn-liste">${inKat(shopKat).map(t => `<button class="sn-k${warum(t) ? ' aus' : ''}" data-t="${t}">${snKarte(t)}</button>`).join('')}</div>
     <div class="sn-fuss"><span>${lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick stellt auf' : 'Antippen zeigt alle Werte, nochmal antippen stellt auf'} – am eigenen Rand oder an eigenen Zielfeldern. Neue Einheiten handeln ab der nächsten Runde.</span><button class="tbtn" id="shopZu">Schließen</button></div>`;
@@ -11866,7 +11909,7 @@ function armyWarum(t) {   // warum diese Einheit nicht noch einmal dazukommen ka
   if (T.cls === 'walker' && Object.keys(armyDraft).reduce((k, x) => k + (TYPES[x].cls === 'walker' ? armyDraft[x] : 0), 0) >= E.ARMY_WALKERS) return `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.`;
   if (T.stufe3 && Object.keys(armyDraft).some(x => TYPES[x].stufe3 && armyDraft[x] > 0)) return 'Stufe 3: höchstens einer je Schlacht.';
   if (T.held && Object.keys(armyDraft).some(x => TYPES[x].held && armyDraft[x] > 0)) return 'Held: höchstens einer je Armee.';   // M2 (2026-11-22)
-  return '';
+  return E.katWarum(armyDraft, t);   // K1
 }
 function openArmy(sd) {
   armySide = sd; armyDraft = Object.assign({}, customArmy[sd] || E.defaultArmy(sd));
@@ -11909,7 +11952,8 @@ function armyRefresh() {
   $('armyWahl').querySelectorAll('button').forEach(b => b.onclick = () => { const t = b.dataset.t; if (armyKat !== 'Alle') armyKat = shopKatOf(t); armyListe(); const el = $('armyList').querySelector(`.sn-k[data-t="${t}"]`); if (el) { el.scrollIntoView({ block: 'nearest' }); el.classList.add('offen'); setTimeout(() => el.classList.remove('offen'), 900); } });
   $('armyCnt').textContent = `${n} Einheiten (${E.ARMY_MIN[sd]} bis ${E.ARMY_MAX[sd]})`;
   const msg = cost > bud ? `${cost - bud} Punkte zu viel.` : n < E.ARMY_MIN[sd] ? `Mindestens ${E.ARMY_MIN[sd]} Einheiten.` : n > E.ARMY_MAX[sd] ? `Höchstens ${E.ARMY_MAX[sd]} Einheiten.`
-    : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
+    : walkers > E.ARMY_WALKERS ? `Höchstens ${E.ARMY_WALKERS} Kolosse und Kampfmaschinen.` : E.katFehler(armyDraft) ? E.katFehler(armyDraft) : cost < bud ? `Noch ${bud - cost} Punkte frei.` : 'Alle Punkte verteilt.';
+  $('armyKat').innerHTML = katLeiste(armyDraft);   // K1
   $('armyMsg').textContent = msg; $('armyOk').disabled = !((sd === feindSeite() && !feindSelbst[sd]) || E.armyOk(sd, armyDraft, mechsOn()));
   $('armyFussText').textContent = (lastPT === 'mouse' ? 'Überfahren zeigt alle Werte, Klick nimmt eine dazu' : 'Antippen zeigt alle Werte, nochmal antippen nimmt eine dazu') + ', −/+ ändert die Anzahl. Ein General ist immer dabei.';
 }

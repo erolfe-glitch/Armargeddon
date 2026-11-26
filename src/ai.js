@@ -502,9 +502,10 @@ function buy(G) {
   const ENVX = typeof process !== 'undefined' && process.env || {};
   for (let guard = 0; guard < 6; guard++) {
     const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', ...(ENVX.REITER_ALT ? ['stahl'] : [])] : ['knecht', 'saeger', 'panzerk']) : W[side];
-    const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null, type = lage || wl[G._wish[side] % wl.length];
+    const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null; let type = lage || wl[G._wish[side] % wl.length], ersatz = false;
     if (type && ENVX.OHNEHELD && TYPES[type].held) { G._wish[side]++; continue; }   // Sim: ohne Helden (NOHELD ist schon der Abschalter für „gebunden im Nahkampf“)
     if (type && !lage && einmalGesperrt(G, side, type)) { G._wish[side]++; continue; }   // M1 (2026-11-22): Held/Stufe 3/General gibt es nur einmal je Schlacht – überspringen, sonst bleibt die Liste daran hängen und die KI kauft nichts mehr
+    if (type && E.katWarum(E.armeeImFeld(G, side), type)) { type = side === 'A' ? 'kohorte' : 'grenadier'; ersatz = true; }   // K1: Kategorie voll – erst Linie (Rückgrat), der Wunsch bleibt stehen
     if (!type || !E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
     if (!hs.length) break;
@@ -514,7 +515,7 @@ function buy(G) {
     hs.sort((p, q) => (Math.abs(p[1] - row) - Math.abs(q[1] - row)) || (side === 'A' ? q[0] - p[0] : p[0] - q[0]));
     const e = E.buy(G, side, type, hs[0][0], hs[0][1]);
     if (!e.length) break;
-    ev.push(...e); if (!lage) G._wish[side]++; G._kauf[side][type] = (G._kauf[side][type] || 0) + 1;
+    ev.push(...e); if (!lage && !ersatz) G._wish[side]++; G._kauf[side][type] = (G._kauf[side][type] || 0) + 1;
   }
   return ev;
 }

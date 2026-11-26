@@ -924,6 +924,12 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 :is(#shopNeu, #armyNeu) .sn-k canvas { width: 92px; height: 88px; border: 3px solid var(--s-ink); box-shadow: inset 0 0 0 2px #6b5236; background: #1d1612; }
 :is(#shopNeu, #armyNeu) .sn-k .nm { display: block; padding-right: 54px; font: 400 17px/1.15 var(--s-head); letter-spacing: .03em; text-transform: uppercase; text-shadow: 0 2px 0 var(--s-ink); }
 :is(#shopNeu, #armyNeu) .sn-k .ko { position: absolute; right: 8px; top: 6px; font: 400 18px var(--s-num); color: #ffe2a0; text-shadow: 0 2px 0 var(--s-ink); }
+/* K1 (Punkt 104): Kategorie-Schild auf der Karte und Plätze je Kategorie */
+:is(#shopNeu, #armyNeu) .sn-k .kt { margin-right: 6px; padding: 0 5px; font-size: 11px; vertical-align: 1px; }
+.kt { display: inline-block; padding: 1px 6px; border: 1px solid currentColor; border-radius: 3px; font: 400 12px/1.3 var(--s-head); letter-spacing: .04em; text-transform: uppercase; background: rgba(20,14,8,.55); }
+.kt-linie { color: #b9b29a; } .kt-unterst { color: #9fb3bd; } .kt-elite { color: #e2b04a; } .kt-geraet { color: #a9aeb4; } .kt-selten { color: #d9776c; }
+.kat-leiste { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 2px; }
+.kat-leiste .kt { font-size: 14px; padding: 2px 8px; } .kat-leiste .kt b { font: 400 15px var(--s-num); color: #ffe2a0; } .kat-leiste .kt.voll b { color: #ff8f6a; }
 :is(#shopNeu, #armyNeu) .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 :is(#shopNeu, #armyNeu) .chips span, :is(#shopDet, #armyDet) .chips span { font: 700 12px var(--s-body); color: #2a1f16; background: linear-gradient(#e6c97a, #b98d3a); border: 1px solid var(--s-ink); border-radius: 3px; padding: 2px 7px; }
 :is(#shopNeu, #armyNeu) .sn-fuss { display: flex; justify-content: space-between; align-items: center; gap: 12px; font: 600 13px var(--s-body); color: #cbbfa6; }
@@ -1267,7 +1273,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
         </div>
         <aside class="an-seite">
           <h3>Gewählte Armee</h3>
-          <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em></div>
+          <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em><div id="armyKat" class="kat-leiste"></div></div>
           <div class="an-wahl" id="armyWahl"></div>
           <div id="armyFeind" hidden><button class="tbtn" data-f="ki">KI stellt selbst zusammen</button><button class="tbtn" data-f="ich">Ich stelle zusammen</button></div>
           <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>

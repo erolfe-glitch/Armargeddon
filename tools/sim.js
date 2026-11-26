@@ -99,6 +99,7 @@ console.log(`U5a: Flucht je Schlacht ${(U5.flucht.A / N).toFixed(2)} / ${(U5.flu
 console.log('U5a Nachschubpunkte verdient (Runde: Konkordat/Aschenwacht):', [5, 10, 15, 20].map(x => x + ': ' + Math.round(avg(U5.verdient.A[x] || [])) + '/' + Math.round(avg(U5.verdient.D[x] || [])) + ' (' + (U5.verdient.A[x] || []).length + ')').join(', '));
 console.log('U5a Schaden je Typ und Schlacht (×10):', JSON.stringify(Object.fromEntries(Object.entries(U5.schaden).sort((a, b) => b[1] - a[1]).map(([t, v]) => [t, Math.round(v * 10 / N)]))));
 console.log('Verluste je Typ:', JSON.stringify(Object.fromEntries(Object.keys(typeLoss).map(t => [t, (100 * typeLoss[t] / typeCount[t]).toFixed(0) + ' %']))));
+{ const kl = {}, kc = {}; for (const t in typeCount) { const k = E.katOf(t); kl[k] = (kl[k] || 0) + (typeLoss[t] || 0); kc[k] = (kc[k] || 0) + typeCount[t]; } console.log('K1 Verluste je Kategorie:', JSON.stringify(Object.fromEntries(Object.keys(kc).map(k => [k, (100 * kl[k] / kc[k]).toFixed(0) + ' % von ' + (kc[k] / N).toFixed(1) + ' je Schlacht']))));  }
 if (!process.env.KURZ) {
   const alle = [...new Set([...Object.keys(nutz.A), ...Object.keys(nutz.D)])].sort();
   console.log('Nutzung je Schlacht (Konkordat / Aschenwacht):');
