@@ -501,7 +501,7 @@ function buy(G) {
   G._wish = G._wish || (ENVX0().KAUF_FEST ? { A: 0, D: 0 } : { A: Math.floor(G.rng() * 16), D: Math.floor(G.rng() * 16) });   /* F94: gemischter Einstieg in die Wunschliste je Schlacht (KAUF_FEST=1: alt) */ G._kauf = G._kauf || { A: {}, D: {} };
   const ENVX = typeof process !== 'undefined' && process.env || {};
   for (let guard = 0; guard < 6; guard++) {
-    const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', 'stahl'] : ['knecht', 'saeger', 'panzerk']) : W[side];
+    const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', ...(ENVX.REITER_ALT ? ['stahl'] : [])] : ['knecht', 'saeger', 'panzerk']) : W[side];
     const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null, type = lage || wl[G._wish[side] % wl.length];
     if (type && ENVX.OHNEHELD && TYPES[type].held) { G._wish[side]++; continue; }   // Sim: ohne Helden (NOHELD ist schon der Abschalter für „gebunden im Nahkampf“)
     if (type && !lage && einmalGesperrt(G, side, type)) { G._wish[side]++; continue; }   // M1 (2026-11-22): Held/Stufe 3/General gibt es nur einmal je Schlacht – überspringen, sonst bleibt die Liste daran hängen und die KI kauft nichts mehr
