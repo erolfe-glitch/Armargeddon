@@ -1,3 +1,76 @@
+## 2026-11-26 – R4 Rest: neue Bögen, Pult-Zeile Pferd, Stahlreiter (`b958ab7`, `f7fd848` mit index.html)
+
+Gepusht, R4 ist damit fertig.
+- **Hänger:** keine. Partietest ohne Fehler, Ton-Pult-Test 93/93, Regeltest ok, Bilder ohne Seitenfehler. Am Ende läuft kein Chrome mehr.
+- **sim:** 11 Läufe, alle nacheinander, **kein Absturz**.
+
+**1. Neue Bögen (Punkte 94/96):**
+- Sturmbrecher `aschenwacht_sturm_reskin` und Grabenräumer `konkordat_sturm_reskin` sind geschnitten. figure_cut liest jetzt auch aus `ui-quelle/figuren/reskin/`.
+- Der Sturmbrecher ist so groß wie bisher (1,1 SH), der Grabenräumer so groß wie die Linie.
+- Am MG ist das gemalte Mündungsfeuer entfernt; den Feuerstoß zeichnet das Spiel selbst.
+- Neu ist eine eigene Ruhe-Pose je Figur (FIGMAP `ruhe`):
+  - **Sturmbrecher:** 4× Granatwurf, 1× MG hüfthoch, 1× Spaten.
+  - **Grabenräumer:** 2× mit Schild vorstoßend, 1× Revolver hinter dem Schild, 2× Keule, 1× Granatwurf.
+- Posen der beiden Trupps:
+  - **Sturmbrecher:** Nahkampf und Wurf zeigen den Granatwurf, Graben den Spaten, Getroffen ist neu.
+  - **Grabenräumer:** Nahkampf zeigt die Keule, Wurf den Granatwurf, „Schilde vor“ das Vorstoßen mit Schild.
+  - **Grabenräumer, Getroffen:** Dafür gibt es noch keine neue Pose. Er nimmt die alte Getroffen-Figur (roter Mantel, ohne Panzer).
+- Allgemein: Trupps ohne eigene „bereit“-Pose zeigen in Ruhe jetzt wirklich ihre verschiedenen Figuren. Vorher zeigten alle die erste Figur. Das betrifft auch Reiter und Gasschutz.
+- Die Farbe ist wie gemalt. Der Sturmtrupp-Bogen ist von sich aus leicht rötlich, ich habe ihn nicht angeglichen.
+- Bilder: `entwurf/probe/r4/sturm_nachher.jpg`, `raeumer_nachher.jpg`, `reiter_nachher.jpg`.
+
+**2. Pult-Zeile „Angriff (Ruf des Pferds)“:**
+- Neuer eigener Spiel-Platz `pferd_angriff`, Standard `stahlreiter_wiehern1`. Er klingt beim eigenen Nahkampfangriff, auch nach einem Sturmlauf.
+- Im Pult steht die Zeile beim Reiter unter Nahkampf.
+- Ton-Spur für Reiter, Sturmbrecher und Grabenräumer neu gemessen.
+- Die Lanzenreiter-Wahlen gelten weiter für den Stahlreiter (gleicher Schlüssel `reiter`).
+
+**3. Punkt 97 Stahlreiter:**
+- **Regeln:**
+  - `reiter` heißt jetzt „Stahlreiter“: cav, 3 Modelle, Bewegung 4.
+  - Werte Angriff 5, Abwehr 3 (vorher 2), Moral 8 (vorher 7).
+  - **Leicht gepanzert:** Panzerklasse L wie die Stahlgänger, also Gewehr, MG und Klinge ×0,5, panzerbrechende Waffen ×1,5.
+  - Ansturm ×1,5, Sturmlauf, keine Fernwaffe. Kein Kampfmaschinen-Schalter nötig.
+- **Preis:** 50 (Lanzenreiter 30, Stahlgänger 65). Der alte Abgleich −10 ist weg.
+- **Stahlgänger:** nicht mehr im Nachschub und nicht mehr in der KI-Liste; der Typ bleibt im Code.
+- **Rückweg:** `REITER_ALT=1` (nur sim).
+- Texte, Chronik und Schlagworte sind neu.
+- **Bild:** 3 Posen (Trab, Galopp mit erhobenem Schwert, aufbäumend). Die Schwerter bleiben beim Schneiden ganz. Aufstellung 2 vorn, 1 hinten.
+- **Messung** (`MISCHEN=1`, je 100 Schlachten, Siegquote Konkordat):
+
+| Karte | Lanzenreiter | Stahlreiter | Schaden der Reiter je Schlacht | Verlust Reiter |
+|---|---|---|---|---|
+| Grauwall | 63 % | 67 % | 6 → 29 | 10 → 15 % |
+| Sankt Ruß | 72 % | 75 % | 13 → 41 | 18 → 30 % |
+| Krähenfurt | 87 % | 89 % | 8 → 23 | 16 → 21 % |
+
+Die Siegquote steigt um 2–4 Punkte, das liegt im Rauschen. Der Trupp richtet aber 3- bis 5-mal so viel Schaden an und nutzt den Sturmlauf 2–4× je Schlacht. Die Runden bleiben gleich.
+
+**Vorschlag „öfter zuschlagen“ (nicht eingebaut, nur Mess-Schalter `ZWEISCHLAG=typ`):**
+- Gemessen wurde ein zweiter Nahkampfschlag ×0,6, wenn der Gegner danach noch steht. Grauwall, sonst Sankt Ruß, `MISCHEN=1`, je 100 Schlachten.
+
+| Einheit | Schaden je Schlacht | Siegquote Konkordat (ohne → mit) |
+|---|---|---|
+| Stahlreiter (Grauwall) | 29 → 38 (+31 %) | 67 → 70 % |
+| Stahlreiter (Sankt Ruß) | 41 → 59 (+44 %) | 75 → 77 % |
+| Löwenoger | 20 → 29 (+45 %) | 67 → 67 % |
+| Grabenräumer | 53 → 88 (+66 %) | 67 → 73 % |
+| Sturmbrecher (Aschenwacht) | 67 → 86 (+28 %) | 67 → 71 % (Rauschen, eigentlich müsste es fallen) |
+
+- Mein Vorschlag:
+  - **Stahlreiter:** „zwei Schläge“ ×0,6, Preis +10 auf 60.
+  - **Löwenoger:** Prankenhieb zweimal, Preis +10.
+  - **Grabenräumer:** nicht. Er gewinnt am meisten und ist für 65 schon günstig.
+  - **Sturmbrecher:** nicht. Er hat schon den Gegenstoß.
+- Für die Anzeige bräuchte es noch einen zweiten Schlag im Nahkampfbild und eine Medaille bzw. ein Schlagwort.
+
+**Fragen an Enrico:**
+1. Stahlreiter: Soll **„MG gegen Reiter ×2“** auch für die gepanzerten Reiter gelten? Heute hebt sich das mit dem Panzer auf (MG trifft ×1). Ohne die Regel trifft das MG nur ×0,5.
+2. Preis 50 und Abwehr 3 so lassen (Feinabgleich U9)?
+3. „Zwei Schläge“ für Stahlreiter und Löwenoger wie vorgeschlagen einbauen?
+4. Grabenräumer-Getroffen: Soll der Berater eine Getroffen-Pose im neuen Stil malen? Heute steht dort die alte Figur.
+5. Soll der Sprenglanzen-Reiter der Aschenwacht auch die Zeile „Angriff (Ruf des Pferds)“ bekommen (mit einem normalen Pferdewiehern)?
+
 ## 2026-11-26 – R4 Regel-Paket, Zwischenstand: Schritte 0, 1 und 2 (Regeln) (`a7763bc`, `dabbae6`, `07dda01` mit index.html)
 
 Gepusht. **Zwischenstand nach Sparregel 5:** Schritt 2 ohne die neuen Bögen, Schritt 3 (Stahlreiter) noch nicht begonnen.
