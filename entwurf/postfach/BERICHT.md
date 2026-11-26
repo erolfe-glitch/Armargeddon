@@ -1,3 +1,96 @@
+## 2026-11-26 – U5a: Schaden über Modelle – Regeln und Messung (`9924675` mit index.html)
+
+Gepusht. U5 habe ich wie erlaubt geteilt: **U5a = Regeln und Messung** (dieser Teil), **U5b = Darstellung** (fallende, liegende Modelle) im nächsten `pa`.
+- **Hänger:** keine. Die Vorschau war nicht offen, kein Chrome blieb offen.
+- **Absturz beim Messen:** Parallel gestartete sim-Läufe sind unter Node 26 einige Male mit „Segmentation fault“ abgestürzt. Das ist auch der Grund für die leeren Zeilen in SP-2. Ich habe jeden fehlenden Lauf einzeln wiederholt; alle 36 Läufe sind vollständig.
+- Tests: `test_regeln`, `test_kommentare` und Partietest ohne Fehler.
+
+### Gemacht (Rückweg für alles: `MODELLSCHADEN_ALT`)
+1. **Modelle in den Regeln:** Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter und Helden zählen als 1 Modell, wie in der Anzeige seit R1. Ein Modell der Linie entspricht 12,5 Stärke.
+   - **Abweichung vom Bauplan:** Die Stärke bleibt stufenlos. Den Schaden auf ganze Modelle zu runden, habe ich verworfen, weil eine Gewehrsalve im Mittel nur 3,5 Stärke macht (gut ¼ Modell). Gerundet bliebe die meiste Salve ganz ohne Wirkung, und selten fiele gleich ein ganzer Mann.
+   - So ist es jetzt: Ein Modell fällt, wenn die Stärke unter seine Schwelle sinkt. Das Treffer-Ereignis meldet dafür, wie viele Modelle gefallen sind (`fall`); das braucht U5b.
+2. **Feuerkraft, zwei Fassungen** (Bild `entwurf/probe/u5a/feuerkraft.png`):
+   - **Fassung 1, weiche Stufen** (jetzt Standard): Stärke 100–70 voll, 69–40 → 75 %, unter 40 → 50 %. Die Übergänge sind weich, etwa ±3 Stärke.
+   - **Fassung 2, Waffenträger** (`KRAFT=traeger`, im Browser `window.KRAFT = 'traeger'`):
+     - Linie und Reiter: 50 % + 50 % × Anteil der stehenden Modelle.
+     - Spezialtrupps (3 Modelle): je gefallenem Schützen −15 %. Fällt der Waffenträger, bleiben nur noch 45 %. Wer fällt, wird gewürfelt; der Träger fällt mit der Chance 1 / stehende Modelle.
+   - Vorher galt 0,4 + 0,6 × Stärke.
+   - Das Info-Fenster zeigt unter der Rolle die Kurve und die Modellzahl.
+3. **Deckung stärker:**
+   - Beschuss auf ungedeckte Fußtruppen und Geschütze macht ×1,4 Schaden (`P.OFFEN_MUL`).
+   - Deckung über 1 wirkt um die Hälfte stärker (`P.DECK_STARK` 1,5): Graben 1,6 → 1,9, Bunker 2 → 2,5.
+   - Fahrzeuge und Schreiter sind davon ausgenommen.
+4. **Splitter:** Geschütze, Mörser, Minenwerfer, Flammenwerfer und die Löwenmaul-Kanone machen gegen Trupps im Offenen ×1,3 (`P.SPLITTER`).
+5. **Punkt 43:**
+   - Löwenmaul-Kanone gegen Fahrzeuge und Schreiter ×2,2 (`P.LOEWE_PZ`): gegen einen Sturmpanzer von vorn etwa 14 statt 6,5 Schaden, also im Zielbereich 12–18 der Prüfung.
+   - Furcht-Aura −10 statt −4 Moral je Runde (`P.FURCHT_MOR_U5`).
+6. **Pannen und Festfahren kürzer:** 1 Runde aus, mit 25 % Chance „schwer“ 2 Runden (vorher 3). Die Texte sind angepasst.
+7. **sim.js** zählt jetzt nach Bauplan 10a: Flucht, Panne und Festfahren je Schlacht, Anteil der Einheiten, die handeln, verdiente Nachschubpunkte nach Runde 5/10/15 und Schaden je Typ. Die Art des Sieges stand schon in der Zeile „Ausgang“.
+
+**Beispiele (Vorschau, Schaden ×10, vorher → jetzt):**
+
+| Schuss | vorher | jetzt |
+|---|---|---|
+| Kohorte → Grenadiere im Offenen | 3,5 | 4,9 |
+| Kohorte → Grenadiere im Graben | 2,2 | 1,8 |
+| Donnerrohr → Grenadiere im Offenen | 7,6 | 13,9 |
+| Donnerrohr → Grenadiere im Graben | 4,8 | 4,0 |
+
+Vorher war der Unterschied zwischen offen und Graben 1,6-fach, jetzt 2,7-fach (Artillerie 3,5-fach).
+
+### Messung (100 Schlachten, Startwerte 1 und 2; Siegquote Konkordat, Mittel)
+| Karte, Aufstellung | vorher | Fassung 1 Stufen | Fassung 2 Träger |
+|---|---|---|---|
+| Grauwall fest | 55 | 55,5 | 60,5 |
+| Grauwall gemischt | 54 | 53 | 53 |
+| Sankt Ruß fest | 57,5 | 47,5 | 47 |
+| Sankt Ruß gemischt | 67,5 | 74,5 | 73 |
+| Krähenfurt fest | 57,5 | 64 | 67,5 |
+| Krähenfurt gemischt | 92,5 | 85,5 | 82 |
+
+- **Ø Runden:** kaum verändert. Grauwall 15,0 → 14,8, Sankt Ruß 14,6 → 14,2, Krähenfurt 14,2 → 14,1 (fest; gemischt gleich).
+- **Art der Siege:**
+  - Grauwall endet immer über die Zielpunkte.
+  - Zusammenbruch auf Sankt Ruß (fest) vorher 20 %, Stufen 31 %, Träger 34 %.
+  - Zusammenbruch auf Krähenfurt vorher 3 %, Stufen 12 %, Träger 9 %.
+  - Die Schlachten entscheiden sich also öfter durch Zusammenbruch.
+- **Ausfälle Konkordat/Aschenwacht (Grauwall fest):** vorher 31/33 %, Stufen 28/35 %. Die Aschenwacht greift über offenes Feld an und verliert mehr.
+- **Flucht je Schlacht (Krähenfurt fest, Konkordat/Aschenwacht):** vorher 5,6/6,7, Stufen 6,3/8,5, Träger 6,1/9,1.
+- **Pannen** (Anzahl Ereignisse): gleich häufig, sie dauern nur kürzer (1–2 statt 3 Runden).
+- **Handeln:** 65–79 % der Einheiten handeln je Runde, in allen Fassungen gleich.
+- **Nachschubpunkte verdient (Grauwall, Konkordat/Aschenwacht):**
+
+  | Runde | vorher | Stufen |
+  |---|---|---|
+  | 5 | 80/89 | 81/89 |
+  | 10 | 181/185 | 182/163 |
+  | 15 | 304/303 | 326/294 |
+
+  Der Führende zieht nicht davon.
+- **Schaden je Typ und Schlacht (Grauwall, ×10), Spitze:**
+
+  | Typ | vorher | Stufen |
+  |---|---|---|
+  | Landkoloss | 187 | 218 |
+  | Grabengeschütz | 101 | 129 |
+  | Donnerrohr | 64 | 95 |
+  | Kohorten | 82 | 108 |
+  | Grenadiere | 146 | 124 |
+
+  Artillerie und Splitterwaffen zählen mehr, die angreifenden Grenadiere weniger.
+- **Fassungen im Vergleich:** Sie unterscheiden sich in der Siegquote um höchstens 5 Punkte, also unter der Messgenauigkeit (±10 bei 100 Schlachten). Die Fassungen selbst entscheiden das Spiel kaum; die Verschiebungen kommen von Deckung und Splitter.
+- **Wie fest und gemischt auseinanderlaufen:** Auf Sankt Ruß und Krähenfurt liegen feste und gemischte Aufstellung schon vorher 10–35 Punkte auseinander. Das ist ein Thema für U9.
+
+### Fragen an Enrico
+1. **Welche Feuerkraft?**
+   - Meine Empfehlung: **Fassung 1, weiche Stufen**. Sie ist im Info-Fenster in einem Satz erklärt („100–70 voll, 69–40 → 75 %, unter 40 → 50 %“), und kein Würfel entscheidet, wer zuerst fällt.
+   - Für Fassung 2 spricht: Fällt beim MG-Trupp der Schütze am MG, merkt man das deutlich, und das passt zu den fallenden Modellen in U5b.
+2. **Deckung (offen ×1,4, Deckung ×1,5 stärker) und Splitter (×1,3):** so lassen? Damit fallen die Schlachten öfter durch Zusammenbruch, und Sankt Ruß fest kippt etwas zur Aschenwacht (57,5 → 47,5 %).
+3. **Stärke stufenlos statt ganzer Modelle** (siehe Punkt 1): einverstanden?
+4. Den Abgleich der Karten würde ich wie vereinbart erst in U9 machen. Oder soll Sankt Ruß fest schon jetzt wieder nachgezogen werden?
+
+Nächster Schritt: **U5b** (Modelle fallen sichtbar und bleiben liegen, verblassen nach einigen Runden, mit Blut-Schalter; Bilder).
+
 ## 2026-11-26 – SP-3: Töne (84.3, 84.10), Pult-Export, Salve ruhiger (`0dbe5c3`, index.html im Folge-Commit)
 
 Gepusht. Alles lief ohne Hänger. Die Vorschau war nicht offen, kein Browser blieb offen, nur der Server läuft. Kein Hilfs-Agent, kein Lauf über 10 Minuten. Keine Regel geändert, deshalb kein sim-Lauf.
