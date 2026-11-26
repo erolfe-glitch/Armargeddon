@@ -1,3 +1,84 @@
+## 2026-11-26 – R4b (Punkt 106) und K1 Einheitenkategorien (Punkt 104) (`04f6b2f`, `431a645` mit index.html)
+
+Gepusht.
+- **Hänger:** keine. Partietest ohne Fehler, Ton-Pult-Test und Ton-Plätze ok, Regeltest ok.
+- **Vorschau:** zum Prüfen kurz offen, danach geschlossen.
+- **sim:** 9 Läufe, alle nacheinander, **kein Absturz**.
+
+### R4b
+1. **MG gegen Reiter ×2** gilt nicht mehr gegen die gepanzerten Stahlreiter. Das MG trifft sie jetzt ×0,5. Für die Sprenglanzen-Reiter bleibt die Regel.
+2. **Zwei Schläge** für Stahlreiter und Löwenoger:
+   - Steht der Gegner nach dem ersten Schlag noch, folgt ein zweiter ×0,6 (`P.ZWEISCHLAG`).
+   - Preis je +10: Stahlreiter 60, Löwenoger 115. Die Rechnung steht im Info-Fenster als „Zwei Schläge +10“.
+   - Schlagwort „Zwei Schläge“. Die Nahkampf-Medaille steigt dadurch auf Gold.
+   - Die Angriffs-Vorschau zeigt „dazu 2. Schlag ×0,6“.
+   - Im Bild holt der Trupp ein zweites Mal aus (Stahlreiter: aufbäumender Seitenhieb, Oger: Prankenhieb), mit dem Hiebton aus seiner Pult-Zeile „Schlag“.
+   - Sim-Abschalter `NOZWEISCHLAG`.
+   - **Messung** (`MISCHEN=1`, je 100 Schlachten), Konkordat ohne → mit zwei Schlägen:
+     - Grauwall 67 → 67 %
+     - Sankt Ruß 75 → 75 %
+     - Krähenfurt 89 → 91 %
+     - Schaden der Stahlreiter etwa +30 %, des Ogers etwa +25 %.
+3. **Stahlreiter-Bogen neu (Punkt 4):** Bis zum Paketende lag noch der alte Bogen (17:50), deshalb übersprungen. Auch „weniger grell“ mache ich mit dem neuen Bogen.
+4. **Sturmbrecher in Ruhe:** 2× MG hüfthoch, 3× Spaten (die ruhigste Pose), 1× Granatwurf. Im Nahkampf schlägt er jetzt mit dem Spaten. Die Wurf-Pose kommt nur noch beim Wurf.
+5. **Grabenräumer-Getroffen (Punkt 6):** Das Bild ist noch nicht da, bis dahin bleibt die alte Figur.
+
+### K1 Einheitenkategorien
+- **Kategorie je Einheit:**
+
+| Kategorie | Einheiten |
+|---|---|
+| Linie | Schützenkohorte, Aschengrenadiere |
+| Unterstützung | alle übrigen Trupps: MG, Mörser, Minenwerfer, Pioniere, Sanitäter, Signal/Fernsprech, Melder, Flammen, Scharfschützen, Pirschjäger, Panzerbüchse, Bannerträger, Gasschutz, Mineure, Versorgung, Sprenglanzen-Reiter |
+| Elite | Stahlreiter, Grabenräumer, Sturmbrecher, Löwenoger, Schwere Grabenwacht, Hünen, Panzerknechte |
+| Gerät | Feldkanone, Haubitze, Geschütz, Landkoloss, Sturmpanzer, Ballon, Kampfmaschinen-Schreiter (Turm, Orden, Bohr, Säge, Klaue) |
+| Selten | General, Hauptmann, Stufe-3-Schreiter, Helden |
+
+- **Grenzen** (in P, Rückweg `KAT_ALT`):
+  - Linie mindestens ein Drittel der Trupps; Anführer und Helden zählen dabei nicht mit.
+  - Unterstützung 1 Platz je 2 Linientrupps.
+  - Elite und Gerät je höchstens 3.
+  - Selten wie bisher: General genau 1, Hauptmann bis 3, Stufe 3 und Held je 1.
+  - Die Grenzen gelten in der Armee-Auswahl und im Nachschub. Gezählt werden die lebenden Einheiten im Feld.
+- **Anzeige:**
+  - Kleines Schild auf jeder Karte, vor der Rollenzeile.
+  - Leiste „Linie 9 · Unterstützung 4/4 · Elite 2/3 · Gerät 3/3“ rechts in der Armee-Auswahl und oben im Nachschub. Volle Kategorien sind rot.
+  - Gesperrte Karten sagen, warum, z. B. „Unterstützung voll (4/4): je 2 Linientrupps ein Platz“.
+  - Bilder: `entwurf/probe/k1/armee_1920.jpg`, `armee_1280.jpg`, `nachschub_1280.jpg`.
+- **Kartenarmeen:**
+  - Die alten Armeen verletzten die Grenzen deutlich (z. B. Grauwall-Konkordat: 5 Linie, 7 Unterstützung, 4 Gerät). Neu aufgestellt, Budget = Wert der alten Armee (alte Armee bleibt als `armyAlt`):
+    - **Konkordat Grauwall (945 von 945):** 9 Kohorten, 2 Mahlwerk, Mörser, Pioniere, 2 Landkolosse, 1 Haubitze, Stahlreiter, Grabenräumer, General, Hauptmann. Weggefallen: Scharfschützen, Sanitäter, Flammen, 1 Haubitze.
+    - **Konkordat Sankt Ruß (985/990) und Krähenfurt (1020/1025):** wie oben mit 10 Kohorten, in Krähenfurt 3 Mahlwerk.
+    - **Aschenwacht Grauwall (875/885):** 10 Grenadiere, 2 Sensenwerke, Minenwerfer, Signaltrupp, 2 Geschütze, Sturmpanzer, Sturmbrecher, General, Hauptmann. Weggefallen: Gasschutz, Banner, 1 Sensenwerk, Sanitäter.
+    - **Aschenwacht Sankt Ruß und Krähenfurt (945/960):** 10 Grenadiere, 2 Pioniere, 2 Sensenwerke, 1 Geschütz, 2 Sturmpanzer, Sturmbrecher, General, Hauptmann.
+  - Die Regel „höchstens 5 vom selben Typ“ (F94) passt nicht mehr zur Rückgrat-Regel und gilt für die Linie nicht mehr.
+- **KI:** Ist der nächste Wunsch durch eine Grenze gesperrt, kauft sie erst Linie. Der Wunsch bleibt stehen.
+- **Messung** (`MISCHEN=1`, je 100 Schlachten, vorher = `KAT_ALT`):
+
+| Karte | Konkordat vorher | nachher | Runden | Ausfälle Konkordat / Aschenwacht nachher |
+|---|---|---|---|---|
+| Grauwall | 67 % | **51 %** | 14,7 → 15,2 | 30 / 28 % (vorher 31 / 42 %) |
+| Sankt Ruß | 75 % | **50 %** | 13,1 → 13,9 | 44 / 29 % (vorher 40 / 46 %) |
+| Krähenfurt | 91 % | 90 % | 12,8 → 13,4 | 31 / 25 % (vorher 38 / 38 %) |
+
+- **Verluste je Kategorie** (nachher):
+  - Linie 29–41 % (vorher 57–71 %, aber jetzt fast dreimal so viele Linientrupps je Schlacht, inklusive Nachschub).
+  - Unterstützung 26–32 %, Gerät 27–31 %.
+  - **Elite 48–51 %.**
+- **Vorschlag Elite:**
+  - Elite stirbt am häufigsten (rund jeder zweite Trupp) und ist auf 3 begrenzt.
+  - Ich schlage vor, Elite je Punkt etwa 10 % günstiger zu machen (Abgleich −5 bis −10 je Typ) und das einzeln zu messen.
+  - Erst nach deiner Antwort.
+
+**Fragen an Enrico:**
+1. **Zweifelsfälle bei der Zuordnung:**
+   - Hauptmann unter „Selten“ (zählt nicht gegen die Linie, bis 3 wie bisher)?
+   - Sprenglanzen-Reiter unter „Unterstützung“ (nicht Elite, weil leicht und billig)?
+   - Pirschjäger und Scharfschützen unter „Unterstützung“?
+   - Ballon unter „Gerät“?
+2. Krähenfurt bleibt bei 90 %. Das prüfe ich als Nächstes im Krähenfurt-Check (Punkt 105). Passt das so?
+3. Elite ~10 % günstiger messen?
+4. Sollen die neuen Kartenarmeen so bleiben? Grauwall und Sankt Ruß liegen damit fast genau bei 50 %.
 ## 2026-11-26 – R4 Rest: neue Bögen, Pult-Zeile Pferd, Stahlreiter (`b958ab7`, `f7fd848` mit index.html)
 
 Gepusht, R4 ist damit fertig.
