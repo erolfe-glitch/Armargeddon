@@ -257,7 +257,7 @@ HELDEN = {
  'K': ('faust', 5, {
    'auswahl': ['The Fist is ready.', 'Speak.', 'Point me at them.', "Steam's up."],
    'bewegen': ['Moving.', 'Clear the way.', 'On my way.', 'Forward.'],
-   'angriff': ['Down you go.', 'Break!', 'Hit them hard.'],
+   'angriff': ['Down you go.', 'Break!', 'Push forward.'],   # V3: „Hit them hard.“ war bei fal gesperrt, gesprochen ist „Push forward.“
    'spezial': ['Through them!', 'Breaking through!', 'Out of my way!'],
    'getroffen': ['Hit.', 'Barely felt it.', 'Plating holds.'],
    'gegner_erledigt': ['One less.', "That's done.", 'Next.'],

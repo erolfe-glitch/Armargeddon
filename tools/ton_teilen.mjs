@@ -32,7 +32,7 @@ for (const k of Object.keys(SND)) if (lit.has(k)) keys.add(k);   // direkt im Co
 const spielK = Object.keys(SND).filter(k => keys.has(k)), pultK = Object.keys(SND).filter(k => !keys.has(k));
 const spielP = Object.fromEntries(Object.entries(POOLS).filter(([p]) => benutzt.has(p))), pultP = Object.fromEntries(Object.entries(POOLS).filter(([p]) => !benutzt.has(p)));
 const kb = ks => Math.round(ks.reduce((n, k) => n + SND[k].length, 0) / 1024);
-writeFileSync(FS, [head.trimEnd(), '// Spieltöne. Nur im Ton-Pult/in der Tonprobe wählbare Töne liegen in src/sound_pult.js (tools/ton_teilen.mjs, M9 2026-11-22).',
+writeFileSync(FS, [head.split(/\r?\n/).filter(l => !l.startsWith('// Spieltöne. Nur im Ton-Pult')).join('\n').trimEnd(), '// Spieltöne. Nur im Ton-Pult/in der Tonprobe wählbare Töne liegen in src/sound_pult.js (tools/ton_teilen.mjs, M9 2026-11-22).',
   '(function (root) {', "'use strict';", 'root.SOUNDS = Object.assign(root.SOUNDS || {}, {', ...spielK.map(k => `  ${k}: '${SND[k]}',`), '});', 'root.SOUND_POOLS = Object.assign(root.SOUND_POOLS || {}, ' + JSON.stringify(spielP) + ');', '})(this);', ''].join('\n'));
 writeFileSync(FP, ['// ===== ARMARGEDDON TÖNE NUR FÜR TON-PULT UND TONPROBE =====', '// Erzeugt mit tools/ton_teilen.mjs aus src/sound.js: Töne und Plätze, die das Spiel nicht abspielt. Nach src/sound.js laden.',
   '(function (root) {', "'use strict';", 'root.SOUNDS = root.SOUNDS || {}; root.SOUND_POOLS = root.SOUND_POOLS || {};', 'Object.assign(root.SOUNDS, {', ...pultK.map(k => `  ${k}: '${SND[k]}',`), '});',
