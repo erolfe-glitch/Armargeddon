@@ -93,8 +93,12 @@
 - ✓ **Fix F1 (Punkt 127):** Nachschub-Menü verdeckt – im nächsten `pa` mit erledigen.
 - ✓ **Paket U7 Moral (Abschnitt 27.11. 16:10, Punkt 125)** – nach W1, drei Schritte mit Messung.
 - ✓ **Fix F2 (Punkt 130)** mit U7 Schritt 3 erledigt (`3a3a2a8`, `b06ebb9`). 5b (Größe der Führung) fehlt → F2b.
-- ✓ **Paket F2b (Abschnitt 27.11. 19:35, Punkt 133)** – nächster `pa`, klein: Größe der Führung (5b) und Fahne kräftiger.
-- **Fable-Prüfrunde U7 (Punkt 133)** – nach F2b, eigene Sitzung, Auftrag `PRUEFAUFTRAG_FABLE_U7.md`. Danach ggf. U7b (Nachbesserung).
+- ✓ **Paket F2b (Abschnitt 27.11. 19:35, Punkt 133)** erledigt (`ffcd417`).
+- ✓ **Fable-Prüfrunde U7 (Punkt 133/134)** erledigt (`PRUEFUNG_FABLE_U7.md`): U7 bleibt, Nachbesserung U7b.
+- **Paket F3 + U7b Teil 1 (Abschnitte 27.11. 20:10 und 20:25, Punkte 135/136)** – nächster `pa`, Sonnet Mittel: Turm-MG und Moral-Anzeige.
+- **Paket U7b Teil 2 (Abschnitt 27.11. 20:25, Punkt 136)** – `pa` danach, Opus Hoch: KI, kleine Regelstellen, Zurückweichen, Halten, Rand, Probe-Messung Panik.
+- **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
+- **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 → S → P → U9.
 - **Paket UI1 Oberfläche (Punkt 128)** – nach U7; vorher Entwürfe vom Berater.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
@@ -122,6 +126,57 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 
 **Bilder:** Vorher/nachher als je eine Übersicht wie bei F2 (`entwurf/probe/f2b/`), dazu ein kurzes Video. Partietest einmal. Am Ende Vorschau bzw. Chrome schließen.
 
+# >>> JETZT (Enrico 2026-11-27 20:25): Antwort zur Fable-Prüfung U7 – Paket U7b in zwei Teilen <<<
+**136. Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_U7.md`**, Abschnitt 6 (Paket U7b) und die Fehler-Nummern aus Abschnitt 2. U7 bleibt wie gebaut.
+
+**Enricos Antworten auf die Fragen der Prüfung:**
+1. **Zurückweichen im Offenen:** Ja. Der Treffer, der unter die Schwelle drückt, wirft den Trupp ein Feld zurück. Am neuen Feld darf er dann niedergehalten liegen (U7b Nr. 6).
+2. **Panik statt „zerschlagen“ unter Beschuss:** Erst nur messen (U7b Nr. 7, Probelauf mit `P_MOR_PER_DMG=1`, 3 Karten × 1 Startwert). Nichts einbauen. Die Ergebnisse kommen in den Bericht, Enrico entscheidet danach.
+3. **Halten um jeden Preis und aufgepflanztes Banner:** Ja, sie verhindern auch das Zurückweichen (U7b Nr. 5).
+4. **Am eigenen Rand:** Ja. Erst den Sammelversuch würfeln, dann ist der Trupp fort (Fehler 6).
+
+✓ **Teil 1 – im nächsten `pa` zusammen mit F3 (Punkt 135). Einstellung: Sonnet, Mittel.** Nur Anzeige, keine Regel:
+- U7b Nr. 1 (Fehler 1, 2, 13): Anzeige einheitlich über `E.moralStufe`. Dazu gehören die Marke „Weicht“ mit der Schwelle aus `fallbackSchwelle`, der Balken der Einheitenkarte gelb bei *wankt* und kein Flackern oder „weicht“-Tooltip bei Geschützen.
+- U7b Nr. 2 (Fehler 3, 14, 15):
+  - Marke „Flieht“ mit zwei Texten (zerschlagen / Panik mit Sammel-Chance zu Rundenbeginn).
+  - Balken-Tooltip mit den Schwellen der Einheit (z. B. „wankt unter 42, weicht unter 30, im Graben unter 20“).
+  - Info-Fenster: Moral ×10.
+  - Regeln-Fenster: „Moral und Flucht“ als Leiter mit vier Zeilen (*wankt*, *weicht*, *Panik*, *zerschlagen*), Sammeln als kurze Liste, „eingegraben“ ergänzen.
+- **Bilder:** Je ein Bild von Marke, Einheitenkarte und Regeln-Fenster. Den Partietest einmal laufen lassen. Dann Bericht und aufhören.
+
+**Teil 2 – eigener `pa` danach. Einstellung: Opus, Hoch** (Regeln und KI mit Messung):
+- U7b Nr. 3 (Fehler 4, 9):
+  - KI beschießt Zerschlagene nicht mehr (`W_ZERSCHLAGEN` 0,3).
+  - Schwellen aus `P` und `fallbackSchwelle` statt fester Zahlen.
+  - `W_SAMMEL` nach Stufe *wankt*.
+  - Dazu die Lücke aus Abschnitt 5: Die KI zieht eigene wankende Trupps aus dem Offenen in Deckung.
+  - Den Sammeln-Befehl auch nach dem Ziehen prüfen.
+- U7b Nr. 4 (Fehler 6, 8, 10, 11, 12):
+  - Am Rand erst würfeln.
+  - Ein Panik-Trupp unter 15 Stärke wird zerschlagen (Punkte gutschreiben).
+  - Ein MG baut auf der Flucht ab.
+  - Eine gemeinsame Deckungs-Funktion (Haus, Kapelle und Mühle erholen sich mit 10).
+  - Wankt ×0,85 auch in `shellDmg`.
+- U7b Nr. 5 (Antwort 3) und Nr. 6 (Antwort 1), je mit eigenem Rückweg-Schalter.
+- **Messung:** Nach Nr. 3, Nr. 4 und Nr. 5/6 je kurz (MISCHEN=1, 3 Karten, Läufe unter 10 Minuten). Am Ende ein voller Lauf mit `u7_messen.mjs`. Die Siegquoten sollen in der Streuung ±4 bleiben, sonst nachfragen.
+- **Zusätzlich nur messen:** U7b Nr. 7 (Antwort 2), nichts einbauen.
+- Regeltest, Partietest und Video wie üblich.
+
+# >>> JETZT (Enrico 2026-11-27 20:10): Fix F3 – Turm-MG am Sturmpanzer der Aschenwacht, erst NACH der Fable-Prüfung U7 <<<
+✓ **135. Nächster `pa` = Paket F3, klein. Erst starten, wenn die Fable-Prüfung U7 fertig ist (nie zwei Browser-Läufe gleichzeitig). Einstellung: Sonnet, Mittel.**
+1. **Turm-MG des Sturmpanzers der Aschenwacht** (Bogen `aschenwacht_panzer_neu`, Zweitwaffe, `MUZ2`):
+   - **Fehler:** Mündungsfeuer und Leuchtspur kommen über dem MG-Schützen auf dem Turm heraus, nicht aus dem Lauf (Enrico 20:05).
+   - **Fix:** Den Mündungspunkt genau auf die Laufspitze des Turm-MGs setzen, und zwar für beide Blickrichtungen (gespiegelt) und auf allen Zoomstufen.
+   - **Prüfen:** Rechnet `fuss`/`fuss2` den Punkt in der gekippten Ansicht nach oben?
+2. **Kurz mitprüfen:** Sitzen die anderen Mündungen (`MUZ`/`MUZ2`) an Panzern, Kolossen und Schreitern ebenfalls an der Laufspitze? Abweichungen gleich mit beheben und im Bericht als Liste aufführen.
+3. **Bilder:** Vorher/nachher je ein Standbild im Moment des Schusses (Turm-MG plus die übrigen, falls geändert). Den Partietest einmal laufen lassen.
+
+# >>> JETZT (Enrico 2026-11-27 20:05): Antwort zu F2b – kein neuer `pa`, jetzt Fable-Prüfrunde U7 <<<
+**134. F2b ist abgenommen.**
+1. **Größe der Führung:** So lassen, also stehende Männer etwa 8 % über dem geduckten Liniensoldaten und den Offizier etwas darüber.
+2. **MG-Trupps und Panzerbüchse** (10–12 % größer): So lassen.
+3. **Nächstes:** Die Fable-Prüfrunde U7 läuft in einer eigenen Sitzung nach `PRUEFAUFTRAG_FABLE_U7.md` und wird nicht über `pa` gestartet. Bis das Ergebnis da ist, gibt es **keinen neuen `pa`** (danach F3, Punkt 135). Danach kommt UI1, vorher zeigt der Berater Entwürfe.
+
 # >>> NOTIZ (Enrico 2026-11-27 19:25): Alles in einem Zeichenstil – Paket W2, erst NACH U7 <<<
 **132. Nur vormerken, vor dem Ende von U7 nichts davon anfassen.** Enrico: Die große neue Mühle gefällt ihm im Stil sehr, aber Bäume und anderes sehen auf anderen Karten ganz anders aus. Er will nicht alles nochmal von Hand neu machen, sondern einen Weg, der **schneller und günstiger ist, aber genauso gut oder besser** aussieht. Neue Modelle und Karten dauern bisher zu lange und wirken „zusammengestückelt“.
 
@@ -143,6 +198,7 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **Lernbilder für ein späteres Figuren-LoRA** liegen schon bereit: 24 Einzelfiguren in `entwurf/lora_figuren/` (`LIESMICH.md`, `uebersicht.jpg`). Angelernt wird erst nach W2a und Enricos Freigabe.
 - **Zu flach („Pappschild“):** die stehenden Melder (`*_melder_steht`) und Fahrzeuge/Kolosse. Sie sollen **leicht plastisch** wirken: mehr Volumen, Licht und Schatten, aber nicht 3D. Für W2b/W2c vormerken. In F2b bleibt der Melder vorerst drin.
 - **Neu zeichnen im Zielstil (Liste, W2):** Panzerbüchsen-Trupp Aschenwacht (Enrico 19:52, Bild aus dem Spiel). Die Figuren haben den alten schlanken Stil, die Büchse liegt einzeln und riesig vor dem Schützen. Neu soll der liegende Schütze die Waffe selbst halten, in passender Größe. Dazu kommen alle Bögen, die noch nicht im Zielstil sind (Liste stellt der Berater vor W2b auf).
+- **MG-Trupp im Graben (Enrico 20:05, Bild aus dem Spiel, Konkordat):** In einem Graben, der in die Tiefe läuft, steht das MG allein oben, der Schütze kniet weit darunter. Vermutlich verteilen die Grabenplätze (`grabenPlaetze`/Zickzack) die Teile der Gruppe einzeln. Für W2 vormerken: Waffentrupps als **ein Stück** (Schütze an der Waffe) zeichnen und im Graben als Gruppe zusammenhalten. Ursache dann mitprüfen. Jetzt nichts ändern.
 - **Lernpaket Figuren:** Es sind jetzt 28 Bilder (dazu 4 Blaue Legion, Hahn übermalt), siehe `entwurf/lora_figuren/LIESMICH.md`.
 
 **Danach (erst nach Enricos Blick, Plan steht hier nur zur Info):**
@@ -150,6 +206,28 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> NOTIZ (Enrico 2026-11-27 20:30): Mini-Kampagne mit Tutorial – Plan zusammen mit dem Kommandanten-Plan <<<
+**137. Nur vormerken, nicht bauen.**
+- **Warum:** Ohne Kampagne läuft das Balancing in zwei Richtungen. Einzelschlachten haben ein festes Budget, eine Kampagne hat Verluste, Erfahrung und Einkommen. Die Begrenzung starker Einheiten, Helden, Kommandanten und Kategorien soll sich nach der Kampagne richten.
+- **Umfang der ersten Mini-Kampagne:** eine Hauptstadt, 2 eigene Provinzen, 1 feindliche Provinz auf einer kleinen Karte, etwa 3–5 Schlachten bis zum Sieg.
+- **Zwischen den Schlachten bleibt erhalten:**
+  - die Armee mit ihren Verlusten (Überlebende bleiben, Gefallene fehlen),
+  - Erfahrung bzw. Veteranen,
+  - der Aufstieg von Kommandant und Held (Fähigkeiten freischalten, siehe Punkt 131),
+  - das Einkommen aus den Provinzen,
+  - **Forschung** (Enricos Frage, im Plan ausarbeiten: z. B. starke Einheiten erst über Forschung freischalten, als Ersatz oder Ergänzung zum Seltenheits-Aufschlag).
+- **Tutorial:** Die erste Schlacht wird erklärt, mit kurzen Hinweisen beim ersten Mal (Ziehen, Schießen, Deckung, Moral).
+- **Vorbild für die Abläufe (Enrico 20:19):** Die Kampagnenschicht großer Strategiespiele wie Total War: Warhammer 3. Übernommen werden nur Abläufe, keine Namen, Bilder oder Begriffe. Im Plan prüfen:
+  - **Auffüllen:** Angeschlagene Trupps füllen sich zwischen den Schlachten um einen Anteil je Runde auf, im eigenen Land mehr, im Feindland weniger und nach Gewaltmarsch gar nicht. Gefallene Trupps sind weg.
+  - **Erfahrung:** Ränge je Trupp, die bleiben, solange der Trupp nicht ganz fällt. Nachgefüllte Männer verwässern den Rang etwas.
+  - **Kommandant:** Er führt die Armee, steigt in Stufen auf und hat einen kleinen Fähigkeitenbaum. Die Armeegröße ist an ihn gebunden.
+  - **Unterhalt:** Jeder Trupp kostet je Runde Sold. Starke Einheiten kosten mehr, und eine zweite Armee macht alles teurer. Das ist eine natürliche Bremse für krasse Einheiten.
+  - **Ausheben:** nur in eigenen Provinzen bzw. der Hauptstadt, mit Gebäuden für bestimmte Einheitenarten. Gerät und Elite brauchen ein Gebäude oder Forschung.
+  - **Forschung:** schaltet Einheiten, Verbesserungen und Fähigkeiten frei.
+  - **Nach der Schlacht:** Verwundete kehren teilweise zurück, und es gibt Beute bzw. Punkte.
+
+- **Plan:** Der Berater schreibt `entwurf/KAMPAGNE_PLAN.md` **zusammen mit** `entwurf/KOMMANDANTEN_PLAN.md`, also nach U7b und UI1 und vor U8. Grundlage: `entwurf/ARMEEAUFBAU_IDEEN.md` (dort steht schon eine Notiz zu Armeeaufbau und Kampagne). Enrico nickt den Plan ab, erst danach wird gebaut.
 
 # >>> NOTIZ (Berater 2026-11-27 18:45): Kommandanten- und Heldensystem – nach U7 und UI1, vor U8 <<<
 **131. Nur vormerken, nicht bauen.** Enrico wünscht ein System wie bei Total War: **Kommandant** = mächtige Einzelfigur, die die Armee führt und richtig mitkämpft (3 Klassen je Seite, dazu **legendäre Kommandanten**), plus **Helden** als besondere Einzelfiguren (Rote Faust, Eiserner Kürassier und später weitere). Die jetzigen Führungstrupps (Offizier mit Stab + Fahnenträger + Melder) wirken „wischiwaschi“, Rolle unklar, kämpfen nicht. Der Berater schreibt nach U7 und UI1 einen Plan zum Abnicken (`entwurf/KOMMANDANTEN_PLAN.md`); Skizze steht in `entwurf/ARMEEAUFBAU_IDEEN.md` Abschnitt 6.

@@ -1,3 +1,51 @@
+## 2026-11-27 – Fix F3 (Punkt 135) und U7b Teil 1 (Punkt 136)
+
+Gepusht:
+- `ca55c0a`: U7b Teil 1 (nur Anzeige)
+- `2d77fef`: F3
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung. Keine Regel geändert, deshalb keine neue Messung.
+- **Video:** `entwurf/probe/video/F3_U7b1.mp4` (Grauwall, 25,3 s, mit Ton).
+- **Panne unterwegs:** `src/index.html` hat gemischte Zeilenenden. Mein erstes Skript hat deshalb statt einer Zeile einen ganzen Block ersetzt. Das fiel beim Bauen sofort auf (295 KB statt 29 MB). Ich habe die Datei vor jedem Commit wiederhergestellt und nur die eine Zeile ersetzt.
+
+**U7b Teil 1 – Anzeige (Fehler 1, 2, 3, 13, 14, 15):**
+- **Eine Quelle:** Marke, Balken auf Karte und Einheitenkarte und Tooltip rechnen jetzt alle wie die Regeln (`E.moralStufe`).
+- **Marke „Weicht“** (vorher „Moral wankt“): Sie nennt die Schwelle, die für den Standort gilt (30, in Deckung 20).
+- **Einheitenkarte:** Der Balken ist bei *wankt* gelb und bei *weicht* rot. Geschütze flackern nicht mehr und werden nie als „weicht“ gemeldet.
+- **Marke „Flieht“** hat zwei Texte:
+  - zerschlagen: „Reste ziehen ab und kommen nicht wieder“,
+  - Panik: Sammel-Chance zu Beginn der nächsten Runde.
+- **Balken-Tooltip:** zum Beispiel „wankt unter 42, weicht unter 30 (in Deckung unter 20)“.
+- **Info-Fenster:** Moral jetzt „70“ statt „7“.
+- **Regeln-Fenster:** „Moral und Flucht“ als Leiter (wankt, weicht, Panik, zerschlagen), Sammeln als kurze Liste, „eingegraben“ ergänzt.
+- **Bilder:** `entwurf/probe/u7b/1_marke_weicht.jpg`, `2_karte_wankt.jpg`, `3_regeln.jpg`.
+
+**F3 – Turm-MG am Sturmpanzer:**
+- **Ursache:** Der Mündungspunkt saß schon richtig auf der Laufspitze, in beiden Blickrichtungen. `fuss`/`fuss2` rechnen ihn auch richtig um. Der Fehler war die **Leuchtspur**: Ihr Kopf startete an der Mündung, und ihre volle Länge ragte sofort nach hinten, quer über den MG-Schützen.
+- **Fix:** Die Spur wird erst mit dem zurückgelegten Weg lang und reicht nie hinter die Mündung. Das gilt für alle Leuchtspuren. Rückweg `window.SPUR_ALT`.
+- **Bilder:** `entwurf/probe/f3/turm_mg_vorher_spur_ueber_schuetzen.jpg` (Fehlerbild, Spalte rechts) und `entwurf/probe/f3/turm_mg_nachher.jpg`.
+
+**Übrige Mündungen** (`entwurf/probe/f3/vorher_punkte.jpg`, `andere_punkte_vorher.jpg`, `andere_punkte_nachher.jpg`, der berechnete Punkt ist rot):
+
+| Waffe | Befund | geändert |
+|---|---|---|
+| Sturmpanzer Bugkanone und Turm-MG, Landkoloss Kanone, Kreuzschreiter Löwenmaul, Eisenknecht Kanone | passt | nein |
+| Turmschreiter **Turm-MG** | schoss aus der Hauptkanone (eine Sonderregel überging den Messwert) | ja, jetzt aus dem MG an der Brust |
+| Turmschreiter Kanone | etwas zu hoch | ja |
+| Ordensschreiter | über und hinter dem Lauf | ja |
+| Säge- und Klauenschreiter | mitten im gemalten Feuer statt am Lauf | ja |
+| Landkoloss **Seiten-MG** | aus der glatten Bordwand | ja, aus dem seitlichen Erker (Ziel hinten: hinteres MG) |
+| Kreuzschreiter **Unterarm-Kanone** | in der Luft neben den Schornsteinen | ja |
+
+- Die Faustsalve des Eisenknechts hat einen eigenen Weg ohne `MUZ`; die habe ich nicht geprüft.
+- Den Schuss des Landkolosses nach hinten habe ich nicht im Bild geprüft.
+
+**Fragen an Enrico:**
+1. Beim Turmschreiter habe ich als „Turm-MG“ das kleine MG vorn an der Brust genommen, nicht das große, tief hängende MG am Arm. Ist das richtig?
+
 ## 2026-11-27 – Paket F2b (Punkt 133): Größe der Führung, Fahne kräftiger
 
 Gepusht:
