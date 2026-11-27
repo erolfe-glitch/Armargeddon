@@ -54,7 +54,7 @@ function moralZaehlen(G, ev, flucht, ents) {   // flucht: Set der fliehenden Ein
     else if ((e.t === 'destroyed' || e.t === 'dead') && flucht.has(z.id)) { m7(sd, 'vernichtet auf der Flucht'); flucht.delete(z.id); } } }
 function moralRunde(G) {   // zu Beginn der Runde von G.side: Moralstufen der Fußtruppen, Niedergehaltene, Fliehende und ob eine Sammel-Chance besteht
   const sd = G.side; for (const u of G.units) { if (u.side !== sd) continue; const T = E.TYPES[u.type];
-    if (u.status === 'ok' && !['walker', 'art'].includes(T.cls)) { m7(sd, 'Rundenanfänge Fußtruppen'); m7(sd, u.mor >= 6 ? 'Moral ≥ 60 %' : u.mor >= 3.5 ? 'Moral 35–60 %' : 'Moral < 35 %'); if (u.supp > 0) m7(sd, 'niedergehalten zu Rundenbeginn'); }
+    if (u.status === 'ok' && !['walker', 'art'].includes(T.cls)) { m7(sd, 'Rundenanfänge Fußtruppen'); m7(sd, u.mor >= 6 ? 'Moral ≥ 60 %' : u.mor >= 3.5 ? 'Moral 35–60 %' : 'Moral < 35 %'); if (u.supp > 0) m7(sd, 'niedergehalten zu Rundenbeginn'); if (E.moralStufe) m7(sd, 'Stufe ' + E.moralStufe(G, u) + ' zu Rundenbeginn'); }
     if (u.status === 'rout') { m7(sd, 'Rundenanfänge auf der Flucht'); const off = G.units.some(o => o.officer && o.side === sd && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= E.P.OFFICER_RANGE);
       if (E.fluchtAlt() ? off && !E.adjEnemies(G, u).length && u.str >= E.P.ROUT_STR : E.sammelChance(G, u) > 0) m7(sd, 'Sammel-Chance bestand'); } } }   // U7 Schritt 2: neue Sammel-Chance
 const U5 = { flucht: { A: 0, D: 0 }, panne: { A: 0, D: 0 }, fest: { A: 0, D: 0 }, schaden: {}, handelt: { A: 0, D: 0 }, da: { A: 0, D: 0 }, verdient: { A: {}, D: {} } };   // U5a-Zähler (Bauplan 10a)

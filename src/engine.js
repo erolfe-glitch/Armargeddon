@@ -7,6 +7,7 @@
 const P = {
   DMG: 0.61,
   RALLY_ALLEIN: 0.2, RALLY_DECKUNG: 0.15, RALLY_BANNER: 0.2, RALLY_GENERAL: 0.8, RALLY_MUEDE: 0.15, RALLY_MAX: 0.9, RALLY_MOR: 3.5, FLUCHT_BP: 2, SAMMELN_R: 2, SAMMELN_R_GENERAL: 3, SAMMELN_BEFEHL: 0.2,   // U7 Schritt 2 (Punkt 125): Sammeln für alle Fliehenden (sammelChance), langsamere Flucht, Befehl „Sammeln“ auf Fliehende
+  WANKT: 0.6, WANKT_ATK: 0.85, SUPP_WANKT: 0.3, RECOVER_SUPP: 0.5, FALLBACK_DECKUNG: 2,   // U7 Schritt 3 (Punkt 125): Moral in Stufen (moralStufe) – wankt unter WANKT × Typmoral: Kampf ×WANKT_ATK, niedergehalten ab SUPP_WANKT; Niedergehaltene erholen sich in Deckung halb; in Graben/Bunker/Gebäude weicht erst unter FALLBACK_DECKUNG
   FURCHT_BASIS: 0.35, ROAR_BASIS: 0.5, ROAR_BESTANDEN: 0.5,   // U7 Schritt 1 (Punkt 125/45b, 2026-11-27): Furcht-Aura und Löwengebrüll über den Entsetzenstest (Grundwerte), bestanden beim Gebrüll nur −ROAR_BESTANDEN Moral
   ROAR_R: 2, ROAR_MOR: 2,   // Löwengebrüll des Kreuzschreiters (2026-11-20): einmal je Schlacht, kostet nichts; Gegner ohne Panzerung bis ROAR_R Felder: Moral −ROAR_MOR, niedergehalten bis zum Ende ihrer nächsten Runde
   FAUST_MUL: 2,
@@ -1212,6 +1213,12 @@ const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlw
   pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 1, banner: 2,   /* Punkt 99: Hund ist Beiwerk */
   hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, ...(TOG.REITER_ALT ? {} : { reiter: 3 }), stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
 const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
+const stufenAlt = () => !!(TOG.STUFEN_ALT || (typeof window !== 'undefined' && window.STUFEN_ALT));   // U7 Schritt 3: Rückweg – Moral ohne Stufen
+function deckungsFeld(G, u) { const h = hex(G, u.c, u.r), t = h && h.t; return t === 'trench' || t === 'bunker' || t === 'fabrik' || KIRCHE.has(t) || !!u.dug; }   // Graben, Bunker, Gebäude, eingegraben
+function wankt(u) { return !stufenAlt() && !!u && u.status === 'ok' && u.mor < P.WANKT * TYPES[u.type].mor; }
+function fallbackSchwelle(G, u) { return !stufenAlt() && deckungsFeld(G, u) ? P.FALLBACK_DECKUNG : P.FALLBACK_MOR; }
+// U7 Schritt 3: Moralstufe für Regel, Anzeige und KI – 'flieht' | 'weicht' (nächster Treffer wirft zurück) | 'wankt' | 'standhaft'
+function moralStufe(G, u) { if (!u) return 'standhaft'; if (u.status === 'rout') return 'flieht'; if (u.mor < fallbackSchwelle(G, u)) return 'weicht'; return wankt(u) ? 'wankt' : 'standhaft'; }
 const fluchtAlt = () => !!(TOG.FLUCHT_ALT || (typeof window !== 'undefined' && window.FLUCHT_ALT));   // U7 Schritt 2: Rückweg – alte Flucht (Punkte sofort, ein Sammelversuch nur mit Offizier, schnelle Flucht)
 const furchtAlt = () => !!(TOG.FURCHT_ALT || (typeof window !== 'undefined' && window.FURCHT_ALT));   // U7 Schritt 1: Rückweg – Furcht-Aura und Gebrüll ohne Test
 const truppAlt = () => !!(TOG.TRUPP_ALT || (typeof window !== 'undefined' && window.TRUPP_ALT));
@@ -1324,6 +1331,8 @@ function preview(G, a, d, kind, o) {
   if (!ranged && A.gegenstoss) { if (gegenstossFeld(G, a.side, d.c, d.r)) { m *= P.GEGENSTOSS; tags.push('Gegenstoß ×1,25'); } else { m *= P.GEGENSTOSS_VOR; tags.push('im Vorgehen ×0,85'); } }
   if (ranged && G.units.some(o => o.shields && o.side === d.side && active(o) && dist(o.c, o.r, d.c, d.r) === 1)) { m *= P.SHIELDS; tags.push('Schilde vor ×0,75'); }
   if (a.supp > 0) { m *= P.SUPP_ATK; tags.push('niedergehalten ×0,5'); }
+  if (wankt(a)) { m *= P.WANKT_ATK; tags.push('wankt ×' + String(P.WANKT_ATK).replace('.', ',')); }   // U7 Schritt 3
+  if (ranged && wankt(d) && !d.supp && cls(d) !== 'walker') tags.push('Ziel wankt: leichter niedergehalten');
   if (a.gassed) { m *= P.GAS_ATK; tags.push('im Gas ×0,7'); }
   let dm = 1;
   if (flame) tags.push('Flammen: Deckung schützt nicht');
@@ -1344,7 +1353,7 @@ function preview(G, a, d, kind, o) {
 function gegenstossFeld(G, side, c, r) { const h = hex(G, c, r); if (!h) return false; if (h.obj && G.ctrl[h.obj] === side) return true; return h.t === 'trench' && (side === 'D' ? c >= COLS / 2 : c < COLS / 2); }
 function counterDmg(G, d, a, ac, ar, arc, dStr) {
   const A = TYPES[a.type], D = TYPES[d.type];
-  let m = P.COUNTER[arc];
+  let m = P.COUNTER[arc]; if (wankt(d)) m *= P.WANKT_ATK;   // U7 Schritt 3: wankender Verteidiger schlägt schwächer zurück
   m *= faktor(d.type, a.type, false).f;   // F66: Nahkampfwaffe des Verteidigers gegen die Panzerklasse des Angreifers
   { const r = nahRolle(d.type); if (r === 'schwach') m *= 0.5; else if (r === 'stark') m *= 1.25; }
   return P.DMG * (D.atk / (A.def * hexDef(G, ac, ar, A.cls === 'walker'))) * kraft({ type: d.type, str: dStr, traegerWeg: d.traegerWeg }) * m;
@@ -1358,7 +1367,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (fall && !u5aus() && kraftArt() === 'traeger' && modelle(d.type) === 3) for (let j = 0; j < fall && !d.traegerWeg; j++) if (G.rng() < 1 / Math.max(1, k0 - j)) d.traegerWeg = true;   // der Waffenträger fällt mit der Chance 1 / stehende Modelle
   if (o.ranged && d.status === 'ok' && cls(d) !== 'walker') {
     d.fireDmg += dmg;
-    if ((d.fireDmg >= P.SUPP || (dmg > 0 && a && TYPES[a.type] && TYPES[a.type].pin)) && !d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
+    if ((d.fireDmg >= (wankt(d) ? P.SUPP_WANKT : P.SUPP) || (dmg > 0 && a && TYPES[a.type] && TYPES[a.type].pin)) && !d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
   }
   let ml = dmg * P.MOR_PER_DMG * (o.morMul || 1) + (o.morPlus || 0);   // morPlus: fester Moralverlust (Sturmrollen)
   if (arc === 'flank') ml += P.MOR_FLANK;
@@ -1375,7 +1384,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
   if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
-  if (d.mor < P.FALLBACK_MOR && cls(d) !== 'art' && !(d.supp > 0 && !TOG.NOSUPP)) fallBack(G, d, a, ev);   // Niedergehaltene bleiben liegen
+  if (d.mor < fallbackSchwelle(G, d) && cls(d) !== 'art' && !(d.supp > 0 && !TOG.NOSUPP)) fallBack(G, d, a, ev);   // Niedergehaltene bleiben liegen
 }
 // Punkt 18 (2026-11-24): Entsetzenstest – nur wenn ein Fahrzeug/Schreiter angreift (statt Moralverlust beim bloßen Annähern; ENTSETZ_ALT=1 = alte Regel).
 // Immun: Helden, Fahrzeuge/Schreiter, Kampfanzüge. Durchgefallen: niedergehalten, Moral −P.ENTSETZ_MOR, unter 60 Stärke zurückweichen (keine Sofortflucht).
@@ -1797,9 +1806,9 @@ function startTurn(G) {
       u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true;
       continue;
     }
-    if (!adjEnemies(G, u).length && !u.supp && !u.gassed) {
+    if (!adjEnemies(G, u).length && (!u.supp || (!stufenAlt() && deckungsFeld(G, u))) && !u.gassed) {   // U7 Schritt 3: Niedergehaltene in Graben/Bunker/Gebäude erholen sich halb
       const t = hex(G, u.c, u.r).t;
-      const rec = ['trench', 'village', 'forest', 'bunker', 'wald', 'fabrik', 'kirche', 'barrikade', 'schiff', 'turm'].includes(t) ? P.RECOVER_COVER : P.RECOVER;
+      const rec = (['trench', 'village', 'forest', 'bunker', 'wald', 'fabrik', 'kirche', 'barrikade', 'schiff', 'turm'].includes(t) ? P.RECOVER_COVER : P.RECOVER) * (u.supp ? P.RECOVER_SUPP : 1);
       u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1) + (bannerAt(G, u.side, u.c, u.r) ? 0.5 : 0));
     }
   }
@@ -2296,7 +2305,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  sammelChance, sammelnR, sammelZiele, fluchtAlt, KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  moralStufe, wankt, fallbackSchwelle, deckungsFeld, stufenAlt, sammelChance, sammelnR, sammelZiele, fluchtAlt, KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

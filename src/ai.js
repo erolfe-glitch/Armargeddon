@@ -45,6 +45,7 @@ const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
 const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
+const W_WANKT = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT) || 0.6);   // U7 Schritt 3: Schuss drückt das Ziel unter die Wankt-Schwelle
 const W_SAMMEL = +((typeof process !== 'undefined' && process.env && process.env.W_SAMMEL) || 1.5), W_FLUCHT_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_FLUCHT_ZIEL) || 2);   // U7 Schritt 2: Anführer/Banner nahe Wankenden und Fliehenden; fliehende Gegner nahe gegnerischer Anführer (kämen sonst zurück)
 const W_CAV_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_CAV_ZIEL) || 3);   // F94: Anreiz für Reiter-Ziele
 const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit;   // Prüfliste 2.25: Pioniere/Mineure haben keine Nahkampf-Panzerwaffe mehr (F80)
@@ -343,6 +344,7 @@ function attackValue(G, a, d, kind, o) {
   const strAfter = d.str - p.dmg;
   const morAfter = d.mor - p.dmg * 0.8 * (flame ? 2 : 1) - (p.arc === 'flank' ? 0.5 : p.arc === 'rear' ? 1 : 0);
   if (strAfter < 1.5 || morAfter <= 0) v += 2.5; else if (morAfter < 3) v += 0.8;
+  else if (!E.stufenAlt() && d.status === 'ok' && !E.wankt(d) && morAfter < P.WANKT * TYPES[d.type].mor) v += W_WANKT;   // U7 Schritt 3
   if (d.officer) v += 0.8;
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
   if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;

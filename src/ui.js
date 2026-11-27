@@ -655,9 +655,9 @@ function drawMarks(u, d, x, y, own, done, acc) {
   if (q > 0.01) drawBrushBar(g, LIFE_COL[lifeTier(q)], bx, by, bw * q, bh);   // Farbe nach Stand, Fraktion zeigt der Ring
   g.fillStyle = 'rgba(18,13,11,0.7)'; for (let i = 1; i < 10 * q - 0.2; i++) g.fillRect(Math.round(bx + bw * i / 10), by + bh * 0.15, 1, bh * 0.7);
   // F52 (2026-11-20): Moral als dünner knochenweißer Balken direkt unter dem Leben; wankend flackert er, auf der Flucht schmutzig grau
-  const mh = Math.max(2, bh * 0.42), my0 = by + bh + Math.max(1, bh * 0.18), mq = Math.max(0, Math.min(1, d.mor / Math.max(1, TYPES[u.type].mor))), flieht = d.vs && d.vs.rout, wankt = !flieht && d.mor < P.FALLBACK_MOR;
+  const mh = Math.max(2, bh * 0.42), my0 = by + bh + Math.max(1, bh * 0.18), mq = Math.max(0, Math.min(1, d.mor / Math.max(1, TYPES[u.type].mor))), flieht = d.vs && d.vs.rout, wankt = !flieht && d.mor < (E.stufenAlt() ? P.FALLBACK_MOR : E.fallbackSchwelle(G, u)), gelb = !flieht && !E.stufenAlt() && d.mor < P.WANKT * TYPES[u.type].mor;   // U7 Schritt 3: wankt = gelb, weicht = flackert
   { g.save(); g.fillStyle = 'rgba(18,13,11,0.85)'; g.fillRect(bx - 1, my0 - 1, bw + 2, mh + 2);
-    if (mq > 0.01) { g.globalAlpha *= wankt ? 0.55 + 0.45 * Math.abs(Math.sin(now / 160)) : 1; g.fillStyle = flieht ? '#7d776a' : '#E6DCC0'; g.fillRect(bx, my0, bw * mq, mh); }
+    if (mq > 0.01) { g.globalAlpha *= wankt ? 0.55 + 0.45 * Math.abs(Math.sin(now / 160)) : 1; g.fillStyle = flieht ? '#7d776a' : gelb ? '#D9B23A' : '#E6DCC0'; g.fillRect(bx, my0, bw * mq, mh); }
     g.restore(); }
   MARKS.push({ x0: bx - 3, y0: by - 4, x1: bx + bw + 3, y1: my0 + mh + 2, u, kind: 'hp' });
   if (own) {   // Fahrplan 2: Bewegungspunkte als kleine Punkte (hell = übrig), daneben die Aktionsmünze (+ kleine Münze der Zweitwaffe)
@@ -1442,7 +1442,8 @@ function kzZustaende(u, runde) {
   if (v.gassed) o.push('gas'); else if (v.poison > 0) o.push('gift');
   if ((VIS.fires || []).some(f => f.c === u.c && f.r === u.r)) o.push('feuer');
   if (v.broken > 0 || v.stuck > 0) o.push('panne');
-  if (!runde) { if (!v.rout && d.mor < P.FALLBACK_MOR && T.cls !== 'art') o.push('tropfen'); if (T.rng > 0 && !T.flame && E.active(u) && E.held(G, u)) o.push('klingen'); if (u.zeal) o.push('wut'); if (u.ow) o.push('auge'); }
+  if (!v.rout && T.cls !== 'art' && (E.stufenAlt() ? !runde && d.mor < P.FALLBACK_MOR : (runde ? d.mor < E.fallbackSchwelle(G, u) : d.mor < P.WANKT * T.mor))) o.push('tropfen');   // U7 Schritt 3: wankt = Schweißtropfen beim Anwählen, am Rundenbeginn nur, wenn er weicht
+  if (!runde) { if (T.rng > 0 && !T.flame && E.active(u) && E.held(G, u)) o.push('klingen'); if (u.zeal) o.push('wut'); if (u.ow) o.push('auge'); }
   return o;
 }
 function kzAnwahl(u) { kzZustaende(u).forEach((a, i) => kz(u.id, a, 'puls', i * 700)); }
@@ -1451,7 +1452,7 @@ function kzRunde(sd) { let n = 0; for (const u of G.units) if (u.side === sd) { 
 const KZ_LEG = [
   ['blitze', 'puls', 'Niedergehalten', 'Liegt unter Beschuss flach. Steigt auf bei Schreck oder Panik.'],
   ['schweiss', 'puls', 'Flieht', 'Moral gebrochen: Staubwolke, die Einheit läuft davon.'],
-  ['tropfen', 'puls', 'Moral wankt', 'Beim nächsten Treffer weicht sie zurück (beim Anwählen).'],
+  ['tropfen', 'puls', 'Moral wankt', 'Unter 60 % Moral (Balken gelb): kämpft schwächer und wird leichter niedergehalten; flackert der Balken, weicht sie beim nächsten Treffer zurück.'],
   ['zurueck', 'steig', 'Weicht zurück', 'Zurückweichen und Rückzug.'],
   ['angst', 'puls', 'Verängstigt', 'Vom Löwengebrüll des Kreuzschreiters: Moral gesunken, niedergehalten bis zum Ende der nächsten eigenen Runde.'],
   ['gas', 'puls', 'Im Gas', 'Steht in der Gaswolke.'],
@@ -3444,7 +3445,7 @@ function markTips(m) {
   if (m.kind === 'lead') { const cd = n => n > 0 ? `wieder in ${upRunden(n)}` : 'bereit'; return [{ name: `Anführer: ${u.officer}`, text: `Befehle an Truppen in Reichweite. Sammeln ${cd(u.cdR)}, Sturmbefehl ${cd(u.cdS)}.${u.ordered ? ' In dieser Runde schon befohlen.' : ''} Dunkler Orden: gerade kein Befehl möglich.` }]; }
   if (m.kind === 'ap') { const aus = d.vs.broken || d.vs.supp, ap = aus ? 0 : (u.ap || 0), bp = aus ? 0 : (u.bp || 0), Z = TYPES[u.type].zweit;
     return [{ name: `Bewegung ${bp} von ${E.bpMax(u)} · Aktion ${ap ? 'frei' : 'verbraucht'}`, text: `Helle Punkte = Bewegungspunkte (Gelände kostet 1–3), die Münze = die eine Aktion der Runde (Schießen, Nahkampf, Befehl, Fähigkeit, Marsch).${Z ? ` Kleine Münze: ${Z.name}, einmal je Runde zusätzlich.` : ''}` }]; }
-  return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
+  return [{ name: `Stärke ${fmt(d.str)} von 100`, text: `Moral ${fmt(d.mor)} von ${fmt(T.mor)}${{ wankt: ' – wankt', weicht: ' – weicht beim nächsten Treffer', flieht: ' – flieht' }[E.moralStufe(G, u)] || ''}. Der Balken zeigt die Stärke in der Farbe der Seite.` }];
 }
 const markKey = m => m.u.id + m.kind + (m.pv ? m.pv.id : '');
 cv.addEventListener('pointermove', ev => {
@@ -4240,7 +4241,7 @@ function updateHud() {
       $('hudStates').innerHTML = hudTips.map((t, i) => `<span class="up-st${t.cls ? ' ' + t.cls : ''}" data-i="${i}" tabindex="0" aria-label="${upEsc(t.name)}"><img src="${t.img}" alt=""></span>`).join(''); }
     const own = u.side === G.side && E.active(u), ap = Math.max(0, u.ap || 0);
     const hn = hudHN[u.id] = hudHN[u.id] || {}; hpNach(hn, u.str); setTimeout(() => hudNachLauf(u.id), 0);
-    $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10, hpNachV(hn._hn, performance.now())) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : ''), 'Moral', u.mor, T.mor) +
+    $('hudStats').innerHTML = upBar('hp ' + lifeTier(u.str / 10), 'Leben', u.str, 10, hpNachV(hn._hn, performance.now())) + upBar('mor' + (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : !E.stufenAlt() && u.status === 'ok' && u.mor < P.WANKT * T.mor ? ' wankt' : ''), 'Moral', u.mor, T.mor) +
       `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung"><small class="up-wort">Bewegung</small> ${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''}</small></span>` +
       (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><small class="up-wort">Aktion</small> <b class="up-akt${ap ? '' : ' used'}">${ap ? 'frei' : 'verbraucht'}</b><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>${T.rng === 1 ? 'Feld' : 'Felder'}</small>` : '–'}</span></div>`;
