@@ -92,6 +92,9 @@
 - ✓ (erledigt in eigener Sitzung, `entwurf/postfach/BERICHT_T1.md`) **Paket T1 (Abschnitt 27.11. 16:25, Punkt 126)** – 23 Töne aus dem Download-Ordner nur in die Pult-Auswahl, vor U7.
 - ✓ **Fix F1 (Punkt 127):** Nachschub-Menü verdeckt – im nächsten `pa` mit erledigen.
 - ✓ **Paket U7 Moral (Abschnitt 27.11. 16:10, Punkt 125)** – nach W1, drei Schritte mit Messung.
+- ✓ **Fix F2 (Punkt 130)** mit U7 Schritt 3 erledigt (`3a3a2a8`, `b06ebb9`). 5b (Größe der Führung) fehlt → F2b.
+- ✓ **Paket F2b (Abschnitt 27.11. 19:35, Punkt 133)** – nächster `pa`, klein: Größe der Führung (5b) und Fahne kräftiger.
+- **Fable-Prüfrunde U7 (Punkt 133)** – nach F2b, eigene Sitzung, Auftrag `PRUEFAUFTRAG_FABLE_U7.md`. Danach ggf. U7b (Nachbesserung).
 - **Paket UI1 Oberfläche (Punkt 128)** – nach U7; vorher Entwürfe vom Berater.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
@@ -100,6 +103,24 @@
 - **Für U7 vormerken (Enrico 23:45, Punkt 86):** Den Befehl „Sammeln“ von Hauptmann und General auch auf **fliehende** Trupps (weiße Fahne) anwenden können, gezielt statt nur automatisch. Heute: der Befehl wirkt nur auf nicht fliehende Trupps (`orderKind` → `active(o)`), Fliehende werden nur zu Rundenbeginn automatisch gesammelt (P.RALLY 0,6, Anführer bis 2 Felder). Im Knopf bzw. in der Vorschau die Chance anzeigen; Regeln zu Moral und Sammeln im Info-Fenster klarer erklären (Enrico: „manchmal undurchsichtig“).
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> JETZT (Enrico 2026-11-27 19:35): Antwort zu U7 Schritt 3 / F2 – nächster `pa` = Paket F2b, danach Fable-Prüfrunde U7 <<<
+✓ **133. Nächster `pa` = Paket F2b, klein. Einstellung: Sonnet, Mittel.**
+Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
+1. **Gruppen dicht genug:** Ja, das passt so. Nichts ändern.
+2. **Fahne:** etwas kräftiger wehen lassen, `a` in `FAHNE_WEHT` von 1,2 % auf etwa **2 %** der Bildhöhe. Kopf und Hand bleiben weiter ruhig, und es soll nichts Wildes werden.
+3. **U7 ist fertig.** Der Berater hat den Prüfauftrag geschrieben (`entwurf/postfach/PRUEFAUFTRAG_FABLE_U7.md`). Enrico startet die Fable-Sitzung selbst, aber **erst nach F2b**. Nie zwei Browser-Läufe gleichzeitig.
+
+**Nachholen aus F2, Punkt 5b (im Bericht fehlte er):** Die Führungsfiguren (Offizier, Fahnenträger, Melder) beider Seiten und der Generäle sind zu klein.
+- Die Größe an einen Linien-Soldaten derselben Seite angleichen: Die Kopfhöhe soll gleich sein, der Offizier darf einen Hauch größer sein.
+- Die anderen neuen Gruppenteile aus U4 Teil 3 und Teil 5 (Waffentrupps, Sanitäter, Versorgung, Fernsprech, Beiwerk) kurz gegen die Linie prüfen. Nur angleichen, wo es deutlich abweicht.
+- Im Bericht eine kleine Tabelle: Teil, Höhe vorher, Höhe nachher.
+
+**Maßstab (Enrico 19:42):** Als Maß gilt die Größe der **Reskin-Einheiten** (Linie `*_soldat_reskin`, Sturm `*_sturm_reskin`), also so, wie die Linie jetzt im Spiel steht. Danach richten sich Führung und alle neuen Gruppenteile.
+
+**Melder:** Der stehende Melder (`*_melder_steht`) bleibt drin. Enrico ist einverstanden, obwohl Punkt 5 ihn gestrichen hatte.
+
+**Bilder:** Vorher/nachher als je eine Übersicht wie bei F2 (`entwurf/probe/f2b/`), dazu ein kurzes Video. Partietest einmal. Am Ende Vorschau bzw. Chrome schließen.
 
 # >>> NOTIZ (Enrico 2026-11-27 19:25): Alles in einem Zeichenstil – Paket W2, erst NACH U7 <<<
 **132. Nur vormerken, vor dem Ende von U7 nichts davon anfassen.** Enrico: Die große neue Mühle gefällt ihm im Stil sehr, aber Bäume und anderes sehen auf anderen Karten ganz anders aus. Er will nicht alles nochmal von Hand neu machen, sondern einen Weg, der **schneller und günstiger ist, aber genauso gut oder besser** aussieht. Neue Modelle und Karten dauern bisher zu lange und wirken „zusammengestückelt“.
@@ -112,6 +133,17 @@
 3. **Proben mit dem LoRA:** 3 Bäume (Laubbaum, Tanne, Totholz), 1 Haus, 1 Zaunstück, je Sommer; dazu dieselben Teile ohne LoRA (nano-banana mit der Mühle als Referenz) zum Vergleich. Übersicht `entwurf/probe/stil/lora_gelaende.jpg`: Mühle – mit LoRA – ohne LoRA – bisheriger Baustein.
 4. **Kurzer Figuren-Test** (wenn Gelände klappt, sonst weglassen): eigenes LoRA aus 15–20 freigegebenen Konkordat-Bögen, 2 Probefiguren; prüfen, ob Ausrüstung, Gasmaske, Farben gleich bleiben.
 5. Bericht: Kosten, Bilder, Einschätzung, ob das LoRA für alle künftigen Bausteine und Modelle taugt. **Nichts einbauen.** Enrico entscheidet danach.
+
+**Nachtrag (Enrico 2026-11-27 19:35):**
+- **Punkt 4 (Figuren-Test) ENTFÄLLT.** W2a ist nur Gelände. Ein Figuren-LoRA kommt später mit eigenen, von Enrico gewählten Lernbildern (der Berater stellt sie zusammen).
+- **Lernbilder für Punkt 2 sind schon ausgewählt:** 25 Einzelbilder in `entwurf/lora_gelaende/` (Liste und Quellen in `LIESMICH.md`, Übersicht `uebersicht.jpg`). Genau diese nehmen und keine weiteren dazusuchen.
+
+**Nachtrag (Enrico 2026-11-27 19:55) – Figuren-Stil, nur vormerken:**
+- **Zielstil für alle Figuren:** die Reskin-Bögen (Linie, Sturm, Schwere Grabenwacht), `aschenwacht_panzer_neu` und `konkordat_fernsprech_neu`. Typisch: wuchtig, Plattenpanzer über dem Mantel, klare dicke Konturen. Die übrigen Bögen weichen ab, deshalb wirkt das Feld so uneinheitlich.
+- **Lernbilder für ein späteres Figuren-LoRA** liegen schon bereit: 24 Einzelfiguren in `entwurf/lora_figuren/` (`LIESMICH.md`, `uebersicht.jpg`). Angelernt wird erst nach W2a und Enricos Freigabe.
+- **Zu flach („Pappschild“):** die stehenden Melder (`*_melder_steht`) und Fahrzeuge/Kolosse. Sie sollen **leicht plastisch** wirken: mehr Volumen, Licht und Schatten, aber nicht 3D. Für W2b/W2c vormerken. In F2b bleibt der Melder vorerst drin.
+- **Neu zeichnen im Zielstil (Liste, W2):** Panzerbüchsen-Trupp Aschenwacht (Enrico 19:52, Bild aus dem Spiel). Die Figuren haben den alten schlanken Stil, die Büchse liegt einzeln und riesig vor dem Schützen. Neu soll der liegende Schütze die Waffe selbst halten, in passender Größe. Dazu kommen alle Bögen, die noch nicht im Zielstil sind (Liste stellt der Berater vor W2b auf).
+- **Lernpaket Figuren:** Es sind jetzt 28 Bilder (dazu 4 Blaue Legion, Hahn übermalt), siehe `entwurf/lora_figuren/LIESMICH.md`.
 
 **Danach (erst nach Enricos Blick, Plan steht hier nur zur Info):**
 - **W2b – Bausteine neu im Stil** (nur die, die herausfallen; Ausführen: Sonnet, Mittel).
