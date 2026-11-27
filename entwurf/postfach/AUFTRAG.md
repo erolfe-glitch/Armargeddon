@@ -95,10 +95,10 @@
 - ✓ **Fix F2 (Punkt 130)** mit U7 Schritt 3 erledigt (`3a3a2a8`, `b06ebb9`). 5b (Größe der Führung) fehlt → F2b.
 - ✓ **Paket F2b (Abschnitt 27.11. 19:35, Punkt 133)** erledigt (`ffcd417`).
 - ✓ **Fable-Prüfrunde U7 (Punkt 133/134)** erledigt (`PRUEFUNG_FABLE_U7.md`): U7 bleibt, Nachbesserung U7b.
-- **Paket F3 + U7b Teil 1 (Abschnitte 27.11. 20:10 und 20:25, Punkte 135/136)** – nächster `pa`, Sonnet Mittel: Turm-MG und Moral-Anzeige.
-- **Paket U7b Teil 2 (Abschnitt 27.11. 20:25, Punkt 136)** – `pa` danach, Opus Hoch: KI, kleine Regelstellen, Zurückweichen, Halten, Rand, Probe-Messung Panik.
+- ✓ **Paket F3 + U7b Teil 1 (Punkte 135/136)** erledigt (`ca55c0a`, `2d77fef`).
+- **Paket U7b Teil 2 (Abschnitt 27.11. 20:25, Punkt 136)** – **nächster `pa`**, Opus Hoch: KI, kleine Regelstellen, Zurückweichen, Halten, Rand, Probe-Messung Panik.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
-- **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 → S → P → U9.
+- **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
 - **Paket UI1 Oberfläche (Punkt 128)** – nach U7; vorher Entwürfe vom Berater.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
@@ -126,6 +126,12 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 
 **Bilder:** Vorher/nachher als je eine Übersicht wie bei F2 (`entwurf/probe/f2b/`), dazu ein kurzes Video. Partietest einmal. Am Ende Vorschau bzw. Chrome schließen.
 
+# >>> JETZT (Enrico 2026-11-27 20:45): Antwort zu F3 / U7b Teil 1 – nächster `pa` = U7b Teil 2 <<<
+✓ **138. F3 und U7b Teil 1 sind abgenommen.**
+1. **Turmschreiter:** Die Zweitwaffe („Turm-MG“) ist das kleine MG vorn an der Brust, so lassen.
+2. **Nächster `pa` = U7b Teil 2** (Abschnitt 20:25, Punkt 136, Teil 2). **Einstellung: Opus, Hoch.**
+3. **Bei Gelegenheit in Teil 2 mitprüfen** (nur ein Standbild, kein eigener Umbau): die Faustsalve des Eisenknechts und den Schuss des Landkolosses nach hinten (Mündungspunkt, Leuchtspur). Ist dort etwas falsch, kurz beheben und im Bericht nennen.
+
 # >>> JETZT (Enrico 2026-11-27 20:25): Antwort zur Fable-Prüfung U7 – Paket U7b in zwei Teilen <<<
 **136. Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_U7.md`**, Abschnitt 6 (Paket U7b) und die Fehler-Nummern aus Abschnitt 2. U7 bleibt wie gebaut.
 
@@ -144,7 +150,7 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
   - Regeln-Fenster: „Moral und Flucht“ als Leiter mit vier Zeilen (*wankt*, *weicht*, *Panik*, *zerschlagen*), Sammeln als kurze Liste, „eingegraben“ ergänzen.
 - **Bilder:** Je ein Bild von Marke, Einheitenkarte und Regeln-Fenster. Den Partietest einmal laufen lassen. Dann Bericht und aufhören.
 
-**Teil 2 – eigener `pa` danach. Einstellung: Opus, Hoch** (Regeln und KI mit Messung):
+✓ **Teil 2 – eigener `pa` danach. Einstellung: Opus, Hoch** (Regeln und KI mit Messung):
 - U7b Nr. 3 (Fehler 4, 9):
   - KI beschießt Zerschlagene nicht mehr (`W_ZERSCHLAGEN` 0,3).
   - Schwellen aus `P` und `fallbackSchwelle` statt fester Zahlen.
@@ -206,6 +212,20 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> NOTIZ (Enrico 2026-11-27 21:15): Für U8 – Handgranaten seltener, Mindestentfernung auch beim direkten Schuss <<<
+**139. Nur vormerken, gehört zu U8 (mit Messung). Jetzt nichts ändern.**
+1. **Handgranaten der Aschenwacht-Grenadiere** (abil `handgranate`, Punkt 34):
+   - Heute mit einer Aktion und 2 Runden Abklingzeit. Weil Graben und Haus nicht schützen und das Ziel niedergehalten wird, ist Werfen fast immer besser als Schießen oder Nahkampf. Enrico: „kracht ganz schön rein“.
+   - **Neu:** höchstens **einmal je Schlacht** (Merker wie `u.roared`/`u.faustUsed`), Zähler am Knopf.
+   - Ein zweiter Wurf kommt später als Freischaltung über Forschung bzw. Entwicklung in der Kampagne (Punkt 137) und muss dann gut gewählt sein.
+   - Preis und KI (`abilPlan`) anpassen, im Info-Text „einmal je Schlacht“.
+2. **Mindestentfernung der Artillerie auch beim direkten Schuss:**
+   - Heute gilt `minSteil` (Mörser/Minenwerfer `P.ART_MIN` 2, große Geschütze `P.ART_MIN_GROSS` 3) nur für das Steilfeuer.
+   - Bis `P.ART_DIRECT` 3 Felder mit Sicht schießen Geschütze flach (`isDirect`) und treffen dadurch auch Gegner direkt vor sich.
+   - **Neu:** Dieselbe Mindestentfernung gilt auch für den direkten Schuss. Mörser und Minenwerfer schießen ab 2 Feldern, große Geschütze (Haubitze, Geschütz, Mahlwerk u. a.) ab 3.
+   - **Ausnahme:** Die Feldkanone (`direkt`) bleibt Nahschutz gegen Panzer und darf weiter auf kurze Entfernung schießen.
+   - Mit eigenem Rückweg-Schalter. KI, Zielvorschau und Info-Text anpassen. Messen, denn Geschütze werden dadurch verwundbarer gegen Stürme.
 
 # >>> NOTIZ (Enrico 2026-11-27 20:30): Mini-Kampagne mit Tutorial – Plan zusammen mit dem Kommandanten-Plan <<<
 **137. Nur vormerken, nicht bauen.**

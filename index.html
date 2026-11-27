@@ -1249,9 +1249,9 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
       <li><b>Moral und Flucht:</b> Jede Einheit hat Moral. Je weniger übrig ist, desto weiter unten steht sie auf dieser Leiter:
         <ul>
           <li><b>Wankt</b> (unter 60 % der eigenen Moral, Balken gelb, Schweißtropfen): Schuss und Nahkampf ×0,85, schon nach halb so viel Beschuss niedergehalten.</li>
-          <li><b>Weicht</b> (unter 30, in Graben, Bunker, Gebäude oder eingegraben unter 20; Balken flackert): ein Feld zurück, höchstens einmal je gegnerischer Runde. Geschütze weichen nie.</li>
-          <li><b>Panik</b> (Moral 0): flieht je Runde 2 Felder zum eigenen Rand; dort ist sie erst zu Beginn der nächsten eigenen Runde fort. Kann sich sammeln.</li>
-          <li><b>Zerschlagen</b> (Stärke unter 15): die Reste ziehen ab und kommen nicht wieder.</li>
+          <li><b>Weicht</b> (unter 30, in Graben, Bunker, Gebäude oder eingegraben unter 20; Balken flackert): der Treffer, der darunter drückt, wirft ein Feld zurück, auch wenn er zugleich niederhält; höchstens einmal je gegnerischer Runde. Geschütze weichen nie, ebenso niemand unter „Halten um jeden Preis“ oder bei einem aufgepflanzten Banner.</li>
+          <li><b>Panik</b> (Moral 0): flieht je Runde 2 Felder zum eigenen Rand; am Rand ist sie erst zu Beginn der nächsten eigenen Runde fort, vorher hat sie noch einen letzten Sammelversuch. Kann sich sammeln. Ein MG ist auf der Flucht abgebaut.</li>
+          <li><b>Zerschlagen</b> (Stärke unter 15, auch erst auf der Flucht): die Reste ziehen ab und kommen nicht wieder.</li>
         </ul>
         <b>Sammeln</b> (nur nach Panik, wenn kein Gegner daneben steht, zu Beginn jeder eigenen Runde):
         <ul>
@@ -1267,7 +1267,7 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
       <li><b>Gelände:</b> Gräben, Dörfer und Bunker schützen gegen Beschuss und Angriffe von vorn. Stacheldraht hält auf und kostet Stärke (Kampfanzüge, Schwere Grabenwacht und Eiserne Hünen nicht). Draht schneiden nur die Drahtschneider – Konkordat: Graben-Pioniere und Grabenräumer, Aschenwacht: Drahtpioniere und Sturmbrecher – mit der Aktion vom Nachbarfeld aus. Gas treibt mit dem Wind und vergiftet noch 2 Runden; brennende Felder schaden, bis der Anzünder wieder am Zug ist.</li>
       <li><b>Kirche</b> (Sankt Ruß): Nur Fußtruppen und Anführer kommen hinein (keine Helden); drinnen Abwehr ×1,8 und halber Moralverlust. Wer im Turm steht, schießt und sieht 1 Feld weiter. Ihre Fahne zählt am meisten (3 Siegpunkte). Treffer von Artillerie, Mörsern und den Kanonen der Kolosse und Sturmpanzer bringen die Kirche zum Einsturz (Anzeige „Kirche … %“): Dann ist sie nur noch Ruine (×1,5), der Turm ist weg, und wer drin steht, nimmt Schaden und wird niedergehalten. Gärten und Friedhof: niedrige Mauern, ×1,2 gegen Beschuss.</li>
       <li><b>Artillerie:</b> braucht eine eigene Einheit, die das Ziel sieht. Steilfeuer erst ab 2 Feldern (Grabenmörser, Minenwerfer) bzw. ab 3 Feldern (große Geschütze); näher nur im direkten Schuss mit Sicht. Leere Drahtfelder kann man nicht beschießen – Draht geht nur nebenbei kaputt, wenn ein Gegner darin steht (Minenwerfer am ehesten). Sprenggranate auf ein Feld; Sperrfeuer auf mehrere Felder (etwa ×0,7 Schaden, hält nieder, höchstens 2× je Geschütz); Gas (höchstens alle 3 Runden). Ziel markieren (Ballon, Signaltrupp): dort trifft die Artillerie bis zum nächsten Zug genau und ×1,25. Feuerschlag (Fernsprechtrupp): eine Batterie hinter der Front schießt. Geschütze aufprotzen (1 Bewegungspunkt, dann 3 Bewegungspunkte, kein Feuer) und abprotzen.</li>
-      <li><b>Anführer:</b> Hauptmann und General (★) geben Befehle an Truppen direkt neben sich, höchstens 3 je Schlacht (Zähler am Knopf): „Sammeln“ (Moral +15, Niederhalten endet; Fliehende bis 2 Felder, beim General 3, sammeln sich mit der angezeigten Chance), dazu „Feuer frei“ (Konkordat, Fernkampf ×1,25) bzw. „Sturmbefehl“ (Aschenwacht, Nahkampf ×1,25). Großer Befehl des Generals einmal je Schlacht, 2 Felder weit: „Halten um jeden Preis“ (keine Flucht, Abwehr ×1,25) bzw. „Generalangriff“ (Einheiten bis 2 Felder greifen noch einmal an: +1 Aktion, +2 Bewegungspunkte, auch wer schon angegriffen hat; Niederhalten endet; nicht auf der Flucht, bei Panne oder festgefahren). Bannerträger: Banner aufpflanzen – dort flieht niemand.</li>
+      <li><b>Anführer:</b> Hauptmann und General (★) geben Befehle an Truppen direkt neben sich, höchstens 3 je Schlacht (Zähler am Knopf): „Sammeln“ (Moral +15, Niederhalten endet; Fliehende bis 2 Felder, beim General 3, sammeln sich mit der angezeigten Chance), dazu „Feuer frei“ (Konkordat, Fernkampf ×1,25) bzw. „Sturmbefehl“ (Aschenwacht, Nahkampf ×1,25). Großer Befehl des Generals einmal je Schlacht, 2 Felder weit: „Halten um jeden Preis“ (keine Flucht, kein Zurückweichen, Abwehr ×1,25) bzw. „Generalangriff“ (Einheiten bis 2 Felder greifen noch einmal an: +1 Aktion, +2 Bewegungspunkte, auch wer schon angegriffen hat; Niederhalten endet; nicht auf der Flucht, bei Panne oder festgefahren). Bannerträger: Banner aufpflanzen – dort flieht und weicht niemand.</li>
       <li><b>Weitere Fähigkeiten:</b> Sanitäter versorgen einen Nachbarn (Stärke +25, Moral +15, höchstens alle 2 Runden). Meldegänger mit Hund: +2 Bewegungspunkte für eine Einheit. Eingraben im Offenen oder Trichter (Abwehr ×1,3). Schilde vor (Nachbarn nehmen Beschuss ×0,75). Pioniere: Haftladung, Bergen festgefahrener Fahrzeuge. Nebelwand (Rauchwerfer): bis zur nächsten eigenen Runde – wer im Nebel steht, wird kaum getroffen (×0,5) und schießt nur schwach heraus (×0,75); durch die Wand hindurch sieht niemand, auch kein Beobachter der Artillerie. Fähigkeiten mit Feld zeigen gültige Felder in Messing.</li>
       <li><b>Löwenoger und Eiserne Hünen:</b> Der Löwenoger (Konkordat) ist schnell und im Nahkampf sehr stark, schießt mit der Schrotflinte nur auf 1 Feld. Sprungangriff (Aktion, alle 2 Runden, nur aus dem Stand): springt bis 2 Felder weit neben einen Gegner, auch über Draht, und greift sofort an. Die Eisernen Hünen (Aschenwacht) sind langsam und gepanzert (Gewehr- und MG-Feuer ×0,5, Draht hält sie nicht auf); ihr MG muss nicht aufgebaut werden und hält jedes getroffene Ziel nieder. Dauerfeuer: nach dem Schuss eine zweite Salve in derselben Runde, danach kühlt das MG eine eigene Runde lang ab (Sanduhr am Standring).</li>
       <li><b>Stark und schwach (Medaillen):</b> Jede Waffe wirkt je nach Panzerung des Ziels ×1,5, ×1 oder ×0,5. Gewehr und MG: gegen Fußtruppen voll, gegen Kampfanzüge halb, an Panzern wirkungslos. Panzerbrechend (Panzerbüchse, Löwenmaul): gegen Panzer und Kampfanzüge ×1,5, gegen Fußtruppen ×0,5. Granaten und Flammen: gegen Panzer halb. Schrot und schwerer Nahkampf (Schreiter, Löwenoger, Helden): gegen Fußtruppen ×1,5; Schrot ist an Panzern wirkungslos. Normaler Nahkampf (Klinge, Kolben) wirkt gegen Kampfanzüge und Panzer nur ×0,5. MG-Trupps, Geschütze, Scharfschützen, Sanitäter und Melder sind schwach im Nahkampf (Angreifer ×1,5, ihr Gegenschlag ×0,5); Sturmtrupps, Kampfanzüge, Schildwall und Löwenoger stark (Gegenschlag ×1,25). Die drei Medaillen unter dem Bild der Einheit zeigen es: gegen Infanterie, gegen Panzer, Nahkampf – Bronze schwach, Silber normal, Gold stark.</li>
@@ -1570,13 +1570,13 @@ Object.assign(TYPES, {
     can: 'Schneidet Draht vom Nachbarfeld aus (Aktion). Je Runde Draht ziehen (aufs Feld, in das er blickt) oder eine Mine auf ein freies Nachbarfeld (3 Stück): unsichtbar, wer hineinzieht, nimmt Schaden und bleibt stehen. Danach kein Angriff mehr.',
     chronik: { quelle: 'Pionierbefehl für den Abschnitt Grauwall', text: 'Im Schutz der Dunkelheit schneiden sie feindliche Verhaue auf oder spannen neue Rollen rostigen Stacheldrahts vor der eigenen Linie. Ebenso lautlos vergraben sie heimtückische Minen im aufgeweichten Boden.' } },
   banner: { side: 'D', name: 'Bannerträger', cls: 'inf', fig: 'banner', banner: true, atk: 3, def: 3, mor: 9, mv: 3, rng: 1, fs: 2,
-    can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr. Banner aufpflanzen (Aktion): wirkt 3 Felder weit, dort flieht niemand; der Träger zieht nicht, bis er es wieder aufnimmt (Aktion).',
+    can: 'Eigene Truppen bis 2 Felder verlieren weniger Moral (×0,75) und erholen sich jede Runde um 0,5 Moral mehr. Banner aufpflanzen (Aktion): wirkt 3 Felder weit, dort flieht und weicht niemand; der Träger zieht nicht, bis er es wieder aufnimmt (Aktion).',
     chronik: { quelle: 'Predigt der Schmiedepriester vor der Schlacht', text: 'Wo das geweihte Feldzeichen der Grauen Liturgie über dem Rauch aufragt, wanken umliegende Truppen deutlich seltener im Beschuss. Rammt der Träger die Stange fest in den Schlamm, weicht dort kein Soldat mehr zurück.' } },
   hauptA: { side: 'A', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: bis zu 3 Befehle je Schlacht an Nachbarn: „Sammeln“ (Moral +15, Niederhalten endet) oder „Feuer frei“ (Fernkampf ×1,25 bis zu ihrem nächsten Zug). Truppen in der Nähe verlieren weniger Moral.',
     chronik: { quelle: 'Aus dem Notizbuch eines Kompaniechefs', text: 'Mit Trillerpfeife und Meldeblock hält der Hauptmann inmitten des Beschusses die Ordnung in seinem Abschnitt aufrecht. Seine knappen Befehle sammeln wankende Nachbartrupps oder peitschen die Schützen zu konzentriertem Feuer an.' } },
   generalA: { side: 'A', name: 'General mit Stab', cls: 'inf', fig: 'leader4', cmd: 2, atk: 2, def: 5, mor: 10, mv: 3, rng: 1, fs: 1,
-    can: 'Pflicht, genau einer je Armee; schwach im Kampf. Bis zu 3 Befehle je Schlacht an Nachbarn („Sammeln“, „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: Einheiten bis 2 Felder fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.',
+    can: 'Pflicht, genau einer je Armee; schwach im Kampf. Bis zu 3 Befehle je Schlacht an Nachbarn („Sammeln“, „Feuer frei“). Einmal je Schlacht „Halten um jeden Preis“: Einheiten bis 2 Felder fliehen und weichen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.',
     chronik: { quelle: 'Stabsbefehl vor der Schlacht bei Grauwall', text: 'Im Kampf kaum wehrhaft, lenkt der oberste Befehlshaber der Armee die Schlacht von einer vorgeschobenen Befehlsstelle aus. Er ordnet die Linien neu und fordert in der höchsten Not das bedingungslose Halten der Stellung um jeden Preis.' } },
   hauptD: { side: 'D', name: 'Hauptmann mit Stab', cls: 'inf', fig: 'leader1', cmd: 1, atk: 3, def: 4, mor: 9, mv: 3, rng: 2, fs: 2,
     can: 'Kommandotrupp: bis zu 3 Befehle je Schlacht an Nachbarn: „Sammeln“ (Moral +15, Niederhalten endet) oder „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde). Truppen in der Nähe verlieren weniger Moral.',
@@ -2575,7 +2575,12 @@ const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlw
   hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, ...(TOG.REITER_ALT ? {} : { reiter: 3 }), stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
 const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
 const stufenAlt = () => !!(TOG.STUFEN_ALT || (typeof window !== 'undefined' && window.STUFEN_ALT));   // U7 Schritt 3: Rückweg – Moral ohne Stufen
-function deckungsFeld(G, u) { const h = hex(G, u.c, u.r), t = h && h.t; return t === 'trench' || t === 'bunker' || t === 'fabrik' || KIRCHE.has(t) || !!u.dug; }   // Graben, Bunker, Gebäude, eingegraben
+const schalter = n => !!(TOG[n] || (typeof window !== 'undefined' && window[n]));
+const u7b4Alt = () => schalter('U7B4_ALT'), halteWeichAlt = () => schalter('HALTEWEICH_ALT'), weichenAlt = () => schalter('WEICHEN_ALT');   // U7b Teil 2: Rückwege (Nr. 4 kleine Regelstellen, Nr. 5 Halten/Banner, Nr. 6 Zurückweichen vor Niederhalten)
+// U7b Nr. 4 (Fehler 10): EINE Quelle für Deckung – feste Deckung (halber Moralverlust), dazu Fabrik und eingegraben (Weich-Schwelle, halbe Erholung); erholFeld = schnelle Erholung
+const festeFeld = t => t === 'trench' || t === 'bunker' || KIRCHE.has(t);
+const erholFeld = t => u7b4Alt() ? ['trench', 'village', 'forest', 'bunker', 'wald', 'fabrik', 'kirche', 'barrikade', 'schiff', 'turm'].includes(t) : festeFeld(t) || ['village', 'forest', 'wald', 'fabrik', 'kirche', 'barrikade'].includes(t);   // neu: Haus, Kapelle, Mühle
+function deckungsFeld(G, u) { const h = hex(G, u.c, u.r), t = h && h.t; return festeFeld(t) || t === 'fabrik' || !!u.dug; }   // Graben, Bunker, Gebäude, eingegraben
 function wankt(u) { return !stufenAlt() && !!u && u.status === 'ok' && u.mor < P.WANKT * TYPES[u.type].mor; }
 function fallbackSchwelle(G, u) { return !stufenAlt() && deckungsFeld(G, u) ? P.FALLBACK_DECKUNG : P.FALLBACK_MOR; }
 // U7 Schritt 3: Moralstufe für Regel, Anzeige und KI – 'flieht' | 'weicht' (nächster Treffer wirft zurück) | 'wankt' | 'standhaft'
@@ -2734,18 +2739,19 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (arc === 'flank') ml += P.MOR_FLANK;
   if (arc === 'rear') ml += P.MOR_REAR;
   if (d.status === 'ok' && surrounded(G, d)) ml += P.MOR_SURR;
-  if ((t === 'trench' || t === 'bunker' || KIRCHE.has(t)) && !o.flame) ml *= 0.5;
+  if (festeFeld(t) && !o.flame) ml *= 0.5;
   if (officerAt(G, d.side, d.c, d.r)) ml *= P.OFFICER_MOR;
   if (bannerAt(G, d.side, d.c, d.r)) ml *= 0.75;
   const standH = o.ranged && G.units.find(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1); if (standH) ml *= P.FAUST_AURA;   // Held Rote Faust
-  d.mor = Math.max(0, d.mor - ml);
+  const morVor = d.mor; d.mor = Math.max(0, d.mor - ml);
   ev.push(standH ? { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, stand: standH.id, fall } : { t: 'hit', u: d.id, dmg, str: d.str, morv: d.mor, fall });   // stand: Aura hat gewirkt (F86, nur Anzeige)
   if (d.str < 0.3) { killUnit(G, d, ev, 'destroyed'); return; }
-  if (d.status === 'rout') return;
+  if (d.status === 'rout') { zerschlagenPruefen(G, d, ev); return; }
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
   if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
-  if (d.mor < fallbackSchwelle(G, d) && cls(d) !== 'art' && !(d.supp > 0 && !TOG.NOSUPP)) fallBack(G, d, a, ev);   // Niedergehaltene bleiben liegen
+  const sw = fallbackSchwelle(G, d);
+  if (d.mor < sw && cls(d) !== 'art' && (!(d.supp > 0 && !TOG.NOSUPP) || (!weichenAlt() && morVor >= sw))) fallBack(G, d, a, ev);   // U7b Nr. 6: der Treffer, der unter die Schwelle drückt, wirft zurück (auch frisch niedergehalten); wer schon darunter liegt, bleibt liegen
 }
 // Punkt 18 (2026-11-24): Entsetzenstest – nur wenn ein Fahrzeug/Schreiter angreift (statt Moralverlust beim bloßen Annähern; ENTSETZ_ALT=1 = alte Regel).
 // Immun: Helden, Fahrzeuge/Schreiter, Kampfanzüge. Durchgefallen: niedergehalten, Moral −P.ENTSETZ_MOR, unter 60 Stärke zurückweichen (keine Sofortflucht).
@@ -2776,6 +2782,8 @@ function killUnit(G, u, ev, how) {
   if (TYPES[u.type].held && how !== 'escaped') { for (const o of G.units) if (o.side === u.side && o !== u && alive(o)) o.mor = Math.max(0, o.mor - P.HELD_FALL_MOR); ev.push({ t: 'heldfall', u: u.id, side: u.side }); if (!fluchtAlt()) for (const o of G.units) if (o.side === u.side && o.status === 'ok' && o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, null, ev); }   // U7 Schritt 2 (Fehler 5): Heldenfall kann zur Flucht führen   // ganze Seite verliert Moral
   ev.push({ t: how, u: u.id });
 }
+// U7b Nr. 4 (Fehler 11): ein Panik-Trupp, der auf der Flucht unter ROUT_STR fällt, ist zerschlagen – endgültig, die Punkte zählen sofort
+function zerschlagenPruefen(G, u, ev) { if (u7b4Alt() || fluchtAlt() || u.status !== 'rout' || u.aufgerieben || u.str >= P.ROUT_STR) return; u.aufgerieben = true; credit(G, u); ev.push({ t: 'zerschlagen', u: u.id }); }
 function retreatHex(G, u, from) {
   const dir = SIDES[u.side].dir;
   let best = null, bs = -1e9;
@@ -2794,6 +2802,7 @@ function retreatHex(G, u, from) {
 }
 function fallBack(G, u, from, ev) {
   if (u.planted) return;   // aufgepflanztes Banner weicht nicht
+  if (!halteWeichAlt() && noFlee(G, u)) return;   // U7b Nr. 5: „Halten um jeden Preis“ und ein aufgepflanztes Banner in Reichweite verhindern auch das Zurückweichen
   if (!fluchtAlt()) { const k = G.turn + G.side; if (u.gewichenIn === k) return; u.gewichenIn = k; }   // U7 Schritt 2 (Fehler 6): höchstens einmal je gegnerischer Runde
   const h = retreatHex(G, u, from);
   if (!h) return;
@@ -2808,7 +2817,7 @@ function routUnit(G, u, from, ev) {
   ev.push({ t: 'rout', u: u.id, aufgerieben: u.aufgerieben });
   for (const [c, r] of neighbors(u.c, u.r)) {
     const o = unitAt(G, c, r);
-    if (o && o.side === u.side && active(o) && neu) { if (o.mor >= P.FALLBACK_MOR) continue; o.mor = Math.max(0, o.mor - 0.5); ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor }); if (o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, from, ev); continue; }   // Kettenflucht nur für Wankende, über routUnit (Fehler 3)
+    if (o && o.side === u.side && active(o) && neu) { if (o.mor >= (u7b4Alt() ? P.FALLBACK_MOR : fallbackSchwelle(G, o))) continue; o.mor = Math.max(0, o.mor - 0.5); ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor }); if (o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, from, ev); continue; }   // Kettenflucht nur für Wankende, über routUnit (Fehler 3)
     if (o && o.side === u.side && active(o)) {
       o.mor = Math.max(0, o.mor - 0.5);
       ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor });
@@ -2819,6 +2828,7 @@ function routUnit(G, u, from, ev) {
 }
 function flee(G, u, steps, ev) {
   const edge = SIDES[u.side].edge, dir = SIDES[u.side].dir;
+  if (!u7b4Alt() && TYPES[u.type].mg) { u.setup = false; u.sperr = 0; }   // U7b Nr. 4 (Fehler 12): auf der Flucht ist das MG abgebaut
   const path = [[u.c, u.r]];
   for (let i = 0; i < steps; i++) {
     if (u.c === edge) break;
@@ -3009,6 +3019,7 @@ function shellDmg(G, a, d, direct, tags) {
   let dm = defMods(G, d, 'front', true, tags);
   if (direct) dm *= kanteFaktor(G, d, a.c, a.r, tags);   // R3: nur der direkte Schuss, Steilfeuer fällt von oben
   m *= splitterU5(G, a, d, dm, tags); dm = deckU5(G, d, dm, tags);   // U5a
+  if (!u7b4Alt() && wankt(a)) { m *= P.WANKT_ATK; tags.push('wankt ×' + String(P.WANKT_ATK).replace('.', ',')); }   // U7b Nr. 4 (Fehler 8): auch Geschütze, Mörser, Sperrfeuer, Feuerschlag
   return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * kraft(a) * m;
 }
 function gasCells(G, c, r) {
@@ -3127,7 +3138,7 @@ function startTurn(G) {
       u.str = Math.max(0, u.str - P.GAS_STR); u.mor = Math.max(0, u.mor - P.GAS_MOR); u.gassed = true;
       u.poison = P.POISON_TURNS;   // wirkt nach dem Verlassen der Wolke noch nach
       ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor, poison: u.poison });
-      if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
+      if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; } zerschlagenPruefen(G, u, ev);
       if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0) && !noFlee(G, u)) { if (!fluchtAlt()) routUnit(G, u, null, ev); else { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); } }   // U7 Schritt 2: Gas-Flucht über routUnit
     }
     else if (u.poison > 0) {   // vergiftet (außerhalb der Wolke): halber, dann viertel Gasschaden
@@ -3135,7 +3146,7 @@ function startTurn(G) {
       if (!gasSafe(G, u) && !TOG.NOPOISON) {
         u.str = Math.max(0, u.str - P.GAS_STR * k); u.mor = Math.max(0, u.mor - P.GAS_MOR * k);
         ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor, poison: u.poison, late: true });
-        if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
+        if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; } zerschlagenPruefen(G, u, ev);
         if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0) && !noFlee(G, u)) { if (!fluchtAlt()) routUnit(G, u, null, ev); else { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); } }
       }
     }
@@ -3145,11 +3156,12 @@ function startTurn(G) {
     }
     if (u.status === 'rout' && !fluchtAlt()) {   // U7 Schritt 2: erst Rand (dort weg), dann Sammelversuch (nicht in der Runde, in der die Flucht begann), sonst P.FLUCHT_BP Felder weiter
       if (u.routTurn !== G.turn + s) {
-        if (u.c === SIDES[s].edge) { killUnit(G, u, ev, 'escaped'); continue; }
+        if (u7b4Alt() && u.c === SIDES[s].edge) { killUnit(G, u, ev, 'escaped'); continue; }
         const p = sammelChance(G, u);
         if (p > 0 && G.rng() < p) { const off = G.units.find(o => o.officer && o.side === s && active(o) && dist(o.c, o.r, u.c, u.r) <= P.OFFICER_RANGE);
           u.status = 'ok'; u.mor = P.RALLY_MOR; u.gesammelt = (u.gesammelt || 0) + 1; u.face = s === 'A' ? 0 : 3; ev.push({ t: 'rally', u: u.id, by: off ? off.officer : null, p: +p.toFixed(2) });
           u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; continue; }
+        if (u.c === SIDES[s].edge) { killUnit(G, u, ev, 'escaped'); continue; }   // U7b Nr. 4: erst der letzte Sammelversuch, dann ist der Trupp fort
         flee(G, u, P.FLUCHT_BP, ev); }
       u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; continue;
     }
@@ -3169,7 +3181,7 @@ function startTurn(G) {
     }
     if (!adjEnemies(G, u).length && (!u.supp || (!stufenAlt() && deckungsFeld(G, u))) && !u.gassed) {   // U7 Schritt 3: Niedergehaltene in Graben/Bunker/Gebäude erholen sich halb
       const t = hex(G, u.c, u.r).t;
-      const rec = (['trench', 'village', 'forest', 'bunker', 'wald', 'fabrik', 'kirche', 'barrikade', 'schiff', 'turm'].includes(t) ? P.RECOVER_COVER : P.RECOVER) * (u.supp ? P.RECOVER_SUPP : 1);
+      const rec = (erholFeld(t) ? P.RECOVER_COVER : P.RECOVER) * (u.supp ? P.RECOVER_SUPP : 1);
       u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1) + (bannerAt(G, u.side, u.c, u.r) ? 0.5 : 0));
     }
   }
@@ -3666,7 +3678,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  moralStufe, wankt, fallbackSchwelle, deckungsFeld, stufenAlt, sammelChance, sammelnR, sammelZiele, fluchtAlt, KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  festeFeld, erholFeld, moralStufe, wankt, fallbackSchwelle, deckungsFeld, stufenAlt, sammelChance, sammelnR, sammelZiele, fluchtAlt, KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
@@ -5958,6 +5970,15 @@ const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
 const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
+// U7b Nr. 3 (Fehler 4 und 9, 2026-11-27): Zerschlagene nur noch mit Faktor W_ZERSCHLAGEN, Schwellen aus P/fallbackSchwelle, wankende Trupps in Deckung ziehen (W_WANKT_DECKUNG), Sammeln-Befehl auch nach dem Ziehen; Rückweg KI_U7B_ALT
+const kiAlt = () => !!((typeof process !== 'undefined' && process.env && process.env.KI_U7B_ALT) || (typeof window !== 'undefined' && window.KI_U7B_ALT));
+const W_ZERSCHLAGEN = +((typeof process !== 'undefined' && process.env && process.env.W_ZERSCHLAGEN) || 0.3), W_WANKT_DECKUNG = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT_DECKUNG) || 2);
+// Moral des Ziels nach einem Treffer – wie applyDamage (ohne Anführer, Banner und Umzingelung)
+function morNach(G, d, dmg, arc, flame) { if (kiAlt()) return d.mor - dmg * 0.8 * (flame ? 2 : 1) - (arc === 'flank' ? 0.5 : arc === 'rear' ? 1 : 0);
+  const t = E.hex(G, d.c, d.r).t; let ml = dmg * P.MOR_PER_DMG * (flame ? P.FLAME_MOR : 1) + (arc === 'flank' ? P.MOR_FLANK : arc === 'rear' ? P.MOR_REAR : 0); if (E.festeFeld(t) && !flame) ml *= 0.5; return d.mor - ml; }
+// U7b Nr. 3: Wankende Fußtruppen suchen Deckung, wenn Gegner in der Nähe sind (im Offenen werden sie von jedem Gewehrtrupp niedergehalten und erholen sich nie)
+function wanktDeckung(G, u, c, r) { if (kiAlt() || !E.wankt(u) || E.cls(u) === 'walker' || E.cls(u) === 'art' || nearestEnemyDist(G, u.side, c, r) > 5) return 0;
+  const x = Object.assign({}, u, { c, r, dug: !!u.dug && c === u.c && r === u.r }); return E.deckungsFeld(G, x) ? W_WANKT_DECKUNG : E.coverOf(G, x).tier >= 1 ? W_WANKT_DECKUNG / 2 : 0; }
 const W_WANKT = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT) || 0.6);   // U7 Schritt 3: Schuss drückt das Ziel unter die Wankt-Schwelle
 const W_SAMMEL = +((typeof process !== 'undefined' && process.env && process.env.W_SAMMEL) || 1.5), W_FLUCHT_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_FLUCHT_ZIEL) || 2);   // U7 Schritt 2: Anführer/Banner nahe Wankenden und Fliehenden; fliehende Gegner nahe gegnerischer Anführer (kämen sonst zurück)
 const W_CAV_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_CAV_ZIEL) || 3);   // F94: Anreiz für Reiter-Ziele
@@ -6173,10 +6194,10 @@ const W_EIS = +((typeof process !== 'undefined' && process.env && process.env.W_
 const W_STECKEN = +((typeof process !== 'undefined' && process.env && process.env.W_STECKEN) || 3);   // M6: Gewicht Steckenbleiben (× P.STECKEN 0,3)
 const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
-function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r) + sammelWert(G, u, c, r); }
+function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r) + sammelWert(G, u, c, r) + wanktDeckung(G, u, c, r); }
 function sammelWert(G, u, c, r) {   // U7 Schritt 2: Anführer und Banner stellen sich bis 2 Felder an eigene Wankende oder Fliehende (Sammel-Chance)
   if (E.fluchtAlt() || !(u.officer || TYPES[u.type].banner)) return 0; let n = 0;
-  for (const o of G.units) if (o !== u && o.side === u.side && E.dist(o.c, o.r, c, r) <= 2 && ((o.status === 'rout' && !o.aufgerieben) || (o.status === 'ok' && o.mor < P.FALLBACK_MOR && E.cls(o) !== 'walker'))) n++;
+  for (const o of G.units) if (o !== u && o.side === u.side && E.dist(o.c, o.r, c, r) <= 2 && ((o.status === 'rout' && !o.aufgerieben) || (o.status === 'ok' && (kiAlt() ? o.mor < P.FALLBACK_MOR : E.moralStufe(G, o) !== 'standhaft') && E.cls(o) !== 'walker'))) n++;
   return W_SAMMEL * Math.min(2, n);
 }
 function posValue0(G, u, c, r) {
@@ -6255,14 +6276,15 @@ function attackValue(G, a, d, kind, o) {
   if (d.status === 'rout' && !d.aufgerieben && !E.fluchtAlt() && G.units.some(o => o.officer && o.side === d.side && E.active(o) && E.dist(o.c, o.r, d.c, d.r) <= 3)) v += W_FLUCHT_ZIEL;   // U7 Schritt 2: sonst wird er gesammelt
   const flame = kind === 'fire' && TYPES[a.type].flame;
   const strAfter = d.str - p.dmg;
-  const morAfter = d.mor - p.dmg * 0.8 * (flame ? 2 : 1) - (p.arc === 'flank' ? 0.5 : p.arc === 'rear' ? 1 : 0);
-  if (strAfter < 1.5 || morAfter <= 0) v += 2.5; else if (morAfter < 3) v += 0.8;
+  const morAfter = morNach(G, d, p.dmg, p.arc, flame), flieht = !kiAlt() && d.status === 'rout';   // U7b Nr. 3: wer schon flieht, kann nicht noch einmal brechen
+  if (flieht) {} else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
   else if (!E.stufenAlt() && d.status === 'ok' && !E.wankt(d) && morAfter < P.WANKT * TYPES[d.type].mor) v += W_WANKT;   // U7 Schritt 3
   if (d.officer) v += 0.8;
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
   if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
   if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += mussAngreifen(G, a) ? W_OBJSTURM : 0.6;   // Zielfeld stürmen, wenn die Seite angreifen muss
   if (kind === 'fire' && E.cls(a) === 'walker') v += kirchenWert(G, a, d.c, d.r);   // Kanone auf die Kirche: Einsturz nutzen
+  if (flieht && d.aufgerieben && !E.fluchtAlt() && v > 0) v *= W_ZERSCHLAGEN;   // U7b Nr. 3: Zerschlagene sind schon voll gezählt und kommen nie zurück
   return v;
 }
 // Schusswinkel (Fahrplan 2): Fahrzeuge/Schreiter schießen mit der Hauptwaffe nur nach vorn (±60°). Ohne Zug darf die KI vorher drehen (1 Punkt), wenn noch 2 Punkte da sind.
@@ -6281,7 +6303,7 @@ function bestAttackFrom(G, u, c, r, moved, run, kosten) {
     const dd = E.dist(c, r, d.c, d.r);
     if (dd === 1 && T.atk >= 3 && !(u.supp > 0) && nahOk) {
       let v = attackValue(G, u, d, 'melee', { c, r, run });
-      if (T.cls === 'cav' && !ENVX0().NOCAVZIEL && E.cls(d) !== 'walker' && (E.medaillen(d.type).rolle === 'schwach' || d.status === 'rout' || d.supp > 0)) v += W_CAV_ZIEL * (run >= P.CHARGE_MIN ? 1.5 : 1);   // F94 (2026-11-22): Reiter gegen Geschütze, MG, Beobachter, Sanitäter, Fliehende und Niedergehaltene
+      if (T.cls === 'cav' && !ENVX0().NOCAVZIEL && E.cls(d) !== 'walker' && (E.medaillen(d.type).rolle === 'schwach' || (d.status === 'rout' && (kiAlt() || !d.aufgerieben)) || d.supp > 0) && (kiAlt() || !(d.status === 'rout' && d.aufgerieben))) v += W_CAV_ZIEL * (run >= P.CHARGE_MIN ? 1.5 : 1);   // F94 (2026-11-22): Reiter gegen Geschütze, MG, Beobachter, Sanitäter, Fliehende und Niedergehaltene
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
     if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.nahSchreiter && moved && ((u.bpUsed || 0) + (kosten || 0)) > E.bpMax(u) / 2) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
@@ -6305,7 +6327,7 @@ function planArt(G, u) {
       const gd = !direct && E.guided(G, u.side, d.c, d.r), dmg = E.shellDmg(G, u, d, direct) * (gd ? P.GUIDED : 1);
       let v = dmg * 4 + (gd ? 0.8 : 0);   // markiertes Ziel: trifft sicher
       if (!d.supp && E.cls(d) !== 'walker' && d.fireDmg + dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
-      if (d.str - dmg < 1.5 || d.mor - dmg * 0.8 <= 0) v += 2.5;
+      if (d.str - dmg < (kiAlt() ? 1.5 : P.ROUT_STR) || morNach(G, d, dmg, 'front', false) <= 0) v += 2.5;
       if (E.cls(d) === 'walker' && direct) v += 1.5;
       if (TYPES[u.type].mobile && E.cls(d) !== 'walker') {   // KI-Runde 2026-11-17: Mörser/Minenwerfer auf Gegner in Stellung oder hinter Draht, wenn eigene Angreifer herankommen
         const t = E.hex(G, d.c, d.r).t, fest = ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village'].includes(t) || E.neighbors(d.c, d.r).some(([a, b]) => E.inMap(a, b) && E.hex(G, a, b).t === 'wire');
@@ -6454,10 +6476,10 @@ function next(G) {
     if (u.side === 'A') G._aiDone.add('b' + u.id);   // Generalangriff wird während des Zugs mehrmals geprüft (F53)
     const own = G.units.filter(o => o.side === u.side && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= P.BIG_R);   // Paket 8: wirkt nur 3 Felder um den General
     if (u.side === 'A') {   // Halten um jeden Preis: viele eigene Einheiten in Feindberührung oder mit wankender Moral
-      const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
+      const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < (kiAlt() ? P.FALLBACK_MOR : E.fallbackSchwelle(G, o)) + 0.5).length;
       // Prüfliste 2.21 (2026-11-21): vorher nur in gut einem Drittel der Schlachten. Zusätzlich: 2 Einheiten in Reichweite wanken (Moral knapp über der Fluchtgrenze
       // oder angeschlagen in Feindberührung), oder ein gehaltenes Zielfeld in Reichweite ist bedroht (Gegner bis 2 Felder heran) – Halten wirkt bis zum nächsten eigenen Zug
-      const wank = own.filter(o => o.mor < P.FALLBACK_MOR + 1.5 || (E.adjEnemies(G, o).length && o.str < 6)).length;
+      const wank = own.filter(o => o.mor < (kiAlt() ? P.FALLBACK_MOR : E.fallbackSchwelle(G, o)) + 1.5 || (E.adjEnemies(G, o).length && o.str < 6)).length;
       const zielBedroht = E.OBJECTIVES.some(ob => G.ctrl[ob.id] === u.side && own.some(o => E.dist(o.c, o.r, ob.c, ob.r) <= 1) && G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, ob.c, ob.r) <= 2));
       if (ENVX.HOLD_ALT ? shaky >= Math.max(3, Math.round(own.length * 0.35)) : (shaky >= Math.max(3, Math.round(own.length * 0.35)) || (wank >= 2 && own.length >= 3) || (zielBedroht && own.length >= 2 && G.turn >= 4))) return { u: u.id, steps: [{ k: 'big' }] };
     } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
@@ -6574,6 +6596,11 @@ function next(G) {
     const wert = d => { const p = E.preview(G, u, d, 'fire'); return Math.min(p.dmg, d.str) + (p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0); };
     const t = ts.sort((a, b) => wert(b) - wert(a))[0];
     if (wert(t) >= W_DAUER) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
+  }
+  // U7b Nr. 3: Sammeln-Befehl noch einmal nach dem Ziehen prüfen (vorher nur zu Beginn des Zugs, dann steht der Anführer oft noch zu weit weg)
+  if (!kiAlt() && !E.fluchtAlt()) for (const u of G.units) {
+    if (!E.canOrder(G, u) || G._aiDone.has('o2' + u.id)) continue;
+    if (E.canOrderKind(G, u, 'rally') && E.sammelZiele(G, u).some(o => o.str >= 4 && E.sammelChance(G, o, true) >= 0.5)) { G._aiDone.add('o2' + u.id); return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] }; }
   }
   // Zweiter Durchgang: Meldehunde bringen Befehle, dann nutzen Einheiten mit übrigen Aktionspunkten sie (weiter ziehen oder angreifen)
   for (const u of G.units) if (u.side === G.side && E.active(u) && TYPES[u.type].abil === 'ammo') {
@@ -6890,7 +6917,7 @@ function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-l
 function fxFaust(id, n) {
   const d = DU.get(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
-  const p = [d.x + x0 + w * (n ? 0.66 : 0.34), d.y + y0 + h * 0.56]; p.fuss = [d.x, d.y]; return p;
+  const lf = facesLeft(d.face), m = n ? [0.962, 0.51] : [0.6, 0.55], p = [d.x + x0 + w * (lf ? 1 - m[0] : m[0]), d.y + y0 + h * m[1]]; p.fuss = [d.x, d.y]; return p;   // U7b (138.3): Laufspitzen der Pose eisenknecht_posen_2 (vorher mitten im Bild, nicht gespiegelt)
 }
 function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
@@ -7222,7 +7249,7 @@ const MUZ_FIG = { /* K12 (2026-11-22): Schuss-Posen gemessen (rechteste Laufspit
   aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475],
   aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237], konkordat_loewenoger_2: [0.93, 0.315] /* U4: neu3 */, konkordat_mg_trupp_1: [1, 0.107], aschenwacht_mg_trupp_1: [1, 0.185], aschenwacht_panzerbuechse_trupp_1: [1, 0.6], konkordat_scharfschuetze_trupp_1: [1, 0.69] /* U4 Teil 3 */, aschenwacht_banner_posen3_1: [0.997, 0.366] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
 const MUZ2 = { konkordat_turmschreiter_posen_1: [0.818, 0.406], konkordat_koloss: [0.425, 0.515], konkordat_kreuzschreiter_posen2_2: [0.94, 0.128], aschenwacht_eisenknecht_posen_2: [0.984, 0.526], konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.695, 0.10] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
-const MUZ2H = { konkordat_koloss: [0.135, 0.478] };   // F3 (Punkt 135): Zweitwaffe nach hinten (Ziel hinter dem Fahrzeug) – hinteres Seiten-MG des Landkolosses
+const MUZ2H = { konkordat_koloss: [0.15, 0.478] };   // F3 (Punkt 135): Zweitwaffe nach hinten (Ziel hinter dem Fahrzeug) – hinteres Seiten-MG des Landkolosses
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
   const T = TYPES[u.type], k = figU(u), s = L.s, flip = facesLeft(d.face) ? 1 : 0, acc = FIG.PAL[u.side].accent;
@@ -9991,6 +10018,7 @@ async function playEvent0(e) {
     case 'fireout': { const old = VIS.fires || []; visSync('fires'); for (const f of old) if (!(VIS.fires || []).some(q => q.c === f.c && q.r === f.r)) { const [x, y] = center(f.c, f.r); gmark('bodenspuren', 0, x, y + s * 0.1, { mul: 0.85 }); } break; }   // Brandfleck bleibt
     case 'burn': playSound('ev_brennt', 0.4); kz(e.u, 'feuer', 'puls'); await wait(120); break;
     case 'steadfast': kz(e.u, 'pfeil', 'steig'); await wait(160); break;
+    case 'zerschlagen': { const dd = DU.get(e.u); if (dd) floater(...headPos(e.u), 'Zerschlagen!', '#F0EDE1'); toast(`${nm(u)} ist zerschlagen – die Reste ziehen ab.`); await wait(260); break; }   // U7b Nr. 4: Panik wird auf der Flucht zerschlagen
     case 'sammelnFehl': { const dd = DU.get(e.u); if (dd) floater(...headPos(e.u), `Sammeln misslungen (${Math.round((e.p || 0) * 100)} %)`, '#F0EDE1'); await wait(160); break; }   // U7 Schritt 2
     case 'dig': { const dd = DU.get(e.u); if (dd) dd.vs.dug = true; pose(e.u, 'graben', 1600); playSound('sandsaecke', 0.4, null, { noGap: true }); playSound('atmen', 0.42, null, { u, noGap: true });   /* Sandsäcke nur beim Eingraben (Enrico 15:26) */   /* F32: nur 72199 (Graben mit schwerem Atmen) */   /* Schaufel + schweres Atmen (Stimmfilter wie der Sprecher), 2026-11-18 */ await wait(240); break; }
     case 'shields': { pose(e.u, 'halten', 1800); const dd = DU.get(e.u); if (dd) { dd.vs.shields = true; rings.push({ x: dd.x, y: dd.y, r: 1.3, col: '#9aa3ab', life: 36, max: 36 }); } playSound('armor', 0.5); await wait(260); break; }
@@ -11752,6 +11780,7 @@ function noteEvent(e, u) {
     case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);
     case 'rout': if (e.aufgerieben && !E.fluchtAlt()) { logAdd(`${N(u)} ist zerschlagen – die Reste ziehen ab`, u.side, ...at(u), true); return headline(`${N(u)} zerschlagen!`, u.side); } logAdd(`${N(u)} flieht`, u.side, ...at(u), true); return headline(`${N(u)} flieht!`, u.side);
     case 'rally': return logAdd(`${N(u)} sammelt sich${e.by ? ' (' + e.by + ')' : ''}${e.p != null ? `, Chance ${Math.round(e.p * 100)} %` : ''}`, u.side, ...at(u));
+    case 'zerschlagen': return logAdd(`${N(u)} ist zerschlagen – die Reste ziehen ab`, u.side, ...at(u), true);
     case 'sammelnFehl': return logAdd(`${N(u)}: Sammeln misslungen (Chance ${Math.round((e.p || 0) * 100)} %)`, u.side, ...at(u));
     case 'destroyed': logAdd(`${N(u)} aufgerieben`, u.side, ...at(u), true); return headline(`${N(u)} aufgerieben!`, u.side);
     case 'officer': logAdd(`${e.name} ist gefallen`, u && u.side, ...at(u), true); return headline(`${e.name} fällt!`, u && u.side);
@@ -11807,7 +11836,7 @@ window.__dbg = { leichen: () => LEICHEN, buchten: () => GBW && GBW.buchtenJeFeld
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
-  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ fxSchirm: (id, zid, zweit) => { const d = DU.get(id), p = zweit ? fxSeite(id, zid) : fxMuzzle(id, 0, 0.42); if (!p) return null; const q = fxScr(p[0], p[1], p.fuss), r = cv.getBoundingClientRect(); return [r.left + q[0] * r.width / cv.width, r.top + q[1] * r.height / cv.height]; },   /* F3 Test: Mündungspunkt auf dem Bildschirm */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx, bildLinks: d.bildLinks }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
+  sync: () => syncAll(), get vis() { return { clouds: VIS.clouds.length, supp: [...DU.values()].filter(d => d.vs && d.vs.supp).length, shells: shells.length }; }, play: async evs => { for (const e of evs) await playEvent(e); }, spiel: evs => play(evs), fxPunkte: (a, d) => { const A = DU.get(a), D = DU.get(d); return { seite: fxSeite(a, d), muz: fxMuzzle(a, 0, 0.3), body: bodyPos(d), fa: [A.x, A.y], fd: [D.x, D.y], fbxA: A.fbx, fbxD: D.fbx, Ls: L.s }; },   /* F65 Test */ fxSchirm: (id, zid, zweit) => { const d = DU.get(id), p = zweit === 2 || zweit === 3 ? fxFaust(id, zweit - 2) : zweit ? fxSeite(id, zid) : fxMuzzle(id, 0, 0.42); if (!p) return null; const q = fxScr(p[0], p[1], p.fuss), r = cv.getBoundingClientRect(); return [r.left + q[0] * r.width / cv.width, r.top + q[1] * r.height / cv.height]; },   /* F3 Test: Mündungspunkt auf dem Bildschirm */ get pji() { return Object.keys(PJI); }, get mz() { return muzzles.map(m => m.img + ':' + Math.round(m.life)); }, get fxl() { return fxs.map(e => e.b + ':' + Math.round(e.life)); }, get gm() { return gmarks.map(m => m.b); }, fxImpact: (c, r) => { const [x, y] = center(c, r); return fxImpact(x, y, L.s * 0.95); }, get wayPt() { return wayPt; }, get mzp() { return muzzles.map(m => [m.img, Math.round(m.x), Math.round(m.y), +m.ang.toFixed(2)]); }, du: id => { const d = DU.get(id); return d && { x: d.x, y: d.y, face: d.face, muz: d.muz, fbx: d.fbx, bildLinks: d.bildLinks }; }, get fx() { return { sh: shells.length, tr: tracers.length, bo: booms.length, fl: floaters.length }; }, get scoutN() { return scoutSet.size; }, get sightN() { return sightSet.size; }, get spentN() { return spent.size; }, get hideN() { return hideSet.size; }, get readyN() { return readyN; },
   select: id => select(G.units.find(u => u.id === id)), tonWahl: (platz, id) => tonWahl(platz, unitById(id)), pkZiehen, get TONWAHL() { return TONWAHL; }, TON_AUS, MISCHTON, tonPick, waffenTon, stimmPool, stimmZiehen, tonSpurTempo: v => { tempo = speed = v; }, tonSpurStimme: id => selectVoice(unitById(id)), get SND_VAR() { return SND_VAR; }, setSound: on => setSound(on),   /* F91-Test */ poseInfo: id => { const u = G.units.find(x => x.id === id), d = DU.get(id); if (!u || !d || !d.pose) return null; const P0 = d.pose, pa = poseFigur(u, d, 0, null); return { art: P0.art, face: d.face, links: facesLeft(d.face), dxWelt: pa.dx * (facesLeft(d.face) ? -1 : 1), spiegel: !!pa.spiegel, von: P0.von, x: d.x }; }, bereitGrund: id => { const u = G.units.find(x => x.id === id); return u ? bereitGrund(u) : null; }, get sel() { return sel; },
   get marks() { const rc = cv.getBoundingClientRect(); return MARKS.map(m => ({ id: m.u.id, kind: m.kind, x: rc.left + (m.x0 + m.x1) / 2 * rc.width / cv.width, y: rc.top + (m.y0 + m.y1) / 2 * rc.height / cv.height })); },
   ctrl: (i, sd) => { const o = OBJECTIVES[i]; G.ctrl[o.id] = VIS.ctrl[o.id] = sd; updateUI(); }   // Test: Zielfeld i an Seite sd

@@ -1,3 +1,84 @@
+## 2026-11-27 – U7b Teil 2 (Punkt 136) und Punkt 138.3
+
+Gepusht:
+- `7d3d59c`: Regeln, KI, Texte, Messungen, Bilder
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung. Die neuen Regeln habe ich zusätzlich einzeln geprüft, mit und ohne Schalter: Halten, Zurückweichen trotz Niederhalten, letzter Versuch am Rand (40 von 200 sammeln sich, vorher 0), wankendes Geschütz ×0,85.
+- **Video:** `entwurf/probe/video/U7b_teil2.mp4` (Sankt Ruß, 25,3 s, mit Ton).
+- **Sitzung:** Vorgesehen war **Opus, Hoch**, gelaufen ist das Paket mit **Sonnet**. Wenn dir das bei Regeln und KI wichtig ist, lass die Fable-Prüfrunde oder eine Opus-Sitzung darüberschauen.
+- **Panne unterwegs:** Ein `sed -i` hatte in `ui.js` die Windows-Zeilenenden entfernt. Vor dem Commit habe ich sie Zeile für Zeile aus dem letzten Stand wiederhergestellt. Der Unterschied umfasst nur die echten Änderungen.
+
+**Gebaut** (jeder Teil hat einen eigenen Rückweg):
+- **Nr. 3, KI** (`KI_U7B_ALT`):
+  - Schüsse auf Zerschlagene zählen nur noch ×0,3, ohne den Zuschlag „Ziel bricht“. Das gilt auch für den Reiter-Bonus.
+  - Die Schwellen kommen jetzt aus den Regelwerten und richten sich nach der Deckung.
+  - Wankende Trupps ziehen in Deckung, wenn Gegner bis 5 Felder nah sind.
+  - Den Sammeln-Befehl prüft die KI jetzt auch nach dem Ziehen.
+- **Nr. 4, kleine Regelstellen** (`U7B4_ALT`):
+  - Am Rand wird erst ein letzter Sammelversuch gewürfelt.
+  - Ein Panik-Trupp unter 15 Stärke ist zerschlagen, die Punkte zählen sofort. Neue Meldung „Zerschlagen!“.
+  - Ein MG ist auf der Flucht abgebaut.
+  - Es gibt nur noch eine Quelle für Deckung. Haus, Kapelle und Mühle erholen sich jetzt wie andere Gebäude. Den halben Moralverlust habe ich bewusst nicht ausgeweitet.
+  - „Wankt“ ×0,85 gilt auch für Geschütze, Mörser, Sperrfeuer und Feuerschlag.
+  - Die Kettenflucht nutzt die Schwelle je nach Deckung.
+- **Nr. 5** (`HALTEWEICH_ALT`): „Halten um jeden Preis“ und ein aufgepflanztes Banner verhindern auch das Zurückweichen.
+- **Nr. 6** (`WEICHEN_ALT`): Der Treffer, der unter die Schwelle drückt, wirft den Trupp ein Feld zurück, auch wenn er ihn zugleich niederhält. Wer schon darunter liegt, bleibt liegen.
+- Die Regeltexte sind angepasst.
+- Nicht geändert (Teil von Fehler 12): Ein Fliehender ohne freies Feld und ohne Gegner daneben bleibt weiter stehen. Das ist selten.
+
+**Zwischenmessungen** (Konkordat-Quote, MISCHEN=1, Startwerte 1 und 2; Ausgang = dieselben Startwerte von Schritt 3):
+
+| Karte | Ausgang | nach Nr. 3 | nach Nr. 4 | nach Nr. 5/6 |
+|---|---|---|---|---|
+| Grauwall | 49 | 52,5 | 52 | 53,5 |
+| Sankt Ruß | 46 | 42,5 | 41,5 | 44,5 |
+| Winterdorf | 57,5 | 60 | 56,5 | 57 |
+
+**Voller Lauf** (4 Startwerte × 100, `entwurf/probe/u7/u7b.json`):
+
+| Karte | Schritt 3 → U7b | Läufe |
+|---|---|---|
+| Grauwall | 48,25 % → **52 %** (+3,8) | 61/46/59/42 |
+| Sankt Ruß | 48,25 % → **45,75 %** (−2,5) | 43/46/47/47 |
+| Winterdorf | 56,5 % → **57,25 %** (+0,8) | 56/58/56/59 |
+
+Alle drei Karten liegen in der Streuung von ±4, Grauwall knapp. Die einzelnen Läufe dort schwanken stark (42–61). Die Runden bleiben gleich.
+
+| je Schlacht (Konkordat / Aschenwacht) | Grauwall | Sankt Ruß | Winterdorf |
+|---|---|---|---|
+| zurückgewichen | 3,6 / 4,1 → 5,9 / 6,2 | 9,8 / 9,3 → 14,8 / 12,7 | 4,9 / 4,7 → 8,6 / 8,4 |
+| Flucht | 4,7 / 4,5 → 4,1 / 4,2 | 7,8 / 5,9 → 7,3 / 5,5 | 4,9 / 5,1 → 4,5 / 4,7 |
+| vernichtet auf der Flucht | 2,3 / 2,3 → 1,5 / 1,6 | 3,6 / 2,6 → 2,5 / 1,8 | 2,6 / 2,1 → 1,8 / 1,3 |
+| auf der Flucht zerschlagen (neu) | 0,3 / 0,6 | 0,9 / 0,8 | 0,7 / 0,7 |
+| gesammelt | 0,47 / 0,71 → 0,41 / 0,73 | 1,36 / 1,41 → 1,39 / 1,47 | 0,60 / 0,85 → 0,61 / 0,99 |
+| davon durch Befehl | 0,04 / 0,13 → 0,03 / 0,10 | 0,21 / 0,28 → 0,19 / 0,31 | 0,06 / 0,09 → 0,06 / 0,08 |
+
+- **Zurückweichen** passiert jetzt 40–80 % häufiger. Das ist die Wirkung von Nr. 6.
+- **Auf der Flucht vernichtet** werden rund 30 % weniger, weil die KI Zerschlagene nicht mehr jagt.
+- **Der zweite Sammeln-Befehl bringt praktisch nichts:** Der Befehl wird weiter genauso selten genutzt. Die Anführer stehen meist nicht nah genug an den Fliehenden.
+
+**Nr. 7 – nur gemessen** (`P_MOR_PER_DMG=1` statt 0,8; **nur 1 Startwert**, also grob; nichts eingebaut), Werte Konkordat / Aschenwacht:
+
+| Karte | Quote 0,8 → 1,0 | Panik-Fluchten | zerschlagen | gesammelt |
+|---|---|---|---|---|
+| Grauwall | 61 → 60 % | 1,3 / 2,6 → 2,1 / 3,5 | 2,7 / 1,3 → 2,4 / 1,1 | 0,4 / 0,6 → 0,8 / 1,2 |
+| Sankt Ruß | 43 → **56 %** | 4,3 / 3,3 → 5,8 / 4,6 | 2,8 / 1,4 → 2,3 / 1,1 | 1,5 / 1,4 → 2,0 / 2,1 |
+| Winterdorf | 56 → 61 % | 2,2 / 2,9 → 3,9 / 4,2 | 2,4 / 2,0 → 1,7 / 1,3 | 0,6 / 1,0 → 1,4 / 1,5 |
+
+- Mit 1,0 gibt es deutlich mehr Panik statt „zerschlagen“, und gesammelt wird fast doppelt so oft.
+- Sankt Ruß (+13) und Winterdorf (+5) verschieben sich zum Konkordat. Meine Empfehlung: **so nicht übernehmen**, höchstens nach einem Kartenabgleich.
+
+**Punkt 138.3:**
+- **Faustsalve des Eisenknechts:** Sie war falsch. Die Blitze entstanden unter bzw. mitten in den Läufen und wurden nicht gespiegelt. Jetzt kommen sie aus beiden Laufspitzen (`entwurf/probe/u7b/4_faustsalve_punkte.jpg`).
+- **Landkoloss nach hinten:** Er schießt richtig aus dem hinteren Seiten-MG (`5_koloss_hinten.jpg`). Den Punkt habe ich eine Spur an den Lauf herangerückt.
+
+**Fragen an Enrico:**
+1. Nr. 7: So lassen (0,8), oder soll der Berater einen Kartenabgleich mit 1,0 einplanen?
+2. Soll die Fable-Prüfrunde auch U7b Teil 2 ansehen, weil es mit Sonnet statt Opus gebaut wurde?
+
 ## 2026-11-27 – Fix F3 (Punkt 135) und U7b Teil 1 (Punkt 136)
 
 Gepusht:
