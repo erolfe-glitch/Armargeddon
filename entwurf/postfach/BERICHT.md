@@ -1,3 +1,25 @@
+## 2026-11-27 – U3 Teil 3 (Punkt 118.3): Helden-Effekte und Fesselballon – U3 damit fertig
+
+Gepusht: `ac4c361` (mit index.html).
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat.
+
+**Helden-Effekte mit Figurenfaktor** (`heldFak`, Rückweg `window.FIGFAK_ALT`):
+- **Was mitwächst:** Glut aus dem Ofen der Roten Faust (Größe und Steighöhe), Dampfstoß aus der Faust, Funken beim Aura-Puls.
+- **Rechnung:** Diese Effekte richten sich nach der Höhe des gezeichneten Heldenmodells, gemessen gegen 0,75 Feldradien (1,5 SH), für die sie gebaut wurden.
+- **Ergebnis:** Gemessen sind beide Helden 85 bzw. 86 Weltpixel hoch, also 0,85 Feldradien. Die Effekte werden dadurch etwa 13 % größer, kaum zu sehen.
+- **Wenn die Helden kleiner werden:** Wird das Modell später kleiner gemalt (Maßstab-Umstellung), schrumpfen diese Effekte mit.
+- **Bleibt feldgroß:** Druckwellen und Ringe am Boden, Furcht-Ring und Aura-Schein am Boden. Sie wirken auf das Feld.
+
+**Fesselballon:** Er rechnet seine Größe schon aus der Figurhöhe (`FIG_SH`), Ballon und Korb stehen im richtigen Verhältnis zur Winde. Ich habe nichts geändert.
+
+**Bilder:** `entwurf/probe/u3/helden/faust_glut.jpg`, `durchbruch_2.jpg`, `ballon.jpg` (Werkzeug `node tools/u3_helden.mjs`).
+
+**Damit ist U3 komplett** (Teil 1 `136f3cc`, Teil 2 `735cae4`, Teil 3 `ac4c361`). Nächster `pa`: Rest U4.
+
+**Fragen an Enrico:** keine neuen. Die zwei Fragen aus Teil 2 gelten noch: Größe des Mündungsfeuers, Leuchtspur bei 4 oder 8 Schützen.
+
 ## 2026-11-27 – U3 figurennahe Effekte (Punkt 118 + Punkt 62), Teil 1 und 2
 
 Gepusht:
