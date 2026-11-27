@@ -1,3 +1,52 @@
+## 2026-11-27 – U4 Teil 5 (Punkt 123): Sanitäter mit Trage, Versorgung, Fernsprech
+
+Gepusht:
+- Commit „U4 Teil 5“ (siehe `git log`)
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, keine Seitenfehler bei den Aufnahmen.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat.
+
+**Herunterladen und Sichern:**
+- Alle 5 Bögen sind geladen (nach deiner Erlaubnis im Chat, zusammen 28,3 MB) und liegen in `ui-quelle/figuren/<fraktion>/`.
+- **Sicherung:** robocopy nach OneDrive, Rückgabewert 1 (kopiert, kein Fehler).
+
+**Abzeichen:**
+- **Adler übermalt:** auf allen vier Helmen der Aschenwacht-Sanitäter (zwei Träger, der Kniende, der mit Tasche).
+- **Kreuz übermalt:** das weiße Kreuz auf der Konkordat-Sanitätstasche.
+- **Ohne Abzeichen:** Die Helme der Aschenwacht-Versorgung sind sauber.
+
+**Schnitt:**
+- Je Bogen 3 Teile, die Farbe ist an die Fraktion angeglichen, die Plastik-Karten sind neu.
+- Beim Aschenwacht-Versorgungsbogen berührt die Werkzeugtasche den Kistenträger. Die Figuren werden dort über eine Naht getrennt.
+- Die alten Bögen bleiben unverändert liegen.
+
+**Im Spiel** (Tabelle `GRUPPE`, feste Plätze):
+- **Feldscher und Aschenpfleger:**
+  - Aufstellung: Trage-Gruppe hinten, Sanitäter mit sitzendem Verwundeten vorn, Sanitäter mit Tasche daneben.
+  - Verluste: zuerst der mit Tasche, dann die kniende Gruppe, zuletzt die Trage.
+  - Rückweg `window.SANI_TRAGE_ALT`.
+- **Versorgung „Munition“:** links zwei Träger (Kiste auf der Schulter bzw. Gepäck, dazu der Kistenträger), rechts der Munitionskarren frei sichtbar.
+- **Versorgung „Werkstatt“:** der kniende Schrauber bzw. Hämmerer und der Kistenträger, daneben die Werkzeugkiste.
+- Rückweg für beide Versorgungstrupps `window.VERSORGUNG_NEU_ALT`.
+- **Fernsprechtrupp (Konkordat):**
+  - Der Telefonist kniet rechts hinten direkt vor dem Feldtelefon, sein Hörerkabel zeigt dorthin. Dazu kommen Kabelleger und Melder.
+  - Die Regel kennt 4 Modelle, gemalt sind 3 Figuren. Der Kabelleger erscheint deshalb zweimal.
+  - Rückweg `window.FERNSPRECH_NEU_ALT`.
+- **Bilder:**
+  - nachher: `entwurf/probe/u4/teil5/nachher/<typ>_voll.jpg` und `_verluste.jpg`, Übersicht `entwurf/probe/u4/teil5/nachher/uebersicht.jpg`
+  - vorher: `entwurf/probe/u4/teil5/vorher/uebersicht.jpg`
+
+**Hinweise:**
+- **Keine Posen mehr:** Die neuen Gruppen zeigen keine der alten Posen (Heilen, Reparieren, Laufen), die alle noch im alten Look sind. Für Gefallene nimmt das Spiel weiter die alte Getroffen-Pose.
+- **Modelle:** Die Sanitäter haben in der Regel 2 Modelle, gezeigt werden 3 Teile. Die Verluste fallen deshalb in Dritteln der Stärke.
+- **Ohne neuen Bogen:** Ein Aschenwacht-Fernsprechtrupp hätte das alte Bild, es gibt keinen Bogen dafür.
+
+**Fragen an Enrico:**
+1. Sollen Sanitäter, Versorgung und Fernsprech noch Posen im neuen Look bekommen (Heilen, Reparieren, Laufen, Getroffen)? Dann müsste der Berater sie malen.
+
 ## 2026-11-27 – U4 Teil 4 (Punkt 122): Löwenoger-Posen
 
 Gepusht:
