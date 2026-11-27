@@ -81,17 +81,19 @@ function schneeKante(im, anteil, minPx = 2) {
 }
 const MUEHLE_GROSS = 1.5;   // G6b: Windmühle als Landmarke 1,5× (heil und eingestürzt gleich; verdeckt sie Figuren dahinter, wird sie durchsichtig wie andere hohe Teile)
 const MUEHLE_MASKE = new WeakMap();   // ST1c (Punkt 117, 2026-11-27): gemalter Bodenfleck der Mühle nur noch im eigenen Feld (weiche Ellipse um die Feldmitte), Turm und Flügel ragen weiter nach oben; Rückweg window.MUEHLE_RAND_ALT
-function muehleMaske(im, wR, fussR, heil) {   // wR = Bildbreite in Feldradien, fussR = Bildunterkante unter der Feldmitte (Feldradien)
+function muehleMaske(im, wR, fussR, heil, schnee) {   // wR = Bildbreite in Feldradien, fussR = Bildunterkante unter der Feldmitte (Feldradien)
   if (!im || window.MUEHLE_RAND_ALT || typeof document === 'undefined') return im;
   const m0 = MUEHLE_MASKE.get(im); if (m0) return m0;
   const w = im.width, h = im.height, pR = w / wR, cx = w / 2, cy = h - fussR * pR, rx = MUEHLE_RX * pR, ry = rx * MUEHLE_RY, fe = 0.16 * pR;
   const mk = document.createElement('canvas'); mk.width = w; mk.height = h; const g = mk.getContext('2d'); g.filter = `blur(${Math.round(fe / 2)}px)`; g.fillStyle = '#fff';
   g.beginPath(); g.ellipse(cx, cy, rx - fe / 2, ry - fe / 2, 0, 0, Math.PI * 2); g.fill();
-  const oben = heil ? [[[0.17, 0], [0.36, 0], [0.36, 0.5], [0.17, 0.5]], [[0.36, 0], [0.64, 0], [0.64, 0.22], [0.607, 0.3], [0.627, 9], [0.36, 9]]] : [[[0.31, 0], [0.67, 0], [0.67, 9], [0.31, 9]]];   // über dem Feld: Flügel (links) und Turm samt Dach (kegelig) – der Boden daneben liegt dahinter und wird abgeschnitten
+  const oben = heil ? [[[0.17, 0], [0.36, 0], [0.36, 0.5], [0.17, 0.5]], [[0.36, 0], [0.64, 0], [0.64, 0.22], [0.607, 0.3], [0.627, 9], [0.36, 9]]] : [[[0.31, 0], [0.67, 0], [0.67, 9], [0.31, 9]], ...(window.MUEHLE_BALKEN_ALT ? [] : schnee ? MUEHLE_BALKEN_SCHNEE : MUEHLE_BALKEN)];   // über dem Feld: Flügel (links) und Turm samt Dach (kegelig) – der Boden daneben liegt dahinter und wird abgeschnitten
   for (const pl of oben) { g.beginPath(); pl.forEach(([x, y], k) => g[k ? 'lineTo' : 'moveTo'](x * w, y ? Math.min(y * h, cy) : -fe)); g.fill(); }
   const out = document.createElement('canvas'); out.width = w; out.height = h; const o = out.getContext('2d'); o.drawImage(im, 0, 0); o.globalCompositeOperation = 'destination-in'; o.drawImage(mk, 0, 0);
   MUEHLE_MASKE.set(im, out); return out;
 }
+const MUEHLE_BALKEN = [[[0.66, 0.17], [0.72, 0.17], [0.8, 0.21], [0.87, 0.27], [0.9, 0.37], [0.91, 0.69], [0.66, 0.69]], [[0.16, 0.25], [0.24, 0.15], [0.31, 0.2], [0.31, 0.45], [0.16, 0.36]]];   // Punkt 118.0/119.1 (2026-11-27): eingestürzt – Balken, die oben rechts (und links) übers Feld ragen, bleiben stehen; nur der Boden wird beschnitten (Rückweg window.MUEHLE_BALKEN_ALT)
+const MUEHLE_BALKEN_SCHNEE = [[[0.66, 0.1], [0.76, 0.1], [0.85, 0.22], [0.91, 0.24], [0.95, 0.42], [0.96, 0.7], [0.66, 0.7]], [[0.15, 0.24], [0.23, 0.15], [0.31, 0.2], [0.31, 0.46], [0.15, 0.3]]];
 const MUEHLE_RX = 0.95, MUEHLE_RY = 0.6;   // Ellipse des Feldbodens im Bild (Halbachsen in Feldradien, senkrecht gestaucht wie die gekippte Ansicht)
 function schneeAuflage(im) {   // G6b (2026-11-25): Koloss-Wrack im Schnee – Schneekappen auf allen Oberkanten, gemalte Schneeflecken verbreitert, leichter Reif
   if (!im) return im; const key = 'auflage'; if (!SCHNEE.has(key)) SCHNEE.set(key, new Map()); const C = SCHNEE.get(key); if (C.has(im)) return C.get(im);
@@ -919,7 +921,7 @@ function aufbauen(cfg, IM) {
       const sn = WI && IM.muehle_heil_schnee ? '_schnee' : '';
       if (t === 'sperre_weg') { const W2 = pool('sperre_weg'); for (const [e, kk, k] of [[4, 0.5, 1], [1, 0.45, 2]]) stand(W2[Math.floor(q(k) * W2.length)], ...corner(c, r, e, kk), 0.62 * SH * (0.85 + q(k + 4) * 0.25), { flip: flipR(c, r, k + 8) }); return; }   // gleiche Stellen wie die Sperre
       const im = t === 'wrack' ? IM[(sn ? 'wrack_schnee_' : 'wrack_') + (q(90) < 0.5 ? 1 : 2)] : IM[(t === 'muehle' ? 'muehle_heil' : 'muehle_kaputt') + sn];
-      const wM = t === 'wrack' ? 1.9 : 2.4 * (window.G6B_ALT ? 1 : MUEHLE_GROSS), imM = t === 'wrack' ? im : muehleMaske(im, wM, 0.62, t === 'muehle');
+      const wM = t === 'wrack' ? 1.9 : 2.4 * (window.G6B_ALT ? 1 : MUEHLE_GROSS), imM = t === 'wrack' ? im : muehleMaske(im, wM, 0.62, t === 'muehle', !!sn);
       if (imM) stand(imM, hx, hy + R * (t === 'wrack' ? 0.5 : 0.62), breit(imM, wM), { noShadow: true, shadeK: 0.3, durch: t !== 'wrack' && !window.G6B_ALT ? 0.3 : 0 }); return; }   // G6b: große Mühle durchsichtiger, wenn Figuren dahinter stehen
     if (deko === 'brunnen') stand(IM.dorf_aufsteller_1, hx - R * 0.58, hy + R * 0.02, px(IM.dorf_aufsteller_1), { shadeK: 0.4 });   // Brunnen am linken Rand des Platzes (nicht vor der Kirchenmauer)
     if (deko === 'wegkreuz') stand(IM.dorf_aufsteller_2, hx + R * 0.55, hy - R * 0.45, px(IM.dorf_aufsteller_2), { shadeK: 0.3, flip: q(201) < 0.5 });
