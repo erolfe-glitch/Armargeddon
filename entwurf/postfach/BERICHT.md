@@ -1,3 +1,38 @@
+## 2026-11-27 – U4 Teil 4 (Punkt 122): Löwenoger-Posen
+
+Gepusht:
+- Commit mit den Posen (siehe `git log`, „U4 Teil 4“)
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, keine Seitenfehler bei den Aufnahmen.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat.
+
+**Ablauf:**
+- **Herunterladen:** Die drei Posen sind geladen (nach deiner Erlaubnis im Chat, zusammen 17,3 MB) und liegen in `ui-quelle/figuren/konkordat/` als `konkordat_loewenoger_sprung/_hieb/_getroffen.png`.
+- **Sicherung:** robocopy nach OneDrive, Rückgabewert 1 (kopiert, kein Fehler).
+- **Schnitt:**
+  - Jede Datei ist eine Einzelpose.
+  - Beim Prankenhieb ist der gemalte Bewegungsbogen über vier Kästen gelöscht. Über den Krallenspitzen bleibt höchstens ein Hauch davon.
+  - Die gemalten Blutspritzer beim Getroffenen fallen als lose Teile weg; das Blut auf der Schulter bleibt.
+- **Größe:** Der Prankenhieb ist so hoch wie die Ruhepose, Sprung und Getroffen haben denselben Maßstab. Der Sprung war größer gemalt (Kopf etwa 1,25×) und ist entsprechend verkleinert. Danach habe ich alle drei um 10 % verkleinert, damit die Köpfe so groß sind wie in der Ruhepose.
+- **Farbe** an das Konkordat angeglichen, Plastik-Karten neu.
+- **Im Spiel (POSE_SETS):**
+  - Nahkampf und Hieb: Prankenhieb
+  - Sprungangriff: Sprung
+  - Getroffen: Getroffen (diese Pose zeigen auch die Gefallenen)
+  - Schießen bleibt Pose 2 des neu3-Bogens.
+  - In Ruhe stehen weiter die drei Köpfe gemischt.
+  - Rückweg `window.OGER_POSEN_NEU3_ALT`.
+- **Bilder:** `entwurf/probe/u4/oger_posen/oger_3_<modelle|schiessen|nahkampf|sprung|getroffen>.jpg`, Übersicht `entwurf/probe/u4/oger_posen/uebersicht.jpg` (Werkzeug `N=3 MEHR=1 node tools/oger_probe.mjs entwurf/probe/u4/oger_posen`).
+
+**Hinweis:** In einer Pose zeigen alle drei Oger dasselbe Bild. Beim Prankenhieb ragt der ausgestreckte Arm etwas übers Feld hinaus, das ist nur kurz zu sehen.
+
+**Nicht gemacht:** gelaende.js nachladen (laut Auftrag später).
+
+**Fragen an Enrico:** keine.
+
 ## 2026-11-27 – Figurenbilder nachladen statt einbetten (deine Wahl nach U4 Teil 3)
 
 In AUFTRAG.md stand kein neuer Auftrag. Du hast im Chat „Figuren nachladen“ gewählt.
