@@ -1,3 +1,60 @@
+## 2026-11-27 – UI1 Teil 2, Zwischenstand: A (Nachbesserungen) und B (neue Symbole)
+
+Gepusht:
+- `fb7e941`: Karte, Knöpfe, Symbole, Bilder
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Teil C fehlt noch:** Nachschub-Karten, Info-Fenster, obere Leiste und Klickgeräusche. Das wäre für einen `pa` zu viel geworden, deshalb nach Sparregel 5 hier ein Zwischenstand. Teil C kommt mit dem nächsten `pa`.
+- **Hänger:** keine. Alle Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“.
+- **Video:** `entwurf/probe/video/UI1_teil2a.mp4`.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+
+**A. Nachbesserungen Teil 1:**
+1. **Karte kompakter:**
+   - Deckungsschild und Zustände stehen in der Kopfzeile neben dem Kategorie-Schild.
+   - „Aktion frei“, „i Info“ und „Mehr ▾“ stehen klein mit Messingrand rechts unter der Stufen-Zeile. Die Stufen-Zeile darf dafür umbrechen, sonst wurde sie abgeschnitten.
+   - Die Eigenschaften stehen rechts in der Zeile der ▲/▼-Plaketten.
+   - Höhe bei 1280 × 800: etwa **360 px** (vorher 465). Bei 1920 sind es 380 px, bei 2560 rund 390 px.
+2. **Knopfgruppen:** Es erscheinen nur vorhandene Gruppen, immer in der Reihenfolge BEWEGEN · ANGRIFF · FÄHIGKEITEN · DREHEN. Jede Art hat ihren festen Platz in der Gruppe, Schießen steht immer zuerst. „Fertig“ steht ohne Überschrift am Ende.
+3. **Überschriften:** auf einer schmalen Eisenleiste über der ganzen Gruppenbreite, 15 px auch bei 1280. Kostenmünzen und Knöpfe überdecken sie nicht.
+4. **Knöpfe als Eisenplatten:** Eisen gekachelt, Tintenschicht, 3 px Tintenrand. Aktiv bzw. pulsierend bekommen sie einen Messingrand. Die gemalten Symbole sind aufgehellt, weil die dunklen auf Eisen fast verschwanden. Graue Knöpfe sind dunkler.
+5. **Schildchen:** Tastenziffern und „i Info“ sind jetzt 15 px groß. Die Messung meldet bei 1920 und 2560 als kleinste Schrift 15 px. Bei 1280 sind die Wert-Beschriftungen auf der Karte 13 px.
+
+**B. Neue Symbole:**
+- **Erzeugt:** zwei Bögen über fal (Nano Banana 2 Edit, Stilvorlage `bogenC_symbole.png`), etwa **0,24 $**. Übersicht: `entwurf/probe/fal/20261127_2154_uebersicht.jpg`.
+- **Abzeichen:** keine Kreuze, Adler oder Totenköpfe.
+- **Einbau:** mit `ui_cut.py` geschnitten (4×2, Nahtschnitt) und mit `panel_assets.py` eingebaut. Die Bögen liegen in `ui-quelle/` und in OneDrive unter `ui-quelle/symbole/`.
+
+**Zuordnung:**
+
+| Symbol | Gilt für |
+|---|---|
+| Brustpanzer | Wert „Abwehr“ |
+| dünne Platte / zwei Platten | Leicht gepanzert / Gepanzert, Schwer gepanzert, Sehr zäh |
+| Sanduhr | „einmal je Schlacht“, Stufe 3, „Einmal: …“ |
+| Lorbeer mit Faust | Held |
+| Stern-Plakette | Höchstens einer |
+| Kriegsmaske | Furcht-Aura |
+| Pferdekopf | Ansturm |
+| Stiefel mit Pfeil | Zieht n Felder |
+| Stiefel mit Gewehr | Ziehen und feuern |
+| Stiefel im Schlamm | Langsam, bleibt stecken |
+| Geschützturm | Geschützturm |
+| Fernglas | Sieht / Sicht |
+| zwei Hiebe | Zwei Schläge |
+| Kettensäge | Kettensäge |
+| Hammer mit Klaue | Kriegshammer, Hackklinge, Stahlklaue |
+
+- **Passt nicht ganz:** „Zwei Schläge“ ist ein schwarzer Doppelstrich ohne Füllung. Auf dem dunklen Kästchen ist er auch aufgehellt nur schwach zu sehen. Ein Neumalen mit Messing- oder Blutfarbe wäre besser.
+
+**Bilder:** `entwurf/probe/ui1/teil2/` (1280, 1920 und 2560 px: Schützenkohorte, Hauptmann, MG, Tooltip mit Maus und Finger, aufgeklappte Karte).
+
+**Fragen an Enrico:**
+1. Gefällt die Eisenplatten-Fassung der Knöpfe, oder sollen die gemalten Knopfrahmen zurück?
+2. Soll der Berater „Zwei Schläge“ farbig neu malen?
+
 ## 2026-11-27 – UI1 Teil 1 (Punkt 141): Einheitenkarte, Knopfgruppen, Schrift
 
 Gepusht:
