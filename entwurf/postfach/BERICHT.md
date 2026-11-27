@@ -1,3 +1,131 @@
+## 2026-11-27 – U7 Schritt 2 (Punkt 125/86) und Fix F1 (Punkt 127)
+
+Gepusht:
+- `8ea4cff`: F1 und Vermerk für U9
+- `5e1c2f3`: U7 Schritt 2
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung (11 neue P-Schlüssel).
+
+**Fix F1 – Nachschub-Menü verdeckt:**
+- **Ursache:** Seit die Kategorie-Leiste (Linie / Unterstützung / Elite / Gerät, K1) dazukam, hat das Menü fünf Zeilen, das Raster war aber für vier gebaut. Die Reiterzeile (Alle, Kommando, Standard …) landete in der schrumpfbaren Zeile, wurde **0 px hoch** und lag unter den Karten. Das war der kaum sichtbare obere Teil.
+- **Jetzt:** Raster mit fünf Zeilen. Titel, Kategorien und Reiter sind bei jeder Größe ganz zu sehen, die Liste scrollt innen.
+- **Gespeicherte Lage:** Eine Lage in `arm.shoppos`, die ins Unsichtbare zeigt, wird beim Öffnen zurückgeholt (das tat sie schon) und jetzt auch gleich so gespeichert.
+- **Geprüft:** 1280×720, 1280×800, 1920×1080, 2560×1440, je mit normaler und mit verschobener Lage.
+- **Bilder:** `entwurf/probe/f1/vorher/` und `entwurf/probe/f1/nachher/shop_*.jpg` (Werkzeug `node tools/f1_shop.mjs`).
+
+**Kreuzschreiter:** Deine Antwort steht in IDEEN.md unter „Offen“: Die KI kauft sehr seltene Einheiten erst ab U9. Beim Speichern von IDEEN.md ist eine noch nicht eingecheckte Notiz des Beraters vom 26.11. (Armeeaufbau und Kampagne) mit eingecheckt worden.
+
+**U7 Schritt 2 – Regeln** (Rückweg `FLUCHT_ALT`):
+- **Zwei Arten Flucht:**
+  - Stärke unter 15 = **zerschlagen**. Die Reste ziehen ab, das ist endgültig, und der Gegner bekommt die Punkte sofort.
+  - Moral 0 = **Panik**, der Trupp ist sammelbar.
+- **Langsamer:** Nach dem ersten Fluchtschritt (2 Felder) läuft der Trupp je Runde nur noch `P.FLUCHT_BP` 2 Felder. Am Rand ist er erst zu Beginn der nächsten eigenen Runde weg.
+- **Sammeln zu Rundenbeginn** für jeden Fliehenden ohne Feind daneben (`sammelChance`):
+  - Grundchance: allein 20 %, mit Hauptmann bis 2 Felder 60 %, mit General 80 %.
+  - Deckung +15 %, Banner bis 2 Felder +20 %, je früherem Sammeln −15 %, höchstens 90 %.
+  - Gesammelt hat er Moral 35 (vorher 30, genau die Rückzugsschwelle). Nicht in der Runde, in der die Flucht begann.
+- **Befehl „Sammeln“ auf Fliehende (Punkt 86):**
+  - Er erreicht zusätzlich Fliehende bis 2 Felder (General 3), jeder würfelt mit `sammelChance` + 20 %.
+  - Er kostet wie bisher die Aktion und einen der drei Befehle.
+  - Die Chance steht am Knopf („Sammeln 80 %“) und im Hinweis je Trupp. Über dem Trupp erscheint sie im Wirkungsbereich (siehe Hinweis unten).
+  - Misslungenes Sammeln erscheint als Meldung mit Prozent.
+- **Verlust erst am Rand:** Fliehende in Panik zählen in den Verlusten halb, die 20 Punkte für den Gegner gibt es erst am Rand oder bei Vernichtung.
+- **Fehler aus der Fable-Prüfung:**
+  - **Behoben:** Gas-Flucht und Kettenflucht laufen über `routUnit` (Fehler 3), und die Kettenflucht trifft nur noch Wankende unter Moral 30. Heldenfall und „Kopf runter!“ prüfen auf Flucht (Fehler 5). Zurückweichen gibt es höchstens einmal je gegnerischer Runde (Fehler 6).
+  - **Absichtlich unverändert:** Furcht-Aura und Entsetzen haben eigene Untergrenzen und lösen weiter keine Flucht aus.
+  - **Mit den Regeln oben erledigt:** Fehler 2 (Moral 35 nach dem Sammeln) und Fehler 4 (Punkte erst am Rand).
+- **KI:**
+  - Der Anführer gibt „Sammeln“, wenn ein Fliehender mindestens 50 % Chance und 40 Stärke hat.
+  - Anführer und Banner suchen Felder bis 2 Felder neben Wankenden oder Fliehenden (`W_SAMMEL` 1,5).
+  - Fliehende Gegner nahe eines gegnerischen Anführers sind lohnendere Ziele (`W_FLUCHT_ZIEL` 2).
+- **Erklärung:** Das Regeln-Fenster hat einen neuen Absatz „Moral und Flucht“ mit allen Chancen. Der Absatz „Anführer“ nennt jetzt Fliehende.
+
+**Messung Schritt 1 → Schritt 2** (`MISCHEN=1`, je 4×100 Schlachten, Streuung etwa ±4):
+
+
+**grauwall** – Konkordat 53.5 % → **50.5 %** (-3.0; Läufe 54/50/54/44), Runden 15.28 → 15.25
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Flucht | 4.72 / 4.44 → 4.6 / 4.43 |
+| Flucht (Moral) | 1.89 / 2.84 → 1.74 / 2.73 |
+| Flucht (Stärke) | 2.7 / 1.46 → 2.79 / 1.5 |
+| Flucht (Gas) | 0.1 / 0.14 → 0.05 / 0.17 |
+| Flucht (Kette) | 0.03 / 0.01 → 0.01 / 0.02 |
+| gesammelt | 0.19 / 0.31 → 0.44 / 0.66 |
+| gesammelt (Befehl) | 0 / 0 → 0.05 / 0.1 |
+| Sammelbefehl misslungen | 0 / 0 → 0.02 / 0.04 |
+| Sammel-Chance bestand | 0.18 / 0.33 → 0.86 / 1.24 |
+| Rundenanfänge auf der Flucht | 3.16 / 2.21 → 5.01 / 3.19 |
+| entkommen am Rand | 1.65 / 1.76 → 0.92 / 0.94 |
+| vernichtet auf der Flucht | 2.1 / 1.89 → 2.28 / 2.29 |
+| noch fliehend am Ende | 0.78 / 0.49 → 0.96 / 0.54 |
+| zurückgewichen | 6.54 / 7.19 → 4.98 / 5.62 |
+| niedergehalten | 35.53 / 23.08 → 35.32 / 23.14 |
+
+**sanktruss** – Konkordat 46 % → **46 %** (0.0; Läufe 45/44/44/51), Runden 14.15 → 14.08
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Flucht | 7.47 / 5.63 → 7.73 / 5.71 |
+| Flucht (Moral) | 4.66 / 3.73 → 4.69 / 3.59 |
+| Flucht (Stärke) | 2.6 / 1.45 → 2.8 / 1.63 |
+| Flucht (Gas) | 0.13 / 0.41 → 0.15 / 0.43 |
+| Flucht (Kette) | 0.08 / 0.05 → 0.1 / 0.05 |
+| gesammelt | 0.52 / 0.64 → 1.24 / 1.35 |
+| gesammelt (Befehl) | 0 / 0 → 0.18 / 0.26 |
+| Sammelbefehl misslungen | 0 / 0 → 0.14 / 0.18 |
+| Sammel-Chance bestand | 0.45 / 0.55 → 2.67 / 2.11 |
+| Rundenanfänge auf der Flucht | 4.79 / 3.38 → 7.71 / 5.61 |
+| entkommen am Rand | 2.95 / 2.29 → 1.45 / 1.04 |
+| vernichtet auf der Flucht | 3.14 / 2.09 → 3.64 / 2.44 |
+| noch fliehend am Ende | 0.86 / 0.61 → 1.4 / 0.88 |
+| zurückgewichen | 15.46 / 14.77 → 12.37 / 11.38 |
+| niedergehalten | 44.21 / 22.58 → 44.23 / 22.28 |
+
+**winterdorf** – Konkordat 56.75 % → **58.5 %** (+1.8; Läufe 54/63/57/60), Runden 14.22 → 14.35
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Flucht | 4.73 / 4.5 → 5.02 / 4.95 |
+| Flucht (Moral) | 2.48 / 2.64 → 2.48 / 2.84 |
+| Flucht (Stärke) | 2.19 / 1.79 → 2.46 / 2.03 |
+| Flucht (Gas) | 0.04 / 0.06 → 0.06 / 0.05 |
+| Flucht (Kette) | 0.02 / 0.01 → 0.01 / 0.02 |
+| gesammelt | 0.22 / 0.22 → 0.6 / 0.81 |
+| gesammelt (Befehl) | 0 / 0 → 0.06 / 0.09 |
+| Sammelbefehl misslungen | 0 / 0 → 0.06 / 0.04 |
+| Sammel-Chance bestand | 0.14 / 0.17 → 1.37 / 1.7 |
+| Rundenanfänge auf der Flucht | 3.48 / 1.95 → 5.25 / 4.48 |
+| entkommen am Rand | 1.48 / 2.29 → 0.53 / 1.39 |
+| vernichtet auf der Flucht | 2.25 / 1.59 → 2.72 / 2.07 |
+| noch fliehend am Ende | 0.78 / 0.4 → 1.17 / 0.69 |
+| zurückgewichen | 7.26 / 7.88 → 6.48 / 6.74 |
+| niedergehalten | 37.71 / 25.57 → 38.58 / 26.15 |
+
+**Einordnung:**
+- **Wie erwartet:**
+  - Gesammelt wird zwei- bis dreimal so oft (0,2–0,6 → 0,4–1,35 je Seite und Schlacht).
+  - Am Rand entkommen nur noch etwa halb so viele.
+  - Das Zurückweichen sinkt um 10–20 %.
+- **Siegquote:** innerhalb der Streuung (Grauwall −3, Sankt Ruß ±0, Winterdorf +2). Kein Ausgleich nötig.
+- **Sammelbefehl der KI:** Sie nutzt ihn selten (0,05–0,26 je Schlacht), weil Anführer selten nah genug an Fliehenden stehen.
+
+**Hinweis Anzeige:**
+- Am Knopf und im Hinweis ist die Chance zu sehen (`entwurf/probe/u7/sammeln/sammeln_hinweis.jpg`).
+- Die Prozentzahl über dem Trupp hängt am vorhandenen Wirkungsbereich beim Überfahren des Knopfs.
+- Der Wirkungsbereich selbst erschien in den Aufnahmen des unsichtbaren Chrome nicht, auch nicht mit der neuen Testhilfe `__dbg.area('o-rally')`, obwohl sie einen Bereich meldet. Ob die Zahl dort erscheint, konnte ich deshalb nicht im Bild bestätigen. Bitte beim Spielen kurz darauf achten.
+
+**Video:** `entwurf/probe/video/U7_schritt2_sanktruss.mp4` (25 s, 25 Bilder/s, mit Ton).
+
+**Nächster `pa`:** U7 Schritt 3 (Moral in Stufen, „wankt“).
+
+**Fragen an Enrico:**
+1. Siehst du beim Überfahren von „Sammeln“ die Prozentzahl über dem fliehenden Trupp?
+
 ## 2026-11-27 – U7 Moral: Zähler, Grundmessung und Schritt 1 (Punkt 125)
 
 Gepusht:
