@@ -49,6 +49,14 @@ const SHEETS = [
   ['flammenstrahl', 'Flammenstrahl', 'Länge nach Entfernung · Variante 4 prallt an Deckung ab', 1.8, 1],
   ['drehlauf', 'Drehlauf', 'Schreiter und Eisenknecht (gemalte Läufe entfernt)', 0.95, 1],
   ['nahkampf', 'Nahkampf', 'Schwung · Kreuzhieb · Aufprall · Stich · Metall auf Metall · Bodenschlag', 1.15, 1],
+  // U3 (Punkt 62, 2026-11-27): Effektbögen E1–E6 aus ui-quelle/effekte/neu/
+  ['gasschliere_dick', 'E1 Gasgranate in der Luft', 'drei dicke Gasfahnen sinken auf die Felder', 1.5, 0],
+  ['gasschliere', 'E1 feine Gasfäden', 'zusätzlich zu den dicken Fahnen', 1.1, 0],
+  ['befehlsruf', 'E2 großer Befehl', 'Staubring am General · kleinerer Ring an den Einheiten', 2.6, 0],
+  ['filterdampf', 'E3 Gasschutz entgiftet', 'Dampfschwaden steigen aus den Filtern', 1.2, 0],
+  ['loewenmaul', 'E4 Löwenmaul-Kanone', 'Kreuzschreiter · linker Rand an der Mündung', 2.4, 0],
+  ['faustsalve', 'E5 Faustsalve', 'Eisenknecht · Doppelblitz je Faust', 0.95, 0],
+  ['kettenklinge', 'E6 Kettenklinge', 'Kürassier Hinrichtung · Tropfen ohne Blut grau', 1.25, 0],
 ];
 const IM = {};
 for (const k in window.FXNEU) { const m = k.match(/^(.+)_(\d+)$/); const im = new Image(); im.src = FXNEU[k]; (IM[m[1]] = IM[m[1]] || [])[+m[2] - 1] = im; }

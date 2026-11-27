@@ -49,6 +49,14 @@ CFG = {
     'fx_heldenfunken': dict(bg='magenta', rows=[3, 3]),
     'fx_faehigkeiten': dict(bg='magenta', rows=[3, 3], leeren=[(0, 350, 75, 500), (0, 1150, 112, 1360)]),   # Paket D (2026-11-24): 1 Gebrüll-Kegel (Düse weg), 2 Gebrüll-Ringe von oben, 3 Boden-Druckwelle, 4 Dampfstoß (Düse weg), 5 Furcht-Ring mit Rauchklauen, 6 Funken und Metallsplitter
     'fx_winter_schnee': dict(bg='magenta', rows=[3, 3], rosa='grau'),   # Krähenfurt (Flux, 2026-11-22): 1 großer Schnee-Einschlag, 2 derselbe fällt zusammen, 3 kleiner Einschlag, 4–5 Pulverschnee (flach), 6 Eissplitter; rosa Säume → Grau (Schnee)   # Helden (Enrico 2026-11-22): 1 blauer Funkenstrich, 2 blau-weißer Einschlag, 3 kaltes Leuchten (Kürassier); 4 orangener Einschlag, 5 orangener Funkenstrich, 6 Glutsprenkel (Rote Faust)
+    # U3 (Punkt 62, 2026-11-27): Effektbögen E1–E6 aus ui-quelle/effekte/neu/ (quelle='neu'); rand=True: Teile am Bildrand behalten (Fahne oben rechts, Löwenmaul-Stöße beginnen am linken Rand = Mündung)
+    'fx_gasschliere_dick': dict(bg='magenta', teile=3, quelle='neu', rand=True),   # E1 Gasgranate platzt in der Luft: 1–3 dicke Gasfahnen, sinken nach rechts unten
+    'fx_gasschliere':  dict(bg='magenta', teile=7, quelle='neu', rand=True),   # E1 feine Fäden dazu (1–7)
+    'fx_befehlsruf':   dict(bg='magenta', teile=6, quelle='neu', weg=[3, 4, 5, 6]),   # E2 großer Befehl: nur 1 Staubring oben links (Magenta-Mitte entfernt), 2 Staubring oben Mitte
+    'fx_filterdampf':  dict(bg='magenta', teile=4, quelle='neu', rand=True),   # E3 Gasschutz entgiftet: 1–4 aufsteigende Dampfschwaden
+    'fx_loewenmaul':   dict(bg='magenta', teile=3, quelle='neu', rand=True),   # E4 Löwenmaul-Kanone: 1 Feuerball, 2 lang mit Rauch, 3 lang mit Staub; linker Rand = Mündung
+    'fx_faustsalve':   dict(bg='magenta', teile=2, quelle='neu', rand=True),   # E5 Faustsalve: 1–2 Doppelblitz nach rechts (zwei parallele Blitze, Rauch links)
+    'fx_kettenklinge': dict(bg='magenta', teile=3, quelle='neu', rand=True),   # E6 Kürassier Hinrichtung: 1 waagerecht, 2 schräg abwärts, 3 Bogen aufwärts (kalt, Tropfen)
 }
 
 
@@ -133,7 +141,7 @@ def cells_teile(k, n):
 
 def cut(name):
     cfg = CFG[name]
-    a = np.asarray(Image.open(SRC / f'{name}.png').convert('RGB'))
+    a = np.asarray(Image.open((SRC / cfg['quelle'] if cfg.get('quelle') else SRC) / f'{name}.png').convert('RGB'))
     H, W = a.shape[:2]
     if cfg.get('lauf_weg'): a = lauf_weg(a)
     if cfg.get('leeren'):   # Kästen auf Hintergrundfarbe setzen (mitgemalte Düsen/Rohre, Paket D 2026-11-24)
@@ -160,14 +168,14 @@ def cut(name):
         ys, xs = np.nonzero(t[..., 3] > 0)
         if not len(ys): continue
         y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
-        if cfg['bg'] == 'magenta' and (x0 <= 8 or x1 >= W - 8 or y0 <= 8 or y1 >= H - 8) and 'teile' in cfg:
+        if cfg['bg'] == 'magenta' and (x0 <= 8 or x1 >= W - 8 or y0 <= 8 or y1 >= H - 8) and 'teile' in cfg and not cfg.get('rand'):
             print(f'  {name}: Teil {i} am Bildrand abgeschnitten, weggelassen'); continue
         pad = 4
         y0, x0 = max(0, y0 - pad), max(0, x0 - pad); y1, x1 = min(H, y1 + pad), min(W, x1 + pad)
         parts.append(t[y0:y1, x0:x1])
     s = MAXPX / max(max(p.shape[:2]) for p in parts)
     OUT.mkdir(parents=True, exist_ok=True)
-    for f in OUT.glob(f'{name}_*.png'): f.unlink()
+    for f in OUT.glob(f'{name}_[0-9]*.png'): f.unlink()   # nur eigene Teile (fx_gasschliere_* löschte sonst fx_gasschliere_dick_*)
     res = []
     for j, p in enumerate(parts, 1):
         im = Image.fromarray(np.clip(p + 0.5, 0, 255).astype(np.uint8), 'RGBA')
