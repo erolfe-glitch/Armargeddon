@@ -546,5 +546,133 @@
  "bogen8b_befehle/s_feuerbereit": [
   726,
   616
+ ],
+ "bogenC_symbole/s_sprenglanze_x": [
+  690,
+  729
+ ],
+ "bogenC_symbole/s_rammen": [
+  655,
+  723
+ ],
+ "bogenC_symbole/s_gegen_panzer_x": [
+  758,
+  578
+ ],
+ "bogenC_symbole/s_einholen_x": [
+  476,
+  730
+ ],
+ "bogenC_symbole/s_sprenglanze": [
+  666,
+  721
+ ],
+ "bogenC_symbole/s_rammen_x": [
+  681,
+  708
+ ],
+ "bogenC_symbole/s_gegen_panzer": [
+  649,
+  673
+ ],
+ "bogenC_symbole/s_einholen": [
+  562,
+  746
+ ],
+ "bogen_zeiger/z_pfeil": [
+  577,
+  680
+ ],
+ "bogen_zeiger/z_hand": [
+  624,
+  659
+ ],
+ "bogen_zeiger/z_stiefel": [
+  591,
+  671
+ ],
+ "bogen_zeiger/z_ziel": [
+  666,
+  674
+ ],
+ "bogen_zeiger/z_saebel": [
+  609,
+  678
+ ],
+ "bogen_zeiger/z_nein": [
+  652,
+  651
+ ],
+ "bogen_zeiger/z_feld": [
+  646,
+  623
+ ],
+ "bogen_zeiger/z_schere": [
+  681,
+  742
+ ],
+ "bogenD_symbole/s_abwehr": [
+  591,
+  720
+ ],
+ "bogenD_symbole/s_panzer_leicht": [
+  510,
+  711
+ ],
+ "bogenD_symbole/s_panzer_schwer": [
+  600,
+  655
+ ],
+ "bogenD_symbole/s_einmal": [
+  426,
+  725
+ ],
+ "bogenD_symbole/s_held": [
+  688,
+  673
+ ],
+ "bogenD_symbole/s_einzig": [
+  503,
+  384
+ ],
+ "bogenD_symbole/s_furcht": [
+  666,
+  714
+ ],
+ "bogenD_symbole/s_ansturm": [
+  660,
+  736
+ ],
+ "bogenE_symbole/s_weit": [
+  689,
+  656
+ ],
+ "bogenE_symbole/s_ziehen_feuern": [
+  618,
+  679
+ ],
+ "bogenE_symbole/s_stecken": [
+  682,
+  644
+ ],
+ "bogenE_symbole/s_geschuetzturm": [
+  634,
+  599
+ ],
+ "bogenE_symbole/s_sicht": [
+  710,
+  661
+ ],
+ "bogenE_symbole/s_zweischlag": [
+  607,
+  688
+ ],
+ "bogenE_symbole/s_kettensaege": [
+  666,
+  704
+ ],
+ "bogenE_symbole/s_schwer_nah": [
+  630,
+  723
  ]
 }

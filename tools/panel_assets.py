@@ -60,6 +60,8 @@ SYMBOLS = {
     'symbol_schaufel': ['schaufel'],
     # Fähigkeiten (bogen8a, 2026-11-22): kein Symbol mit zwei Bedeutungen
     'bogen8b_befehle': ['sammeln', 'sturmbefehl', 'feuerfrei', 'halten', 'generalangriff', 'markieren', 'feuerschlag', 'feuerbereit'],   # Befehle (2026-11-22)
+    'bogenD_symbole': ['abwehr', 'panzer_leicht', 'panzer_schwer', 'einmal', 'held', 'einzig', 'furcht', 'ansturm'],   # UI1 Teil 2 (Punkt 144)
+    'bogenE_symbole': ['weit', 'ziehen_feuern', 'stecken', 'geschuetzturm', 'sicht', 'zweischlag', 'kettensaege', 'schwer_nah'],
     'bogenC_symbole': ['sprenglanze', 'rammen', 'gegen_panzer', 'einholen'],   # Bogen C (2026-11-22): doppelte Symbole aufgelöst (nur die gewählten Fassungen)
     'bogen8a_faehigkeiten': ['durchbruch', 'hinrichtung', 'sturmrollen', 'sturmlauf', 'sprung', 'gebruell', 'kanone_zweit', 'panzergranate', 'breitseite'],
 }

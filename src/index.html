@@ -1167,6 +1167,48 @@ body.neu.ui1 .up-tip, body.neu.ui1 .mtip { font-family: var(--s-body); }
   body.neu.ui1 #hud .up-name { font-size: 32px; } body.neu.ui1 #hud .up-sub, body.neu.ui1 .u1-stufe, body.neu.ui1 .u1-p, body.neu.ui1 .u1-w > small, body.neu.ui1 .u1-gk { font-size: 18px; }
   body.neu.ui1 .u1-w img { width: 30px; height: 30px; } body.neu.ui1 .u1-w b { font-size: 26px; } body.neu.ui1 .u1-eig { width: 48px; height: 48px; } body.neu.ui1 .u1-eig img { width: 36px; height: 36px; }
 }
+/* UI1 Teil 2 (Punkt 144): Nachbesserungen Teil 1 – Karte kompakter, Gruppenleisten, Knöpfe als Eisenplatten, Schildchen ab 15 px */
+body.neu.ui1 #hud #neuKK, body.neu.ui1 #hud #hudStates { display: none; }
+body.neu.ui1 .u1-st { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; cursor: help; }
+body.neu.ui1 .u1-st img { width: 26px; height: 26px; object-fit: contain; }
+body.neu.ui1 .u1-st.gross img { filter: drop-shadow(0 0 2px #d0786c); }
+body.neu.ui1 #hud .up-sub { gap: 3px 6px; }
+body.neu.ui1 .u1-stufe { flex-wrap: wrap; row-gap: 3px; }
+body.neu.ui1 .u1-stufe > span:first-child { flex: 1 1 100%; }
+body.neu.ui1 .u1-kn { display: inline-flex; gap: 4px; flex: none; }
+body.neu.ui1 .u1-akt + .u1-kn { margin-left: 0; } body.neu.ui1 .u1-stufe .u1-kn:first-of-type { margin-left: auto; }
+body.neu.ui1 #hud .u1-kn #btnInfo, body.neu.ui1 #hud .u1-kn .neu-mehr { min-height: 26px; height: 26px; min-width: 0; margin: 0; padding: 0 7px; border: 1px solid var(--s-brass); background: var(--s-bg); color: var(--s-brass);
+  font: 600 15px/1 var(--s-body) !important; text-transform: none; letter-spacing: 0; text-shadow: none; filter: none; border-radius: 0; }
+body.neu.ui1 #hud .u1-kn #btnInfo .long { display: inline; }
+body.neu.ui1 .u1-plak { align-items: center; }
+body.neu.ui1 .u1-plak .u1-eigs { display: inline-flex; gap: 5px; margin-left: auto; }
+body.neu.ui1 .u1-eig { width: 34px; height: 34px; } body.neu.ui1 .u1-eig img { width: 26px; height: 26px; }
+body.neu.ui1 .u1-w { padding: 3px 0 2px; } body.neu.ui1 .u1-w img { width: 24px; height: 24px; }
+body.neu.ui1 #u1Unten { gap: 6px; }
+/* Gruppenüberschrift auf schmaler Eisenleiste über der ganzen Gruppenbreite */
+body.neu.ui1 .u1-gr { gap: 16px; align-items: stretch; }
+body.neu.ui1 .u1-gk { display: block; padding: 3px 10px; text-align: center; font: 600 15px/1.1 var(--s-body) !important; letter-spacing: .08em; color: var(--s-parch);
+  background: var(--tx-ink45), var(--up-txEisen) 0 0 repeat; border: 2px solid var(--s-ink); box-shadow: 0 2px 0 rgba(0,0,0,.5); position: relative; z-index: 2; }
+body.neu.ui1 .u1-gk.leer { visibility: hidden; }
+/* Knöpfe als Eisenplatten (Entwurf A): Eisen gekachelt, Tintenschicht, 3 px Tintenrand; aktiv = Messingrand */
+body.neu.ui1 #hud .up-ab { height: var(--ab); background: linear-gradient(rgba(18,13,11,.38), rgba(18,13,11,.38)), var(--up-txEisen) 0 0 / 160px repeat; border: 3px solid var(--s-ink); box-sizing: border-box; }
+body.neu.ui1 #hud .up-ab::before { inset: 0; border-radius: 0; background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.55) 0 40%, rgba(18,13,11,0) 75%); }
+body.neu.ui1 #hud .up-ab > img { inset: 12%; width: 76%; height: 76%; filter: brightness(1.6) contrast(1.1) drop-shadow(0 0 1px #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.7)); }
+body.neu.ui1 #hud .up-ab.off > img { filter: brightness(.8) saturate(.5); }
+body.neu.ui1 .u1-eig img, body.neu.ui1 .u1-w img, body.neu.ui1 .u1-st img { filter: brightness(1.6) contrast(1.1) drop-shadow(0 0 1px rgba(240,237,225,.8)); }
+body.neu.ui1 #hud .up-ab.on, body.neu.ui1 #hud .up-ab.pulse { background: linear-gradient(rgba(18,13,11,.2), rgba(18,13,11,.2)), var(--up-txEisen) 0 0 / 160px repeat; border-color: var(--s-brass); box-shadow: inset 0 0 0 1px #6e5a2e; }
+body.neu.ui1 #hud .up-ab.off { background: linear-gradient(rgba(18,13,11,.62), rgba(18,13,11,.62)), var(--up-txEisen) 0 0 / 160px repeat; }
+body.neu.ui1 #hud .up-key { font: 600 15px/1.2 var(--s-body) !important; min-width: 24px; }
+@media (max-width: 1500px) {
+  body.neu.ui1 #hud .up-unit { --pic: 76px; --bar: 276px; }
+  body.neu.ui1 #hud .up-name { font-size: 21px; }
+  body.neu.ui1 #hud .up-bar .tube { height: 14px; } body.neu.ui1 #hud .up-bar.mor .tube { height: 9px; }
+  body.neu.ui1 .u1-w b { font-size: 17px; } body.neu.ui1 .u1-w > small { font-size: 13px; }
+  body.neu.ui1 .u1-gk { font-size: 15px !important; letter-spacing: .04em; padding: 2px 6px; }
+  body.neu.ui1 .u1-eig { width: 30px; height: 30px; } body.neu.ui1 .u1-eig img { width: 23px; height: 23px; }
+}
+@media (min-width: 2200px) { body.neu.ui1 .u1-gk { font-size: 18px !important; } body.neu.ui1 .u1-eig { width: 44px; height: 44px; } body.neu.ui1 .u1-eig img { width: 34px; height: 34px; }
+  body.neu.ui1 #hud .u1-kn #btnInfo, body.neu.ui1 #hud .u1-kn .neu-mehr { height: 32px; font-size: 18px !important; } body.neu.ui1 .u1-st, body.neu.ui1 .u1-st img { width: 34px; height: 34px; } }
 </style>
 </head>
 <body>

@@ -4023,7 +4023,10 @@ let upBtns = [];
 // ---------- UI1 Teil 1 (Punkt 141, 2026-11-27): Einheitenkarte nach Entwurf A „Eisenplatte“, Knöpfe in festen Gruppen; Rückweg window.UI1_ALT (vor dem Laden) ----------
 const ui1An = () => document.body.classList.contains('ui1');
 // Eigenschaften (Schlagworte T.sp) als goldene Symbol-Kästchen: Symbol nach dem ersten passenden Muster; ohne Treffer Ersatzsymbol (Liste für den Berater: tools/ui1_symbole.js)
-const EIG_SYM = [[/Draht schneiden|Schneidet Draht/, 'drahtschere'], [/Zieht Stacheldraht|Walzt Draht|Draht hält nicht|Kein Draht/, 'drahtrolle'], [/Eingraben/, 'schaufel'], [/Feuerbereitschaft/, 'feuerbereit'],
+const EIG_SYM = [/* UI1 Teil 2 (Punkt 144): eigene Symbole aus bogenD/bogenE */ [/Schwer gepanzert|Sehr zäh|^Gepanzert/, 'panzer_schwer'], [/Leicht gepanzert/, 'panzer_leicht'], [/Furcht/, 'furcht'], [/Ansturm/, 'ansturm'],
+  [/Zieht \d Felder und schießt|Ziehen und feuern/, 'ziehen_feuern'], [/Zieht \d Felder/, 'weit'], [/Langsam|stecken/, 'stecken'], [/Geschützturm/, 'geschuetzturm'], [/Sieht|Sicht/, 'sicht'],
+  [/Zwei Schläge/, 'zweischlag'], [/Kettensäge/, 'kettensaege'], [/Kriegshammer|Hackklinge|[Kk]laue/, 'schwer_nah'], [/^Held$/, 'held'], [/Höchstens einer/, 'einzig'],
+  [/Draht schneiden|Schneidet Draht/, 'drahtschere'], [/Zieht Stacheldraht|Walzt Draht|Draht hält nicht|Kein Draht/, 'drahtrolle'], [/Eingraben/, 'schaufel'], [/Feuerbereitschaft/, 'feuerbereit'],
   [/Gas und Sperrfeuer/, 'sperrfeuer'], [/Sperrfeuer|Dauerfeuer|Drehlauf/, 'garbe'], [/aufbauen/, 'mg_auf'], [/Aufprotzen/, 'aufprotzen'], [/Sturmrollen/, 'sturmrollen'], [/Panne/, 'festgefahren'],
   [/Seiten-MG|Bord-MG|Turm-MG|Unterarm|Flammenstoß|Faustsalve|Sturmkanonen/, 'kanone_zweit'], [/Breitseite/, 'breitseite'], [/Ansturm/, 'pferd'], [/Sturmlauf/, 'sturmlauf'], [/Handgranaten/, 'handgranate'],
   [/Panzergranate/, 'panzergranate'], [/Direktschuss|Panzerjäger|Panzer ×1,5|Panzersäge|Keine Panzerwaffe/, 'gegen_panzer'], [/Sickert|Getarnt/, 'durchsickern'], [/Gegenstoß|Sturmbefehl/, 'sturmbefehl'],
@@ -4032,7 +4035,7 @@ const EIG_SYM = [[/Draht schneiden|Schneidet Draht/, 'drahtschere'], [/Zieht Sta
   [/Schilde vor|gepanzert|Gepanzert|zäh/, 'schild'], [/markieren/, 'markieren'], [/Sieht|Sicht/, 'fernglas'], [/Halten um jeden Preis/, 'halten'], [/Generalangriff/, 'generalangriff'], [/Befehle|Sammeln/, 'sammeln'],
   [/Aufpflanzen|Aura|Moralverlust/, 'fahne'], [/Löwengebrüll/, 'gebruell'], [/Sprungangriff/, 'sprung'], [/Durchbruch/, 'durchbruch'], [/Hinrichtung/, 'hinrichtung'], [/Feuerschlag/, 'feuerschlag'],
   [/Stollen/, 'spitzhacke'], [/Nachladen/, 'munitionskiste'], [/Geschützturm/, 'lafette'], [/Furcht/, 'gebrochen'], [/Zwei Schläge|Kettensäge|Hackklinge|Kriegshammer|Nur Nahkampf|[Kk]laue/, 'nahkampf'],
-  [/Schuss \d|Reichweite|Schrotflinte|Feuert über|Kaum Fernkampf/, 'zielen'], [/Zieht|Ziehen|Langsam|stecken/, 'stiefel'], [/Stufe 3|Höchstens einer|Held|einmal je Schlacht/, 'zahnrad']];
+  [/Schuss \d|Reichweite|Schrotflinte|Feuert über|Kaum Fernkampf/, 'zielen'], [/Zieht|Ziehen|Langsam|stecken/, 'stiefel'], [/Stufe 3|einmal je Schlacht|Einmal:/, 'einmal'], [/Stufe 3|Höchstens einer|Held|einmal je Schlacht/, 'zahnrad']];
 function eigSym(x) { for (const [re, s] of EIG_SYM) if (re.test(x) && upSym(s)) return s; return null; }
 const RANG_SVG = '<svg viewBox="0 0 18 14" aria-hidden="true"><path d="M1 8l8-6 8 6v4L9 6l-8 6z"/></svg>';
 function ui1Stufe(u, T) {   // eine Zeile Moralstufe (U7b-Anzeige)
@@ -4046,23 +4049,23 @@ function ui1Stufe(u, T) {   // eine Zeile Moralstufe (U7b-Anzeige)
 }
 function ui1Karte(u, own, nach) {
   const T = TYPES[u.type], r = rolle(u.type), kat = E.KAT_NAME[E.katOf(u.type)] || '', ap = Math.max(0, u.ap || 0), tip = (n, t) => ` data-u1tip="${upEsc(n)}|${upEsc(t || '')}" tabindex="0"`;
-  const sub = `<span class="u1-kat"${tip('Kategorie: ' + kat, 'Wie viele davon eine Armee haben darf, steht im Nachschub-Menü.')}>${upSym('schild') ? `<img src="${upSym('schild')}" alt="">` : ''}${kat.toUpperCase()}</span>` +
+  const sub = `<span class="u1-kat"${tip('Kategorie: ' + kat, 'Wie viele davon eine Armee haben darf, steht im Nachschub-Menü.')}>${upSym('schild') ? `<img src="${upSym('schild')}" alt="">` : ''}${kat.toUpperCase()}</span>` + hudTips.map(t => `<span class="u1-st${t.cls ? ' ' + t.cls : ''}"${tip(t.name, t.text)}><img src="${t.img}" alt=""></span>`).join('') +   /* UI1 Teil 2: Deckung und Zustände in der Kopfzeile */
     `<span class="u1-rolle">${r ? r.rolle : T.name}</span><span class="u1-seite ${u.side}">${SIDES[u.side].short}</span>${u.officer ? `<span class="u1-off">${UP.orden ? `<img class="up-orden" src="${UP.orden}" alt="">` : '★ '}${u.officer}</span>` : ''}` +
     `<span class="u1-rang"${tip('Rang', 'Platz für Veteranen-Ränge. Ränge kommen mit der Kampagne.')}>${RANG_SVG.repeat(3)}</span>`;
   const [stk, stTxt] = ui1Stufe(u, T);
   const morKl = E.stufenAlt() ? (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : '') : { weicht: ' bad', flieht: ' bad', wankt: ' wankt' }[stk] || '';
   const stats = upBar('hp ' + lifeTier(u.str / 10), 'Stärke', u.str, 10, nach) + upBar('mor' + morKl, 'Moral', u.mor, T.mor) +
-    `<div class="u1-stufe ${stk}"><span>${stTxt}</span>${own ? `<span class="u1-akt${ap ? '' : ' used'}"${tip('Aktion', 'Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch – eine je Runde.' + (T.zweit ? ` Dazu ${T.zweit.name} einmal je Runde.` : ''))}>Aktion ${ap ? 'frei' : 'verbraucht'}</span>` : ''}</div>`;
+    `<div class="u1-stufe ${stk}"><span>${stTxt}</span>${own ? `<span class="u1-akt${ap ? '' : ' used'}"${tip('Aktion', 'Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch – eine je Runde.' + (T.zweit ? ` Dazu ${T.zweit.name} einmal je Runde.` : ''))}>Aktion ${ap ? 'frei' : 'verbraucht'}</span>` : ''}<span class="u1-kn"></span></div>`;
   const bm = E.bpMax(u), werte = [
     ['stiefel', own ? `${u.bp || 0}<small>/${bm}</small>` : bm, 'Bewegung', `Bewegungspunkte${own ? `: noch ${u.bp || 0} von ${bm}` : ` je Runde: ${bm}`}. Gelände kostet 1–3; Marsch gibt für die Aktion +50 %.`],
     ['zielen', T.fs ? fmt(T.fs) : '–', 'Schuss', T.fs ? 'Feuerkraft im Fernkampf (×10).' : 'Kein Fernkampf.'],
     ['nahkampf', T.atk ? fmt(T.atk) : '–', 'Nahkampf', T.atk ? 'Angriff im Nahkampf (×10).' : 'Kämpft nicht im Nahkampf.'],
-    ['schild', fmt(T.def), 'Abwehr', 'Abwehr gegen Beschuss und Nahkampf (×10), dazu Deckung des Felds.'],
+    [upSym('abwehr') ? 'abwehr' : 'schild', fmt(T.def), 'Abwehr', 'Abwehr gegen Beschuss und Nahkampf (×10), dazu Deckung des Felds.'],
     ['gewehr', T.rng || '–', 'Reichweite', T.rng ? `Schießt ${felder(T.rng)} weit.` : 'Nur Nahkampf.']];
   const plak = r ? [...r.stark.slice(0, 2).map(x => `<span class="u1-p gut"${tip('Gut gegen ' + x, 'Stark gegen: ' + r.stark.join(', ') + '.')}>▲ ${x}</span>`), ...r.schwach.slice(0, 2).map(x => `<span class="u1-p schlecht"${tip('Schlecht gegen ' + x, 'Schwach gegen: ' + r.schwach.join(', ') + '. Kontert man mit: ' + r.konter.join(', ') + '.')}>▼ ${x}</span>`)].join('') : '';
   const eigs = (T.sp || []).map(x => { const s = eigSym(x) || 'blitz'; return `<span class="u1-eig"${tip(x, '')} aria-label="${upEsc(x)}"><img src="${upSym(s)}" alt=""></span>`; }).join('');
   const unten = `<div class="u1-werte">${werte.map(([s, v, k, t]) => `<div class="u1-w"${tip(k, t)}><img src="${upSym(s)}" alt=""><b>${v}</b><small>${k}</small></div>`).join('')}</div>` +
-    (plak ? `<div class="u1-plak">${plak}</div>` : '') + (eigs ? `<div class="u1-eigs"><span class="u1-k">Eigenschaften</span>${eigs}</div>` : '');
+    (plak || eigs ? `<div class="u1-plak">${plak}${eigs ? `<span class="u1-eigs" aria-label="Eigenschaften">${eigs}</span>` : ''}</div>` : '');   // UI1 Teil 2: eine Zeile
   return { sub, stats, unten };
 }
 function ui1Mehr(u) {   // „Mehr ▾“: ausführlich – Rolle, Eigenschaften in Worten, Fähigkeitstext, Stärken/Schwächen (Medaillen), Chronik
@@ -4071,13 +4074,14 @@ function ui1Mehr(u) {   // „Mehr ▾“: ausführlich – Rolle, Eigenschaften
     `<div class="u1-med">${medaillenTexte(u.type).map(t => `<p><b>${t.name}.</b> ${t.text}</p>`).join('')}</div>` + chronikHtml(T, 'p');
 }
 // Knöpfe in festen Gruppen (Entwurf A): Draht zuerst (Wunsch des Nutzers), dann Angriff, Fähigkeiten, Drehen; „Fertig“ am Ende
-const KNOPF_GR = [['Bewegen', ['cut', 'lay', 'limber', 'setup', 'teardown', 'undig', 'ball-ein', 'ball-auf']], ['Angriff', ['p-fire', 'p-melee', 'zweit', 'faust', 'm-he', 'm-barrage', 'm-gas', 'sperr', 'ow']], ['Fähigkeiten', null], ['Drehen', ['tl', 'tr']], ['', ['pass']]];
+const KNOPF_GR = [['Bewegen', ['cut', 'lay', 'limber', 'setup', 'teardown', 'undig', 'ball-ein', 'ball-auf']], ['Angriff', ['p-fire', 'p-melee', 'zweit', 'faust', 'm-he', 'm-barrage', 'm-gas', 'sperr', 'ow']], ['Fähigkeiten', ['abil', 'o-rally', 'o-fire', 'o-storm', 'big', 'loewe', 'dig', 'shields', 'plant', 'i-heal', 'i-send', 'i-rec', 'ramm']], ['Drehen', ['tl', 'tr']], ['', ['pass']]];   // je Art ein fester Platz; Unbekanntes kommt zu den Fähigkeiten ans Ende
 function knopfGruppen(btns) {
   const gr = KNOPF_GR.map(([n, l]) => ({ n, l, b: [] }));
   for (const b of btns) { const i = gr.findIndex(g => g.l && g.l.includes(b.act)); (i >= 0 ? gr[i] : gr[2]).b.push(b); }
-  for (const g of gr) if (g.l) g.b.sort((x, y) => g.l.indexOf(x.act) - g.l.indexOf(y.act));
+  const pos = (g, a) => { const i = g.l.indexOf(a); return i < 0 ? 99 : i; };
+  for (const g of gr) g.b.sort((x, y) => pos(g, x.act) - pos(g, y.act));
   const voll = gr.filter(g => g.b.length); let i = 0;
-  return { liste: voll.flatMap(g => g.b), html: voll.map(g => `<div class="u1-gr${g.n ? '' : ' ende'}">${g.n ? `<span class="u1-gk">${g.n}</span>` : '<span class="u1-gk">&nbsp;</span>'}<div class="u1-gb">${g.b.map(b => upBtn(b, i++)).join('')}</div></div>`).join(''), gruppen: voll.length };
+  return { liste: voll.flatMap(g => g.b), html: voll.map(g => `<div class="u1-gr${g.n ? '' : ' ende'}">${g.n ? `<span class="u1-gk">${g.n}</span>` : '<span class="u1-gk leer">&nbsp;</span>'}<div class="u1-gb">${g.b.map(b => upBtn(b, i++)).join('')}</div></div>`).join(''), gruppen: voll.length };
 }
 // Tooltips der neuen Karte: Maus beim Überfahren, Finger bei langem Druck (0,4 s), Tastatur beim Fokus
 { const hud = $('hud'), at = e => e.target.closest && e.target.closest('[data-u1tip]'), show = (el, ms) => { const [n, t] = el.dataset.u1tip.split('|'), r = el.getBoundingClientRect(); showTip([{ name: n, text: t }], r.left + r.width / 2, r.top, 'u1' + n, ms); };
@@ -4343,6 +4347,7 @@ function unitButtons(T, hints) {
 }
 function updateHud() {
   if (!G) return;
+  { const kk = $('neuKK'); if (kk && $('btnInfo') && $('btnInfo').closest('#hudStats')) kk.append($('btnInfo'), $('btnMehr')); }   // UI1 Teil 2: Knöpfe vor dem Neuschreiben der Karte retten
   const hud = $('hud'), u = placing ? null : (sel || (inspect && inspect.unit) || null);
   const hasU = !!(u && E.alive(u));
   const hints = []; let btns = [];
@@ -4364,7 +4369,7 @@ function updateHud() {
       `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung"><small class="up-wort">Bewegung</small> ${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''}</small></span>` +
       (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><small class="up-wort">Aktion</small> <b class="up-akt${ap ? '' : ' used'}">${ap ? 'frei' : 'verbraucht'}</b><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>${T.rng === 1 ? 'Feld' : 'Felder'}</small>` : '–'}</span></div>`;
-    if (ui1An()) { const k = ui1Karte(u, own, hpNachV(hn._hn, performance.now())); $('hudSub').innerHTML = k.sub; $('hudStats').innerHTML = k.stats; let un = $('u1Unten'); if (!un) { un = document.createElement('div'); un.id = 'u1Unten'; document.querySelector('#hud .up-unit').appendChild(un); } un.innerHTML = k.unten; }   // UI1: Karte nach Entwurf A
+    if (ui1An()) { const k = ui1Karte(u, own, hpNachV(hn._hn, performance.now())); $('hudSub').innerHTML = k.sub; $('hudStats').innerHTML = k.stats; let un = $('u1Unten'); if (!un) { un = document.createElement('div'); un.id = 'u1Unten'; document.querySelector('#hud .up-unit').appendChild(un); } un.innerHTML = k.unten; const kn = $('hudStats').querySelector('.u1-kn'); if (kn) kn.append($('btnInfo'), $('btnMehr')); }   // UI1: Karte nach Entwurf A
     $('btnInfo').hidden = false;
     if (previewT && sel && !targets.has(previewT.id)) previewT = null;   // Vorschau-Ziel ist keins mehr (z. B. nach Eingraben): Vorschau weg statt Absturz
     if (previewT && sel) {
