@@ -288,7 +288,7 @@ const gbKipp = () => window.NOKIPP ? 0 : (window.KIPP ?? 1);
 const gbAn = () => GB_KARTEN.has(E.MAP.id) && !!window.GBau && !!window.GELAENDE;
 function gbBereit() {   // Welt passend zu Karte und Gelände (Draht kann wegfallen) aufbauen; false, solange die Bilder laden
   if (!gbAn() || !L || !G) return false;
-  if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), gbPlastikLaden()]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
+  if (!GBIM) { if (!gbLaden) gbLaden = Promise.all([GBau.bilder(n => window.GELAENDE[n]), figurenNachladen().then(gbPlastikLaden)]).then(([im]) => { GBIM = im; if (L) renderTerrain(); }); return false; }
   // Schlüssel nach dem, was gezeichnet wird (Platzhalter: eingestürztes Haus sieht aus wie vorher), Bauzustand nur der Gebäude, die GBau selbst zeichnet (Kirche)
   const basis = E.MAP.id + ':' + BW + ':' + gbKipp() + ':' + (window.GB_PROBE ? JSON.stringify(window.GB_PROBE) : '') + (window.GTEILE_ALT ? ':alt' : '') + (window.G7_ALT ? ':g7alt' : '') + (window.FLACH_ALT ? ':flalt' : '') + (window.ZINNEN_ALT ? ':zalt' : '') + (window.G4B_ALT ? ':g4b' : '') + (window.GRABENPLATZ_ALT ? ':gpa' : '') + (window.ZICKZACK_ALT ? ':zz' : '') + (window.DRAHT_ALT ? ':da' : '') + (window.STAERKE_ALT ? ':st' : '') + (window.RASTER_ALT ? ':ra' : '') + (window.GUERTEL_ALT ? ':ga' : '') + ':' + L.W + 'x' + L.H + ':' + (G.bauten || []).map((b, i) => b.art === 'kirche' ? bauSicht()[i] : '').join(), feld = G.map.map((col, c) => col.map((h, r) => gbTerr(c, r))), key = basis + ':' + feld.map(col => col.map(t => t[0] + t.length).join('')).join('|');
   if (GBW && gbKey === key) return 'gleich';
@@ -1556,6 +1556,16 @@ function setBildwirkung(v, still) {
   if (!still && G && $('start').hidden) toast('Bildwirkung: ' + BW_NAME[BW]);
 }
 const FIGI = {};
+// Figurenbilder nachladen (Enrico 2026-11-27, wie die Töne): src/figs.js und src/figsplastik.js liegen neben index.html und kommen nach dem Start;
+// bis dahin greifen die gezeichneten Figuren. Danach Zwischenspeicher leeren (fehlende Bilder, Bildwirkung ohne Plastik-Karte). Rückweg: build.py mit EINBETTEN_FIGUREN=1.
+let figurenLaden = null;
+function figurenNachladen() {
+  if (figurenLaden) return figurenLaden;
+  const lade = (src, da) => da ? Promise.resolve(true) : new Promise(res => { const sc = document.createElement('script'); sc.src = src; sc.async = true; sc.onload = () => res(true); sc.onerror = () => { console.warn(src + ' fehlt – gezeichnete Figuren'); res(false); }; document.body.appendChild(sc); });
+  figurenLaden = Promise.all([lade('src/figs.js', !!window.FIGS), lade('src/figsplastik.js', !!window.FIGSP)]).then(r => { for (const k in FIGI) if (!FIGI[k]) delete FIGI[k]; BWI.clear(); window.__figurenDa = true; return r; });
+  return figurenLaden;
+}
+setTimeout(figurenNachladen, 0);
 function figImg(key) {
   if (key in FIGI) { const b = FIGI[key] && FIGI[key].complete && FIGI[key].naturalWidth ? bwBild(key, FIGI[key]) : null; if (b) b._key = key; return b; }
   const src = window.FIGS && window.FIGS[key]; if (!src) { FIGI[key] = null; return null; }

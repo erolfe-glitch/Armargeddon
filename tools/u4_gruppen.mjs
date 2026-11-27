@@ -24,6 +24,7 @@ const stelle = (typ, seite, str) => ev(`(async () => { const D = __dbg, G = D.G,
   for (const u of G.units) if (u !== a && Math.abs(u.c - 6) < 2.5 && Math.abs(u.r - 4) < 2.5) u.c = u.side === 'A' ? 0 : 15;
   D.neuDU(); await new Promise(r => setTimeout(r, 900)); const [x, y] = D.mitte(6, 4); D.camSetzen(x, y - 40, 2.8); await new Promise(r => setTimeout(r, 1800)); return a.id; })()`);
 const TYPEN = (process.env.TYPEN || 'mahlwerk:A,sense:D,buechse:D,hauptA:A,hauptD:D,generalA:A,generalD:D,scharf:A,munition:A,werkstatt:D,fernsprech:A').split(',').map(t => t.split(':'));
+console.log("Figuren da:", await ev("window.__figurenDa === true"), "FIGS:", await ev("Object.keys(window.FIGS || {}).length"), "FIGSP:", await ev("Object.keys(window.FIGSP || {}).length"));
 for (const [typ, seite] of TYPEN) { const id_ = await stelle(typ, seite, 10); await bild(`${typ}_voll`); console.log(typ, "Mündung", await ev(`JSON.stringify(__dbg.du(${id_}).muz)`)); if (!process.env.NUR_VOLL) { await stelle(typ, seite, 4); await bild(`${typ}_verluste`); } }
 console.log(fehler.length ? 'Fehler: ' + fehler.slice(0, 3).join(' | ') : 'keine Seitenfehler');
 ws.close(); ch.kill();
