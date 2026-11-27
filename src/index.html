@@ -1211,6 +1211,36 @@ body.neu.ui1 #hud .up-key { font: 600 15px/1.2 var(--s-body) !important; min-wid
 }
 @media (min-width: 2200px) { body.neu.ui1 .u1-gk { font-size: 18px !important; } body.neu.ui1 .u1-eig { width: 44px; height: 44px; } body.neu.ui1 .u1-eig img { width: 34px; height: 34px; }
   body.neu.ui1 #hud .u1-kn #btnInfo, body.neu.ui1 #hud .u1-kn .neu-mehr { height: 32px; font-size: 18px !important; } body.neu.ui1 .u1-st, body.neu.ui1 .u1-st img { width: 34px; height: 34px; } }
+/* UI1 Teil 2 C (Punkt 145): Nachschub-Karten nach Entwurf C (Stil A) und Info-Fenster im Aufbau der Einheitenkarte */
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k { grid-template-columns: 76px 1fr; gap: 6px 10px; min-height: 0; padding: 9px; border: 2px solid var(--s-ink); border-radius: 0; background: var(--s-bg); align-content: start; }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k:hover, body.ui1 :is(#shopNeu, #armyNeu) .sn-k.offen { border-color: var(--s-brass); }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k.aus { filter: grayscale(.7) brightness(.75); opacity: .8; }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k canvas { width: 76px; height: 86px; border: 2px solid var(--s-brass); box-shadow: none; grid-row: 1; }
+body.ui1 .u1s-kopf { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k .u1s-kopf .nm { padding: 0; font: 400 21px/1.02 var(--s-head); text-transform: none; letter-spacing: .01em; }
+body.ui1 .u1s-kat { padding: 0 7px; border: 2px solid var(--s-brass); font: 700 14px/1.3 var(--s-body); letter-spacing: .05em; }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k .u1s-kopf .ko { position: static; font: 700 22px/1 var(--s-body); color: var(--s-brass); }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k .u1s-kopf .ko small.aufs { font: 600 15px var(--s-body); color: var(--s-parch); }
+body.ui1 .u1s-zeile, body.ui1 .u1s-grund { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+body.ui1 .u1s-w { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px; border: 2px solid #322923; font: 600 16px var(--s-body); color: var(--s-text); }
+body.ui1 .u1s-w img { width: 20px; height: 20px; object-fit: contain; filter: brightness(1.6) contrast(1.1); }
+body.ui1 .u1s-zeile .u1-p { padding: 1px 6px; background: var(--s-bg); border: 2px solid; font: 600 15px/1.25 var(--s-body); color: var(--s-text); }
+body.ui1 .u1s-zeile .u1-p.gut { border-color: #6B7A3A; } body.ui1 .u1s-zeile .u1-p.schlecht { border-color: #8E2B22; }
+body.ui1 .u1s-grund { font: 500 16px/1.25 var(--s-body); color: var(--s-parch); }
+body.ui1 :is(#shopNeu, #armyNeu) .sn-k .chips { display: none; }
+/* Info-Fenster: Werte als Symbole oben, Text darunter, Chronik aufklappbar */
+body.ui1 #detail .det h3 { font: 400 32px/1.05 var(--s-head); text-transform: none; }
+body.ui1 #detail .kicker { font: 600 17px var(--s-body); }
+body.ui1 .u1d-werte { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin: 6px 0 4px; }
+body.ui1 .u1d-w { display: flex; flex-direction: column; align-items: center; padding: 5px 0 3px; background: rgba(18,13,11,.12); border: 2px solid rgba(18,13,11,.55); }
+body.ui1 .u1d-w img { width: 28px; height: 28px; object-fit: contain; filter: drop-shadow(0 1px 0 rgba(255,255,255,.25)); }
+body.ui1 .u1d-w b { font: 700 21px/1.1 var(--s-body); } body.ui1 .u1d-w small { font: 500 15px var(--s-body); opacity: .85; }
+body.ui1 #detSp { display: flex; flex-wrap: wrap; gap: 6px; }
+body.ui1 .u1d-eig { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 3px; border: 2px solid rgba(18,13,11,.55); font: 600 15px var(--s-body); }
+body.ui1 .u1d-eig img { width: 24px; height: 24px; object-fit: contain; }
+body.ui1 #detail p, body.ui1 #detail .rolle, body.ui1 #detail .det-med { font: 500 16px/1.38 var(--s-body); }
+body.ui1 .u1d-kn { margin-top: 6px; padding: 3px 10px; border: 2px solid rgba(18,13,11,.6); background: transparent; color: inherit; font: 600 16px var(--s-body); cursor: pointer; }
+body.ui1 #detail .chronik { display: none; } body.ui1 #detail .chronik.offen { display: block; }
 </style>
 </head>
 <body>
