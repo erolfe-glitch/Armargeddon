@@ -200,8 +200,8 @@ function fxMuzzle(id, q = 0, hf = 0.3) {
   if (d.muz) return mitFuss([d.x + (!!d.muz[2] === lf ? d.muz[0] : -d.muz[0]), d.y + d.muz[1]]);
   const bs = d.fbx || []; if (!bs.length) return null;
   let [x0, y0, w, h, fl, mz] = bs[q % bs.length]; if (!!fl !== lf) x0 = -(x0 + w);
-  if (mz) return mitFuss([d.x + (lf ? x0 + w * (1 - mz[0]) : x0 + w * mz[0]), d.y + y0 + h * mz[1]]);   // F47: gemessene Mündung der Pose
-  return mitFuss([d.x + (lf ? x0 : x0 + w), d.y + y0 + h * hf]);
+  if (mz) return Object.assign(mitFuss([d.x + (lf ? x0 + w * (1 - mz[0]) : x0 + w * mz[0]), d.y + y0 + h * mz[1]]), { h });   // F47: gemessene Mündung der Pose; h = Figurhöhe (U3 Figurenfaktor)
+  return Object.assign(mitFuss([d.x + (lf ? x0 : x0 + w), d.y + y0 + h * hf]), { h });
 }
 // Richtung für Bilder, die nach rechts zeigen: nach links gespiegelt statt kopfüber gedreht
 function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-lim, Math.min(lim, Math.atan2(y2 - y1, Math.abs(x2 - x1) || 1e-6))); return { flip: fl, ang: fl ? -a0 : a0 }; }
@@ -235,6 +235,9 @@ let fxZielFuss = null;   // Fußpunkt des aktuellen Ziels (Leuchtspur endet dort
 function fxScr(x, y, f) { const b = f && bbAt(f[0], f[1]); return b ? [b.px + b.sc * (x - f[0]), b.py + b.sc * (y - f[1])] : [x, y]; }
 function fxDirS(p, tx, ty, lim) { if (!p.fuss || !fxZielFuss) return fxDir(p[0], p[1], tx, ty, lim); const a = fxScr(p[0], p[1], p.fuss), z = fxScr(tx, ty, fxZielFuss); return fxDir(a[0], a[1], z[0], z[1], lim); }
 function fxFlash(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDirS(p, tx, ty, 0.5); return fx('muendung', v, p[0], p[1], Object.assign({ fuss: p.fuss, anchor: 'links', life: 6, fadeOut: 0.7, flip: dr.flip, ang: dr.ang, mul: 1 }, o)); }
+// U3 (2026-11-27): Figurenfaktor – Mündungsfeuer und Spritzer an einzelnen Figuren nach deren Höhe statt feldgroß (Linien-Soldat ≈ 0,5 Feldradien hoch:
+// Gewehrfeuer vorher ≈ 0,73 R, jetzt ≈ 0,8 Figurhöhe). Rückweg window.FIGFAK_ALT.
+const figMul = (h, anteil, sz, alt) => window.FIGFAK_ALT || !h ? alt : Math.max(0.3, Math.min(1.3, anteil * h / (sz * L.s)));
 // Leuchtspur fliegt von p zum Ziel: v 0 Gewehr, 1 MG-Striche, 5 Panzerbüchse
 function fxTracer(v, p, tx, ty, o = {}) { if (!p) return null; const dr = fxDirS(p, tx, ty, 1.2), oo = Object.assign({ fuss: p.fuss, fuss2: p.fuss && fxZielFuss, anchor: 'rechts', move: [tx, ty], life: 14, fadeOut: 0.25, flip: dr.flip, ang: dr.ang, mul: 0.55 }, o);
   { const im = fxIm('leuchtspur', v), b = p.fuss && bbAt(p.fuss[0], p.fuss[1]); if (im && b && fxZielFuss) { const a0 = fxScr(p[0], p[1], p.fuss), z = fxScr(tx, ty, fxZielFuss), D = Math.hypot(z[0] - a0[0], z[1] - a0[1]), w = fxDim(im, 'leuchtspur', oo.mul)[0]; if (w * b.sc > D * 0.5) oo.len = Math.max(8, D * 0.5 / b.sc); } }   // F65: Spur höchstens halb so lang wie die Flugstrecke, sonst ragt ihr Schweif bei kurzen, steilen Schüssen über den Schützen hinaus
@@ -1794,8 +1797,18 @@ const LEICHEN = [], LEICHE_RUNDEN = 3, LEICHE_MAX = 220, FALL_MS = 460;
 function stehende(u, d, max, n) {
   const weg = d.weg || (d.weg = new Set());
   while (weg.size > max - n) { const a = [...weg]; weg.delete(a[Math.floor(Math.random() * a.length)]); }   // Stärke gestiegen: eine steht wieder
-  while (weg.size < max - n) { const frei = []; for (let i = 0; i < max; i++) if (!weg.has(i)) frei.push(i); const i = frei[Math.floor(Math.random() * frei.length)]; weg.add(i); if (window.GEFALLEN_AN) leicheNeu(u, d, i, false); }   // Punkt 98 (Enrico 17:30): Gefallene standardmäßig aus – der Mann verschwindet einfach
+  const erst = !d._wegDa; d._wegDa = true;   // U3: beim ersten Zeichnen fällt niemand „neu“ (kein Spritzer für alte Verluste)
+  while (weg.size < max - n) { const frei = []; for (let i = 0; i < max; i++) if (!weg.has(i)) frei.push(i); const i = frei[Math.floor(Math.random() * frei.length)]; weg.add(i); if (!erst) figurSpritzer(u, d, i); if (window.GEFALLEN_AN) leicheNeu(u, d, i, false); }   // Punkt 98 (Enrico 17:30): Gefallene standardmäßig aus – der Mann verschwindet einfach
   const out = []; for (let i = 0; i < max; i++) if (!weg.has(i)) out.push(i); return out;
+}
+// U3 (Punkt 118.2): Treffer-Spritzer an der Figur, die fällt – im Moment des Einschlags (die gezeigte Stärke sinkt mit dem Ereignis 'hit'), Größe nach Figurhöhe.
+// Gepanzerte und Maschinen Funken statt Blut; Blut-Schalter und Bildwirkung gelten. Rückweg window.FIGURSPRITZ_ALT.
+function figurSpritzer(u, d, i) {
+  if (window.FIGURSPRITZ_ALT || window.TREFFERBLUT_ALT || !BW) return; const f = d.figIm && d.figIm[i]; if (!f || !(d.alpha > 0)) return;
+  const T = TYPES[u.type], hart = istMaschine(u) || !!T.suit || !!T.gepanzert, la = letzterAngreifer && performance.now() - letzterAngreifer.t < 3000 ? DU.get(letzterAngreifer.id) : null, fl = la ? la.x > f.wx : Math.random() < 0.5, x = f.wx, y = f.wy - f.h * 0.55;
+  if (hart) { fx('funken', null, x, y, { anchor: 'mitte', life: 16, fadeOut: 0.6, mul: figMul(f.h, 0.9, FX_SZ.funken, 0.6), flip: Math.random() < 0.5 }); return; }
+  if (!blood) return; fx('blut', Math.floor(Math.random() * 3), x + (fl ? -1 : 1) * f.h * 0.15, y, { anchor: 'mitte', life: 28, mul: figMul(f.h, 0.75, FX_SZ.blut, 0.4), grow: 0.3, flip: fl, filter: BLUT_FILTER });
+  blutFleck(x + (fl ? -1 : 1) * f.h * 0.2, f.wy + L.s * 0.03, figMul(f.h, 0.55, FX_SZ.blut, 0.28));
 }
 function leicheNeu(u, d, i, alle) {
   const f = d.figIm && d.figIm[i]; if (!f || !f.im || !(d.alpha > 0)) return;
@@ -2132,7 +2145,7 @@ function szeneTween(ms, f) { return new Promise(res => { const t0 = performance.
 async function kampfSzene(x, y) {
   if (KS === 'aus' || speed >= INSTANT || szene) return null;
   const st = { z0: CAM.z, x0: CAM.x, y0: CAM.y, vig: 0, skip: false }; szene = st;
-  if (KS === 'an') { const z1 = Math.min(Z_MAX, Math.max(CAM.z * 1.45, 1.5)), tx = x, ty = y + L.s * 0.5; camAnim = null;
+  if (KS === 'an') { const nz = window.NAHZOOM_ALT ? 1 : 1.2, z1 = Math.min(Z_MAX, Math.max(CAM.z * 1.45 * nz, 1.5 * nz)), tx = x, ty = y + L.s * 0.5; camAnim = null;
     await szeneTween(320, e => { CAM.z = st.z0 + (z1 - st.z0) * e; CAM.x = st.x0 + (tx - st.x0) * e; CAM.y = st.y0 + (ty - st.y0) * e; st.vig = 0.6 * e; camClamp(); camSetup(); }); }
   else st.vig = 0.25;
   return st;
@@ -2763,7 +2776,7 @@ async function playEvent0(e) {
         const figN = Math.max(1, (a.fbx && a.fbx.length) || Math.min(4, Math.ceil((a.str || 10) / 2.5 - 0.001)));   // F74 (2026-11-21): so viele Schützen, wie Figuren stehen
         if (rs === 'sniper' && e.kind === 'rifle') { const key = waffenTon('sniper', au); let t = 0;   // F74: Scharfschützen/Pirschjäger – je Figur ein Schuss, deutlich nacheinander („pam … pam“)
           for (let q = 0; q < figN; q++) { if (q) t += 400 + Math.random() * 200; const tq = t; setTimeout(() => playSound(key, 0.6, au && au.side, { noGap: true, rate: 0.95 + Math.random() * 0.1, dur: 650 }), tq / speed);
-            const p = fxMuzzle(e.a, q % figN); if (p) { fxFlash(5, p, x2, y2, { delay: tq / 16.667, mul: 0.85 }); fxTracer(5, p, x2, y2, { delay: tq / 16.667 }); pulverDampf(p, 0.16, tq / 16.667 + 3); } }
+            const p = fxMuzzle(e.a, q % figN); if (p) { fxFlash(5, p, x2, y2, { delay: tq / 16.667, mul: figMul(p.h, 1.0, FX_SZ.muendung, 0.85) }); fxTracer(5, p, x2, y2, { delay: tq / 16.667 }); pulverDampf(p, 0.16, tq / 16.667 + 3); } }
           salveT = t + 150; if (a.pose && a.pose.t0 != null) { a.pose.dauer = Math.max(900, t + 650); } }
         if (salve) { const n = figN, m = window.SALVE_DOPPELT || window.SALVE_ALT ? n + Math.round(n * (0.5 + Math.random() * 0.5)) : n;   /* SP-2 (Enrico 13:50): jede stehende Figur schießt genau einmal (Rückweg SALVE_DOPPELT) */   // F28 (2026-11-20): je Figur 1–2 Schüsse, zusammen 2–3 s
           const key = waffenTon('rifle', au);   // F30: fest je Seite und Typ   // eine Datei je Salve (Hauptgewehr der Seite), nur versetzt mit leicht anderer Tonhöhe und Lautstärke
@@ -2776,9 +2789,10 @@ async function playEvent0(e) {
             const reihe = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [reihe[i], reihe[j]] = [reihe[j], reihe[i]]; }   // Figuren in zufälliger Folge, jede einmal
             const kz = window.SALVE_KURZ ? [30, 30, 110, 120] : [60, 60, 150, 150];   /* SP-3 (Enrico 26.11. 14:32): ruhiger – Abstände 0,15–0,3 s, in der Mitte 0,06–0,12 s, voller Trupp etwa 1,4 s (Rückweg SALVE_KURZ = 0,11–0,23 s) */
             for (let q = 0; q < m; q++) { if (q) tt += dop.has(q) ? kz[0] + Math.random() * kz[1] : kz[2] + Math.random() * kz[3]; plan.push([tt, m === n ? reihe[q] : q % n]); } }
+          const spur = new Set(window.FIGFAK_ALT || n <= 4 ? [...Array(n).keys()] : [...Array(n).keys()].sort(() => Math.random() - 0.5).slice(0, 4));   // U3: jede Figur blitzt (SP-2), Leuchtspur und Pulverdampf nur bei 4 von 8 (Rückweg FIGFAK_ALT)
           let t = 0; const schuss = []; for (const [tq, f] of plan) { t = tq; schuss.push(t);
             setTimeout(() => playSound(key, (GEWEHR_ART === 'B' ? 0.5 : 0.42) * (0.8 + Math.random() * 0.4), au && au.side, { noGap: true, rate: 0.94 + Math.random() * 0.12, hall: GEWEHR_ART }), t / speed);
-            const p = fxMuzzle(e.a, f); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: 1.05 }); fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } }
+            const p = fxMuzzle(e.a, f); if (p) { fxFlash(0, p, x2, y2, { delay: t / 16.667, mul: figMul(p.h, 0.85, FX_SZ.muendung, 1.05) }); if (spur.has(f)) { fxTracer(0, p, x2, y2, { delay: t / 16.667 }); pulverDampf(p, 0.16, t / 16.667 + 3); } } }
           if (a.pose && a.pose.t0 != null) { a.pose.schuss = schuss; a.pose.gleich = true; a.pose.dauer = Math.max(900, t + 650); } salveT = t; }   // je Figur Mündungsfeuer und Leuchtspur im Takt der Salve
         else if (AT && AT.dauerfeuer) playSound(waffenTon('mg', au), 0.62, au.side, { rate: 0.8 + Math.random() * 0.06 });   // Eiserne Hünen: schweres MG, tiefer gestimmt (Enrico 15:26: Pult-Wahl gilt)   // Eiserne Hünen: schweres MG, tiefer gestimmt
         else if (!(rs === 'sniper' && e.kind === 'rifle')) playSound(waffenTon(e.kind === 'rifle' ? (au && au.type === 'buechse' ? 'neu4_gewehr_schwer' : rs) : schwerMG ? 'neu4_mg_schwer' : mini ? 'minigun' : mg ? 'mg' : au && au.type === 'kreuz' ? 'loewenkanone' : au && ['koloss', 'turm'].includes(au.type) ? 'kolosskanone' : au && au.side === 'D' && AT && AT.cls === 'walker' ? 'panzerkanone' : 'cannon', au), mg ? 0.55 : 0.6, au && au.side);
@@ -2979,7 +2993,7 @@ async function playEvent0(e) {
       if (e.stand) auraPuls(e.stand, 'faust');   // F86: Standhaft hat gewirkt
       if (!e.panic && e.dmg > 0) { const ab = poseHat(u, 'aufbaeumen') && Math.random() < 0.4; pose(e.u, ab ? 'aufbaeumen' : 'getroffen', ab ? 800 : 550); }   // kurz taumeln; Reiter: Pferd bäumt sich manchmal auf (Runde 2)
       if (!e.panic && e.dmg > 0 && d && !e.wire && !window.TREFFERBLUT_ALT) { const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 3000 ? DU.get(letzterAngreifer.id) : null, Tz = TYPES[u.type], hart = istMaschine(u) || !!Tz.suit || !!Tz.gepanzert, fall = e.fall || 0;   // ST1 (115.6): jeder Treffer an Fußtruppen/Reitern ein Blutspritzer, fällt ein Mann ein größerer mit Bodenfleck; Gepanzerte/Fahrzeuge Funken (Blut-Schalter gilt)
-        trefferSpritzer(la ? la.x : d.x - L.s, la ? la.y : d.y, d, fall > 0 ? 2 : 1, hart); if (fall > 0 && !hart) blutFleck(d.x + (Math.random() - 0.5) * L.s * 0.5, d.y + L.s * 0.15 * kAt(d.x, d.y), 0.28); }
+        trefferSpritzer(la ? la.x : d.x - L.s, la ? la.y : d.y, d, fall > 0 && window.FIGURSPRITZ_ALT ? 2 : 1, hart); if (fall > 0 && !hart && window.FIGURSPRITZ_ALT) blutFleck(d.x + (Math.random() - 0.5) * L.s * 0.5, d.y + L.s * 0.15 * kAt(d.x, d.y), 0.28); }
       if ((E.isMech(u.type) && TYPES[u.type].cls === 'walker') || TYPES[u.type].dauerfeuer) playSound('robot', 0.5, null, { u, v: 'mr' });   // Hünen (2026-11-20): Maschinenstimme   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) shake(e.dmg >= 2.5 ? 6 : 4);
