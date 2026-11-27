@@ -96,10 +96,12 @@
 - ✓ **Paket F2b (Abschnitt 27.11. 19:35, Punkt 133)** erledigt (`ffcd417`).
 - ✓ **Fable-Prüfrunde U7 (Punkt 133/134)** erledigt (`PRUEFUNG_FABLE_U7.md`): U7 bleibt, Nachbesserung U7b.
 - ✓ **Paket F3 + U7b Teil 1 (Punkte 135/136)** erledigt (`ca55c0a`, `2d77fef`).
-- **Paket U7b Teil 2 (Abschnitt 27.11. 20:25, Punkt 136)** – **nächster `pa`**, Opus Hoch: KI, kleine Regelstellen, Zurückweichen, Halten, Rand, Probe-Messung Panik.
+- ✓ **Paket U7b Teil 2 (Punkt 136)** erledigt (`7d3d59c`).
+- ✓ **Kurz-Prüfung U7b Teil 2 durch Fable (Punkt 140)** erledigt (`PRUEFUNG_FABLE_U7B.md`).
+- ✓ **Paket U7c (Abschnitt 27.11. 21:50, Punkt 142)** – **nächster `pa`**, Opus Mittel: KI-Nachbesserung aus der Kurzprüfung. Danach UI1 Teil 1.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
-- **Paket UI1 Oberfläche (Punkt 128)** – nach U7; vorher Entwürfe vom Berater.
+- **Paket UI1 Oberfläche (Punkte 128/141)** – Entwurf A gewählt. **Teil 1** (Einheitenkarte, Knopfgruppen, Schrift) nach der Fable-Kurzprüfung U7b, dann **Teil 2** (Nachschub-Karten, Info-Fenster, Leisten, Klicktöne). Je Opus Mittel.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -212,6 +214,67 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-27 21:50): Paket U7c – Nachbesserung aus der Fable-Kurzprüfung, VOR UI1 <<<
+✓ **142. Nächster `pa` = Paket U7c. Einstellung: Opus, Mittel.** Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_U7B.md` (Fehler-Nummern daraus). UI1 (Punkt 141) kommt erst danach.
+
+**Beheben:**
+1. **Fehler 1:** `wanktDeckung` (`ai.js` ca. 55) misst die Feindnähe am Standort des Trupps (`nearestEnemyDist(G, u.side, u.c, u.r) > 5`), nicht am Zielfeld.
+2. **Fehler 2:** Ein wankender Trupp auf einem Zielfeld wird nicht durch den Deckungszuschlag weggezogen (`wanktDeckung` gibt 0, wenn er auf einem Zielfeld steht und ein anderes Feld bewertet wird).
+3. **Fehler 3:**
+   - Eine Hilfsfunktion „Ziel ist zerschlagen“.
+   - In `abilPlan`/`foe` solche Ziele auslassen.
+   - Zweitwaffe und zweiter Breitseiten-Schuss sortieren sie ans Ende.
+   - Dauerfeuer und Faustsalve: ×`W_ZERSCHLAGEN` ohne die +3.
+4. **Fehler 4:** `retreatHex` bewertet Gas (`cloudAt`) und Feuer (`fireAt`) mit −4, Draht mit −4 statt −2 (außer `wireProof`).
+5. **Fehler 5 (Enrico: nein):** Ein durchgefallener Entsetzenstest wirft wie vorher nur schwache Trupps zurück (unter 60 Stärke). Bei stärkeren greift Nr. 6 dort nicht (`morVor` erst nach `entsetzen` vergleichen oder Entsetzen ausnehmen).
+6. **Fehler 6 (Enrico: Feuerschlag nicht schwächer):** Nur den Kommentar in `engine.js` ca. 1661 und den Bericht berichtigen, keine Regeländerung.
+7. **Fehler 7:** KI-Zuschlag 1,5 für Schüsse, die einen Panik-Trupp unter `P.ROUT_STR` drücken.
+8. **Fehler 8:** `retreatHex` nimmt `erholFeld(t)` (Haus, Kapelle, Mühle).
+9. **Fehler 9:** Faustsalve: Die vordere Faust bekommt denselben Laufspitzen-Wert wie `MUZ_FIG`/`MUZ2` (am Bild `4_faustsalve_punkte.jpg` gegenprüfen).
+
+**Nicht ändern:** Zielfelder werden nicht standhafter (Enrico: vorerst nein, im Spieltest beobachten).
+
+**Messung:** ein kurzer Lauf je Karte (MISCHEN=1, 100 Schlachten, unter 10 Minuten je Lauf). Die Quoten sollen in der Streuung ±4 gegen `u7b.json` bleiben. Dazu Regeltest, Partietest und Video. Rückweg-Schalter `U7C_ALT`.
+
+# >>> JETZT (Enrico 2026-11-27 21:45): Paket UI1 – Entwurf A „Eisenplatte“ gewählt, erst NACH der Fable-Kurzprüfung U7b <<<
+**141. UI1 in zwei Teilen, je ein `pa`, erst NACH U7c (Punkt 142). Einstellung: Opus, Mittel.** Grundlage ist Punkt 128 (Wünsche) und der gewählte **Entwurf A** des Beraters: `entwurf/ui1/entwurf_A_eisenplatte.dc.html`. Für das Nachschub-Menü kommt `entwurf/ui1/entwurf_C_nachschub.dc.html` dazu (nur der Nachschub-Teil oben). Beides sind HTML-Skizzen mit Platzhalter-Symbolen. Maßgeblich sind **Aufbau, Größen und Anordnung**, nicht die Platzhalter. Im Spiel kommen die gemalten Symbolbögen (`bogen3c`/`bogen4*`, `panel_assets.py`) und die Texturen nach `STYLE.md` zum Einsatz. Wo ein Symbol fehlt: Liste im Bericht, der Berater malt nach.
+
+**Teil 1 – Einheitenkarte, Knöpfe, Schrift** (nächster `pa` nach der Kurzprüfung):
+1. **Einheitenkarte links unten** wie Entwurf A, auf Eisen mit Tintenschicht:
+   - Porträt mit Messingrahmen, Name groß in der Titelschrift.
+   - **Rollen-Schild** (Kategorie, z. B. „LINIE“ mit Schild-Symbol) und Rolle in einem Halbsatz (`rollen.js`).
+   - **Rangwinkel** (Platz für Veteranen, vorerst leer/grau, Kampagne Punkt 137).
+   - Stärkebalken dick mit Strichen, Moralbalken dünn. Darunter **eine** Zeile Moralstufe („wankt · Angriff ×0,85 · weicht unter 30“).
+   - **Fünf Werte als Symbol plus Zahl** (×10): Bewegung, Schuss, Nahkampf, Abwehr, Reichweite.
+   - **Gut gegen / schlecht gegen** als ▲-Plaketten (grün `--s-moss`) und ▼-Plaketten (Rand `--s-life`), aus `medaillen()`/FAK, höchstens je zwei.
+   - **Eigenschaften** als goldene Symbol-Kästchen. Text nur im Pergament-Tooltip (Maus und langes Drücken).
+   - **„Mehr ▾“** klappt die ausführlichen Werte und die Chronik auf (`arm.kartelang` weiter nutzen).
+2. **Knopfleiste unten in festen Gruppen mit kleiner Überschrift:** BEWEGEN (Ziehen, Marsch) · ANGRIFF (Schießen, Nahkampf, Zweitwaffe) · FÄHIGKEITEN (alles aus `abil`, Befehle, Eingraben …) · DREHEN. Feste Plätze je Art, auch wenn ein Knopf grau ist. Knöpfe mindestens 56 px, Tasten 1–n bleiben, Gründe für Grau (`ABIL_KEIN`) im Tooltip.
+3. **Schrift:**
+   - Titel und Knöpfe in **IM Fell English SC**, Text und Zahlen in **Barlow Condensed** (500/600/700). Beide stehen unter der SIL Open Font License: Dateien nach `ui-quelle/schriften/`, Lizenz in `CREDITS.md`, `tools/fonts.py`, lokal einbetten (kein Google-Link im Spiel).
+   - Mindestgröße für Text 15 px bei 1920 px Breite.
+   - Die Ziffernschrift „Arm Ziffer“ nur dort behalten, wo sie heute für große Schadenszahlen steht.
+4. **Prüfen** bei 1280, 1920 und 2560 px, mit Touch-Tooltips. Partietest. Bilder vorher/nachher (`entwurf/probe/ui1/`). Rückweg `window.UI1_ALT`.
+
+**Teil 2 – Nachschub, Fenster, Leisten, Klicks** (eigener `pa` danach):
+1. **Nachschub-Menü als Karten** wie in Entwurf C (Stil A):
+   - Je Karte: Porträt, Name, Kategorie-Schild, Preis mit Aufschlag („★ 85 +50 %“), 2–3 Werte als Symbole, ▲/▼-Plaketten.
+   - Gesperrte Einheiten ausgegraut, mit Grund („Voll: je 2 Linientrupps ein Platz“).
+   - Kategorie-Leiste oben, Reiter bleiben. Finger: erst antippen = Details, zweimal = aufstellen.
+2. **Info-Fenster** auf Pergament im selben Aufbau wie die Karte (Werte als Symbole oben, Text darunter, Chronik zum Aufklappen).
+3. **Obere Leiste** schlanker wie in Entwurf A: Runde links, Siegpunkte mittig, Knöpfe rechts mit `aria-label`/Tooltip.
+4. **Klickgeräusche:**
+   - 3–4 neue kurze Knopfklänge über `node tools/fal_ton.mjs` (ElevenLabs Geräusche): trocken, metallisch bzw. Holz, unter 0,3 s, kein Nachhall.
+   - Als Plätze `klick_neu_1–4` nur zur Auswahl ins Ton-Pult (Rubrik Oberfläche). Enrico wählt dort, und der alte `klick` bleibt bis dahin.
+   - Kosten im Bericht.
+5. Prüfen wie in Teil 1, Video.
+
+# >>> JETZT (Enrico 2026-11-27 21:35): Antwort zu U7b Teil 2 – kurze Fable-Prüfung, kein neuer `pa` <<<
+**140. U7b Teil 2 ist vorläufig abgenommen** (gebaut mit Sonnet statt Opus).
+1. **Nr. 7 (Moralverlust je Schaden 1,0):** Nicht übernehmen, es bleibt bei 0,8. Das wird mit der Kampagne (Punkt 137) neu angesehen, weil dort gesammelte Trupps erhalten bleiben und das Sammeln mehr zählt.
+2. **Kurze Fable-Prüfung:** Fable liest nur den Code der neuen Regel- und KI-Stellen, nach `entwurf/postfach/PRUEFAUFTRAG_FABLE_U7B.md`, in einer eigenen Sitzung, die nicht über `pa` gestartet wird. Bis das Ergebnis da ist, gibt es **keinen neuen `pa`**.
+3. **Danach:** UI1 (vorher Entwürfe vom Berater).
 
 # >>> NOTIZ (Enrico 2026-11-27 21:15): Für U8 – Handgranaten seltener, Mindestentfernung auch beim direkten Schuss <<<
 **139. Nur vormerken, gehört zu U8 (mit Messung). Jetzt nichts ändern.**

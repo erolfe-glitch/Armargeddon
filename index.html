@@ -2576,6 +2576,7 @@ const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlw
 const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
 const stufenAlt = () => !!(TOG.STUFEN_ALT || (typeof window !== 'undefined' && window.STUFEN_ALT));   // U7 Schritt 3: Rückweg – Moral ohne Stufen
 const schalter = n => !!(TOG[n] || (typeof window !== 'undefined' && window[n]));
+const u7cAlt = () => schalter('U7C_ALT');   // U7c (Punkt 142): Rückweg der Nachbesserungen aus der Fable-Kurzprüfung
 const u7b4Alt = () => schalter('U7B4_ALT'), halteWeichAlt = () => schalter('HALTEWEICH_ALT'), weichenAlt = () => schalter('WEICHEN_ALT');   // U7b Teil 2: Rückwege (Nr. 4 kleine Regelstellen, Nr. 5 Halten/Banner, Nr. 6 Zurückweichen vor Niederhalten)
 // U7b Nr. 4 (Fehler 10): EINE Quelle für Deckung – feste Deckung (halber Moralverlust), dazu Fabrik und eingegraben (Weich-Schwelle, halbe Erholung); erholFeld = schnelle Erholung
 const festeFeld = t => t === 'trench' || t === 'bunker' || KIRCHE.has(t);
@@ -2749,9 +2750,9 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (d.status === 'rout') { zerschlagenPruefen(G, d, ev); return; }
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
-  if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
-  const sw = fallbackSchwelle(G, d);
-  if (d.mor < sw && cls(d) !== 'art' && (!(d.supp > 0 && !TOG.NOSUPP) || (!weichenAlt() && morVor >= sw))) fallBack(G, d, a, ev);   // U7b Nr. 6: der Treffer, der unter die Schwelle drückt, wirft zurück (auch frisch niedergehalten); wer schon darunter liegt, bleibt liegen
+  const nEv = ev.length; if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
+  const sw = fallbackSchwelle(G, d), entsetzt = !u7cAlt() && ev.slice(nEv).some(e => e.t === 'entsetzen' && !e.ok);   // U7c (Fehler 5): nach einem durchgefallenen Entsetzenstest gilt Nr. 6 nicht – zurückgeworfen werden dann nur schwache Trupps (in entsetzen)
+  if (d.mor < sw && cls(d) !== 'art' && (!(d.supp > 0 && !TOG.NOSUPP) || (!weichenAlt() && !entsetzt && morVor >= sw))) fallBack(G, d, a, ev);   // U7b Nr. 6: der Treffer, der unter die Schwelle drückt, wirft zurück (auch frisch niedergehalten); wer schon darunter liegt, bleibt liegen
 }
 // Punkt 18 (2026-11-24): Entsetzenstest – nur wenn ein Fahrzeug/Schreiter angreift (statt Moralverlust beim bloßen Annähern; ENTSETZ_ALT=1 = alte Regel).
 // Immun: Helden, Fahrzeuge/Schreiter, Kampfanzüge. Durchgefallen: niedergehalten, Moral −P.ENTSETZ_MOR, unter 60 Stärke zurückweichen (keine Sofortflucht).
@@ -2794,8 +2795,9 @@ function retreatHex(G, u, from) {
     if (from) s += dist(c, r, from.c, from.r) * 2;
     let adj = 0; for (const [nc, nr] of neighbors(c, r)) { const o = unitAt(G, nc, nr); if (o && o.side !== u.side && active(o)) adj++; }
     s -= adj * 2;
-    if (['trench', 'village', 'bunker', 'fabrik', 'kirche', 'barrikade', 'wald', 'schiff', 'turm'].includes(t)) s += 1;
-    if (t === 'wire') s -= 2;
+    if (u7cAlt() ? ['trench', 'village', 'bunker', 'fabrik', 'kirche', 'barrikade', 'wald', 'schiff', 'turm'].includes(t) : erholFeld(t)) s += 1;   // U7c (Fehler 8): eine Deckungs-Quelle (auch Haus, Kapelle, Mühle)
+    if (t === 'wire') s -= u7cAlt() || wireProof(TYPES[u.type]) ? 2 : 4;   // U7c (Fehler 4): nicht in Draht, Gas oder Feuer zurückweichen
+    if (!u7cAlt()) { if (cloudAt(G, c, r)) s -= 4; if (fireAt(G, c, r)) s -= 4; }
     if (s > bs) { bs = s; best = [c, r]; }
   }
   return best;
@@ -3019,7 +3021,7 @@ function shellDmg(G, a, d, direct, tags) {
   let dm = defMods(G, d, 'front', true, tags);
   if (direct) dm *= kanteFaktor(G, d, a.c, a.r, tags);   // R3: nur der direkte Schuss, Steilfeuer fällt von oben
   m *= splitterU5(G, a, d, dm, tags); dm = deckU5(G, d, dm, tags);   // U5a
-  if (!u7b4Alt() && wankt(a)) { m *= P.WANKT_ATK; tags.push('wankt ×' + String(P.WANKT_ATK).replace('.', ',')); }   // U7b Nr. 4 (Fehler 8): auch Geschütze, Mörser, Sperrfeuer, Feuerschlag
+  if (!u7b4Alt() && wankt(a)) { m *= P.WANKT_ATK; tags.push('wankt ×' + String(P.WANKT_ATK).replace('.', ',')); }   // U7b Nr. 4 (Fehler 8): auch Geschütze, Mörser und Sperrfeuer. NICHT der Feuerschlag: seine Hilfs-Batterie hat keinen Status (Enrico 2026-11-27: so lassen)
   return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * kraft(a) * m;
 }
 function gasCells(G, c, r) {
@@ -5972,12 +5974,16 @@ const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W
 const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
 // U7b Nr. 3 (Fehler 4 und 9, 2026-11-27): Zerschlagene nur noch mit Faktor W_ZERSCHLAGEN, Schwellen aus P/fallbackSchwelle, wankende Trupps in Deckung ziehen (W_WANKT_DECKUNG), Sammeln-Befehl auch nach dem Ziehen; Rückweg KI_U7B_ALT
 const kiAlt = () => !!((typeof process !== 'undefined' && process.env && process.env.KI_U7B_ALT) || (typeof window !== 'undefined' && window.KI_U7B_ALT));
+const u7cAlt = () => !!((typeof process !== 'undefined' && process.env && process.env.U7C_ALT) || (typeof window !== 'undefined' && window.U7C_ALT));   // U7c (Punkt 142): Rückweg
+// U7c (Fehler 3): „Ziel ist zerschlagen“ – schon voll gezählt, kommt nie zurück; Fähigkeiten, Zweitwaffe, Breitseite, Dauerfeuer und Faustsalve sollen es nicht suchen
+function zerschlagenZiel(d) { return !u7cAlt() && !kiAlt() && !E.fluchtAlt() && !!d && d.status === 'rout' && !!d.aufgerieben; }
 const W_ZERSCHLAGEN = +((typeof process !== 'undefined' && process.env && process.env.W_ZERSCHLAGEN) || 0.3), W_WANKT_DECKUNG = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT_DECKUNG) || 2);
 // Moral des Ziels nach einem Treffer – wie applyDamage (ohne Anführer, Banner und Umzingelung)
 function morNach(G, d, dmg, arc, flame) { if (kiAlt()) return d.mor - dmg * 0.8 * (flame ? 2 : 1) - (arc === 'flank' ? 0.5 : arc === 'rear' ? 1 : 0);
   const t = E.hex(G, d.c, d.r).t; let ml = dmg * P.MOR_PER_DMG * (flame ? P.FLAME_MOR : 1) + (arc === 'flank' ? P.MOR_FLANK : arc === 'rear' ? P.MOR_REAR : 0); if (E.festeFeld(t) && !flame) ml *= 0.5; return d.mor - ml; }
 // U7b Nr. 3: Wankende Fußtruppen suchen Deckung, wenn Gegner in der Nähe sind (im Offenen werden sie von jedem Gewehrtrupp niedergehalten und erholen sich nie)
-function wanktDeckung(G, u, c, r) { if (kiAlt() || !E.wankt(u) || E.cls(u) === 'walker' || E.cls(u) === 'art' || nearestEnemyDist(G, u.side, c, r) > 5) return 0;
+function wanktDeckung(G, u, c, r) { if (kiAlt() || !E.wankt(u) || E.cls(u) === 'walker' || E.cls(u) === 'art' || nearestEnemyDist(G, u.side, u7cAlt() ? c : u.c, u7cAlt() ? r : u.r) > 5) return 0;   // U7c (Fehler 1): Feindnähe am Standort des Trupps
+  if (!u7cAlt() && G.map[u.c][u.r].obj && (c !== u.c || r !== u.r)) return 0;   // U7c (Fehler 2): nicht vom Zielfeld weglocken
   const x = Object.assign({}, u, { c, r, dug: !!u.dug && c === u.c && r === u.r }); return E.deckungsFeld(G, x) ? W_WANKT_DECKUNG : E.coverOf(G, x).tier >= 1 ? W_WANKT_DECKUNG / 2 : 0; }
 const W_WANKT = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT) || 0.6);   // U7 Schritt 3: Schuss drückt das Ziel unter die Wankt-Schwelle
 const W_SAMMEL = +((typeof process !== 'undefined' && process.env && process.env.W_SAMMEL) || 1.5), W_FLUCHT_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_FLUCHT_ZIEL) || 2);   // U7 Schritt 2: Anführer/Banner nahe Wankenden und Fliehenden; fliehende Gegner nahe gegnerischer Anführer (kämen sonst zurück)
@@ -6070,7 +6076,7 @@ function openObjDist(G, u, c, r) {
 function abilPlan(G, u) {
   const k = TYPES[u.type].abil; if (!k || (typeof process !== 'undefined' && process.env && process.env.NOABIL)) return null;
   const tg = E.abilTargets(G, u); if (!tg.length) return null;
-  const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== u.side && E.alive(x) ? x : null; };
+  const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== u.side && E.alive(x) && !zerschlagenZiel(x) ? x : null; };
   const area = (c, r) => [[c, r], ...E.neighbors(c, r)].filter(([a, b]) => E.inMap(a, b));
   let best = null, bv = 0;
   // Rauch (KI-Runde 2026-11-17): Sichtlinien gegnerischer Schützen auf eigene Truppen, die die Nebelwand unterbricht – MG und vorrückende Trupps zählen mehr;
@@ -6125,7 +6131,7 @@ function abilPlan(G, u) {
     else if (k === 'mine') { const n = nearestEnemyDist(G, u.side, c, r); v = n <= 6 ? 7 - n + (G.map[c][r].t === 'open' || G.map[c][r].t === 'mud' ? 0.5 : 0) : 0; }
     else if (k === 'light') { for (const [a, b] of area(c, r)) if (foe(a, b)) v += 1; v = v >= 1 ? v : 0; }
     else if (k === 'rush') {   // Sturmlauf: Ziel neben einem Gegner, schwache Gegner und Zielfelder bevorzugt
-      const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
+      const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x) && !zerschlagenZiel(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
     else if (k === 'pzschuss') { const x = foe(c, r); if (x) { const S = E.panzerKl(x.type) === 'S'; v = (S ? 3 : 1.6) + (TYPES[x.type].mg ? 0.5 : 0) + (G.map[x.c][x.r].obj ? 0.8 : 0) + (x.str < 4 ? 1 : 0); } }   // Punkt 16: Panzergranate nur gegen gepanzerte Ziele (abilTargets), schwere zuerst
@@ -6277,7 +6283,8 @@ function attackValue(G, a, d, kind, o) {
   const flame = kind === 'fire' && TYPES[a.type].flame;
   const strAfter = d.str - p.dmg;
   const morAfter = morNach(G, d, p.dmg, p.arc, flame), flieht = !kiAlt() && d.status === 'rout';   // U7b Nr. 3: wer schon flieht, kann nicht noch einmal brechen
-  if (flieht) {} else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
+  if (flieht) { if (!u7cAlt() && !d.aufgerieben && strAfter < P.ROUT_STR) v += 1.5; }   // U7c (Fehler 7): Panik unter ROUT_STR drücken = zerschlagen, Punkte sofort
+  else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
   else if (!E.stufenAlt() && d.status === 'ok' && !E.wankt(d) && morAfter < P.WANKT * TYPES[d.type].mor) v += W_WANKT;   // U7 Schritt 3
   if (d.officer) v += 0.8;
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
@@ -6519,7 +6526,7 @@ function next(G) {
   for (const u of G.units) {   // Flammenstoß (Bohrkoloss) vor dem Bohrer: der Nahkampf verbraucht alle Punkte
     if (u.side !== G.side || !(TYPES[u.type].zweit && TYPES[u.type].zweit.flamme) || G._aiDone.has('z' + u.id)) continue;
     const tg = E.zweitTargets(G, u); if (!tg.length) continue;
-    G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
+    G._aiDone.add('z' + u.id); tg.sort((a, b) => zerschlagenZiel(a) - zerschlagenZiel(b) || a.str - b.str);
     return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
   }
   for (const u of G.units) {   // Löwengebrüll (Kreuzschreiter, 2026-11-20): kostet nichts, vor dem eigenen Angriff, wenn es mindestens 2 Gegner trifft oder einen auf einem Zielfeld bzw. ein MG
@@ -6586,14 +6593,14 @@ function next(G) {
   // Sturmpanzer: zweiter Schuss der Breitseite auf ein anderes Ziel bis 2 Felder (schwächstes zuerst)
   for (const u of G.units) {
     if (u.side !== G.side || !TYPES[u.type].broadside || !E.active(u) || !u.attacked || (u.bsT || []).length !== 1) continue;
-    const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => x.str - y.str)[0];
+    const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => zerschlagenZiel(x) - zerschlagenZiel(y) || x.str - y.str)[0];
     if (t) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
   }
   // Eiserne Hünen (2026-11-20): Dauerfeuer – zweite Salve, wenn das Ziel lohnt (danach kühlt das MG eine Runde ab)
   for (const u of G.units) {
     if (u.side !== G.side || !TYPES[u.type].dauerfeuer || !E.active(u) || !E.dauerOk(u)) continue;
     const ts = G.units.filter(d => E.canFire(G, u, d)); if (!ts.length) continue;
-    const wert = d => { const p = E.preview(G, u, d, 'fire'); return Math.min(p.dmg, d.str) + (p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0); };
+    const wert = d => { const p = E.preview(G, u, d, 'fire'), z = zerschlagenZiel(d); return (Math.min(p.dmg, d.str) + (!z && p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0)) * (z ? W_ZERSCHLAGEN : 1); };
     const t = ts.sort((a, b) => wert(b) - wert(a))[0];
     if (wert(t) >= W_DAUER) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
   }
@@ -6646,7 +6653,7 @@ function next(G) {
   for (const u of G.units) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG) mit übrigen Punkten
     if (u.side !== G.side || !TYPES[u.type].zweit || G._aiDone.has('z' + u.id)) continue;
     const tg = E.zweitTargets(G, u); if (!tg.length) continue;
-    G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
+    G._aiDone.add('z' + u.id); tg.sort((a, b) => zerschlagenZiel(a) - zerschlagenZiel(b) || a.str - b.str);
     return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
   }
   return null;
@@ -6686,7 +6693,7 @@ function exec(G, uid, s) {
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
   if (s.k === 'fire' && TYPES[u.type].faust && E.canFaust(G, u, d)) {   // Faustsalve (2026-11-20): statt des Schusses, wenn ein zweites Ziel lohnt
-    const wert = x => { const p = E.preview(G, u, x, 'fire'), dm = p.dmg * E.P.FAUST_MUL; return Math.min(dm, x.str) + (dm >= x.str - 0.3 ? 3 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (E.hex(G, x.c, x.r).obj ? 0.8 : 0); };
+    const wert = x => { const p = E.preview(G, u, x, 'fire'), dm = p.dmg * E.P.FAUST_MUL, z = zerschlagenZiel(x); return (Math.min(dm, x.str) + (!z && dm >= x.str - 0.3 ? 3 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (E.hex(G, x.c, x.r).obj ? 0.8 : 0)) * (z ? W_ZERSCHLAGEN : 1); };
     const zw = E.faustTargets(G, u).filter(x => x !== d).sort((a, b) => wert(b) - wert(a))[0];
     if (zw) { const v = wert(d) + wert(zw); if (v >= 4 || wert(d) >= 3 || wert(zw) >= 3 || G.turn >= 10) return E.faust(G, u, d, zw); }
   }
@@ -6917,7 +6924,7 @@ function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-l
 function fxFaust(id, n) {
   const d = DU.get(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
-  const lf = facesLeft(d.face), m = n ? [0.962, 0.51] : [0.6, 0.55], p = [d.x + x0 + w * (lf ? 1 - m[0] : m[0]), d.y + y0 + h * m[1]]; p.fuss = [d.x, d.y]; return p;   // U7b (138.3): Laufspitzen der Pose eisenknecht_posen_2 (vorher mitten im Bild, nicht gespiegelt)
+  const lf = facesLeft(d.face), m = n ? [0.984, 0.507] : [0.6, 0.55], p = [d.x + x0 + w * (lf ? 1 - m[0] : m[0]), d.y + y0 + h * m[1]]; p.fuss = [d.x, d.y]; return p;   // U7b (138.3): Laufspitzen der Pose eisenknecht_posen_2 (vorher mitten im Bild, nicht gespiegelt)
 }
 function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);

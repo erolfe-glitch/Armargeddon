@@ -1,3 +1,45 @@
+## 2026-11-27 – U7c (Punkt 142): Nachbesserung aus der Fable-Kurzprüfung
+
+Gepusht:
+- `82c5873`: Änderungen, Messung, Bild
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung. Fehler 5 habe ich einzeln nachgestellt: Ein starker Trupp bleibt nach dem durchgefallenen Test liegen, mit `U7C_ALT` weicht er wie vorher.
+- **Video:** `entwurf/probe/video/U7c.mp4` (Grauwall, 25,3 s, mit Ton).
+- **Sitzung:** Vorgesehen war Opus, Mittel, gelaufen ist das Paket mit **Sonnet**.
+
+**Behoben** (alles unter dem Rückweg `U7C_ALT`):
+
+| Fehler | Änderung |
+|---|---|
+| 1 | „Wankende in Deckung“ misst die Feindnähe am Standort des Trupps. |
+| 2 | Ein wankender Trupp wird nicht mehr durch den Deckungszuschlag vom Zielfeld weggelockt. |
+| 3 | Neue Funktion „Ziel ist zerschlagen“: Fähigkeiten lassen solche Ziele aus, Zweitwaffe und Breitseite nehmen sie zuletzt, Dauerfeuer und Faustsalve rechnen ×0,3 ohne +3. |
+| 4 | Beim Zurückweichen meiden Trupps Gas und Feuer (−4) und Draht (−4 statt −2, außer drahtfeste). |
+| 5 | Nach einem durchgefallenen Entsetzenstest werden wie früher nur schwache Trupps zurückgeworfen. |
+| 6 | Nur der Kommentar ist berichtigt. Der Feuerschlag wird nicht schwächer. **Berichtigung zum Bericht U7b Teil 2:** „Wankt ×0,85“ gilt für Geschütze, Mörser und Sperrfeuer, **nicht** für den Feuerschlag. |
+| 7 | Die KI bekommt +1,5 für Schüsse, die einen Panik-Trupp unter 15 Stärke drücken. |
+| 8 | Zurückweichen kennt jetzt auch Haus, Kapelle und Mühle als Deckung. |
+| 9 | Die vordere Faust nutzt denselben Wert wie `MUZ_FIG`/`MUZ2` (0,984). Im Bild sitzt der Punkt wenige Pixel vor der Laufspitze: `entwurf/probe/u7c/faustsalve_punkte.jpg`. Der Rückweg-Schalter gilt hier nicht. |
+
+Zielfelder werden nicht standhafter, wie du es wolltest.
+
+**Messung** (MISCHEN=1, 4 × 100 Schlachten je Karte, weil `u7b.json` ein Mittel aus vier Startwerten ist; `entwurf/probe/u7/u7c.json`):
+
+| Karte | U7b → U7c | Läufe |
+|---|---|---|
+| Grauwall | 52 % → **49,5 %** (−2,5) | 52/44/56/46 |
+| Sankt Ruß | 45,75 % → **46,25 %** (+0,5) | 46/43/46/50 |
+| Winterdorf | 57,25 % → **57,5 %** (+0,3) | 60/53/58/59 |
+
+- Alle drei Karten liegen in der Streuung von ±4, die Runden bleiben gleich.
+- Auf der Flucht werden noch einmal 11–17 % weniger Trupps vernichtet, weil die KI Zerschlagene nun auch mit Fähigkeiten und Zweitwaffen in Ruhe lässt. Etwas mehr entkommen am Rand.
+- Zurückweichen, Fluchten und Sammeln bleiben praktisch gleich.
+
+**Fragen an Enrico:** keine. Als Nächstes kommt laut Auftrag UI1 Teil 1.
+
 ## 2026-11-27 – U7b Teil 2 (Punkt 136) und Punkt 138.3
 
 Gepusht:
