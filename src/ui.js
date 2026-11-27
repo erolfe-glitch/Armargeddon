@@ -488,7 +488,7 @@ function drawBrushBar(g, col, bx, by, bw, bh) {   // Breite bw = gefüllter Ante
 // Ersatzschild, falls das gemalte Bild fehlt
 const SHIELD_COL = { 1: ['#e6a868', '#a8662c', '#5c3412'], 2: ['#f4f5f7', '#b4b8be', '#5d6168'], 3: ['#fff1a0', '#e0ad2c', '#7a5408'] };
 // SP-1 (84.2): Feldsymbole (Geländehinweis, BP-Kosten, Weg, Marken, Kopfzeichen) wachsen mit dem Zoom, aber nur zwischen SYM_MIN und SYM_MAX Bildschirm-Pixeln Feldgröße; Rückweg window.SYM_ALT
-const SYM_MIN = 90, SYM_MAX = 220;   // gemessen: Feldgröße ganze Karte ≈ 51 px, Zoom 1 ≈ 154 px, Zoom 2,6 ≈ 400 px
+const SYM_MIN = 90, SYM_MAX = 140;   /* ST1 (115.7): Obergrenze 220 → 140 – nah herangezoomt nicht mehr riesig */   // gemessen: Feldgröße ganze Karte ≈ 51 px, Zoom 1 ≈ 154 px, Zoom 2,6 ≈ 400 px
 function symS(g, s) { const a = g && g.getTransform ? Math.hypot(g.getTransform().a, g.getTransform().b) || 1 : 1, px = s * a; window.__symPx = px; if (window.SYM_ALT) return s; return Math.max(SYM_MIN, Math.min(SYM_MAX, px)) / a; }
 function drawShield(g, cx, cy, h, tier) {
   if (VIEW.up) VIEW.up(cx, cy);
@@ -2974,6 +2974,8 @@ async function playEvent0(e) {
       if (!e.panic && e.dmg > 0 && u && TYPES[u.type].held) playSound('held_ruestung', 0.5);   // Helden getroffen
       if (e.stand) auraPuls(e.stand, 'faust');   // F86: Standhaft hat gewirkt
       if (!e.panic && e.dmg > 0) { const ab = poseHat(u, 'aufbaeumen') && Math.random() < 0.4; pose(e.u, ab ? 'aufbaeumen' : 'getroffen', ab ? 800 : 550); }   // kurz taumeln; Reiter: Pferd bäumt sich manchmal auf (Runde 2)
+      if (!e.panic && e.dmg > 0 && d && !e.wire && !window.TREFFERBLUT_ALT) { const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 3000 ? DU.get(letzterAngreifer.id) : null, Tz = TYPES[u.type], hart = istMaschine(u) || !!Tz.suit || !!Tz.gepanzert, fall = e.fall || 0;   // ST1 (115.6): jeder Treffer an Fußtruppen/Reitern ein Blutspritzer, fällt ein Mann ein größerer mit Bodenfleck; Gepanzerte/Fahrzeuge Funken (Blut-Schalter gilt)
+        trefferSpritzer(la ? la.x : d.x - L.s, la ? la.y : d.y, d, fall > 0 ? 2 : 1, hart); if (fall > 0 && !hart) blutFleck(d.x + (Math.random() - 0.5) * L.s * 0.5, d.y + L.s * 0.15 * kAt(d.x, d.y), 0.28); }
       if ((E.isMech(u.type) && TYPES[u.type].cls === 'walker') || TYPES[u.type].dauerfeuer) playSound('robot', 0.5, null, { u, v: 'mr' });   // Hünen (2026-11-20): Maschinenstimme   // Schreiter/Eisenknecht; Kampfanzüge rufen wie Fußtruppen (unten)
       d.str = e.str; d.mor = e.morv; d.shake = 1; setTimeout(() => d.shake = 0, 260 / speed);
       if (!e.panic && e.dmg >= 1.5) shake(e.dmg >= 2.5 ? 6 : 4);
