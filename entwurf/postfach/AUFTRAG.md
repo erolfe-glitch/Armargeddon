@@ -7,6 +7,18 @@
 3. **Je `pa` genau EIN Paket** (siehe unten), dann Bericht + „– pb“ und **aufhören**. Nicht von selbst mit dem nächsten Paket weitermachen.
 4. Nur das Nötige lesen (gezielt suchen statt ganze Dateien), keine Bilderserien, wenn ein Bild reicht.
 5. Wenn ein Paket größer wird als gedacht: Zwischenstand committen, im Bericht sagen, was fehlt, aufhören.
+6. **Vorschau schließen (Enrico 2026-11-25 16:55):** Am Ende jedes Pakets die Spiel-Vorschau im CC-Fenster schließen (bzw. `preview_stop`); der Vorschau-Server darf weiterlaufen. Grund: Das Spiel zeichnet jedes Bild neu, auch im Leerlauf, und belastet den PC dauernd (heute Absturz unter Last). **Idee für später (Berater):** Ruhemodus – nur neu zeichnen, wenn sich etwas bewegt.
+7. **GELOCKERT ab Paket G7b-Test (Enrico 2026-11-25 20:26):** Der neue NVIDIA-Treiber 617.42 ist seit 19:40 drauf. Ab dem nächsten `pa` (G7b-Test) wieder normal arbeiten wie vor dem 25.11.:
+   - Spiel-Vorschau darf wieder sichtbar laufen.
+   - Der unsichtbare Chrome darf wieder mit Grafikkarte starten (`MIT_GPU=1` setzen bzw. als Standard zurückdrehen; `--disable-gpu` nur noch als Schalter `OHNE_GPU=1`).
+   - Bildzeit-Messungen sind wieder erlaubt.
+   - **Bleibt:** nie zwei Browser-Läufe gleichzeitig, keine Läufe über 10 Min. (Regel 2), kein ComfyUI, am Paketende Vorschau/Chrome schließen (Regel 6). Nach jedem Paket kurz im Bericht: lief alles ohne Hänger?
+   - **Friert der PC wieder ein:** Enrico sagt Bescheid, dann gilt sofort wieder der alte Text darunter.
+   Alter Text: **Grafikkarte schonen, bis Enrico den NVIDIA-Treiber neu installiert hat (Berater 2026-11-25 17:30).** Der PC ist heute zweimal komplett eingefroren (ca. 14:40 und 17:15). Ereignisanzeige: `nvlddmkm` Ereignis 153 (Grafiktreiber hängt, Reset) und danach `dwm.exe`-Absturz. Enrico steuert von unterwegs, ein Hänger wäre dann nicht zu beheben. Deshalb bis auf Widerruf:
+   - **Keine sichtbare Spiel-Vorschau** öffnen. Bilder und Tests nur im unsichtbaren Chrome.
+   - Den unsichtbaren Chrome in allen Test- und Bildwerkzeugen (`test_partie.mjs`, `test_ki_partie.mjs`, `leistung_messen.mjs`, `*_bilder.mjs` usw.) **ohne Grafikkarte** starten, wenn das ohne großen Umbau geht: `--disable-gpu` bzw. Software-Rendering (`--use-angle=swiftshader`). Messungen der Bildzeit (Leistung) in dieser Zeit **nicht** machen bzw. als „ohne GPU“ kennzeichnen. Wenn das einen Werkzeug-Umbau bräuchte: einfache Umgebungsvariable (z. B. `OHNE_GPU=1`) einführen und nutzen.
+   - **Nie zwei Browser-Läufe gleichzeitig**, keine langen Läufe (>10 Min.), kein ComfyUI.
+   - Am Paketende Vorschau/Chrome-Prozesse beenden (Server darf laufen).
 
 **Paket-Reihenfolge (die Abschnitte darunter bleiben die Beschreibung, hier steht nur, was in welches Paket gehört):**
 - ✓ Ton-Pult 3 (16:50) abgeschlossen.
@@ -29,16 +41,1049 @@
 - ✓ G1 erledigt (Probe+Plan). **Paket G – Gelände (Abschnitt 25.11. 07:00, Punkte 56–57).** Erst **G1 = Probe + Plan** (ein `pa`, Bilder, Liste der Bausteine, die der Berater malen soll), dann nach Enricos Blick **G2 Gräben** und **G3 Felder** bauen. Danach U2.
 - **Paket G2a + G3a – ohne neue Bilder (Abschnitt 25.11. 08:35, Punkt 58).** Ein `pa`. Die gemalten Teile (G-1…G-10, F-3…F-6) baut CC ein, sobald der Berater sie geliefert hat (eigener Schritt).
 - **Paket G2b + G3b – gemalte Teile einbauen (Abschnitt 25.11. 10:15, Punkt 59).** Eigener `pa` nach G2a/G3a. Bilder liegen fertig in `ui-quelle/gelaende/neu_g/`.
+- **Paket G4 – Zinnenverlauf + Acker (Abschnitt 25.11. 13:15, Punkt 61).** Ein `pa`, vor U2.
+- **Paket G4b – Grabentakt unregelmäßiger + Grabenboden (Roste, Pfützen) (Abschnitt 25.11. 14:10, Punkt 63).** Ein kleiner `pa`.
+- **Paket U2 – Klone und Grabenplätze (Bauplan, Abschnitt 25.11. 14:10, Punkt 64).** Eigener `pa` nach G4b. Am Anfang: Restpunkte Grabenboden (Pfützen-Glanz, Laufsteg scharf, Rost-Teil, fehlender Steg).
+- **Paket U2b – Grabenplätze im Zickzack, Klone ohne Spiegeln (Abschnitt 25.11. 15:10, Punkt 67).** Kleiner `pa` direkt nach U2. Danach Leistungs-Check mit Fable (Enrico startet ihn selbst), dann G5.
+- **Paket G5 – Stacheldraht mit Sinn und Verstand (Abschnitt 25.11. 14:35, Punkt 65).** Eigener `pa` nach U2b und dem Fable-Check.
+- **Paket G5b – Drahtgürtel aus gemalten Stücken (Abschnitt 25.11. 15:55, Punkt 69).** Eigener `pa` nach dem Fable-Check, vor G6.
+- **Paket L1 – Leistung: Filter vorrechnen, Schatten, Ton (Abschnitt 25.11. 16:20, Punkt 71).** Kleiner `pa` direkt nach G5b.
+- **Paket R1 – 8/6/3 + Feldlinien dezenter (Abschnitt 25.11. 17:05, Punkte 72/73).** Nächster `pa`. Danach G7a.
+- **Paket G7 – Gräben eingegraben statt Pappe (Abschnitt 25.11. 16:15, Punkt 70).** Erst G7a = Probe + Plan (ein `pa`), nach Enricos Blick G7b bauen. Nach L1, vor G6. **In G7b auch Fable-Bremsen 2 und 4** (Punkt 71).
+- ✓ **Paket G6 – Panzersperren und besondere Orte (Windmühle, Koloss-Wrack) (Abschnitt 25.11. 15:10, Punkt 68).** Erledigt (`1c7bc1c`, `0d96e82`).
+- ✓ **Paket G6b – Nachbesserung G6 (Abschnitt 25.11. 19:20, Punkt 75).** Erledigt (`0cd3d13`).
+- ✓ **Paket G7b-Test – Erdlippe und Innenwand in die Probe (Punkte 76, 77).** Erledigt (`8caaf72`).
+- **Paket G7b voll, Teil 1** erledigt als Zwischenstand (`93b6504`, `aded42e`).
+- ✓ **Paket G7c – Graben nachbessern (Punkt 80).** Erledigt (`1b1dc00`).
+- **Paket G7d – neuer Graben ins Spiel (Abschnitt 25.11. 22:10, Punkt 81).** Teil 1 erledigt (`c21b8f8`).
+- ✓ **Paket G7e – Rest von G7d (Abschnitt 25.11. 22:35, Punkt 82).** Erledigt (`30d8196`, `9d794aa`).
+- ✓ **Fable-Check 1** erledigt (`entwurf/postfach/PRUEFUNG_FABLE_GRABEN.md`, Bilder `entwurf/probe/fable_graben/`).
+- ~~Paket G7f – R2 (Punkt 83)~~ → ersetzt durch Punkt 85 (Fable: R2 allein schließt die Lücke nicht).
+- ✓ **Paket G7f – Reparatur Graben (Punkt 85 Teil 1).** Erledigt (`b7bf1f1`).
+- ✓ **Paket G7g – Grabenform (Punkt 85 Teil 2).** Erledigt (`05ae696`).
+- ✓ **Paket G7h** (G7h-1 `37b0985`/`9058ac0`, G7h-2 `631a996`/`cf0db67`/`c7b8cc9`) erledigt, index.html drin.
+- ✓ **Paket SP-1** erledigt (`0ddd904`, `04659b9`, `08ee033`).
+- ✓ **Paket SP-2** erledigt (`6248915`, Salve-Nachtrag `0bd6d5b`).
+- ✓ **Paket SP-3 – Töne (84.3, 84.10) + Salve je Figur einmal (Abschnitt 26.11. 14:25).** Erledigt (`0dbe5c3`).
+- ✓ **Paket U5a – Regeln und Messung** erledigt (`9924675`).
+- ✓ **Paket U5b** erledigt (`fe24c8c`). **Punkt 90 (Truppgrößen) wurde nicht mitgemacht → U5c.**
+- ✓ **Paket U5c** erledigt (`a8ffb5b`, `11fa6e5`).
+- ✓ **Paket R3 + Nachträge 98–100** erledigt (`9b1c272`, `805e7b1`).
+- ✓ **Paket R4** Teil 1 erledigt (`a7763bc`, `dabbae6`, `07dda01`). **Rest R4 (Abschnitt 26.11. 18:45) erledigt (`b958ab7`, `f7fd848`).**
+- ✓ **Nachtrag R4b (Abschnitt 26.11. 19:30, Punkt 106) + Paket K1 (Punkt 104)** erledigt (`04f6b2f`, `431a645`); R4b-Punkte 4 und 6 warten auf die Bilder.
+- ✓ **Paket R4c + Elite-Messung + Krähenfurt-Check** erledigt (`7d9eece`).
+- ✓ **Nachtrag R4d (Abschnitt 26.11. 20:25, Punkt 108)** + **V1 Stimmen-Plan** erledigt (`52046c7`, V1 siehe Bericht).
+- ✓ (erledigt `2c7bf3e`) **Nachtrag V1b (Abschnitt 26.11. 20:55, Punkt 109):** Stimmen-Plan auf 5 Sprecher je Seite, Konkordat Englisch, Schlachtfunk – nur Plan/Texte, nichts bauen. Danach V2 (Berater erzeugt), dann V3 (CC baut ein).
+- ✓ (erledigt `1704fb4`) **Nachtrag V1c (Abschnitt 26.11. 21:10, Punkt 110):** Helden-, Schreiter- und Hünen-Zeilen in die CSV, nur Text. **V2 läuft beim Berater** (erzeugt die 552 Zeilen, Liste `entwurf/postfach/stimmen_urls.csv`). Danach V3 (CC lädt herunter und baut ein).
+- **Paket V3 – Stimmen einbauen (Abschnitt 26.11. 22:25, Punkt 111):** Teil 1 erledigt (`44f4ee9`: Laden, Prüfen, Filter, Hörprobe); **Teil 2 Einbau = nächster `pa`.** 608 Sprüche liegen bereit (`entwurf/postfach/stimmen_urls.csv`).
+- ✓ (erledigt `4e8d8d0`, `c7d733e` + Teil 2c) **Paket V3 Teil 2 – Einbau (Abschnitt 26.11. 22:45, Punkt 112):** 30 Heldensprüche neu (`stimmen_urls_nach1.csv`), dann einbauen.
+- ✓ (erledigt, Bericht 27.11.) **Paket U4a – neue Figuren vorgezogen (Abschnitt 26.11. 23:00, Punkt 113): direkt nach V3**, vor U3. Danach Spielpause (Enrico spielt).
+- ✓ **Nachtrag 114 (alte Stimmen raus) im selben `pa` wie U4a.** erledigt (`763dcf7`)
+- ✓ (weitgehend, Bericht 27.11.; 115.1/115.2 offen – Stelle gesucht) **Paket ST1 – Spieltest-Funde (Abschnitt 26.11. 23:40, Punkt 115): eigener `pa` nach U4a.**
+- ✓ **Nachtrag ST1b (Abschnitt 27.11. 07:30, Punkt 116):** Kirche, Kisten, Sankt-Ruß-Ausgleich.
+- ✓ **Nachtrag ST1c (Abschnitt 27.11. 09:40, Punkt 117):** Windmühle Grauwall überlappt.
+- **Danach U3 (Abschnitt 27.11. 09:45, Punkt 118), dann Rest U4.**
+- **Rest U4 (Abschnitt 27.11. 12:50, Punkt 119)** – vorher 118.0 (Mühlen-Ruine) nachholen.
+- **U4 Teil 2 (Abschnitt 27.11. 13:50, Punkt 120)** – Sicherung Quellbögen, übrige Bögen.
+- **U4 Teil 3 (Abschnitt 27.11. 14:40, Punkt 121)** – neue Bögen aus Punkt 90 (Waffentrupps, Führung, Scharfschütze, Beiwerk).
+- **U4 Teil 4 (Abschnitt 27.11. 15:05, Punkt 122)** – Löwenoger-Posen (120.1c nachholen).
+- **U4 Teil 5 (Abschnitt 27.11. 15:25, Punkt 123)** – Sanitäter mit Trage, Versorgung, Fernsprech.
+- **Paket W1 (Abschnitt 27.11. 15:55, Punkt 124)** – fal aus CC, Video je Paket, Fable-Prüfrunde. Parallel: Fable prüft die Moral (`PRUEFAUFTRAG_FABLE_MORAL.md`), danach U7.
+- ✓ (erledigt in eigener Sitzung, `entwurf/postfach/BERICHT_T1.md`) **Paket T1 (Abschnitt 27.11. 16:25, Punkt 126)** – 23 Töne aus dem Download-Ordner nur in die Pult-Auswahl, vor U7.
+- ✓ **Fix F1 (Punkt 127):** Nachschub-Menü verdeckt – im nächsten `pa` mit erledigen.
+- ✓ **Paket U7 Moral (Abschnitt 27.11. 16:10, Punkt 125)** – nach W1, drei Schritte mit Messung.
+- **Paket UI1 Oberfläche (Punkt 128)** – nach U7; vorher Entwürfe vom Berater.
+- **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
+- Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
+- **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
+- **Neue Figurenbögen (Punkt 66) – kein eigenes Paket, gehört in U4.**
+- **Für U7 vormerken (Enrico 23:45, Punkt 86):** Den Befehl „Sammeln“ von Hauptmann und General auch auf **fliehende** Trupps (weiße Fahne) anwenden können, gezielt statt nur automatisch. Heute: der Befehl wirkt nur auf nicht fliehende Trupps (`orderKind` → `active(o)`), Fliehende werden nur zu Rundenbeginn automatisch gesammelt (P.RALLY 0,6, Anführer bis 2 Felder). Im Knopf bzw. in der Vorschau die Chance anzeigen; Regeln zu Moral und Sammeln im Info-Fenster klarer erklären (Enrico: „manchmal undurchsichtig“).
 - **Mit der Maßstab-Umstellung A (noch kein eigenes Paket):** Punkt 26 (Löwenoger neues Modell + kleiner), Punkt 43 (Löwenmaul-Kanone und Furcht-Aura stärker), Punkt 44 (neue Scharfschützen-Regel wieder aufgreifen), Punkt 45b (Furcht-Aura und Gebrüll über den Entsetzenstest).
 - **Nur Vorschläge, später:** Punkte 7 Teil 2 (Melder+Sanitäter), 10 (Fähigkeiten am Porträt), 11 (Kommandobunker), 23 (Moral-Aura).
+
+# >>> NOTIZ (Enrico 2026-11-27 19:25): Alles in einem Zeichenstil – Paket W2, erst NACH U7 <<<
+**132. Nur vormerken, vor dem Ende von U7 nichts davon anfassen.** Enrico: Die große neue Mühle gefällt ihm im Stil sehr, aber Bäume und anderes sehen auf anderen Karten ganz anders aus. Er will nicht alles nochmal von Hand neu machen, sondern einen Weg, der **schneller und günstiger ist, aber genauso gut oder besser** aussieht. Neue Modelle und Karten dauern bisher zu lange und wirken „zusammengestückelt“.
+
+**Gedanke:** Die Karten bestehen aus Bausteinen. Wird ein Baustein neu gezeichnet, ändert er sich auf allen Karten, keine Karte muss neu gebaut werden. Darum zuerst einen festen Stil schaffen, dann nur die Bausteine, die herausfallen, in diesem Stil neu zeichnen.
+
+**W2a – Stilmodell (LoRA) anlernen und testen, nur Probe (Einstellung: Opus, Mittel).**
+1. Auf fal den passenden LoRA-Trainer wählen (aktuelle Liste prüfen, z. B. Flux- oder Qwen-Image-LoRA-Training; Bildmodell muss mit LoRA malen können und Magenta-Hintergrund schaffen). Kosten vorher im Bericht nennen; Grenze für den Test: **höchstens 5 € Training + 2 € Probebilder**, sonst vorher fragen.
+2. **Gelände-Stil zuerst:** 15–25 Lernbilder aus den freigegebenen Bausteinen – Grundlage die **große neue Mühle** (`ui-quelle/gelaende/neu_poi/windmuehle_bogen`), dazu die Teile, die im selben Stil entstanden sind (CC sucht sie und zeigt sie als Übersicht). Keine fremden Marken, nur unsere Bilder. Schlüsselwort z. B. `armgelaende`.
+3. **Proben mit dem LoRA:** 3 Bäume (Laubbaum, Tanne, Totholz), 1 Haus, 1 Zaunstück, je Sommer; dazu dieselben Teile ohne LoRA (nano-banana mit der Mühle als Referenz) zum Vergleich. Übersicht `entwurf/probe/stil/lora_gelaende.jpg`: Mühle – mit LoRA – ohne LoRA – bisheriger Baustein.
+4. **Kurzer Figuren-Test** (wenn Gelände klappt, sonst weglassen): eigenes LoRA aus 15–20 freigegebenen Konkordat-Bögen, 2 Probefiguren; prüfen, ob Ausrüstung, Gasmaske, Farben gleich bleiben.
+5. Bericht: Kosten, Bilder, Einschätzung, ob das LoRA für alle künftigen Bausteine und Modelle taugt. **Nichts einbauen.** Enrico entscheidet danach.
+
+**Danach (erst nach Enricos Blick, Plan steht hier nur zur Info):**
+- **W2b – Bausteine neu im Stil** (nur die, die herausfallen; Ausführen: Sonnet, Mittel).
+- **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
+- **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
+- **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> NOTIZ (Berater 2026-11-27 18:45): Kommandanten- und Heldensystem – nach U7 und UI1, vor U8 <<<
+**131. Nur vormerken, nicht bauen.** Enrico wünscht ein System wie bei Total War: **Kommandant** = mächtige Einzelfigur, die die Armee führt und richtig mitkämpft (3 Klassen je Seite, dazu **legendäre Kommandanten**), plus **Helden** als besondere Einzelfiguren (Rote Faust, Eiserner Kürassier und später weitere). Die jetzigen Führungstrupps (Offizier mit Stab + Fahnenträger + Melder) wirken „wischiwaschi“, Rolle unklar, kämpfen nicht. Der Berater schreibt nach U7 und UI1 einen Plan zum Abnicken (`entwurf/KOMMANDANTEN_PLAN.md`); Skizze steht in `entwurf/ARMEEAUFBAU_IDEEN.md` Abschnitt 6.
+
+# >>> JETZT (Enrico 2026-11-27 18:05): „Sehen aus wie Pappaufsteller“ – Fix F2 mit U7 Schritt 3 <<<
+✓ **130. Nächster `pa` = U7 Schritt 3 (Punkt 125) + Fix F2. Einstellung: Opus, Hoch.**
+Enrico (Bilder Hauptmann/General Konkordat): Die neuen Gruppen (Führung, aber auch Waffentrupps, Sanitäter, Versorgung, Fernsprech, Beiwerk aus U4 Teil 3/5) wirken wie Pappaufsteller. Fix F2:
+1. **Kontaktschatten** unter jedem Gruppenteil wie bei den übrigen Trupps (auch Beiwerk), im Graben auf der Sohle.
+2. **Plastik-Karten** (`figur_plastik.py --teil …`) für alle Teile aus U4 Teil 3 und 5 prüfen bzw. nachrechnen, damit Licht/Schatten wie bei den anderen Figuren wirken.
+3. **Enger stellen:** Führung als Gruppe – Offizier vorn Mitte, Fahnenträger halb dahinter (leicht versetzt, überdeckt sich etwas), Melder seitlich dicht dran; alles innerhalb des Rings. Waffentrupps/Sanitäter/Versorgung ebenso etwas dichter, aber Beiwerk sichtbar lassen.
+4. **Eigenbewegung:** kleine Atem-/Gewichtsverlagerung je Figur (versetzt), **Fahne weht leicht** (Tuch biegen/verzerren, wie `drawFahne`/Wimpel), nichts Wildes. Bildwirkung „aus“ = keine Bewegung.
+5. **ENTFÄLLT (Enrico 18:40): kein neuer Melder malen/einbauen** – die Führungsgruppen werden später durch Kommandanten als Einzelfiguren ersetzt (Punkt 131). Für Führung nur Schatten, Plastik, enger stellen und Größe (5b). Alter Text zur Info: **Melder neu (Berater-Malauftrag über `tools/fal_bild.mjs`):** in Ruhe ein **stehender/wartender Melder**, der laufende nur beim Ziehen und bei Befehlen. Auftrag (JSON, CC passt Pfade an die echten Dateien an):
+```json
+[
+ { "name": "konkordat_melder_steht", "ordner": "ui-quelle/figuren/konkordat",
+   "refs": ["ui-quelle/figuren/konkordat/konkordat_hauptmann_gruppe.png"],
+   "aspect": "1:1", "res": "2K",
+   "prompt": "Draw ONLY the messenger runner from the reference (same oxblood red coat, round steel helmet, gas mask with round goggles, leather satchel, rifle slung on his back) but STANDING still and waiting: relaxed upright stance, weight on one leg, one hand on the satchel strap, head turned slightly towards the right as if awaiting orders. Single full-body figure, centred, facing right, on a flat solid magenta background (#FF00FF), no ground, no cast shadow, no text. Same hand-drawn grimdark WW1 ink illustration style and colours as the reference. No skulls, no crosses, no eagles, no emblems." },
+ { "name": "aschenwacht_melder_steht", "ordner": "ui-quelle/figuren/aschenwacht",
+   "refs": ["ui-quelle/figuren/aschenwacht/aschenwacht_hauptmann_gruppe.png"],
+   "aspect": "1:1", "res": "2K",
+   "prompt": "Draw ONLY the messenger runner from the reference (same ash-grey greatcoat, spiked helmet, gas mask with yellow goggles, leather satchel, rifle slung on his back) but STANDING still and waiting: relaxed upright stance, weight on one leg, one hand on the satchel strap, head turned slightly towards the right as if awaiting orders. Single full-body figure, centred, facing right, on a flat solid magenta background (#FF00FF), no ground, no cast shadow, no text. Same hand-drawn grimdark WW1 ink illustration style and colours as the reference. No skulls, no crosses, no eagles, no emblems." }
+]
+```
+   Erst die Übersicht `entwurf/probe/fal/<datum>_uebersicht.jpg` im Bericht zeigen; einbauen gleich mit (Enrico sieht es dann im Spiel). Abzeichen prüfen.
+5b. **Maßstab (Enrico 18:15):** Die Führungsfiguren (Offizier, Fahnenträger, Melder) sind zu klein. Größe an einen Linien-Soldaten derselben Seite angleichen (Kopfhöhe gleich, Offizier gern einen Hauch größer); dasselbe für die anderen neuen Gruppenteile kurz gegen die Linie prüfen.
+6. Bilder vorher/nachher (Führung beider Seiten, ein Waffentrupp, Sanitäter, Versorgung), Video.
+
+# >>> JETZT (Enrico 2026-11-27 17:15): Antwort zu U7 Schritt 1 – nächster `pa` = U7 Schritt 2 + Fix F1 <<<
+**129. Nächster `pa`:** **U7 Schritt 2** wie in Punkt 125 und **Fix F1 (Punkt 127, Nachschub-Menü verdeckt)** mit erledigen. **Einstellung: Opus, Hoch** (Flucht/Sammeln/Verluste verschieben die Balance).
+- **Antwort Kreuzschreiter:** Die KI soll „sehr seltene“ Einheiten (Kreuzschreiter, Eisenknecht, Helden) gelegentlich kaufen – **aber erst in U9** (mit Messung), nicht jetzt. In IDEEN.md bzw. U9-Liste vermerken.
+
+# >>> JETZT (Enrico 2026-11-27 17:00): Nachschub-Menü verdeckt – Fix F1 sofort, UI-Paket UI1 nach U7 <<<
+**127. Fix F1 (klein, im nächsten `pa` mit erledigen, egal bei welchem U7-Schritt; Einstellung: reicht im laufenden Modell):**
+- **Nachschub/Rekrutieren auf dem Schlachtfeld:** Das Nachschub-Menü überlappt sich, der obere Teil ist kaum zu sehen (Enrico 27.11.). Prüfen bei 1280, 1920 und 2560 px (auch Vollbild): Fenster darf nicht unter die obere Leiste oder aus dem Bild rutschen, Reiter und Kopf immer sichtbar, Inhalt scrollt notfalls innen. Gespeicherte Position `arm.shoppos` beim Öffnen in den sichtbaren Bereich zurückholen. Bilder vorher/nachher.
+
+**128. Paket UI1 – Oberfläche neu (NACH U7, nicht jetzt bauen; Berater malt erst 2–3 Entwürfe zum Aussuchen):**
+Enrico (27.11.): Oberfläche „stylischer, ein Hauch mehr Grimdark“, Schrift überarbeiten, aufgeräumter, **weniger winzige Texte, mehr Symbole**; auf einen Blick erkennen „das macht die Einheit, dagegen ist sie gut/schlecht“ (Vorbild Total War: Warhammer III: Einheitenkarte mit Symbolen für Fähigkeiten/Eigenschaften/Widerstände, Text bei Bedarf **ausklappbar**, Güte-Stufe sichtbar). Dazu **neue Klickgeräusche** für Knöpfe (die jetzigen gefallen nicht). Umfang: Einheitenkarte, Nachschub-Menü, Leisten oben/unten, Knöpfe, Info-Fenster, Schriften, Knopf-Töne. Einbau erst nach Entwurfswahl. **Dazu (Enrico 18:15):** Rollen der Einheiten klarer erkennbar machen (Rollen-Schild/Symbol auf der Karte, F103 `rollen.js` sichtbarer) und die **Anordnung der Fähigkeitsknöpfe** im UI überdenken (feste Plätze je Art: Bewegen, Schießen, Fähigkeit, Befehl …).
+
+# >>> JETZT (Enrico 2026-11-27 16:25): 23 neue Töne nur in die Auswahl – Paket T1 (vor U7) <<<
+**126. Paket T1 – ERLEDIGT in einer eigenen Sitzung (Bericht `BERICHT_T1.md`). Die U7-Sitzung macht T1 NICHT noch einmal.** Hinweis an die U7-Sitzung: Der Pult-Test aus T1 hat `src/ui.js` gegen 16:26 kurz geändert und wiederhergestellt – bitte die eigene letzte ui.js-Änderung prüfen.
+(alt:) **126. Paket T1 (klein, vor U7 Schritt 1; im selben `pa` erlaubt):**
+In `C:\Users\erolf\Downloads\` liegen 23 mp3 von Enrico (26.11., 17:00–18:00), sprechend benannt, z. B. „Riesiges Monsterbrüllen.mp3“, „schnitt mit blut und hand abtrennung.mp3“, „Anti Panzerkanone.mp3“, „Fahlen Hexen Fähigkeit.mp3“ (alle .mp3 mit Änderungszeit 26.11. ab 17:00 außer den Stimmen-Dateien).
+1. Nach `sound-quelle/enrico_2611/` kopieren (Namen behalten), robocopy-Sicherung.
+2. In sound_bau.json als **neue Plätze nur zur Auswahl** aufnehmen (z. B. `e26_<kurzname>`), Pegel angleichen, Stille schneiden.
+3. **Ins Ton-Pult in die passenden Rubriken der Bibliothek (`HOER`)** einsortieren, damit Enrico sie bei den Kategorien auswählen kann. Vorschlag des Beraters zur Rubrik: Monsterbrüllen → Brüllen/Stimmen Bestien; Monster stampfen, Hydraulik-Mech-Schritte → Schritte schwer/Maschine; Faustschlag, metallischer Schlag stumpf, Metall gegen Metall (3), Schwerter prallen, Schild-Block → Nahkampf Metall; Hand-Abtrennung, Körper blutig, blutiger Einschlag, Blutfontäne, Zerquetschen → Nahkampf/Treffer Fleisch; Einschlag auf Metall (2) → Treffer Fahrzeug; Feuerball-Einschlag → Flammen/Einschlag; Anti-Panzerkanone, mittlere Kanone (2), Todesschuss zisch-boom → Kanone/Geschütz; Fahlen Hexen Fähigkeit → Fähigkeiten (Fahle).
+4. **Wichtig (Enrico): an keiner Einheit etwas ändern** – keine Zuordnung, keine TONWAHL, kein `slotsVon`. Nur zusätzlich in der Auswahl.
+5. tonpult_bau, Pult-Test, build. Kurz im Bericht: Liste Datei → Platz → Rubrik.
+
+# >>> JETZT (Enrico 2026-11-27 16:10): Paket U7 Moral – nach W1 <<<
+**125. Paket U7 – Moral (drei Schritte, je Schritt ein `pa` mit Messung; Grundlage `entwurf/postfach/PRUEFUNG_FABLE_MORAL.md`, Abschnitt 4 und 5 – dort stehen Regeln, Konstanten und Rückwege im Einzelnen):**
+**Vorab (im ersten `pa`):** die Zähler aus Fable Abschnitt 2 fest in `sim.js` aufnehmen (supp, fallback, rout nach Stärke/Moral/Kette/Gas, rally, escaped, vernichtet auf der Flucht, Sammel-Chance, Entsetzen-Wiederholungen, Moralstufen zu Rundenbeginn; Ereignisse aus endTurn/startTurn mitzählen). **Grundmessung** mit `MISCHEN=1`, vier Startwerten, Grauwall + Sankt Ruß (+ Krähenfurt), 100 Schlachten je Lauf. Dann Schritt 1.
+**Enricos Entscheidungen (27.11. 16:05):**
+- **Aufgerieben (Stärke < 15) = endgültig weg**, nur Panik (Moral 0) ist sammelbar. (Fable Frage 1: ja)
+- **Fliehende zählen bis zum Rand halb als Verlust, die 20 Punkte erst am Rand/bei Vernichtung.** (Frage 2: ja, halb)
+- **Furcht-Aura über einen Test** mit `P.FURCHT_BASIS` 0,35. (Frage 3: ja)
+- **Niedergehalten: weiter kein Schuss**, in Graben/Bunker/Gebäude halbe Erholung `P.RECOVER_SUPP`. (Frage 4: ja)
+**Schritt 1** (Fable 4/Schritt 1): Entsetzen höchstens einmal je Einheit und gegnerischer Runde; Furcht-Aura und Löwengebrüll über den Test (Punkt 45b), Rückweg `ENTSETZ_OFT`/`FURCHT_ALT`. Messen (auch `MECHS=1` für das Gebrüll).
+**Schritt 2** (Fable Schritt 2): zwei Fluchtarten, langsamere Flucht (`P.FLUCHT_BP` 2, am Rand erst nächste Runde weg), `sammelChance` für alle Fliehenden ohne Feind daneben (allein 0,2, Deckung +0,15, Banner +0,2, Hauptmann 0,6, General 0,8, müde −0,15, max 0,9, gesammelt Moral 3,5), **Befehl „Sammeln“ auf Fliehende (Punkt 86) mit Prozent am Knopf und am Ziel**, Verlust halb bis zum Rand, Kettenflucht nur über `routUnit` und nur für Nachbarn unter `P.FALLBACK_MOR`. Fehler 2–6 aus Fable Abschnitt 1 dabei beheben (Gas-/Kettenflucht über `routUnit`, Abzüge ohne Fluchtprüfung, Zurückweichen höchstens einmal je gegnerischer Runde). Regeln und Chancen im Info-/Regeln-Fenster klar erklären (Enrico: „manchmal undurchsichtig“). KI: Sammeln-Befehl, Anführer/Banner nah an Wankende/Fliehende, fliehende Gegner nahe gegnerischer Anführer verfolgen. Rückweg `FLUCHT_ALT`. Messen.
+**Schritt 3** (Fable Schritt 3): Moral in Stufen (standhaft / wankt / niedergehalten / weicht / flieht) über `moralStufe(u)`, Werte aus der Fable-Tabelle, Kopfzeichen und Moralbalken gelb bei „wankt“, Vorschau-Schlagworte, KI `W_WANKT`. Rückweg `STUFEN_ALT`. Messen.
+**Nicht in U7:** `P.BREAK` (U8), `P.MOR_PER_DMG`. Nach jedem Schritt Bericht mit Messtabelle (vorher/nachher, ±-Hinweis) und Video (W1). Danach Fable-Prüfrunde für U7 (Berater schreibt den Prüfauftrag).
+
+# >>> JETZT (Enrico 2026-11-27 15:55): Werkzeuge für schnellere Arbeit – Paket W1 <<<
+**124. Paket W1 (ein `pa`, während Fable die Moral prüft; keine Regeländerung):**
+1. **fal direkt aus CC (Enrico: ja):** Enrico legt einen eigenen fal-API-Schlüssel als Windows-Benutzer-Umgebungsvariable **`FAL_KEY`** an (macht er selbst; CC fasst den Schlüssel nie an, schreibt ihn nirgends hin, druckt ihn nie aus). Baue `tools/fal_bild.mjs`:
+   - `node tools/fal_bild.mjs <auftrag.json>`: je Eintrag `{ name, ordner, prompt, refs: [Dateipfade oder URLs], aspect: "16:9", res: "2K" }` → Modell `fal-ai/nano-banana-2/edit` (ohne refs: `fal-ai/nano-banana-2`), lokale Referenzbilder über den fal-Speicher hochladen, Ergebnis-PNG direkt nach `ordner/name.png` speichern, Liste mit Kosten/Dauer ausgeben. Paket `@fal-ai/client` oder einfacher `fetch` mit `Authorization: Key ${process.env.FAL_KEY}`.
+   - Dazu `tools/fal_ton.mjs` für Töne (`fal-ai/elevenlabs/sound-effects/v3`, `fal-ai/elevenlabs/tts/eleven-v3`), gleiche Art, mp3 nach `sound-quelle/…`.
+   - Kleine Vorschau-Übersicht je Lauf (`entwurf/probe/fal/<datum>_uebersicht.jpg`), damit der Berater die Ergebnisse sieht.
+   - Ohne `FAL_KEY`: klare Meldung, nichts tun. Test mit einem einzigen billigen Bild (1K, ~0,08 $) erst, wenn Enrico „Schlüssel ist da“ sagt.
+   - Ab dann schreibt der Berater Malaufträge als JSON-Liste in AUFTRAG; CC erzeugt, schneidet, baut ein.
+2. **Video nach jedem Paket (Enrico: ja):** `tools/video_partie.mjs` – Headless-Chrome (Vorschau-Server), KI gegen KI auf einer wählbaren Karte, 20–30 s Spielgeschehen ab Runde 2 bei 1920 px, mit Ton wenn möglich (sonst ohne), Bildrate ≥ 20, als **MP4 (H.264, -preset veryfast)** nach `entwurf/probe/video/<paket>.mp4` (unter ~15 MB). Optional Kamera auf das Gefecht (`__dbg.camSetzen`). Ab jetzt nach jedem Paket ein Video, Pfad im Bericht. Videos nicht in git (`.gitignore`), nur im Ordner.
+3. **Fable-Prüfrunde fest (Enrico: ja):** in CLAUDE.md unter „Feste Regeln“ eintragen: „Nach jedem größeren Regelpaket (U7, U8, S, P, U9) prüft eine eigene Fable-Sitzung nach einem Prüfauftrag des Beraters (`entwurf/postfach/PRUEFAUFTRAG_FABLE_*.md`); nur prüfen, Ergebnis `PRUEFUNG_FABLE_*.md`.“
+4. Bericht mit Testvideo (eine Partie Grauwall), Fragen.
+
+# >>> JETZT (Enrico 2026-11-27 15:25): Sanitäter, Versorgung, Fernsprech gemalt – Paket U4 Teil 5 <<<
+**123. U4 Teil 5 (ein `pa`):** Neue Bögen vom Berater (fal, 2752×1536, Magenta, Blick nach rechts). Zuerst herunterladen nach `ui-quelle/figuren/<fraktion>/`, robocopy.
+1. **Sanitäter mit Trage + Verwundetem** (Element 1 = zwei Träger + Trage + Verwundeter als EIN Teil, Element 2 = Sanitäter kniend mit sitzendem Verwundetem als EIN Teil, Element 3 = Sanitäter mit Tasche):
+   - `konkordat_sanitaeter_trage.png`: https://v3b.fal.media/files/b/0ab427ba/vV-SBkPesKQK3l-tay6fB_kebUluuG.png
+   - `aschenwacht_sanitaeter_trage.png`: https://v3b.fal.media/files/b/0ab427bf/VGD5Y3R8jA9H50Te_Z7HY_y96Effe4.png
+   Im Spiel: Trage-Gruppe hinten, Sanitäter mit Verwundetem vorn, Sanitäter mit Tasche daneben; beim Heilen kann die kniende Gruppe nach vorn. Verluste: zuerst der mit Tasche, dann die kniende Gruppe, zuletzt die Trage. **Abzeichen:** kleines weißes Kreuz auf der Konkordat-Sanitätstasche übermalen; Helmplaketten der Aschenwacht-Sanitäter prüfen (Adler?) → übermalen.
+2. **Versorgungstrupps neu** (3 klar verschiedene Posen, damit sie sich nicht mehr verdecken):
+   - `konkordat_versorgung_neu.png`: https://v3b.fal.media/files/b/0ab427f5/mZZvYQxomLMPzmbdSUZf7_RJwozRZB.png
+   - `aschenwacht_versorgung_neu.png`: https://v3b.fal.media/files/b/0ab427f8/FO8ENBKm6xBxJjs-bPOIK_MgK5oMgO.png
+3. **Fernsprechtrupp neu** (Telefonist kniend mit Hörer – das Feldtelefon bleibt das Beiwerk daneben; Kabelleger; Melder zeigt nach vorn): `konkordat_fernsprech_neu.png`: https://v3b.fal.media/files/b/0ab427fc/AU9gKos7-YUh3Q-HmfLtk_1IMNuLn4.png – Telefonist so stellen, dass sein Hörerkabel zum Beiwerk-Telefon zeigt.
+4. Aufstellung so, dass das Beiwerk sichtbar bleibt (Bericht U4 Teil 3: Männer verdeckten das Telefon). ERSETZT/GRUPPE, SH wie bisher, Farbe angleichen, figur_plastik, Bilder vorher/nachher im Spiel, Partietest, `index.html`, Bericht.
+5. **Danach:** Der Berater macht die Moral-Prüfung (vor U7). Kein eigener `pa` dafür.
+
+# >>> JETZT (Enrico 2026-11-27 15:05): Löwenoger-Posen nachholen – Paket U4 Teil 4 <<<
+**122. U4 Teil 4 (ein `pa`, klein):**
+1. **Punkt 120.1c wurde übersehen:** die drei gemalten Löwenoger-Posen (Sprung, Prankenhieb, Getroffen) – Links und Anweisungen stehen in Punkt 120, Eintrag 1c. Herunterladen, robocopy, schneiden (beim Prankenhieb den gemalten Bewegungsbogen weg), in POSE_SETS (sprung, hieb/nahkampf, getroffen), Bild im Spiel. Die drei Köpfe bleiben gemischt wie in Teil 2.
+2. **Noch nicht:** gelaende.js nachladen (später).
+3. Danach malt der Berater neue Bögen für Sanitäter mit Trage (beide Seiten), Versorgungs- und Fernsprechtrupp; dann folgt die Moral-Prüfung und U7.
+4. Partietest, `index.html`, Bericht.
+
+# >>> JETZT (Enrico 2026-11-27 14:40): Neue Bögen aus Punkt 90 gemalt – Paket U4 Teil 3 (nach Teil 2) <<<
+**121. U4 Teil 3 – neue Bögen einbauen (eigener `pa` nach U4 Teil 2, Punkt 120):**
+Der Berater hat auf fal gemalt (je 2752×1536, Magenta, Elemente getrennt, Blick nach rechts). **Zuerst alle herunterladen** (Links nicht ewig gültig) nach `ui-quelle/figuren/<fraktion>/` mit den Namen unten, dann robocopy-Sicherung (Punkt 120.2). Enrico hat alle abgenommen.
+1. **Waffentrupps „Waffe + 3 Mann“** (Waffe allein, Schütze kniend/liegend ohne Waffe, Ladeschütze, Beobachter mit Fernglas):
+   - `konkordat_mg_trupp.png` (Mahlwerk, **Fassung B im Look der neuen Linie**, Enrico): https://v3b.fal.media/files/b/0ab4268c/DPGS4kbdSI9xqVNVlosnD_6QHJOZT5.png
+   - `aschenwacht_mg_trupp.png` (Sensenwerk): https://v3b.fal.media/files/b/0ab42631/5WrzOiCYtUIzjHZVheufM_6nfwnI6p.png
+   - `aschenwacht_panzerbuechse_trupp.png`: https://v3b.fal.media/files/b/0ab4264b/Ck59QQGNZB6pX5JZXlKX9_gXMuCZ15.png
+   Im Spiel: Waffe als Gerät in die Feldmitte, Schütze hinter die Waffe (Hände an den Griffen), Ladeschütze und Beobachter daneben (bei Verlusten fällt zuerst der Beobachter, dann der Lader). Mündung (`MUZ`) neu messen. Alte Einzelbilder bleiben als Rückweg (`WAFFENTRUPP_ALT`).
+2. **Führung mit 3 Figuren** (Offizier, Fahnenträger, Melder):
+   - `konkordat_hauptmann_gruppe.png`: https://v3b.fal.media/files/b/0ab4264f/tx_XupixLO4AvcbyEmrOH_qcFrWnnP.png
+   - `aschenwacht_hauptmann_gruppe.png`: https://v3b.fal.media/files/b/0ab42652/My4_mEgnz4GAQPc9wk4oS_mzcpMVoO.png
+   - `konkordat_general_gruppe.png`: https://v3b.fal.media/files/b/0ab42656/SJC14E_VUi8e_PhroqaC0_sIMxduqw.png
+   - `aschenwacht_general_gruppe.png`: https://v3b.fal.media/files/b/0ab4267b/bz3Cw3KPG5zoh-4zASS6Q_HL5gDBjR.png
+   Drei Einzelfiguren statt des gemeinsamen Bildes; Posen des Offiziers (Befehl, großer Befehl) aus den vorhandenen Posenbögen weiter nutzen, Fahnenträger/Melder ohne Posen. **Abzeichen prüfen** (`ABZEICHEN`): Orden/Abzeichen an Brust und Helm des Aschenwacht-Generals und -Hauptmanns dürfen keine Kreuze sein – sonst übermalen.
+3. **Scharfschütze mit Beobachter:** `konkordat_scharfschuetze_trupp.png`: https://v3b.fal.media/files/b/0ab42685/tVdNfM-o8JZncKHMcOdA0_8MsvLH1f.png – Schütze liegend links oben, Beobachter **unten rechts** nehmen (die obere rechte Figur ist eine doppelte Fassung). Prüfen, ob die Aschenwacht (Pirschjäger) auch so einen Trupp braucht → im Bericht melden, der Berater malt ihn.
+4. **Beiwerk:** `beiwerk_versorgung.png`: https://v3b.fal.media/files/b/0ab42689/DMFcSNN1k0qnRRmS7jyGS_Q9OTcn0B.png – Munitionskarren und Werkzeugkiste zu den Versorgungstrupps (Munition bzw. Werkstatt), Feldtelefon mit Kabeltrommel zum Fernsprechtrupp. Als Gerät neben den Trupp ins Feld, bleibt stehen, solange der Trupp nicht zieht.
+5. **Sanitäter mit Trage + Verwundetem** malt der Berater erst, wenn die neuen Sanitäterbögen aus Teil 2 geschnitten sind (Look soll passen).
+6. figure_cut (Einträge, SH, Farbe angleichen), figur_plastik, Bilder vorher/nachher je Einheit im Spiel, Partietest, `index.html`, Bericht.
+
+# >>> JETZT (Enrico 2026-11-27 13:50): Antworten zu U4 Teil 1 – nächster `pa` = U4 Teil 2 <<<
+**120. U4 Teil 2 (ein `pa`):**
+1. **Löwenoger bleibt bei 3 Modellen** (Enrico). Der Berater malt einen **Posenbogen im neu3-Look** (Sprung, Prankenhieb, Getroffen) – Ablage kommt später nach `ui-quelle/figuren/konkordat/`, dann eigener kleiner Schritt.
+1b. **Löwenoger sehen alle gleich aus (Enrico 13:46):** Im Probebild stehen alle drei mit Gasmaske in derselben Ruhe-Pose. In Ruhe sollen die **drei verschiedenen Figuren des neu3-Bogens gemischt** stehen (Gasmaske, ruhiger Kopf, brüllend) – wie bei Trupps ohne `bereit`-Pose (jede Figur ein anderes Bild, POSE_SETS so, dass Ruhe = Grundbogen je Figur). Beim Schießen/Nahkampf dürfen sie die Posen tauschen. Bild im Spiel.
+1c. **Löwenoger-Posen im neu3-Look – vom Berater gemalt (fal, 2752×1536, je EINE Figur, Magenta):** herunterladen nach `ui-quelle/figuren/konkordat/` und zu einem Posenbogen `konkordat_loewenoger_posen_neu.png` (REIHE, 3 Posen nebeneinander) zusammensetzen oder einzeln schneiden:
+   - Sprung (Gasmaske): https://v3b.fal.media/files/b/0ab4260a/woLNQLU2m6Pfuer-HApFs_VudTbKr7.png
+   - Prankenhieb (ruhiger Kopf): https://v3b.fal.media/files/b/0ab4260d/fFSv0U6IaAwr9LKDrxYBM_7h8pac5F.png – **den gemalten Bewegungsbogen rechts der Pranke wegschneiden** (Hieb-Effekt macht das Spiel).
+   - Getroffen (brüllend): https://v3b.fal.media/files/b/0ab4260f/Fwfw-i965Gfueawpy-9iU_Pv2pemF7.png
+   Einbauen in POSE_SETS (sprung, hieb/nahkampf, getroffen), Größe wie neu3 (1,25 SH, `refpose`), Farbe angleichen, figur_plastik. Bilder im Spiel. Danach robocopy (Punkt 2).
+2. **Sicherung der Quellbögen (Enrico: ja, robocopy):** `ui-quelle/figuren/` (alle Fraktionsordner, auch die 38 Bögen außerhalb von git) zusätzlich nach OneDrive sichern – nur kopieren, nie löschen:
+   `robocopy C:\Projekte\Armargeddon\ui-quelle\figuren C:\Users\erolf\OneDrive\Armargeddon-Sicherung\ui-quelle\figuren /E /R:1 /W:1 /NP`
+   In CLAUDE.md bei „Sicherung außerhalb von git“ als dritte Zeile aufnehmen (nach jeder Änderung an Figurenbögen). Gleich jetzt einmal laufen lassen, Rückgabewert im Bericht. Prüfen, ob auch `ui-quelle/gelaende/` und `ui-quelle/effekte/` Dateien außerhalb von git haben – wenn ja, genauso sichern.
+3. **Übrige abgenommene Bögen einbauen** (Liste aus dem Bericht): Sanitäter Konkordat (Grund + Posen), Flammen beider Seiten (vier Bögen), Gasschutz (Grund + Posen), Panzerknechte, Konkordat-Reiter `neu2`, Ordensschreiter (Grundbogen). Übermalungen je Bogen neu setzen und prüfen (Abzeichen, Schädel, Kreuze → keine echten Hoheitszeichen). Vorher/Nachher-Bilder je Einheit.
+4. Der Berater malt danach die fehlenden Bilder aus Punkt 90 (Sanitäter mit Trage + Verwundetem, Beiwerk Munitionskarren/Werkzeugkiste/Feldtelefon, MG/Panzerbüchse als Waffe + 3 Mann, Offiziere mit 3 Figuren + Scharfschütze mit Beobachter) – Einbau dann in einem eigenen Paket.
+5. Partietest, `index.html`, Bericht.
+
+# >>> JETZT (Enrico 2026-11-27 12:50): U3 fertig – nächster `pa` = Rest U4 <<<
+**119. Rest U4 (wie in Punkt 118 beschrieben) und zwei Kleinigkeiten:**
+1. **Zuerst den übersehenen Punkt 118.0 nachholen:** eingestürzte Mühle – Maske nur am Boden, die Balken oben rechts **stehen lassen**; Bild im Spiel. (Stand im U3-Abschnitt, ist in U3 nicht erledigt worden.)
+2. **Antworten zu U3 Teil 2:** Leuchtspur **bleibt bei 4 von 8** Schützen. Mündungsfeuer-Größe sieht Enrico heute Nachmittag beim Spielen – jetzt nicht ändern.
+3. Dann **Rest U4**: Ordner je Fraktion (Punkt 53), Löwenoger `konkordat_loewenoger_neu3.png` mit Probebild **3 und 4 Modelle** (Enrico entscheidet), übrige abgenommene Bögen; Punkt 90 nur, soweit Bilder da sind – fehlende im Bericht auflisten (der Berater malt sie).
+4. Partietest, `index.html`, Bericht.
+
+# >>> JETZT (Enrico 2026-11-27 09:45): Weiterarbeiten bis nachmittags – nach ST1c Paket U3 <<<
+**118. Reihenfolge, während Enrico erst nachmittags spielt („lass weiter arbeiten“):** ST1c (Punkt 117) → **U3** → Rest **U4**. Jedes Paket einzeln committen und berichten, `index.html` je Paketende. Enrico tippt `pa` bzw. `pw`.
+
+**Paket U3 – figurennahe Effekte (BAUPLAN_UMBAU.md Abschnitt 3/5) plus Effektbögen E1–E6 (Punkt 62):**
+1. Mündungsfeuer je Figur: bei 8 Figuren nicht alle blitzen lassen (Auswahl), Takt der Salve anpassen; Mündungsfeuer und Treffer-Spritzer mit Figurenfaktor (passend zur Figurengröße, nicht feldgroß).
+2. Treffer-Spritzer aus ST1 (Blut je Treffer) **auf die fallenden Modelle abstimmen**: Spritzer an der Figur, die fällt; Zeitpunkt = Einschlag.
+3. Helden-Effekte (Glut, Ringe, Dampf) mit Figurenfaktor; Fesselballon prüfen.
+4. Nahzoom der Kampfszene/Kamerafahrt etwa ×1,2; Klickflächen (`UBOX`/pick) prüfen – auf dem Board sollen kleine Figuren gut antippbar bleiben (sonst Klick auf das ganze Feld).
+5. **Effektbögen E1–E6 einbauen** wie in Punkt 62 beschrieben (Gasgranate in der Luft, großer Befehl Staubringe, Filterdampf Gasschutz, Löwenmaul, Faustsalve, Kettenklinge Kürassier).
+0. **Kleiner Nachtrag zu ST1c (vorweg, Enrico 10:30):** Boden um die Mühle passt so. Bei der **eingestürzten Mühle** die Maske nur unten (Boden) wirken lassen – die Balken, die oben rechts übers Feld ragen, **stehen lassen**. Bild im Spiel (Einsturz z. B. über `__dbg`).
+6. Bilder vorher/nachher je Punkt, `entwurf/probe/effekte.html` ergänzen, Partietest, `index.html`, Bericht.
+
+**Danach Rest U4** (BAUPLAN Abschnitt 4): Ordner je Fraktion (Punkt 53), Löwenoger-Bogen `konkordat_loewenoger_neu3.png` mit Probebild **3 und 4 Modelle** (Enrico entscheidet am Bild), übrige abgenommene Bögen. Punkt 90 (6er-Sturmtrupps/Beiwerk) nur, soweit Bilder da sind – fehlende im Bericht auflisten, der Berater malt sie.
+**U6 (Mehr Blut)** ist durch ST1 Punkt 6 größtenteils erledigt; Rest (Winter dunkler, kleinere Flecken) später nur, wenn Enrico beim Spielen etwas fehlt.
+
+# >>> JETZT (Enrico 2026-11-27 09:40): Überlappung ist die Windmühle – Nachtrag ST1c <<<
+**117. Nachtrag ST1c (klein, ein `pa`):**
+1. **Nicht die Kirche, sondern die Windmühle überlappt (Enrico 09:36):** Grauwall, Mühle auf Feld (5,6) (Feldart `muehle`, Bild `windmuehle_bogen`, G6). Sie ragt über andere Teile drüber. Prüfen: Tiefensortierung der Mühle (hoher Turm + Flügel) gegen Nachbarfelder dahinter/davor, Gräben, Draht, Figuren; Größe/Fußpunkt; ob die Flügel ins Nachbarfeld ragen und dort Teile verdecken, die davor liegen müssten. Mühle ggf. etwas kleiner oder in Teile (Sockel/Turm, Flügel) mit eigener Tiefe zerlegen. Auch den Einsturz-Zustand (`muehle_kaputt`) und Krähenfurt (falls dort eine Mühle steht) prüfen. Bilder vorher/nachher bei mittlerem und nahem Zoom.
+   **Genauer (Enrico 09:37): „Am Boden überragt sie“** – also der **Sockel/Fuß** der Mühle ist breiter als ihr Feld und liegt unten über den Nachbarfeldern (Boden, Gräben, Draht). Hauptsache: Grundfläche der Mühle auf ihr Feld begrenzen (Sockel schmaler skalieren oder Bild am Fuß beschneiden), Fußpunkt in die Feldmitte; der Turm darf nach oben ragen.
+2. Kirche bleibt so (keine Überlappung gefunden).
+3. Partietest, `index.html`, Bericht.
+
+# >>> JETZT (Enrico 2026-11-27 07:30): Antworten zu ST1 – Nachtrag ST1b <<<
+**116. Nachtrag ST1b (ein `pa`):**
+1. **Kirche überlappt – Sankt Ruß:** Enrico hat es auf Sankt Ruß gesehen. Gezielt suchen: Kirchenschiff/Turm (Felder 8,5 / 9,5 / 9,4) gegen die Nachbarfelder (Häuser, Friedhof, Platz, Straße) in der Spielansicht bei mittlerem und nahem Zoom, aus verschiedenen Kamerawinkeln; Tiefensortierung der großen Gebäudeteile gegen Nachbarteile und Figuren prüfen (`drawTilt`, Teile-Tiefe, `cfg.bauten`). Bilder vorher/nachher.
+2. **Schwebende Kisten – im Graben:** Kram-Teile in den Grabendurchgängen (seitlicher Versatz) – Vermutung aus ST1 prüfen: in engen Durchgängen nicht über die Sohle hinaus versetzen, Fußpunkt auf die Sohle. Alle Gräben auf allen Karten absuchen (Grauwall, Sankt Ruß, Krähenfurt), notfalls Kram nur dort, wo genug Platz ist. Bilder vorher/nachher.
+3. **Sankt Ruß 51 → 40 %: Ursache finden und ausgleichen**, Ziel wieder etwa 50 %. Schrittweise gegen den Stand nach R4d messen (`MISCHEN=1`, gleiche Startwerte): Kategorie „sehr selten“, Elite-Abschlag/Budget, Ballon-Kategorie, U4a/114-Änderungen, ST1-Blut usw. – was die Quote verschiebt, im Bericht als Tabelle. Dann ausgleichen (Kartenarmee, `MAP.ki`, Budget – nicht die Grundregel).
+4. **+25 % Aufschlag bleibt** (Enrico).
+5. Partietest, `index.html`, Bericht.
+
+# >>> JETZT (Enrico 2026-11-26 23:40): Spieltest-Funde – Paket ST1 (nach U4a) <<<
+**115. Paket ST1 – Funde aus Enricos erster Spielrunde (eigener `pa` NACH U4a, nicht im laufenden):**
+1. **Kirche überlappt andere Teile (Sankt Ruß):** Die Kirche ragt über benachbarte Gelände-Teile/Häuser drüber. Tiefenreihenfolge und Grenzen der Kirche prüfen; Bild vorher/nachher.
+2. **Schwebende Kisten:** vereinzelte Kisten (Kram-Teile) schweben in der Luft. Fußpunkt der Kram-Teile prüfen (auf Boden/Grabensohle setzen), alle Karten absuchen, Bilder.
+3. **Begrenzung neu: Aufschlag statt Sperre (Enrico):** Die festen Obergrenzen (Elite höchstens 3, Gerät 2–3) führen dazu, dass man später nur noch Linie nachkaufen kann. Neu: **keine harte Grenze für Elite und Gerät**, stattdessen kostet **jede weitere Einheit derselben Kategorie, die gleichzeitig auf dem Feld steht, +25 %** (1. normal, 2. +25 %, 3. +50 % …; gefallene zählen nicht). Anzeige im Nachschub-Menü und in der Armee-Auswahl („+25 % Seltenheit“), Rechnung im Info-Fenster. Rückgrat-Regel für Unterstützung (1 je 2 Linie) bleibt vorerst. Werte in P (`P.KAT_AUFSCHLAG`), Rückweg `KAT_SPERRE_ALT`. KI kauft nach Preis. Messung `MISCHEN=1` alle drei Karten.
+4. **Neue Kategorie „sehr selten“** für **Helden und Stufe-3-Schreiter** (Kreuzschreiter, Eisenknecht), weil es später mehrere geben wird: eigene Kategorie mit eigenem Schild, je Armee weiter höchstens einer je Einheit (wie heute), Kategorie bereit für mehr.
+5. **Fesselballon nicht mehr „Gerät“**, sondern **Unterstützung** (nimmt der Artillerie keinen Geräteplatz weg). (Annahme des Beraters, Enrico hat nicht ausdrücklich gewählt.)
+6. **Mehr Blut (Enrico):** Bei Treffern durch Beschuss an Infanterie kommt kein Blut; im Nahkampf erst ganz am Schluss. Neu: **bei jedem Treffer an Fußtruppen/Reitern** (Gewehr, MG, Splitter, jeder Nahkampf-Schlag) ein kleiner Blutspritzer an der getroffenen Figur, beim Ausfall eines Mannes ein größerer + Blutfleck am Boden. Gepanzerte/Fahrzeuge: Funken statt Blut. Bleibt über den Blut-Schalter abschaltbar. Bilder.
+7. **Feldsymbole nah herangezoomt zu groß** (Folge von 84.2): Obergrenze deutlich senken, sodass sie nah nicht riesig wirken; Bilder bei nah/mittel/fern.
+9. **Neuer Aschenwacht-Panzer ersetzt den Sturmpanzer (Enrico 27.11. 06:10):** `ui-quelle/figuren/reskin/aschenwacht_panzer_neu.png` wurde vom Berater **neu abgelegt** (gleicher Name): Turmschütze jetzt im Look der neuen Linie (Pickelhaube, Gasmaske mit gelben Augengläsern), Abzeichen am Helm entfernt. Neu schneiden und als Bild des **Sturmpanzers** (`sturmpz`, bisher `aschenwacht_panzer`) einsetzen – Werte bleiben. Mündungen neu messen: Bugkanone = `MUZ`, Turm-MG oben = Zweitwaffe (`MUZ2`, bisher mittlere Bordschützen-Luke); Seitenluken-MGs dürfen bleiben. Rot-weißer Streifen vorn **bleibt** (Enrico). `aschenwacht_koloss` aus U4a wieder entfernen (Aschenwacht hat keinen Landkoloss). figur_plastik, Vorher/Nachher-Bild im Spiel.
+8. Partietest, `index.html`, Bericht mit Fragen.
+
+# >>> JETZT (Enrico 2026-11-26 23:30): Antworten zu V3 Teil 2 – mit U4a erledigen <<<
+**114. Nachtrag zu V3 (im selben `pa` wie U4a, Punkt 113):**
+1. **Alte Stimmen gleich raus (Enrico 23:30):** alte Stimmdateien aus `src/sound.js` bzw. `sound_pult.js` entfernen (Suno-Anklicken, alte Panik/Sanitäter/Befehlsrufe, `hst_*`, `sst_*`, `_gm/_gs/_bf/_mr`-Fassungen der abgelösten Plätze) und den Rückweg `STIMMEN_ALT` ausbauen. Kampfschrei `cry`, Schmerzlaute, Husten, Atmen bleiben. Die **Quelldateien in `sound-quelle/` bleiben liegen** (nicht löschen), Rückweg nur über git. Danach sound_bau, ton_teilen, tonpult_bau, Pult-Test; Ton-Spur ist nicht nötig, solange keine Abspielstelle geändert wird.
+2. Häufigkeit/Lautstärke und fehlende Rufstellen beantwortet Enrico nach der Spielpause – jetzt nichts ändern.
+3. **Alter Sanitäter-Ruf noch zu hören (Enrico 23:30, Aschenwacht):** Im Spiel war bei der Aschenwacht noch der alte „Sanitäter“-Ton zu hören – der soll ganz weg. Alle Wege suchen, über die er noch kommt: Heilen/Verbinden des Sanitäter-Trupps (`heiler`, `medic`-Platz, `heal`-Ereignis), Pult-Wahlen in `TONWAHL`, die noch auf alte Sanitäter-Töne zeigen, `RUF_STANDARD`, `stimmVar`-Fassungen `medic_gm` usw. Stattdessen der neue Ruf (`A_*_verwundet` bzw. beim Heilen nichts Gesprochenes oder ein neuer Sanitäter-Spruch aus `A_erscheinen_heiler_*`-Stimme A2). Im Bericht sagen, wo er herkam. Gleich auch beim Konkordat prüfen.
+
+# >>> JETZT (Enrico 2026-11-26 23:00): Paket U4a – neue Figuren vorziehen (nach V3) <<<
+**113. Paket U4a (ein `pa`, direkt nach V3 Teil 2; der Rest von U4 und U3 bleibt für später):**
+Enrico will vor der Spielpause den neuen Look im Spiel haben. Alle Bilder liegen in `ui-quelle/figuren/reskin/` (siehe LIESMICH dort):
+1. **Linie beider Seiten (Punkt 92):** `konkordat_soldat_reskin.png` + `konkordat_soldat_posen_reskin.png` ersetzen `konkordat_soldat` / `_posen`; `aschenwacht_soldat_reskin.png` + `aschenwacht_soldat_posen_reskin.png` ersetzen `aschenwacht_soldat` / `_posen`. Gleiches Raster 2×2 und gleiche Posen, also `POSE_SETS`/SH weiter gültig; `ENTROSA`, beim Aschenwacht-Grundbogen den winzigen Wappen-Rest unter dem Arm oben rechts mit `ABZEICHEN` übermalen. Klone für Truppgröße 8 wie bisher.
+2. **Landkoloss Aschenwacht:** `aschenwacht_panzer_neu.png` ersetzt `aschenwacht_koloss` (Einzelmodell, Blick nach rechts, Bugkanone = `MUZ`, Turm-MG/Seitenluken = Zweitwaffe). Größe wie der bisherige Koloss, Kettenschatten, `KETTE_FILTER`.
+3. **Prüfen:** Sturmbrecher und Schwere Grabenwacht zeigen im Spiel die **Kürassierhelm-Fassung** (Stand 17:10/17:20, gleiche Dateinamen) – falls noch die ältere geschnitten war, neu schneiden.
+4. **Grabenräumer:** die vierte Figur aus `konkordat_sturm_getroffen.png` als dritte Getroffen-Fassung zuordnen (Punkt 108.5).
+5. Danach `figur_plastik.py` für alle neuen Bögen, Porträts (`portraitKey`) prüfen, Vorher/Nachher-Bilder (Linie beider Seiten im Feld und im Graben, Landkoloss), Partietest, `index.html`, Bericht. Keine Regeländerung, also kein sim nötig.
+
+# >>> JETZT (Enrico 2026-11-26 22:45): Antworten zu V3 Teil 1 – Teil 2 Einbau <<<
+**112. Paket V3 Teil 2 (ein `pa`):**
+1. **Heldensprüche neu:** Der Berater hat alle 28 Kürassier-Zeilen (`A_held_kuerass_*`) und `K_held_faust_getroffen_1/2` neu erzeugt, diesmal mit sicherer Zuordnung (Ergebnis-Spieler statt Verlaufsliste). Liste **`entwurf/postfach/stimmen_urls_nach1.csv`** (`id;url`). Herunterladen, die alten Dateien gleicher id ersetzen, robocopy, filtern (`helm`), Längenprüfung wiederholen. Auffälliges im Bericht.
+2. **Filter passt so** (Enrico hat die Tonprobe gehört) – keine Änderung.
+3. **„Befehl bestätigt“ beim Ziehen etwa jedes zweite Mal**; Anwählen wie heute über den Beutel ohne Wiederholung.
+4. **Einbau wie geplant:** alle alten Sprüche raus (Suno-Anklicken, alte Panik/Sterben/Rufe, `hst_*`, `sst_*`), neue Plätze je Sprecher und Anlass (sound_bau, `HOER`, `slotsVon`, Ton-Spur), neue Abspielstellen aus dem Plan (Erscheinen, Zielfeld, Schilde, Gegenstoß, Dauerfeuer, Panzer getroffen/Panne, Koloss gesichtet …), Abstand je Einheit, Vorrang für verwundet/Rückzug/Panik. Rückweg `STIMMEN_ALT`, alte Dateien bleiben liegen.
+5. „Angriff!“ (`A_fuehrer_befehl_sturm_2` / `A_fuehrer_angriff_2`) bleibt, ist nur lang gerufen; Stille ist ja abgeschnitten.
+6. **Ton-Spur (`ton_spur.mjs`, ca. 25 Min.) nur EINMAL, ganz am Ende nach dem kompletten Einbau** (Enrico 22:50) – nicht nach Teilschritten, nicht für die Heldensprüche allein. Danach `test_tonplaetze`, Partietest, `index.html`, Bericht mit Fragen.
+
+# >>> JETZT (Enrico 2026-11-26 22:25): V2 fertig – Paket V3 Stimmen einbauen <<<
+**111. Paket V3 – neue Stimmen einbauen (ein `pa`, Teilschritte einzeln committen):**
+V2 ist fertig: der Berater hat **alle 608 Zeilen** aus `entwurf/stimmen_texte.csv` auf fal.ai (ElevenLabs Eleven v3) erzeugt, roh ohne Filter. Liste: **`entwurf/postfach/stimmen_urls.csv`** (Spalten `id;url`, id = Zeile der Text-CSV).
+
+1. **Herunterladen:** alle 608 mp3 nach `sound-quelle/Voices/eigene/el/<konkordat|aschenwacht>/<id>.mp3` (K_ = konkordat, A_ = aschenwacht). Die fal-Links sind nicht ewig gültig – gleich als Erstes laden. Danach `sound-quelle` per robocopy sichern (CLAUDE.md).
+2. **Prüfen, ob jede Datei zum Text passt:** Die Zuordnung lief über die Ergebnisliste der fal-Seite; einmal waren zwei Zeilen vertauscht (nachgebessert). Bitte grob prüfen: Länge der Datei gegen Textlänge (Ausreißer melden). Wenn ein Spracherkenner da ist (z. B. whisper), stichprobenartig 30 Dateien abhören lassen. Auffällige ids im Bericht – der Berater erzeugt sie neu.
+3. **Eine Textänderung:** `K_held_faust_angriff_3` war vom Inhaltsfilter gesperrt („Hit them hard.“) – gesprochen ist jetzt **„Push forward.“**. In `tools/stimmen_plan.py`/CSV nachziehen.
+4. **Filter bauen** (Kette aus Punkt 109.5, Python, im Stil von `tools/stimmfilter.py`): `funk` = Schlachtfunk; `bordfunk` = Schlachtfunk + mehr Rauschen; `maschine` = Maschine (wie `_mr`) + leichter Schlachtfunk; `helm` = Schlachtfunk etwas weniger Kamm, dafür hohler Helmklang. Eiserne Hünen bekommen je Einheit `maschine`, obwohl sie die `A_sturm_*`-Zeilen teilen (eigene gefilterte Fassungen). Ruhe am Anfang/Ende abschneiden, Lautstärke angleichen.
+5. **Einbauen:** neue Tonplätze je Sprecher und Anlass (sound_bau, Pult-Bibliothek `HOER`, `slotsVon`, Ton-Spur). Alle alten Sprüche (Suno-Anklicken, alte Panik/Sterben/Ruf-Plätze, alte Heldenstimmen `hst_*`, Schreiter `sst_*`) werden abgelöst; Rückweg-Schalter `STIMMEN_ALT`. Alte Dateien nicht löschen.
+6. **Neue Abspielstellen** aus dem Plan: Erscheinen (beim Aufstellen/Nachschub), Zielfeld genommen, Schilde, Gegenstoß, Dauerfeuer, Panzer getroffen/Panne, Koloss gesichtet usw. Nicht zu oft: je Einheit Abstand, Wichtiges (verwundet, Rückzug, Panik) hat Vorrang.
+7. **Hörprobe zuerst:** vor dem Einbau in `tonprobe.html` eine Gruppe „Neue Stimmen“ (je Sprecher 6 Sprüche, roh und gefiltert). Enrico hört sie sich nach dem Bericht an.
+8. Danach Partietest, `index.html` am Ende, Bericht mit Fragen.
+
+# >>> JETZT (Enrico 2026-11-26 21:10): Antworten zu V1b – Nachtrag V1c <<<
+**110. Nachtrag V1c (klein, nur Text, nichts bauen):**
+1. **Eiserne Hünen bleiben Maschine:** ihre Zeilen behalten Sprecher A3 (Bill, schroff), bekommen in V3 aber den **Maschinenfilter** statt Schlachtfunk (wie heute `_mr`, darüber leichter Schlachtfunk). In der CSV eine Spalte `filter` ergänzen: `funk` (Standard), `maschine` (Hünen, Schreiter), `helm` (Helden), `bordfunk` (Panzer/Kolosse).
+2. **Löwenoger: nur Brüllen**, keine Worte (so lassen, keine Zeilen).
+3. **Helden neu sprechen, gleich mit:** Rote Faust = **K5 Bill** (Englisch), Eiserner Kürassier = **A5 Liam** (Deutsch), Filter `helm`. Für jeden Anlass, den die Heldenstimmen heute haben (`HELD_ST`, Plätze `hst_faust_*`/`hst_kuerass_*`), 2–4 neue kurze Texte, dazu Erscheinen 2. Sachlich, grimmig, keine Verherrlichung. Ids `K_held_faust_<anlass>_<n>` bzw. `A_held_kuerass_<anlass>_<n>`.
+4. **Schreiter** (`sst_*`): gleich behandeln – Kreuzschreiter K5 Bill, Eisenknecht A5 Liam, Filter `maschine`; Texte für die heutigen Schreiter-Anlässe. Ids `K_schreiter_…` / `A_schreiter_…`.
+5. **Die bestehenden 552 Zeilen NICHT umbenennen, umnummerieren oder umtexten** – der Berater erzeugt sie schon (Dateiname = id). Neue Zeilen nur anhängen; im Bericht die Liste der neuen ids.
+6. Im Bericht: Anzahl neuer Zeilen und Zeichen.
+
+# >>> JETZT (Enrico 2026-11-26 20:55): Stimmen nach Hörprobe 3/4 – Nachtrag V1b <<<
+**109. Nachtrag V1b – Stimmen-Plan anpassen (nur Text, nichts bauen):**
+Enrico hat vier Hörproben gehört (Berater, fal.ai ElevenLabs Eleven v3). Ergebnis:
+
+1. **Alle alten Sprüche werden ersetzt** (Suno, frühere ElevenLabs-Sprüche) – keine Mischung alt/neu.
+2. **Sprache:** **Konkordat spricht Englisch** (auch Blaue Legion, sie nutzt die Konkordat-Stimmen), **Aschenwacht spricht Deutsch.** Alle Texte des Konkordats in `entwurf/stimmen_texte.csv` und `STIMMEN_PLAN.md` auf **Englisch** umschreiben (kurz, militärisch, an die Welt angepasst – „For the Crown“ ist ok, keine echten Länder-/Ortsnamen). Deutsche Texte der Aschenwacht bleiben, nur auf 5 Sprecher verteilen.
+3. **5 Sprecher je Seite** (statt 3), feste Zuordnung über die Kategorien aus K1:
+   | Sprecher | Einheiten | Konkordat (EN) | Aschenwacht (DE) |
+   |---|---|---|---|
+   | 1 Linie | Linien-Infanterie, Rückgrat | Brian | Charlie |
+   | 2 Unterstützung | MG, Artillerie, Mörser, Pioniere, Sanitäter, Versorgung, Beobachter, Ballon, Fachtrupps | Daniel | Callum |
+   | 3 Sturm/Elite | Sturmtrupps, Schwere, Grabenräumer, Sturmbrecher, Oger/Hünen, Panzerknechte | Callum | **Bill, schroff** |
+   | 4 Reiter | Reiter, Lanzen, Stahlreiter | George | Will |
+   | 5 Anführer + Panzer | Hauptmann, General, Bannerträger; Panzer/Kolosse (Bordfunk) | Bill | Liam |
+   Helden (`hst_*`) und Schreiter-Maschinenstimmen (`sst_*`) bleiben eigene Gruppen; Vorschlag für sie im Plan, ob sie mit Sprecher 5 (Held) bzw. Sprecher 5 + Maschinenfilter (Schreiter) neu gesprochen werden.
+   Spalte `sprecher` in der CSV: `K1`…`K5`, `A1`…`A5`. Zuordnung jeder Einheit (TYPES-Schlüssel) zu ihrem Sprecher als eigene Tabelle in `STIMMEN_PLAN.md`.
+4. **Sprechweise (für die Erzeugung):** tief, rau, abgehackt, wenig Gefühl – Richtung StarCraft 2 / Command & Conquer / Dawn of War 1, nicht „gespielt“. Rufen/Schreien nur bei Not (Rückzug, Sanitäter, unter Beschuss, Hilfe, Panik, schwer verwundet). Neue Spalte `ton` in der CSV: `ruhig` oder `ruf` (der Berater setzt dann den Schrei-Hinweis).
+5. **Filter „Schlachtfunk“ für ALLE Einheiten beider Seiten** (Enrico: „volles Brett in dieser Tiefe“) – ersetzt die leichte Funk-Gasmaske und später auch `_gm/_gs/_bf/_mr`. Vorlage aus der Hörprobe des Beraters (WebAudio, zum Nachbauen in Python für sound_bau / stimmfilter):
+   Tonhöhe ×0,86 (tiefer und langsamer) → Hochpass 260 Hz → Low-Shelf 300 Hz +4 dB → Glocke 1100 Hz Q 1,4 +7 dB → Sättigung tanh k = 5,5 → Tiefpass 2900 Hz → Kompressor (−28 dB, 8:1, Attack 3 ms, Release 120 ms) → dazu Kammfilter (Verzögerung 6 ms, Rückkopplung 0,45, Anteil 0,5) für den metallischen Klang; Funkrauschen (Bandpass 2200 Hz, leise) über die ganze Länge und ein kurzer Rauschklick (60 ms) am Anfang. Panzer/Kolosse etwas mehr Rauschen (Bordfunk). In V1b nur im Plan festhalten, gebaut wird in V3.
+6. **Ablage für V2:** `sound-quelle/Voices/eigene/el/<konkordat|aschenwacht>/<id>.mp3`, `id` wie in der CSV. Der Berater erzeugt roh (ohne Filter); der Filter kommt in V3.
+7. Am Ende im Bericht: Anzahl Zeilen je Sprecher und grobe Zeichenzahl gesamt (für die Kosten auf fal, ca. 0,10 $ je 1000 Zeichen).
+
+# >>> JETZT (Enrico 2026-11-26 20:25): Antworten zu R4c – Nachtrag R4d, dann V1 <<<
+**108. Nachtrag R4d (klein):**
+1. **Fehler Stahlreiter-Position:** Im Bild `entwurf/probe/r4c/stahlreiter_vorher_nachher.jpg` (rechts) stehen die drei Reiter **ein ganzes Feld zu weit oben** (auf dem Graben), ihr Ring darunter ist leer. Mit dem neuen Bogen stimmt der Fußpunkt nicht (Bildhöhe/Schnitt/Fußlinie, `massSlots3` oder SH). Beheben, sodass die Hufe im eigenen Feld stehen wie bei allen Trupps; Bild im offenen Feld und am Graben.
+2. **Farbe der Stahlreiter passt** (Enrico), so lassen.
+3. **Krähenfurt-Zielwerte übernehmen:** Dorfplatz 3 → 2, Gehöft 1 → 3 (gemessen 59 %). Kurze Gegenmessung.
+4. **Elite je −5 übernehmen:** Stahlreiter 55, Grabenräumer 60, Sturmbrecher 115, Löwenoger 110, Schwere Grabenwacht 30, Hünen 85 (Panzerknechte entsprechend −5). Info-Fenster-Rechnung „Elite-Abschlag −5“.
+5. **Vierte Grabenräumer-Figur** (zweite Getroffen-Variante) später in U4 als dritte Fassung – jetzt nicht.
+
+Danach **V1 – Stimmen-Plan (Punkt 102)**: nur Liste, Texte, `stimmen_texte.csv`, keine Töne bauen.
+
+# >>> JETZT (Enrico 2026-11-26 19:55): Antworten zu K1 – Bilder, Elite-Messung, Krähenfurt <<<
+Antworten: (1) Zuordnung der Zweifelsfälle **passt so** (Hauptmann Selten, Sprenglanze/Pirschjäger/Scharfschützen Unterstützung, Ballon Gerät). (2) Neue Kartenarmeen **bleiben so**. (3) Elite-Abschlag **messen** (Punkt 107). (4) Reihenfolge wie unten.
+
+**In diesem `pa`:**
+1. **R4b-Rest (106.4 und 106.6):** Die Bilder liegen jetzt bereit (Berater 19:45): neuer `konkordat_stahlreiter_reskin.png` (massivere Pferde, ohne Rotschimmer – im Spiel nicht röter/heller machen) und `konkordat_sturm_getroffen.png` (2×2: oben links Getroffen mit Schild, oben rechts Getroffen mit Keule, unten links geduckt hinter dem Schild = gute „Schilde vor“-Pose, unten rechts zweite Getroffen-Variante). Einbauen, Vorher/Nachher-Bilder.
+2. **107. Elite günstiger messen:** je Elite-Typ einzeln −5 bzw. −10 Punkte (`MISCHEN=1`, alle drei Karten), Vorschlag mit Zahlen; erst nach Enricos Antwort fest übernehmen.
+3. **105. Krähenfurt-Check** (wie beschrieben: Hecken (7,4), (10,6) und Dorfplatz-Mauer (8,5) einzeln abschalten, außerdem prüfen, ob es an der Karte selbst liegt, z. B. Aufstellungszonen, Zielfelder, Eis/Furt) – Ziel gemischt unter ~70 %, Vorschlag.
+Bei Platzmangel nach Schritt 1 oder 2 Zwischenstand und aufhören.
+
+# >>> JETZT (Enrico 2026-11-26 19:30): Antworten zu R4 – Nachtrag R4b, dann K1 <<<
+**106. Nachtrag R4b:**
+1. **„MG gegen Reiter ×2“ gilt NICHT für die gepanzerten Stahlreiter** (Enrico: sie sollen auch gegen MG zäh sein, ×0,5). Für ungepanzerte Reiter (Sprenglanzen-Reiter) bleibt die Regel.
+2. **Stahlreiter Preis 50 / Abwehr 3 bleiben** (Feinabgleich U9).
+3. **„Zwei Schläge“ einbauen für Stahlreiter und Löwenoger:** zweiter Nahkampfschlag ×0,6, wenn der Gegner danach noch steht; Preis je +10 (Stahlreiter 60). Schlagwort/Medaille und im Nahkampfbild ein zweiter Schlag sichtbar. Kurz messen (`MISCHEN=1`).
+4. **Stahlreiter-Bogen wird NEU gemalt (Enrico 19:26: Pferde massiver – Beine, Rumpf, Proportionen).** Der Berater legt ihn als `konkordat_stahlreiter_reskin.png` neu ab (gleicher Name, 3 Posen in einer Reihe). **Neuer Bogen liegt bereit (Berater 19:40, Enrico „passt“):** massivere Kaltblut-Pferde, Panzerung rostiges Eisen/Braun, Rot nur als Akzent – der Rotschimmer ist schon im Bild behoben. Neu schneiden (gleiche 3 Posen); im Spiel **nicht aufhellen oder röter machen**, Vorher/Nachher-Bild. Früher stand hier: **weniger grell:** Im Spiel wirken sie viel greller rot als im gemalten Bogen – Farbe/Sättigung näher an den Bogen bringen (Aufhellung/Plastik prüfen), Vorher/Nachher-Bild.
+5. **Sturmbrecher-Ruhe mischen:** nicht 4× Granatwurf in Ruhe; z. B. 2× MG hüfthoch, 2× Spaten, 1× Granatwurf, 1× ruhigste Pose – abwechslungsreich; Wurf-Pose vor allem beim Wurf.
+6. **Grabenräumer-Getroffen:** malt der Berater (Ablage folgt als `ui-quelle/figuren/reskin/konkordat_sturm_getroffen.png`); einbauen, sobald sie da ist, bis dahin alte Figur.
+
+Danach **K1** (Punkt 104).
+
+# >>> JETZT (Enrico 2026-11-26 18:45): Antworten zu R4 Teil 1 – Rest von R4 <<<
+Antworten: (1) Sturmbrecher **ohne** den Zielfeld-Faktor des alten Eingreiftrupps – richtig so. (2) Preise 120 / 65 passen (Feinabgleich U9). (3) **Ja**, eigene Pult-Zeile „Angriff (Ruf des Pferds)“ für Lanzenreiter und Stahlreiter, Standard = `stahlreiter_wiehern1`. (4) Krähenfurt: nach K1 kurz prüfen (Punkt 105).
+
+**In diesem `pa`:**
+1. Neue Bögen der zusammengelegten Trupps einbauen (`aschenwacht_sturm_reskin.png`, `konkordat_sturm_reskin.png`, figure_cut, figur_plastik, Posen; Truppgröße 6).
+2. Pult-Zeile „Angriff (Ruf des Pferds)“ (siehe oben), Ton-Spur, `tonpult_test`.
+3. Punkt 97 Stahlreiter mit Bogen `konkordat_stahlreiter_reskin.png` (3 Modelle), Messung, Vorschlag „öfter zuschlagen/schießen“ mit Zahlen (nicht fest einbauen). Lanzenreiter-Tonwahl auf die Stahlreiter übertragen.
+Bei Platzmangel nach Schritt 2 Zwischenstand und aufhören.
+
+**105. Krähenfurt-Check (nach K1):** gemischt 87–91 % für das Konkordat. Hecken (7,4), (10,6) und die Mauer am Dorfplatz (8,5) einzeln abschalten und messen, dann Vorschlag (versetzen oder weg). Fest bleibt der Maßstab, gemischt soll unter ~70 % kommen.
+
+# >>> JETZT (Enrico 2026-11-26 18:15): Antworten zu R3 – weiter mit Paket R4 (Regeln) <<<
+**Reihenfolge in diesem `pa` (bei Platzmangel nach Schritt 2 Zwischenstand committen und aufhören, Sparregel 5):**
+
+**0. Punkt 101 zuerst:** Pferdetöne herunterladen und ablegen (Liste unter Punkt 101; dampf1 nicht nehmen). Gleich ins Ton-Pult als Auswahl stellen und vorläufig den **Lanzenreitern** zuordnen (Anwählen = maske_schnauben2 bzw. schnauben, Angriff = wiehern, Bewegung = galopp-Schleife, Getroffen = aufbäumen), damit Enrico sie schon im Spiel hört.
+
+**1. Punkt 103 – Nacharbeit R3 (Antworten Enrico 18:15):**
+- **Krähenfurt:** die Sandsäcke am Gehöft (14,3) entfernen, der Rest der Kanten bleibt. Neu messen.
+- **Bild = Regel:** Die Gartenmauern in Sankt Ruß und die Sandsäcke an der Schanze in Grauwall, die heute nur Bild sind, werden echte Kantendeckung (Mauer ×1,7 bzw. Sandsäcke ×1,5, nur über die Kante, an der sie stehen). Messung danach.
+- **Werte bleiben:** Sandsäcke ×1,5, Mauer ×1,7, Hecke ×1,25.
+- **Sommerhecke:** malt der Berater, Ablage folgt in `ui-quelle/gelaende/neu_hecke/`. Bis dahin auf Grauwall/Sankt Ruß keine Hecken.
+
+**2. Zusammenlegungen 94 (Aschenwacht-Sturm) und 96 (Konkordat-Grabenräumer)** wie in den Notizen beschrieben, mit den neuen Bögen aus `ui-quelle/figuren/reskin/` (Truppgröße 6). Messung mit `MISCHEN=1`.
+
+**3. Punkt 97 – Stahlreiter** (3 Modelle, Bogen `konkordat_stahlreiter_reskin.png`), mit Messung; dazu der Prüfauftrag „öfter zuschlagen/schießen“ als Vorschlag mit Zahlen (nicht fest einbauen).
+
+Danach: V1 (Stimmen-Plan), dann U3.
+
+# >>> JETZT (Enrico 2026-11-26 17:35): Antworten zu U5c – Nachträge, dann R3 <<<
+**Zuerst diese Nachträge (klein), dann im selben `pa` R3 (Deckung an der Feldkante).**
+
+**98. Gefallene ganz weglassen (Enrico 17:30).** Die liegenden Figuren aus Punkt 93 machen das Bild unruhig. Fällt ein Mann aus einem Trupp, verschwindet er einfach – keine liegende Figur, keine Bodenspur. Code bitte nur abschalten (Schalter, z. B. `GEFALLEN_AN`, Standard aus), nicht löschen. Der gemalte Bogen `ui-quelle/figuren/reskin/gefallene_bogen.png` wird jetzt **nicht** eingebaut, aber **auf keinen Fall löschen** – Enrico gefällt er, vielleicht später (in IDEEN.md vormerken). Blut-/Krater-Bodenspuren bei Einschlägen bleiben wie sie sind.
+
+**99. Meldegänger: 1 Modell**, der Hund ist Beiwerk (läuft mit, zählt nicht).
+
+**100. Gepanzerte Infanterie: 3 Modelle** (Panzerknechte, Hünen, Löwenoger; Stahlgänger fallen mit Punkt 97 weg). Hauptmann/General: 3 Modelle, Bild bleibt bis U4 ein gemeinsames Bild – einverstanden. MG/Panzerbüchse: einverstanden, Bild bis U4.
+
+Nach den Nachträgen kurz `sim.js 100` Grauwall (ein Startwert), dann R3 wie geplant.
+
+**104. Einheitenkategorien und Rückgrat-Regel im Gefecht (Enrico 18:30) – Paket K1, eigener `pa` nach R4:**
+Grundlage: `entwurf/ARMEEAUFBAU_IDEEN.md` (Teile 1, 2 und 4). Später trägt das bis in die Kampagne.
+- **Kategorie je Einheit** in TYPES: `kat: 'linie' | 'unterst' | 'elite' | 'geraet' | 'selten'` (Zuordnung wie in der Tabelle; Zweifelsfälle im Bericht auflisten). Sichtbar als kleines Schild im Nachschub-Menü und in der Armee-Auswahl, mit freien/belegten Plätzen je Kategorie.
+- **Grenzen** in `armyOk`/`canBuy` (Armee-Auswahl und Nachschub): Linie mindestens ein Drittel der Trupps; **Unterstützung: 1 Platz je 2 Linientrupps (Rückgrat-Regel)**; Elite höchstens 3; Gerät höchstens 2–3; Selten je 1 wie heute. Werte in P, Rückweg-Schalter (z. B. `KAT_ALT`).
+- **Noch keine Fraktions-Doktrinen** (Teil 3) – erst die gemeinsamen Grenzen messen; Doktrinen danach einzeln in eigenen kleinen Schritten.
+- **Kartenarmeen und KI** halten sich an dieselben Grenzen (Standardarmeen ggf. anpassen, Budget gleich lassen).
+- **Messung:** `sim.js` mit `MISCHEN=1` vorher/nachher auf allen drei Karten, Siegquote, Runden, Verluste je Kategorie; Bericht mit Vorschlag, ob Elite je Punkt etwas günstiger werden darf (weil knapp).
+
+**102. Stimmen einheitlich „Funk-Gasmaske“ + alle Rufe (Enrico 17:58) – Paket V in drei Schritten:**
+- **Ziel:** Alle menschlichen Einheiten klingen nicht wie normale Menschen, sondern wie durch Gasmaske und Funk (blechern, leicht kratzig, „Vox“ – wie die Einheitenrufe in alten Echtzeit-Strategiespielen). Je Fraktion wenige feste Sprecher, damit es wie aus einem Guss klingt. Maschinen/Schreiter behalten ihre Maschinenstimme.
+- **Stilvorgabe von Enrico (18:08), für Texte (V1), Erzeugung (V2) und Filter (V3):** Kurze, entschlossene Einheitenrufe wie militärische Bestätigungen – diszipliniert, professionell, leicht rau, gleichmäßiges Tempo, wenig Gefühl. Klang wie über ein Kopfhörer-Funkgerät: leichtes Rauschen, milde Kompression, etwas mehr Mitten, weniger Bass. Englische Beispiele aus Enricos Vorlage: „Ready.“ „Affirmative.“ „Moving out.“ „Target locked.“ – bei uns **auf Deutsch und an die Welt angepasst** (z. B. „Bereit.“, „Verstanden.“, „Rücken vor.“, „Ziel erfasst.“ – Vorschläge in V1). **Ausnahme:** Bei Not dürfen sie rufen/schreien – Rückzug, Sanitäter, unter Beschuss, Hilfe, Panik, schwer verwundet – dann lauter und gehetzter, aber mit demselben Funk-Klang.
+- **Alle Anlässe sollen einen Ruf haben**, mit mehreren Varianten (nicht immer derselbe Satz, auch verschiedene Tonlagen): Anwählen (Anklicken), Ziehen/Befehl bestätigt, Angriff, Rückzug, Panik/Flucht, schwer verwundet, Sammeln, Tod/aufgerieben, **Erscheinen** (Nachschub/Aufstellung: kurze Vorstellung wie „Grabenräumer, zur Stelle!“ – darf je Einheit eigen sein).
+- **V1 (CC, ein `pa`, nur Text):** Tabelle `entwurf/STIMMEN_PLAN.md`: je Fraktion (Konkordat, Aschenwacht; Blaue Legion = Konkordat-Stimmen) × Einheitengruppe × Anlass → welche Rufe es heute gibt (aus TONWAHL/HOER/`RUF_STANDARD`, Liste fehlender Sprachbefehle aus Paket F nutzen), was fehlt, und **deutsche Sprechtexte** für alles Fehlende (kurz, 1–5 Wörter, sachlich, Krieg nicht verherrlichen; je Anlass 3–4 Varianten; Erscheinen je Einheit 2 Varianten). Dazu Vorschlag: 2–3 Sprecher je Fraktion (Alter, Tonlage), welche Einheit welchen Sprecher bekommt. Am Ende eine Datei `entwurf/stimmen_texte.csv` (Spalten: id, fraktion, sprecher, anlass, einheit, text), die der Berater direkt in ElevenLabs abarbeiten kann.
+- **V2 (Berater):** erzeugt **über fal.ai** (Enricos Guthaben liegt dort, nicht bei ElevenLabs direkt; fal bietet ElevenLabs Eleven v3 Text-zu-Sprache und den Voice Changer) die neuen Sprüche (Text-zu-Sprache) und schickt vorhandene Suno-Sprüche durch den **Voice Changer** auf die festen Sprecher; Ablage `sound-quelle/Voices/eigene/el/<fraktion>/<id>.mp3`.
+- **Hörproben zuerst (Enrico 17:59):** Nach den ersten Proben (V2) bekommt Enrico eine kleine Hörprobe (je Fraktion ein Sprecher, 3–4 Rufe, mit und ohne Filter) und entscheidet, bevor alles erzeugt wird. Auch in V3 vor dem Einbau eine Hörprobe in `tonprobe.html`.
+- **V3 (CC, ein `pa`):** einbauen (sound_bau, Plätze, Pult-Bibliothek, `slotsVon`, Ton-Spur), Ruf beim **Erscheinen** neu einhängen, und **ein gemeinsamer, kräftigerer Filter „Funk-Gasmaske“** für alle menschlichen Stimmen (Bandpass, leichte Sättigung, Masken-Resonanz, dezentes Knistern; Stärke je Klasse: Linie leicht, Sturm/Schwer mittel, Panzerbesatzung Bordfunk). Vorher/nachher-Hörprobe in `tonprobe.html`. Vorhandene Filter (`_gm/_gs/_bf/_mr`) dabei ablösen, Rückweg-Schalter.
+
+**101. Pferdetöne für die Stahlreiter (Berater 17:58, gehört zum Regel-`pa` mit Punkt 97, nur Ablage + Pult):** Mit ElevenLabs SFX v3 (fal) erzeugt, 10 MP3 (44,1 kHz, 128 kbit). Bitte herunterladen (curl/node, die Adressen sind öffentlich) nach `sound-quelle/stahlreiter/<name>.mp3`, in `CREDITS.md` vermerken (ElevenLabs Sound Effects über fal.ai, KI-erzeugt), danach wie gewohnt per `sound_bau.json` als neue Plätze `stahlreiter_<name>` bauen und in der Ton-Pult-Bibliothek (`HOER`, Gruppe Reiter) zur Auswahl stellen. Enrico wählt dann selbst im Pult. Vorschlag für die Zuordnung: Anwählen = schnauben, Angriff = wiehern, Bewegung = galopp (Schleife), Getroffen = aufbäumen, Dampf zum Mischen.
+- schnauben1 https://v3b.fal.media/files/b/0ab40a07/OIPNjod7KGzglXpEqw3-f_sound_effect.mp3
+- schnauben2 https://v3b.fal.media/files/b/0ab40a09/3R4UBc9koV280iZVEyq1N_sound_effect.mp3
+- wiehern1 https://v3b.fal.media/files/b/0ab40a0a/KeLS0fl6TKjYN_B56KHP8_sound_effect.mp3
+- wiehern2 https://v3b.fal.media/files/b/0ab40a0b/s0ELNkGPENRlMN1STHsQh_sound_effect.mp3
+- galopp1 (Schleife) https://v3b.fal.media/files/b/0ab40a0b/ZcvwB2eT1pawrrhGAfrQv_sound_effect.mp3
+- galopp2 (Schleife, drei Pferde) https://v3b.fal.media/files/b/0ab40a0c/SDNhbNoyt2RO5vRLYxXgv_sound_effect.mp3
+- aufbaeumen1 https://v3b.fal.media/files/b/0ab40a0c/adPmLAs1OQu2PknmUvpO7_sound_effect.mp3
+- aufbaeumen2 https://v3b.fal.media/files/b/0ab40a0d/jUgG0gUF2mMpbNpoAOM3n_sound_effect.mp3
+- ~~dampf1~~ (Enrico 18:03: klingt zu metallisch – nicht nehmen)
+- dampf2 https://v3b.fal.media/files/b/0ab40a0e/oovybpE0OJuZRYQJarmWp_sound_effect.mp3
+- maske_schnauben1 (durch Gasmaske, Ventile) https://v3b.fal.media/files/b/0ab40a3e/5rmGN7UpdAq9egktx1Y-f_sound_effect.mp3
+- maske_schnauben2 (durch Vox-Gitter, mechanisch) https://v3b.fal.media/files/b/0ab40a3f/EtblvK6-EGsqs5eXvE4Ph_sound_effect.mp3
+- maske_wiehern (durch Gasmaske/Vox) https://v3b.fal.media/files/b/0ab40a40/1JQ2TqUEGuP-98OF6DYB5_sound_effect.mp3
+**Gleich im nächsten `pa` (vor den Nachträgen) nur herunterladen und ablegen**, damit die Adressen nicht verfallen; Einbau später mit Punkt 97.
+
+**97. Schwere Reiter des Konkordats (Enrico 17:28) – NICHT jetzt bauen, Regel-`pa` vor U4 (zusammen mit 94 und 96):**
+- **Lanzenreiter (`reiter`) und Stahlgänger-Trupp (`stahl`) werden ein Trupp:** schwere, gepanzerte Reiter. Enrico: Die Stahlgänger sahen gut aus, hatten aber wenig Wirkung („ein bisschen laufen, ein bisschen schießen“); der Sturmlauf war das Beste daran.
+- **Regeln:** Klasse `cav`, **3 Modelle** (Enrico 17:33: große, gepanzerte, mechanische Monster-Reiter, deshalb weniger als die 6 normalen Reiter; Stärke je Trupp bleibt gleich, nur weniger Figuren, Aufstellung im Feld 2 vorn/1 hinten), Ansturm ×1,5 wie bisher, **leicht gepanzert** wie die Stahlgänger (Gewehr, MG, Klinge ×0,5 über die FAK-Tabelle), **Sturmlauf** (`abil: 'rush'`), **kein Gewehr** (rng 0), Bewegung wie Reiter. Kein `mech` → kein Kampfmaschinen-Schalter nötig. Preis aus den Werten (wird teurer als die Lanzenreiter). `stahl` aus SHOP und Armeen nehmen (Typ im Code lassen oder mit Rückweg-Schalter), Rolle/Chronik/Schlagworte anpassen. Name: Vorschlag „Stahlreiter“ (Enrico kann ändern). Messung mit `MISCHEN=1`, Siegquote, Verluste je Typ.
+- **Idee dazu (Enrico 17:31), im selben Regel-`pa` prüfen:** Manche Einheiten sollen **öfter zuschlagen oder schießen** können (z. B. schwere Reiter zwei Schläge, ähnlich Dauerfeuer der Hünen). Vorschlag mit Messung machen, welche Einheiten dafür passen; erst nach Enricos Antwort fest einbauen.
+- **Bild:** Der Berater malt den Bogen (Enricos Vorlagen: Idee wie `Gemini_Generated_Image_n21l5u…` – Dampfrohre am Rücken, Pferdemasken mit Gitter, Umhang –, Zeichenstil wie `…5tmmgq…`). **Fertiger Bogen (Enrico 17:49 „passt“): `ui-quelle/figuren/reskin/konkordat_stahlreiter_reskin.png`** – 3 Posen nebeneinander (REIHE, Blick nach rechts): Trab mit gesenktem Zweihänder, Galopp-Angriff mit erhobenem Schwert, halb aufbäumend mit Seitenhieb. Reiter: offener Mantel, Gasmaske, Rohre am Rücken; Pferd voll gepanzert mit Visier-Schlitzmaske. 3 Modelle = je eine Pose. Entwürfe 1–3 und Enricos Vorlagen in `kavallerie_vorlagen/` (nur Archiv). Bis dahin die alten Reiterbilder.
+
+# >>> NOTIZ (Enrico 2026-11-26 16:30): Aschenwacht-Sturmtrupps zusammenlegen, Schildträger neu – gehört in U4 (nicht in U5c) <<<
+- [x] **94. Sturmbrecher und Eingreiftrupp werden eine Einheit (Enrico 16:28/16:30).**
+  - Die neue Einheit ist der **Sturmbrecher-Trupp** (Schlüssel `sturm` bleibt, `eingreif` entfällt).
+  - Er kann alles aus beiden: Handgranaten, Panzergranate, Draht schneiden, Gegenstoß. Er ist nahkampfstark und hat 6 Mann (Punkt 90).
+  - Etwas teurer: Preis neu über costParts, Rechnung im Info-Fenster.
+  - Im Bild trägt ein Mann ein **schweres MG hüfthoch mit Munitionsgurt**. Das ist nur Bild, keine eigene Fernwaffe.
+  - **Anpassen:** Kartenarmeen, Nachschub, KI-Wunschlisten und abilPlan, Rollen, Chronik-Text, Ton-Pult-Zeilen (Wahlen des Eingreiftrupps sinnvoll auf den Sturmbrecher übertragen, im Bericht auflisten), Schlagworte.
+  - `sim.js` auf allen Karten, nacheinander starten.
+  - Bild: ein neuer Bogen vom Berater. Bis dahin der heutige Sturmbrecher-Bogen.
+- [ ] **95. Schwere Grabenwacht (Schildträger) im Look der neuen Linie (Enrico 16:30).**
+  - Rüstung, Mantel und Maske wie die neue Aschenwacht-Linie.
+  - **Schilde bleiben wie heute** (Enrico 16:31: nicht rechteckig, denn das Konkordat hat schon die rechteckigen Sturmschilde).
+  - **Helm** wie das Aschenwacht-Wappen bzw. die Eisenknechte, mit **T-förmigem Sehschlitz** (Kreuzschlitz ohne oberen Teil).
+  - Bild vom Berater.
+- [x] **96. Konkordat: Grabenräumer und Schildwall werden eine Einheit (Enrico 16:32).**
+  - Die neue Einheit ist der **Grabenräumer-Trupp** (Schlüssel `raeumer` bleibt, `schildwall` entfällt).
+  - Er kann alles aus beiden: nahkampfstark, Handgranaten, Draht schneiden, „Schilde vor“. Er hat 6 Mann.
+  - Etwas teurer, Preis über costParts.
+  - Im Bild tragen einige Mann die rechteckigen Sturmschilde mit Löwe, die anderen Keule bzw. Granate und Gewehr.
+  - **Stahlgänger bleiben** als eigene Einheit, Enrico überlegt deren Fähigkeiten und Ausrüstung noch.
+  - Anpassen wie bei 94: Armeen, Nachschub, KI, Rollen, Chronik, Pult-Zeilen (Wahlen übertragen, Liste in den Bericht), sim auf allen Karten nacheinander.
+- **Bilder liegen bereit (Berater 16:45):** `ui-quelle/figuren/reskin/`, siehe die LIESMICH dort. Linie beider Seiten (Grund- und Posenbogen), Aschenwacht-Sturmtrupp (zusammengelegt, mit MG), Schwere Grabenwacht (T-Visier), Konkordat-Grabenräumer (zusammengelegt, mit Sturmschilden) und Gefallene (3 je Seite).
+- **Reihenfolge:** 94, 95 und 96 gehören in **U4** (neue Bögen) bzw. als eigener kleiner Regel-`pa` direkt vor U4. Nicht in U5c.
+
+# >>> JETZT (Enrico 2026-11-26 16:35): Antworten zu U5b – weiter mit U5c (Truppgrößen) <<<
+1. **Wie die Gefallenen liegen:** Der Berater malt eigene liegende Posen im neuen Stil (Punkt 92/93). Bis dahin bleibt die gedrehte Figur.
+2. **3 Runden liegen bleiben:** passt.
+3. **Blutflecken unter den Gefallenen:** erst in U6, richtig so.
+4. **Punkt 90 (Truppgrößen in sieben Gruppen) fehlt in U5b.** Er ist der nächste `pa` als **U5c**:
+   - Regel (`modelle()`) und Anzeige so wie in der Tabelle unter Punkt 90.
+   - Bis die Bilder da sind, mit Klonen bzw. Wiederholung der vorhandenen Posen.
+   - Unklare Zuordnungen nicht raten, sondern als Frage in den Bericht.
+   - `sim.js 100` Grauwall mit zwei Startwerten, fest und gemischt, nacheinander starten.
+   - index.html am Ende.
+
+Danach R3 (Deckung an der Feldkante) → U3 → U4 … wie in der Paketliste.
+
+# >>> JETZT (Enrico 2026-11-26 16:30): Gefallene sehen aus wie Matschflecken – und neuer Look der Fußtruppen (Reskin) <<<
+- [ ] **93. Gefallene (Enrico 16:11, gehört sofort in U5b):** Die liegenden Modelle in `entwurf/probe/u5b/*_viele.jpg` sind die **gequetschten Standfiguren** und wirken wie rote, matschige Streifen.
+  - **Sofort in U5b:** Nicht mehr flach drücken. Stattdessen die **Getroffen-Pose um etwa 80–90° auf die Seite drehen** (Füße zur Seite, je Figur zufällig links/rechts, leicht verschieden), dunkler und etwas entsättigt, mit kleinem Schatten darunter. Sie bleibt liegen und verblasst wie geplant.
+  - Rückweg `GEFALLEN_QUETSCH`. Bilder vorher/nachher im Offenen, im Graben und im Schnee.
+  - **Später:** Der Berater malt **echte liegende Gefallene** im neuen Stil (Punkt 92), etwa 6 Posen je Seite. Dann ersetzen sie die gedrehte Pose (Einbau in U4).
+- [ ] **92. Neuer Look der Fußtruppen – Reskin (Enrico 16:12–16:15, gehört in U4).**
+  - **Umfang eingeschränkt (Enrico 16:19):** Neu gemalt werden nur die **Linie beider Seiten** (Schützenkohorte, Aschengrenadiere) und bei der Aschenwacht zusätzlich **Schwere Grabenwacht** (`aschenwacht_schwer`) und **Sturmbrecher** (`aschenwacht_sturm`). Bei den übrigen Konkordat-Einheiten schaut Enrico noch. **Der Rest bleibt, wie er ist**, damit sich die Einheiten auch optisch unterscheiden. Also etwa 10–14 Bögen statt 60.
+  - Vorlagen: `entwurf/konzept_neu/reskin/` (`vorlage_aschenwacht_gemini.jpg`, `vorlage_konkordat_gemini.jpg`, `vorlage_konkordat_maske.png`).
+  - **Aschenwacht:** wie `vorlage_aschenwacht_gemini.jpg`:
+    - Pickelhaube, Gasmaske mit gelben Augengläsern und Schlauch, Plattenrüstung über dem Mantel, Gewehr mit Trommelmagazin und Bajonett.
+    - **Adler und Eisernes Kreuz kommen raus** und werden durch das Aschenwacht-Wappen ersetzt. Das macht der Berater beim Malen.
+  - **Konkordat:** Rüstung wie die Figur **oben rechts** in `vorlage_konkordat_gemini.jpg` (Plattenrüstung, Löwe auf der Brust, roter Mantel).
+    - **Helm** wie die kniende Figur unten (flacher Stahlhelm mit Krempe).
+    - **Maske** wie `vorlage_konkordat_maske.png` (geschlossene Gesichtsplatte mit grünem Sehschlitz und Atemschläuchen).
+    - **Gewehr** wie in diesem Bild (Holz, Kastenmagazin, Bajonett).
+  - **Enrico:** **Auch die Standard-Infanterie trägt die volle Rüstung.** Die Unterscheidung zu Kampfanzügen läuft über Größe, Form und den Panzerwert (Paket P), nicht über „ohne Rüstung“.
+  - **Ablauf:**
+    1. Der Berater malt **zuerst je Seite einen Probebogen der Linie** (Grundbogen und Posenbogen, mit den alten Posen als Vorlage, damit Schnitt und Posen passen).
+    2. Enrico prüft im Spiel.
+    3. Erst dann die übrigen etwa 60 Bögen.
+    4. Einbau in U4 in mehreren `pa`.
+  - Getroffen-Posen und Gefallene kommen im neuen Stil mit.
+
+# >>> JETZT (Enrico 2026-11-26 16:20): Neue Gliederung der Truppgrößen (U5b) und Panzer-Paket P (vor U9) <<<
+Enrico: Sturmtrupps sehen mit 3 Mann zu dünn aus, kleine Trupps mit 2 noch dünner. Er möchte die Einteilung feiner und später ein Panzerungssystem wie in Helldivers.
+
+- [ ] **90. Truppgrößen in sieben Gruppen (Enrico 16:20, gehört in U5b).** Gilt für Regel (`modelle()` in engine.js) **und** Anzeige (`massNF`/`massZahl` in ui.js):
+
+  | Gruppe | Figuren | Einheiten |
+  |---|---|---|
+  | Linie | 8 | Schützenkohorte, Aschengrenadiere |
+  | Sturm/Nahkampf | 6 | Grabenräumer, Sturmbrecher, Eingreiftrupp, Schildwall, Schwere Grabenwacht |
+  | Waffentrupp | Waffe + 3 Mann | Mahlwerk, Sensenwerk, Panzerbüchse, Flammentrupp, Brandwerfer |
+  | Fachtrupp | 4 | Graben-/Drahtpioniere, Mineure, Gasschutz, Signal-, Fernsprechtrupp, Pirschjäger |
+  | Kleine Gruppe + Beiwerk | 2–3 + Gegenstand | Feldscher/Aschenpfleger (2 Träger **mit Trage und Verwundetem**), Versorgungstrupps (2 + Munitionskarren bzw. Werkzeugkiste), Scharfschütze (Schütze + Beobachter), Meldegänger + Hund, Bannerträger, Hauptmann/General (Offizier + Fahnenträger + Melder) |
+  | Gepanzerte Infanterie | 2–3 große Figuren | Stahlgänger, Panzerknechte, Hünen, Löwenoger |
+  | Einzelmodell | 1 | Geschütze, Mörser, Minenwerfer, Feldkanone, Fahrzeuge, Schreiter, Helden, Ballon |
+
+  - **Beiwerk:** Trage, Karren, Kiste und Feldtelefon zählen **nicht** als Modell. Sie bleiben stehen, wenn die Männer fallen.
+  - Gibt es noch kein Bild (Trage, Karren, 6er-Sturmbogen), kommt es in **U4**. Bis dahin werden vorhandene Posen **wiederholt bzw. als Klone** gezeigt (U2-Klone), damit die Zahl schon stimmt.
+  - Reiter bleiben 6. Gibt es Abweichungen in der Tabelle (z. B. eine Einheit fehlt oder passt besser woandershin), **nicht raten**, sondern die vollständige Zuordnung aller Einheiten als Tabelle in den Bericht unter „Fragen an Enrico“.
+  - Die Regel ändert sich: Ein Mann eines 6er-Trupps entspricht etwa 16,7 Stärke, Splitter gelten ab 2 Modellen. Deshalb danach `sim.js 100` auf Grauwall mit zwei Startwerten, fest und gemischt (nacheinander starten!), Werte in den Bericht.
+- [ ] **91. Paket P – Panzerung und Durchschlag als Treppe 0–5 (Enrico 16:20, eigenes Paket vor U9, nach S).** Vorbild Helldivers 2.
+  - **Panzerwert (PW):**
+    - 0 Fußtruppen;
+    - 1 Schild/Schutzpanzer (Schildwall, Schwere Grabenwacht);
+    - 2 Kampfanzug (Stahlgänger, Panzerknechte, Hünen, Oger, Helden);
+    - 3 Schreiter (Orden, Säger, Klaue, Turm);
+    - 4 Panzer (Landkoloss, Sturmpanzer, Bohrkoloss);
+    - 5 Stufe 3 (Kreuzschreiter, Eisenknecht).
+  - **Durchschlag (DS):**
+    - 1 Gewehr/MG;
+    - 2 Scharfschütze, Schrot nah, Kettenschwert;
+    - 3 Panzerbüchse, Haftladung, Panzersäge;
+    - 4 Feldkanone, Panzergranate, Löwenmaul-Kanone;
+    - 5 schwere Haubitze, Sprengladung.
+  - **Wirkung:**
+    - DS > PW: voller Schaden (roter Treffer).
+    - DS = PW: halber Schaden (weißer Treffer).
+    - DS < PW: abgeprallt, kein Stärkeschaden, Moral und Niederhalten wirken weiter. Kopfzeichen „abgeprallt“.
+  - **Zusätze:**
+    - Flanke und Heck von Fahrzeugen und Schreitern: PW −1.
+    - Sprenggranate: DS 2, aber Fläche und gegen Deckung.
+    - Flamme: DS 1, aber ohne Deckung und mit starker Moralwirkung.
+  - **Ersetzt** die Tabelle `FAK`/`panzerKl`/`waffeArt` und die Medaillen. Anzeige: Schild mit Zahl an der Einheit, Spitze mit Zahl an der Waffe, beides in Vorschau, Einheitenkarte und Info-Fenster.
+  - **Nahkampfwert sichtbar:** Schwert 1–3 auf der Einheitenkarte (aus `nahRolle`: Sturm 3, Linie 2, Geschütze/Sanitäter/Melder 1).
+  - KI-Ziele danach, Rückweg `PANZER_ALT`, Balance-Test auf allen Karten (vier Startwerte, nacheinander).
+  - Vorher als **G1-artige Probe**: Liste aller Einheiten mit PW/DS/Nahkampf und Vergleich alte Faktoren gegen neue, dann Enricos Blick.
+
+# >>> JETZT (Enrico 2026-11-26 16:00): Antworten zu U5a – weiter mit U5b <<<
+1. **Feuerkraft:** **Fassung 1, weiche Stufen** gilt (100–70 voll, 69–40 → 75 %, unter 40 → 50 %). Fassung 2 (`KRAFT=traeger`) darf als Schalter für Messungen bleiben, im Spiel ist sie nicht erreichbar.
+2. **Deckung** (offen ×1,4, Deckung ×1,5 stärker) und **Splitter** ×1,3: so lassen.
+3. **Stärke stufenlos**, ein Modell fällt beim Unterschreiten seiner Schwelle: einverstanden.
+4. **Sankt Ruß** (fest 47,5 %): erst in U9 abgleichen.
+5. **Hinweis zu den Abstürzen** (Node 26, Segmentation fault bei parallelen sim-Läufen): sim-Läufe künftig nacheinander statt parallel starten, wenn die Zeit reicht, oder höchstens zwei gleichzeitig. Im Bericht vermerken, falls wieder einer abstürzt.
+
+**Nächster `pa` = U5b, Darstellung** (Bauplan Abschnitt 3a):
+- Fallende Modelle sichtbar: Beim Treffer mit `fall` kippt bzw. sinkt die passende Figur um. Sie bleibt liegen und verblasst nach einigen Runden.
+- Blut-Schalter beachten.
+- Die stehenden Figuren rücken nicht sprunghaft um.
+- Im Graben liegen die Gefallenen auf der Sohle.
+- Fahrzeuge und Schreiter: kein Umfallen, das kommt in U8 bzw. als Wrack.
+- Bilder für den Bericht: ein Trupp vor/nach Beschuss im Offenen und im Graben, Schnee (Krähenfurt).
+- Partietest, Leistung kurz messen (viele liegende Figuren!). index.html am Ende.
+
+# >>> JETZT (Enrico 2026-11-26 15:05): Antworten zu SP-3 – Paket SP fertig, weiter mit U5 <<<
+**Antworten zu SP-3:**
+1. **Salve** 1,4 s mit den etwas weiter auseinanderliegenden mittleren Schüssen: passt.
+2. **Streifschuss** für MG- und andere Einheiten im Pult: nicht nötig, keine lange Ton-Spur.
+3. **Ordensschreiter:** Kein Einschlag vor dem Kettenschwert, ein Ton reicht.
+4. Die **9 neuen stummen Zeilen** unter „Gelände und Gebäude“ und die Trennung der Trommel (Erobern bzw. Rundenschild der Aschenwacht) wählt Enrico selbst im Pult. Kein Auftrag an CC.
+
+**Nächster `pa` = U5 Schaden über Modelle**, so wie im Bauplan `entwurf/BAUPLAN_UMBAU.md` (Abschnitte 3a, 8, 10a, Tabelle Zeile U5):
+- Modelle fallen und bleiben liegen.
+- Die Figurenzahl zeigt die Stärke (Linie 8, Reiter 6, Spezialtrupps 3; seit R1).
+- Splitter.
+- Deckung stärker.
+- Punkt 43.
+- Pannen kürzer.
+- Rückweg `MODELLSCHADEN_ALT`.
+- **Feuerkraft: beide Fassungen messen** (weiche Stufen 100–70 / 69–40 / unter 40 gegen „Waffenträger“). Enrico entscheidet am Ergebnis, mit Bildern und Zahlen im Bericht.
+- **Zwischenmessung nach Abschnitt 10a:** Ø Runden, Siegquote je Seite fest und gemischt, Schaden je Typ, Flucht/Panne, Art der Siege.
+- Darf in **U5a** (Regeln und Messung) und **U5b** (Darstellung: fallende Modelle, Bilder) geteilt werden. Jeder Teil einzeln committen und berichten, index.html am Ende des jeweiligen Teils.
+- CC-Stufe: Hoch empfohlen, weil viele Regeln betroffen sind.
+
+# >>> JETZT (Enrico 2026-11-26 14:25): Antworten zu SP-2 – weiter mit SP-3 <<<
+1. **Balance:** so lassen (Grauwall 54 %, Sankt Ruß 57,5 %). Der feine Abgleich kommt in Paket S bzw. U9.
+2. **Bunker** schützt gegen Sturmrollen wie der Graben: bleibt so.
+3. **Mörser 40 Punkte:** passt.
+4. **Salve:** Der Nachtrag `0bd6d5b` (ein Schuss je Figur) ist erledigt. **Neu (Enrico 14:32):** etwas ruhiger, Abstände **0,15–0,3 s**, die Mitte weiter 1–2 halb überlappend, Ziel **etwa 1,4 s** für einen vollen Trupp. Neue Dauer für einen vollen und einen halben Trupp in den Bericht.
+
+**Nächster `pa` = SP-3:**
+- 84.3: Liste der Ereignisse ohne passenden Ton, mit Vorschlag je Ereignis, damit Enrico im Pult wählen kann. Das Erobern eines Zielfelds muss einen Ton bekommen.
+- 84.10: Der Ordensschreiter bekommt Kettenschwert-Töne (Fleisch und Metall), dazu den neuesten Pult-Export einbauen.
+- Punkt 4 oben.
+
+Am Ende index.html einchecken. Danach geht es laut Plan mit **U5** weiter.
+
+# >>> JETZT (Enrico 2026-11-26 13:50): Antworten zu SP-1 – weiter mit SP-2 <<<
+1. **Salve:** **Jede aktive Figur schießt genau einmal**, nicht 1–2-mal. So war es gemeint. Die Abstände aus SP-1 bleiben. In den Bericht: neue Dauer für einen vollen und einen halben Trupp. Das ist nur Anzeige, der Schaden bleibt gleich. Gehört mit in SP-2.
+2. **Symbole bei der ganzen Karte:** passen so.
+3. **Ruckeln General gegen Panzer:** Enrico achtet beim Spielen darauf und meldet den Ort. Bis dahin nicht weiter suchen.
+
+**Nächster `pa` = SP-2:**
+- 84.4 Sturmrollen gegen den Graben;
+- 84.7 Rauchwerfer weg, der Mörser bekommt Rauchmunition und wird teurer;
+- Punkt 1 oben.
+
+`sim.js` Grauwall mit vier Startwerten gemittelt, dazu Sankt Ruß. index.html am Ende.
+
+# >>> JETZT (Enrico 2026-11-26 11:20): Antworten zu G7h-2 – weiter mit Paket SP (in drei Teilen) <<<
+**Antworten zu deinen Fragen aus G7h-2:**
+1. **Hausruinen über Eck:** passen, bleiben.
+2. **Lattenroste:** etwas **wärmer** (brauner) und **weniger Blauglanz** in den Pfützen, damit der Steg nicht wie ein Gleis wirkt. Gehört in SP-1.
+3. **Draht-Module:** **dichter, 5–6 je Feld**. Schlammflecken und Drahtrollen sollen sich überlappen, damit ein geschlossener Gürtel entsteht und keine Leiter. Die Drahtlinien von Pfahl zu Pfahl dichter. Gehört in SP-1.
+
+**Paket SP wird in drei `pa` geteilt.** Jeder Teil wird einzeln committet und berichtet, index.html jeweils am Ende des Teils.
+- **SP-1, Darstellung und Ablauf (nächster `pa`):**
+  - 84.1 Ruckeln beim Nahkampf des Generals gegen einen Panzer;
+  - 84.2 Feldsymbole wachsen mit dem Zoom, mit Grenzen;
+  - 84.5 Schleifen und Schuss nach Rundenende;
+  - 84.6 Salve dichter;
+  - 84.8 und 84.9 Kamera folgt immer und bleibt, bis der Schaden zu sehen ist;
+  - 84.11 Geschütze und MGs nicht zu früh grau;
+  - die **Sankt-Ruß-Bremse** (30 ms je Bild, Ursache finden; G7h-2 misst dort schon 6,2 ms bei ganzer Karte, also zuerst prüfen, ob sie überhaupt noch da ist);
+  - der **Geländehinweis** halb hinter der Fähigkeitenleiste;
+  - dazu die Punkte 2 und 3 oben.
+- **SP-2, Regeln:**
+  - 84.4 Sturmrollen gegen den Graben: kein Wegstoßen, wenig Schaden, niedergehalten.
+  - 84.7 Rauchwerfer streichen, der Mörser bekommt Rauchmunition und wird teurer.
+  - Mit `sim.js` auf Grauwall und Sankt Ruß, Grauwall mit vier Startwerten gemittelt.
+- **SP-3, Töne:**
+  - 84.3 Ereignisse ohne passenden Ton auflisten.
+  - 84.10 Ordensschreiter mit Kettenschwert, dazu den neuesten Pult-Export einbauen.
+
+# >>> JETZT (Enrico 2026-11-26 10:00): Antworten zu G7h-1 – weiter mit G7h-2 <<<
+- **Laufsteg (deine Frage 1):** Der Code-Steg wirkt wie eine **breite, helle Treppe** (`gelaende_g7h/grauwall_leer_nah.jpg`).
+  - Der Berater hat **gerade Lattenroste** gemalt: `ui-quelle/gelaende/neu_g7h/graben_laufsteg_bogen.png`, 4 Streifen, Zeilen in der LIESMICH.
+  - In G7h-2 einbauen: etwa **0,35 R breit**, entlang der Mitte gekachelt, nur drehen und nie scheren, dunkel wie der Grabenboden.
+  - Der Code-Steg bleibt als Rückweg.
+- **Sonst G7h-2 wie geplant:**
+  - Draht-Module für Gürtel in die Tiefe.
+  - Hausruinen (über Eck, mit Rückweg).
+  - Querwand-Blöcke, die halb neben dem Graben sitzen, korrigieren.
+  - Ende des Sandsackwalls.
+  - Scharfschützen im Graben.
+  - Bild mit Panzer im Graben: Die Probe muss ihn finden.
+  - Messung „85 % der Grabenfläche in Grabenfeldern“.
+  - Punkt 84.12 kurz prüfen.
+  - **Am Ende index.html einchecken.**
+- Grauwall jetzt 43 % für das Konkordat: nicht hier ausgleichen, das ist Paket S.
+
+# >>> JETZT (Enrico 2026-11-26 06:25): Bilder für G7h sind gemalt – `pa` = G7h <<<
+Die Bilder liegen in `ui-quelle/gelaende/neu_g7h/`. In `LIESMICH.md` dort stehen Kästen, Zeilen und Hinweise.
+- **G7-3b Seitenwand breit:** `graben_wand_seite_breit_bogen.png` (3 Streifen, ohne Pfosten).
+- **G7-6b Querwand als Erdblock:** `graben_querwand_block_bogen.png` (4 Blöcke, gerade von vorn, Oberseite sichtbar). Im Spiel auf die geplante Höhe stauchen.
+- **G7-1b schmale Lippe:** nicht gemalt. Die heutige Lippe bleibt, bis das Probebild zeigt, dass sie stört.
+- **Punkt 88.2 Drahtgürtel in die Tiefe:**
+  - Der Bildgenerator malt das immer mit Fluchtpunkt (zwei Versuche verworfen).
+  - Stattdessen gibt es **Querschnitt-Module** (`drahtguertel_tiefe_module_bogen.png`, 6 Stück). GBau stellt sie hintereinander zu einem Gürtel mit parallelen Pfahlreihen auf. Die genaue Bauweise steht in der LIESMICH.
+  - Prüfen, ob `_schraeg` dasselbe Problem hat.
+- **Punkt 88.1 Ruinen:**
+  - `ruinen_haus_bogen.png` enthält 4 ganze Hausruinen auf Fundament, je Dorf- bzw. Ruinenfeld ein Modell statt der Wandstreifen.
+  - Sie sind **über Eck** gesehen. Enrico (06:25): so einbauen und am Probebild entscheiden.
+  - Vorher mit `window.NOKIPP` zeigen, ob das Auffächern der alten Ruinen vom Kippen kam.
+  - Rückweg zu den alten Ruinen über einen Schalter.
+- **Dazu in G7h:**
+  - Punkt 87: Laufsteg durchgehend ohne Scheren, Querwand über die volle Breite, zwei versetzte Reihen statt Säule, Geschütz nicht auf der Lippe, Rest aus G7g.
+  - Punkt 89: Zielfeld 1 zugänglich, mit Test und sim.
+  - Punkt 84.12, falls es seit G7f kaputt ist.
+- Ist das Paket zu groß, darf CC es in **G7h-1** (Graben: 87 + Seitenwand + Querwand + 89) und **G7h-2** (Draht-Module + Ruinen) teilen. Je Teil einzeln committen und berichten. index.html nur am Ende.
+- **Bilder für den Bericht:** nah und ganze Karte, jeweils vorher/nachher, mit Einheiten im Graben und einem Panzer. Dazu ein Bild je neuer Ruine im Spiel und ein Drahtgürtel in die Tiefe.
+
+# >>> JETZT (Enrico 2026-11-26 00:10): Antworten zu G7g – weiter mit G7h, sobald die Bilder da sind <<<
+**Reihenfolge:** Der Berater malt die Bilder aus `entwurf/GELAENDE_G7H_BILDER.md` am 26.11. Danach `pa` = **G7h** (Punkt 85 Teil 3 und Punkt 87), dann Paket SP. Bis die Bilder da sind, **kein `pa`**. Die Grabenform aus G7g bleibt. Enrico (00:10): Der Aufbau der Gräben gefällt ihm im Großen. Die Einzelheiten stehen in Punkt 87.
+
+- [x] **87. Nachbesserungen nach G7g (Enrico 00:09, Bilder `entwurf/probe/spieltest_g7g/enrico_1–3.png`; Berater).** Gehört in G7h.
+  1. **Laufsteg zerhackt** (`enrico_1.png`, `enrico_3.png`): Die Roste liegen als einzelne, **schräg verzerrte** Parallelogramme im Zickzack, springen von Seite zu Seite und wirken wie schwebende Treppenstufen.
+     - Soll: **ein durchgehender, gerader Laufsteg** in der Grabenmitte, die Bretter rechtwinklig zur Laufrichtung.
+     - **Nicht scheren:** Die Stücke werden nur gedreht und gekachelt, nicht verzerrt.
+     - An einem Buchtversatz macht er einen kurzen, geraden Versatz mit, mit einem Brett quer oder einer kleinen Lücke.
+     - Lücken und kaputte Bretter höchstens selten.
+     - Gilt für Gräben in beide Richtungen.
+  2. **Querwand-Blöcke zu klein** (`enrico_1.png`, `enrico_3.png`): Sie liegen als kleine flache Stücke an einer Seite, statt quer über die ganze Grabenbreite zu gehen. Mit dem neuen Bild G7-6b die ganze Breite (0,95 R) nehmen, seitlich an die Wände anschließen.
+  3. **Soldaten-Säule:** Im Graben, der in die Tiefe läuft, stehen die Figuren in einer einzigen Reihe auf der Mittellinie (`gelaende_g7g/vergleich_nah.jpg` rechts). Jetzt ist Platz für **zwei versetzte Reihen**, etwa ±0,15 R neben der Mitte, im Wechsel. Bild vorher/nachher.
+  4. **Geschütz im Graben bzw. in der Stellung** (`enrico_2.png`): Es wirkt, als stünde es auf der Grabenkante, und die Lippe läuft hinter bzw. unter ihm durch. Prüfen, ob Geschütze in den Graben bzw. auf die Sohle sollen oder davor. Es soll klar stehen, auf der Sohle oder auf dem Boden, nicht halb auf der Lippe.
+  5. Aus G7g offen:
+     - Ende des Sandsackwalls unregelmäßig.
+     - Scharfschützen liegend im Graben (Bild).
+     - **Bild mit Panzer im Graben**, nah, Fahrzeug per `ARMEE_A` oder `__dbg` dazustellen.
+     - Prüfung „85 % der Grabenfläche in Grabenfeldern“ messen.
+  6. **Leistung seit G7f** (6,9 → 7,6 ms ganze Karte) erst in Paket SP eingrenzen, nicht in G7h.
+
+- [x] **89. Zielfeld 1 auf Grauwall ist blockiert (Enrico 00:14, gehört in G7h).** Auf der Konkordat-Seite ist das erste Zielfeld durch Panzersperren und den Spanischen Reiter (Barrikade) so zugestellt, dass man es nur mit einer Einheit besetzen kann, die räumt oder sprengt. Das zwingt einen, eine bestimmte Einheit zu kaufen.
+  - **Regel für alle Karten:** Jedes Zielfeld muss für normale Fußtruppen ohne Räumen von der eigenen Seite aus erreichbar sein, über mindestens zwei Zugänge. Panzersperren und Barrikaden dürfen nicht **auf** einem Zielfeld stehen und es nicht ganz einschließen. Sie sollen den Weg für **Fahrzeuge** lenken, nicht für Fußtruppen.
+  - **Grauwall:** Die Sperren bzw. den Spanischen Reiter an Zielfeld 1 verschieben, sodass Fußtruppen frei hinkommen und Fahrzeuge weiter einen Umweg fahren müssen. Gilt sinngemäß auch für die Aschenwacht-Seite, falls dort dasselbe ist.
+  - **Prüfung als Test:** für jede Karte und jedes Zielfeld eine Wegsuche mit einem Fußtrupp von der Aufstellungszone der Seite aus, ohne Räumen. Das gehört in `tools/test_regeln.js` oder `test_belegung.js`.
+  - `sim.js 100` Grauwall vorher und nachher, mit vier Startwerten gemittelt. Werte in den Bericht.
+
+- [x] **88. Weitere Bilder neu malen (Enrico 00:13, Berater malt mit den G7h-Bildern).**
+  1. **Ruinen:** Sie wirken wie eine auseinandergeklappte Pappschachtel. Die Wände fächern nach allen Seiten auf, das sieht nicht wie ein Gebäude aus. Der Berater malt neue Ruinen-Teile, bei denen die Wände stehen bzw. auf festen Grundmauern eingestürzt sind, in der Ansicht der übrigen Bausteine.
+     - **CC in G7h:** Liste der heutigen Ruinen-Teile (Namen, Maße, wie GBau sie aufstellt, ob sie gekippt werden – `kippen`/`KIPP_MAX`) in `entwurf/GELAENDE_G7H_BILDER.md` ergänzen. Prüfen, ob das Auffächern schon vom Kippen kommt (`window.NOKIPP` vergleichen), und das Ergebnis mit Bild in den Bericht.
+  2. **Drahtgürtel in Tiefenrichtung** (`entwurf/probe/spieltest_g7g/enrico_4_draht.png`, Stück `drahtguertel_tiefe` aus G5b): Die Perspektive stimmt nicht. Die Pfähle laufen auf einen Fluchtpunkt zu, der Gürtel „bohrt sich ins Bild“. In der gekippten Ansicht müssen beide Pfahlreihen parallel laufen und nach hinten nur wenig kleiner werden. Der Berater malt das Stück neu. CC prüft in G7h, ob die anderen Drahtstücke (`_schraeg`, `_quer`, `_ende`) dasselbe Problem haben. Bild in den Bericht.
+
+# >>> JETZT (Enrico 2026-11-25 23:35): Fable-Check 1 gelesen – erst Reparatur, dann Grabenform <<<
+Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_GRABEN.md` (Bilder `entwurf/probe/fable_graben/`).
+
+**Reihenfolge:** G7f (Reparatur) → G7g (Grabenform) → G7h (neue Bilder, erst nach dem Malen) → Paket SP (Punkt 84 + Sankt Ruß) → U5 → wie geplant.
+- **Punkt 83 (R2) entfällt in dieser Form.** Sein Kleinkram (Ende des Sandsackwalls, Abstand der Figuren zur Querwand) geht in G7f.
+- Der alte Graben wird **nicht** zurückgeschaltet, weil die Reparatur sofort kommt.
+- Je `pa` genau ein Paket. CC-Stufe: Mittel oder Hoch (Enrico entscheidet). Prüfer `test_kommentare` vor jedem build.py.
+
+- [ ] **85. Graben nach dem Fable-Check (Enrico 23:35).**
+
+  **Teil 1 = Paket G7f, Reparatur (nächster `pa`):** die Punkte 1–5 aus Fables Tabelle „Sofort reparieren“.
+  1. **Flach liegende Stücke** (Lippe, Seitenwand, Sandsackwall) vor allen Einheiten zeichnen, direkt nach `projectGround`, nicht nach Tiefe gemischt (`gelaende_bau.js` `liegend`, `ui.js` `drawTilt`).
+  2. **Fahrzeuge auf Grabenfeldern** nach den Teilen ihres Felds zeichnen. Stärkeleiste und Punkte aller Einheiten im Graben nach den Geländeteilen (`MARKQ`; `ui.js` um Zeile 2014).
+  3. **Figuren nicht mehr an der Hüfte abschneiden.** Die Füße stehen auf der Sohle (`cut` nur noch beim alten Graben).
+  4. **Grabenplätze zur Mitte:** höchstens 0,08 R neben der Mittellinie, nicht mehr in zwei senkrechten Reihen. Etwas Abstand zu Querwänden (aus Punkt 83).
+  5. **Umriss von Zone und Zugbereich** auf Grabenfeldern nach den Geländeteilen noch einmal als Linie zeichnen.
+  6. Dazu aus Fables Fehlerliste, soweit klein:
+     - Scharfschützen liegen auf den Lippen statt im Graben.
+     - Das Ende des Sandsackwalls ist gerade abgeschnitten (unregelmäßig enden lassen, ohne Geisterstücke).
+     - Kisten stehen halb in der Seitenwand.
+  - **Prüfen:** Bilder vorher/nachher an Fables Stellen (`t0_stelle1…3`, `t0_weit`), jeweils mit Einheiten im Graben und gewählter Einheit, in der Aufstellungsphase **und** in der Schlacht (Zugbereich). Dazu Enricos Stellen aus `entwurf/probe/spieltest_g7e/`. Partietest. index.html am Ende einchecken.
+
+  **Teil 2 = Paket G7g, Grabenform (eigener `pa`)**, nach Fables Vorschlag „R2: anders bauen“:
+  - **Breite:** Graben 0,9–1,0 R breit, freie Sohle mindestens 0,6 R.
+  - **Buchten:**
+    - Der Versatz ist halb so tief (etwa 0,45 R statt 0,9 R).
+    - Ein Erdblock kommt etwa alle zwei Felder, keine Zinnen mehr je Feldradius.
+    - Querwände gibt es nur an diesen Erdblöcken. In Gräben, die in die Tiefe laufen, sind sie niedrig (halbe Höhe), es gibt keine „gestapelten Kisten“ mehr.
+  - **Laufgräben:**
+    - Ost–West verlaufen sie als gerade Linie auf der Mittellinie der Reihe, also kein V-Zickzack mehr.
+    - Nord–Süd verlaufen sie wie heute durch die Feldmitten.
+    - Die Linie wird aus `MAP.graeben` berechnet. Die Grabenfelder bleiben gleich, deshalb ist kein sim-Lauf nötig.
+    - Prüfung: mindestens 85 % der gezeichneten Grabenfläche liegt in Grabenfeldern.
+  - **Einmündungen schließen:** Wo ein Laufgraben auf einen Feuergraben trifft, sollen Wände und Lippe durchgehen.
+  - **Plätze:** Die Figuren stehen entlang der Mittellinie, in der Bucht an der Feindwand.
+  - **Licht:** Die Sohle wird weniger abgedunkelt, der Laufrost soll erkennbar sein. Die Lippe wird schmaler und erdiger.
+  - **Bilder:** nah, ganze Karte, jeweils neben dem Zielbild. Dazu die Stellen aus Teil 1. Partietest, Leistung kurz messen.
+  - **Am Ende:** Liste, welche Bilder der Berater neu malen soll (Seitenwand für den breiten Graben, Querwand als Erdblock mit sichtbarer Oberseite), mit Maßen und Ansicht.
+
+  **Teil 3 = Paket G7h:** Die neuen Bilder vom Berater einbauen. Eigener `pa`, erst wenn sie in `ui-quelle/gelaende/` liegen.
+
+  **Teil 4 = Paket SP (nach G7h):** Punkt 84 ganz (alle Unterpunkte) und dazu die **Sankt-Ruß-Bremse**. Fable misst ohne Bildratendeckel gleichmäßig 30,5 ms je Bild, in beiden Ansichten. Die Ursache ist unklar, siehe `PRUEFUNG_FABLE_GRABEN.md` Teil B und `b_messung_ohne_deckel.json`. Das passt vermutlich zu Enricos „Spiel schleift manchmal“ (84.5).
+
+# >>> NOTIZ (Enrico 2026-11-25 23:12): Gesammelte Spieltest-Funde – noch kein Paket <<<
+Nur sammeln. Der Berater teilt die Punkte nach dem Fable-Check einem Paket zu. **Nicht von selbst bearbeiten.**
+
+- [ ] **84. Spieltest-Funde nach G7e (Enrico 23:12).**
+  1. **Ruckeln beim Nahkampf General gegen Panzer:** Wenn der General einen Panzer im Nahkampf angreift, ruckelt das Bild kurz. Ursache messen: Effekt, Ton, Neuaufbau oder Pose?
+  2. **Symbole auf dem Feld skalieren nicht mit dem Zoom:** Die Marken unten am Feld und über den Einheiten sind nah herangezoomt sehr groß und herausgezoomt sehr klein. Gemeint sind der Geländehinweis (▲/▼, was ein Feld bringt), die BP-Kosten und die Zustands- und Meldungssymbole. Sie sollen mit dem Zoom mitwachsen, mit einer Unter- und Obergrenze, damit sie lesbar bleiben.
+  4. **Sturmrollen gegen Einheiten im Graben (Enrico 23:13, Regel):** Der Graben schützt.
+     - Rollt ein Fahrzeug mit Sturmrollen über ein Grabenfeld, wird die Einheit darin **nicht weggestoßen** und nimmt **deutlich weniger Schaden**, zum Beispiel ×0,3.
+     - Sie ist aber **niedergehalten** (Schock).
+     - Gilt für Graben, eingegrabene Einheiten und Unterstand.
+     - Neue Konstante in P, KI anpassen (Sturmrollen gegen Grabenfelder lohnt weniger), `sim.js 100` Grauwall, Werte in den Bericht.
+  5. **Spiel schleift manchmal, und nach Rundenende wird noch geschossen (Enrico 23:14):**
+     - Die Runde war schon zu Ende, dann kam noch ein Schuss.
+     - Das Schleifen kann auch daran liegen, dass gleichzeitig der Fable-Check lief. Deshalb erst nachprüfen, wenn nichts anderes läuft.
+     - Prüfen: Laufen Ereignisse oder Töne des alten Zugs in den nächsten hinein (Rundenschild, KI-Zug startet zu früh, Sperrfeuer oder Feuerbereitschaft spielt verspätet)?
+  6. **Beschuss der Infanterie dauert zu lange (Enrico 23:14, genauer 23:16):**
+     - **Nicht weniger Schüsse:** Jede noch lebende, aktive Figur des Trupps feuert wie bisher genau einmal.
+     - **Nur die Abfolge schneller:** kürzere Abstände zwischen den Schüssen.
+     - In der Mitte der Salve feuern 1–2 Schüsse **halb überlappend**, ganz kurz nacheinander, fast gleichzeitig. So wirkt die Salve weniger gestreckt.
+     - Zu schnell darf es nicht werden.
+     - In den Bericht: vorher/nachher mit Sekunden je Salve, für einen vollen und einen halben Trupp.
+  7. **Rauchwerfer streichen, Mörser bekommt Rauchmunition (Enrico 23:14, Regel):**
+     - Die Einheit Rauchwerfer (Rauchmörser) fällt weg, auf beiden Seiten, falls beide sie haben.
+     - Der normale **Mörser** bekommt Rauch als zweite Munition. Je Runde wählt er Sprenggranate **oder** Nebelwand (wie bisher beim Rauchwerfer, mit Abklingzeit).
+     - Der Mörser wird dafür **teurer** (über costParts/ABIL, Rechnung im Info-Fenster).
+     - Anpassen: Kartenarmeen, Wunschlisten der KI, abilPlan (Rauch vor dem Vorrücken jetzt durch den Mörser), Ton-Pult-Zeilen, Rollen (rollen.js), Chronik-Text des Mörsers.
+     - `sim.js 100` auf Grauwall und Sankt Ruß, Werte in den Bericht.
+  8. **Kamera folgt nicht immer (Enrico 23:15):**
+     - Bei manchen Nahkämpfen folgt die Kamera, bei anderen nicht, vermutlich vor allem im KI-Zug.
+     - Beim Leuchtschuss (Ziel markieren) folgt sie dem Ereignis nicht.
+     - Prüfen, welche Ereignisse eine Kamerafahrt auslösen. Die Regel soll gleich sein für eigenen Zug und KI-Zug: Die Kamera fährt hin, wenn das Ereignis außerhalb des Bildes oder nahe am Rand liegt.
+     - Liste der Ereignisse mit bzw. ohne Kamerafahrt in den Bericht.
+  9. **Kamera fährt zu früh weg (Enrico 23:23):**
+     - Wenn der Feind Granaten wirft und bei manchen Nahkämpfen, ist die Kamera schon weg, bevor man den Schaden sieht.
+     - Die Kamera soll bleiben, bis Schadenszahl, Treffer und Kopfzeichen zu sehen sind (etwa 1–1,5 s nach dem letzten Treffer des Ereignisses), und erst dann zum nächsten Ereignis fahren.
+     - Gehört zusammen mit 84.8 (Kamera folgt nicht immer).
+  10. **Ordensschreiter: Hieb mit Kettenschwert-Tönen (Enrico 23:22):**
+     - Heute steht im Pult beim Schlag `heavy3`.
+     - Neu: gegen Fußtruppen die Säge-Fleisch-Töne (wie beim Sägeschreiter `held_kschwert_metall_3` bzw. Säge-Fleisch), gegen Gepanzerte `held_kschwert_metall_4` bzw. `kettenschwert_ruestung_1-3`.
+     - Eigene Plätze für Fleisch und Metall wie beim Sägeschreiter, TONWAHL für `orden` entsprechend, Pult-Zeilen (`slotsVon`) nachziehen.
+     - Dazu nach der Info unten den neuesten Export einbauen: `tonpult_export_2026-11-24_2248.json`. Er unterscheidet sich vom eingebauten Export vom 23.11. nur bei den Handgranaten der Aschengrenadiere. Ablauf: `tonwahl_bau`, `ton_teilen`, build.
+  11. **Abgeprotzte Geschütze und aufgebaute MGs werden zu früh grau (Enrico 00:11):** Nach dem Abprotzen bzw. Aufbauen erscheinen sie ausgegraut, obwohl sie noch schießen könnten. Sie sind nur eingesetzt worden. Prüfen in `bereitGrund` bzw. „fertig“: Grau darf eine Einheit nur werden, wenn wirklich nichts mehr geht, also wenn kein Schuss, keine Fähigkeit und kein Befehl mehr möglich ist. Wenn Abprotzen oder Aufbauen die Aktion kostet und danach kein Schuss mehr möglich ist, das im Hinweis sagen, statt die Einheit grau zu machen. Regel prüfen: kostet das Abprotzen heute die Aktion?
+  12. **Warnsymbole am Weg und gemalte Mauszeiger scheinen zu fehlen (Enrico 00:11):**
+     - Beim Ziehen über Stacheldraht (bzw. Gas, Feuer, MG-Sperrfeuer) kommt die Warnung in der Pfadvorschau anscheinend nicht mehr (`pathHazard`: roter Weg + Warndreieck). Dasselbe gilt für den Geländehinweis ▲/▼ (`drawFeldWirkung`).
+     - Die gemalten Mauszeiger (`ZEIGER`, Hand mit Finger usw.) scheinen nicht mehr zu erscheinen.
+     - **Prüfen, ob das seit G7f/G7g kaputt ist** (neue Zeichenreihenfolge, `MARKQ`). **Falls ja, gleich in G7h beheben**, sonst in SP. Bild als Beleg.
+  3. **Fehlende oder unpassende Töne,** zum Beispiel beim Erobern eines Zielfelds. Ähnliche Stellen auflisten: Wo gibt es ein Ereignis ohne Ton oder mit einem Ton, der nicht passt? Liste in den Bericht, damit Enrico im Ton-Pult wählen kann.
+
+# >>> JETZT (Enrico 2026-11-25 22:55): Antworten zu G7e – erst Fable-Check 1, dann G7f <<<
+**Reihenfolge:** Zuerst prüft Fable in einer eigenen Sitzung (`entwurf/postfach/PRUEFAUFTRAG_GRABEN.md`). **Bis dahin kein `pa`** (nie zwei Browser-Läufe gleichzeitig). Danach trägt der Berater das Ergebnis hier ein, dann `pa` = **G7f** (Punkt 83). CC-Stufe: Mittel oder Hoch (Enrico entscheidet). Prüfer `test_kommentare` vor jedem build.py.
+
+- [ ] **83. G7f – R2 gerade Gräben + Kleinkram (Enrico 22:55).**
+  1. **R2** (gerade Gräben, Punkt 73) als eigenes Paket, **so wie es der Fable-Check empfiehlt** (Ergebnis `PRUEFUNG_FABLE_GRABEN.md`; der Berater ergänzt hier die Einzelheiten, bevor Enrico `pa` tippt). Mit `sim.js 100` Grauwall, falls sich Grabenfelder ändern.
+  2. **Kleinkram nebenbei (Berater, Enrico: ja):**
+     - Das Ende des Sandsackwalls bricht in `entwurf/probe/gelaende_g7e/vergleich_fleck.jpg` (rechts) waagerecht gerade ab. Es soll unregelmäßig enden, etwa mit einem letzten, schräg liegenden oder halb verschütteten Sack, oder in Erde auslaufen. Es darf **keine** halbdurchsichtigen Geisterstücke geben.
+     - In `vergleich_figuren.jpg` (rechts unten) ragen zwei Soldaten noch über den Querwand-Block. Der eine oben steht knapp an der Kante. Die Grabenplätze sollen etwas mehr Abstand zur Querwand bekommen.
+  - Am Ende index.html einchecken. Bilder vorher/nachher, Partietest, Leistung kurz messen.
+
+# >>> JETZT (Enrico 2026-11-25 22:35): Antworten zu G7d (Zwischenstand) – G7e <<<
+**Reihenfolge:** nächster `pa` = **G7e** (Punkt 82). CC-Stufe: Mittel oder Hoch (Enrico entscheidet). Prüfer `test_kommentare` vor jedem build.py.
+
+- [ ] **82. G7e – Rest von G7d (Enrico 22:35).**
+  1. **Zuerst, sofort: index.html jetzt bauen und einchecken** (Stand G7d mit neuem Graben und Bodenkontakt der Hindernisse), damit Enrico es im Spiel sieht. Eigener Commit, dann weiter.
+  2. **Sandsackwall passt** so (Stand G7d), nichts ändern.
+  3. **Figuren gegen Querwände (Berater):** In `entwurf/probe/gelaende_g7d/grauwall_figuren_nah.jpg` stehen Soldaten teils auf bzw. vor den neuen, tiefer hängenden Querwand-Blöcken. Die Grabenplätze (U2) dürfen nicht in den Querwänden liegen: Plätze, die jetzt in einer Querwand liegen, in die Bucht bzw. auf die Sohle daneben schieben, oder die Querwand-Tiefe dort begrenzen. Bild vorher/nachher.
+  4. **Lippen-Ecken G7-5** ausprobieren (Punkt 81.5).
+  5. **R2** (gerade Gräben, Punkt 73), **Bremse 2** und **Bremse 4** (Punkt 81.7). Bremse 2 nur, wenn sie nach der Messung noch etwas bringt.
+  6. Den schwachen hellen Fleck am Ende einer liegenden Seitenwand (rechts an der Brustwehr) beheben.
+  - Am Ende index.html erneut einchecken. Bilder wie üblich, Partietest, Leistung kurz messen. `sim.js 100` Grauwall nur, falls R2 Grabenfelder ändert.
+
+# >>> JETZT (Enrico 2026-11-25 22:10): Antworten zu G7c – G7d: neuer Graben ins Spiel <<<
+**Reihenfolge:** nächster `pa` = **G7d** (Punkt 81). Wenn es zu groß wird: Zwischenstand committen, berichten, aufhören (Sparregel 5); die Reihenfolge unten ist die Priorität. CC-Stufe: Mittel oder Hoch (Enrico entscheidet). Prüfer `test_kommentare` vor jedem build.py.
+
+- [ ] **81. G7d – neuer Graben ins Spiel (Enrico 22:10).**
+  1. **Querwände bleiben** wie in G7c (hängend, Flechtwerk/beschädigt).
+  2. **Sandsackwall etwas kräftiger:** in der Mitte zwischen G7b (zu hell) und G7c (zu blass). Die Säcke sollen erkennbar sein, aber nicht das Hellste im Bild. Die blassen grauen Flecken rechts in `entwurf/probe/gelaende_g7c/vergleich_ecke.jpg` und `vergleich_ausschnitt.jpg` müssen weg.
+  3. **Aufräumen:** das schwarze Rechteck an der kurzen Buchtkante (hängende Innenwand an sehr kurzen Kanten weglassen oder kürzen).
+  4. **Ins Spiel:** G7 wird Standard für die Zinnengräben (Rückweg `window.G7_ALT`), dazu **Lauf- und Sappengräben** auf denselben Aufbau (keine Pappwände mehr).
+  5. **Lippen-Ecken G7-5** ausprobieren. Wenn gedrehte L-Stücke falsch wirken, bei den überlappenden Streifen bleiben und das im Bericht sagen.
+  6. **Figuren im Graben:** prüfen, wie tief sie neben der neuen Lippe einsinken; sie sollen im Graben stehen, nicht davor schweben.
+  7. **R2** (Gräben als freie gerade Linien, siehe Punkt 73), **Fable-Bremse 2** (Teile je Tiefenband zwischenspeichern) und **Bremse 4** (voller Neuaufbau seltener).
+  8. **Leistungsmessung** vorher/nachher mit Grafikkarte (`node tools/leistung_messen.mjs`).
+  - Am Ende index.html neu einchecken (damit auch der Bodenkontakt der Hindernisse im Spiel ist). Bilder: nah, nah2, ganz, Ecke neben Zielbild, dazu Figuren im Graben nah. Partietest. `sim.js 100` Grauwall nur, falls R2 Grabenfelder ändert.
+
+# >>> JETZT (Enrico 2026-11-25 21:55): Antworten zu G7b voll (Zwischenstand) – erst nachbessern <<<
+**Reihenfolge:** nächster `pa` = **G7c** (Punkt 80). Noch **nicht** ins Spiel nehmen. Weiter nur in der Probe `GB_PROBE { eingegraben: true }`. CC-Stufe: Mittel. Prüfer `test_kommentare` vor jedem build.py.
+
+- [ ] **80. Nachbesserungen G7b (Enrico 21:55, Bilder `entwurf/probe/gelaende_g7b/vergleich_ausschnitt.jpg` und `vergleich_ecke.jpg`).**
+  1. **Querwände:** Sie liegen jetzt wie flache Balken bzw. Brücken quer über dem Graben. Sie sollen als Erdblock wirken, der von der Kante in den Graben fällt:
+     - oben die Sandsackkrone auf Bodenhöhe;
+     - darunter die Vorderseite, die sichtbar schräg nach unten in den dunklen Graben läuft. Also hängend, mehr Höhe in die Tiefe, nicht flach gestaucht.
+     - Wenn das mit G7-6 nicht gelingt: lieber die alten aufrechten Querwände aus dem Test behalten und im Bericht sagen.
+  2. **Liegender Sandsackwall (Brustwehr G7-4):** Er wirkt wie eine helle, gleichmäßige Perlenkette. Abhilfe:
+     - deutlich dunkler und an Boden und Lippe angleichen (Helligkeit und Sättigung runter, etwas Schmutz bzw. Erde darüber);
+     - unregelmäßiger (Fassungen mischen, Stücke versetzt, Lücken, Abschnitte, an denen nur der Erdwall ist);
+     - schmaler.
+     - Er soll den Graben begleiten, nicht das hellste Ding im Bild sein.
+  3. **Lippe:** Sie ist im Bild kaum zu erkennen. Mehr Kontrast an der Abbruchkante: die dunkle Bruchkante zum Graben hin kräftiger, außen die hellen Erdklumpen sichtbar. Vergleich mit dem Zielbild, wo die bröckelige Kante klar zu sehen ist.
+  4. **Bodenkontakt der Hindernisse deutlicher:** Den Erdfleck dunkler und etwas größer machen, mit sichtbaren Klumpen, den Kontaktschatten unter Füßen und Balken kräftiger und die Füße sichtbar eingesunken. Im Vorher/nachher-Bild muss der Unterschied klar zu sehen sein.
+  - Bilder wie in G7b (Ausschnitt, Ecke, nah, ganz, jeweils G7b-Zwischenstand | neu | Zielbild) plus Hindernisse vorher/nachher. Kurzer Partietest. Kein sim-Lauf.
+
+# >>> JETZT (Enrico 2026-11-25 21:10): Antworten zum G7b-Test – G7b voll nach den neuen Bildern <<<
+**Reihenfolge:** **G7b voll** erst, wenn der Berater G7-3 bis G7-7 nach `ui-quelle/gelaende/neu_g7/` gelegt und hier „Bilder da“ vermerkt hat. Liegen sie beim nächsten `pa` noch nicht da: nichts bauen, im Bericht sagen. CC-Stufe: Mittel (bei G7b voll ggf. Hoch, Enrico entscheidet).
+
+- [ ] **78. Antworten zum G7b-Test (Enrico 21:10).**
+  1. **Erdlippe scharf:** In G7b voll die Lippe als liegendes Teil in Bildschirmauflösung zeichnen (wie die aufrechten Teile), nicht im Weltbild. Sie muss aus der Nähe scharf und bröckelig wirken wie im Zielbild.
+  2. **Lippe breiter:** 0,3 R statt 0,25 R.
+  3. **Innenwand passt**, die Bilder bleiben.
+  4. **G7b voll** dann wie im Plan (`entwurf/GELAENDE_G7_PLAN.md` Abschnitt 4): nahe Wand weg, ferne Wand hängend aus G7-2, Seitenwände aus G7-3, Lippe überall mit Ecken aus G7-5, Brustwehr-Wall G7-4 und Rückwall-Hang G7-7 flach, Querwände G7-6 hängend, Lauf- und Sappengräben auf denselben Aufbau. Dazu R2 (gerade Gräben) und die Fable-Bremsen 2 und 4. Zwischenstände committen; wenn es zu groß wird: aufhören und berichten (Sparregel 5).
+  - Bilder: nah, nah2, ganz, Ecke, jeweils neben Zielbild. Partietest. Leistung messen (mit Grafikkarte, Regel 7 ist gelockert) vorher/nachher.
+
+- [ ] **79. Bilder da + Nachtrag Enrico (21:20).**
+  1. **Bilder G7-3 bis G7-6 liegen in `ui-quelle/gelaende/neu_g7/`** (Seitenwand, Lippen-Ecken, Querwand, Brustwehr-Wall). Die genauen Zeilen- und Spaltenbereiche stehen in der LIESMICH. **G7-7 Rückwall-Hang gibt es nicht als Bild**, den weiter im Code zeichnen.
+  2. **Brustwehr-Stummel (Enrico):** In `grauwall_ecke_nah.jpg` ragt rechts ein Stück Sandsack-Brustwehr als eckiger Block über die Grabenkante und steht frei in der Luft. Brustwehr-Stücke dürfen nie über das Grabenende bzw. die Kante hinausstehen. Am Ende abgerundet auslaufen lassen (Wall läuft in Erde aus).
+  3. **Hindernisse wirken aufgeklebt (Enrico):** Spanische Reiter, Panzersperren und die angespitzten Pfahlreihen stehen ohne Bodenkontakt da. Sie brauchen Bodenkontakt: Kontaktschatten unter jedem Fuß bzw. Balken, einen leicht dunkleren Erdfleck mit aufgewühlter Erde darunter und die Füße etwas in den Boden eingesunken (unteren Rand weich in den Boden überblenden). Gilt für alle Karten. Vorher/nachher-Bild nah.
+
+# >>> JETZT (Enrico 2026-11-25 20:35): Antworten zu G6b <<<
+**Reihenfolge:** nächster `pa` = **G7b-Test** (Punkt 76, Abschnitt darunter). Punkt 77 gehört dazu, ist klein. Regel 7 ist ab diesem Paket gelockert (Sparregel 7). CC-Stufe: Mittel.
+
+- [ ] **77. Antworten zu G6b (Enrico 20:35).**
+  1. **Windmühle bleibt 1,5× mit Durchsicht**, wenn Figuren dahinter stehen. Nichts ändern.
+  2. Einsturzmeldung, Wrack im Schnee und Betonhöcker passen so.
+  3. **Kleinigkeit nebenbei (Berater):** `tools/test_kommentare.js` soll auch `src/gelaende_bau.js` prüfen. Das ist die Lücke, die du in G6b gefunden hast. Im Bericht kurz sagen, ob dabei etwas aufgefallen ist.
+
+# >>> JETZT (Berater 2026-11-25 20:05): G7-1 und G7-2 sind gemalt – Paket G7b-Test <<<
+**Reihenfolge:** zuerst G6b (Punkt 75), dann **G7b-Test** als eigener kleiner `pa`. Regel 7 ist ab diesem Paket gelockert (siehe Sparregel 7, Enrico 20:26): mit Grafikkarte arbeiten, Vorschau am Ende schließen. Danach aufhören; nicht von selbst G7b voll oder U5 beginnen. CC-Stufe: Mittel.
+
+- [ ] **76. G7b-Test: Erdlippe und Innenwand in die Probe (Punkt 74.2).**
+  1. **Bilder:** `ui-quelle/gelaende/neu_g7/graben_lippe_bogen.png` (G7-1, 3 Streifen) und `graben_wand_innen_bogen.png` (G7-2, 3 Streifen: Bretter, Flechtwerk, Sandsäcke). Die Zeilenbereiche der Streifen und die Hinweise stehen in `ui-quelle/gelaende/neu_g7/LIESMICH.md`. Stilvorlage war `entwurf/probe/zielbild_graben/arm_g7_ziel_ausschnitt.jpg`.
+  2. **Schnitt:** Beide mit `gelaende_cut.py` als nahtlose Kachelstreifen schneiden (wie die übrigen Wandstücke; die Enden passen noch nicht ganz zueinander), Magenta freistellen.
+  3. **Nur in die Probe** `GB_PROBE { eingegraben: true }` (GBau `EG`), im Spiel nichts ändern:
+     - Die **Erdlippe** ersetzt die im Code gezeichnete Lippe (`zeichneLippen`). Sie liegt flach auf allen Grabenkanten, die Unterkante zeigt zum Graben. Die drei Streifen wechseln je Abschnitt zufällig, Variante 3 (Wurzeln) seltener. Die Bodenfarbe oben bei Bedarf an den Kartenboden angleichen.
+     - Die **Innenwand** ersetzt `graben_kante_hinten` an der fernen, hängenden Wand (`strip` mit `ab`). Die Abdunklung nach unten und die Stauchung in die Tiefe bleiben im Code; die Bilder sind recht frontal gemalt. Varianten je Graben bzw. Abschnitt mischen, Flechtwerk und Bretter häufiger als Sandsäcke.
+     - Seitenwände, Brustwehr, Ecken, Querwände und Rückwall bleiben wie in G7a; dafür kommen später G7-3 bis G7-7.
+  4. **Bilder:** dieselben Ausschnitte wie in G7a (nah, nah2, ganz), jeweils G7a-Probe | G7b-Test | Zielbild nebeneinander, nach `entwurf/probe/gelaende_g7b_test/`. Dazu eine Nahaufnahme einer Ecke.
+  5. **Bericht:** Was gut passt und was nicht, besonders der Maßstab der Lippe (Plan: 0,25 R) und der Wand (0,35 SH). Sag auch, ob die Wand-Bilder für die Tiefe taugen oder ob der Berater sie mit stärkerer Verkürzung neu malen soll. Dazu Wünsche für G7-3 bis G7-7.
+  - Tests: test_kommentare, Partietest ohne GPU (kurz). Kein sim-Lauf (keine Regeländerung).
+
+# >>> JETZT (Enrico 2026-11-25 19:20): Antworten zu G6 – kleine Nachbesserung G6b <<<
+**Reihenfolge:** nächster `pa` = **G6b** (Punkt 75, klein). Regel 7 (Grafikkarte schonen) gilt weiter. Danach G7b-Test, sobald der Berater G7-1 und G7-2 geliefert hat. Liegen die Teile dann noch nicht da: aufhören und im Bericht sagen, nicht von selbst U5 beginnen. CC-Stufe: Mittel.
+
+- [ ] **75. Antworten zu G6 (Enrico 19:20).**
+  1. **Windmühle etwa 1,5× größer** (Landmarke). Sie darf keine Figuren auf Nachbarfeldern verdecken; wenn das bei 1,5× passiert, so groß wie möglich ohne Verdecken und im Bericht sagen. Heil und eingestürzt gleich skalieren.
+  2. **Fehler Einsturzmeldung:** Im Bild `vergleich_muehle_ganz.jpg` steht beim Einsturz der Mühle **„Die Kirche stürzt ein!“** und die Meldung sitzt bei Flagge 1 statt an der Mühle. Richtig: „Die Windmühle stürzt ein!“ an der Mühle. Dazu die Sim-Zeile „Kirche“ für die Mühle richtig benennen (Mühle getrennt zählen).
+  3. **Koloss-Wrack im Schnee (Krähenfurt):** Es ist braun ohne Schnee und fast ganz von Tannen verdeckt. Schnee auf das Wrack (Bildfassung für Schneekarten, z. B. helle Auflage oben wie bei den Tannen) und die Tannen direkt davor/auf dem Wrackfeld wegnehmen bzw. zur Seite rücken, damit man es sieht. Regeln und Lage bleiben (6,10).
+  4. **Betonhöcker** (die hellen Spitzkegel neben dem Graben, Grauwall) sind fast weiß und stechen heraus: dunkler und erdiger machen, wie Beton mit Schmutz, an den Boden angleichen.
+  5. **Sankt Ruß bekommt keine Panzersperren** (erst mal nicht, die Kirche reicht als besonderer Ort).
+  6. **Grauwall-Gleichgewicht** (Konkordat 35 %) jetzt **nicht** ausgleichen, das kommt gesammelt in Paket S nach G7. Im Bericht nur den Stand nennen.
+  - Bilder: Mühle ganz/nah vorher/nachher, Einsturz mit Meldung, Wrack im Schnee, Höcker nah. Tests wie üblich (test_regeln, test_kommentare, Partietest ohne GPU). Kein sim-Lauf nötig, außer Punkt 3 ändert Felder (dann `sim.js 100` Krähenfurt).
+
+# >>> JETZT (Enrico 2026-11-25 18:30): Antworten zu G7a – G6 vorziehen <<<
+**Reihenfolge:** nächster `pa` = **G6** (Punkt 68, Bilder liegen in `ui-quelle/gelaende/neu_poi/`). Regel 7 (Grafikkarte schonen) gilt weiter. Danach, sobald der Berater die Teile geliefert hat: **G7b-Test** (nur G7-1 + G7-2), dann die übrigen Teile, dann G7b voll. CC-Stufe: Mittel.
+
+- [ ] **74. Antworten zu G7a (Enrico 18:30).**
+  1. **Richtung der Probe stimmt** (nahe Wand weg, ferne Wand hängt schräg in die Tiefe, Erdlippe an der Kante).
+  2. **Erst 2 Teile testen:** Der Berater malt zuerst **G7-1 `graben_lippe`** und **G7-2 `graben_wand_innen`** (3 Varianten) nach `entwurf/GELAENDE_G7_PLAN.md` Abschnitt 3, im Stil des Zielbilds. Wenn sie da sind: kleiner `pa` **G7b-Test** – nur diese beiden in die Probe (`GB_PROBE eingegraben`) einbauen, Bilder nah/ganz neben Zielbild, Enrico schaut. Danach malt der Berater G7-3 bis G7-7 im gleichen Stil, dann **G7b voll** (mit R2 und Bremsen 2+4).
+  3. **G6 vorziehen**, bis die Teile da sind (Berater malt erst, wenn Enrico zu Hause ist und Chrome offen hat).
+
+# >>> JETZT (Enrico 2026-11-25 17:05): Raster entschieden – Sechsecke bleiben (Variante 1b) <<<
+Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_RASTER.md` (Bilder `entwurf/probe/raster/`). **Kein Raster-Wechsel.** Die Vorteile der Quadrate werden auf Sechsecken nachgebaut (Pakete R1–R4).
+**Reihenfolge ab jetzt:** R1 → G7a → G7b (mit R2, Bremsen 2+4) → G6 → U5 → R3 → U3 → U4 → U6 → U7 → U8 → R4a → (R4 nur falls Enrico es nach R4a will) → S → U9. CC-Stufe: Mittel.
+
+- [ ] **73. Raster-Pakete (Enrico 17:05).**
+  - **R1 (nächster `pa`, klein):** Truppstärke **8 / 6 / 3** umsetzen (Punkt 72: Linie 8, Reiter 6, Spezialtrupps 3; Grabenplätze 8 je Feld; Formation im offenen Feld **3-2-3 versetzt**, niemand ragt aus dem Feld, leicht versetzt statt überlappend; Klone/Größen-Streuung bleiben). Dazu **Feldlinien etwas dezenter** (Enrico: Linien sind okay, dürfen etwas dezenter sein). Bilder offenes Feld + Graben vorher/nachher, Partietest; `sim.js 100` Grauwall nur, falls Stärke/Schaden je Figur irgendwo in Regeln einfließt (sonst nicht nötig).
+  - **R2 (in G7b):** Gräben und Mauern als **freie gerade Linie** (Punkte zwischen Feldmitten erlaubt, Grabenfelder daraus abgeleitet, „Bild = Regel“ bleibt) – vor allem Quergräben ohne Zickzack von Feldmitte zu Feldmitte.
+  - **R3 (nach U5):** **Deckung an der Feldkante** als neue Regel (Sandsackwall, Mauer, Hecke auf der Kante zwischen zwei Feldern; schützt nur gegen Beschuss über diese Kante; kann umgangen werden). Enrico: „mehr wie ein Deckungssystem“, Angriffsrichtung und Verteidigungsstellung sollen zählen; Deckung auf den Karten dann schlauer setzen. Mit Schild-Zeichen und KI.
+  - **R4a (nach U8, klein):** **Zwischenlösung große Fahrzeuge** (Landkoloss, Sturmpanzer, Bohrkoloss; Schreiter bleiben): Fahrzeug bleibt in den Regeln auf 1 Feld, **das Feld direkt hinter ihm (Heckfeld) ist gesperrt** (niemand darf hinein, Wegsuche/Belegung/Aufstellung/Nachschub beachten, wandert mit beim Fahren und Drehen; Drehen nur, wenn das neue Heckfeld frei ist). **Rückenangriffe bleiben möglich:** Beschuss von hinten zählt wie heute als Rücken, Nahkampf von den beiden Feldern schräg hinten zählt als Flanke/Rücken. Danach entscheidet Enrico, ob **R4** (echte 2 Felder) noch nötig ist.
+
+# >>> JETZT (Enrico 2026-11-25 16:50): Truppstärke 8/6/3 und Raster-Frage – G7 wartet <<<
+**Reihenfolge:** `pa` = **L1** (Punkt 71) wie geplant. Parallel macht Enrico in einem eigenen Fenster mit Fable eine **Raster-Studie** (`entwurf/postfach/PRUEFAUFTRAG_RASTER.md`). **G7 (Punkt 70) und die 8/6/3-Umstellung (Punkt 72) erst nach Enricos Raster-Entscheidung.** In der Zeit nach L1 nichts Großes beginnen.
+
+- [x] **72. Truppstärke 8 / 6 / 3 oder 10 / 6 / 4 – wird mit dem Raster entschieden (Enrico 16:58: mit anderem Raster braucht es die Verringerung vielleicht nicht).** Bisheriger Stand: Linieninfanterie **8** Figuren (statt 10), Reiter **6**, Spezialtrupps **3** (statt 4). Grund: 10 Mann ragen im offenen Feld links/rechts aus dem Feld. Folgen: Grabenplätze 8 je Feld, Formation im offenen Feld z. B. 3-2-3 bzw. 4-4 versetzt (nicht überlappend, leicht versetzt), U5 dann 1 Figur ≈ 12–13 Stärke. Maßstab-Entscheidung E1 (10/6/4) damit geändert. Umsetzung erst, wenn klar ist, ob das Raster bleibt.
+  Enricos Wunsch dahinter (16:45): mehr Freiheit bei **Bewegung, Aufstellung und Gelände** (gerade Gräben leichter) und **große Fahrzeuge über mehrere Felder** → Raster-Studie.
+
+# >>> JETZT (Enrico 2026-11-25 16:20): Fable-Prüfung gelesen – Paket L1 nach G5b <<<
+**Reihenfolge:** `pa` = G5b (Punkt 69), danach `pa` = **L1** (Punkt 71), dann G7a. Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_LEISTUNG.md`. CC-Stufe: Mittel.
+
+- [ ] **71. Leistung nach der Fable-Prüfung (Enrico 16:20).** Enrico hat kein Digitalboard und keinen schwächeren PC zum Testen; deshalb vorsorglich die billigen Bremsen lösen.
+  **L1 (eigener kleiner `pa`):**
+  1. **Bremse 1 – Canvas-Filter je Bild** (`drawNewFigs`, um Zeilen 1766/1784/1811): abgedunkelte hintere Reihe, graue fertige Einheiten, dunkle Felder, Kettenfahrzeug-Farbfilter je Figurenbild **einmal vorrechnen und merken** (wie `bwBild`); den `blur`-Kettenschatten als fertiges Bild. Ziel: ganze Karte schlechteste 5 % deutlich unter 20 ms auf dem Mess-PC.
+  2. **Bremse 3 – Kontaktschatten** als fertiges Bild statt neuem Farbverlauf je Figur. Trupp-Zwischenbild in der Übersicht nur, wenn klein machbar.
+  3. **Ton-Kleinigkeit:** Töne, die mit `pause()` enden (Einzelschuss mit `dur`, Getümmel-Schleife), auch vom Tonweg trennen (`anBus` hört bisher nur auf `ended`).
+  4. Vergleichsbild vorher/nachher (darf sich nicht sichtbar ändern), Messung wie Fable (ganze Karte, Zoom 1, Grauwall + Sankt Ruß, Mittel + schlechteste 5 %), Partietest.
+  **In G7b mitnehmen:** Bremse 2 (Geländeteile je Tiefenband zwischenspeichern, solange Kamera/Gelände gleich) und Bremse 4 (vollen Gelände-Neuaufbau seltener; erst bestimmen, welcher Feldwechsel ihn auslöst) – der Grabenaufbau wird dort ohnehin neu gemacht.
+  **Später (vor dem Teilen des Spiels):** Bremse 5 – Figuren/Gelände wie die Töne getrennt nachladen.
+  **Offener Punkt Sankt Ruß** (erste ~10 s nach Schlachtstart kaum Bilder im unsichtbaren Chrome): Enrico prüft beim nächsten Spielen am eigenen PC. Falls CC es nebenbei im sichtbaren Browser nachstellen kann, im L1-Bericht kurz sagen.
+
+# >>> NOTIZ (Enrico 2026-11-25 16:15): Paket G7 – Gräben eingegraben statt Pappe (nach G5b) <<<
+**Noch nicht bauen**, erst nach G5b. Zuerst **G7a = Probe + Plan** (ein `pa`, nur Bilder und Plan, nichts fest einbauen), dann nach Enricos Blick G7b.
+
+- [ ] **70. Gräben sollen wie in die Erde gegraben aussehen (Enrico 16:03).** Enrico: Die Grabenwände wirken wie **hochstehende Pappen**, die auf dem Boden stehen, nicht wie ein Graben. Die Sandsäcke sehen **aufgeklebt** aus statt wie Körper. An den Ecken **schließt die Kante nicht ab** (z. B. oben links in `entwurf/probe/u2/boden_nah.jpg`). Alles wirkt geflickschustert. Die Teile selbst sind neu (G2b), es liegt an der **Bauweise** in GBau.
+  **Zielbild:** `entwurf/probe/zielbild_graben/zielbild_graben_eingegraben.jpg` (Vergleich heute/Ziel: `vergleich_heute_ziel.jpg`). **Enrico (16:08): „Das rechte sieht super aus. Das sieht schön aus.“** – also so nah wie möglich an dieses Bild heran (Aufbau, Erdlippe, Tiefe, Sandsack-Wall). Nicht pixelgenau abmalen; Schrift dort ist Unsinn.
+  Was das Zielbild anders macht:
+  1. **Boden läuft bis an die Grabenkante** und bricht dort mit einer **unregelmäßigen, bröckeligen Erdlippe** ab (keine gerade Linie, keine Karte).
+  2. **Nur die dem Betrachter zugewandte Innenwand ist sichtbar**, schräg nach unten ins Dunkle (Bretter, Flechtwerk, Sandsäcke). Die nahe Wand verschwindet fast hinter der Lippe. Heute stehen beide Wände als aufrechte Streifen.
+  3. **Tiefe durch Schatten:** Sohle deutlich dunkler, Verlauf nach unten dunkler; Wände werfen Schatten auf die Sohle.
+  4. **Sandsack-Brustwehr liegt als Wall AUF dem Boden** (Feindseite), mit Volumen: oben hell, Seiten dunkel, Schatten auf den Boden, lose Erde drumherum.
+  5. **Ecken und Knicke geschlossen**, durchgehende Erdkante ohne Nähte, keine senkrecht abgeschnittenen Texturen; gleiche Farbe/Helligkeit über alle Teile.
+  **Nebenpunkt aus G5b (Berater 16:40):** Die gemalten Drahtgürtel haben aus der Ferne (`gelaende_g5b/vergleich_grauwall_ganz.jpg`) einen leicht violetten Schimmer – vermutlich Magenta-Reste an den feinen Drähten. In G7 mit prüfen und ggf. entfärben (wie `ENTROSA`).
+  **G7a liefert:** (a) Analyse, welche Teile heute aufrecht stehen und warum es pappig wirkt; (b) eine Probe an einem Grauwall-Ausschnitt (nah + ganz) mit dem neuen Aufbau (z. B. nahe Wand weg bzw. nur Lippe, ferne Wand geneigt statt aufrecht, Erdlippe über alle Oberkanten, Schatten/Tiefe, Brustwehr als Hügel); (c) Liste, welche Teile der Berater neu malen soll (z. B. Erdlippen-Streifen, geneigte Wandkacheln, Brustwehr-Hügel, Eckstücke), Format wie G1; (d) Aufwand und Folgen für U2-Grabenplätze und Leistung. Rückweg-Schalter wie üblich.
+
+# >>> JETZT (Enrico 2026-11-25 15:55): Antworten zu G5 – erst Fable-Check, dann G5b <<<
+**Reihenfolge:** Enrico lässt **jetzt** den Leistungs-Check mit Fable laufen (eigenes Fenster, `PRUEFAUFTRAG_FABLE.md`). In der Zeit **nichts bauen**. Danach nächster `pa` = **G5b** (Punkt 69), dann G6. CC-Stufe: Mittel.
+
+- [x] **69. Drahtgürtel aus gemalten Stücken (Enrico 15:55).**
+  1. **Bild:** Der im Code gezeichnete Draht aus G5 wirkt nah wie senkrechte Ketten aus orangen Ringen und ist aus der Ferne kaum als Stacheldraht zu erkennen. **Ersetzen durch gemalte Stücke** aus `ui-quelle/gelaende/neu_draht/` (welches Stück wofür: `LIESMICH.md` dort). Gürtel quer zur Blickrichtung aus den waagerechten Stücken (`drahtguertel_b.png` oben/Mitte, aneinandergereiht), Gürtel in die Tiefe aus dem Tiefenstück (`drahtguertel_a.png` oben rechts), schräge Abschnitte aus den schrägen Stücken (gespiegelt für die andere Richtung), Enden an Gassen mit dem Endstück. Gelegentlich das beschädigte Stück zur Abwechslung. Die Teile wie andere Gelände-Teile freistellen (gelaende_cut.py), Plastik-Karte (`figur_plastik.py` `gel_…`).
+  2. **Lage aus G5 bleibt** (Zickzack-Gürtel, Gassen vor den MGs). **Spanischer Reiter auf der Landstraße bleibt** (Enrico).
+  3. **Bild = Regel** weiter prüfen (`test_draht.js`, `test_draht_bild.mjs`). Der hingeworfene Draht fern von Gräben darf bleiben.
+  4. Bilder nah und ganz vorher/nachher (`entwurf/probe/gelaende_g5b/`), Partietest. Keine Regeländerung, also kein sim-Lauf nötig.
+
+# >>> NOTIZ (Enrico 2026-11-25 14:28–15:10): Paket G6 – Panzersperren und besondere Orte (nach G5) <<<
+**Noch nicht bauen**, erst nach G5 als eigener `pa`. Bilder liegen fertig in `ui-quelle/gelaende/neu_poi/` (Übersicht `LIESMICH.md` dort), die Sperren selbst in `ui-quelle/gelaende/panzersperren.png` / `panzersperren_b.png` (vorhanden).
+
+- [x] **68. Panzersperren und besondere Orte (Enrico).** Enrico fehlen auf den Grabenkarten noch besondere Orte; dazu Panzersperren.
+  1. **Panzersperre** (neue Feldart, z. B. `sperre`): **Niemand betritt das Feld** (Fußtruppen, Reiter, Fahrzeuge, Schreiter, auch nicht überrollen). **Infanterie auf einem Nachbarfeld bekommt Deckung gegen Beschuss, der über die Sperre kommt** (Schusslinie läuft durch das Sperrfeld; Stärke wie Hecke/Mauer, Vorschlag ×1,2, mit Deckungsschild). Sichtlinie bleibt frei. **Nur Pioniere mit Sprengladung** (Graben-Pioniere, abil `charge`) können sie vom Nachbarfeld sprengen; danach wird das Feld Trümmer (Bild `panzersperren_gesprengt.png`). KI: Sperren umgehen, Pioniere sprengen, wenn eine Sperre den Weg zu einem Zielfeld versperrt. Bilder: Stahligel, Betonhöcker, Drahtigel, Pfahlsperre aus `panzersperren.png` (gesprengt je die gleiche Stelle aus dem neuen Bogen). Infofenster-Text + Chronik im Format von `entwurf/welt/gelaende_chroniken.md` (Berater liefert den Text auf Zuruf, sonst sachlich selbst schreiben).
+  2. **Besondere Orte mit kleiner Wirkung:**
+     - **Zerschossene Windmühle** (`windmuehle_bogen.png`, Schlamm/Schnee, beschädigt/zerstört): Beobachtungsposten wie der Kirchturm (mehr Sicht, ggf. +1 Reichweite für Fußtruppen darin), nur Fußtruppen; kann wie die Kirche einstürzen (dann Bild „zerstört“, Wirkung weg).
+     - **Ausgebranntes Koloss-Wrack** (`koloss_wrack_bogen.png`, Schlamm/Schnee): Deckung für Fußtruppen (Vorschlag wie Ruine), Fahrzeuge kommen nicht durch, sperrt die Sicht.
+     - Je Grabenkarte **einen** besonderen Ort an einer sinnvollen Stelle (Grauwall: Windmühle oder Wrack im Niemandsland, Krähenfurt: der andere), Punktsymmetrie/Gleichgewicht beachten.
+  3. **Panzersperren auf die Karten** dort, wo sie Sinn ergeben: vor den Gräben an Straßen und Wegen (Fahrzeuge kanalisieren), mit Lücken; nicht so viele, dass Fahrzeuge nutzlos werden.
+  4. Messen: `node tools/sim.js 100` je geänderter Karte vorher/nachher, Fahrzeugverluste und -wirkung im Bericht. Ändert sich eine Quote um mehr als 8 Punkte: melden, nicht selbst ausgleichen (Abgleich U9). `test_regeln.js` mit neuen P-Schlüsseln (`--neu`).
+  5. Bilder ganz + nah je Karte, Partietest.
+
+# >>> JETZT (Enrico 2026-11-25 15:10): Antworten zu U2 – Paket U2b <<<
+**Reihenfolge:** nächster `pa` = **U2b** (Punkt 67, klein). Bericht, dann aufhören. Danach startet Enrico den Leistungs-Check mit Fable (`PRUEFAUFTRAG_FABLE.md`, eigene Sitzung) – in der Zeit nichts Schweres laufen lassen. Erst danach G5. CC-Stufe: Mittel.
+
+- [x] **67. Grabenplätze im Zickzack, Klone ohne Spiegeln (Enrico 15:10).**
+  1. **Gräben, die in die Tiefe laufen** (Blick von vorn, Bild `u2/vergleich_grauwall_graben.jpg` rechts oben): Die Figuren stehen dort wie eine Warteschlange hintereinander. **Alle 10 Plätze bleiben** (ab U5 zeigt die Figurenzahl die Stärke), aber stärker im Zickzack: abwechselnd deutlich an die linke und rechte Grabenwand, über den ganzen Abschnitt des Feldes verteilt (auch Knicke und Buchtenden nutzen), etwas mehr Abstand in der Tiefe, damit sich die Figuren weniger überdecken. Waagerechte Gräben so lassen.
+  2. **Klone ohne Spiegeln:** Das Umdrehen jeder fünften Figur in Ruhe wieder herausnehmen. Größe/Neigung/Versatz bleiben.
+  3. Bilder vorher/nachher (`entwurf/probe/u2b/`), Partietest.
+
+# >>> JETZT (Enrico 2026-11-25 14:35): Stacheldraht – Paket G5 nach U2 <<<
+**Reihenfolge:** U2 zuerst (Punkt 64). **Danach** eigener `pa` = G5 (Punkt 65). CC-Stufe: Mittel.
+
+- [x] **65. Stacheldraht planvoll statt hingeworfen (Enrico 14:27).** Enrico stört, dass der Draht überall aussieht wie einfach hingeworfen. Eine Verteidigungslinie wird mit Plan verdrahtet. Bild **und** Lage ändern.
+  1. **Bild (GBau):** Pfähle in geraden Reihen **parallel zum nächsten eigenen Graben**, Draht zwischen den Pfählen gespannt (2–3 Pfahlreihen je Feld, versetzt), dazu wenig loser Draht. Nur dort, wo kein Graben in der Nähe ist (Niemandsland, Trümmer), darf er unordentlicher liegen. „Bild = Regel“ muss weiter stimmen (`tools/test_draht.js`, `tools/test_draht_bild.mjs`).
+  2. **Lage auf der Karte (Grauwall, Krähenfurt, Sankt Ruß, soweit dort Draht liegt):** Drahtfelder als **Gürtel vor den Feuergräben**, etwa 1–2 Felder davor, durchgehend mit wenigen **Gassen**. Die Gassen liegen **vor MG-Stellungen bzw. Feuerbuchten** (Angreifer werden ins Schussfeld gelenkt), dazu eine Lücke an Wegen/Straßen, wo ein Spanischer Reiter (Barrikade) stehen darf. Gürtel gern **schräg oder im Zickzack** statt schnurgerade. Punktsymmetrie und Gleichgewicht der Seiten beachten.
+  3. **Messen:** `node tools/sim.js 100` je geänderter Karte, vorher/nachher, gleicher Startwert. Siegquote, Dauer, Verluste je Typ. Ändert sich eine Quote um mehr als 8 Punkte: im Bericht melden, **nicht** selbst ausgleichen (Abgleich in U9).
+  4. Bilder je Karte ganz + nah, vorher/nachher (`entwurf/probe/gelaende_g5/`). Kurzer Partietest.
+  Hintergrund (nur zur Orientierung): Im Ersten Weltkrieg lagen die Drahthindernisse meist 20–50 m vor dem vordersten Graben, oft zwei bis drei Gürtel hintereinander, mehrere Pfahlreihen tief, mit schrägen Abschnitten, die Angreifer in die MG-Schussbahnen lenkten, und mit Lücken für eigene Spähtrupps.
+
+# >>> JETZT (Enrico 2026-11-25 14:10): Antworten zu G4 – erst G4b, dann U2 <<<
+**Reihenfolge:** nächster `pa` = **G4b** (Punkt 63, klein). Bericht, dann aufhören. Der `pa` danach = **U2** (Punkt 64). CC-Stufe: Mittel.
+
+- [x] **63. Grabentakt unregelmäßiger (Enrico 14:10, Frage 1 aus G4: Ja).**
+  1. Längen von Bucht und Durchgang stärker schwanken lassen (zufällig, aber fest je Karte), damit der Graben aus der Ferne nicht mehr wie ein gleichmäßiges Muster wirkt. Gelegentlich auch zwei Buchten oder zwei Durchgänge hintereinander unterschiedlich lang.
+  2. Regeln und Grabenfelder bleiben gleich, `buchtenJeFeld` liefert weiter die Feuerbuchten je Grabenfeld (jedes Grabenfeld braucht mindestens eine Bucht für U2).
+  3. **Grabenboden (Enrico 14:15, alles mit in G4b):** Im Nahbild `gelaende_g4/grauwall_nachher_nah.jpg` passen Roste und Pfützen nicht:
+     - **Lattenroste** sind nur einzelne kurze Flicken mit dunklen Lücken. In den **Durchgängen** soll ein **durchgehender Laufsteg** liegen (Latten quer zur Laufrichtung, wie jetzt), in den **Buchten** einzelne Stücke reichen.
+     - **Nichts darf in die Wände ragen** oder von ihnen abgeschnitten werden (ein Brett liegt schräg halb in der Wand). Roste etwas schmaler als die Sohle, mit kleinem Abstand zu den Wänden.
+     - Roste **kräftiger**, sie wirken blass und verwaschen. Mehr Kontrast, eigener kleiner Schatten, wie die übrigen Gelände-Teile (`teilFilter`).
+     - **Pfützen** sehen aus wie weiße Rauchflecken. Sie sollen **dunkel und glänzend wie Wasser** wirken (dunkles Braungrau, schmaler heller Glanzrand oder Spiegelung, kein weißer Fleck). Weniger davon, nicht auf den Rosten.
+  4. Bilder ganz und nah, vorher/nachher (`entwurf/probe/gelaende_g4b/`), dazu ein Nahbild nur vom Grabenboden. Kurzer Partietest.
+
+- [x] **64. Umbau U2 freigegeben (Enrico 14:10, Frage 2 aus G4: Ja).**
+  U2 nach `entwurf/BAUPLAN_UMBAU.md` (Klone und die 10 Grabenplätze). Die Grabenplätze sitzen an den neuen Buchten aus G4/G4b. Eigener `pa` nach G4b.
+  **Zuerst, am Anfang von U2 (Enrico 14:30, Antworten zu G4b):** Restpunkte am Grabenboden (Bild `gelaende_g4b/vergleich_boden.jpg`, rechte Hälfte):
+  1. **Pfützen etwas mehr Glanz:** dunkel bleiben, aber deutlicherer Glanzrand und Spiegelung, damit man Wasser erkennt. Nicht glitzernd.
+  2. **Laufsteg schärfer:** Er wirkt gestreckt und verschmiert. Kachel nicht strecken, sondern in Originalgröße wiederholen (STYLE.md: Flächen gekachelt, nie gestreckt).
+  3. **Kaputtes Rost-Teil mit Loch** liegt am linken Rand des Laufstegs halb darüber. Prüfen, was das ist, und so legen, dass es nichts überdeckt, oder in Durchgängen weglassen.
+  4. **Ein Durchgang ohne Steg** (oben im Bild): prüfen, ob dort ein Laufsteg fehlt (zählt das Stück als Knick statt als Durchgang?).
+  Danach ein Nahbild vom Grabenboden, dann erst die Klone und Grabenplätze.
+
+# >>> NOTIZ (Berater 2026-11-25 14:55): Drei Figurenbögen überarbeitet – Einbau in U4 <<<
+**Kein eigener `pa`.** Nur merken für U4 (neue Bögen). Alle in `ui-quelle/figuren/`, die alten Dateien sind unverändert.
+
+- [ ] **66. Überarbeitete Figurenbögen in U4 einbauen.**
+  - `konkordat_reiter_neu2.png` statt `konkordat_reiter_neu.png`: rechtes Pferd hat jetzt auch die vordere Filterdose an der Gasmaske (sonst gleich).
+  - `aschenwacht_gasschutz_neu.png` (Grundbogen, 2730 px, scharf, ohne Glocken und Pistole) und `aschenwacht_gasschutz_posen_neu.png` (Posen ohne Gürtelpistole) statt der alten Gasschutz-Bögen. Die Grundbogen-Figuren sind größer als im alten 1024-px-Bogen: Höhe über `SH_SINGLE`/Maß wie gewohnt angleichen.
+  - `konkordat_ordensschreiter_neu.png` statt `konkordat_ordensschreiter.png` (gleiches Aussehen, viel schärfer, 2398 px). Die Posenbögen bleiben vorerst.
+  - Danach `figure_cut.py --game` und `figur_plastik.py`. Vergleichsbild alt/neu je Bogen.
+
+# >>> NOTIZ (Berater 2026-11-25 13:20): Effektbögen E1–E6 sind gemalt – Einbau in U3 <<<
+**Kein eigener `pa`.** Nur merken: Die Bögen liegen in `ui-quelle/effekte/neu/` (Übersicht und Hinweise in `LIESMICH.md` dort). Eingebaut werden sie **in U3 (figurennahe Effekte)**, nicht vorher.
+
+- [ ] **62. Effektbögen aus Paket D einbauen (in U3).**
+  1. Mit `tools/fx_cut.py` freistellen (Einträge in `CFG` mit Bedeutung je Variante), danach `src/fxneu.js` wie gewohnt. Rosa Säume entfernen (die fal-Bilder kamen als WebP 92 % durchs Netz).
+  2. Zuordnung:
+     - **E1** Gasgranate platzt in der Luft (Punkt 19): Hauptbild `fx_gasschliere_dick.png` (3 dicke Fahnen), dazu wahlweise feine Fäden aus `fx_gasschliere.png`.
+     - **E2** großer Befehl: `fx_befehlsruf.png`, **nur die zwei Staubringe oben links und oben Mitte** (Rest hat das Modell aus der Vorlage abgemalt).
+     - **E3** Gasschutz-Trupp entgiftet: `fx_filterdampf.png` (zum Dunst aus F82 `gasschutzFx`).
+     - **E4** Kreuzschreiter Löwenmaul-Kanone: `fx_loewenmaul.png`, linker Bildrand = Mündung (`MUZ`); zusammen mit Punkt 43 (Löwenmaul stärker).
+     - **E5** Eisenknecht Faustsalve: `fx_faustsalve.png` (zwei parallele Blitze, an `MUZ` und `MUZ2`).
+     - **E6** Kürassier Hinrichtung: `fx_kettenklinge.png` (kalter Schnittbogen; Blutstropfen über den Blut-Schalter abschaltbar, `BLUT_FILTER`).
+  3. Bilder vorher/nachher je Effekt (ein Bild je Effekt reicht), Testseite `entwurf/probe/effekte.html` ergänzen.
+
+# >>> JETZT (Enrico 2026-11-25 13:15): Antworten zu G2b/G3b – Paket G4 <<<
+**Reihenfolge:** nächster `pa` = G4 (Punkt 61), danach Bilder nah + ganz und Partietest. **U2 erst nach G4.** CC-Stufe: Mittel.
+
+- [x] **61. Antworten zu den Fragen aus G2b/G3b (Enrico 13:15).**
+  1. **Echter Zinnenverlauf bauen** (wie im Bericht beschrieben: Grabenkanten folgen dem Rechteckumriss, Buchten springen nach vorn, Brustwehr nur vor den Buchten und knickt mit, Rückwall springt hinter den Durchgängen zurück, Graben schmaler ~0,6 R). Nur Darstellung, Regeln/Grabenfelder gleich, `buchtenJeFeld` weiter liefern. Bilder vorher/nachher **ganz** (das Band-Problem sieht man aus der Ferne) und nah.
+  2. **Querwände/Eckstücke an ~20 % der Knicke weglassen** (zufällig, aber fest je Karte), damit es weniger gleichförmig wirkt.
+  3. **Eigenes Feld „Acker“ auf Krähenfurt** statt „Garten“: gleiche Regel (×1,2 gegen Beschuss, Fahrzeuge/Geschütze 2 BP), Deckungsname „Hecke/Feldrain ×1,2“ (Punkt 60) bleibt. Text im Infofenster und Chronik (Format wie `entwurf/welt/gelaende_chroniken.md`):
+     - Kurztext: „Gepflügter Acker unter Schnee, an den Rändern Hecken und Feldraine.“
+     - Chronik – Quelle: *Bauernkalender von Krähenfurt, Winter 116 n. G.* – Text: *Die Furchen sind gefroren und die Hecken kahl, doch wer sich an den Feldrain duckt, wird von den Kugeln eher übersehen als vom Frost.*
+     - In `gelaende_chroniken.md` die Zeile `acker` ergänzen.
 
 # >>> JETZT (Berater 2026-11-25 10:15): Gelände-Teile sind gemalt – G2b/G3b <<<
 **Reihenfolge:** erst G2a + G3a fertig machen (Punkt 58), **dann eigener `pa` für G2b + G3b**: die neuen Bilder einbauen. CC-Stufe: Mittel.
 
-- [ ] **59. Neue Gelände-Teile einbauen.** Alle 14 Teile aus `GELAENDE_G_PLAN.md` Abschnitt 3 (ohne F-1/F-2) liegen in **`ui-quelle/gelaende/neu_g/`**, Zuordnung und Hinweise in `neu_g/LIESMICH.md`. Übersicht: `entwurf/probe/gelaende_g1/teile_uebersicht.jpg` (falls nicht da: die Bilder selbst).
+- [x] **59. Neue Gelände-Teile einbauen.** Alle 14 Teile aus `GELAENDE_G_PLAN.md` Abschnitt 3 (ohne F-1/F-2) liegen in **`ui-quelle/gelaende/neu_g/`**, Zuordnung und Hinweise in `neu_g/LIESMICH.md`. Übersicht: `entwurf/probe/gelaende_g1/teile_uebersicht.jpg` (falls nicht da: die Bilder selbst).
   - Mit `tools/gelaende_cut.py` freistellen wie die bisherigen Teile (Höhen in `TEILE` nach Plan-Tabelle; Streifen G-2/G-3/F-3 nahtlos machen), Plastizität mit `figur_plastik.py` (`gel_<name>`), einbetten.
   - **Beachten:** In `hecke_schnee.png` hat das Bildmodell oben Brücke/Brunnen/Holzstapel aus der Vorlage kopiert → **nur die zwei Heckenstreifen unten** nehmen. In `heuhaufen_schnee.png` den „Pilz auf der Stange“ (oben Mitte) weglassen. `graben_ecken.png` sind eher Außenecken/Stirnseiten – prüfen, wo sie passen; wenn echte Innenecken fehlen, im Bericht sagen, der Berater malt nach. `pflug_schnee.png` hat einen gemalten weichen Schneefleck – mitnehmen, wenn er sich in den Schnee fügt, sonst wegschneiden.
   - Verteilung wie im Plan (nie zwei gleiche nebeneinander), Bilder vorher/nachher nah + ganz für Grauwall und Krähenfurt. Gefällt etwas nicht oder fehlt ein Teil: im Bericht unter „Fragen an Enrico“ mit Bild, der Berater malt nach.
+- [x] **60. Antworten zu G2a/G3a (Enrico 25.11. 11:25), zusammen mit Punkt 59 erledigen.**
+  - **Krähenfurt (59 %) erst in U9 abgleichen**, jetzt nichts ändern.
+  - **Deckungsname auf Krähenfurt: „Hecke/Feldrain ×1,2“** statt „Gartenmauer“ (nur Anzeige, Regel gleich; auf Sankt Ruß bleibt „Gartenmauer“).
+  - **Grabenbild:** erst die gemalten Teile einbauen (Punkt 59), dann Bilder nah. Berater und Enrico schauen danach, ob die geraden Feuergräben mit den Buchten-Kästen noch „wie eine Leiter“ wirken; erst dann ggf. die Linie selbst eckiger (Feuerbuchten nach außen versetzt statt Kästen im Graben). Das jetzt schon im Bericht kurz einschätzen: Wie aufwendig wäre ein versetzter (zinnenförmiger) Grabenverlauf?
 
 # >>> JETZT (Enrico 2026-11-25 08:35): Antworten zu G1 – jetzt G2a + G3a <<<
 **Reihenfolge:** nächster `pa` = G2a + G3a (alles, was **ohne** neue Bilder geht). Danach Bericht mit Bildern und Messung, dann warten auf die gemalten Teile vom Berater. **U2 erst, wenn die Grabenform steht** (Feuerbuchten für die 10 Grabenplätze). CC-Stufe: Mittel.

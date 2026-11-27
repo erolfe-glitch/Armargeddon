@@ -1,3 +1,84 @@
+## 2026-11-27 – U7 Schritt 3 (Punkt 125) und Fix F2 (Punkt 130)
+
+Gepusht:
+- `3a3a2a8`: U7 Schritt 3
+- `b06ebb9`: Fix F2
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest zweimal „Konsole rot-frei, keine Fehler“, nach U7 Schritt 3 und nach F2. Regeltest in Ordnung, 5 neue P-Schlüssel, jetzt 199.
+- **Video:** `entwurf/probe/video/U7_schritt3_F2.mp4` (Grauwall, 25,4 s, 24,7 Bilder/s, mit Ton).
+
+**U7 Schritt 3 – Moral in Stufen:**
+- Die neue Funktion `moralStufe(G, u)` gilt für Regel, Anzeige und KI. Sie liefert *standhaft*, *wankt*, *weicht* oder *flieht*.
+- **Wankt:** Ein Trupp wankt unter 60 % seiner Typmoral, die Linie also unter 42.
+  - Schuss, Nahkampf und Gegenschlag wirken dann nur noch zu 85 %.
+  - Niedergehalten ist er schon ab halb so viel Beschuss (`P.SUPP_WANKT` 0,3 statt 0,6).
+- **Erholung:** Niedergehaltene erholen sich jetzt in Graben, Bunker, Gebäude oder eingegraben zur Hälfte (`P.RECOVER_SUPP`). Im Offenen erholen sie sich wie bisher gar nicht.
+- **Zurückweichen:** In Graben, Bunker, Gebäude oder eingegraben weicht ein Trupp erst unter Moral 20 zurück (`P.FALLBACK_DECKUNG`), sonst unter 30.
+- **Anzeige:**
+  - Der Moralbalken ist bei *wankt* gelb und flackert bei *weicht*. Das gilt auf der Karte und auf der Einheitenkarte.
+  - Beim Anwählen pulsiert der Schweißtropfen. Zu Rundenbeginn erscheint er nur, wenn der Trupp beim nächsten Treffer weicht.
+  - Neue Vorschau-Schlagworte: „wankt ×0,85“ und „Ziel wankt: leichter niedergehalten“.
+  - Der Tooltip des Balkens nennt die Stufe. Das Regeln-Fenster und die Legende der Kopfzeichen sind ergänzt.
+- **KI:** Sie bekommt einen Zuschlag `W_WANKT` 0,6 für Schüsse, die ein Ziel unter die Schwelle zum Wanken drücken.
+- **Rückweg:** `STUFEN_ALT`, in Node als Umgebungsvariable, im Browser `window.STUFEN_ALT`.
+
+**Messung** (MISCHEN=1, vier Startwerte zu je 100 Schlachten je Karte, Werte je Schlacht Konkordat / Aschenwacht, `entwurf/probe/u7/schritt3.json`):
+
+| Karte | Konkordat Schritt 2 → Schritt 3 | Läufe |
+|---|---|---|
+| Grauwall | 50,5 % → 48,25 % (−2,3) | 54/44/54/41 |
+| Sankt Ruß | 46 % → 48,25 % (+2,3) | 47/45/53/48 |
+| Winterdorf | 58,5 % → 56,5 % (−2,0) | 54/61/55/56 |
+
+Alle drei Karten liegen in der Streuung von ±4. Die Runden bleiben gleich (15,2 / 14,2 / 14,2).
+
+| je Schlacht | Grauwall | Sankt Ruß | Winterdorf |
+|---|---|---|---|
+| Rundenanfänge „wankt“ | 6,7 / 8,0 | 13,6 / 14,3 | 9,3 / 8,3 |
+| Rundenanfänge „weicht“ | 4,8 / 5,3 | 14,0 / 13,8 | 9,5 / 7,9 |
+| niedergehalten | 35,3 / 23,1 → 36,0 / 24,8 | 44,2 / 22,3 → 45,9 / 25,3 | 38,6 / 26,2 → 38,9 / 27,8 |
+| zurückgewichen | 5,0 / 5,6 → 3,6 / 4,1 | 12,4 / 11,4 → 9,8 / 9,3 | 6,5 / 6,7 → 4,9 / 4,7 |
+| Flucht | 4,6 / 4,4 → 4,7 / 4,5 | 7,7 / 5,7 → 7,8 / 5,9 | 5,0 / 5,0 → 4,9 / 5,1 |
+| gesammelt | 0,44 / 0,66 → 0,47 / 0,71 | 1,24 / 1,35 → 1,36 / 1,41 | 0,6 / 0,81 → 0,6 / 0,85 |
+
+- Wankend oder weichend sind etwa 4–11 % der Rundenanfänge. Das passt zur Erwartung von 6–10 % aus der Fable-Prüfung.
+- Das Zurückweichen sinkt um 20–30 %, vor allem durch die Schwelle von 20 in der Deckung.
+- Niedergehalten wird etwas öfter (+2–14 %), vor allem bei der Aschenwacht.
+- Die Fluchten bleiben gleich.
+
+**Fix F2 – Gruppen wie Pappaufsteller:**
+1. **Schatten:**
+   - Jede Gruppe hat jetzt einen gemeinsamen weichen Bodenschatten, der die Teile verbindet.
+   - Der Kontaktschatten jedes Teils ist etwas größer, das gilt auch für das Beiwerk.
+   - Im Graben liegt der Schatten wie bisher auf der Sohle.
+   - Rückweg `window.GRUPPENSCHATTEN_ALT`.
+2. **Plastik-Karten:** Ich habe alle 45 Teile aus U4 Teil 3 und Teil 5 samt Beiwerk neu gerechnet. Das Ergebnis war byte-gleich, die Karten waren also schon richtig. Neu gerechnet sind nur die beiden neuen Melder.
+3. **Enger gestellt:**
+   - Führung: Der Offizier steht vorn in der Mitte, der Fahnenträger halb dahinter und etwas versetzt, der Melder dicht daneben. Alle stehen im Ring.
+   - MG-Trupps, Panzerbüchse, Sanitäter, Versorgung und Fernsprech stehen dichter. Das Beiwerk bleibt sichtbar.
+   - Rückweg `window.GRUPPE_WEIT`, vor dem Laden setzen.
+4. **Eigenbewegung:**
+   - Jede Figur atmet leicht (±0,9 % Höhe, etwa 2,4 s) und verlagert langsam ihr Gewicht (±0,7°, etwa 7 s), jede versetzt zu den anderen. Rückweg `window.ATEM_ALT`.
+   - Die Fahne der Führung weht leicht: Das Tuch wellt sich vom Stab weg, das hängende Banner des Konkordat-Hauptmanns schwingt seitlich.
+   - Kopf und Hand bleiben stehen, die Welle läuft dort weich aus. Je Bild werden 16 Wellenbilder einmal gerechnet. Rückweg `window.FAHNE_STILL`.
+   - Bei Bildwirkung „aus“ bewegt sich nichts, beim Ziehen und in Posen auch nicht.
+5. **Melder neu:**
+   - Zwei Bilder über fal (Nano Banana 2 Edit, etwa 0,24 $), Übersicht `entwurf/probe/fal/20261127_1803_uebersicht.jpg`.
+   - Abzeichen sind keine zu sehen: kein Totenkopf, kein Kreuz, kein Adler.
+   - Die Bilder sind als `konkordat_melder_steht` und `aschenwacht_melder_steht` freigestellt (1,0 SH), eingebettet, mit Plastik-Karte und robocopy-Sicherung.
+   - Im Spiel steht der Melder in Ruhe. Beim Ziehen und bei Befehlen des Offiziers läuft er wie bisher. Rückweg `window.MELDER_STEHT_ALT`.
+6. **Bilder:**
+   - Übersichten: `entwurf/probe/f2/vorher_uebersicht.jpg` und `entwurf/probe/f2/nachher_uebersicht.jpg`. Sie zeigen Hauptmann Konkordat, Hauptmann Aschenwacht, General Konkordat, MG-Trupp, Sanitäter und Versorgung.
+   - Einzelbilder liegen in `entwurf/probe/f2/vorher/` und `entwurf/probe/f2/nachher/`, nachher zusätzlich General Aschenwacht, Panzerbüchse, Werkstatt und Fernsprech.
+
+**Fragen an Enrico:**
+1. Wirken die Gruppen jetzt dicht genug, oder sollen Fahnenträger und Melder noch näher an den Offizier?
+2. Ist die Fahnenbewegung so richtig („leicht“), oder darf sie etwas kräftiger sein? Der Wert dafür ist `a` in `FAHNE_WEHT`, jetzt 1,2 % der Bildhöhe.
+3. U7 ist damit fertig. Soll der Berater jetzt den Prüfauftrag für die Fable-Prüfrunde U7 schreiben?
+
 ## 2026-11-27 – U7 Schritt 2 (Punkt 125/86) und Fix F1 (Punkt 127)
 
 Gepusht:
