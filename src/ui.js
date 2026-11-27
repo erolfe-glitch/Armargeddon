@@ -212,7 +212,7 @@ function fxDir(x1, y1, x2, y2, lim = 0.6) { const fl = x2 < x1, a0 = Math.max(-l
 function fxFaust(id, n) {
   const d = DU.get(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);
   let [x0, y0, w, h, fl] = bs[0]; if (!!fl !== facesLeft(d.face)) x0 = -(x0 + w);
-  const lf = facesLeft(d.face), m = n ? [0.962, 0.51] : [0.6, 0.55], p = [d.x + x0 + w * (lf ? 1 - m[0] : m[0]), d.y + y0 + h * m[1]]; p.fuss = [d.x, d.y]; return p;   // U7b (138.3): Laufspitzen der Pose eisenknecht_posen_2 (vorher mitten im Bild, nicht gespiegelt)
+  const lf = facesLeft(d.face), m = n ? [0.984, 0.507] : [0.6, 0.55], p = [d.x + x0 + w * (lf ? 1 - m[0] : m[0]), d.y + y0 + h * m[1]]; p.fuss = [d.x, d.y]; return p;   // U7b (138.3): Laufspitzen der Pose eisenknecht_posen_2 (vorher mitten im Bild, nicht gespiegelt)
 }
 function fxSeite(id, zid) {
   const d = DU.get(id), u = unitById(id); if (!d) return null; const bs = d.fbx || []; if (!bs.length) return fxMuzzle(id, 0, 0.5);

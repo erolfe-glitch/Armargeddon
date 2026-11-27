@@ -1215,6 +1215,7 @@ const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlw
 const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
 const stufenAlt = () => !!(TOG.STUFEN_ALT || (typeof window !== 'undefined' && window.STUFEN_ALT));   // U7 Schritt 3: Rückweg – Moral ohne Stufen
 const schalter = n => !!(TOG[n] || (typeof window !== 'undefined' && window[n]));
+const u7cAlt = () => schalter('U7C_ALT');   // U7c (Punkt 142): Rückweg der Nachbesserungen aus der Fable-Kurzprüfung
 const u7b4Alt = () => schalter('U7B4_ALT'), halteWeichAlt = () => schalter('HALTEWEICH_ALT'), weichenAlt = () => schalter('WEICHEN_ALT');   // U7b Teil 2: Rückwege (Nr. 4 kleine Regelstellen, Nr. 5 Halten/Banner, Nr. 6 Zurückweichen vor Niederhalten)
 // U7b Nr. 4 (Fehler 10): EINE Quelle für Deckung – feste Deckung (halber Moralverlust), dazu Fabrik und eingegraben (Weich-Schwelle, halbe Erholung); erholFeld = schnelle Erholung
 const festeFeld = t => t === 'trench' || t === 'bunker' || KIRCHE.has(t);
@@ -1388,9 +1389,9 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (d.status === 'rout') { zerschlagenPruefen(G, d, ev); return; }
   if ((d.str < P.ROUT_STR || d.mor <= 0) && noFlee(G, d)) { d.mor = Math.max(d.mor, 0.1); ev.push({ t: 'steadfast', u: d.id }); return; }   // hält stand
   if (d.str < P.ROUT_STR || d.mor <= 0) { routUnit(G, d, a, ev); return; }
-  if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
-  const sw = fallbackSchwelle(G, d);
-  if (d.mor < sw && cls(d) !== 'art' && (!(d.supp > 0 && !TOG.NOSUPP) || (!weichenAlt() && morVor >= sw))) fallBack(G, d, a, ev);   // U7b Nr. 6: der Treffer, der unter die Schwelle drückt, wirft zurück (auch frisch niedergehalten); wer schon darunter liegt, bleibt liegen
+  const nEv = ev.length; if (entsetzen(G, a, d, ev)) return;   // Punkt 18: Entsetzenstest bei Angriff durch Fahrzeug/Schreiter
+  const sw = fallbackSchwelle(G, d), entsetzt = !u7cAlt() && ev.slice(nEv).some(e => e.t === 'entsetzen' && !e.ok);   // U7c (Fehler 5): nach einem durchgefallenen Entsetzenstest gilt Nr. 6 nicht – zurückgeworfen werden dann nur schwache Trupps (in entsetzen)
+  if (d.mor < sw && cls(d) !== 'art' && (!(d.supp > 0 && !TOG.NOSUPP) || (!weichenAlt() && !entsetzt && morVor >= sw))) fallBack(G, d, a, ev);   // U7b Nr. 6: der Treffer, der unter die Schwelle drückt, wirft zurück (auch frisch niedergehalten); wer schon darunter liegt, bleibt liegen
 }
 // Punkt 18 (2026-11-24): Entsetzenstest – nur wenn ein Fahrzeug/Schreiter angreift (statt Moralverlust beim bloßen Annähern; ENTSETZ_ALT=1 = alte Regel).
 // Immun: Helden, Fahrzeuge/Schreiter, Kampfanzüge. Durchgefallen: niedergehalten, Moral −P.ENTSETZ_MOR, unter 60 Stärke zurückweichen (keine Sofortflucht).
@@ -1433,8 +1434,9 @@ function retreatHex(G, u, from) {
     if (from) s += dist(c, r, from.c, from.r) * 2;
     let adj = 0; for (const [nc, nr] of neighbors(c, r)) { const o = unitAt(G, nc, nr); if (o && o.side !== u.side && active(o)) adj++; }
     s -= adj * 2;
-    if (['trench', 'village', 'bunker', 'fabrik', 'kirche', 'barrikade', 'wald', 'schiff', 'turm'].includes(t)) s += 1;
-    if (t === 'wire') s -= 2;
+    if (u7cAlt() ? ['trench', 'village', 'bunker', 'fabrik', 'kirche', 'barrikade', 'wald', 'schiff', 'turm'].includes(t) : erholFeld(t)) s += 1;   // U7c (Fehler 8): eine Deckungs-Quelle (auch Haus, Kapelle, Mühle)
+    if (t === 'wire') s -= u7cAlt() || wireProof(TYPES[u.type]) ? 2 : 4;   // U7c (Fehler 4): nicht in Draht, Gas oder Feuer zurückweichen
+    if (!u7cAlt()) { if (cloudAt(G, c, r)) s -= 4; if (fireAt(G, c, r)) s -= 4; }
     if (s > bs) { bs = s; best = [c, r]; }
   }
   return best;
@@ -1658,7 +1660,7 @@ function shellDmg(G, a, d, direct, tags) {
   let dm = defMods(G, d, 'front', true, tags);
   if (direct) dm *= kanteFaktor(G, d, a.c, a.r, tags);   // R3: nur der direkte Schuss, Steilfeuer fällt von oben
   m *= splitterU5(G, a, d, dm, tags); dm = deckU5(G, d, dm, tags);   // U5a
-  if (!u7b4Alt() && wankt(a)) { m *= P.WANKT_ATK; tags.push('wankt ×' + String(P.WANKT_ATK).replace('.', ',')); }   // U7b Nr. 4 (Fehler 8): auch Geschütze, Mörser, Sperrfeuer, Feuerschlag
+  if (!u7b4Alt() && wankt(a)) { m *= P.WANKT_ATK; tags.push('wankt ×' + String(P.WANKT_ATK).replace('.', ',')); }   // U7b Nr. 4 (Fehler 8): auch Geschütze, Mörser und Sperrfeuer. NICHT der Feuerschlag: seine Hilfs-Batterie hat keinen Status (Enrico 2026-11-27: so lassen)
   return P.DMG * (TYPES[a.type].fs / (TYPES[d.type].def * dm)) * kraft(a) * m;
 }
 function gasCells(G, c, r) {

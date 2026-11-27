@@ -47,12 +47,16 @@ const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W
 const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
 // U7b Nr. 3 (Fehler 4 und 9, 2026-11-27): Zerschlagene nur noch mit Faktor W_ZERSCHLAGEN, Schwellen aus P/fallbackSchwelle, wankende Trupps in Deckung ziehen (W_WANKT_DECKUNG), Sammeln-Befehl auch nach dem Ziehen; Rückweg KI_U7B_ALT
 const kiAlt = () => !!((typeof process !== 'undefined' && process.env && process.env.KI_U7B_ALT) || (typeof window !== 'undefined' && window.KI_U7B_ALT));
+const u7cAlt = () => !!((typeof process !== 'undefined' && process.env && process.env.U7C_ALT) || (typeof window !== 'undefined' && window.U7C_ALT));   // U7c (Punkt 142): Rückweg
+// U7c (Fehler 3): „Ziel ist zerschlagen“ – schon voll gezählt, kommt nie zurück; Fähigkeiten, Zweitwaffe, Breitseite, Dauerfeuer und Faustsalve sollen es nicht suchen
+function zerschlagenZiel(d) { return !u7cAlt() && !kiAlt() && !E.fluchtAlt() && !!d && d.status === 'rout' && !!d.aufgerieben; }
 const W_ZERSCHLAGEN = +((typeof process !== 'undefined' && process.env && process.env.W_ZERSCHLAGEN) || 0.3), W_WANKT_DECKUNG = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT_DECKUNG) || 2);
 // Moral des Ziels nach einem Treffer – wie applyDamage (ohne Anführer, Banner und Umzingelung)
 function morNach(G, d, dmg, arc, flame) { if (kiAlt()) return d.mor - dmg * 0.8 * (flame ? 2 : 1) - (arc === 'flank' ? 0.5 : arc === 'rear' ? 1 : 0);
   const t = E.hex(G, d.c, d.r).t; let ml = dmg * P.MOR_PER_DMG * (flame ? P.FLAME_MOR : 1) + (arc === 'flank' ? P.MOR_FLANK : arc === 'rear' ? P.MOR_REAR : 0); if (E.festeFeld(t) && !flame) ml *= 0.5; return d.mor - ml; }
 // U7b Nr. 3: Wankende Fußtruppen suchen Deckung, wenn Gegner in der Nähe sind (im Offenen werden sie von jedem Gewehrtrupp niedergehalten und erholen sich nie)
-function wanktDeckung(G, u, c, r) { if (kiAlt() || !E.wankt(u) || E.cls(u) === 'walker' || E.cls(u) === 'art' || nearestEnemyDist(G, u.side, c, r) > 5) return 0;
+function wanktDeckung(G, u, c, r) { if (kiAlt() || !E.wankt(u) || E.cls(u) === 'walker' || E.cls(u) === 'art' || nearestEnemyDist(G, u.side, u7cAlt() ? c : u.c, u7cAlt() ? r : u.r) > 5) return 0;   // U7c (Fehler 1): Feindnähe am Standort des Trupps
+  if (!u7cAlt() && G.map[u.c][u.r].obj && (c !== u.c || r !== u.r)) return 0;   // U7c (Fehler 2): nicht vom Zielfeld weglocken
   const x = Object.assign({}, u, { c, r, dug: !!u.dug && c === u.c && r === u.r }); return E.deckungsFeld(G, x) ? W_WANKT_DECKUNG : E.coverOf(G, x).tier >= 1 ? W_WANKT_DECKUNG / 2 : 0; }
 const W_WANKT = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT) || 0.6);   // U7 Schritt 3: Schuss drückt das Ziel unter die Wankt-Schwelle
 const W_SAMMEL = +((typeof process !== 'undefined' && process.env && process.env.W_SAMMEL) || 1.5), W_FLUCHT_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_FLUCHT_ZIEL) || 2);   // U7 Schritt 2: Anführer/Banner nahe Wankenden und Fliehenden; fliehende Gegner nahe gegnerischer Anführer (kämen sonst zurück)
@@ -145,7 +149,7 @@ function openObjDist(G, u, c, r) {
 function abilPlan(G, u) {
   const k = TYPES[u.type].abil; if (!k || (typeof process !== 'undefined' && process.env && process.env.NOABIL)) return null;
   const tg = E.abilTargets(G, u); if (!tg.length) return null;
-  const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== u.side && E.alive(x) ? x : null; };
+  const foe = (c, r) => { const x = E.unitAt(G, c, r); return x && x.side !== u.side && E.alive(x) && !zerschlagenZiel(x) ? x : null; };
   const area = (c, r) => [[c, r], ...E.neighbors(c, r)].filter(([a, b]) => E.inMap(a, b));
   let best = null, bv = 0;
   // Rauch (KI-Runde 2026-11-17): Sichtlinien gegnerischer Schützen auf eigene Truppen, die die Nebelwand unterbricht – MG und vorrückende Trupps zählen mehr;
@@ -200,7 +204,7 @@ function abilPlan(G, u) {
     else if (k === 'mine') { const n = nearestEnemyDist(G, u.side, c, r); v = n <= 6 ? 7 - n + (G.map[c][r].t === 'open' || G.map[c][r].t === 'mud' ? 0.5 : 0) : 0; }
     else if (k === 'light') { for (const [a, b] of area(c, r)) if (foe(a, b)) v += 1; v = v >= 1 ? v : 0; }
     else if (k === 'rush') {   // Sturmlauf: Ziel neben einem Gegner, schwache Gegner und Zielfelder bevorzugt
-      const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x));
+      const fs = E.neighbors(c, r).map(([a, b]) => E.inMap(a, b) && E.unitAt(G, a, b)).filter(x => x && x.side !== u.side && E.alive(x) && !zerschlagenZiel(x));
       if (fs.length) { const f = fs.sort((x, y) => x.str - y.str)[0]; v = 2 + (10 - f.str) * 0.2 + (G.map[f.c][f.r].obj ? 1 : 0) + (E.cls(f) === 'art' || TYPES[f.type].mg ? 1 : 0) - (E.cls(f) === 'walker' ? 2 : 0) - threatAt(G, u, c, r) * 1.5; }
     }
     else if (k === 'pzschuss') { const x = foe(c, r); if (x) { const S = E.panzerKl(x.type) === 'S'; v = (S ? 3 : 1.6) + (TYPES[x.type].mg ? 0.5 : 0) + (G.map[x.c][x.r].obj ? 0.8 : 0) + (x.str < 4 ? 1 : 0); } }   // Punkt 16: Panzergranate nur gegen gepanzerte Ziele (abilTargets), schwere zuerst
@@ -352,7 +356,8 @@ function attackValue(G, a, d, kind, o) {
   const flame = kind === 'fire' && TYPES[a.type].flame;
   const strAfter = d.str - p.dmg;
   const morAfter = morNach(G, d, p.dmg, p.arc, flame), flieht = !kiAlt() && d.status === 'rout';   // U7b Nr. 3: wer schon flieht, kann nicht noch einmal brechen
-  if (flieht) {} else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
+  if (flieht) { if (!u7cAlt() && !d.aufgerieben && strAfter < P.ROUT_STR) v += 1.5; }   // U7c (Fehler 7): Panik unter ROUT_STR drücken = zerschlagen, Punkte sofort
+  else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
   else if (!E.stufenAlt() && d.status === 'ok' && !E.wankt(d) && morAfter < P.WANKT * TYPES[d.type].mor) v += W_WANKT;   // U7 Schritt 3
   if (d.officer) v += 0.8;
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
@@ -594,7 +599,7 @@ function next(G) {
   for (const u of G.units) {   // Flammenstoß (Bohrkoloss) vor dem Bohrer: der Nahkampf verbraucht alle Punkte
     if (u.side !== G.side || !(TYPES[u.type].zweit && TYPES[u.type].zweit.flamme) || G._aiDone.has('z' + u.id)) continue;
     const tg = E.zweitTargets(G, u); if (!tg.length) continue;
-    G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
+    G._aiDone.add('z' + u.id); tg.sort((a, b) => zerschlagenZiel(a) - zerschlagenZiel(b) || a.str - b.str);
     return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
   }
   for (const u of G.units) {   // Löwengebrüll (Kreuzschreiter, 2026-11-20): kostet nichts, vor dem eigenen Angriff, wenn es mindestens 2 Gegner trifft oder einen auf einem Zielfeld bzw. ein MG
@@ -661,14 +666,14 @@ function next(G) {
   // Sturmpanzer: zweiter Schuss der Breitseite auf ein anderes Ziel bis 2 Felder (schwächstes zuerst)
   for (const u of G.units) {
     if (u.side !== G.side || !TYPES[u.type].broadside || !E.active(u) || !u.attacked || (u.bsT || []).length !== 1) continue;
-    const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => x.str - y.str)[0];
+    const t = G.units.filter(d => E.canFire(G, u, d)).sort((x, y) => zerschlagenZiel(x) - zerschlagenZiel(y) || x.str - y.str)[0];
     if (t) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
   }
   // Eiserne Hünen (2026-11-20): Dauerfeuer – zweite Salve, wenn das Ziel lohnt (danach kühlt das MG eine Runde ab)
   for (const u of G.units) {
     if (u.side !== G.side || !TYPES[u.type].dauerfeuer || !E.active(u) || !E.dauerOk(u)) continue;
     const ts = G.units.filter(d => E.canFire(G, u, d)); if (!ts.length) continue;
-    const wert = d => { const p = E.preview(G, u, d, 'fire'); return Math.min(p.dmg, d.str) + (p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0); };
+    const wert = d => { const p = E.preview(G, u, d, 'fire'), z = zerschlagenZiel(d); return (Math.min(p.dmg, d.str) + (!z && p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0)) * (z ? W_ZERSCHLAGEN : 1); };
     const t = ts.sort((a, b) => wert(b) - wert(a))[0];
     if (wert(t) >= W_DAUER) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
   }
@@ -721,7 +726,7 @@ function next(G) {
   for (const u of G.units) {   // Paket 8: Zweitwaffe (Seiten-MG, Turm-MG) mit übrigen Punkten
     if (u.side !== G.side || !TYPES[u.type].zweit || G._aiDone.has('z' + u.id)) continue;
     const tg = E.zweitTargets(G, u); if (!tg.length) continue;
-    G._aiDone.add('z' + u.id); tg.sort((a, b) => a.str - b.str);
+    G._aiDone.add('z' + u.id); tg.sort((a, b) => zerschlagenZiel(a) - zerschlagenZiel(b) || a.str - b.str);
     return { u: u.id, steps: [{ k: 'zweit', d: tg[0].id }] };
   }
   return null;
@@ -761,7 +766,7 @@ function exec(G, uid, s) {
   const d = G.units.find(x => x.id === s.d);
   if (!d || !E.alive(d)) return [];
   if (s.k === 'fire' && TYPES[u.type].faust && E.canFaust(G, u, d)) {   // Faustsalve (2026-11-20): statt des Schusses, wenn ein zweites Ziel lohnt
-    const wert = x => { const p = E.preview(G, u, x, 'fire'), dm = p.dmg * E.P.FAUST_MUL; return Math.min(dm, x.str) + (dm >= x.str - 0.3 ? 3 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (E.hex(G, x.c, x.r).obj ? 0.8 : 0); };
+    const wert = x => { const p = E.preview(G, u, x, 'fire'), dm = p.dmg * E.P.FAUST_MUL, z = zerschlagenZiel(x); return (Math.min(dm, x.str) + (!z && dm >= x.str - 0.3 ? 3 : 0) + (TYPES[x.type].mg || E.cls(x) === 'art' ? 0.8 : 0) + (E.hex(G, x.c, x.r).obj ? 0.8 : 0)) * (z ? W_ZERSCHLAGEN : 1); };
     const zw = E.faustTargets(G, u).filter(x => x !== d).sort((a, b) => wert(b) - wert(a))[0];
     if (zw) { const v = wert(d) + wert(zw); if (v >= 4 || wert(d) >= 3 || wert(zw) >= 3 || G.turn >= 10) return E.faust(G, u, d, zw); }
   }
