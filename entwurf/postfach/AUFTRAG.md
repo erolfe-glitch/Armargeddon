@@ -101,8 +101,9 @@
 - ✓ **Paket U7c (Punkt 142)** erledigt (Bericht 27.11. 22:10). Damit ist **U7 komplett**.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
-- **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** – Teil 1 ✓, Teil 2 A+B ✓, Teil C ✓ bis auf die obere Leiste (`f9e754b`, `8c20d5d`, `dabe30a`). **Rest = nächster `pa`:** obere Leiste + Klick „Eisenschalter“ als Standard. Opus Mittel. **Danach Spieltest durch Enrico.**
-- **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
+- ✓ **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** fertig (`5b48bd8`). Jetzt **Spieltest durch Enrico** (U7 + UI1).
+- **Paket W2a – Gelände-LoRA (Punkte 132/147)** – **nächster `pa`, parallel zum Spieltest, ohne Browser.** Opus Mittel.
+- **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
 - **Neue Figurenbögen (Punkt 66) – kein eigenes Paket, gehört in U4.**
@@ -215,6 +216,19 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-27 23:50): UI1 fertig – Spieltest läuft, nebenbei W2a Gelände-LoRA (ohne Browser) <<<
+✓ **147. Nächster `pa` = W2a (Punkt 132, Abschnitt „Alles in einem Zeichenstil“, mit Nachtrag 19:35). Einstellung: Opus, Mittel.**
+- **Wichtig:** Enrico spielt gleichzeitig im Browser. Deshalb in diesem `pa` **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe** und keine Änderungen in `src/`. Nur fal (Training und Probebilder) und Python für die Übersicht.
+- **Ablauf:**
+  1. Auf fal den passenden LoRA-Trainer wählen. Kosten vorher prüfen: **höchstens 5 € Training + 2 € Probebilder**, sonst aufhören und fragen.
+  2. Als Lernbilder **genau die 25** aus `entwurf/lora_gelaende/` nehmen (Liste in der `LIESMICH.md` dort). Bildbeschreibungen kurz und mit Schlüsselwort `armgelaende`.
+  3. Fehlt in `tools/` ein Werkzeug fürs Training: ein kleines `tools/fal_lora.mjs` neben `fal_bild.mjs` bauen. Es nutzt `fal_lib.mjs` mit dem Schlüssel aus der Umgebung (`FAL_KEY` nie ausgeben oder speichern).
+  4. **Proben**, alle auf Magenta, ohne Abzeichen, im Sommer: 3 Bäume (Laubbaum, Tanne, Totholz), 1 Haus, 1 Zaunstück. Jeweils einmal mit LoRA und einmal ohne LoRA (Nano Banana mit der Mühle als Referenz).
+  5. **Übersicht** `entwurf/probe/stil/lora_gelaende.jpg` mit den Spalten Mühle – mit LoRA – ohne LoRA – bisheriger Baustein.
+  6. **Bericht:** Kosten, Bilder, eine Einschätzung, ob das LoRA für künftige Bausteine taugt, und eine Empfehlung für das Figuren-LoRA (Lernbilder `entwurf/lora_figuren/`, 28). **Nichts einbauen.** robocopy-Sicherung für neue Quellbilder.
+- **Kein Figuren-Training in diesem `pa`.**
+- **Spieltest:** Enrico meldet seine Funde direkt beim Berater. Daraus wird ein eigenes Paket.
 
 # >>> JETZT (Enrico 2026-11-27 23:35): Antwort zu UI1 Teil C – nächster `pa` = obere Leiste, dann Spieltest <<<
 ✓ **146. Nächster `pa` = Rest von UI1. Einstellung: Opus, Mittel.**

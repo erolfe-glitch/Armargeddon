@@ -1,0 +1,7 @@
+[
+ { "name": "mit_laubbaum", "prompt": "armgelaende, a single leafy deciduous oak tree in summer on a small patch of muddy ground, hand-drawn grimdark ink illustration, isometric game terrain piece, flat magenta background" },
+ { "name": "mit_tanne", "prompt": "armgelaende, a single green fir tree in summer on a small patch of muddy ground, hand-drawn grimdark ink illustration, isometric game terrain piece, flat magenta background" },
+ { "name": "mit_totholz", "prompt": "armgelaende, a single shell-shattered dead tree trunk with broken branches on a small patch of muddy ground in summer, hand-drawn grimdark ink illustration, isometric game terrain piece, flat magenta background" },
+ { "name": "mit_haus", "prompt": "armgelaende, a single intact small stone farmhouse with a tiled roof and a chimney on a small patch of muddy ground in summer, hand-drawn grimdark ink illustration, isometric game terrain piece, flat magenta background" },
+ { "name": "mit_zaun", "prompt": "armgelaende, a short straight section of an old weathered wooden picket fence on a strip of muddy ground in summer, hand-drawn grimdark ink illustration, isometric game terrain piece, flat magenta background" }
+]

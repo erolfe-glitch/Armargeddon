@@ -22,7 +22,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const sauber = (t, key) => String(t).split(key).join('***').slice(0, 600);
 
 // Lokale Datei in den fal-Speicher laden → öffentliche URL; URLs bleiben wie sie sind. Schlägt der Speicher fehl: Daten-URL (base64).
-const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.wav': 'audio/wav' };
+const MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.zip': 'application/zip' };
 export async function hochladen(pfad, key) {
   if (/^https?:|^data:/.test(pfad)) return pfad;
   const bytes = readFileSync(pfad), typ = MIME[extname(pfad).toLowerCase()] || 'application/octet-stream';

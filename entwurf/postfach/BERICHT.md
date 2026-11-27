@@ -1,3 +1,47 @@
+## 2026-11-28 – W2a Gelände-LoRA (Punkt 147): nur Probe, nichts eingebaut
+
+Gepusht:
+- Werkzeuge, Probebilder, Übersicht und dieser Bericht in einem Commit
+
+**Stand:**
+- **Ohne Browser:** Kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe. In `src/` ist nichts geändert, `index.html` bleibt deshalb, wie sie ist.
+- **Hänger:** keine. Auf das Training habe ich in Abschnitten unter 9 Minuten gewartet.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+
+**Kosten** (Preise über die fal-Preisschnittstelle geprüft):
+
+| Posten | Preis bei fal | hier |
+|---|---|---|
+| Flux-LoRA-Training | 0,02 $ je Schritt (1000 Schritte = 20 $) | **nicht genommen**, über der Grenze |
+| Z-Image-Training, Typ „style“, 1000 Schritte | 0,00226 $ je Schritt | etwa **2,26 $** (≈ 2,10 €) |
+| 5 Probebilder mit LoRA (Z-Image Turbo) | etwa 0,01–0,02 $ je Bild | etwa 0,10 $ |
+| 5 Probebilder ohne LoRA (Nano Banana Edit, Mühle als Referenz) | 0,08 $ je Bild | etwa 0,40 $ |
+| **zusammen** | | **etwa 2,80 $ (≈ 2,60 €)**, unter der Grenze von 5 € + 2 € |
+
+**Ablauf:**
+- **Lernbilder:** genau die 25 aus `entwurf/lora_gelaende/`, je mit einer kurzen Beschreibung und dem Schlüsselwort `armgelaende` (`tools/lora_zip.py`). Das ZIP ist etwa 24 MB groß und liegt nicht in git.
+- **Training:** 1000 Schritte, Typ „style“, Dauer etwa 19 Minuten bei fal. Die LoRA-Datei liegt bei fal, ihre Adresse steht in `entwurf/probe/stil/lora_gelaende.json`.
+- **Neue Werkzeuge:** `tools/fal_lora.mjs` (`start` / `status` / `probe`; das Training wartet nicht, der Schlüssel kommt nur aus der Umgebung) und `tools/lora_uebersicht.py`. `fal_lib.mjs` kennt jetzt ZIP-Dateien.
+- **Proben** im Sommer, ohne Abzeichen: Laubbaum, Tanne, Totholz, Haus und Zaun, je mit und ohne LoRA.
+- **Übersicht:** `entwurf/probe/stil/lora_gelaende.jpg` mit den Spalten Mühle – mit LoRA – ohne LoRA – bisheriger Baustein. Die Einzelbilder liegen in `entwurf/probe/stil/`, gesichert in OneDrive.
+
+**Einschätzung:**
+- **Linien und Tusche** trifft das LoRA gut: dicke schwarze Konturen, schraffierte Schatten, isometrische Grundplatte wie bei der Mühle. Es ist schnell (2–7 s je Bild) und billig.
+- **Farben** sind zu kräftig und zu sauber. Die Tanne ist fast neongrün, die gedämpften Erdtöne der Mühle fehlen.
+- **Hintergrund:** Das größte Problem. Statt reinem Magenta kommt ein rosa-fleckiger Grund. Am Bildrand liegen **0 %** der Pixel nahe `#FF00FF`, bei Nano Banana 97–100 %. Unsere Freistell-Werkzeuge (`gelaende_cut.py`, `figure_cut.py`) brauchen reines Magenta. Jedes LoRA-Bild müsste also von Hand nachgearbeitet werden.
+- **Nano Banana mit der Mühle als Referenz** passt dagegen schon jetzt sehr gut: gedämpfte Farben, gleiche Strichstärke, gleiche Grundplatte, sauberer Hintergrund. Es kostet 0,08 $ je Bild.
+- **Fazit:** Für künftige Gelände-Bausteine taugt dieses LoRA **nicht besser** als Nano Banana mit einer Stil-Referenz. Ich würde Bausteine weiter mit Nano Banana und **einer festen Referenzmappe** malen (Mühle plus 2–3 der Lernbilder als `refs`). Das ist billiger als jedes weitere Training und hält den Stil schon jetzt.
+- **Wenn doch LoRA:** Ein zweiter Versuch müsste die Hintergründe der Lernbilder dunkel neutral statt Magenta haben, mehr Schritte bekommen und danach eine Freistellung ohne Magenta (z. B. fal-Hintergrundentfernung) nutzen. Das wäre ein eigenes Paket mit eigener Kostenfreigabe.
+
+**Empfehlung Figuren-LoRA** (Lernbilder in `entwurf/lora_figuren/`, 28 Bilder):
+- Mit Z-Image eher **nicht**. Die Farbtreue ist bei Figuren noch wichtiger (Ochsenblut, Feldgrau, Messing), und dieselben Magenta-Probleme würden jeden Bogen treffen.
+- Besser zuerst mit Nano Banana Edit testen: 2–3 Zielstil-Bögen als Referenz (Reskin-Linie, `aschenwacht_panzer_neu`, `konkordat_fernsprech_neu`) und einen alten Bogen „im Stil der Referenz neu“ zeichnen lassen. Das kostet etwa 0,12 $ je Bogen, ganz ohne Training.
+- Ein Training lohnt erst, wenn das nicht reicht.
+
+**Fragen an Enrico:**
+1. Bleiben wir für Gelände bei Nano Banana mit einer festen Referenzmappe und lassen das LoRA liegen?
+2. Soll der Berater für die Figuren zuerst den Test „alter Bogen im Zielstil über Nano Banana“ mit 2–3 Bögen planen?
+
 ## 2026-11-27 – UI1 Rest (Punkt 146): obere Leiste, Standard-Klick – UI1 fertig
 
 Gepusht:

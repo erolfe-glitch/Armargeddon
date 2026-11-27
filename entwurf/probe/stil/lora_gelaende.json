@@ -1,0 +1,12 @@
+{
+ "trainer": "fal-ai/z-image-trainer",
+ "schritte": 1000,
+ "art": "style",
+ "start": "2026-11-27T22:57:18.609Z",
+ "request_id": "01a21f3a-0d6b-7600-af64-8b261f900c07",
+ "status_url": "https://queue.fal.run/fal-ai/z-image-trainer/requests/01a21f3a-0d6b-7600-af64-8b261f900c07/status",
+ "response_url": "https://queue.fal.run/fal-ai/z-image-trainer/requests/01a21f3a-0d6b-7600-af64-8b261f900c07",
+ "lora": "https://v3b.fal.media/files/b/0ab434b5/uJhd7zx62q65_Nnz56pOD_pytorch_lora_weights.safetensors",
+ "config": "https://v3b.fal.media/files/b/0ab434b6/6wadlOpbAtN-ZSh2lwSYt_config_82877a3e-2ae5-4ca3-aa44-1bd9f7c63a9f.json",
+ "ende": "2026-11-27T23:16:34.744Z"
+}
