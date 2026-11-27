@@ -29,6 +29,7 @@ for (const n of (process.env.N || "3,4").split(",").map(Number)) {
   const id = await stelle(n); await bild(`oger_${n}_modelle`);
   await ev(`(async () => { __dbg.pose(${id}, 'anlegen', 2500); await new Promise(r => setTimeout(r, 500)); return true; })()`); await bild(`oger_${n}_schiessen`);
   await ev(`(async () => { await new Promise(r => setTimeout(r, 2600)); __dbg.pose(${id}, 'kolben', 2500); await new Promise(r => setTimeout(r, 500)); return true; })()`); await bild(`oger_${n}_nahkampf`);
+  for (const art of (process.env.MEHR ? ['sprung', 'getroffen'] : [])) { await ev(`(async () => { await new Promise(r => setTimeout(r, 2600)); __dbg.pose(${id}, '${art}', 2500); await new Promise(r => setTimeout(r, 400)); return true; })()`); await bild(`oger_${n}_${art}`); }
 }
 console.log(fehler.length ? 'Fehler: ' + fehler.slice(0, 3).join(' | ') : 'keine Seitenfehler');
 ws.close(); ch.kill();

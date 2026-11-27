@@ -382,6 +382,10 @@ FIGUREN_POSEN = {
     'konkordat_pionier_posen2': dict(n=4, reihen=2, grund='pionier'),   # Anlegen stehend, Anlegen kniend, geduckt vorrücken, Getroffen
     'aschenwacht_pionier_posen2': dict(n=4, reihen=2, grund='pionier'),   # Anlegen stehend, Anlegen kniend, geduckt vorrücken, Nahkampf-Vorstoß
     'aschenwacht_eiserne_huenen_posen': dict(n=4, reihen=2, grund='eiserne_huenen'),   # Hüftfeuer, Sturmlauf, halb kniend, Getroffen mit Hackmesser
+    # U4 Teil 4 (Punkt 122): Löwenoger-Posen im neu3-Look, je Datei eine Figur; Hieb so hoch wie die Ruhepose, Sprung/Getroffen im selben Maßstab; Bewegungsbogen beim Hieb gelöscht
+    'konkordat_loewenoger_hieb': dict(n=1, reihen=1, grund='loewenoger', posehoehe=(1, 'konkordat_loewenoger_1'), skal=0.9, loesch=[(2160, 0, 2752, 1000), (1500, 150, 2300, 252), (1400, 560, 2160, 1000), (1400, 495, 1790, 560)]),
+    'konkordat_loewenoger_sprung': dict(n=1, reihen=1, grund='loewenoger', massvon='konkordat_loewenoger_hieb', skal=0.72),   # Sprung größer gemalt (Kopf ≈ 1,25×); alle drei ×0,9 (Köpfe wie in der Ruhepose)
+    'konkordat_loewenoger_getroffen': dict(n=1, reihen=1, grund='loewenoger', massvon='konkordat_loewenoger_hieb', skal=0.9),
     'konkordat_loewenoger_posen': dict(n=4, reihen=2, grund='loewenoger'),   # Sprung mit Krallen, Prankenhieb, Schrot angelegt, Getroffen brüllend
     'aschenwacht_gasschutz_posen': dict(n=4, reihen=1, grund='gasschutz', gross={2: 1.3, 3: 1.3, 4: 1.3}),   # links stehend ~30 % größer gezeichnet
     'aschenwacht_banner_posen': dict(n=2, reihen=1, grund='banner'),   # Fahne hoch rufend, Stange in den Boden rammen
