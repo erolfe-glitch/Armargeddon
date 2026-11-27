@@ -1,0 +1,34 @@
+// Punkt 118.0/119.1 (2026-11-27): Löwenoger neu3, Probebild 3 und 4 Modelle (Enrico entscheidet), Vergleich alter Bogen über ALT=1 (OGER_POSEN_ALT + git-Stand nötig).
+// Aufruf: node tools/oger_probe.mjs [ordner=entwurf/probe/u4/oger]   (Vorschau-Server)
+import { spawn } from 'node:child_process';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const OUT = process.argv[2] || 'entwurf/probe/u4/oger'; mkdirSync(OUT, { recursive: true });
+const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armfx-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', 'about:blank']);
+let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
+const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
+let id = 0; const pend = {}, fehler = [];
+ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pend[m.id]) { pend[m.id](m); delete pend[m.id]; return; } if (m.method === 'Runtime.exceptionThrown') fehler.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text); };
+const cmd = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] = r; ws.send(JSON.stringify({ id: i, method, params })); });
+const ev = async x => { const r = await cmd('Runtime.evaluate', { expression: x, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text); return r.result?.result?.value; };
+const bild = async name => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, name + '.jpg'), Buffer.from(r.result.data, 'base64')); console.log('  Bild', name); };
+await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('arm.ton','0')}catch(e){}" });
+await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+if (process.env.INIT) await cmd('Page.addScriptToEvaluateOnNewDocument', { source: process.env.INIT });
+await cmd('Page.navigate', { url: process.env.URL || 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
+await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
+  click('neue schlacht'); await W(700); for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); } await W(2500); click('schlacht beginnen'); await W(4000); return true; })()`);
+// Bühne: Löwenoger auf freiem Feld (6,4), daneben Schützenkohorte (6,5) zum Größenvergleich und ein Löwenoger im Graben
+const stelle = n => ev(`(async () => { const D = __dbg, G = D.G, E = D.E; E.TRUPP.oger = ${n}; const A = G.units.filter(u => u.side === 'A' && E.alive(u));
+  const [a, b] = A; a.type = 'oger'; a.c = 6; a.r = 4; a.face = 0; a.str = 10; b.type = 'kohorte'; b.c = 5; b.r = 4; b.face = 0;
+  for (const u of G.units) if (u !== a && u !== b && Math.abs(u.c - 5.5) < 2.5 && Math.abs(u.r - 4) < 2.5) u.c = u.side === 'A' ? 0 : 15;
+  D.neuDU(); await new Promise(r => setTimeout(r, 900)); const [x, y] = D.mitte(5.5, 4); D.camSetzen(x, y - 40, 2.3); await new Promise(r => setTimeout(r, 1800)); return a.id; })()`);
+for (const n of [3, 4]) {
+  const id = await stelle(n); await bild(`oger_${n}_modelle`);
+  await ev(`(async () => { __dbg.pose(${id}, 'anlegen', 2500); await new Promise(r => setTimeout(r, 500)); return true; })()`); await bild(`oger_${n}_schiessen`);
+  await ev(`(async () => { await new Promise(r => setTimeout(r, 2600)); __dbg.pose(${id}, 'kolben', 2500); await new Promise(r => setTimeout(r, 500)); return true; })()`); await bild(`oger_${n}_nahkampf`);
+}
+console.log(fehler.length ? 'Fehler: ' + fehler.slice(0, 3).join(' | ') : 'keine Seitenfehler');
+ws.close(); ch.kill();

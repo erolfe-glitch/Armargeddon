@@ -100,7 +100,7 @@ SPALTEN = {'konkordat_stahlreiter_reskin': 3,   # R4 (Punkt 97): Stahlreiter, Tr
 # Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'konkordat_stahlreiter_reskin': 1.85, 'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.5, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+SH_REIHE = {'konkordat_stahlreiter_reskin': 1.85, 'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.25, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
 # Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
 SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_eisenknecht_neu', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
 
@@ -109,6 +109,7 @@ SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_eisenknecht_neu', 'aschenwac
 # Lange Waffe ragt unter die Nachbarpose (Spieltest 2026-11-17: Lauf des liegenden Scharfschützen fehlte im Spiel): unterhalb der
 # Höhe (Anteil der Bildhöhe) gehört der Streifen der Pose rechts daneben noch zur Pose links. Schlüssel: ganzer Bogenname.
 UNTEN_LINKS = {'konkordat_scharfschuetze': 0.7695}
+KASTEN_POSE = {'konkordat_loewenoger': [(1, 0.64, 0.316, 0.705, 0.42), (1, 0.705, 0.303, 0.768, 0.42)]}   # U4 (2026-11-27): Kasten (Pose-Index ab 0, x0, y0, x1, y1 als Anteil) gehört ganz zu dieser Pose – Schrotflinte samt Messer der mittleren Löwenoger-Pose ragt unter die Pranke der rechten
 LAMPE = {'konkordat_mineur'}
 LAMPE_FARBE = np.array([255, 208, 112.])
 
@@ -435,7 +436,8 @@ def ordner(name):
 
 
 ERSETZT = {'konkordat_soldat': 'konkordat_soldat_reskin', 'konkordat_soldat_posen': 'konkordat_soldat_posen_reskin', 'aschenwacht_soldat': 'aschenwacht_soldat_reskin',
-           'aschenwacht_soldat_posen': 'aschenwacht_soldat_posen_reskin', 'aschenwacht_schwer_posen': 'aschenwacht_schwer_reskin', 'aschenwacht_panzer': 'aschenwacht_panzer_neu'}   # ST1 (115.9): neuer Panzer = Sturmpanzer (kein Aschenwacht-Landkoloss)   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
+           'aschenwacht_soldat_posen': 'aschenwacht_soldat_posen_reskin', 'aschenwacht_schwer_posen': 'aschenwacht_schwer_reskin', 'aschenwacht_panzer': 'aschenwacht_panzer_neu',
+           'konkordat_loewenoger': 'konkordat_loewenoger_neu3'}   # U4 (Punkt 26/119): Löwenoger neu3 (Panzerhandschuhe mit Klingen, Hintergrund dunkleres Pink)   # ST1 (115.9): neuer Panzer = Sturmpanzer (kein Aschenwacht-Landkoloss)   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
 
 
 def quelle(name):
@@ -606,6 +608,9 @@ def cut(name, out=OUT):
                 yb = int(H * UNTEN_LINKS[name]); rows = np.arange(H)[:, None] >= yb
                 if j == 0 and len(seams) > 1: m |= rows & (cols >= seams[0][:, None]) & (cols < seams[1][:, None])
                 if j == 1: m &= ~rows
+            for jk, x0, y0, x1, y1 in KASTEN_POSE.get(name, []):
+                bx = (np.arange(H)[:, None] >= int(H * y0)) & (np.arange(H)[:, None] < int(H * y1)) & (cols >= int(W * x0)) & (cols < int(W * x1))
+                m = (m | bx) if j == jk else (m & ~bx)
             t = k.copy(); t[~m, 3] = 0; t = keep_parts(t, True, 0.12)   # Krümel der Nachbarpose weg
             poses.append(entrosa(t.astype(np.float64)) if name in ENTROSA else t)
         s = H_OUT * wert(SH_REIHE, name, kind, 1.0) / max(q.shape[0] for q in poses); out.mkdir(parents=True, exist_ok=True)

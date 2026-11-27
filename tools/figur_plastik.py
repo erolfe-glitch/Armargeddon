@@ -66,7 +66,8 @@ def main():
     probe = sys.argv[sys.argv.index('--probe') + 1] if '--probe' in sys.argv else None
     if probe: args = [x for x in args if x != probe]
     files = [f for f in sorted(GAME.glob('*.png')) if f.stem not in ('aschenwacht_eisenknecht', 'konkordat_kreuzschreiter')] + sorted(f for f in GELAENDE.glob('*.png') if f.stem.startswith(GEL_TEILE))
-    if args and not probe: sys.exit('Mit Namen nur zusammen mit --probe (die Datendatei enthält immer alle Bilder).')
+    teil = '--teil' in sys.argv   # U4 (2026-11-27): nur die genannten Einträge in src/figsplastik.js ersetzen bzw. anhängen (ganzer Lauf dauert lange)
+    if args and not probe and not teil: sys.exit('Mit Namen nur zusammen mit --probe (die Datendatei enthält immer alle Bilder).')
     if args: files = [f for f in files if f.stem in args]
     lines = ['// ===== ARMARGEDDON BILDWIRKUNG DER FIGUREN =====',
              '// Erzeugt von tools/figur_plastik.py aus ui-quelle/teile/figuren/. Datendatei, nicht von Hand ändern, nicht komplett lesen.',
@@ -89,6 +90,16 @@ def main():
         u = 'data:image/webp;base64,' + base64.b64encode(buf.getvalue()).decode(); total += len(u)
         lines.append(f'"{"gel_" if gel else ""}{f.stem}": "{u}",')
     if probe: print('Probe in', probe); return
+    if teil:
+        import re
+        P = ROOT / 'src' / 'figsplastik.js'; L = P.read_text(encoding='utf8').split(chr(10)); neu = lines[4:]
+        idx = {m.group(1): i for i, l in enumerate(L) if (m := re.match(r'"([^"]+)": "', l))}
+        for z in neu:
+            k = re.match(r'"([^"]+)"', z).group(1)
+            if k in idx: L[idx[k]] = z
+            else: L.insert(L.index('};'), z)
+            print('ersetzt' if k in idx else 'neu', k)
+        P.write_text(chr(10).join(L), encoding='utf8', newline=chr(10)); return
     lines.append('};')
     (ROOT / 'src' / 'figsplastik.js').write_text('\n'.join(lines) + '\n', encoding='utf8', newline='\n')
     print('src/figsplastik.js', total // 1024, 'KB,', len(files), 'Bilder')
