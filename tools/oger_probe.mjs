@@ -25,7 +25,7 @@ const stelle = n => ev(`(async () => { const D = __dbg, G = D.G, E = D.E; E.TRUP
   const [a, b] = A; a.type = 'oger'; a.c = 6; a.r = 4; a.face = 0; a.str = 10; b.type = 'kohorte'; b.c = 5; b.r = 4; b.face = 0;
   for (const u of G.units) if (u !== a && u !== b && Math.abs(u.c - 5.5) < 2.5 && Math.abs(u.r - 4) < 2.5) u.c = u.side === 'A' ? 0 : 15;
   D.neuDU(); await new Promise(r => setTimeout(r, 900)); const [x, y] = D.mitte(5.5, 4); D.camSetzen(x, y - 40, 2.3); await new Promise(r => setTimeout(r, 1800)); return a.id; })()`);
-for (const n of [3, 4]) {
+for (const n of (process.env.N || "3,4").split(",").map(Number)) {
   const id = await stelle(n); await bild(`oger_${n}_modelle`);
   await ev(`(async () => { __dbg.pose(${id}, 'anlegen', 2500); await new Promise(r => setTimeout(r, 500)); return true; })()`); await bild(`oger_${n}_schiessen`);
   await ev(`(async () => { await new Promise(r => setTimeout(r, 2600)); __dbg.pose(${id}, 'kolben', 2500); await new Promise(r => setTimeout(r, 500)); return true; })()`); await bild(`oger_${n}_nahkampf`);
