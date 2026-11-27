@@ -1193,8 +1193,10 @@ body.neu.ui1 .u1-gk.leer { visibility: hidden; }
 /* Knöpfe als Eisenplatten (Entwurf A): Eisen gekachelt, Tintenschicht, 3 px Tintenrand; aktiv = Messingrand */
 body.neu.ui1 #hud .up-ab { height: var(--ab); background: linear-gradient(rgba(18,13,11,.38), rgba(18,13,11,.38)), var(--up-txEisen) 0 0 / 160px repeat; border: 3px solid var(--s-ink); box-sizing: border-box; }
 body.neu.ui1 #hud .up-ab::before { inset: 0; border-radius: 0; background: radial-gradient(ellipse at 50% 50%, rgba(18,13,11,.55) 0 40%, rgba(18,13,11,0) 75%); }
-body.neu.ui1 #hud .up-ab > img { inset: 12%; width: 76%; height: 76%; filter: brightness(1.6) contrast(1.1) drop-shadow(0 0 1px #F0EDE1) drop-shadow(0 2px 1px rgba(0,0,0,.7)); }
-body.neu.ui1 #hud .up-ab.off > img { filter: brightness(.8) saturate(.5); }
+/* Punkt 145: Symbole knochenweiß (normal) bzw. Messing (aktiv) mit dunkler Tintenkontur, grau = gedämpft, aber erkennbar */
+body.neu.ui1 #hud .up-ab > img { inset: 12%; width: 76%; height: 76%; filter: grayscale(1) sepia(.25) brightness(2.4) contrast(1.5) drop-shadow(1px 0 0 #120D0B) drop-shadow(-1px 0 0 #120D0B) drop-shadow(0 1px 0 #120D0B) drop-shadow(0 -1px 0 #120D0B) drop-shadow(0 2px 2px rgba(0,0,0,.8)); }
+body.neu.ui1 #hud .up-ab.on > img, body.neu.ui1 #hud .up-ab.pulse > img { filter: grayscale(1) sepia(1) saturate(2.2) hue-rotate(-8deg) brightness(1.9) contrast(1.4) drop-shadow(1px 0 0 #120D0B) drop-shadow(-1px 0 0 #120D0B) drop-shadow(0 1px 0 #120D0B) drop-shadow(0 -1px 0 #120D0B) drop-shadow(0 2px 2px rgba(0,0,0,.8)); }
+body.neu.ui1 #hud .up-ab.off > img { filter: grayscale(1) brightness(1.5) contrast(1.2) drop-shadow(1px 0 0 #120D0B) drop-shadow(-1px 0 0 #120D0B); opacity: .5; }
 body.neu.ui1 .u1-eig img, body.neu.ui1 .u1-w img, body.neu.ui1 .u1-st img { filter: brightness(1.6) contrast(1.1) drop-shadow(0 0 1px rgba(240,237,225,.8)); }
 body.neu.ui1 #hud .up-ab.on, body.neu.ui1 #hud .up-ab.pulse { background: linear-gradient(rgba(18,13,11,.2), rgba(18,13,11,.2)), var(--up-txEisen) 0 0 / 160px repeat; border-color: var(--s-brass); box-shadow: inset 0 0 0 1px #6e5a2e; }
 body.neu.ui1 #hud .up-ab.off { background: linear-gradient(rgba(18,13,11,.62), rgba(18,13,11,.62)), var(--up-txEisen) 0 0 / 160px repeat; }

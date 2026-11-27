@@ -1,0 +1,6 @@
+[
+ { "name": "klick_neu_1", "ordner": "sound-quelle/ui_klick", "art": "sfx", "dauer": 0.5, "text": "single short dry metallic click of a heavy iron switch, very short, no echo, no reverb" },
+ { "name": "klick_neu_2", "ordner": "sound-quelle/ui_klick", "art": "sfx", "dauer": 0.5, "text": "single short dry wooden knock, a small wooden block tapped once, very short, no echo, no reverb" },
+ { "name": "klick_neu_3", "ordner": "sound-quelle/ui_klick", "art": "sfx", "dauer": 0.5, "text": "single short brass rifle bolt click, crisp mechanical, very short, no echo, no reverb" },
+ { "name": "klick_neu_4", "ordner": "sound-quelle/ui_klick", "art": "sfx", "dauer": 0.5, "text": "single short dull thud of a leather glove on an iron plate, very short, no echo, no reverb" }
+]

@@ -1,0 +1,6 @@
+[
+ { "name": "symbol_zwei_schlaege", "ordner": "ui-quelle",
+   "refs": ["ui-quelle/bogenE_symbole.png"],
+   "aspect": "1:1", "res": "1K",
+   "prompt": "A single game UI icon, centred, on a flat solid magenta background (#FF00FF): two bold crossing curved blade slashes drawn as thick brass-coloured motion streaks with dark ink outlines, a few small blood drops flying off the ends. Same hand-drawn grimdark WW1 comic ink style as the reference: thick black outlines, hard shadows. No text, no letters, no numbers, no skulls, no crosses." }
+]

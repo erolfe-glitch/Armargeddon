@@ -44,12 +44,13 @@ NAMES['bogen7_zustandszeichen'] = ['k_blitze', 'k_tropfen', 'k_schweiss', 'k_ang
                                    'k_klingen', 'k_wut', 'k_auge', 'k_pfeil', 'k_garbe', 'k_funkeln', 'k_kreuz', 'k_reserve']
 # Einzelsymbol Schaufel (2026-11-18): Eingraben (Knopf und Zustandsmarke), ersetzt dort die Spitzhacke
 NAMES['symbol_schaufel'] = ['s_schaufel']
+NAMES['symbol_zwei_schlaege'] = ['s_zweischlag']   # UI1 Teil 2 C (Punkt 145): ersetzt das schwarze Feld in bogenE
 # Fähigkeiten-Symbole (Enrico 2026-11-22, 3×3, Nahtschnitt): je Fähigkeit ein eigenes Zeichen
 NAMES['bogen8b_befehle'] = ['s_sammeln', 's_sturmbefehl', 's_feuerfrei', 's_halten', 's_generalangriff', 's_markieren', 's_feuerschlag', 's_feuerbereit']   # Befehle (Enrico 2026-11-22, 4×2)
 # Bogen C (Enrico 2026-11-22 15:12, 4×2, Nahtschnitt): doppelte Symbole auflösen. Oben Fassung A, unten B; gewählt: Sprenglanze B, Rammen A, gegen Panzer B, Ballon einholen B.
 # Nicht gewählte Fassungen (_x) nur abgelegt, nicht im Spiel.
 NAMES['bogenD_symbole'] = ['s_abwehr', 's_panzer_leicht', 's_panzer_schwer', 's_einmal', 's_held', 's_einzig', 's_furcht', 's_ansturm']   # UI1 Teil 2 (Punkt 144, fal)
-NAMES['bogenE_symbole'] = ['s_weit', 's_ziehen_feuern', 's_stecken', 's_geschuetzturm', 's_sicht', 's_zweischlag', 's_kettensaege', 's_schwer_nah']
+NAMES['bogenE_symbole'] = ['s_weit', 's_ziehen_feuern', 's_stecken', 's_geschuetzturm', 's_sicht', 's_zweischlag_alt', 's_kettensaege', 's_schwer_nah']
 NAMES['bogenC_symbole'] = ['s_sprenglanze_x', 's_rammen', 's_gegen_panzer_x', 's_einholen_x', 's_sprenglanze', 's_rammen_x', 's_gegen_panzer', 's_einholen']
 # Gemalte Mauszeiger (Enrico 2026-11-22 15:53, 4×2, Nahtschnitt): Pfeil, Panzerhandschuh, Stiefel, Fadenkreuz, Säbel, Sperrkreis, Feld-Zielring, Drahtschere
 NAMES['bogen_zeiger'] = ['z_pfeil', 'z_hand', 'z_stiefel', 'z_ziel', 'z_saebel', 'z_nein', 'z_feld', 'z_schere']
@@ -73,7 +74,7 @@ MERGE = {'bogen1_rahmen': 18, 'bogen2_buttons': 6}
 # so bleiben Funken und Splitter beim Symbol, auch wenn die Symbole eng stehen.
 GRID = {'bogen4a_symbole': (3, 3), 'bogen4b_symbole': (3, 3), 'bogen4c_symbole': (3, 3),
         'wappen_konkordat': (2, 1), 'wappen_aschenwacht': (2, 1), 'wappen_legion': (2, 1),
-        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2), 'symbol_schaufel': (1, 1),
+        'wimpel_fraktionen': (3, 1), 'kartenmarken': (3, 2), 'bogen6_stellung': (2, 2), 'symbol_schaufel': (1, 1), 'symbol_zwei_schlaege': (1, 1),
         'banner_konkordat': (2, 1), 'banner_aschenwacht': (2, 1), 'banner_blaue_legion': (2, 1), 'wimpel': (3, 1)}
 # Bögen mit Nahtschnitt (wie figure_cut): je Rasterlinie eine Naht durch den freien Hintergrund (geringste Deckung),
 # die Zellen dazwischen sind die Teile. Splitter und Funken bleiben so sicher beim eigenen Symbol.

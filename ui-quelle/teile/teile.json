@@ -663,10 +663,6 @@
   710,
   661
  ],
- "bogenE_symbole/s_zweischlag": [
-  607,
-  688
- ],
  "bogenE_symbole/s_kettensaege": [
   666,
   704
@@ -674,5 +670,13 @@
  "bogenE_symbole/s_schwer_nah": [
   630,
   723
+ ],
+ "symbol_zwei_schlaege/s_zweischlag": [
+  851,
+  893
+ ],
+ "bogenE_symbole/s_zweischlag_alt": [
+  607,
+  688
  ]
 }
