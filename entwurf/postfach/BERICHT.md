@@ -1,3 +1,51 @@
+## 2026-11-27 – Paket W1 (Punkt 124): fal aus CC, Video je Paket, Fable-Prüfrunde
+
+Gepusht:
+- `acd0baf`
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat.
+
+**1. fal direkt aus CC:**
+- **Werkzeuge:**
+  - `tools/fal_bild.mjs <auftrag.json>`: Nano Banana 2, mit `refs` die Edit-Fassung; lokale Referenzen gehen in den fal-Speicher, notfalls als Daten-URL.
+  - `tools/fal_ton.mjs <auftrag.json>`: ElevenLabs-Geräusche (`art: "sfx"`) und Sprache (`art: "tts"`), mp3 in den angegebenen Ordner.
+  - Gemeinsame Hilfen stehen in `tools/fal_lib.mjs`.
+- **Ablauf:** Vorhandene Dateien werden nicht überschrieben (außer mit `"ueberschreiben": true`). Am Ende kommen eine Liste mit Dauer und geschätzten Kosten und die Übersicht `entwurf/probe/fal/<datum>_uebersicht.jpg`.
+- **Schlüssel:**
+  - Dein `FAL_KEY` ist als Windows-Benutzervariable gesetzt (Länge geprüft, Wert nicht angesehen).
+  - Diese CC-Sitzung lief schon vor dem Anlegen und sieht ihn nicht in der Umgebung. Die Werkzeuge lesen ihn deshalb selbst aus der Benutzer-Umgebung (Registry), nur im Speicher.
+  - Er wird nirgends ausgegeben oder gespeichert. Geprüft: in keiner Projektdatei.
+  - Ohne Schlüssel gibt es eine klare Meldung, und es wird nichts erzeugt.
+- **Test:**
+  - Ein Bild (1K, 1:1, etwa 0,08 $), 16 s.
+  - Ergebnis `entwurf/probe/fal/test_kiste.png`, Übersicht `entwurf/probe/fal/20261127_1501_uebersicht.jpg`.
+  - Der Magenta-Hintergrund ist etwas dunkler und leicht ungleichmäßig. Für figure_cut sollte das reichen; der Hintergrund wird je Bogen gemessen.
+- **Nicht getestet:**
+  - `fal_ton.mjs` (noch kein Tonauftrag, keine Kosten verursacht).
+  - Das Hochladen lokaler Referenzen (das Testbild hatte keine).
+  - Beides erst beim ersten echten Auftrag.
+
+**2. Video nach jedem Paket:**
+- **Werkzeug:** `tools/video_partie.mjs <paket> [KARTE=…] [DAUER=25]`. KI gegen KI, Runde 1 schnell, ab Runde 2 in Tempo 1×.
+- **Aufnahme:** im Browser selbst (MediaRecorder, **MP4 H.264 + AAC**). ffmpeg ist auf dem Rechner nicht installiert und wird so auch nicht gebraucht.
+- **Ton:** kommt über einen Abgriff hinter dem Begrenzer im Tonweg (neue Testhilfe `__dbg.tonAbgriff`, ändert am Spielton nichts).
+- **Was zu sehen ist:** nur die Spielfläche (1920×1006), ohne die HTML-Leisten oben und unten.
+- **Prüfwerkzeug:** `tools/video_pruefen.mjs <datei>` misst Dauer, Bildrate, Bewegung und Tonpegel und legt Standbilder daneben.
+- **Testvideo Grauwall:** `entwurf/probe/video/W1_grauwall.mp4`
+  - 7,5 MB, 25,3 s, **25 Bilder/s**, Bild bewegt sich, Ton −15 dB im Mittel.
+  - Standbilder `entwurf/probe/video/W1_grauwall_bild1–6.jpg`.
+- **Nicht in git:** Videos sind in `.gitignore`, sie liegen nur im Ordner.
+
+**3. Fable-Prüfrunde:** Die Regel steht in CLAUDE.md unter „Feste Regeln“, dazu je ein Hinweis zu Video und fal.
+
+**Fragen an Enrico:**
+1. Reicht im Video die Spielfläche ohne die Leisten oben und unten? Die ganze Seite mit Leisten ginge über Bildschirmaufnahmen Bild für Bild, wäre aber deutlich aufwendiger.
+2. Soll der erste echte Malauftrag des Beraters gleich über `fal_bild.mjs` laufen? Er schreibt dann die JSON-Liste in AUFTRAG.
+
 ## 2026-11-27 – U4 Teil 5 (Punkt 123): Sanitäter mit Trage, Versorgung, Fernsprech
 
 Gepusht:
