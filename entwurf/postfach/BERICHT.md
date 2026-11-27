@@ -1,3 +1,28 @@
+## 2026-11-27 – ST1c (Punkt 117): Windmühle Grauwall
+
+Gepusht (Commit siehe unten, mit index.html). **Hänger:** keine. Partietest „Konsole rot-frei, keine Fehler“. Keine Regeländerung, daher kein sim-Lauf.
+
+**Ursache:** Das Mühlenbild wird 3,6 Feldradien breit gezeichnet (2,4 × MUEHLE_GROSS 1,5), das Feld ist nur gut 2 breit. Der **gemalte Bodenfleck** (Schlamm mit Trichtern und Steinen, Rautenform) lag deshalb unten über den Drahtgürteln links und rechts und über den Nachbarfeldern.
+
+**Änderung** (`src/gelaende_bau.js`, `muehleMaske`, Rückweg `window.MUEHLE_RAND_ALT`):
+- Das Bild wird einmal mit einer weichen Maske beschnitten. Unten bleibt nur eine Ellipse um die Feldmitte (Halbachsen 0,95 R und 0,57 R, wie das gekippte Feld).
+- Turm, Dach und Flügel bleiben ganz und ragen weiter nach oben. Der Boden neben dem Turm fällt weg.
+- Größe und Fußpunkt der Mühle bleiben gleich.
+- Für den Einsturz-Zustand und die Schnee-Fassungen gilt dieselbe Maske. Auf Krähenfurt steht keine Mühle.
+- Kirche unverändert (Punkt 117.2).
+
+**Bilder:**
+- vorher: `entwurf/probe/st1c/vorher/muehle_nah.jpg`, `muehle_mittel.jpg`
+- nachher: `entwurf/probe/st1c/nachher/muehle_nah.jpg`, `muehle_mittel.jpg`
+- Masken an den anderen Fassungen, außerhalb des Spiels gerechnet: `entwurf/probe/st1c/maske_muehle_kaputt.jpg`, `maske_muehle_heil_schnee.jpg`, `maske_muehle_kaputt_schnee.jpg`
+- Die eingestürzte Mühle habe ich im Spiel nicht aufgenommen.
+
+**Fragen an Enrico:**
+1. Passt der Boden um die Mühle so, oder soll der Fleck noch kleiner bzw. größer sein? Einstellbar über `MUEHLE_RX`/`MUEHLE_RY`.
+2. Bei der eingestürzten Mühle schneidet die Maske die Balken rechts oben ab, die über das Feld hinausragen. Falls das stört, kann ich dort mehr stehen lassen.
+
+Nächster `pa`: Paket U3.
+
 ## 2026-11-27 – ST1b (Punkt 116) (`0d6dc86` mit index.html)
 
 Gepusht.
