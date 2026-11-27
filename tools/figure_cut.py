@@ -92,9 +92,10 @@ OHNE_BLITZ = {'sturm_posen', 'pionier_posen'}
 POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97), 'sturm_posen': ('sturm', 4, 0.97), 'pionier_posen': ('pionier', 4, 0.97)}   # 2026-11-20: Sturmtrupps (Ausholen, Loslassen, Graben, Getroffen), Pioniere (Draht schneiden, Haftladung/Mine, Graben, Getroffen)
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3,
-         'mg_trupp': 4, 'panzerbuechse_trupp': 4, 'hauptmann_gruppe': 3, 'general_gruppe': 3, 'scharfschuetze_trupp': 3}   # U4 Teil 3 (Punkt 121): Waffe + 3 Mann, Führung mit 3 Figuren, Scharfschütze + Beobachter (Teile getrennt gemalt)
+         'mg_trupp': 4, 'panzerbuechse_trupp': 4, 'hauptmann_gruppe': 3, 'general_gruppe': 3, 'scharfschuetze_trupp': 3,
+         'sanitaeter_trage': 3, 'versorgung_neu': 3, 'fernsprech_neu': 3}   # U4 Teil 5 (Punkt 123)   # U4 Teil 3 (Punkt 121): Waffe + 3 Mann, Führung mit 3 Figuren, Scharfschütze + Beobachter (Teile getrennt gemalt)
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
-SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4,   # U4 Teil 2: neuer Bogen, Düse der ersten Pose berührt den Mantel der zweiten
+SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4, 'aschenwacht_versorgung_neu': 3,   # U4 Teil 5: Werkzeugtasche berührt den Kistenträger   # U4 Teil 2: neuer Bogen, Düse der ersten Pose berührt den Mantel der zweiten
              # R4 (Punkt 97): Stahlreiter, Trab | Galopp mit erhobenem Schwert | aufbäumend (Schwerter berühren sich, Naht)
            'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
            'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4,
@@ -104,6 +105,7 @@ TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen aut
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
 SH_REIHE = {'konkordat_mg_trupp': 0.72, 'aschenwacht_mg_trupp': 0.74, 'aschenwacht_panzerbuechse_trupp': 0.75,   # U4 Teil 3: höchstes Teil = kniender Mann
             'konkordat_hauptmann_gruppe': 1.09, 'aschenwacht_hauptmann_gruppe': 1.01, 'konkordat_general_gruppe': 1.06, 'aschenwacht_general_gruppe': 1.08,   # höchstes Teil = Fahne, Offizier 1 SH (General 1,05)
+            'konkordat_sanitaeter_trage': 1.05, 'aschenwacht_sanitaeter_trage': 1.1, 'konkordat_versorgung_neu': 1.08, 'aschenwacht_versorgung_neu': 1.15, 'konkordat_fernsprech_neu': 1.0,   # U4 Teil 5: höchstes Teil (erhobene Hand, Kiste/Gepäck über dem Kopf)
             'konkordat_scharfschuetze_trupp': 0.58, 'beiwerk_versorgung': 0.6,   # Liegende: Körperlänge ≈ 1 SH; Karren/Kiste/Feldtelefon ≈ 0,6 SH
             'konkordat_stahlreiter_reskin': 1.85, 'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.25, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
 # Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
@@ -205,6 +207,8 @@ ABZEICHEN = {
     'aschenwacht_bohrkoloss': [('platte', 468, 579, 27)],
     'aschenwacht_general_gruppe': [('platte', 268, 740, 44)],   # U4 Teil 3: Adler an der Ärmelmanschette
     'aschenwacht_hauptmann_gruppe': [('platte', 505, 175, 46)],   # U4 Teil 3: Adler vorn am Helm
+    'aschenwacht_sanitaeter_trage': [('platte', 497, 178, 38), ('platte', 1153, 192, 38), ('platte', 1745, 531, 38), ('platte', 2475, 190, 38)],   # U4 Teil 5: Adler auf den Helmen
+    'konkordat_sanitaeter_trage': [('platte', 2156, 968, 30)],   # U4 Teil 5: weißes Kreuz auf der Sanitätstasche
     # Posenbögen 2026-11-20: Adler auf den Pickelhauben (Pflicht: keine Adler im Spiel)
     'aschenwacht_sanitaeter_posen': [('platte', 496, 137, 34), ('platte', 2424, 160, 32), ('platte', 1895, 261, 32), ('platte', 1169, 604, 32)],
     'aschenwacht_melder_posen': [('platte', 669, 934, 30), ('platte', 2335, 745, 34), ('platte', 301, 81, 26)],
