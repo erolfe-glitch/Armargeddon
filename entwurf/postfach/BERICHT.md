@@ -1,3 +1,66 @@
+## 2026-11-27 – Rest U4, erster Teil (Punkt 119): Mühle, Ordner je Fraktion, Löwenoger – Zwischenstand
+
+Gepusht:
+- `9d3a398`: eingestürzte Mühle (Punkt 118.0)
+- `f6dc54f`: Ordner je Fraktion (Punkt 53)
+- `59eb29f`: Löwenoger neu3
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat (der Oger bleibt bei 3 Modellen).
+- **Zwischenstand:** Der Rest von U4 war für einen `pa` zu groß. Die übrigen abgenommenen Bögen kommen im nächsten `pa` (Liste unten).
+
+**1. Eingestürzte Mühle (118.0):**
+- **Vorher:** Die Maske schnitt die eingestürzte Mühle senkrecht neben dem Turm ab. Dadurch fehlten die Balken, die oben rechts übers Feld ragen.
+- **Jetzt:** Turm und Balken (rechts und die kurzen links) bleiben stehen. Beschnitten wird nur der gemalte Boden außerhalb des Felds. Das gilt für die Schlamm- und die Schneefassung (`MUEHLE_BALKEN`, Rückweg `window.MUEHLE_BALKEN_ALT`).
+- **Bilder im Spiel:**
+  - `entwurf/probe/st1c/kaputt/vorher/` und `…/nachher/muehle_kaputt_nah.jpg`, `muehle_kaputt_mittel.jpg` (Werkzeug `node tools/muehle_bilder.mjs`)
+  - Masken: `entwurf/probe/st1c/maske_muehle_kaputt_119.jpg`, `maske_muehle_kaputt_schnee_119.jpg`
+- **Rest:** Hinter den Balken rechts bleibt ein schmaler Streifen Boden mit stehen. Er ist kaum zu sehen.
+
+**2. Antworten zu U3:** Die Leuchtspur bleibt bei 4 von 8 Schützen. Am Mündungsfeuer habe ich nichts geändert.
+
+**3. Ordner je Fraktion (Punkt 53):**
+- **Neue Ordner:** `ui-quelle/figuren/konkordat/`, `aschenwacht/`, `blaue_legion/` (vorher „Frankreich neu“).
+- **Reskin-Bögen:** liegen jetzt in `<fraktion>/reskin/`. Gemeinsame Vorlagen (Gefallene, Kavallerie-Vorlagen) bleiben in `reskin/`, `fahle/` bleibt unberührt. Dateinamen sind gleich geblieben.
+- **Werkzeug:** `figure_cut.py` findet die Bögen über `ordner(name)`. Die übrigen Werkzeuge lesen nur die geschnittenen Teile und brauchten keine Änderung. CLAUDE.md und MODELL_LISTE sind angepasst.
+- **Prüfung:** Alle 145 Bögen habe ich vor und nach dem Umzug in einen Probeordner geschnitten. Alle **348 Teilbilder sind gleich** (Prüfsummen).
+- **Bögen außerhalb von git:** 38 Quellbögen waren nie in git und sind es weiter nicht (191 MB, z. B. alle `*_neu*.png`, Klauenschreiter-Posen). Ich habe sie nur mit verschoben. Sie sind auch nicht in der OneDrive-Sicherung.
+- **Gefunden:** Ein voller Lauf `figure_cut.py --game` ohne Namen bricht ab, weil die Bögen nach Namen sortiert werden und `aschenwacht_klauenschreiter_posen` dann vor dem Bogen kommt, den es als Maßstab braucht. Das war vorher schon so. Außerdem dauert das Einbetten aller Bilder über 8 Minuten.
+- **Neue Werkzeuge:** `tools/figs_teil.py <schlüssel …>` und `figur_plastik.py --teil <schlüssel …>` ersetzen nur einzelne Einträge in figs.js bzw. figsplastik.js. Für unveränderte Bilder kommt dabei derselbe Eintrag heraus wie vorher.
+
+**4. Löwenoger neu3 (Punkt 26):**
+- **Einbau:** über `ERSETZT` (Spielname bleibt `konkordat_loewenoger`), Größe 1,25 SH statt 1,5, Farbe an das Konkordat angeglichen, Plastik-Karten neu.
+- **Schnitt:** Der dunklere Pink-Hintergrund wird richtig erkannt. Die Schrotflinte der mittleren Pose ragt unter die Pranke der rechten Pose; ein fester Kasten (`KASTEN_POSE`) gibt sie jetzt ganz der mittleren Pose. An den Krallenspitzen der rechten Pose bleibt eine haarfeine Kante.
+- **Posen:** Der alte Posenbogen (rote Rüstung, Stirnband) passt nicht mehr zum neuen Look. Das Spiel nimmt jetzt nur die drei neuen Posen: Ruhe, Schießen (auch kniend) und Nahkampf (auch Sprung). Ein Getroffen-Bild gibt es nicht; Gefallene erscheinen wie bei Trupps ohne Posen. Rückweg `window.OGER_POSEN_ALT`. Die Mündung der Schrotflinte ist neu eingetragen.
+- **Probebilder 3 und 4 Modelle:** `entwurf/probe/u4/oger/oger_3_modelle.jpg`, `oger_4_modelle.jpg`, dazu je `_schiessen` und `_nahkampf` (Werkzeug `node tools/oger_probe.mjs`). Im Spiel bleiben es vorerst 3. Bei 4 stehen sie zu zweit hintereinander und decken sich gegenseitig stärker.
+
+**Noch offen in U4 (nächster `pa`), abgenommene Bögen aus MODELL_LISTE:**
+- Sanitäter Konkordat (Grund + Posen)
+- Flammen beider Seiten (Grund + Posen, vier Bögen)
+- Gasschutz (Grund + Posen)
+- Panzerknechte
+- Konkordat-Reiter (`neu2`)
+- Ordensschreiter (Grundbogen)
+
+Einige davon haben Übermalungen mit festen Pixelstellen (Abzeichen, leere Flächen). Die muss ich je Bogen neu setzen und prüfen.
+
+**Punkt 90: Bilder, die fehlen** (für den Berater, nur nach Dateinamen in `ui-quelle/figuren/` gesucht):
+- Feldscher und Aschenpfleger: zwei Träger **mit Trage und Verwundetem**. Der neue Sanitäterbogen hat nur eine Trage über der Schulter.
+- Versorgungstrupps: Munitionskarren bzw. Werkzeugkiste als Beiwerk.
+- Fernsprechtrupp: Feldtelefon als Beiwerk.
+- 6er-Sturmtrupps als eigene Bögen mit mehr Posen (Grabenräumer, Sturmbrecher, Eingreiftrupp, Schwere Grabenwacht). Bisher zeigen sie 4 Posen, die sich als Klone wiederholen.
+- Waffentrupps „Waffe + 3 Mann“: MG (Mahlwerk, Sensenwerk) und Panzerbüchse sind ein einziges Bild.
+- Hauptmann und General mit drei Figuren (Offizier, Fahnenträger, Melder). Bisher ist es ein gemeinsames Bild.
+- Scharfschütze mit Beobachter.
+- **Löwenoger:** neuer Posenbogen im neu3-Look (Sprung, Prankenhieb, Getroffen).
+
+**Fragen an Enrico:**
+1. **Löwenoger: 3 oder 4 Modelle?** Bitte an den Probebildern entscheiden. Bei 4 würde ich die Aufstellung lockerer machen und mit sim messen.
+2. Soll der Berater die Löwenoger-Posen im neuen Look malen, oder reichen die drei Posen?
+
 ## 2026-11-27 – U3 Teil 3 (Punkt 118.3): Helden-Effekte und Fesselballon – U3 damit fertig
 
 Gepusht: `ac4c361` (mit index.html).
