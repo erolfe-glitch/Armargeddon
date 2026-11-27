@@ -1101,6 +1101,72 @@ body.neu #hud .up-med .med { width: 40px; height: 40px; } body.neu #hud .up-med 
 #shopDet .rolle .rl-p, #armyDet .rolle .rl-p, #detRolle .rolle .rl-p { color: #3c5a1c; }
 #shopDet .rolle .rl-m, #armyDet .rolle .rl-m, #detRolle .rolle .rl-m { color: #8E2B22; }
 #shopDet .rolle .rl-k, #armyDet .rolle .rl-k, #detRolle .rolle .rl-k { color: #3a2c1e; }
+/* ===== UI1 Teil 1 (Punkt 141, 2026-11-27): Einheitenkarte nach Entwurf A „Eisenplatte“, Knopfgruppen, Schrift. Nur body.neu.ui1; Rückweg window.UI1_ALT (dann body.ui1alt). ===== */
+body.ui1alt { --body: "Arm Text Alt", system-ui, sans-serif; --s-body: "Arm Text Alt", "Segoe UI", system-ui, sans-serif; }
+body.neu.ui1 #hud .up-unit { --pic: 104px; --bar: 318px; gap: 8px 14px; padding: 8px 10px;
+  background: var(--tx-ink45), var(--up-txEisen) 0 0 repeat; background-clip: padding-box; box-shadow: 6px 6px 0 rgba(18,13,11,.6), 0 6px 18px rgba(0,0,0,.55); }
+body.neu.ui1 #hud .up-pic { height: calc(var(--pic) * 1.16); border: 3px solid var(--s-ink); outline: 2px solid var(--s-brass); outline-offset: -6px; box-sizing: border-box; }
+body.neu.ui1 #hud .up-unit > .up-med { display: none; }
+body.neu.ui1 #hud .up-stats { gap: 6px; }
+body.neu.ui1 #hud .up-unit > .up-stats { grid-row: 1; }
+body.neu.ui1 #hud .up-unit > .up-pic { grid-row: 1; align-self: start; }
+body.neu.ui1 #hud .up-name { font: 400 26px/1.05 var(--s-head); text-transform: none; letter-spacing: .01em; }
+body.neu.ui1 #hud .up-name.two { font-size: 21px; }
+body.neu.ui1 #hud .up-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font: 500 16px/1.2 var(--s-body); color: var(--s-parch); white-space: normal; overflow: visible; }
+body.neu.ui1 .u1-kat { display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border: 2px solid var(--s-brass); color: var(--s-text); font: 700 15px/1.2 var(--s-body); letter-spacing: .06em; }
+body.neu.ui1 .u1-kat img { width: 18px; height: 18px; }
+body.neu.ui1 .u1-rolle { color: var(--s-parch); }
+body.neu.ui1 .u1-seite { font-weight: 700; } body.neu.ui1 .u1-seite.A { color: #d0786c; } body.neu.ui1 .u1-seite.D { color: #b9c0a8; }
+body.neu.ui1 .u1-off { display: inline-flex; align-items: center; gap: 3px; color: var(--s-text); }
+body.neu.ui1 .u1-rang { display: inline-flex; gap: 2px; margin-left: auto; }
+body.neu.ui1 .u1-rang svg { width: 18px; height: 14px; fill: #322923; stroke: #66483A; }
+/* Balken: Stärke dick mit Strichen, Moral dünn */
+body.neu.ui1 #hud .up-bar .tube { height: 18px; } body.neu.ui1 #hud .up-bar.mor .tube { height: 11px; }
+body.neu.ui1 #hud .up-bar .val { font: 700 18px var(--s-body); } body.neu.ui1 #hud .up-bar .val small { font-size: 15px; color: var(--s-parch); }
+body.neu.ui1 #hud .up-bar .val .k { font: 700 15px var(--s-body); letter-spacing: .05em; }
+body.neu.ui1 .u1-stufe { display: flex; align-items: center; gap: 8px; font: 500 15px/1.25 var(--s-body); color: var(--s-parch); }
+body.neu.ui1 .u1-stufe.wankt span:first-child { color: #D9B23A; } body.neu.ui1 .u1-stufe.weicht span:first-child, body.neu.ui1 .u1-stufe.flieht span:first-child { color: #e0816f; }
+body.neu.ui1 .u1-akt { margin-left: auto; flex: none; padding: 0 6px; border: 1px solid var(--s-brass); color: var(--s-brass); font-weight: 600; }
+body.neu.ui1 .u1-akt.used { border-color: #66483A; color: #8a7a64; }
+/* untere Hälfte über die ganze Breite: Werte, Plaketten, Eigenschaften */
+#u1Unten { display: none; }
+body.neu.ui1 #hud:not(.nounit) #u1Unten { display: flex; flex-direction: column; gap: 8px; grid-column: 1 / -1; grid-row: 2; }
+body.neu.ui1 .u1-werte { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+body.neu.ui1 .u1-w { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 0 3px; background: var(--s-bg); border: 2px solid var(--s-ink); }
+body.neu.ui1 .u1-w img { width: 28px; height: 28px; object-fit: contain; }
+body.neu.ui1 .u1-w b { font: 700 20px/1.05 var(--s-body); color: var(--s-text); } body.neu.ui1 .u1-w b small { font-size: 15px; color: var(--s-parch); }
+body.neu.ui1 .u1-w > small { font: 500 15px/1.1 var(--s-body); color: var(--s-parch); }
+body.neu.ui1 .u1-plak { display: flex; flex-wrap: wrap; gap: 6px; }
+body.neu.ui1 .u1-p { padding: 2px 8px; background: var(--s-bg); border: 2px solid; font: 600 15px/1.25 var(--s-body); color: var(--s-text); }
+body.neu.ui1 .u1-p.gut { border-color: #6B7A3A; } body.neu.ui1 .u1-p.schlecht { border-color: var(--s-life, #8E2B22); }
+body.neu.ui1 .u1-eigs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+body.neu.ui1 .u1-k { font: 600 15px var(--s-body); color: var(--s-parch); letter-spacing: .06em; text-transform: uppercase; }
+body.neu.ui1 .u1-eig { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; background: var(--s-bg); border: 2px solid var(--s-brass); cursor: help; }
+body.neu.ui1 .u1-eig img { width: 30px; height: 30px; object-fit: contain; }
+body.neu.ui1 #hud #neuKK { grid-column: auto; }
+body.neu.ui1 #hud .neu-mehr { font: 600 16px var(--s-body) !important; text-transform: none; letter-spacing: 0; }
+body.neu.ui1 #hudMore { grid-row: 3; max-width: none; }
+body.neu.ui1 #hudMore p, body.neu.ui1 #hudMore .rolle { font: 500 15px/1.35 var(--s-body); }
+body.neu.ui1 #hudMore .hm-chips span { font: 600 15px var(--s-body); }
+body.neu.ui1 #hudMore .u1-med p { margin: 0 0 3px; }
+/* Knöpfe in Gruppen mit kleiner Überschrift */
+body.neu.ui1 #hud .up-abils { gap: var(--grgap, 20px); }
+body.neu.ui1 .u1-gr { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+body.neu.ui1 .u1-gk { font: 600 15px/1 var(--s-body); letter-spacing: .08em; text-transform: uppercase; color: var(--s-parch); text-shadow: 0 2px 0 var(--s-ink); }
+body.neu.ui1 .u1-gb { display: flex; gap: var(--abgap, 10px); align-items: flex-end; }
+body.neu.ui1 #hud .up-key { font: 600 15px var(--s-body); }
+body.neu.ui1 .up-tip, body.neu.ui1 .mtip { font-family: var(--s-body); }
+@media (max-width: 1500px) {
+  body.neu.ui1 #hud .up-unit { --pic: 84px; --bar: 262px; gap: 6px 10px; padding: 6px 8px; }
+  body.neu.ui1 #hud .up-name { font-size: 22px; } body.neu.ui1 #hud .up-name.two { font-size: 18px; }
+  body.neu.ui1 .u1-w b { font-size: 18px; } body.neu.ui1 .u1-eig { width: 36px; height: 36px; } body.neu.ui1 .u1-eig img { width: 26px; height: 26px; }
+  body.neu.ui1 .u1-gk { font-size: 13px; letter-spacing: .05em; }
+}
+@media (min-width: 2200px) {
+  body.neu.ui1 #hud .up-unit { --pic: 136px; --bar: 410px; }
+  body.neu.ui1 #hud .up-name { font-size: 32px; } body.neu.ui1 #hud .up-sub, body.neu.ui1 .u1-stufe, body.neu.ui1 .u1-p, body.neu.ui1 .u1-w > small, body.neu.ui1 .u1-gk { font-size: 18px; }
+  body.neu.ui1 .u1-w img { width: 30px; height: 30px; } body.neu.ui1 .u1-w b { font-size: 26px; } body.neu.ui1 .u1-eig { width: 48px; height: 48px; } body.neu.ui1 .u1-eig img { width: 36px; height: 36px; }
+}
 </style>
 </head>
 <body>

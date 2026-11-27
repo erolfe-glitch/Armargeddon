@@ -231,3 +231,14 @@ Töne im Spiel (`src/sound.js`), eingebaut mit `tools/sound_bau.mjs` aus `sound-
 | Krähenfurt: Häuser, Kapelle, Ruinen, Bäume, Dorfteile, Böden, Streifen, reine Schneeflächen, Furt/Krater | ui-quelle/gelaende/*_schnee*_bogen.png, haus_heil_bogen.png, kapelle_ruinen_bogen.png, furt_krater_schnee_bogen.png | fal.ai „Flux 3 Image Edit“ (Enrico, eigenes Konto, 2026-11-22) | eigene Erzeugung |
 | Titelbild | ui-quelle/titelbild_neu.png | fal.ai „Flux 3 Image Edit“ (Enrico, eigenes Konto, 2026-11-22) | eigene Erzeugung |
 | Figuren-, Symbol- und Gelände-Bögen | ui-quelle/** | Gemini (Enrico) | eigene Erzeugung |
+
+# Credits – Schriften
+
+Eingebettet in `src/fonts.css` (`tools/fonts.py`, gekürzt auf Latein/Deutsch), Dateien und Lizenztexte in `ui-quelle/schriften/`. Alle unter der SIL Open Font License 1.1.
+
+| Schrift | Verwendung | Urheber | Lizenz | Quelle |
+|---|---|---|---|---|
+| IM Fell English SC | Titel, Namen, Knöpfe | Igino Marini | SIL OFL 1.1 (`OFL-imfellenglishsc.txt`) | <https://github.com/google/fonts/tree/main/ofl/imfellenglishsc> |
+| Barlow Condensed (Medium, SemiBold, Bold) | Text und Zahlen (seit UI1, 2026-11-27) | The Barlow Project Authors (Jeremy Tribby) | SIL OFL 1.1 (`OFL-barlowcondensed.txt`) | <https://github.com/google/fonts/tree/main/ofl/barlowcondensed> |
+| Alegreya Sans | früherer Text, Rückweg `window.UI1_ALT` | Juan Pablo del Peral, Huerta Tipográfica | SIL OFL 1.1 (`OFL-alegreyasans.txt`) | <https://github.com/google/fonts/tree/main/ofl/alegreyasans> |
+| Arm Ziffer | große Schadenszahlen | eigene Ziffern (`tools/ziffern.py`) | – | – |

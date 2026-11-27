@@ -1,7 +1,7 @@
 # Erzeugt src/fonts.css: eingebettete Schriften (OFL, Quelle ui-quelle/schriften/), auf Latein/Deutsch gekürzt, als woff2.
 #  "Arm Kopf"  = IM Fell English SC für Überschriften, Knöpfe, Namen. Ziffern und Rechenzeichen kommen über
 #               unicode-range aus Alegreya Sans Medium, damit alle Zahlen klar lesbar sind (auch "Runde 1").
-#  "Arm Text"  = Alegreya Sans Regular/Bold für Werte und Fließtext.
+#  "Arm Text"  = Barlow Condensed 500/600/700 für Werte und Fließtext (seit UI1); "Arm Text Alt" = Alegreya Sans (Rückweg).
 # Aufruf: python tools/fonts.py   (danach tools/build.py)
 import base64, io, pathlib
 from fontTools import subset
@@ -32,9 +32,14 @@ def face(fam, name, weight, ranges, urange=None):
 css = [
     '/* Erzeugt von tools/fonts.py – nicht von Hand ändern, nicht komplett lesen. Lizenzen: ui-quelle/schriften/OFL-*.txt */',
     face('Arm Kopf', 'IMFeENsc28P.ttf', 400, TEXT),
-    face('Arm Kopf', 'AlegreyaSans-Medium.ttf', 400, DIGITS, DIGITS),   # später deklariert = gewinnt bei Ziffern
-    face('Arm Text', 'AlegreyaSans-Regular.ttf', 400, TEXT),
-    face('Arm Text', 'AlegreyaSans-Bold.ttf', 700, TEXT),
+    face('Arm Kopf', 'BarlowCondensed-SemiBold.ttf', 400, DIGITS, DIGITS),   # später deklariert = gewinnt bei Ziffern (UI1: Barlow statt Alegreya)
+    # UI1 (Punkt 141, 2026-11-27): Text und Zahlen in Barlow Condensed (500/600/700); Alegreya bleibt als "Arm Text Alt" für den Rückweg window.UI1_ALT
+    face('Arm Text', 'BarlowCondensed-Medium.ttf', 400, TEXT),
+    face('Arm Text', 'BarlowCondensed-Medium.ttf', 500, TEXT),
+    face('Arm Text', 'BarlowCondensed-SemiBold.ttf', 600, TEXT),
+    face('Arm Text', 'BarlowCondensed-Bold.ttf', 700, TEXT),
+    face('Arm Text Alt', 'AlegreyaSans-Regular.ttf', 400, TEXT),
+    face('Arm Text Alt', 'AlegreyaSans-Bold.ttf', 700, TEXT),
     # Paket 2: kantige Ziffern für Schadenszahlen und obere Leiste (tools/ziffern.py; Stile Gebrochen, Schablone, Kantig – hier wählen)
     face('Arm Ziffer', 'ArmZiffern-Gebrochen.ttf', 400, ZIFF, ZIFF),
 ]

@@ -4020,13 +4020,80 @@ function upBtn(b, i) {
   return `<div class="up-slot${b.on ? ' on' : ''}"><button class="${cls}" data-act="${b.act}" aria-label="${upEsc(b.name)}, Taste ${i + 1}"${b.off ? ' aria-disabled="true"' : ''}><img src="${upSym(b.sym)}" alt="">${cost}${corner}${tip}</button><span class="up-key">${i + 1}</span></div>`;
 }
 let upBtns = [];
+// ---------- UI1 Teil 1 (Punkt 141, 2026-11-27): Einheitenkarte nach Entwurf A „Eisenplatte“, Knöpfe in festen Gruppen; Rückweg window.UI1_ALT (vor dem Laden) ----------
+const ui1An = () => document.body.classList.contains('ui1');
+// Eigenschaften (Schlagworte T.sp) als goldene Symbol-Kästchen: Symbol nach dem ersten passenden Muster; ohne Treffer Ersatzsymbol (Liste für den Berater: tools/ui1_symbole.js)
+const EIG_SYM = [[/Draht schneiden|Schneidet Draht/, 'drahtschere'], [/Zieht Stacheldraht|Walzt Draht|Draht hält nicht|Kein Draht/, 'drahtrolle'], [/Eingraben/, 'schaufel'], [/Feuerbereitschaft/, 'feuerbereit'],
+  [/Gas und Sperrfeuer/, 'sperrfeuer'], [/Sperrfeuer|Dauerfeuer|Drehlauf/, 'garbe'], [/aufbauen/, 'mg_auf'], [/Aufprotzen/, 'aufprotzen'], [/Sturmrollen/, 'sturmrollen'], [/Panne/, 'festgefahren'],
+  [/Seiten-MG|Bord-MG|Turm-MG|Unterarm|Flammenstoß|Faustsalve|Sturmkanonen/, 'kanone_zweit'], [/Breitseite/, 'breitseite'], [/Ansturm/, 'pferd'], [/Sturmlauf/, 'sturmlauf'], [/Handgranaten/, 'handgranate'],
+  [/Panzergranate/, 'panzergranate'], [/Direktschuss|Panzerjäger|Panzer ×1,5|Panzersäge|Keine Panzerwaffe/, 'gegen_panzer'], [/Sickert|Getarnt/, 'durchsickern'], [/Gegenstoß|Sturmbefehl/, 'sturmbefehl'],
+  [/Flammen|brennt|Deckung schützt nicht/, 'flamme'], [/Versorgt|Heilt|Entgiften|Erholung/, 'sanitaeter'], [/Gasfest/, 'gasmaske'], [/Mörser|Steilfeuer|Sprenggranaten/, 'granate_artillerie'], [/Rauch|Nebel/, 'nebel'],
+  [/Zerstört Draht|Haftladung|Ladungen/, 'sprengladung'], [/Sprenglanze/, 'sprenglanze'], [/Hält .*nieder/, 'niedergehalten'], [/Befehl überbringen/, 'meldehund'], [/Bergt|Repariert/, 'schraubenschluessel'],
+  [/Schilde vor|gepanzert|Gepanzert|zäh/, 'schild'], [/markieren/, 'markieren'], [/Sieht|Sicht/, 'fernglas'], [/Halten um jeden Preis/, 'halten'], [/Generalangriff/, 'generalangriff'], [/Befehle|Sammeln/, 'sammeln'],
+  [/Aufpflanzen|Aura|Moralverlust/, 'fahne'], [/Löwengebrüll/, 'gebruell'], [/Sprungangriff/, 'sprung'], [/Durchbruch/, 'durchbruch'], [/Hinrichtung/, 'hinrichtung'], [/Feuerschlag/, 'feuerschlag'],
+  [/Stollen/, 'spitzhacke'], [/Nachladen/, 'munitionskiste'], [/Geschützturm/, 'lafette'], [/Furcht/, 'gebrochen'], [/Zwei Schläge|Kettensäge|Hackklinge|Kriegshammer|Nur Nahkampf|[Kk]laue/, 'nahkampf'],
+  [/Schuss \d|Reichweite|Schrotflinte|Feuert über|Kaum Fernkampf/, 'zielen'], [/Zieht|Ziehen|Langsam|stecken/, 'stiefel'], [/Stufe 3|Höchstens einer|Held|einmal je Schlacht/, 'zahnrad']];
+function eigSym(x) { for (const [re, s] of EIG_SYM) if (re.test(x) && upSym(s)) return s; return null; }
+const RANG_SVG = '<svg viewBox="0 0 18 14" aria-hidden="true"><path d="M1 8l8-6 8 6v4L9 6l-8 6z"/></svg>';
+function ui1Stufe(u, T) {   // eine Zeile Moralstufe (U7b-Anzeige)
+  const st = stufeZeig(u, u.mor, u.status === 'rout'), sw = E.fallbackSchwelle(G, u), wa = xf(P.WANKT_ATK);
+  if (st === 'flieht') { if (u.aufgerieben) return ['flieht', 'zerschlagen · kommt nicht wieder']; const p = Math.round(E.sammelChance(G, u) * 100); return ['flieht', `Panik · Sammel-Chance ${p} %`]; }
+  if (E.stufenAlt()) return u.mor < P.FALLBACK_MOR ? ['weicht', `weicht beim nächsten Treffer`] : ['standhaft', `standhaft · weicht unter ${fmt(P.FALLBACK_MOR)}`];
+  const weichtTxt = T.cls === 'art' ? 'weicht nie' : `weicht unter ${fmt(sw)}`;
+  if (st === 'weicht') return ['weicht', `weicht beim nächsten Treffer · Angriff ${wa}`];
+  if (st === 'wankt') return ['wankt', `wankt · Angriff ${wa} · ${weichtTxt}`];
+  return ['standhaft', `standhaft · wankt unter ${fmt(P.WANKT * T.mor)} · ${weichtTxt}`];
+}
+function ui1Karte(u, own, nach) {
+  const T = TYPES[u.type], r = rolle(u.type), kat = E.KAT_NAME[E.katOf(u.type)] || '', ap = Math.max(0, u.ap || 0), tip = (n, t) => ` data-u1tip="${upEsc(n)}|${upEsc(t || '')}" tabindex="0"`;
+  const sub = `<span class="u1-kat"${tip('Kategorie: ' + kat, 'Wie viele davon eine Armee haben darf, steht im Nachschub-Menü.')}>${upSym('schild') ? `<img src="${upSym('schild')}" alt="">` : ''}${kat.toUpperCase()}</span>` +
+    `<span class="u1-rolle">${r ? r.rolle : T.name}</span><span class="u1-seite ${u.side}">${SIDES[u.side].short}</span>${u.officer ? `<span class="u1-off">${UP.orden ? `<img class="up-orden" src="${UP.orden}" alt="">` : '★ '}${u.officer}</span>` : ''}` +
+    `<span class="u1-rang"${tip('Rang', 'Platz für Veteranen-Ränge. Ränge kommen mit der Kampagne.')}>${RANG_SVG.repeat(3)}</span>`;
+  const [stk, stTxt] = ui1Stufe(u, T);
+  const morKl = E.stufenAlt() ? (u.mor < P.FALLBACK_MOR + 1 ? ' bad' : '') : { weicht: ' bad', flieht: ' bad', wankt: ' wankt' }[stk] || '';
+  const stats = upBar('hp ' + lifeTier(u.str / 10), 'Stärke', u.str, 10, nach) + upBar('mor' + morKl, 'Moral', u.mor, T.mor) +
+    `<div class="u1-stufe ${stk}"><span>${stTxt}</span>${own ? `<span class="u1-akt${ap ? '' : ' used'}"${tip('Aktion', 'Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch – eine je Runde.' + (T.zweit ? ` Dazu ${T.zweit.name} einmal je Runde.` : ''))}>Aktion ${ap ? 'frei' : 'verbraucht'}</span>` : ''}</div>`;
+  const bm = E.bpMax(u), werte = [
+    ['stiefel', own ? `${u.bp || 0}<small>/${bm}</small>` : bm, 'Bewegung', `Bewegungspunkte${own ? `: noch ${u.bp || 0} von ${bm}` : ` je Runde: ${bm}`}. Gelände kostet 1–3; Marsch gibt für die Aktion +50 %.`],
+    ['zielen', T.fs ? fmt(T.fs) : '–', 'Schuss', T.fs ? 'Feuerkraft im Fernkampf (×10).' : 'Kein Fernkampf.'],
+    ['nahkampf', T.atk ? fmt(T.atk) : '–', 'Nahkampf', T.atk ? 'Angriff im Nahkampf (×10).' : 'Kämpft nicht im Nahkampf.'],
+    ['schild', fmt(T.def), 'Abwehr', 'Abwehr gegen Beschuss und Nahkampf (×10), dazu Deckung des Felds.'],
+    ['gewehr', T.rng || '–', 'Reichweite', T.rng ? `Schießt ${felder(T.rng)} weit.` : 'Nur Nahkampf.']];
+  const plak = r ? [...r.stark.slice(0, 2).map(x => `<span class="u1-p gut"${tip('Gut gegen ' + x, 'Stark gegen: ' + r.stark.join(', ') + '.')}>▲ ${x}</span>`), ...r.schwach.slice(0, 2).map(x => `<span class="u1-p schlecht"${tip('Schlecht gegen ' + x, 'Schwach gegen: ' + r.schwach.join(', ') + '. Kontert man mit: ' + r.konter.join(', ') + '.')}>▼ ${x}</span>`)].join('') : '';
+  const eigs = (T.sp || []).map(x => { const s = eigSym(x) || 'blitz'; return `<span class="u1-eig"${tip(x, '')} aria-label="${upEsc(x)}"><img src="${upSym(s)}" alt=""></span>`; }).join('');
+  const unten = `<div class="u1-werte">${werte.map(([s, v, k, t]) => `<div class="u1-w"${tip(k, t)}><img src="${upSym(s)}" alt=""><b>${v}</b><small>${k}</small></div>`).join('')}</div>` +
+    (plak ? `<div class="u1-plak">${plak}</div>` : '') + (eigs ? `<div class="u1-eigs"><span class="u1-k">Eigenschaften</span>${eigs}</div>` : '');
+  return { sub, stats, unten };
+}
+function ui1Mehr(u) {   // „Mehr ▾“: ausführlich – Rolle, Eigenschaften in Worten, Fähigkeitstext, Stärken/Schwächen (Medaillen), Chronik
+  const T = TYPES[u.type];
+  return rolleHtml(u.type) + (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` +
+    `<div class="u1-med">${medaillenTexte(u.type).map(t => `<p><b>${t.name}.</b> ${t.text}</p>`).join('')}</div>` + chronikHtml(T, 'p');
+}
+// Knöpfe in festen Gruppen (Entwurf A): Draht zuerst (Wunsch des Nutzers), dann Angriff, Fähigkeiten, Drehen; „Fertig“ am Ende
+const KNOPF_GR = [['Bewegen', ['cut', 'lay', 'limber', 'setup', 'teardown', 'undig', 'ball-ein', 'ball-auf']], ['Angriff', ['p-fire', 'p-melee', 'zweit', 'faust', 'm-he', 'm-barrage', 'm-gas', 'sperr', 'ow']], ['Fähigkeiten', null], ['Drehen', ['tl', 'tr']], ['', ['pass']]];
+function knopfGruppen(btns) {
+  const gr = KNOPF_GR.map(([n, l]) => ({ n, l, b: [] }));
+  for (const b of btns) { const i = gr.findIndex(g => g.l && g.l.includes(b.act)); (i >= 0 ? gr[i] : gr[2]).b.push(b); }
+  for (const g of gr) if (g.l) g.b.sort((x, y) => g.l.indexOf(x.act) - g.l.indexOf(y.act));
+  const voll = gr.filter(g => g.b.length); let i = 0;
+  return { liste: voll.flatMap(g => g.b), html: voll.map(g => `<div class="u1-gr${g.n ? '' : ' ende'}">${g.n ? `<span class="u1-gk">${g.n}</span>` : '<span class="u1-gk">&nbsp;</span>'}<div class="u1-gb">${g.b.map(b => upBtn(b, i++)).join('')}</div></div>`).join(''), gruppen: voll.length };
+}
+// Tooltips der neuen Karte: Maus beim Überfahren, Finger bei langem Druck (0,4 s), Tastatur beim Fokus
+{ const hud = $('hud'), at = e => e.target.closest && e.target.closest('[data-u1tip]'), show = (el, ms) => { const [n, t] = el.dataset.u1tip.split('|'), r = el.getBoundingClientRect(); showTip([{ name: n, text: t }], r.left + r.width / 2, r.top, 'u1' + n, ms); };
+  let tm = 0;
+  hud.addEventListener('pointerover', e => { const el = at(e); if (el && e.pointerType === 'mouse') show(el); });
+  hud.addEventListener('pointerout', e => { if (at(e) && e.pointerType === 'mouse') hideTip(); });
+  hud.addEventListener('pointerdown', e => { const el = at(e); clearTimeout(tm); if (el && e.pointerType !== 'mouse') tm = setTimeout(() => show(el, 3500), 400); });
+  hud.addEventListener('pointerup', () => clearTimeout(tm)); hud.addEventListener('pointercancel', () => clearTimeout(tm));
+  hud.addEventListener('focusin', e => { const el = at(e); if (el) show(el); }); }
 // ---------- Bedienfeld der neuen Ansicht nach Entwurf A1 (2026-11-17) ----------
 // body.neu: dieselben Elemente wie im alten Panel, per CSS neu angeordnet (index.html „Bedienfeld der neuen Ansicht“).
 // Verschoben werden: Nachschub-Knopf nach oben links (#nachOben), Zustände unter die Moral, Hinweiszeile nach oben.
 let kartLang = false; try { kartLang = localStorage.getItem('arm.kartelang') === '1'; } catch (e) {}
 function neuBedienfeld(on) {
   if (neuBedienfeld.an === on) return; neuBedienfeld.an = on;
-  document.body.classList.toggle('neu', on);
+  document.body.classList.toggle('neu', on); document.body.classList.toggle('ui1', on && !window.UI1_ALT); document.body.classList.toggle('ui1alt', !!window.UI1_ALT);   // UI1 (Punkt 141)
   const shop = $('btnShop'), st = $('hudStates'), hint = $('hudHint');
   let kk = $('neuKK'); if (!kk) { kk = document.createElement('div'); kk.id = 'neuKK'; }   // Zeile unter der Moral: Zustände links, Info und ausführlich rechts
   if (on) { $('nachOben').appendChild(shop); $('hudStats').after(kk); kk.append(st, $('btnInfo'), $('btnMehr')); document.body.appendChild(hint); }
@@ -4035,22 +4102,24 @@ function neuBedienfeld(on) {
 // Knopfreihe unten mittig im freien Raum zwischen Einheitenkarte und rechtem Block; bei vielen Knöpfen kleiner, nie unter 40 px
 function neuKnopfreihe() {
   if (!document.body.classList.contains('neu')) return;
-  const mid = document.querySelector('#hud .up-mid'), row = $('hudRow'), n = Math.max(1, row.children.length);
+  const mid = document.querySelector('#hud .up-mid'), row = $('hudRow'), ui1 = ui1An(), n = Math.max(1, ui1 ? row.querySelectorAll('.up-ab').length : row.children.length), ngr = ui1 ? row.querySelectorAll('.u1-gr').length : 1;
   const card = document.querySelector('#hud .up-unit').getBoundingClientRect(), turn = document.querySelector('#hud .up-turn').getBoundingClientRect();
   const l = card.right + 18, r = turn.left - 18, space = Math.max(160, r - l), wide = innerWidth >= 2200, mid1 = innerWidth > 1500;
-  const gap = wide ? 12 : mid1 ? 10 : 7, ab = Math.max(40, Math.min(wide ? 80 : mid1 ? 66 : 56, Math.floor((space - gap * (n - 1)) / n)));
+  const gap = wide ? 12 : mid1 ? 10 : 7, gGap = ui1 ? (wide ? 26 : mid1 ? 20 : 12) : 0, ab = Math.max(ui1 ? 48 : 40, Math.min(wide ? 80 : mid1 ? 66 : 56, Math.floor((space - gap * (n - 1) - gGap * Math.max(0, ngr - 1)) / n)));   // UI1: Gruppenabstand; unter 56 px nur, wenn sonst nichts passt (1280 px)
+  if (ui1) mid.style.setProperty('--grgap', gGap + 'px');
   mid.style.setProperty('--abneu', ab + 'px'); mid.style.setProperty('--abgap', gap + 'px'); mid.style.left = Math.round(l + space / 2) + 'px';
 }
 // Karte „ausführlich“: Werte, Schlagworte, Text; Einstellung bleibt gespeichert
 function neuKarteMehr(u) {
   let m = $('hudMore'); if (!m) { m = document.createElement('div'); m.id = 'hudMore'; document.querySelector('#hud .up-unit').appendChild(m); }
   if (!u) { m.innerHTML = ''; return; }
+  if (ui1An()) { m.innerHTML = ui1Mehr(u); return; }
   const T = TYPES[u.type];
   m.innerHTML = `<div class="hm-w">${[['Angriff', T.atk], ['Abwehr', T.def], ['Moral', fmt(T.mor)], ['Zug', u.limbered ? P.LIMBER_MV : T.mv], ['Reichweite', T.rng || '–']].map(([k, x]) => `<div><b>${x}</b>${k}</div>`).join('')}</div>` +
     rolleHtml(u.type) + (T.sp && T.sp.length ? `<div class="hm-chips">${T.sp.map(x => `<span>${x}</span>`).join('')}</div>` : '') + `<p>${T.can}</p>` + chronikHtml(T, 'p');
 }
 { const b = document.createElement('button'); b.className = 'neu-mehr'; b.id = 'btnMehr'; b.title = 'Einheitenkarte: kurz oder ausführlich'; $('btnInfo').after(b);
-  const set = () => { document.body.classList.toggle('kartelang', kartLang); b.textContent = kartLang ? 'kurz' : 'ausführlich'; }; set();
+  const set = () => { document.body.classList.toggle('kartelang', kartLang); b.textContent = document.body.classList.contains('ui1') ? (kartLang ? 'Weniger ▴' : 'Mehr ▾') : kartLang ? 'kurz' : 'ausführlich'; }; set(); b._set = set;
   b.onclick = () => { kartLang = !kartLang; try { localStorage.setItem('arm.kartelang', kartLang ? '1' : '0'); } catch (e) {} set(); neuKnopfreihe(); }; }
 // Nachschub-Menü nach Entwurf B: Kategorien als Reiter, Karten im Querformat, Pergament-Details beim Überfahren/Antippen
 let shopKat = 'Alle';
@@ -4295,6 +4364,7 @@ function updateHud() {
       `<div class="up-tiles"><span class="up-t" title="Bewegungspunkte: ${own ? `noch ${u.bp || 0} von ${E.bpMax(u)}` : E.bpMax(u)}. Gelände kostet 1–3; Marsch (Stiefel mit Flügeln) gibt für die Aktion +50 %."><img src="${upSym('stiefel')}" alt="Bewegung"><small class="up-wort">Bewegung</small> ${own ? (u.bp || 0) : E.bpMax(u)}<small>${own ? ' / ' + E.bpMax(u) : ''}</small></span>` +
       (own ? `<span class="up-t" title="Aktion: ${ap ? 'noch frei' : 'verbraucht'} – Schießen, Nahkampf, Befehl, Fähigkeit oder Marsch${T.zweit ? `; kleine Münze: ${T.zweit.name}, einmal je Runde zusätzlich` : ''}"><img src="${upSym('blitz')}" alt="Aktion"><small class="up-wort">Aktion</small> <b class="up-akt${ap ? '' : ' used'}">${ap ? 'frei' : 'verbraucht'}</b><i class="up-pip${ap ? '' : ' used'}"></i>${T.zweit ? `<i class="up-pip klein${sel && sel.zw ? ' used' : u.zw ? ' used' : ''}"></i>` : ''}</span>` : '') +
       `<span class="up-t" title="Reichweite"><img class="wide" src="${upSym('gewehr')}" alt="Reichweite">${T.rng ? `${T.rng} <small>${T.rng === 1 ? 'Feld' : 'Felder'}</small>` : '–'}</span></div>`;
+    if (ui1An()) { const k = ui1Karte(u, own, hpNachV(hn._hn, performance.now())); $('hudSub').innerHTML = k.sub; $('hudStats').innerHTML = k.stats; let un = $('u1Unten'); if (!un) { un = document.createElement('div'); un.id = 'u1Unten'; document.querySelector('#hud .up-unit').appendChild(un); } un.innerHTML = k.unten; }   // UI1: Karte nach Entwurf A
     $('btnInfo').hidden = false;
     if (previewT && sel && !targets.has(previewT.id)) previewT = null;   // Vorschau-Ziel ist keins mehr (z. B. nach Eingraben): Vorschau weg statt Absturz
     if (previewT && sel) {
@@ -4304,6 +4374,7 @@ function updateHud() {
     if (sel && human(sel.side) && sel.side === G.side) btns = unitButtons(T, hints);
     else if (!hints.length) hints.push(T.can);
   } else {
+    if ($('u1Unten')) $('u1Unten').innerHTML = '';
     medaillenZeigen(null); $('portrait').hidden = true; $('btnInfo').hidden = true; $('hudStats').innerHTML = ''; $('upMark').innerHTML = ''; $('hudStates').innerHTML = ''; hudTips = [];
     if (placing) {
       $('hudName').textContent = 'Nachschub: ' + TYPES[placing].name;
@@ -4344,7 +4415,9 @@ function updateHud() {
   btns = btns.filter(b => b.pulse && (b.act === 'cut' || b.act === 'lay')).concat(btns.filter(b => !(b.pulse && (b.act === 'cut' || b.act === 'lay'))));
   upBtns = btns;
   neuKarteMehr(hasU ? u : null); setTimeout(neuKnopfreihe, 0);
-  $('hudRow').innerHTML = btns.map(upBtn).join('') + (placing ? '<button class="up-text" data-act="cancel">Abbrechen</button>' : '');
+  const kg = ui1An() && !G.aufstellung && btns.length ? knopfGruppen(btns) : null; if (kg) upBtns = btns = kg.liste;   // UI1: feste Gruppen, Tasten 1–n in Anzeigereihenfolge
+  if ($('btnMehr') && $('btnMehr')._set) $('btnMehr')._set();
+  $('hudRow').innerHTML = (kg ? kg.html : btns.map(upBtn).join('')) + (placing ? '<button class="up-text" data-act="cancel">Abbrechen</button>' : '');
   $('hudRow').querySelectorAll('.up-ab[data-act]').forEach(b => {   // Wirkungsbereich zeigen: Maus beim Überfahren, Finger solange gedrückt (+1,5 s)
     b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') areaAct = b.dataset.act; });
     b.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && areaAct === b.dataset.act) areaAct = null; });
