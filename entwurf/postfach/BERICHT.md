@@ -1,3 +1,39 @@
+## 2026-11-28 – W2g zweite Figurenprobe ohne alten Bogen (Punkt 149): nur Probe, nichts eingebaut
+
+Gepusht:
+- Auftrag, Werkzeug, JPG-Kopien, Übersicht und dieser Bericht in einem Commit
+
+**Stand:**
+- **Ohne Browser:** Kein Browser, keine Vorschau, kein Test, kein Video, keine sim-Läufe. In `src/` ist nichts geändert.
+- **Hänger:** keine.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** zwei Bögen in 2K über Nano Banana 2 Edit, **etwa 0,24 $** (≈ 0,22 €, Grenze 0,50 €).
+- **Ablage:** Die PNGs liegen in `entwurf/probe/stil/figuren/` (nicht in git, gesichert in OneDrive). In git liegen JPG-Kopien und der Auftrag `auftrag_w2g.json`.
+
+**Übersicht:** `entwurf/probe/stil/figuren/uebersicht2.jpg`, Spalten: alter Bogen – W2f – W2g – Zielstil. Das neue Prüfwerkzeug `tools/stil_uebersicht2.py` misst den Magenta-Rand und zählt die großen getrennten Flächen.
+
+| | Panzerbüchse Aschenwacht | MG-Trupp Konkordat |
+|---|---|---|
+| Stil | **klar im Zielstil:** wuchtig, Plattenpanzer, Rückentanks wie die Reskin-Linie | **klar im Zielstil**, Löwe auf der Brust |
+| Waffe genau einmal | ja, der liegende Schütze hält die Büchse mit Zweibein selbst | ja, der Schütze sitzt hinter dem MG, beide Hände an den Griffen |
+| Figuren getrennt (schneidbar) | **nein:** Schütze und Lader hängen zusammen (nur 2 große Flächen für 3 Figuren). Dazu ist der liegende Schütze am **linken Rand angeschnitten**. | **ja:** 3 getrennte Flächen (MG mit Schütze, Lader mit Kiste, Beobachter) |
+| Magenta-Rand | 97 % | 100 % |
+| Abzeichen | keine Kreuze, Adler oder Totenköpfe; auf der Brust ein Zahnrad, keine Helmplakette | keine; Löwe als Fraktionszeichen |
+| Größen | Büchse glaubhaft groß für einen Mann | MG eher leicht (luftgekühlt statt schwer wassergekühlt), aber stimmig |
+
+**Einschätzung:**
+- **„Ohne alten Bogen, mit genauer Beschreibung“ ist deutlich besser als W2f:** Der Stil sitzt, es gibt keine Doppelungen, und die Waffe gehört zur Figur. **Für die Umstellung taugt dieser Weg.**
+- **Schwachstelle sind Abstände und Bildrand.** Liegende Figuren werden lang und stoßen an den Nachbarn oder den Rand. Abhilfe im Prompt:
+  - „leave a wide margin to all image edges“,
+  - liegende Figuren immer **allein in einer eigenen Zeile** bzw. ein eigener Bogen im Format 21:9,
+  - oder höchstens zwei Figuren je Bogen.
+- **Prüfung vor dem Schnitt:** Das neue Werkzeug zählt die getrennten Flächen. Stimmt die Zahl nicht, wird gleich neu gemalt (je Versuch etwa 0,12 $).
+- **Ablauf je Bogen** wie beschlossen in zwei Durchgängen (erst Stil, dann Posen), Laufbilder gleich mitmalen. Damit rechne ich mit etwa 1,5 Versuchen je Bogen statt 2–3.
+
+**Fragen an Enrico:**
+1. Soll die Panzerbüchse vor dem großen Umbau noch einmal gemalt werden, mit Randabstand und dem liegenden Schützen allein in einer Zeile?
+2. Darf das MG beim Konkordat so leicht bleiben, oder soll es wie beim alten Bogen ein schweres wassergekühltes sein?
+
 ## 2026-11-28 – W2f Figuren-Stiltest (Punkt 148): nur Probe, nichts eingebaut
 
 Gepusht:

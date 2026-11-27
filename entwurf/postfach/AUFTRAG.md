@@ -103,7 +103,8 @@
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
 - ✓ **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** fertig (`5b48bd8`). Jetzt **Spieltest durch Enrico** (U7 + UI1).
 - ✓ **Paket W2a – Gelände-LoRA (Punkte 132/147)** erledigt: LoRA taugt nicht besser, Gelände künftig über Nano Banana + Referenzmappe.
-- **Paket W2f – Figuren-Stiltest (Punkt 148)** – **nächster `pa`, parallel zum Spieltest, ohne Browser.** Opus Mittel.
+- ✓ **Paket W2f – Figuren-Stiltest (Punkt 148)** erledigt (mit altem Bogen als Vorlage: Stil nur vorsichtig, Doppelungen).
+- **Paket W2g – zweite Figurenprobe ohne alten Bogen (Punkt 149)** – **nächster `pa`, ohne Browser.** Opus Mittel. Reihenfolge der späteren Umstellung: Waffentrupps und Unterstützung zuerst, Fahrzeuge zuletzt (Enrico ok).
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -217,6 +218,26 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-28 00:35): Antwort zu W2f – zweite Probe OHNE alten Bogen (W2g), ohne Browser <<<
+✓ **149. Nächster `pa` = W2g. Einstellung: Opus, Mittel.** Wie bei W2f: **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe, nichts in `src/`** (Enrico spielt).
+- **Idee:** Der alte Bogen kommt **nicht** als Vorlage mit, damit nichts doppelt abgemalt wird. Als `refs` dienen nur die Zielstil-Bögen, dazu eine genaue Beschreibung jeder Figur. Jede Figur steht frei mit viel Abstand, und Waffe und Schütze bilden ein Stück.
+- **Reihenfolge der späteren Umstellung** (Enrico ok): Waffentrupps und Unterstützung zuerst, Fahrzeuge zuletzt. Zwei Durchgänge (erst Stil, dann Posen), Laufbilder gleich mitmalen.
+```json
+[
+ { "name": "aschenwacht_panzerbuechse_trupp_zielstil2", "ordner": "entwurf/probe/stil/figuren",
+   "refs": ["ui-quelle/figuren/aschenwacht/reskin/aschenwacht_soldat_reskin.png", "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_sturm_reskin.png", "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_panzer_neu.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "Draw a sheet of exactly THREE separate soldiers of the same army as the references, in exactly their art style, proportions and armour (bulky men in riveted steel plate armour over ash-grey greatcoats, spiked helmets, gas masks with glowing yellow eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter), all facing right, in one row with wide empty gaps between them so that no figure touches another: 1) LEFT: a gunner lying prone, holding a long anti-tank rifle on a small bipod with both hands, cheek on the stock; the rifle is part of this figure and appears only once on the whole sheet. 2) MIDDLE: a loader kneeling, holding one large rifle cartridge in both hands. 3) RIGHT: a spotter kneeling, looking through binoculars. No other weapons lying around, no extra figures. Flat solid magenta background (#FF00FF) everywhere, no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags, no badges on helmets." },
+ { "name": "konkordat_mg_trupp_zielstil2", "ordner": "entwurf/probe/stil/figuren",
+   "refs": ["ui-quelle/figuren/konkordat/reskin/konkordat_soldat_reskin.png", "ui-quelle/figuren/konkordat/reskin/konkordat_sturm_reskin.png", "ui-quelle/figuren/konkordat/konkordat_fernsprech_neu.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "Draw a sheet of exactly THREE separate groups of soldiers of the same army as the references, in exactly their art style, proportions and armour (bulky men in riveted steel plate armour over oxblood red greatcoats, brodie-style steel helmets, gas masks with glowing green eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter), all facing right, in one row with wide empty gaps between them so that nothing touches: 1) LEFT: a heavy water-cooled machine gun on a low tripod with a gunner sitting directly behind it, both hands on the grips, as one connected piece; the machine gun appears only once on the whole sheet. 2) MIDDLE: a loader kneeling next to an open wooden ammunition box, holding an ammunition belt. 3) RIGHT: a spotter kneeling, looking through binoculars. No extra figures, no raised hands. Flat solid magenta background (#FF00FF) everywhere, no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags." }
+]
+```
+- **Übersicht:** `entwurf/probe/stil/figuren/uebersicht2.jpg` mit den Spalten alter Bogen – W2f – W2g – Zielstil.
+- **Prüfen:** Abzeichen, Waffe genau einmal vorhanden, Figuren berühren sich nicht (schneidbar), Magenta-Rand.
+- **Kosten:** Grenze 0,50 €. Bericht mit Einschätzung, ob dieser Weg („ohne alten Bogen, mit genauer Beschreibung“) für die Umstellung taugt. Nichts einbauen.
 
 # >>> JETZT (Enrico 2026-11-28 00:25): Antwort zu W2a – Gelände über Referenzmappe; nächster `pa` = Figuren-Stiltest W2f (ohne Browser) <<<
 ✓ **148. Nächster `pa` = W2f, Figuren-Stiltest. Einstellung: Opus, Mittel.** Enrico spielt weiter, deshalb wieder **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe, nichts in `src/`**.
