@@ -1695,6 +1695,14 @@ const FAHNE_WEHT = { konkordat_hauptmann_gruppe_2: { art: 'haengt', x: [0.66, 0.
   aschenwacht_hauptmann_gruppe_2: { art: 'quer', x: [0.1, 0.99], y: [0, 0.31], pol: 0.92, aus: [0.4, 0.13, 0.7, 0.36] },
   konkordat_general_gruppe_2: { art: 'quer', x: [0, 0.99], y: [0, 0.44], pol: 0.92, aus: [0.22, 0.26, 0.54, 0.47], unten: 0.07 },
   aschenwacht_general_gruppe_2: { art: 'quer', x: [0.02, 0.99], y: [0, 0.39], pol: 0.91, aus: [0.17, 0.23, 0.53, 0.42], unten: 0.04 } };
+// F2b (Punkt 133, 2026-11-27): Größe der Führungsfiguren an den Linien-Soldaten derselben Seite angeglichen. Gemessen in den Bildern (320 px = 1 SH): Scheitel der Linie Konkordat 309, Aschenwacht 305 (ohne Spitze);
+// stehende Männer (Fahnenträger, Melder) auf 1,08 × Linie (die Linie steht breitbeinig geduckt), Offizier +4 %, General +6 %, Läufer nach der Kopfgröße des stehenden Melders. Rückweg window.GRUPPE_GR_ALT
+const GRUPPE_GR = { konkordat_hauptmann_gruppe_1: 1.09, konkordat_hauptmann_gruppe_2: 1.16, konkordat_hauptmann_gruppe_3: 1.06, konkordat_melder_steht: 1.08,
+  konkordat_general_gruppe_1: 1.16, konkordat_general_gruppe_2: 1.3, konkordat_general_gruppe_3: 1.25,
+  aschenwacht_hauptmann_gruppe_1: 1.13, aschenwacht_hauptmann_gruppe_2: 1.25, aschenwacht_hauptmann_gruppe_3: 1.14, aschenwacht_melder_steht: 1.08,
+  aschenwacht_general_gruppe_1: 1.11, aschenwacht_general_gruppe_2: 1.26, aschenwacht_general_gruppe_3: 1.17,
+  /* Waffentrupps: kniende Bedienung 10–14 % kleiner als der kniende Liniensoldat (257 bzw. 270 px) – ganze Gruppe samt Waffe gleich vergrößert */ konkordat_mg_trupp_1: 1.1, konkordat_mg_trupp_2: 1.1, konkordat_mg_trupp_3: 1.1, konkordat_mg_trupp_4: 1.1,
+  aschenwacht_mg_trupp_1: 1.12, aschenwacht_mg_trupp_2: 1.12, aschenwacht_mg_trupp_3: 1.12, aschenwacht_mg_trupp_4: 1.12, aschenwacht_panzerbuechse_trupp_1: 1.12, aschenwacht_panzerbuechse_trupp_2: 1.12, aschenwacht_panzerbuechse_trupp_3: 1.12, aschenwacht_panzerbuechse_trupp_4: 1.12 };
 const FW_N = 16, FW_C = new WeakMap();
 function fahneBilder(im, sp) {
   let c = FW_C.get(im); if (c) return c;
@@ -1706,7 +1714,7 @@ function fahneBilder(im, sp) {
 }
 function fahneBild(im, sp) {   // aktuelles Bild der Welle (Periode 1,7 s)
   const c = fahneBilder(im, sp), n = Math.floor(((now / 1700) % 1) * FW_N); if (c.fr[n]) return c.fr[n];
-  const { W, H } = c, v = document.createElement('canvas'); v.width = W; v.height = H; const x = v.getContext('2d'), A = (sp.a || 0.012) * H, om = n / FW_N * Math.PI * 2, cw = 3, ch = 6;
+  const { W, H } = c, v = document.createElement('canvas'); v.width = W; v.height = H; const x = v.getContext('2d'), A = (sp.a || (window.FAHNE_SANFT ? 0.012 : 0.02)) * H   /* F2b: 2 % statt 1,2 % der Bildhöhe, Rückweg window.FAHNE_SANFT */, om = n / FW_N * Math.PI * 2, cw = 3, ch = 6;
   const x0 = Math.floor(sp.x[0] * W), x1 = Math.ceil(sp.x[1] * W), y0 = Math.floor(sp.y[0] * H), y1 = Math.ceil(sp.y[1] * H);
   for (let cx = x0; cx < x1; cx += cw) for (let cy = y0; cy < y1; cy += ch) { const fx = (cx + cw / 2) / W, fy = (cy + ch / 2) / H, au = sp.aus, ak = au ? Math.min(1, Math.hypot(Math.max(au[0] - fx, 0, fx - au[2]), Math.max(au[1] - fy, 0, fy - au[3])) / 0.07) : 1;   // Welle läuft zum stehenden Kasten (Kopf, Hand) weich aus
     if (sp.art === 'haengt') { const q = Math.max(0, (fy - sp.y[0]) / (sp.y[1] - sp.y[0])); x.drawImage(c.tuch, cx, cy, cw + 1, ch + 1, cx + A * 0.8 * q * ak * Math.sin(om - q * 4), cy, cw + 1, ch + 1); }
@@ -1988,6 +1996,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
     if (f.kv) { h *= f.kv.sz; w *= f.kv.sz; }   // U2: Klone – Größe je Figur
+    { const gg = nf.gruppe && !window.GRUPPE_GR_ALT && nf.ims[f.i] && GRUPPE_GR[nf.ims[f.i]._key]; if (gg) { h *= gg; w *= gg; } }   // F2b (Punkt 133): Führung so groß wie die Linie (Faktor des Platzes, gilt auch für die Posen des Offiziers)
     const atm = nf.gruppe && BW && !f.geraet && !pa && !d.moving && !window.ATEM_ALT ? atemVon(u, f.i) : null; if (atm) h *= atm.sy;   // F2 (Punkt 130.4)
     const prot2 = prot + (f.kv ? f.kv.rot : 0) + (atm ? atm.rot : 0), flipF = !!flip !== !!(f.kv && f.kv.sp);
     // Bodenschatten
