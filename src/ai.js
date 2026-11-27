@@ -45,6 +45,7 @@ const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
 const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
+const W_SAMMEL = +((typeof process !== 'undefined' && process.env && process.env.W_SAMMEL) || 1.5), W_FLUCHT_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_FLUCHT_ZIEL) || 2);   // U7 Schritt 2: Anführer/Banner nahe Wankenden und Fliehenden; fliehende Gegner nahe gegnerischer Anführer (kämen sonst zurück)
 const W_CAV_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_CAV_ZIEL) || 3);   // F94: Anreiz für Reiter-Ziele
 const nahKaempfer = T => T.cls === 'storm' || T.cls === 'cav' || !!T.suit;   // Prüfliste 2.25: Pioniere/Mineure haben keine Nahkampf-Panzerwaffe mehr (F80)
 // Erwarteter Nahkampfschaden gegen ein Fahrzeug auf (c, r) in der nächsten gegnerischen Runde: Sturmtruppen, Reiter, Kampfanzüge, Pioniere,
@@ -258,7 +259,12 @@ const W_EIS = +((typeof process !== 'undefined' && process.env && process.env.W_
 const W_STECKEN = +((typeof process !== 'undefined' && process.env && process.env.W_STECKEN) || 3);   // M6: Gewicht Steckenbleiben (× P.STECKEN 0,3)
 const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
-function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r); }
+function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r) + sammelWert(G, u, c, r); }
+function sammelWert(G, u, c, r) {   // U7 Schritt 2: Anführer und Banner stellen sich bis 2 Felder an eigene Wankende oder Fliehende (Sammel-Chance)
+  if (E.fluchtAlt() || !(u.officer || TYPES[u.type].banner)) return 0; let n = 0;
+  for (const o of G.units) if (o !== u && o.side === u.side && E.dist(o.c, o.r, c, r) <= 2 && ((o.status === 'rout' && !o.aufgerieben) || (o.status === 'ok' && o.mor < P.FALLBACK_MOR && E.cls(o) !== 'walker'))) n++;
+  return W_SAMMEL * Math.min(2, n);
+}
 function posValue0(G, u, c, r) {
   const w = wOf(u.side), h = E.hex(G, c, r), k = TYPES[u.type].relay || (TYPES[u.type].abil === 'smoke' && E.cls(u) !== 'art') ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
   const th = threatAt(G, u, c, r);
@@ -332,6 +338,7 @@ function attackValue(G, a, d, kind, o) {
   const p = E.preview(G, a, d, kind, o), w = wOf(a.side);
   if (p.dmg <= 0.01) return -1;
   let v = p.dmg * w.dmg - p.counter * w.counter;
+  if (d.status === 'rout' && !d.aufgerieben && !E.fluchtAlt() && G.units.some(o => o.officer && o.side === d.side && E.active(o) && E.dist(o.c, o.r, d.c, d.r) <= 3)) v += W_FLUCHT_ZIEL;   // U7 Schritt 2: sonst wird er gesammelt
   const flame = kind === 'fire' && TYPES[a.type].flame;
   const strAfter = d.str - p.dmg;
   const morAfter = d.mor - p.dmg * 0.8 * (flame ? 2 : 1) - (p.arc === 'flank' ? 0.5 : p.arc === 'rear' ? 1 : 0);
@@ -567,6 +574,7 @@ function next(G) {
       if (E.TYPES[o.type].atk >= 4 && !o.attacked && o.ap >= 1 && nearestEnemyDist(G, o.side, o.c, o.r) <= (E.nahFrei(o) ? 2 : 1)) close++;
       if (E.TYPES[o.type].rng >= 2 && E.TYPES[o.type].fs >= 2 && !o.attacked && o.ap >= 1 && G.units.some(e => e.side !== o.side && E.canFire(G, o, e))) shoot++;
     }
+    if (!E.fluchtAlt() && E.canOrderKind(G, u, 'rally') && E.sammelZiele(G, u).some(o => o.str >= 4 && E.sammelChance(G, o, true) >= 0.5)) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };   // U7 Schritt 2: Sammeln auf Fliehende
     if (shoot >= 2 && E.canOrderKind(G, u, 'fire')) return { u: u.id, steps: [{ k: 'order', kind: 'fire' }] };
     if (weak >= 2 && E.canOrderKind(G, u, 'rally')) return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] };
     if (close >= 2 && E.canOrderKind(G, u, 'storm')) return { u: u.id, steps: [{ k: 'order', kind: 'storm' }] };

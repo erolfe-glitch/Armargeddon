@@ -6,6 +6,7 @@
 // ---------- Grundwerte (per Simulation abgestimmt) ----------
 const P = {
   DMG: 0.61,
+  RALLY_ALLEIN: 0.2, RALLY_DECKUNG: 0.15, RALLY_BANNER: 0.2, RALLY_GENERAL: 0.8, RALLY_MUEDE: 0.15, RALLY_MAX: 0.9, RALLY_MOR: 3.5, FLUCHT_BP: 2, SAMMELN_R: 2, SAMMELN_R_GENERAL: 3, SAMMELN_BEFEHL: 0.2,   // U7 Schritt 2 (Punkt 125): Sammeln für alle Fliehenden (sammelChance), langsamere Flucht, Befehl „Sammeln“ auf Fliehende
   FURCHT_BASIS: 0.35, ROAR_BASIS: 0.5, ROAR_BESTANDEN: 0.5,   // U7 Schritt 1 (Punkt 125/45b, 2026-11-27): Furcht-Aura und Löwengebrüll über den Entsetzenstest (Grundwerte), bestanden beim Gebrüll nur −ROAR_BESTANDEN Moral
   ROAR_R: 2, ROAR_MOR: 2,   // Löwengebrüll des Kreuzschreiters (2026-11-20): einmal je Schlacht, kostet nichts; Gegner ohne Panzerung bis ROAR_R Felder: Moral −ROAR_MOR, niedergehalten bis zum Ende ihrer nächsten Runde
   FAUST_MUL: 2,
@@ -1211,6 +1212,7 @@ const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlw
   pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 1, banner: 2,   /* Punkt 99: Hund ist Beiwerk */
   hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, ...(TOG.REITER_ALT ? {} : { reiter: 3 }), stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
 const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
+const fluchtAlt = () => !!(TOG.FLUCHT_ALT || (typeof window !== 'undefined' && window.FLUCHT_ALT));   // U7 Schritt 2: Rückweg – alte Flucht (Punkte sofort, ein Sammelversuch nur mit Offizier, schnelle Flucht)
 const furchtAlt = () => !!(TOG.FURCHT_ALT || (typeof window !== 'undefined' && window.FURCHT_ALT));   // U7 Schritt 1: Rückweg – Furcht-Aura und Gebrüll ohne Test
 const truppAlt = () => !!(TOG.TRUPP_ALT || (typeof window !== 'undefined' && window.TRUPP_ALT));
 function modelle(t) { const T = TYPES[t]; if (!truppAlt() && TRUPP[t] != null) return TRUPP[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
@@ -1398,10 +1400,10 @@ function entsetzen(G, a, d, ev) {
 }
 function credit(G, u) { if (!u.credited) { u.credited = true; G.pts[u.side === 'A' ? 'D' : 'A'] += P.PTS_KILL; } }
 function killUnit(G, u, ev, how) {
-  if (how !== 'escaped') credit(G, u);
+  if (how !== 'escaped' || !fluchtAlt()) credit(G, u);   // U7 Schritt 2: Moral-Flucht zählt erst am Rand bzw. bei Vernichtung
   u.status = how === 'escaped' ? 'gone' : 'dead';
   if (u.officer && how !== 'escaped') ev.push({ t: 'officer', u: u.id, name: u.officer });
-  if (TYPES[u.type].held && how !== 'escaped') { for (const o of G.units) if (o.side === u.side && o !== u && alive(o)) o.mor = Math.max(0, o.mor - P.HELD_FALL_MOR); ev.push({ t: 'heldfall', u: u.id, side: u.side }); }   // ganze Seite verliert Moral
+  if (TYPES[u.type].held && how !== 'escaped') { for (const o of G.units) if (o.side === u.side && o !== u && alive(o)) o.mor = Math.max(0, o.mor - P.HELD_FALL_MOR); ev.push({ t: 'heldfall', u: u.id, side: u.side }); if (!fluchtAlt()) for (const o of G.units) if (o.side === u.side && o.status === 'ok' && o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, null, ev); }   // U7 Schritt 2 (Fehler 5): Heldenfall kann zur Flucht führen   // ganze Seite verliert Moral
   ev.push({ t: how, u: u.id });
 }
 function retreatHex(G, u, from) {
@@ -1422,6 +1424,7 @@ function retreatHex(G, u, from) {
 }
 function fallBack(G, u, from, ev) {
   if (u.planted) return;   // aufgepflanztes Banner weicht nicht
+  if (!fluchtAlt()) { const k = G.turn + G.side; if (u.gewichenIn === k) return; u.gewichenIn = k; }   // U7 Schritt 2 (Fehler 6): höchstens einmal je gegnerischer Runde
   const h = retreatHex(G, u, from);
   if (!h) return;
   const fc = u.c, fr = u.r;
@@ -1430,10 +1433,12 @@ function fallBack(G, u, from, ev) {
   ev.push({ t: 'fallback', u: u.id, path: [[fc, fr], h] });
 }
 function routUnit(G, u, from, ev) {
-  u.status = 'rout'; u.supp = 0; credit(G, u);
-  ev.push({ t: 'rout', u: u.id });
+  const neu = !fluchtAlt(); u.status = 'rout'; u.supp = 0; u.aufgerieben = u.str < P.ROUT_STR; u.routTurn = G.turn + G.side;   // U7 Schritt 2: aufgerieben (Stärke) = endgültig, Panik (Moral 0) = sammelbar
+  if (!neu || u.aufgerieben) credit(G, u);   // Panik: Punkte erst am Rand oder bei Vernichtung
+  ev.push({ t: 'rout', u: u.id, aufgerieben: u.aufgerieben });
   for (const [c, r] of neighbors(u.c, u.r)) {
     const o = unitAt(G, c, r);
+    if (o && o.side === u.side && active(o) && neu) { if (o.mor >= P.FALLBACK_MOR) continue; o.mor = Math.max(0, o.mor - 0.5); ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor }); if (o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, from, ev); continue; }   // Kettenflucht nur für Wankende, über routUnit (Fehler 3)
     if (o && o.side === u.side && active(o)) {
       o.mor = Math.max(0, o.mor - 0.5);
       ev.push({ t: 'hit', u: o.id, dmg: 0, panic: true, str: o.str, morv: o.mor });
@@ -1753,7 +1758,7 @@ function startTurn(G) {
       u.poison = P.POISON_TURNS;   // wirkt nach dem Verlassen der Wolke noch nach
       ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor, poison: u.poison });
       if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
-      if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0) && !noFlee(G, u)) { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); }
+      if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0) && !noFlee(G, u)) { if (!fluchtAlt()) routUnit(G, u, null, ev); else { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); } }   // U7 Schritt 2: Gas-Flucht über routUnit
     }
     else if (u.poison > 0) {   // vergiftet (außerhalb der Wolke): halber, dann viertel Gasschaden
       const k = P.POISON_K[Math.min(u.poison, P.POISON_K.length) - 1]; u.poison--;
@@ -1761,12 +1766,22 @@ function startTurn(G) {
         u.str = Math.max(0, u.str - P.GAS_STR * k); u.mor = Math.max(0, u.mor - P.GAS_MOR * k);
         ev.push({ t: 'gas', u: u.id, str: u.str, morv: u.mor, poison: u.poison, late: true });
         if (u.str < 0.3) { killUnit(G, u, ev, 'destroyed'); continue; }
-        if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0) && !noFlee(G, u)) { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); }
+        if (u.status === 'ok' && (u.str < P.ROUT_STR || u.mor <= 0) && !noFlee(G, u)) { if (!fluchtAlt()) routUnit(G, u, null, ev); else { u.status = 'rout'; u.supp = 0; credit(G, u); ev.push({ t: 'rout', u: u.id }); } }
       }
     }
     if (u.broken > 0) {
       u.broken--;
       if (u.broken > 0) { u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; } else ev.push({ t: 'repaired', u: u.id });
+    }
+    if (u.status === 'rout' && !fluchtAlt()) {   // U7 Schritt 2: erst Rand (dort weg), dann Sammelversuch (nicht in der Runde, in der die Flucht begann), sonst P.FLUCHT_BP Felder weiter
+      if (u.routTurn !== G.turn + s) {
+        if (u.c === SIDES[s].edge) { killUnit(G, u, ev, 'escaped'); continue; }
+        const p = sammelChance(G, u);
+        if (p > 0 && G.rng() < p) { const off = G.units.find(o => o.officer && o.side === s && active(o) && dist(o.c, o.r, u.c, u.r) <= P.OFFICER_RANGE);
+          u.status = 'ok'; u.mor = P.RALLY_MOR; u.gesammelt = (u.gesammelt || 0) + 1; u.face = s === 'A' ? 0 : 3; ev.push({ t: 'rally', u: u.id, by: off ? off.officer : null, p: +p.toFixed(2) });
+          u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; continue; }
+        flee(G, u, P.FLUCHT_BP, ev); }
+      u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; continue;
     }
     if (u.status === 'rout') {
       const off = G.units.find(o => o.officer && o.side === s && active(o) && dist(o.c, o.r, u.c, u.r) <= P.OFFICER_RANGE);
@@ -1988,6 +2003,7 @@ function useAbil(G, u, c, r) {
   else if (k === 'kopfrunter') {   // Punkt 3: kein Schaden – Ziel niedergehalten, Moral −P.KOPF_MOR
     const d = unitAt(G, c, r); if (TYPES[u.type].hidden) u.revealed = 1; ev.push({ t: 'kopfrunter', u: u.id, d: d.id });
     d.mor = Math.max(0, d.mor - P.KOPF_MOR * (TYPES[d.type].suit || cls(d) === 'walker' ? 0.5 : 1)); if (active(d) && !d.supp) { d.supp = 1; ev.push({ t: 'supp', u: d.id }); }
+    if (!fluchtAlt() && active(d) && d.mor <= 0 && !noFlee(G, d)) routUnit(G, d, u, ev);   // U7 Schritt 2 (Fehler 5)
   }
   else if (k === 'handgranate') {   // Punkt 34: Wurf, Schaden P.HANDGR_DMG (Graben/Haus schützen nicht), gegen Panzer schwach, Ziel niedergehalten
     const d = unitAt(G, c, r); ev.push({ t: 'handgranate', a: u.id, d: d.id, wurf: true });
@@ -2098,6 +2114,18 @@ function cmdRange(u) { return P.ORDER_R; }   // Paket 8: normale Befehle nur 1 F
 const ORDER_KINDS = { A: ['rally', 'fire'], D: ['rally', 'storm'] };
 function orderKinds(u) { return ORDER_KINDS[u.side] || ['rally', 'storm']; }
 function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && u.ap >= 1 && !(u.supp > 0) && !u.ordered && (u.befehle || 0) < P.ORDER_MAX && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }
+// U7 Schritt 2: Sammel-Chance eines Fliehenden zu Rundenbeginn bzw. mit Befehl (Regel, Anzeige und KI); aufgerieben (Stärke < ROUT_STR) oder Feind daneben = 0
+function sammelChance(G, u, befehl) {
+  if (!u || u.status !== 'rout' || u.aufgerieben || u.str < P.ROUT_STR || adjEnemies(G, u).length) return 0;
+  const offs = G.units.filter(o => o.officer && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.OFFICER_RANGE);
+  let p = offs.some(o => TYPES[o.type].cmd === 2) ? P.RALLY_GENERAL : offs.length ? P.RALLY : P.RALLY_ALLEIN;
+  if (coverOf(G, u).tier >= 1) p += P.RALLY_DECKUNG;
+  if (G.units.some(o => TYPES[o.type].banner && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= 2)) p += P.RALLY_BANNER;
+  p -= (u.gesammelt || 0) * P.RALLY_MUEDE; if (befehl) p += P.SAMMELN_BEFEHL;
+  return Math.max(0, Math.min(P.RALLY_MAX, p));
+}
+function sammelnR(u) { return TYPES[u.type].cmd === 2 ? P.SAMMELN_R_GENERAL : P.SAMMELN_R; }
+function sammelZiele(G, u) { return fluchtAlt() ? [] : G.units.filter(o => o.side === u.side && o.status === 'rout' && !o.aufgerieben && dist(o.c, o.r, u.c, u.r) <= sammelnR(u)); }
 function canOrder(G, u) { return orderKinds(u || {}).some(k => canOrderKind(G, u, k)); }
 function orderCd(G, u, kind) {
   const relay = G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].relay && dist(o.c, o.r, u.c, u.r) <= 3);
@@ -2112,7 +2140,11 @@ function order(G, u, kind) {
     if (kind === 'rally') { o.mor = Math.min(TYPES[o.type].mor, o.mor + P.ORDER_MOR); o.supp = 0; } else if (kind === 'fire') o.fireFree = true; else o.zeal = true;
     ids.push(o.id);
   }
-  return [{ t: 'order', u: u.id, kind, name: u.officer, ids, mors: ids.map(id => G.units.find(x => x.id === id).mor) }];
+  const ev = [{ t: 'order', u: u.id, kind, name: u.officer, ids, mors: ids.map(id => G.units.find(x => x.id === id).mor) }];
+  if (kind === 'rally' && !fluchtAlt()) for (const o of sammelZiele(G, u)) {   // U7 Schritt 2 (Punkt 86): Fliehende im Umkreis würfeln einzeln mit sammelChance + P.SAMMELN_BEFEHL
+    const p = sammelChance(G, o, true); if (G.rng() < p) { o.status = 'ok'; o.mor = P.RALLY_MOR; o.supp = 0; o.gesammelt = (o.gesammelt || 0) + 1; o.ap = 0; o.bp = 0; o.moved = true; o.attacked = true; ev.push({ t: 'rally', u: o.id, by: u.officer, befehl: true, p: +p.toFixed(2) }); }
+    else ev.push({ t: 'sammelnFehl', u: o.id, by: u.officer, p: +p.toFixed(2) }); }
+  return ev;
 }
 
 // Großer Befehl des Generals (einmal je Schlacht und Seite, 1 Punkt): Konkordat „Halten um jeden Preis“ (bis zum nächsten eigenen Zug keine Flucht, Abwehr ×1,25),
@@ -2220,7 +2252,7 @@ function endTurn(G) {
 }
 function losses(G, side) {
   let total = 0, lost = 0;
-  for (const u of G.units) if (u.side === side) { total += 10; lost += u.status === 'ok' ? 10 - u.str : 10; }
+  for (const u of G.units) if (u.side === side) { total += 10; lost += u.status === 'ok' ? 10 - u.str : u.status === 'rout' && !u.aufgerieben && !fluchtAlt() ? (10 + 10 - u.str) / 2 : 10; }   // U7 Schritt 2: in Panik fliehend halb (Mittel aus voll und fehlender Stärke), voll erst am Rand/bei Vernichtung
   return lost / total;
 }
 function points(G) { let p = 0; for (const o of OBJECTIVES) if (G.ctrl[o.id] === 'A') p += o.pts; return p; }
@@ -2264,7 +2296,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  sammelChance, sammelnR, sammelZiele, fluchtAlt, KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy
