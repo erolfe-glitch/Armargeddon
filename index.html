@@ -11741,11 +11741,15 @@ function heldBlitz(id, art) { if (BW) HBLITZ.push({ id, art, t0: now }); }
 // F84 (2026-11-21): Ofen-Glut der Roten Faust – wenige glühende Funken aus Brusthöhe (Ofenkern am Rücken), gelb-oranger Kern mit weichem Schein,
 // flackernd, steigen auf, treiben leicht zur Seite und verlöschen (vorher harte rote Punkte, die wie Tropfen wirkten)
 const GLUT = [];   // { id, t0, dauer, ox, vx, gr }
+// U3 (Punkt 118.3): Helden-Effekte an der Figur (Glut, Dampfstoß, Funken, Aufblitzen) mit Figurenfaktor – Höhe des gezeichneten Heldenmodells
+// gegen die Malhöhe 0,75 Feldradien (1,5 SH), für die sie gebaut wurden; Ringe/Druckwellen am Boden bleiben feldgroß. Rückweg window.FIGFAK_ALT.
+const HELD_H = 0.75;
+function heldFak(id) { if (window.FIGFAK_ALT) return 1; const d = DU.get(id), b = d && d.fbx && d.fbx[0]; return b ? Math.max(0.6, Math.min(1.6, b[3] / (HELD_H * L.s))) : 1; }
 function drawGlut(g, s, up) {
   for (let i = GLUT.length - 1; i >= 0; i--) { const p = GLUT[i], el = (now - p.t0) * speed, d = DU.get(p.id); if (el > p.dauer || !d) { GLUT.splice(i, 1); continue; }
     if (up && !up(d.x, d.y)) continue; const k = el / p.dauer, b = d.fbx && d.fbx[0], y0 = b ? d.y + b[1] + b[3] * 0.16 : d.y - s * 1.2, x0 = b ? d.x + b[0] + b[2] * (facesLeft(d.face) ? 0.74 : 0.26) : d.x;   // Ofen auf dem Rücken (Schornstein)
-    const x = x0 + (p.ox * 0.4 + p.vx * k + Math.sin(el / 230 + p.t0) * 0.04) * s, y = y0 - k * s * 1.1, fl = 0.7 + 0.3 * Math.sin(el / 45 + p.t0), a = (k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85) * fl * (BW === 1 ? 0.7 : 1);
-    const rr = s * 0.045 * p.gr * (1 - 0.5 * k), gr = g.createRadialGradient(x, y, 0, x, y, rr * 2.6);
+    const hf = heldFak(p.id), x = x0 + (p.ox * 0.4 + p.vx * k + Math.sin(el / 230 + p.t0) * 0.04) * s * hf, y = y0 - k * s * 1.1 * hf, fl = 0.7 + 0.3 * Math.sin(el / 45 + p.t0), a = (k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85) * fl * (BW === 1 ? 0.7 : 1);
+    const rr = s * 0.045 * p.gr * (1 - 0.5 * k) * hf, gr = g.createRadialGradient(x, y, 0, x, y, rr * 2.6);
     gr.addColorStop(0, `rgba(255,236,170,${a})`); gr.addColorStop(0.25, `rgba(255,170,60,${0.85 * a})`); gr.addColorStop(0.6, `rgba(220,80,20,${0.3 * a})`); gr.addColorStop(1, 'rgba(160,40,10,0)');
     g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr * 2.6, 0, 7); g.fill(); g.restore(); }
 }
@@ -11785,10 +11789,10 @@ function drawHeldRinge(g, s, up) {
 const AURA_PULS = new Set();
 function auraPuls(id, art) {   // Aura hat gewirkt: einmal je Held und Runde Ring, Aufblitzen und kleine Einblendung
   if (!G) return; const k = id + ':' + G.turn + ':' + G.side; if (AURA_PULS.has(k)) return; AURA_PULS.add(k); const d = DU.get(id); if (!d) return;
-  heldRing(d.x, d.y, art, false); heldBlitz(id, art === 'faust' ? 'glut' : 'kalt'); heldFunken(art === 'faust' ? 6 : 3, d.x, d.y - L.s * 0.75, { mul: 0.5, life: 30 }); heldTitel(art === 'faust' ? 'Standhaft' : 'Furcht', art + ' klein', heldName(id));
+  heldRing(d.x, d.y, art, false); heldBlitz(id, art === 'faust' ? 'glut' : 'kalt'); { const hf = heldFak(id); heldFunken(art === 'faust' ? 6 : 3, d.x, d.y - L.s * 0.75 * hf, { mul: 0.5 * hf, life: 30 }); } heldTitel(art === 'faust' ? 'Standhaft' : 'Furcht', art + ' klein', heldName(id));
 }
 function faustDampf(id, st) {   // Dampfstoß aus Faust und Ofen
-  const d = DU.get(id); if (!d) return; const b = d.fbx && d.fbx[0], lf = facesLeft(d.face), s = L.s;
+  const d = DU.get(id); if (!d) return; const b = d.fbx && d.fbx[0], lf = facesLeft(d.face), s = L.s * heldFak(id);   // U3: Dampf nach Figurhöhe
   const x = b ? d.x + b[0] + b[2] * (lf ? 0.15 : 0.85) : d.x + (lf ? -1 : 1) * s * 0.4, y = b ? d.y + b[1] + b[3] * 0.5 : d.y - s * 0.6;
   for (let q = 0; q < (BW >= 2 ? 3 : 2); q++) { const e = fx('rauch', null, x + (lf ? -1 : 1) * q * s * 0.12, y, { delay: q * 4, move: [x + (lf ? -1 : 1) * s * (0.3 + q * 0.15), y - s * 0.25], life: 60 + q * 10, mul: 0.22 * st + q * 0.04, grow: 1.1, rise: 0.5, alpha: 0.55, fadeIn: 3, fadeOut: 0.7, flip: lf, filter: 'brightness(2.1) saturate(0.2)' }); if (e) e.dampf = true; }
   if (!(BW && fxIm('faehigkeiten', 3))) burst(x, y, BW >= 2 ? 8 : 5, ['#f2efe8', '#dcd8cf', '#ffffff'], { up: 0.03, spread: 0.07 });   // flache weiße Kreise nur noch ohne gemalten Dampfstoß (Punkt 40)
