@@ -1,3 +1,118 @@
+## 2026-11-27 – U7 Moral: Zähler, Grundmessung und Schritt 1 (Punkt 125)
+
+Gepusht:
+- `4249cbf`: Zähler und Grundmessung
+- `e7cb7d6`: Schritt 1
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung (neue P-Schlüssel aufgenommen).
+- **ui.js nach dem Hinweis geprüft:** Die andere Sitzung (Ton-Pult-Test, 16:26) hat nichts von mir überschrieben. Alle Änderungen aus U4, W1 und Schritt 1 sind drin. T1 habe ich nicht angefasst.
+
+**Vorab: Zähler in sim.js.**
+- **Was gezählt wird** (je Seite und Schlacht, Zeile „U7 Moral …“): niedergehalten, zurückgewichen, Flucht gesamt und nach Grund (Stärke / Moral / Kette / Gas), gesammelt, entkommen am Rand, vernichtet auf der Flucht, noch fliehend am Ende, Rundenanfänge auf der Flucht, Sammel-Chance bestand, Entsetzenstests mit Durchfallern und Wiederholungen, Furcht-Aura, Löwengebrüll (Ziele), Heldenfall, „hält stand“, Moralstufen der Fußtruppen und Niedergehaltene zu Rundenbeginn.
+- **Ereignisse:** Die Ereignisse aus `startTurn`/`endTurn` werden mitgezählt.
+- **Messwerkzeug:** `node tools/u7_messen.mjs <name>` (3 Karten × 4 Startwerte × 100 Schlachten, `MISCHEN=1`, nacheinander, etwa 12 min), Vergleich mit `node tools/u7_vergleich.mjs <vorher> <nachher>`. Die Ergebnisse liegen in `entwurf/probe/u7/*.json`.
+
+**Schritt 1:**
+- **Entsetzen:** höchstens ein Test je Einheit und gegnerischer Runde. Rückweg `ENTSETZ_OFT`.
+- **Furcht-Aura** (Kürassier): Test zu Beginn der Runde mit `P.FURCHT_BASIS` 0,35 und denselben Einflüssen wie beim Entsetzen. Wer durchfällt, verliert Moral −1 wie bisher.
+- **Löwengebrüll:** Test je Ziel mit `P.ROAR_BASIS` 0,5.
+  - durchgefallen: wie bisher −2 und niedergehalten
+  - bestanden: nur −0,5 (`P.ROAR_BESTANDEN`)
+- **Rückweg** für Aura und Gebrüll: `FURCHT_ALT`.
+- **Anzeige:** Wer besteht, bekommt das Kopfzeichen Funkeln, wer durchfällt, Angst. Das Protokoll nennt die Chance.
+- **Texte:** Beschreibung der Furcht des Kürassiers und des Gebrülls im Info-Fenster angepasst. Dort stand noch „−4 Moral“ aus einer alten Fassung.
+
+**Messung Grundmessung → Schritt 1** (`MISCHEN=1`, je 4×100 Schlachten; die Streuung zwischen den vier Läufen liegt bei etwa ±4 Punkten):
+
+
+**grauwall** – Konkordat 50.5 % → **53.5 %** (+3.0; Läufe 56/53/53/52), Runden 15.3 → 15.28
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Entsetzenstests | 13.82 / 25.26 → 10.42 / 17.84 |
+| Entsetzen durchgefallen | 3.13 / 5.9 → 2.18 / 3.92 |
+| Entsetzen Wiederholung | 3.23 / 7.13 → 0 / 0 |
+| Furcht-Aura | 1.26 / 0 → 1.19 / 0 |
+| Löwengebrüll (Ziele) | 0 / 0 → 0 / 0 |
+| niedergehalten | 36.08 / 23.75 → 35.53 / 23.08 |
+| zurückgewichen | 6.95 / 8.22 → 6.54 / 7.19 |
+| Flucht | 4.52 / 4.52 → 4.72 / 4.44 |
+| Flucht (Moral) | 1.81 / 2.89 → 1.89 / 2.84 |
+| Flucht (Stärke) | 2.59 / 1.43 → 2.7 / 1.46 |
+| gesammelt | 0.23 / 0.29 → 0.19 / 0.31 |
+
+**sanktruss** – Konkordat 43.25 % → **46 %** (+2.8; Läufe 47/42/49/46), Runden 14 → 14.15
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Entsetzenstests | 23.98 / 18.37 → 18.48 / 14.37 |
+| Entsetzen durchgefallen | 5.38 / 3.73 → 4 / 2.97 |
+| Entsetzen Wiederholung | 5.41 / 4.12 → 0 / 0 |
+| Furcht-Aura | 1.04 / 0 → 0.96 / 0 |
+| Löwengebrüll (Ziele) | 0 / 0 → 0 / 0 |
+| niedergehalten | 44.32 / 22.12 → 44.21 / 22.58 |
+| zurückgewichen | 16.25 / 15.54 → 15.46 / 14.77 |
+| Flucht | 7.67 / 5.41 → 7.47 / 5.63 |
+| Flucht (Moral) | 4.96 / 3.52 → 4.66 / 3.73 |
+| Flucht (Stärke) | 2.51 / 1.4 → 2.6 / 1.45 |
+| gesammelt | 0.5 / 0.62 → 0.52 / 0.64 |
+
+**winterdorf** – Konkordat 58 % → **56.75 %** (-1.3; Läufe 52/61/59/55), Runden 14.2 → 14.22
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Entsetzenstests | 20.99 / 15.79 → 15.77 / 11.42 |
+| Entsetzen durchgefallen | 5.15 / 4 → 3.89 / 2.95 |
+| Entsetzen Wiederholung | 5.27 / 4.42 → 0 / 0 |
+| Furcht-Aura | 1 / 0 → 1 / 0 |
+| Löwengebrüll (Ziele) | 0 / 0 → 0 / 0 |
+| niedergehalten | 37.55 / 25.73 → 37.71 / 25.57 |
+| zurückgewichen | 7.83 / 8.63 → 7.26 / 7.88 |
+| Flucht | 4.83 / 4.52 → 4.73 / 4.5 |
+| Flucht (Moral) | 2.63 / 2.75 → 2.48 / 2.64 |
+| Flucht (Stärke) | 2.12 / 1.69 → 2.19 / 1.79 |
+| gesammelt | 0.24 / 0.21 → 0.22 / 0.22 |
+
+**Gebrüll gesondert:**
+- **Ohne Gebrüll in den Läufen:** Auch mit `MECHS=1` ist der Kreuzschreiter nicht in der Kartenarmee, und die KI kauft ihn nicht. Das Gebrüll kam deshalb in keinem Lauf vor (Grauwall 49,5 → 53,3 %, Sankt Ruß 42,5 → 42,8 %, `mechs_*.json`).
+- **Gezielte Messung:** Grauwall mit einem zusätzlichen Kreuzschreiter (`EXTRA_A=kreuz:1`), vorher über die Rückwege:
+
+
+**grauwall** – Konkordat 84 % → **80.5 %** (-3.5; Läufe 81/80/76/85), Runden 14.85 → 14.93
+
+| je Schlacht (Konkordat / Aschenwacht) | vorher → nachher |
+|---|---|
+| Entsetzenstests | 12.79 / 33.86 → 9.64 / 23.28 |
+| Entsetzen durchgefallen | 2.71 / 7.9 → 2.13 / 5.22 |
+| Entsetzen Wiederholung | 2.99 / 11.24 → 0 / 0 |
+| Furcht-Aura | 0.58 / 0 → 0.53 / 0 |
+| Löwengebrüll (Ziele) | 3.06 / 0 → 3.22 / 0 |
+| niedergehalten | 31.11 / 27.01 → 31.04 / 25.78 |
+| zurückgewichen | 6.33 / 10.72 → 5.69 / 9.7 |
+| Flucht | 3.45 / 6.28 → 3.33 / 6.21 |
+| Flucht (Moral) | 1.58 / 4.13 → 1.5 / 3.87 |
+| Flucht (Stärke) | 1.78 / 1.88 → 1.76 / 2.12 |
+| gesammelt | 0.13 / 0.4 → 0.12 / 0.42 |
+
+- **Lesart:** „Furcht-Aura“ zählt vorher die Abzüge, nachher die Tests (bestanden oder nicht). Der Unterschied in der Zeile ist deshalb kleiner als die eigentliche Wirkung.
+
+**Einordnung:**
+- **Wie erwartet:**
+  - Die Wiederholungen sind weg, die Tests gehen um 23–31 % zurück, die Durchfaller um 1–2 je Schlacht.
+  - Das Zurückweichen sinkt leicht.
+- **Siegquote:** bewegt sich innerhalb der Streuung (Grauwall +3, Sankt Ruß +3, Winterdorf −1; mit Kreuzschreiter −3,5).
+- **Ausgleich:** nicht nötig.
+
+**Video:** `entwurf/probe/video/U7_schritt1_grauwall.mp4` (25 s, 25 Bilder/s, mit Ton).
+
+**Nächster `pa`:** U7 Schritt 2 (Flucht langsamer, Sammeln für alle Fliehenden, Befehl „Sammeln“ auf Fliehende, Fehler 2–6).
+
+**Fragen an Enrico:**
+1. **Kreuzschreiter:** Die KI kauft ihn nie. Soll das so bleiben, oder soll ein Paket die KI ihn kaufen lassen?
+
 ## 2026-11-27 – Paket W1 (Punkt 124): fal aus CC, Video je Paket, Fable-Prüfrunde
 
 Gepusht:
