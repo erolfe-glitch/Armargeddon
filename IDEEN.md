@@ -3,6 +3,8 @@
 Sammelstelle für Ideen, die nicht sofort umgesetzt werden. Neue Ideen kommen hier hinein (kurz, mit Datum), erledigte werden gestrichen oder mit Verweis auf den Commit abgehakt.
 
 ## Offen
+- **Für U9 (Enrico 2026-11-27, Punkt 129):** Die KI soll „sehr seltene“ Einheiten (Kreuzschreiter, Eisenknecht, Helden) gelegentlich kaufen – heute kauft sie sie nie (U7-Messung: auch mit `MECHS=1` kein Löwengebrüll). Erst in U9 mit Messung, nicht vorher.
+
 - **Gefallene liegen lassen (2026-11-26, Punkt 98):** Der Code aus U5b/Punkt 93 ist da, aber abgeschaltet (`window.GEFALLEN_AN`). Enrico gefällt der gemalte Bogen `ui-quelle/figuren/reskin/gefallene_bogen.png` (3 Gefallene je Seite) – **nicht löschen**, vielleicht später statt der gedrehten Getroffen-Pose einbauen, wenn das Bild ruhig genug bleibt.
 
 - **Schussfeld-Anzeige** (2026-11-15): erst nach Klick auf „Schießen“ zeigen oder immer bei Auswahl? Später ausprobieren.
@@ -165,3 +167,5 @@ Reihenfolge, damit eins auf dem anderen aufbaut:
 - **Zweistufige Tooltips (nicht wichtig, nur Idee):** Beim Verweilen über Gelände, Einheit, Knopf oder Marke erscheint nach ca. 0,6 s ein kleines, gut lesbares Fenster mit Namen und 1–2 kurzen Zeilen (z. B. „Zugefrorenes Wasser – keine Deckung, kann einbrechen“). Länger darauf (ca. 2–3 s) oder eine Taste (Umschalt/i) klappt die ausführliche Erklärung mit den Regeln auf. Touch: langes Drücken = Stufe 1, noch einmal lang = Stufe 2. Darf nie stören (kein Aufpoppen beim normalen Überfahren).
 - **Flieger-Unterstützung (Ausarbeitung später):** Funker/Fliegerleit-Trupp auf beiden Seiten (Umbau Fernsprechtrupp?) ruft einen einmaligen Luftschlag, bezahlt mit **Nachschubpunkten**: **Tiefflieger** (MG-Garbe über eine Linie von 3 Feldern, niederhalten) oder **Bomber** (2–3 schwere Bomben mit Streuung). Das Flugzeug fliegt einmal schräg übers Bild (Schatten, Motordröhnen, Sirene), wirft ab und ist weg. Grenzen: Kosten, Abklingzeit bzw. 1–2× je Schlacht, Streuung/Eigenbeschuss, später Flak. Für die Kampagne: Flugplätze schalten Luftschläge frei.
 - **Stilrichtung:** eigene Fantasy-Welt; Mischung aus Erstem und Zweitem Weltkrieg, Trench Crusade, ein Hauch Mad Max und Warhammer Fantasy; über die Zeit optisch mehr Richtung Zweiter Weltkrieg (Panzer), später Flugzeuge. Weltkriegs-Bezüge („Im echten Krieg“) sind nicht mehr Pflicht.
+
+- **2026-11-26 (Berater): Armeeaufbau und Kampagne** – Kategorien (Linie/Unterstützung/Elite/Gerät/Selten) mit Rückgrat-Regel, Fraktionsprofile (Konkordat, Aschenwacht, Blaue Legion, Velya, Sieben Pforten, Fahle) und Kampagnen-Armeen (General + bis 20 Trupps, Nachbar-Armeen als Verstärkungswellen, Garnisonen, Front mit Eingraben): siehe `entwurf/ARMEEAUFBAU_IDEEN.md`. Kategorien im Gefecht = Paket K1 (Punkt 104).

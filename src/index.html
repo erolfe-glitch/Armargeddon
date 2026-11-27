@@ -899,7 +899,7 @@ body.neu #nachOben .up-shop { height: 48px; min-width: 190px; padding: 0 18px; f
 /* Nachschub-Menü nach Entwurf B (neue Ansicht): Reiter, Karten im Querformat, Pergament-Details */
 #shopNeu { display: none; }
 body.neu #shop .sheet > :not(#shopNeu) { display: none !important; }
-body.neu #shop #shopNeu { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 10px; height: min(680px, calc(100vh - 150px)); }
+body.neu #shop #shopNeu { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; /* F1 (2026-11-27): fünf Zeilen seit der Kategorie-Leiste (K1) – vorher fiel die Reiterzeile auf 0 px und lag unter den Karten */ gap: 10px; height: min(680px, calc(100vh - 150px)); }
 body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px)); margin: 70px 20px 0 auto; border: 14px solid transparent; border-image: var(--up-r9) 64 round;
   background: var(--tx-ink45), var(--up-txBronze) 0 0 repeat; background-clip: padding-box; padding: 6px 12px; }
 :is(#shopNeu, #armyNeu) .sn-titel { display: flex; align-items: baseline; justify-content: space-between; }

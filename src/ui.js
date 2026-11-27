@@ -4042,7 +4042,7 @@ function shopLage(sh) {   // Versatz anwenden, Fenster bleibt ganz im Bild (unte
   sh.style.transform = `translate(${Math.round(shopPos[0])}px, ${Math.round(shopPos[1])}px)`;
 }
 function shopZiehen() {
-  const sh = $('shop').querySelector('.sheet'), tit = $('shopNeu').querySelector('.sn-titel'); if (!sh || !tit) return; shopLage(sh);
+  const sh = $('shop').querySelector('.sheet'), tit = $('shopNeu').querySelector('.sn-titel'); if (!sh || !tit) return; shopLage(sh); try { localStorage.setItem('arm.shoppos', JSON.stringify(shopPos.map(Math.round))); } catch (e) {}   // F1: in den sichtbaren Bereich zurückgeholte Lage gleich speichern
   tit.onpointerdown = ev => { if (ev.button > 0) return; ev.preventDefault(); try { tit.setPointerCapture(ev.pointerId); } catch (e) {} hideShopDet();
     const x0 = ev.clientX, y0 = ev.clientY, p0 = shopPos.slice(); tit.classList.add('zieht');
     tit.onpointermove = e => { shopPos = [p0[0] + e.clientX - x0, p0[1] + e.clientY - y0]; shopLage(sh); shopZieh = performance.now(); };
