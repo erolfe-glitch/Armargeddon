@@ -493,9 +493,9 @@ const MAPS = {
       { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 7, pts: 2 },
       { id: 'wegkreuz', name: 'Wegkreuz', c: 10, r: 7, pts: 1 }],
     bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[8, 5], [9, 5]], turm: [9, 4] }],
-    ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },
+    ki: { A: { ohneBallon: true }, D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },   /* ST1b (116.3): Konkordat-KI kauft hier keine Ballone (51 → 40 % mit Ballon als Unterstützung) */
     // Beide Seiten greifen an: Aschenwacht etwa gleich viel wert wie das Konkordat (940 zu 910 – ein Grenadier-Trupp mehr gleicht den ersten Zug aus), ohne Reserve zur Mitte der Schlacht
-    army: { A: { kohorte: 10, mahlwerk: 2, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
+    army: { A: { kohorte: 10, mahlwerk: 3, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   /* ST1b (116.3): 3 statt 2 Mahlwerke – Sankt Ruß 40 → 49 % (200 Schlachten, MISCHEN) */   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
     armyAlt: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },   /* F94 (2026-11-22): gemischte Startarmeen, höchstens 5 vom selben Typ; vorher 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter, 2 Pioniere */
       D: { grenadier: 5, pionierD: 2, gasschutz: 2, sense: 2, geschuetz: 2, sturmpz: 2, sturm: 1, minenwerfer: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* vorher 11 Grenadiere, 3 Sensenwerk, 2 Geschütze, 2 Sturmpanzer, 2 Sprenglanzen, 1 Minenwerfer; Abgleich: feste Aufstellung 49,4 %, gemischt 77,5 % */
     grid: [
@@ -668,7 +668,7 @@ function katFehler(army) { if (katAlt()) return ''; const z = katZahl(army), m =
   if (z.linie < z.n * P.KAT_LINIE) return `Linie mindestens ein Drittel der Trupps (${z.linie} von ${z.n}).`;
   return ''; }
 function katWarum(army, t) {   // warum t nicht noch dazukommen darf ('' = geht)
-  if (katAlt() || katOf(t) === 'selten') return ''; const a = Object.assign({}, army); a[t] = (a[t] || 0) + 1; const z = katZahl(a), m = katMax(z), k = katOf(t);
+  if (katAlt() || katOf(t) === 'selten' || katOf(t) === 'sehrselten') return '';   /* ST1b: sehr selten wie selten (sonst sperrte die Linien-Prüfung Helden/Stufe 3) */ const a = Object.assign({}, army); a[t] = (a[t] || 0) + 1; const z = katZahl(a), m = katMax(z), k = katOf(t);
   if (k === 'unterst' && z.unterst > m.unterst) return `Unterstützung voll (${z.unterst - 1}/${m.unterst}): je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
   if (k === 'elite' && z.elite > m.elite) return `Elite voll: höchstens ${m.elite}.`;
   if (k === 'geraet' && z.geraet > m.geraet) return `Gerät voll: höchstens ${m.geraet}.`;

@@ -836,8 +836,8 @@ function aufbauen(cfg, IM) {
         else if (v < 0.65 && IM.graben_drahtrolle && last.b !== IM.graben_drahtrolle) { last.b = IM.graben_drahtrolle; stand(IM.graben_drahtrolle, ...at(GK + 0.55), hoch(IM.graben_drahtrolle)); }
         else last.b = null; });
       DURCH.forEach((d, k) => { if (d.ti < 0 || hrnd(d.ti, k, 360) > 0.55 || !KRAM.length) return; const im = nimm(KRAM, hrnd(d.ti, k, 361), last.k); last.k = im;
-        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * (EGW ? 0.08 : 0.3);   // Einsturz und Balken an der hinteren Wand; G7f: im eingegrabenen Graben Kram nahe der Mitte (stand halb in der Seitenwand)
-        stand(im, d.a[0] + (d.b[0] - d.a[0]) * t + d.nx * R * wand, d.a[1] + (d.b[1] - d.a[1]) * t + d.ny * R * wand, hoch(im), { flip: hrnd(d.ti, k, 364) < 0.5 }); });
+        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * (EGW ? 0.08 : window.KRAM_ALT ? 0.3 : 0.12);   // Einsturz und Balken an der hinteren Wand; G7f: im eingegrabenen Graben Kram nahe der Mitte (stand halb in der Seitenwand)
+        stand(im, d.a[0] + (d.b[0] - d.a[0]) * t + d.nx * R * wand, d.a[1] + (d.b[1] - d.a[1]) * t + d.ny * R * wand, hoch(im), { flip: hrnd(d.ti, k, 364) < 0.5, boden: !window.KRAM_ALT }); });   // ST1b (116.2): Kram mit Bodenkontakt (Schatten, leicht eingesunken) und mittiger – wirkte schwebend; Rückweg KRAM_ALT
     }
   }
 

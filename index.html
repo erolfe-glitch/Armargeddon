@@ -1838,9 +1838,9 @@ const MAPS = {
       { id: 'dorfplatz', name: 'Dorfplatz', c: 8, r: 7, pts: 2 },
       { id: 'wegkreuz', name: 'Wegkreuz', c: 10, r: 7, pts: 1 }],
     bauten: [{ art: 'kirche', name: 'Kirche von Sankt Ruß', felder: [[8, 5], [9, 5]], turm: [9, 4] }],
-    ki: { D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },
+    ki: { A: { ohneBallon: true }, D: { prog: 0.6, threat: 0.35, obj: 0.35, cover: 0.5 } },   /* ST1b (116.3): Konkordat-KI kauft hier keine Ballone (51 → 40 % mit Ballon als Unterstützung) */
     // Beide Seiten greifen an: Aschenwacht etwa gleich viel wert wie das Konkordat (940 zu 910 – ein Grenadier-Trupp mehr gleicht den ersten Zug aus), ohne Reserve zur Mitte der Schlacht
-    army: { A: { kohorte: 10, mahlwerk: 2, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
+    army: { A: { kohorte: 10, mahlwerk: 3, pionier: 1, moerser: 1, koloss: 2, haubitze: 1, reiter: 1, raeumer: 1, generalA: 1, hauptA: 1 }, D: { grenadier: 10, pionierD: 2, sense: 2, geschuetz: 1, sturmpz: 2, sturm: 1, generalD: 1, hauptD: 1 } },   /* ST1b (116.3): 3 statt 2 Mahlwerke – Sankt Ruß 40 → 49 % (200 Schlachten, MISCHEN) */   // K1 (Punkt 104): Rückgrat-Regel, Budget = Wert von armyAlt (Armee vor den Kategorien, Rückweg KAT_ALT)
     armyAlt: { A: { kohorte: 5, mahlwerk: 2, koloss: 2, haubitze: 2, reiter: 1, pionier: 2, scharf: 1, moerser: 1, feldscher: 1, raeumer: 1, flammen: 1, generalA: 1, hauptA: 1 },   /* F94 (2026-11-22): gemischte Startarmeen, höchstens 5 vom selben Typ; vorher 8 Kohorten, 3 Mahlwerk, 3 Kolosse, 2 Donnerrohre, 2 Reiter, 2 Pioniere */
       D: { grenadier: 5, pionierD: 2, gasschutz: 2, sense: 2, geschuetz: 2, sturmpz: 2, sturm: 1, minenwerfer: 1, heiler: 1, generalD: 1, hauptD: 1 } },   /* vorher 11 Grenadiere, 3 Sensenwerk, 2 Geschütze, 2 Sturmpanzer, 2 Sprenglanzen, 1 Minenwerfer; Abgleich: feste Aufstellung 49,4 %, gemischt 77,5 % */
     grid: [
@@ -2013,7 +2013,7 @@ function katFehler(army) { if (katAlt()) return ''; const z = katZahl(army), m =
   if (z.linie < z.n * P.KAT_LINIE) return `Linie mindestens ein Drittel der Trupps (${z.linie} von ${z.n}).`;
   return ''; }
 function katWarum(army, t) {   // warum t nicht noch dazukommen darf ('' = geht)
-  if (katAlt() || katOf(t) === 'selten') return ''; const a = Object.assign({}, army); a[t] = (a[t] || 0) + 1; const z = katZahl(a), m = katMax(z), k = katOf(t);
+  if (katAlt() || katOf(t) === 'selten' || katOf(t) === 'sehrselten') return '';   /* ST1b: sehr selten wie selten (sonst sperrte die Linien-Prüfung Helden/Stufe 3) */ const a = Object.assign({}, army); a[t] = (a[t] || 0) + 1; const z = katZahl(a), m = katMax(z), k = katOf(t);
   if (k === 'unterst' && z.unterst > m.unterst) return `Unterstützung voll (${z.unterst - 1}/${m.unterst}): je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
   if (k === 'elite' && z.elite > m.elite) return `Elite voll: höchstens ${m.elite}.`;
   if (k === 'geraet' && z.geraet > m.geraet) return `Gerät voll: höchstens ${m.geraet}.`;
@@ -6188,8 +6188,8 @@ function aufbauen(cfg, IM) {
         else if (v < 0.65 && IM.graben_drahtrolle && last.b !== IM.graben_drahtrolle) { last.b = IM.graben_drahtrolle; stand(IM.graben_drahtrolle, ...at(GK + 0.55), hoch(IM.graben_drahtrolle)); }
         else last.b = null; });
       DURCH.forEach((d, k) => { if (d.ti < 0 || hrnd(d.ti, k, 360) > 0.55 || !KRAM.length) return; const im = nimm(KRAM, hrnd(d.ti, k, 361), last.k); last.k = im;
-        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * (EGW ? 0.08 : 0.3);   // Einsturz und Balken an der hinteren Wand; G7f: im eingegrabenen Graben Kram nahe der Mitte (stand halb in der Seitenwand)
-        stand(im, d.a[0] + (d.b[0] - d.a[0]) * t + d.nx * R * wand, d.a[1] + (d.b[1] - d.a[1]) * t + d.ny * R * wand, hoch(im), { flip: hrnd(d.ti, k, 364) < 0.5 }); });
+        const t = 0.2 + hrnd(d.ti, k, 362) * 0.6, wand = im === IM.graben_einsturz || im === IM.graben_balken ? -(GK - 0.08) : (hrnd(d.ti, k, 363) - 0.5) * (EGW ? 0.08 : window.KRAM_ALT ? 0.3 : 0.12);   // Einsturz und Balken an der hinteren Wand; G7f: im eingegrabenen Graben Kram nahe der Mitte (stand halb in der Seitenwand)
+        stand(im, d.a[0] + (d.b[0] - d.a[0]) * t + d.nx * R * wand, d.a[1] + (d.b[1] - d.a[1]) * t + d.ny * R * wand, hoch(im), { flip: hrnd(d.ti, k, 364) < 0.5, boden: !window.KRAM_ALT }); });   // ST1b (116.2): Kram mit Bodenkontakt (Schatten, leicht eingesunken) und mittiger – wirkte schwebend; Rückweg KRAM_ALT
     }
   }
 
@@ -7081,7 +7081,8 @@ const LAGE_KAUF = { A: { abwehr: 'pionier', aufkl: 'ballon' }, D: { abwehr: 'bue
 function kaufNachLage(G, side) {
   const eig = G.units.filter(u => u.side === side && E.active(u)), fe = G.units.filter(u => u.side !== side && E.active(u)), pz = u => TYPES[u.type].cls === 'walker', K = LAGE_KAUF[side];
   if (K.abwehr && !ENVW.NOLAGE_abwehr && fe.filter(pz).length - eig.filter(u => PANZERABWEHR.has(u.type)).length >= 3) return K.abwehr;
-  if (K.aufkl && !ENVW.NOLAGE_aufkl && eig.some(u => TYPES[u.type].cls === 'art') && !eig.some(u => AUFKL.has(u.type))) return K.aufkl;
+  const kiK = E.MAP && E.MAP.ki && E.MAP.ki[side] || {};   // ST1b: Kartenschalter ohneBallon
+  if (K.aufkl && !ENVW.NOLAGE_aufkl && !(kiK.ohneBallon && K.aufkl === 'ballon') && eig.some(u => TYPES[u.type].cls === 'art') && !eig.some(u => AUFKL.has(u.type))) return K.aufkl;
   return null;
 }
 function einmalGesperrt(G, side, type) { const T = TYPES[type], hat = f => G.units.some(u => u.side === side && f(TYPES[u.type])); return (T.held && hat(x => x.held)) || (T.stufe3 && hat(x => x.stufe3)) || (T.cmd === 2 && hat(x => x.cmd === 2)); }
@@ -7094,7 +7095,8 @@ function buy(G) {
     const W = ENVX.KAUF_ALT ? WISH_ALT : WISH, wl = G.mechs ? W[side].concat(side === 'A' ? ['turm', 'orden', ...(ENVX.REITER_ALT ? ['stahl'] : [])] : ['knecht', 'saeger', 'panzerk']) : W[side];
     const lage = !ENVX.KAUF_ALT && guard === 0 ? kaufNachLage(G, side) : null; let type = lage || wl[G._wish[side] % wl.length], ersatz = false;
     if (type && ENVX.OHNEHELD && TYPES[type].held) { G._wish[side]++; continue; }   // Sim: ohne Helden (NOHELD ist schon der Abschalter für „gebunden im Nahkampf“)
-    if (type && !lage && einmalGesperrt(G, side, type)) { G._wish[side]++; continue; }   // M1 (2026-11-22): Held/Stufe 3/General gibt es nur einmal je Schlacht – überspringen, sonst bleibt die Liste daran hängen und die KI kauft nichts mehr
+    if (type && !lage && einmalGesperrt(G, side, type)) { G._wish[side]++; continue; }
+    if (type === 'ballon' && E.MAP && E.MAP.ki && E.MAP.ki[side] && E.MAP.ki[side].ohneBallon) { G._wish[side]++; continue; }   // ST1b: auf dieser Karte keine Ballone   // M1 (2026-11-22): Held/Stufe 3/General gibt es nur einmal je Schlacht – überspringen, sonst bleibt die Liste daran hängen und die KI kauft nichts mehr
     if (type && E.katWarum(E.armeeImFeld(G, side), type)) { type = side === 'A' ? 'kohorte' : 'grenadier'; ersatz = true; }   // K1: Kategorie voll – erst Linie (Rückgrat), der Wunsch bleibt stehen
     if (!type || !E.canBuy(G, side, type)) break;
     const hs = E.spawnHexes(G, side, type);
