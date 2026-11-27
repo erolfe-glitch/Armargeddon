@@ -1,0 +1,377 @@
+{
+ "grauwall": {
+  "quote": 61,
+  "quoten": [
+   61
+  ],
+  "runden": 15.3,
+  "verluste": [
+   31,
+   28
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    255.75,
+    240.37
+   ],
+   "Moral ≥ 60 %": [
+    217.28,
+    211.57
+   ],
+   "Stufe standhaft zu Rundenbeginn": [
+    243.88,
+    226.97
+   ],
+   "Entsetzenstests": [
+    9.94,
+    18.37
+   ],
+   "Entsetzen durchgefallen": [
+    1.91,
+    4.35
+   ],
+   "niedergehalten": [
+    36.87,
+    24.78
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    30.55,
+    17.54
+   ],
+   "Moral 35–60 %": [
+    30.78,
+    20.27
+   ],
+   "Stufe wankt zu Rundenbeginn": [
+    7.59,
+    8.4
+   ],
+   "zurückgewichen": [
+    5.44,
+    6.21
+   ],
+   "Moral < 35 %": [
+    7.69,
+    8.53
+   ],
+   "Stufe weicht zu Rundenbeginn": [
+    4.28,
+    5
+   ],
+   "Flucht": [
+    4.12,
+    4.14
+   ],
+   "Flucht (Stärke)": [
+    2.67,
+    1.29
+   ],
+   "vernichtet auf der Flucht": [
+    1.4,
+    1.72
+   ],
+   "Flucht (Moral)": [
+    1.34,
+    2.63
+   ],
+   "auf der Flucht zerschlagen": [
+    0.28,
+    0.64
+   ],
+   "Rundenanfänge auf der Flucht": [
+    6.08,
+    3.9
+   ],
+   "Sammel-Chance bestand": [
+    0.77,
+    1.35
+   ],
+   "Flucht (Gas)": [
+    0.09,
+    0.2
+   ],
+   "noch fliehend am Ende": [
+    1.36,
+    0.68
+   ],
+   "entkommen am Rand": [
+    0.96,
+    1.11
+   ],
+   "gesammelt": [
+    0.4,
+    0.63
+   ],
+   "Furcht-Aura": [
+    0.65,
+    0
+   ],
+   "hält stand": [
+    0.14,
+    0.17
+   ],
+   "gesammelt (Befehl)": [
+    0.02,
+    0.14
+   ],
+   "Flucht (Kette)": [
+    0.02,
+    0.02
+   ],
+   "Sammelbefehl misslungen": [
+    0,
+    0.02
+   ]
+  }
+ },
+ "sanktruss": {
+  "quote": 43,
+  "quoten": [
+   43
+  ],
+  "runden": 14.1,
+  "verluste": [
+   41,
+   32
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    249.18,
+    248.41
+   ],
+   "Moral ≥ 60 %": [
+    196.02,
+    192.42
+   ],
+   "Stufe standhaft zu Rundenbeginn": [
+    219.24,
+    218.73
+   ],
+   "Entsetzenstests": [
+    17.86,
+    14.47
+   ],
+   "niedergehalten": [
+    46.49,
+    24.95
+   ],
+   "Moral 35–60 %": [
+    32.08,
+    36.03
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    36.66,
+    19.9
+   ],
+   "zurückgewichen": [
+    15.05,
+    12.76
+   ],
+   "Moral < 35 %": [
+    21.08,
+    19.96
+   ],
+   "Stufe weicht zu Rundenbeginn": [
+    15.99,
+    14.27
+   ],
+   "Flucht": [
+    7.39,
+    5.33
+   ],
+   "Flucht (Moral)": [
+    4.34,
+    3.32
+   ],
+   "Rundenanfänge auf der Flucht": [
+    9.51,
+    5.74
+   ],
+   "Sammel-Chance bestand": [
+    2.64,
+    2.12
+   ],
+   "Entsetzen durchgefallen": [
+    3.85,
+    3.34
+   ],
+   "auf der Flucht zerschlagen": [
+    0.99,
+    0.8
+   ],
+   "Stufe wankt zu Rundenbeginn": [
+    13.95,
+    15.41
+   ],
+   "Flucht (Stärke)": [
+    2.75,
+    1.39
+   ],
+   "vernichtet auf der Flucht": [
+    2.56,
+    1.91
+   ],
+   "entkommen am Rand": [
+    1.61,
+    0.94
+   ],
+   "gesammelt": [
+    1.46,
+    1.4
+   ],
+   "noch fliehend am Ende": [
+    1.76,
+    1.08
+   ],
+   "Flucht (Gas)": [
+    0.21,
+    0.48
+   ],
+   "gesammelt (Befehl)": [
+    0.22,
+    0.34
+   ],
+   "Flucht (Kette)": [
+    0.09,
+    0.14
+   ],
+   "hält stand": [
+    0.17,
+    0.17
+   ],
+   "Furcht-Aura": [
+    1.1,
+    0
+   ],
+   "Sammelbefehl misslungen": [
+    0.07,
+    0.14
+   ]
+  }
+ },
+ "winterdorf": {
+  "quote": 56,
+  "quoten": [
+   56
+  ],
+  "runden": 14.4,
+  "verluste": [
+   34,
+   29
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    268.43,
+    256.62
+   ],
+   "Moral ≥ 60 %": [
+    221.93,
+    222.28
+   ],
+   "Stufe standhaft zu Rundenbeginn": [
+    249.4,
+    239.15
+   ],
+   "niedergehalten": [
+    39.6,
+    28.39
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    29.93,
+    21.69
+   ],
+   "Entsetzenstests": [
+    15.37,
+    11.27
+   ],
+   "Entsetzen durchgefallen": [
+    3.77,
+    3.04
+   ],
+   "Moral 35–60 %": [
+    33.75,
+    22.85
+   ],
+   "Stufe wankt zu Rundenbeginn": [
+    10.4,
+    9.13
+   ],
+   "zurückgewichen": [
+    8.52,
+    8.31
+   ],
+   "Moral < 35 %": [
+    12.75,
+    11.49
+   ],
+   "Stufe weicht zu Rundenbeginn": [
+    8.63,
+    8.34
+   ],
+   "Flucht": [
+    4.57,
+    5
+   ],
+   "Flucht (Moral)": [
+    2.15,
+    2.92
+   ],
+   "Rundenanfänge auf der Flucht": [
+    6.23,
+    5.36
+   ],
+   "Sammel-Chance bestand": [
+    1.11,
+    1.99
+   ],
+   "gesammelt": [
+    0.6,
+    1.03
+   ],
+   "Flucht (Stärke)": [
+    2.36,
+    1.95
+   ],
+   "vernichtet auf der Flucht": [
+    1.98,
+    1.36
+   ],
+   "entkommen am Rand": [
+    0.54,
+    1.8
+   ],
+   "noch fliehend am Ende": [
+    1.45,
+    0.81
+   ],
+   "gesammelt (Befehl)": [
+    0.05,
+    0.06
+   ],
+   "auf der Flucht zerschlagen": [
+    0.65,
+    0.72
+   ],
+   "Furcht-Aura": [
+    1.16,
+    0
+   ],
+   "hält stand": [
+    0.15,
+    0.39
+   ],
+   "Flucht (Gas)": [
+    0.04,
+    0.08
+   ],
+   "Sammelbefehl misslungen": [
+    0.01,
+    0.03
+   ],
+   "Flucht (Kette)": [
+    0.02,
+    0.05
+   ]
+  }
+ }
+}

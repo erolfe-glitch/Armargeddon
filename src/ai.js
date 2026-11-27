@@ -45,6 +45,15 @@ const ENVW = typeof process !== 'undefined' && process.env || {};
 // Fahrzeuge (KI-Runde 2026-11-17): Begleitschutz und Nahkampf-Bedrohung (W_FZ_NAH: Gewicht der Bedrohung, W_FZ_BEGL: Strafe ohne Begleitung)
 const W_FZ_NAH = ENVW.W_FZ_NAH != null ? +ENVW.W_FZ_NAH : 10, W_FZ_BEGL = ENVW.W_FZ_BEGL != null ? +ENVW.W_FZ_BEGL : 4;
 const ART_RUNDEN = +((typeof process !== 'undefined' && process.env && process.env.ART_RUNDEN) || 2);   // F94: so viele eigene Runden ohne Ziel, dann ziehen Geschütze nach
+// U7b Nr. 3 (Fehler 4 und 9, 2026-11-27): Zerschlagene nur noch mit Faktor W_ZERSCHLAGEN, Schwellen aus P/fallbackSchwelle, wankende Trupps in Deckung ziehen (W_WANKT_DECKUNG), Sammeln-Befehl auch nach dem Ziehen; Rückweg KI_U7B_ALT
+const kiAlt = () => !!((typeof process !== 'undefined' && process.env && process.env.KI_U7B_ALT) || (typeof window !== 'undefined' && window.KI_U7B_ALT));
+const W_ZERSCHLAGEN = +((typeof process !== 'undefined' && process.env && process.env.W_ZERSCHLAGEN) || 0.3), W_WANKT_DECKUNG = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT_DECKUNG) || 2);
+// Moral des Ziels nach einem Treffer – wie applyDamage (ohne Anführer, Banner und Umzingelung)
+function morNach(G, d, dmg, arc, flame) { if (kiAlt()) return d.mor - dmg * 0.8 * (flame ? 2 : 1) - (arc === 'flank' ? 0.5 : arc === 'rear' ? 1 : 0);
+  const t = E.hex(G, d.c, d.r).t; let ml = dmg * P.MOR_PER_DMG * (flame ? P.FLAME_MOR : 1) + (arc === 'flank' ? P.MOR_FLANK : arc === 'rear' ? P.MOR_REAR : 0); if (E.festeFeld(t) && !flame) ml *= 0.5; return d.mor - ml; }
+// U7b Nr. 3: Wankende Fußtruppen suchen Deckung, wenn Gegner in der Nähe sind (im Offenen werden sie von jedem Gewehrtrupp niedergehalten und erholen sich nie)
+function wanktDeckung(G, u, c, r) { if (kiAlt() || !E.wankt(u) || E.cls(u) === 'walker' || E.cls(u) === 'art' || nearestEnemyDist(G, u.side, c, r) > 5) return 0;
+  const x = Object.assign({}, u, { c, r, dug: !!u.dug && c === u.c && r === u.r }); return E.deckungsFeld(G, x) ? W_WANKT_DECKUNG : E.coverOf(G, x).tier >= 1 ? W_WANKT_DECKUNG / 2 : 0; }
 const W_WANKT = +((typeof process !== 'undefined' && process.env && process.env.W_WANKT) || 0.6);   // U7 Schritt 3: Schuss drückt das Ziel unter die Wankt-Schwelle
 const W_SAMMEL = +((typeof process !== 'undefined' && process.env && process.env.W_SAMMEL) || 1.5), W_FLUCHT_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_FLUCHT_ZIEL) || 2);   // U7 Schritt 2: Anführer/Banner nahe Wankenden und Fliehenden; fliehende Gegner nahe gegnerischer Anführer (kämen sonst zurück)
 const W_CAV_ZIEL = +((typeof process !== 'undefined' && process.env && process.env.W_CAV_ZIEL) || 3);   // F94: Anreiz für Reiter-Ziele
@@ -260,10 +269,10 @@ const W_EIS = +((typeof process !== 'undefined' && process.env && process.env.W_
 const W_STECKEN = +((typeof process !== 'undefined' && process.env && process.env.W_STECKEN) || 3);   // M6: Gewicht Steckenbleiben (× P.STECKEN 0,3)
 const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
-function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r) + sammelWert(G, u, c, r); }
+function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r) + sammelWert(G, u, c, r) + wanktDeckung(G, u, c, r); }
 function sammelWert(G, u, c, r) {   // U7 Schritt 2: Anführer und Banner stellen sich bis 2 Felder an eigene Wankende oder Fliehende (Sammel-Chance)
   if (E.fluchtAlt() || !(u.officer || TYPES[u.type].banner)) return 0; let n = 0;
-  for (const o of G.units) if (o !== u && o.side === u.side && E.dist(o.c, o.r, c, r) <= 2 && ((o.status === 'rout' && !o.aufgerieben) || (o.status === 'ok' && o.mor < P.FALLBACK_MOR && E.cls(o) !== 'walker'))) n++;
+  for (const o of G.units) if (o !== u && o.side === u.side && E.dist(o.c, o.r, c, r) <= 2 && ((o.status === 'rout' && !o.aufgerieben) || (o.status === 'ok' && (kiAlt() ? o.mor < P.FALLBACK_MOR : E.moralStufe(G, o) !== 'standhaft') && E.cls(o) !== 'walker'))) n++;
   return W_SAMMEL * Math.min(2, n);
 }
 function posValue0(G, u, c, r) {
@@ -342,14 +351,15 @@ function attackValue(G, a, d, kind, o) {
   if (d.status === 'rout' && !d.aufgerieben && !E.fluchtAlt() && G.units.some(o => o.officer && o.side === d.side && E.active(o) && E.dist(o.c, o.r, d.c, d.r) <= 3)) v += W_FLUCHT_ZIEL;   // U7 Schritt 2: sonst wird er gesammelt
   const flame = kind === 'fire' && TYPES[a.type].flame;
   const strAfter = d.str - p.dmg;
-  const morAfter = d.mor - p.dmg * 0.8 * (flame ? 2 : 1) - (p.arc === 'flank' ? 0.5 : p.arc === 'rear' ? 1 : 0);
-  if (strAfter < 1.5 || morAfter <= 0) v += 2.5; else if (morAfter < 3) v += 0.8;
+  const morAfter = morNach(G, d, p.dmg, p.arc, flame), flieht = !kiAlt() && d.status === 'rout';   // U7b Nr. 3: wer schon flieht, kann nicht noch einmal brechen
+  if (flieht) {} else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
   else if (!E.stufenAlt() && d.status === 'ok' && !E.wankt(d) && morAfter < P.WANKT * TYPES[d.type].mor) v += W_WANKT;   // U7 Schritt 3
   if (d.officer) v += 0.8;
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
   if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
   if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += mussAngreifen(G, a) ? W_OBJSTURM : 0.6;   // Zielfeld stürmen, wenn die Seite angreifen muss
   if (kind === 'fire' && E.cls(a) === 'walker') v += kirchenWert(G, a, d.c, d.r);   // Kanone auf die Kirche: Einsturz nutzen
+  if (flieht && d.aufgerieben && !E.fluchtAlt() && v > 0) v *= W_ZERSCHLAGEN;   // U7b Nr. 3: Zerschlagene sind schon voll gezählt und kommen nie zurück
   return v;
 }
 // Schusswinkel (Fahrplan 2): Fahrzeuge/Schreiter schießen mit der Hauptwaffe nur nach vorn (±60°). Ohne Zug darf die KI vorher drehen (1 Punkt), wenn noch 2 Punkte da sind.
@@ -368,7 +378,7 @@ function bestAttackFrom(G, u, c, r, moved, run, kosten) {
     const dd = E.dist(c, r, d.c, d.r);
     if (dd === 1 && T.atk >= 3 && !(u.supp > 0) && nahOk) {
       let v = attackValue(G, u, d, 'melee', { c, r, run });
-      if (T.cls === 'cav' && !ENVX0().NOCAVZIEL && E.cls(d) !== 'walker' && (E.medaillen(d.type).rolle === 'schwach' || d.status === 'rout' || d.supp > 0)) v += W_CAV_ZIEL * (run >= P.CHARGE_MIN ? 1.5 : 1);   // F94 (2026-11-22): Reiter gegen Geschütze, MG, Beobachter, Sanitäter, Fliehende und Niedergehaltene
+      if (T.cls === 'cav' && !ENVX0().NOCAVZIEL && E.cls(d) !== 'walker' && (E.medaillen(d.type).rolle === 'schwach' || (d.status === 'rout' && (kiAlt() || !d.aufgerieben)) || d.supp > 0) && (kiAlt() || !(d.status === 'rout' && d.aufgerieben))) v += W_CAV_ZIEL * (run >= P.CHARGE_MIN ? 1.5 : 1);   // F94 (2026-11-22): Reiter gegen Geschütze, MG, Beobachter, Sanitäter, Fliehende und Niedergehaltene
       if (!best || v > best.v) best = { v, d, kind: 'melee' };
     }
     if (T.rng && T.cls !== 'art' && !(u.supp > 0) && !u.fellBack && !E.heldAt(G, u, c, r) && !(T.nahSchreiter && moved && ((u.bpUsed || 0) + (kosten || 0)) > E.bpMax(u) / 2) && !(T.mg && (moved || (!u.setup && (u.bp || 0) < 1))) && !E.immune(T, TYPES[d.type]) && dd >= 1 &&
@@ -392,7 +402,7 @@ function planArt(G, u) {
       const gd = !direct && E.guided(G, u.side, d.c, d.r), dmg = E.shellDmg(G, u, d, direct) * (gd ? P.GUIDED : 1);
       let v = dmg * 4 + (gd ? 0.8 : 0);   // markiertes Ziel: trifft sicher
       if (!d.supp && E.cls(d) !== 'walker' && d.fireDmg + dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
-      if (d.str - dmg < 1.5 || d.mor - dmg * 0.8 <= 0) v += 2.5;
+      if (d.str - dmg < (kiAlt() ? 1.5 : P.ROUT_STR) || morNach(G, d, dmg, 'front', false) <= 0) v += 2.5;
       if (E.cls(d) === 'walker' && direct) v += 1.5;
       if (TYPES[u.type].mobile && E.cls(d) !== 'walker') {   // KI-Runde 2026-11-17: Mörser/Minenwerfer auf Gegner in Stellung oder hinter Draht, wenn eigene Angreifer herankommen
         const t = E.hex(G, d.c, d.r).t, fest = ['trench', 'bunker', 'barrikade', 'kirche', 'fabrik', 'village'].includes(t) || E.neighbors(d.c, d.r).some(([a, b]) => E.inMap(a, b) && E.hex(G, a, b).t === 'wire');
@@ -541,10 +551,10 @@ function next(G) {
     if (u.side === 'A') G._aiDone.add('b' + u.id);   // Generalangriff wird während des Zugs mehrmals geprüft (F53)
     const own = G.units.filter(o => o.side === u.side && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= P.BIG_R);   // Paket 8: wirkt nur 3 Felder um den General
     if (u.side === 'A') {   // Halten um jeden Preis: viele eigene Einheiten in Feindberührung oder mit wankender Moral
-      const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < P.FALLBACK_MOR + 0.5).length;
+      const shaky = own.filter(o => E.adjEnemies(G, o).length || o.mor < (kiAlt() ? P.FALLBACK_MOR : E.fallbackSchwelle(G, o)) + 0.5).length;
       // Prüfliste 2.21 (2026-11-21): vorher nur in gut einem Drittel der Schlachten. Zusätzlich: 2 Einheiten in Reichweite wanken (Moral knapp über der Fluchtgrenze
       // oder angeschlagen in Feindberührung), oder ein gehaltenes Zielfeld in Reichweite ist bedroht (Gegner bis 2 Felder heran) – Halten wirkt bis zum nächsten eigenen Zug
-      const wank = own.filter(o => o.mor < P.FALLBACK_MOR + 1.5 || (E.adjEnemies(G, o).length && o.str < 6)).length;
+      const wank = own.filter(o => o.mor < (kiAlt() ? P.FALLBACK_MOR : E.fallbackSchwelle(G, o)) + 1.5 || (E.adjEnemies(G, o).length && o.str < 6)).length;
       const zielBedroht = E.OBJECTIVES.some(ob => G.ctrl[ob.id] === u.side && own.some(o => E.dist(o.c, o.r, ob.c, ob.r) <= 1) && G.units.some(e => e.side !== u.side && E.active(e) && E.dist(e.c, e.r, ob.c, ob.r) <= 2));
       if (ENVX.HOLD_ALT ? shaky >= Math.max(3, Math.round(own.length * 0.35)) : (shaky >= Math.max(3, Math.round(own.length * 0.35)) || (wank >= 2 && own.length >= 3) || (zielBedroht && own.length >= 2 && G.turn >= 4))) return { u: u.id, steps: [{ k: 'big' }] };
     } else {   // Generalangriff: zu Beginn des Zugs, wenn viele eigene Einheiten nah am Gegner sind und noch handeln können
@@ -661,6 +671,11 @@ function next(G) {
     const wert = d => { const p = E.preview(G, u, d, 'fire'); return Math.min(p.dmg, d.str) + (p.dmg >= d.str - 0.3 ? 3 : 0) + (G.map[d.c][d.r].obj ? 1.5 : 0) + (TYPES[d.type].mg || E.cls(d) === 'art' ? 1 : 0) + (E.dist(u.c, u.r, d.c, d.r) <= 1 ? 1 : 0); };
     const t = ts.sort((a, b) => wert(b) - wert(a))[0];
     if (wert(t) >= W_DAUER) return { u: u.id, steps: [{ k: 'fire', d: t.id }] };
+  }
+  // U7b Nr. 3: Sammeln-Befehl noch einmal nach dem Ziehen prüfen (vorher nur zu Beginn des Zugs, dann steht der Anführer oft noch zu weit weg)
+  if (!kiAlt() && !E.fluchtAlt()) for (const u of G.units) {
+    if (!E.canOrder(G, u) || G._aiDone.has('o2' + u.id)) continue;
+    if (E.canOrderKind(G, u, 'rally') && E.sammelZiele(G, u).some(o => o.str >= 4 && E.sammelChance(G, o, true) >= 0.5)) { G._aiDone.add('o2' + u.id); return { u: u.id, steps: [{ k: 'order', kind: 'rally' }] }; }
   }
   // Zweiter Durchgang: Meldehunde bringen Befehle, dann nutzen Einheiten mit übrigen Aktionspunkten sie (weiter ziehen oder angreifen)
   for (const u of G.units) if (u.side === G.side && E.active(u) && TYPES[u.type].abil === 'ammo') {

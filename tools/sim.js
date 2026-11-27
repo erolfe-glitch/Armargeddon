@@ -50,7 +50,7 @@ function moralZaehlen(G, ev, flucht, ents) {   // flucht: Set der fliehenden Ein
     else if (e.t === 'entsetzen') { const k = z.id + ':' + G.turn + G.side, wdh = ents.has(k); ents.add(k); m7(sd, 'Entsetzenstests'); if (!e.ok) m7(sd, 'Entsetzen durchgefallen'); if (wdh) { m7(sd, 'Entsetzen Wiederholung'); if (!e.ok) m7(sd, 'Entsetzen Wiederholung durchgefallen'); } }
     else if (e.t === 'rout') { const vor = ev.slice(Math.max(0, i - 3), i).filter(x => x.u === e.u), grund = vor.some(x => x.t === 'gas') ? 'Gas' : vor.some(x => x.t === 'hit' && x.panic) ? 'Kette' : z.str < E.P.ROUT_STR ? 'Stärke' : 'Moral';
       m7(sd, 'Flucht'); m7(sd, 'Flucht (' + grund + ')'); flucht.add(z.id); }
-    else if (e.t === 'rally') { m7(sd, 'gesammelt'); if (e.befehl) m7(sd, 'gesammelt (Befehl)'); flucht.delete(z.id); } else if (e.t === 'sammelnFehl') m7(sd, 'Sammelbefehl misslungen'); else if (e.t === 'escaped') { m7(sd, 'entkommen am Rand'); flucht.delete(z.id); }
+    else if (e.t === 'rally') { m7(sd, 'gesammelt'); if (e.befehl) m7(sd, 'gesammelt (Befehl)'); flucht.delete(z.id); } else if (e.t === 'sammelnFehl') m7(sd, 'Sammelbefehl misslungen'); else if (e.t === 'zerschlagen') m7(sd, 'auf der Flucht zerschlagen'); else if (e.t === 'escaped') { m7(sd, 'entkommen am Rand'); flucht.delete(z.id); }
     else if ((e.t === 'destroyed' || e.t === 'dead') && flucht.has(z.id)) { m7(sd, 'vernichtet auf der Flucht'); flucht.delete(z.id); } } }
 function moralRunde(G) {   // zu Beginn der Runde von G.side: Moralstufen der Fußtruppen, Niedergehaltene, Fliehende und ob eine Sammel-Chance besteht
   const sd = G.side; for (const u of G.units) { if (u.side !== sd) continue; const T = E.TYPES[u.type];
