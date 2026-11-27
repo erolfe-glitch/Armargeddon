@@ -91,7 +91,8 @@ TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall', 'soldat_posen', 'sturm_pose
 OHNE_BLITZ = {'sturm_posen', 'pionier_posen'}
 POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97), 'sturm_posen': ('sturm', 4, 0.97), 'pionier_posen': ('pionier', 4, 0.97)}   # 2026-11-20: Sturmtrupps (Ausholen, Loslassen, Graben, Getroffen), Pioniere (Draht schneiden, Haftladung/Mine, Graben, Getroffen)
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
-REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
+REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3,
+         'mg_trupp': 4, 'panzerbuechse_trupp': 4, 'hauptmann_gruppe': 3, 'general_gruppe': 3, 'scharfschuetze_trupp': 3}   # U4 Teil 3 (Punkt 121): Waffe + 3 Mann, Führung mit 3 Figuren, Scharfschütze + Beobachter (Teile getrennt gemalt)
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
 SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4,   # U4 Teil 2: neuer Bogen, Düse der ersten Pose berührt den Mantel der zweiten
              # R4 (Punkt 97): Stahlreiter, Trab | Galopp mit erhobenem Schwert | aufbäumend (Schwerter berühren sich, Naht)
@@ -101,7 +102,10 @@ SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4,   # U4 T
 # Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'konkordat_stahlreiter_reskin': 1.85, 'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.25, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
+SH_REIHE = {'konkordat_mg_trupp': 0.72, 'aschenwacht_mg_trupp': 0.74, 'aschenwacht_panzerbuechse_trupp': 0.75,   # U4 Teil 3: höchstes Teil = kniender Mann
+            'konkordat_hauptmann_gruppe': 1.09, 'aschenwacht_hauptmann_gruppe': 1.01, 'konkordat_general_gruppe': 1.06, 'aschenwacht_general_gruppe': 1.08,   # höchstes Teil = Fahne, Offizier 1 SH (General 1,05)
+            'konkordat_scharfschuetze_trupp': 0.58, 'beiwerk_versorgung': 0.6,   # Liegende: Körperlänge ≈ 1 SH; Karren/Kiste/Feldtelefon ≈ 0,6 SH
+            'konkordat_stahlreiter_reskin': 1.85, 'aschenwacht_sturm': 1.1, 'konkordat_versorgung': 1.06, 'mineur': 1.02, 'eingreif': 1.0, 'reiter': 1.75, 'banner': 1.45, 'schwer': 1.08, 'pirschjaeger': 0.85, 'signal': 1.17, 'stahl': 1.4, 'panzerknecht': 1.4, 'loewenoger': 1.25, 'eiserne_huenen': 1.85}   # Kampfanzüge: Körper ca. 1,25 Soldatenhöhen (Höhe gemessen mit Auspuff und Antenne), kleiner als Kolosse   # Pirschjäger: höchste Pose geduckt
 # Bögen, die nach links blicken: spiegeln (das Spiel erwartet Blick nach rechts und spiegelt selbst je nach Blickrichtung)
 SPIEGELN = {'aschenwacht_eisenknecht', 'aschenwacht_eisenknecht_neu', 'aschenwacht_saegeschreiter', 'aschenwacht_klauenschreiter'}
 
@@ -199,6 +203,8 @@ ABZEICHEN = {
     'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15),
                             ('platte', 595, 273, 34), ('platte', 447, 451, 13), ('platte', 605, 458, 13), ('platte', 517, 692, 22)],   # Pflicht-Übermalung 2026-11-21: Helmemblem, Totenköpfe an den Schulterkordeln, Totenkopf-Schnalle
     'aschenwacht_bohrkoloss': [('platte', 468, 579, 27)],
+    'aschenwacht_general_gruppe': [('platte', 268, 740, 44)],   # U4 Teil 3: Adler an der Ärmelmanschette
+    'aschenwacht_hauptmann_gruppe': [('platte', 505, 175, 46)],   # U4 Teil 3: Adler vorn am Helm
     # Posenbögen 2026-11-20: Adler auf den Pickelhauben (Pflicht: keine Adler im Spiel)
     'aschenwacht_sanitaeter_posen': [('platte', 496, 137, 34), ('platte', 2424, 160, 32), ('platte', 1895, 261, 32), ('platte', 1169, 604, 32)],
     'aschenwacht_melder_posen': [('platte', 669, 934, 30), ('platte', 2335, 745, 34), ('platte', 301, 81, 26)],
@@ -663,7 +669,7 @@ def cut(name, out=OUT):
         for j, i in enumerate(big, 1):
             sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0
             poses.append((j, keep_parts(t, True), 0))
-        hmax = max(p[1].shape[0] for p in poses); s = H_OUT * SH_REIHE.get(kind, 1.0) / hmax
+        hmax = max(p[1].shape[0] for p in poses); s = H_OUT * wert(SH_REIHE, name, kind, 1.0) / hmax   # U4 Teil 3: auch ganzer Bogenname
         out.mkdir(parents=True, exist_ok=True)
         for i, q, fl in poses:
             im = Image.fromarray(np.clip(q + 0.5, 0, 255).astype(np.uint8), 'RGBA')
