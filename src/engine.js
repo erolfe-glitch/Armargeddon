@@ -6,6 +6,7 @@
 // ---------- Grundwerte (per Simulation abgestimmt) ----------
 const P = {
   DMG: 0.61,
+  FURCHT_BASIS: 0.35, ROAR_BASIS: 0.5, ROAR_BESTANDEN: 0.5,   // U7 Schritt 1 (Punkt 125/45b, 2026-11-27): Furcht-Aura und Löwengebrüll über den Entsetzenstest (Grundwerte), bestanden beim Gebrüll nur −ROAR_BESTANDEN Moral
   ROAR_R: 2, ROAR_MOR: 2,   // Löwengebrüll des Kreuzschreiters (2026-11-20): einmal je Schlacht, kostet nichts; Gegner ohne Panzerung bis ROAR_R Felder: Moral −ROAR_MOR, niedergehalten bis zum Ende ihrer nächsten Runde
   FAUST_MUL: 2,
   SPRUNG: 2,   // Sprungangriff der Löwenoger (2026-11-20): Landefeld bis so viele Felder entfernt   // Faustsalve des Eisenknechts (2026-11-20): einmal je Schlacht statt des Schusses zwei Schüsse auf zwei verschiedene Ziele, je ×FAUST_MUL
@@ -170,7 +171,7 @@ Object.assign(TYPES, {
     can: 'Kampfmaschine in Ritterrüstung mit Drehlauf-Waffe und Kettensäge. Stark auf kurze Entfernung und im Nahkampf. Bleibt manchmal mit einer Panne liegen.',
     chronik: { quelle: 'Predigt vor dem Ausrücken, Kronkirche', text: 'Geweihte Panzerplatten in Form alter Ritterrüstungen schützen diese Kampfmaschine auf dem Weg direkt in die feindliche Linie. Auf kurze Distanz zersiebt ihre Drehlauf-Waffe jede Deckung, ehe die kreischende Kettensäge im Nahkampf den Rest besorgt.' } },
   kreuz: { side: 'A', name: 'Kreuzschreiter', cls: 'walker', stufe3: true, roar: true, at: true,   /* Löwenmaul-Kanone panzerbrechend wie die Panzerbüchse (Faktortabelle FAK.at) */ zweit: { name: 'Unterarm-Kanone', rng: 2, kanone: true }, fig: 'mechC', mech: true, atk: 8, def: 9, mor: 9, mv: 3, rng: 2, fs: 5,
-    can: 'Stufe 3, höchstens einer je Schlacht. Panzerjäger: Löwenmaul-Kanone panzerbrechend (Fahrzeuge und Schreiter ×1,5, Fußtruppen nur ×0,5, trifft die Kirche) und Kriegshammer (gegen Fußtruppen im Nahkampf ×1,5); am zähesten von allen, Bewegung 3. Unterarm-Kanone (2 Felder, einmal je Runde zusätzlich, ebenfalls panzerbrechend). Löwengebrüll (einmal je Schlacht, kostenlos): Gegner ohne Panzerung bis 2 Felder Moral −20 und niedergehalten. Selten Panne.',
+    can: 'Stufe 3, höchstens einer je Schlacht. Panzerjäger: Löwenmaul-Kanone panzerbrechend (Fahrzeuge und Schreiter ×1,5, Fußtruppen nur ×0,5, trifft die Kirche) und Kriegshammer (gegen Fußtruppen im Nahkampf ×1,5); am zähesten von allen, Bewegung 3. Unterarm-Kanone (2 Felder, einmal je Runde zusätzlich, ebenfalls panzerbrechend). Löwengebrüll (einmal je Schlacht, kostenlos): Gegner bis 2 Felder machen einen Schrecktest (Grundchance 50 %); wer durchfällt, verliert 20 Moral und ist niedergehalten, wer besteht, nur 5 Moral. Selten Panne.',
     chronik: { quelle: 'Chronik der 2. Inselgarde, 115 n. G.', text: 'Nur ein einziger dieser gewaltigen Panzerjäger schreitet je aufs Feld, bewaffnet mit der Löwenmaul-Kanone und einem Kriegshammer. Wenn sein metallenes Löwengebrüll über den Schlamm grollt, verlässt selbst abgehärtete Veteranen der Mut.' } },
   stahl: { side: 'A', name: 'Stahlgänger-Trupp', cls: 'inf', fig: 'suitA', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Motorisierte Kampfanzüge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Stark im Nahkampf.',
@@ -188,7 +189,7 @@ Object.assign(TYPES, {
     can: 'Held, höchstens einer je Armee: Oberst im Kampfanzug mit dampfgetriebener Schlagfaust. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Durchbruch (Aktion und alle BP, alle 2 Runden): stürmt in eine Einheit daneben oder mit Anlauf (nur aus dem Stand) bis 2 Felder geradeaus (keine Panzer oder Schreiter) – bis 26 Schaden, gegen Gepanzerte weniger, Moral −15, niedergehalten, sie wird ein Feld zurückgeschleudert (an einer Wand ×1,5). Standhaft: er selbst und eigene Einheiten neben ihm verlieren unter Beschuss nur halb so viel Moral. Schwäche: kaum Fernkampf (Revolver, 1 Feld). Fällt er, verliert die ganze Seite Moral (−10).',
     chronik: { quelle: 'Tagesbefehl des Westlichen Konvents, 116 n. G.', text: 'Der Oberst schreitet in seinem Kampfanzug voran, während der Rückenofen Dampf in die rot emaillierte Schlagfaust presst. Sein wuchtiger Durchbruch sprengt feindliche Reihen, und Soldaten an seiner Seite weichen keinen Schritt zurück.' } },
   kuerass: { side: 'D', name: 'Der Eiserne Kürassier', cls: 'storm', fig: 'suitD', suit: true, held: true, abil: 'hinrichtung', aura: 'furcht', stecken: true, atk: 10, def: 8, mor: 10, mv: 2, rng: 0, fs: 0,
-    can: 'Held, höchstens einer je Armee: riesiger gepanzerter Ritter mit Kettenklinge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Hinrichtung (Aktion, alle 3 Runden): eine angeschlagene Einheit daneben (unter 40 Stärke, keine Panzer oder Schreiter) wird sofort vernichtet. Furcht: Gegner neben ihm (keine Fahrzeuge oder Schreiter) verlieren zu Beginn ihrer Runde Moral (−4), höchstens bis 5; das allein löst keine Flucht aus. Schwäche: langsam (2 Bewegung), kein Fernkampf, bleibt in Schlamm, Sumpf und Gräben leicht stecken (30 %, dann eine Runde fest). Fällt er, verliert die ganze Seite Moral (−10).',
+    can: 'Held, höchstens einer je Armee: riesiger gepanzerter Ritter mit Kettenklinge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Im Nahkampf sehr stark. Hinrichtung (Aktion, alle 3 Runden): eine angeschlagene Einheit daneben (unter 40 Stärke, keine Panzer oder Schreiter) wird sofort vernichtet. Furcht: Gegner neben ihm (keine Fahrzeuge oder Schreiter) machen zu Beginn ihrer Runde einen Furchttest (Grundchance 35 %, mehr bei wenig Stärke oder Moral, weniger mit Offizier oder Banner daneben); wer durchfällt, verliert Moral. Das allein löst keine Flucht aus. Schwäche: langsam (2 Bewegung), kein Fernkampf, bleibt in Schlamm, Sumpf und Gräben leicht stecken (30 %, dann eine Runde fest). Fällt er, verliert die ganze Seite Moral (−10).',
     chronik: { quelle: 'Chronik der Grauen Liturgie, 116 n. G.', text: 'In geweihten Hochofenstahl gehüllt, verbreitet er blanke Furcht und richtet geschwächte Feinde mit seiner kreischenden Kettenklinge hin. Doch sein gewaltiges Gewicht lässt ihn in tiefem Schlamm und Gräben immer wieder steckenbleiben.' } },
   panzerk: { side: 'D', name: 'Panzerknechte', cls: 'inf', fig: 'suitD', mech: true, suit: true, abil: 'rush', atk: 5, def: 5, mor: 8, mv: 3, rng: 2, fs: 3,
     can: 'Motorisierte Kampfanzüge. Leicht gepanzert: Gewehr, MG und Klingen treffen nur ×0,5, panzerbrechende Waffen ×1,5. Draht verletzt und hält nicht auf. Sturmlauf (Aktion und alle BP): bis 4 Felder geradeaus, dann sofort Nahkampf. Stark im Nahkampf.',
@@ -1209,6 +1210,8 @@ const kraftArt = () => TOG.KRAFT || 'stufen';   // Fassung 2 nur für Messungen 
 const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlwerk: 3, sense: 3, buechse: 3, flammen: 3, brand: 3,
   pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 1, banner: 2,   /* Punkt 99: Hund ist Beiwerk */
   hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, ...(TOG.REITER_ALT ? {} : { reiter: 3 }), stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
+const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
+const furchtAlt = () => !!(TOG.FURCHT_ALT || (typeof window !== 'undefined' && window.FURCHT_ALT));   // U7 Schritt 1: Rückweg – Furcht-Aura und Gebrüll ohne Test
 const truppAlt = () => !!(TOG.TRUPP_ALT || (typeof window !== 'undefined' && window.TRUPP_ALT));
 function modelle(t) { const T = TYPES[t]; if (!truppAlt() && TRUPP[t] != null) return TRUPP[t]; if (t === 'kohorte' || t === 'grenadier') return 8; if (T.cls === 'cav') return 6; if (T.cls === 'walker' || T.cls === 'art' || T.held || T.mech) return 1; return 3; }   // wie die Anzeige (R1: Linie 8, Reiter 6, Spezialtrupps 3; Geschütze, Fahrzeuge, Schreiter, Helden 1)
 const modelleDa = u => Math.max(0, Math.ceil(u.str / 10 * modelle(u.type) - 1e-6));
@@ -1375,8 +1378,8 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
 // Punkt 18 (2026-11-24): Entsetzenstest – nur wenn ein Fahrzeug/Schreiter angreift (statt Moralverlust beim bloßen Annähern; ENTSETZ_ALT=1 = alte Regel).
 // Immun: Helden, Fahrzeuge/Schreiter, Kampfanzüge. Durchgefallen: niedergehalten, Moral −P.ENTSETZ_MOR, unter 60 Stärke zurückweichen (keine Sofortflucht).
 function entsetzenImmun(t) { const T = TYPES[t]; return !T || !!T.held || T.cls === 'walker' || !!T.suit || !!T.mech; }
-function entsetzenP(G, d) {
-  const T = TYPES[d.type]; let p = P.ENTSETZ_BASIS + (1 - d.str / 10) * 0.25 + Math.max(0, (5 - d.mor) / 10) * 0.3;
+function entsetzenP(G, d, basis = P.ENTSETZ_BASIS) {   // U7: auch für Furcht-Aura (P.FURCHT_BASIS) und Löwengebrüll (P.ROAR_BASIS)
+  const T = TYPES[d.type]; let p = basis + (1 - d.str / 10) * 0.25 + Math.max(0, (5 - d.mor) / 10) * 0.3;
   p += [0.08, 0.03, 0, -0.03][coverOf(G, d).tier];
   if (T.cls === 'art' || T.mg) p += 0.08; else if (T.cls === 'storm' || T.cls === 'cav') p -= 0.05;
   if (T.cmd) p -= 0.1;
@@ -1385,6 +1388,7 @@ function entsetzenP(G, d) {
 }
 function entsetzen(G, a, d, ev) {
   if (TOG.ENTSETZ_ALT || !a || !alive(a) || cls(a) !== 'walker' || a.side === d.side || !active(d) || entsetzenImmun(d.type)) return false;
+  const runde = G.turn + G.side; if (!entsetzOft() && d.entsetztIn === runde) return false; d.entsetztIn = runde;   // U7 Schritt 1: höchstens ein Test je Einheit und gegnerischer Runde
   const p = entsetzenP(G, d), ok = G.rng() >= p; G.entsetzen = G.entsetzen || { n: 0, fail: 0 }; G.entsetzen.n++;
   const evE = { t: 'entsetzen', u: d.id, ok, p: +p.toFixed(2) }; ev.push(evE); if (ok) return false; G.entsetzen.fail++;
   d.mor = Math.max(0.1, d.mor - P.ENTSETZ_MOR); evE.morv = d.mor;
@@ -1739,7 +1743,8 @@ function startTurn(G) {
       if (TYPES[u.type].counterStrike) u.cready = true;
       if (u.stuck > 0) { u.stuck--; if (!u.stuck) ev.push({ t: 'unstuck', u: u.id }); }
       if (u.status === 'ok' && cls(u) !== 'walker') { const fh = G.units.find(h => h.side !== u.side && alive(h) && TYPES[h.type].aura === 'furcht' && dist(h.c, h.r, u.c, u.r) <= 1);   // Held Kürassier: Furcht
-        if (fh) { u.mor = Math.max(0.5, u.mor - (u5aus() ? P.FURCHT_MOR : P.FURCHT_MOR_U5)); ev.push({ t: 'furcht', u: u.id, by: fh.id, mor: u.mor }); } }
+        if (fh && !furchtAlt() && !entsetzenImmun(u.type)) { const p = entsetzenP(G, u, P.FURCHT_BASIS), ok = G.rng() >= p; if (!ok) u.mor = Math.max(0.5, u.mor - (u5aus() ? P.FURCHT_MOR : P.FURCHT_MOR_U5)); ev.push({ t: 'furcht', u: u.id, by: fh.id, mor: u.mor, ok, p: +p.toFixed(2) }); }   // U7 Schritt 1: Test statt fester Abzug
+        else if (fh && furchtAlt()) { u.mor = Math.max(0.5, u.mor - (u5aus() ? P.FURCHT_MOR : P.FURCHT_MOR_U5)); ev.push({ t: 'furcht', u: u.id, by: fh.id, mor: u.mor }); } }
     }
   }
   for (const u of G.units.filter(x => x.side === s && alive(x))) {
@@ -2172,9 +2177,11 @@ function canRoar(G, u) { return !!TYPES[u.type].roar && active(u) && u.side === 
 function roar(G, u) {
   if (!canRoar(G, u)) return [];
   const ts = roarTargets(G, u), ev = [{ t: 'roar', u: u.id, d: ts.map(o => o.id) }]; u.roared = true;
+  ev[0].best = []; ev[0].mor = {};
   for (const o of ts) {
+    if (!furchtAlt()) { const p = entsetzenImmun(o.type) ? 0 : entsetzenP(G, o, P.ROAR_BASIS); if (G.rng() >= p) { o.mor = Math.max(0, o.mor - P.ROAR_BESTANDEN); ev[0].best.push(o.id); ev[0].mor[o.id] = o.mor; continue; } }   // U7 Schritt 1: Test je Ziel; bestanden nur −ROAR_BESTANDEN, kein Niederhalten
     let ml = P.ROAR_MOR; if (officerAt(G, o.side, o.c, o.r)) ml *= P.OFFICER_MOR; if (bannerAt(G, o.side, o.c, o.r)) ml *= 0.75;
-    o.mor = Math.max(0, o.mor - ml); o.angst = 1;
+    o.mor = Math.max(0, o.mor - ml); o.angst = 1; ev[0].mor[o.id] = o.mor;
     if (o.mor <= 0 && !noFlee(G, o)) { routUnit(G, o, u, ev); continue; }
     if (!(o.supp > 0)) { o.supp = 1; ev.push({ t: 'supp', u: o.id }); }
   }

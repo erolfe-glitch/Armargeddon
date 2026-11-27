@@ -3093,7 +3093,7 @@ async function playEvent0(e) {
       floater(x, y - s * 1.0, 'Stacheldraht', '#d9b48a'); await wait(120); break; }
     case 'entsetzen': { const dd = DU.get(e.u); if (dd && e.morv != null) dd.mor = e.morv; kz(e.u, e.ok ? 'funkeln' : 'angst', 'steig'); if (!e.ok && dd) { floater(...headPos(e.u), 'Entsetzt!', '#F0EDE1'); playSound('ev_entsetzen', 0.4); } await wait(e.ok ? 60 : 220); break; }   // Punkt 18: Entsetzenstest beim Angriff eines Fahrzeugs/Schreiters
     case 'fear': { DU.get(e.u).mor = e.morv; kz(e.u, 'blitze', 'steig'); await wait(200); break; }
-    case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); pose(e.u, 'gebruell', 1800); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); if (ksz) shake(6); await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
+    case 'roar': { const ru = unitById(e.u), dr = DU.get(e.u); pose(e.u, 'gebruell', 1800); const ksz = dr ? await kampfSzene(dr.x, dr.y - L.s * 0.6) : null; if (ru) loewenGebruell(ru, e.d); for (const id of e.d || []) { const dd = DU.get(id); if (dd && e.mor && e.mor[id] != null) dd.mor = e.mor[id]; if (e.best) kz(id, e.best.includes(id) ? 'funkeln' : 'angst', 'steig'); } if (ksz) shake(6);   /* U7 Schritt 1: Test je Ziel (Funkeln = bestanden) */ await wait(700); await kampfSzeneEnde(ksz); break; }   // F48
     case 'abilTitel': {   // Enrico 2026-11-22: Titel zuerst, dann Anlauf/Sprung und Schlag (Durchbruch, Sturmrollen, Sprungangriff)
       const a = DU.get(e.u), au = unitById(e.u); if (!a || !au) break; if (camOn() && !inView(a.x, a.y, 0.15)) await camTo(a.x, a.y - L.s * 0.4, 360);
       const NAME = { durchbruch: 'Durchbruch', rollen: 'Sturmrollen', sprung: 'Sprungangriff' }, art = e.k === 'durchbruch' ? 'faust' : au.side === 'A' ? 'faust' : 'kalt';
@@ -3149,7 +3149,7 @@ async function playEvent0(e) {
       trefferSpritzer(a.x, a.y, d, 3, masch); if (!masch) { schwerBlut(a.x, a.y, d, 3); schwerBlut(a.x, a.y, d, 3); bodenBlut(d.x + (Math.random() - 0.5) * L.s * 0.3, d.y + L.s * 0.12 * kAt(d.x, d.y), 0.7); }   // schwerer Blutstoß, dann Lache
       if (!(ksz && ksz.skip)) await wait(420); await kampfSzeneEnde(ksz); break; }
     case 'heldfall': { const hu = unitById(e.u); playSound('held_fall_horn', 0.6, null, { an: hu }); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
-    case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, 'angst', 'steig'); playSound('ev_furcht', 0.35); } if (e.by) auraPuls(e.by, 'kalt'); await wait(120); break; }
+    case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, e.ok ? 'funkeln' : 'angst', 'steig'); if (!e.ok) playSound('ev_furcht', 0.35); } if (e.by) auraPuls(e.by, 'kalt'); await wait(e.ok ? 60 : 120); break; }   // U7 Schritt 1: Test bestanden = Funkeln
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0, true);   // Runde 2: Sprung mit Krallen
       const [c1, r1] = e.path[1], [x0, y0] = [d0.x, d0.y], [x1, y1] = center(c1, r1), dauer = 420 / speed, t0 = performance.now();
@@ -5011,10 +5011,10 @@ function noteEvent(e, u) {
     case 'durchbruch': return logAdd(`${N(u)}: Durchbruch`, u && u.side, ...at(u), true);   // Einblendung: heldTitel (F86)
     case 'hinrichtung': return logAdd(`${N(u)}: Hinrichtung`, u && u.side, ...at(u), true);
     case 'heldfall': logAdd(`${N(u)} ist gefallen – die Seite verliert Moral`, u && u.side, ...at(u), true); return headline(`${N(u)} fällt!`, u && u.side);
-    case 'furcht': return logAdd(`${N(u)}: Furcht vor dem Kürassier`, u && u.side, ...at(u));
+    case 'furcht': return logAdd(e.ok ? `${N(u)}: hält der Furcht vor dem Kürassier stand (Chance ${Math.round((e.p || 0) * 100)} %)` : `${N(u)}: Furcht vor dem Kürassier` + (e.p != null ? ` (Chance ${Math.round(e.p * 100)} %)` : ''), u && u.side, ...at(u));
     case 'dauerfeuer': return logAdd(`${N(u)}: Dauerfeuer – das MG kühlt eine Runde ab`, u && u.side, ...at(u), true);
     case 'faust': logAdd(`${N(u)}: Faustsalve auf ${(e.d || []).map(id => N(unitById(id))).join(' und ')}`, u && u.side, ...at(u), true); return headline('Faustsalve!', u && u.side);
-    case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length} Gegner verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);
+    case 'roar': logAdd(`${N(u)}: Löwengebrüll, ${(e.d || []).length - (e.best || []).length} von ${(e.d || []).length} Gegnern verängstigt`, u && u.side, ...at(u), true); return headline(`Löwengebrüll!`, u && u.side);
     case 'supp': logAdd(`${N(u)} niedergehalten`, u.side, ...at(u), true); return headline(`${N(u)} niedergehalten!`, u.side);
     case 'rout': logAdd(`${N(u)} flieht`, u.side, ...at(u), true); return headline(`${N(u)} flieht!`, u.side);
     case 'destroyed': logAdd(`${N(u)} aufgerieben`, u.side, ...at(u), true); return headline(`${N(u)} aufgerieben!`, u.side);

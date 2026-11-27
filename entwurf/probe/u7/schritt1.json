@@ -1,0 +1,326 @@
+{
+ "grauwall": {
+  "quote": 53.5,
+  "quoten": [
+   56,
+   53,
+   53,
+   52
+  ],
+  "runden": 15.28,
+  "verluste": [
+   33.5,
+   29.25
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    256.53,
+    239.69
+   ],
+   "Moral ≥ 60 %": [
+    216.41,
+    210.59
+   ],
+   "Entsetzenstests": [
+    10.42,
+    17.84
+   ],
+   "Entsetzen durchgefallen": [
+    2.18,
+    3.92
+   ],
+   "niedergehalten": [
+    35.53,
+    23.08
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    29.1,
+    16.15
+   ],
+   "Moral 35–60 %": [
+    30.66,
+    20.01
+   ],
+   "zurückgewichen": [
+    6.54,
+    7.19
+   ],
+   "Moral < 35 %": [
+    9.46,
+    9.09
+   ],
+   "Flucht": [
+    4.72,
+    4.44
+   ],
+   "Flucht (Stärke)": [
+    2.7,
+    1.46
+   ],
+   "vernichtet auf der Flucht": [
+    2.1,
+    1.89
+   ],
+   "Flucht (Moral)": [
+    1.89,
+    2.84
+   ],
+   "Rundenanfänge auf der Flucht": [
+    3.16,
+    2.21
+   ],
+   "entkommen am Rand": [
+    1.65,
+    1.76
+   ],
+   "gesammelt": [
+    0.19,
+    0.31
+   ],
+   "Sammel-Chance bestand": [
+    0.18,
+    0.33
+   ],
+   "noch fliehend am Ende": [
+    0.78,
+    0.49
+   ],
+   "Furcht-Aura": [
+    1.19,
+    0
+   ],
+   "Flucht (Gas)": [
+    0.1,
+    0.14
+   ],
+   "Flucht (Kette)": [
+    0.03,
+    0.01
+   ],
+   "hält stand": [
+    0.05,
+    0.21
+   ],
+   "Heldenfall": [
+    0,
+    0
+   ]
+  }
+ },
+ "sanktruss": {
+  "quote": 46,
+  "quoten": [
+   47,
+   42,
+   49,
+   46
+  ],
+  "runden": 14.15,
+  "verluste": [
+   42.75,
+   34.25
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    249.39,
+    248.14
+   ],
+   "Moral ≥ 60 %": [
+    195.66,
+    192.89
+   ],
+   "Entsetzenstests": [
+    18.48,
+    14.37
+   ],
+   "niedergehalten": [
+    44.21,
+    22.58
+   ],
+   "Moral 35–60 %": [
+    31.92,
+    34.67
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    34.55,
+    17.84
+   ],
+   "Flucht": [
+    7.47,
+    5.63
+   ],
+   "Flucht (Moral)": [
+    4.66,
+    3.73
+   ],
+   "Rundenanfänge auf der Flucht": [
+    4.79,
+    3.38
+   ],
+   "Entsetzen durchgefallen": [
+    4,
+    2.97
+   ],
+   "entkommen am Rand": [
+    2.95,
+    2.29
+   ],
+   "Moral < 35 %": [
+    21.8,
+    20.58
+   ],
+   "zurückgewichen": [
+    15.46,
+    14.77
+   ],
+   "Flucht (Stärke)": [
+    2.6,
+    1.45
+   ],
+   "vernichtet auf der Flucht": [
+    3.14,
+    2.09
+   ],
+   "Sammel-Chance bestand": [
+    0.45,
+    0.55
+   ],
+   "noch fliehend am Ende": [
+    0.86,
+    0.61
+   ],
+   "Furcht-Aura": [
+    0.96,
+    0
+   ],
+   "gesammelt": [
+    0.52,
+    0.64
+   ],
+   "Flucht (Gas)": [
+    0.13,
+    0.41
+   ],
+   "Flucht (Kette)": [
+    0.08,
+    0.05
+   ],
+   "Heldenfall": [
+    0,
+    0
+   ],
+   "hält stand": [
+    0.17,
+    0.26
+   ]
+  }
+ },
+ "winterdorf": {
+  "quote": 56.75,
+  "quoten": [
+   52,
+   61,
+   59,
+   55
+  ],
+  "runden": 14.22,
+  "verluste": [
+   34.75,
+   29.25
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    263.14,
+    248.17
+   ],
+   "Moral ≥ 60 %": [
+    216.19,
+    215.02
+   ],
+   "niedergehalten": [
+    37.71,
+    25.57
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    28.27,
+    19.51
+   ],
+   "Entsetzenstests": [
+    15.77,
+    11.42
+   ],
+   "Entsetzen durchgefallen": [
+    3.89,
+    2.95
+   ],
+   "Moral 35–60 %": [
+    33.28,
+    21.5
+   ],
+   "zurückgewichen": [
+    7.26,
+    7.88
+   ],
+   "Moral < 35 %": [
+    13.67,
+    11.65
+   ],
+   "Flucht": [
+    4.73,
+    4.5
+   ],
+   "Flucht (Moral)": [
+    2.48,
+    2.64
+   ],
+   "Rundenanfänge auf der Flucht": [
+    3.48,
+    1.95
+   ],
+   "Sammel-Chance bestand": [
+    0.14,
+    0.17
+   ],
+   "entkommen am Rand": [
+    1.48,
+    2.29
+   ],
+   "vernichtet auf der Flucht": [
+    2.25,
+    1.59
+   ],
+   "Flucht (Stärke)": [
+    2.19,
+    1.79
+   ],
+   "noch fliehend am Ende": [
+    0.78,
+    0.4
+   ],
+   "gesammelt": [
+    0.22,
+    0.22
+   ],
+   "Furcht-Aura": [
+    1,
+    0
+   ],
+   "Flucht (Gas)": [
+    0.04,
+    0.06
+   ],
+   "Flucht (Kette)": [
+    0.02,
+    0.01
+   ],
+   "hält stand": [
+    0.05,
+    0.21
+   ],
+   "Heldenfall": [
+    0,
+    0
+   ]
+  }
+ }
+}

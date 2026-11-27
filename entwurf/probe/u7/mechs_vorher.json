@@ -1,0 +1,226 @@
+{
+ "grauwall": {
+  "quote": 49.5,
+  "quoten": [
+   49,
+   49,
+   53,
+   47
+  ],
+  "runden": 15.32,
+  "verluste": [
+   33.75,
+   30.75
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    256.31,
+    238.3
+   ],
+   "Moral ≥ 60 %": [
+    214.87,
+    207.09
+   ],
+   "Entsetzenstests": [
+    14.16,
+    25.39
+   ],
+   "Entsetzen durchgefallen": [
+    3.13,
+    5.85
+   ],
+   "niedergehalten": [
+    35.77,
+    23.7
+   ],
+   "Entsetzen Wiederholung": [
+    3.24,
+    7.11
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    29.63,
+    16.68
+   ],
+   "Moral 35–60 %": [
+    31.56,
+    21.21
+   ],
+   "zurückgewichen": [
+    6.94,
+    8.23
+   ],
+   "Moral < 35 %": [
+    9.89,
+    9.99
+   ],
+   "Flucht": [
+    4.53,
+    4.57
+   ],
+   "Flucht (Stärke)": [
+    2.58,
+    1.47
+   ],
+   "vernichtet auf der Flucht": [
+    1.97,
+    2.01
+   ],
+   "Rundenanfänge auf der Flucht": [
+    2.92,
+    2.15
+   ],
+   "entkommen am Rand": [
+    1.67,
+    1.76
+   ],
+   "Flucht (Moral)": [
+    1.84,
+    2.89
+   ],
+   "gesammelt": [
+    0.22,
+    0.31
+   ],
+   "Entsetzen Wiederholung durchgefallen": [
+    0.79,
+    1.76
+   ],
+   "noch fliehend am Ende": [
+    0.66,
+    0.48
+   ],
+   "Sammel-Chance bestand": [
+    0.19,
+    0.32
+   ],
+   "Flucht (Gas)": [
+    0.09,
+    0.18
+   ],
+   "Furcht-Aura": [
+    0.91,
+    0
+   ],
+   "Flucht (Kette)": [
+    0.02,
+    0.04
+   ],
+   "hält stand": [
+    0.08,
+    0.26
+   ]
+  }
+ },
+ "sanktruss": {
+  "quote": 42.5,
+  "quoten": [
+   43,
+   42,
+   39,
+   46
+  ],
+  "runden": 14,
+  "verluste": [
+   44,
+   34.5
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    243.09,
+    242.04
+   ],
+   "Moral ≥ 60 %": [
+    190.25,
+    188.2
+   ],
+   "Entsetzenstests": [
+    24.23,
+    18.84
+   ],
+   "niedergehalten": [
+    43.53,
+    21.95
+   ],
+   "Entsetzen Wiederholung": [
+    5.46,
+    4.22
+   ],
+   "Moral 35–60 %": [
+    31.4,
+    33.28
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    34.02,
+    17.49
+   ],
+   "Flucht": [
+    7.55,
+    5.35
+   ],
+   "Flucht (Moral)": [
+    4.83,
+    3.47
+   ],
+   "Rundenanfänge auf der Flucht": [
+    4.52,
+    3.25
+   ],
+   "entkommen am Rand": [
+    3.1,
+    2.29
+   ],
+   "Entsetzen durchgefallen": [
+    5.33,
+    3.85
+   ],
+   "Entsetzen Wiederholung durchgefallen": [
+    1.27,
+    0.94
+   ],
+   "Moral < 35 %": [
+    21.44,
+    20.55
+   ],
+   "zurückgewichen": [
+    16.11,
+    15.31
+   ],
+   "hält stand": [
+    0.1,
+    0.28
+   ],
+   "Flucht (Gas)": [
+    0.12,
+    0.4
+   ],
+   "Flucht (Stärke)": [
+    2.52,
+    1.41
+   ],
+   "vernichtet auf der Flucht": [
+    3,
+    1.9
+   ],
+   "noch fliehend am Ende": [
+    0.94,
+    0.56
+   ],
+   "gesammelt": [
+    0.51,
+    0.6
+   ],
+   "Sammel-Chance bestand": [
+    0.47,
+    0.51
+   ],
+   "Furcht-Aura": [
+    0.75,
+    0
+   ],
+   "Flucht (Kette)": [
+    0.08,
+    0.07
+   ]
+  }
+ }
+}
