@@ -1,0 +1,38 @@
+[
+ {
+  "name": "konkordat_mg_trupp_w2c1_v2",
+  "ordner": "entwurf/probe/stil/figuren/w2c1",
+  "refs": [
+   "ui-quelle/figuren/konkordat/reskin/konkordat_soldat_reskin.png",
+   "ui-quelle/figuren/konkordat/reskin/konkordat_sturm_reskin.png",
+   "ui-quelle/figuren/konkordat/konkordat_fernsprech_neu.png"
+  ],
+  "aspect": "16:9",
+  "res": "2K",
+  "prompt": "Draw a sheet of exactly THREE separate groups of soldiers of the same army as the references, in exactly their art style, proportions and armour (bulky men in riveted steel plate armour over oxblood red greatcoats, brodie-style steel helmets, gas masks with glowing green eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter), all facing right, in one row: 1) LEFT: a HEAVY water-cooled machine gun with a thick ribbed cooling jacket, a water hose and a heavy low tripod, with a gunner sitting directly behind it, both hands on the grips, as one connected piece; the machine gun appears only once on the whole sheet and its muzzle stays well inside the image, far from the edge. 2) MIDDLE: a loader kneeling next to an open wooden ammunition box, holding an ammunition belt. 3) RIGHT: a spotter kneeling, looking through binoculars. No extra figures, no raised hands. Wide empty gaps between all figures so that nothing touches, wide margin to all image edges. Flat solid magenta background (#FF00FF) everywhere, no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags, no badges or plaques on helmets."
+ },
+ {
+  "name": "aschenwacht_minenwerfer_w2c1_v2",
+  "ordner": "entwurf/probe/stil/figuren/w2c1",
+  "refs": [
+   "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_soldat_reskin.png",
+   "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_sturm_reskin.png",
+   "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_panzer_neu.png"
+  ],
+  "aspect": "4:3",
+  "res": "2K",
+  "prompt": "Draw ONE single connected group of soldiers of the same army as the references, in exactly their art style, proportions and armour (bulky men in riveted steel plate armour over ash-grey greatcoats, spiked helmets, gas masks with glowing yellow eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter), all facing right: a heavy riveted short-barrelled trench mortar (minenwerfer) on a small two-wheeled carriage with a handwheel, one crew member loading a big finned bomb into the muzzle, a second crew member turning the handwheel on the other side, two spare bombs on a small stretcher beneath. Weapon, bombs and both men form one connected piece; the weapon appears only once. Nothing else in the picture: no vehicles, no tanks, no background objects. Wide empty gaps between all figures so that nothing touches, wide margin to all image edges. Flat solid magenta background (#FF00FF) everywhere, no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags, no badges or plaques on helmets."
+ },
+ {
+  "name": "konkordat_flammen_w2c1_v2",
+  "ordner": "entwurf/probe/stil/figuren/w2c1",
+  "refs": [
+   "ui-quelle/figuren/konkordat/reskin/konkordat_soldat_reskin.png",
+   "ui-quelle/figuren/konkordat/reskin/konkordat_sturm_reskin.png",
+   "ui-quelle/figuren/konkordat/konkordat_fernsprech_neu.png"
+  ],
+  "aspect": "16:9",
+  "res": "2K",
+  "prompt": "Draw a sheet of exactly FOUR separate soldiers of the same army as the references, in exactly their art style, proportions and armour (bulky men in riveted steel plate armour over oxblood red greatcoats, brodie-style steel helmets, gas masks with glowing green eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter), all facing right, each with a brass fuel tank backpack and a flame projector held in both hands, in one row: 1) advancing, projector held low; 2) standing and aiming the projector forward; 3) kneeling and aiming the projector forward; 4) walking, projector held at the hip. The four soldiers stand evenly spaced across the whole width with clearly visible empty magenta between every two of them. No flames coming out of the weapons, no extra figures. Wide empty gaps between all figures so that nothing touches, wide margin to all image edges. Flat solid magenta background (#FF00FF) everywhere, no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags, no badges or plaques on helmets."
+ }
+]

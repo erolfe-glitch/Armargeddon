@@ -1,3 +1,54 @@
+## 2026-11-28 – W2c-1 (Punkt 150): sechs Bögen im Zielstil gemalt, nur Probe, nichts eingebaut
+
+Gepusht:
+- Aufträge, Prüfwerkzeug, JPG-Kopien, Übersicht und dieser Bericht in einem Commit
+
+**Stand:**
+- **Ohne Browser:** Kein Browser, keine Vorschau, kein Test, kein Video, keine sim-Läufe. In `src/` ist nichts geändert.
+- **Hänger:** keine.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** 9 Bilder in 2K über Nano Banana 2 Edit, je etwa 0,12 $, zusammen **etwa 1,08 $ (≈ 1,00 €, Grenze 1,50 €)**.
+- **Ablage:** Die PNGs liegen in `entwurf/probe/stil/figuren/w2c1/` (nicht in git, gesichert in OneDrive). In git liegen JPG-Kopien und die Aufträge `auftrag.json` / `auftrag_v2.json`.
+- **Weg wie W2g:** als `refs` nur die Zielstil-Bögen der Seite, der alte Bogen nur angesehen und beschrieben.
+
+**Neue Werkzeuge:**
+- `tools/w2c1_auftrag.py` schreibt die Aufträge.
+- `tools/stil_pruefen.py` prüft: Zahl der getrennten Flächen gegen den Soll-Wert, Magenta-Rand und ob eine Figur den Bildrand berührt. Dazu baut es die Übersicht.
+
+**Ergebnis** (Übersicht `entwurf/probe/stil/figuren/w2c1/uebersicht.jpg`, Spalten: alter Bogen – neuer Bogen):
+
+| Bogen | Versuche | Flächen (soll) | Magenta-Rand | Bewertung |
+|---|---|---|---|---|
+| Panzerbüchse Aschenwacht | 1 | 3 (3) | 100 % | **gut:** der liegende Schütze allein oben mit der Büchse in der Hand, darunter Lader und Beobachter |
+| MG-Trupp Konkordat | 2 | 3 (3) | 99 % | **brauchbar:** schweres wassergekühltes MG mit Kühlmantel und Schlauch, Schütze an den Griffen. Er streift links den Rand (1,2 %). |
+| MG-Trupp Aschenwacht | 1 | 3 (3) | 100 % | **gut:** Schlittenlafette, Schütze an den Griffen, Lader, Beobachter |
+| Mörser Konkordat | 1 | 1 (1) | 100 % | **gut:** eine zusammenhängende Gruppe mit Richtschütze am Rad, Lader mit Granate und Munitionskiste |
+| Minenwerfer Aschenwacht | 2 | 1 (1) | 100 % | **gut** im 2. Versuch; im 1. stand ein kleiner Panzer aus der Referenz im Hintergrund |
+| Flammenwerfer Konkordat | 2 | 3 (4) | 99 % | **brauchbar:** vier Posen im Zielstil, aber zwei Figuren berühren sich mit den Werferrohren, und rechts streift einer den Rand |
+
+- **Abzeichen:** keine Kreuze, Adler oder Totenköpfe. Auf den Brustplatten stehen die eigenen Zeichen (Löwe, Zahnrad, Ritterhelm). Beim Minenwerfer tragen die Helme kleine runde Nieten-Platten. Ob das als Helmplakette zählt, entscheidest du beim Ansehen; sonst übermalt `ABZEICHEN` sie beim Schnitt.
+- **Grenze erreicht:** Bei zwei Bögen sind die zwei Versuche aufgebraucht, beide sind aber ohne Neumalen schneidbar (siehe unten).
+
+**Für den Einbau (W2c-1b) zu beachten:**
+1. **Rand:** Vor dem Schnitt jeden Bogen ringsum mit 40 px Magenta auffüllen (MG-Trupp Konkordat, Flammenwerfer), sonst hält `keep_parts` den angeschnittenen Rand für eine Figur.
+2. **Schnittart:**
+   - Panzerbüchse und beide MG-Trupps: `REIHE` (getrennte Flächen; Panzerbüchse in zwei Zeilen, Schütze oben).
+   - Flammenwerfer: `SPALTEN 4` (Nahtschnitt durch den Hintergrund), weil sich zwei Rohre berühren.
+   - Mörser und Minenwerfer: **Einzelmodell** (eine Gruppe), Höhe über `SH_SINGLE`.
+3. **Maße:** Die neuen Figuren sind wuchtiger und höher als die alten.
+   - `SH_REIHE` für die Waffentrupps neu messen; nach F2b (Punkt 133) gilt die Linie als Maß.
+   - Mörser und Minenwerfer sind größer als die alten Bögen, `SH_SINGLE` neu setzen.
+4. **Gruppen und Plätze:**
+   - Die Reihenfolge der Teile ist bei MG-Trupps und Panzerbüchse wie bisher (Waffe mit Schütze, Lader, Beobachter).
+   - Neu ist: Beim MG-Trupp ist das MG jetzt mit dem Schützen **ein Stück**. In `GRUPPE` (ui.js) wird aus 4 Teilen (MG, Schütze, Lader, Beobachter) also 3, `geraet` und `fall` sind anzupassen.
+   - Bei der Panzerbüchse war die Büchse bisher ein eigenes Gerät; jetzt gehört sie zum Schützen.
+5. **Mündungen:** `MUZ_FIG` für die neuen Schützenbilder neu messen (MG-Läufe, Panzerbüchse); beim Mörser bzw. Minenwerfer `MUZ` an der Rohrmündung.
+6. **Danach:** Plastik-Karten (`figur_plastik.py --teil`), robocopy, Bilder im Spiel.
+
+**Fragen an Enrico:**
+1. Passen die sechs Bögen so, oder sollen MG-Trupp Konkordat bzw. Flammenwerfer trotz der erreichten Versuchsgrenze noch einmal gemalt werden?
+2. Gelten die Nietenplatten an den Minenwerfer-Helmen als Plakette (übermalen) oder nicht?
+
 ## 2026-11-28 – W2g zweite Figurenprobe ohne alten Bogen (Punkt 149): nur Probe, nichts eingebaut
 
 Gepusht:

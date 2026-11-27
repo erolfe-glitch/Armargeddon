@@ -104,7 +104,8 @@
 - ✓ **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** fertig (`5b48bd8`). Jetzt **Spieltest durch Enrico** (U7 + UI1).
 - ✓ **Paket W2a – Gelände-LoRA (Punkte 132/147)** erledigt: LoRA taugt nicht besser, Gelände künftig über Nano Banana + Referenzmappe.
 - ✓ **Paket W2f – Figuren-Stiltest (Punkt 148)** erledigt (mit altem Bogen als Vorlage: Stil nur vorsichtig, Doppelungen).
-- **Paket W2g – zweite Figurenprobe ohne alten Bogen (Punkt 149)** – **nächster `pa`, ohne Browser.** Opus Mittel. Reihenfolge der späteren Umstellung: Waffentrupps und Unterstützung zuerst, Fahrzeuge zuletzt (Enrico ok).
+- ✓ **Paket W2g – zweite Figurenprobe (Punkt 149)** erledigt: Der Weg „ohne alten Bogen, mit genauer Beschreibung“ taugt.
+- **Paket W2c-1 – erste sechs Bögen im Zielstil (Punkt 150)** – **nächster `pa`, ohne Browser.** Opus Mittel. Nur malen und prüfen, noch nicht einbauen.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -218,6 +219,40 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-28 00:40): Antwort zu W2g – erstes Umstellungs-Paket W2c-1 (nur malen, ohne Browser) <<<
+✓ **150. Nächster `pa` = W2c-1. Einstellung: Opus, Mittel.** Enrico spielt weiter, deshalb **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe, nichts in `src/`**. In diesem Paket wird **nur gemalt und geprüft, nicht eingebaut**: Schneiden, `figure_cut`, FIGMAP und Plastik kommen in W2c-1b, wenn Enrico die Bilder gesehen hat.
+
+**Weg wie W2g:**
+- Als `refs` **nur die Zielstil-Bögen** der jeweiligen Seite, nie der alte Bogen.
+  - **Aschenwacht:** `aschenwacht_soldat_reskin`, `aschenwacht_sturm_reskin`, `aschenwacht_panzer_neu`.
+  - **Konkordat:** `konkordat_soldat_reskin`, `konkordat_sturm_reskin`, `konkordat_fernsprech_neu`.
+- Den alten Bogen **nur ansehen** und daraus eine genaue Beschreibung schreiben: Anzahl der Figuren, Posen, Ausrüstung, wer welche Waffe hält.
+- Prompt-Bausteine aus `entwurf/probe/stil/figuren/auftrag_w2g.json` übernehmen.
+
+**Regeln für jeden Bogen:**
+- „wide empty gaps between all figures, wide margin to all image edges“.
+- Höchstens 4 Figuren bzw. Gruppen je Bogen.
+- **Liegende Figuren allein in einer eigenen Zeile** (oder eigener Bogen im Format 21:9).
+- Waffe und Schütze sind ein Stück, die Waffe kommt auf dem Bogen genau einmal vor.
+- Keine Kreuze, Adler, Totenköpfe oder Helmplaketten.
+- Danach `tools/stil_uebersicht2.py`: Stimmt die Zahl der getrennten Flächen nicht oder ist der Magenta-Rand unter 95 %, gleich neu malen, **höchstens 2 Versuche je Bogen**.
+
+**Die sechs Bögen (Waffentrupps und Unterstützung zuerst):**
+1. **Panzerbüchse Aschenwacht** (neu nach den Lehren aus W2g): liegender Schütze mit der Büchse allein in der oberen Zeile, darunter Lader mit Patrone und Beobachter mit Fernglas.
+2. **MG-Trupp Konkordat:** wie W2g, aber mit **schwerem wassergekühltem MG** (dicker gerippter Kühlmantel, Wasserschlauch, schweres Dreibein; Enrico).
+3. **MG-Trupp Aschenwacht** (`aschenwacht_mg_trupp`): Schütze an den Griffen des schweren MG, Lader, Beobachter.
+4. **Mörser Konkordat** (`konkordat_moerser`): Mörser mit Richtschütze direkt daran, Lader mit Granate.
+5. **Minenwerfer Aschenwacht** (`aschenwacht_minenwerfer`): Werfer mit Bedienung direkt daran.
+6. **Flammenwerfer Konkordat** (`konkordat_flammen_neu`): vier Posen wie der alte Bogen, aber wuchtig wie die Reskin-Linie, ohne Flammen.
+
+**Ablage und Kosten:**
+- Ablage `entwurf/probe/stil/figuren/w2c1/`, **nicht** `ui-quelle/`.
+- Übersicht `w2c1/uebersicht.jpg` mit den Spalten alter Bogen – neuer Bogen.
+- Kostengrenze **1,50 €**, darüber aufhören und fragen.
+- Laufbilder kommen erst im zweiten Durchgang („Posen“), nicht jetzt.
+
+**Bericht:** Bilder, Flächenzahl und Magenta je Bogen, Versuche, Kosten und eine Liste, was beim Einbau (W2c-1b) zu beachten ist, z. B. neue Maße, `SH_SINGLE`, Gruppenplätze und Mündungen `MUZ`.
 
 # >>> JETZT (Enrico 2026-11-28 00:35): Antwort zu W2f – zweite Probe OHNE alten Bogen (W2g), ohne Browser <<<
 ✓ **149. Nächster `pa` = W2g. Einstellung: Opus, Mittel.** Wie bei W2f: **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe, nichts in `src/`** (Enrico spielt).
