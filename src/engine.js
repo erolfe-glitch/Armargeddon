@@ -15,7 +15,7 @@ const P = {
   FALLBACK_MOR: 3, ROUT_STR: 1.5,
   BREAK: { A: 0.55, D: 0.64 },   // D höher seit Aktionspunkten und Marsch (Angreifer kommt schneller heran)
   TRENCH_DEF: 1.6, CRATER_FIRE: 1.2, VILLAGE_DEF: 1.5, FOREST_DEF: 1.4, WIRE_DEF: 0.6,
-  MG_VS_WIRE: 2, MG_VS_CAV: 2, KAT_LINIE: 0.333, KAT_UNTERST_JE: 2, KAT_ELITE: 3, KAT_GERAET: 3, ELITE_ABSCHLAG: 5, /* K1: Linie mind. ein Drittel, 1 Unterstützung je 2 Linie, Elite/Gerät höchstens 3 */
+  MG_VS_WIRE: 2, MG_VS_CAV: 2, KAT_LINIE: 0.333, KAT_UNTERST_JE: 2, KAT_ELITE: 3, KAT_GERAET: 3, KAT_AUFSCHLAG: 0.25, ELITE_ABSCHLAG: 5, /* K1: Linie mind. ein Drittel, 1 Unterstützung je 2 Linie, Elite/Gerät höchstens 3 */
   AP: 1, ZOC_STOP: 1, GUIDED: 1.25, ORDER_MOR: 1.5, ORDER_ATK: 1.25,
   OFFICER_ATK: 1.15, OFFICER_MOR: 0.8, OFFICER_RANGE: 2, RALLY: 0.6,
   RECOVER: 0.5, RECOVER_COVER: 1,
@@ -650,13 +650,17 @@ function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgeba
 // K1 (Punkt 104, 2026-11-26): Einheitenkategorien und Rückgrat-Regel (entwurf/ARMEEAUFBAU_IDEEN.md); Rückweg KAT_ALT (Node) bzw. window.KAT_ALT
 const KAT_TAB = { kohorte: 'linie', grenadier: 'linie',
   reiter: 'elite', raeumer: 'elite', oger: 'elite', sturm: 'elite', schwer: 'elite', huenen: 'elite', panzerk: 'elite', stahl: 'elite',
-  feldkanone: 'geraet', haubitze: 'geraet', koloss: 'geraet', turm: 'geraet', orden: 'geraet', ballon: 'geraet', geschuetz: 'geraet', sturmpz: 'geraet', bohrer: 'geraet', saeger: 'geraet', klaue: 'geraet',
-  hauptA: 'selten', hauptD: 'selten', generalA: 'selten', generalD: 'selten', kreuz: 'selten', knecht: 'selten', faust: 'selten', kuerass: 'selten' };   // alle übrigen: Unterstützung
-const KAT_NAME = { linie: 'Linie', unterst: 'Unterstützung', elite: 'Elite', geraet: 'Gerät', selten: 'Selten' };
+  feldkanone: 'geraet', haubitze: 'geraet', koloss: 'geraet', turm: 'geraet', orden: 'geraet',   /* ST1 (115.5): Ballon = Unterstützung */ geschuetz: 'geraet', sturmpz: 'geraet', bohrer: 'geraet', saeger: 'geraet', klaue: 'geraet',
+  hauptA: 'selten', hauptD: 'selten', generalA: 'selten', generalD: 'selten', kreuz: 'sehrselten', knecht: 'sehrselten', faust: 'sehrselten', kuerass: 'sehrselten' };   // ST1 (115.4): Helden und Stufe 3 = sehr selten (je Einheit höchstens eine)   // alle übrigen: Unterstützung
+const KAT_NAME = { linie: 'Linie', unterst: 'Unterstützung', elite: 'Elite', geraet: 'Gerät', selten: 'Selten', sehrselten: 'Sehr selten' };
 const katAlt = () => !!(TOG.KAT_ALT || (typeof window !== 'undefined' && window.KAT_ALT));
 function katOf(t) { return KAT_TAB[t] || 'unterst'; }
-function katZahl(army) { const z = { linie: 0, unterst: 0, elite: 0, geraet: 0, selten: 0 }; for (const t in army) z[katOf(t)] += army[t] || 0; z.n = z.linie + z.unterst + z.elite + z.geraet; return z; }   // n = Trupps ohne Selten (Anführer, Helden, Stufe 3)
-function katMax(z) { return { unterst: Math.floor(z.linie / P.KAT_UNTERST_JE), elite: P.KAT_ELITE, geraet: P.KAT_GERAET }; }
+function katZahl(army) { const z = { linie: 0, unterst: 0, elite: 0, geraet: 0, selten: 0, sehrselten: 0 }; for (const t in army) z[katOf(t)] += army[t] || 0; z.n = z.linie + z.unterst + z.elite + z.geraet; return z; }   // n = Trupps ohne Selten (Anführer, Helden, Stufe 3)
+const katSperreAlt = () => !!(TOG.KAT_SPERRE_ALT || (typeof window !== 'undefined' && window.KAT_SPERRE_ALT));   // ST1 (115.3): Rückweg zu den harten Grenzen Elite/Gerät
+const KAT_AUFSCHLAG_ARTEN = ['elite', 'geraet'];
+function katMax(z) { const frei = !katSperreAlt(); return { unterst: Math.floor(z.linie / P.KAT_UNTERST_JE), elite: frei ? Infinity : P.KAT_ELITE, geraet: frei ? Infinity : P.KAT_GERAET }; }
+function aufschlagVon(army, t) { if (katAlt() || katSperreAlt() || !KAT_AUFSCHLAG_ARTEN.includes(katOf(t))) return 0; return P.KAT_AUFSCHLAG * (katZahl(army)[katOf(t)] || 0); }   // je weitere Einheit derselben Kategorie (gleichzeitig da) +25 %
+function preisNeu(army, t) { const a = aufschlagVon(army, t); return a ? Math.round(COST[t] * (1 + a) / 5) * 5 : COST[t]; }
 function katFehler(army) { if (katAlt()) return ''; const z = katZahl(army), m = katMax(z);
   if (z.unterst > m.unterst) return `Unterstützung ${z.unterst}/${m.unterst}: je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
   if (z.elite > m.elite) return `Elite höchstens ${m.elite}.`;
@@ -672,10 +676,10 @@ function katWarum(army, t) {   // warum t nicht noch dazukommen darf ('' = geht)
   return ''; }
 function armeeImFeld(G, side) { const a = {}; for (const u of G.units) if (u.side === side && alive(u)) a[u.type] = (a[u.type] || 0) + 1; return a; }
 function defaultArmy(side) { return Object.assign({}, katAlt() && MAP.armyAlt ? MAP.armyAlt[side] : MAP.army[side]); }   // K1: armyAlt = Armee vor den Kategorien (Rückweg)
-function armyCost(army) { let n = 0; for (const t in army) n += (COST[t] || 0) * army[t]; return n; }
+function armyCost(army) { let n = 0; const schon = {}; for (const t in army) for (let i = 0; i < (army[t] || 0); i++) { n += preisNeu(schon, t) || 0; schon[t] = (schon[t] || 0) + 1; } return n; }   // ST1: mit Seltenheits-Aufschlag
 function armyCount(army) { let n = 0; for (const t in army) n += army[t]; return n; }
 const ARMY_BUDGET = {}, ARMY_MAX = {};   // je Karte, siehe armySync()
-function armySync() { for (const sd of ['A', 'D']) { { const aa = (MAP.armyAlt || MAP.army)[sd]; ARMY_BUDGET[sd] = armyCost(aa) + (katAlt() ? 0 : Object.keys(aa).reduce((n, t) => n + (katOf(t) === 'elite' ? aa[t] * P.ELITE_ABSCHLAG : 0), 0)); }   /* Punkt 108: Budget ohne Elite-Abschlag, damit der Nachlass beim Spieler ankommt */ ARMY_MAX[sd] = Math.max(MAP.armyMax[sd], ...[MAP.army, MAP.armyAlt].filter(Boolean).map(a => Object.values(a[sd]).reduce((x, y) => x + y, 0) + 2)); }   /* K1: Budget bleibt der Wert der Armee vor den Kategorien */ ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; for (const sd of ['A', 'D']) for (const t in MAP.army[sd]) ARMY_CAP = Math.max(ARMY_CAP, MAP.army[sd][t]); ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
+function armySync() { for (const sd of ['A', 'D']) { { const aa = (katAlt() ? (MAP.armyAlt || MAP.army) : MAP.army)[sd];   /* ST1: Budget = Kartenarmee mit Seltenheits-Aufschlag (+ Elite-Abschlag), sie passt genau */ ARMY_BUDGET[sd] = armyCost(aa) + (katAlt() ? 0 : Object.keys(aa).reduce((n, t) => n + (katOf(t) === 'elite' ? aa[t] * P.ELITE_ABSCHLAG : 0), 0)); }   /* Punkt 108: Budget ohne Elite-Abschlag, damit der Nachlass beim Spieler ankommt */ ARMY_MAX[sd] = Math.max(MAP.armyMax[sd], ...[MAP.army, MAP.armyAlt].filter(Boolean).map(a => Object.values(a[sd]).reduce((x, y) => x + y, 0) + 2)); }   /* K1: Budget bleibt der Wert der Armee vor den Kategorien */ ARMY_CAP = COLS * ROWS > 300 ? 16 : COLS * ROWS > 200 ? 13 : 9; for (const sd of ['A', 'D']) for (const t in MAP.army[sd]) ARMY_CAP = Math.max(ARMY_CAP, MAP.army[sd][t]); ARMY_WALKERS = COLS * ROWS > 300 ? 7 : COLS * ROWS > 200 ? 5 : 4; }
 let ARMY_CAP = 9, ARMY_WALKERS = 4; const ARMY_MIN = { A: 8, D: 8 };   // je Typ höchstens 9, höchstens 4 Kolosse/Kampfmaschinen
 const ROSTER = { A: SHOP.A.slice(), D: SHOP.D.slice() };
 armySync();
@@ -2154,10 +2158,10 @@ function spawnHexes(G, side, type) {
   for (const o of OBJECTIVES) if (G.ctrl[o.id] === side) for (const [c, r] of [[o.c, o.r], ...neighbors(o.c, o.r)]) if (inMap(c, r) && (side === 'A' ? c <= o.c : c >= o.c) && !isZOC(G, c, r, side)) add(c, r);   // Paket 8: nie hinter der Flagge Richtung Gegner
   return out;
 }
-function canBuy(G, side, type) { return !G.over && !(TYPES[type].stufe3 && G.units.some(u => u.side === side && TYPES[u.type].stufe3)) && !(TYPES[type].held && G.units.some(u => u.side === side && TYPES[u.type].held)) && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= COST[type] && !katWarum(armeeImFeld(G, side), type); }   // K1: Kategorien-Grenzen auch im Nachschub
+function canBuy(G, side, type) { return !G.over && !(TYPES[type].stufe3 && G.units.some(u => u.side === side && TYPES[u.type].stufe3)) && !(TYPES[type].held && G.units.some(u => u.side === side && TYPES[u.type].held)) && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= preisNeu(armeeImFeld(G, side), type) && !katWarum(armeeImFeld(G, side), type); }   // K1: Kategorien-Grenzen auch im Nachschub
 function buy(G, side, type, c, r) {
   if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
-  G.pts[side] -= COST[type];
+  G.pts[side] -= preisNeu(armeeImFeld(G, side), type);   // ST1: Seltenheits-Aufschlag
   const u = addUnit(G, type, c, r);
   u.ap = 0; u.bp = 0; u.moved = true; u.attacked = true; u.sperr = 0;
   return [{ t: 'spawn', u: u.id }];
@@ -2253,7 +2257,7 @@ const E = {
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
-  KAT_TAB, KAT_NAME, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
+  KAT_TAB, KAT_NAME, aufschlagVon, preisNeu, katSperreAlt, katOf, katZahl, katMax, katFehler, katWarum, katAlt, armeeImFeld, canUndig, undig, pzgDmg, canEinholen, einholen, canAufsteigen, aufsteigen, luft, rammZiele, rammen, RUINE, kraft, kraftText, modelle, modelleDa, u5aus, TRUPP, truppAlt, kanteAt, kantenVon, kanteDeck, kanteFaktor, KANTE_ART, KANTEN_KARTE, kanteAus, rollenWeg, rollenDmg, rollenGraben, FAK, WAFFE_NAME, KLASSE_NAME, panzerKl, waffeArt, nahRolle, faktor, medaillen, roar, canRoar, roarTargets, faust, canFaust, faustTargets, sprungLand, dauerOk, feindNah, minSteil, schussNachZug, leererDraht, ABILS, abilTargets, canAbil, useAbil, canSperr, sperr, fireAt, canDig, dig, canShields, shieldsUp, rushPath, orderKinds, canBig, bigOrder, BIG, canPlant, plantBanner, noFlee, smokeAt, litAt, concealed, gasSafe, wireProof, openGround, hasFlanks, freeBlows,
   canFire, canMelee, canShell, preview, shellDmg, gasCells, isDirect, spotted, immune, sichtOf, bauAt, schwereWaffe, KIRCHE,
   unitAt, hex, neighbors, step, dist, angleTo, faceIndex, arcOf, inMap, cloudAt, cost,
   isZOC, adjEnemies, losses, points, alive, active, cls, hasLOS, rangeOf, officerAt, key, mulberry32, nearestEnemy

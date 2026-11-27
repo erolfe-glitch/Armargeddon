@@ -142,7 +142,7 @@ SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch
 # aschenwacht_*-Bögen (2026-11-17): Fahnen, Wimpel, Streifen werden automatisch gefunden (kräftiges Rot, Weiß und Schwarz dicht beieinander);
 # dort wird Rot → Knochenweiß und Weiß neben Rot → Aschgrau, Schwarz bleibt. Rost, Blut, Ledergürtel und Lichter bleiben unberührt.
 # FAHNE: zusätzliche feste Bereiche (Anteile x0, y0, x1, y1), wo die Erkennung nicht reicht (dunkles Weinrot der Banner, Panzerstreifen).
-FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_banner_posen': (0, 0, 1, 0.42), 'aschenwacht_banner_posen2': (0.5, 0, 1, 0.42), 'aschenwacht_banner_posen3': (0, 0, 0.5, 0.42), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23), 'aschenwacht_panzer': (0.66, 0.26, 0.99, 0.87)}
+FAHNE = {'aschenwacht_banner': (0, 0, 1, 0.5), 'aschenwacht_banner_posen': (0, 0, 1, 0.42), 'aschenwacht_banner_posen2': (0.5, 0, 1, 0.42), 'aschenwacht_banner_posen3': (0, 0, 0.5, 0.42), 'aschenwacht_bohrkoloss': (0.18, 0.0, 0.42, 0.23)}
 ASCHGRAU, KNOCHEN = np.array([108, 106, 100.]), np.array([222, 212, 186.])
 
 
@@ -335,7 +335,7 @@ def rauch_weg(a, name):
 
 
 # Magenta-Reste in Lücken (Kettenhemd) bei JPG-Bögen: Rot und Blau nicht über Grün hinaus (Überschuss abziehen), Ochsenblut bleibt (wenig Blau)
-ENTROSA = {'konkordat_soldat', 'konkordat_soldat_posen', 'aschenwacht_soldat', 'aschenwacht_soldat_posen', 'aschenwacht_koloss', 'konkordat_stahlreiter_reskin', 'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
+ENTROSA = {'konkordat_soldat', 'konkordat_soldat_posen', 'aschenwacht_soldat', 'aschenwacht_soldat_posen', 'aschenwacht_panzer', 'konkordat_stahlreiter_reskin', 'konkordat_ordensschreiter_posen5', 'konkordat_kreuzschreiter_neu', 'aschenwacht_eisenknecht_neu', 'konkordat_kreuzschreiter_posen', 'konkordat_kreuzschreiter_posen2', 'aschenwacht_eisenknecht_posen', 'aschenwacht_eisenknecht_posen2', 'aschenwacht_eisenknecht_posen3', 'konkordat_loewenoger', 'aschenwacht_eiserne_huenen'}
 
 
 def entrosa(q):
@@ -427,7 +427,7 @@ RESKIN = SRC / 'reskin'
 
 
 ERSETZT = {'konkordat_soldat': 'konkordat_soldat_reskin', 'konkordat_soldat_posen': 'konkordat_soldat_posen_reskin', 'aschenwacht_soldat': 'aschenwacht_soldat_reskin',
-           'aschenwacht_soldat_posen': 'aschenwacht_soldat_posen_reskin', 'aschenwacht_schwer_posen': 'aschenwacht_schwer_reskin', 'aschenwacht_koloss': 'aschenwacht_panzer_neu'}   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
+           'aschenwacht_soldat_posen': 'aschenwacht_soldat_posen_reskin', 'aschenwacht_schwer_posen': 'aschenwacht_schwer_reskin', 'aschenwacht_panzer': 'aschenwacht_panzer_neu'}   # ST1 (115.9): neuer Panzer = Sturmpanzer (kein Aschenwacht-Landkoloss)   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
 
 
 def quelle(name):
