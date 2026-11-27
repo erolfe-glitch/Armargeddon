@@ -1,6 +1,6 @@
-"""Stellt Figurenbögen frei: 2×2 Posen auf Magenta (ui-quelle/figuren/<name>.png) → entwurf/probe/fig/<name>_<n>.png.
+"""Stellt Figurenbögen frei: 2×2 Posen auf Magenta (ui-quelle/figuren/<fraktion>/<name>.png) → entwurf/probe/fig/<name>_<n>.png.
 
-Aufruf:  python tools/figure_cut.py [name ...] [--game]   (ohne Namen: alle Bögen in ui-quelle/figuren/;
+Aufruf:  python tools/figure_cut.py [name ...] [--game]   (ohne Namen: alle Bögen in ui-quelle/figuren/<fraktion>/;
          --game: Spielbilder nach ui-quelle/teile/figuren/ und eingebettet in src/figs.js, sonst Probebild entwurf/probe/fig/)
 - Magenta wird über den Abstand zur Schlüsselfarbe weich ausgeblendet, der Magenta-Saum an der Kante entfärbt (despill).
 - Jede Pose wird auf ihren Inhalt zugeschnitten, Füße unten bündig (gleiche Grundlinie), höchste Kante = 1 Soldatenhöhe.
@@ -418,12 +418,20 @@ FIGUREN_POSEN = {
     'aschenwacht_held_posen': dict(n=2, reihen=1, grund='held_1', massvon='aschenwacht_held'),   # Ausholen, Hinrichtungsschlag; das verblassende zweite Schwert fällt weg
     'aschenwacht_held_posen2': dict(n=2, reihen=1, grund='held_1', massvon='aschenwacht_held'),   # Querhieb, Getroffen kniend
     'aschenwacht_held_portrait': dict(n=1, reihen=1, grund='held_1'),
-    # R4 (2026-11-26): zusammengelegte Trupps, Bögen in ui-quelle/figuren/reskin/ (Quelle über quelle()); hoehe = höchste Pose in px (320 = 1 SH), blitz = Mündungsfeuer weg
+    # R4 (2026-11-26): zusammengelegte Trupps, Bögen in ui-quelle/figuren/<fraktion>/reskin/ (Quelle über quelle()); hoehe = höchste Pose in px (320 = 1 SH), blitz = Mündungsfeuer weg
     'aschenwacht_sturm_reskin': dict(n=4, reihen=2, grund='sturm', hoehe=350, blitz=[2]),   # Sturmbrecher: Granatwurf, MG hüfthoch feuernd, Spaten, Getroffen
     'konkordat_sturm_reskin': dict(n=4, reihen=2, grund='sturm', hoehe=320),   # Grabenräumer: Keule, Granatwurf, mit Sturmschild vorstoßend, hinter dem Schild mit Revolver
     'konkordat_sturm_getroffen': dict(n=4, reihen=2, grund='sturm', posehoehe=(3, 'konkordat_sturm_reskin_3')),   # R4c (106.6): Getroffen mit Schild, Getroffen mit Keule, geduckt hinter dem Schild (Schilde vor), Getroffen 2; Maß: Schild-Pose = Schild-Pose des Grabenräumers
 }
-RESKIN = SRC / 'reskin'
+RESKIN = SRC / 'reskin'   # gemeinsame Vorlagen (Gefallene, Kavallerie); die Reskin-Bögen liegen seit U4 in <fraktion>/reskin/
+FRAKTIONEN = ('konkordat', 'aschenwacht', 'blaue_legion')   # U4 (Punkt 53, 2026-11-27): Bögen in Ordnern je Fraktion, Dateinamen gleich; fahle/ = nur Stil-Entwürfe
+
+
+def ordner(name):
+    """Fraktionsordner eines Bogens (nach dem Namensanfang)."""
+    for f in FRAKTIONEN:
+        if name.startswith(f + '_'): return SRC / f
+    return SRC
 
 
 ERSETZT = {'konkordat_soldat': 'konkordat_soldat_reskin', 'konkordat_soldat_posen': 'konkordat_soldat_posen_reskin', 'aschenwacht_soldat': 'aschenwacht_soldat_reskin',
@@ -431,10 +439,10 @@ ERSETZT = {'konkordat_soldat': 'konkordat_soldat_reskin', 'konkordat_soldat_pose
 
 
 def quelle(name):
-    """Bogen in ui-quelle/figuren/, sonst in reskin/ (R4, 2026-11-26); U4a: ERSETZT nimmt den neuen Bogen unter altem Namen."""
-    if name in ERSETZT: return RESKIN / f'{ERSETZT[name]}.png'
-    p = SRC / f'{name}.png'
-    return p if p.exists() else RESKIN / f'{name}.png'
+    """Bogen in ui-quelle/figuren/<fraktion>/, sonst in <fraktion>/reskin/ (R4, 2026-11-26; Ordner je Fraktion seit U4); U4a: ERSETZT nimmt den neuen Bogen unter altem Namen."""
+    if name in ERSETZT: name = ERSETZT[name]
+    p = ordner(name) / f'{name}.png'
+    return p if p.exists() else ordner(name) / 'reskin' / f'{name}.png'
 
 
 def helm_gold_weg(q, hmax):
@@ -708,7 +716,7 @@ def embed():
 if __name__ == '__main__':
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     game = '--game' in sys.argv   # Spielbilder nach ui-quelle/teile/figuren/ und src/figs.js
-    names = args or sorted(p.stem for p in SRC.glob('*.png')) + sorted(n for n in list(FIGUREN_POSEN) + list(SPALTEN) if (RESKIN / f'{n}.png').exists())   # R4: Reskin-Bögen gehören dazu
+    names = args or sorted(p.stem for f in FRAKTIONEN for p in (SRC / f).glob('*.png')) + sorted(n for n in list(FIGUREN_POSEN) + list(SPALTEN) if (ordner(n) / 'reskin' / f'{n}.png').exists())   # R4: Reskin-Bögen gehören dazu; U4: Ordner je Fraktion
     for n in names:
         cut(n, GAME if game else OUT)
     if game and '--angleichen' in sys.argv:
