@@ -1,3 +1,63 @@
+## 2026-11-27 – U4 Teil 2 (Punkt 120): Sicherung, gemischte Löwenoger, übrige Bögen
+
+Gepusht:
+- `04c02d7`: Sicherung der Quellbögen
+- `78dbacc`: Löwenoger gemischt
+- `82b31b3`: übrige Bögen
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, keine Seitenfehler bei den Aufnahmen.
+- **sim und Regeltest:** nicht gelaufen, weil sich keine Regel geändert hat.
+
+**1. Sicherung der Quellbögen (120.2):**
+- **Lauf:** `robocopy` für `ui-quelle/figuren`, `ui-quelle/gelaende` und `ui-quelle/effekte` nach OneDrive. **Rückgabewert je 1**, also Dateien kopiert, kein Fehler.
+- **Auch außerhalb von git lagen:** in `gelaende` die Ordner `neu_draht/`, `neu_hecke/`, `neu_poi/`; in `effekte` die Ordner `neu/` sowie `fx_faehigkeiten.png` und `fx_heldenfunken.png`. Deshalb habe ich alle drei gesichert.
+- **CLAUDE.md:** Unter „Sicherung außerhalb von git“ stehen jetzt drei weitere Zeilen, eine je Ordner.
+
+**2. Löwenoger gemischt (120.1b):**
+- In Ruhe stehen jetzt die drei verschiedenen Figuren des neu3-Bogens: mit Gasmaske, mit ruhigem Kopf und brüllend.
+- Beim Schießen und im Nahkampf wechseln sie in die Posen.
+- **Bild:** `entwurf/probe/u4/oger_gemischt/oger_3_modelle.jpg`.
+
+**3. Übrige abgenommene Bögen (120.3):**
+- **Eingebaut über `ERSETZT`** (Spielnamen bleiben gleich):
+  - Sanitäter Konkordat (Grund + Posen)
+  - Flammen Konkordat und Aschenwacht (je Grund + Posen)
+  - Gasschutz (Grund + Posen)
+  - Panzerknechte
+  - Konkordat-Reiter `neu2`
+  - Ordensschreiter (Grundbogen, scharf)
+- **Übermalungen:**
+  - Panzerknechte (neu ohne Kreuze) und die Helmplaketten der Aschenwacht-Flammen-Posen brauchen keine Übermalung mehr. Die alten Pixelstellen trafen ohnehin nicht mehr.
+  - Gasschutz neu ohne Glocken und Pistole.
+  - Die Fahnen-Umfärbung der Aschenwacht läuft wie bisher.
+  - Ich habe in den Bildern kein Kreuz, keinen Adler und keinen Totenkopf gefunden.
+- **Trennung:**
+  - Aschenwacht-Flammen (Grundbogen): Die Düse der ersten Pose berührt den Mantel der zweiten. Die Posen werden jetzt über eine Naht getrennt (`SPALTEN`).
+  - Konkordat-Flammen-Posen: Die Düse der ersten Pose liegt vor dem Mantel der zweiten. Ein Vieleck gibt das Rohr ganz der ersten Pose. Die Stelle im Mantel der zweiten Pose wird mit der Mantelfarbe gefüllt. Dort sieht man einen kleinen, etwas glatteren Fleck (im Spiel etwa 10 Pixel).
+- **Mündungen:** Für beide Flammen-Schusshaltungen neu gemessen. Gasschutz: Die Messung ergab dieselben Werte wie bisher.
+- **Bilder:**
+  - alt/neu je Bogen: `entwurf/probe/u4/boegen/*.jpg`
+  - im Spiel je Einheit Ruhe und Schusspose: `entwurf/probe/u4/einheiten/*_ruhe.jpg`, `*_pose.jpg`, Übersicht `entwurf/probe/u4/einheiten/uebersicht.jpg` (Werkzeug `node tools/u4_einheiten.mjs`)
+- **Hinweise:**
+  - Bei den Panzerknechten endet ein Gewehr (dritte Pose) schon im gemalten Bogen am Bildrand. Das ist im Spiel kaum zu sehen.
+  - Den Konkordat-Reiter-Bogen nutzt das Spiel derzeit nur über den Rückweg `REITER_ALT`. Der Stahlreiter hat seinen eigenen Bogen.
+  - Der Ordensschreiter blickt in Ruhe nach links, in der Schusspose nach rechts. Das liegt an den Posen und war vorher genauso.
+
+**4. Fehlende Bilder für den Berater (Punkt 90):**
+- Sanitäter mit Trage und Verwundetem
+- Beiwerk: Munitionskarren, Werkzeugkiste, Feldtelefon
+- MG und Panzerbüchse als Waffe + 3 Mann
+- Offiziere mit drei Figuren
+- Scharfschütze mit Beobachter
+- Löwenoger-Posen im neu3-Look (Sprung, Prankenhieb, Getroffen)
+
+Der Einbau kommt in einem eigenen Paket, sobald die Bilder da sind.
+
+**Fragen an Enrico:** keine.
+
 ## 2026-11-27 – Rest U4, erster Teil (Punkt 119): Mühle, Ordner je Fraktion, Löwenoger – Zwischenstand
 
 Gepusht:
