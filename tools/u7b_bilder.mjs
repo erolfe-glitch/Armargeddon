@@ -1,0 +1,34 @@
+import { spawn } from 'node:child_process';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+const OUT = 'entwurf/probe/u7b'; mkdirSync(OUT, { recursive: true });
+const sleep = ms => new Promise(r => setTimeout(r, ms)), port = 9500 + Math.floor(Math.random() * 300);
+const ch = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${mkdtempSync(join(tmpdir(), 'armfx-'))}`, '--no-first-run', '--mute-audio', '--window-size=1920,1080', 'about:blank']);
+let tabs; for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); break; } catch { await sleep(200); } }
+const ws = new WebSocket(tabs.find(t => t.type === 'page').webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
+let id = 0; const pend = {}, fehler = [];
+ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pend[m.id]) { pend[m.id](m); delete pend[m.id]; return; } if (m.method === 'Runtime.exceptionThrown') fehler.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text); };
+const cmd = (method, params = {}) => new Promise(r => { const i = ++id; pend[i] = r; ws.send(JSON.stringify({ id: i, method, params })); });
+const ev = async x => { const r = await cmd('Runtime.evaluate', { expression: x, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text); return r.result?.result?.value; };
+const bild = async name => { const r = await cmd('Page.captureScreenshot', { format: 'jpeg', quality: 88 }); writeFileSync(join(OUT, name + '.jpg'), Buffer.from(r.result.data, 'base64')); console.log('  Bild', name); };
+await cmd('Runtime.enable'); await cmd('Page.enable'); await cmd('Page.addScriptToEvaluateOnNewDocument', { source: "try{localStorage.setItem('arm.ton','0')}catch(e){}" });
+await cmd('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+if (process.env.INIT) await cmd('Page.addScriptToEvaluateOnNewDocument', { source: process.env.INIT });
+await cmd('Page.navigate', { url: process.env.URL || 'http://127.0.0.1:8765/index.html' }); await sleep(5000);
+await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), click = t => { const b = [...document.querySelectorAll('button')].find(b => b.offsetParent && b.textContent.trim().toLowerCase().includes(t)); if (b) b.click(); return !!b; };
+  click('neue schlacht'); await W(700); for (const t of ['weiter', 'weiter', 'die schlacht']) { click(t); await W(700); } await W(2500); click('schlacht beginnen'); await W(4000); return true; })()`);
+const stelle = (mor, extra = '') => ev(`(async () => { const D = __dbg, G = D.G, E = D.E; const a = G.units.find(u => u.side === 'A' && u.type === 'kohorte' && E.alive(u)); a.c = 6; a.r = 4; a.str = 6; a.mor = ${mor}; a.status = 'ok'; ${extra}
+  for (const u of G.units) if (u !== a && Math.abs(u.c - 6) < 2.5 && Math.abs(u.r - 4) < 2.5) u.c = u.side === 'A' ? 0 : 15;
+  D.neuDU(); D.pick(a.id); await new Promise(r => setTimeout(r, 900)); const [x, y] = D.mitte(6, 4); D.camSetzen(x, y - 20, 2.4); await new Promise(r => setTimeout(r, 1500)); return a.id; })()`);
+const tips = (i, k) => ev(`JSON.stringify(__dbg.markTips(${i}, '${k}'))`);
+const zeigeMarke = async i => { const p = await ev(`(() => { const m = __dbg.MARKS.find(q => q.id === ${i} && q.kind === 'state'); if (!m) return null; let x = (m.x0 + m.x1) / 2, y = (m.y0 + m.y1) / 2; if (m.tf) { const q = new DOMMatrix(m.tf).transformPoint(new DOMPoint(x, y)); x = q.x; y = q.y; } const cv = document.querySelector('canvas'), r = cv.getBoundingClientRect(); return [r.left + x * r.width / cv.width, r.top + y * r.height / cv.height]; })()`); if (p) { await cmd('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p[0] - 2, y: p[1] }); await cmd('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p[0], y: p[1] }); await sleep(500); } return p; };
+let a = await stelle(2.5); console.log('Marke', await zeigeMarke(a)); await bild('1_marke_weicht'); console.log('weicht', await tips(a, 'state'), await tips(a, 'hp'));
+await cmd('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 5, y: 500 });
+a = await stelle(3.5); await bild('2_karte_wankt'); console.log('wankt', await tips(a, 'state'), await tips(a, 'hp'));
+a = await stelle(0, "a.status = 'rout'; a.aufgerieben = false;"); console.log('panik', await tips(a, 'state'));
+a = await stelle(0, "a.status = 'rout'; a.aufgerieben = true; a.str = 1.2;"); console.log('zerschlagen', await tips(a, 'state'));
+const art = await ev(`(() => { const D = __dbg, g = D.G.units.find(u => D.E.TYPES[u.type].cls === 'art'); g.mor = 2; D.neuDU(); return g.id; })()`); await sleep(600); console.log('Geschütz', await tips(art, 'state'), await tips(art, 'hp'));
+await ev(`(() => { const r = document.getElementById('rules'); r.hidden = false; const li = [...r.querySelectorAll('li')].find(l => l.textContent.startsWith('Moral und Flucht')); li.scrollIntoView({ block: 'start' }); })()`); await sleep(700); await bild('3_regeln');
+console.log(fehler.length ? 'Fehler: ' + fehler.slice(0, 3).join(' | ') : 'keine Seitenfehler');
+ws.close(); ch.kill();
