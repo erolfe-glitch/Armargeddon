@@ -1,3 +1,51 @@
+## 2026-11-27 – UI1 Teil 2 C (Punkt 145), Zwischenstand: nur die obere Leiste fehlt
+
+Gepusht:
+- `f9e754b`: Knopfsymbole hell, „Zwei Schläge“ neu
+- `8c20d5d`: Klickgeräusche im Ton-Pult
+- `dabe30a`: Nachschub-Karten und Info-Fenster
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Offen:** die schlankere **obere Leiste** (Punkt 141 Teil 2, Nr. 3). Sie hätte den `pa` gesprengt, deshalb hier nach Sparregel 5 aufgehört. Sie kommt mit dem nächsten `pa`.
+- **Hänger:** keine. Alle Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, Ton-Pult-Test 93 von 93 bestanden.
+- **Video:** `entwurf/probe/video/UI1_teil2c.mp4`.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Downloads (mit deiner Erlaubnis), alles über fal:**
+  - Symbol „Zwei Schläge“, etwa 0,08 $. Übersicht: `entwurf/probe/fal/20261127_2212_uebersicht.jpg`.
+  - Vier Klickgeräusche über ElevenLabs. Die Kosten zeigt fal nicht an; nach der Preisliste sind es wenige Cent.
+  - Sicherung per robocopy (sound-quelle) bzw. Kopie in OneDrive `ui-quelle/symbole/`.
+
+**1. Knopfsymbole heller:**
+- Die Symbole sind jetzt knochenweiß mit dunkler Tintenkontur, bei aktiven bzw. pulsierenden Knöpfen in Messing.
+- Graue Knöpfe sind gedämpft (halbe Deckkraft), das Symbol bleibt erkennbar.
+- Vorher/nachher bei 1280 und 1920: `entwurf/probe/ui1/c_symbole/vorher_nachher.jpg` (oben vorher, unten nachher).
+
+**2. „Zwei Schläge“ neu:** zwei gekreuzte Hiebe in Messing mit Tintenkontur und ein paar Blutstropfen. Das Bild ersetzt im Spiel die schwarze Fassung; die liegt noch als `zweischlag_alt` im Bogen.
+
+**3. Klickgeräusche:**
+- Vier Klänge `klick_neu_1–4`, je 0,12–0,14 s nach dem Zuschnitt, ohne Nachhall: Eisenschalter, Holz, Gewehrschloss, Handschuh auf Eisen.
+- Sie stehen nur zur Auswahl im Ton-Pult, Rubrik „Oberfläche“. Der alte `klick` bleibt, bis du wählst.
+
+**4. Nachschub-Menü als Karten** (Entwurf C, Stil A, gilt auch für die Armee-Auswahl):
+- Je Karte: Porträt mit Messingrand, Name in IM Fell, Kategorie-Schild und Preis mit Aufschlag (z. B. „★ 85 +55 %“).
+- Darunter drei Werte als Symbol plus Zahl (Abwehr, Schuss bzw. Nahkampf, Bewegung) und je eine ▲/▼-Plakette.
+- Gesperrte Einheiten sind ausgegraut und zeigen den Grund auf der Karte, z. B. „Unterstützung voll (4/4): je 2 Linientrupps ein Platz“ oder „Es gibt schon einen General“.
+- Kategorie-Leiste und Reiter bleiben. Finger: erstes Antippen zeigt die Details, zweites stellt auf (wie bisher).
+
+**5. Info-Fenster** (Pergament):
+- Oben sechs Werte als Symbol plus Zahl (Bewegung, Schuss, Nahkampf, Abwehr, Reichweite, Moral), darunter die Eigenschaften als Symbol mit Wort.
+- Die Kopfzeile nennt Seite, Kategorie und Preis.
+- Darunter Kosten, Rolle, Fähigkeitstext sowie Stärken und Schwächen.
+- „Aus den Chroniken ▾“ klappt die Chronik auf.
+
+**Bilder:** `entwurf/probe/ui1/c_fenster/` bei 1280, 1920 und 2560 px: Nachschub, Info-Fenster, Info-Fenster mit Chronik, dazu die Karte.
+
+**Fragen an Enrico:**
+1. Welcher der vier Klickklänge soll den alten `klick` ersetzen? Das Ton-Pult unter „Oberfläche“ reicht dafür.
+2. Soll die obere Leiste im nächsten `pa` kommen, oder erst nach einem Spieltest?
+
 ## 2026-11-27 – UI1 Teil 2, Zwischenstand: A (Nachbesserungen) und B (neue Symbole)
 
 Gepusht:

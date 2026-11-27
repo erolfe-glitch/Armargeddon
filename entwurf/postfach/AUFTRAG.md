@@ -101,7 +101,7 @@
 - ✓ **Paket U7c (Punkt 142)** erledigt (Bericht 27.11. 22:10). Damit ist **U7 komplett**.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
-- **Paket UI1 Oberfläche (Punkte 128/141)** – Entwurf A gewählt. **Teil 1 = nächster `pa`** (Einheitenkarte, Knopfgruppen, Schrift), dann **Teil 2** (Nachschub-Karten, Info-Fenster, Leisten, Klicktöne). Je Opus Mittel.
+- **Paket UI1 Oberfläche (Punkte 128/141/144/145)** – Teil 1 ✓ (`7a6bae5`), Teil 2 A+B ✓ (`fb7e941`). **Teil 2 C = nächster `pa`** (helle Symbole, „Zwei Schläge“ neu, Nachschub-Karten, Info-Fenster, obere Leiste, Klicktöne). Opus Mittel.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -215,6 +215,51 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-27 23:15): Antwort zu UI1 Teil 2 A+B – nächster `pa` = Teil C <<<
+✓ **145. Nächster `pa` = UI1 Teil 2 C (Punkt 144 C). Einstellung: Opus, Mittel.** Vorher zwei kleine Punkte:
+1. **Eisenplatten-Knöpfe bleiben, aber die Symbole deutlich heller.** Die gemalten Symbole auf den Knöpfen sollen auf einen Blick lesbar sein: knochenweiß (`--s-text`) bzw. Messing (`--s-brass`) mit dunkler Tintenkontur, so wie im Entwurf A. Graue (nicht verfügbare) Knöpfe bleiben gedämpft, aber das Symbol muss erkennbar bleiben. Vorher/nachher bei 1280 und 1920.
+2. **„Zwei Schläge“ neu malen**, ein Bild über `node tools/fal_bild.mjs`. Ersetzt das Symbol in `bogenE_symbole` (Feld unten Mitte) bzw. kommt als Einzelsymbol dazu:
+```json
+[
+ { "name": "symbol_zwei_schlaege", "ordner": "ui-quelle",
+   "refs": ["ui-quelle/bogenE_symbole.png"],
+   "aspect": "1:1", "res": "1K",
+   "prompt": "A single game UI icon, centred, on a flat solid magenta background (#FF00FF): two bold crossing curved blade slashes drawn as thick brass-coloured motion streaks with dark ink outlines, a few small blood drops flying off the ends. Same hand-drawn grimdark WW1 comic ink style as the reference: thick black outlines, hard shadows. No text, no letters, no numbers, no skulls, no crosses." }
+]
+```
+3. **Danach der Rest von Teil C** wie in Punkt 144 C: Nachschub-Karten, Info-Fenster, obere Leiste, 3–4 Klickgeräusche zur Auswahl im Ton-Pult. Wird es zu viel: Zwischenstand, Bericht, aufhören.
+
+# >>> JETZT (Enrico 2026-11-27 22:50): Antwort zu UI1 Teil 1 – nächster `pa` = UI1 Teil 2 mit Nachbesserungen <<<
+**144. Nächster `pa` = UI1 Teil 2 (Punkt 141, Teil 2). Einstellung: Opus, Mittel.** Zuerst die Nachbesserungen aus Teil 1, dann der Rest von Teil 2.
+
+**A. Nachbesserungen Teil 1:**
+1. **Karte kompakter, bei allen Breiten:**
+   - Das Deckungsschild kommt in die Kopfzeile neben das Kategorie-Schild.
+   - „i Info“ und „Mehr ▾“ wandern in die Stufen-Zeile (rechts, klein, Messing).
+   - Die Eigenschaften stehen in derselben Zeile wie die ▲/▼-Plaketten.
+   - Ziel: bei 1280 × 800 höchstens etwa 360 px hoch.
+2. **Knopfgruppen:** Es werden nur vorhandene Gruppen gezeigt, in fester Reihenfolge BEWEGEN · ANGRIFF · FÄHIGKEITEN · DREHEN. Innerhalb der Gruppe hat jede Art ihren festen Platz (Schießen immer zuerst usw.).
+3. **Gruppenüberschriften** auf eigener schmaler Leiste (Holz oder Eisen mit Tintenschicht), nicht frei über dem Feld. Mindestens 15 px, auch bei 1280. Nichts darf sie verdecken.
+4. **Knöpfe als Eisenplatten** wie im Entwurf A: Eisen-Textur gekachelt, Tintenschicht, 3 px Tintenrand. Die gewählte bzw. aktive Fähigkeit bekommt einen Messingrand, Symbole hell auf dunkel. Die gemalten Symbole bleiben.
+5. Die alten Schildchen („i Info“, Tastenziffern) auf mindestens 15 px.
+
+**B. Neue Symbole** (Liste aus dem Bericht zu Teil 1), über `node tools/fal_bild.mjs`, Stilvorlage `ui-quelle/bogenC_symbole.png`. Danach mit `ui_cut.py` schneiden (Raster 4×2, Nahtschnitt), mit `panel_assets.py` einbauen und den Platzhaltern zuordnen. Übersicht `entwurf/probe/fal/<datum>_uebersicht.jpg` in den Bericht, Kosten nennen, Abzeichen prüfen (keine Kreuze, Adler, Totenköpfe), robocopy-Sicherung.
+```json
+[
+ { "name": "bogenD_symbole", "ordner": "ui-quelle",
+   "refs": ["ui-quelle/bogenC_symbole.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "A sheet of 8 separate game UI icons in a 4 by 2 grid, each icon clearly separated with wide gaps, on a flat solid magenta background (#FF00FF). Exactly the same hand-drawn grimdark WW1 comic ink style as the reference sheet: thick black outlines, rusty iron, brass and leather, hard shadows, no text, no letters, no numbers. Top row left to right: 1) a riveted steel breastplate seen from the front (defence), 2) a single thin riveted armour plate (light armour), 3) two thick overlapping riveted armour plates (heavy armour), 4) a brass hourglass with one grain of sand left (once per battle). Bottom row left to right: 5) a laurel wreath around a clenched iron gauntlet (hero), 6) a single brass star on a small iron plaque (only one allowed), 7) a grim iron war mask with dark shock waves radiating from it (fear aura), 8) a charging armoured horse head with flaring nostrils (charge). No skulls, no crosses, no eagles, no flags, no national symbols." },
+ { "name": "bogenE_symbole", "ordner": "ui-quelle",
+   "refs": ["ui-quelle/bogenC_symbole.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "A sheet of 8 separate game UI icons in a 4 by 2 grid, each icon clearly separated with wide gaps, on a flat solid magenta background (#FF00FF). Exactly the same hand-drawn grimdark WW1 comic ink style as the reference sheet: thick black outlines, rusty iron, brass and leather, hard shadows, no text, no letters, no numbers. Top row left to right: 1) a muddy hobnailed boot with a long arrow behind it (moves far), 2) a boot next to a small smoking rifle muzzle (move and fire), 3) a boot sunk to the ankle in brown mud (slow, gets stuck), 4) a small riveted gun turret with a short barrel (gun turret). Bottom row left to right: 5) brass field binoculars (sight), 6) two crossed curved slash marks from a blade, drawn as bold motion streaks (two strikes), 7) a heavy rusty chainsaw blade (chainsaw), 8) a massive riveted war hammer next to a steel claw gauntlet (heavy melee). No skulls, no crosses, no eagles, no flags, no national symbols." }
+]
+```
+Zuordnung: Abwehr-Wert, Panzerung leicht/schwer („Sehr zäh“ = schwer), „einmal je Schlacht“, Held/Stufe 3, „Höchstens einer“, Furcht-Aura, Ansturm, „Zieht n Felder“, „Ziehen und feuern“, „Langsam, bleibt stecken“, Geschützturm, Sicht, „Zwei Schläge“, Kettensäge, Kriegshammer/Hackklinge/Stahlklaue. Passt ein Bild nicht, im Bericht sagen und nicht erzwingen.
+
+**C. Rest von Teil 2** wie in Punkt 141 beschrieben: Nachschub-Karten, Info-Fenster, obere Leiste, 3–4 Klickgeräusche zur Auswahl. Ist das zu viel für einen `pa`: nach A und B Zwischenstand committen, Bericht schreiben, aufhören (Sparregel 5).
 
 # >>> JETZT (Enrico 2026-11-27 22:15): U7c abgenommen – nächster `pa` = UI1 Teil 1 <<<
 ✓ **143.** U7c ist abgenommen, U7 ist damit fertig. Messung gegen `u7b.json`: Grauwall −2,5, Sankt Ruß +0,5, Winterdorf +0,3, alles in der Streuung.
