@@ -1618,7 +1618,7 @@ function newFigs0(u, d) {
   const m = FIGMAP[u.type]; if (!m || (fac(u.side) === 'F' && !TYPES[u.type].held)) return null;   // Blaue Legion: noch keine neuen Bögen (K10: Helden nehmen ihren eigenen Bogen)
   const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
   const gr = GRUPPE[u.type]; if (gr && !window[gr.alt] && !(gr.nur === 'setup' && !(d.vs && d.vs.setup))) {   // U4 Teil 3: Trupp aus Teilen (fehlt ein Bild: wie bisher)
-    const keys = (gr.bilder || gr.slots.map((_, i) => i + 1)).map(i => pre + gr.bogen + '_' + i), ims = window.FIGS && keys.every(k => window.FIGS[k]) ? keys.map(figImg) : null;
+    const keys = (gr.bilder || gr.slots.map((_, i) => i + 1)).map((i, j) => { const rk = gr.ruhe && gr.ruhe[j] && !window.MELDER_STEHT_ALT && !d.moving && !d.pose && pre + gr.ruhe[j]; return rk && window.FIGS && window.FIGS[rk] ? rk : pre + gr.bogen + '_' + i; })   /* F2 (Punkt 130.5): Melder steht in Ruhe, läuft beim Ziehen und bei Befehlen; Rückweg MELDER_STEHT_ALT */, ims = window.FIGS && keys.every(k => window.FIGS[k]) ? keys.map(figImg) : null;
     if (ims && ims.every(Boolean)) return { key: keys[0], links: false, ims, trupp: true, max: ims.length, sc: gr.sc || 1, slots: gr.slots, gruppe: gr }; }
   let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
@@ -1675,17 +1675,44 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // U4 Teil 3 (Punkt 121, 2026-11-27): Trupps aus getrennt gemalten Teilen – je Platz ein festes Bild (bilder = Nummern im Bogen), feste Plätze (Feldradien, Blick nach rechts),
 // geraet = Teile, die nie fallen (Waffe), fall = Reihenfolge der Verluste, offizier = Figur mit Posen (Befehl, großer Befehl), nur 'setup' = nur aufgebaut (MG). Rückwege je Eintrag (alt).
 const GRUPPE = {
-  mahlwerk: { bogen: 'mg_trupp', alt: 'WAFFENTRUPP_ALT', nur: 'setup', slots: [[0.16, 0.08], [-0.04, 0.02], [0.36, -0.24], [-0.4, -0.3]], geraet: [0], fall: [3, 2, 1] },
-  sense: { bogen: 'mg_trupp', alt: 'WAFFENTRUPP_ALT', nur: 'setup', slots: [[0.14, 0.08], [-0.06, 0.02], [0.38, -0.24], [-0.4, -0.3]], geraet: [0], fall: [3, 2, 1] },
-  buechse: { bogen: 'panzerbuechse_trupp', alt: 'WAFFENTRUPP_ALT', slots: [[0.22, 0.06], [-0.24, 0.1], [0.4, -0.3], [-0.42, -0.32]], geraet: [0], fall: [3, 2, 1] },
-  hauptA: { bogen: 'hauptmann_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] }, hauptD: { bogen: 'hauptmann_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] },
-  generalA: { bogen: 'general_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] }, generalD: { bogen: 'general_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] },
-  feldscher: { bogen: 'sanitaeter_trage', alt: 'SANI_TRAGE_ALT', slots: [[-0.04, -0.28], [-0.12, 0.2], [0.48, 0.08]], fall: [2, 1, 0] }, heiler: { bogen: 'sanitaeter_trage', alt: 'SANI_TRAGE_ALT', slots: [[-0.04, -0.28], [-0.12, 0.2], [0.48, 0.08]], fall: [2, 1, 0] },   /* U4 Teil 5 (Punkt 123): Trage hinten, Kniender mit Verwundetem vorn, Taschenträger daneben; fällt: Tasche, Kniender, Trage */
-  munition: { bogen: 'versorgung_neu', alt: 'VERSORGUNG_NEU_ALT', bilder: [1, 3], slots: [[-0.44, -0.06], [-0.04, 0.22]], fall: [1, 0] }, werkstatt: { bogen: 'versorgung_neu', alt: 'VERSORGUNG_NEU_ALT', bilder: [2, 3], slots: [[-0.36, -0.02], [-0.02, 0.24]], fall: [1, 0] },   /* Träger bzw. Schrauber links, das Beiwerk rechts bleibt frei */
-  fernsprech: { bogen: 'fernsprech_neu', alt: 'FERNSPRECH_NEU_ALT', bilder: [1, 2, 3, 2], slots: [[0.1, -0.2], [-0.42, -0.24], [-0.06, 0.24], [-0.5, 0.18]], fall: [3, 2, 1, 0] },   /* Telefonist kniend vor dem Feldtelefon (Beiwerk rechts hinten), Kabelleger doppelt (4 Modelle) */
+  mahlwerk: { bogen: 'mg_trupp', alt: 'WAFFENTRUPP_ALT', nur: 'setup', slots: window.GRUPPE_WEIT ? [[0.16, 0.08], [-0.04, 0.02], [0.36, -0.24], [-0.4, -0.3]] : [[0.14, 0.08], [-0.04, 0.03], [0.29, -0.15], [-0.3, -0.19]], geraet: [0], fall: [3, 2, 1] },
+  sense: { bogen: 'mg_trupp', alt: 'WAFFENTRUPP_ALT', nur: 'setup', slots: window.GRUPPE_WEIT ? [[0.14, 0.08], [-0.06, 0.02], [0.38, -0.24], [-0.4, -0.3]] : [[0.12, 0.08], [-0.06, 0.03], [0.3, -0.15], [-0.3, -0.19]], geraet: [0], fall: [3, 2, 1] },
+  buechse: { bogen: 'panzerbuechse_trupp', alt: 'WAFFENTRUPP_ALT', slots: window.GRUPPE_WEIT ? [[0.22, 0.06], [-0.24, 0.1], [0.4, -0.3], [-0.42, -0.32]] : [[0.18, 0.06], [-0.18, 0.1], [0.31, -0.2], [-0.32, -0.21]], geraet: [0], fall: [3, 2, 1] },
+  hauptA: { bogen: 'hauptmann_gruppe', alt: 'FUEHRUNG_ALT', slots: window.GRUPPE_WEIT ? [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]] : [[0.04, 0.16], [-0.17, -0.05], [0.3, 0.03]], offizier: 0, fall: [2, 1, 0], ruhe: { 2: 'melder_steht' } }, hauptD: { bogen: 'hauptmann_gruppe', alt: 'FUEHRUNG_ALT', slots: window.GRUPPE_WEIT ? [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]] : [[0.04, 0.16], [-0.17, -0.05], [0.3, 0.03]], offizier: 0, fall: [2, 1, 0], ruhe: { 2: 'melder_steht' } },
+  generalA: { bogen: 'general_gruppe', alt: 'FUEHRUNG_ALT', slots: window.GRUPPE_WEIT ? [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]] : [[0.04, 0.16], [-0.17, -0.05], [0.3, 0.03]], offizier: 0, fall: [2, 1, 0], ruhe: { 2: 'melder_steht' } }, generalD: { bogen: 'general_gruppe', alt: 'FUEHRUNG_ALT', slots: window.GRUPPE_WEIT ? [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]] : [[0.04, 0.16], [-0.17, -0.05], [0.3, 0.03]], offizier: 0, fall: [2, 1, 0], ruhe: { 2: 'melder_steht' } },
+  feldscher: { bogen: 'sanitaeter_trage', alt: 'SANI_TRAGE_ALT', slots: window.GRUPPE_WEIT ? [[-0.04, -0.28], [-0.12, 0.2], [0.48, 0.08]] : [[-0.04, -0.2], [-0.1, 0.15], [0.36, 0.05]], fall: [2, 1, 0] }, heiler: { bogen: 'sanitaeter_trage', alt: 'SANI_TRAGE_ALT', slots: window.GRUPPE_WEIT ? [[-0.04, -0.28], [-0.12, 0.2], [0.48, 0.08]] : [[-0.04, -0.2], [-0.1, 0.15], [0.36, 0.05]], fall: [2, 1, 0] },   /* U4 Teil 5 (Punkt 123): Trage hinten, Kniender mit Verwundetem vorn, Taschenträger daneben; fällt: Tasche, Kniender, Trage */
+  munition: { bogen: 'versorgung_neu', alt: 'VERSORGUNG_NEU_ALT', bilder: [1, 3], slots: window.GRUPPE_WEIT ? [[-0.44, -0.06], [-0.04, 0.22]] : [[-0.33, -0.04], [-0.04, 0.17]], fall: [1, 0] }, werkstatt: { bogen: 'versorgung_neu', alt: 'VERSORGUNG_NEU_ALT', bilder: [2, 3], slots: window.GRUPPE_WEIT ? [[-0.36, -0.02], [-0.02, 0.24]] : [[-0.28, 0], [-0.02, 0.18]], fall: [1, 0] },   /* Träger bzw. Schrauber links, das Beiwerk rechts bleibt frei */
+  fernsprech: { bogen: 'fernsprech_neu', alt: 'FERNSPRECH_NEU_ALT', bilder: [1, 2, 3, 2], slots: window.GRUPPE_WEIT ? [[0.1, -0.2], [-0.42, -0.24], [-0.06, 0.24], [-0.5, 0.18]] : [[0.08, -0.14], [-0.31, -0.17], [-0.04, 0.17], [-0.38, 0.12]], fall: [3, 2, 1, 0] },   /* Telefonist kniend vor dem Feldtelefon (Beiwerk rechts hinten), Kabelleger doppelt (4 Modelle) */
   scharf: { bogen: 'scharfschuetze_trupp', alt: 'SCHARF_TRUPP_ALT', bilder: [1, 2], slots: [[-0.12, 0.18], [0.08, -0.26]], fall: [1, 0], muz: 0 } };   /* Beobachter: Bild 2 unten rechts im Bogen, Bild 3 doppelt */
 // Beiwerk (Punkt 90/121): Gerät neben dem Trupp, fällt nicht, steht nur, solange der Trupp nicht zieht; Rückweg window.BEIWERK_ALT
-const BEIWERK = { munition: ['beiwerk_versorgung_1', [0.42, -0.3]], werkstatt: ['beiwerk_versorgung_2', [0.42, -0.3]], fernsprech: ['beiwerk_versorgung_3', [0.44, -0.3]] };
+const BEIWERK = window.GRUPPE_WEIT ? { munition: ['beiwerk_versorgung_1', [0.42, -0.3]], werkstatt: ['beiwerk_versorgung_2', [0.42, -0.3]], fernsprech: ['beiwerk_versorgung_3', [0.44, -0.3]] }
+  : { munition: ['beiwerk_versorgung_1', [0.33, -0.2]], werkstatt: ['beiwerk_versorgung_2', [0.33, -0.2]], fernsprech: ['beiwerk_versorgung_3', [0.35, -0.21]] };   // F2 (Punkt 130.3): Gruppen dichter, Beiwerk bleibt sichtbar; Rückweg window.GRUPPE_WEIT (vor dem Laden)
+// F2 (Punkt 130.4): Eigenbewegung der Gruppenteile – Atmen (Höhe ±0,9 %) und Gewichtsverlagerung (±0,7°), je Figur versetzt; Bildwirkung aus = still; Rückweg window.ATEM_ALT
+function atemVon(u, i) { const t = now / 1000, ph = u.id * 1.37 + i * 2.11; return { sy: 1 + 0.009 * Math.sin(t * 2.6 + ph), rot: 0.012 * Math.sin(t * 0.9 + ph * 1.7) }; }
+// F2 (Punkt 130.4): Fahne der Führungsgruppen weht leicht. Tuch je Bild als Anteile: quer = Tuch vom Stab (pol) nach links, senkrechte Welle wächst vom Stab weg;
+// haengt = Banner am Querholz, seitliche Welle wächst nach unten; aus = Kasten, der stehen bleibt (Kopf, Hand); unten = Saum, in dem die Welle ausläuft. 16 Bilder je Welle, einmal gerechnet. Rückweg window.FAHNE_STILL
+const FAHNE_WEHT = { konkordat_hauptmann_gruppe_2: { art: 'haengt', x: [0.66, 0.99], y: [0, 0.49], aus: [0.58, 0.42, 0.745, 0.56] },
+  aschenwacht_hauptmann_gruppe_2: { art: 'quer', x: [0.1, 0.99], y: [0, 0.31], pol: 0.92, aus: [0.4, 0.13, 0.7, 0.36] },
+  konkordat_general_gruppe_2: { art: 'quer', x: [0, 0.99], y: [0, 0.44], pol: 0.92, aus: [0.22, 0.26, 0.54, 0.47], unten: 0.07 },
+  aschenwacht_general_gruppe_2: { art: 'quer', x: [0.02, 0.99], y: [0, 0.39], pol: 0.91, aus: [0.17, 0.23, 0.53, 0.42], unten: 0.04 } };
+const FW_N = 16, FW_C = new WeakMap();
+function fahneBilder(im, sp) {
+  let c = FW_C.get(im); if (c) return c;
+  const W = im.naturalWidth || im.width, H = im.naturalHeight || im.height, mk = () => { const v = document.createElement('canvas'); v.width = W; v.height = H; return v; };
+  const m = mk(), mx = m.getContext('2d'); mx.fillStyle = '#000'; mx.fillRect(sp.x[0] * W, sp.y[0] * H, (sp.x[1] - sp.x[0]) * W, (sp.y[1] - sp.y[0]) * H); if (sp.aus) mx.clearRect(sp.aus[0] * W, sp.aus[1] * H, (sp.aus[2] - sp.aus[0]) * W, (sp.aus[3] - sp.aus[1]) * H);
+  const tuch = mk(), tx = tuch.getContext('2d'); tx.drawImage(im, 0, 0, W, H); tx.globalCompositeOperation = 'destination-in'; tx.drawImage(m, 0, 0);
+  const rest = mk(), rx = rest.getContext('2d'); rx.drawImage(im, 0, 0, W, H); rx.globalCompositeOperation = 'destination-out'; rx.drawImage(m, 0, 0);
+  c = { W, H, tuch, rest, fr: [] }; FW_C.set(im, c); return c;
+}
+function fahneBild(im, sp) {   // aktuelles Bild der Welle (Periode 1,7 s)
+  const c = fahneBilder(im, sp), n = Math.floor(((now / 1700) % 1) * FW_N); if (c.fr[n]) return c.fr[n];
+  const { W, H } = c, v = document.createElement('canvas'); v.width = W; v.height = H; const x = v.getContext('2d'), A = (sp.a || 0.012) * H, om = n / FW_N * Math.PI * 2, cw = 3, ch = 6;
+  const x0 = Math.floor(sp.x[0] * W), x1 = Math.ceil(sp.x[1] * W), y0 = Math.floor(sp.y[0] * H), y1 = Math.ceil(sp.y[1] * H);
+  for (let cx = x0; cx < x1; cx += cw) for (let cy = y0; cy < y1; cy += ch) { const fx = (cx + cw / 2) / W, fy = (cy + ch / 2) / H, au = sp.aus, ak = au ? Math.min(1, Math.hypot(Math.max(au[0] - fx, 0, fx - au[2]), Math.max(au[1] - fy, 0, fy - au[3])) / 0.07) : 1;   // Welle läuft zum stehenden Kasten (Kopf, Hand) weich aus
+    if (sp.art === 'haengt') { const q = Math.max(0, (fy - sp.y[0]) / (sp.y[1] - sp.y[0])); x.drawImage(c.tuch, cx, cy, cw + 1, ch + 1, cx + A * 0.8 * q * ak * Math.sin(om - q * 4), cy, cw + 1, ch + 1); }
+    else { const q = Math.max(0, Math.min(1, (sp.pol - fx) / (sp.pol - sp.x[0]))), saum = sp.unten ? Math.max(0, Math.min(1, (sp.y[1] - fy) / sp.unten)) : 1; x.drawImage(c.tuch, cx, cy, cw + 1, ch + 1, cx, cy + A * q * saum * ak * Math.sin(om - q * 5), cw + 1, ch + 1); } }
+  x.drawImage(c.rest, 0, 0); v.naturalWidth = W; v.naturalHeight = H; return c.fr[n] = v;
+}
 const POSE_TYPEN = new Set(['kreuz', 'knecht', 'saeger', 'klaue', 'orden', /* Stufe-3-Schreiter (2026-11-22) */ 'kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
@@ -1954,12 +1981,15 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     if (u.type === 'ballon') drawBallon(g, s, u, x, top, w, h, flip, filt);
     return top;
   }
+  if (nf.gruppe && list.length > 1 && !(pl && pl.pts) && !window.LEISTUNG_ALT && !window.GRUPPENSCHATTEN_ALT) { let a = 9, b = -9, oy = 0; for (const f of list) { a = Math.min(a, f.ox); b = Math.max(b, f.ox); oy += f.oy; }   // F2 (Punkt 130.1): gemeinsamer weicher Bodenschatten verbindet die Teile einer Gruppe
+    const cx = x + (flip ? -(a + b) / 2 : (a + b) / 2) * s, cy = y + oy / list.length * s * k + duck, ww = ((b - a) / 2 + 0.32) * s, hh = ww * 0.3 * Math.max(0.55, k); g.save(); g.filter = 'none'; g.globalAlpha = A0 * 0.5; g.drawImage(kontaktBild(), cx - ww, cy - hh, ww * 2, hh * 2); g.restore(); }
   for (const f of list) {
     const pa = f.pa, vor = flip ? -1 : 1, fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s + (pa ? pa.dx * vor * s : 0), fy = y + f.oy * s * k + duck + (pa ? pa.dy * s : 0), prot = pa ? pa.rot : 0;
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
     if (f.kv) { h *= f.kv.sz; w *= f.kv.sz; }   // U2: Klone – Größe je Figur
-    const prot2 = prot + (f.kv ? f.kv.rot : 0), flipF = !!flip !== !!(f.kv && f.kv.sp);
+    const atm = nf.gruppe && BW && !f.geraet && !pa && !d.moving && !window.ATEM_ALT ? atemVon(u, f.i) : null; if (atm) h *= atm.sy;   // F2 (Punkt 130.4)
+    const prot2 = prot + (f.kv ? f.kv.rot : 0) + (atm ? atm.rot : 0), flipF = !!flip !== !!(f.kv && f.kv.sp);
     // Bodenschatten
     g.filter = 'none'; g.globalAlpha = A0;
     // Kontaktschatten: weicher dunkler Fleck direkt unter den Füßen (verankert die Figur am Boden), darin ein kleiner kräftiger Kern
@@ -1969,11 +1999,11 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
       const sg = g.createRadialGradient(0, 0, 0, 0, 0, ww); sg.addColorStop(0, `rgba(6,4,3,${bwA(0.72)})`); sg.addColorStop(0.5, `rgba(6,4,3,${bwA(0.42)})`); sg.addColorStop(1, 'rgba(6,4,3,0)');
       g.fillStyle = sg; g.beginPath(); g.arc(0, 0, ww, 0, 7); g.fill(); g.restore();
       g.fillStyle = `rgba(4,3,2,${bwA(0.55)})`; g.beginPath(); g.ellipse(fx, fy, sw * 0.45 * k2, sk * 0.42, 0, 0, 7); g.fill(); };
-    if (!sink && !(BW && f.abs && pl && pl.cut)) kontakt();   // Bildwirkung: Grabenfiguren bekommen ihren Schatten erst beim Zeichnen nach Tiefe (auf der Sohle)
+    if (!sink && !(BW && f.abs && pl && pl.cut)) kontakt(nf.gruppe && !window.GRUPPENSCHATTEN_ALT ? 1.15 : 1);   // F2: Gruppenteile etwas kräftiger verankert   // Bildwirkung: Grabenfiguren bekommen ihren Schatten erst beim Zeichnen nach Tiefe (auf der Sohle)
     const back = nf.trupp && f.oy < -0.1;
     const filt = [done ? 'grayscale(0.75) brightness(0.8)' : '', dim ? 'brightness(0.8)' : '', back ? 'brightness(0.86)' : ''].filter(Boolean).join(' ');
     if (done) g.globalAlpha = A0 * 0.85;
-    const vorF = !!filt && !window.LEISTUNG_ALT, imF = vorF ? filtBild(f.im, filt) : f.im;   // L1: Filter (hintere Reihe, grau, dunkles Feld) einmal je Bild vorgerechnet
+    const vorF = !!filt && !window.LEISTUNG_ALT, imF0 = vorF ? filtBild(f.im, filt) : f.im, fw = nf.gruppe && BW && !pa && !window.FAHNE_STILL && FAHNE_WEHT[f.im && f.im._key], imF = fw ? fahneBild(imF0, fw) : imF0;   // F2: Fahne weht   // L1: Filter (hintere Reihe, grau, dunkles Feld) einmal je Bild vorgerechnet
     if (filt && !vorF) g.filter = filt;
     const zeichne = (tf, al, fl) => { g.save(); if (tf) { g.setTransform(tf); g.globalAlpha = al; g.filter = (!vorF && fl) || 'none'; }
       if (f.abs && pl && pl.cut && window.GBau) {   // im Graben: unterer Teil bis etwa zur Hüfte weg, weich in die dunkle Sohle ausgeblendet – unabhängig von der Grabenrichtung

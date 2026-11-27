@@ -1,0 +1,10 @@
+[
+ { "name": "konkordat_melder_steht", "ordner": "ui-quelle/figuren/konkordat",
+   "refs": ["ui-quelle/figuren/konkordat/konkordat_hauptmann_gruppe.png"],
+   "aspect": "1:1", "res": "2K",
+   "prompt": "Draw ONLY the messenger runner from the reference (same oxblood red coat, round steel helmet, gas mask with round goggles, leather satchel, rifle slung on his back) but STANDING still and waiting: relaxed upright stance, weight on one leg, one hand on the satchel strap, head turned slightly towards the right as if awaiting orders. Single full-body figure, centred, facing right, on a flat solid magenta background (#FF00FF), no ground, no cast shadow, no text. Same hand-drawn grimdark WW1 ink illustration style and colours as the reference. No skulls, no crosses, no eagles, no emblems." },
+ { "name": "aschenwacht_melder_steht", "ordner": "ui-quelle/figuren/aschenwacht",
+   "refs": ["ui-quelle/figuren/aschenwacht/aschenwacht_hauptmann_gruppe.png"],
+   "aspect": "1:1", "res": "2K",
+   "prompt": "Draw ONLY the messenger runner from the reference (same ash-grey greatcoat, spiked helmet, gas mask with yellow goggles, leather satchel, rifle slung on his back) but STANDING still and waiting: relaxed upright stance, weight on one leg, one hand on the satchel strap, head turned slightly towards the right as if awaiting orders. Single full-body figure, centred, facing right, on a flat solid magenta background (#FF00FF), no ground, no cast shadow, no text. Same hand-drawn grimdark WW1 ink illustration style and colours as the reference. No skulls, no crosses, no eagles, no emblems." }
+]
