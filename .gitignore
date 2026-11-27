@@ -21,3 +21,6 @@ ui-quelle/teile/texturen/_kachel_2x2.png
 
 # Stimmproben zum Klonen (Kopien aus sound-quelle, 26 MB, nur lokal; 2026-11-24)
 entwurf/postfach/stimmproben/
+
+# Paket W1: Videos je Paket nur im Ordner, nicht in git
+entwurf/probe/video/
