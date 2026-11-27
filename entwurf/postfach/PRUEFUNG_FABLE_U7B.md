@@ -4,7 +4,7 @@ Geprüft: Commit `7d3d59c` am Code (`src/engine.js`, `src/ai.js`, `src/ui.js`), 
 
 ## Urteil
 Die Regelstellen (Nr. 4, 5, 6) und alle vier Rückweg-Schalter sind in Ordnung: nichts stürzt ab, nichts wird doppelt gezählt.
-Nachbessern sollte man zwei Stellen in der KI (Fehler 1 und 2), der Rest ist klein.
+Nachbessern sollte man drei Stellen in der KI (Fehler 1 bis 3), der Rest ist klein.
 
 ## Fehler, nach Schwere
 
