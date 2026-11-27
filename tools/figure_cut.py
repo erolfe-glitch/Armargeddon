@@ -93,7 +93,8 @@ POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97), 'sturm_posen': ('sturm', 4, 0
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
 REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3}
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
-SPALTEN = {'konkordat_stahlreiter_reskin': 3,   # R4 (Punkt 97): Stahlreiter, Trab | Galopp mit erhobenem Schwert | aufbäumend (Schwerter berühren sich, Naht)
+SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4,   # U4 Teil 2: neuer Bogen, Düse der ersten Pose berührt den Mantel der zweiten
+             # R4 (Punkt 97): Stahlreiter, Trab | Galopp mit erhobenem Schwert | aufbäumend (Schwerter berühren sich, Naht)
            'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
            'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4,
            'loewenoger': 3, 'eiserne_huenen': 3}   # 2026-11-20: Löwenoger, Eiserne Hünen (Ruhe/vorrücken, Schießen, Nahkampf)   # Schlüssel: Art oder ganzer Bogenname (geht vor)
@@ -194,14 +195,13 @@ def fahne_umfaerben(a, name, alpha):
 #   spitze (x0, y0, x1, y1, px0, px1, sy): Kreuz an der Fahnenspitze durch Stangenstück ersetzen (Rest Hintergrund)
 ABZEICHEN = {
     'aschenwacht_soldat': [('platte', 1367, 312, 24)],   # U4a: Wappen-Rest unter dem Arm (Reskin-Bogen, oben rechts)
-    'aschenwacht_panzerknecht': [('platte', 106, 236, 50), ('platte', 619, 264, 46), ('platte', 1205, 294, 52)],
+    # U4 Teil 2: aschenwacht_panzerknecht (neu ohne Kreuze) und aschenwacht_flammen_posen (neu ohne Helmplakette) brauchen keine Übermalung mehr
     'aschenwacht_general': [('spitze', 104, 64, 186, 146, 138, 152, 300), ('orden', 630, 505, 22, 601, 549, 15), ('orden', 620, 584, 22, 601, 549, 15),
                             ('platte', 595, 273, 34), ('platte', 447, 451, 13), ('platte', 605, 458, 13), ('platte', 517, 692, 22)],   # Pflicht-Übermalung 2026-11-21: Helmemblem, Totenköpfe an den Schulterkordeln, Totenkopf-Schnalle
     'aschenwacht_bohrkoloss': [('platte', 468, 579, 27)],
     # Posenbögen 2026-11-20: Adler auf den Pickelhauben (Pflicht: keine Adler im Spiel)
     'aschenwacht_sanitaeter_posen': [('platte', 496, 137, 34), ('platte', 2424, 160, 32), ('platte', 1895, 261, 32), ('platte', 1169, 604, 32)],
     'aschenwacht_melder_posen': [('platte', 669, 934, 30), ('platte', 2335, 745, 34), ('platte', 301, 81, 26)],
-    'aschenwacht_flammen_posen': [('platte', 1845, 150, 26), ('platte', 1738, 935, 26), ('platte', 705, 150, 26), ('platte', 785, 960, 26)],
     # Runde 2 (2026-11-21, Pflicht-Übermalung): kleine Totenköpfe an den Schulterkordeln beider Generäle je Bogen
     'aschenwacht_general_posen': [('platte', 610, 350, 14), ('platte', 775, 350, 14), ('platte', 1912, 350, 14), ('platte', 2075, 350, 14)],
     'aschenwacht_general_posen2': [('platte', 550, 345, 14), ('platte', 720, 345, 14), ('platte', 1805, 372, 14), ('platte', 1970, 335, 14)],
@@ -352,7 +352,7 @@ def entrosa(q):
 FIGUREN_POSEN = {
     'konkordat_sanitaeter_posen': dict(n=3, reihen=1, grund='sanitaeter', trenne=[3]),   # Laufen und Getroffen berühren sich
     'aschenwacht_sanitaeter_posen': dict(n=4, reihen=1, grund='sanitaeter'),   # Adler über ABZEICHEN
-    'konkordat_flammen_posen': dict(n=4, reihen=1, grund='flammen', schatten=True),
+    'konkordat_flammen_posen': dict(n=3, reihen=1, grund='flammen', schatten=True, trenne=[1], vieleck_links=[(0.2, 0.468), (0.323, 0.543), (0.323, 0.592), (0.2, 0.512)], fuellen_ab=0.289),   # U4 Teil 2 (neu): Düse der ersten Pose liegt vor dem Mantel der zweiten
     'aschenwacht_flammen_posen': dict(n=4, reihen=2, grund='flammen'),   # Helmplakette über ABZEICHEN
     'konkordat_kampfanzug_posen': dict(n=4, reihen=2, grund='stahl', rauch=True, eins=True),
     'aschenwacht_kampfanzug_posen': dict(n=4, reihen=2, grund='panzerknecht', rauch=True, eins=True),   # eins: nur das größte Teil (deckend gemalte Rauchwolke neben Pose 3)
@@ -437,7 +437,13 @@ def ordner(name):
 
 ERSETZT = {'konkordat_soldat': 'konkordat_soldat_reskin', 'konkordat_soldat_posen': 'konkordat_soldat_posen_reskin', 'aschenwacht_soldat': 'aschenwacht_soldat_reskin',
            'aschenwacht_soldat_posen': 'aschenwacht_soldat_posen_reskin', 'aschenwacht_schwer_posen': 'aschenwacht_schwer_reskin', 'aschenwacht_panzer': 'aschenwacht_panzer_neu',
-           'konkordat_loewenoger': 'konkordat_loewenoger_neu3'}   # U4 (Punkt 26/119): Löwenoger neu3 (Panzerhandschuhe mit Klingen, Hintergrund dunkleres Pink)   # ST1 (115.9): neuer Panzer = Sturmpanzer (kein Aschenwacht-Landkoloss)   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
+           'konkordat_loewenoger': 'konkordat_loewenoger_neu3',
+           # U4 Teil 2 (Punkt 120.3): übrige abgenommene Bögen aus MODELL_LISTE
+           'konkordat_sanitaeter': 'konkordat_sanitaeter_neu', 'konkordat_sanitaeter_posen': 'konkordat_sanitaeter_posen_neu',
+           'konkordat_flammen': 'konkordat_flammen_neu', 'konkordat_flammen_posen': 'konkordat_flammen_posen_neu',
+           'aschenwacht_flammen': 'aschenwacht_flammen_neu', 'aschenwacht_flammen_posen': 'aschenwacht_flammen_posen_neu',
+           'aschenwacht_gasschutz': 'aschenwacht_gasschutz_neu', 'aschenwacht_gasschutz_posen': 'aschenwacht_gasschutz_posen_neu',
+           'aschenwacht_panzerknecht': 'aschenwacht_panzerknecht_neu', 'konkordat_reiter': 'konkordat_reiter_neu2', 'konkordat_ordensschreiter': 'konkordat_ordensschreiter_neu'}   # U4 (Punkt 26/119): Löwenoger neu3 (Panzerhandschuhe mit Klingen, Hintergrund dunkleres Pink)   # ST1 (115.9): neuer Panzer = Sturmpanzer (kein Aschenwacht-Landkoloss)   # U4a (Punkt 113): neuer Look, gleiche Spielnamen
 
 
 def quelle(name):
@@ -530,6 +536,7 @@ def figuren_posen(name, out):
     figs = []
     for i in big:
         sl = fo[i - 1]; t = k[sl].copy(); t[~ndimage.binary_dilation(lab[sl] == i, iterations=2), 3] = 0; figs.append(keep_parts(t, not o.get('eins'), o.get('teile_min', 0.15)))
+    sls = [fo[i - 1] for i in big]   # Versatz des beschnittenen Bilds: keep_parts schneidet auf die Deckung zu
     for j in sorted(o.get('trenne', []), reverse=True):   # zwei sich berührende Figuren: Naht durch die dünnste Stelle
         f = figs[j - 1]; op = f[..., 3] > 40
         if j in o.get('quer', []):   # übereinander stehende Figuren: waagerechte Naht, oben zuerst
@@ -537,7 +544,20 @@ def figuren_posen(name, out):
             l = f.copy(); l[rows >= ys[None, :], 3] = 0; rr = f.copy(); rr[rows < ys[None, :], 3] = 0
         else:
             xs = seam(op, f.shape[1] // 2, int(f.shape[1] * 0.25)); cols = np.arange(f.shape[1])[None, :]
-            l = f.copy(); l[cols >= xs[:, None], 3] = 0; rr = f.copy(); rr[cols < xs[:, None], 3] = 0
+            links_ = cols < xs[:, None]
+            if o.get('vieleck_links'):   # U4 Teil 2: Vieleck (Anteile der Quelle) gehört ganz zur linken Figur – Düse, die vor dem Mantel der rechten liegt
+                from PIL import ImageDraw as _D
+                mk = Image.new('L', (W, H), 0); _D.Draw(mk).polygon([(x * W, y * H) for x, y in o['vieleck_links']], fill=255)
+                sl_ = sls[j - 1]; m_ = np.asarray(mk)[sl_]; tt = k[sl_][..., 3] > 40
+                yy, xx = np.nonzero(ndimage.binary_dilation(lab[sl_] == big[j - 1], iterations=2) & (k[sl_][..., 3] > 40)); m_ = m_[yy.min():, xx.min():]
+                vk = np.zeros(f.shape[:2], bool); m2 = m_[:f.shape[0], :f.shape[1]] > 0; vk[:m2.shape[0], :m2.shape[1]] = m2
+                fi = f[..., :3].astype(int); mantel = (fi[..., 0] - fi[..., 1] > 35) & (fi[..., 0] < 170) & (fi[..., 1] < 80)   # dunkelrot = Mantel der rechten Figur, bleibt dort
+                x_ab = int(o.get('fuellen_ab', 0) * W) - sl_[1].start - xx.min(); rechtsab = np.arange(f.shape[1])[None, :] >= x_ab
+                vk = vk & ~(mantel & rechtsab); links_ = (links_ & ~(m2_ := np.zeros_like(vk))) | vk
+            l = f.copy(); l[~links_, 3] = 0; rr = f.copy(); rr[links_, 3] = 0
+            if o.get('vieleck_links') and o.get('fuellen_ab'):   # Loch im Mantel der rechten Figur (dort lag die Düse davor) aus der Umgebung füllen
+                loch = vk & rechtsab; ring = ndimage.binary_dilation(loch, iterations=6) & ~loch & (rr[..., 3] > 40) & mantel
+                if ring.any(): rr = rr.copy(); rr[loch, :3] = np.median(rr[ring, :3], axis=0).astype(rr.dtype); rr[loch, 3] = 255
         figs[j - 1:j] = [keep_parts(l, True, 0.15), keep_parts(rr, True, 0.15)]
     hmax = max(f.shape[0] for f in figs)
     grund = sorted(GAME.glob(f"{name.split('_', 1)[0]}_{o['grund']}*.png")); grund = [g for g in grund if '_posen' not in g.stem]
