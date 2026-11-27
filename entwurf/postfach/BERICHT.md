@@ -1,3 +1,51 @@
+## 2026-11-27 – U3 figurennahe Effekte (Punkt 118 + Punkt 62), Teil 1 und 2
+
+Gepusht:
+- `136f3cc`: Teil 1, Effektbögen E1–E6
+- `735cae4`: Teil 2, Figurenfaktor, Spritzer, Nahzoom; mit index.html
+
+**Hänger:** keine. Partietest „Konsole rot-frei, keine Fehler“, Regeltest in Ordnung. Keine Regeländerung, deshalb kein sim-Lauf.
+
+**Noch offen (Teil 3, nächster `pa`):** 118.3, die Helden-Effekte (Glut, Ringe, Dampf) mit Figurenfaktor und die Prüfung des Fesselballons. Index.html ist trotzdem schon drin, damit du heute Nachmittag den Stand spielen kannst.
+
+### 118.5 / Punkt 62 – Effektbögen E1–E6
+Freigestellt mit `tools/fx_cut.py`:
+- neue Einträge in `CFG` mit Bedeutung je Variante
+- liest seit diesem Paket auch `ui-quelle/effekte/neu/` (Option `quelle`)
+- `rand` behält Teile am Bildrand
+- Fehler behoben: Das Löschen alter Teile von `fx_gasschliere` nahm `fx_gasschliere_dick` mit.
+
+Im Spiel (Rückweg je Effekt `window.E1_ALT` … `E6_ALT`):
+- **E1 Gasgranate in der Luft:** dicke Gasfahnen sinken auf die Felder, daneben feine Fäden.
+- **E2 großer Befehl:** Staubring am General, kleinere Ringe an bis zu 6 Einheiten. Leicht entsättigt, weil die Ringe rosa angehaucht waren.
+- **E3 Gasschutz entgiftet:** 2–3 Dampfschwaden steigen aus den Figuren, dazu der Dunst aus F82.
+- **E4 Löwenmaul:** Feuerstoß aus dem Maul, linker Bildrand an der Mündung. Ersetzt das alte Kanonenfeuer, nur beim Hauptschuss des Kreuzschreiters.
+- **E5 Faustsalve:** Doppelblitz je Faust statt des alten Mündungsfeuers.
+- **E6 Hinrichtung:** kalter Schnittbogen der Kettenklinge. Ohne Blut sind die Tropfen grau.
+
+Testseite `entwurf/probe/effekte.html` ergänzt. Bilder vorher/nachher: `entwurf/probe/u3/vergleich_e1_gas_luft.jpg` … `vergleich_e6_hinrichtung.jpg`, Werkzeug `node tools/u3_bilder.mjs`.
+
+### 118.1 – Mündungsfeuer je Figur
+- **Größe:** Das Mündungsfeuer richtet sich nach der Figurhöhe (`figMul`, Rückweg `window.FIGFAK_ALT`). Gemessen ist ein Linien-Soldat etwa 0,5 Feldradien hoch, das Gewehrfeuer war bisher 0,73 Feldradien lang, also größer als der Mann. Jetzt ist es etwa 0,85 × Figurhöhe. Scharfschützen sind gleich angepasst.
+- **Auswahl:** Jede Figur blitzt weiter genau einmal, wie in SP-2 gewünscht. Leuchtspur und Pulverdampf gibt es aber nur bei 4 von 8 Schützen, damit das Bild ruhiger bleibt.
+- **Takt:** nicht geändert. Er ist seit SP-3 schon auf 8 Mann abgestimmt (voller Trupp etwa 1,4 s).
+
+### 118.2 – Treffer-Spritzer an der fallenden Figur
+- Fällt ein Mann, gibt es Spritzer und Bodenfleck an genau dieser Figur, und zwar im Moment des Treffer-Ereignisses (`figurSpritzer`, Rückweg `window.FIGURSPRITZ_ALT`). Die Größe richtet sich nach der Figurhöhe.
+- Gepanzerte und Maschinen bekommen Funken statt Blut.
+- Der bisher große Spritzer in der Truppmitte ist beim Fallen nur noch der kleine Treffer-Spritzer.
+- Blut-Schalter und Bildwirkung gelten.
+
+### 118.4 – Nahzoom und Klickflächen
+- Die Kampfszene zoomt jetzt ×1,2 näher heran (Rückweg `window.NAHZOOM_ALT`).
+- Klickflächen: `UBOX` ist je Einheit gut 1,5 Feldradien breit und hängt nicht an der Figurengröße. Kleine Figuren bleiben dadurch auf dem Board gut antippbar. Ich habe daran nichts geändert.
+
+Bilder: `entwurf/probe/u3/vergleich_salve_figurenfaktor.jpg`, `vergleich_treffer_fallende_figur.jpg` (Werkzeug `node tools/u3_salve.mjs`).
+
+**Fragen an Enrico:**
+1. Passt die Größe der Gewehr-Mündungsfeuer, oder sind sie jetzt zu klein? Der Anteil in `figMul` ist einstellbar.
+2. Sollen alle 8 Schützen eine Leuchtspur haben wie bisher, oder bleibt es bei 4?
+
 ## 2026-11-27 – ST1c (Punkt 117): Windmühle Grauwall
 
 Gepusht (`9213cd9`, mit index.html). **Hänger:** keine. Partietest „Konsole rot-frei, keine Fehler“. Keine Regeländerung, daher kein sim-Lauf.
