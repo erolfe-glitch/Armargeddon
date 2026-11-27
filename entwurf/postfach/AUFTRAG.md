@@ -98,10 +98,10 @@
 - ✓ **Paket F3 + U7b Teil 1 (Punkte 135/136)** erledigt (`ca55c0a`, `2d77fef`).
 - ✓ **Paket U7b Teil 2 (Punkt 136)** erledigt (`7d3d59c`).
 - ✓ **Kurz-Prüfung U7b Teil 2 durch Fable (Punkt 140)** erledigt (`PRUEFUNG_FABLE_U7B.md`).
-- ✓ **Paket U7c (Abschnitt 27.11. 21:50, Punkt 142)** – **nächster `pa`**, Opus Mittel: KI-Nachbesserung aus der Kurzprüfung. Danach UI1 Teil 1.
+- ✓ **Paket U7c (Punkt 142)** erledigt (Bericht 27.11. 22:10). Damit ist **U7 komplett**.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
-- **Paket UI1 Oberfläche (Punkte 128/141)** – Entwurf A gewählt. **Teil 1** (Einheitenkarte, Knopfgruppen, Schrift) nach der Fable-Kurzprüfung U7b, dann **Teil 2** (Nachschub-Karten, Info-Fenster, Leisten, Klicktöne). Je Opus Mittel.
+- **Paket UI1 Oberfläche (Punkte 128/141)** – Entwurf A gewählt. **Teil 1 = nächster `pa`** (Einheitenkarte, Knopfgruppen, Schrift), dann **Teil 2** (Nachschub-Karten, Info-Fenster, Leisten, Klicktöne). Je Opus Mittel.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -207,6 +207,7 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **Zu flach („Pappschild“):** die stehenden Melder (`*_melder_steht`) und Fahrzeuge/Kolosse. Sie sollen **leicht plastisch** wirken: mehr Volumen, Licht und Schatten, aber nicht 3D. Für W2b/W2c vormerken. In F2b bleibt der Melder vorerst drin.
 - **Neu zeichnen im Zielstil (Liste, W2):** Panzerbüchsen-Trupp Aschenwacht (Enrico 19:52, Bild aus dem Spiel). Die Figuren haben den alten schlanken Stil, die Büchse liegt einzeln und riesig vor dem Schützen. Neu soll der liegende Schütze die Waffe selbst halten, in passender Größe. Dazu kommen alle Bögen, die noch nicht im Zielstil sind (Liste stellt der Berater vor W2b auf).
 - **MG-Trupp im Graben (Enrico 20:05, Bild aus dem Spiel, Konkordat):** In einem Graben, der in die Tiefe läuft, steht das MG allein oben, der Schütze kniet weit darunter. Vermutlich verteilen die Grabenplätze (`grabenPlaetze`/Zickzack) die Teile der Gruppe einzeln. Für W2 vormerken: Waffentrupps als **ein Stück** (Schütze an der Waffe) zeichnen und im Graben als Gruppe zusammenhalten. Ursache dann mitprüfen. Jetzt nichts ändern.
+- **Laufbilder beim Reskin (Enrico 22:19):** Beim Ziehen wirken die Figuren, als würden sie schweben. Beim Neuzeichnen im Zielstil deshalb je Fußtrupp **2–4 Laufposen** mitmalen (Schritt links, Schritt rechts, ggf. Zwischenpose), dazu Pferde und Schreiter mit Gangposen. Im Spiel wechseln sie beim Ziehen im Takt (wie `d.wipp` bei den Schreitern). Bis dahin **kein** Code-Behelf (Enrico).
 - **Lernpaket Figuren:** Es sind jetzt 28 Bilder (dazu 4 Blaue Legion, Hahn übermalt), siehe `entwurf/lora_figuren/LIESMICH.md`.
 
 **Danach (erst nach Enricos Blick, Plan steht hier nur zur Info):**
@@ -214,6 +215,12 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-27 22:15): U7c abgenommen – nächster `pa` = UI1 Teil 1 <<<
+✓ **143.** U7c ist abgenommen, U7 ist damit fertig. Messung gegen `u7b.json`: Grauwall −2,5, Sankt Ruß +0,5, Winterdorf +0,3, alles in der Streuung.
+- **Nächster `pa` = UI1 Teil 1** (Punkt 141). **Einstellung: Opus, Mittel.**
+- **Aufräumen nebenbei:** Im letzten Lauf sind die Hilfsskripte `u7c.py` und `doku3.py` entstanden. Wenn sie nur Einmal-Helfer waren, sollen sie nicht im Hauptordner liegen bleiben: löschen oder nach `tools/` verschieben. Im Bericht kurz sagen, was damit passiert ist.
+- **Hinweis Modell:** Die letzten Berichte nannten „Sonnet“, obwohl Opus eingestellt war. Im Bericht nur das Modell nennen, das die Sitzung wirklich anzeigt, und sonst „unbekannt“ schreiben.
 
 # >>> JETZT (Enrico 2026-11-27 21:50): Paket U7c – Nachbesserung aus der Fable-Kurzprüfung, VOR UI1 <<<
 ✓ **142. Nächster `pa` = Paket U7c. Einstellung: Opus, Mittel.** Grundlage: `entwurf/postfach/PRUEFUNG_FABLE_U7B.md` (Fehler-Nummern daraus). UI1 (Punkt 141) kommt erst danach.
@@ -240,7 +247,7 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 # >>> JETZT (Enrico 2026-11-27 21:45): Paket UI1 – Entwurf A „Eisenplatte“ gewählt, erst NACH der Fable-Kurzprüfung U7b <<<
 **141. UI1 in zwei Teilen, je ein `pa`, erst NACH U7c (Punkt 142). Einstellung: Opus, Mittel.** Grundlage ist Punkt 128 (Wünsche) und der gewählte **Entwurf A** des Beraters: `entwurf/ui1/entwurf_A_eisenplatte.dc.html`. Für das Nachschub-Menü kommt `entwurf/ui1/entwurf_C_nachschub.dc.html` dazu (nur der Nachschub-Teil oben). Beides sind HTML-Skizzen mit Platzhalter-Symbolen. Maßgeblich sind **Aufbau, Größen und Anordnung**, nicht die Platzhalter. Im Spiel kommen die gemalten Symbolbögen (`bogen3c`/`bogen4*`, `panel_assets.py`) und die Texturen nach `STYLE.md` zum Einsatz. Wo ein Symbol fehlt: Liste im Bericht, der Berater malt nach.
 
-**Teil 1 – Einheitenkarte, Knöpfe, Schrift** (nächster `pa` nach der Kurzprüfung):
+✓ **Teil 1 – Einheitenkarte, Knöpfe, Schrift** (nächster `pa` nach der Kurzprüfung):
 1. **Einheitenkarte links unten** wie Entwurf A, auf Eisen mit Tintenschicht:
    - Porträt mit Messingrahmen, Name groß in der Titelschrift.
    - **Rollen-Schild** (Kategorie, z. B. „LINIE“ mit Schild-Symbol) und Rolle in einem Halbsatz (`rollen.js`).

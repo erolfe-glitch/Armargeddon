@@ -1,3 +1,56 @@
+## 2026-11-27 – UI1 Teil 1 (Punkt 141): Einheitenkarte, Knopfgruppen, Schrift
+
+Gepusht:
+- `7a6bae5`: Karte, Knöpfe, Schrift, Bilder
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“. Der Rückweg `window.UI1_ALT` läuft ohne Fehler und zeigt die alte Karte. Keine Regel geändert, deshalb keine Messung.
+- **Video:** `entwurf/probe/video/UI1_teil1.mp4` (Grauwall, 25,3 s, mit Ton).
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Download (mit deiner Erlaubnis):** Barlow Condensed (Medium, SemiBold, Bold) und die Lizenz aus dem Google-Fonts-Repository auf GitHub nach `ui-quelle/schriften/`. Die Schrift ist eingebettet, ohne Google-Link; die Lizenz steht in `CREDITS.md` (neuer Abschnitt „Schriften“).
+- **Aufräumen (Punkt 143):** `u7c.py` und `doku3.py` lagen nicht im Projektordner, sondern in meinem Arbeitsordner unter `%TEMP%`. Ich habe sie dort gelöscht, ebenso die übrigen Einmal-Helfer der letzten Pakete. Im Projekt ist nichts davon gelandet.
+
+**1. Einheitenkarte** (wie Entwurf A):
+- **Aufbau:** Eisenplatte mit Tintenschicht, Porträt mit Messingrahmen, Name groß in IM Fell English.
+- **Kopfzeile:** Kategorie-Schild (z. B. „LINIE“), Rolle als Halbsatz und Seite. Daneben drei leere Rangwinkel als Platz für Veteranen (Tooltip: kommt mit der Kampagne).
+- **Balken:** Stärke dick mit Strichen, Moral dünn.
+- **Stufen-Zeile:** zum Beispiel „wankt · Angriff ×0,85 · weicht unter 20“, rechts „Aktion frei/verbraucht“.
+- **Fünf Werte als Symbol plus Zahl:** Bewegung (bei eigenen Einheiten noch/max), Schuss, Nahkampf, Abwehr, Reichweite.
+- **▲ gut gegen / ▼ schlecht gegen:** je höchstens zwei, aus `rollen.js`, mit vollem Text im Tooltip.
+- **Eigenschaften:** goldene Kästchen mit Symbol. Der Text steht im Pergament-Tooltip, bei der Maus beim Überfahren, bei Touch nach langem Druck (0,4 s).
+- **„Mehr ▾“:** klappt Rolle mit Konter, die Schlagworte in Worten, den Fähigkeitstext, Stärken und Schwächen (früher die Medaillen unter dem Bild) und die Chronik auf. Gespeichert in `arm.kartelang` wie bisher.
+
+**2. Knopfleiste:**
+- **Gruppen:** BEWEGEN (Draht schneiden und ziehen zuerst, Auf-/Abbauen, Protzen, Ausgraben, Ballon), ANGRIFF (Schuss, Nahkampf, Zweitwaffe, Sperrfeuer, Feuerbereitschaft, Geschütz-Munition), FÄHIGKEITEN (alles Übrige, Befehle, Eingraben), DREHEN, dazu „Fertig“ am Ende.
+- **Größe und Tasten:** Die Knöpfe sind 56 px (1280), 66 px (1920) und 80 px (2560) groß. Die Tasten 1–n folgen der Anzeige. Die Gründe für graue Knöpfe stehen weiter im Tooltip.
+- **Leere Gruppen** werden nicht gezeigt. Eine Einheit ohne Draht- oder Aufbau-Knopf hat also keine Überschrift BEWEGEN, weil Ziehen und Marsch über die Karte laufen. Feste Plätze für Knöpfe, die eine Einheit gar nicht hat, habe ich nicht angelegt.
+
+**3. Schrift:**
+- Text und Zahlen in Barlow Condensed (500/600/700), Titel und Knöpfe weiter in IM Fell English SC. „Arm Ziffer“ bleibt für die großen Schadenszahlen.
+- Auf der neuen Karte und an den Knöpfen ist Text mindestens 15 px groß. Die Messung meldet trotzdem 13–14 px: Das sind die alten „i Info“- und Tasten-Schildchen. Bei 1280 px sind die Gruppenüberschriften 13 px.
+
+**4. Bilder:**
+- `entwurf/probe/ui1/vorher/` und `entwurf/probe/ui1/nachher/`, je Breite 1280, 1920 und 2560.
+- Motive: Schützenkohorte (wankend), Hauptmann, MG, dazu der Tooltip mit Maus und mit langem Druck und die aufgeklappte Karte („mehr“).
+
+**Fehlende bzw. ersetzte Symbole** (Liste für den Berater; das jetzige Symbol passt nur ungefähr):
+- Panzerung (Gepanzert / Leicht / Schwer gepanzert, „Sehr zäh“) → Schild
+- Held, Stufe 3, „Höchstens einer“, „einmal je Schlacht“ → Zahnrad
+- Furcht-Aura → Gebrochen-Zeichen
+- „Zieht n Felder“, „Ziehen und feuern“, „Langsam, bleibt stecken“ → Stiefel
+- „Ansturm ×1,5“ → Pferd; „Geschützturm“ → Lafette; „Sieht 6 Felder“, „Sicht von oben“ → Fernglas
+- Kettensäge, Hackklinge, Kriegshammer, Stahlklaue, „Zwei Schläge“ → Nahkampf
+- Symbole für die fünf Werte: Nahkampf = gekreuzte Klingen, Abwehr = Deckungsschild. Ein eigenes Abwehr-Symbol wäre klarer.
+
+**Offen bzw. auffällig:**
+- Bei 1280 × 800 ist die Karte hoch (etwa 465 px) und verdeckt links unten einen Teil des Felds. Bei 1920 und 2560 passt es.
+
+**Fragen an Enrico:**
+1. Ist die Karte bei 1280 px zu hoch? Dann würde ich dort die Eigenschaften neben die Plaketten in eine Zeile legen.
+2. Sollen Gruppen auch dann mit Platzhaltern erscheinen, wenn eine Einheit keinen Knopf darin hat (immer vier feste Felder), oder so lassen?
+
 ## 2026-11-27 – U7c (Punkt 142): Nachbesserung aus der Fable-Kurzprüfung
 
 Gepusht:
