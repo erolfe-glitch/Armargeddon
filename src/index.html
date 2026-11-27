@@ -1241,6 +1241,28 @@ body.ui1 .u1d-eig img { width: 24px; height: 24px; object-fit: contain; }
 body.ui1 #detail p, body.ui1 #detail .rolle, body.ui1 #detail .det-med { font: 500 16px/1.38 var(--s-body); }
 body.ui1 .u1d-kn { margin-top: 6px; padding: 3px 10px; border: 2px solid rgba(18,13,11,.6); background: transparent; color: inherit; font: 600 16px var(--s-body); cursor: pointer; }
 body.ui1 #detail .chronik { display: none; } body.ui1 #detail .chronik.offen { display: block; }
+/* UI1 (Punkt 146): obere Leiste schlanker wie Entwurf A – Holz mit Tintenschicht, 56 px; Runde links, Siegpunkte mittig, Knöpfe rechts. Wappen je Seite bleiben (unter 1800 px ohne Wappen an den Balken, wie bisher) */
+body.ui1 .tbar { height: 56px; gap: 14px; background: var(--tx-ink45), var(--up-txHolz) 0 0 repeat; border-bottom: 3px solid var(--s-ink); box-shadow: 0 3px 0 rgba(18,13,11,.5); }
+body.ui1 .tbar::before { content: none; }
+body.ui1 .tb-brand { display: none; }
+body.ui1 .tb-plate:not(.tb-pts) { height: 38px; padding: 0 6px; border: 0; border-image: none; background: none; filter: none; }
+body.ui1 #topbar .tb-turn { font: 400 24px var(--s-head) !important; text-transform: none; letter-spacing: .02em; padding-left: 0; }
+body.ui1 .tb-side { padding: 0 4px; }
+body.ui1 .tb-medal { --m: 48px; }
+body.ui1 .tb-side .tb-medal { margin: calc(var(--m) * -0.2) 0; }
+body.ui1 .tb-wind .k { font: 600 15px var(--s-body); }
+body.ui1 .tb-wind i { width: 28px; height: 28px; }
+body.ui1 .tb-meter .tube { height: 30px; }
+body.ui1 .tb-meter .val { font: 700 19px var(--s-body); }
+body.ui1 .tb-pts { height: 44px; font-size: 26px; }
+body.ui1 .tb-pts b, body.ui1 .tb-pts { font-family: var(--s-body); font-weight: 700; }
+body.ui1 .tb-pts small { font: 600 16px var(--s-body); }
+body.ui1 .tb-obj { width: 26px; height: 26px; font-size: 14px; }
+body.ui1 .tb-btn { width: 40px; height: 40px; background: linear-gradient(rgba(18,13,11,.4), rgba(18,13,11,.4)), var(--up-txEisen) 0 0 / 120px repeat; border: 2px solid var(--s-ink); filter: none; box-sizing: border-box; }
+body.ui1 .tb-btn::before { content: none; }
+body.ui1 .tb-btn svg { width: 22px; height: 22px; }
+body.ui1 .tb-tools { gap: 5px; }
+body.ui1 .tbar [data-tip]::after { font: 600 15px/1.3 var(--s-body); }
 </style>
 </head>
 <body>
