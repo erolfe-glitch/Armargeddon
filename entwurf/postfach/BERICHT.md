@@ -1,3 +1,56 @@
+## 2026-11-27 – ST1b (Punkt 116) (`0d6dc86` mit index.html)
+
+Gepusht.
+- **Hänger:** keine. Partietest ohne Fehler, Regeltest ok.
+- **sim:** alle Läufe nacheinander, kein Absturz.
+
+**3. Sankt Ruß 51 → 40 %: Ursache gefunden und ausgeglichen.**
+
+Gleiche Messung (`MISCHEN=1`, 100 Schlachten, Sankt Ruß, Siegquote Konkordat) auf den Ständen seit R4d:
+
+| Stand | Konkordat |
+|---|---|
+| R4d `52046c7` | 51 % |
+| V1 `8cedd29` | 51 % |
+| V3 `4ee7443` | 51 % |
+| 114 `763dcf7` | 51 % |
+| ST1-Regeln `7a5e728` | **40 %** |
+
+Innerhalb von ST1:
+
+| Variante | Konkordat |
+|---|---|
+| alte Sperre + Ballon als Gerät (= vorher) | 51 % |
+| alte Sperre + Ballon als Unterstützung | 39 % |
+| Aufschlag + Ballon als Gerät | 22 % |
+| Aufschlag + Ballon als Unterstützung (ST1) | 40 % |
+| dazu ohne Lage-Kauf „Aufklärung“ | 45 % |
+| dazu Kartenschalter `ohneBallon` | 43 % |
+| **dazu 3 statt 2 Mahlwerke (200 Schlachten)** | **49 %** |
+
+- **Ursache:** Mit „Ballon = Gerät“ und der alten Obergrenze 3 konnte die Konkordat-KI auf Sankt Ruß keinen Ballon nachkaufen, weil schon 3 Geräte standen, und kaufte stattdessen Linie. Seit der Ballon Unterstützung ist (bzw. Gerät ohne Grenze), kauft sie Ballone („Artillerie ohne Beobachter“), und die nützen dort nichts.
+- Der Aufschlag selbst und „sehr selten“ ändern die Quote nicht.
+- Nebenbei behoben: „sehr selten“ lief durch die Linien-Prüfung (Helden/Stufe 3 konnten gesperrt werden); jetzt wie „selten“.
+- **Ausgleich (ohne Grundregel):**
+  - Sankt Ruß `MAP.ki.A.ohneBallon` (die Konkordat-KI kauft dort keine Ballone, weder über die Wunschliste noch über den Lage-Kauf).
+  - Kartenarmee Konkordat 3 statt 2 Mahlwerke.
+  - Ergebnis **49 %** (200 Schlachten). Grauwall 50 %, Krähenfurt 54 % unverändert.
+
+**2. Schwebende Kisten:**
+- Die Kram-Teile in den Grabendurchgängen hatten keinen Bodenkontakt; die Spanischen Reiter hatten früher dasselbe Problem (Punkt 79.3).
+- Jetzt bekommen sie wie diese einen Kontaktschatten und sinken leicht ein (`boden`). Außerhalb des eingegrabenen Grabens stehen sie mittiger (Versatz 0,3 → 0,12).
+- Rückweg `KRAM_ALT`.
+- **Nicht im Bild geprüft:** Im Vorschaufenster sind die Kisten zu klein. Bitte beim Spielen schauen, ob noch eine schwebt.
+
+**1. Kirche überlappt: nicht gefunden.**
+- Nahaufnahmen: `entwurf/probe/st1b/kirche_nah.jpg`, `kirche_mittel.jpg`, `kirche_turm.jpg`.
+- Darin sehe ich keine eindeutige Überlappung; Schiff, Wände und Turm stehen in ihren Feldern, die Tiefenfolge gegen Brunnen, Bildstock und Häuser stimmt.
+
+**4.** Der Aufschlag von +25 % bleibt.
+
+**Fragen an Enrico:**
+1. Kannst du die Kirchen-Stelle in einem der Bilder markieren oder ein Bildschirmfoto in `entwurf/postfach/` legen?
+2. Schwebt nach dem Bodenkontakt noch eine Kiste? Wenn ja, wo?
 ## 2026-11-27 – Paket ST1 Spieltest-Funde (Punkt 115) (`7a5e728`, `271cf47` mit index.html)
 
 Gepusht.
