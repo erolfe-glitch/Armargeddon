@@ -102,7 +102,8 @@
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
 - ✓ **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** fertig (`5b48bd8`). Jetzt **Spieltest durch Enrico** (U7 + UI1).
-- **Paket W2a – Gelände-LoRA (Punkte 132/147)** – **nächster `pa`, parallel zum Spieltest, ohne Browser.** Opus Mittel.
+- ✓ **Paket W2a – Gelände-LoRA (Punkte 132/147)** erledigt: LoRA taugt nicht besser, Gelände künftig über Nano Banana + Referenzmappe.
+- **Paket W2f – Figuren-Stiltest (Punkt 148)** – **nächster `pa`, parallel zum Spieltest, ohne Browser.** Opus Mittel.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -216,6 +217,38 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-28 00:25): Antwort zu W2a – Gelände über Referenzmappe; nächster `pa` = Figuren-Stiltest W2f (ohne Browser) <<<
+✓ **148. Nächster `pa` = W2f, Figuren-Stiltest. Einstellung: Opus, Mittel.** Enrico spielt weiter, deshalb wieder **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe, nichts in `src/`**.
+
+**Entscheidung zu W2a:**
+- Das Gelände-LoRA bleibt liegen.
+- **Gelände-Bausteine** malen wir künftig mit Nano Banana Edit und einer **festen Referenzmappe**. Bitte als `entwurf/stil/referenz_gelaende.json` anlegen: Liste der `refs` mit `ui-quelle/gelaende/neu_poi/windmuehle_bogen.png` plus 2–3 passende Lernbilder aus `entwurf/lora_gelaende/`, je Sommer und Winter.
+- In `CLAUDE.md` bei „fal direkt“ einen Satz ergänzen: Neue Gelände-Bausteine immer mit dieser Mappe.
+
+**W2f – drei alte Bögen im Zielstil neu (nur Probe, nichts einbauen):**
+- **Zielstil:** die Reskin-Bögen, `aschenwacht_panzer_neu` und `konkordat_fernsprech_neu` (siehe `entwurf/lora_figuren/LIESMICH.md`).
+- **Ablage:** Die Bilder kommen nach `entwurf/probe/stil/figuren/`, **nicht** nach `ui-quelle/`, damit `figure_cut` sie nicht aus Versehen nimmt.
+- **Malauftrag** über `node tools/fal_bild.mjs`. Pfade an die echten Dateien anpassen. Gleiche Anordnung wie der alte Bogen, damit der Schnitt später passt.
+```json
+[
+ { "name": "aschenwacht_panzerbuechse_trupp_zielstil", "ordner": "entwurf/probe/stil/figuren",
+   "refs": ["ui-quelle/figuren/aschenwacht/aschenwacht_panzerbuechse_trupp.png", "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_soldat_reskin.png", "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_panzer_neu.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "Redraw the anti-tank rifle team from the FIRST reference image with the same number of figures, the same layout and the same weapon, but in exactly the art style, proportions and armour of the SECOND reference (bulky soldiers with riveted steel plate armour over ash-grey greatcoats, spiked helmets, gas masks with glowing yellow eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter). IMPORTANT: the prone gunner lies directly behind the long anti-tank rifle and holds it with both hands, cheek on the stock; the rifle is not lying separately. Weapon at a believable size for one man. Flat solid magenta background (#FF00FF), no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags." },
+ { "name": "konkordat_mg_trupp_zielstil", "ordner": "entwurf/probe/stil/figuren",
+   "refs": ["ui-quelle/figuren/konkordat/konkordat_mg_trupp.png", "ui-quelle/figuren/konkordat/reskin/konkordat_soldat_reskin.png", "ui-quelle/figuren/konkordat/konkordat_fernsprech_neu.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "Redraw the machine-gun team from the FIRST reference image with the same number of figures, the same layout and the same tripod machine gun, but in exactly the art style, proportions and armour of the SECOND reference (bulky soldiers with riveted steel plate armour over oxblood red greatcoats, brodie-style steel helmets, gas masks with glowing green eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter). IMPORTANT: the gunner kneels directly behind the machine gun with both hands on the grips, the loader sits right next to the gun feeding the ammunition belt; nobody is separated from the gun. Flat solid magenta background (#FF00FF), no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags." },
+ { "name": "aschenwacht_flammen_zielstil", "ordner": "entwurf/probe/stil/figuren",
+   "refs": ["ui-quelle/figuren/aschenwacht/aschenwacht_flammen_neu.png", "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_soldat_reskin.png", "ui-quelle/figuren/aschenwacht/reskin/aschenwacht_sturm_reskin.png"],
+   "aspect": "16:9", "res": "2K",
+   "prompt": "Redraw the four flamethrower soldiers from the FIRST reference image with the same four poses in the same order and the same fuel tanks and flame projectors, but in exactly the art style, proportions and armour of the SECOND reference (bulky soldiers with riveted steel plate armour over ash-grey greatcoats, spiked helmets, gas masks with glowing yellow eyes, thick clean black ink outlines, hard comic shading, grime and blood spatter). No flames coming out of the weapons. Flat solid magenta background (#FF00FF), no ground, no cast shadows, no text. No skulls, no crosses, no eagles, no flags." }
+]
+```
+- **Übersicht:** `entwurf/probe/stil/figuren/uebersicht.jpg` mit den Spalten **alter Bogen – neuer Bogen – Zielstil-Referenz** (Python, wie `lora_uebersicht.py`).
+- **Prüfen:** Abzeichen; Waffe in der Hand des Schützen; reines Magenta am Rand (Anteil wie bei W2a messen).
+- **Bericht:** Kosten (Grenze 1 €), die Bilder, eine Einschätzung, ob der Weg für alle übrigen Bögen taugt, und einen Plan (Reihenfolge, Kosten, Laufbilder mit 2–4 Posen je Fußtrupp gleich mitmalen). Nichts einbauen.
 
 # >>> JETZT (Enrico 2026-11-27 23:50): UI1 fertig – Spieltest läuft, nebenbei W2a Gelände-LoRA (ohne Browser) <<<
 ✓ **147. Nächster `pa` = W2a (Punkt 132, Abschnitt „Alles in einem Zeichenstil“, mit Nachtrag 19:35). Einstellung: Opus, Mittel.**

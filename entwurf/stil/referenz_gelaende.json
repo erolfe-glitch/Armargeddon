@@ -1,0 +1,6 @@
+{
+ "zweck": "Feste Referenzmappe für neue Gelände-Bausteine (Punkt 148, 2026-11-28): bei node tools/fal_bild.mjs als \"refs\" übernehmen – sommer bzw. winter je nach Karte. Stilvorbild ist die große Mühle.",
+ "sommer": ["ui-quelle/gelaende/neu_poi/windmuehle_bogen.png", "entwurf/lora_gelaende/K01.png", "entwurf/lora_gelaende/K09.png", "entwurf/lora_gelaende/K33.png"],
+ "winter": ["ui-quelle/gelaende/neu_poi/windmuehle_bogen.png", "entwurf/lora_gelaende/K03.png", "entwurf/lora_gelaende/K17.png", "entwurf/lora_gelaende/K29.png"],
+ "promptzusatz": "in exactly the same hand-drawn grimdark WW1 ink illustration style and colours as the reference windmill: thick black outlines, muted earthy colours, hard shadows, isometric game terrain piece on a small patch of ground, flat solid magenta background (#FF00FF), no text, no emblems"
+}

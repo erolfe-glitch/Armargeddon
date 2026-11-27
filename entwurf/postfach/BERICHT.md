@@ -1,3 +1,53 @@
+## 2026-11-28 – W2f Figuren-Stiltest (Punkt 148): nur Probe, nichts eingebaut
+
+Gepusht:
+- Referenzmappe, Werkzeug, Probebilder und dieser Bericht in einem Commit
+
+**Stand:**
+- **Ohne Browser:** Kein Browser, keine Vorschau, kein Test, kein Video, keine sim-Läufe. In `src/` ist nichts geändert.
+- **Hänger:** keine.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** drei Bögen in 2K über Nano Banana 2 Edit, je etwa 0,12 $, zusammen **etwa 0,36 $** (≈ 0,33 €, Grenze 1 €).
+- **Ablage:** Die PNGs liegen in `entwurf/probe/stil/figuren/` (nicht in `ui-quelle/`), gesichert in OneDrive. Sie sind nicht in git, weil sie je 5–6 MB groß sind. In git liegen JPG-Kopien und `uebersicht.jpg`. Der Auftrag liegt in `auftrag_w2f.json`.
+
+**Gelände-Referenzmappe:**
+- `entwurf/stil/referenz_gelaende.json`, je Sommer und Winter die Mühle plus drei Lernbilder: Sommer K01 (Mühle), K09 (Ruinenhaus), K33 (Panzersperren); Winter K03, K17 (Fachwerkhaus), K29 (Tanne). Dazu ein fester Promptzusatz.
+- In `CLAUDE.md` bei „fal direkt“ steht jetzt: neue Gelände-Bausteine immer mit dieser Mappe.
+
+**Ergebnis** (`entwurf/probe/stil/figuren/uebersicht.jpg`, Spalten: alter Bogen – neuer Bogen – Zielstil-Referenz):
+
+| Bogen | Stil | Anordnung | Waffe in der Hand | Magenta am Rand (alt → neu) |
+|---|---|---|---|---|
+| Panzerbüchse Aschenwacht | etwas wuchtiger, mehr Plattenpanzer, aber nah am alten | gleich | **Teilweise:** Der liegende Schütze hält jetzt eine Büchse, die große Büchse auf dem Zweibein steht aber **zusätzlich** noch oben links. Die Waffe ist also doppelt. | 0 → 62 % |
+| MG-Trupp Konkordat | deutlich näher am Zielstil (Plattenpanzer, Löwe auf der Brust) | **verändert:** Zwei Figuren rechts stehen übereinander und überdecken sich, eine winkt. Ein Schnitt in Einzelfiguren ginge so nicht. | **Nein:** Der Richtschütze kniet neben dem MG statt an den Griffen; der Lader sitzt richtig an Kiste und Gurt. | 34 → 100 % |
+| Flammen Aschenwacht | kaum verändert, der alte Bogen war schon fast im Zielstil | gleich, vier Posen | ja | 100 → 100 % |
+
+- **Abzeichen:** keine Kreuze, Adler oder Totenköpfe. Auf den Brustplatten stehen die eigenen Fraktionszeichen (Ritterhelm bzw. Löwe). Der kniende Lader der Panzerbüchse trägt eine kleine Helmplakette (Schild mit Flügel?). Die würde ich beim Schnitt über `ABZEICHEN` übermalen.
+
+**Einschätzung:**
+- Der Weg „alter Bogen + Zielstil-Referenz“ **taugt bedingt**. Nano Banana hält die Anordnung, wenn der alte Bogen schon sauber getrennt ist. Den Stil ändert es aber nur vorsichtig, weil es sich stark an das erste Bild hält.
+- Sobald der Auftrag etwas umstellen soll (Schütze an die Waffe), entstehen Doppelungen oder Überdeckungen.
+- Rechne je Bogen mit **2–3 Versuchen** (0,25–0,40 $) und einer Sichtprüfung, bevor `figure_cut` ihn bekommt.
+
+**Plan für die übrigen Bögen** (Vorschlag, nichts davon gebaut):
+1. **Reihenfolge:**
+   - zuerst die Bögen, die am weitesten vom Zielstil weg sind: Waffentrupps (MG Aschenwacht, Panzerbüchse), Pioniere, Sanitäter, Melder, Mineure,
+   - dann Sonderinfanterie,
+   - zuletzt Fahrzeuge und Schreiter. Die sind teils schon im Zielstil, und „Pappschild“ ist dort eher eine Frage der Plastik.
+2. **Malweise je Bogen:**
+   - zuerst nur Stil (gleiche Posen, gleiche Anordnung, als erste Referenz der alte Bogen, Prompt kurz),
+   - Umstellungen (Waffe in die Hand) in einem **zweiten** Auftrag mit dem neuen Bogen als Vorlage und einer Skizze bzw. einem Beispiel der gewünschten Pose.
+   - Figuren dürfen sich nicht berühren: „wide gaps between figures“ in jeden Prompt.
+3. **Laufbilder:** je Fußtrupp gleich einen zweiten Bogen mit **2–4 Laufposen** im selben Auftragslauf (gleiche Referenzen), etwa 0,12 $ je Bogen.
+4. **Kosten grob:**
+   - etwa 30 Figurenbögen, je 2–3 Versuche plus ein Laufbogen: **etwa 12–15 $**,
+   - in Paketen zu 5–6 Bögen (je etwa 2–3 $), je Paket ein Bericht mit Übersicht,
+   - der Einbau (Schnitt, Plastik-Karten, Bilder im Spiel) erst nach Enricos Wahl.
+
+**Fragen an Enrico:**
+1. Soll der MG-Trupp Konkordat noch einmal mit „wide gaps“ und dem Schützen an den Griffen gemalt werden, bevor wir den Plan freigeben?
+2. Ist die Reihenfolge (Waffentrupps und Unterstützung zuerst, Fahrzeuge zuletzt) so richtig?
+
 ## 2026-11-28 – W2a Gelände-LoRA (Punkt 147): nur Probe, nichts eingebaut
 
 Gepusht:
