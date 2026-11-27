@@ -1,3 +1,30 @@
+## 2026-11-27 – Figurenbilder nachladen statt einbetten (deine Wahl nach U4 Teil 3)
+
+In AUFTRAG.md stand kein neuer Auftrag. Du hast im Chat „Figuren nachladen“ gewählt.
+
+Gepusht:
+- `e95eaa5`: Code und index.html
+- Nachtrag mit diesem Bericht und dem Hinweis in CLAUDE.md
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat.
+
+**Was sich ändert:**
+- **Neues Laden:** `src/figs.js` (17,7 MB) und `src/figsplastik.js` (5 MB) stecken nicht mehr in index.html. Das Spiel lädt sie beim Start nach, so wie seit dem 22.11. die Töne (`figurenNachladen` in ui.js).
+- **Größe:** **index.html ist 29 MB statt 50,2 MB.** Die GitHub-Warnung über 50 MB ist damit weg.
+- **Bis die Bilder da sind:** kurz die gezeichneten Figuren, wie bisher, wenn ein Bild fehlt. Danach leert das Spiel die Zwischenspeicher, damit Bilder und Bildwirkung richtig erscheinen. Der Geländeaufbau wartet auf die Plastik-Karten.
+- **Geprüft:** übers Netz (Vorschau-Server) und direkt von der Festplatte (`file://`). Beide Male kommen alle 360 Figurenbilder und 465 Plastik-Karten an.
+- **Kontrollbild:** `entwurf/probe/figuren_nachladen/oger_general.jpg`.
+- **Rückweg:** `EINBETTEN_FIGUREN=1 python tools/build.py`. CLAUDE.md ist ergänzt.
+
+**Für GitHub Pages:** Das Spiel braucht jetzt neben index.html auch `src/figs.js` und `src/figsplastik.js`, wie schon `src/sound.js`. Alle liegen in git, online läuft es also wie bisher.
+
+**Möglich als Nächstes:** `src/gelaende.js` (18,8 MB) könnte genauso nachgeladen werden. index.html würde dann etwa 10 MB groß.
+
+**Fragen an Enrico:** keine. Laut Plan ist der nächste Schritt U7 Moral. Davor kommt die Fable-Prüfung der Moral beim Berater.
+
 ## 2026-11-27 – U4 Teil 3 (Punkt 121): neue Bögen aus Punkt 90 im Spiel
 
 Gepusht:
