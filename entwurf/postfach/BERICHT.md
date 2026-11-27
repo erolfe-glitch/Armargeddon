@@ -1,3 +1,58 @@
+## 2026-11-27 – U4 Teil 3 (Punkt 121): neue Bögen aus Punkt 90 im Spiel
+
+Gepusht:
+- `da6e1cd`: Bögen geladen, geschnitten und eingebettet
+- `6a1c705`: Einbau ins Spiel
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“, keine Seitenfehler bei den Aufnahmen.
+- **sim:** kein Lauf, weil sich keine Regel geändert hat. Die Zahl der Modelle bleibt gleich: Waffentrupps 3 Mann, Führung 3, Scharfschütze 2.
+
+**Herunterladen und Sichern:**
+- Alle 9 Bögen sind geladen (nach deiner Erlaubnis im Chat, je 2752×1536 px, zusammen 48,5 MB).
+- **Ablage:**
+  - `konkordat_*` in `ui-quelle/figuren/konkordat/`
+  - `aschenwacht_*` in `ui-quelle/figuren/aschenwacht/`
+  - `beiwerk_versorgung.png` direkt in `ui-quelle/figuren/` (gehört keiner Fraktion)
+- **Sicherung:** robocopy nach OneDrive, Rückgabewert 1 (kopiert, kein Fehler). Die Bögen sind nicht in git, wie die übrigen Quellbögen.
+
+**Abzeichen:**
+- Zwei **Adler** übermalt (`ABZEICHEN`): vorn am Helm des Aschenwacht-Hauptmanns und an der Ärmelmanschette des Aschenwacht-Generals.
+- Die Orden des Generals sind runde Scheiben, keine Kreuze. Brustwappen und Fahnen zeigen den Ritterhelm bzw. den Löwen.
+
+**So erscheinen die neuen Trupps** (Tabelle `GRUPPE` in ui.js, jedes Teil hat einen festen Platz):
+- **Waffentrupps:**
+  - **MG** (Mahlwerk, Sensenwerk), nur aufgebaut: Waffe in der Feldmitte, der kniende Schütze an den Griffen, daneben der Lader mit Munitionskiste, hinten der Beobachter. Abgebaut bleibt das alte Marschbild.
+  - **Panzerbüchse:** Gewehr auf dem Zweibein, Schütze liegend dahinter.
+  - **Verluste:** Es fällt zuerst der Beobachter, dann der Lader, zuletzt der Schütze. Die Waffe fällt nie.
+  - **Mündung:** Das Mündungsfeuer sitzt an der Waffe (neu gemessen).
+  - Rückweg `window.WAFFENTRUPP_ALT`.
+- **Führung** (Hauptmann und General beider Seiten): drei Einzelfiguren, Offizier vorn, Fahnenträger hinten links, Melder rechts.
+  - Verluste: Melder, dann Fahnenträger, zuletzt der Offizier.
+  - Nur der Offizier nimmt die Befehlsposen aus den bisherigen Posenbögen ein (alter Look).
+  - Rückweg `window.FUEHRUNG_ALT`.
+- **Scharfschütze** (Konkordat): Schütze liegend vorn, Beobachter mit Fernrohr dahinter (die Figur unten rechts im Bogen). Der Beobachter fällt zuerst. Rückweg `window.SCHARF_TRUPP_ALT`.
+- **Beiwerk:** Munitionskarren beim Versorgungstrupp „Munition“, Werkzeugkiste bei „Werkstatt“, Feldtelefon mit Kabeltrommel beim Fernsprechtrupp.
+  - Es steht neben dem Trupp und fällt nicht.
+  - Beim Ziehen und im Graben wird es nicht gezeigt.
+  - Rückweg `window.BEIWERK_ALT`.
+
+**Bilder:**
+- nachher: `entwurf/probe/u4/teil3/nachher/<typ>_voll.jpg` und `<typ>_verluste.jpg` (Stärke 4 von 10), Übersicht `entwurf/probe/u4/teil3/nachher/uebersicht.jpg`
+- vorher: `entwurf/probe/u4/teil3/vorher/` (Übersicht dort)
+- Werkzeug `node tools/u4_gruppen.mjs`
+
+**Hinweise:**
+- **Versorgungs- und Fernsprechtrupp:** Die Männer stammen noch aus den alten Bögen und stehen dicht hintereinander. Beim Fernsprechtrupp verdecken sie das Feldtelefon teilweise. Neue Bögen für diese Trupps würden helfen.
+- **Pirschjäger (Aschenwacht):** In der Regel ist er ein Fachtrupp mit 4 Modellen, kein Schützen-Paar wie der Konkordat-Scharfschütze. Einen eigenen Trupp mit Beobachter braucht er deshalb nur, wenn du die Regel angleichen willst.
+- **Panzerbüchse:** Nur die Aschenwacht hat einen Trupp-Bogen. Hat das Konkordat eine Panzerbüchse, bleibt dort das alte Bild.
+
+**Noch offen:** Sanitäter mit Trage und Verwundetem (malt der Berater, Punkt 121.5).
+
+**Fragen an Enrico:** keine.
+
 ## 2026-11-27 – U4 Teil 2 (Punkt 120): Sicherung, gemischte Löwenoger, übrige Bögen
 
 Gepusht:
