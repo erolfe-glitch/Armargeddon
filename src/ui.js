@@ -535,7 +535,7 @@ const MUZ = { konkordat_ordensschreiter_posen_2: [0.62, 0.37], konkordat_ordenss
 // Mündung je Figurenbild eines Trupps (Posen): F47 Eiserne Hünen (schweres MG auf Hüfthöhe, nicht Brust), Löwenoger-Flinte
 const MUZ_FIG = { /* K12 (2026-11-22): Schuss-Posen gemessen (rechteste Laufspitze im oberen Bildteil, tools-Probe muz.py; Schildwall verdeckt, nicht gemessen) */ konkordat_soldat_2: [1, 0.164], aschenwacht_soldat_2: [1, 0.199], konkordat_soldat_3: [1, 0.183], aschenwacht_soldat_3: [1, 0.243], konkordat_pionier_posen2_1: [1, 0.147], aschenwacht_pionier_posen2_1: [1, 0.229], konkordat_pionier_posen2_2: [1, 0.172], aschenwacht_pionier_posen2_2: [1, 0.27], aschenwacht_gasschutz_posen_1: [1, 0.18], aschenwacht_gasschutz_posen_3: [1, 0.266], konkordat_kampfanzug_posen_3: [1, 0.243], aschenwacht_kampfanzug_posen_3: [1, 0.267], konkordat_scharfschuetze_posen_1: [1, 0.667], konkordat_scharfschuetze_posen_3: [0.996, 0.253], aschenwacht_pirschjaeger_posen_1: [1, 0.553], aschenwacht_pirschjaeger_posen_2: [1, 0.219], konkordat_flammen_posen_2: [1, 0.203] /* U4 Teil 2: neu */, aschenwacht_flammen_posen_2: [1, 0.413] /* U4 Teil 2: neu */, konkordat_hauptmann_posen_2: [1, 0.133], aschenwacht_hauptmann_posen_2: [0.997, 0.147],
   aschenwacht_eiserne_huenen_1: [0.99, 0.71], aschenwacht_eiserne_huenen_2: [0.99, 0.475],
-  aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237], konkordat_loewenoger_2: [0.93, 0.315] /* U4: neu3 */, aschenwacht_banner_posen3_1: [0.997, 0.366] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
+  aschenwacht_eiserne_huenen_posen_1: [0.998, 0.698], aschenwacht_eiserne_huenen_posen_3: [0.935, 0.80], konkordat_loewenoger_posen_3: [0.92, 0.237], konkordat_loewenoger_2: [0.93, 0.315] /* U4: neu3 */, konkordat_mg_trupp_1: [1, 0.107], aschenwacht_mg_trupp_1: [1, 0.185], aschenwacht_panzerbuechse_trupp_1: [1, 0.6], konkordat_scharfschuetze_trupp_1: [1, 0.69] /* U4 Teil 3 */, aschenwacht_banner_posen3_1: [0.997, 0.366] };   // Runde 2 (2026-11-21): Hüftfeuer, kniend, Schrot angelegt   // Stufe 3: Rohr im Löwenmaul; vordere Doppelkanone an der Faust
 const MUZ2 = { konkordat_turmschreiter_posen_1: [0.49, 0.71], konkordat_kreuzschreiter_posen2_2: [0.64, 0.1], aschenwacht_eisenknecht_posen_2: [0.984, 0.526], konkordat_kreuzschreiter_neu: [0.02, 0.835], aschenwacht_panzer: [0.695, 0.10] };   // F59 (2026-11-20): Bord-MG = mittlere Bordschützen-Luke des Sturmpanzers   // Zweitwaffe: Unterarm-Kanone am linken Arm des Kreuzschreiters (fxSeite)
 function drawUnit(u, d) {
   d.muz = null; d.fbx = [];   // Mündung (falls gemessen) und Kästen der gezeichneten Figuren, relativ zur Einheit
@@ -1582,6 +1582,7 @@ function massSlots(n, reiter) {   // zwei lockere Reihen, Füße im eigenen Feld
 function massNF(u, nf) {
   if (/ballon/.test(nf.key)) return nf;   // Fesselballon: Winde und Ballon bleiben wie sie sind
   const o = Object.assign({}, nf), T = TYPES[u.type], gross = nf.kette || nf.gross || /schreiter|eisenknecht/.test(nf.key);
+  if (nf.gruppe) { o.sc = nf.sc * MASS.fig; o.massF = MASS.fig; return o; }   // U4 Teil 3: feste Gruppe behält Plätze und Zahl
   if (nf.deep) { o.tiefSc = o.massF = gross ? MASS.fz : MASS.fig; return o; }   // MG, Geschütze, Gespanne ×0,65; Fahrzeuge/Schreiter ×0,85
   o.sc = nf.sc * MASS.fig; o.massF = MASS.fig;
   const Z = massZahl();
@@ -1605,6 +1606,9 @@ function newFigs(u, d) { const nf = newFigs0(u, d); return nf && massAn() ? mass
 function newFigs0(u, d) {
   const m = FIGMAP[u.type]; if (!m || (fac(u.side) === 'F' && !TYPES[u.type].held)) return null;   // Blaue Legion: noch keine neuen Bögen (K10: Helden nehmen ihren eigenen Bogen)
   const pre = u.side === 'A' ? 'konkordat_' : 'aschenwacht_';
+  const gr = GRUPPE[u.type]; if (gr && !window[gr.alt] && !(gr.nur === 'setup' && !(d.vs && d.vs.setup))) {   // U4 Teil 3: Trupp aus Teilen (fehlt ein Bild: wie bisher)
+    const keys = (gr.bilder || gr.slots.map((_, i) => i + 1)).map(i => pre + gr.bogen + '_' + i), ims = window.FIGS && keys.every(k => window.FIGS[k]) ? keys.map(figImg) : null;
+    if (ims && ims.every(Boolean)) return { key: keys[0], links: false, ims, trupp: true, max: ims.length, sc: gr.sc || 1, slots: gr.slots, gruppe: gr }; }
   let sheet = m[0]; if (sheet === 'mg' && !(d.vs && d.vs.setup)) sheet = 'mg_marsch';
   if (sheet === 'geschuetz' && ((d.vs && d.vs.limbered) || d.moving) && window.FIGS && window.FIGS[pre + 'geschuetz_marsch']) sheet = 'geschuetz_marsch';   // aufgeprotzt oder beim Ziehen: Pferdegespann
   let keys = m[1] ? ((m[3] && m[3].ruhe) || [1, 2, 3, 4]).map(i => pre + sheet + '_' + i).filter(k => window.FIGS && window.FIGS[k]) : [pre + sheet];   // Trupp-Bögen mit 3 oder 4 Posen
@@ -1657,6 +1661,17 @@ function drawBallon(g, s, u, x, top, w, h, flip, filt) {
 // Eingraben mit Schaufel im Takt auf und ab, Granatwurf Ausholen → Loslassen (Granate fliegt aus der Hand), Getroffen taumelt kurz.
 // Danach immer zurück in die Ruhepose. Jede Figur eines Trupps leicht versetzt (POSE_VERSATZ), damit niemand im Gleichschritt geht.
 // Bilder: Grundbogen <fraktion>_soldat_1–4 und Zusatzbogen <fraktion>_soldat_posen_1–4 (tools/figure_cut.py, POSEN_MASS).
+// U4 Teil 3 (Punkt 121, 2026-11-27): Trupps aus getrennt gemalten Teilen – je Platz ein festes Bild (bilder = Nummern im Bogen), feste Plätze (Feldradien, Blick nach rechts),
+// geraet = Teile, die nie fallen (Waffe), fall = Reihenfolge der Verluste, offizier = Figur mit Posen (Befehl, großer Befehl), nur 'setup' = nur aufgebaut (MG). Rückwege je Eintrag (alt).
+const GRUPPE = {
+  mahlwerk: { bogen: 'mg_trupp', alt: 'WAFFENTRUPP_ALT', nur: 'setup', slots: [[0.16, 0.08], [-0.04, 0.02], [0.36, -0.24], [-0.4, -0.3]], geraet: [0], fall: [3, 2, 1] },
+  sense: { bogen: 'mg_trupp', alt: 'WAFFENTRUPP_ALT', nur: 'setup', slots: [[0.14, 0.08], [-0.06, 0.02], [0.38, -0.24], [-0.4, -0.3]], geraet: [0], fall: [3, 2, 1] },
+  buechse: { bogen: 'panzerbuechse_trupp', alt: 'WAFFENTRUPP_ALT', slots: [[0.22, 0.06], [-0.24, 0.1], [0.4, -0.3], [-0.42, -0.32]], geraet: [0], fall: [3, 2, 1] },
+  hauptA: { bogen: 'hauptmann_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] }, hauptD: { bogen: 'hauptmann_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] },
+  generalA: { bogen: 'general_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] }, generalD: { bogen: 'general_gruppe', alt: 'FUEHRUNG_ALT', slots: [[0.02, 0.2], [-0.4, -0.2], [0.42, -0.12]], offizier: 0, fall: [2, 1, 0] },
+  scharf: { bogen: 'scharfschuetze_trupp', alt: 'SCHARF_TRUPP_ALT', bilder: [1, 2], slots: [[-0.12, 0.18], [0.08, -0.26]], fall: [1, 0], muz: 0 } };   /* Beobachter: Bild 2 unten rechts im Bogen, Bild 3 doppelt */
+// Beiwerk (Punkt 90/121): Gerät neben dem Trupp, fällt nicht, steht nur, solange der Trupp nicht zieht; Rückweg window.BEIWERK_ALT
+const BEIWERK = { munition: ['beiwerk_versorgung_1', [0.42, -0.3]], werkstatt: ['beiwerk_versorgung_2', [0.42, -0.3]], fernsprech: ['beiwerk_versorgung_3', [0.44, -0.3]] };
 const POSE_TYPEN = new Set(['kreuz', 'knecht', 'saeger', 'klaue', 'orden', /* Stufe-3-Schreiter (2026-11-22) */ 'kohorte', 'grenadier', 'oger', 'huenen', 'raeumer', 'sturm', 'pionier', 'pionierD', 'reiter', 'lanzeD', 'eingreif', 'gasschutz', 'banner', 'generalA', 'generalD', 'buechse', 'faust', 'kuerass',   /* Posenbögen Runde 2 (2026-11-21), Helden */
   'feldscher', 'heiler', 'flammen', 'brand', 'stahl', 'panzerk', 'werkstatt', 'munition', 'schildwall', 'schwer', 'scharf', 'pirsch', 'fernsprech', 'signal', 'mineur', 'hauptA', 'hauptD']);   // Posenbögen 2026-11-20   // 2026-11-20: Sturmtrupps und Pioniere (Posenbögen)
 const POSE_BILD = { bereit: 'soldat_1', anlegen: 'soldat_2', knien: 'soldat_3', kolben: 'soldat_4', graben: 'soldat_posen_1', ausholen: 'soldat_posen_2', loslassen: 'soldat_posen_3', getroffen: 'soldat_posen_4' };
@@ -1795,6 +1810,12 @@ function klonVar(u, d, i, pa) {
 // Ohne Blut verblasst sie gleich nach dem Fallen. Steigt die Stärke wieder (Versorgen), steht eine Gefallene wieder auf (ohne Bild).
 // Fahrzeuge, Schreiter und Einzelmodelle fallen nicht (U8/Wrack). Rückweg window.FALLEN_ALT. Test: __dbg.leichen.
 const LEICHEN = [], LEICHE_RUNDEN = 3, LEICHE_MAX = 220, FALL_MS = 460;
+function stehendeGruppe(u, d, gr) {   // U4 Teil 3: feste Reihenfolge der Verluste (Beobachter, Lader, Schütze …), Gerät fällt nie
+  const weg = d.weg || (d.weg = new Set()), mann = gr.fall.length, nM = Math.max(1, Math.min(mann, Math.ceil(d.str / (10 / mann) - 0.001))), soll = new Set(gr.fall.slice(0, mann - nM));
+  const erst = !d._wegDa; d._wegDa = true; for (const i of [...weg]) if (!soll.has(i)) weg.delete(i);
+  for (const i of soll) if (!weg.has(i)) { weg.add(i); if (!erst) figurSpritzer(u, d, i); if (!erst && window.GEFALLEN_AN) leicheNeu(u, d, i, false); }
+  return gr.slots.map((_, i) => i).filter(i => !weg.has(i));
+}
 function stehende(u, d, max, n) {
   const weg = d.weg || (d.weg = new Set());
   while (weg.size > max - n) { const a = [...weg]; weg.delete(a[Math.floor(Math.random() * a.length)]); }   // Stärke gestiegen: eine steht wieder
@@ -1822,7 +1843,7 @@ function leicheNeu(u, d, i, alle) {
 }
 function alleFallen(u, d) {   // aufgerieben: die letzten stehenden Figuren fallen alle
   if (!window.GEFALLEN_AN || window.FALLEN_ALT || !d || !d.figIm || TYPES[u.type].cls === 'walker' || TYPES[u.type].cls === 'art') return false;
-  let n = 0; for (let i = 0; i < d.figIm.length; i++) if (d.figIm[i] && !(d.weg && d.weg.has(i))) { leicheNeu(u, d, i, true); n++; }
+  let n = 0; for (let i = 0; i < d.figIm.length; i++) if (d.figIm[i] && !d.figIm[i].geraet && !(d.weg && d.weg.has(i))) { leicheNeu(u, d, i, true); n++; }
   return n > 0;
 }
 function leicheAlpha(c, t) {
@@ -1853,19 +1874,20 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   const pl0 = gbPlatz(u, d), reiter = TYPES[u.type] && TYPES[u.type].cls === 'cav' && !window.REITER_GRABEN_ALT, pl = reiter && pl0 && pl0.pts ? null : pl0, [pcx, pcy] = pl ? center(u.c, u.r) : [0, 0];   // Punkt 108: Reiter nie auf die Grabenplätze (standen am Grabenrand ein Feld zu hoch), Rückweg REITER_GRABEN_ALT   // Gelände-Bausteine: Graben (Linie, abgesenkt), Ruine (gestaucht)
   if (nf.trupp) {
     const n = Math.max(1, Math.min(nf.max, Math.ceil(d.str / (10 / nf.max) - 0.001)));
-    const fest = !window.FALLEN_ALT, nP = fest ? nf.max : n, idx = fest ? stehende(u, d, nf.max, n) : [...Array(n).keys()];   // U5b: jede Figur behält ihren Platz, gefallene fehlen (Rückweg FALLEN_ALT)
+    const gr = nf.gruppe, fest = !window.FALLEN_ALT || gr, nP = fest ? nf.max : n, idx = gr ? stehendeGruppe(u, d, gr) : fest ? stehende(u, d, nf.max, n) : [...Array(n).keys()];   // U5b: jede Figur behält ihren Platz, gefallene fehlen (Rückweg FALLEN_ALT)
     if (fest) d.figIm = d.figIm || [];
     for (const i of idx) {
-      const imI = nf.ims[(u.id * 3 + i) % nf.ims.length], pa = posenAn(u) ? poseFigur(u, d, i, imI) : null, im = pa ? pa.im : imI;   /* R4: Ruhe ohne bereit = eigene Figur des Grundbogens */   // Posenwechsel (Stufe 1)
-      const kv = klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
+      const imI = gr ? nf.ims[i] : nf.ims[(u.id * 3 + i) % nf.ims.length], pa0 = gr ? (i === gr.offizier && d.pose && posenAn(u) ? poseFigur(u, d, i, imI) : null) : posenAn(u) ? poseFigur(u, d, i, imI) : null, pa = gr && pa0 && pa0.ruhe ? null : pa0, im = pa ? pa.im : imI;   // U4 Teil 3: in der Gruppe posiert nur der Offizier   /* R4: Ruhe ohne bereit = eigene Figur des Grundbogens */   // Posenwechsel (Stufe 1)
+      const kv = gr ? KLON_NULL : klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
       if (pl && pl.pts) { const q = pl.reihe ? pl.pts[Math.min(pl.pts.length - 1, Math.floor((i + 0.5) * pl.pts.length / nP))] : nP > 4 ? grabenPunkt(pl.pts, i, nP, s) : pl.pts[[1, 2, 0, 3][i] ?? i];   // U2: zehn Grabenplätze (bei weniger Figuren gleichmäßig verteilt); U1-Fassung als Rückweg
         const lieg = pl.reihe && !window.LIEGEND_ALT && TYPES[u.type].fig === 'sniper', mx = lieg ? pl.pts.reduce((a, t) => a + t[0], 0) / pl.pts.length : q[0];   // G7h-2: liegende Scharfschützen (lange Gewehre) auf die Grabenmitte statt in zwei Reihen; Rückweg LIEGEND_ALT
         list.push({ im, pa, kv, ox: (mx - pcx) / s, oy: (q[1] - pcy) / s, abs: true, i }); continue; }
-      const slot = nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, kv, ox: slot[0] + kv.jx, oy: slot[1] * (pl && pl.sy || 1) + kv.jy, i });
+      const slot = gr ? nf.slots[i] : nf.slots ? nf.slots[(i + u.id) % nf.slots.length] : FIG_SLOTS4[(i + u.id) % 4]; list.push({ im, pa, kv, ox: slot[0] + kv.jx, oy: slot[1] * (pl && pl.sy || 1) + kv.jy, i, geraet: !!(gr && gr.geraet && gr.geraet.includes(i)) });
     }
   } else if (pl && pl.pts && pl.reihe && !nf.vehicle && !window.G7H_ALT) { let q = pl.pts[0]; for (const t of pl.pts) if (Math.hypot(t[0] - pcx, t[1] - pcy - s * 0.15) < Math.hypot(q[0] - pcx, q[1] - pcy - s * 0.15)) q = t; list.push({ im: nf.ims[0], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s }); }   // G7h (87.4): Einzelmodell (Geschütz) im Graben auf die Sohle, nicht halb auf der Lippe
   else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s * (nf.massF || 1) * (GRABEN_TIEFE[u.type] || 1) : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 * (nf.massF || 1) : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
+  { const bw = !window.BEIWERK_ALT && BEIWERK[u.type], bim = bw && !d.moving && figImg(bw[0]); if (bim && nf.trupp && !(pl && pl.pts)) list.push({ im: bim, ox: bw[1][0], oy: bw[1][1], geraet: true }); }   // U4 Teil 3: Beiwerk neben dem Trupp, nicht im Graben
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
@@ -1948,7 +1970,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
         g.translate(fx, fy + h * 0.012 + sink); if (flipF !== !!(pa && pa.spiegel)) g.scale(-1, 1); if (prot2) g.rotate(pa && pa.spiegel ? -prot2 : prot2); g.drawImage(imF, -w * 0.5, -h, w, h);   // Sohlen minimal in den Boden: kein Spalt
       }
       g.restore(); };
-    if (d.figIm && f.i != null) d.figIm[f.i] = { im: f.im, wx: fx, wy: y + f.oy * s, w, h, flip: flipF, abs: !!f.abs, cut: f.abs && pl ? pl.cut : null };   // U5b: letzte Lage je Figur (für die Gefallenen)
+    if (d.figIm && f.i != null) d.figIm[f.i] = { im: f.im, wx: fx, wy: y + f.oy * s, w, h, flip: flipF, abs: !!f.abs, cut: f.abs && pl ? pl.cut : null, geraet: !!f.geraet };
+    if (nf.gruppe && (f.geraet || nf.gruppe.muz === f.i)) { const mz = MUZ_FIG[f.im && f.im._key]; if (mz) { const x0 = fx - w / 2 - d.x; d.muz = [flipF ? x0 + w * (1 - mz[0]) : x0 + w * mz[0], fy - h - d.y + sink + h * mz[1], flipF]; } }   // U4 Teil 3: Mündung an der Waffe der Gruppe   // U5b: letzte Lage je Figur (für die Gefallenen)
     if (d.fbx) d.fbx.push([fx - w / 2 - d.x, fy - h - d.y + sink, w, h, flip, MUZ_FIG[f.im && f.im._key] || MUZ[f.im && f.im._key] || null]);   // M3 (2026-11-22): Helden/Generäle (Einzelmodelle über diesen Weg) lesen auch MUZ   // 6.: Mündung aus dem Bild (MUZ_FIG)
     if (!(pa && pa.spiegel)) d.bildLinks = !!flip;   // F83: gezeigte Blickrichtung (Test; Getroffen-Spiegelung zählt nicht)
     if (FIGQ && f.abs) { const tf = g.getTransform(), al = g.globalAlpha, fl = filt; FIGQ.push({ y: y + f.oy * s, f: () => zeichne(tf, al, fl) }); }   // Graben: später nach Tiefe
