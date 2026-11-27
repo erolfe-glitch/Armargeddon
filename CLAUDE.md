@@ -19,6 +19,10 @@ Rundenbasiertes Hexfeld-Strategiespiel im Browser im Stil des Grabenkriegs, in e
 - **Sicherung außerhalb von git (seit 2026-11-20):** `sound-quelle\` und `ui-quelle\konzept\sammlung\` sind nicht in git (.gitignore). Nach jeder Änderung daran per robocopy nach `C:\Users\erolf\OneDrive\Armargeddon-Sicherung\` sichern – nur kopieren, nie löschen (kein `/MIR`, kein `/PURGE`):
   `robocopy C:\Projekte\Armargeddon\sound-quelle C:\Users\erolf\OneDrive\Armargeddon-Sicherung\sound-quelle /E /R:1 /W:1 /NP`
   `robocopy C:\Projekte\Armargeddon\ui-quelle\konzept\sammlung C:\Users\erolf\OneDrive\Armargeddon-Sicherung\ui-quelle\konzept\sammlung /E /R:1 /W:1 /NP`
+  Seit 2026-11-27 (Punkt 120) auch die Quellbögen (Figuren samt 38 Bögen außerhalb von git, Gelände `neu_draht`/`neu_hecke`/`neu_poi`, Effekte `neu/` u. a.), nach jeder Änderung daran:
+  `robocopy C:\Projekte\Armargeddon\ui-quelle\figuren C:\Users\erolf\OneDrive\Armargeddon-Sicherung\ui-quelle\figuren /E /R:1 /W:1 /NP`
+  `robocopy C:\Projekte\Armargeddon\ui-quelle\gelaende C:\Users\erolf\OneDrive\Armargeddon-Sicherung\ui-quelle\gelaende /E /R:1 /W:1 /NP`
+  `robocopy C:\Projekte\Armargeddon\ui-quelle\effekte C:\Users\erolf\OneDrive\Armargeddon-Sicherung\ui-quelle\effekte /E /R:1 /W:1 /NP`
   Robocopy-Rückgabewerte 0–7 sind Erfolg, ab 8 Fehler.
 
 ## Designvorgaben (Wünsche des Nutzers)
