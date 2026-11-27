@@ -1,3 +1,32 @@
+## 2026-11-27 – UI1 Rest (Punkt 146): obere Leiste, Standard-Klick – UI1 fertig
+
+Gepusht:
+- `5b48bd8`: Leiste, Klick und Bilder
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“. Im Browser habe ich nachgeprüft, dass `klick` jetzt den neuen Klang zieht (sechs von sechs Mal) und alle acht Knöpfe der Leiste ein `aria-label` haben.
+- **Video:** `entwurf/probe/video/UI1_leiste.mp4` (Sankt Ruß, 25,3 s, mit Ton).
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+
+**1. Obere Leiste** (Entwurf A):
+- 56 statt 74 px hoch, Holz mit Tintenschicht und Tintenkante unten statt des Messingrahmens.
+- Links „Runde n“ als Text in IM Fell, das Seitenwappen und der Wind.
+- In der Mitte die Balken und Siegpunkte in Barlow Condensed.
+- Rechts die Knöpfe als kleine Eisenplatten (40 px) mit Tooltip und `aria-label`. Der Schriftzug „Armargeddon“ ist ausgeblendet.
+- **Wie bisher:** Wappen je Seite an den Balken nur ab 1800 px, darunter ohne. Bei keiner Breite läuft etwas über den Rand.
+- **Bilder** vorher (oben) und nachher (unten): `entwurf/probe/ui1/leiste_1280.jpg`, `leiste_1920.jpg`, `leiste_2560.jpg`.
+
+**2. Klickgeräusch:**
+- „Eisenschalter“ (`klick_neu_1`) ist jetzt Standard für alle Knopfklicks (Nächste Einheit, Fertig, Aufstellen, Klick auf fertige Einheiten).
+- Eingebaut ist er als Umleitung des Platzes `klick`. Wählst du im Ton-Pult in der Zeile „Klick“ etwas anderes, gilt deine Wahl. Der alte Klang bleibt in der Auswahl.
+- Rückweg `window.KLICK_ALT`.
+
+**UI1 ist damit fertig.** Wie besprochen kommt jetzt kein weiterer `pa`, sondern dein Spieltest mit allem Neuen (U7 und UI1).
+
+**Fragen an Enrico:** keine.
+
 ## 2026-11-27 – UI1 Teil 2 C (Punkt 145), Zwischenstand: nur die obere Leiste fehlt
 
 Gepusht:

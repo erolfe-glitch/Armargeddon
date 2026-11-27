@@ -1252,6 +1252,28 @@ body.ui1 .u1d-eig img { width: 24px; height: 24px; object-fit: contain; }
 body.ui1 #detail p, body.ui1 #detail .rolle, body.ui1 #detail .det-med { font: 500 16px/1.38 var(--s-body); }
 body.ui1 .u1d-kn { margin-top: 6px; padding: 3px 10px; border: 2px solid rgba(18,13,11,.6); background: transparent; color: inherit; font: 600 16px var(--s-body); cursor: pointer; }
 body.ui1 #detail .chronik { display: none; } body.ui1 #detail .chronik.offen { display: block; }
+/* UI1 (Punkt 146): obere Leiste schlanker wie Entwurf A – Holz mit Tintenschicht, 56 px; Runde links, Siegpunkte mittig, Knöpfe rechts. Wappen je Seite bleiben (unter 1800 px ohne Wappen an den Balken, wie bisher) */
+body.ui1 .tbar { height: 56px; gap: 14px; background: var(--tx-ink45), var(--up-txHolz) 0 0 repeat; border-bottom: 3px solid var(--s-ink); box-shadow: 0 3px 0 rgba(18,13,11,.5); }
+body.ui1 .tbar::before { content: none; }
+body.ui1 .tb-brand { display: none; }
+body.ui1 .tb-plate:not(.tb-pts) { height: 38px; padding: 0 6px; border: 0; border-image: none; background: none; filter: none; }
+body.ui1 #topbar .tb-turn { font: 400 24px var(--s-head) !important; text-transform: none; letter-spacing: .02em; padding-left: 0; }
+body.ui1 .tb-side { padding: 0 4px; }
+body.ui1 .tb-medal { --m: 48px; }
+body.ui1 .tb-side .tb-medal { margin: calc(var(--m) * -0.2) 0; }
+body.ui1 .tb-wind .k { font: 600 15px var(--s-body); }
+body.ui1 .tb-wind i { width: 28px; height: 28px; }
+body.ui1 .tb-meter .tube { height: 30px; }
+body.ui1 .tb-meter .val { font: 700 19px var(--s-body); }
+body.ui1 .tb-pts { height: 44px; font-size: 26px; }
+body.ui1 .tb-pts b, body.ui1 .tb-pts { font-family: var(--s-body); font-weight: 700; }
+body.ui1 .tb-pts small { font: 600 16px var(--s-body); }
+body.ui1 .tb-obj { width: 26px; height: 26px; font-size: 14px; }
+body.ui1 .tb-btn { width: 40px; height: 40px; background: linear-gradient(rgba(18,13,11,.4), rgba(18,13,11,.4)), var(--up-txEisen) 0 0 / 120px repeat; border: 2px solid var(--s-ink); filter: none; box-sizing: border-box; }
+body.ui1 .tb-btn::before { content: none; }
+body.ui1 .tb-btn svg { width: 22px; height: 22px; }
+body.ui1 .tb-tools { gap: 5px; }
+body.ui1 .tbar [data-tip]::after { font: 600 15px/1.3 var(--s-body); }
 </style>
 </head>
 <body>
@@ -9299,7 +9321,7 @@ function musikWecken() { tonWecken(); for (const t of musikSp) if (!t.aus && t.a
 // F30 (2026-11-20): Waffenton fest je Seite und Einheitentyp – einmal gewählt, dann immer derselbe (Salven variieren nur Tonhöhe/Lautstärke)
 const WAFFE_FEST = {}, WAFFE_TOK = {}; function waffeFest(pool, u) { const k = pool + '|' + u.side + '|' + u.type; if (!(k in WAFFE_FEST)) WAFFE_FEST[k] = sndPick(pool, u.side) || pool; return WAFFE_FEST[k]; }   // fester Ton je Seite und Einheitentyp (F30)
 function waffenTon(pool, u) { if (!u) return pool; const tok = 'waffe|' + pool + '|' + u.id; WAFFE_TOK[tok] = { pool, u }; return tok; }   // Marke statt Schlüssel: playSound löst sie auf – erst die Pult-Wahl der Einheit für diesen Platz, sonst der feste Ton (Ton-Pult 3)
-const SND_VAR = { aufgerieben: [], /* ohne Ton, bis im Ton-Pult einer gewählt ist */ pferd_angriff: ['stahlreiter_wiehern1'], /* R4: eigener Spiel-Platz */ marsch_schritte: ['schritte'], sperr_boom: ['boom'], sperr_boomH: ['boomH'], aufprall_rollen: ['neu3_fzaufprall'], aufprall_rammen: ['neu3_fzaufprall'], aufprall_bohr: ['neu3_fzaufprall'], erobert_konkordat: ['erobert'], erobert_aschenwacht: ['erobert'], ev_punkte: [], ev_anfuehrer_faellt: [], ev_sammeln: [], ev_entsetzen: [], ev_furcht: [], ev_feuerbereit: [], ev_wieder_flott: [], ev_brennt: [], ev_wind: [],   /* SP-3 (84.3): Ereignisse ohne Ton – stumm, bis im Ton-Pult einer gewählt ist */ orden_fleisch: ['saege_fleisch'], orden_metall: ['held_kschwert_metall'],   /* eigene Tonplätze fürs Ton-Pult (Enrico 21:00), klingen wie bisher */ feldkanone_zug: ['wagenknarren'], stollen_boom: ['boom2'], stollen_knall: ['grenade2'], stollen_blast: ['blast'], /* Feldkanone ziehen (Enrico 2026-11-22 18:45): Standard Wagenknarren (Tiefpass 1,2 kHz); im Pult auch gespann, gallop */ cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'],
+const SND_VAR = { ...(window.KLICK_ALT ? {} : { klick: ['klick_neu_1'] }), /* UI1 (Punkt 146): Standard-Knopfklang „Eisenschalter“ klick_neu_1; Pult-Wahl für klick hat Vorrang; Rückweg window.KLICK_ALT */ aufgerieben: [], /* ohne Ton, bis im Ton-Pult einer gewählt ist */ pferd_angriff: ['stahlreiter_wiehern1'], /* R4: eigener Spiel-Platz */ marsch_schritte: ['schritte'], sperr_boom: ['boom'], sperr_boomH: ['boomH'], aufprall_rollen: ['neu3_fzaufprall'], aufprall_rammen: ['neu3_fzaufprall'], aufprall_bohr: ['neu3_fzaufprall'], erobert_konkordat: ['erobert'], erobert_aschenwacht: ['erobert'], ev_punkte: [], ev_anfuehrer_faellt: [], ev_sammeln: [], ev_entsetzen: [], ev_furcht: [], ev_feuerbereit: [], ev_wieder_flott: [], ev_brennt: [], ev_wind: [],   /* SP-3 (84.3): Ereignisse ohne Ton – stumm, bis im Ton-Pult einer gewählt ist */ orden_fleisch: ['saege_fleisch'], orden_metall: ['held_kschwert_metall'],   /* eigene Tonplätze fürs Ton-Pult (Enrico 21:00), klingen wie bisher */ feldkanone_zug: ['wagenknarren'], stollen_boom: ['boom2'], stollen_knall: ['grenade2'], stollen_blast: ['blast'], /* Feldkanone ziehen (Enrico 2026-11-22 18:45): Standard Wagenknarren (Tiefpass 1,2 kHz); im Pult auch gespann, gallop */ cry: ['cry', 'scream'], grenade: ['grenade2'], axe: ['axe', 'slash'], punch: ['punch1', 'punch2', 'punch3', 'swords'], artD: ['cannonH', 'cannon'],
   boom: ['boomH_1'] };   // Tonprobe 2026-11-18: Granateinschlag = boomH_1 (alter boom und grenade entfernt)
 // Stimmen gegenüber Fahrzeugen (Tonprobe 2026-11-18): Stimm-Plätze lauter (STIMM_VOL ≈ +3 dB); solange jemand spricht, werden laufende Fahrzeugtöne
 // (DUCK_PL, Motor beim Anklicken) auf DUCK_F abgesenkt und danach wieder angehoben.
@@ -10970,6 +10992,7 @@ function knopfGruppen(btns) {
 let kartLang = false; try { kartLang = localStorage.getItem('arm.kartelang') === '1'; } catch (e) {}
 function neuBedienfeld(on) {
   if (neuBedienfeld.an === on) return; neuBedienfeld.an = on;
+  document.querySelectorAll('.tbar button[data-tip]').forEach(b => { if (!b.getAttribute('aria-label')) b.setAttribute('aria-label', b.dataset.tip.split(':')[0]); });   // UI1 (Punkt 146): Knöpfe der oberen Leiste mit aria-label
   document.body.classList.toggle('neu', on); document.body.classList.toggle('ui1', on && !window.UI1_ALT); document.body.classList.toggle('ui1alt', !!window.UI1_ALT);   // UI1 (Punkt 141)
   const shop = $('btnShop'), st = $('hudStates'), hint = $('hudHint');
   let kk = $('neuKK'); if (!kk) { kk = document.createElement('div'); kk.id = 'neuKK'; }   // Zeile unter der Moral: Zustände links, Info und ausführlich rechts

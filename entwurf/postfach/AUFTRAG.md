@@ -101,7 +101,7 @@
 - ✓ **Paket U7c (Punkt 142)** erledigt (Bericht 27.11. 22:10). Damit ist **U7 komplett**.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
 - **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
-- **Paket UI1 Oberfläche (Punkte 128/141/144/145)** – Teil 1 ✓ (`7a6bae5`), Teil 2 A+B ✓ (`fb7e941`). **Teil 2 C = nächster `pa`** (helle Symbole, „Zwei Schläge“ neu, Nachschub-Karten, Info-Fenster, obere Leiste, Klicktöne). Opus Mittel.
+- **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** – Teil 1 ✓, Teil 2 A+B ✓, Teil C ✓ bis auf die obere Leiste (`f9e754b`, `8c20d5d`, `dabe30a`). **Rest = nächster `pa`:** obere Leiste + Klick „Eisenschalter“ als Standard. Opus Mittel. **Danach Spieltest durch Enrico.**
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe.
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -215,6 +215,12 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-27 23:35): Antwort zu UI1 Teil C – nächster `pa` = obere Leiste, dann Spieltest <<<
+✓ **146. Nächster `pa` = Rest von UI1. Einstellung: Opus, Mittel.**
+1. **Obere Leiste** schlanker wie in Entwurf A (Punkt 141 Teil 2, Nr. 3): Runde links, Siegpunkte mittig, Knöpfe rechts mit `aria-label` und Tooltip. Die Regeln aus `STYLE.md` gelten weiter: bei keiner Breite ab 1280 px über den Rand, Wappen je Seite, unter 1800 px ohne Wappen neben den Balken. Vorher/nachher bei 1280, 1920 und 2560.
+2. **Klickgeräusch:** Der neue Klang **„Eisenschalter“** (`klick_neu_…`, der passende der vier) wird Standard für alle Knopfklicks statt des alten `klick`. Im Ton-Pult bleibt er wählbar (TONWAHL bzw. Vorgabe wie bei `VORGABE` in `tonwahl_bau.mjs`), der alte `klick` bleibt in der Auswahl.
+3. Partietest, Video, Bericht. **Danach kein weiterer `pa`:** Enrico macht einen Spieltest mit allem Neuen (U7 + UI1) und meldet Funde.
 
 # >>> JETZT (Enrico 2026-11-27 23:15): Antwort zu UI1 Teil 2 A+B – nächster `pa` = Teil C <<<
 ✓ **145. Nächster `pa` = UI1 Teil 2 C (Punkt 144 C). Einstellung: Opus, Mittel.** Vorher zwei kleine Punkte:
