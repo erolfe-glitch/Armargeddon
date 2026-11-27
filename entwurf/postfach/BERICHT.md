@@ -1,3 +1,46 @@
+## 2026-11-27 – Paket ST1 Spieltest-Funde (Punkt 115) (`7a5e728`, `271cf47` mit index.html)
+
+Gepusht.
+- **Hänger:** keine. Partietest ohne Fehler, Regeltest ok.
+- **sim:** 8 Läufe nacheinander, kein Absturz.
+- Der Vorschau-Server war nach dem Herunterfahren aus; er ist neu gestartet.
+
+**9. Neuer Panzer = Sturmpanzer:**
+- Neu geschnitten (Turmschütze im neuen Look), als Bild des Sturmpanzers (`aschenwacht_panzer`).
+- Mündungen neu gemessen: Bugkanone (0,94 | 0,41), Turm-MG als Zweitwaffe (0,70 | 0,10).
+- Der rot-weiße Streifen bleibt (die alte feste Umfärbe-Fläche ist dafür entfernt). `aschenwacht_koloss` ist wieder raus.
+- Bild im Spiel: `entwurf/probe/st1/sturmpz_nachher.jpg` (vorher: `sturmpz_vorher.jpg`).
+
+**3. Seltenheits-Aufschlag statt Sperre:**
+- Keine Obergrenze mehr für Elite und Gerät. Jede weitere Einheit derselben Kategorie, die gleichzeitig auf dem Feld steht, kostet +25 % (`P.KAT_AUFSCHLAG`). Gefallene zählen nicht.
+- Gilt in Nachschub und Armee-Auswahl. Die Karte zeigt den Preis mit „+25 %“ bzw. „+50 %“, mit Erklärung beim Darüberfahren.
+- Die Rückgrat-Regel (Unterstützung) bleibt.
+- **Budget:** Kartenarmee mit Aufschlag plus Elite-Abschlag, damit die Standardarmee wie bisher passt (Grauwall jetzt 1005/940).
+- Rückweg `KAT_SPERRE_ALT`. Die KI kauft nach Preis.
+- **Messung** (`MISCHEN=1`, je 100 Schlachten), Konkordat Sperre → Aufschlag: Grauwall 49 → 50 %, Sankt Ruß 39 → 40 %, Krähenfurt 49 → 54 %. Die Regel selbst verschiebt also kaum etwas.
+- **Auffällig:** Sankt Ruß liegt in **beiden** Fassungen bei 39–40 %, nach R4d waren es 51 %. Am Ballon liegt es nicht: als Gerät gemessen fällt Sankt Ruß sogar auf 22 %. Die Ursache habe ich noch nicht gefunden (Kandidaten: Kategorie „sehr selten“, Preise im Nachkauf). Ich schaue im nächsten `pa` nach, wenn du willst.
+
+**4. Kategorie „Sehr selten“:** Helden und Stufe-3-Schreiter, eigenes Schild (violett). Je Einheit weiter höchstens eine.
+
+**5. Fesselballon:** jetzt Unterstützung.
+
+**6. Mehr Blut:**
+- Jeder Treffer an Fußtruppen und Reitern (Gewehr, MG, Splitter, jeder Nahkampfschlag) zeigt einen kleinen Spritzer.
+- Fällt dabei ein Mann, gibt es einen größeren Spritzer und einen Blutfleck am Boden.
+- Gepanzerte (Kampfanzüge, Stahlreiter) und Fahrzeuge/Geschütze zeigen Funken.
+- Abschaltbar über den Blut-Schalter, Rückweg `TREFFERBLUT_ALT`.
+- Bilder dazu habe ich nicht gemacht. Beim nächsten Spiel siehst du es sofort.
+
+**7. Feldsymbole:** Obergrenze 220 → 140 px Feldgröße; nah herangezoomt bleiben sie jetzt etwa so groß wie bei Zoom 1. Keine Bilder gemacht.
+
+**1. Kirche überlappt / 2. schwebende Kisten: noch nicht gelöst.**
+- Auf der Übersicht von Sankt Ruß konnte ich beides nicht eindeutig finden.
+- Die Kisten stehen in den Grabendurchgängen mit seitlichem Versatz; ich vermute, dass sie in engen Durchgängen über die Sohle hinausragen. Ohne die Stelle wollte ich nicht raten.
+
+**Fragen an Enrico:**
+1. Wo genau hast du die schwebenden Kisten und die überlappende Kirche gesehen (Karte, Feld oder ein Bildschirmfoto)?
+2. Soll ich dem Rückgang von Sankt Ruß (51 → 40 %) nachgehen?
+3. Passt der Aufschlag von +25 % je weitere Elite/Gerät, oder lieber anders gestaffelt?
 ## 2026-11-27 – Nachtrag 114 (alte Stimmen raus) und U4a (neue Figuren) (`763dcf7`, `38e3f8f` mit index.html)
 
 Gepusht.
