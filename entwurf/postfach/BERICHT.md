@@ -1,6 +1,6 @@
 ## 2026-11-27 – ST1c (Punkt 117): Windmühle Grauwall
 
-Gepusht (Commit siehe unten, mit index.html). **Hänger:** keine. Partietest „Konsole rot-frei, keine Fehler“. Keine Regeländerung, daher kein sim-Lauf.
+Gepusht (`9213cd9`, mit index.html). **Hänger:** keine. Partietest „Konsole rot-frei, keine Fehler“. Keine Regeländerung, daher kein sim-Lauf.
 
 **Ursache:** Das Mühlenbild wird 3,6 Feldradien breit gezeichnet (2,4 × MUEHLE_GROSS 1,5), das Feld ist nur gut 2 breit. Der **gemalte Bodenfleck** (Schlamm mit Trichtern und Steinen, Rautenform) lag deshalb unten über den Drahtgürteln links und rechts und über den Nachbarfeldern.
 
