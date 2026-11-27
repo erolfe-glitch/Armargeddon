@@ -41,6 +41,22 @@ function schrittName(G, u, s, ev) {
   return s.k;
 }
 let errors = 0;
+// U7 (Punkt 125, 2026-11-27): Moral-Zähler aus der Fable-Prüfung, Abschnitt 2 – je Seite; Ereignisse aus AI.exec, startTurn und endTurn
+const M7 = {}, m7 = (sd, k, n = 1) => { const o = M7[k] = M7[k] || { A: 0, D: 0 }; o[sd] += n; };
+function moralZaehlen(G, ev, flucht, ents) {   // flucht: Set der fliehenden Einheiten (über die Schlacht), ents: Entsetzen je Einheit und gegnerischer Runde
+  for (let i = 0; i < ev.length; i++) { const e = ev[i], z = e.u != null && G.units.find(x => x.id === e.u); if (!z) continue; const sd = z.side;
+    if (e.t === 'supp') m7(sd, 'niedergehalten'); else if (e.t === 'fallback') m7(sd, 'zurückgewichen'); else if (e.t === 'steadfast') m7(sd, 'hält stand'); else if (e.t === 'furcht') m7(sd, 'Furcht-Aura'); else if (e.t === 'heldfall') m7(sd, 'Heldenfall');
+    else if (e.t === 'roar') m7(sd, 'Löwengebrüll (Ziele)', (e.d || []).length);
+    else if (e.t === 'entsetzen') { const k = z.id + ':' + G.turn + G.side, wdh = ents.has(k); ents.add(k); m7(sd, 'Entsetzenstests'); if (!e.ok) m7(sd, 'Entsetzen durchgefallen'); if (wdh) { m7(sd, 'Entsetzen Wiederholung'); if (!e.ok) m7(sd, 'Entsetzen Wiederholung durchgefallen'); } }
+    else if (e.t === 'rout') { const vor = ev.slice(Math.max(0, i - 3), i).filter(x => x.u === e.u), grund = vor.some(x => x.t === 'gas') ? 'Gas' : vor.some(x => x.t === 'hit' && x.panic) ? 'Kette' : z.str < E.P.ROUT_STR ? 'Stärke' : 'Moral';
+      m7(sd, 'Flucht'); m7(sd, 'Flucht (' + grund + ')'); flucht.add(z.id); }
+    else if (e.t === 'rally') { m7(sd, 'gesammelt'); flucht.delete(z.id); } else if (e.t === 'escaped') { m7(sd, 'entkommen am Rand'); flucht.delete(z.id); }
+    else if ((e.t === 'destroyed' || e.t === 'dead') && flucht.has(z.id)) { m7(sd, 'vernichtet auf der Flucht'); flucht.delete(z.id); } } }
+function moralRunde(G) {   // zu Beginn der Runde von G.side: Moralstufen der Fußtruppen, Niedergehaltene, Fliehende und ob eine Sammel-Chance besteht
+  const sd = G.side; for (const u of G.units) { if (u.side !== sd) continue; const T = E.TYPES[u.type];
+    if (u.status === 'ok' && !['walker', 'art'].includes(T.cls)) { m7(sd, 'Rundenanfänge Fußtruppen'); m7(sd, u.mor >= 6 ? 'Moral ≥ 60 %' : u.mor >= 3.5 ? 'Moral 35–60 %' : 'Moral < 35 %'); if (u.supp > 0) m7(sd, 'niedergehalten zu Rundenbeginn'); }
+    if (u.status === 'rout') { m7(sd, 'Rundenanfänge auf der Flucht'); const off = G.units.some(o => o.officer && o.side === sd && E.active(o) && E.dist(o.c, o.r, u.c, u.r) <= E.P.OFFICER_RANGE);
+      if (off && !E.adjEnemies(G, u).length && u.str >= E.P.ROUT_STR) m7(sd, 'Sammel-Chance bestand'); } } }
 const U5 = { flucht: { A: 0, D: 0 }, panne: { A: 0, D: 0 }, fest: { A: 0, D: 0 }, schaden: {}, handelt: { A: 0, D: 0 }, da: { A: 0, D: 0 }, verdient: { A: {}, D: {} } };   // U5a-Zähler (Bauplan 10a)
 for (let g = 0; g < N; g++) {
   const parse = v => v ? Object.fromEntries(v.split(',').map(x => { const [t, n] = x.split(':'); return [t, +n]; })) : null;
@@ -54,7 +70,7 @@ for (let g = 0; g < N; g++) {
     const fz = E.startZone(G, sd).filter(([c, r]) => !E.unitAt(G, c, r) && E.cost(G, u, c, r) < 99); if (fz.length) { const h = fz[Math.floor(G.rng() * fz.length)]; u.c = h[0]; u.r = h[1]; } if (T.mg) u.setup = true; if (T.mines) u.mines = T.mines; if (T.counterStrike) u.cready = true; } } }
   if (noA.length) G.units = G.units.filter(u => !(u.side === 'A' && noA.includes(E.cls(u))));
   for (const [t, n] of Object.entries(drop)) for (let i = 0; i < n; i++) { const x = G.units.findIndex(u => u.type === t); if (x >= 0) G.units.splice(x, 1); }
-  E.startTurn(G);
+  const flucht = new Set(), ents = new Set(); moralZaehlen(G, E.startTurn(G) || [], flucht, ents); moralRunde(G);
   let guard = 0; const ausg = { A: 0, D: 0 }, tat = new Set(); let tk = '';
   try {
     let bk = '';
@@ -65,14 +81,15 @@ for (let g = 0; g < N; g++) {
       if (!act) { const b = G.bauten && G.bauten.find(x => !x.art || x.art === 'kirche'); if (b) { const tu = b.turm && !b.kaputt && E.unitAt(G, b.turm[0], b.turm[1]); KI.zuege++; if (tu) KI.turm[tu.side]++;
           for (const [c, r] of b.felder) { const x = !b.kaputt && E.unitAt(G, c, r); if (x) KI.schiff[x.side]++; } }
         { const sd = G.side; for (const x of G.units) if (x.side === sd && E.active(x)) { U5.da[sd]++; if (tat.has(x.id)) U5.handelt[sd]++; } tat.clear(); }
-        E.endTurn(G); continue; }
-      for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || []; if (ev.length) tat.add(act.u);
+        moralZaehlen(G, E.endTurn(G) || [], flucht, ents); if (!G.over) moralRunde(G); continue; }
+      for (const s of act.steps) { const u = G.units.find(x => x.id === act.u), sd = u && u.side; const ev = AI.exec(G, act.u, s) || []; if (ev.length) tat.add(act.u); moralZaehlen(G, ev, flucht, ents);
         for (const e of ev) { const z = e.u && G.units.find(x => x.id === e.u); if (!z) continue; if (e.t === 'rout') U5.flucht[z.side]++; if (e.t === 'breakdown') U5.panne[z.side]++; if (e.t === 'stuck') U5.fest[z.side]++; if (e.t === 'hit' && u && z.side !== u.side) U5.schaden[u.type] = (U5.schaden[u.type] || 0) + (e.dmg || 0); }
         for (const e of ev) { if (e.t === 'eisbruch') { KI.eis = (KI.eis || 0) + 1; if (e.u) KI.eisU = (KI.eisU || 0) + 1; } if (e.t === 'heldfall') KI.heldfall = (KI.heldfall || 0) + 1; if (e.t === 'entsetzen') { KI.ent = (KI.ent || 0) + 1; if (!e.ok) KI.entF = (KI.entF || 0) + 1; } if (e.t === 'fear') KI.fear = (KI.fear || 0) + 1; if (e.t === 'stuck' && u && E.TYPES[u.type].stecken) KI.stecken = (KI.stecken || 0) + 1; }   // M6: Heldenfall, Kürassier steckt fest
         if (u && ev.length) { for (const e of ev) if (e.t === 'einsturz') { const art = e.art || (G.bauten[e.bau] && G.bauten[e.bau].art) || 'kirche', k = KI.art[art] = KI.art[art] || { n: 0, runde: [], durch: { A: 0, D: 0 }, typ: {}, sl: -1 }; if (k.sl !== g) { k.sl = g; k.n++; } k.runde.push(G.turn); k.durch[sd]++; k.typ[u.type] = (k.typ[u.type] || 0) + 1; }   /* G6b: Einsturz je Gebäudeart (Kirche, Windmühle, Haus, Kapelle), je Schlacht höchstens einmal gezählt */ zaehl(sd, schrittName(G, u, s, ev)); for (const e of ev) { if (e.t === 'fire' && e.reaction) zaehl(e.a != null && G.units.find(x => x.id === e.a).side, 'Reaktionsfeuer (Sperrfeuer/Bereitschaft)'); if (e.t === 'spawn') zaehl(sd, 'Nachschub'); if (e.t === 'sprung') zaehl(sd, 'Sprungangriff (Löwenoger)'); if (e.t === 'dauerfeuer') zaehl(sd, 'Dauerfeuer (Hünen, 2. Salve)'); } }
         if (G.over) break; }
     }
   } catch (e) { errors++; if (errors < 3) console.error(e); continue; }
+  for (const id of flucht) { const z = G.units.find(x => x.id === id); if (z && z.status === 'rout') m7(z.side, 'noch fliehend am Ende'); }
   const r = G.over || { winner: null, why: 'guard' };
   res[r.winner || 'draw']++;
   const wk = (r.winner || 'draw') + ':' + r.why; why[wk] = (why[wk] || 0) + 1;
@@ -100,6 +117,7 @@ console.log('U5a Nachschubpunkte verdient (Runde: Konkordat/Aschenwacht):', [5, 
 console.log('U5a Schaden je Typ und Schlacht (×10):', JSON.stringify(Object.fromEntries(Object.entries(U5.schaden).sort((a, b) => b[1] - a[1]).map(([t, v]) => [t, Math.round(v * 10 / N)]))));
 console.log('Verluste je Typ:', JSON.stringify(Object.fromEntries(Object.keys(typeLoss).map(t => [t, (100 * typeLoss[t] / typeCount[t]).toFixed(0) + ' %']))));
 { const kl = {}, kc = {}; for (const t in typeCount) { const k = E.katOf(t); kl[k] = (kl[k] || 0) + (typeLoss[t] || 0); kc[k] = (kc[k] || 0) + typeCount[t]; } console.log('K1 Verluste je Kategorie:', JSON.stringify(Object.fromEntries(Object.keys(kc).map(k => [k, (100 * kl[k] / kc[k]).toFixed(0) + ' % von ' + (kc[k] / N).toFixed(1) + ' je Schlacht']))));  }
+console.log('U7 Moral je Schlacht (Konkordat / Aschenwacht): ' + Object.entries(M7).map(([k, v]) => `${k} ${(v.A / N).toFixed(2)} / ${(v.D / N).toFixed(2)}`).join('; '));
 if (!process.env.KURZ) {
   const alle = [...new Set([...Object.keys(nutz.A), ...Object.keys(nutz.D)])].sort();
   console.log('Nutzung je Schlacht (Konkordat / Aschenwacht):');
