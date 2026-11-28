@@ -1614,6 +1614,8 @@ function massNF(u, nf) {
   return o;
 }
 // Grabenplätze (vorläufig bis U2): mehr als 4 Figuren gleichmäßig entlang der Grabenpunkte, abwechselnd etwas vor/zurück
+// G8 (Punkt 153): Läuft der Graben dieses Felds in die Tiefe (auf dem Bildschirm senkrecht)? Rückweg window.GRABEN_TIEFE_ALT
+function grabenTief(pl) { if (window.GRABEN_TIEFE_ALT || !pl || !pl.pts || pl.pts.length < 2) return false; const xs = pl.pts.map(p => p[0]), ys = pl.pts.map(p => p[1]); return Math.max(...ys) - Math.min(...ys) > (Math.max(...xs) - Math.min(...xs)) * 1.2; }
 function grabenPunkt(pts, i, n, s) {
   const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), quer = Math.max(...ys) - Math.min(...ys) > Math.max(...xs) - Math.min(...xs);   // Graben läuft eher senkrecht oder waagerecht
   const q = pts.slice().sort((a, b) => quer ? a[1] - b[1] : a[0] - b[0]); let L = 0; const seg = []; for (let k = 1; k < q.length; k++) { const l = Math.hypot(q[k][0] - q[k - 1][0], q[k][1] - q[k - 1][1]); seg.push(l); L += l; }
@@ -1941,7 +1943,9 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     for (const i of idx) {
       const imI = gr ? nf.ims[i] : nf.ims[(u.id * 3 + i) % nf.ims.length], pa0 = gr ? (i === gr.offizier && d.pose && posenAn(u) ? poseFigur(u, d, i, imI) : null) : posenAn(u) ? poseFigur(u, d, i, imI) : null, pa = gr && pa0 && pa0.ruhe ? null : pa0, im = pa ? pa.im : imI;   // U4 Teil 3: in der Gruppe posiert nur der Offizier   /* R4: Ruhe ohne bereit = eigene Figur des Grundbogens */   // Posenwechsel (Stufe 1)
       const kv = gr ? KLON_NULL : klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
-      if (gr && pl && pl.pts && !window.GRABEN_GRUPPE_ALT) { const q = pl.pts[Math.floor(pl.pts.length / 2)], sl = nf.slots[i];   // Fund 3 (Punkt 151): eine Gruppe = ein Grabenplatz, Waffe und Beiwerk bleiben bei ihrer Figur
+      if (gr && pl && pl.pts && !window.GRABEN_GRUPPE_ALT) { const q = pl.pts[Math.floor(pl.pts.length / 2)], sl = nf.slots[i], tief = grabenTief(pl);   // Fund 3 (Punkt 151): eine Gruppe = ein Grabenplatz, Waffe und Beiwerk bleiben bei ihrer Figur
+        if (tief) { const rang = [...idx].sort((a, b) => nf.slots[a][1] - nf.slots[b][1]).indexOf(i), n = idx.length, lang = imI.naturalWidth / imI.naturalHeight > 1.6;   // G8 (Punkt 153): Graben läuft in die Tiefe – Teile hintereinander entlang des Grabens, leicht abwechselnd zur Wand; lange Teile in die Tiefe verkürzt (wie der Laufsteg)
+          list.push({ im, pa, kv, ox: (q[0] - pcx) / s + (rang % 2 ? 0.06 : -0.06), oy: (q[1] - pcy) / s + (n > 1 ? -0.34 + 0.68 * rang / (n - 1) : 0), abs: true, i, sx: lang ? 0.5 : 1, geraet: !!(gr.geraet && gr.geraet.includes(i)) }); continue; }
         list.push({ im, pa, kv, ox: (q[0] - pcx) / s + (flip ? -sl[0] : sl[0]) * 0.8, oy: (q[1] - pcy) / s + sl[1] * 0.4, abs: true, i, geraet: !!(gr.geraet && gr.geraet.includes(i)) }); continue; }
       if (pl && pl.pts) { const q = pl.reihe ? pl.pts[Math.min(pl.pts.length - 1, Math.floor((i + 0.5) * pl.pts.length / nP))] : nP > 4 ? grabenPunkt(pl.pts, i, nP, s) : pl.pts[[1, 2, 0, 3][i] ?? i];   // U2: zehn Grabenplätze (bei weniger Figuren gleichmäßig verteilt); U1-Fassung als Rückweg
         const lieg = pl.reihe && !window.LIEGEND_ALT && TYPES[u.type].fig === 'sniper', mx = lieg ? pl.pts.reduce((a, t) => a + t[0], 0) / pl.pts.length : q[0];   // G7h-2: liegende Scharfschützen (lange Gewehre) auf die Grabenmitte statt in zwei Reihen; Rückweg LIEGEND_ALT
@@ -1951,7 +1955,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   } else if (pl && pl.pts && pl.reihe && !nf.vehicle && !window.G7H_ALT) { let q = pl.pts[0]; for (const t of pl.pts) if (Math.hypot(t[0] - pcx, t[1] - pcy - s * 0.15) < Math.hypot(q[0] - pcx, q[1] - pcy - s * 0.15)) q = t; list.push({ im: nf.ims[0], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s }); }   // G7h (87.4): Einzelmodell (Geschütz) im Graben auf die Sohle, nicht halb auf der Lippe
   else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s * (nf.massF || 1) * (GRABEN_TIEFE[u.type] || 1) : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 * (nf.massF || 1) : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
-  { const bw = !window.BEIWERK_ALT && BEIWERK[u.type], bim = bw && !d.moving && figImg(bw[0]); if (bim && nf.trupp && pl && pl.pts && nf.gruppe && !window.GRABEN_GRUPPE_ALT) { const q = pl.pts[Math.floor(pl.pts.length / 2)]; list.push({ im: bim, ox: (q[0] - pcx) / s + (flip ? -bw[1][0] : bw[1][0]) * 0.8, oy: (q[1] - pcy) / s + bw[1][1] * 0.4, abs: true, geraet: true }); } else if (bim && nf.trupp && !(pl && pl.pts)) list.push({ im: bim, ox: bw[1][0], oy: bw[1][1], geraet: true }); }   // U4 Teil 3: Beiwerk neben dem Trupp, nicht im Graben
+  { const bw = !window.BEIWERK_ALT && BEIWERK[u.type], bim = bw && !d.moving && figImg(bw[0]); if (bim && nf.trupp && pl && pl.pts && nf.gruppe && !window.GRABEN_GRUPPE_ALT) { const q = pl.pts[Math.floor(pl.pts.length / 2)], tief = grabenTief(pl); list.push(tief ? { im: bim, ox: (q[0] - pcx) / s + 0.05, oy: (q[1] - pcy) / s + 0.44, abs: true, geraet: true, sx: bim.naturalWidth / bim.naturalHeight > 1.6 ? 0.5 : 1 } : { im: bim, ox: (q[0] - pcx) / s + (flip ? -bw[1][0] : bw[1][0]) * 0.8, oy: (q[1] - pcy) / s + bw[1][1] * 0.4, abs: true, geraet: true }); } else if (bim && nf.trupp && !(pl && pl.pts)) list.push({ im: bim, ox: bw[1][0], oy: bw[1][1], geraet: true }); }   // U4 Teil 3: Beiwerk neben dem Trupp, nicht im Graben   // G8: Beiwerk im tiefen Graben vorn hinter der Gruppe
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
@@ -2011,7 +2015,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     const pa = f.pa, vor = flip ? -1 : 1, fx = x + (f.abs ? f.ox : flip ? -f.ox : f.ox) * s + (pa ? pa.dx * vor * s : 0), fy = y + f.oy * s * k + duck + (pa ? pa.dy * s : 0), prot = pa ? pa.rot : 0;
     let h = f.im.naturalHeight / 320 * FIG_SH * s * nf.sc, w = h * f.im.naturalWidth / f.im.naturalHeight;
     const wmax = (nf.vehicle || nf.gross ? FIGW_VEH : FIGW_MAX) * s * nf.sc; if (w > wmax) { h *= wmax / w; w = wmax; }
-    if (f.kv) { h *= f.kv.sz; w *= f.kv.sz; }   // U2: Klone – Größe je Figur
+    if (f.kv) { h *= f.kv.sz; w *= f.kv.sz; }
+    if (f.sx) w *= f.sx;   // G8: langes Teil im tiefen Graben in die Tiefe verkürzt   // U2: Klone – Größe je Figur
     { const gg = nf.gruppe && !window.GRUPPE_GR_ALT && nf.ims[f.i] && GRUPPE_GR[nf.ims[f.i]._key]; if (gg) { h *= gg; w *= gg; } }   // F2b (Punkt 133): Führung so groß wie die Linie (Faktor des Platzes, gilt auch für die Posen des Offiziers)
     const atm = nf.gruppe && BW && !f.geraet && !pa && !d.moving && !window.ATEM_ALT ? atemVon(u, f.i) : null; if (atm) h *= atm.sy;   // F2 (Punkt 130.4)
     const prot2 = prot + (f.kv ? f.kv.rot : 0) + (atm ? atm.rot : 0), flipF = !!flip !== !!(f.kv && f.kv.sp);

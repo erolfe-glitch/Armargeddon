@@ -21,13 +21,16 @@ await ev(`(async () => { const W = ms => new Promise(r => setTimeout(r, ms)), cl
 // W2c-1b (Punkt 151): Einheit im Offenen und im Graben, daneben ein Liniensoldat derselben Seite. TYPEN="typ:seite,…"
 const LINIE = { A: 'kohorte', D: 'grenadier' };
 const stelle = (typ, seite, graben) => ev(`(async () => { const D = __dbg, G = D.G, E = D.E, M = G.map; let c = 6, r = 4, c2 = 6, r2 = 5;
-  if (${graben}) { outer: for (let x = 2; x < E.COLS - 2; x++) for (let y = 1; y < E.ROWS - 1; y++) if (M[x][y].t === 'trench' && M[x][y + 1] && M[x][y + 1].t === 'trench') { c = x; r = y; c2 = x; r2 = y + 1; break outer; } }
+  const T = (x, y) => M[x] && M[x][y] && M[x][y].t === 'trench';
+  if (${graben} === 1) { outer: for (let x = 2; x < E.COLS - 2; x++) for (let y = 1; y < E.ROWS - 1; y++) if (T(x, y) && T(x, y + 1)) { c = x; r = y; c2 = x; r2 = y + 1; break outer; } }   // Graben in die Tiefe
+  if (${graben} === 2) { outer2: for (let x = 2; x < E.COLS - 2; x++) for (let y = 1; y < E.ROWS - 1; y++) if (T(x, y) && T(x + 1, y) && T(x - 1, y) && !T(x, y + 1) && !T(x, y - 1)) { c = x; r = y; c2 = x + 1; r2 = y; break outer2; } }   // Graben quer (G8)
   const S = G.units.filter(u => u.side === '${seite}' && E.alive(u)), a = S[0], b = S.find(u => u !== a);
   a.type = '${typ}'; a.c = c; a.r = r; a.face = '${seite}' === 'A' ? 0 : 3; a.str = 10; a.setup = !!E.TYPES[a.type].mg; a.limbered = false;
   b.type = '${LINIE[seite]}'; b.c = c2; b.r = r2; b.face = a.face; b.str = 10; b.dug = false;
   for (const u of G.units) if (u !== a && u !== b && Math.abs(u.c - c) < 3.5 && Math.abs(u.r - r) < 3.5) { u.c = u.side === 'A' ? 0 : E.COLS - 1; }
   D.neuDU(); await new Promise(r => setTimeout(r, 900)); const [x, y] = D.mitte(c, r + 0.5); D.camSetzen(x, y - 40, 2.6); await new Promise(r => setTimeout(r, 1800)); return a.id; })()`);
 const TYPEN = (process.env.TYPEN || 'mahlwerk:A,sense:D,buechse:D,moerser:A,minenwerfer:D,flammen:A').split(',').map(t => t.split(':'));
-for (const [typ, seite] of TYPEN) for (const g of [false, true]) { await stelle(typ, seite, g); await bild(`${typ}_${g ? 'graben' : 'offen'}`); }
+const LAGEN = (process.env.LAGEN || '0,1').split(',').map(Number), LNAME = ['offen', 'graben', 'graben_quer'];
+for (const [typ, seite] of TYPEN) for (const g of LAGEN) { await stelle(typ, seite, g); await bild(`${typ}_${LNAME[g]}`); }
 console.log(fehler.length ? 'Fehler: ' + fehler.slice(0, 3).join(' | ') : 'keine Seitenfehler');
 ws.close(); ch.kill();
