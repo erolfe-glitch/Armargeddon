@@ -1941,6 +1941,8 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
     for (const i of idx) {
       const imI = gr ? nf.ims[i] : nf.ims[(u.id * 3 + i) % nf.ims.length], pa0 = gr ? (i === gr.offizier && d.pose && posenAn(u) ? poseFigur(u, d, i, imI) : null) : posenAn(u) ? poseFigur(u, d, i, imI) : null, pa = gr && pa0 && pa0.ruhe ? null : pa0, im = pa ? pa.im : imI;   // U4 Teil 3: in der Gruppe posiert nur der Offizier   /* R4: Ruhe ohne bereit = eigene Figur des Grundbogens */   // Posenwechsel (Stufe 1)
       const kv = gr ? KLON_NULL : klonVar(u, d, i, pa);   // U2: Klone – je Figur eigene Größe, Neigung, Versatz, in Ruhe teils gespiegelt
+      if (gr && pl && pl.pts && !window.GRABEN_GRUPPE_ALT) { const q = pl.pts[Math.floor(pl.pts.length / 2)], sl = nf.slots[i];   // Fund 3 (Punkt 151): eine Gruppe = ein Grabenplatz, Waffe und Beiwerk bleiben bei ihrer Figur
+        list.push({ im, pa, kv, ox: (q[0] - pcx) / s + (flip ? -sl[0] : sl[0]) * 0.8, oy: (q[1] - pcy) / s + sl[1] * 0.4, abs: true, i, geraet: !!(gr.geraet && gr.geraet.includes(i)) }); continue; }
       if (pl && pl.pts) { const q = pl.reihe ? pl.pts[Math.min(pl.pts.length - 1, Math.floor((i + 0.5) * pl.pts.length / nP))] : nP > 4 ? grabenPunkt(pl.pts, i, nP, s) : pl.pts[[1, 2, 0, 3][i] ?? i];   // U2: zehn Grabenplätze (bei weniger Figuren gleichmäßig verteilt); U1-Fassung als Rückweg
         const lieg = pl.reihe && !window.LIEGEND_ALT && TYPES[u.type].fig === 'sniper', mx = lieg ? pl.pts.reduce((a, t) => a + t[0], 0) / pl.pts.length : q[0];   // G7h-2: liegende Scharfschützen (lange Gewehre) auf die Grabenmitte statt in zwei Reihen; Rückweg LIEGEND_ALT
         list.push({ im, pa, kv, ox: (mx - pcx) / s, oy: (q[1] - pcy) / s, abs: true, i }); continue; }
@@ -1949,7 +1951,7 @@ function drawNewFigs(g, u, d, nf, x, y, flip, A0, done) {
   } else if (pl && pl.pts && pl.reihe && !nf.vehicle && !window.G7H_ALT) { let q = pl.pts[0]; for (const t of pl.pts) if (Math.hypot(t[0] - pcx, t[1] - pcy - s * 0.15) < Math.hypot(q[0] - pcx, q[1] - pcy - s * 0.15)) q = t; list.push({ im: nf.ims[0], ox: (q[0] - pcx) / s, oy: (q[1] - pcy) / s }); }   // G7h (87.4): Einzelmodell (Geschütz) im Graben auf die Sohle, nicht halb auf der Lippe
   else list.push({ im: nf.ims[0], ox: 0, oy: nf.vehicle ? 0.22 : 0.15 });
   const sink = (pl && pl.sink && !nf.vehicle ? pl.sink * FIG_SH * s * (nf.massF || 1) * (GRABEN_TIEFE[u.type] || 1) : 0) + (nf.vehicle && d.vs && (d.vs.broken || d.vs.stuck) ? s * 0.16 : 0) + (!nf.vehicle && !(pl && pl.sink) && d.vs && d.vs.dug ? s * 0.12 * (nf.massF || 1) : 0);   // F36: eingegraben etwas tiefer   // im Graben tiefer; Fahrzeug festgefahren: Ketten im Schlamm eingesunken (Paket 8)
-  { const bw = !window.BEIWERK_ALT && BEIWERK[u.type], bim = bw && !d.moving && figImg(bw[0]); if (bim && nf.trupp && !(pl && pl.pts)) list.push({ im: bim, ox: bw[1][0], oy: bw[1][1], geraet: true }); }   // U4 Teil 3: Beiwerk neben dem Trupp, nicht im Graben
+  { const bw = !window.BEIWERK_ALT && BEIWERK[u.type], bim = bw && !d.moving && figImg(bw[0]); if (bim && nf.trupp && pl && pl.pts && nf.gruppe && !window.GRABEN_GRUPPE_ALT) { const q = pl.pts[Math.floor(pl.pts.length / 2)]; list.push({ im: bim, ox: (q[0] - pcx) / s + (flip ? -bw[1][0] : bw[1][0]) * 0.8, oy: (q[1] - pcy) / s + bw[1][1] * 0.4, abs: true, geraet: true }); } else if (bim && nf.trupp && !(pl && pl.pts)) list.push({ im: bim, ox: bw[1][0], oy: bw[1][1], geraet: true }); }   // U4 Teil 3: Beiwerk neben dem Trupp, nicht im Graben
   list.sort((a, b) => a.oy - b.oy);
   const hx = G.map[u.c] && G.map[u.c][u.r], dim = hx && DIM_T.has(hx.t) && !d.lunge;
   let topY = y - s;
@@ -4103,7 +4105,7 @@ let kartLang = false; try { kartLang = localStorage.getItem('arm.kartelang') ===
 function neuBedienfeld(on) {
   if (neuBedienfeld.an === on) return; neuBedienfeld.an = on;
   document.querySelectorAll('.tbar button[data-tip]').forEach(b => { if (!b.getAttribute('aria-label')) b.setAttribute('aria-label', b.dataset.tip.split(':')[0]); });   // UI1 (Punkt 146): Knöpfe der oberen Leiste mit aria-label
-  document.body.classList.toggle('neu', on); document.body.classList.toggle('ui1', on && !window.UI1_ALT); document.body.classList.toggle('ui1alt', !!window.UI1_ALT);   // UI1 (Punkt 141)
+  document.body.classList.toggle('neu', on); document.body.classList.toggle('ui1', on && !window.UI1_ALT); document.body.classList.toggle('ui1alt', !!window.UI1_ALT); document.body.classList.toggle('symfarbe', !window.SYMBOL_WEISS);   // Fund 2 (Punkt 151)   // UI1 (Punkt 141)
   const shop = $('btnShop'), st = $('hudStates'), hint = $('hudHint');
   let kk = $('neuKK'); if (!kk) { kk = document.createElement('div'); kk.id = 'neuKK'; }   // Zeile unter der Moral: Zustände links, Info und ausführlich rechts
   if (on) { $('nachOben').appendChild(shop); $('hudStats').after(kk); kk.append(st, $('btnInfo'), $('btnMehr')); document.body.appendChild(hint); }
