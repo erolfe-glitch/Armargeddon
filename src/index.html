@@ -1288,17 +1288,28 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
 #kampagne #kaSvg { position: absolute; inset: 0; width: 100%; height: 100%; }
 #kampagne .ka-prov { font: 700 30px var(--s-head); fill: #120D0B; opacity: .28; text-anchor: middle; letter-spacing: .12em; }
 #kampagne #kaOrte { position: absolute; inset: 0; }
-#kampagne .ka-ort { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 12px 4px 8px; cursor: pointer;
-  color: var(--s-text); font: 700 15px var(--s-body); background: var(--up-txEisen) 0 0 repeat; border: 2px solid var(--s-ink); box-shadow: 0 3px 0 var(--s-ink); white-space: nowrap; }
-#kampagne .ka-ort.hauptstadt, #kampagne .ka-ort.hauptort { font: 700 17px var(--s-head); letter-spacing: .04em; min-height: 50px; }
-#kampagne .ka-ort .ka-fahne { width: 16px; height: 22px; clip-path: polygon(0 0, 100% 15%, 70% 45%, 100% 75%, 0 90%); border-left: 3px solid #120D0B; }
+#kampagne .ka-ort { position: absolute; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; padding: 0; cursor: pointer; display: grid; place-items: center;
+  background: var(--up-txEisen) 0 0 repeat; border: 3px solid var(--s-ink); box-shadow: 0 3px 0 var(--s-ink); z-index: 2; }
+#kampagne .ka-ort.hauptstadt, #kampagne .ka-ort.hauptort { width: 50px; height: 50px; border-width: 4px; }
+#kampagne .ka-ort .ka-fahne { width: 18px; height: 24px; margin-left: 6px; clip-path: polygon(0 0, 100% 15%, 70% 45%, 100% 75%, 0 90%); border-left: 3px solid #120D0B; }
 #kampagne .ka-ort.bA .ka-fahne { background: #8E2B22; } #kampagne .ka-ort.bD .ka-fahne { background: #7D8471; } #kampagne .ka-ort.bR .ka-fahne { background: #2E2A28; box-shadow: inset 0 0 0 2px #9A9089; }
-#kampagne .ka-ort.bA { border-color: #8E2B22; } #kampagne .ka-ort.bR { border-color: #9A9089; }
-#kampagne .ka-ort.gesperrt { opacity: .7; }
-#kampagne .ka-ort.frei { outline: 3px solid var(--s-brass); animation: kaPuls 1.6s ease-in-out infinite; }
-#kampagne .ka-ort.gewaehlt { outline: 3px solid #F6E3A8; }
-@keyframes kaPuls { 50% { outline-color: rgba(194,164,97,.35); } }
-#kampagne .ka-armee { position: absolute; transform: translate(-50%, -118%); width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--s-brass); background: #8E2B22; box-shadow: 0 4px 0 var(--s-ink); cursor: pointer; padding: 0; transition: left .5s, top .5s; }
+#kampagne .ka-ort.bA { border-color: #8E2B22; } #kampagne .ka-ort.bD { border-color: #4E5446; } #kampagne .ka-ort.bR { border-color: #9A9089; }
+#kampagne .ka-ort.gesperrt { opacity: .8; }
+#kampagne .ka-ort.frei { outline: 3px solid var(--s-brass); outline-offset: 2px; }
+#kampagne .ka-ort.angriff { outline: 3px solid #A8473A; outline-offset: 2px; animation: kaPuls 1.4s ease-in-out infinite; }
+#kampagne .ka-ort.gewaehlt { outline: 3px solid #F6E3A8; outline-offset: 2px; }
+@keyframes kaPuls { 50% { outline-color: rgba(168,71,58,.3); } }
+#kampagne .ka-name { position: absolute; transform: translate(-50%, 24px); pointer-events: none; white-space: nowrap; z-index: 1; padding: 0 5px; color: #F0EDE1; background: rgba(18,13,11,.72); font: 700 14px var(--s-body); }
+#kampagne .ka-name.hauptstadt, #kampagne .ka-name.hauptort { transform: translate(-50%, 28px); font: 700 15px var(--s-head); letter-spacing: .04em; }
+#kampagne .ka-feld { fill: transparent; stroke: none; pointer-events: all; cursor: pointer; }
+#kampagne .ka-feld.sicht { stroke: rgba(18,13,11,.45); stroke-width: 1; }
+#kampagne .ka-feld:hover { fill: rgba(246,227,168,.18); }
+#kampagne .ka-zeichen { font: 700 11px var(--s-body); fill: #F0EDE1; text-anchor: middle; paint-order: stroke; stroke: #120D0B; stroke-width: 3px; pointer-events: none; }
+#kampagne .ka-kosten { font: 700 15px var(--s-body); fill: #F6E3A8; text-anchor: middle; pointer-events: none; }
+#kampagne .ka-halt { font: 700 15px var(--s-head); fill: #F0EDE1; text-anchor: middle; paint-order: stroke; stroke: #713B36; stroke-width: 4px; pointer-events: none; }
+#kampagne #kaDyn { pointer-events: none; }
+#kampagne .up-text.an { color: #F6E3A8; }
+#kampagne .ka-armee { position: absolute; transform: translate(-50%, -50%); z-index: 3; width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--s-brass); background: #8E2B22; box-shadow: 0 4px 0 var(--s-ink); cursor: pointer; padding: 0; transition: left .5s, top .5s; }
 #kampagne .ka-armee img { width: 100%; height: 100%; object-fit: contain; }
 #kampagne .ka-armee b { position: absolute; right: -8px; bottom: -6px; min-width: 24px; padding: 0 5px; border-radius: 12px; background: var(--s-ink); color: var(--s-text); font: 700 14px var(--s-body); }
 #kampagne .ka-info { width: 340px; overflow: auto; padding: 14px 16px; color: var(--s-bg); border: 15px solid transparent; border-image: var(--up-p9) 46 / 22px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; font: 600 15px/1.4 var(--s-body); }
@@ -1314,7 +1325,7 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
 #kampagne .ka-hinweis { padding: 6px 16px 10px; color: var(--s-text); font: 600 15px var(--s-body); text-shadow: 0 1px 0 var(--s-ink); }
 #kaChronik { z-index: 70; } #kaChronik .ka-chronik { max-width: 620px; } #kaChronik p { font: 600 17px/1.5 var(--s-body); }
 .ka-start { display: grid; gap: 12px; max-width: 560px; margin: 0 auto; color: var(--s-text); font: 600 17px/1.5 var(--s-body); }
-@media (max-width: 1500px) { #kampagne .ka-info { width: 290px; } #kampagne .ka-ort { font-size: 14px; padding: 3px 9px 3px 6px; } #kampagne .ka-ort.hauptstadt, #kampagne .ka-ort.hauptort { font-size: 15px; } #kampagne .ka-titel { font-size: 19px; } }
+@media (max-width: 1500px) { #kampagne .ka-info { width: 280px; } #kampagne .ka-titel { font-size: 18px; } #kampagne .ka-armee { width: 48px; height: 48px; } }
 </style>
 </head>
 <body>
@@ -1553,8 +1564,8 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
 </div>
 
 <div class="overlay" id="kampagne" hidden>
-  <div class="ka-leiste"><span class="ka-titel">Feldzug um Grauwall</span><span class="tb-plate" id="kaRunde">Runde 1</span><span class="tb-plate" id="kaKasse" title="Kriegskasse – Einnahmen und Ausgaben kommen mit dem nächsten Paket">2.000 Kronen</span>
-    <span class="ka-luecke"></span><button class="up-text" id="kaArmeeKn">Armee</button><button class="up-text ka-haupt" id="kaRundeKn">Runde beenden</button><button class="up-text" id="kaMenue">Menü</button></div>
+  <div class="ka-leiste"><span class="ka-titel">Feldzug um Grauwall</span><span class="tb-plate" id="kaRunde">Runde 1</span><span class="tb-plate" id="kaBp" title="Bewegungspunkte der Armee in dieser Runde">Bewegung 10/10</span><span class="tb-plate" id="kaKasse" title="Kriegskasse – Einnahmen und Ausgaben kommen mit dem nächsten Paket">2.000 Kronen</span>
+    <span class="ka-luecke"></span><button class="up-text" id="kaRasterKn" title="Hexfeld der Kampagnenkarte ein- oder ausblenden (zum Testen)">Hexfeld</button><button class="up-text" id="kaArmeeKn">Armee</button><button class="up-text ka-haupt" id="kaRundeKn">Runde beenden</button><button class="up-text" id="kaMenue">Menü</button></div>
   <div class="ka-flaeche"><div class="ka-karte" id="kaKarte"><svg id="kaSvg" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"></svg><div id="kaOrte"></div><button class="ka-armee" id="kaArmee"></button></div>
     <aside class="ka-info" id="kaInfo"></aside></div>
   <div class="ka-hinweis" id="kaHinweis"></div>

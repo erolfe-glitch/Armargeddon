@@ -4882,75 +4882,131 @@ function drawMapPick() {
 }
 
 // ---------- Kampagne (K-A, Punkt 156, 2026-11-28) ----------
-// Kampagnenkarte (vorläufig im Code gezeichnet: Pergament, Provinzgrenzen, Wege, 12 Orte, Armee), Zug je Runde, Chronik vor/nach der Schlacht,
+// Kampagnenkarte (vorläufig im Code gezeichnet: Pergament, Gelände auf einem unsichtbaren Hexfeld, Fluss, Gebirge, Straßen, Orte als Plaketten, Armee),
+// freie Bewegung mit Bewegungspunkten (Reichweite, Wegvorschau, Halt im Sperrbereich), Angriff vom Nachbarfeld, Chronik vor/nach der Schlacht,
 // Übergang Karte → Schlacht (startGame(opts)) → Karte (showEnd → kaSchlachtEnde). Daten und Regeln: src/kampagne.js (KAMPAGNE). Spielstand localStorage arm.kampagne.
-const KAMP = window.KAMPAGNE; let KA = null, kaAktiv = false, kaWahl = null, kaArmeeOffen = false, kaErg = null, kaNeuScharf = false;
+const KAMP = window.KAMPAGNE; let KA = null, kaAktiv = false, kaWahl = null, kaArmeeOffen = false, kaErg = null, kaNeuScharf = false, kaZiel = null, kaReich = null;
+let kaRaster = false; try { kaRaster = localStorage.getItem('arm.karaster') === '1'; } catch (e) {}
 const KA_TYPNAME = t => (TYPES[t] && TYPES[t].name) || t;
+const KA_FARBE = { w: ['#4E5A34', 0.42], s: ['#6B7A3A', 0.38], '~': ['#55707A', 0.75], o: ['#55707A', 0.75], '^': ['#66483A', 0.6], f: ['#55707A', 0.35], b: ['#55707A', 0.75] };   // vorläufige Geländefarben (STYLE.md „Kampagnenkarte“)
+const kaPt = (c, r) => { const [x, y] = KAMP.mitte(c, r); return [x * 1000, y * 600]; };
+const kaHex = (c, r) => KAMP.ecken(c, r).map(([x, y]) => `${(x * 1000).toFixed(1)},${(y * 600).toFixed(1)}`).join(' ');
 function kaStand() { return KAMP ? KAMP.laden() : null; }
 function kaMenueSync() {   // Startmenü-Seite „Kampagne“: Fortsetzen nur mit Spielstand
   const s = kaStand(), w = $('kaWeiter'), i = $('kaStandInfo'); if (!w) return;
   w.hidden = !s; kaNeuScharf = false; $('kaNeu').textContent = 'Neue Kampagne';
-  if (i) i.textContent = s ? `Gespeichert: Runde ${s.runde} · ${KAMP.ortVon(s.armee.ort).name} · ${s.armee.trupps.length} Trupps${s.phase === 'schlacht' ? ' · Schlacht um ' + KAMP.ortVon(s.schlacht.ort).name + ' steht bevor' : ''}` : 'Noch kein Spielstand.';
+  const wo = s => { const o = KAMP.ortAuf(s.armee.c, s.armee.r); return o ? o.name : 'im Feld'; };
+  if (i) i.textContent = s ? `Gespeichert: Runde ${s.runde} · ${wo(s)} · ${s.armee.trupps.length} Trupps${s.phase === 'schlacht' ? ' · Schlacht um ' + KAMP.ortVon(s.schlacht.ort).name + ' steht bevor' : ''}` : 'Noch kein Spielstand.';
 }
 function kaNeuKlick() {
   if (kaStand() && !kaNeuScharf) { kaNeuScharf = true; $('kaNeu').textContent = 'Sicher? Alter Stand wird überschrieben'; return; }
   KA = KAMP.neu(E); KAMP.speichern(KA); kaWahl = null; kaOeffnen();
-  kaChronik('Der Feldzug beginnt', 'Aus den Chroniken', 'Der Feldstab des Konkordats sammelt die Armee in Valmor-Stadt. Jenseits von Grauwall liegt Aschenhof, die Stadt der Hochöfen – fällt sie, wankt die Aschenwacht im ganzen Westen.', '', [['Zur Karte', kaChronikZu]]);
+  kaChronik('Der Feldzug beginnt', 'Aus den Chroniken', 'Der Feldstab des Konkordats sammelt die Armee in Valmor-Stadt. Jenseits des Passes von Grauwall liegt Aschenhof, die Stadt der Hochöfen – fällt sie, wankt die Aschenwacht im ganzen Westen.', '', [['Zur Karte', kaChronikZu]]);
 }
 function kaWeiterKlick() { KA = kaStand(); if (!KA) return kaNeuKlick(); kaWahl = null; kaOeffnen(); if (KA.phase === 'schlacht') kaChronikVor(); }
 function kaOeffnen() {
-  $('start').hidden = true; $('end').hidden = true; $('kampagne').hidden = false; kaAktiv = false; kaArmeeOffen = false;
+  $('start').hidden = true; $('end').hidden = true; $('kampagne').hidden = false; kaAktiv = false; kaArmeeOffen = false; kaZiel = null;
   if (soundOn && musikName !== 'musik_titel') setMusik('musik_titel', 2);
   kaZeichnen();
 }
 function kaZuMenue() { $('kampagne').hidden = true; showStart(true); startStep('kampagne'); }
-// Karte zeichnen: SVG-Schicht (Provinzen, Wege) und Orte als Knöpfe an Anteilen der Fläche
+// Karte zeichnen: Gelände je Feld (SVG), Provinzgrenzen, Straßen, Fluss; darüber die Schicht für Reichweite/Weg/Sperrbereich und die Orte als Knöpfe
 function kaZeichnen() {
-  if (!KA) return; const A = KA.armee, frei = new Set(KAMP.nachbarn(A.ort).filter(id => !KAMP.gesperrtWarum(KA, id)));
-  $('kaRunde').textContent = `Runde ${KA.runde}`; $('kaKasse').textContent = `${KAMP.zahl(KA.kasse)} Kronen`;
-  const P2 = ([x, y]) => `${(x * 1000).toFixed(1)},${(y * 600).toFixed(1)}`;
-  let svg = '<defs><pattern id="kaSchraff" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="10" stroke="#66483A" stroke-width="1.2" opacity=".18"/></pattern></defs>';
-  for (const p of KAMP.PROVINZEN) { const orte = KAMP.ORTE.filter(o => o.prov === p.id), besitz = orte.map(o => KA.orte[o.id].besitz), alle = besitz.every(b => b === besitz[0]) ? besitz[0] : null;
-    const fill = alle ? KAMP.SEITEN[alle].farbe : 'url(#kaSchraff)';
-    svg += `<polygon points="${p.umriss.map(P2).join(' ')}" fill="${fill}" fill-opacity="${alle ? 0.13 : 1}" stroke="#120D0B" stroke-width="3" stroke-dasharray="14 6 3 6" stroke-linejoin="round"/>`;
-    const [lx, ly] = p.schrift; svg += `<text x="${lx * 1000}" y="${ly * 600}" class="ka-prov">${p.name}</text>`; }
-  for (const [a, b] of KAMP.WEGE) { const oa = KAMP.ortVon(a), ob = KAMP.ortVon(b), an = (a === A.ort && frei.has(b)) || (b === A.ort && frei.has(a));
-    svg += `<line x1="${oa.x * 1000}" y1="${oa.y * 600}" x2="${ob.x * 1000}" y2="${ob.y * 600}" stroke="${an ? '#C2A461' : '#66483A'}" stroke-width="${an ? 6 : 4}" stroke-dasharray="${an ? '' : '10 7'}" stroke-linecap="round" opacity="${an ? 1 : 0.75}"/>`; }
+  if (!KA) return; const A = KA.armee, { SPALTEN, ZEILEN } = KAMP;
+  $('kaRunde').textContent = `Runde ${KA.runde}`; $('kaKasse').textContent = `${KAMP.zahl(KA.kasse)} Kronen`; $('kaBp').textContent = `Bewegung ${A.bp}/${KAMP.BP_RUNDE}`;
+  $('kaRasterKn').classList.toggle('an', kaRaster);
+  let svg = '<defs><pattern id="kaWald" width="14" height="12" patternUnits="userSpaceOnUse"><path d="M7 1 L11 9 L3 9 Z" fill="#2E3A1E" opacity=".55"/></pattern>' +
+    '<pattern id="kaSumpf" width="16" height="8" patternUnits="userSpaceOnUse"><path d="M2 5 H10" stroke="#3E4A22" stroke-width="1.6" opacity=".6"/></pattern>' +
+    '<pattern id="kaBerg" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2 13 L9 2 L16 13" fill="none" stroke="#120D0B" stroke-width="1.8" opacity=".55"/></pattern></defs><g id="kaGel">';
+  const prov = (c, r) => KAMP.provVon(c, r);
+  for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) { const z = KAMP.zeichen(c, r), f = KA_FARBE[z], pv = prov(c, r), os = KAMP.ORTE.filter(o => o.prov === pv).map(o => KA.orte[o.id].besitz), alle = os.every(b => b === os[0]) ? os[0] : null;
+    svg += `<polygon points="${kaHex(c, r)}" fill="${alle ? KAMP.SEITEN[alle].farbe : '#66483A'}" fill-opacity="${alle ? 0.09 : 0.05}"/>`;
+    if (f) svg += `<polygon points="${kaHex(c, r)}" fill="${f[0]}" fill-opacity="${f[1]}"/>`;
+    if (z === 'w') svg += `<polygon points="${kaHex(c, r)}" fill="url(#kaWald)"/>`; else if (z === 's') svg += `<polygon points="${kaHex(c, r)}" fill="url(#kaSumpf)"/>`; else if (z === '^') svg += `<polygon points="${kaHex(c, r)}" fill="url(#kaBerg)"/>`; }
+  // Provinzgrenzen: Kante zwischen zwei Feldern verschiedener Provinz (die beiden Ecken, die dem Nachbarn am nächsten liegen)
+  for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) for (const [c2, r2] of KAMP.nachbarn(c, r)) { if (c2 < c || (c2 === c && r2 < r) || prov(c, r) === prov(c2, r2)) continue;
+    const [nx, ny] = kaPt(c2, r2), e = KAMP.ecken(c, r).map(([x, y]) => [x * 1000, y * 600]).sort((a, b) => Math.hypot(a[0] - nx, a[1] - ny) - Math.hypot(b[0] - nx, b[1] - ny));
+    svg += `<line x1="${e[0][0]}" y1="${e[0][1]}" x2="${e[1][0]}" y2="${e[1][1]}" stroke="#120D0B" stroke-width="3" stroke-dasharray="9 4 2 4" stroke-linecap="round"/>`; }
+  // Fluss und Straßen als Linien von Feldmitte zu Feldmitte
+  const linie = (zs, farbe, breite, strich) => { let s = ''; const wurzel = {}, w = k => wurzel[k] && wurzel[k] !== k ? (wurzel[k] = w(wurzel[k])) : k;   // Kanten als Baum (ohne Dreiecke, wo zwei Straßen nebeneinander laufen)
+    for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) { if (!zs.includes(KAMP.zeichen(c, r))) continue; const [x1, y1] = kaPt(c, r);
+    for (const [c2, r2] of KAMP.nachbarn(c, r)) { if ((c2 < c || (c2 === c && r2 < r)) || !zs.includes(KAMP.zeichen(c2, r2))) continue; const a = w(c + ',' + r), b = w(c2 + ',' + r2); if (a === b) continue; wurzel[a] = b; const [x2, y2] = kaPt(c2, r2); s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${farbe}" stroke-width="${breite}" stroke-linecap="round"${strich ? ` stroke-dasharray="${strich}"` : ''}/>`; } } return s; };
+  svg += linie('~fb', '#3E5560', 7) + linie('=Ob', '#66483A', 4, '') + '</g>';
+  for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) { const z = KAMP.zeichen(c, r); if (z === 'b' || z === 'f') { const [x, y] = kaPt(c, r); svg += `<text x="${x}" y="${y + 6}" class="ka-zeichen">${z === 'b' ? 'Brücke' : 'Furt'}</text>`; } }
+  for (const p of KAMP.PROVINZEN) { const [x, y] = kaPt(...p.schrift); svg += `<text x="${x}" y="${y + 8}" class="ka-prov">${p.name}</text>`; }
+  svg += '<g id="kaDyn"></g><g id="kaFelder"></g>';
   $('kaSvg').innerHTML = svg;
-  $('kaOrte').innerHTML = KAMP.ORTE.map(o => { const s = KA.orte[o.id], cls = ['ka-ort', 'b' + s.besitz, o.art, frei.has(o.id) ? 'frei' : '', kaWahl === o.id ? 'gewaehlt' : '', A.ort === o.id ? 'hier' : '', s.besitz === 'R' ? 'gesperrt' : ''].filter(Boolean).join(' ');
-    return `<button class="${cls}" data-ort="${o.id}" style="left:${o.x * 100}%;top:${o.y * 100}%" title="${o.name} – ${KAMP.SEITEN[s.besitz].name}"><i class="ka-fahne"></i><span>${o.name}</span></button>`; }).join('');
-  $('kaOrte').querySelectorAll('.ka-ort').forEach(b => b.onclick = () => kaOrtKlick(b.dataset.ort));
-  const ao = KAMP.ortVon(A.ort), ak = $('kaArmee'); ak.style.left = `${ao.x * 100}%`; ak.style.top = `${ao.y * 100}%`;
-  ak.innerHTML = `${UP.wA ? `<img src="${UP.wA}" alt="">` : ''}<b>${A.trupps.length}</b>`; ak.title = `Armee des Konkordats: ${A.trupps.length} Trupps`; ak.onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaInfo(); };
+  // Trefferschicht: ein unsichtbares Sechseck je Feld (Hexfeld sichtbar über den Schalter „Hexfeld“)
+  let fl = ''; for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) fl += `<polygon data-k="${c},${r}" points="${kaHex(c, r)}" class="ka-feld${kaRaster ? ' sicht' : ''}"/>`;
+  $('kaFelder').innerHTML = fl;
+  const sv = $('kaSvg'); sv.onpointermove = e => { const k = e.target.dataset && e.target.dataset.k; if (k !== kaZiel && e.pointerType === 'mouse') { kaZiel = k || null; kaDyn(); } };
+  sv.onpointerleave = () => { if (kaZiel) { kaZiel = null; kaDyn(); } };
+  sv.onclick = e => { const k = e.target.dataset && e.target.dataset.k; if (k) kaFeldKlick(k); };
+  kaReich = KA.phase === 'karte' && !(KA.ende && !KA.weiter) ? KAMP.reichweite(KA) : new Map();
+  $('kaOrte').innerHTML = KAMP.ORTE.map(o => { const s = KA.orte[o.id], ang = !KAMP.angriffWarum(KA, o.id), cls = ['ka-ort', 'b' + s.besitz, o.art, ang ? 'angriff' : '', kaReich.has(KAMP.key(o.c, o.r)) ? 'frei' : '', kaWahl === o.id ? 'gewaehlt' : '', s.besitz === 'R' ? 'gesperrt' : ''].filter(Boolean).join(' ');
+    return `<button class="${cls}" data-ort="${o.id}" style="left:${o.x * 100}%;top:${o.y * 100}%" title="${o.name} – ${KAMP.SEITEN[s.besitz].name}" aria-label="${o.name}"><i class="ka-fahne"></i></button><span class="ka-name ${o.art}" style="left:${o.x * 100}%;top:${o.y * 100}%">${o.name}</span>`; }).join('');
+  $('kaOrte').querySelectorAll('.ka-ort').forEach(b => { b.onclick = () => kaOrtKlick(b.dataset.ort); b.onpointerenter = e => { if (e.pointerType === 'mouse') { const o = KAMP.ortVon(b.dataset.ort); kaZiel = KAMP.key(o.c, o.r); kaDyn(); } }; });
+  const [ax, ay] = KAMP.mitte(A.c, A.r), ak = $('kaArmee'); ak.style.left = `${ax * 100}%`; ak.style.top = `${ay * 100}%`;
+  ak.innerHTML = `${UP.wA ? `<img src="${UP.wA}" alt="">` : ''}<b>${A.trupps.length}</b>`; ak.title = `Armee des Konkordats: ${A.trupps.length} Trupps, ${A.bp} Bewegungspunkte`; ak.onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); };
   $('kaRundeKn').disabled = KA.phase !== 'karte' || (!!KA.ende && !KA.weiter);
-  kaInfo(); kaHinweis();
+  kaDyn(); kaInfo(); kaHinweis();
+}
+// Dynamische Schicht: Reichweite (Messing), Sperrbereich (roter Rand), Weg zum Feld unter Maus/Finger mit Kosten
+function kaDyn() {
+  const d = $('kaDyn'); if (!d || !KA) return; let s = '';
+  const sp = KAMP.sperrbereich(KA);
+  for (const n of kaReich.values()) s += `<polygon points="${kaHex(n.c, n.r)}" fill="${n.halt ? '#A8473A' : '#C2A461'}" fill-opacity="${n.halt ? 0.3 : 0.5}" stroke="#7A5E2A" stroke-opacity=".55" stroke-width="1"/>`;   // Reichweite deutlich auf dem Pergament
+  for (const k of sp.keys()) { const [c, r] = k.split(',').map(Number); s += `<polygon points="${kaHex(c, r)}" fill="none" stroke="#A8473A" stroke-width="2.5" stroke-dasharray="6 4"/>`; }
+  let ziel = kaZiel; const o = ziel && KAMP.ortAuf(...ziel.split(',').map(Number));
+  if (o && KA.orte[o.id].besitz !== 'A') { const best = [...kaReich.values()].filter(n => KAMP.nachbarn(n.c, n.r).some(([c, r]) => c === o.c && r === o.r)).sort((a, b) => a.k - b.k)[0]; ziel = best ? KAMP.key(best.c, best.r) : null; }   // feindlicher Ort: Weg bis davor
+  if (ziel && kaReich.has(ziel)) { const p = [KA.armee, ...KAMP.pfad(kaReich, ziel)].map(n => kaPt(n.c, n.r)), n = kaReich.get(ziel), [ex, ey] = p[p.length - 1];
+    s += `<polyline points="${p.map(q => q.join(',')).join(' ')}" fill="none" stroke="#120D0B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><polyline points="${p.map(q => q.join(',')).join(' ')}" fill="none" stroke="#F6E3A8" stroke-width="3.5" stroke-dasharray="10 6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<circle cx="${ex}" cy="${ey}" r="13" fill="#120D0B"/><text x="${ex}" y="${ey + 5}" class="ka-kosten">${n.k}</text>${n.halt ? `<text x="${ex}" y="${ey - 18}" class="ka-halt">Halt</text>` : ''}`; }
+  d.innerHTML = s;
 }
 function kaHinweis() {
-  const m = KA.letzteMeldung, h = $('kaHinweis');
+  const m = KA.letzteMeldung, h = $('kaHinweis'), A = KA.armee;
   h.textContent = KA.ende === 'niederlage' ? 'Die Armee ist vernichtet. Nur ein Neustart ist möglich.' : KA.phase === 'schlacht' ? `Die Schlacht um ${KAMP.ortVon(KA.schlacht.ort).name} steht bevor.`
-    : KA.gezogen ? 'Die Armee ist gezogen. „Runde beenden“ für die nächste Runde.' : 'Ort anklicken: Wege in Messing führen zu erreichbaren Orten. Erneut klicken oder „Hierher ziehen“.';
+    : A.bp <= 0 ? 'Keine Bewegungspunkte mehr. „Runde beenden“ für die nächste Runde – angreifen geht noch, wenn die Armee neben einem feindlichen Ort steht.'
+    : `Bewegung ${A.bp}/${KAMP.BP_RUNDE}: Feld anklicken (Messing = erreichbar, roter Rand = Sperrbereich: dort muss die Armee anhalten). Feindlichen Ort vom Nachbarfeld aus angreifen.`;
   if (m && KA.phase === 'karte') h.textContent = (m.sieg ? `Sieg bei ${KAMP.ortVon(m.ort).name}. ` : `Niederlage bei ${KAMP.ortVon(m.ort).name}. `) + h.textContent;
 }
 function kaInfo() {
   const el = $('kaInfo'); if (!KA) return;
-  if (kaArmeeOffen || !kaWahl) { const T = KA.armee.trupps, sum = T.reduce((n, t) => n + t.str, 0);
-    el.innerHTML = `<h3>Armee des Konkordats</h3><p class="ka-sub">${KAMP.ortVon(KA.armee.ort).name} · ${T.length} Trupps · Stärke Ø ${Math.round(sum / Math.max(1, T.length) * 10)}</p>` +
+  if (kaArmeeOffen || !kaWahl) { const T = KA.armee.trupps, sum = T.reduce((n, t) => n + t.str, 0), o = KAMP.ortAuf(KA.armee.c, KA.armee.r), g = KAMP.GELAENDE[KAMP.zeichen(KA.armee.c, KA.armee.r)];
+    el.innerHTML = `<h3>Armee des Konkordats</h3><p class="ka-sub">${o ? o.name : g.name} · ${T.length} Trupps · Stärke Ø ${Math.round(sum / Math.max(1, T.length) * 10)} · Bewegung ${KA.armee.bp}/${KAMP.BP_RUNDE}</p>` +
       `<table class="ka-tab"><tr><th>Trupp</th><th>Stärke</th><th>Schlachten</th><th>Abschüsse</th></tr>${T.map(t => `<tr><td>${KA_TYPNAME(t.typ)}</td><td class="${t.str < 4 ? 'rot' : t.str < 7 ? 'gelb' : ''}">${Math.round(t.str * 10)}</td><td>${t.schlachten}</td><td>${t.abschuesse}</td></tr>`).join('')}</table>`;
     return; }
-  const o = KAMP.ortVon(kaWahl), s = KA.orte[o.id], warum = KAMP.gesperrtWarum(KA, o.id), M = E.MAPS[o.karte], hier = KA.armee.ort === o.id;
+  const o = KAMP.ortVon(kaWahl), s = KA.orte[o.id], M = E.MAPS[o.karte], hier = KA.armee.c === o.c && KA.armee.r === o.r, aw = KAMP.angriffWarum(KA, o.id), erreichbar = kaReich && kaReich.get(KAMP.key(o.c, o.r));
   const garn = s.garnison.length ? `<p><b>Besatzung:</b> ${Object.entries(s.garnison.reduce((m, t) => (m[t.typ] = (m[t.typ] || 0) + 1, m), {})).map(([t, n]) => `${n}× ${KA_TYPNAME(t)}`).join(', ')}</p>` : '';
+  const knopf = hier ? '<p class="ka-sub">Die Armee steht hier.</p>' : s.besitz === 'A' ? (erreichbar ? `<button class="up-text ka-zug" id="kaZiehenKn">Hierher ziehen (${erreichbar.k})</button>` : `<p class="ka-warum">${KA.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'In dieser Runde nicht erreichbar.'}</p>`)
+    : !aw ? '<button class="up-text ka-zug" id="kaAngriffKn">Angreifen</button>' : `<p class="ka-warum">${aw}</p>`;
   el.innerHTML = `<h3>${o.name}</h3><p class="ka-sub">${(KAMP.PROVINZEN.find(p => p.id === o.prov) || {}).name} · ${o.art === 'hauptstadt' ? 'Hauptstadt' : o.art === 'hauptort' ? 'Hauptort' : 'Ort'}${o.text ? ' · ' + o.text : ''}</p>` +
-    `<p><b>Besitz:</b> <span class="ka-b b${s.besitz}">${KAMP.SEITEN[s.besitz].name}</span></p>${garn}<p><b>Schlachtkarte:</b> ${M ? M.name : o.karte}${M && M.winter ? ' (Winter)' : ''}</p>` +
-    (hier ? '<p class="ka-sub">Die Armee steht hier.</p>' : warum ? `<p class="ka-warum">${warum}</p>` : `<button class="up-text ka-zug" id="kaZiehenKn">${s.besitz === 'D' ? 'Angreifen' : 'Hierher ziehen'}</button>`);
-  const z = $('kaZiehenKn'); if (z) z.onclick = () => kaZiehen(o.id);
+    `<p><b>Besitz:</b> <span class="ka-b b${s.besitz}">${KAMP.SEITEN[s.besitz].name}</span></p>${garn}${s.besitz !== 'A' && s.garnison.length ? '<p class="ka-sub">Sperrbereich: Wer ein Nachbarfeld betritt, muss anhalten.</p>' : ''}<p><b>Schlachtkarte:</b> ${M ? M.name : o.karte}${M && M.winter ? ' (Winter)' : ''}</p>` + knopf;
+  const z = $('kaZiehenKn'); if (z) z.onclick = () => kaZiehen(o.c, o.r);
+  const a = $('kaAngriffKn'); if (a) a.onclick = () => kaAngriff(o.id);
 }
-function kaOrtKlick(id) { if (!KA) return; playSound('klick', 0.4, null); if (kaWahl === id && !KAMP.gesperrtWarum(KA, id)) return kaZiehen(id); kaWahl = id; kaArmeeOffen = false; kaZeichnen(); }
-function kaZiehen(id) {
-  const r = KAMP.ziehen(KA, id); if (!r.ok) { toast(r.warum); return; }
-  KA.letzteMeldung = null; KAMP.speichern(KA); kaWahl = null; playSound('march', 0.4); kaZeichnen();
-  if (r.schlacht) kaChronikVor();
+function kaOrtKlick(id) {
+  if (!KA) return; playSound('klick', 0.4, null); const o = KAMP.ortVon(id), s = KA.orte[id];
+  if (kaWahl === id) { if (s.besitz === 'A' && kaReich.has(KAMP.key(o.c, o.r))) return kaZiehen(o.c, o.r); if (s.besitz !== 'A' && !KAMP.angriffWarum(KA, id)) return kaAngriff(id); }
+  kaWahl = id; kaArmeeOffen = false; kaZiel = KAMP.key(o.c, o.r); kaInfo(); kaDyn();
+  $('kaOrte').querySelectorAll('.ka-ort').forEach(b => b.classList.toggle('gewaehlt', b.dataset.ort === id));
 }
+// Feld anklicken: Maus – Weg steht schon (Überfahren), also gleich ziehen; Finger – erst Weg zeigen, zweites Antippen zieht
+function kaFeldKlick(k) {
+  if (!KA || KA.phase !== 'karte') return;
+  if (kaZiel !== k) { kaZiel = k; kaDyn(); return; }
+  if (kaReich.has(k)) { const [c, r] = k.split(',').map(Number); kaZiehen(c, r); } else toast(KA.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'Dorthin kommt die Armee in dieser Runde nicht.');
+}
+function kaZiehen(c, r) {
+  const r0 = KAMP.ziehenNach(KA, c, r); if (!r0.ok) { toast(r0.warum); return; }
+  KAMP.speichern(KA); kaWahl = null; kaZiel = null; playSound('march', 0.4);
+  if (r0.halt) toast(`Halt vor ${KAMP.ortVon(r0.halt).name}: Sperrbereich – angreifen oder umkehren.`);
+  kaZeichnen();
+}
+function kaAngriff(id) { const r = KAMP.angreifen(KA, id); if (!r.ok) { toast(r.warum); return; } KAMP.speichern(KA); kaWahl = null; kaZiel = null; kaZeichnen(); kaChronikVor(); }
 function kaRundeEnde() { if (!KA || !KAMP.rundeBeenden(KA)) return; KA.letzteMeldung = null; KAMP.speichern(KA); playSound('klick', 0.5, null); toast(`Runde ${KA.runde}`); kaZeichnen(); }
+function kaRasterUmschalten() { kaRaster = !kaRaster; try { localStorage.setItem('arm.karaster', kaRaster ? '1' : '0'); } catch (e) {} if (KA) kaZeichnen(); }
 // Pergament „Aus den Chroniken“ vor/nach der Schlacht und für Sieg/Niederlage der Kampagne
 function kaChronik(titel, kicker, text, liste, knoepfe) {
   $('kaChTitel').textContent = titel; $('kaChKicker').textContent = kicker; $('kaChText').textContent = text; $('kaChListe').innerHTML = liste || '';
@@ -5119,7 +5175,7 @@ let beendenT = 0; function beendenScharf(an) { clearTimeout(beendenT); const b =
 $('smBeenden').onclick = () => { if (!$('smBeenden').classList.contains('scharf')) return beendenScharf(true); beendenScharf(false); if (G) G.over = G.over || { winner: null, why: 'quit' }; setAmbient(false); showStart(true); };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; kzLegende(); };
 $('closeRules').onclick = () => { $('rules').hidden = true; };
-$('kaNeu').onclick = kaNeuKlick; $('kaWeiter').onclick = kaWeiterKlick; $('kaRundeKn').onclick = kaRundeEnde; $('kaMenue').onclick = kaZuMenue; $('kaArmeeKn').onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaInfo(); };   // K-A
+$('kaNeu').onclick = kaNeuKlick; $('kaWeiter').onclick = kaWeiterKlick; $('kaRundeKn').onclick = kaRundeEnde; $('kaMenue').onclick = kaZuMenue; $('kaArmeeKn').onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); }; $('kaRasterKn').onclick = kaRasterUmschalten;   // K-A
 $('againBtn').onclick = () => { if (kaErg) return kaNachSchlacht(); $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };

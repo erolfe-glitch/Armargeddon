@@ -1,3 +1,92 @@
+## 2026-11-28 – K-A (Punkt 156 mit Nachtrag Abschnitt 16): Kampagne Start mit freier Bewegung auf dem Hexfeld
+
+Gepusht:
+- `c7c9ebc`: Teil 1, Kampagne mit festen Wegen. Daten, Karte, Übergang Schlacht ↔ Karte, Speichern.
+- Abschluss-Commit: Umbau auf freie Bewegung (Abschnitt 16), Test, STYLE.md, CLAUDE.md, index.html und dieser Bericht.
+
+**Stand:**
+- **Hänger:** keine. Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:**
+  - Regeltest in Ordnung, Kommentar-Prüfung sauber, Belegungstest in Ordnung.
+  - Partietest „Konsole rot-frei, keine Fehler“.
+  - Neuer Kampagnentest `node tools/test_kampagne.mjs`: **32 von 32 Prüfungen** in Ordnung, keine Seitenfehler, etwa 3 Minuten.
+  - Das Gefecht ist unverändert: `sim.js 200` Grauwall wie vorher Konkordat 67 %, 15,9 Runden, Ausfälle 31 / 25 %.
+- **Video:** `entwurf/probe/video/K-A.mp4` (Gefecht Grauwall, 25 s, mit Ton). Die Kampagnenkarte zeigen die Bilder unten.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** keine.
+
+**Gebaut:**
+1. **Startmenü:** neuer Knopf „Kampagne“ mit „Neue Kampagne“ und „Fortsetzen“.
+   - „Fortsetzen“ erscheint nur, wenn ein Spielstand da ist; die Seite zeigt Runde, Ort, Trupps und eine anstehende Schlacht.
+   - Ist schon ein Stand da, fragt „Neue Kampagne“ einmal nach.
+   - Das Gefecht ist unverändert.
+2. **Daten in `src/kampagne.js`** (als Daten, erweiterbar):
+   - 4 Provinzen mit je 3 Orten und Besitz wie Abschnitt 14.
+   - Je Ort: Schlachtkarte (Grauwall, Sankt Ruß oder Winterdorf) mit eigenem Startwert (wechselt je Runde) und Besatzung von 3–6 Trupps.
+   - Armee: Trupps mit Typ, Stärke, Rang, Schlachten, Abschüsse. Startarmee = Gefechtsarmee Grauwall mit Feldmarschall, in Valmor-Stadt.
+   - Runde und Kasse (2.000 Kronen, noch ohne Wirkung).
+3. **Kampagnenkarte mit freier Bewegung (Abschnitt 16):**
+   - **Unsichtbares Hexfeld** 30 × 20 als Zeichenraster. Der Knopf „Hexfeld“ blendet es ein.
+   - **Gelände:** Straße 1, Land 2, Wald 3, Sumpf 4, Furt 3, Brücke 1. Fluss, Gebirge und See sind gesperrt.
+   - **Engpässe:**
+     - der Pass bei der Grauwall-Stellung durch den Gebirgskamm zwischen Valmor und dem Osten;
+     - der Fluss vor Krähenfurt mit einer Furt bei Furtdorf und einer Brücke bei Krähenfurt;
+     - der Waldweg im Süden als langer Umweg;
+     - die Hügelkette vor Aschenhof mit zwei Durchgängen.
+   - **10 Bewegungspunkte je Runde.**
+     - Beim Öffnen der Karte ist die Reichweite in Messing zu sehen.
+     - Beim Überfahren erscheint der kürzeste Weg nach Kosten mit Kostenzahl und gegebenenfalls „Halt“.
+     - Mit dem Finger zeigt das erste Antippen den Weg, das zweite zieht.
+   - **Sperrbereich:** 1 Feld um jeden feindlichen Ort mit Besatzung, als roter gestrichelter Rand.
+     - Wer hineinzieht, muss anhalten; die restlichen Punkte verfallen.
+     - Vorbeiziehen geht nicht.
+     - Er reicht nicht über Fluss oder Gebirge.
+   - **Angriff:** nur vom Nachbarfeld aus, einmal je Runde, auch nach dem Halt. Orte der Renegaten sind gesperrt („Renegaten – kommt später“).
+   - **Darstellung im Code:**
+     - Geländetönung je Feld, Wald-, Sumpf- und Bergmuster, Fluss und Straßen als Linien.
+     - Provinzgrenzen gestrichelt; die Provinzen sind leicht in der Besitzerfarbe getönt.
+     - Orte als runde Eisenmarken mit Fähnchen (Konkordat Ochsenblut, Aschenwacht Feldgrau, Renegaten Schwarz mit grauer Kontur), der Name darunter. Die Armee ist das Konkordat-Wappen mit der Zahl der Trupps.
+     - Rechts zeigt ein Pergament den gewählten Ort (Besitz, Besatzung, Schlachtkarte, Angreifen bzw. Hierher ziehen) oder die Armee-Liste.
+     - Die Lage der Orte steht als Anteil (0–1) bzw. als Feld im Raster, damit die gemalte Landkarte sie übernehmen kann.
+4. **Schlacht:**
+   - Vorher ein Pergament „Aus den Chroniken“ (Platzhaltertexte je Ort), dann die eigene Armee mit Reststärke gegen die Besatzung auf der Schlachtkarte des Ortes.
+   - Aufstellungsphase wie im Gefecht. „Automatisch aufstellen“ behält die Reststärken; das war ein Fehler, den der Test gefunden hat.
+   - Kein Seltenheits-Aufschlag.
+   - **Danach:**
+     - Stärken übernommen; Gefallene und Zerschlagene sind weg, Entkommene bleiben.
+     - Schlachten und Abschüsse je Trupp werden gezählt.
+     - Sieg: der Ort gehört dem Konkordat, die Armee steht darin.
+     - Niederlage: Rückzug zum nächsten eigenen Ort; die überlebende Besatzung bleibt.
+5. **Ende der Kampagne:**
+   - Sieg = Aschenhof-Stadt erobert und Valmor-Stadt gehalten. Es kommt ein Siegbild mit „Weiterspielen“.
+   - Niederlage = Armee vernichtet. Es bleibt nur ein Neustart.
+6. **Speichern:** automatisch nach jedem Zug, jeder Runde, vor und nach jeder Schlacht (`arm.kampagne`, Versionsnummer 2). Wird die Seite in einer Schlacht neu geladen, geht es vor dieser Schlacht weiter; der Test prüft das.
+
+**Bilder** in `entwurf/probe/k_a/`:
+- 1920 px:
+  - `1920_karte_beginn.jpg`
+  - `1920_karte_hexfeld_reichweite.jpg` (Hexfeld eingeblendet, Reichweite von der Grauwall-Stellung, Sperrbereiche)
+  - `1920_karte_halt_sperrbereich.jpg`
+  - `1920_chronik_vor_der_schlacht.jpg`
+  - `1920_chronik_nach_der_schlacht.jpg`
+  - `1920_karte_nach_der_schlacht.jpg` (Fähnchen gewechselt, Armee mit Verlusten)
+- 1280 px:
+  - `1280_karte_nach_der_schlacht.jpg`
+  - `1280_karte_ort_gewaehlt.jpg`
+  - `1280_karte_hexfeld_reichweite.jpg` (Weg mit Kosten und „Halt“)
+  - `1280_karte_armee.jpg`
+- Die Leiste läuft bei 1280 nicht über, alle Knöpfe sind mindestens 40 px hoch.
+
+**Nicht in K-A** (wie geplant):
+- Einnahmen, Unterhalt, Ausheben, Gebäude (K-B), Ränge (K-C), Feldschlachten zwischen Armeen und Gegner-KI (K-D), Renegaten (K-F), Ereignisse (K-G), Tutorial und Einstellungen (K-E).
+- Die Aschenwacht handelt auf der Karte noch nicht; der Sperrbereich um Armeen kommt mit ihrer Armee in K-D.
+
+**Fragen an Enrico:**
+1. **Nachschub in Kampagnenschlachten:** Der Nachschub-Knopf geht in der Schlacht wie im Gefecht (mit Schlachtpunkten, ohne Seltenheits-Aufschlag). Was man in der Schlacht kauft, bleibt danach in der Armee; was die Besatzung kauft und überlebt, bleibt im Ort. Im Test wuchs die Armee so von 20 auf 22 Trupps. Soll das so bleiben, oder soll der Nachschub in Kampagnenschlachten aus sein, bis die Wirtschaft (K-B1) kommt?
+2. **Winter:** Winter gibt es nur auf der Winterdorf-Karte (die Orte in Krähenfurt). Grauwall oder Sankt Ruß im Winter brauchen erst Gelände-Teile im Schnee. Gespiegelt habe ich keine Karte, das wäre ein größerer Umbau. Reicht das vorerst?
+3. **Bewegung:** Von Valmor-Stadt zur Grauwall-Stellung kostet es 12 Punkte, also 2 Runden; bis vor Aschenhof etwa 4–5 Runden. Passt das Tempo, oder lieber 12 Bewegungspunkte je Runde?
+4. **Besatzungen:** 3–6 Trupps gegen eine Armee von 20 sind schnell besiegt (Kreidegrube im Test nach 9 Runden). Das ist für den Anfang gedacht; die Stärke kommt mit Wirtschaft und Gegner-KI. Einverstanden?
+
 ## 2026-11-28 – KO-A2 (Punkt 155): Befehle mit Abklingzeit und Stufen, Abgleich feste Aufstellung (nicht erreicht – Frage)
 
 Gepusht:

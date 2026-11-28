@@ -55,12 +55,20 @@ Fest je Fraktion, nicht nach Freund/Feind. Alle drei klar verschieden:
 - **Konkordat:** Ochsenblut `#8E2B22` (tief, nicht orange). Auf dunklem Grund trägt die Tintenkontur bzw. ein helles Glanzlicht die Farbe, nie ein helleres Orange-Rot. Als Schrift zu dunkel: Seitennamen in Knochenweiß mit Farbstrich darunter.
 - **Aschenwacht:** Feldgrau grünlich `#7D8471`.
 - **Blaue Legion:** Horizontblau `#6F8FB5` – die **einzige erlaubte Blau-Farbe** im Spiel.
+- **Renegaten** (neutral, Kampagne, Punkt 156): Schwarz `#2E2A28` mit Kontur `#9A9089` (Fähnchen und Besitz-Schild auf der Kampagnenkarte).
 
 Im Code: CSS `--A` / `--D` und `FIG.PAL.accent`; `applySkin` in ui.js setzt sie nach Bilderset (`sideCol`). Gilt für Kampfkraft-Balken, Siegpunkte, Zielfeld-Marken (Leiste und Karte), Ringe unter den Einheiten und Seitennamen. Hilfsmarkierungen nie blau, sondern Knochenweiß oder Messing.
 
 **Zahlen nie in Fraktionsfarbe** (Rot auf Dunkel ist schlecht lesbar): Siegpunkt-Zahlen in Knochenweiß, die Fraktionsfarbe als dicker Strich (5 px) darunter.
 
 Die Seite erkennt man nie nur an der Farbe: dazu das Wappen bzw. der Name. Ersatzformen, falls ein Wappenbild fehlt: Schild (Konkordat/Legion) und Zackenraute (Aschenwacht). Reihenfolge in der Leiste nach Sicht: eigene Seite links, Gegner rechts.
+
+## Kampagnenkarte (vorläufig im Code, K-A Punkt 156)
+- Fläche Pergament (`--up-txPerg` gekachelt, Rahmen `--up-p9`), Leiste Holz. Provinzen leicht in der Farbe des Besitzers (Deckkraft 0,09), gemischte Provinzen schraffiert; Grenzen Tintenstrich gestrichelt.
+- Gelände je Hexfeld als flache Tönung: Wald `#4E5A34` mit Tannenmuster, Sumpf `#6B7A3A` mit Strichen, Wasser (Fluss, See, Furt, Brücke) gedämpftes Schiefergrau `#55707A` (bewusst kein Blau), Fluss-Linie `#3E5560`, Gebirge `--s-rust` mit Zackenmuster, Straßen `--s-rust` als Linie.
+- Reichweite der Armee Messing (`--s-brass`, Deckkraft 0,5), Haltefelder im Sperrbereich Ochsenblut hell `--s-range`, Sperrbereich roter gestrichelter Rand `--s-range`, Wegvorschau knochenhell gestrichelt mit Kostenzahl.
+- Orte als runde Eisenmarken (mindestens 42 px, Hauptorte 50 px) mit Fähnchen in der Besitzerfarbe; der Name steht als Tintenschild darunter und lässt Klicks durch. Angreifbar = pulsierender roter Rand.
+- Die gemalte Landkarte ersetzt das später; die Lagen stehen als Anteile (0–1) bzw. als Hexfeld im Raster.
 
 ## Schrift
 Eingebettet, keine Online-Abhängigkeit (Quelle `ui-quelle/schriften/`, OFL; `tools/fonts.py` erzeugt `src/fonts.css`).

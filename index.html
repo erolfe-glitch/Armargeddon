@@ -713,7 +713,7 @@ body:has(#start:not([hidden])) .tbar { visibility: hidden; }   /* Startmenü: Le
 .sm-bg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 45%, rgba(18,13,11,.55) 75%, rgba(18,13,11,.92) 100%), linear-gradient(rgba(18,13,11,.35), transparent 22%, transparent 70%, rgba(18,13,11,.75)); }
 .sm:not([data-step="title"]) .sm-bg { filter: blur(6px) brightness(.32) saturate(.8); transform: scale(1.04); }
 .sm-page { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; padding: 28px 40px 24px; }
-.sm[data-step="title"] [data-page="title"], .sm[data-step="opts"] [data-page="opts"], .sm[data-step="side"] [data-page="side"], .sm[data-step="map"] [data-page="map"], .sm[data-step="setup"] [data-page="setup"] { display: flex; }
+.sm[data-step="title"] [data-page="title"], .sm[data-step="opts"] [data-page="opts"], .sm[data-step="side"] [data-page="side"], .sm[data-step="map"] [data-page="map"], .sm[data-step="setup"] [data-page="setup"], .sm[data-step="kampagne"] [data-page="kampagne"] { display: flex; }
 .sm-kicker { font: 400 22px var(--s-head); letter-spacing: .22em; text-transform: uppercase; color: var(--s-brass); text-shadow: 0 2px 0 var(--s-ink), 0 0 10px rgba(18,13,11,.9); }
 /* Titelseite */
 .sm-title { justify-content: space-between; }
@@ -1284,6 +1284,59 @@ body.neu.ui1.symfarbe #hud .up-ab > img { filter: brightness(1.12) saturate(1.15
 body.neu.ui1.symfarbe #hud .up-ab.on > img, body.neu.ui1.symfarbe #hud .up-ab.pulse > img { filter: brightness(1.25) saturate(1.25) drop-shadow(1px 0 0 #120D0B) drop-shadow(-1px 0 0 #120D0B) drop-shadow(0 1px 0 #120D0B) drop-shadow(0 -1px 0 #120D0B) drop-shadow(0 0 4px rgba(246,227,168,.7)); }
 body.neu.ui1.symfarbe #hud .up-ab.off::before { background: radial-gradient(circle at 50% 50%, rgba(187,165,131,.22) 0 35%, rgba(187,165,131,0) 70%); }
 body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.85) drop-shadow(1px 0 0 #120D0B) drop-shadow(-1px 0 0 #120D0B); opacity: .7; }
+/* ---- Kampagne (K-A, Punkt 156): Kampagnenkarte vorläufig im Code (Pergament, Provinzen, Wege, Orte), Leiste aus Holz, Chronik auf Pergament ---- */
+#kampagne { display: flex; flex-direction: column; background: var(--s-bg); z-index: 60; }
+#kampagne[hidden] { display: none; }
+#kampagne .ka-leiste { display: flex; align-items: center; gap: 10px; padding: 8px 14px; min-height: 60px; background: var(--up-txHolz) 0 0 repeat; box-shadow: inset 0 -3px 0 var(--s-ink); }
+#kampagne .ka-titel { font: 700 22px var(--s-head); letter-spacing: .06em; color: var(--s-text); text-shadow: 0 2px 0 var(--s-ink); margin-right: 8px; white-space: nowrap; }
+#kampagne .tb-plate { color: var(--s-text); font: 700 16px var(--s-body); }
+#kampagne .ka-luecke { flex: 1; }
+#kampagne .up-text { min-height: 44px; min-width: 44px; }
+#kampagne .up-text:disabled { opacity: .45; cursor: default; }
+#kampagne .ka-haupt { color: #F6E3A8; }
+#kampagne .ka-flaeche { flex: 1; display: flex; gap: 12px; padding: 12px; min-height: 0; }
+#kampagne .ka-karte { position: relative; flex: 1; min-width: 0; border: 15px solid transparent; border-image: var(--up-p9) 46 / 22px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; }
+#kampagne #kaSvg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#kampagne .ka-prov { font: 700 30px var(--s-head); fill: #120D0B; opacity: .28; text-anchor: middle; letter-spacing: .12em; }
+#kampagne #kaOrte { position: absolute; inset: 0; }
+#kampagne .ka-ort { position: absolute; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; padding: 0; cursor: pointer; display: grid; place-items: center;
+  background: var(--up-txEisen) 0 0 repeat; border: 3px solid var(--s-ink); box-shadow: 0 3px 0 var(--s-ink); z-index: 2; }
+#kampagne .ka-ort.hauptstadt, #kampagne .ka-ort.hauptort { width: 50px; height: 50px; border-width: 4px; }
+#kampagne .ka-ort .ka-fahne { width: 18px; height: 24px; margin-left: 6px; clip-path: polygon(0 0, 100% 15%, 70% 45%, 100% 75%, 0 90%); border-left: 3px solid #120D0B; }
+#kampagne .ka-ort.bA .ka-fahne { background: #8E2B22; } #kampagne .ka-ort.bD .ka-fahne { background: #7D8471; } #kampagne .ka-ort.bR .ka-fahne { background: #2E2A28; box-shadow: inset 0 0 0 2px #9A9089; }
+#kampagne .ka-ort.bA { border-color: #8E2B22; } #kampagne .ka-ort.bD { border-color: #4E5446; } #kampagne .ka-ort.bR { border-color: #9A9089; }
+#kampagne .ka-ort.gesperrt { opacity: .8; }
+#kampagne .ka-ort.frei { outline: 3px solid var(--s-brass); outline-offset: 2px; }
+#kampagne .ka-ort.angriff { outline: 3px solid #A8473A; outline-offset: 2px; animation: kaPuls 1.4s ease-in-out infinite; }
+#kampagne .ka-ort.gewaehlt { outline: 3px solid #F6E3A8; outline-offset: 2px; }
+@keyframes kaPuls { 50% { outline-color: rgba(168,71,58,.3); } }
+#kampagne .ka-name { position: absolute; transform: translate(-50%, 24px); pointer-events: none; white-space: nowrap; z-index: 1; padding: 0 5px; color: #F0EDE1; background: rgba(18,13,11,.72); font: 700 14px var(--s-body); }
+#kampagne .ka-name.hauptstadt, #kampagne .ka-name.hauptort { transform: translate(-50%, 28px); font: 700 15px var(--s-head); letter-spacing: .04em; }
+#kampagne .ka-feld { fill: transparent; stroke: none; pointer-events: all; cursor: pointer; }
+#kampagne .ka-feld.sicht { stroke: rgba(18,13,11,.45); stroke-width: 1; }
+#kampagne .ka-feld:hover { fill: rgba(246,227,168,.18); }
+#kampagne .ka-zeichen { font: 700 11px var(--s-body); fill: #F0EDE1; text-anchor: middle; paint-order: stroke; stroke: #120D0B; stroke-width: 3px; pointer-events: none; }
+#kampagne .ka-kosten { font: 700 15px var(--s-body); fill: #F6E3A8; text-anchor: middle; pointer-events: none; }
+#kampagne .ka-halt { font: 700 15px var(--s-head); fill: #F0EDE1; text-anchor: middle; paint-order: stroke; stroke: #713B36; stroke-width: 4px; pointer-events: none; }
+#kampagne #kaDyn { pointer-events: none; }
+#kampagne .up-text.an { color: #F6E3A8; }
+#kampagne .ka-armee { position: absolute; transform: translate(-50%, -50%); z-index: 3; width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--s-brass); background: #8E2B22; box-shadow: 0 4px 0 var(--s-ink); cursor: pointer; padding: 0; transition: left .5s, top .5s; }
+#kampagne .ka-armee img { width: 100%; height: 100%; object-fit: contain; }
+#kampagne .ka-armee b { position: absolute; right: -8px; bottom: -6px; min-width: 24px; padding: 0 5px; border-radius: 12px; background: var(--s-ink); color: var(--s-text); font: 700 14px var(--s-body); }
+#kampagne .ka-info { width: 340px; overflow: auto; padding: 14px 16px; color: var(--s-bg); border: 15px solid transparent; border-image: var(--up-p9) 46 / 22px stretch; background: var(--up-txPerg) 0 0 repeat; background-clip: padding-box; font: 600 15px/1.4 var(--s-body); }
+#kampagne .ka-info h3 { margin: 0 0 4px; font: 700 21px var(--s-head); letter-spacing: .04em; }
+#kampagne .ka-info p { margin: 6px 0; }
+.ka-sub { opacity: .85; font-size: 14px; }
+#kampagne .ka-warum { color: #713B36; font-weight: 700; }
+#kampagne .ka-b { padding: 0 6px; color: #F0EDE1; } #kampagne .ka-b.bA { background: #8E2B22; } #kampagne .ka-b.bD { background: #7D8471; } #kampagne .ka-b.bR { background: #2E2A28; outline: 2px solid #9A9089; }
+#kampagne .ka-zug { margin-top: 8px; width: 100%; }
+#kampagne .ka-tab { width: 100%; border-collapse: collapse; font-size: 14px; } #kampagne .ka-tab th { text-align: left; border-bottom: 2px solid var(--s-rust); }
+#kampagne .ka-tab td { padding: 2px 4px; border-bottom: 1px solid rgba(102,72,58,.3); } #kampagne .ka-tab td:not(:first-child), #kampagne .ka-tab th:not(:first-child) { text-align: right; }
+#kampagne .ka-tab td.gelb { color: #8A6A1E; } #kampagne .ka-tab td.rot { color: #8E2B22; font-weight: 800; }
+#kampagne .ka-hinweis { padding: 6px 16px 10px; color: var(--s-text); font: 600 15px var(--s-body); text-shadow: 0 1px 0 var(--s-ink); }
+#kaChronik { z-index: 70; } #kaChronik .ka-chronik { max-width: 620px; } #kaChronik p { font: 600 17px/1.5 var(--s-body); }
+.ka-start { display: grid; gap: 12px; max-width: 560px; margin: 0 auto; color: var(--s-text); font: 600 17px/1.5 var(--s-body); }
+@media (max-width: 1500px) { #kampagne .ka-info { width: 280px; } #kampagne .ka-titel { font-size: 18px; } #kampagne .ka-armee { width: 48px; height: 48px; } }
 </style>
 </head>
 <body>
@@ -1348,12 +1401,20 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
     <header class="sm-logo"><div class="sm-kicker">Die Schlacht am Grauwall</div><h1 class="sm-h1">Armargeddon</h1></header>
     <nav class="sm-menu">
       <button class="sm-btn main" id="closeStart" hidden>Zurück zum Spiel</button>
-      <button class="sm-btn main" id="smNeu" data-go="side">Neue Schlacht</button>
+      <button class="sm-btn main" id="smNeu" data-go="side">Neue Schlacht</button><button class="sm-btn main" id="smKampagne" data-go="kampagne">Kampagne</button>
       <button class="sm-btn" id="btnRules">Regeln</button>
       <button class="sm-btn" data-go="opts">Optionen</button>
       <button class="sm-btn" id="smBeenden" hidden data-tip="Schlacht beenden und zum Startbildschirm">Beenden</button>
     </nav>
     <p class="sm-note">Eine eigene Welt im Stil des Grabenkriegs.</p>
+  </section>
+  <!-- Kampagne (K-A, Punkt 156) -->
+  <section class="sm-page" data-page="kampagne">
+    <header class="sm-head"><div class="sm-kicker">Feldzug um Grauwall</div><h2 class="sm-h2">Kampagne</h2></header>
+    <div class="sm-body"><div class="ka-start"><p>Führe die Armee des Konkordats von Valmor-Stadt bis nach Aschenhof. Ein Ort je Runde, jede Schlacht mit den Verlusten der letzten.</p>
+      <p id="kaStandInfo" class="ka-sub"></p>
+      <button class="sm-btn main" id="kaWeiter" hidden>Fortsetzen</button><button class="sm-btn main" id="kaNeu">Neue Kampagne</button></div></div>
+    <footer class="sm-foot"><button class="sm-btn small" data-go="title">Zurück</button></footer>
   </section>
   <!-- Optionen -->
   <section class="sm-page" data-page="opts">
@@ -1513,6 +1574,14 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
   </div>
 </div>
 
+<div class="overlay" id="kampagne" hidden>
+  <div class="ka-leiste"><span class="ka-titel">Feldzug um Grauwall</span><span class="tb-plate" id="kaRunde">Runde 1</span><span class="tb-plate" id="kaBp" title="Bewegungspunkte der Armee in dieser Runde">Bewegung 10/10</span><span class="tb-plate" id="kaKasse" title="Kriegskasse – Einnahmen und Ausgaben kommen mit dem nächsten Paket">2.000 Kronen</span>
+    <span class="ka-luecke"></span><button class="up-text" id="kaRasterKn" title="Hexfeld der Kampagnenkarte ein- oder ausblenden (zum Testen)">Hexfeld</button><button class="up-text" id="kaArmeeKn">Armee</button><button class="up-text ka-haupt" id="kaRundeKn">Runde beenden</button><button class="up-text" id="kaMenue">Menü</button></div>
+  <div class="ka-flaeche"><div class="ka-karte" id="kaKarte"><svg id="kaSvg" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"></svg><div id="kaOrte"></div><button class="ka-armee" id="kaArmee"></button></div>
+    <aside class="ka-info" id="kaInfo"></aside></div>
+  <div class="ka-hinweis" id="kaHinweis"></div>
+</div>
+<div class="overlay center" id="kaChronik" hidden><div class="box ka-chronik"><div class="kicker" id="kaChKicker">Aus den Chroniken</div><h2 class="title" id="kaChTitel"></h2><p id="kaChText"></p><div id="kaChListe"></div><div class="startrow" style="justify-content:center" id="kaChKnoepfe"></div></div></div>
 <div class="overlay center" id="end" hidden>
   <div class="box">
     <div class="kicker">Die Schlacht am Grauwall</div>
@@ -2215,7 +2284,8 @@ function katZahl(army) { const z = { linie: 0, unterst: 0, elite: 0, geraet: 0, 
 const katSperreAlt = () => !!(TOG.KAT_SPERRE_ALT || (typeof window !== 'undefined' && window.KAT_SPERRE_ALT));   // ST1 (115.3): Rückweg zu den harten Grenzen Elite/Gerät
 const KAT_AUFSCHLAG_ARTEN = ['elite', 'geraet'];
 function katMax(z) { const frei = !katSperreAlt(); return { unterst: Math.floor(z.linie / P.KAT_UNTERST_JE), elite: frei ? Infinity : P.KAT_ELITE, geraet: frei ? Infinity : P.KAT_GERAET }; }
-function aufschlagVon(army, t) { if (katAlt() || katSperreAlt() || !KAT_AUFSCHLAG_ARTEN.includes(katOf(t))) return 0; return P.KAT_AUFSCHLAG * (katZahl(army)[katOf(t)] || 0); }   // je weitere Einheit derselben Kategorie (gleichzeitig da) +25 %
+let aufschlagAus = false;   // K-A (Punkt 156): in Kampagnenschlachten kein Seltenheits-Aufschlag (newGame-Option kampagne)
+function aufschlagVon(army, t) { if (aufschlagAus || katAlt() || katSperreAlt() || !KAT_AUFSCHLAG_ARTEN.includes(katOf(t))) return 0; return P.KAT_AUFSCHLAG * (katZahl(army)[katOf(t)] || 0); }   // je weitere Einheit derselben Kategorie (gleichzeitig da) +25 %
 function preisNeu(army, t) { const a = aufschlagVon(army, t); return a ? Math.round(COST[t] * (1 + a) / 5) * 5 : COST[t]; }
 function katFehler(army) { if (katAlt()) return ''; const z = katZahl(army), m = katMax(z);
   if (z.unterst > m.unterst) return `Unterstützung ${z.unterst}/${m.unterst}: je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
@@ -2364,13 +2434,14 @@ function autoAufstellen(G, side) {   // Kartenvorgabe: Seite neu aufstellen wie 
   for (const u of G.units) if (u.side === side) { if (TYPES[u.type].mg) u.setup = true; if (TYPES[u.type].mines) u.mines = TYPES[u.type].mines; if (TYPES[u.type].counterStrike) u.cready = true; }
 }
 function newGame(opts) {
-  opts = opts || {};
+  opts = opts || {}; aufschlagAus = !!opts.kampagne;
   useMapArmy(opts.map);
   const G = {
     mapId: MAP.id,
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     kommStufe: { A: +(opts.kommStufe && opts.kommStufe.A) || P.KOMM_STUFE, D: +(opts.kommStufe && opts.kommStufe.D) || P.KOMM_STUFE },   // KO-A2: Kommandanten-Stufe je Seite
+    kampagne: !!opts.kampagne,   // K-A: Schlacht aus der Kampagne
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
     kanten: null,   // R3: Deckung an Feldkanten (unten aus Karte und Gelände)
     bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
@@ -2921,7 +2992,7 @@ function counterDmg(G, d, a, ac, ar, arc, dStr) {
 
 function applyDamage(G, a, d, dmg, arc, ev, o) {
   o = o || {};
-  const t = hex(G, d.c, d.r).t, k0 = modelleDa(d);
+  const t = hex(G, d.c, d.r).t, k0 = modelleDa(d); if (a && a.side !== d.side) d.lastHitBy = a.id;   // K-A: Abschüsse je Trupp
   d.str = Math.max(0, d.str - dmg);
   const fall = Math.max(0, k0 - modelleDa(d));   // U5a: gefallene Modelle (Anzeige in U5b)
   if (fall && !u5aus() && kraftArt() === 'traeger' && modelle(d.type) === 3) for (let j = 0; j < fall && !d.traegerWeg; j++) if (G.rng() < 1 / Math.max(1, k0 - j)) d.traegerWeg = true;   // der Waffenträger fällt mit der Chance 1 / stehende Modelle
@@ -6945,6 +7016,207 @@ function exec(G, uid, s) {
 const AI = { next, exec, buy, W, setAktiv, planUnit, posValue, threatAt, mussAngreifen };   // posValue/threatAt/mussAngreifen: Messungen (tools/ki_aktiv.js)
 if (typeof module !== 'undefined' && module.exports) module.exports = AI; else root.AI = AI;
 })(this);
+
+</script>
+<script>
+// Kampagne (K-A, Punkt 156, 2026-11-28): Daten und Regeln der Kampagnenkarte – Provinzen, Orte, Hexfeld mit Gelände, Spielstand, Bewegung, Übergang Schlacht ↔ Karte.
+// Alles als Daten (erweiterbar); die Ansicht und der Ablauf im Spiel stehen in ui.js (Abschnitt „Kampagne“). Läuft auch in Node (tools/test_kampagne.mjs).
+// Grundlage: entwurf/KAMPAGNE_PLAN.md Abschnitte 2–4, 8, 10, 13, 14, 16 (freie Bewegung). Nicht in K-A: Wirtschaft (K-B), Ränge (K-C), Feldschlachten und Gegner-KI (K-D), Renegaten (K-F), Ereignisse (K-G).
+(function (root) {
+  'use strict';
+  const VERSION = 2, SPEICHER = 'arm.kampagne', STARTKASSE = 2000, BP_RUNDE = 10;
+  // Besitzer: A = Konkordat (Spieler), D = Aschenwacht, R = Renegaten (in K-A gesperrt). Farben nach STYLE.md / AUFTRAG 156.
+  const SEITEN = { A: { name: 'Konkordat', farbe: '#8E2B22', kontur: '#E9D9A8' }, D: { name: 'Aschenwacht', farbe: '#7D8471', kontur: '#1E1B18' }, R: { name: 'Renegaten', farbe: '#2E2A28', kontur: '#9A9089' } };
+  // Unsichtbares Hexfeld (Abschnitt 16): 30 × 20 flache Sechsecke, ungerade Spalten halb nach unten versetzt. Ein Zeichen je Feld:
+  // . offenes Land 2 · = Straße 1 · w Wald 3 · s Sumpf 4 · f Furt 3 · b Brücke 1 · ~ Fluss, ^ Gebirge, o See gesperrt · O Ort (Straße, 1)
+  // Engpässe: Pass bei der Grauwall-Stellung (Spalten 9–10, Zeilen 9–10), Furt bei Furtdorf und Brücke bei Krähenfurt über den Fluss, Waldweg im Süden als Umweg,
+  // Hügelkette vor Aschenhof mit Durchgängen im Norden (Zeile 7) und an der Straße (Zeile 14). Erzeugt mit einem Hilfsskript, danach von Hand lesbar gehalten.
+  const RASTER = [
+    '..............................',
+    '....................ss...oo...',
+    '...........O......O..ww..oo...',
+    '..ww.....==.......=.....O.....',
+    '...w...==.........=...........',
+    '......=..^^~~f~~~~b~~~~~~~~~~~',
+    '.....=O.^^^^.....==...........',
+    '...===...^^..s.O=...........ww',
+    '..=...==.^^.s==....^...O....w.',
+    '..=.....==.==.....^^...=......',
+    '..O.......=.O......^^..=......',
+    '..=...ww.^^.==.....^^...==....',
+    '..=...w..^^...==...^...==.O...',
+    '..=......^^.....O=.^.==.......',
+    '..==....^^^.......===......ww.',
+    '....=O...^^^..ww.ss........www',
+    '.........^^...ww.ss..O........',
+    '...wwwwwwwwwwwwwwwwwww..oo....',
+    '...wwsswwwwwwwwwwwwwww..ooo...',
+    '...wwwwwwwwwwwwwwwwwww........',
+  ];
+  const SPALTEN = 30, ZEILEN = 20;
+  const GELAENDE = { '.': { name: 'offenes Land', k: 2 }, '=': { name: 'Straße', k: 1 }, w: { name: 'Wald', k: 3 }, s: { name: 'Sumpf', k: 4 }, f: { name: 'Furt', k: 3 }, b: { name: 'Brücke', k: 1 },
+    '~': { name: 'Fluss', k: 99 }, '^': { name: 'Gebirge', k: 99 }, o: { name: 'See', k: 99 }, O: { name: 'Ort', k: 1 } };
+  const PROVINZEN = [
+    { id: 'valmor', name: 'Valmor', text: 'Brückenkopf des Konkordats an der Küste, Sitz des Feldstabs.', schrift: [3, 1] },
+    { id: 'grauwall', name: 'Grauwall', text: 'Das Grabensystem der Pufferzone – umkämpft seit dem Vertrag von Grauwall.', schrift: [14, 18] },
+    { id: 'kraehenfurt', name: 'Krähenfurt', text: 'Vereister Nordabschnitt mit dem alten Stahlwerk, in der Hand von Banden.', schrift: [14, 0] },
+    { id: 'aschenhof', name: 'Aschenhof', text: 'Industriestadt der Aschenwacht hinter der Front.', schrift: [26, 19] },
+  ];
+  // Provinz eines Feldes: Valmor westlich des Kamms, Krähenfurt nördlich des Flusses, dazwischen Grauwall, im Osten Aschenhof
+  const provVon = (c, r) => c <= 8 ? 'valmor' : r <= 5 ? 'kraehenfurt' : c <= 18 ? 'grauwall' : 'aschenhof';
+  // Orte auf Feldern (c, r); karte = Schlachtkarte, seed = Abwandlung (Startwert). Wetter folgt der Karte (Winter nur Winterdorf; andere Karten im Winter brauchen erst Gelände-Teile).
+  const ORTE = [
+    { id: 'valmor', name: 'Valmor-Stadt', besitz: 'A', art: 'hauptstadt', c: 2, r: 10, karte: 'sanktruss', seed: 101 },
+    { id: 'muehlenhof', name: 'Mühlenhof', besitz: 'A', art: 'ort', c: 6, r: 6, karte: 'grauwall', seed: 102 },
+    { id: 'sanktruss', name: 'Sankt Ruß', besitz: 'A', art: 'ort', c: 5, r: 15, karte: 'sanktruss', seed: 103 },
+    { id: 'grauwall', name: 'Grauwall-Stellung', besitz: 'A', art: 'hauptort', c: 12, r: 10, karte: 'grauwall', seed: 201, text: 'sperrt den Pass' },
+    { id: 'kreidegrube', name: 'Kreidegrube', besitz: 'D', art: 'ort', c: 16, r: 13, karte: 'grauwall', seed: 202, garnison: { grenadier: 3, sense: 1, pionierD: 1 } },
+    { id: 'drahtfeld', name: 'Drahtfeld', besitz: 'R', art: 'ort', c: 15, r: 7, karte: 'grauwall', seed: 203, garnison: { kohorte: 2, grenadier: 2, sense: 1 } },
+    { id: 'kraehenfurt', name: 'Krähenfurt', besitz: 'R', art: 'hauptort', c: 18, r: 2, karte: 'winterdorf', seed: 301, text: 'Stahlwerk', garnison: { kohorte: 2, grenadier: 2, mahlwerk: 1, sense: 1 } },
+    { id: 'furtdorf', name: 'Furtdorf', besitz: 'R', art: 'ort', c: 11, r: 2, karte: 'winterdorf', seed: 302, garnison: { kohorte: 2, grenadier: 2 } },
+    { id: 'eisweiher', name: 'Eisweiher', besitz: 'R', art: 'ort', c: 24, r: 3, karte: 'winterdorf', seed: 303, garnison: { grenadier: 2, kohorte: 1, sense: 1 } },
+    { id: 'aschenhof', name: 'Aschenhof-Stadt', besitz: 'D', art: 'hauptstadt', c: 26, r: 12, karte: 'grauwall', seed: 401, garnison: { grenadier: 3, sense: 1, geschuetz: 1, sturmpz: 1 } },
+    { id: 'russhuette', name: 'Rußhütte', besitz: 'D', art: 'ort', c: 23, r: 8, karte: 'sanktruss', seed: 402, garnison: { grenadier: 3, sturm: 1, minenwerfer: 1 } },
+    { id: 'grauerhang', name: 'Grauer Hang', besitz: 'D', art: 'ort', c: 21, r: 16, karte: 'grauwall', seed: 403, garnison: { grenadier: 3, sense: 1, minenwerfer: 1, hauptD: 1 } },
+  ];
+  for (const o of ORTE) o.prov = provVon(o.c, o.r);
+  // Geometrie: Mitte eines Feldes als Anteil der Kartenfläche (0–1), damit eine spätere gemalte Landkarte sie übernehmen kann
+  const BREITE = (SPALTEN - 1) * 1.5 + 2, HOEHE = (ZEILEN + 0.5) * Math.sqrt(3);
+  const mitte = (c, r) => [(c * 1.5 + 1) / BREITE, (r * Math.sqrt(3) + (c % 2 ? Math.sqrt(3) / 2 : 0) + Math.sqrt(3) / 2) / HOEHE];
+  const ecken = (c, r) => { const [x, y] = mitte(c, r); return [0, 1, 2, 3, 4, 5].map(i => [x + Math.cos(i * Math.PI / 3) / BREITE, y + Math.sin(i * Math.PI / 3) * 1 / HOEHE]); };
+  for (const o of ORTE) [o.x, o.y] = mitte(o.c, o.r);
+  const imFeld = (c, r) => c >= 0 && c < SPALTEN && r >= 0 && r < ZEILEN;
+  const nachbarn = (c, r) => (c % 2 === 0 ? [[1, -1], [1, 0], [-1, -1], [-1, 0], [0, -1], [0, 1]] : [[1, 0], [1, 1], [-1, 0], [-1, 1], [0, -1], [0, 1]]).map(([a, b]) => [c + a, r + b]).filter(([x, y]) => imFeld(x, y));
+  const zeichen = (c, r) => RASTER[r][c];
+  const kosten = (c, r) => GELAENDE[zeichen(c, r)].k;
+  const key = (c, r) => c + ',' + r;
+  const ortVon = id => ORTE.find(o => o.id === id);
+  const ortAuf = (c, r) => ORTE.find(o => o.c === c && o.r === r) || null;
+  const benachbart = (a, b) => nachbarn(a.c, a.r).some(([c, r]) => c === b.c && r === b.r);
+  const zahl = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');   // 2000 → „2.000“
+  const truppenAus = (st, liste) => { const t = []; for (const [typ, n] of Object.entries(liste || {})) for (let i = 0; i < n; i++) t.push({ id: st.nextId++, typ, str: 10, rang: 0, schlachten: 0, abschuesse: 0 }); return t; };
+
+  // Neue Kampagne: Startarmee = Gefechtsarmee von Grauwall (Konkordat, mit Feldmarschall), Standort Valmor-Stadt
+  function neu(E) {
+    const v = ortVon('valmor');
+    const st = { version: VERSION, runde: 1, kasse: STARTKASSE, nextId: 1, phase: 'karte', schlacht: null, ende: null, weiter: false, letzteMeldung: null, orte: {},
+      armee: { c: v.c, r: v.r, bp: BP_RUNDE, angriff: false, trupps: [] } };
+    for (const o of ORTE) st.orte[o.id] = { besitz: o.besitz, garnison: o.besitz === 'A' ? [] : truppenAus(st, o.garnison) };
+    st.armee.trupps = truppenAus(st, E.MAPS.grauwall.army.A);
+    return st;
+  }
+  const armeeOrt = st => { const o = ortAuf(st.armee.c, st.armee.r); return o ? o.id : null; };
+  // Sperrbereich (Abschnitt 16): 1 Feld um jeden feindlichen Ort mit Besatzung (und später um jede feindliche Armee). Wer ihn betritt, muss anhalten.
+  // Gebirge, Fluss und See gehören nicht dazu (dort kann ohnehin niemand stehen), deshalb reicht er nicht über einen Fluss ohne Brücke.
+  function sperrbereich(st) {
+    const s = new Map();
+    for (const o of ORTE) { const x = st.orte[o.id]; if (x.besitz === 'A' || !x.garnison.length) continue;
+      for (const [c, r] of nachbarn(o.c, o.r)) if (kosten(c, r) < 99 && !ortAuf(c, r)) s.set(key(c, r), o.id); }
+    return s;
+  }
+  const betretbar = (st, c, r) => { if (kosten(c, r) >= 99) return false; const o = ortAuf(c, r); return !o || st.orte[o.id].besitz === 'A'; };   // feindliche Orte nur durch Angriff
+  // Reichweite: kürzester Weg nach Kosten (Dijkstra) mit den Bewegungspunkten der Armee; im Sperrbereich endet der Zug (wer dort steht, darf ihn verlassen)
+  function reichweite(st, bp) {
+    const A = st.armee, sp = sperrbereich(st), start = key(A.c, A.r), max = bp == null ? A.bp : bp;
+    const m = new Map([[start, { c: A.c, r: A.r, k: 0, vor: null, halt: false }]]), q = [[0, A.c, A.r]];
+    while (q.length) { q.sort((a, b) => a[0] - b[0]); const [k0, c0, r0] = q.shift(), n0 = m.get(key(c0, r0)); if (n0.k < k0) continue;
+      if (n0.halt && key(c0, r0) !== start) continue;
+      for (const [c, r] of nachbarn(c0, r0)) { if (!betretbar(st, c, r)) continue; const k = k0 + kosten(c, r); if (k > max) continue;
+        const kk = key(c, r), alt = m.get(kk); if (alt && alt.k <= k) continue;
+        m.set(kk, { c, r, k, vor: key(c0, r0), halt: sp.has(kk) }); q.push([k, c, r]); } }
+    m.delete(start); return m;
+  }
+  function pfad(m, ziel) { const p = []; let k = ziel; while (k && m.get(k)) { p.unshift(m.get(k)); k = m.get(k).vor; } return p; }
+  // Ziehen auf ein Feld in Reichweite; im Sperrbereich verfallen die restlichen Punkte
+  function ziehenNach(st, c, r) {
+    if (st.phase !== 'karte') return { ok: false, warum: 'Erst die Schlacht schlagen.' };
+    if (st.ende && !st.weiter) return { ok: false, warum: 'Die Kampagne ist zu Ende.' };
+    const m = reichweite(st), n = m.get(key(c, r)); if (!n) return { ok: false, warum: st.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'Zu weit oder nicht erreichbar.' };
+    st.armee.c = c; st.armee.r = r; st.armee.bp = n.halt ? 0 : st.armee.bp - n.k; st.letzteMeldung = null;
+    return { ok: true, weg: pfad(m, key(c, r)), halt: n.halt ? sperrbereich(st).get(key(c, r)) : null };
+  }
+  // Angriff auf einen Ort: nur vom Nachbarfeld aus, einmal je Runde (auch nach dem Halt im Sperrbereich)
+  function angriffWarum(st, id) {
+    const o = ortVon(id), x = st.orte[id];
+    if (st.ende && !st.weiter) return 'Die Kampagne ist zu Ende.';
+    if (st.phase !== 'karte') return 'Erst die Schlacht schlagen.';
+    if (x.besitz === 'A') return 'Eigener Ort.';
+    if (x.besitz === 'R') return 'Renegaten – kommt später.';
+    if (!benachbart(st.armee, o)) return 'Erst auf ein Nachbarfeld ziehen.';
+    if (st.armee.angriff) return 'In dieser Runde wurde schon angegriffen.';
+    return '';
+  }
+  function angreifen(st, id) {
+    const w = angriffWarum(st, id); if (w) return { ok: false, warum: w };
+    st.armee.angriff = true; st.armee.bp = 0; st.phase = 'schlacht'; st.schlacht = { ort: id, von: { c: st.armee.c, r: st.armee.r } }; st.letzteMeldung = null;
+    return { ok: true, schlacht: true };
+  }
+  function rundeBeenden(st) { if (st.phase !== 'karte') return false; st.runde++; st.armee.bp = BP_RUNDE; st.armee.angriff = false; return true; }
+  // Armeen für newGame: Anzahl je Typ (E.newGame mit free: true, die Stärke setzt zuordnen danach)
+  const zaehle = trupps => trupps.reduce((m, t) => (m[t.typ] = (m[t.typ] || 0) + 1, m), {});
+  function schlachtOpts(st) {
+    const o = ortVon(st.schlacht.ort);
+    return { map: o.karte, seed: o.seed * 1000 + st.runde, free: true, kampagne: true, army: { A: zaehle(st.armee.trupps), D: zaehle(st.orte[o.id].garnison) } };
+  }
+  // Nach newGame (und nach „Automatisch aufstellen“): jede Einheit bekommt ihren Trupp (kId) und dessen Reststärke; je Typ in der Reihenfolge der Liste
+  function zuordnen(st, G) {
+    const liste = { A: st.armee.trupps, D: st.orte[st.schlacht.ort].garnison };
+    for (const sd of ['A', 'D']) { const frei = liste[sd].slice();
+      for (const u of G.units) { if (u.side !== sd) continue; const i = frei.findIndex(t => t.typ === u.type); if (i < 0) continue; const t = frei.splice(i, 1)[0]; u.kId = t.id; u.str = Math.max(0.5, Math.min(10, t.str)); } }
+  }
+  // Rückzug: nächster eigener Ort (Weglänge über betretbare Felder, ohne Bewegungsgrenze)
+  function naechsterEigenerOrt(st, von) {
+    const s = key(von.c, von.r), d = new Map([[s, 0]]), q = [[0, von.c, von.r]];
+    while (q.length) { q.sort((a, b) => a[0] - b[0]); const [k0, c0, r0] = q.shift(); const o = ortAuf(c0, r0); if (o && st.orte[o.id].besitz === 'A') return o;
+      for (const [c, r] of nachbarn(c0, r0)) { if (!betretbar(st, c, r)) continue; const k = k0 + kosten(c, r); if (k < (d.get(key(c, r)) ?? 1e9)) { d.set(key(c, r), k); q.push([k, c, r]); } } }
+    return ortVon('valmor');
+  }
+  // Nach der Schlacht: Stärken übernehmen, Gefallene und Zerschlagene streichen, Entkommene bleiben, im Gefecht ausgehobene Trupps kommen dazu; Besitz und Rückzug
+  function nachSchlacht(st, G) {
+    const ort = st.schlacht.ort, sieg = G.over && G.over.winner === 'A', abschuesse = {};
+    for (const u of G.units) if (u.side === 'D' && (u.status === 'dead' || u.aufgerieben) && u.lastHitBy != null) abschuesse[u.lastHitBy] = (abschuesse[u.lastHitBy] || 0) + 1;
+    const lebt = u => u.status !== 'dead' && !u.aufgerieben && u.str > 0;
+    const alt = new Map(st.armee.trupps.map(t => [t.id, t])), neuListe = [], verloren = [];
+    for (const u of G.units) { if (u.side !== 'A') continue;
+      let t = u.kId != null ? alt.get(u.kId) : null;
+      if (!t) { if (!lebt(u)) continue; t = { id: st.nextId++, typ: u.type, str: 10, rang: 0, schlachten: 0, abschuesse: 0 }; }   // im Gefecht ausgehoben
+      if (!lebt(u)) { verloren.push(t.typ); continue; }
+      t.str = Math.round(u.str * 10) / 10; t.schlachten++; t.abschuesse += abschuesse[u.id] || 0; neuListe.push(t); }
+    st.armee.trupps = neuListe;
+    const garn = [];
+    if (!sieg) for (const u of G.units) if (u.side === 'D' && lebt(u)) { const t = st.orte[ort].garnison.find(x => x.id === u.kId) || { id: st.nextId++, typ: u.type, rang: 0, schlachten: 0, abschuesse: 0 }; t.str = Math.round(u.str * 10) / 10; garn.push(t); }
+    st.orte[ort].garnison = garn;
+    let rueck = null;
+    if (sieg) { st.orte[ort].besitz = 'A'; const o = ortVon(ort); st.armee.c = o.c; st.armee.r = o.r; }
+    else { const o = naechsterEigenerOrt(st, st.schlacht.von); st.armee.c = o.c; st.armee.r = o.r; rueck = o.id; }   // Rückzug zum nächsten eigenen Ort
+    st.armee.bp = 0;
+    const ergebnis = { ort, sieg, verloren, uebrig: neuListe.length, rueck };
+    st.letzteMeldung = ergebnis; st.phase = 'karte'; st.schlacht = null;
+    if (!st.armee.trupps.length) st.ende = 'niederlage';
+    else if (!st.weiter && st.orte.aschenhof.besitz === 'A' && st.orte.valmor.besitz === 'A') st.ende = 'sieg';
+    return ergebnis;
+  }
+  // Platzhalter „Aus den Chroniken“ (2–3 Sätze, Namen aus der Weltbibel); vor der Schlacht je Ort, danach je Ausgang
+  const CHRONIK_VOR = {
+    kreidegrube: 'In den alten Kreidebrüchen hat sich eine Kompanie der Aschenwacht eingegraben. Wer die Grube hält, beherrscht die Straße nach Osten.',
+    aschenhof: 'Hinter den Schloten von Aschenhof schlägt das Herz der Aschenwacht. Fällt die Stadt, verstummen die Hochöfen der Grauen Liturgie.',
+    russhuette: 'Die Rußhütte speist die Geschütze der Front mit Stahl. Ihre Besatzung weiß, dass es hinter ihr keine Stellung mehr gibt.',
+    grauerhang: 'Am Grauen Hang decken Minenwerfer den Weg nach Aschenhof. Der Hang ist kahl geschossen, jede Mulde ist umkämpft.',
+  };
+  const CHRONIK_STANDARD_VOR = 'Der Feldstab des Konkordats befiehlt den Angriff auf {ort}. Die Truppen des Westlichen Konvents rücken im Morgengrauen vor.';
+  const CHRONIK_SIEG = '{ort} ist genommen. Die Fahne des Konkordats weht über den Stellungen, die Verwundeten werden nach Valmor zurückgebracht.';
+  const CHRONIK_NIEDERLAGE = 'Der Angriff auf {ort} ist gescheitert. Die Reste der Armee ziehen sich nach {rueck} zurück und sammeln sich.';
+  const chronikVor = st => (CHRONIK_VOR[st.schlacht.ort] || CHRONIK_STANDARD_VOR).replace('{ort}', ortVon(st.schlacht.ort).name);
+  const chronikNach = (st, e) => (e.sieg ? CHRONIK_SIEG : CHRONIK_NIEDERLAGE).replace('{ort}', ortVon(e.ort).name).replace('{rueck}', e.rueck ? ortVon(e.rueck).name : 'Valmor');
+  // Speichern/Laden (localStorage im Browser; in Node übergibt der Test einen eigenen Speicher); alte Spielstände (Version 1, feste Wege) gelten nicht mehr
+  function speichern(st, ls) { try { (ls || root.localStorage).setItem(SPEICHER, JSON.stringify(st)); return true; } catch (e) { return false; } }
+  function laden(ls) { try { const s = JSON.parse((ls || root.localStorage).getItem(SPEICHER) || 'null'); return s && s.version === VERSION ? s : null; } catch (e) { return null; } }
+  function loeschen(ls) { try { (ls || root.localStorage).removeItem(SPEICHER); } catch (e) {} }
+
+  const API = { VERSION, SPEICHER, STARTKASSE, BP_RUNDE, SEITEN, PROVINZEN, ORTE, RASTER, SPALTEN, ZEILEN, GELAENDE, provVon, mitte, ecken, nachbarn, zeichen, kosten, key, ortVon, ortAuf, zahl,
+    neu, armeeOrt, sperrbereich, betretbar, reichweite, pfad, ziehenNach, angriffWarum, angreifen, rundeBeenden, schlachtOpts, zuordnen, naechsterEigenerOrt, nachSchlacht, chronikVor, chronikNach, speichern, laden, loeschen };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.KAMPAGNE = API;
+})(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
 <script>
@@ -11695,6 +11967,7 @@ function startStep(st) {
   if (st === 'side') drawFacUnits();
   if (st === 'map') requestAnimationFrame(() => document.querySelectorAll('#mapPick canvas').forEach(c => drawMapPreview(c, c.dataset.map)));
   if (st === 'setup') setupSync();
+  if (st === 'kampagne') kaMenueSync();
 }
 function drawFacUnits() {   // Einheitenbilder je Fraktionskarte; die Legion braucht kurz das Bilderset F
   requestAnimationFrame(() => { for (const c of document.querySelectorAll('.sm-units canvas')) { if (c.dataset.sk) FIG.setSkin('A', c.dataset.sk); drawPortrait(c, c.dataset.k, c.dataset.s, c.dataset.sk === 'F' ? null : c.dataset.t); } FIG.setSkin('A', skinA); });
@@ -11709,6 +11982,7 @@ function showStart(first) {
   setMusik(soundOn ? 'musik_titel' : null, 2);   // Punkt 9 (2026-11-21): nur mit Ton an   // Titelmusik im Startmenü (Schleife, aus der Schlacht weich übergeblendet)
   $('start').hidden = false; setMap(mapSel); drawMapPick(); armyInfo(); drawFlagPick(); $('setSpeed').textContent = speedTxt(); $('setZoom').textContent = zoomTxt(); $('closeStart').hidden = first;
   $('smNeu').hidden = !first; $('smBeenden').hidden = first; beendenScharf(false);   // F2 (2026-11-20): im Spiel oben „Zurück zum Spiel“, unten „Beenden“
+  if (kaAktiv && !kaErg) kaAktiv = false;   // K-A: Schlacht verlassen – der Spielstand steht vor der Schlacht
   startStep('title');
 }
 // ---------- Armee-Auswahl vor der Schlacht ----------
@@ -11829,14 +12103,170 @@ function drawMapPick() {
   document.querySelectorAll('input[name=map]').forEach(i => i.addEventListener('change', () => { setMap(i.value); customArmy.A = customArmy.D = null; armyInfo(); bgGame(); }));
 }
 
-function startGame() {
+// ---------- Kampagne (K-A, Punkt 156, 2026-11-28) ----------
+// Kampagnenkarte (vorläufig im Code gezeichnet: Pergament, Gelände auf einem unsichtbaren Hexfeld, Fluss, Gebirge, Straßen, Orte als Plaketten, Armee),
+// freie Bewegung mit Bewegungspunkten (Reichweite, Wegvorschau, Halt im Sperrbereich), Angriff vom Nachbarfeld, Chronik vor/nach der Schlacht,
+// Übergang Karte → Schlacht (startGame(opts)) → Karte (showEnd → kaSchlachtEnde). Daten und Regeln: src/kampagne.js (KAMPAGNE). Spielstand localStorage arm.kampagne.
+const KAMP = window.KAMPAGNE; let KA = null, kaAktiv = false, kaWahl = null, kaArmeeOffen = false, kaErg = null, kaNeuScharf = false, kaZiel = null, kaReich = null;
+let kaRaster = false; try { kaRaster = localStorage.getItem('arm.karaster') === '1'; } catch (e) {}
+const KA_TYPNAME = t => (TYPES[t] && TYPES[t].name) || t;
+const KA_FARBE = { w: ['#4E5A34', 0.42], s: ['#6B7A3A', 0.38], '~': ['#55707A', 0.75], o: ['#55707A', 0.75], '^': ['#66483A', 0.6], f: ['#55707A', 0.35], b: ['#55707A', 0.75] };   // vorläufige Geländefarben (STYLE.md „Kampagnenkarte“)
+const kaPt = (c, r) => { const [x, y] = KAMP.mitte(c, r); return [x * 1000, y * 600]; };
+const kaHex = (c, r) => KAMP.ecken(c, r).map(([x, y]) => `${(x * 1000).toFixed(1)},${(y * 600).toFixed(1)}`).join(' ');
+function kaStand() { return KAMP ? KAMP.laden() : null; }
+function kaMenueSync() {   // Startmenü-Seite „Kampagne“: Fortsetzen nur mit Spielstand
+  const s = kaStand(), w = $('kaWeiter'), i = $('kaStandInfo'); if (!w) return;
+  w.hidden = !s; kaNeuScharf = false; $('kaNeu').textContent = 'Neue Kampagne';
+  const wo = s => { const o = KAMP.ortAuf(s.armee.c, s.armee.r); return o ? o.name : 'im Feld'; };
+  if (i) i.textContent = s ? `Gespeichert: Runde ${s.runde} · ${wo(s)} · ${s.armee.trupps.length} Trupps${s.phase === 'schlacht' ? ' · Schlacht um ' + KAMP.ortVon(s.schlacht.ort).name + ' steht bevor' : ''}` : 'Noch kein Spielstand.';
+}
+function kaNeuKlick() {
+  if (kaStand() && !kaNeuScharf) { kaNeuScharf = true; $('kaNeu').textContent = 'Sicher? Alter Stand wird überschrieben'; return; }
+  KA = KAMP.neu(E); KAMP.speichern(KA); kaWahl = null; kaOeffnen();
+  kaChronik('Der Feldzug beginnt', 'Aus den Chroniken', 'Der Feldstab des Konkordats sammelt die Armee in Valmor-Stadt. Jenseits des Passes von Grauwall liegt Aschenhof, die Stadt der Hochöfen – fällt sie, wankt die Aschenwacht im ganzen Westen.', '', [['Zur Karte', kaChronikZu]]);
+}
+function kaWeiterKlick() { KA = kaStand(); if (!KA) return kaNeuKlick(); kaWahl = null; kaOeffnen(); if (KA.phase === 'schlacht') kaChronikVor(); }
+function kaOeffnen() {
+  $('start').hidden = true; $('end').hidden = true; $('kampagne').hidden = false; kaAktiv = false; kaArmeeOffen = false; kaZiel = null;
+  if (soundOn && musikName !== 'musik_titel') setMusik('musik_titel', 2);
+  kaZeichnen();
+}
+function kaZuMenue() { $('kampagne').hidden = true; showStart(true); startStep('kampagne'); }
+// Karte zeichnen: Gelände je Feld (SVG), Provinzgrenzen, Straßen, Fluss; darüber die Schicht für Reichweite/Weg/Sperrbereich und die Orte als Knöpfe
+function kaZeichnen() {
+  if (!KA) return; const A = KA.armee, { SPALTEN, ZEILEN } = KAMP;
+  $('kaRunde').textContent = `Runde ${KA.runde}`; $('kaKasse').textContent = `${KAMP.zahl(KA.kasse)} Kronen`; $('kaBp').textContent = `Bewegung ${A.bp}/${KAMP.BP_RUNDE}`;
+  $('kaRasterKn').classList.toggle('an', kaRaster);
+  let svg = '<defs><pattern id="kaWald" width="14" height="12" patternUnits="userSpaceOnUse"><path d="M7 1 L11 9 L3 9 Z" fill="#2E3A1E" opacity=".55"/></pattern>' +
+    '<pattern id="kaSumpf" width="16" height="8" patternUnits="userSpaceOnUse"><path d="M2 5 H10" stroke="#3E4A22" stroke-width="1.6" opacity=".6"/></pattern>' +
+    '<pattern id="kaBerg" width="18" height="14" patternUnits="userSpaceOnUse"><path d="M2 13 L9 2 L16 13" fill="none" stroke="#120D0B" stroke-width="1.8" opacity=".55"/></pattern></defs><g id="kaGel">';
+  const prov = (c, r) => KAMP.provVon(c, r);
+  for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) { const z = KAMP.zeichen(c, r), f = KA_FARBE[z], pv = prov(c, r), os = KAMP.ORTE.filter(o => o.prov === pv).map(o => KA.orte[o.id].besitz), alle = os.every(b => b === os[0]) ? os[0] : null;
+    svg += `<polygon points="${kaHex(c, r)}" fill="${alle ? KAMP.SEITEN[alle].farbe : '#66483A'}" fill-opacity="${alle ? 0.09 : 0.05}"/>`;
+    if (f) svg += `<polygon points="${kaHex(c, r)}" fill="${f[0]}" fill-opacity="${f[1]}"/>`;
+    if (z === 'w') svg += `<polygon points="${kaHex(c, r)}" fill="url(#kaWald)"/>`; else if (z === 's') svg += `<polygon points="${kaHex(c, r)}" fill="url(#kaSumpf)"/>`; else if (z === '^') svg += `<polygon points="${kaHex(c, r)}" fill="url(#kaBerg)"/>`; }
+  // Provinzgrenzen: Kante zwischen zwei Feldern verschiedener Provinz (die beiden Ecken, die dem Nachbarn am nächsten liegen)
+  for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) for (const [c2, r2] of KAMP.nachbarn(c, r)) { if (c2 < c || (c2 === c && r2 < r) || prov(c, r) === prov(c2, r2)) continue;
+    const [nx, ny] = kaPt(c2, r2), e = KAMP.ecken(c, r).map(([x, y]) => [x * 1000, y * 600]).sort((a, b) => Math.hypot(a[0] - nx, a[1] - ny) - Math.hypot(b[0] - nx, b[1] - ny));
+    svg += `<line x1="${e[0][0]}" y1="${e[0][1]}" x2="${e[1][0]}" y2="${e[1][1]}" stroke="#120D0B" stroke-width="3" stroke-dasharray="9 4 2 4" stroke-linecap="round"/>`; }
+  // Fluss und Straßen als Linien von Feldmitte zu Feldmitte
+  const linie = (zs, farbe, breite, strich) => { let s = ''; const wurzel = {}, w = k => wurzel[k] && wurzel[k] !== k ? (wurzel[k] = w(wurzel[k])) : k;   // Kanten als Baum (ohne Dreiecke, wo zwei Straßen nebeneinander laufen)
+    for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) { if (!zs.includes(KAMP.zeichen(c, r))) continue; const [x1, y1] = kaPt(c, r);
+    for (const [c2, r2] of KAMP.nachbarn(c, r)) { if ((c2 < c || (c2 === c && r2 < r)) || !zs.includes(KAMP.zeichen(c2, r2))) continue; const a = w(c + ',' + r), b = w(c2 + ',' + r2); if (a === b) continue; wurzel[a] = b; const [x2, y2] = kaPt(c2, r2); s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${farbe}" stroke-width="${breite}" stroke-linecap="round"${strich ? ` stroke-dasharray="${strich}"` : ''}/>`; } } return s; };
+  svg += linie('~fb', '#3E5560', 7) + linie('=Ob', '#66483A', 4, '') + '</g>';
+  for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) { const z = KAMP.zeichen(c, r); if (z === 'b' || z === 'f') { const [x, y] = kaPt(c, r); svg += `<text x="${x}" y="${y + 6}" class="ka-zeichen">${z === 'b' ? 'Brücke' : 'Furt'}</text>`; } }
+  for (const p of KAMP.PROVINZEN) { const [x, y] = kaPt(...p.schrift); svg += `<text x="${x}" y="${y + 8}" class="ka-prov">${p.name}</text>`; }
+  svg += '<g id="kaDyn"></g><g id="kaFelder"></g>';
+  $('kaSvg').innerHTML = svg;
+  // Trefferschicht: ein unsichtbares Sechseck je Feld (Hexfeld sichtbar über den Schalter „Hexfeld“)
+  let fl = ''; for (let r = 0; r < ZEILEN; r++) for (let c = 0; c < SPALTEN; c++) fl += `<polygon data-k="${c},${r}" points="${kaHex(c, r)}" class="ka-feld${kaRaster ? ' sicht' : ''}"/>`;
+  $('kaFelder').innerHTML = fl;
+  const sv = $('kaSvg'); sv.onpointermove = e => { const k = e.target.dataset && e.target.dataset.k; if (k !== kaZiel && e.pointerType === 'mouse') { kaZiel = k || null; kaDyn(); } };
+  sv.onpointerleave = () => { if (kaZiel) { kaZiel = null; kaDyn(); } };
+  sv.onclick = e => { const k = e.target.dataset && e.target.dataset.k; if (k) kaFeldKlick(k); };
+  kaReich = KA.phase === 'karte' && !(KA.ende && !KA.weiter) ? KAMP.reichweite(KA) : new Map();
+  $('kaOrte').innerHTML = KAMP.ORTE.map(o => { const s = KA.orte[o.id], ang = !KAMP.angriffWarum(KA, o.id), cls = ['ka-ort', 'b' + s.besitz, o.art, ang ? 'angriff' : '', kaReich.has(KAMP.key(o.c, o.r)) ? 'frei' : '', kaWahl === o.id ? 'gewaehlt' : '', s.besitz === 'R' ? 'gesperrt' : ''].filter(Boolean).join(' ');
+    return `<button class="${cls}" data-ort="${o.id}" style="left:${o.x * 100}%;top:${o.y * 100}%" title="${o.name} – ${KAMP.SEITEN[s.besitz].name}" aria-label="${o.name}"><i class="ka-fahne"></i></button><span class="ka-name ${o.art}" style="left:${o.x * 100}%;top:${o.y * 100}%">${o.name}</span>`; }).join('');
+  $('kaOrte').querySelectorAll('.ka-ort').forEach(b => { b.onclick = () => kaOrtKlick(b.dataset.ort); b.onpointerenter = e => { if (e.pointerType === 'mouse') { const o = KAMP.ortVon(b.dataset.ort); kaZiel = KAMP.key(o.c, o.r); kaDyn(); } }; });
+  const [ax, ay] = KAMP.mitte(A.c, A.r), ak = $('kaArmee'); ak.style.left = `${ax * 100}%`; ak.style.top = `${ay * 100}%`;
+  ak.innerHTML = `${UP.wA ? `<img src="${UP.wA}" alt="">` : ''}<b>${A.trupps.length}</b>`; ak.title = `Armee des Konkordats: ${A.trupps.length} Trupps, ${A.bp} Bewegungspunkte`; ak.onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); };
+  $('kaRundeKn').disabled = KA.phase !== 'karte' || (!!KA.ende && !KA.weiter);
+  kaDyn(); kaInfo(); kaHinweis();
+}
+// Dynamische Schicht: Reichweite (Messing), Sperrbereich (roter Rand), Weg zum Feld unter Maus/Finger mit Kosten
+function kaDyn() {
+  const d = $('kaDyn'); if (!d || !KA) return; let s = '';
+  const sp = KAMP.sperrbereich(KA);
+  for (const n of kaReich.values()) s += `<polygon points="${kaHex(n.c, n.r)}" fill="${n.halt ? '#A8473A' : '#C2A461'}" fill-opacity="${n.halt ? 0.3 : 0.5}" stroke="#7A5E2A" stroke-opacity=".55" stroke-width="1"/>`;   // Reichweite deutlich auf dem Pergament
+  for (const k of sp.keys()) { const [c, r] = k.split(',').map(Number); s += `<polygon points="${kaHex(c, r)}" fill="none" stroke="#A8473A" stroke-width="2.5" stroke-dasharray="6 4"/>`; }
+  let ziel = kaZiel; const o = ziel && KAMP.ortAuf(...ziel.split(',').map(Number));
+  if (o && KA.orte[o.id].besitz !== 'A') { const best = [...kaReich.values()].filter(n => KAMP.nachbarn(n.c, n.r).some(([c, r]) => c === o.c && r === o.r)).sort((a, b) => a.k - b.k)[0]; ziel = best ? KAMP.key(best.c, best.r) : null; }   // feindlicher Ort: Weg bis davor
+  if (ziel && kaReich.has(ziel)) { const p = [KA.armee, ...KAMP.pfad(kaReich, ziel)].map(n => kaPt(n.c, n.r)), n = kaReich.get(ziel), [ex, ey] = p[p.length - 1];
+    s += `<polyline points="${p.map(q => q.join(',')).join(' ')}" fill="none" stroke="#120D0B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><polyline points="${p.map(q => q.join(',')).join(' ')}" fill="none" stroke="#F6E3A8" stroke-width="3.5" stroke-dasharray="10 6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<circle cx="${ex}" cy="${ey}" r="13" fill="#120D0B"/><text x="${ex}" y="${ey + 5}" class="ka-kosten">${n.k}</text>${n.halt ? `<text x="${ex}" y="${ey - 18}" class="ka-halt">Halt</text>` : ''}`; }
+  d.innerHTML = s;
+}
+function kaHinweis() {
+  const m = KA.letzteMeldung, h = $('kaHinweis'), A = KA.armee;
+  h.textContent = KA.ende === 'niederlage' ? 'Die Armee ist vernichtet. Nur ein Neustart ist möglich.' : KA.phase === 'schlacht' ? `Die Schlacht um ${KAMP.ortVon(KA.schlacht.ort).name} steht bevor.`
+    : A.bp <= 0 ? 'Keine Bewegungspunkte mehr. „Runde beenden“ für die nächste Runde – angreifen geht noch, wenn die Armee neben einem feindlichen Ort steht.'
+    : `Bewegung ${A.bp}/${KAMP.BP_RUNDE}: Feld anklicken (Messing = erreichbar, roter Rand = Sperrbereich: dort muss die Armee anhalten). Feindlichen Ort vom Nachbarfeld aus angreifen.`;
+  if (m && KA.phase === 'karte') h.textContent = (m.sieg ? `Sieg bei ${KAMP.ortVon(m.ort).name}. ` : `Niederlage bei ${KAMP.ortVon(m.ort).name}. `) + h.textContent;
+}
+function kaInfo() {
+  const el = $('kaInfo'); if (!KA) return;
+  if (kaArmeeOffen || !kaWahl) { const T = KA.armee.trupps, sum = T.reduce((n, t) => n + t.str, 0), o = KAMP.ortAuf(KA.armee.c, KA.armee.r), g = KAMP.GELAENDE[KAMP.zeichen(KA.armee.c, KA.armee.r)];
+    el.innerHTML = `<h3>Armee des Konkordats</h3><p class="ka-sub">${o ? o.name : g.name} · ${T.length} Trupps · Stärke Ø ${Math.round(sum / Math.max(1, T.length) * 10)} · Bewegung ${KA.armee.bp}/${KAMP.BP_RUNDE}</p>` +
+      `<table class="ka-tab"><tr><th>Trupp</th><th>Stärke</th><th>Schlachten</th><th>Abschüsse</th></tr>${T.map(t => `<tr><td>${KA_TYPNAME(t.typ)}</td><td class="${t.str < 4 ? 'rot' : t.str < 7 ? 'gelb' : ''}">${Math.round(t.str * 10)}</td><td>${t.schlachten}</td><td>${t.abschuesse}</td></tr>`).join('')}</table>`;
+    return; }
+  const o = KAMP.ortVon(kaWahl), s = KA.orte[o.id], M = E.MAPS[o.karte], hier = KA.armee.c === o.c && KA.armee.r === o.r, aw = KAMP.angriffWarum(KA, o.id), erreichbar = kaReich && kaReich.get(KAMP.key(o.c, o.r));
+  const garn = s.garnison.length ? `<p><b>Besatzung:</b> ${Object.entries(s.garnison.reduce((m, t) => (m[t.typ] = (m[t.typ] || 0) + 1, m), {})).map(([t, n]) => `${n}× ${KA_TYPNAME(t)}`).join(', ')}</p>` : '';
+  const knopf = hier ? '<p class="ka-sub">Die Armee steht hier.</p>' : s.besitz === 'A' ? (erreichbar ? `<button class="up-text ka-zug" id="kaZiehenKn">Hierher ziehen (${erreichbar.k})</button>` : `<p class="ka-warum">${KA.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'In dieser Runde nicht erreichbar.'}</p>`)
+    : !aw ? '<button class="up-text ka-zug" id="kaAngriffKn">Angreifen</button>' : `<p class="ka-warum">${aw}</p>`;
+  el.innerHTML = `<h3>${o.name}</h3><p class="ka-sub">${(KAMP.PROVINZEN.find(p => p.id === o.prov) || {}).name} · ${o.art === 'hauptstadt' ? 'Hauptstadt' : o.art === 'hauptort' ? 'Hauptort' : 'Ort'}${o.text ? ' · ' + o.text : ''}</p>` +
+    `<p><b>Besitz:</b> <span class="ka-b b${s.besitz}">${KAMP.SEITEN[s.besitz].name}</span></p>${garn}${s.besitz !== 'A' && s.garnison.length ? '<p class="ka-sub">Sperrbereich: Wer ein Nachbarfeld betritt, muss anhalten.</p>' : ''}<p><b>Schlachtkarte:</b> ${M ? M.name : o.karte}${M && M.winter ? ' (Winter)' : ''}</p>` + knopf;
+  const z = $('kaZiehenKn'); if (z) z.onclick = () => kaZiehen(o.c, o.r);
+  const a = $('kaAngriffKn'); if (a) a.onclick = () => kaAngriff(o.id);
+}
+function kaOrtKlick(id) {
+  if (!KA) return; playSound('klick', 0.4, null); const o = KAMP.ortVon(id), s = KA.orte[id];
+  if (kaWahl === id) { if (s.besitz === 'A' && kaReich.has(KAMP.key(o.c, o.r))) return kaZiehen(o.c, o.r); if (s.besitz !== 'A' && !KAMP.angriffWarum(KA, id)) return kaAngriff(id); }
+  kaWahl = id; kaArmeeOffen = false; kaZiel = KAMP.key(o.c, o.r); kaInfo(); kaDyn();
+  $('kaOrte').querySelectorAll('.ka-ort').forEach(b => b.classList.toggle('gewaehlt', b.dataset.ort === id));
+}
+// Feld anklicken: Maus – Weg steht schon (Überfahren), also gleich ziehen; Finger – erst Weg zeigen, zweites Antippen zieht
+function kaFeldKlick(k) {
+  if (!KA || KA.phase !== 'karte') return;
+  if (kaZiel !== k) { kaZiel = k; kaDyn(); return; }
+  if (kaReich.has(k)) { const [c, r] = k.split(',').map(Number); kaZiehen(c, r); } else toast(KA.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'Dorthin kommt die Armee in dieser Runde nicht.');
+}
+function kaZiehen(c, r) {
+  const r0 = KAMP.ziehenNach(KA, c, r); if (!r0.ok) { toast(r0.warum); return; }
+  KAMP.speichern(KA); kaWahl = null; kaZiel = null; playSound('march', 0.4);
+  if (r0.halt) toast(`Halt vor ${KAMP.ortVon(r0.halt).name}: Sperrbereich – angreifen oder umkehren.`);
+  kaZeichnen();
+}
+function kaAngriff(id) { const r = KAMP.angreifen(KA, id); if (!r.ok) { toast(r.warum); return; } KAMP.speichern(KA); kaWahl = null; kaZiel = null; kaZeichnen(); kaChronikVor(); }
+function kaRundeEnde() { if (!KA || !KAMP.rundeBeenden(KA)) return; KA.letzteMeldung = null; KAMP.speichern(KA); playSound('klick', 0.5, null); toast(`Runde ${KA.runde}`); kaZeichnen(); }
+function kaRasterUmschalten() { kaRaster = !kaRaster; try { localStorage.setItem('arm.karaster', kaRaster ? '1' : '0'); } catch (e) {} if (KA) kaZeichnen(); }
+// Pergament „Aus den Chroniken“ vor/nach der Schlacht und für Sieg/Niederlage der Kampagne
+function kaChronik(titel, kicker, text, liste, knoepfe) {
+  $('kaChTitel').textContent = titel; $('kaChKicker').textContent = kicker; $('kaChText').textContent = text; $('kaChListe').innerHTML = liste || '';
+  const k = $('kaChKnoepfe'); k.innerHTML = knoepfe.map(([t], i) => `<button class="${i ? 'tbtn' : 'endbtn'}" data-i="${i}">${t}</button>`).join('');
+  k.querySelectorAll('button').forEach(b => b.onclick = () => knoepfe[+b.dataset.i][1]());
+  $('kaChronik').hidden = false;
+}
+const kaChronikZu = () => { $('kaChronik').hidden = true; };
+function kaChronikVor() {
+  const o = KAMP.ortVon(KA.schlacht.ort), M = E.MAPS[o.karte];
+  kaChronik(`Angriff auf ${o.name}`, 'Aus den Chroniken', KAMP.chronikVor(KA), `<p class="ka-sub">Eure Armee: ${KA.armee.trupps.length} Trupps · Besatzung: ${KA.orte[o.id].garnison.length} Trupps · Schlachtkarte: ${M ? M.name : o.karte}</p>`, [['Zur Schlacht', kaSchlacht]]);
+}
+function kaSchlacht() { $('kaChronik').hidden = true; $('kampagne').hidden = true; KAMP.speichern(KA); kaAktiv = true; startGame(KAMP.schlachtOpts(KA)); }
+// Schlachtende (aus showEnd): Ergebnis in die Kampagne übernehmen, speichern; der Knopf führt zurück zur Karte
+function kaSchlachtEnde() {
+  if (!kaAktiv || !KA || KA.phase !== 'schlacht' || !G.over || G.over.why === 'quit') return;
+  kaErg = KAMP.nachSchlacht(KA, G); KAMP.speichern(KA);
+  $('againBtn').textContent = 'Zur Kampagnenkarte';
+}
+function kaNachSchlacht() {
+  $('end').hidden = true; kaAktiv = false; $('againBtn').textContent = 'Neue Schlacht'; kaOeffnen(); const e = kaErg; kaErg = null; if (!e) return;
+  const verl = e.verloren.length ? `<p class="ka-sub">Verloren: ${Object.entries(e.verloren.reduce((m, t) => (m[t] = (m[t] || 0) + 1, m), {})).map(([t, n]) => `${n}× ${KA_TYPNAME(t)}`).join(', ')} · Es bleiben ${e.uebrig} Trupps.</p>` : `<p class="ka-sub">Keine Trupps verloren · ${e.uebrig} Trupps.</p>`;
+  kaChronik(e.sieg ? `Sieg bei ${KAMP.ortVon(e.ort).name}` : `Niederlage bei ${KAMP.ortVon(e.ort).name}`, 'Aus den Chroniken', KAMP.chronikNach(KA, e), verl, [['Weiter', kaEndeZeigen]]);
+}
+function kaEndeZeigen() {
+  kaChronikZu(); if (!KA.ende || KA.weiter) return;
+  if (KA.ende === 'sieg') kaChronik('Der Feldzug ist gewonnen', 'Aus den Chroniken', 'Aschenhof ist gefallen, und Valmor-Stadt steht. Die Hochöfen der Aschenwacht schweigen, doch im Osten sammeln sich schon neue Heere.', '', [['Weiterspielen', () => { KA.weiter = true; KAMP.speichern(KA); kaChronikZu(); kaZeichnen(); }], ['Hauptmenü', () => { kaChronikZu(); kaZuMenue(); }]]);
+  else kaChronik('Die Armee ist vernichtet', 'Aus den Chroniken', 'Von der Armee des Konkordats kehrt niemand zurück. Der Feldzug ist verloren – nur ein neuer Anfang bleibt.', '', [['Neue Kampagne', () => { kaChronikZu(); KAMP.loeschen(); kaNeuKlick(); }], ['Hauptmenü', () => { kaChronikZu(); kaZuMenue(); }]]);
+}
+function startGame(ka) {   // ka = Optionen einer Kampagnenschlacht (KAMPAGNE.schlachtOpts), sonst Gefecht
   setMusik(null);
-  mode = curMode();
+  kaAktiv = !!ka; mode = ka ? 'A' : curMode();
   blood = $('optBlood').checked; tbSync();
-  applySkin(curSkin());
-  $('start').hidden = true; $('end').hidden = true;
+  applySkin(ka ? 'A' : curSkin());
+  $('start').hidden = true; $('end').hidden = true; if ($('kampagne')) $('kampagne').hidden = true;
+  if (ka) mapSel = ka.map;
   setMap(mapSel);
-  G = E.newGame({ map: mapSel, mechs: mechsOn(), kommStufe: { A: human('A') ? kommStufeWahl.A : 5, D: human('D') ? kommStufeWahl.D : 5 }, army: { A: human('A') || feindSelbst.A ? customArmy.A : null, D: human('D') || feindSelbst.D ? customArmy.D : null } });   // F94: Feind-Armee selbst gewählt
+  if (ka) { G = E.newGame(ka); KAMP.zuordnen(KA, G); } else G = E.newGame({ map: mapSel, mechs: mechsOn(), kommStufe: { A: human('A') ? kommStufeWahl.A : 5, D: human('D') ? kommStufeWahl.D : 5 }, army: { A: human('A') || feindSelbst.A ? customArmy.A : null, D: human('D') || feindSelbst.D ? customArmy.D : null } });   // F94: Feind-Armee selbst gewählt
   if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(kiArt === 'ruhig' ? [] : ['A', 'D'].filter(sd => !human(sd))); siegGemeldet = { A: 0, D: 0 };   // F43: Einstellung KI ruhig / angriffslustig, die KI greift gegen Menschen aktiver an (ai.js AKTIV); H1 (2026-11-22): Siegwarnung je Schlacht neu
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
@@ -11866,7 +12296,7 @@ function aufstellFertig() {
   if (mode === 'hot') showHandover(); else if (!human(G.side)) aiTurn();
 }
 function aufstellSetze(u, c, r) { const ok = E.aufstellen(G, u, c, r); syncAll(); if (ok) { playSound('klick', 0.3, null, { noGap: true }); aufstellWahl = null; } return ok; }
-$('aufstellAuto').onclick = () => { if (!G || !G.aufstellung) return; E.autoAufstellen(G, G.aufstellung); initDU(); syncAll(); aufstellWahl = null; updateUI(); };
+$('aufstellAuto').onclick = () => { if (!G || !G.aufstellung) return; E.autoAufstellen(G, G.aufstellung); if (kaAktiv && KA && KA.phase === 'schlacht') KAMP.zuordnen(KA, G); /* K-A: Reststärken der Kampagnentrupps */ initDU(); syncAll(); aufstellWahl = null; updateUI(); };
 $('aufstellLos').onclick = () => aufstellFertig();
 cv.addEventListener('pointerdown', ev => {   // vor dem Kamera-Ziehen: eigene Einheit greifen
   if (!G || !G.aufstellung || busy || pinch || ev.button > 0) return;
@@ -11905,7 +12335,7 @@ function showEnd() {
   $('endStars').textContent = me ? '★'.repeat(stars) + '☆'.repeat(3 - stars) : '';
   $('endStats').innerHTML = `<div><dt>Ausfälle ${SIDES.A.short}</dt><dd>${Math.round(E.losses(G, 'A') * 100)} %</dd></div><div><dt>Ausfälle Aschenwacht</dt><dd>${Math.round(E.losses(G, 'D') * 100)} %</dd></div>` +
     OBJECTIVES.map(o => `<div class="${G.ctrl[o.id] || 'N'}"><dt>${o.name}</dt><dd>${G.ctrl[o.id] ? SIDES[G.ctrl[o.id]].short : 'neutral'}</dd></div>`).join('');
-  $('end').hidden = false;
+  $('end').hidden = false; kaSchlachtEnde();   // K-A: Kampagnenschlacht → Ergebnis übernehmen
   setAmbient(false);
   if (win && (!me || win === me)) playSound('win', 0.6); else if (me && win && win !== me && soundOn) setMusik('musikNiederlage');   // Niederlage: „Taps“
 }
@@ -11941,7 +12371,7 @@ $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext
   b.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') return; tm = setTimeout(() => { b.dataset.long = '1'; showTip(tip, ...at(), 'next', 3500); }, 420); });
   b.addEventListener('pointerup', () => clearTimeout(tm)); b.addEventListener('pointercancel', () => clearTimeout(tm));
   b.addEventListener('contextmenu', e => e.preventDefault()); }
-$('startBtn').onclick = startGame;
+$('startBtn').onclick = () => startGame();
 $('btnArmy').onclick = () => openArmy(curMode() === 'D' ? 'D' : 'A');
 document.querySelectorAll('#armyKomm button').forEach(b => b.onclick = () => { kommStufeWahl[armySide] = +b.dataset.s; try { localStorage.setItem('arm.kommstufe', JSON.stringify(kommStufeWahl)); } catch (e) {} kommStufeZeigen(); });   // KO-A2
 document.querySelectorAll('#armyFeind button').forEach(b => b.onclick = () => { feindSelbst[armySide] = b.dataset.f === 'ich'; feindWahlZeigen(); armyRefresh(); });   // F94
@@ -11967,7 +12397,8 @@ let beendenT = 0; function beendenScharf(an) { clearTimeout(beendenT); const b =
 $('smBeenden').onclick = () => { if (!$('smBeenden').classList.contains('scharf')) return beendenScharf(true); beendenScharf(false); if (G) G.over = G.over || { winner: null, why: 'quit' }; setAmbient(false); showStart(true); };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; kzLegende(); };
 $('closeRules').onclick = () => { $('rules').hidden = true; };
-$('againBtn').onclick = () => { $('end').hidden = true; showStart(true); };
+$('kaNeu').onclick = kaNeuKlick; $('kaWeiter').onclick = kaWeiterKlick; $('kaRundeKn').onclick = kaRundeEnde; $('kaMenue').onclick = kaZuMenue; $('kaArmeeKn').onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); }; $('kaRasterKn').onclick = kaRasterUmschalten;   // K-A
+$('againBtn').onclick = () => { if (kaErg) return kaNachSchlacht(); $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };
 $('btnInfo').onclick = showDetail;
@@ -12200,7 +12631,7 @@ G = E.newGame({ seed: 7 });
 initDU(); layout(); syncAll(); updateUI();
 requestAnimationFrame(frame);
 showStart(true);
-window.__dbg = { leichen: () => LEICHEN, buchten: () => GBW && GBW.buchtenJeFeld, gbTeile: () => GBW && GBW.gteile && { an: GBW.gteile.an, stirn: (GBW.gteile.st || []).length, feind: (GBW.gteile.st || []).filter(q => q.feind).length, weg: GBW.gteile.weg || 0 },   /* G2b: gemalte Grabenteile aktiv? */   /* G2a: Feuerbuchten je Grabenfeld (für U2) */ gbProbe: o => { window.GB_PROBE = o || null; renderTerrain(); return true; },   /* G1: Gelände-Probe neu aufbauen */ massstab: an => { window.MASSSTAB_ALT = !an; return !window.MASSSTAB_ALT; },   /* U1: 1 = Maßstab E1, 0 = alter Maßstab */ schaden: (id, dmg, krit, seite) => { const u = unitById(id), st = schadenStufe(dmg), f = floater(...headPos(id), '−' + fmt(dmg), st.col, st.big, true); if (f && u) { f.seite = seite || fac(u.side); f.krit = !!krit; } return !!f; },   /* Punkt 17: Schadenszahl zeigen */ mitte: (c, r) => center(c, r), zaehler: () => ({ fxs: fxs.length, gmarks: gmarks.length, particles: particles.length, floaters: floaters.length, decals: decals.length, tracers: tracers.length, booms: booms.length, flames: flames.length, rings: rings.length, du: DU.size, wolken: (G.clouds || []).length, nebel: (G.smoke || []).length, feuer: (G.fires || []).length, eisloch: G.map.flat().filter(h => h.t === 'eisloch').length }),   /* Paket C Punkt 4: Größen der Listen je Runde */ modus: () => aktModus(), zielDa: id => zielDa(unitById(id)), knoepfe: () => [...document.querySelectorAll('[data-act]')].filter(b => b.offsetParent).map(b => b.dataset.act), spur: (i, c0, r0, c1, r1, o) => { const [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1); spurSchnee(i, x0, y0, x1, y1, o || {}); }, spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; },  istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, area: a => { areaAct = a || null; return !!abilArea(areaAct); },   /* U7: Wirkungsbereich eines Knopfs setzen (Test) */ tonAbgriff: () => { const ac = tonNetz(); if (!ac || !TBUS) return null; if (ac.state === 'suspended') ac.resume(); const d = ac.createMediaStreamDestination(); TBUS.lim.connect(d); return d.stream; },   /* W1: Ton für tools/video_partie.mjs */ schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
+window.__dbg = { kaEnde: () => showEnd(), kaZuordnen: () => KAMP.zuordnen(KA, G), ka: () => KA, kaSetzen: s => { KA = s; }, kaZeichnen: () => kaZeichnen(), kaOeffnen: () => kaOeffnen(), kaAktiv: () => kaAktiv, kaErg: () => kaErg, leichen: () => LEICHEN, buchten: () => GBW && GBW.buchtenJeFeld, gbTeile: () => GBW && GBW.gteile && { an: GBW.gteile.an, stirn: (GBW.gteile.st || []).length, feind: (GBW.gteile.st || []).filter(q => q.feind).length, weg: GBW.gteile.weg || 0 },   /* G2b: gemalte Grabenteile aktiv? */   /* G2a: Feuerbuchten je Grabenfeld (für U2) */ gbProbe: o => { window.GB_PROBE = o || null; renderTerrain(); return true; },   /* G1: Gelände-Probe neu aufbauen */ massstab: an => { window.MASSSTAB_ALT = !an; return !window.MASSSTAB_ALT; },   /* U1: 1 = Maßstab E1, 0 = alter Maßstab */ schaden: (id, dmg, krit, seite) => { const u = unitById(id), st = schadenStufe(dmg), f = floater(...headPos(id), '−' + fmt(dmg), st.col, st.big, true); if (f && u) { f.seite = seite || fac(u.side); f.krit = !!krit; } return !!f; },   /* Punkt 17: Schadenszahl zeigen */ mitte: (c, r) => center(c, r), zaehler: () => ({ fxs: fxs.length, gmarks: gmarks.length, particles: particles.length, floaters: floaters.length, decals: decals.length, tracers: tracers.length, booms: booms.length, flames: flames.length, rings: rings.length, du: DU.size, wolken: (G.clouds || []).length, nebel: (G.smoke || []).length, feuer: (G.fires || []).length, eisloch: G.map.flat().filter(h => h.t === 'eisloch').length }),   /* Paket C Punkt 4: Größen der Listen je Runde */ modus: () => aktModus(), zielDa: id => zielDa(unitById(id)), knoepfe: () => [...document.querySelectorAll('[data-act]')].filter(b => b.offsetParent).map(b => b.dataset.act), spur: (i, c0, r0, c1, r1, o) => { const [x0, y0] = center(c0, r0), [x1, y1] = center(c1, r1); spurSchnee(i, x0, y0, x1, y1, o || {}); }, spurN: () => gmarks.filter(m => m.b === 'spurschnee').length, get schneefall() { return SCHNEEFALL.length; }, pickAt: (cx, cy) => { const rc = cv.getBoundingClientRect(); const ev = { clientX: cx, clientY: cy }; const [x, y] = evToPx(ev), p = pick(x, y); return { h: p.h, uHex: p.uHex && p.uHex.id, uFig: p.uFig && p.uFig.id }; }, get hilfe() { return hilfeModus; }, get sendIds() { return [...sendSet]; }, setFace: (id, f) => { const d = DU.get(id); if (d) d.face = f; },  istSchreiter: id => istSchreiter(unitById(id)), gewehr: v => { GEWEHR_ART = v === 'B' ? 'B' : 'A'; }, get tonNetz() { return TAC ? { zustand: TAC.state, m: TBUS.m.gain.value, e: TBUS.e.gain.value, s: TBUS.s.gain.value } : TAC; }, mischF, area: a => { areaAct = a || null; return !!abilArea(areaAct); },   /* U7: Wirkungsbereich eines Knopfs setzen (Test) */ tonAbgriff: () => { const ac = tonNetz(); if (!ac || !TBUS) return null; if (ac.state === 'suspended') ac.resume(); const d = ac.createMediaStreamDestination(); TBUS.lim.connect(d); return d.stream; },   /* W1: Ton für tools/video_partie.mjs */ schaerfe: n => { SCHAERFE = +n || 0; }, get CAM() { return CAM; }, get ZFIT() { return ZFIT; }, camSetzen: (x, y, z) => { CAM.x = x; CAM.y = y; CAM.z = ZOOM = z; camClamp(); camSetup(); }, ton: { an: on => setSound(on), waffen: () => WAFFE_FEST, duck: () => +musikDuckL.toFixed(2), play: (n, v, sd) => playSound(n, v, sd), ducken: ms => musikDucken(ms) },   /* Paket B Test */ ende: w => { G.over = { winner: w, why: 'goal' }; showEnd(); }, get ort() { return { an: ortAn, lvl: +ortLvl.toFixed(2), wind: windSp.map(w => [+w.a.currentTime.toFixed(1), +(w.a.duration || 0).toFixed(1), +w.a.volume.toFixed(3), w.a.paused]), kraeheIn: Math.round(kraeheT - performance.now()), glockeIn: Math.round(glockeT - performance.now()), glockeRunde }; }, kipp: v => { window.KIPP = v; window.NOKIPP = false; renderTerrain(); }, neuDU: () => { initDU(); syncAll(); }, get bauSicht() { return bauSicht(); }, portraitKey, feldWirkung, bild: v => setBildwirkung(v, true), get BW() { return BW; }, pose: (id, art, dauer) => pose(id, art, dauer || 1500), poseWurf: (id, c, r) => poseWurf(id, ...center(c, r)), posenAn: id => posenAn(unitById(id)), get MARKS() { return MARKS.map(m => ({ x0: m.x0, y0: m.y0, x1: m.x1, y1: m.y1, kind: m.kind, id: m.u.id, tf: m.tf ? [m.tf.a, m.tf.b, m.tf.c, m.tf.d, m.tf.e, m.tf.f] : null })); }, markTips: (id, kind) => markTips({ u: unitById(id), kind }), kz: (id, a, m) => kz(id, a, m), get KZ() { return KZ; }, KZ_ART, kzPose, kzAnwahl: id => kzAnwahl(unitById(id)), kzRunde: sd => kzRunde(sd), get floaters() { return floaters; }, loewe: id => loewenGebruell(unitById(id)), pick: id => { sel = unitById(id); computeOptions(); updateUI(); }, move: (c, r) => doMove(c, r), attack: id => doAttack(unitById(id)), get busyFlag() { return busy; }, get pv() { return pvCache; }, get sel() { return sel; },openShop: () => openShop(), sndPick, SND, playSound, getuemmel: () => ({ an: !!gtA, vol: gtA ? +gtA.volume.toFixed(3) : 0 }), duck: () => ({ f: duckF(), laufend: duckLauf.length, bisMs: Math.round(duckBis - performance.now()) }), get gbw() { gbBereit(); return GBW; }, get musik() { return musik; }, get musikSp() { return musikSp.map(t => [t.name, +t.lvl.toFixed(2), t.aus, +(t.a.volume || 0).toFixed(3)]); }, get musikName() { return musikName; }, setMusikVol: v => { musikVol = v; }, musikTest: { setMusik: (n, f) => setMusik(n, f), setAmbient: on => setAmbient(on) },  get amb() { return [ambient, wetter]; }, tcv: () => tcv, renderTerrain: () => renderTerrain(), paintReady: () => paintReady(),
   hexCss: (c, r) => { let [x, y] = center(c, r); camSetup(); [x, y] = proj(x, y); const rc = cv.getBoundingClientRect(); return [rc.left + x * rc.width / cv.width, rc.top + y * rc.height / cv.height]; }, get cam() { return { ...CAM, ZFIT }; }, setCam: (x, y, z) => { if (z) CAM.z = z; CAM.x = x; CAM.y = y; camClamp(); }, FIGMAP,
   get reach() { return [...reach.values()]; }, get targets() { return [...targets.values()]; }, get shellHexes() { return [...shellHexes]; },
   setSpeed: v => speed = tempo = v, get speed() { return speed; }, cursorFor, CURSOR, get abilSet() { return abilSet; }, get shellHexes() { return shellHexes; }, panelAct: a => panelAct(a), get sndCount() { return window.__snd || 0; }, get sndBy() { return window.__sndBy || {}; }, aufstellFertig: () => aufstellFertig(), get aufstellWahl() { return aufstellWahl; }, rundenSchild: () => rundenSchild(), get G() { return G; }, get busy() { return busy || qRunning; }, E, AI,
