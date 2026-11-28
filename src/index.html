@@ -970,7 +970,7 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 #armyNeu .an-wahl button b { font: 400 18px var(--s-num); color: #fff2cc; } #armyNeu .an-wahl button span:last-child { font: 400 15px var(--s-num); color: #e6c97a; }
 #armyNeu #armyMechRow .tbtn { width: 100%; min-height: 44px; }
 #armyNeu #armyFeind { display: grid; gap: 6px; margin: 6px 0; } #armyNeu #armyFeind[hidden] { display: none; }
-#armyNeu #armyFeind .tbtn { width: 100%; min-height: 44px; } #armyNeu #armyFeind .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; }   /* F94: Wahl KI / selbst für die Feind-Armee */
+#armyNeu #armyKomm { display: grid; gap: 4px; margin: 6px 0; } #armyNeu #armyKomm[hidden] { display: none; } #armyNeu #armyKomm .ak-kn { display: flex; gap: 4px; } #armyNeu #armyKomm .tbtn { flex: 1; min-width: 40px; min-height: 44px; padding: 0; } #armyNeu #armyKomm .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; } #armyNeu #armyKomm small { opacity: .8; }   /* KO-A2: Kommandanten-Stufe */ #armyNeu #armyFeind .tbtn { width: 100%; min-height: 44px; } #armyNeu #armyFeind .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; }   /* F94: Wahl KI / selbst für die Feind-Armee */
 #armyDet { width: clamp(260px, 22vw, 380px); box-sizing: border-box; }
 :is(#shopNeu, #armyNeu) .sn-k .nm { hyphens: manual; -webkit-hyphens: manual; }
 #armyNeu .sn-titel b span { font: inherit; color: inherit; text-shadow: inherit; }
@@ -1464,7 +1464,7 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
           <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em><div id="armyKat" class="kat-leiste"></div></div>
           <div class="an-wahl" id="armyWahl"></div>
           <div id="armyFeind" hidden><button class="tbtn" data-f="ki">KI stellt selbst zusammen</button><button class="tbtn" data-f="ich">Ich stelle zusammen</button></div>
-          <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
+          <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div><div id="armyKomm" hidden><span class="ak-titel">Kommandanten-Stufe</span><span class="ak-kn"><button class="tbtn" data-s="1" title="Stufe 1">1</button><button class="tbtn" data-s="2" title="Stufe 2">2</button><button class="tbtn" data-s="3" title="Stufe 3">3</button><button class="tbtn" data-s="4" title="Stufe 4">4</button><button class="tbtn" data-s="5" title="Stufe 5">5</button></span><small id="armyKommTxt"></small></div>
         </aside>
       </div>
       <div class="sn-fuss"><span id="armyFussText"></span><span class="sn-knoepfe"><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button><button class="endbtn" id="armyOk">Übernehmen</button></span></div>
