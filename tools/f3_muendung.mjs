@@ -23,7 +23,7 @@ const FAELLE = (process.env.FAELLE || 'sturmpz:D:1:3,sturmpz:D:1:0,sturmpz:D:0:3
 const punkte = {}; const ZOOM = +(process.env.ZOOM || 2.6);
 for (const [typ, seite, zweit, face] of FAELLE) {
   const r = await ev(`(async () => { const D = __dbg, G = D.G, E = D.E; const S = G.units.filter(u => u.side === '${seite}' && E.alive(u)), a = S[0], z = G.units.find(u => u.side !== '${seite}' && E.alive(u) && E.TYPES[u.type].cls === 'inf');
-    a.type = '${typ}'; a.c = 6; a.r = 4; a.face = ${face}; a.str = 10; z.c = (${face} === 0) !== ${!!process.env.HINTEN} ? 8 : 4; z.r = 4; z.str = 10;
+    a.type = '${typ}'; a.setup = !!E.TYPES['${typ}'].mg; a.limbered = false; a.c = 6; a.r = 4; a.face = ${face}; a.str = 10; z.c = (${face} === 0) !== ${!!process.env.HINTEN} ? 8 : 4; z.r = 4; z.str = 10;
     for (const u of G.units) if (u !== a && u !== z && Math.abs(u.c - 6) < 3.5 && Math.abs(u.r - 4) < 2.5) u.c = u.side === 'A' ? 0 : 15;
     D.neuDU(); await new Promise(r => setTimeout(r, 900)); const [x, y] = D.mitte(6, 4); D.camSetzen(x + (${face} === 0 ? 1 : -1) * 40, y - 40, ${ZOOM}); await new Promise(r => setTimeout(r, 1200));
     return [a.id, z.id]; })()`);

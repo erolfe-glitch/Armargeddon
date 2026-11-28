@@ -91,11 +91,14 @@ TRUPP = {'soldat', 'sturm', 'pionier', 'schildwall', 'soldat_posen', 'sturm_pose
 OHNE_BLITZ = {'sturm_posen', 'pionier_posen'}
 POSEN_MASS = {'soldat_posen': ('soldat', 4, 0.97), 'sturm_posen': ('sturm', 4, 0.97), 'pionier_posen': ('pionier', 4, 0.97)}   # 2026-11-20: Sturmtrupps (Ausholen, Loslassen, Graben, Getroffen), Pioniere (Draht schneiden, Haftladung/Mine, Graben, Getroffen)
 # Bögen mit Posen in einer Reihe (nebeneinander): Anzahl Posen; Teile werden über zusammenhängende Flächen gefunden
-REIHE = {'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3,
+REIHE = {'mg_trupp_z': 3, 'panzerbuechse_trupp_z': 3,   # W2c-1b (Punkt 151): Zielstil, Waffe und Schütze ein Stück
+         'reiter': 3, 'flammen': 4, 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'banner': 3,
          'mg_trupp': 4, 'panzerbuechse_trupp': 4, 'hauptmann_gruppe': 3, 'general_gruppe': 3, 'scharfschuetze_trupp': 3,
          'sanitaeter_trage': 3, 'versorgung_neu': 3, 'fernsprech_neu': 3}   # U4 Teil 5 (Punkt 123)   # U4 Teil 3 (Punkt 121): Waffe + 3 Mann, Führung mit 3 Figuren, Scharfschütze + Beobachter (Teile getrennt gemalt)
 # Posen nebeneinander, die sich berühren (Mann und Hund): an festen Stellen (Anteil der Breite) senkrecht trennen
-SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4, 'aschenwacht_versorgung_neu': 3,   # U4 Teil 5: Werkzeugtasche berührt den Kistenträger   # U4 Teil 2: neuer Bogen, Düse der ersten Pose berührt den Mantel der zweiten
+SPALTEN = {'konkordat_flammen_z': 4, 'konkordat_mg_trupp_z': 3,   # Lader und Beobachter liegen eng beieinander: Naht statt Flächen
+             # W2c-1b: Zielstil, zwei Werferrohre berühren sich
+           'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4, 'aschenwacht_versorgung_neu': 3,   # U4 Teil 5: Werkzeugtasche berührt den Kistenträger   # U4 Teil 2: neuer Bogen, Düse der ersten Pose berührt den Mantel der zweiten
              # R4 (Punkt 97): Stahlreiter, Trab | Galopp mit erhobenem Schwert | aufbäumend (Schwerter berühren sich, Naht)
            'melder': [0.525], 'sanitaeter': 4, 'scharfschuetze': 3, 'schwer': 4, 'pirschjaeger': 3, 'signal': 3, 'stahl': 3, 'panzerknecht': 3,
            'fernsprech': 3, 'versorgung': 3, 'gasschutz': 3, 'mineur': 3, 'eingreif': 4, 'aschenwacht_sturm': 4,
@@ -103,7 +106,8 @@ SPALTEN = {'konkordat_stahlreiter_reskin': 3, 'aschenwacht_flammen': 4, 'aschenw
 # Waagerecht teilen (Anteil der Höhe): unten das Modell im Feld (<name>), oben ein Teil, den das Spiel eigens zeichnet (<name>_luft) – Fesselballon über der Winde
 TEILUNG = {'konkordat_ballon': 0.53}   # Zahl = so viele Posen, Trennstellen automatisch (dünnste Spalten)
 # Höhe der höchsten Pose in SH (Reiter mit Pferd, erhobener Waffe/Lanze); sonst 1,0
-SH_REIHE = {'konkordat_mg_trupp': 0.72, 'aschenwacht_mg_trupp': 0.74, 'aschenwacht_panzerbuechse_trupp': 0.75,   # U4 Teil 3: höchstes Teil = kniender Mann
+SH_REIHE = {'konkordat_mg_trupp_z': 0.85, 'aschenwacht_mg_trupp_z': 0.98, 'aschenwacht_panzerbuechse_trupp_z': 0.85, 'konkordat_flammen_z': 1.08,   # W2c-1b: kniende Bedienung = kniender Liniensoldat (Konkordat 257 px, Aschenwacht 270 px, F2b)
+            'konkordat_mg_trupp': 0.72, 'aschenwacht_mg_trupp': 0.74, 'aschenwacht_panzerbuechse_trupp': 0.75,   # U4 Teil 3: höchstes Teil = kniender Mann
             'konkordat_hauptmann_gruppe': 1.09, 'aschenwacht_hauptmann_gruppe': 1.01, 'konkordat_general_gruppe': 1.06, 'aschenwacht_general_gruppe': 1.08,   # höchstes Teil = Fahne, Offizier 1 SH (General 1,05)
             'konkordat_sanitaeter_trage': 1.05, 'aschenwacht_sanitaeter_trage': 1.1, 'konkordat_versorgung_neu': 1.08, 'aschenwacht_versorgung_neu': 1.15, 'konkordat_fernsprech_neu': 1.0,   # U4 Teil 5: höchstes Teil (erhobene Hand, Kiste/Gepäck über dem Kopf)
             'konkordat_scharfschuetze_trupp': 0.58, 'beiwerk_versorgung': 0.6,   # Liegende: Körperlänge ≈ 1 SH; Karren/Kiste/Feldtelefon ≈ 0,6 SH
@@ -143,7 +147,8 @@ def lampe_gelb(k):
 OHNE_SCHATTEN = {'konkordat_flammen', 'aschenwacht_flammen'}
 # Einzelmodelle: Höhe des freigestellten Bilds in Soldatenhöhen (SH, 1 SH = stehender Soldat). Panzer nach STYLE.md 1,3–1,5 SH,
 # Breite nach Bild (darf etwas über den Feldrand ragen, ui.js FIGW_VEH als Sicherheitsgrenze).
-SH_SINGLE = {'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.62, 'panzer': 1.5, 'bohrkoloss': 1.5,
+SH_SINGLE = {'moerser_z': 1.07, 'minenwerfer_z': 1.08,   # W2c-1b: Zielstil-Gruppen mit Bedienung
+             'mg': 1.13, 'mg_marsch': 1.21, 'geschuetz': 1.38, 'geschuetz_marsch': 1.4, 'hauptmann': 1.2, 'koloss': 1.62, 'panzer': 1.5, 'bohrkoloss': 1.5,
              'moerser': 0.95, 'minenwerfer': 1.0, 'rauchwerfer': 1.02, 'panzerbuechse': 0.82, 'general': 1.5, 'ballon': 1.15, 'feldkanone': 1.05,
              'turmschreiter': 1.9, 'ordensschreiter': 1.9, 'kreuzschreiter': 1.9, 'eisenknecht': 1.9, 'kreuzschreiter_neu': 2.3, 'eisenknecht_neu': 2.45, 'saegeschreiter': 1.9, 'klauenschreiter': 1.9}   # Schreiter (2026-11-17): knapp 2 SH, größer als Kampfanzüge   # Trupps mit Gerät: höchste Figur; General mit Fahnenträger (Fahne ragt über den Kopf)   # 2026-11-16: MG 1,15× (beide Zustände), Geschütz 1,38, Gespann am Reiter gemessen 1,4 SH, Fahrzeuge 1,5 SH
 # Aschenwacht: Schwarz-Weiß-Rot (echte Reichsfarben) → eigene Farben Aschgrau / Schwarz / Knochenweiß. Allgemeine Regel für ALLE
@@ -606,9 +611,14 @@ def figuren_posen(name, out):
         im.save(out / f'{name}_{j}.png'); print(f'{name}_{j}: {im.width}×{im.height}')
 
 
+# W2c-1b (Punkt 151): Bögen, deren Figuren den Bildrand streifen – vor dem Schnitt ringsum mit Magenta auffüllen (sonst Teil des Rands)
+RAND = {'konkordat_mg_trupp_z': 40, 'konkordat_flammen_z': 40, 'aschenwacht_panzerbuechse_trupp_z': 40, 'aschenwacht_mg_trupp_z': 40, 'konkordat_moerser_z': 40, 'aschenwacht_minenwerfer_z': 40}
+
+
 def cut(name, out=OUT):
     if name in FIGUREN_POSEN: return figuren_posen(name, out)
     a = np.asarray(Image.open(quelle(name)).convert('RGB'))
+    if name in RAND: r = RAND[name]; a = np.pad(a, ((r, r), (r, r), (0, 0)), constant_values=0); a[:r] = a[-r:] = [255, 0, 255]; a[:, :r] = a[:, -r:] = [255, 0, 255]
     a = rauch_weg(a, name)
     a = abzeichen_uebermalen(a, name)
     if name in SPIEGELN: a = np.ascontiguousarray(a[:, ::-1])
