@@ -107,8 +107,9 @@
 - ✓ **Paket W2g – zweite Figurenprobe (Punkt 149)** erledigt: Der Weg „ohne alten Bogen, mit genauer Beschreibung“ taugt.
 - ✓ **Paket W2c-1 (Punkt 150)** gemalt und abgenommen (sechs Bögen in `entwurf/probe/stil/figuren/w2c1/`).
 - ✓ **Paket W2c-1b (Punkt 151)** erledigt (`c3ee77c`, `db9b656`).
-- **Nachtrag G8 – Gruppen in senkrechten Gräben hintereinander (Punkt 153)** – **nächster `pa`**, Opus Mittel, klein.
-- **Paket KO-A – erster Kommandant (Stratege) (Punkt 154)** – `pa` danach, Opus Hoch. Dann K-A (Kampagne Start).
+- ✓ **Nachtrag G8 (Punkt 153)** erledigt (`07e4da6`).
+- ✓ **Paket KO-A (Punkt 154)** erledigt (`f9bc380`).
+- **Paket KO-A2 – Abgleich feste Aufstellung + Befehle mit Abklingzeit (Punkt 155)** – **nächster `pa`**, Opus Hoch. Dann K-A (Kampagne Start).
 - **W2c-2 (später):** nächste Zielstil-Bögen, dazu MG auf dem Marsch (`*_mg_marsch`) und Getroffen-Pose der Flammenwerfer (Enrico 01:40).
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
@@ -223,6 +224,34 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-28 08:15): Antwort zu KO-A – nächster `pa` = KO-A2 <<<
+✓ **155. Nächster `pa` = KO-A2. Einstellung: Opus, Hoch.** Die Abnahmen aus Punkt 153 (G8) und 154 (KO-A) bleiben bestehen.
+
+**Enricos Antworten zu KO-A:**
+1. **Feste Aufstellung abgleichen:** ja. Grauwall fest springt von 21 % auf 71 % Konkordat, und auf die feste Aufstellung gleichen wir ab (F94).
+2. **Namen** „Feldmarschall“ und „Generalstäbler“ bleiben vorerst. Sie werden beim Malen in KO-B mit der Weltbibel abgeglichen.
+3. **Befehle des Kommandanten:** Statt „höchstens 5 je Schlacht“ werden sie **über den Fähigkeitenbaum freigeschaltet und haben eine Abklingzeit** (Enrico).
+
+**A. Befehle mit Abklingzeit** (nur Kommandant; der Hauptmann behält seine Regel):
+- Keine Obergrenze je Schlacht mehr. Jeder Befehl hat eine **eigene Abklingzeit** in eigenen Runden: Sammeln 1, Feuer frei bzw. Sturmbefehl 2, „Feuer lenken“ 1. Der große Befehl bleibt einmal je Schlacht. Die Werte stehen als `P.KOMM_CD_*` in `P`.
+- Bis zu 2 Befehle je Runde bleiben, aber **nicht zweimal derselbe**.
+- **Freischaltung:** Jeder Befehl bekommt ein Feld `stufe` (ab welcher Kommandanten-Stufe er verfügbar ist). Vorschlag:
+  - Stufe 1: Sammeln, Feuer lenken.
+  - Stufe 2: Feuer frei bzw. Sturmbefehl.
+  - Stufe 3: zweiter Befehl je Runde.
+  - Stufe 4: Reichweite 2 statt 1.
+  - Stufe 5: großer Befehl.
+- **Im Gefecht** wählt man die Stufe im Startmenü bei der Armee-Auswahl; Vorgabe ist Stufe 5 (alles frei), die KI nimmt ebenfalls 5. Der Baum selbst kommt in KO-D (Kampagne). Hier nur die Datenstruktur und die Prüfung „freigeschaltet?“.
+- **Anzeige:** Abklingzeit als Zahl auf dem Knopf (wie bei Sperrfeuer), gesperrte Befehle grau mit „ab Stufe n“ im Tooltip.
+
+**B. Abgleich auf die feste Aufstellung:**
+- **Ursache suchen** (sim mit fester Aufstellung, Grauwall, 200): Lage des Feldmarschalls in der Kartenvorgabe, Aura 2 Felder, Befehlszahl, „Feuer lenken“ (ohne es bleibt es bei 70 %, ist also nicht die Ursache), Nahkampf 8,5, Preis 145 im Budget. Dazu kommt Teil A, weil Abklingzeiten die Befehlsmenge ändern.
+- **Ziel:** feste **und** gemischte Aufstellung auf allen drei Karten in der Streuung ±4 gegen den Stand vor KO-A. Mit fester Aufstellung je Karte 200 Schlachten, gemischt 3 Karten × 2 Startwerte × 100.
+- **Zulässige Mittel:** Werte und Preis des Kommandanten, seine Lage in der Kartenvorgabe, die KI-Gewichte für den Kommandanten. Keine Änderungen an anderen Einheiten.
+- Wenn es nicht in ±4 geht: den besten Stand nehmen und mit Tabelle nachfragen.
+
+**Danach:** Regeltest, Belegungstest, Partietest, Video. Bilder: Knopfleiste mit Abklingzeiten und gesperrtem Befehl.
 
 # >>> JETZT (Enrico 2026-11-28 01:40): W2c-1b abgenommen – nächster `pa` = Nachtrag G8, danach KO-A <<<
 ✓ **153. Nächster `pa` = Nachtrag G8 (klein). Einstellung: Opus, Mittel.**

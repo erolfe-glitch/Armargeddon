@@ -981,7 +981,7 @@ body.neu #shop .sheet { max-width: none; width: min(1180px, calc(100vw - 460px))
 #armyNeu .an-wahl button b { font: 400 18px var(--s-num); color: #fff2cc; } #armyNeu .an-wahl button span:last-child { font: 400 15px var(--s-num); color: #e6c97a; }
 #armyNeu #armyMechRow .tbtn { width: 100%; min-height: 44px; }
 #armyNeu #armyFeind { display: grid; gap: 6px; margin: 6px 0; } #armyNeu #armyFeind[hidden] { display: none; }
-#armyNeu #armyFeind .tbtn { width: 100%; min-height: 44px; } #armyNeu #armyFeind .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; }   /* F94: Wahl KI / selbst für die Feind-Armee */
+#armyNeu #armyKomm { display: grid; gap: 4px; margin: 6px 0; } #armyNeu #armyKomm[hidden] { display: none; } #armyNeu #armyKomm .ak-kn { display: flex; gap: 4px; } #armyNeu #armyKomm .tbtn { flex: 1; min-width: 40px; min-height: 44px; padding: 0; } #armyNeu #armyKomm .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; } #armyNeu #armyKomm small { opacity: .8; }   /* KO-A2: Kommandanten-Stufe */ #armyNeu #armyFeind .tbtn { width: 100%; min-height: 44px; } #armyNeu #armyFeind .tbtn.an { outline: 2px solid #C2A461; color: #E9D9A8; }   /* F94: Wahl KI / selbst für die Feind-Armee */
 #armyDet { width: clamp(260px, 22vw, 380px); box-sizing: border-box; }
 :is(#shopNeu, #armyNeu) .sn-k .nm { hyphens: manual; -webkit-hyphens: manual; }
 #armyNeu .sn-titel b span { font: inherit; color: inherit; text-shadow: inherit; }
@@ -1475,7 +1475,7 @@ body.neu.ui1.symfarbe #hud .up-ab.off > img { filter: saturate(.55) brightness(.
           <div class="an-punkte"><div class="an-balken"><i id="armyBalken"></i></div><div class="an-zeile"><span>Verteilt</span><b id="armyPtsSeite">0</b></div><div class="an-zeile"><span>Restpunkte</span><b id="armyRest">0</b></div><div class="an-zeile"><span id="armyCnt"></span></div><em id="armyMsg"></em><div id="armyKat" class="kat-leiste"></div></div>
           <div class="an-wahl" id="armyWahl"></div>
           <div id="armyFeind" hidden><button class="tbtn" data-f="ki">KI stellt selbst zusammen</button><button class="tbtn" data-f="ich">Ich stelle zusammen</button></div>
-          <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div>
+          <div id="armyMechRow"><button class="tbtn" id="armyMech">Kampfmaschinen zulassen</button></div><div id="armyKomm" hidden><span class="ak-titel">Kommandanten-Stufe</span><span class="ak-kn"><button class="tbtn" data-s="1" title="Stufe 1">1</button><button class="tbtn" data-s="2" title="Stufe 2">2</button><button class="tbtn" data-s="3" title="Stufe 3">3</button><button class="tbtn" data-s="4" title="Stufe 4">4</button><button class="tbtn" data-s="5" title="Stufe 5">5</button></span><small id="armyKommTxt"></small></div>
         </aside>
       </div>
       <div class="sn-fuss"><span id="armyFussText"></span><span class="sn-knoepfe"><button class="tbtn" id="armyStd">Standard</button><button class="tbtn" id="armyClear">Leeren</button><button class="tbtn" id="armySwap" hidden>Andere Seite</button><button class="tbtn" id="armyCancel">Abbrechen</button><button class="endbtn" id="armyOk">Übernehmen</button></span></div>
@@ -1602,9 +1602,11 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
-  // KO-A (Punkt 154, 2026-11-28): Kommandant „Stratege“ statt General – Befehle 2 Felder weit, bis zu 2 je Runde (der zweite ohne Aktion), höchstens KOMM_ORDER_MAX je Schlacht; Aura 2 Felder (Moralverlust ×OFFICER_MOR, Sammeln +KOMM_SAMMELN);
+  // KO-A (Punkt 154, 2026-11-28): Kommandant „Stratege“ statt General – Befehle 2 Felder weit, bis zu 2 je Runde (der zweite ohne Aktion); Aura 2 Felder (Moralverlust ×OFFICER_MOR, Sammeln +KOMM_SAMMELN);
   // „Feuer lenken“ einmal je Runde ohne Kosten an ein eigenes Geschütz/einen Mörser bis KOMM_LENKEN_R Felder (schießt in diesem Zug ohne Streuung); Fall: ganze Seite −KOMM_FALL_MOR Moral. Rückweg KOMMANDANT_ALT
-  KOMM_ORDER_R: 2, KOMM_ORDER_RUNDE: 2, KOMM_ORDER_MAX: 5, KOMM_SAMMELN: 0.1, KOMM_FALL_MOR: 2, KOMM_LENKEN_R: 3,
+  KOMM_ORDER_R: 2, KOMM_ORDER_RUNDE: 2, KOMM_SAMMELN: 0.1, KOMM_FALL_MOR: 2, KOMM_LENKEN_R: 3,
+  // KO-A2 (Punkt 155): keine Obergrenze je Schlacht mehr, Abklingzeit je Befehl in eigenen Runden (Sammeln, Feuer frei/Sturmbefehl, Feuer lenken); Kommandanten-Stufe 1–5 (Vorgabe KOMM_STUFE) schaltet frei (KOMM_FREI)
+  KOMM_CD_SAMMELN: 1, KOMM_CD_FEUER: 2, KOMM_CD_LENKEN: 1, KOMM_STUFE: 5,
   DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, ZWEISCHLAG: 0.6, /* Punkt 106: zweiter Nahkampfschlag (Stahlreiter, Löwenoger) */ GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, ENTSETZ_BASIS: 0.08, ENTSETZ_MOR: 0.8, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
@@ -1775,11 +1777,12 @@ Object.assign(TYPES, {
 // KO-A (Punkt 154): Der Stratege ersetzt den General (gleiche Typschlüssel generalA/generalD). Einzelfigur wie die Helden, leicht gepanzert, Nahkampf über jedem Trupp, unter den Helden
 if (KOMM) {
   const st = { cls: 'storm', kommandant: 'stratege', gepanzert: !TOG.KOMM_OHNEPANZER, cmd: 2, atk: 8.5, def: 6, mor: 9, mv: 3, rng: 2, fs: 3 };   if (TOG.KOMM_WERTE) { const [w1, w2, w3, w4] = TOG.KOMM_WERTE.split(',').map(Number); Object.assign(st, { atk: w1, def: w2, mor: w3, fs: w4 }); }   // Mess-Schalter (nur Node): Angriff, Abwehr, Moral, Feuer
-  Object.assign(TYPES.generalA, st, { name: 'Feldmarschall', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Feuer frei“) an Einheiten bis 2 Felder, bis zu 2 je Runde (der zweite kostet keine Aktion), höchstens 5 je Schlacht. Einmal je Schlacht „Halten um jeden Preis“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Mörser bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
+  Object.assign(TYPES.generalA, st, { name: 'Feldmarschall', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Feuer frei“) an Einheiten bis 2 Felder, bis zu 2 verschiedene je Runde (der zweite kostet keine Aktion), ohne Obergrenze, mit Abklingzeit (Sammeln jede Runde, Feuer frei jede 2. Runde). Einmal je Schlacht „Halten um jeden Preis“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Mörser bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
     chronik: { quelle: 'Lagebuch des Westlichen Konvents, 116 n. G.', text: 'Mit Stab und Karte steht der Feldmarschall hinter der Linie und rückt die Schlacht wie Steine auf einem Brett zurecht. Seine Batterien treffen, wo er hinzeigt, und solange er steht, halten die Kompanien ringsum ihre Gräben.' } });
-  Object.assign(TYPES.generalD, st, { name: 'Generalstäbler', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Sturmbefehl“) an Einheiten bis 2 Felder, bis zu 2 je Runde (der zweite kostet keine Aktion), höchstens 5 je Schlacht. Einmal je Schlacht „Generalangriff“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Minenwerfer bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
+  Object.assign(TYPES.generalD, st, { name: 'Generalstäbler', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Sturmbefehl“) an Einheiten bis 2 Felder, bis zu 2 verschiedene je Runde (der zweite kostet keine Aktion), ohne Obergrenze, mit Abklingzeit (Sammeln jede Runde, Sturmbefehl jede 2. Runde). Einmal je Schlacht „Generalangriff“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Minenwerfer bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
     chronik: { quelle: 'Fernsprechprotokoll des Grauwall-Stabs, 116 n. G.', text: 'Fernglas am Auge und Hörer am Ohr, lenkt der Generalstäbler die Geschütze der Aschenwacht Granate um Granate ins Ziel. Wo seine Stimme durch den Draht dringt, sammeln sich auch zerschlagene Trupps wieder zur Linie.' } });
 }
+if (KOMM) for (const sd of ['A', 'D']) if (TOG['KOMM_WERTE_' + sd]) { const [w1, w2, w3, w4] = TOG['KOMM_WERTE_' + sd].split(',').map(Number); Object.assign(TYPES['general' + sd], { atk: w1, def: w2, mor: w3, fs: w4 }); }   // KO-A2: Mess-Schalter je Seite (nur Node)
 // Nachschub: Kosten in Punkten und Angebot je Seite
 // Kosten in Punkten (großer Maßstab, Wunsch des Nutzers): aus Werten und Fähigkeiten berechnet.
 // Kampfwert = 6·Angriff + 5·Zähigkeit + 5·Zug − 45, auf 5 gerundet.
@@ -2191,7 +2194,7 @@ function bpMax(u) { const T = TYPES[u.type]; if (T.cls === 'art') return T.mobil
 function fahrzeugArt(u) { const T = TYPES[u.type]; return T.cls !== 'walker' ? null : T.mech && u.type !== 'bohrer' ? 'schreiter' : 'fahrzeug'; }
 function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgebaut (siehe newGame)
   const T = TYPES[type];
-  const u = { id: G.nextId++, type, side: T.side, c, r, officer: T.cmd ? officer || (T.cmd === 2 ? (KOMM ? T.name : 'General') : 'Hauptmann') : null, ap: P.AP, bp: 0, bpUsed: 0,
+  const u = { id: G.nextId++, type, side: T.side, c, r, ...(KOMM && T.kommandant ? { kStufe: (G.kommStufe && G.kommStufe[T.side]) || P.KOMM_STUFE } : {}), officer: T.cmd ? officer || (T.cmd === 2 ? (KOMM ? T.name : 'General') : 'Hauptmann') : null, ap: P.AP, bp: 0, bpUsed: 0,
     str: 10, mor: T.mor, face: T.side === 'A' ? 0 : 3, status: 'ok',
     moved: false, attacked: false, sperr: 0, supp: 0, fireDmg: 0, turnOnly: false,
     run: 0, broken: 0, gassed: false, seenWalker: false, limbered: false, gas: T.gas || 0, mines: T.mines || 0, startC: c, startR: r };   // Minen auch für gekaufte Trupps
@@ -2367,6 +2370,7 @@ function newGame(opts) {
     mapId: MAP.id,
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
+    kommStufe: { A: +(opts.kommStufe && opts.kommStufe.A) || P.KOMM_STUFE, D: +(opts.kommStufe && opts.kommStufe.D) || P.KOMM_STUFE },   // KO-A2: Kommandanten-Stufe je Seite
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
     kanten: null,   // R3: Deckung an Feldkanten (unten aus Karte und Gelände)
     bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
@@ -3316,7 +3320,7 @@ function startTurn(G) {
     u.fireDmg = 0;
     if (u.side === s) {
       u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.befR = 0; u.lenkte = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false; u.abgeprotzt = false;
-      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'cdM', 'kuehl']) if (u[k] > 0) u[k]--;
+      for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'cdM', 'cdL', 'kuehl']) if (u[k] > 0) u[k]--;
       u.dfN = 0;
       if (u.revealed > 0) u.revealed--;
       if (TYPES[u.type].counterStrike) u.cready = true;
@@ -3684,12 +3688,15 @@ function counterStrike(G, mover, ev) {
 // ---------- Befehle der Anführer ----------
 // Einmal alle zwei eigenen Runden. 'rally' = Sammeln (Moral +1,5, Niederhalten endet), 'storm' = Sturmbefehl (Nahkampf ×1,25 in dieser Runde).
 function istKomm(u) { return !!(KOMM && u && TYPES[u.type].kommandant); }   // KO-A (Punkt 154)
-function cmdRange(u) { return istKomm(u) ? P.KOMM_ORDER_R : P.ORDER_R; }   // Paket 8: normale Befehle nur 1 Feld weit (auch der General)
+// KO-A2 (Punkt 155): Freischaltung je Kommandanten-Stufe (Baum folgt in KO-D); Prüfung „freigeschaltet?“ über kommFrei
+const KOMM_FREI = { rally: 1, lenken: 1, fire: 2, storm: 2, zweiter: 3, reichweite: 4, big: 5 };
+function kommFrei(u, was) { return !istKomm(u) || (u.kStufe || P.KOMM_STUFE) >= (KOMM_FREI[was] || 1); }
+function cmdRange(u) { return istKomm(u) && kommFrei(u, 'reichweite') ? P.KOMM_ORDER_R : P.ORDER_R; }   // Paket 8: normale Befehle nur 1 Feld weit (auch der General)
 // Abklingzeit je Befehl: Sammeln 3 Runden, Sturmbefehl/Feuer frei 2; General und Funker in der Nähe je 1 weniger (mindestens 1). Höchstens ein Befehl je Runde.
 // Befehle je Seite (Gruppe 2, 2026-11-16): beide „Sammeln“; Konkordat „Feuer frei“ (Fernkampf ×1,25 bis zum nächsten eigenen Zug), Aschenwacht „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde).
 const ORDER_KINDS = { A: ['rally', 'fire'], D: ['rally', 'storm'] };
 function orderKinds(u) { return ORDER_KINDS[u.side] || ['rally', 'storm']; }
-function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && !(u.supp > 0) && (istKomm(u) ? (u.befR || 0) < P.KOMM_ORDER_RUNDE && ((u.befR || 0) > 0 || u.ap >= 1) && (u.befehle || 0) < P.KOMM_ORDER_MAX : u.ap >= 1 && !u.ordered && (u.befehle || 0) < P.ORDER_MAX) && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }   // KO-A: Kommandant bis zu 2 Befehle je Runde, der zweite ohne Aktion
+function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && !(u.supp > 0) && (istKomm(u) ? kommFrei(u, kind) && (u.befR || 0) < (kommFrei(u, 'zweiter') ? P.KOMM_ORDER_RUNDE : 1) && ((u.befR || 0) > 0 || u.ap >= 1) : u.ap >= 1 && !u.ordered && (u.befehle || 0) < P.ORDER_MAX) && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }   // KO-A: Kommandant bis zu 2 Befehle je Runde, der zweite ohne Aktion
 // U7 Schritt 2: Sammel-Chance eines Fliehenden zu Rundenbeginn bzw. mit Befehl (Regel, Anzeige und KI); aufgerieben (Stärke < ROUT_STR) oder Feind daneben = 0
 function sammelChance(G, u, befehl) {
   if (!u || u.status !== 'rout' || u.aufgerieben || u.str < P.ROUT_STR || adjEnemies(G, u).length) return 0;
@@ -3705,13 +3712,14 @@ function sammelnR(u) { return TYPES[u.type].cmd === 2 ? P.SAMMELN_R_GENERAL : P.
 function sammelZiele(G, u) { return fluchtAlt() ? [] : G.units.filter(o => o.side === u.side && o.status === 'rout' && !o.aufgerieben && dist(o.c, o.r, u.c, u.r) <= sammelnR(u)); }
 // KO-A: Feuer lenken – einmal je Runde ohne Kosten; ein eigenes Geschütz/Mörser bis KOMM_LENKEN_R Felder schießt in diesem Zug ohne Streuung
 function lenkbar(G, u, o) { return o && o.side === u.side && active(o) && cls(o) === 'art' && !TYPES[o.type].direkt && !gelenkt(G, o) && dist(o.c, o.r, u.c, u.r) <= P.KOMM_LENKEN_R; }
-function canLenken(G, u) { return !G.over && istKomm(u) && active(u) && u.side === G.side && !u.lenkte && !(u.supp > 0) && G.units.some(o => lenkbar(G, u, o) && !o.attacked); }
+function canLenken(G, u) { return !G.over && istKomm(u) && active(u) && u.side === G.side && kommFrei(u, 'lenken') && !(u.cdL > 0) && !(u.supp > 0) && G.units.some(o => lenkbar(G, u, o) && !o.attacked); }
 function lenkenZiele(G, u) { return canLenken(G, u) ? G.units.filter(o => lenkbar(G, u, o) && !o.attacked) : []; }
-function lenken(G, u, o) { if (!canLenken(G, u) || !lenkbar(G, u, o) || o.attacked) return []; u.lenkte = true; o.gelenkt = G.turn + G.side; return [{ t: 'lenken', u: u.id, z: o.id }]; }
+function lenken(G, u, o) { if (!canLenken(G, u) || !lenkbar(G, u, o) || o.attacked) return []; u.lenkte = true; u.cdL = P.KOMM_CD_LENKEN; o.gelenkt = G.turn + G.side; return [{ t: 'lenken', u: u.id, z: o.id }]; }
 function gelenkt(G, a) { return !!(a && a.gelenkt && a.gelenkt === G.turn + G.side); }
 function canOrder(G, u) { return orderKinds(u || {}).some(k => canOrderKind(G, u, k)); }
 function orderCd(G, u, kind) {
   const relay = G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].relay && dist(o.c, o.r, u.c, u.r) <= 3);
+  if (istKomm(u)) return kind === 'rally' ? P.KOMM_CD_SAMMELN : P.KOMM_CD_FEUER;   // KO-A2: feste Abklingzeit je Befehl
   return Math.max(1, (kind === 'rally' ? P.RALLY_CD : P.STORM_CD) - (TYPES[u.type].cmd === 2 ? 1 : 0) - (relay ? 1 : 0));
 }
 function order(G, u, kind) {
@@ -3733,7 +3741,7 @@ function order(G, u, kind) {
 // Großer Befehl des Generals (einmal je Schlacht und Seite, 1 Punkt): Konkordat „Halten um jeden Preis“ (bis zum nächsten eigenen Zug keine Flucht, Abwehr ×1,25),
 // Aschenwacht „Generalangriff“ (alle eigenen Einheiten sofort +1 Aktionspunkt)
 const BIG = { A: { k: 'hold', name: 'Halten um jeden Preis' }, D: { k: 'assault', name: 'Generalangriff' } };
-function canBig(G, u) { return !G.over && u && active(u) && TYPES[u.type].cmd === 2 && u.side === G.side && u.ap >= 1 && !(u.supp > 0) && !(G.bigUsed && G.bigUsed[u.side]); }
+function canBig(G, u) { return !G.over && u && active(u) && TYPES[u.type].cmd === 2 && kommFrei(u, 'big') && u.side === G.side && u.ap >= 1 && !(u.supp > 0) && !(G.bigUsed && G.bigUsed[u.side]); }
 function bigOrder(G, u) {
   if (!canBig(G, u)) return [];
   G.bigUsed = G.bigUsed || {}; G.bigUsed[u.side] = true; spend(u, 1);
@@ -3875,7 +3883,7 @@ function checkEnd(G) {
   T.huenen.can = 'Schweres Feuer: ' + T.huenen.can;
   T.fernsprech.can = 'Feuerleitung: ' + T.fernsprech.can; T.ballon.can = 'Aufklärung: ' + T.ballon.can; }
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, eisSchwer, eisBruch, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, istKomm, canLenken, lenkenZiele, lenken, gelenkt, KOMM, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, eisSchwer, eisBruch, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, istKomm, kommFrei, KOMM_FREI, canLenken, lenkenZiele, lenken, gelenkt, KOMM, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,
@@ -11277,22 +11285,25 @@ function unitButtons(T, hints) {
   if (T.mg) btns.push({ act: 'sperr', sym: 'garbe', name: 'Sperrfeuer', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Im gegnerischen Zug bis zu 2 Schüsse auf Gegner, die sich im Schussfeld im Offenen bewegen. Nur aufgebaut, in dieser Runde nicht bewegt und nicht geschossen.', on: sel.sperr > 0, off: !E.canSperr(G, sel),
     why: sel.sperr > 0 ? 'Sperrfeuer steht.' : !sel.setup ? 'Erst aufbauen.' : E.feindNah(G, sel) ? 'Gegner direkt daneben: in Feindberührung kein Sperrfeuer.' : sel.mvd ? 'Hat sich in dieser Runde bewegt.' : sel.attacked ? 'Hat diese Runde schon geschossen.' : 'Aktion schon verbraucht.' });
   if (T.rng >= 2 && !T.mg && T.cls !== 'walker') btns.push({ act: 'ow', sym: 'feuerbereit', name: 'Feuerbereitschaft', cost: 1, costTxt: 'die Aktion und alle Bewegungspunkte', text: 'Schießt in der gegnerischen Runde auf den ersten Gegner, der sich in Reichweite bewegt (Schaden ×0,8).', on: !!sel.ow, off: !E.canOverwatch(G, sel), why: sel.ow ? 'Ist schon feuerbereit.' : E.feindNah(G, sel) ? 'Gegner direkt daneben: in Feindberührung keine Feuerbereitschaft.' : 'Braucht die Aktion; nur ohne Bewegung in dieser Runde.' });   // F55
-  const ORD = { /* bogen8b (Enrico 2026-11-22) */ rally: ['sammeln', 'Sammeln', 'Eigene Truppen im Umkreis von 1 Feld: Moral +15, Niederhalten endet.'], storm: ['sturmbefehl', 'Sturmbefehl', 'Eigene Truppen im Umkreis von 1 Feld: Nahkampf ×1,25 in dieser Runde.'], fire: ['feuerfrei', 'Feuer frei', 'Eigene Truppen im Umkreis von 1 Feld: Fernkampf ×1,25 bis zu ihrem nächsten Zug.'] };
+  const umk = `Eigene Truppen im Umkreis von ${felder(E.cmdRange(sel), 1)}`, ORD = { /* bogen8b (Enrico 2026-11-22) */ rally: ['sammeln', 'Sammeln', `${umk}: Moral +15, Niederhalten endet.`], storm: ['sturmbefehl', 'Sturmbefehl', `${umk}: Nahkampf ×1,25 in dieser Runde.`], fire: ['feuerfrei', 'Feuer frei', `${umk}: Fernkampf ×1,25 bis zu ihrem nächsten Zug.`] };
   if (sel.officer) for (const [k, sym, name, tip] of E.orderKinds(sel).map(k => [k, ...ORD[k]])) {
     const cd = k === 'rally' ? sel.cdR : sel.cdS;
     const rest = P.ORDER_MAX - (sel.befehle || 0);
     const sz = k === 'rally' && !E.fluchtAlt() ? E.sammelZiele(G, sel) : [], spz = sz.map(o => Math.round(E.sammelChance(G, o, true) * 100)), name2 = sz.length ? `${name} ${Math.max(...spz)} %` : name;   // U7 Schritt 2 (Punkt 86): Chance für Fliehende am Knopf
     const tip2 = sz.length ? `${tip} Fliehende bis ${E.sammelnR(sel)} Felder sammeln sich mit: ${sz.map((o, i) => `${TYPES[o.type].name} ${spz[i]} %`).join(', ')}.` : tip;
+    if (E.istKomm(sel)) { const frei = E.kommFrei(sel, k), zweiter = (sel.befR || 0) > 0;   // KO-A2 (Punkt 155): Kommandant – Abklingzeit statt Obergrenze, Freischaltung je Stufe
+      btns.push({ act: 'o-' + k, sym, name: name2, ...(zweiter ? { costTxt: 'kostet nichts (zweiter Befehl in dieser Runde)' } : { cost: 1 }), cd: frei ? cd : 0, text: `${tip2} Abklingzeit ${upRunden(E.orderCd(G, sel, k))}. Bis zu ${E.kommFrei(sel, 'zweiter') ? 2 : 1} verschiedene Befehle je Runde${E.kommFrei(sel, 'zweiter') ? ', der zweite kostet keine Aktion' : ''}.`, off: !E.canOrderKind(G, sel, k), why: !frei ? `Ab Kommandanten-Stufe ${E.KOMM_FREI[k]}.` : cd > 0 ? `Wieder in ${upRunden(cd)}.` : (sel.befR || 0) >= (E.kommFrei(sel, 'zweiter') ? P.KOMM_ORDER_RUNDE : 1) ? (E.kommFrei(sel, 'zweiter') ? 'Schon zwei Befehle in dieser Runde.' : 'Ein Befehl je Runde (zweiter Befehl ab Kommandanten-Stufe 3).') : 'Braucht die Aktion.' }); continue; }
     btns.push({ act: 'o-' + k, sym, name: name2, cost: 1, cd, cnt: rest, text: `${tip2} Noch ${rest} von ${P.ORDER_MAX} Befehlen in dieser Schlacht (alle Befehle zusammen). Abklingzeit ${E.orderCd(G, sel, k)} Runden.`, off: !E.canOrderKind(G, sel, k), why: rest <= 0 ? `Alle ${P.ORDER_MAX} Befehle verbraucht.` : cd > 0 ? `Wieder in ${upRunden(cd)}.` : 'Nur ein Befehl je Runde.' });
   }
-  if (T.cmd === 2) { const B = E.BIG[sel.side], used = G.bigUsed && G.bigUsed[sel.side];   // großer Befehl des Generals: einmal je Schlacht
+  if (T.cmd === 2) { const B = E.BIG[sel.side], used = G.bigUsed && G.bigUsed[sel.side], gesperrt = E.istKomm(sel) && !E.kommFrei(sel, 'big');   // großer Befehl des Generals: einmal je Schlacht
     btns.push({ act: 'big', sym: B.k === 'hold' ? 'halten' : 'generalangriff', name: B.name, cost: 1, pulse: E.canBig(G, sel), cnt: used ? 0 : 1, text: B.k === 'hold' ? `Einmal je Schlacht: eigene Einheiten im Umkreis von ${felder(P.BIG_R, 1)} fliehen bis zum nächsten eigenen Zug nicht, Abwehr ×1,25.` : `Einmal je Schlacht: eigene Einheiten im Umkreis von ${felder(P.BIG_R, 1)} greifen sofort noch einmal an – +1 Aktion und +${P.GENERAL_BP} Bewegungspunkte, auch wer schon geschossen oder gekämpft hat, Nahkampf auch nach weitem Zug; Niederhalten endet. Nicht für fliehende, liegengebliebene oder festgefahrene Einheiten.`, off: !E.canBig(G, sel), why: used ? 'Verbraucht: nur einmal je Schlacht.' : 'Braucht 1 Aktionspunkt.' }); }
   if (sel.dug) btns.push({ act: 'undig', sym: 'schaufel', name: 'Ausgraben', ...(P.AUSGRABEN_AP ? { cost: 1 } : { bp: P.AUSGRABEN_BP }), text: `Aus der Stellung heraus: danach kann die Einheit ziehen, die Deckung ${xf(P.DIG_DEF)} endet. Kostet ${P.AUSGRABEN_AP ? 'die Aktion' : P.AUSGRABEN_BP + ' Bewegungspunkt'}.`, off: !E.canUndig(G, sel), why: P.AUSGRABEN_AP ? 'Aktion schon verbraucht.' : 'Keine Bewegungspunkte mehr.' });   // F36
   if (T.dig && !sel.dug) btns.push({ act: 'dig', sym: 'schaufel', name: 'Eingraben', cost: 1, on: !!sel.dug, text: 'Im offenen Gelände oder Trichter: Abwehr ×1,3, bis die Einheit wieder zieht.', off: !E.canDig(G, sel), why: sel.dug ? 'Ist schon eingegraben.' : !['open', 'crater'].includes(G.map[sel.c][sel.r].t) ? 'Nur im offenen Gelände oder Trichter.' : 'Braucht 1 Aktionspunkt.' });
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', on: hilfeAn('heal'), cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
-  if (E.istKomm && E.istKomm(sel) && !sel.lenkte) btns.push({ act: 'i-lenk', sym: 'fernglas', name: 'Feuer lenken', on: hilfeAn('lenk'), cost: 0, text: `Einmal je Runde, kostet nichts: ein eigenes Geschütz oder einen Mörser bis ${P.KOMM_LENKEN_R} Felder anklicken. Es schießt in diesem Zug ohne Streuung.`, off: !lenkSet.size, why: 'Kein eigenes Geschütz oder Mörser bis 3 Felder, das in diesem Zug noch schießen kann.' });   // KO-A
+  if (T.cmd === 2 && E.istKomm(sel) && !E.kommFrei(sel, 'big') && btns.find(b => b.act === 'big')) Object.assign(btns.find(b => b.act === 'big'), { off: true, pulse: false, why: `Ab Kommandanten-Stufe ${E.KOMM_FREI.big}.` });   // KO-A2
+  if (E.istKomm && E.istKomm(sel)) btns.push({ act: 'i-lenk', sym: 'fernglas', name: 'Feuer lenken', on: hilfeAn('lenk'), cost: 0, cd: sel.cdL || 0, text: `Abklingzeit ${upRunden(P.KOMM_CD_LENKEN)}, kostet nichts: ein eigenes Geschütz oder einen Mörser bis ${P.KOMM_LENKEN_R} Felder anklicken. Es schießt in diesem Zug ohne Streuung.`, off: !lenkSet.size, why: !E.kommFrei(sel, 'lenken') ? `Ab Kommandanten-Stufe ${E.KOMM_FREI.lenken}.` : sel.cdL > 0 ? `Wieder in ${upRunden(sel.cdL)}.` : 'Kein eigenes Geschütz oder Mörser bis 3 Felder, das in diesem Zug noch schießen kann.' });   // KO-A
   if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', on: hilfeAn('send'), cost: 1, cd: sel.cdM, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte. Danach ${P.MELDER_CD} Runden Pause.`, off: !sendSet.size, why: sel.cdM > 0 ? 'Der Meldegänger ist noch unterwegs.' : 'Keine Einheit in Reichweite.' });
   if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', on: hilfeAn('rec'), cost: 1, cd: sel.cdB, text: 'Koloss bzw. Maschine mit Schraubenschlüssel anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
   if (!sel.supp && !sel.broken) {
@@ -11762,7 +11773,10 @@ function armyListe() {   // Reiter und Karten der gewählten Kategorie neu aufba
   armyRefresh();
 }
 function hideArmyDet() { $('armyDet').classList.remove('zeigen'); document.querySelectorAll('#armyNeu .sn-k.offen').forEach(e => e.classList.remove('offen')); }
-function armyRefresh() {
+// KO-A2 (Punkt 155): Kommandanten-Stufe je Seite in der Armee-Auswahl (Vorgabe 5 = alles frei; die KI nimmt immer 5). Der Fähigkeitenbaum folgt in KO-D.
+const kommStufeWahl = { A: 5, D: 5 }; try { const v = JSON.parse(localStorage.getItem('arm.kommstufe') || 'null'); if (v) for (const sd of ['A', 'D']) if (v[sd] >= 1 && v[sd] <= 5) kommStufeWahl[sd] = +v[sd]; } catch (e) {}
+function kommStufeZeigen() { const w = $('armyKomm'); if (!w) return; w.hidden = !E.KOMM; w.querySelectorAll('button').forEach(b => b.classList.toggle('an', +b.dataset.s === kommStufeWahl[armySide])); const t = $('armyKommTxt'); if (t) t.textContent = ['', 'Sammeln, Feuer lenken', '+ Feuer frei bzw. Sturmbefehl', '+ zweiter Befehl je Runde', '+ Reichweite 2 Felder', '+ großer Befehl'][kommStufeWahl[armySide]]; }
+function armyRefresh() { kommStufeZeigen();
   const sd = armySide, cost = E.armyCost(armyDraft), n = E.armyCount(armyDraft), bud = E.ARMY_BUDGET[sd], list = roster(sd), inKat = k => snInKat(list, k);
   let walkers = 0; for (const t in armyDraft) if (TYPES[t].cls === 'walker') walkers += armyDraft[t];
   $('armyReiter').innerHTML = SN_REITER.filter(k => inKat(k).length).map(k => { const frei = inKat(k).filter(t => !armyWarum(t)).length, gew = inKat(k).reduce((x, t) => x + (armyDraft[t] || 0), 0);
@@ -11822,7 +11836,7 @@ function startGame() {
   applySkin(curSkin());
   $('start').hidden = true; $('end').hidden = true;
   setMap(mapSel);
-  G = E.newGame({ map: mapSel, mechs: mechsOn(), army: { A: human('A') || feindSelbst.A ? customArmy.A : null, D: human('D') || feindSelbst.D ? customArmy.D : null } });   // F94: Feind-Armee selbst gewählt
+  G = E.newGame({ map: mapSel, mechs: mechsOn(), kommStufe: { A: human('A') ? kommStufeWahl.A : 5, D: human('D') ? kommStufeWahl.D : 5 }, army: { A: human('A') || feindSelbst.A ? customArmy.A : null, D: human('D') || feindSelbst.D ? customArmy.D : null } });   // F94: Feind-Armee selbst gewählt
   if (typeof AI !== 'undefined' && AI.setAktiv) AI.setAktiv(kiArt === 'ruhig' ? [] : ['A', 'D'].filter(sd => !human(sd))); siegGemeldet = { A: 0, D: 0 };   // F43: Einstellung KI ruhig / angriffslustig, die KI greift gegen Menschen aktiver an (ai.js AKTIV); H1 (2026-11-22): Siegwarnung je Schlacht neu
   fxs.length = gmarks.length = decals.length = particles.length = floaters.length = tracers.length = shells.length = booms.length = flames.length = rings.length = muzzles.length = 0;
   initDU(); layout(); syncAll();
@@ -11929,6 +11943,7 @@ $('btnNext').onclick = e => { if ($('btnNext').dataset.long) { delete $('btnNext
   b.addEventListener('contextmenu', e => e.preventDefault()); }
 $('startBtn').onclick = startGame;
 $('btnArmy').onclick = () => openArmy(curMode() === 'D' ? 'D' : 'A');
+document.querySelectorAll('#armyKomm button').forEach(b => b.onclick = () => { kommStufeWahl[armySide] = +b.dataset.s; try { localStorage.setItem('arm.kommstufe', JSON.stringify(kommStufeWahl)); } catch (e) {} kommStufeZeigen(); });   // KO-A2
 document.querySelectorAll('#armyFeind button').forEach(b => b.onclick = () => { feindSelbst[armySide] = b.dataset.f === 'ich'; feindWahlZeigen(); armyRefresh(); });   // F94
 $('armyStd').onclick = () => { armyDraft = Object.assign({}, E.defaultArmy(armySide)); armyRefresh(); };
 $('armyClear').onclick = () => { armyDraft = {}; armyFixGeneral(armySide); armyRefresh(); };

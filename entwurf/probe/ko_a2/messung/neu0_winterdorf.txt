@@ -1,0 +1,93 @@
+Häuser: Einsturz in 72 % der Schlachten (Runde Ø 6.4, durch Konkordat 138 / Aschenwacht 8, {"koloss":25,"moerser":107,"haubitze":6,"sturmpz":4,"geschuetz":4})
+Kapelle: Einsturz in 2 % der Schlachten (Runde Ø 9.5, durch Konkordat 3 / Aschenwacht 1, {"koloss":1,"haubitze":2,"geschuetz":1})
+200 Schlachten  Konkordat 7 %  Aschenwacht 94 %  unentschieden 0 %  Fehler 0
+Ausgang: {"D:points":187,"A:points":13}
+Eis eingebrochen: 556× (je Schlacht 2.78), davon mit Einheit darauf 432×
+Entsetzenstests: 5513 (je Schlacht 27.57), durchgefallen 1233 (22 %); alte Fahrzeugfurcht: 0 (je Schlacht 0.00)
+KO-A Handlungen des Kommandanten (Konkordat / Aschenwacht): {"A":{"move":1143,"lenken":905,"order":962,"big":155,"fire":193,"melee":18,"turn":1},"D":{"move":575,"lenken":750,"big":194,"order":615,"fire":77,"melee":9}}
+KO-A Kommandant: gefallen 2 (je Schlacht 0.01), Feuer gelenkt 1655× (Schüsse ohne Streuung 1148), Befehle 2011
+Helden: gefallen 0 (je Schlacht 0.00), Kürassier steckt fest 0×
+Runden Ø 12.8  Punkte Ø 5.1  Ausfälle Ø Konkordat 23 %  Aschenwacht 26 %
+Zielfelder beim Konkordat: {"teich":"99 %","dorfplatz":"77 %","kapelle":"46 %","bruecke":"82 %","gehoeft":"1 %"}
+U5a: Flucht je Schlacht 1.89 / 3.69, Panne 1.43 / 0.69, Festfahren 0.00 / 0.01, handelt 72 % / 69 % (Konkordat / Aschenwacht)
+U5a Nachschubpunkte verdient (Runde: Konkordat/Aschenwacht): 5: 81/109 (200), 10: 173/169 (200), 15: 300/264 (29), 20: 0/0 (0)
+U5a Schaden je Typ und Schlacht (×10): {"koloss":190,"grenadier":175,"kohorte":134,"sturmpz":100,"geschuetz":98,"haubitze":89,"mahlwerk":51,"moerser":36,"sturm":35,"pionier":32,"sense":27,"pionierD":20,"kuerass":17,"generalA":9,"raeumer":8,"reiter":8,"huenen":5,"generalD":5,"minenwerfer":4,"hauptA":4,"hauptD":1,"pirsch":1,"faust":1,"feldkanone":1,"gasschutz":1,"schwer":1,"buechse":0,"flammen":0,"scharf":0,"lanzeD":0,"banner":0}
+Verluste je Typ: {"hauptA":"7 %","generalA":"14 %","kohorte":"35 %","pionier":"15 %","mahlwerk":"11 %","moerser":"7 %","reiter":"3 %","raeumer":"17 %","haubitze":"9 %","koloss":"16 %","hauptD":"3 %","generalD":"43 %","grenadier":"26 %","pionierD":"13 %","sturm":"86 %","sturmpz":"20 %","sense":"12 %","geschuetz":"45 %","signal":"13 %","ballon":"15 %","munition":"55 %","lanzeD":"27 %","pirsch":"25 %","scharf":"4 %","huenen":"9 %","banner":"47 %","faust":"2 %","heiler":"10 %","schwer":"22 %","feldkanone":"4 %","feldscher":"3 %","kuerass":"8 %","minenwerfer":"33 %","werkstatt":"11 %","mineur":"0 %","buechse":"31 %","gasschutz":"31 %","flammen":"0 %","oger":"0 %"}
+K1 Verluste je Kategorie: {"selten":"17 % von 4.0 je Schlacht","linie":"30 % von 26.3 je Schlacht","unterst":"13 % von 12.1 je Schlacht","elite":"36 % von 3.4 je Schlacht","geraet":"20 % von 6.1 je Schlacht","sehrselten":"6 % von 0.3 je Schlacht"}
+U7 Moral je Schlacht (Konkordat / Aschenwacht): Rundenanfänge Fußtruppen 251.63 / 222.17; Moral ≥ 60 % 210.31 / 198.92; Stufe standhaft zu Rundenbeginn 231.66 / 211.53; Entsetzenstests 14.54 / 13.03; niedergehalten 32.95 / 23.20; Moral 35–60 % 27.27 / 17.16; niedergehalten zu Rundenbeginn 28.91 / 15.14; Entsetzen durchgefallen 3.49 / 2.67; Moral < 35 % 14.04 / 6.09; Stufe wankt zu Rundenbeginn 11.71 / 6.27; zurückgewichen 6.03 / 5.92; Flucht 1.93 / 3.79; Flucht (Stärke) 0.86 / 1.56; Rundenanfänge auf der Flucht 3.17 / 4.61; Stufe weicht zu Rundenbeginn 8.25 / 4.37; vernichtet auf der Flucht 0.38 / 1.17; Flucht (Moral) 1.02 / 2.11; auf der Flucht zerschlagen 0.10 / 0.75; Sammel-Chance bestand 0.93 / 0.80; noch fliehend am Ende 1.01 / 1.19; gesammelt 0.43 / 0.66; gesammelt (Befehl) 0.05 / 0.10; entkommen am Rand 0.10 / 0.78; hält stand 0.03 / 0.33; Furcht-Aura 0.68 / 0.00; Flucht (Gas) 0.04 / 0.10; Flucht (Kette) 0.01 / 0.01; Heldenfall 0.00 / 0.01; Sammelbefehl misslungen 0.02 / 0.08
+Nutzung je Schlacht (Konkordat / Aschenwacht):
+  Artillerie barrage                         0.15 /   0.26
+  Artillerie gas                             0.92 /   0.56
+  Artillerie he                              9.85 /   5.53
+  Befehl fire                                2.33 /   0.00
+  Befehl rally                               3.81 /   2.71
+  Befehl storm                               0.00 /   1.20
+  Beschuss                                  49.23 /  33.37
+  Breitseite 2. Schuss                       0.00 /   2.31
+  Dauerfeuer (Hünen, 2. Salve)               0.00 /   0.08   ← selten
+  Fähigkeit charge                           0.88 /   0.00
+  Fähigkeit clear                            0.00 /   0.01   ← selten
+  Fähigkeit durchbruch                       0.01 /   0.00   ← selten
+  Fähigkeit handgranate                      0.00 /  11.49
+  Fähigkeit hinrichtung                      0.00 /   0.04   ← selten
+  Fähigkeit mark (ballon)                    2.38 /   0.00
+  Fähigkeit mark (signal)                    0.00 /   5.53
+  Fähigkeit mine                             0.00 /   5.99
+  Fähigkeit pzgranate                        0.00 /   0.33
+  Fähigkeit pzschuss                         0.04 /   0.00   ← selten
+  Fähigkeit rollen                           4.00 /   3.03
+  Fähigkeit rush                             0.44 /   0.00
+  Fähigkeit smoke                            3.44 /   0.00
+  Kauf ballon                                1.03 /   0.00
+  Kauf banner                                0.00 /   0.14
+  Kauf buechse                               0.00 /   0.07   ← selten
+  Kauf faust                                 0.10 /   0.00   ← selten
+  Kauf feldkanone                            0.06 /   0.00   ← selten
+  Kauf feldscher                             0.07 /   0.00   ← selten
+  Kauf flammen                               0.03 /   0.00   ← selten
+  Kauf gasschutz                             0.00 /   0.11
+  Kauf grenadier                             0.00 /   2.82
+  Kauf heiler                                0.00 /   0.07   ← selten
+  Kauf huenen                                0.00 /   0.07   ← selten
+  Kauf kohorte                               3.50 /   0.00
+  Kauf koloss                                0.06 /   0.00   ← selten
+  Kauf kuerass                               0.00 /   0.23
+  Kauf lanzeD                                0.00 /   0.13
+  Kauf minenwerfer                           0.00 /   0.14
+  Kauf mineur                                0.06 /   0.00   ← selten
+  Kauf moerser                               0.04 /   0.00   ← selten
+  Kauf munition                              0.00 /   0.10   ← selten
+  Kauf oger                                  0.01 /   0.00   ← selten
+  Kauf pionier                               0.04 /   0.00   ← selten
+  Kauf pirsch                                0.00 /   0.04   ← selten
+  Kauf scharf                                0.03 /   0.00   ← selten
+  Kauf schwer                                0.00 /   0.15
+  Kauf signal                                0.00 /   1.02
+  Kauf sturm                                 0.00 /   0.14
+  Kauf sturmpz                               0.00 /   0.03   ← selten
+  Kauf werkstatt                             0.03 /   0.00   ← selten
+  Marsch                                    28.77 /   7.39
+  Nachschub am Rand                          3.27 /   2.98
+  Nachschub an Zielfeld                      1.77 /   2.29
+  Nahkampf                                  13.15 /   8.96
+  Reaktionsfeuer (Sperrfeuer/Bereitschaft)   1.23 /   0.68
+  Zug                                      125.73 / 105.14
+  aufsteigen                                 0.23 /   0.00
+  big                                        0.78 /   0.97
+  cut                                        0.01 /   0.53
+  dig                                        7.15 /   7.72
+  einholen                                   0.47 /   0.00
+  heal                                       0.05 /   0.09
+  lenken                                     4.53 /   3.75
+  limber                                     2.21 /   2.00
+  ow                                         0.12 /   2.54
+  plant                                      0.00 /   0.09   ← selten
+  recover                                    0.24 /   0.13
+  setup                                      5.30 /   4.21
+  shields                                    1.99 /   0.23
+  sperr                                     10.11 /  10.97
+  teardown                                   5.55 /   4.29
+  turn                                       5.67 /   3.35
+  undig                                      4.21 /   6.54
+  wire                                       0.00 /   0.81
+  zweit                                     11.29 /   8.49

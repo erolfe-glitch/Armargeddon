@@ -1,3 +1,89 @@
+## 2026-11-28 – KO-A2 (Punkt 155): Befehle mit Abklingzeit und Stufen, Abgleich feste Aufstellung (nicht erreicht – Frage)
+
+Gepusht:
+- `9c29c41`: Teil A, Abklingzeiten, Stufen, Anzeige
+- Abschluss-Commit mit Mess-Schalter, Messwerkzeug, Messungen, index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Bei den sim-Läufen liefen je zwei Karten gleichzeitig (kein Browser); einer stürzte ab und wurde wiederholt. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Regeltest in Ordnung (208 P-Konstanten), Kommentar-Prüfung sauber, Belegungstest in Ordnung, Partietest „Konsole rot-frei, keine Fehler“.
+- **Video:** `entwurf/probe/video/KO-A2.mp4` (Grauwall, 25 s, mit Ton).
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** keine.
+
+**Teil A – Befehle mit Abklingzeit (fertig):**
+1. **Keine Obergrenze je Schlacht mehr.** Jeder Befehl hat eine eigene Abklingzeit in eigenen Runden: Sammeln 1, Feuer frei bzw. Sturmbefehl 2, Feuer lenken 1 (`P.KOMM_CD_*`).
+   - Der große Befehl bleibt einmal je Schlacht.
+   - Bis zu 2 Befehle je Runde, nie zweimal derselbe (die Abklingzeit sperrt ihn).
+   - Der Hauptmann behält seine Regel (3 je Schlacht).
+2. **Freischaltung:** `KOMM_FREI` in engine.js (Stufe 1 Sammeln und Feuer lenken, 2 Feuer frei bzw. Sturmbefehl, 3 zweiter Befehl je Runde, 4 Reichweite 2 Felder, 5 großer Befehl).
+   - Prüfung über `kommFrei(einheit, was)`; die Stufe trägt der Kommandant (`kStufe`).
+3. **Armee-Auswahl:** Zeile „Kommandanten-Stufe“ mit Knöpfen 1–5 unter „Kampfmaschinen zulassen“. Vorgabe 5, wird gespeichert. Die KI nimmt immer 5.
+4. **Anzeige:**
+   - Abklingzeit als Sanduhr mit Zahl auf dem Knopf.
+   - Gesperrte Befehle sind grau mit „Ab Kommandanten-Stufe n.“ im Tooltip.
+   - Der zweite Befehl der Runde zeigt „kostet nichts“.
+   - Bilder (je Bild die Knopfleiste) in `entwurf/probe/ko_a2/`:
+     - `stufe5_frisch.jpg`
+     - `stufe5_nach_sammeln_tooltip.jpg`
+     - `stufe5_nach_zwei_befehlen.jpg` (Sammeln 1, Feuer frei 2)
+     - `stufe2_grosser_befehl_gesperrt.jpg`
+     - `stufe2_zweiter_befehl_gesperrt.jpg`
+     - `armee_auswahl_stufe.jpg`
+
+**Teil B – Abgleich auf die feste Aufstellung (nicht erreicht):**
+
+Feste Aufstellung, je Karte 200 Schlachten, Siegquote Konkordat. „Alt“ ist der General vor KO-A (heute nachgemessen, mit Startwert 2 fast gleich: 22/91/19).
+
+| Variante | Grauwall | Sankt Ruß | Winterdorf |
+|---|---|---|---|
+| **alter General (Ziel)** | **21** | **92** | **22** |
+| KO-A2 (Nahkampf 8,5, Abwehr 6, Moral 9, Feuer 3) | 67 | 40 | 7 |
+| dasselbe, Startwert 2 | 70 | 38 | 4 |
+| alte Kampfwerte (2/5/10/1), neue Regeln | 27 | 43 | 23 |
+| alte Kampfwerte, Stufe 1, ohne Sammel-Aura, ohne Feuer lenken | 28 | 68 | 26 |
+| nur Feldmarschall schwach (2/5/10/1) | 5 | 46 | 4 |
+| nur Generalstäbler schwach | 91 | 45 | 83 |
+| mittlere Werte (5/6/9/3) | 84 | 73 | 76 |
+| weniger Befehle (Feuer frei/Sturm alle 3 Runden, 1 je Runde) | 70 | 34 | 7 |
+| Sankt Ruß: Stufe 1 / ohne Feuer lenken / Reichweite 1 / ohne Sammel-Aura | – | 32 / 36 / 38 / 40 | – |
+| Sankt Ruß: ohne Panzerung / ohne KI-Gewichte des Kommandanten | – | 39 / 5 | – |
+
+**Befund:**
+- **Lage:** Die Kommandanten stehen in der Kartenvorgabe auf denselben Feldern wie der alte General. Die Lage ist nicht die Ursache.
+- **Grauwall und Winterdorf** hängen fast nur an den Kampfwerten der beiden Kommandanten. Ist nur eine Seite stark, kippt die Karte auf 5 bzw. 91 %.
+- **Sankt Ruß** bleibt bei 32–46 %, egal welche einzelne Regel ich abschalte. Erst alle Regeln zusammen mit den alten Werten bringen 68 %. Ohne die KI-Gewichte fällt es auf 5 %.
+- **Die feste Aufstellung reagiert chaotisch:** Nahkampf 2 → 27/43/23, Nahkampf 5 → 84/73/76, Nahkampf 8,5 → 67/40/7. Das ist kein stetiger Verlauf, den man einstellen könnte. Ein Wertesatz, der alle drei Karten zugleich trifft, wäre Zufall und kippt bei der nächsten Änderung wieder.
+  - Mit Startwert 2 kommt dasselbe heraus. Es ist also nicht der Würfel, sondern die eine feste Aufstellung je Karte, die jedes Mal ähnlich abläuft.
+- **Ich habe deshalb nichts weiter verstellt.** Werte, Preis (145) und KI-Gewichte stehen wie in KO-A.
+- Messungen: `entwurf/probe/ko_a2/messung/` (Rohdaten, Verluste je Typ, `varianten_fest.txt`). Werkzeug: `tools/ko_a2_fest.mjs`.
+
+**Gemischte Aufstellung mit den Abklingzeiten aus Teil A** (3 Karten × Startwerte 1/2 × 100; Ziel = Stand vor KO-A mit denselben Startwerten):
+
+| Karte | vor KO-A | KO-A | KO-A2 |
+|---|---|---|---|
+| Grauwall | 48 % | 44,5 % | 44 % (46/42) |
+| Sankt Ruß | 44,5 % | 45,5 % | 45,5 % (51/40) |
+| Winterdorf | 56,5 % | 55,5 % | **51,5 %** (49/54) |
+
+Winterdorf liegt mit −5 knapp außerhalb von ±4. Datei: `entwurf/probe/u7/ko_a2.json`.
+
+**Standardlauf (feste Aufstellung, Grauwall 200):**
+- Konkordat 67 %, 15,9 Runden, Ausfälle Konkordat 31 % / Aschenwacht 25 %.
+- Kommandanten fallen selten (Verluste Feldmarschall 4 %, Generalstäbler 3 %).
+- Je Schlacht etwa 17 Feuerlenkungen und 11 Befehle.
+- Verluste je Typ: `entwurf/probe/ko_a2/messung/neu0_grauwall.txt`.
+
+**Fragen an Enrico:**
+1. **Wie gleichen wir ab?** Ich sehe vier Wege:
+   - (a) **Werte so lassen.** Die gemischte Aufstellung als Maßstab nehmen; dort passt es bis auf Winterdorf −5.
+   - (b) **Kommandanten im Kampf schwach machen** (alte Werte 2/5/10/1). Fest passen dann Grauwall und Winterdorf (27 / 23), Sankt Ruß bleibt bei 43 statt 92. Gemischt war Grauwall damit +6,5. Das widerspricht dem Plan „Kampf über jedem Trupp“.
+   - (c) **Die feste Aufstellung je Karte neu abgleichen** (Kartenarmeen oder Startfelder), in einem eigenen Paket. In diesem Paket war das nicht erlaubt.
+   - (d) **Die feste Messung auf mehrere feste Aufstellungen je Karte erweitern** (z. B. 4 Varianten der Kartenvorgabe), damit eine einzelne Aufstellung nicht alles bestimmt.
+
+   Mein Vorschlag: (a) jetzt, dazu (d) oder (c) als eigenes Paket. Schon vor KO-A lag die feste Aufstellung weit weg von 50 % (21 / 92 / 22).
+2. **Winterdorf gemischt −5:** so lassen, oder soll ich die Abklingzeit für Feuer frei bzw. Sturmbefehl auf 3 Runden setzen und nachmessen?
+
 ## 2026-11-28 – KO-A (Punkt 154): erster Kommandant „Stratege“ statt General
 
 Gepusht:

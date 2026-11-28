@@ -245,6 +245,7 @@ if (KOMM) {
   Object.assign(TYPES.generalD, st, { name: 'Generalstäbler', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Sturmbefehl“) an Einheiten bis 2 Felder, bis zu 2 verschiedene je Runde (der zweite kostet keine Aktion), ohne Obergrenze, mit Abklingzeit (Sammeln jede Runde, Sturmbefehl jede 2. Runde). Einmal je Schlacht „Generalangriff“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Minenwerfer bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
     chronik: { quelle: 'Fernsprechprotokoll des Grauwall-Stabs, 116 n. G.', text: 'Fernglas am Auge und Hörer am Ohr, lenkt der Generalstäbler die Geschütze der Aschenwacht Granate um Granate ins Ziel. Wo seine Stimme durch den Draht dringt, sammeln sich auch zerschlagene Trupps wieder zur Linie.' } });
 }
+if (KOMM) for (const sd of ['A', 'D']) if (TOG['KOMM_WERTE_' + sd]) { const [w1, w2, w3, w4] = TOG['KOMM_WERTE_' + sd].split(',').map(Number); Object.assign(TYPES['general' + sd], { atk: w1, def: w2, mor: w3, fs: w4 }); }   // KO-A2: Mess-Schalter je Seite (nur Node)
 // Nachschub: Kosten in Punkten und Angebot je Seite
 // Kosten in Punkten (großer Maßstab, Wunsch des Nutzers): aus Werten und Fähigkeiten berechnet.
 // Kampfwert = 6·Angriff + 5·Zähigkeit + 5·Zug − 45, auf 5 gerundet.

@@ -1,0 +1,14 @@
+v1_altwerte (KOMM_WERTE=2,5,10,1): grauwall 27 %, sanktruss 43 %, winterdorf 23 %
+v2_fastalt (KOMM_WERTE=2,5,10,1 P_KOMM_STUFE=1 P_KOMM_SAMMELN=0 NOLENKEN=1): grauwall 28 %, sanktruss 68 %, winterdorf 26 %
+alt_sw2 (KOMMANDANT_ALT=1): grauwall 22 %, sanktruss 91 %, winterdorf 19 %
+neu_sw2 (): grauwall 70 %, sanktruss 38 %, winterdorf 4 %
+b1_A_schwach (KOMM_WERTE_A=2,5,10,1): grauwall 5 %, sanktruss 46 %, winterdorf 4 %
+b2_D_schwach (KOMM_WERTE_D=2,5,10,1): grauwall 91 %, sanktruss 45 %, winterdorf 83 %
+b3_wenigbefehle (P_KOMM_CD_FEUER=3 P_KOMM_ORDER_RUNDE=1): grauwall 70 %, sanktruss 34 %, winterdorf 7 %
+s2_nolenken (NOLENKEN=1): sanktruss 36 %
+s1_stufe1 (P_KOMM_STUFE=1): sanktruss 32 %
+s4_ohnesammeln (P_KOMM_SAMMELN=0): sanktruss 40 %
+s3_reichweite1 (P_KOMM_ORDER_R=1): sanktruss 38 %
+c1_mittel (KOMM_WERTE=5,6,9,3): grauwall 84 %, sanktruss 73 %, winterdorf 76 %
+s6_ohnekigewicht (W_KOMM_POS=0 W_KOMM_NAH=0 W_KOMM_ZIEL=0.001): sanktruss 5 %
+s5_ohnepanzer (KOMM_OHNEPANZER=1): sanktruss 39 %
