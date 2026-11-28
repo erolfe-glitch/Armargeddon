@@ -3724,6 +3724,7 @@ const doShell = (c, r) => { const m = artMode; return act(u => E.shell(G, u, c, 
 
 // ---------- Nachschub ----------
 function openShop() {
+  if (G && G.kampagne) { toast('In der Kampagne: Ausheben in den Städten'); return; }   // K-B1
   if (busy || G.over || !human(G.side)) return;
   if (document.body.classList.contains('neu')) return openShopNeu();
   const sd = G.side;
@@ -3936,7 +3937,7 @@ function updateUI() {
   be.textContent = !human(G.side) && !G.over ? 'KI zieht …' : 'Runde beenden';
   be.classList.toggle('fertig', !be.disabled && !G.aufstellung && !G.units.some(u => u.side === G.side && E.active(u) && !spent.has(u.id)));   // F13: alle fertig oder abgehakt: langsam pulsieren
   const bs = $('btnShop'), hs = human(G.side) ? G.side : (mode === 'hot' ? G.side : mode);
-  bs.disabled = busy || !!G.over || !human(G.side); bs.innerHTML = `Nachschub <b>★ ${G.pts[hs]}</b>`;
+  bs.disabled = busy || !!G.over || !human(G.side) || !!G.kampagne; bs.innerHTML = `Nachschub <b>★ ${G.pts[hs]}</b>`; bs.title = G.kampagne ? 'In der Kampagne: Ausheben in den Städten' : ''; if (G.kampagne) bs.dataset.tip = bs.title; else delete bs.dataset.tip;   // K-B1
   if (sel && (!E.active(sel) || sel.side !== G.side)) sel = null;
   computeOptions(); updateHud();
 }
@@ -4887,6 +4888,8 @@ function drawMapPick() {
 // Übergang Karte → Schlacht (startGame(opts)) → Karte (showEnd → kaSchlachtEnde). Daten und Regeln: src/kampagne.js (KAMPAGNE). Spielstand localStorage arm.kampagne.
 const KAMP = window.KAMPAGNE; let KA = null, kaAktiv = false, kaWahl = null, kaArmeeOffen = false, kaErg = null, kaNeuScharf = false, kaZiel = null, kaReich = null;
 let kaRaster = false; try { kaRaster = localStorage.getItem('arm.karaster') === '1'; } catch (e) {}
+const KA_KRONE = '<svg class="ka-krone" viewBox="0 0 24 18" aria-hidden="true"><path d="M2 15 L1 4 L7 9 L12 2 L17 9 L23 4 L22 15 Z" fill="#C2A461" stroke="#120D0B" stroke-width="1.6" stroke-linejoin="round"/></svg>';   // K-B1: Kronen-Symbol
+const kaKr = n => `${KA_KRONE}${KAMP.zahl(n)}`;
 const KA_TYPNAME = t => (TYPES[t] && TYPES[t].name) || t;
 const KA_FARBE = { w: ['#4E5A34', 0.42], s: ['#6B7A3A', 0.38], '~': ['#55707A', 0.75], o: ['#55707A', 0.75], '^': ['#66483A', 0.6], f: ['#55707A', 0.35], b: ['#55707A', 0.75] };   // vorläufige Geländefarben (STYLE.md „Kampagnenkarte“)
 const kaPt = (c, r) => { const [x, y] = KAMP.mitte(c, r); return [x * 1000, y * 600]; };
@@ -4903,7 +4906,7 @@ function kaNeuKlick() {
   KA = KAMP.neu(E); KAMP.speichern(KA); kaWahl = null; kaOeffnen();
   kaChronik('Der Feldzug beginnt', 'Aus den Chroniken', 'Der Feldstab des Konkordats sammelt die Armee in Valmor-Stadt. Jenseits des Passes von Grauwall liegt Aschenhof, die Stadt der Hochöfen – fällt sie, wankt die Aschenwacht im ganzen Westen.', '', [['Zur Karte', kaChronikZu]]);
 }
-function kaWeiterKlick() { KA = kaStand(); if (!KA) return kaNeuKlick(); kaWahl = null; kaOeffnen(); if (KA.phase === 'schlacht') kaChronikVor(); }
+function kaWeiterKlick() { KA = kaStand(); if (!KA) return kaNeuKlick(); kaWahl = null; kaOeffnen(); if (KA.umgewandelt) { delete KA.umgewandelt; KAMP.speichern(KA); toast('Spielstand auf die neue Fassung (Wirtschaft) umgestellt.'); } if (KA.phase === 'schlacht') kaChronikVor(); }
 function kaOeffnen() {
   $('start').hidden = true; $('end').hidden = true; $('kampagne').hidden = false; kaAktiv = false; kaArmeeOffen = false; kaZiel = null;
   if (soundOn && musikName !== 'musik_titel') setMusik('musik_titel', 2);
@@ -4913,7 +4916,7 @@ function kaZuMenue() { $('kampagne').hidden = true; showStart(true); startStep('
 // Karte zeichnen: Gelände je Feld (SVG), Provinzgrenzen, Straßen, Fluss; darüber die Schicht für Reichweite/Weg/Sperrbereich und die Orte als Knöpfe
 function kaZeichnen() {
   if (!KA) return; const A = KA.armee, { SPALTEN, ZEILEN } = KAMP;
-  $('kaRunde').textContent = `Runde ${KA.runde}`; $('kaKasse').textContent = `${KAMP.zahl(KA.kasse)} Kronen`; $('kaBp').textContent = `Bewegung ${A.bp}/${KAMP.BP_RUNDE}`;
+  $('kaRunde').textContent = `Runde ${KA.runde}`; { const sv = KAMP.saldoVorschau(KA); $('kaKasse').innerHTML = `${kaKr(KA.kasse)} <small class="${sv < 0 ? 'minus' : 'plus'}">${sv < 0 ? '−' : '+'}${KAMP.zahl(Math.abs(sv))} je Runde</small>`; $('kaKasse').title = 'Kriegskasse in Kronen; dahinter der Saldo der nächsten Runde (Einnahmen minus Unterhalt)'; } $('kaBp').textContent = `Bewegung ${A.bp}/${KAMP.BP_RUNDE}`;
   $('kaRasterKn').classList.toggle('an', kaRaster);
   let svg = '<defs><pattern id="kaWald" width="14" height="12" patternUnits="userSpaceOnUse"><path d="M7 1 L11 9 L3 9 Z" fill="#2E3A1E" opacity=".55"/></pattern>' +
     '<pattern id="kaSumpf" width="16" height="8" patternUnits="userSpaceOnUse"><path d="M2 5 H10" stroke="#3E4A22" stroke-width="1.6" opacity=".6"/></pattern>' +
@@ -4944,7 +4947,7 @@ function kaZeichnen() {
   sv.onclick = e => { const k = e.target.dataset && e.target.dataset.k; if (k) kaFeldKlick(k); };
   kaReich = KA.phase === 'karte' && !(KA.ende && !KA.weiter) ? KAMP.reichweite(KA) : new Map();
   $('kaOrte').innerHTML = KAMP.ORTE.map(o => { const s = KA.orte[o.id], ang = !KAMP.angriffWarum(KA, o.id), cls = ['ka-ort', 'b' + s.besitz, o.art, ang ? 'angriff' : '', kaReich.has(KAMP.key(o.c, o.r)) ? 'frei' : '', kaWahl === o.id ? 'gewaehlt' : '', s.besitz === 'R' ? 'gesperrt' : ''].filter(Boolean).join(' ');
-    return `<button class="${cls}" data-ort="${o.id}" style="left:${o.x * 100}%;top:${o.y * 100}%" title="${o.name} – ${KAMP.SEITEN[s.besitz].name}" aria-label="${o.name}"><i class="ka-fahne"></i></button><span class="ka-name ${o.art}" style="left:${o.x * 100}%;top:${o.y * 100}%">${o.name}</span>`; }).join('');
+    return `<button class="${cls}" data-ort="${o.id}" style="left:${o.x * 100}%;top:${o.y * 100}%" title="${o.name} – ${KAMP.SEITEN[s.besitz].name}" aria-label="${o.name}"><i class="ka-fahne"></i>${kaAbzeichen(o.id)}</button><span class="ka-name ${o.art}" style="left:${o.x * 100}%;top:${o.y * 100}%">${o.name}</span>`; }).join('');
   $('kaOrte').querySelectorAll('.ka-ort').forEach(b => { b.onclick = () => kaOrtKlick(b.dataset.ort); b.onpointerenter = e => { if (e.pointerType === 'mouse') { const o = KAMP.ortVon(b.dataset.ort); kaZiel = KAMP.key(o.c, o.r); kaDyn(); } }; });
   const [ax, ay] = KAMP.mitte(A.c, A.r), ak = $('kaArmee'); ak.style.left = `${ax * 100}%`; ak.style.top = `${ay * 100}%`;
   ak.innerHTML = `${UP.wA ? `<img src="${UP.wA}" alt="">` : ''}<b>${A.trupps.length}</b>`; ak.title = `Armee des Konkordats: ${A.trupps.length} Trupps, ${A.bp} Bewegungspunkte`; ak.onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); };
@@ -4971,20 +4974,69 @@ function kaHinweis() {
     : `Bewegung ${A.bp}/${KAMP.BP_RUNDE}: Feld anklicken (Messing = erreichbar, roter Rand = Sperrbereich: dort muss die Armee anhalten). Feindlichen Ort vom Nachbarfeld aus angreifen.`;
   if (m && KA.phase === 'karte') h.textContent = (m.sieg ? `Sieg bei ${KAMP.ortVon(m.ort).name}. ` : `Niederlage bei ${KAMP.ortVon(m.ort).name}. `) + h.textContent;
 }
+function kaAbzeichen(id) {   // K-B1: kleine Zeichen an der Ortsmarke – Kaserne/Werkstatt mit Stufe, laufender Bau, ankommende Trupps
+  const x = KA.orte[id]; if (x.besitz !== 'A') return ''; const B = x.bauten || {}, z = [];
+  if (B.kaserne) z.push(`<i class="ka-abz" title="Kaserne Stufe ${B.kaserne}">K${B.kaserne}</i>`);
+  if (B.werkstatt) z.push(`<i class="ka-abz" title="Werkstatt Stufe ${B.werkstatt}">W${B.werkstatt}</i>`);
+  if (x.bau) z.push(`<i class="ka-abz bau" title="Im Bau: ${KAMP.GEBAEUDE[x.bau.art].name} Stufe ${x.bau.stufe}, noch ${x.bau.rest} Runde(n)"><img src="${upSym('sanduhr')}" alt="">${x.bau.rest}</i>`);
+  if ((x.ankunft || []).length) z.push(`<i class="ka-abz neu" title="${x.ankunft.length} Trupp(s) kommen am Rundenende an">+${x.ankunft.length}</i>`);
+  return z.length ? `<span class="ka-abzs">${z.join('')}</span>` : '';
+}
+function kaTruppZeile(t, knopf) { return `<tr><td>${KA_TYPNAME(t.typ)}</td><td class="${t.str < 4 ? 'rot' : t.str < 7 ? 'gelb' : ''}">${Math.round(t.str * 10)}</td><td>${t.schlachten}</td><td>${t.abschuesse}</td><td>${knopf || ''}</td></tr>`; }
 function kaInfo() {
   const el = $('kaInfo'); if (!KA) return;
-  if (kaArmeeOffen || !kaWahl) { const T = KA.armee.trupps, sum = T.reduce((n, t) => n + t.str, 0), o = KAMP.ortAuf(KA.armee.c, KA.armee.r), g = KAMP.GELAENDE[KAMP.zeichen(KA.armee.c, KA.armee.r)];
-    el.innerHTML = `<h3>Armee des Konkordats</h3><p class="ka-sub">${o ? o.name : g.name} · ${T.length} Trupps · Stärke Ø ${Math.round(sum / Math.max(1, T.length) * 10)} · Bewegung ${KA.armee.bp}/${KAMP.BP_RUNDE}</p>` +
-      `<table class="ka-tab"><tr><th>Trupp</th><th>Stärke</th><th>Schlachten</th><th>Abschüsse</th></tr>${T.map(t => `<tr><td>${KA_TYPNAME(t.typ)}</td><td class="${t.str < 4 ? 'rot' : t.str < 7 ? 'gelb' : ''}">${Math.round(t.str * 10)}</td><td>${t.schlachten}</td><td>${t.abschuesse}</td></tr>`).join('')}</table>`;
+  const hierOrt = KAMP.ortAuf(KA.armee.c, KA.armee.r), hierEigen = hierOrt && KA.orte[hierOrt.id].besitz === 'A' ? hierOrt.id : null;
+  if (kaArmeeOffen || !kaWahl) { const T = KA.armee.trupps, sum = T.reduce((n, t) => n + t.str, 0), g = KAMP.GELAENDE[KAMP.zeichen(KA.armee.c, KA.armee.r)], uh = T.reduce((n, t) => n + KAMP.unterhaltVon(t.typ), 0);
+    el.innerHTML = `<h3>Armee des Konkordats</h3><p class="ka-sub">${hierOrt ? hierOrt.name : g.name} · ${T.length}/${KAMP.ARMEE_MAX} Trupps · Stärke Ø ${Math.round(sum / Math.max(1, T.length) * 10)} · Bewegung ${KA.armee.bp}/${KAMP.BP_RUNDE} · Unterhalt ${kaKr(uh)} je Runde</p>` +
+      (hierEigen ? `<p class="ka-sub">Im Ort: Trupps mit „↓“ der Besatzung übergeben.</p>` : '') +
+      `<table class="ka-tab"><tr><th>Trupp</th><th>Stärke</th><th>Schl.</th><th>Absch.</th><th></th></tr>${T.map(t => kaTruppZeile(t, hierEigen && !KAMP.tauschWarum(KA, hierEigen, t.id, false) ? `<button class="ka-mini" data-ab="${t.id}" title="Der Besatzung von ${hierOrt.name} übergeben">↓</button>` : '')).join('')}</table>`;
+    el.querySelectorAll('[data-ab]').forEach(b => b.onclick = () => kaTausch(hierEigen, +b.dataset.ab, false));
     return; }
-  const o = KAMP.ortVon(kaWahl), s = KA.orte[o.id], M = E.MAPS[o.karte], hier = KA.armee.c === o.c && KA.armee.r === o.r, aw = KAMP.angriffWarum(KA, o.id), erreichbar = kaReich && kaReich.get(KAMP.key(o.c, o.r));
-  const garn = s.garnison.length ? `<p><b>Besatzung:</b> ${Object.entries(s.garnison.reduce((m, t) => (m[t.typ] = (m[t.typ] || 0) + 1, m), {})).map(([t, n]) => `${n}× ${KA_TYPNAME(t)}`).join(', ')}</p>` : '';
-  const knopf = hier ? '<p class="ka-sub">Die Armee steht hier.</p>' : s.besitz === 'A' ? (erreichbar ? `<button class="up-text ka-zug" id="kaZiehenKn">Hierher ziehen (${erreichbar.k})</button>` : `<p class="ka-warum">${KA.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'In dieser Runde nicht erreichbar.'}</p>`)
+  const o = KAMP.ortVon(kaWahl), s = KA.orte[o.id], M = E.MAPS[o.karte], hier = KA.armee.c === o.c && KA.armee.r === o.r, aw = KAMP.angriffWarum(KA, o.id), erreichbar = kaReich && kaReich.get(KAMP.key(o.c, o.r)), eigen = s.besitz === 'A';
+  const zaehl = l => Object.entries(l.reduce((m, t) => (m[t.typ || t] = (m[t.typ || t] || 0) + 1, m), {})).map(([t, n]) => `${n}× ${KA_TYPNAME(t)}`).join(', ');
+  let garn = '';
+  if (eigen) { const ein = KAMP.einnahmen(Object.assign({}, KA, { runde: KA.runde + 1 })).find(e => e.ort === o.id);
+    garn += `<p><b>Einnahmen:</b> ${ein ? kaKr(ein.betrag) + (ein.bonus ? ' (Provinz ganz gehalten, +50 %)' : '') : 'ab der übernächsten Runde'}</p>`;
+    if (s.garnison.length || (s.ankunft || []).length) garn += `<p><b>Besatzung:</b> ${s.garnison.length ? '' : 'noch keine'}</p>` + (s.garnison.length ? `<table class="ka-tab"><tr><th>Trupp</th><th>Stärke</th><th>Schl.</th><th>Absch.</th><th></th></tr>${s.garnison.map(t => kaTruppZeile(t, hier ? `<button class="ka-mini" data-zu="${t.id}" title="${KAMP.tauschWarum(KA, o.id, t.id, true) || 'Zur Armee nehmen'}"${KAMP.tauschWarum(KA, o.id, t.id, true) ? ' disabled' : ''}>↑</button>` : '')).join('')}</table>` : '') +
+      ((s.ankunft || []).length ? `<p class="ka-sub">Kommt am Rundenende: ${zaehl(s.ankunft)}</p>` : '');
+    if (KAMP.bauplaetze(o)) { const B = s.bauten || {}, belegt = Object.keys(B).length;
+      garn += `<h4>Gebäude <small>(${belegt}/${KAMP.bauplaetze(o)} Bauplätze)</small></h4>` + Object.entries(KAMP.GEBAEUDE).map(([art, Gb]) => { const st0 = B[art] || 0, w = KAMP.bauWarum(KA, o.id, art), laeuft = s.bau && s.bau.art === art;
+        return `<div class="ka-bau"><b>${Gb.name}</b> ${st0 ? `Stufe ${st0}` : laeuft ? '' : '–'}${laeuft ? ` <span class="ka-sub">im Bau: Stufe ${s.bau.stufe}, noch ${s.bau.rest} Runde(n)</span>` : ''}<br><small>${Gb.text.map((t, i) => `${i + 1}: ${t}`).join(' · ')}</small>` +
+          (st0 < 2 && !laeuft ? `<button class="up-text ka-mini2" data-bau="${art}" ${w ? `disabled title="${w}"` : ''}>${st0 ? 'Ausbauen' : 'Bauen'} ${kaKr(Gb.kosten[st0])} · ${Gb.runden[st0]} R.</button>${w && w !== 'Schon voll ausgebaut.' ? `<small class="ka-warum"> ${w}</small>` : ''}` : '') + '</div>'; }).join('') +
+        (KAMP.bauplaetze(o) > 2 ? '<p class="ka-sub">Lazarett und Befestigung folgen (K-B2).</p>' : '') +
+        `<button class="up-text ka-zug" id="kaAushebenKn">Ausheben …</button>`; } }
+  else if (s.garnison.length) garn = `<p><b>Besatzung:</b> ${zaehl(s.garnison)}</p><p class="ka-sub">Sperrbereich: Wer ein Nachbarfeld betritt, muss anhalten.</p>`;
+  const knopf = hier ? '<p class="ka-sub">Die Armee steht hier.</p>' : eigen ? (erreichbar ? `<button class="up-text ka-zug" id="kaZiehenKn">Hierher ziehen (${erreichbar.k})</button>` : `<p class="ka-warum">${KA.armee.bp <= 0 ? 'Keine Bewegungspunkte mehr in dieser Runde.' : 'In dieser Runde nicht erreichbar.'}</p>`)
     : !aw ? '<button class="up-text ka-zug" id="kaAngriffKn">Angreifen</button>' : `<p class="ka-warum">${aw}</p>`;
   el.innerHTML = `<h3>${o.name}</h3><p class="ka-sub">${(KAMP.PROVINZEN.find(p => p.id === o.prov) || {}).name} · ${o.art === 'hauptstadt' ? 'Hauptstadt' : o.art === 'hauptort' ? 'Hauptort' : 'Ort'}${o.text ? ' · ' + o.text : ''}</p>` +
-    `<p><b>Besitz:</b> <span class="ka-b b${s.besitz}">${KAMP.SEITEN[s.besitz].name}</span></p>${garn}${s.besitz !== 'A' && s.garnison.length ? '<p class="ka-sub">Sperrbereich: Wer ein Nachbarfeld betritt, muss anhalten.</p>' : ''}<p><b>Schlachtkarte:</b> ${M ? M.name : o.karte}${M && M.winter ? ' (Winter)' : ''}</p>` + knopf;
+    `<p><b>Besitz:</b> <span class="ka-b b${s.besitz}">${KAMP.SEITEN[s.besitz].name}</span> · <b>Schlachtkarte:</b> ${M ? M.name : o.karte}${M && M.winter ? ' (Winter)' : ''}</p>${knopf}${garn}`;
   const z = $('kaZiehenKn'); if (z) z.onclick = () => kaZiehen(o.c, o.r);
   const a = $('kaAngriffKn'); if (a) a.onclick = () => kaAngriff(o.id);
+  const ah = $('kaAushebenKn'); if (ah) ah.onclick = () => kaAushebenZeigen(o.id);
+  el.querySelectorAll('[data-bau]').forEach(b => b.onclick = () => { const r = KAMP.bauen(KA, o.id, b.dataset.bau); if (!r.ok) return toast(r.warum); KAMP.speichern(KA); playSound('klick', 0.5, null); toast(`${KAMP.GEBAEUDE[b.dataset.bau].name}: Bau begonnen`); kaZeichnen(); });
+  el.querySelectorAll('[data-zu]').forEach(b => b.onclick = () => kaTausch(o.id, +b.dataset.zu, true));
+}
+function kaTausch(id, truppId, zurArmee) { const r = KAMP.tauschen(KA, id, truppId, zurArmee); if (!r.ok) return toast(r.warum); KAMP.speichern(KA); playSound('klick', 0.4, null); kaZeichnen(); }
+// Ausheben: Karten wie im Nachschub (UI1), Preis in Kronen, gesperrte mit Grund; Ankunft am Rundenende in der Besatzung
+let kaAushebenOrt = null;
+function kaAushebenZeigen(id) {
+  kaAushebenOrt = id; const o = KAMP.ortVon(id), liste = KAMP.aushebbar(KA, id);
+  $('kaAhTitel').textContent = `Ausheben in ${o.name}`; $('kaAhKasse').innerHTML = `Kasse ${kaKr(KA.kasse)}`;
+  $('kaAhListe').innerHTML = liste.map(a => `<button class="sn-k${a.warum ? ' aus' : ''}" data-t="${a.t}" title="${a.warum || 'Ausheben: kommt am Rundenende in ' + o.name + ' an'}">${snKarte(a.t, a.preis, a.warum).replace(/<span class="ko">★ [^<]*(<small class="aufs">[^<]*<\/small>)?/, `<span class="ko">${kaKr(a.preis)}`)}<span class="ka-uh">Unterhalt ${kaKr(a.unterhalt)} je Runde</span></button>`).join('');
+  $('kaAhListe').querySelectorAll('.sn-k').forEach(b => b.onclick = () => { const r = KAMP.ausheben(KA, id, b.dataset.t); if (!r.ok) return toast(r.warum); KAMP.speichern(KA); playSound('klick', 0.5, null); toast(`${KA_TYPNAME(b.dataset.t)} ausgehoben – kommt am Rundenende an`); kaAushebenZeigen(id); kaZeichnen(); });
+  $('kaAusheben').hidden = false;
+  requestAnimationFrame(() => $('kaAhListe').querySelectorAll('canvas').forEach(c => drawPortrait(c, c.dataset.k, 'A', c.dataset.t)));
+}
+// Rundenbericht (Pergament zu Beginn der Runde): Einnahmen je Ort, Unterhalt, Saldo, Auffüllen, fertige Bauten, angekommene Trupps
+function kaRundenbericht(b) {
+  const zeilen = b.einnahmen.map(e => `<tr><td>${KAMP.ortVon(e.ort).name}${e.bonus ? ' <small>(+50 %)</small>' : ''}</td><td>+${KAMP.zahl(e.betrag)}</td></tr>`).join('');
+  const ein = b.einnahmen.reduce((n, e) => n + e.betrag, 0);
+  const html = `<table class="ka-tab ka-bericht">${zeilen}<tr class="sum"><td>Einnahmen</td><td>+${KAMP.zahl(ein)}</td></tr><tr><td>Unterhalt Armee</td><td>−${KAMP.zahl(b.unterhalt.armee)}</td></tr><tr><td>Unterhalt Besatzungen</td><td>−${KAMP.zahl(b.unterhalt.besatzung)}</td></tr>` +
+    `<tr class="sum"><td>Saldo</td><td>${b.saldo < 0 ? '−' : '+'}${KAMP.zahl(Math.abs(b.saldo))}</td></tr><tr class="sum"><td>Kasse</td><td>${kaKr(b.kasse)}</td></tr></table>` +
+    (b.knapp ? '<p class="ka-warum">Die Kasse reicht nicht für den Unterhalt: kein Auffüllen in dieser Runde, und in der nächsten Schlacht startet die Armee mit −1 Moral.</p>' : `<p class="ka-sub">Aufgefüllt: Armee +${b.auffuellen.armee}, Besatzungen +${b.auffuellen.besatzung} Stärke.</p>`) +
+    (b.fertig.length ? `<p class="ka-sub">Fertig gebaut: ${b.fertig.map(f => `${KAMP.GEBAEUDE[f.art].name} Stufe ${f.stufe} in ${KAMP.ortVon(f.ort).name}`).join(', ')}</p>` : '') +
+    (b.ankunft.length ? `<p class="ka-sub">Angekommen: ${b.ankunft.map(a => `${KA_TYPNAME(a.typ)} in ${KAMP.ortVon(a.ort).name}`).join(', ')}</p>` : '');
+  kaChronik(`Runde ${b.runde}`, 'Bericht der Feldkasse', '', html, [['Weiter', kaChronikZu]]);
 }
 function kaOrtKlick(id) {
   if (!KA) return; playSound('klick', 0.4, null); const o = KAMP.ortVon(id), s = KA.orte[id];
@@ -5005,7 +5057,7 @@ function kaZiehen(c, r) {
   kaZeichnen();
 }
 function kaAngriff(id) { const r = KAMP.angreifen(KA, id); if (!r.ok) { toast(r.warum); return; } KAMP.speichern(KA); kaWahl = null; kaZiel = null; kaZeichnen(); kaChronikVor(); }
-function kaRundeEnde() { if (!KA || !KAMP.rundeBeenden(KA)) return; KA.letzteMeldung = null; KAMP.speichern(KA); playSound('klick', 0.5, null); toast(`Runde ${KA.runde}`); kaZeichnen(); }
+function kaRundeEnde() { if (!KA) return; const b = KAMP.rundeBeenden(KA); if (!b) return; KA.letzteMeldung = null; KAMP.speichern(KA); playSound('klick', 0.5, null); kaZeichnen(); kaRundenbericht(b); }   // K-B1: Rundenbericht
 function kaRasterUmschalten() { kaRaster = !kaRaster; try { localStorage.setItem('arm.karaster', kaRaster ? '1' : '0'); } catch (e) {} if (KA) kaZeichnen(); }
 // Pergament „Aus den Chroniken“ vor/nach der Schlacht und für Sieg/Niederlage der Kampagne
 function kaChronik(titel, kicker, text, liste, knoepfe) {
@@ -5029,7 +5081,7 @@ function kaSchlachtEnde() {
 function kaNachSchlacht() {
   $('end').hidden = true; kaAktiv = false; $('againBtn').textContent = 'Neue Schlacht'; kaOeffnen(); const e = kaErg; kaErg = null; if (!e) return;
   const verl = e.verloren.length ? `<p class="ka-sub">Verloren: ${Object.entries(e.verloren.reduce((m, t) => (m[t] = (m[t] || 0) + 1, m), {})).map(([t, n]) => `${n}× ${KA_TYPNAME(t)}`).join(', ')} · Es bleiben ${e.uebrig} Trupps.</p>` : `<p class="ka-sub">Keine Trupps verloren · ${e.uebrig} Trupps.</p>`;
-  kaChronik(e.sieg ? `Sieg bei ${KAMP.ortVon(e.ort).name}` : `Niederlage bei ${KAMP.ortVon(e.ort).name}`, 'Aus den Chroniken', KAMP.chronikNach(KA, e), verl, [['Weiter', kaEndeZeigen]]);
+  kaChronik(e.sieg ? `Sieg bei ${KAMP.ortVon(e.ort).name}` : `Niederlage bei ${KAMP.ortVon(e.ort).name}`, 'Aus den Chroniken', KAMP.chronikNach(KA, e), verl + (e.sieg ? '<p class="ka-sub">Verwundete kehren zurück: +15 Stärke je Trupp.</p>' : '') + (e.beute ? `<p class="ka-sub">Beute: ${kaKr(e.beute)}</p>` : ''), [['Weiter', kaEndeZeigen]]);
 }
 function kaEndeZeigen() {
   kaChronikZu(); if (!KA.ende || KA.weiter) return;
@@ -5175,7 +5227,7 @@ let beendenT = 0; function beendenScharf(an) { clearTimeout(beendenT); const b =
 $('smBeenden').onclick = () => { if (!$('smBeenden').classList.contains('scharf')) return beendenScharf(true); beendenScharf(false); if (G) G.over = G.over || { winner: null, why: 'quit' }; setAmbient(false); showStart(true); };
 $('btnRules').onclick = $('btnRules2').onclick = () => { $('rules').hidden = false; kzLegende(); };
 $('closeRules').onclick = () => { $('rules').hidden = true; };
-$('kaNeu').onclick = kaNeuKlick; $('kaWeiter').onclick = kaWeiterKlick; $('kaRundeKn').onclick = kaRundeEnde; $('kaMenue').onclick = kaZuMenue; $('kaArmeeKn').onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); }; $('kaRasterKn').onclick = kaRasterUmschalten;   // K-A
+$('kaNeu').onclick = kaNeuKlick; $('kaWeiter').onclick = kaWeiterKlick; $('kaRundeKn').onclick = kaRundeEnde; $('kaMenue').onclick = kaZuMenue; $('kaArmeeKn').onclick = () => { kaArmeeOffen = !kaArmeeOffen; kaWahl = null; kaInfo(); }; $('kaRasterKn').onclick = kaRasterUmschalten; $('kaAhZu').onclick = () => { $('kaAusheben').hidden = true; };   // K-A
 $('againBtn').onclick = () => { if (kaErg) return kaNachSchlacht(); $('end').hidden = true; showStart(true); };
 $('reviewBtn').onclick = () => { $('end').hidden = true; };
 $('handBtn').onclick = () => { $('handover').hidden = true; updateUI(); };

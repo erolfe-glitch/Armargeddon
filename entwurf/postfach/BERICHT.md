@@ -1,3 +1,75 @@
+## 2026-11-28 – K-B1 (Punkt 157): Kronen, Unterhalt, Ausheben, Kaserne, Werkstatt
+
+Gepusht:
+- ein Commit mit Regeln, Anzeige, Test, Bildern, CLAUDE.md, index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:**
+  - Regeltest, Kommentar-Prüfung, Belegungstest in Ordnung; Partietest „Konsole rot-frei, keine Fehler“.
+  - Kampagnentest **49 von 49 Prüfungen** in Ordnung, keine Seitenfehler.
+  - Gefecht unverändert: `sim.js 200` Grauwall Konkordat 67 %, 15,9 Runden, Ausfälle 31 / 25 %.
+- **Video:** `entwurf/probe/video/K-B1.mp4` (Gefecht, 25 s, mit Ton).
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** keine.
+- **CLAUDE.md:** Beim Eintrag F94 steht jetzt, dass die gemischte Aufstellung der Maßstab ist (deine Antwort zu KO-A2; in K-A hatte ich das vergessen).
+
+**Gebaut** (alle Beträge in Kronen = Gefechtspreis × 20, Anzeige mit Tausenderpunkt und Kronen-Symbol):
+1. **Nachschub in Kampagnenschlachten aus** (beide Seiten). Der Knopf ist gesperrt und zeigt „In der Kampagne: Ausheben in den Städten“. Das Gefecht bleibt unverändert.
+2. **Einnahmen je Runde:** Valmor-Stadt 1.200, Hauptorte 600, kleine Orte 300.
+   - Ein eroberter Ort zahlt erst nach einer ganzen Runde Besitz.
+   - Provinz ganz gehalten: +50 % auf alle drei Orte. Die Provinz Valmor ist das von Anfang an: 2.700 statt 1.800.
+   - Startkasse 2.000.
+3. **Unterhalt je Runde** in Prozent des Kampagnenpreises, für Armee und eigene Besatzungen: Linie 5 %, Unterstützung 8 %, Elite 12 %, Gerät 15 %, Kommandant, Hauptmann und Held 10 %.
+   - Die Startarmee kostet 1.834 je Runde.
+   - **Reicht die Kasse nicht:** Die Kasse bleibt bei 0, in dieser Runde wird nicht aufgefüllt, und in der nächsten Schlacht startet jede eigene Einheit mit −1 Moral. Der Rundenbericht sagt das. Danach ist der Abzug wieder weg.
+4. **Rundenbericht** als Pergament zu Beginn jeder Runde:
+   - Einnahmen je Ort (mit „+50 %“), Unterhalt Armee und Besatzungen, Saldo, Kasse;
+   - Auffüllen, fertige Bauten, angekommene Trupps.
+   - In der oberen Leiste stehen Kasse und „+Saldo je Runde“ (Vorschau der nächsten Runde).
+5. **Ausheben** nur in eigenen Orten mit Bauplatz (Valmor-Stadt, eigene Hauptorte), ohne Seltenheits-Aufschlag:
+   - Linie überall, Unterstützung (auch Hauptmann) mit Kaserne, Elite nur in Valmor-Stadt mit Kaserne 2.
+   - Gerät mit Werkstatt; Landkoloss und Kreuzschreiter erst mit Werkstatt 2. Der Kreuzschreiter bleibt einer je Kampagne.
+   - Nicht auszuheben sind der Kommandant, die Helden (kommen mit HE-A/B) und die Kampfmaschinen (Turm- und Ordensschreiter, sie hängen am Schalter für Kampfmaschinen).
+   - Die Auswahl erscheint als Nachschub-Karten aus UI1 mit Preis in Kronen, Unterhalt je Runde und gesperrten Karten mit Grund.
+   - Neue Trupps kommen am Rundenende als Besatzung in dem Ort an.
+6. **Tauschen:** Steht die Armee im Ort, gehen Trupps per Knopf zwischen Armee (↓) und Besatzung (↑).
+   - Die Armee hat höchstens 20 Trupps, die Kategorien-Grenzen gelten wie im Gefecht.
+   - Der Kommandant bleibt immer bei der Armee.
+7. **Gebäude Kaserne** (1.600 / 3.200) **und Werkstatt** (2.000 / 4.000):
+   - Bauplätze: Valmor-Stadt 4, Hauptorte 2. Der Platz ist ab Baubeginn belegt.
+   - Bauzeit 1 Runde, Stufe 2 noch einmal 2 Runden; je Ort ein Bau gleichzeitig.
+   - Das Pergament des Ortes zeigt Gebäude, Bauplätze und den laufenden Bau. An der Ortsmarke stehen kleine Zeichen: K1/W2, Sanduhr mit Restrunden, +n ankommende Trupps.
+   - Lazarett und Befestigung folgen in K-B2; die Plätze bleiben frei.
+8. **Auffüllen je Runde** (Armee und Besatzungen): Valmor-Stadt +40, eigenes Land +25, Feindland +10, höchstens 100.
+   - „Eigenes Land“ heißt: Der nächste Ort ist eigen.
+   - **Verwundete:** nach einer gewonnenen Schlacht +15 je überlebendem Trupp.
+9. **Provinz-Besonderheiten:** Stahlwerk Krähenfurt gehalten → Gerät beim Ausheben −20 %. Aschenhof-Stadt erobert → einmalig 3.000 Beute.
+10. **Speichern:** Spielstand Version 3. Ein Stand aus K-A (Version 2) wird beim Fortsetzen umgewandelt (Hinweis im Spiel), nicht neu gestartet.
+
+**Wie lange bis zum Landkoloss?** Eingespielt in Node: Werkstatt sofort in Runde 1 bauen, ohne Krieg und ohne andere Ausgaben.
+- Werkstatt 1 ist nach Runde 1 fertig.
+- Für Stufe 2 (4.000) reicht die Kasse erst in Runde 4; sie ist dann nach 2 Runden fertig.
+- **Ab Runde 6 ist der Landkoloss bestellbar** (1.400), er kommt am Ende von Runde 6 an.
+- Mit Kaserne und Linie nebenher dauert es länger.
+- Einnahmen am Anfang 3.300 je Runde, Unterhalt der Startarmee 1.834, also Saldo +1.466.
+
+**Bilder** in `entwurf/probe/k_a/`:
+- 1920 px:
+  - `1920_rundenbericht.jpg`
+  - `1920_ausheben_valmor.jpg` (Pergament des Ortes mit Ausheben)
+  - `1920_bau_laeuft.jpg`
+  - `1920_tauschen_armee_besatzung.jpg`
+- 1280 px:
+  - `1280_rundenbericht.jpg`
+  - `1280_ausheben_valmor.jpg`
+- Die Bilder aus K-A sind neu aufgenommen, mit Kasse und Saldo in der Leiste.
+
+**Fragen an Enrico:**
+1. **Unterhalt bei leerer Kasse:** so gelöst wie vorgeschlagen (Kasse 0, kein Auffüllen, nächste Schlacht −1 Moral). Weil die Einnahmen vor dem Unterhalt gebucht werden, tritt das nur ein, wenn eine Runde wirklich mehr kostet als sie bringt. Passt das?
+2. **Hauptmann** zählt beim Ausheben wie Unterstützung (braucht eine Kaserne) und hat 10 % Unterhalt wie der Kommandant. Einverstanden?
+3. **Saldo am Anfang +1.466 je Runde:** Ein Landkoloss ist ab Runde 6 möglich, eine Kaserne gleich in Runde 2. Ist das Tempo so gewollt, oder soll der Unterhalt der Startarmee höher bzw. die Einnahmen niedriger sein? (Die Zahlen stellt sonst K-P mit Fable ein.)
+
 ## 2026-11-28 – K-A (Punkt 156 mit Nachtrag Abschnitt 16): Kampagne Start mit freier Bewegung auf dem Hexfeld
 
 Gepusht:

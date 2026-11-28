@@ -2251,7 +2251,7 @@ function spawnHexes(G, side, type) {
   for (const o of OBJECTIVES) if (G.ctrl[o.id] === side) for (const [c, r] of [[o.c, o.r], ...neighbors(o.c, o.r)]) if (inMap(c, r) && (side === 'A' ? c <= o.c : c >= o.c) && !isZOC(G, c, r, side)) add(c, r);   // Paket 8: nie hinter der Flagge Richtung Gegner
   return out;
 }
-function canBuy(G, side, type) { return !G.over && !(TYPES[type].stufe3 && G.units.some(u => u.side === side && TYPES[u.type].stufe3)) && !(TYPES[type].held && G.units.some(u => u.side === side && TYPES[u.type].held)) && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= preisNeu(armeeImFeld(G, side), type) && !katWarum(armeeImFeld(G, side), type); }   // K1: Kategorien-Grenzen auch im Nachschub
+function canBuy(G, side, type) { return !G.over && !G.kampagne /* K-B1: in Kampagnenschlachten kein Nachschub (Ausheben in den Städten) */ && !(TYPES[type].stufe3 && G.units.some(u => u.side === side && TYPES[u.type].stufe3)) && !(TYPES[type].held && G.units.some(u => u.side === side && TYPES[u.type].held)) && !(TYPES[type].cmd === 2 && G.units.some(u => u.side === side && alive(u) && TYPES[u.type].cmd === 2)) && (G.mechs || !isMech(type)) && G.side === side && SHOP[side].includes(type) && G.pts[side] >= preisNeu(armeeImFeld(G, side), type) && !katWarum(armeeImFeld(G, side), type); }   // K1: Kategorien-Grenzen auch im Nachschub
 function buy(G, side, type, c, r) {
   if (!canBuy(G, side, type) || !spawnHexes(G, side, type).some(h => h[0] === c && h[1] === r)) return [];
   G.pts[side] -= preisNeu(armeeImFeld(G, side), type);   // ST1: Seltenheits-Aufschlag
