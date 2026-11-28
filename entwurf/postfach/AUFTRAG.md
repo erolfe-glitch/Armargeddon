@@ -100,12 +100,13 @@
 - ✓ **Kurz-Prüfung U7b Teil 2 durch Fable (Punkt 140)** erledigt (`PRUEFUNG_FABLE_U7B.md`).
 - ✓ **Paket U7c (Punkt 142)** erledigt (Bericht 27.11. 22:10). Damit ist **U7 komplett**.
 - **Danach UI1** – vorher 2–3 Entwürfe vom Berater.
-- **Danach Pläne Kommandanten (Punkt 131) + Mini-Kampagne mit Tutorial (Punkt 137)** – Berater schreibt beide zusammen, Enrico nickt ab; dann U8 (mit Punkt 139: Handgranaten einmal je Schlacht, Mindestentfernung Artillerie) → S → P → U9.
+- ✓ **Pläne Kommandanten (Punkt 131) + Mini-Kampagne (Punkt 137)** geschrieben und abgenickt (Punkt 152). Bau-Reihenfolge nach W2c-1b: **KO-A → K-A → K-B → KO-B → K-C (mit KO-D) → KO-C → K-D → K-E**, dann U8 (mit Punkt 139) → S → P → U9.
 - ✓ **Paket UI1 Oberfläche (Punkte 128/141/144/145/146)** fertig (`5b48bd8`). Jetzt **Spieltest durch Enrico** (U7 + UI1).
 - ✓ **Paket W2a – Gelände-LoRA (Punkte 132/147)** erledigt: LoRA taugt nicht besser, Gelände künftig über Nano Banana + Referenzmappe.
 - ✓ **Paket W2f – Figuren-Stiltest (Punkt 148)** erledigt (mit altem Bogen als Vorlage: Stil nur vorsichtig, Doppelungen).
 - ✓ **Paket W2g – zweite Figurenprobe (Punkt 149)** erledigt: Der Weg „ohne alten Bogen, mit genauer Beschreibung“ taugt.
-- **Paket W2c-1 – erste sechs Bögen im Zielstil (Punkt 150)** – **nächster `pa`, ohne Browser.** Opus Mittel. Nur malen und prüfen, noch nicht einbauen.
+- ✓ **Paket W2c-1 (Punkt 150)** gemalt und abgenommen (sechs Bögen in `entwurf/probe/stil/figuren/w2c1/`).
+- **Paket W2c-1b – Einbau der sechs Bögen + Spieltest-Funde 1–3 (Punkt 151)** – **nächster `pa`, mit Browser** (Enrico spielt nicht). Opus Mittel.
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -219,6 +220,48 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> NOTIZ (Enrico 2026-11-28 01:15): Pläne Kampagne und Kommandanten abgenickt – Bau NACH W2c-1b <<<
+**152. Nur vormerken.** Pläne: `entwurf/KAMPAGNE_PLAN.md` und `entwurf/KOMMANDANTEN_PLAN.md` (Berater, 28.11.).
+
+**Enricos Antworten:**
+1. Die Kampagne ist zuerst **nur mit dem Konkordat** spielbar, die Aschenwacht kommt später als zweite Kampagne.
+2. Der **Seltenheits-Aufschlag (+25 %) entfällt in der Kampagne**, dort bremsen Unterhalt und Forschung. Im Gefecht bleibt er.
+3. Der **Hauptmann bleibt** als kleinere Führungseinheit. Ein Kommandant fällt in der Kampagne nur **verwundet** aus (2 Runden), er stirbt nicht endgültig.
+4. Die erste Kommandanten-Klasse ist der **Stratege**.
+5. Offen und nach Empfehlung: Eine Währung reicht. Das Tutorial ist die erste Kampagnenschlacht und steht zusätzlich im Startmenü. Höchstens 1 Held im Gefecht und 2 in der Kampagne.
+
+**Bau-Reihenfolge** (je ein eigener `JETZT`-Abschnitt vom Berater, wenn es losgeht): KO-A → K-A → K-B → KO-B → K-C (mit KO-D) → KO-C → K-D → K-E. Danach U8 (mit Punkt 139).
+
+# >>> JETZT (Enrico 2026-11-28 00:55): W2c-1 abgenommen – nächster `pa` = Einbau W2c-1b + Spieltest-Funde (mit Browser) <<<
+✓ **151. Nächster `pa` = W2c-1b. Einstellung: Opus, Mittel.** Enrico spielt gerade nicht. Browser, Partietest und Video sind wieder erlaubt (nie zwei Browser-Läufe zugleich).
+
+**Enricos Antworten zu W2c-1:**
+- Alle sechs Bögen passen und werden so eingebaut, ohne Neumalen.
+- Die runden Nietenplatten an den Minenwerfer-Helmen sind keine Abzeichen und bleiben.
+
+**Teil 1 – Einbau der sechs Bögen** nach der Liste im Bericht W2c-1 („Für den Einbau zu beachten“):
+1. Die besten Fassungen (bei zwei Versuchen die neuere, `_v2`) aus `entwurf/probe/stil/figuren/w2c1/` nach `ui-quelle/figuren/<fraktion>/` kopieren, als **neue** Namen (z. B. `aschenwacht_panzerbuechse_trupp_z.png`). Die alten Bögen bleiben liegen. Über `ERSETZT` in `figure_cut.py` umschalten, damit es einen Rückweg gibt (`window.ZIELSTIL_ALT`).
+2. Rand 40 px Magenta auffüllen. Schnittarten:
+   - `REIHE`: Panzerbüchse (zwei Zeilen, Schütze oben) und beide MG-Trupps.
+   - `SPALTEN 4`: Flammenwerfer.
+   - Einzelmodell: Mörser und Minenwerfer.
+3. **Maße:** Die Linie ist das Maß (F2b). `SH_REIHE`/`SH_SINGLE` neu setzen, Vergleichsbild neben einem Liniensoldaten derselben Seite.
+4. **Gruppen** (`GRUPPE` in ui.js): MG und Schütze sind ein Stück, und die Büchse gehört zum Panzerbüchsen-Schützen, also 3 statt 4 Teile. `geraet`/`fall` anpassen. Im Graben bleiben die Teile einer Gruppe beisammen (siehe Funde unten).
+5. **Mündungen** `MUZ_FIG`/`MUZ` neu messen: MG-Läufe, Panzerbüchse, Mörser- und Minenwerfer-Rohr, Flammenrohr. Standbild beim Schuss.
+6. Plastik-Karten (`figur_plastik.py --teil …`), Porträts (`portraitKey`) prüfen, robocopy-Sicherung.
+
+**Teil 2 – Spieltest-Funde 1–3** aus `entwurf/postfach/SPIELTEST_FUNDE.md`:
+- **Fund 1:** In der Armee-Auswahl bekommen die Knöpfe −/+ und die Anzahl einen eigenen Platz auf der Karte und verdecken keine Plaketten mehr.
+- **Fund 2:** Die **farbigen gemalten Knopfsymbole** kommen zurück statt der weißen Fassung. Damit sie sich vom Eisen abheben, kommt ein heller Lichtschein bzw. hellerer Knopfgrund dahinter. Der Messingrand bei aktiven Knöpfen bleibt, die weiße Fassung bleibt als Rückweg-Schalter.
+- **Fund 3:** Im Graben bleiben Beiwerk und Waffe bei ihrer Figur, also eine Gruppe auf einem Grabenplatz. Der Kanister schwebt nicht mehr, das MG steht nicht mehr getrennt. Gilt für alle Gruppen (Versorgung, Sanitäter, Waffentrupps).
+
+**Prüfen:**
+- Bilder vorher/nachher (`entwurf/probe/w2c1b/`): je Bogen im Spiel, im Offenen **und im Graben**, neben einem Liniensoldaten.
+- Armee-Auswahl und Knopfleiste bei 1280, 1920 und 2560.
+- Partietest, Video.
+
+Wird es zu viel: Teil 1 fertig machen, Zwischenstand, Bericht, aufhören.
 
 # >>> JETZT (Enrico 2026-11-28 00:40): Antwort zu W2g – erstes Umstellungs-Paket W2c-1 (nur malen, ohne Browser) <<<
 ✓ **150. Nächster `pa` = W2c-1. Einstellung: Opus, Mittel.** Enrico spielt weiter, deshalb **kein Browser, keine Vorschau, kein Partietest, kein Video, keine sim-Läufe, nichts in `src/`**. In diesem Paket wird **nur gemalt und geprüft, nicht eingebaut**: Schneiden, `figure_cut`, FIGMAP und Plastik kommen in W2c-1b, wenn Enrico die Bilder gesehen hat.

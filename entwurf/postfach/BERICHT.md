@@ -1,3 +1,65 @@
+## 2026-11-28 – W2c-1b (Punkt 151): sechs Zielstil-Bögen eingebaut, Spieltest-Funde 1–3
+
+Gepusht:
+- `c3ee77c`: Teil 1, Einbau der sechs Bögen
+- `db9b656`: Teil 2, Funde 1–3
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest zweimal „Konsole rot-frei, keine Fehler“.
+- **Video:** `entwurf/probe/video/W2c1b.mp4` (Grauwall, 25 s, mit Ton).
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+
+**Teil 1 – Einbau:**
+1. **Neue Bögen:** Die Bilder aus W2c-1 liegen als neue Bögen `*_z` in `ui-quelle/figuren/<fraktion>/`, die alten Bögen bleiben liegen.
+   - Bei zwei Versuchen ist es die neuere Fassung (`_v2`).
+   - Umgeschaltet wird nicht über `ERSETZT`, sondern über eigene Schlüssel. So bleiben die alten Bilder eingebettet, und `window.ZIELSTIL_ALT` schaltet im Browser zurück.
+   - Gesichert per robocopy.
+2. **Schnitt:**
+   - Ringsum 40 px Magenta (figure_cut `RAND`).
+   - `REIHE` für die Panzerbüchse und das Aschenwacht-MG.
+   - `SPALTEN 4` für die Flammenwerfer. Beim Konkordat-MG lagen Lader und Beobachter zu eng für den Flächenschnitt, deshalb dort `SPALTEN 3`.
+   - Mörser und Minenwerfer sind Einzelmodelle.
+3. **Maße:** Die kniende Bedienung ist so hoch wie der kniende Liniensoldat derselben Seite (Konkordat 257 px, Aschenwacht 270 px, Werte aus F2b).
+
+| Bogen | alt (Teile) | neu (Teile, Höhe der knienden Bedienung) |
+|---|---|---|
+| MG-Trupp Konkordat | 4 (MG, Schütze, Lader, Beobachter) | 3 (MG mit Schütze, Lader, Beobachter), 255–259 px |
+| MG-Trupp Aschenwacht | 4 | 3, 268–270 px |
+| Panzerbüchse Aschenwacht | 4 (Büchse einzeln) | 3 (liegender Schütze mit Büchse, Lader, Beobachter), 268–272 px |
+| Flammenwerfer Konkordat | 4 Posen | 4 Posen, kniend 246 px, stehend 322–346 px samt Tank |
+| Mörser Konkordat | Einzelmodell 0,95 SH, Blick nach links | 1,07 SH, Blick nach rechts |
+| Minenwerfer Aschenwacht | Einzelmodell 1,0 SH, Blick nach links | 1,08 SH, Blick nach rechts |
+
+4. **Gruppen** (`GRUPPE_Z` in ui.js): Waffe und Schütze sind ein Stück (fällt zuletzt), dann fallen Lader und Beobachter. Die Plätze liegen dichter. Die Flammenwerfer posieren mit dem neuen Bogen (anlegen, knien, laufen). „Getroffen“ kommt noch aus dem alten Posenbogen, dafür gibt es kein neues Bild.
+5. **Mündungen** neu gemessen (`MUZ_FIG`): Konkordat-MG, Aschenwacht-MG (Laufspitze, nicht die Schlittenkufe), Panzerbüchse und Flammenrohre. Standbilder: `entwurf/probe/w2c1b/muendung_punkte.jpg`, alle an der Laufspitze, in beiden Blickrichtungen. Mörser und Minenwerfer haben wie bisher keinen eigenen Mündungspunkt.
+6. **Plastik-Karten** sind für alle 15 neuen Bilder gerechnet. Die Porträts nehmen weiter das erste Teil des Bogens.
+- **Bilder:** `entwurf/probe/w2c1b/uebersicht.jpg`, je Einheit vorher/nachher, im Offenen und im Graben, mit einem Liniensoldaten daneben. Einzelbilder in `vorher/` und `nachher/`.
+- **Nicht umgestellt:** Ein MG, das nicht aufgebaut ist (auf dem Marsch), zeigt weiter das alte Marschbild `mg_marsch`. Dafür gibt es noch keinen Zielstil-Bogen.
+
+**Teil 2 – Spieltest-Funde:**
+- **Fund 1, Armee-Auswahl:**
+  - Ursache war meine UI1-Karte: Sie hatte den unteren Abstand überschrieben, in dem die −/+-Zähler saßen.
+  - Jetzt haben die Zähler unten rechts wieder eine eigene Zeile.
+  - Gemessen bei 1280, 1920 und 2560 px: 0 Überlappungen mit Plaketten oder Werten (`tools/f1_armee.mjs`).
+  - Bilder: `entwurf/probe/w2c1b/funde/armee/`.
+- **Fund 2, Knopfsymbole:**
+  - Die farbigen gemalten Symbole sind zurück, mit dunkler Tintenkontur und einem hellen Messingschein dahinter.
+  - Aktive Knöpfe behalten den Messingrand und leuchten etwas. Graue sind entsättigt, aber farbig erkennbar.
+  - Rückweg zur weißen Fassung: `window.SYMBOL_WEISS`.
+  - Vorher/nachher bei 1280 und 1920: `entwurf/probe/w2c1b/funde/symbole_vorher_nachher.jpg`.
+- **Fund 3, Gruppen im Graben:**
+  - Eine Gruppe steht jetzt auf **einem** Grabenplatz, mit ihren Gruppen-Abständen (etwas enger).
+  - Waffe und Beiwerk bleiben bei ihrer Figur: MG mit Bedienung, Kanister und Karren bei der Versorgung, Trage bei den Sanitätern.
+  - Rückweg: `window.GRABEN_GRUPPE_ALT`.
+  - Bilder (links vorher, rechts nachher): `entwurf/probe/w2c1b/funde/graben_vorher_nachher.jpg` mit Versorgung Aschenwacht, beiden MG-Trupps, Sanitätern und Panzerbüchse.
+  - **Rest:** In einem Graben, der senkrecht (in die Tiefe) läuft, ragt eine breite Gruppe noch etwas über die Grabenwand, z. B. der Versorgungskarren oder die lange Panzerbüchse. Besser wäre, die Teile dort hintereinander statt nebeneinander zu stellen. Das wäre ein kleiner Nachtrag.
+
+**Fragen an Enrico:**
+1. Soll der Nachtrag „Gruppen in senkrechten Gräben hintereinander stellen“ ins nächste Paket?
+2. Soll das MG auf dem Marsch einen eigenen Zielstil-Bogen bekommen (Malauftrag für den Berater)?
+
 ## 2026-11-28 – W2c-1 (Punkt 150): sechs Bögen im Zielstil gemalt, nur Probe, nichts eingebaut
 
 Gepusht:
