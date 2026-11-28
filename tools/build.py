@@ -4,7 +4,7 @@ root = pathlib.Path(__file__).resolve().parent.parent
 src = root / 'src'
 html = (src / 'index.html').read_text(encoding='utf8')
 parts = []
-for name in ['engine.js', 'rollen.js', 'figures.js', 'art.js', 'fx.js', 'uiart.js', 'uipanel.js', 'zeiger.js', *(['figs.js', 'figsplastik.js'] if os.environ.get('EINBETTEN_FIGUREN') else []), 'fxneu.js', 'gelaende.js', 'gelaende_bau.js', 'titlebg.js', 'ai.js', 'ui.js']:   # Töne (sound.js) nicht mehr eingebettet: ui.js lädt src/sound.js daneben nach (Enrico 2026-11-22 17:30)
+for name in ['engine.js', 'rollen.js', 'figures.js', 'art.js', 'fx.js', 'uiart.js', 'uipanel.js', 'zeiger.js', *(['figs.js', 'figsplastik.js'] if os.environ.get('EINBETTEN_FIGUREN') else []), 'fxneu.js', 'gelaende.js', 'gelaende_bau.js', 'titlebg.js', 'ai.js', 'kampagne.js', 'ui.js']:   # Töne (sound.js) nicht mehr eingebettet: ui.js lädt src/sound.js daneben nach (Enrico 2026-11-22 17:30)
     code = (src / name).read_text(encoding='utf8')
     assert '</script' not in code, name
     parts.append(f'<script>\n{code}\n</script>')

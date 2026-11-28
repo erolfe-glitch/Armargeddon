@@ -678,7 +678,8 @@ function katZahl(army) { const z = { linie: 0, unterst: 0, elite: 0, geraet: 0, 
 const katSperreAlt = () => !!(TOG.KAT_SPERRE_ALT || (typeof window !== 'undefined' && window.KAT_SPERRE_ALT));   // ST1 (115.3): Rückweg zu den harten Grenzen Elite/Gerät
 const KAT_AUFSCHLAG_ARTEN = ['elite', 'geraet'];
 function katMax(z) { const frei = !katSperreAlt(); return { unterst: Math.floor(z.linie / P.KAT_UNTERST_JE), elite: frei ? Infinity : P.KAT_ELITE, geraet: frei ? Infinity : P.KAT_GERAET }; }
-function aufschlagVon(army, t) { if (katAlt() || katSperreAlt() || !KAT_AUFSCHLAG_ARTEN.includes(katOf(t))) return 0; return P.KAT_AUFSCHLAG * (katZahl(army)[katOf(t)] || 0); }   // je weitere Einheit derselben Kategorie (gleichzeitig da) +25 %
+let aufschlagAus = false;   // K-A (Punkt 156): in Kampagnenschlachten kein Seltenheits-Aufschlag (newGame-Option kampagne)
+function aufschlagVon(army, t) { if (aufschlagAus || katAlt() || katSperreAlt() || !KAT_AUFSCHLAG_ARTEN.includes(katOf(t))) return 0; return P.KAT_AUFSCHLAG * (katZahl(army)[katOf(t)] || 0); }   // je weitere Einheit derselben Kategorie (gleichzeitig da) +25 %
 function preisNeu(army, t) { const a = aufschlagVon(army, t); return a ? Math.round(COST[t] * (1 + a) / 5) * 5 : COST[t]; }
 function katFehler(army) { if (katAlt()) return ''; const z = katZahl(army), m = katMax(z);
   if (z.unterst > m.unterst) return `Unterstützung ${z.unterst}/${m.unterst}: je ${P.KAT_UNTERST_JE} Linientrupps ein Platz.`;
@@ -827,13 +828,14 @@ function autoAufstellen(G, side) {   // Kartenvorgabe: Seite neu aufstellen wie 
   for (const u of G.units) if (u.side === side) { if (TYPES[u.type].mg) u.setup = true; if (TYPES[u.type].mines) u.mines = TYPES[u.type].mines; if (TYPES[u.type].counterStrike) u.cready = true; }
 }
 function newGame(opts) {
-  opts = opts || {};
+  opts = opts || {}; aufschlagAus = !!opts.kampagne;
   useMapArmy(opts.map);
   const G = {
     mapId: MAP.id,
     map: buildMap(), units: [], turn: 1, side: 'A', over: null,
     rng: mulberry32(opts.seed != null ? opts.seed : (Date.now() & 0xffffffff)),
     kommStufe: { A: +(opts.kommStufe && opts.kommStufe.A) || P.KOMM_STUFE, D: +(opts.kommStufe && opts.kommStufe.D) || P.KOMM_STUFE },   // KO-A2: Kommandanten-Stufe je Seite
+    kampagne: !!opts.kampagne,   // K-A: Schlacht aus der Kampagne
     mischen: !!opts.mischen, ctrl: {}, nextId: 1, clouds: [], smoke: [], lit: [], tunnels: [], mines: [], marks: [], fires: [], wind: 1, pts: { A: 0, D: 0 }, mechs: !!opts.mechs,
     kanten: null,   // R3: Deckung an Feldkanten (unten aus Karte und Gelände)
     bauten: (MAP.bauten || []).map(b => { const hp = +(TOG.M_kirche || 0) || (b.art === 'haus' ? P.HAUS_HP : b.art === 'kapelle' ? P.KAPELLE_HP : b.art === 'muehle' ? P.MUEHLE_HP : P.KIRCHE_HP); return { ...b, hp, max: hp, kaputt: false }; })   // große Gebäude mit Bauzustand (Kirche)
@@ -1384,7 +1386,7 @@ function counterDmg(G, d, a, ac, ar, arc, dStr) {
 
 function applyDamage(G, a, d, dmg, arc, ev, o) {
   o = o || {};
-  const t = hex(G, d.c, d.r).t, k0 = modelleDa(d);
+  const t = hex(G, d.c, d.r).t, k0 = modelleDa(d); if (a && a.side !== d.side) d.lastHitBy = a.id;   // K-A: Abschüsse je Trupp
   d.str = Math.max(0, d.str - dmg);
   const fall = Math.max(0, k0 - modelleDa(d));   // U5a: gefallene Modelle (Anzeige in U5b)
   if (fall && !u5aus() && kraftArt() === 'traeger' && modelle(d.type) === 3) for (let j = 0; j < fall && !d.traegerWeg; j++) if (G.rng() < 1 / Math.max(1, k0 - j)) d.traegerWeg = true;   // der Waffenträger fällt mit der Chance 1 / stehende Modelle
