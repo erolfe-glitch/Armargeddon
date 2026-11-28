@@ -6,6 +6,7 @@
   function rolleVon(E, t) {
     const T = E.TYPES[t], A = T.abil;
     if (T.held) return 'Held';
+    if (T.kommandant === 'stratege') return 'Kommandant – Stratege';   // KO-A (Punkt 154)
     if (T.cmd) return T.cmd === 2 ? 'Führung (General)' : 'Führung';
     if (T.cls === 'medic') return T.repair || A === 'ammo' ? 'Versorgung' : 'Sanität';
     if (T.cls === 'art') return T.direkt ? 'Direktes Feuer' : T.mobile ? (A === 'smoke' ? 'Steilfeuer und Nebel' : 'Steilfeuer') : 'Steil- und Sperrfeuer';   // F103: Feldkanone flache Bahn, Donnerrohr/Grabengeschütz Steil- und Sperrfeuer

@@ -1,0 +1,128 @@
+{
+ "grauwall": {
+  "quote": 36,
+  "quoten": [
+   39,
+   33
+  ],
+  "runden": 15.45,
+  "verluste": [
+   32.5,
+   25
+  ],
+  "moral": {
+   "Rundenanfänge Fußtruppen": [
+    260.09,
+    246.43
+   ],
+   "Moral ≥ 60 %": [
+    223.49,
+    219.34
+   ],
+   "Stufe standhaft zu Rundenbeginn": [
+    249.53,
+    233.34
+   ],
+   "niedergehalten": [
+    34.27,
+    23.44
+   ],
+   "Moral 35–60 %": [
+    29.49,
+    18.96
+   ],
+   "niedergehalten zu Rundenbeginn": [
+    28.71,
+    16.54
+   ],
+   "Entsetzenstests": [
+    9.55,
+    18.69
+   ],
+   "Entsetzen durchgefallen": [
+    1.89,
+    3.63
+   ],
+   "Stufe wankt zu Rundenbeginn": [
+    6.71,
+    8.3
+   ],
+   "zurückgewichen": [
+    5,
+    5.33
+   ],
+   "Moral < 35 %": [
+    7.11,
+    8.13
+   ],
+   "Stufe weicht zu Rundenbeginn": [
+    3.84,
+    4.79
+   ],
+   "Flucht": [
+    4.14,
+    3.61
+   ],
+   "Flucht (Stärke)": [
+    2.87,
+    1.33
+   ],
+   "Rundenanfänge auf der Flucht": [
+    6.94,
+    4.5
+   ],
+   "Flucht (Moral)": [
+    1.22,
+    2.12
+   ],
+   "auf der Flucht zerschlagen": [
+    0.27,
+    0.6
+   ],
+   "vernichtet auf der Flucht": [
+    1.41,
+    1.23
+   ],
+   "entkommen am Rand": [
+    1.19,
+    1.03
+   ],
+   "Sammel-Chance bestand": [
+    0.48,
+    1.15
+   ],
+   "noch fliehend am Ende": [
+    1.25,
+    0.74
+   ],
+   "gesammelt": [
+    0.28,
+    0.61
+   ],
+   "Furcht-Aura": [
+    0.9,
+    0
+   ],
+   "Flucht (Gas)": [
+    0.06,
+    0.17
+   ],
+   "Heldenfall": [
+    0.01,
+    0.09
+   ],
+   "gesammelt (Befehl)": [
+    0.04,
+    0.06
+   ],
+   "hält stand": [
+    0.09,
+    0.75
+   ],
+   "Sammelbefehl misslungen": [
+    0.01,
+    0.02
+   ]
+  }
+ }
+}

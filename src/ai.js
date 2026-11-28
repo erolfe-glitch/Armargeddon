@@ -273,6 +273,7 @@ const W_EIS = +((typeof process !== 'undefined' && process.env && process.env.W_
 const W_STECKEN = +((typeof process !== 'undefined' && process.env && process.env.W_STECKEN) || 3);   // M6: Gewicht Steckenbleiben (× P.STECKEN 0,3)
 const W_SPRUNG_GEF = +((typeof process !== 'undefined' && process.env && process.env.W_SPRUNG_GEF) || 1.0), W_DAUER = +((typeof process !== 'undefined' && process.env && process.env.W_DAUER) || 2.5);   // Löwenoger/Hünen (2026-11-20)
 const W_HAZ = { fire: +((typeof process !== 'undefined' && process.env && process.env.W_FIRE) || 2.6), wire: +((typeof process !== 'undefined' && process.env && process.env.W_WIRE) || 1.2), gas: +((typeof process !== 'undefined' && process.env && process.env.W_GAS) || 1.5) };
+const W_KOMM_NAH = +((typeof process !== 'undefined' && process.env.W_KOMM_NAH) || 3), W_KOMM_RUECK = 0.6, W_KOMM_ZIEL = +((typeof process !== 'undefined' && process.env.W_KOMM_ZIEL) || 1.2), W_KOMM_POS = +((typeof process !== 'undefined' && process.env.W_KOMM_POS) || 3);   // KO-A (Punkt 154)
 function posValue(G, u, c, r) { return posValue0(G, u, c, r) - hazard(G, u, c, r) + sammelWert(G, u, c, r) + wanktDeckung(G, u, c, r); }
 function sammelWert(G, u, c, r) {   // U7 Schritt 2: Anführer und Banner stellen sich bis 2 Felder an eigene Wankende oder Fliehende (Sammel-Chance)
   if (E.fluchtAlt() || !(u.officer || TYPES[u.type].banner)) return 0; let n = 0;
@@ -280,7 +281,7 @@ function sammelWert(G, u, c, r) {   // U7 Schritt 2: Anführer und Banner stelle
   return W_SAMMEL * Math.min(2, n);
 }
 function posValue0(G, u, c, r) {
-  const w = wOf(u.side), h = E.hex(G, c, r), k = TYPES[u.type].relay || (TYPES[u.type].abil === 'smoke' && E.cls(u) !== 'art') ? 'medic' : E.cls(u);   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
+  const w = wOf(u.side), h = E.hex(G, c, r), k = TYPES[u.type].relay || (TYPES[u.type].abil === 'smoke' && E.cls(u) !== 'art') ? 'medic' : E.istKomm(u) ? 'inf' : E.cls(u);   /* KO-A: Kommandant stellt sich wie ein Anführer, nicht wie Stoßtruppen */   // Rauchwerfer bleiben hinter den eigenen Trupps (Reichweite 3 genügt)
   const th = threatAt(G, u, c, r);
   let v;
   if (k === 'medic') {
@@ -305,7 +306,8 @@ function posValue0(G, u, c, r) {
     if (TYPES[u.type].cmd) {   // Spieltest Runde 3: Anführer nicht vorneweg – mindestens zwei eigene Trupps sollen näher am Feind stehen
       const nd = nearestEnemyDist(G, u.side, c, r); let vor = 0;
       for (const o of G.units) if (o.side === u.side && E.active(o) && o.id !== u.id && !TYPES[o.type].cmd && E.cls(o) !== 'art' && nearestEnemyDist(G, o.side, o.c, o.r) < nd) vor++;
-      if (vor < 2) v -= 1.6 * (2 - vor); if (nd <= 2) v -= 1.2; }
+      if (vor < 2) v -= 1.6 * (2 - vor); if (nd <= 2) v -= 1.2;
+      if (E.istKomm(u)) { if (nd <= 1) v -= W_KOMM_POS; if (u.str < 4) v += Math.min(nd, 6) * W_KOMM_RUECK; } }   // KO-A (Punkt 154): Stratege hinter der Front, angeschlagen zurück
     if (k === 'walker' && h.t === 'wire') v += 1.0;
     if (k === 'walker') {   // KI-Runde 2026-11-17: nicht allein vor, keine Felder, die Sturmtruppen nächste Runde erreichen (außer gedeckt)
       v -= fzNahGefahr(G, u, c, r) * W_FZ_NAH;
@@ -360,6 +362,8 @@ function attackValue(G, a, d, kind, o) {
   else if (strAfter < (kiAlt() ? 1.5 : P.ROUT_STR) || morAfter <= 0) v += 2.5; else if (morAfter < (kiAlt() ? 3 : E.fallbackSchwelle(G, d))) v += 0.8;
   else if (!E.stufenAlt() && d.status === 'ok' && !E.wankt(d) && morAfter < P.WANKT * TYPES[d.type].mor) v += W_WANKT;   // U7 Schritt 3
   if (d.officer) v += 0.8;
+  if (E.istKomm(d)) v += W_KOMM_ZIEL;   // KO-A: fällt er, verliert die ganze Seite Moral
+  if (kind === 'melee' && E.istKomm(a) && !(strAfter < P.ROUT_STR || morAfter <= 0)) v -= W_KOMM_NAH;   // KO-A: Kommandant nicht in den Nahkampf
   if (E.cls(d) === 'art' || E.cls(d) === 'walker') v += 0.8;
   if (kind === 'fire' && !d.supp && d.status === 'ok' && E.cls(d) !== 'walker' && d.fireDmg + p.dmg >= P.SUPP) v += TYPES[d.type].mg ? 2.2 : 1.2;
   if (kind === 'melee' && E.hex(G, d.c, d.r).obj) v += mussAngreifen(G, a) ? W_OBJSTURM : 0.6;   // Zielfeld stürmen, wenn die Seite angreifen muss
@@ -580,9 +584,17 @@ function next(G) {
     if (!u.planted && near <= 4 && friends >= 3 && (u.mvd || near <= 2 || G.map[u.c][u.r].obj)) return { u: u.id, steps: [{ k: 'plant' }] };
     if (u.planted && near > 6) return { u: u.id, steps: [{ k: 'plant' }] };
   }
+  for (const u of G.units) {   // KO-A: Feuer lenken – ein Geschütz/Mörser mit einem Ziel im Steilfeuer schießt ohne Streuung
+    if (u.side !== G.side || !E.canLenken(G, u) || G._aiDone.has('l' + u.id) || ENVX.NOLENKEN) continue;
+    G._aiDone.add('l' + u.id);
+    const ziel = E.lenkenZiele(G, u).filter(o => o.ap >= 1 && !o.limbered && !(o.supp > 0) && G.units.some(e => e.side !== o.side && E.active(e) && E.canShell(G, o, e.c, e.r, 'he') && !E.isDirect(G, o, e.c, e.r)))
+      .sort((x, y) => (TYPES[y.type].rng || 0) - (TYPES[x.type].rng || 0))[0];
+    if (ziel) return { u: u.id, steps: [{ k: 'lenken', t: ziel.id }] };
+  }
   for (const u of G.units) {   // Befehle der Anführer zuerst
-    if (!E.canOrder(G, u) || G._aiDone.has('o' + u.id)) continue;
-    G._aiDone.add('o' + u.id);
+    const oKey = 'o' + u.id + (E.istKomm(u) ? ':' + (u.befR || 0) : '');   // KO-A: Kommandant prüft je Runde zweimal
+    if (!E.canOrder(G, u) || G._aiDone.has(oKey)) continue;
+    G._aiDone.add(oKey);
     let weak = 0, close = 0, shoot = 0;
     for (const o of G.units) {
       if (o.side !== u.side || !E.active(o) || E.cls(o) === 'walker' || E.dist(o.c, o.r, u.c, u.r) > E.cmdRange(u)) continue;
@@ -756,6 +768,7 @@ function exec(G, uid, s) {
   if (s.k === 'aufsteigen') return E.aufsteigen(G, u);
   if (s.k === 'ramm') return E.rammen(G, u, s.c, s.r);
   if (s.k === 'shields') return E.canShields(G, u) ? E.shieldsUp(G, u) : [];
+  if (s.k === 'lenken') { const t = G.units.find(x => x.id === s.t); return t ? E.lenken(G, u, t) : []; }
   if (s.k === 'send') { const t = G.units.find(x => x.id === s.t); return t ? E.sendOrder(G, u, t) : []; }
   if (s.k === 'heal') {
     let best = null;

@@ -65,6 +65,9 @@ const P = {
   // Hinrichtung des Kürassiers (Ziel unter HINRICHT_STR = 40 % Stärke, Enrico 17:03; vorher 30 %), Furcht-Aura (Gegner daneben zu Beginn ihrer Runde −FURCHT_MOR), Festfahren in Schlamm/Graben (STECKEN),
   // Fall eines Helden: ganze Seite −HELD_FALL_MOR Moral
   DURCH_DMG: 2.6, DURCH_MOR: 1.5, FAUST_AURA: 0.5, HINRICHT_STR: 4, FURCHT_MOR: 0.4, STECKEN: 0.3, HELD_FALL_MOR: 1,
+  // KO-A (Punkt 154, 2026-11-28): Kommandant „Stratege“ statt General – Befehle 2 Felder weit, bis zu 2 je Runde (der zweite ohne Aktion), höchstens KOMM_ORDER_MAX je Schlacht; Aura 2 Felder (Moralverlust ×OFFICER_MOR, Sammeln +KOMM_SAMMELN);
+  // „Feuer lenken“ einmal je Runde ohne Kosten an ein eigenes Geschütz/einen Mörser bis KOMM_LENKEN_R Felder (schießt in diesem Zug ohne Streuung); Fall: ganze Seite −KOMM_FALL_MOR Moral. Rückweg KOMMANDANT_ALT
+  KOMM_ORDER_R: 2, KOMM_ORDER_RUNDE: 2, KOMM_ORDER_MAX: 5, KOMM_SAMMELN: 0.1, KOMM_FALL_MOR: 2, KOMM_LENKEN_R: 3,
   DIG_DEF: 1.3, AUSGRABEN_BP: 1, AUSGRABEN_AP: 1, SHIELDS: 0.75, RUSH: 4, BROADSIDE: 0.6, BLAST_LANCE: 1.5, ZWEISCHLAG: 0.6, /* Punkt 106: zweiter Nahkampfschlag (Stahlreiter, Löwenoger) */ GRANAT_NAH: 1.25, GRANAT_FERN: 0.85, HANDGR_DMG: 0.7, HANDGR_RNG: 2, SCHARF_INF: 1.6, KOPF_MOR: 1, FK_VS_WALKER: 1.25, ENTSETZ_BASIS: 0.08, ENTSETZ_MOR: 0.8, PZS_S: 3.5, PZS_L: 2, PZS_U: 0.6, PZS_LADUNGEN: 3, GEGENSTOSS: 1.25, GEGENSTOSS_VOR: 0.85,   /* F103 Rollen schärfen (2026-11-22) */   // F36: Ausgraben kostet die Aktion (Abstimmung siehe BERICHT)
   // Gruppe 4 (2026-11-17): Flammenstrahl setzt das Zielfeld bis zum nächsten eigenen Zug in Brand; Feuerschaden wie Draht, Kolosse halb
   FIRE_DMG: 1.0, FIRE_WALKER: 0.5
@@ -74,6 +77,8 @@ const P = {
 let COLS = 16, ROWS = 10;
 // Test-Schalter für die Simulation (im Browser leer)
 const TOG = (typeof process !== 'undefined' && process.env) || {};
+// KO-A (Punkt 154): Kommandant statt General; Rückweg KOMMANDANT_ALT (Node: Umgebung, Browser: window vor dem Laden)
+const KOMM = !(TOG.KOMMANDANT_ALT || (typeof window !== 'undefined' && window.KOMMANDANT_ALT));
 
 const SIDES = {
   A: { name: 'Konkordat von Valmor', short: 'Konkordat', edge: 0, dir: 1 },
@@ -230,6 +235,14 @@ Object.assign(TYPES, {
     can: 'Kampfmaschine mit Bohrkopf: sehr stark im Nahkampf. Flammenstoß (einmal je Runde zusätzlich) bis 2 Felder: halb so stark wie ein Flammentrupp, das Feld brennt. Selten Panne: 1 Runde aus (schwer 2).',
     chronik: { quelle: 'Bericht eines Überlebenden aus den Kohlegruben', text: 'Aus den tiefen Kohlegruben an die Front geholt, zermalmt sein rotierender Bohrkopf im Nahkampf jede Befestigung. Ein glühender Flammenstoß aus dem Rumpf setzt zudem das gesamte Vorfeld in Brand.' } }
 });
+// KO-A (Punkt 154): Der Stratege ersetzt den General (gleiche Typschlüssel generalA/generalD). Einzelfigur wie die Helden, leicht gepanzert, Nahkampf über jedem Trupp, unter den Helden
+if (KOMM) {
+  const st = { cls: 'storm', kommandant: 'stratege', gepanzert: !TOG.KOMM_OHNEPANZER, cmd: 2, atk: 8.5, def: 6, mor: 9, mv: 3, rng: 2, fs: 3 };   if (TOG.KOMM_WERTE) { const [w1, w2, w3, w4] = TOG.KOMM_WERTE.split(',').map(Number); Object.assign(st, { atk: w1, def: w2, mor: w3, fs: w4 }); }   // Mess-Schalter (nur Node): Angriff, Abwehr, Moral, Feuer
+  Object.assign(TYPES.generalA, st, { name: 'Feldmarschall', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Feuer frei“) an Einheiten bis 2 Felder, bis zu 2 je Runde (der zweite kostet keine Aktion), höchstens 5 je Schlacht. Einmal je Schlacht „Halten um jeden Preis“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Mörser bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
+    chronik: { quelle: 'Lagebuch des Westlichen Konvents, 116 n. G.', text: 'Mit Stab und Karte steht der Feldmarschall hinter der Linie und rückt die Schlacht wie Steine auf einem Brett zurecht. Seine Batterien treffen, wo er hinzeigt, und solange er steht, halten die Kompanien ringsum ihre Gräben.' } });
+  Object.assign(TYPES.generalD, st, { name: 'Generalstäbler', can: 'Kommandant (Stratege), Pflicht, genau einer je Armee. Leicht gepanzert, im Nahkampf stärker als jeder Trupp. Befehle („Sammeln“, „Sturmbefehl“) an Einheiten bis 2 Felder, bis zu 2 je Runde (der zweite kostet keine Aktion), höchstens 5 je Schlacht. Einmal je Schlacht „Generalangriff“. Feuer lenken (einmal je Runde, kostenlos): ein eigenes Geschütz oder ein Minenwerfer bis 3 Felder schießt in diesem Zug ohne Streuung. Aura 2 Felder: Moralverlust ×0,8, Sammeln +10 %. Fällt er, verliert die ganze Seite 2 Moral.',
+    chronik: { quelle: 'Fernsprechprotokoll des Grauwall-Stabs, 116 n. G.', text: 'Fernglas am Auge und Hörer am Ohr, lenkt der Generalstäbler die Geschütze der Aschenwacht Granate um Granate ins Ziel. Wo seine Stimme durch den Draht dringt, sammeln sich auch zerschlagene Trupps wieder zur Linie.' } });
+}
 // Nachschub: Kosten in Punkten und Angebot je Seite
 // Kosten in Punkten (großer Maßstab, Wunsch des Nutzers): aus Werten und Fähigkeiten berechnet.
 // Kampfwert = 6·Angriff + 5·Zähigkeit + 5·Zug − 45, auf 5 gerundet.
@@ -238,7 +251,7 @@ Object.assign(TYPES, {
 // Dazu Fähigkeiten (ABIL) und ein kleiner Abgleich aus der Simulation (ADJ). Prüfen: node tools/costcheck.js
 const ABIL = { grenadier: ['Handgranaten', 10], ...(TOG.PZS_ALT ? {} : { feldkanone: ['Panzergranate (3×)', 10] }), feldscher: ['Versorgen', 30], heiler: ['Versorgen', 30], scharf: [!TOG.SCHARF_NEU ? 'Niederhalten' : 'Kopf runter!', 15], buechse: ['Panzerbrechend', 25],
   signal: ['Ziel markieren', 5], fernsprech: ['Feuerschlag anfordern', 10], melder: ['Befehl überbringen', 5], banner: ['Banner', 15],
-  hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: ['Befehle (3), großer Befehl', 35], generalD: ['Befehle (3), großer Befehl', 35],
+  hauptA: ['Befehle (3)', 10], hauptD: ['Befehle (3)', 10], generalA: KOMM ? ['Befehle (2 je Runde, 2 Felder), großer Befehl, Feuer lenken, Aura', 45] : ['Befehle (3), großer Befehl', 35], generalD: KOMM ? ['Befehle (2 je Runde, 2 Felder), großer Befehl, Feuer lenken, Aura', 45] : ['Befehle (3), großer Befehl', 35],
   pionierD: ['Draht ziehen oder Minen (3), Bergen', 10], pionier: ['Haftladung, Bergen', 15], knecht: ['Doppelte Sturmkanonen, Faustsalve', 30], oger: ['Sprungangriff', 15], huenen: ['Dauerfeuer', 10],
   faust: ['Durchbruch, Standhaft-Aura', 20], kuerass: ['Hinrichtung, Furcht-Aura', 20], kreuz: ['Löwenmaul-Kanone gegen Panzerung, Unterarm-Kanone, Löwengebrüll', 30],
   moerser: ['Rauchmunition (Nebelwand)', 15], mineur: ['Stollen', 10], werkstatt: ['Reparieren, Bergen, Nachladen', 40], ballon: ['Ziel markieren, Sicht von oben', 50],
@@ -306,7 +319,7 @@ Object.assign(TYPES.feldkanone, { direkt: true, fahrbar: true, mv: 2 }); delete 
 if (!TOG.PZS_ALT) Object.assign(TYPES.feldkanone, { abil: 'pzschuss', ladungen: P.PZS_LADUNGEN });   // Punkt 16 (2026-11-24): Panzergranate mit begrenzten Ladungen; normaler Schuss gegen Panzer schwächer (P.FK_VS_WALKER); PZS_ALT=1 = vorher   // Feldkanone: nur direktes Feuer mit Sicht über ihre ganze Reichweite; ohne Protzen, zieht immer 2 Felder und schießt danach noch (Enrico 2026-11-22 17:40)
 Object.assign(TYPES.panzerk, { cutter: true });          // Panzerknechte: Nahkampf und Draht
 for (const k in TYPES) if (COST[k] == null) COST[k] = costParts(k).total;
-const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Bord-MG", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "reiter": TOG.REITER_ALT ? ["Ansturm ×1,5", "Kein Draht, kein Totholz"] : ["Ansturm ×1,5", "Zwei Schläge", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Sturmlauf", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "Panzergranate", "Gegenstoß auf Zielfelder"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder", "Rauchmunition: Nebelwand"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionier": ["Draht schneiden und angreifen", "Haftladung gegen Panzer"], "raeumer": ["Sickert durch", "Handgranaten", "Panzergranate", "Schilde vor"], "buechse": ["Schuss 3 Felder", "Panzer ×1,5, Fußtruppen ×0,5"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Feuer frei"], "hauptD": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Sturmbefehl"], "generalA": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Generalangriff (zweiter Angriff)", "Höchstens einer"], "panzerk": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"], "oger": ["Sprungangriff (alle 2 Runden)", "Zwei Schläge", "Schrotflinte 1 Feld", "Sickert durch"], "faust": ["Held", "Durchbruch: 2 Felder, schleudert zurück", "Standhaft-Aura", "Leicht gepanzert", "Kaum Fernkampf"], "kuerass": ["Held", "Hinrichtung unter 40 %", "Furcht-Aura", "Leicht gepanzert", "Langsam, bleibt stecken"], "huenen": ["Dauerfeuer: 2 Salven, dann abkühlen", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Hält nieder", "Draht hält nicht auf"]};
+const SPECIALS = {"kohorte": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "grenadier": ["Schneidet Draht", "Schuss 2 Felder", "Eingraben"], "mahlwerk": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "sense": ["Sperrfeuer: 2 Schüsse", "Zieht oder schießt"], "haubitze": ["Feuert über Truppen", "Gas und Sperrfeuer", "Aufprotzen"], "geschuetz": ["Feuert über Truppen", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "koloss": ["Gepanzert", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "sturmpz": ["Gepanzert", "Breitseite: 2 Ziele ×0,6", "Bord-MG", "Sturmrollen", "Walzt Draht nieder", "Pannen"], "reiter": TOG.REITER_ALT ? ["Ansturm ×1,5", "Kein Draht, kein Totholz"] : ["Ansturm ×1,5", "Zwei Schläge", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Sturmlauf", "Kein Draht, kein Totholz"], "lanzeD": ["Ansturm ×1,5", "Sprenglanze ×1,5 (einmal)", "Kein Draht, kein Totholz"], "sturm": ["Sickert durch", "Handgranaten", "Panzergranate", "Gegenstoß auf Zielfelder"], "brand": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldscher": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "heiler": ["Versorgt einen Nachbarn", "Heilt Vergiftung"], "moerser": ["Mörser", "Ziehen und feuern", "Steilfeuer 4 Felder", "Rauchmunition: Nebelwand"], "minenwerfer": ["Steilfeuer 4 Felder", "Sprenggranaten ×1,5", "Zerstört Draht und Barrikaden", "Ziehen oder feuern"], "scharf": ["Schuss 4 Felder", "Hält das Ziel nieder"], "melder": ["Befehl überbringen: +2 Bewegung", "Zieht 5 Felder"], "signal": ["Ziel markieren: ×1,25, keine Streuung, deckt auf", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionier": ["Draht schneiden und angreifen", "Haftladung gegen Panzer"], "raeumer": ["Sickert durch", "Handgranaten", "Panzergranate", "Schilde vor"], "buechse": ["Schuss 3 Felder", "Panzer ×1,5, Fußtruppen ×0,5"], "schwer": ["Sehr zäh", "Nur Nahkampf", "Draht hält nicht auf", "Schilde vor"], "knecht": ["Stufe 3: einmal je Schlacht", "Gepanzert", "Doppelte Sturmkanonen", "Faustsalve: einmal je Schlacht", "Hackklinge", "Pannen"], "klaue": ["Gepanzert", "Maschinenwaffe", "Pannen"], "stahl": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "flammen": ["Flammenstrahl", "Deckung schützt nicht", "Feld brennt"], "feldkanone": ["Reichweite 5", "Direktschuss ×2,5 auf Kolosse", "Aufprotzen"], "fernsprech": ["Feuerschlag anfordern (alle 3 Runden)", "Sieht 6 Felder", "Befehle 1 Runde früher"], "pionierD": ["Zieht Stacheldraht", "Schuss 2 Felder"], "banner": ["Moralverlust ×0,75 in 2 Feldern", "Erholung +5", "Aufpflanzen: 3 Felder, keine Flucht"], "hauptA": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Feuer frei"], "hauptD": ["3 Befehle je Schlacht, an Nachbarn", "Sammeln, Sturmbefehl"], "generalA": KOMM ? ["Kommandant", "Leicht gepanzert", "Befehle 2 Felder, 2 je Runde", "Feuer lenken", "Einmal: Halten um jeden Preis"] : ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Halten um jeden Preis", "Höchstens einer"], "generalD": KOMM ? ["Kommandant", "Leicht gepanzert", "Befehle 2 Felder, 2 je Runde", "Feuer lenken", "Einmal: Generalangriff (zweiter Angriff)"] : ["3 Befehle je Schlacht, an Nachbarn", "Einmal: Generalangriff (zweiter Angriff)", "Höchstens einer"], "panzerk": ["Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Draht hält nicht auf", "Sturmlauf"], "bohrer": ["Gepanzert", "Nur Nahkampf", "Pannen"], "saeger": ["Gepanzert", "Maschinenwaffe und Säge", "Pannen"], "oger": ["Sprungangriff (alle 2 Runden)", "Zwei Schläge", "Schrotflinte 1 Feld", "Sickert durch"], "faust": ["Held", "Durchbruch: 2 Felder, schleudert zurück", "Standhaft-Aura", "Leicht gepanzert", "Kaum Fernkampf"], "kuerass": ["Held", "Hinrichtung unter 40 %", "Furcht-Aura", "Leicht gepanzert", "Langsam, bleibt stecken"], "huenen": ["Dauerfeuer: 2 Salven, dann abkühlen", "Leicht gepanzert: Gewehr, MG, Klinge ×0,5", "Hält nieder", "Draht hält nicht auf"]};
 for (const t in SPECIALS) TYPES[t].sp = SPECIALS[t];
 Object.assign(SPECIALS, { turm: ["Gepanzert", "Geschützturm", "Schuss 3 Felder", "Panne möglich"], orden: ["Gepanzert", "Drehlauf", "Kettensäge", "Panne möglich"], kreuz: ["Stufe 3: einmal je Schlacht", "Schwer gepanzert", "Panzerjäger: Panzer ×1,5, Fußtruppen ×0,5", "Kriegshammer", "Löwengebrüll: einmal je Schlacht", "Panne möglich"] });
 // Paket 1: Schlagworte für neue Regeln
@@ -641,7 +654,7 @@ function bpMax(u) { const T = TYPES[u.type]; if (T.cls === 'art') return T.mobil
 function fahrzeugArt(u) { const T = TYPES[u.type]; return T.cls !== 'walker' ? null : T.mech && u.type !== 'bohrer' ? 'schreiter' : 'fahrzeug'; }
 function addUnit(G, type, c, r, officer) {   // MG stehen zu Spielbeginn aufgebaut (siehe newGame)
   const T = TYPES[type];
-  const u = { id: G.nextId++, type, side: T.side, c, r, officer: T.cmd ? officer || (T.cmd === 2 ? 'General' : 'Hauptmann') : null, ap: P.AP, bp: 0, bpUsed: 0,
+  const u = { id: G.nextId++, type, side: T.side, c, r, officer: T.cmd ? officer || (T.cmd === 2 ? (KOMM ? T.name : 'General') : 'Hauptmann') : null, ap: P.AP, bp: 0, bpUsed: 0,
     str: 10, mor: T.mor, face: T.side === 'A' ? 0 : 3, status: 'ok',
     moved: false, attacked: false, sperr: 0, supp: 0, fireDmg: 0, turnOnly: false,
     run: 0, broken: 0, gassed: false, seenWalker: false, limbered: false, gas: T.gas || 0, mines: T.mines || 0, startC: c, startR: r };   // Minen auch für gekaufte Trupps
@@ -853,8 +866,8 @@ function isZOC(G, c, r, side) {
 function bannerAt(G, side, c, r) { return G.units.some(o => TYPES[o.type].banner && o.side === side && active(o) && dist(o.c, o.r, c, r) <= (o.planted ? P.BANNER_R_PLANTED : P.BANNER_R)); }
 // Wer flieht nicht? Konkordat unter „Halten um jeden Preis“ (bis zum nächsten eigenen Zug) und alle Einheiten im Bereich eines aufgepflanzten Banners
 function noFlee(G, u) { return !!u.holdB || G.units.some(o => TYPES[o.type].banner && o.planted && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.BANNER_R_PLANTED); }
-function officerAt(G, side, c, r) {
-  return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= cmdRange(o));
+function officerAt(G, side, c, r, aura) {   // KO-A: aura = Moral (Kommandant 2 Felder), sonst Befehlsreichweite 1
+  return G.units.some(o => o.officer && o.side === side && active(o) && dist(o.c, o.r, c, r) <= (aura && istKomm(o) ? P.KOMM_ORDER_R : P.ORDER_R));
 }
 // Flanken und Rücken mit Schadens-, Moral- und Gegenschlag-Wirkung haben nur Fahrzeuge: Kolosse, Schreiter, Sturmpanzer (Klasse walker).
 // Infanterie, Reiter und Geschütze nicht (Paket 3, 2026-11-17). Die Lage (arcOf) zählt weiter für Deckung von vorn und das MG-Schussfeld.
@@ -1211,7 +1224,7 @@ const kraftArt = () => TOG.KRAFT || 'stufen';   // Fassung 2 nur für Messungen 
 // kleine Gruppe 2–3 (+ Beiwerk: Trage, Karren, Kiste zählen nicht), gepanzerte Infanterie 2, Einzelmodell 1, Reiter 6. Rückweg TRUPP_ALT (Node: Umgebung, Browser: window).
 const TRUPP = { kohorte: 8, grenadier: 8, raeumer: 6, sturm: 6, schwer: 6, mahlwerk: 3, sense: 3, buechse: 3, flammen: 3, brand: 3,
   pionier: 4, pionierD: 4, mineur: 4, gasschutz: 4, signal: 4, fernsprech: 4, pirsch: 4, feldscher: 2, heiler: 2, werkstatt: 2, munition: 2, scharf: 2, melder: 1, banner: 2,   /* Punkt 99: Hund ist Beiwerk */
-  hauptA: 3, hauptD: 3, generalA: 3, generalD: 3, ...(TOG.REITER_ALT ? {} : { reiter: 3 }), stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
+  hauptA: 3, hauptD: 3, generalA: KOMM ? 1 : 3, generalD: KOMM ? 1 : 3, ...(TOG.REITER_ALT ? {} : { reiter: 3 }), stahl: 3, panzerk: 3, huenen: 3, oger: 3, ballon: 1 };   // Punkt 100: gepanzerte Infanterie 3
 const entsetzOft = () => !!(TOG.ENTSETZ_OFT || (typeof window !== 'undefined' && window.ENTSETZ_OFT));   // U7 Schritt 1: Rückweg – Entsetzen bei jedem Angriff (vorher)
 const stufenAlt = () => !!(TOG.STUFEN_ALT || (typeof window !== 'undefined' && window.STUFEN_ALT));   // U7 Schritt 3: Rückweg – Moral ohne Stufen
 const schalter = n => !!(TOG[n] || (typeof window !== 'undefined' && window[n]));
@@ -1380,7 +1393,7 @@ function applyDamage(G, a, d, dmg, arc, ev, o) {
   if (arc === 'rear') ml += P.MOR_REAR;
   if (d.status === 'ok' && surrounded(G, d)) ml += P.MOR_SURR;
   if (festeFeld(t) && !o.flame) ml *= 0.5;
-  if (officerAt(G, d.side, d.c, d.r)) ml *= P.OFFICER_MOR;
+  if (officerAt(G, d.side, d.c, d.r, true)) ml *= P.OFFICER_MOR;
   if (bannerAt(G, d.side, d.c, d.r)) ml *= 0.75;
   const standH = o.ranged && G.units.find(h => h.side === d.side && alive(h) && TYPES[h.type].aura === 'standhaft' && dist(h.c, h.r, d.c, d.r) <= 1); if (standH) ml *= P.FAUST_AURA;   // Held Rote Faust
   const morVor = d.mor; d.mor = Math.max(0, d.mor - ml);
@@ -1419,6 +1432,7 @@ function killUnit(G, u, ev, how) {
   if (how !== 'escaped' || !fluchtAlt()) credit(G, u);   // U7 Schritt 2: Moral-Flucht zählt erst am Rand bzw. bei Vernichtung
   u.status = how === 'escaped' ? 'gone' : 'dead';
   if (u.officer && how !== 'escaped') ev.push({ t: 'officer', u: u.id, name: u.officer });
+  if (istKomm(u) && how !== 'escaped') { for (const o of G.units) if (o.side === u.side && o !== u && alive(o)) o.mor = Math.max(0, o.mor - P.KOMM_FALL_MOR); ev.push({ t: 'heldfall', u: u.id, side: u.side, kommandant: true }); if (!fluchtAlt()) for (const o of G.units) if (o.side === u.side && o.status === 'ok' && o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, null, ev); }   // KO-A: Fall des Kommandanten – ganze Seite −2 Moral
   if (TYPES[u.type].held && how !== 'escaped') { for (const o of G.units) if (o.side === u.side && o !== u && alive(o)) o.mor = Math.max(0, o.mor - P.HELD_FALL_MOR); ev.push({ t: 'heldfall', u: u.id, side: u.side }); if (!fluchtAlt()) for (const o of G.units) if (o.side === u.side && o.status === 'ok' && o.mor <= 0 && !noFlee(G, o)) routUnit(G, o, null, ev); }   // U7 Schritt 2 (Fehler 5): Heldenfall kann zur Flucht führen   // ganze Seite verliert Moral
   ev.push({ t: how, u: u.id });
 }
@@ -1705,8 +1719,9 @@ function shell(G, a, c, r, mode) {
   const direct = isDirect(G, a, c, r);
   let tc = c, tr = r, sc = false;
   const gd = !direct && guided(G, a.side, c, r), roll = direct ? 1 : G.rng();
-  if (!direct && !gd && roll < P.SCATTER) { const nb = neighbors(c, r); const p = nb[Math.floor(G.rng() * nb.length)]; tc = p[0]; tr = p[1]; sc = true; }
-  ev.push({ t: 'shell', a: a.id, c: tc, r: tr, mode, scatter: sc, guided: gd, face: a.face, cells: mode === 'barrage' ? barrageCells(G, a, tc, tr) : null });
+  const gl = !direct && gelenkt(G, a); if (gl) a.gelenkt = false;   // KO-A: gelenkter Schuss ohne Streuung (verbraucht)
+  if (!direct && !gd && !gl && roll < P.SCATTER) { const nb = neighbors(c, r); const p = nb[Math.floor(G.rng() * nb.length)]; tc = p[0]; tr = p[1]; sc = true; }
+  ev.push({ t: 'shell', a: a.id, c: tc, r: tr, mode, scatter: sc, guided: gd, gelenkt: gl, face: a.face, cells: mode === 'barrage' ? barrageCells(G, a, tc, tr) : null });
   if (mode === 'he') {
     const d = unitAt(G, tc, tr);
     if (d) applyDamage(G, a, d, shellDmg(G, a, d, direct) * (gd ? P.GUIDED : 1) * (TYPES[a.type].heMul || 1) * (0.75 + G.rng() * 0.5), 'front', ev, { ranged: true });
@@ -1763,7 +1778,7 @@ function startTurn(G) {
   for (const u of G.units) {
     u.fireDmg = 0;
     if (u.side === s) {
-      u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false; u.abgeprotzt = false;
+      u.ap = P.AP; u.bp = bpMax(u); u.bpUsed = 0; u.sturmlauf = false; u.mvd = 0; u.zocStop = false; u.moved = false; u.attacked = false; u.turnOnly = false; u.run = 0; u.gassed = false; u.sent = false; u.ow = false; u.ordered = false; u.befR = 0; u.lenkte = false; u.ammoed = false; u.fellBack = false; u.sperr = 0; u.fireFree = false; u.shields = false; u.bsT = []; u.task = null; u.zw = false; u.holdB = false; u.gedreht = false; u.abgeprotzt = false;
       for (const k of ['cd', 'cdR', 'cdS', 'cdH', 'cdB', 'cdA', 'cdP', 'cdG', 'cdM', 'kuehl']) if (u[k] > 0) u[k]--;
       u.dfN = 0;
       if (u.revealed > 0) u.revealed--;
@@ -1823,7 +1838,7 @@ function startTurn(G) {
     if (!adjEnemies(G, u).length && (!u.supp || (!stufenAlt() && deckungsFeld(G, u))) && !u.gassed) {   // U7 Schritt 3: Niedergehaltene in Graben/Bunker/Gebäude erholen sich halb
       const t = hex(G, u.c, u.r).t;
       const rec = (erholFeld(t) ? P.RECOVER_COVER : P.RECOVER) * (u.supp ? P.RECOVER_SUPP : 1);
-      u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r) ? 1.5 : 1) + (bannerAt(G, u.side, u.c, u.r) ? 0.5 : 0));
+      u.mor = Math.min(TYPES[u.type].mor, u.mor + rec * (officerAt(G, u.side, u.c, u.r, true) ? 1.5 : 1) + (bannerAt(G, u.side, u.c, u.r) ? 0.5 : 0));
     }
   }
   ev.push(...checkEnd(G));
@@ -2131,24 +2146,32 @@ function counterStrike(G, mover, ev) {
 
 // ---------- Befehle der Anführer ----------
 // Einmal alle zwei eigenen Runden. 'rally' = Sammeln (Moral +1,5, Niederhalten endet), 'storm' = Sturmbefehl (Nahkampf ×1,25 in dieser Runde).
-function cmdRange(u) { return P.ORDER_R; }   // Paket 8: normale Befehle nur 1 Feld weit (auch der General)
+function istKomm(u) { return !!(KOMM && u && TYPES[u.type].kommandant); }   // KO-A (Punkt 154)
+function cmdRange(u) { return istKomm(u) ? P.KOMM_ORDER_R : P.ORDER_R; }   // Paket 8: normale Befehle nur 1 Feld weit (auch der General)
 // Abklingzeit je Befehl: Sammeln 3 Runden, Sturmbefehl/Feuer frei 2; General und Funker in der Nähe je 1 weniger (mindestens 1). Höchstens ein Befehl je Runde.
 // Befehle je Seite (Gruppe 2, 2026-11-16): beide „Sammeln“; Konkordat „Feuer frei“ (Fernkampf ×1,25 bis zum nächsten eigenen Zug), Aschenwacht „Sturmbefehl“ (Nahkampf ×1,25 in dieser Runde).
 const ORDER_KINDS = { A: ['rally', 'fire'], D: ['rally', 'storm'] };
 function orderKinds(u) { return ORDER_KINDS[u.side] || ['rally', 'storm']; }
-function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && u.ap >= 1 && !(u.supp > 0) && !u.ordered && (u.befehle || 0) < P.ORDER_MAX && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }
+function canOrderKind(G, u, kind) { return !G.over && u && active(u) && !!u.officer && u.side === G.side && orderKinds(u).includes(kind) && !(u.supp > 0) && (istKomm(u) ? (u.befR || 0) < P.KOMM_ORDER_RUNDE && ((u.befR || 0) > 0 || u.ap >= 1) && (u.befehle || 0) < P.KOMM_ORDER_MAX : u.ap >= 1 && !u.ordered && (u.befehle || 0) < P.ORDER_MAX) && !((kind === 'rally' ? u.cdR : u.cdS) > 0); }   // KO-A: Kommandant bis zu 2 Befehle je Runde, der zweite ohne Aktion
 // U7 Schritt 2: Sammel-Chance eines Fliehenden zu Rundenbeginn bzw. mit Befehl (Regel, Anzeige und KI); aufgerieben (Stärke < ROUT_STR) oder Feind daneben = 0
 function sammelChance(G, u, befehl) {
   if (!u || u.status !== 'rout' || u.aufgerieben || u.str < P.ROUT_STR || adjEnemies(G, u).length) return 0;
   const offs = G.units.filter(o => o.officer && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.OFFICER_RANGE);
   let p = offs.some(o => TYPES[o.type].cmd === 2) ? P.RALLY_GENERAL : offs.length ? P.RALLY : P.RALLY_ALLEIN;
   if (coverOf(G, u).tier >= 1) p += P.RALLY_DECKUNG;
+  if (G.units.some(o => istKomm(o) && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= P.KOMM_ORDER_R)) p += P.KOMM_SAMMELN;   // KO-A: Aura des Kommandanten
   if (G.units.some(o => TYPES[o.type].banner && o.side === u.side && active(o) && dist(o.c, o.r, u.c, u.r) <= 2)) p += P.RALLY_BANNER;
   p -= (u.gesammelt || 0) * P.RALLY_MUEDE; if (befehl) p += P.SAMMELN_BEFEHL;
   return Math.max(0, Math.min(P.RALLY_MAX, p));
 }
 function sammelnR(u) { return TYPES[u.type].cmd === 2 ? P.SAMMELN_R_GENERAL : P.SAMMELN_R; }
 function sammelZiele(G, u) { return fluchtAlt() ? [] : G.units.filter(o => o.side === u.side && o.status === 'rout' && !o.aufgerieben && dist(o.c, o.r, u.c, u.r) <= sammelnR(u)); }
+// KO-A: Feuer lenken – einmal je Runde ohne Kosten; ein eigenes Geschütz/Mörser bis KOMM_LENKEN_R Felder schießt in diesem Zug ohne Streuung
+function lenkbar(G, u, o) { return o && o.side === u.side && active(o) && cls(o) === 'art' && !TYPES[o.type].direkt && !gelenkt(G, o) && dist(o.c, o.r, u.c, u.r) <= P.KOMM_LENKEN_R; }
+function canLenken(G, u) { return !G.over && istKomm(u) && active(u) && u.side === G.side && !u.lenkte && !(u.supp > 0) && G.units.some(o => lenkbar(G, u, o) && !o.attacked); }
+function lenkenZiele(G, u) { return canLenken(G, u) ? G.units.filter(o => lenkbar(G, u, o) && !o.attacked) : []; }
+function lenken(G, u, o) { if (!canLenken(G, u) || !lenkbar(G, u, o) || o.attacked) return []; u.lenkte = true; o.gelenkt = G.turn + G.side; return [{ t: 'lenken', u: u.id, z: o.id }]; }
+function gelenkt(G, a) { return !!(a && a.gelenkt && a.gelenkt === G.turn + G.side); }
 function canOrder(G, u) { return orderKinds(u || {}).some(k => canOrderKind(G, u, k)); }
 function orderCd(G, u, kind) {
   const relay = G.units.some(o => o.side === u.side && active(o) && TYPES[o.type].relay && dist(o.c, o.r, u.c, u.r) <= 3);
@@ -2157,7 +2180,7 @@ function orderCd(G, u, kind) {
 function order(G, u, kind) {
   if (!canOrderKind(G, u, kind)) return [];
   if (kind === 'rally') u.cdR = orderCd(G, u, kind); else u.cdS = orderCd(G, u, kind);
-  u.ordered = true; u.befehle = (u.befehle || 0) + 1; spend(u, 1); const ids = [];
+  const zweiter = istKomm(u) && (u.befR || 0) > 0; u.ordered = true; u.befR = (u.befR || 0) + 1; u.befehle = (u.befehle || 0) + 1; if (!zweiter) spend(u, 1); const ids = [];
   for (const o of G.units) {
     if (o.side !== u.side || !active(o) || cls(o) === 'walker' || dist(o.c, o.r, u.c, u.r) > cmdRange(u)) continue;
     if (kind === 'rally') { o.mor = Math.min(TYPES[o.type].mor, o.mor + P.ORDER_MOR); o.supp = 0; } else if (kind === 'fire') o.fireFree = true; else o.zeal = true;
@@ -2235,7 +2258,7 @@ function roar(G, u) {
   ev[0].best = []; ev[0].mor = {};
   for (const o of ts) {
     if (!furchtAlt()) { const p = entsetzenImmun(o.type) ? 0 : entsetzenP(G, o, P.ROAR_BASIS); if (G.rng() >= p) { o.mor = Math.max(0, o.mor - P.ROAR_BESTANDEN); ev[0].best.push(o.id); ev[0].mor[o.id] = o.mor; continue; } }   // U7 Schritt 1: Test je Ziel; bestanden nur −ROAR_BESTANDEN, kein Niederhalten
-    let ml = P.ROAR_MOR; if (officerAt(G, o.side, o.c, o.r)) ml *= P.OFFICER_MOR; if (bannerAt(G, o.side, o.c, o.r)) ml *= 0.75;
+    let ml = P.ROAR_MOR; if (officerAt(G, o.side, o.c, o.r, true)) ml *= P.OFFICER_MOR; if (bannerAt(G, o.side, o.c, o.r)) ml *= 0.75;
     o.mor = Math.max(0, o.mor - ml); o.angst = 1; ev[0].mor[o.id] = o.mor;
     if (o.mor <= 0 && !noFlee(G, o)) { routUnit(G, o, u, ev); continue; }
     if (!(o.supp > 0)) { o.supp = 1; ev.push({ t: 'supp', u: o.id }); }
@@ -2315,7 +2338,7 @@ function checkEnd(G) {
   T.huenen.can = 'Schweres Feuer: ' + T.huenen.can;
   T.fernsprech.can = 'Feuerleitung: ' + T.fernsprech.can; T.ballon.can = 'Aufklärung: ' + T.ballon.can; }
 const E = {
-  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, eisSchwer, eisBruch, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
+  P, SIDES, TYPES, TERRAIN, MAPS, costParts, deploy, eisSchwer, eisBruch, barrageCells, coverOf, defMods, useMap: useMapArmy, COST, SHOP, spawnHexes, canBuy, buy, limber, canLimber, heal, canHeal, order, canOrder, cmdRange, istKomm, canLenken, lenkenZiele, lenken, gelenkt, KOMM, canSend, sendOrder, pass, canCut, guided, layWire, canLay, layTarget, bannerAt, defaultArmy, armyCost, armyCount, armyOk, ARMY_BUDGET, ARMY_MAX, ARMY_MIN, ROSTER, isMech, buildMap,
   newGame, startTurn, endTurn, bpMax, fahrzeugArt, nahFrei, reachable, moveUnit, turnUnit, drehKosten, fanOf, angDiff, faceToward, startZone, inStartZone, canPlaceStart, aufstellen, autoAufstellen, cutWire, canCut, cutTargets, canZweit, zweitTargets, zweitFire, fire, melee, shell,
   canMarch, canSetup, setupMG, canTeardown, teardownMG, inFan, MG_FAN, canOverwatch, overwatch, canRecover, recover, canOrderKind, orderCd,
   sizeOf, heldAt, held,

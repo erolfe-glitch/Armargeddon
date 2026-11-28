@@ -36,7 +36,7 @@ function aktModus() { return abilMode ? feldArt : hilfeModus ? 'i-' + hilfeModus
 function modiAus() { abilMode = false; feldArt = 'abil'; faustErst = null; hilfeModus = null; artMode = 'he'; atkPref = 'auto'; }
 const MODUS_KNOPF = /^(p-melee|p-fire|m-|i-|abil$|cut$|zweit$|ramm$|faust$)/;
 let hilfeModus = null; const hilfeAn = art => !!(hilfeModus && sel && hilfeModus.id === sel.id && hilfeModus.art === art);
-let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set();
+let previewT = null, hoverHex = null, inspect = null, lastPT = 'mouse', placing = null, spawnSet = new Set(), rangeSet = new Set(), hoverU = null, atkPref = 'auto', healSet = new Set(), sendSet = new Set(), sightSet = new Set(), scoutSet = new Set(), lenkSet = new Set();   /* KO-A: Feuer lenken */
 // Übersicht auf dem Feld (Etappe 2): verdeckte Felder, Kontur der Reichweite, Vorschau vom Feld unter Maus/Finger, bereite Einheiten
 let hideSet = new Set(), rangeEdges = [], touchMove = null, pvCache = null, readyN = 0;
 const OPT = { ready: true, strag: true, cam: true, shake: true, base: 0, camZurueck: true };   // base: „Base“ unter Einheiten (0 aus … 3 deutlich)   // Hilfen und Spielgefühl (Optionen), im Browser gemerkt
@@ -836,6 +836,7 @@ function drawGround(g, s) {
     if (scoutSet.size) { g.font = `900 ${Math.round(s * 0.34)}px "Arm Text", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
       for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) if (scoutSet.has(E.key(c, r))) { const [hx, hy] = center(c, r); g.lineWidth = Math.max(2, s * 0.08); g.strokeStyle = O; g.strokeText('◉', hx, hy); g.fillStyle = '#F0EDE1'; g.fillText('◉', hx, hy); } }
     if (hilfeAn('send')) for (const id of sendSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, dash: true, sym: UPI.s_meldehund }); }
+    if (hilfeAn('lenk')) for (const id of lenkSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BRASS, dash: true, sym: UPI.s_fernglas }); }   // KO-A
     if (hilfeAn('rec')) for (const id of recSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BRASS, sym: UPI.s_schraubenschluessel }); }
     if (hilfeAn('heal')) for (const id of healSet) { const hu = unitById(id); hexMark(hu.c, hu.r, { rgb: BONE, sym: UPI.s_sanitaeter }); }
     if (healSet.size) { const gg = ctx; for (const id of healSet) { if (!DU.get(id)) continue; const [hx, hy] = headPos(id), rep = TYPES[unitById(id).type].cls === 'walker'; MARKQ.push(() => heilZeichen(gg, hx, hy, id, rep)); } }   // Punkt 20: wer jetzt versorgt werden kann – aufsteigende Pluszeichen (Fahrzeuge: Schraubenschlüssel), solange der Sanitäts-/Versorgungstrupp gewählt ist
@@ -1499,12 +1500,13 @@ const FIG_SH = 0.8, FIGW_MAX = 2.0, FIGW_VEH = 2.4;   // Wunsch 2026-11-16: Sold
 // Spieleinheit → Bogen [Name, Trupp?, höchstens Figuren]. MG: aufgebaut „mg“, sonst „mg_marsch“ (siehe newFigs).
 const ANZUG = { slots: [[-0.2, -0.06], [0.2, 0.2]] };   // Kampfanzug-Trupps: breit und groß, eng gestellt, damit nichts über den Feldrand ragt
 const SANI = { sc: 0.92, slots: [[-0.18, -0.08], [0.16, 0.22]] };   // Sanitäter eng beieinander: Lauf- und Trage-Posen sind breit und ragten sonst aus dem Feld
+const KOMM_SC = 1.45;   // KO-A: Größe des Platzhalters (Offizier auf 1,5 Soldatenhöhen)
 const FIGMAP = {
   faust: ['held_1', 0, 0, { sc: 1.1 }], kuerass: ['held_1', 0, 0, { sc: 1.1 }],   // Helden (2026-11-21): Einzelmodelle; K9 (Enrico 2026-11-22): 1,65 statt 1,5 Soldatenhöhen (sc 1,1)
   kohorte: ['soldat', 1], scharf: ['scharfschuetze', 1, 2], reiter: ['stahlreiter_reskin', 1, 3, { sc: 0.8, slots: [[-0.3, 0.14], [0.28, 0.28], [-0.02, -0.16]], ruhe: [1, 2, 3] }], /* R4 (Punkt 97): Stahlreiter, 3 Modelle = je eine Pose, 2 vorn, 1 hinten */ lanzeD: ['reiter', 1, 3, { sc: 0.8, slots: [[-0.3, 0.14], [0.28, 0.28], [-0.02, -0.16]] }],   /* F58 (2026-11-20): drei Reiter, der dritte hinten in der Mitte */ sturmpz: ['panzer'], flammen: [!window.ZIELSTIL_ALT ? 'flammen_z' : 'flammen', 1],   // Reiter: 2 von 3 Posen, eng und auf 85 % (bleiben im eigenen Feld), Flammentrupp 4 Posen
   brand: ['flammen', 1], raeumer: ['sturm_reskin', 1, 4, { ruhe: [3, 1, 4, 2, 3, 1] }],   /* R4 (Punkt 96): Grabenräumer mit Sturmschilden – in Ruhe 2× Schild, Revolver hinter dem Schild, 2× Keule, Granate */
   pionier: ['pionier', 1], mineur: ['mineur', 1, 2],
-  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['feldkanone'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: ['general'],
+  mahlwerk: ['mg'], haubitze: ['geschuetz'], feldkanone: ['feldkanone'], koloss: ['koloss'], hauptA: ['hauptmann'], generalA: E.KOMM ? ['general_gruppe_1', 0, 0, { sc: KOMM_SC }] : ['general'],   /* KO-A: Stratege = Offizier aus dem General-Gruppenbogen, 1,5 SH (Platzhalter bis KO-B) */
   grenadier: ['soldat', 1], sturm: ['sturm_reskin', 1, 4, { ruhe: [2, 3, 1, 3, 2, 3] }], eingreif: ['eingreif', 1],   /* Punkt 106: Sturmbrecher in Ruhe 2× MG hüfthoch, 3× Spaten (ruhigste Pose), 1× Granatwurf */
   pionierD: ['pionier', 1],
   feldscher: ['sanitaeter', 1, 2, SANI], heiler: ['sanitaeter', 1, 2, SANI], pirsch: ['pirschjaeger', 1, 2, { slots: [[-0.2, -0.06], [0.18, 0.24]] }], moerser: [!window.ZIELSTIL_ALT ? 'moerser_z' : 'moerser'],   /* W2c-1b: Zielstil, Blick nach rechts */ minenwerfer: [!window.ZIELSTIL_ALT ? 'minenwerfer_z' : 'minenwerfer'], rauch: ['rauchwerfer'], buechse: ['panzerbuechse'],   // neue Bögen 2026-11-16
@@ -1512,7 +1514,7 @@ const FIGMAP = {
   oger: ['loewenoger', 1, 2, ANZUG], huenen: ['eiserne_huenen', 1, 2, { ...ANZUG, sc: (ANZUG.sc || 1) * 0.92 }],   /* K9: Hünen 1,7 statt 1,85 SH */   // 2026-11-20: Löwenoger, Eiserne Hünen – 2 große Figuren je Trupp, Posen über POSE_SETS   // Kampfanzüge: 2 Figuren, 1,25 SH, eng im Feld
   ballon: ['ballon'], signal: ['signal', 1, 2], fernsprech: ['fernsprech', 1, 2], werkstatt: ['versorgung', 1, 2], munition: ['versorgung', 1, 2], gasschutz: ['gasschutz', 1, 2],   // neue Bögen 2026-11-17   // Fesselballon: Winde im Feld, Ballon eigens darüber (drawBallon)
   schildwall: ['schildwall', 1], schwer: ['schwer', 1], melder: ['melder', 1, 1, { sc: 0.9, slots: [[0, 0.15]] }], banner: ['banner', 1, 2, { slots: [[-0.25, 0.02], [0.22, 0.28]] }],
-  sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: ['general'], bohrer: ['bohrkoloss'],
+  sense: ['mg'], geschuetz: ['geschuetz'], hauptD: ['hauptmann'], generalD: E.KOMM ? ['general_gruppe_1', 0, 0, { sc: KOMM_SC }] : ['general'], bohrer: ['bohrkoloss'],
   turm: ['turmschreiter_posen_1'], /* neues Aussehen (Enrico 2026-11-22) */ orden: ['ordensschreiter_posen2_1'], /* neues Aussehen (Enrico 2026-11-22): Ruhe als Grundbild */ kreuz: ['kreuzschreiter_neu'], knecht: ['eisenknecht_neu'], saeger: ['saegeschreiter_posen2_1'], klaue: ['klauenschreiter_posen2_1'],   /* neues Aussehen (Enrico 2026-11-22): Grundbild = Ruhepose aus posen2 */   // Schreiter 2026-11-17: Einzelmodelle knapp 2 SH, Schatten wie Fahrzeuge (deep)
 };
 // Farbstimmung der Kettenfahrzeuge an die Umgebung; der neue Landkoloss (Dreiviertelansicht, 2026-11-17) nur leicht gedämpft, damit das Rot kräftig bleibt
@@ -1698,7 +1700,8 @@ const GRUPPE = {
   munition: { bogen: 'versorgung_neu', alt: 'VERSORGUNG_NEU_ALT', bilder: [1, 3], slots: window.GRUPPE_WEIT ? [[-0.44, -0.06], [-0.04, 0.22]] : [[-0.33, -0.04], [-0.04, 0.17]], fall: [1, 0] }, werkstatt: { bogen: 'versorgung_neu', alt: 'VERSORGUNG_NEU_ALT', bilder: [2, 3], slots: window.GRUPPE_WEIT ? [[-0.36, -0.02], [-0.02, 0.24]] : [[-0.28, 0], [-0.02, 0.18]], fall: [1, 0] },   /* Träger bzw. Schrauber links, das Beiwerk rechts bleibt frei */
   fernsprech: { bogen: 'fernsprech_neu', alt: 'FERNSPRECH_NEU_ALT', bilder: [1, 2, 3, 2], slots: window.GRUPPE_WEIT ? [[0.1, -0.2], [-0.42, -0.24], [-0.06, 0.24], [-0.5, 0.18]] : [[0.08, -0.14], [-0.31, -0.17], [-0.04, 0.17], [-0.38, 0.12]], fall: [3, 2, 1, 0] },   /* Telefonist kniend vor dem Feldtelefon (Beiwerk rechts hinten), Kabelleger doppelt (4 Modelle) */
   scharf: { bogen: 'scharfschuetze_trupp', alt: 'SCHARF_TRUPP_ALT', bilder: [1, 2], slots: [[-0.12, 0.18], [0.08, -0.26]], fall: [1, 0], muz: 0 } };   /* Beobachter: Bild 2 unten rechts im Bogen, Bild 3 doppelt */
-if (ZIELSTIL) Object.assign(GRUPPE, GRUPPE_Z);   // W2c-1b: Zielstil-Gruppen gelten
+if (ZIELSTIL) Object.assign(GRUPPE, GRUPPE_Z);
+if (E.KOMM) { delete GRUPPE.generalA; delete GRUPPE.generalD; }   // KO-A: Kommandant ist eine Einzelfigur   // W2c-1b: Zielstil-Gruppen gelten
 // Beiwerk (Punkt 90/121): Gerät neben dem Trupp, fällt nicht, steht nur, solange der Trupp nicht zieht; Rückweg window.BEIWERK_ALT
 const BEIWERK = window.GRUPPE_WEIT ? { munition: ['beiwerk_versorgung_1', [0.42, -0.3]], werkstatt: ['beiwerk_versorgung_2', [0.42, -0.3]], fernsprech: ['beiwerk_versorgung_3', [0.44, -0.3]] }
   : { munition: ['beiwerk_versorgung_1', [0.33, -0.2]], werkstatt: ['beiwerk_versorgung_2', [0.33, -0.2]], fernsprech: ['beiwerk_versorgung_3', [0.35, -0.21]] };   // F2 (Punkt 130.3): Gruppen dichter, Beiwerk bleibt sichtbar; Rückweg window.GRUPPE_WEIT (vor dem Laden)
@@ -1791,6 +1794,7 @@ const POSE_SETS = { /* Stufe-3-Schreiter (Enrico 2026-11-22): Einzelmodelle mit 
   // Generäle (Einzelmodell mit Fahnenträger): Befehl zeigend, großer Befehl mit erhobenem Säbel, Pistolenschuss, Getroffen
   generalA: { befehl: 'general_posen2_2', grossbefehl: 'general_posen2_1', kolben: 'general_posen3_2', hiebAus: 'general_posen2_1', hieb: 'general_posen3_1',   /* F101: Säbelstoß, Hieb schräg nach unten */ anlegen: 'general_posen_3', knien: 'general_posen_3', getroffen: 'general_posen_4' },
   generalD: { befehl: 'general_posen_2', grossbefehl: 'general_posen_1', kolben: 'general_posen_1',   /* F101: bis ein Hieb-Bogen kommt, Säbel erhoben */ anlegen: 'general_posen2_1', knien: 'general_posen2_1', getroffen: 'general_posen2_2' } };
+if (E.KOMM) { delete POSE_SETS.generalA; delete POSE_SETS.generalD; POSE_TYPEN.delete('generalA'); POSE_TYPEN.delete('generalD'); }   // KO-A: Platzhalter ohne Posen (die General-Posen zeigen den Fahnenträger mit)
 const poseHat = (u, art) => !!(u && POSE_SETS[u.type] && POSE_SETS[u.type][art]);
 const POSE_VERSATZ = 60;   // ms je Figur (dazu etwas Zufall aus Einheit und Platz)
 const posenAn = u => !!(u && POSE_TYPEN.has(u.type) && fac(u.side) !== 'F');
@@ -2623,6 +2627,7 @@ function stimmeBeiEreignis(e, u) {
     case 'destroyed': { const la = letzterAngreifer && performance.now() - letzterAngreifer.t < 4000 ? unitById(letzterAngreifer.id) : null; if (stHeld(la) && u && la.side !== u.side) stimme(la, 'gegner_erledigt');
       if (!u) break; if (istSchreiter(u) || ST_GRUPPE[u.type] === 'panzer' || TYPES[u.type].cmd) stimme(u, 'tod', { immer: true }); else if (++stTodZ % 2 === 0) stimme(u, 'tod'); break; }
     case 'heldfall': if (stHeld(u)) stimme(u, 'tod', { immer: true }); break;
+    case 'lenken': if (u) stimme(u, 'befehl', { immer: true, sperre: 3000 }); break;   // KO-A
     case 'abilTitel': if (stHeld(u) && e.k === 'durchbruch') stimme(u, 'spezial', { immer: true }); break;   // Durchbruch-Ruf beim Anlauf
     case 'hinrichtung': if (stHeld(u)) stimme(u, 'spezial', { immer: true }); break;   // vor dem Säge-Schnitt
     case 'order': if (!u) break; stimme(u, e.kind === 'rally' ? 'befehl_sammeln' : e.kind === 'fire' ? 'befehl_feuerfrei' : 'befehl_sturm', { immer: true, sperre: 3000 }); break;
@@ -3210,7 +3215,7 @@ async function playEvent0(e) {
       stopBis = performance.now() + (BW ? 230 : 140); if (!(ksz && ksz.skip)) await wait(220);   // kurzer Stillstand im Treffer
       trefferSpritzer(a.x, a.y, d, 3, masch); if (!masch) { schwerBlut(a.x, a.y, d, 3); schwerBlut(a.x, a.y, d, 3); bodenBlut(d.x + (Math.random() - 0.5) * L.s * 0.3, d.y + L.s * 0.12 * kAt(d.x, d.y), 0.7); }   // schwerer Blutstoß, dann Lache
       if (!(ksz && ksz.skip)) await wait(420); await kampfSzeneEnde(ksz); break; }
-    case 'heldfall': { const hu = unitById(e.u); playSound('held_fall_horn', 0.6, null, { an: hu }); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, 'Die ganze Seite verliert Moral'); await wait(900); break; }
+    case 'heldfall': { const hu = unitById(e.u); playSound('held_fall_horn', 0.6, null, { an: hu }); banner(`${hu ? TYPES[hu.type].name : 'Der Held'} ist gefallen`, e.kommandant ? `Der Kommandant fällt – die ganze Seite verliert ${Math.round(P.KOMM_FALL_MOR * 10)} Moral` : 'Die ganze Seite verliert Moral'); await wait(900); break; }
     case 'furcht': { const d = DU.get(e.u); if (d) { d.mor = e.mor; kz(e.u, e.ok ? 'funkeln' : 'angst', 'steig'); if (!e.ok) playSound('ev_furcht', 0.35); } if (e.by) auraPuls(e.by, 'kalt'); await wait(e.ok ? 60 : 120); break; }   // U7 Schritt 1: Test bestanden = Funkeln
     case 'sprung': {   // Sprungangriff (2026-11-20): Brüllen, Sprung im Bogen, Staub bei der Landung; der Nahkampf folgt als eigenes Ereignis
       const d0 = DU.get(e.u); if (!d0) break; playSound('loewe', 0.55); kz(e.u, 'wut', 'steig'); pose(e.u, 'sprung', 900); gebruellFx(e.u, [], 0, true);   // Runde 2: Sprung mit Krallen
@@ -3245,6 +3250,8 @@ async function playEvent0(e) {
     case 'escaped': DU.get(e.u).alpha = 0; toast(`${nm(u)} hat das Schlachtfeld verlassen.`); break;
     case 'officer': playSound('ev_anfuehrer_faellt', 0.5); toast(`${e.name} ist gefallen.`); floater(...headPos(e.u), e.name + ' fällt', '#ff6a50', true); await wait(300); break;
     case 'sent': { playSound('dog', 0.55); const d = DU.get(e.u), m = DU.get(e.by); if (m) m.face = d.x >= m.x ? 0 : 3; await wait(300); break; }
+    case 'lenken': { const d0 = DU.get(e.u), dz = DU.get(e.z), zu = unitById(e.z); pose(e.u, 'befehl', 1200); if (dz) { kz(e.z, 'auge', 'steig'); rings.push({ x: dz.x, y: dz.y, r: 2.4, col: '#e8c46a', life: 40, max: 40 }); }   // KO-A: Feuer lenken
+      if (d0) rings.push({ x: d0.x, y: d0.y, r: 2.0, col: '#e8c46a', life: 30, max: 30 }); toast(`Feuer gelenkt: ${zu ? TYPES[zu.type].name : 'Geschütz'} schießt ohne Streuung.`); await wait(400); break; }
     case 'order': {
       const d0 = DU.get(e.u), rl = e.kind === 'rally', ff = e.kind === 'fire'; pose(e.u, 'befehl', 1500);   // Hauptmann zeigt mit dem Säbel; Ruf kommt aus stimmeBeiEreignis (V3)
       if (ff) for (const id of e.ids || []) { const dd = DU.get(id); if (dd) dd.vs.fireFree = true; }   // Aschenwacht-Führung: Kampfschrei (Wunsch des Nutzers: nur der Anführer)
@@ -3467,12 +3474,13 @@ function cursorFor(p) {
   { const hu = u && u.side === sel.side ? u.id : null;   // Hilfsfähigkeiten nur im Modus (Knopf)
     if (hu != null && hilfeAn('heal') && healSet.has(hu)) return symCursor(TYPES[sel.type].repair ? 'zahnrad' : 'sanitaeter');
     if (hu != null && hilfeAn('rec') && recSet.has(hu)) return symCursor('schraubenschluessel');
-    if (hu != null && hilfeAn('send') && sendSet.has(hu)) return symCursor('meldehund'); }
+    if (hu != null && hilfeAn('send') && sendSet.has(hu)) return symCursor('meldehund');
+    if (hu != null && hilfeAn('lenk') && lenkSet.has(hu)) return symCursor('fernglas'); }
   if (u && u.side === sel.side) return CURSOR.hand;
   if (k && reach.has(k)) return CURSOR.stiefel;   // gemalte Zeiger: Ziehen
   if (k && shellHexes.has(k)) return CURSOR.ziel;
   if (k && (abilSet.has(k) || spawnSet.has(k))) return CURSOR.feld;
-  if (!k || healSet.has(k) || sendSet.has(k) || recSet.has(k)) return '';
+  if (!k || healSet.has(k) || sendSet.has(k) || recSet.has(k) || lenkSet.has(k)) return '';
   return CURSOR.nein;
 }
 // Pergament-Tooltips für Marken (Karte und Panel), per Maus beim Drüberfahren, per Touch durch Antippen oder langes Drücken
@@ -3561,6 +3569,7 @@ cv.addEventListener('click', ev => {
   const u = p.uFig || p.uHex;
   { const hu = [p.uHex, p.uFig].find(q => q && healSet.has(q.id)); if (sel && hu && hilfeAn('heal')) { hilfeModus = null; return act(m => E.heal(G, m, hu)); } }   // nur nach dem Knopf „Versorgen“
   { const ru = [p.uHex, p.uFig].find(q => q && recSet.has(q.id)); if (sel && ru && hilfeAn('rec')) { hilfeModus = null; return act(m => E.recover(G, m, ru)); } }
+  { const lu = [p.uHex, p.uFig].find(q => q && lenkSet.has(q.id)); if (sel && lu && hilfeAn('lenk')) { hilfeModus = null; return act(m => E.lenken(G, m, lu)); } }   // KO-A: Feuer lenken – das Geschütz schießt in diesem Zug ohne Streuung
   { const su = [p.uHex, p.uFig].find(q => q && sendSet.has(q.id)); if (sel && su && hilfeAn('send')) { hilfeModus = null; ABGEHAKT.delete(G.turn + G.side + ':' + su.id); return act(m => E.sendOrder(G, m, su)); } }   // Enrico 2026-11-22: schon fertige Einheit bekommt Punkte vom Hund und darf wieder handeln (Fertig-Haken weg)
   if (u && u.side === G.side && E.active(u)) { if (u === sel && human(u.side)) klickStimme(u); return select(u); }   // auch erneutes Anklicken der gewählten Einheit
   if (u) { select(null); inspect = { unit: u }; updateHud(); return; }
@@ -3655,6 +3664,7 @@ function computeOptions() {
   recSet = new Set(); if (TYPES[sel.type].recover) for (const o of G.units) if (E.canRecover(G, sel, o)) recSet.add(o.id);
   if (TYPES[sel.type].cls === 'medic') for (const o of G.units) if (E.canHeal(G, sel, o)) healSet.add(o.id);
   sendSet = new Set(); if (TYPES[sel.type].courier) for (const o of G.units) if (E.canSend(G, sel, o)) sendSet.add(o.id);
+  lenkSet = new Set(); if (E.istKomm && E.istKomm(sel)) for (const o of E.lenkenZiele(G, sel)) lenkSet.add(o.id);   // KO-A: Feuer lenken
   { const T0 = TYPES[sel.type], can = T0.cls === 'art' ? (!sel.limbered && !sel.attacked && sel.ap >= 1 && !sel.supp) : (T0.rng > 1 && !sel.attacked && sel.ap >= 1 && (!T0.mg || sel.setup));
     if (can) for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) { const d = E.dist(sel.c, sel.r, c, r); if (d >= 1 && d <= (T0.cls === 'art' ? T0.rng : E.rangeOf(G, sel, c, r)) && E.inFan(G, sel, c, r)) rangeSet.add(E.key(c, r)); }   // MG: nur im Schussfächer
     // Sicht: Felder in Sicht- bzw. Schussweite ohne Sichtlinie (Wald, Dorf, Fabrik, Kirche dazwischen, Rauch). Artillerie sieht selbst nur bis zur Direktschussweite.
@@ -3687,7 +3697,7 @@ async function act(fn) {
   busy = true; const u = sel; handelnd = u.id;
   camRueck = human(G.side) && OPT.camZurueck !== false ? { x: CAM.x, y: CAM.y, fern: false, t: performance.now() } : null;   // Punkt 24: Kamera vor der Handlung merken
   try {
-    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); updateHud();
+    previewT = null; recSet = new Set(); abilSet = new Set(); abilMode = false; feldArt = 'abil'; faustErst = null; reach = new Map(); targets = new Map(); shellHexes = new Set(); rangeSet = new Set(); healSet = new Set(); sendSet = new Set(); sightSet = new Set(); scoutSet = new Set(); lenkSet = new Set(); updateHud();
     await play(fn(u) || []);
   } catch (err) { console.error('Handlung:', err); }
   finally {   // busy wird immer zurückgesetzt – sonst lassen sich danach keine Trupps mehr losschicken
@@ -4086,7 +4096,7 @@ function ui1Mehr(u) {   // „Mehr ▾“: ausführlich – Rolle, Eigenschaften
     `<div class="u1-med">${medaillenTexte(u.type).map(t => `<p><b>${t.name}.</b> ${t.text}</p>`).join('')}</div>` + chronikHtml(T, 'p');
 }
 // Knöpfe in festen Gruppen (Entwurf A): Draht zuerst (Wunsch des Nutzers), dann Angriff, Fähigkeiten, Drehen; „Fertig“ am Ende
-const KNOPF_GR = [['Bewegen', ['cut', 'lay', 'limber', 'setup', 'teardown', 'undig', 'ball-ein', 'ball-auf']], ['Angriff', ['p-fire', 'p-melee', 'zweit', 'faust', 'm-he', 'm-barrage', 'm-gas', 'sperr', 'ow']], ['Fähigkeiten', ['abil', 'o-rally', 'o-fire', 'o-storm', 'big', 'loewe', 'dig', 'shields', 'plant', 'i-heal', 'i-send', 'i-rec', 'ramm']], ['Drehen', ['tl', 'tr']], ['', ['pass']]];   // je Art ein fester Platz; Unbekanntes kommt zu den Fähigkeiten ans Ende
+const KNOPF_GR = [['Bewegen', ['cut', 'lay', 'limber', 'setup', 'teardown', 'undig', 'ball-ein', 'ball-auf']], ['Angriff', ['p-fire', 'p-melee', 'zweit', 'faust', 'm-he', 'm-barrage', 'm-gas', 'sperr', 'ow']], ['Fähigkeiten', ['abil', 'o-rally', 'o-fire', 'o-storm', 'big', 'loewe', 'dig', 'shields', 'plant', 'i-heal', 'i-send', 'i-lenk', 'i-rec', 'ramm']], ['Drehen', ['tl', 'tr']], ['', ['pass']]];   // je Art ein fester Platz; Unbekanntes kommt zu den Fähigkeiten ans Ende
 function knopfGruppen(btns) {
   const gr = KNOPF_GR.map(([n, l]) => ({ n, l, b: [] }));
   for (const b of btns) { const i = gr.findIndex(g => g.l && g.l.includes(b.act)); (i >= 0 ? gr[i] : gr[2]).b.push(b); }
@@ -4340,6 +4350,7 @@ function unitButtons(T, hints) {
   if (T.shieldWall) btns.push({ act: 'shields', sym: 'schild', name: 'Schilde vor', cost: 1, on: !!sel.shields, text: 'Eigene Einheiten in den Nachbarfeldern nehmen bis zum nächsten eigenen Zug Beschuss ×0,75.', off: !E.canShields(G, sel), why: sel.shields ? 'Schilde stehen schon.' : 'Braucht 1 Aktionspunkt.' });
   if (T.banner) btns.push({ act: 'plant', sym: 'fahne', name: sel.planted ? 'Banner aufnehmen' : 'Banner aufpflanzen', cost: 1, on: !!sel.planted, text: sel.planted ? 'Banner aus dem Boden nehmen: der Träger kann wieder ziehen, Wirkung wieder 2 Felder.' : 'Banner in den Boden: wirkt 3 Felder weit, dort flieht niemand. Der Träger zieht nicht, solange es steht.', off: !E.canPlant(G, sel), why: 'Braucht 1 Aktionspunkt.' });
   if (T.cls === 'medic' && !sel.attacked) btns.push({ act: 'i-heal', sym: 'sanitaeter', name: 'Versorgen', on: hilfeAn('heal'), cost: 1, cd: sel.cdH, text: 'Nachbarn mit Sanitätszeichen anklicken: Stärke +25, Moral +15.', off: !healSet.size, why: sel.cdH > 0 ? `Wieder in ${upRunden(sel.cdH)}.` : 'Kein verwundeter Nachbar. Neben eine angeschlagene eigene Einheit ziehen.' });
+  if (E.istKomm && E.istKomm(sel) && !sel.lenkte) btns.push({ act: 'i-lenk', sym: 'fernglas', name: 'Feuer lenken', on: hilfeAn('lenk'), cost: 0, text: `Einmal je Runde, kostet nichts: ein eigenes Geschütz oder einen Mörser bis ${P.KOMM_LENKEN_R} Felder anklicken. Es schießt in diesem Zug ohne Streuung.`, off: !lenkSet.size, why: 'Kein eigenes Geschütz oder Mörser bis 3 Felder, das in diesem Zug noch schießen kann.' });   // KO-A
   if (T.courier && !sel.sent) btns.push({ act: 'i-send', sym: 'meldehund', name: 'Befehl überbringen', on: hilfeAn('send'), cost: 1, cd: sel.cdM, text: `Einheit mit Hundesymbol anklicken: Sie bekommt +${P.MELDER_BP} Bewegungspunkte. Danach ${P.MELDER_CD} Runden Pause.`, off: !sendSet.size, why: sel.cdM > 0 ? 'Der Meldegänger ist noch unterwegs.' : 'Keine Einheit in Reichweite.' });
   if (T.recover) btns.push({ act: 'i-rec', sym: 'schraubenschluessel', name: 'Bergen', on: hilfeAn('rec'), cost: 1, cd: sel.cdB, text: 'Koloss bzw. Maschine mit Schraubenschlüssel anklicken.', off: !recSet.size, why: sel.cdB > 0 ? `Wieder in ${upRunden(sel.cdB)}.` : 'Kein liegengebliebener Koloss daneben.' });
   if (!sel.supp && !sel.broken) {
@@ -4652,7 +4663,7 @@ async function panelAct(a) {
   if (a === 'cancel') return cancelPlace();
   if (MODUS_KNOPF.test(a)) { const war = aktModus(); if (war && war !== a && !(a === 'm-he' && war === 'm-he')) modiAus(); }   // Paket A: nur ein Modus
   if (a.startsWith('i-')) { const art = a.slice(2); if (hilfeAn(art)) { hilfeModus = null; updateUI(); return; }   // zweiter Druck schaltet aus
-    abilMode = false; hilfeModus = sel ? { art, id: sel.id } : null; toast({ 'i-heal': TYPES[sel.type].repair ? 'Versorgen: Einheit mit Zahnrad anklicken.' : 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); updateUI(); return; }
+    abilMode = false; hilfeModus = sel ? { art, id: sel.id } : null; toast({ 'i-heal': TYPES[sel.type].repair ? 'Versorgen: Einheit mit Zahnrad anklicken.' : 'Versorgen: Nachbarn mit Sanitätszeichen anklicken.', 'i-send': 'Befehl überbringen: Einheit mit Hundesymbol anklicken.', 'i-lenk': 'Feuer lenken: Geschütz oder Mörser mit Fernglas anklicken.', 'i-rec': 'Bergen: Koloss mit Schraubenschlüssel anklicken.' }[a] || ''); updateUI(); return; }
   if (a === 'st-limber' || a === 'st-mg' || a === 'st-ballon' || a === 'st-dreh-l' || a === 'st-dreh-r') { const u = inspect && inspect.unit; if (!u || !G.aufstellung) return; if (a === 'st-limber') u.limbered = !u.limbered; else if (a === 'st-mg') u.setup = !u.setup; else if (a === 'st-ballon') u.eingeholt = !u.eingeholt; else u.face = (u.face + (a === 'st-dreh-r' ? 1 : 5)) % 6;   // Punkt 2: Ballon und Blickrichtung kostenlos   // F6
     playSound(a === 'st-limber' ? (u.limbered ? 'clank' : 'abprotzen') : 'mgsetup', 0.4, u.side); syncAll(); updateHud(); return; }
   if (a === 'pass') {   // F102 (2026-11-22): jederzeit selbst abhaken (Knopf, Leertaste oder E), danach zur nächsten offenen Einheit; noch einmal = wieder öffnen
@@ -5202,6 +5213,7 @@ function noteEvent(e, u) {
       else logAdd(`Beschuss: ${N(a)} auf ${N(d)}`, a.side, ...at(d)); return; }
     case 'melee': { const a = unitById(e.a), d = unitById(e.d); if (a && d) logAdd(`Nahkampf: ${N(a)} gegen ${N(d)}`, a.side, ...at(d)); return; }
     case 'shell': { const a = unitById(e.a); if (a) logAdd(`${N(a)}: ${e.mode === 'gas' ? 'Gasgranaten' : e.mode === 'barrage' ? 'Artillerie-Sperrfeuer' : 'Granaten'}${e.scatter ? ' (gestreut)' : ''}`, a.side, e.c, e.r); return; }
+    case 'lenken': { const zu = unitById(e.z); return logAdd(`${N(u)} lenkt das Feuer: ${zu ? N(zu) : 'Geschütz'}`, u && u.side, ...at(u)); }
     case 'order': return logAdd(`${e.name}: ${e.kind === 'rally' ? 'Sammeln' : e.kind === 'fire' ? 'Feuer frei' : 'Sturmbefehl'}`, u && u.side, ...at(u));
     case 'bigorder': logAdd(`General: ${e.name}!`, e.side, ...at(u), true); return headline(`${e.name}!`, e.side);
     case 'undig': return logAdd(`${N(u)}: ausgegraben`, u && u.side, ...at(u));
