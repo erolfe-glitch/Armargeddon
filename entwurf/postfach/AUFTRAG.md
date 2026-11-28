@@ -232,7 +232,7 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
   - Gilt für alle Gruppen (`GRUPPE_Z`, Versorgung, Sanitäter, Führung). Rückweg `window.GRABEN_TIEFE_ALT`.
   - Bilder vorher/nachher in senkrechten und waagerechten Gräben (`entwurf/probe/g8/`), Partietest. Kein Video nötig.
 
-**154. `pa` danach = KO-A, erster Kommandant. Einstellung: Opus, Hoch.** Grundlage: `entwurf/KOMMANDANTEN_PLAN.md` (Abschnitte 2, 3, 7, 8, 10) und Punkt 152.
+✓ **154. `pa` danach = KO-A, erster Kommandant. Einstellung: Opus, Hoch.** Grundlage: `entwurf/KOMMANDANTEN_PLAN.md` (Abschnitte 2, 3, 7, 8, 10) und Punkt 152.
 1. **Neuer Typ „Stratege“ je Seite** (Einzelfigur, Klasse wie Helden, `T.kommandant`). Er **ersetzt den General** in den Kartenarmeen und in der Pflichtregel (genau ein Kommandant je Armee). Der Hauptmann bleibt.
 2. **Werte** (Vorschlag, mit Messung festlegen):
    - Stärke 100, Abwehr wie Schwere Grabenwacht, Moral 9, leicht gepanzert.

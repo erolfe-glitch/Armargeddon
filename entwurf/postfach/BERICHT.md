@@ -1,3 +1,79 @@
+## 2026-11-28 – KO-A (Punkt 154): erster Kommandant „Stratege“ statt General
+
+Gepusht:
+- `f9bc380`: Regeln, KI, Anzeige, Messung, Bilder
+- Abschluss-Commit mit index.html, CLAUDE.md und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Alle Browser-Läufe einzeln nacheinander, keiner über 10 Minuten. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Regeltest in Ordnung (205 P-Konstanten, 6 neue `KOMM_*`), Kommentar-Prüfung sauber, Belegungstest in Ordnung, Partietest „Konsole rot-frei, keine Fehler“.
+- **Video:** `entwurf/probe/video/KO-A.mp4` (Grauwall, 25 s, 24,9 Bilder/s, mit Ton).
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+- **Kosten:** keine (kein fal).
+
+**Was gebaut ist:**
+1. **Stratege je Seite:** Konkordat „Feldmarschall“, Aschenwacht „Generalstäbler“. Er ersetzt den General in allen Kartenarmeen und in der Pflichtregel (genau einer je Armee). Der Hauptmann bleibt.
+   - Die Typschlüssel `generalA`/`generalD` bleiben. So laufen Kartenarmeen, Pflichtregel, Nachschub und KI ohne Umbau weiter.
+2. **Werte:** Stärke 100 (Einzelfigur), Abwehr 6 wie die Schwere Grabenwacht, Moral 9, leicht gepanzert, Bewegung 3.
+   - Nahkampf 8,5: über dem stärksten Trupp (Löwenoger 8), unter den Helden (9 und 10).
+   - Schuss 3 auf 2 Felder.
+   - Kategorie „selten“. Preis aus den Werten: **145** (alter General 70). Das Armee-Budget wächst mit, weil es aus der Kartenarmee gerechnet wird.
+3. **Befehle:** alle Befehle des Generals (Sammeln, Feuer frei bzw. Sturmbefehl, großer Befehl einmal je Schlacht). Dazu:
+   - Reichweite 2 Felder.
+   - Bis zu 2 Befehle je Runde; der zweite kostet keine Aktion.
+   - Höchstens 5 je Schlacht (General: 3). Mit nur 3 wäre der zweite Befehl je Runde nach zwei Runden verbraucht.
+   - **„Feuer lenken“** (neuer Knopf mit Fernglas, einmal je Runde, kostet nichts): ein eigenes Geschütz oder ein Mörser bis 3 Felder schießt in diesem Zug ohne Streuung. Die Feldkanone ist ausgenommen, weil sie nur direkt schießt.
+4. **Aura 2 Felder:** Moralverlust ×0,8 und Sammeln +10 %. Der Angriffsbonus des Offiziers (×1,15) bleibt bei 1 Feld.
+5. **Fall:** Die ganze Seite verliert 2 Moral (Held: 1), mit Fluchtprüfung. Danach gibt es nur noch Befehle über Hauptleute. Einblendung: „Der Kommandant fällt – die ganze Seite verliert 20 Moral“.
+6. **Bild (Platzhalter bis KO-B):** der Offizier aus dem General-Gruppenbogen als Einzelfigur, auf 1,5 Soldatenhöhen vergrößert (gemessen: Linie 53, Kommandant 79, Held 85 Bildpunkte), mit Plastik. Ohne Posen, weil die General-Posen den Fahnenträger mit zeigen.
+7. **KI:**
+   - stellt ihn wie einen Anführer hinter die eigenen Trupps, nie in Feindberührung, und zieht ihn unter 40 Stärke zurück;
+   - greift mit ihm nur dann im Nahkampf an, wenn es den Gegner bricht;
+   - lenkt das Feuer vor den Artillerieschüssen (Geschütz mit der größten Reichweite und einem Ziel im Steilfeuer);
+   - gibt Befehle wie bisher, jetzt bis zu zwei je Runde;
+   - nimmt den gegnerischen Kommandanten lieber ins Ziel.
+8. **Texte:** Chronik je Seite (2 Sätze), Info-Text, Schlagworte, Rolle „Kommandant – Stratege“.
+9. **Rückweg:** `KOMMANDANT_ALT` (Node) bzw. `window.KOMMANDANT_ALT` vor dem Laden stellt den alten General wieder her.
+
+**Messung** (3 Karten × Startwerte 1 und 2 × 100 Schlachten, gemischte Aufstellung, Quote Konkordat; Vergleich mit denselben Startwerten aus U7c, alter General heute auf Grauwall nachgemessen: 48 %):
+
+| Karte | U7c (Startwerte 1/2) | KO-A | Unterschied | Runden | Verluste Konkordat/Aschenwacht |
+|---|---|---|---|---|---|
+| Grauwall | 48 % (52/44) | 44,5 % (49/40) | −3,5 | 15,9 (vorher 15,3) | 30 / 25 % (vorher 32,5 / 28) |
+| Sankt Ruß | 44,5 % (46/43) | 45,5 % (51/40) | +1 | 14,4 | 39,5 / 30,5 % |
+| Winterdorf | 56,5 % (60/53) | 55,5 % (56/55) | −1 | 14,3 | 30 / 24,5 % |
+
+Alle drei liegen in der Streuung ±4. Ergebnis: `entwurf/probe/u7/ko_a.json`.
+
+**Fehler auf dem Weg (behoben):** In der ersten Fassung fiel Konkordat auf Sankt Ruß auf 27,5 % und auf Winterdorf auf 40,5 %.
+- Ursache: Die KI der Aschenwacht schickt jede Einheit der Klasse „Sturm“ als Stoßtrupp zum nächsten Gegner. Der Generalstäbler ging so 4,5-mal je Schlacht in den Nahkampf, der Feldmarschall kaum.
+- Jetzt stellt die KI den Kommandanten wie einen Anführer. Danach: 25 statt 182 Nahkämpfe in 40 Schlachten.
+- Zerlegt auf Grauwall:
+  - nur die neuen Regeln (alte Werte): 54,5 %;
+  - nur die starken Werte: 35,5 %;
+  - der Nahkampfwert war der Treiber, Abwehr 6 mit Panzerung allein ist unbedenklich (47 %).
+- Teilmessungen: `entwurf/probe/u7/ko_a_*_gw.json` und `ko_a_v1_sw.json`.
+
+**Standardlauf `node tools/sim.js 200`** (feste Aufstellung, Grauwall):
+
+| | alter General | KO-A | KO-A ohne Feuer lenken |
+|---|---|---|---|
+| Konkordat | 21 % | 71 % | 70 % |
+| Runden | 14,5 | 15,9 | 16,0 |
+| Ausfälle Konkordat/Aschenwacht | 30 / 27 % | 31 / 25 % | 30 / 25 % |
+
+- Kommandanten fallen selten (je 3 %, alter General 5 %).
+- Je Schlacht etwa 17 Feuerlenkungen (davon 16 ohne Streuung wirksam) und 11 Befehle (alter General: 5).
+- Verluste je Typ: `entwurf/postfach/ko_a_sim200.txt`.
+- **Achtung:** In der festen Aufstellung springt die Quote um 50 Punkte, in der gemischten Messung bleibt sie in der Streuung. Die feste Aufstellung ist ein einziger Aufbau je Karte und schwankt bekanntlich stark (F94: Grauwall 54 % fest gegen 62 % gemischt; heute fest mit dem alten General nur 21 %). Trotzdem ist das ein deutlicher Ausschlag. „Feuer lenken“ ist nicht die Ursache: ohne es bleibt es bei 70 %.
+
+**Bilder:** `entwurf/probe/ko_a/uebersicht.jpg` (vorher General-Gruppe, nachher Stratege; je Seite links Linie, rechts Held). Einzelbilder in `vorher/` und `nachher/`. Bedienung: `nachher/bedienung_feldmarschall.jpg`, `nachher/feuer_lenken_modus.jpg`, `nachher/feuer_gelenkt.jpg`. Werkzeug: `node tools/ko_a_bilder.mjs <ordner>`.
+
+**Fragen an Enrico:**
+1. Die vorgeschriebene Messung (gemischt) liegt in ±4. Die feste Aufstellung auf Grauwall springt aber von 21 % auf 71 % Konkordat. Reicht dir die gemischte Messung, oder soll ich die feste Aufstellung (z. B. Lage des Feldmarschalls neben dem Mörser) eigens abgleichen?
+2. Passen die Namen „Feldmarschall“ und „Generalstäbler“ aus dem Plan, oder sollen sie beim Malen (KO-B) noch an die Weltbibel angepasst werden?
+3. Höchstens 5 Befehle je Schlacht statt 3 – einverstanden?
+
 ## 2026-11-28 – Nachtrag G8 (Punkt 153): Gruppen in Gräben, die in die Tiefe laufen
 
 Gepusht:
