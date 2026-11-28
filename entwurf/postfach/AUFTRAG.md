@@ -106,7 +106,10 @@
 - ✓ **Paket W2f – Figuren-Stiltest (Punkt 148)** erledigt (mit altem Bogen als Vorlage: Stil nur vorsichtig, Doppelungen).
 - ✓ **Paket W2g – zweite Figurenprobe (Punkt 149)** erledigt: Der Weg „ohne alten Bogen, mit genauer Beschreibung“ taugt.
 - ✓ **Paket W2c-1 (Punkt 150)** gemalt und abgenommen (sechs Bögen in `entwurf/probe/stil/figuren/w2c1/`).
-- **Paket W2c-1b – Einbau der sechs Bögen + Spieltest-Funde 1–3 (Punkt 151)** – **nächster `pa`, mit Browser** (Enrico spielt nicht). Opus Mittel.
+- ✓ **Paket W2c-1b (Punkt 151)** erledigt (`c3ee77c`, `db9b656`).
+- **Nachtrag G8 – Gruppen in senkrechten Gräben hintereinander (Punkt 153)** – **nächster `pa`**, Opus Mittel, klein.
+- **Paket KO-A – erster Kommandant (Stratege) (Punkt 154)** – `pa` danach, Opus Hoch. Dann K-A (Kampagne Start).
+- **W2c-2 (später):** nächste Zielstil-Bögen, dazu MG auf dem Marsch (`*_mg_marsch`) und Getroffen-Pose der Flammenwerfer (Enrico 01:40).
 - **Paket W2 „Aus einem Guss“ (Punkt 132)** – erst nach U7: zuerst W2a = Stilmodell (LoRA) anlernen und testen, nur Probe. → W2a jetzt (Punkt 147).
 - Danach U3 → U4 (mit Bildern für 6er-Sturmtrupps und Beiwerk, Punkt 90) → U6 → U7 (vorher Fable-Prüfung Moral) → U8 → S → **P Panzerung/Durchschlag (Punkt 91)** → U9.
 - **Effektbögen E1–E6 einbauen (Abschnitt 25.11. 13:20, Punkt 62) – kein eigenes Paket, gehört in U3 (figurennahe Effekte).**
@@ -220,6 +223,29 @@ Enricos Antworten auf die Fragen im Bericht von U7 Schritt 3 / F2:
 - **W2c – „Einheit neu“ / „Gelände neu“ in einem Befehl** (malen mit Stil → freistellen → Plastik → Abzeichen prüfen → Probebild neben einem Liniensoldaten).
 - **W2d – Karteneditor im Spiel** (Vorschlag des Beraters statt Tiled, weil dort sofort das echte Aussehen zu sehen ist; Enrico entscheidet später).
 - **Zurückgestellt:** Rotstich/„matschig“ bei der neuen Linie (Verdacht: Farbangleich zum Ochsenblut, Verkleinern, Plastik-Karte); wird mit W2 angesehen.
+
+# >>> JETZT (Enrico 2026-11-28 01:40): W2c-1b abgenommen – nächster `pa` = Nachtrag G8, danach KO-A <<<
+✓ **153. Nächster `pa` = Nachtrag G8 (klein). Einstellung: Opus, Mittel.**
+- **Abnahme W2c-1b:** Die farbigen Knopfsymbole mit Messingschein bleiben so (Enrico). Die neuen Bögen und die Funde 1–3 sind abgenommen.
+- **G8: Gruppen in senkrechten Gräben** (Graben läuft in die Tiefe): Die Teile einer Gruppe stehen dort **hintereinander** entlang des Grabens statt nebeneinander quer. So ragt nichts über die Grabenwand, z. B. die lange Panzerbüchse, der Versorgungskarren oder die Trage.
+  - Lange Teile (Panzerbüchse, Trage, Karren) in senkrechten Gräben um 90° drehen bzw. in die Tiefe verkürzen wie den Laufsteg, oder durch das schmalere Teil der Gruppe ersetzen. Bei unschönem Ergebnis lieber hintereinander mit leichtem Versatz zur Wand.
+  - Gilt für alle Gruppen (`GRUPPE_Z`, Versorgung, Sanitäter, Führung). Rückweg `window.GRABEN_TIEFE_ALT`.
+  - Bilder vorher/nachher in senkrechten und waagerechten Gräben (`entwurf/probe/g8/`), Partietest. Kein Video nötig.
+
+**154. `pa` danach = KO-A, erster Kommandant. Einstellung: Opus, Hoch.** Grundlage: `entwurf/KOMMANDANTEN_PLAN.md` (Abschnitte 2, 3, 7, 8, 10) und Punkt 152.
+1. **Neuer Typ „Stratege“ je Seite** (Einzelfigur, Klasse wie Helden, `T.kommandant`). Er **ersetzt den General** in den Kartenarmeen und in der Pflichtregel (genau ein Kommandant je Armee). Der Hauptmann bleibt.
+2. **Werte** (Vorschlag, mit Messung festlegen):
+   - Stärke 100, Abwehr wie Schwere Grabenwacht, Moral 9, leicht gepanzert.
+   - Schuss bzw. Nahkampf über jedem Trupp, aber unter einem Helden.
+   - Bewegung 3.
+3. **Befehle:** alle Befehle des Generals (Sammeln, Feuer frei bzw. Sturmbefehl, großer Befehl einmal je Schlacht). **Stratege extra:** +1 Befehl je Runde, Reichweite der Befehle 2 Felder, „**Feuer lenken**“ (einmal je Runde kostenlos: eine eigene Artillerie oder ein Mörser schießt in diesem Zug ohne Streuung).
+4. **Aura** 2 Felder: Moralverlust ×0,8, Sammel-Chance +10 %.
+5. **Fall:** Die ganze Seite verliert Moral (stärker als beim Heldenfall, Vorschlag −2). Danach gibt es nur noch Befehle über Hauptleute.
+6. **Bild:** vorerst Platzhalter. Der Offizier aus dem General-Gruppenbogen als Einzelfigur, auf 1,5 SH vergrößert, mit Plastik. Eigene Bilder kommen in KO-B.
+7. **KI:** bleibt 1–2 Felder hinter der Front, nutzt „Feuer lenken“ vor Artillerieschüssen, zieht sich unter 40 Stärke zurück, gibt Befehle wie bisher der General.
+8. **Info-Fenster und Chronik:** Text „Aus den Chroniken“ (2 Sätze, Weltbibel), Rolle „Kommandant – Stratege“. Kategorie „selten“, Preis aus den Werten.
+9. **Rückweg:** `KOMMANDANT_ALT` (Node) bzw. `window.KOMMANDANT_ALT` stellt den alten General wieder her.
+10. **Messung:** 3 Karten × 2 Startwerte × 100 Schlachten (MISCHEN=1), Vergleich mit `u7b.json`/U7c. Streuung ±4, sonst Werte anpassen und nachfragen. Regeltest, Partietest, Video.
 
 # >>> NOTIZ (Enrico 2026-11-28 01:15): Pläne Kampagne und Kommandanten abgenickt – Bau NACH W2c-1b <<<
 **152. Nur vormerken.** Pläne: `entwurf/KAMPAGNE_PLAN.md` und `entwurf/KOMMANDANTEN_PLAN.md` (Berater, 28.11.).

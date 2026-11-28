@@ -1,3 +1,28 @@
+## 2026-11-28 – Nachtrag G8 (Punkt 153): Gruppen in Gräben, die in die Tiefe laufen
+
+Gepusht:
+- `07e4da6`: G8
+- Abschluss-Commit mit index.html und diesem Bericht
+
+**Stand:**
+- **Hänger:** keine. Der unsichtbare Chrome ist geschlossen, der Server auf 8765 läuft weiter.
+- **Tests:** Partietest „Konsole rot-frei, keine Fehler“. Ein Video war nicht gefordert.
+- **Modell:** Die Sitzung zeigt „Opus 5.5“ an.
+
+**Gebaut:**
+- **Erkennung:** `grabenTief()` erkennt an den Grabenplätzen des Felds, ob der Graben auf dem Bildschirm senkrecht läuft.
+- **Graben in die Tiefe:**
+  - Die Teile einer Gruppe stehen hintereinander entlang des Grabens, mit leichtem Versatz abwechselnd zur Wand.
+  - Lange Teile (Breite über 1,6 × Höhe: liegender Panzerbüchsen-Schütze, Versorgungskarren, Trage) sind in die Tiefe auf die Hälfte verkürzt, wie der Laufsteg. So ragt nichts über die Wand.
+  - Beiwerk steht vorn hinter der Gruppe.
+- **Graben quer:** unverändert, also nebeneinander wie bisher.
+- **Geltung:** alle Gruppen (Waffentrupps, Versorgung, Sanitäter, Führung, Fernsprech).
+- **Rückweg:** `window.GRABEN_TIEFE_ALT`.
+
+**Bilder:** `entwurf/probe/g8/uebersicht.jpg` mit Panzerbüchse, Versorgung Aschenwacht, Sanitäter, MG-Trupp und Hauptmann, je vorher/nachher im Graben in die Tiefe und quer. Einzelbilder in `vorher/` und `nachher/`.
+
+**Fragen an Enrico:** keine. Der nächste `pa` ist laut Auftrag KO-A (erster Kommandant, „Stratege“).
+
 ## 2026-11-28 – W2c-1b (Punkt 151): sechs Zielstil-Bögen eingebaut, Spieltest-Funde 1–3
 
 Gepusht:
